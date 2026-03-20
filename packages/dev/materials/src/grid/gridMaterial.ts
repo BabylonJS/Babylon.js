@@ -125,7 +125,7 @@ export class GridMaterial extends PushMaterial {
      * Texture to define opacity of the grid
      */
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public opacityTexture: BaseTexture;
+    public accessor opacityTexture: BaseTexture;
 
     private _gridControl: Vector4 = new Vector4(this.gridRatio, this.majorUnitFrequency, this.minorUnitVisibility, this.opacity);
 

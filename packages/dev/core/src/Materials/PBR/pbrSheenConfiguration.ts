@@ -43,7 +43,7 @@ export class PBRSheenConfiguration extends MaterialPluginBase {
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public isEnabled = false;
+    public accessor isEnabled = false;
 
     private _linkSheenWithAlbedo = false;
     /**
@@ -51,7 +51,7 @@ export class PBRSheenConfiguration extends MaterialPluginBase {
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public linkSheenWithAlbedo = false;
+    public accessor linkSheenWithAlbedo = false;
 
     /**
      * Defines the sheen intensity.
@@ -74,7 +74,7 @@ export class PBRSheenConfiguration extends MaterialPluginBase {
      */
     @serializeAsTexture()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public texture: Nullable<BaseTexture> = null;
+    public accessor texture: Nullable<BaseTexture> = null;
 
     private _useRoughnessFromMainTexture = true;
     /**
@@ -83,7 +83,7 @@ export class PBRSheenConfiguration extends MaterialPluginBase {
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public useRoughnessFromMainTexture = true;
+    public accessor useRoughnessFromMainTexture = true;
 
     private _roughness: Nullable<number> = null;
     /**
@@ -93,7 +93,7 @@ export class PBRSheenConfiguration extends MaterialPluginBase {
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public roughness: Nullable<number> = null;
+    public accessor roughness: Nullable<number> = null;
 
     private _textureRoughness: Nullable<BaseTexture> = null;
     /**
@@ -102,7 +102,7 @@ export class PBRSheenConfiguration extends MaterialPluginBase {
      */
     @serializeAsTexture()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public textureRoughness: Nullable<BaseTexture> = null;
+    public accessor textureRoughness: Nullable<BaseTexture> = null;
 
     private _albedoScaling = false;
     /**
@@ -112,7 +112,7 @@ export class PBRSheenConfiguration extends MaterialPluginBase {
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public albedoScaling = false;
+    public accessor albedoScaling = false;
 
     /** @internal */
     private _internalMarkAllSubMeshesAsTexturesDirty: () => void;

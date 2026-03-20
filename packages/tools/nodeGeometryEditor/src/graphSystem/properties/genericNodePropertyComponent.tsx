@@ -14,7 +14,7 @@ import { NodeGeometryBlockConnectionPointTypes } from "core/Meshes/Node/Enums/no
 import { Vector3LineComponent } from "shared-ui-components/lines/vector3LineComponent";
 import { Vector4LineComponent } from "shared-ui-components/lines/vector4LineComponent";
 import type { IEditablePropertyListOption } from "core/Decorators/nodeDecorator";
-import { PropertyTypeForEdition, type IPropertyDescriptionForEdition } from "core/Decorators/nodeDecorator";
+import { PropertyTypeForEdition, getEditableProperties, type IPropertyDescriptionForEdition } from "core/Decorators/nodeDecorator";
 import { ForceRebuild } from "shared-ui-components/nodeGraphSystem/automaticProperties";
 
 export class GenericPropertyComponent extends React.Component<IPropertyComponentProps> {
@@ -146,29 +146,17 @@ export class GenericPropertyTabComponent extends React.Component<IPropertyCompon
 
     override render() {
         const block = this.props.nodeData.data as NodeGeometryBlock,
-            propStore: IPropertyDescriptionForEdition[] = (block as any)._propStore;
+            propStore: IPropertyDescriptionForEdition[] = getEditableProperties(block);
 
-        if (!propStore) {
+        if (!propStore.length) {
             return <></>;
         }
 
         const componentList: { [groupName: string]: JSX.Element[] } = {},
             groups: string[] = [];
 
-        const classes: string[] = [];
-
-        let proto = Object.getPrototypeOf(block);
-        while (proto && proto.getClassName) {
-            classes.push(proto.getClassName());
-            proto = Object.getPrototypeOf(proto);
-        }
-
-        for (const { propertyName, displayName, type, groupName, options, className } of propStore) {
+        for (const { propertyName, displayName, type, groupName, options } of propStore) {
             let components = componentList[groupName];
-
-            if (classes.indexOf(className) === -1) {
-                continue;
-            }
 
             if (!components) {
                 components = [];

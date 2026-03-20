@@ -211,7 +211,7 @@ export abstract class Light extends Node implements ISortableLight {
      * exceeding the number allowed of the materials.
      */
     @expandToProperty("_reorderLightsInScene")
-    public renderPriority: number = 0;
+    public accessor renderPriority: number = 0;
 
     @serialize("shadowEnabled")
     private _shadowEnabled: boolean = true;

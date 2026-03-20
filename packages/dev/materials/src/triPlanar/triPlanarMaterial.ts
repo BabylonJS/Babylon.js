@@ -84,32 +84,32 @@ export class TriPlanarMaterial extends PushMaterial {
     @serializeAsTexture("diffuseTextureX")
     private _diffuseTextureX: BaseTexture;
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public diffuseTextureX: BaseTexture;
+    public accessor diffuseTextureX: BaseTexture;
 
     @serializeAsTexture("diffuseTexturY")
     private _diffuseTextureY: BaseTexture;
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public diffuseTextureY: BaseTexture;
+    public accessor diffuseTextureY: BaseTexture;
 
     @serializeAsTexture("diffuseTextureZ")
     private _diffuseTextureZ: BaseTexture;
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public diffuseTextureZ: BaseTexture;
+    public accessor diffuseTextureZ: BaseTexture;
 
     @serializeAsTexture("normalTextureX")
     private _normalTextureX: BaseTexture;
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public normalTextureX: BaseTexture;
+    public accessor normalTextureX: BaseTexture;
 
     @serializeAsTexture("normalTextureY")
     private _normalTextureY: BaseTexture;
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public normalTextureY: BaseTexture;
+    public accessor normalTextureY: BaseTexture;
 
     @serializeAsTexture("normalTextureZ")
     private _normalTextureZ: BaseTexture;
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public normalTextureZ: BaseTexture;
+    public accessor normalTextureZ: BaseTexture;
 
     @serialize()
     public tileSize: number = 1;
@@ -126,12 +126,12 @@ export class TriPlanarMaterial extends PushMaterial {
     @serialize("disableLighting")
     private _disableLighting = false;
     @expandToProperty("_markAllSubMeshesAsLightsDirty")
-    public disableLighting: boolean;
+    public accessor disableLighting: boolean;
 
     @serialize("maxSimultaneousLights")
     private _maxSimultaneousLights = 4;
     @expandToProperty("_markAllSubMeshesAsLightsDirty")
-    public maxSimultaneousLights: number;
+    public accessor maxSimultaneousLights: number;
 
     constructor(name: string, scene?: Scene) {
         super(name, scene);

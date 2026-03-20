@@ -57,7 +57,7 @@ export class PBRClearCoatConfiguration extends MaterialPluginBase {
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public isEnabled = false;
+    public accessor isEnabled = false;
 
     /**
      * Defines the clear coat layer strength (between 0 and 1) it defaults to 1.
@@ -80,7 +80,7 @@ export class PBRClearCoatConfiguration extends MaterialPluginBase {
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public indexOfRefraction = PBRClearCoatConfiguration._DefaultIndexOfRefraction;
+    public accessor indexOfRefraction = PBRClearCoatConfiguration._DefaultIndexOfRefraction;
 
     private _texture: Nullable<BaseTexture> = null;
     /**
@@ -90,7 +90,7 @@ export class PBRClearCoatConfiguration extends MaterialPluginBase {
      */
     @serializeAsTexture()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public texture: Nullable<BaseTexture> = null;
+    public accessor texture: Nullable<BaseTexture> = null;
 
     private _useRoughnessFromMainTexture = true;
     /**
@@ -99,7 +99,7 @@ export class PBRClearCoatConfiguration extends MaterialPluginBase {
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public useRoughnessFromMainTexture = true;
+    public accessor useRoughnessFromMainTexture = true;
 
     private _textureRoughness: Nullable<BaseTexture> = null;
     /**
@@ -108,7 +108,7 @@ export class PBRClearCoatConfiguration extends MaterialPluginBase {
      */
     @serializeAsTexture()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public textureRoughness: Nullable<BaseTexture> = null;
+    public accessor textureRoughness: Nullable<BaseTexture> = null;
 
     private _remapF0OnInterfaceChange = true;
     /**
@@ -116,7 +116,7 @@ export class PBRClearCoatConfiguration extends MaterialPluginBase {
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public remapF0OnInterfaceChange = true;
+    public accessor remapF0OnInterfaceChange = true;
 
     private _bumpTexture: Nullable<BaseTexture> = null;
     /**
@@ -124,7 +124,7 @@ export class PBRClearCoatConfiguration extends MaterialPluginBase {
      */
     @serializeAsTexture()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public bumpTexture: Nullable<BaseTexture> = null;
+    public accessor bumpTexture: Nullable<BaseTexture> = null;
 
     private _isTintEnabled = false;
     /**
@@ -132,7 +132,7 @@ export class PBRClearCoatConfiguration extends MaterialPluginBase {
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public isTintEnabled = false;
+    public accessor isTintEnabled = false;
 
     /**
      * Defines the clear coat tint of the material.
@@ -164,7 +164,7 @@ export class PBRClearCoatConfiguration extends MaterialPluginBase {
      */
     @serializeAsTexture()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public tintTexture: Nullable<BaseTexture> = null;
+    public accessor tintTexture: Nullable<BaseTexture> = null;
 
     /** @internal */
     private _internalMarkAllSubMeshesAsTexturesDirty: () => void;

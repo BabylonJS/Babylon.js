@@ -58,7 +58,7 @@ export class PBRIridescenceConfiguration extends MaterialPluginBase {
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public isEnabled = false;
+    public accessor isEnabled = false;
 
     /**
      * Defines the iridescence layer strength (between 0 and 1) it defaults to 1.
@@ -90,7 +90,7 @@ export class PBRIridescenceConfiguration extends MaterialPluginBase {
      */
     @serializeAsTexture()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public texture: Nullable<BaseTexture> = null;
+    public accessor texture: Nullable<BaseTexture> = null;
 
     private _thicknessTexture: Nullable<BaseTexture> = null;
     /**
@@ -98,7 +98,7 @@ export class PBRIridescenceConfiguration extends MaterialPluginBase {
      */
     @serializeAsTexture()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public thicknessTexture: Nullable<BaseTexture> = null;
+    public accessor thicknessTexture: Nullable<BaseTexture> = null;
 
     /** @internal */
     private _internalMarkAllSubMeshesAsTexturesDirty: () => void;

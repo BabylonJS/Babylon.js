@@ -34,7 +34,7 @@ export class DecalMapConfiguration extends MaterialPluginBase {
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public isEnabled = false;
+    public accessor isEnabled = false;
 
     private _smoothAlpha = false;
 
@@ -44,7 +44,7 @@ export class DecalMapConfiguration extends MaterialPluginBase {
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public smoothAlpha = false;
+    public accessor smoothAlpha = false;
 
     private _internalMarkAllSubMeshesAsTexturesDirty: () => void;
 

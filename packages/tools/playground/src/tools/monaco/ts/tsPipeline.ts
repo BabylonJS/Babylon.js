@@ -22,8 +22,6 @@ const TsOptions = {
     baseUrl: "file:///pg/",
     typeRoots: [],
     isolatedModules: true,
-    experimentalDecorators: true,
-    emitDecoratorMetadata: false,
     allowUmdGlobalAccess: true,
     inlineSourceMap: true,
     inlineSources: true,

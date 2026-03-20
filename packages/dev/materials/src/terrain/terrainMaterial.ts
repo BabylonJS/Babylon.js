@@ -76,37 +76,37 @@ export class TerrainMaterial extends PushMaterial {
     @serializeAsTexture("mixTexture")
     private _mixTexture: BaseTexture;
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public mixTexture: BaseTexture;
+    public accessor mixTexture: BaseTexture;
 
     @serializeAsTexture("diffuseTexture1")
     private _diffuseTexture1: Texture;
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public diffuseTexture1: Texture;
+    public accessor diffuseTexture1: Texture;
 
     @serializeAsTexture("diffuseTexture2")
     private _diffuseTexture2: Texture;
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public diffuseTexture2: Texture;
+    public accessor diffuseTexture2: Texture;
 
     @serializeAsTexture("diffuseTexture3")
     private _diffuseTexture3: Texture;
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public diffuseTexture3: Texture;
+    public accessor diffuseTexture3: Texture;
 
     @serializeAsTexture("bumpTexture1")
     private _bumpTexture1: Texture;
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public bumpTexture1: Texture;
+    public accessor bumpTexture1: Texture;
 
     @serializeAsTexture("bumpTexture2")
     private _bumpTexture2: Texture;
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public bumpTexture2: Texture;
+    public accessor bumpTexture2: Texture;
 
     @serializeAsTexture("bumpTexture3")
     private _bumpTexture3: Texture;
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public bumpTexture3: Texture;
+    public accessor bumpTexture3: Texture;
 
     @serializeAsColor3()
     public diffuseColor = new Color3(1, 1, 1);
@@ -120,12 +120,12 @@ export class TerrainMaterial extends PushMaterial {
     @serialize("disableLighting")
     private _disableLighting = false;
     @expandToProperty("_markAllSubMeshesAsLightsDirty")
-    public disableLighting: boolean;
+    public accessor disableLighting: boolean;
 
     @serialize("maxSimultaneousLights")
     private _maxSimultaneousLights = 4;
     @expandToProperty("_markAllSubMeshesAsLightsDirty")
-    public maxSimultaneousLights: number;
+    public accessor maxSimultaneousLights: number;
 
     constructor(name: string, scene?: Scene) {
         super(name, scene);

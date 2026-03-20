@@ -932,7 +932,7 @@ export class GIRSMRenderPluginMaterial extends MaterialPluginBase {
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public isEnabled = false;
+    public accessor isEnabled = false;
 
     protected _markAllSubMeshesAsTexturesDirty(): void {
         this._enable(this._isEnabled);

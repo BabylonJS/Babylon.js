@@ -19,7 +19,7 @@ export class PBRSpecularGlossinessMaterial extends PBRBaseSimpleMaterial {
      */
     @serializeAsColor3("diffuse")
     @expandToProperty("_markAllSubMeshesAsTexturesDirty", "_albedoColor")
-    public diffuseColor: Color3;
+    public accessor diffuseColor: Color3;
 
     /**
      * Specifies the diffuse texture of the material. This can also contains the opacity value in its alpha
@@ -27,28 +27,28 @@ export class PBRSpecularGlossinessMaterial extends PBRBaseSimpleMaterial {
      */
     @serializeAsTexture()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty", "_albedoTexture")
-    public diffuseTexture: Nullable<BaseTexture>;
+    public accessor diffuseTexture: Nullable<BaseTexture>;
 
     /**
      * Specifies the specular color of the material. This indicates how reflective is the material (none to mirror).
      */
     @serializeAsColor3("specular")
     @expandToProperty("_markAllSubMeshesAsTexturesDirty", "_reflectivityColor")
-    public specularColor: Color3;
+    public accessor specularColor: Color3;
 
     /**
      * Specifies the glossiness of the material. This indicates "how sharp is the reflection".
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty", "_microSurface")
-    public glossiness: number;
+    public accessor glossiness: number;
 
     /**
      * Specifies both the specular color RGB and the glossiness A of the material per pixels.
      */
     @serializeAsTexture()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty", "_reflectivityTexture")
-    public specularGlossinessTexture: Nullable<BaseTexture>;
+    public accessor specularGlossinessTexture: Nullable<BaseTexture>;
 
     /**
      * Specifies if the reflectivity texture contains the glossiness information in its alpha channel.

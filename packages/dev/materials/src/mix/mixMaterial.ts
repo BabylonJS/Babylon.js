@@ -78,12 +78,12 @@ export class MixMaterial extends PushMaterial {
     @serializeAsTexture("mixTexture1")
     private _mixTexture1: BaseTexture;
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public mixTexture1: BaseTexture;
+    public accessor mixTexture1: BaseTexture;
 
     @serializeAsTexture("mixTexture2")
     private _mixTexture2: BaseTexture;
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public mixTexture2: BaseTexture;
+    public accessor mixTexture2: BaseTexture;
 
     /**
      * Diffuse textures
@@ -92,42 +92,42 @@ export class MixMaterial extends PushMaterial {
     @serializeAsTexture("diffuseTexture1")
     private _diffuseTexture1: Texture;
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public diffuseTexture1: Texture;
+    public accessor diffuseTexture1: Texture;
 
     @serializeAsTexture("diffuseTexture2")
     private _diffuseTexture2: Texture;
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public diffuseTexture2: Texture;
+    public accessor diffuseTexture2: Texture;
 
     @serializeAsTexture("diffuseTexture3")
     private _diffuseTexture3: Texture;
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public diffuseTexture3: Texture;
+    public accessor diffuseTexture3: Texture;
 
     @serializeAsTexture("diffuseTexture4")
     private _diffuseTexture4: Texture;
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public diffuseTexture4: Texture;
+    public accessor diffuseTexture4: Texture;
 
     @serializeAsTexture("diffuseTexture1")
     private _diffuseTexture5: Texture;
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public diffuseTexture5: Texture;
+    public accessor diffuseTexture5: Texture;
 
     @serializeAsTexture("diffuseTexture2")
     private _diffuseTexture6: Texture;
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public diffuseTexture6: Texture;
+    public accessor diffuseTexture6: Texture;
 
     @serializeAsTexture("diffuseTexture3")
     private _diffuseTexture7: Texture;
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public diffuseTexture7: Texture;
+    public accessor diffuseTexture7: Texture;
 
     @serializeAsTexture("diffuseTexture4")
     private _diffuseTexture8: Texture;
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public diffuseTexture8: Texture;
+    public accessor diffuseTexture8: Texture;
 
     /**
      * Uniforms
@@ -145,12 +145,12 @@ export class MixMaterial extends PushMaterial {
     @serialize("disableLighting")
     private _disableLighting = false;
     @expandToProperty("_markAllSubMeshesAsLightsDirty")
-    public disableLighting: boolean;
+    public accessor disableLighting: boolean;
 
     @serialize("maxSimultaneousLights")
     private _maxSimultaneousLights = 4;
     @expandToProperty("_markAllSubMeshesAsLightsDirty")
-    public maxSimultaneousLights: number;
+    public accessor maxSimultaneousLights: number;
 
     constructor(name: string, scene?: Scene) {
         super(name, scene);

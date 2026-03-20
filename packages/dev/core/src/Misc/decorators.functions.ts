@@ -1,16 +1,30 @@
-const MergedStore = {};
+/** @internal */
+export const __bjsSerializableKey = "__bjs_serializable__";
 
-const DecoratorInitialStore = {};
+const _mergedStoreCache = new WeakMap<object, Record<string, any>>();
+
+/**
+ * Returns the metadata object for the decorator context.
+ * Used internally by decorator functions to store serialization info.
+ * @internal
+ */
+export function GetDirectStoreFromMetadata(metadata: DecoratorMetadataObject): Record<string, any> {
+    let ownStore = Object.hasOwn(metadata, __bjsSerializableKey) ? (metadata[__bjsSerializableKey] as Record<string, any>) : undefined;
+    if (!ownStore) {
+        ownStore = {};
+        metadata[__bjsSerializableKey] = ownStore;
+    }
+    return ownStore;
+}
 
 /** @internal */
 export function GetDirectStore(target: any): any {
-    const classKey = target.getClassName();
-
-    if (!(<any>DecoratorInitialStore)[classKey]) {
-        (<any>DecoratorInitialStore)[classKey] = {};
+    const ctor = typeof target === "function" ? target : target?.constructor;
+    const metadata: DecoratorMetadataObject | undefined = ctor?.[Symbol.metadata];
+    if (!metadata) {
+        return {};
     }
-
-    return (<any>DecoratorInitialStore)[classKey];
+    return Object.hasOwn(metadata, __bjsSerializableKey) ? (metadata[__bjsSerializableKey] as Record<string, any>) : {};
 }
 
 /**
@@ -18,47 +32,33 @@ export function GetDirectStore(target: any): any {
  * @param target host object
  */
 export function GetMergedStore(target: any): any {
-    const classKey = target.getClassName();
-
-    if ((<any>MergedStore)[classKey]) {
-        return (<any>MergedStore)[classKey];
+    const ctor = typeof target === "function" ? target : target?.constructor;
+    const metadata: DecoratorMetadataObject | undefined = ctor?.[Symbol.metadata];
+    if (!metadata) {
+        return {};
     }
 
-    (<any>MergedStore)[classKey] = {};
-
-    const store = (<any>MergedStore)[classKey];
-    let currentTarget = target;
-    let currentKey = classKey;
-    while (currentKey) {
-        const initialStore = (<any>DecoratorInitialStore)[currentKey];
-        for (const property in initialStore) {
-            store[property] = initialStore[property];
-        }
-
-        let parent: any;
-        let done = false;
-
-        do {
-            parent = Object.getPrototypeOf(currentTarget);
-            if (!parent.getClassName) {
-                done = true;
-                break;
-            }
-
-            if (parent.getClassName() !== currentKey) {
-                break;
-            }
-
-            currentTarget = parent;
-        } while (parent);
-
-        if (done) {
-            break;
-        }
-
-        currentKey = parent.getClassName();
-        currentTarget = parent;
+    // Check cache
+    const cached = _mergedStoreCache.get(metadata);
+    if (cached) {
+        return cached;
     }
 
+    // Walk the metadata prototype chain and merge all serializable stores
+    const store: Record<string, any> = {};
+    let currentMeta: any = metadata;
+    while (currentMeta) {
+        if (Object.hasOwn(currentMeta, __bjsSerializableKey)) {
+            const classStore = currentMeta[__bjsSerializableKey] as Record<string, any>;
+            for (const property in classStore) {
+                if (Object.hasOwn(classStore, property) && !(property in store)) {
+                    store[property] = classStore[property];
+                }
+            }
+        }
+        currentMeta = Object.getPrototypeOf(currentMeta);
+    }
+
+    _mergedStoreCache.set(metadata, store);
     return store;
 }

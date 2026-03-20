@@ -65,17 +65,17 @@ export class FireMaterial extends PushMaterial {
     @serializeAsTexture("diffuseTexture")
     private _diffuseTexture: Nullable<BaseTexture>;
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public diffuseTexture: Nullable<BaseTexture>;
+    public accessor diffuseTexture: Nullable<BaseTexture>;
 
     @serializeAsTexture("distortionTexture")
     private _distortionTexture: Nullable<BaseTexture>;
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public distortionTexture: Nullable<BaseTexture>;
+    public accessor distortionTexture: Nullable<BaseTexture>;
 
     @serializeAsTexture("opacityTexture")
     private _opacityTexture: Nullable<BaseTexture>;
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public opacityTexture: Nullable<BaseTexture>;
+    public accessor opacityTexture: Nullable<BaseTexture>;
 
     @serializeAsColor3("diffuse")
     public diffuseColor = new Color3(1, 1, 1);

@@ -469,8 +469,8 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
      * Base Weight is a multiplier on the diffuse and metal lobes.
      * See OpenPBR's specs for base_weight
      */
-    public baseWeight: number;
-    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "baseWeight")
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty")
+    accessor baseWeight: number;
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _baseWeight: Property<number> = new Property<number>("base_weight", 1, "vBaseWeight", 1);
 
@@ -478,8 +478,8 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
      * Base Weight is a multiplier on the diffuse and metal lobes.
      * See OpenPBR's specs for base_weight
      */
-    public baseWeightTexture: Nullable<BaseTexture>;
-    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "baseWeightTexture")
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty")
+    accessor baseWeightTexture: Nullable<BaseTexture>;
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _baseWeightTexture: Sampler = new Sampler("base_weight", "baseWeight", "BASE_WEIGHT");
 
@@ -487,8 +487,8 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
      * Color of the base diffuse lobe.
      * See OpenPBR's specs for base_color
      */
-    public baseColor: Color3;
-    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "baseColor")
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty")
+    accessor baseColor: Color3;
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _baseColor: Property<Color3> = new Property<Color3>("base_color", Color3.White(), "vBaseColor", 4);
 
@@ -496,8 +496,8 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
      * Base Color Texture property.
      * See OpenPBR's specs for base_color
      */
-    public baseColorTexture: Nullable<BaseTexture>;
-    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "baseColorTexture")
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty")
+    accessor baseColorTexture: Nullable<BaseTexture>;
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _baseColorTexture: Sampler = new Sampler("base_color", "baseColor", "BASE_COLOR");
 
@@ -505,8 +505,8 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
      * Roughness of the diffuse lobe.
      * See OpenPBR's specs for base_diffuse_roughness
      */
-    public baseDiffuseRoughness: number;
-    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "baseDiffuseRoughness")
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty")
+    accessor baseDiffuseRoughness: number;
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _baseDiffuseRoughness: Property<number> = new Property<number>("base_diffuse_roughness", 0, "vBaseDiffuseRoughness", 1);
 
@@ -514,8 +514,8 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
      * Roughness texture of the diffuse lobe.
      * See OpenPBR's specs for base_diffuse_roughness
      */
-    public baseDiffuseRoughnessTexture: Nullable<BaseTexture>;
-    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "baseDiffuseRoughnessTexture")
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty")
+    accessor baseDiffuseRoughnessTexture: Nullable<BaseTexture>;
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _baseDiffuseRoughnessTexture: Sampler = new Sampler("base_diffuse_roughness", "baseDiffuseRoughness", "BASE_DIFFUSE_ROUGHNESS");
 
@@ -523,8 +523,8 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
      * Metalness of the base lobe.
      * See OpenPBR's specs for base_metalness
      */
-    public baseMetalness: number;
-    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "baseMetalness")
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty")
+    accessor baseMetalness: number;
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _baseMetalness: Property<number> = new Property<number>("base_metalness", 0, "vReflectanceInfo", 4, 0);
 
@@ -532,8 +532,8 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
      * Metalness texture.
      * See OpenPBR's specs for base_metalness
      */
-    public baseMetalnessTexture: Nullable<BaseTexture>;
-    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "baseMetalnessTexture")
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty")
+    accessor baseMetalnessTexture: Nullable<BaseTexture>;
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _baseMetalnessTexture: Sampler = new Sampler("base_metalness", "baseMetalness", "BASE_METALNESS");
 
@@ -541,8 +541,8 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
      * Weight of the specular lobe.
      * See OpenPBR's specs for specular_weight
      */
-    public specularWeight: number;
-    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "specularWeight")
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty")
+    accessor specularWeight: number;
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _specularWeight: Property<number> = new Property<number>("specular_weight", 1, "vReflectanceInfo", 4, 3);
 
@@ -550,8 +550,8 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
      * Weight texture of the specular lobe.
      * See OpenPBR's specs for specular_weight
      */
-    public specularWeightTexture: Nullable<BaseTexture>;
-    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "specularWeightTexture")
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty")
+    accessor specularWeightTexture: Nullable<BaseTexture>;
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _specularWeightTexture: Sampler = new Sampler("specular_weight", "specularWeight", "SPECULAR_WEIGHT");
 
@@ -559,8 +559,8 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
      * Color of the specular lobe.
      * See OpenPBR's specs for specular_color
      */
-    public specularColor: Color3;
-    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "specularColor")
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty")
+    accessor specularColor: Color3;
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _specularColor: Property<Color3> = new Property<Color3>("specular_color", Color3.White(), "vSpecularColor", 4);
 
@@ -568,8 +568,8 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
      * Specular Color Texture property.
      * See OpenPBR's specs for specular_color
      */
-    public specularColorTexture: Nullable<BaseTexture>;
-    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "specularColorTexture")
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty")
+    accessor specularColorTexture: Nullable<BaseTexture>;
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _specularColorTexture: Sampler = new Sampler("specular_color", "specularColor", "SPECULAR_COLOR");
 
@@ -577,8 +577,8 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
      * Roughness of the specular lobe.
      * See OpenPBR's specs for specular_roughness
      */
-    public specularRoughness: number;
-    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "specularRoughness")
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty")
+    accessor specularRoughness: number;
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _specularRoughness: Property<number> = new Property<number>("specular_roughness", 0.3, "vReflectanceInfo", 4, 1);
 
@@ -586,8 +586,8 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
      * Roughness texture of the specular lobe.
      * See OpenPBR's specs for specular_roughness
      */
-    public specularRoughnessTexture: Nullable<BaseTexture>;
-    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "specularRoughnessTexture")
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty")
+    accessor specularRoughnessTexture: Nullable<BaseTexture>;
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _specularRoughnessTexture: Sampler = new Sampler("specular_roughness", "specularRoughness", "SPECULAR_ROUGHNESS");
 
@@ -595,8 +595,8 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
      * Anisotropic roughness of the specular lobe.
      * See OpenPBR's specs for specular_roughness_anisotropy
      */
-    public specularRoughnessAnisotropy: number;
-    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "specularRoughnessAnisotropy")
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty")
+    accessor specularRoughnessAnisotropy: number;
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _specularRoughnessAnisotropy: Property<number> = new Property<number>("specular_roughness_anisotropy", 0, "vSpecularAnisotropy", 3, 2);
 
@@ -604,8 +604,8 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
      * Anisotropic Roughness texture.
      * See OpenPBR's specs for specular_roughness
      */
-    public specularRoughnessAnisotropyTexture: Nullable<BaseTexture>;
-    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "specularRoughnessAnisotropyTexture")
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty")
+    accessor specularRoughnessAnisotropyTexture: Nullable<BaseTexture>;
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _specularRoughnessAnisotropyTexture: Sampler = new Sampler("specular_roughness_anisotropy", "specularRoughnessAnisotropy", "SPECULAR_ROUGHNESS_ANISOTROPY");
 
@@ -613,8 +613,8 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
      * IOR of the specular lobe.
      * See OpenPBR's specs for specular_ior
      */
-    public specularIor: number;
-    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "specularIor")
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty")
+    accessor specularIor: number;
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _specularIor: Property<number> = new Property<number>("specular_ior", 1.5, "vReflectanceInfo", 4, 2);
 
@@ -622,8 +622,8 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
      * Transmission weight of the surface.
      * See OpenPBR's specs for transmission_weight
      */
-    public transmissionWeight: number;
-    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "transmissionWeight")
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty")
+    accessor transmissionWeight: number;
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _transmissionWeight: Property<number> = new Property<number>("transmission_weight", 0.0, "vTransmissionWeight", 1);
 
@@ -631,8 +631,8 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
      * Transmission weight texture.
      * See OpenPBR's specs for transmission_weight
      */
-    public transmissionWeightTexture: Nullable<BaseTexture>;
-    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "transmissionWeightTexture")
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty")
+    accessor transmissionWeightTexture: Nullable<BaseTexture>;
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _transmissionWeightTexture: Sampler = new Sampler("transmission_weight", "transmissionWeight", "TRANSMISSION_WEIGHT");
 
@@ -640,8 +640,8 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
      * Transmission color of the surface.
      * See OpenPBR's specs for transmission_color
      */
-    public transmissionColor: Color3;
-    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "transmissionColor")
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty")
+    accessor transmissionColor: Color3;
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _transmissionColor: Property<Color3> = new Property<Color3>("transmission_color", Color3.White(), "vTransmissionColor", 3, 0);
 
@@ -649,8 +649,8 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
      * Transmission color texture.
      * See OpenPBR's specs for transmission_color
      */
-    public transmissionColorTexture: Nullable<BaseTexture>;
-    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "transmissionColorTexture")
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty")
+    accessor transmissionColorTexture: Nullable<BaseTexture>;
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _transmissionColorTexture: Sampler = new Sampler("transmission_color", "transmissionColor", "TRANSMISSION_COLOR");
 
@@ -658,8 +658,8 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
      * Transmission depth of the volume
      * See OpenPBR's specs for transmission_depth
      */
-    public transmissionDepth: number;
-    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "transmissionDepth")
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty")
+    accessor transmissionDepth: number;
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _transmissionDepth: Property<number> = new Property<number>("transmission_depth", 0.0, "vTransmissionDepth", 1, 0);
 
@@ -667,8 +667,8 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
      * Transmission depth texture.
      * See OpenPBR's specs for transmission_depth
      */
-    public transmissionDepthTexture: Nullable<BaseTexture>;
-    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "transmissionDepthTexture")
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty")
+    accessor transmissionDepthTexture: Nullable<BaseTexture>;
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _transmissionDepthTexture: Sampler = new Sampler("transmission_depth", "transmissionDepth", "TRANSMISSION_DEPTH");
 
@@ -676,8 +676,8 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
      * Transmission scatter of the surface.
      * See OpenPBR's specs for transmission_scatter
      */
-    public transmissionScatter: Color3;
-    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "transmissionScatter")
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty")
+    accessor transmissionScatter: Color3;
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _transmissionScatter: Property<Color3> = new Property<Color3>("transmission_scatter", Color3.Black(), "vTransmissionScatter", 3, 0);
 
@@ -685,8 +685,8 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
      * Transmission scatter texture.
      * See OpenPBR's specs for transmission_scatter
      */
-    public transmissionScatterTexture: Nullable<BaseTexture>;
-    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "transmissionScatterTexture")
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty")
+    accessor transmissionScatterTexture: Nullable<BaseTexture>;
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _transmissionScatterTexture: Sampler = new Sampler("transmission_scatter", "transmissionScatter", "TRANSMISSION_SCATTER");
 
@@ -694,8 +694,8 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
      * Transmission scatter anisotropy
      * See OpenPBR's specs for transmission_scatter_anisotropy
      */
-    public transmissionScatterAnisotropy: number;
-    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "transmissionScatterAnisotropy")
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty")
+    accessor transmissionScatterAnisotropy: number;
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _transmissionScatterAnisotropy: Property<number> = new Property<number>("transmission_scatter_anisotropy", 0.0, "vTransmissionScatterAnisotropy", 1, 0);
 
@@ -703,8 +703,8 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
      * Transmission Dispersion Scale factor.
      * See OpenPBR's specs for transmission_dispersion_scale
      */
-    public transmissionDispersionScale: number;
-    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "transmissionDispersionScale")
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty")
+    accessor transmissionDispersionScale: number;
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _transmissionDispersionScale: Property<number> = new Property<number>("transmission_dispersion_scale", 0.0, "vTransmissionDispersionScale", 1, 0);
 
@@ -712,8 +712,8 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
      * Transmission Dispersion Scale texture.
      * See OpenPBR's specs for transmission_dispersion_scale
      */
-    public transmissionDispersionScaleTexture: Nullable<BaseTexture>;
-    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "transmissionDispersionScaleTexture")
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty")
+    accessor transmissionDispersionScaleTexture: Nullable<BaseTexture>;
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _transmissionDispersionScaleTexture: Sampler = new Sampler("transmission_dispersion_scale", "transmissionDispersionScale", "TRANSMISSION_DISPERSION_SCALE");
 
@@ -721,8 +721,8 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
      * Transmission Dispersion Abbe number.
      * See OpenPBR's specs for transmission_dispersion_abbe_number
      */
-    public transmissionDispersionAbbeNumber: number;
-    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "transmissionDispersionAbbeNumber")
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty")
+    accessor transmissionDispersionAbbeNumber: number;
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _transmissionDispersionAbbeNumber: Property<number> = new Property<number>("transmission_dispersion_abbe_number", 20.0, "vTransmissionDispersionAbbeNumber", 1, 0);
 
@@ -730,8 +730,8 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
      * Defines the amount of clear coat on the surface.
      * See OpenPBR's specs for coat_weight
      */
-    public coatWeight: number;
-    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "coatWeight")
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty")
+    accessor coatWeight: number;
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _coatWeight: Property<number> = new Property<number>("coat_weight", 0.0, "vCoatWeight", 1, 0);
 
@@ -739,8 +739,8 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
      * Coat weight texture.
      * See OpenPBR's specs for coat_weight
      */
-    public coatWeightTexture: Nullable<BaseTexture>;
-    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "coatWeightTexture")
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty")
+    accessor coatWeightTexture: Nullable<BaseTexture>;
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _coatWeightTexture: Sampler = new Sampler("coat_weight", "coatWeight", "COAT_WEIGHT");
 
@@ -748,8 +748,8 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
      * Defines the color of the clear coat on the surface.
      * See OpenPBR's specs for coat_color
      */
-    public coatColor: Color3;
-    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "coatColor")
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty")
+    accessor coatColor: Color3;
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _coatColor: Property<Color3> = new Property<Color3>("coat_color", Color3.White(), "vCoatColor", 3, 0);
 
@@ -757,8 +757,8 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
      * Color texture of the clear coat.
      * See OpenPBR's specs for coat_color
      */
-    public coatColorTexture: Nullable<BaseTexture>;
-    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "coatColorTexture")
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty")
+    accessor coatColorTexture: Nullable<BaseTexture>;
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _coatColorTexture: Sampler = new Sampler("coat_color", "coatColor", "COAT_COLOR");
 
@@ -766,8 +766,8 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
      * Defines the roughness of the clear coat on the surface.
      * See OpenPBR's specs for coat_roughness
      */
-    public coatRoughness: number;
-    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "coatRoughness")
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty")
+    accessor coatRoughness: number;
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _coatRoughness: Property<number> = new Property<number>("coat_roughness", 0.0, "vCoatRoughness", 1, 0);
 
@@ -775,8 +775,8 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
      * Roughness texture of the clear coat.
      * See OpenPBR's specs for coat_roughness
      */
-    public coatRoughnessTexture: Nullable<BaseTexture>;
-    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "coatRoughnessTexture")
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty")
+    accessor coatRoughnessTexture: Nullable<BaseTexture>;
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _coatRoughnessTexture: Sampler = new Sampler("coat_roughness", "coatRoughness", "COAT_ROUGHNESS");
 
@@ -784,8 +784,8 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
      * Defines the anisotropy of the clear coat on the surface.
      * See OpenPBR's specs for coat_roughness_anisotropy
      */
-    public coatRoughnessAnisotropy: number;
-    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "coatRoughnessAnisotropy")
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty")
+    accessor coatRoughnessAnisotropy: number;
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _coatRoughnessAnisotropy: Property<number> = new Property<number>("coat_roughness_anisotropy", 0, "vCoatRoughnessAnisotropy", 1);
 
@@ -793,8 +793,8 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
      * Anisotropic Roughness texture of the clear coat.
      * See OpenPBR's specs for coat_roughness_anisotropy
      */
-    public coatRoughnessAnisotropyTexture: Nullable<BaseTexture>;
-    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "coatRoughnessAnisotropyTexture")
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty")
+    accessor coatRoughnessAnisotropyTexture: Nullable<BaseTexture>;
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _coatRoughnessAnisotropyTexture: Sampler = new Sampler("coat_roughness_anisotropy", "coatRoughnessAnisotropy", "COAT_ROUGHNESS_ANISOTROPY");
 
@@ -802,8 +802,8 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
      * Defines the IOR of the clear coat on the surface.
      * See OpenPBR's specs for coat_ior
      */
-    public coatIor: number;
-    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "coatIor")
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty")
+    accessor coatIor: number;
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _coatIor: Property<number> = new Property<number>("coat_ior", 1.5, "vCoatIor", 1, 0);
 
@@ -813,8 +813,8 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
      * is applied, while a value of 0.0 means that no darkening is applied.
      * See OpenPBR's specs for coat_darkening
      */
-    public coatDarkening: number;
-    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "coatDarkening")
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty")
+    accessor coatDarkening: number;
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _coatDarkening: Property<number> = new Property<number>("coat_darkening", 1.0, "vCoatDarkening", 1, 0);
 
@@ -824,8 +824,8 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
      * is applied, while a value of 0.0 means that no darkening is applied.
      * See OpenPBR's specs for coat_darkening
      */
-    public coatDarkeningTexture: Nullable<BaseTexture>;
-    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "coatDarkeningTexture")
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty")
+    accessor coatDarkeningTexture: Nullable<BaseTexture>;
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _coatDarkeningTexture: Sampler = new Sampler("coat_darkening", "coatDarkening", "COAT_DARKENING");
 
@@ -839,8 +839,8 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
      * Defines the weight of the fuzz layer on the surface.
      * See OpenPBR's specs for fuzz_weight
      */
-    public fuzzWeight: number;
-    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "fuzzWeight")
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty")
+    accessor fuzzWeight: number;
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _fuzzWeight: Property<number> = new Property<number>("fuzz_weight", 0.0, "vFuzzWeight", 1, 0);
 
@@ -848,8 +848,8 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
      * Weight texture of the fuzz layer.
      * See OpenPBR's specs for fuzz_weight
      */
-    public fuzzWeightTexture: Nullable<BaseTexture>;
-    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "fuzzWeightTexture")
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty")
+    accessor fuzzWeightTexture: Nullable<BaseTexture>;
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _fuzzWeightTexture: Sampler = new Sampler("fuzz_weight", "fuzzWeight", "FUZZ_WEIGHT");
 
@@ -857,8 +857,8 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
      * Defines the color of the fuzz layer on the surface.
      * See OpenPBR's specs for fuzz_color
      */
-    public fuzzColor: Color3;
-    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "fuzzColor")
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty")
+    accessor fuzzColor: Color3;
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _fuzzColor: Property<Color3> = new Property<Color3>("fuzz_color", Color3.White(), "vFuzzColor", 3, 0);
 
@@ -866,8 +866,8 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
      * Color texture of the fuzz layer.
      * See OpenPBR's specs for fuzz_color
      */
-    public fuzzColorTexture: Nullable<BaseTexture>;
-    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "fuzzColorTexture")
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty")
+    accessor fuzzColorTexture: Nullable<BaseTexture>;
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _fuzzColorTexture: Sampler = new Sampler("fuzz_color", "fuzzColor", "FUZZ_COLOR");
 
@@ -875,8 +875,8 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
      * Defines the roughness of the fuzz layer on the surface.
      * See OpenPBR's specs for fuzz_roughness
      */
-    public fuzzRoughness: number;
-    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "fuzzRoughness")
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty")
+    accessor fuzzRoughness: number;
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _fuzzRoughness: Property<number> = new Property<number>("fuzz_roughness", 0.5, "vFuzzRoughness", 1, 0);
 
@@ -884,8 +884,8 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
      * Roughness texture of the fuzz layer.
      * See OpenPBR's specs for fuzz_roughness
      */
-    public fuzzRoughnessTexture: Nullable<BaseTexture>;
-    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "fuzzRoughnessTexture")
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty")
+    accessor fuzzRoughnessTexture: Nullable<BaseTexture>;
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _fuzzRoughnessTexture: Sampler = new Sampler("fuzz_roughness", "fuzzRoughness", "FUZZ_ROUGHNESS");
 
@@ -893,8 +893,8 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
      * Defines the normal of the material's geometry.
      * See OpenPBR's specs for geometry_normal
      */
-    public geometryNormalTexture: Nullable<BaseTexture>;
-    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "geometryNormalTexture")
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty")
+    accessor geometryNormalTexture: Nullable<BaseTexture>;
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _geometryNormalTexture: Sampler = new Sampler("geometry_normal", "geometryNormal", "GEOMETRY_NORMAL");
 
@@ -902,8 +902,8 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
      * Defines the tangent of the material's geometry. Used only for anisotropic reflections.
      * See OpenPBR's specs for geometry_tangent
      */
-    public geometryTangent: Vector2;
-    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "geometryTangent")
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty")
+    accessor geometryTangent: Vector2;
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _geometryTangent: Property<Vector2> = new Property<Vector2>("geometry_tangent", new Vector2(1, 0), "vSpecularAnisotropy", 3, 0);
 
@@ -923,8 +923,8 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
      * Defines the tangent of the material's geometry. Used only for anisotropic reflections.
      * See OpenPBR's specs for geometry_tangent
      */
-    public geometryTangentTexture: Nullable<BaseTexture>;
-    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "geometryTangentTexture")
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty")
+    accessor geometryTangentTexture: Nullable<BaseTexture>;
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _geometryTangentTexture: Sampler = new Sampler("geometry_tangent", "geometryTangent", "GEOMETRY_TANGENT");
 
@@ -932,8 +932,8 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
      * Defines the normal of the material's coat layer.
      * See OpenPBR's specs for geometry_coat_normal
      */
-    public geometryCoatNormalTexture: Nullable<BaseTexture>;
-    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "geometryCoatNormalTexture")
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty")
+    accessor geometryCoatNormalTexture: Nullable<BaseTexture>;
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _geometryCoatNormalTexture: Sampler = new Sampler("geometry_coat_normal", "geometryCoatNormal", "GEOMETRY_COAT_NORMAL");
 
@@ -941,8 +941,8 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
      * Defines the tangent of the material's coat layer. Used only for anisotropic reflections.
      * See OpenPBR's specs for geometry_coat_tangent
      */
-    public geometryCoatTangent: Vector2;
-    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "geometryCoatTangent")
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty")
+    accessor geometryCoatTangent: Vector2;
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _geometryCoatTangent: Property<Vector2> = new Property<Vector2>("geometry_coat_tangent", new Vector2(1, 0), "vGeometryCoatTangent", 2, 0);
 
@@ -964,8 +964,8 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
      * Defines the tangent of the material's coat layer. Used only for anisotropic reflections.
      * See OpenPBR's specs for geometry_coat_tangent
      */
-    public geometryCoatTangentTexture: Nullable<BaseTexture>;
-    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "geometryCoatTangentTexture")
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty")
+    accessor geometryCoatTangentTexture: Nullable<BaseTexture>;
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _geometryCoatTangentTexture: Sampler = new Sampler("geometry_coat_tangent", "geometryCoatTangent", "GEOMETRY_COAT_TANGENT");
 
@@ -973,8 +973,8 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
      * Defines the opacity of the material's geometry.
      * See OpenPBR's specs for geometry_opacity
      */
-    public geometryOpacity: number;
-    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "geometryOpacity")
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty")
+    accessor geometryOpacity: number;
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _geometryOpacity: Property<number> = new Property<number>("geometry_opacity", 1.0, "vBaseColor", 4, 3);
 
@@ -982,8 +982,8 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
      * Defines the opacity texture of the material's geometry.
      * See OpenPBR's specs for geometry_opacity
      */
-    public geometryOpacityTexture: Nullable<BaseTexture>;
-    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "geometryOpacityTexture")
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty")
+    accessor geometryOpacityTexture: Nullable<BaseTexture>;
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _geometryOpacityTexture: Sampler = new Sampler("geometry_opacity", "geometryOpacity", "GEOMETRY_OPACITY");
 
@@ -991,8 +991,8 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
      * Defines the thickness of the material's geometry.
      * Not part of OpenPBR's specs but useful for rasterization approximations of volume.
      */
-    public geometryThickness: number;
-    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "geometryThickness")
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty")
+    accessor geometryThickness: number;
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _geometryThickness: Property<number> = new Property<number>("geometry_thickness", 0.0, "vGeometryThickness", 1, 0);
 
@@ -1000,8 +1000,8 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
      * Defines the thickness of the material's geometry.
      * Not part of OpenPBR's specs but useful for rasterization approximations of volume.
      */
-    public geometryThicknessTexture: Nullable<BaseTexture>;
-    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "geometryThicknessTexture")
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty")
+    accessor geometryThicknessTexture: Nullable<BaseTexture>;
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _geometryThicknessTexture: Sampler = new Sampler("geometry_thickness", "geometryThickness", "GEOMETRY_THICKNESS");
 
@@ -1009,8 +1009,8 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
      * Defines the luminance of the material's emission.
      * See OpenPBR's specs for emission_luminance
      */
-    public emissionLuminance: number;
-    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "emissionLuminance")
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty")
+    accessor emissionLuminance: number;
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _emissionLuminance: Property<number> = new Property<number>("emission_luminance", 1.0, "vLightingIntensity", 4, 1);
 
@@ -1018,8 +1018,8 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
      * Defines the color of the material's emission.
      * See OpenPBR's specs for emission_color
      */
-    public emissionColor: Color3;
-    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "emissionColor")
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty")
+    accessor emissionColor: Color3;
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _emissionColor: Property<Color3> = new Property<Color3>("emission_color", Color3.Black(), "vEmissionColor", 3);
 
@@ -1027,24 +1027,24 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
      * Defines the texture of the material's emission color.
      * See OpenPBR's specs for emission_color
      */
-    public emissionColorTexture: Nullable<BaseTexture>;
-    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "emissionColorTexture")
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty")
+    accessor emissionColorTexture: Nullable<BaseTexture>;
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _emissionColorTexture: Sampler = new Sampler("emission_color", "emissionColor", "EMISSION_COLOR");
 
     /**
      * Defines the weight of the thin film layer on top of the base layer for iridescent effects.
      */
-    public thinFilmWeight: number;
-    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "thinFilmWeight")
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty")
+    accessor thinFilmWeight: number;
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _thinFilmWeight: Property<number> = new Property<number>("thin_film_weight", 0.0, "vThinFilmWeight", 1, 0);
 
     /**
      * Thin film weight texture.
      */
-    public thinFilmWeightTexture: Nullable<BaseTexture>;
-    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "thinFilmWeightTexture")
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty")
+    accessor thinFilmWeightTexture: Nullable<BaseTexture>;
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _thinFilmWeightTexture: Sampler = new Sampler("thin_film_weight", "thinFilmWeight", "THIN_FILM_WEIGHT");
 
@@ -1053,40 +1053,40 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
      * this value will act as a multiplier to the texture values.
      * See OpenPBR's specs for thin_film_thickness
      */
-    public thinFilmThickness: number;
-    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "thinFilmThickness")
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty")
+    accessor thinFilmThickness: number;
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _thinFilmThickness: Property<number> = new Property<number>("thin_film_thickness", 0.5, "vThinFilmThickness", 2, 0);
 
     /**
      * Defines the minimum thickness of the thin film layer in μm.
      */
-    public thinFilmThicknessMin: number;
-    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "thinFilmThicknessMin")
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty")
+    accessor thinFilmThicknessMin: number;
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _thinFilmThicknessMin: Property<number> = new Property<number>("thin_film_thickness_min", 0.0, "vThinFilmThickness", 2, 1);
 
     /**
      * Defines the maximum thickness of the thin film layer in μm.
      */
-    public thinFilmThicknessTexture: Nullable<BaseTexture>;
-    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "thinFilmThicknessTexture")
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty")
+    accessor thinFilmThicknessTexture: Nullable<BaseTexture>;
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _thinFilmThicknessTexture: Sampler = new Sampler("thin_film_thickness", "thinFilmThickness", "THIN_FILM_THICKNESS");
 
     /**
      * Defines the index of refraction of the thin film layer.
      */
-    public thinFilmIor: number;
-    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "thinFilmIor")
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty")
+    accessor thinFilmIor: number;
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _thinFilmIor: Property<number> = new Property<number>("thin_film_ior", 1.4, "vThinFilmIor", 1, 0);
 
     /**
      * Defines the ambient occlusion texture.
      */
-    public ambientOcclusionTexture: Nullable<BaseTexture>;
-    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "ambientOcclusionTexture")
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty")
+    accessor ambientOcclusionTexture: Nullable<BaseTexture>;
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _ambientOcclusionTexture: Sampler = new Sampler("ambient_occlusion", "ambientOcclusion", "AMBIENT_OCCLUSION");
 
@@ -1103,7 +1103,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public directIntensity: number = 1.0;
+    public accessor directIntensity: number = 1.0;
 
     /**
      * Intensity of the environment e.g. how much the environment will light the object
@@ -1111,42 +1111,42 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public environmentIntensity: number = 1.0;
+    public accessor environmentIntensity: number = 1.0;
 
     /**
      * Specifies that the specular weight is stored in the alpha channel of the specular weight texture.
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public useSpecularWeightFromTextureAlpha = false;
+    public accessor useSpecularWeightFromTextureAlpha = false;
 
     /**
      * Enforces alpha test in opaque or blend mode in order to improve the performances of some situations.
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesAndMiscDirty")
-    public forceAlphaTest = false;
+    public accessor forceAlphaTest = false;
 
     /**
      * Defines the alpha limits in alpha test mode.
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesAndMiscDirty")
-    public alphaCutOff = 0.4;
+    public accessor alphaCutOff = 0.4;
 
     /**
      * Specifies if the metallic texture contains the ambient occlusion information in its red channel.
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public useAmbientOcclusionFromMetallicTextureRed = false;
+    public accessor useAmbientOcclusionFromMetallicTextureRed = false;
 
     /**
      * Specifies if the ambient texture contains the ambient occlusion information in its red channel only.
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public useAmbientInGrayScale = false;
+    public accessor useAmbientInGrayScale = false;
 
     /**
      * BJS is using an hardcoded light falloff based on a manually sets up range.
@@ -1207,70 +1207,70 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public useObjectSpaceNormalMap = false;
+    public accessor useObjectSpaceNormalMap = false;
 
     /**
      * Allows using the normal map in parallax mode.
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public useParallax = false;
+    public accessor useParallax = false;
 
     /**
      * Allows using the normal map in parallax occlusion mode.
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public useParallaxOcclusion = false;
+    public accessor useParallaxOcclusion = false;
 
     /**
      * Controls the scale bias of the parallax mode.
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public parallaxScaleBias = 0.05;
+    public accessor parallaxScaleBias = 0.05;
 
     /**
      * If sets to true, disables all the lights affecting the material.
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsLightsDirty")
-    public disableLighting = false;
+    public accessor disableLighting = false;
 
     /**
      * Force the shader to compute irradiance in the fragment shader in order to take normal mapping into account.
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public forceIrradianceInFragment = false;
+    public accessor forceIrradianceInFragment = false;
 
     /**
      * Number of Simultaneous lights allowed on the material.
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsLightsDirty")
-    public maxSimultaneousLights = 4;
+    public accessor maxSimultaneousLights = 4;
 
     /**
      * If sets to true, x component of normal map value will invert (x = 1.0 - x).
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public invertNormalMapX = false;
+    public accessor invertNormalMapX = false;
 
     /**
      * If sets to true, y component of normal map value will invert (y = 1.0 - y).
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public invertNormalMapY = false;
+    public accessor invertNormalMapY = false;
 
     /**
      * If sets to true and backfaceCulling is false, normals will be flipped on the backside.
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public twoSidedLighting = false;
+    public accessor twoSidedLighting = false;
 
     /**
      * A fresnel is applied to the alpha of the model to ensure grazing angles edges are not alpha tested.
@@ -1278,7 +1278,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public useAlphaFresnel = false;
+    public accessor useAlphaFresnel = false;
 
     /**
      * A fresnel is applied to the alpha of the model to ensure grazing angles edges are not alpha tested.
@@ -1286,7 +1286,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public useLinearAlphaFresnel = false;
+    public accessor useLinearAlphaFresnel = false;
 
     /**
      * Let user defines the brdf lookup texture used for IBL.
@@ -1297,14 +1297,14 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
      * * LEGACY Default None correlated 16bit pixel depth https://assets.babylonjs.com/environments/uncorrelatedBRDF.dds
      */
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public environmentBRDFTexture: Nullable<BaseTexture> = null;
+    public accessor environmentBRDFTexture: Nullable<BaseTexture> = null;
 
     /**
      * Force normal to face away from face.
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public forceNormalForward = false;
+    public accessor forceNormalForward = false;
 
     /**
      * Enables specular anti aliasing in the PBR shader.
@@ -1313,7 +1313,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public enableSpecularAntiAliasing = false;
+    public accessor enableSpecularAntiAliasing = false;
 
     /**
      * This parameters will enable/disable Horizon occlusion to prevent normal maps to look shiny when the normal
@@ -1321,7 +1321,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public useHorizonOcclusion = true;
+    public accessor useHorizonOcclusion = true;
 
     /**
      * This parameters will enable/disable radiance occlusion by preventing the radiance to lit
@@ -1329,21 +1329,21 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public useRadianceOcclusion = true;
+    public accessor useRadianceOcclusion = true;
 
     /**
      * If set to true, no lighting calculations will be applied.
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsMiscDirty")
-    public unlit = false;
+    public accessor unlit = false;
 
     /**
      * If sets to true, the decal map will be applied after the detail map. Else, it is applied before (default: false)
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsMiscDirty")
-    public applyDecalMapAfterDetailMap = false;
+    public accessor applyDecalMapAfterDetailMap = false;
 
     /**
      * Force all the PBR materials to compile to glsl even on WebGPU engines.
@@ -1668,7 +1668,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
      * It helps seeing only some components of the material while troubleshooting.
      */
     @expandToProperty("_markAllSubMeshesAsMiscDirty")
-    public debugMode = 0;
+    public accessor debugMode = 0;
 
     /**
      * @internal

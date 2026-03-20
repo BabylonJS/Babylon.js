@@ -860,7 +860,7 @@ export abstract class PBRBaseMaterial extends PBRBaseMaterialBase {
      * It helps seeing only some components of the material while troubleshooting.
      */
     @expandToProperty("_markAllSubMeshesAsMiscDirty")
-    public debugMode = 0;
+    public accessor debugMode = 0;
 
     /**
      * @internal

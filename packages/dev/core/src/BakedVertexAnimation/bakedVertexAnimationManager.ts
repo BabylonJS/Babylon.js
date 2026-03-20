@@ -75,7 +75,7 @@ export class BakedVertexAnimationManager implements IBakedVertexAnimationManager
      */
     @serializeAsTexture()
     @expandToProperty("_markSubMeshesAsAttributesDirty")
-    public texture: Nullable<BaseTexture>;
+    public accessor texture: Nullable<BaseTexture>;
 
     private _isEnabled = true;
     /**
@@ -83,7 +83,7 @@ export class BakedVertexAnimationManager implements IBakedVertexAnimationManager
      */
     @serialize()
     @expandToProperty("_markSubMeshesAsAttributesDirty")
-    public isEnabled = true;
+    public accessor isEnabled = true;
 
     /**
      * The animation parameters for the mesh. See setAnimationParameters()

@@ -42,7 +42,7 @@ export class FluentMaterial extends PushMaterial {
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public innerGlowColorIntensity = 0.5;
+    public accessor innerGlowColorIntensity = 0.5;
 
     /**
      * Gets or sets the inner glow color (white by default)
@@ -61,7 +61,7 @@ export class FluentMaterial extends PushMaterial {
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public renderBorders = false;
+    public accessor renderBorders = false;
 
     /**
      * Gets or sets border width (default is 0.5)
@@ -86,7 +86,7 @@ export class FluentMaterial extends PushMaterial {
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public renderHoverLight = false;
+    public accessor renderHoverLight = false;
 
     /**
      * Gets or sets the radius used to render the hover light (default is 0.01)
@@ -111,7 +111,7 @@ export class FluentMaterial extends PushMaterial {
 
     /** Gets or sets the texture to use for albedo color */
     @expandToProperty("_markAllSubMeshesAsTexturesAndMiscDirty")
-    public albedoTexture: Nullable<BaseTexture>;
+    public accessor albedoTexture: Nullable<BaseTexture>;
 
     /**
      * Creates a new Fluent material

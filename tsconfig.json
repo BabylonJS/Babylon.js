@@ -3,7 +3,6 @@
 
     "compilerOptions": {
         "baseUrl": "packages",
-        "experimentalDecorators": true,
         "noImplicitAny": true,
         "noImplicitOverride": true,
         "noImplicitReturns": true,
