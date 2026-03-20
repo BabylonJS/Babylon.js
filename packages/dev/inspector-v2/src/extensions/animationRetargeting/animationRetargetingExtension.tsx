@@ -1,7 +1,9 @@
 import type { IDisposable } from "core/index";
 import type { ServiceDefinition } from "../../modularity/serviceDefinition";
 import type { IShellService } from "../../services/shellService";
+import type { ISettingsStore } from "../../services/settingsStore";
 import { ShellServiceIdentity } from "../../services/shellService";
+import { SettingsStoreIdentity } from "../../services/settingsStore";
 
 import { Observable } from "core/Misc/observable";
 import { PersonRunningRegular } from "@fluentui/react-icons";
@@ -22,10 +24,10 @@ import { Link } from "shared-ui-components/fluent/primitives/link";
  * - Registers a controls side pane with Avatar / Animation / Retarget sections.
  * - Exposes an Enable / Disable toggle to restore the original inspector scene.
  */
-export const AnimationRetargetingServiceDefinition: ServiceDefinition<[], [IShellService]> = {
+export const AnimationRetargetingServiceDefinition: ServiceDefinition<[], [IShellService, ISettingsStore]> = {
     friendlyName: "Animation Retargeting",
-    consumes: [ShellServiceIdentity],
-    factory: (shellService) => {
+    consumes: [ShellServiceIdentity, SettingsStoreIdentity],
+    factory: (shellService, settingsStore) => {
         // Observable that fires whenever a new scene manager is ready (on each enable)
         const onManagerReadyObs = new Observable<RetargetingSceneManager>();
         // Observable that broadcasts enable/disable state changes to the panel
@@ -33,14 +35,14 @@ export const AnimationRetargetingServiceDefinition: ServiceDefinition<[], [IShel
         // Observable that fires when the config dialog closes — panel refreshes dropdowns
         const onConfigChangedObs = new Observable<void>();
 
-        // Naming scheme manager — persists across extension lifetime via localStorage
-        const namingSchemeManager = new NamingSchemeManager();
+        // Naming scheme manager — persists across extension lifetime via ISettingsStore
+        const namingSchemeManager = new NamingSchemeManager(settingsStore);
 
-        // Avatar manager — persists across extension lifetime via localStorage + IndexedDB
-        const avatarManager = new AvatarManager();
+        // Avatar manager — persists across extension lifetime via ISettingsStore + IndexedDB
+        const avatarManager = new AvatarManager(settingsStore);
 
-        // Animation manager — persists across extension lifetime via localStorage + IndexedDB
-        const animationManager = new AnimationManager();
+        // Animation manager — persists across extension lifetime via ISettingsStore + IndexedDB
+        const animationManager = new AnimationManager(settingsStore);
 
         // Create default entries if both lists are empty (first-time use)
         if (avatarManager.getAllAvatars().length === 0 && animationManager.getAllDisplayNames().length === 0) {

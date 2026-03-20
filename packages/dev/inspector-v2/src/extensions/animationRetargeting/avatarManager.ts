@@ -1,6 +1,7 @@
+import type { ISettingsStore, SettingDescriptor } from "../../services/settingsStore";
+
 export type RestPoseDataUpdate = Array<{ name: string; data: { position?: number[]; scaling?: number[]; quaternion?: number[] } }>;
 
-const AvatarStorageKey = "BabylonInspector_AnimRetargeting_AvatarManager";
 const IDBName = "BabylonInspector_AnimRetargeting";
 const IDBStore = "avatarFiles";
 
@@ -20,6 +21,11 @@ export type StoredAvatar = {
 
 type SerializedData = {
     avatars: StoredAvatar[];
+};
+
+const AvatarSettingDescriptor: SettingDescriptor<SerializedData> = {
+    key: "AnimRetargeting/Avatars",
+    defaultValue: { avatars: [] },
 };
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -131,7 +137,7 @@ async function IdbDeletePrefix(prefix: string): Promise<void> {
 export class AvatarManager {
     private _avatars: StoredAvatar[] = [];
 
-    public constructor() {
+    public constructor(private readonly _settingsStore: ISettingsStore) {
         this._loadFromStorage();
     }
 
@@ -304,11 +310,7 @@ export class AvatarManager {
 
     private _loadFromStorage(): void {
         try {
-            const raw = localStorage.getItem(AvatarStorageKey);
-            if (!raw) {
-                return;
-            }
-            const data: SerializedData = JSON.parse(raw);
+            const data = this._settingsStore.readSetting(AvatarSettingDescriptor);
             this._avatars = data.avatars ?? [];
         } catch {
             this._avatars = [];
@@ -317,6 +319,6 @@ export class AvatarManager {
 
     private _saveToStorage(): void {
         const data: SerializedData = { avatars: this._avatars };
-        localStorage.setItem(AvatarStorageKey, JSON.stringify(data));
+        this._settingsStore.writeSetting(AvatarSettingDescriptor, data);
     }
 }

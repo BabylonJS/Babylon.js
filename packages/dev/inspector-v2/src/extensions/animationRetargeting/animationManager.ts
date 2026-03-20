@@ -1,6 +1,6 @@
+import type { ISettingsStore, SettingDescriptor } from "../../services/settingsStore";
 import type { RestPoseDataUpdate } from "./avatarManager";
 
-const AnimationStorageKey = "BabylonInspector_AnimRetargeting_AnimationManager";
 const IDBName = "BabylonInspector_AnimRetargeting";
 const IDBStore = "animationFiles";
 
@@ -34,6 +34,11 @@ export type StoredAnimation = {
 
 type SerializedData = {
     animations: StoredAnimation[];
+};
+
+const AnimationSettingDescriptor: SettingDescriptor<SerializedData> = {
+    key: "AnimRetargeting/Animations",
+    defaultValue: { animations: [] },
 };
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -145,7 +150,7 @@ async function IdbDeletePrefix(prefix: string): Promise<void> {
 export class AnimationManager {
     private _animations: StoredAnimation[] = [];
 
-    public constructor() {
+    public constructor(private readonly _settingsStore: ISettingsStore) {
         this._loadFromStorage();
     }
 
@@ -360,11 +365,7 @@ export class AnimationManager {
 
     private _loadFromStorage(): void {
         try {
-            const raw = localStorage.getItem(AnimationStorageKey);
-            if (!raw) {
-                return;
-            }
-            const data: SerializedData = JSON.parse(raw);
+            const data = this._settingsStore.readSetting(AnimationSettingDescriptor);
             // Migrate old format: entries with `animationGroupName` but no `animations` array
             this._animations = (data.animations ?? []).map((entry: StoredAnimation & { animationGroupName?: string }) => {
                 if (!entry.animations) {
@@ -396,6 +397,6 @@ export class AnimationManager {
 
     private _saveToStorage(): void {
         const data: SerializedData = { animations: this._animations };
-        localStorage.setItem(AnimationStorageKey, JSON.stringify(data));
+        this._settingsStore.writeSetting(AnimationSettingDescriptor, data);
     }
 }

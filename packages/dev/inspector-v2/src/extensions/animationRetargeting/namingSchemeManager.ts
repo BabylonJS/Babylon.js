@@ -1,4 +1,9 @@
-const StorageKey = "BabylonInspector_AnimRetargeting_NamingSchemeManager";
+import type { ISettingsStore, SettingDescriptor } from "../../services/settingsStore";
+
+const NamingSchemeSettingDescriptor: SettingDescriptor<StoredData> = {
+    key: "AnimRetargeting/NamingSchemes",
+    defaultValue: { schemes: {}, remappings: [] },
+};
 
 /**
  * A bone/node entry in a naming scheme.
@@ -125,7 +130,7 @@ export class NamingSchemeManager {
     private _schemes: Map<string, BoneEntry[]> = new Map();
     private _remappings: Array<{ fromScheme: string; toScheme: string; map: Map<string, string> }> = [];
 
-    constructor() {
+    constructor(private readonly _settingsStore: ISettingsStore) {
         this._loadFromStorage();
     }
 
@@ -461,7 +466,7 @@ export class NamingSchemeManager {
             });
         }
         try {
-            localStorage.setItem(StorageKey, JSON.stringify(data));
+            this._settingsStore.writeSetting(NamingSchemeSettingDescriptor, data);
         } catch {
             // Storage may be unavailable (e.g. private browsing quota exceeded).
         }
@@ -469,12 +474,11 @@ export class NamingSchemeManager {
 
     private _loadFromStorage(): void {
         try {
-            const raw = localStorage.getItem(StorageKey);
-            if (!raw) {
+            const data = this._settingsStore.readSetting(NamingSchemeSettingDescriptor);
+            if (Object.keys(data.schemes).length === 0 && data.remappings.length === 0) {
                 this._createDefaultSchemes();
                 return;
             }
-            const data: StoredData = JSON.parse(raw);
             for (const [name, entries] of Object.entries(data.schemes)) {
                 this._schemes.set(name, entries as BoneEntry[]);
             }
