@@ -445,6 +445,11 @@ export type ViewerDetails = {
      * @returns A PickingInfo if an object was picked, otherwise null.
      */
     pick(screenX: number, screenY: number): Promise<Nullable<PickingInfo>>;
+
+    /**
+     * True if the viewer's render loop is currently suspended (not actively rendering).
+     */
+    readonly isIdle: boolean;
 };
 
 /**
@@ -881,6 +886,7 @@ export class Viewer implements IDisposable {
     private readonly _defaultHardwareScalingLevel: number;
     private _lastHardwareScalingLevel: number;
     private _renderedLastFrame: Nullable<boolean> = null;
+    private _isIdle = true;
     private _sceneOptimizer: Nullable<SceneOptimizer> = null;
 
     private readonly _tempVectors = BuildTuple(4, Vector3.Zero);
@@ -1066,6 +1072,9 @@ export class Viewer implements IDisposable {
             suspendRendering: () => this._suspendRendering(),
             markSceneMutated: () => this._markSceneMutated(),
             pick: async (screenX: number, screenY: number) => await this._pick(screenX, screenY),
+            get isIdle() {
+                return viewer._isIdle;
+            },
         });
 
         this._reset(false, "source", "environment", "post-processing");
@@ -2826,6 +2835,7 @@ export class Viewer implements IDisposable {
 
             const onRenderingResumed = () => {
                 this._log("Viewer Resumed Rendering");
+                this._isIdle = false;
                 // Resume rendering with the hardware scaling level from prior to suspending.
                 this._engine.setHardwareScalingLevel(this._lastHardwareScalingLevel);
                 this._engine.performanceMonitor.enable();
@@ -2835,6 +2845,7 @@ export class Viewer implements IDisposable {
 
             const onRenderingSuspended = () => {
                 this._log("Viewer Suspended Rendering");
+                this._isIdle = true;
                 this._renderedLastFrame = false;
                 renderedReadyFrame = false;
                 // Take note of the current hardware scaling level for when rendering is resumed.

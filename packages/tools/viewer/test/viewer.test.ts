@@ -32,19 +32,52 @@ test.beforeEach(({ page }) => {
 
 test.afterEach(async ({ page }) => {
     // Wait until at least 50 frames have been rendered to allow async errors (e.g. WebGPU validation) to surface.
-    const minFrameCount = 50;
+    const actualFrameCount = await waitForFrameCount(page, 50);
+    console.log(`${actualFrameCount} of minimum 50 frames rendered.`);
+    expect(actualFrameCount).toBeGreaterThanOrEqual(50);
+    expect(pageErrors, "Unhandled page errors").toEqual([]);
+    expect(consoleErrors, "Console errors").toEqual([]);
+});
+
+async function waitForFrameCount(page: Page, minFrameCount: number): Promise<number> {
     const frameIdHandle = await page.waitForFunction((minFrameCount) => {
         const viewer = document.querySelector("babylon-viewer") as ViewerElement;
         const engine = viewer.viewerDetails?.scene.getEngine();
         return engine && engine.frameId >= minFrameCount ? engine.frameId : null;
     }, minFrameCount);
 
-    const actualFrameCount = await frameIdHandle.jsonValue();
-    console.log(`${actualFrameCount} of minimum ${minFrameCount} frames rendered.`);
-    expect(actualFrameCount).toBeGreaterThanOrEqual(minFrameCount);
-    expect(pageErrors, "Unhandled page errors").toEqual([]);
-    expect(consoleErrors, "Console errors").toEqual([]);
-});
+    return (await frameIdHandle.jsonValue()) as number;
+}
+
+async function waitForModelLoaded(page: Page) {
+    await page.waitForFunction(() => {
+        const viewer = document.querySelector("babylon-viewer") as ViewerElement;
+        return viewer.viewerDetails && viewer.viewerDetails.viewer.loadingProgress === false && viewer.viewerDetails.model !== null;
+    });
+    console.log("Model loaded.");
+}
+
+async function expectScreenshotMatch(page: Page, name: string, minFrameCount = 10) {
+    // Wait for the viewer to be idle (render loop suspended after all work is done).
+    await page.waitForFunction(() => {
+        const viewer = document.querySelector("babylon-viewer") as ViewerElement;
+        return viewer.viewerDetails?.isIdle;
+    });
+    console.log("Viewer is idle.");
+
+    // Wait for additional frames to render after the current point, ensuring visual stability.
+    const currentFrameId = await page.evaluate(() => {
+        const viewer = document.querySelector("babylon-viewer") as ViewerElement;
+        return viewer.viewerDetails?.scene.getEngine()?.frameId ?? 0;
+    });
+    const renderedFrames = await waitForFrameCount(page, currentFrameId + minFrameCount);
+    console.log(`${renderedFrames} total frames rendered before screenshot comparison.`);
+
+    await expect(page.locator("babylon-viewer")).toHaveScreenshot(name, {
+        threshold: 0.035,
+        maxDiffPixelRatio: 0.011,
+    });
+}
 
 async function attachViewerElement(page: Page, viewerHtml: string) {
     await page.goto(viewerUrl, {
@@ -100,6 +133,8 @@ test("animation-auto-play", async ({ page }) => {
         `
     );
 
+    await waitForModelLoaded(page);
+
     // Wait for the viewerDetails property to become defined
     const isAnimationPlaying = await page.waitForFunction((viewerElement) => {
         return (viewerElement as ViewerElement).viewerDetails?.viewer.isAnimationPlaying;
@@ -119,6 +154,8 @@ test('selected-animation="n"', async ({ page }) => {
         </babylon-viewer>
         `
     );
+
+    await waitForModelLoaded(page);
 
     // Wait for the viewerDetails property to become defined
     const selectedAnimation = await page.waitForFunction((viewerElement) => {
@@ -152,6 +189,9 @@ test('camera-orbit="a b r"', async ({ page }) => {
     }, viewerElementHandle);
 
     expect(await cameraPose.jsonValue()).toEqual([1, 2, 0.1]);
+
+    await waitForModelLoaded(page);
+    await expectScreenshotMatch(page, "viewer-camera-orbit.png");
 });
 
 test('camera-target="x y z"', async ({ page }) => {
@@ -198,6 +238,9 @@ test('tone-mapping="none"', async ({ page }) => {
     }, viewerElementHandle);
 
     expect(await toneMapping.jsonValue()).toEqual("none");
+
+    await waitForModelLoaded(page);
+    await expectScreenshotMatch(page, "viewer-tone-mapping-none.png");
 });
 
 test('material-variant="name"', async ({ page }) => {
@@ -221,6 +264,9 @@ test('material-variant="name"', async ({ page }) => {
     }, viewerElementHandle);
 
     expect(await materialVariant.jsonValue()).toEqual("street");
+
+    await waitForModelLoaded(page);
+    await expectScreenshotMatch(page, "viewer-material-variant.png");
 });
 
 test('environment="auto"', async ({ page }) => {
@@ -246,6 +292,8 @@ test('environment="auto"', async ({ page }) => {
     }, viewerElementHandle);
 
     expect(isEnvironmentLoaded).toBeTruthy();
+
+    await expectScreenshotMatch(page, "viewer-environment-auto.png");
 });
 
 test('shadow-quality="high"', async ({ page }) => {
@@ -265,6 +313,9 @@ test('shadow-quality="high"', async ({ page }) => {
         // For now, we'll just rely on the common per-test validation that there are no unhandled page errors or console errors.
         return (viewerElement as ViewerElement).viewerDetails;
     }, viewerElementHandle);
+
+    await waitForModelLoaded(page);
+    await expectScreenshotMatch(page, "viewer-shadow-quality-high.png");
 });
 
 test("concurrent lighting and skybox environment updates", async ({ page }) => {
@@ -281,6 +332,7 @@ test("concurrent lighting and skybox environment updates", async ({ page }) => {
 
     // Trigger back-to-back lighting-only and skybox-only updates without awaiting them individually.
     // This exercises the separate abort controllers and locks to ensure they don't cancel each other.
+    await waitForModelLoaded(page);
     await page.waitForFunction(async (viewerElement) => {
         const viewer = (viewerElement as ViewerElement).viewerDetails?.viewer;
         if (!viewer) {
