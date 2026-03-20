@@ -114,7 +114,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
             });
     }
 
-    async saveToSnippetServer() {
+    async saveToSnippetServerAsync() {
         const json = SerializationTools.Serialize(this.props.globalState.flowGraph, this.props.globalState);
         const dataToSend = {
             payload: JSON.stringify({ flowGraph: json }),
@@ -129,6 +129,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         try {
             const response = await fetch(url, {
                 method: "POST",
+                // eslint-disable-next-line @typescript-eslint/naming-convention
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(dataToSend),
             });
@@ -169,7 +170,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         }
     }
 
-    async loadFromSnippet(snippetId?: string) {
+    async loadFromSnippetAsync(snippetId?: string) {
         const id = snippetId || this.props.globalState.hostDocument.defaultView!.prompt("Please enter the snippet ID to load");
         if (!id) {
             return;
@@ -323,8 +324,8 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                                 propertyName="flowGraphSnippetId"
                             />
                         )}
-                        <ButtonLineComponent label="Load from snippet server" onClick={() => this.loadFromSnippet()} />
-                        <ButtonLineComponent label="Save to snippet server" onClick={() => this.saveToSnippetServer()} />
+                        <ButtonLineComponent label="Load from snippet server" onClick={async () => await this.loadFromSnippetAsync()} />
+                        <ButtonLineComponent label="Save to snippet server" onClick={async () => await this.saveToSnippetServerAsync()} />
                     </LineContainerComponent>
                 </div>
             </div>

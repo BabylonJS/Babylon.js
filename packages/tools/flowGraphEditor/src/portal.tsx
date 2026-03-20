@@ -21,7 +21,7 @@ export class ErrorBoundary extends React.Component<PropsWithChildren<{}>, IError
         this.state = { hasError: false, error: "" };
     }
 
-    static getDerivedStateFromError(error: Error): IErrorBoundaryState {
+    static GetDerivedStateFromError(error: Error): IErrorBoundaryState {
         return { hasError: true, error: error.message };
     }
 
