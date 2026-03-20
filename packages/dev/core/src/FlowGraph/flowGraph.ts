@@ -17,7 +17,7 @@ import { FlowGraphSceneEventCoordinator } from "./flowGraphSceneEventCoordinator
 import type { FlowGraphMeshPickEventBlock } from "./Blocks/Event/flowGraphMeshPickEventBlock";
 import { _IsDescendantOf } from "./utils";
 import type { IFlowGraphValidationResult } from "./flowGraphValidator";
-import { ValidateFlowGraph } from "./flowGraphValidator";
+import { ValidateFlowGraphWithBlockList } from "./flowGraphValidator";
 
 export const enum FlowGraphState {
     /**
@@ -105,7 +105,14 @@ export class FlowGraph {
     /**
      * @internal
      */
-    public _scene: Scene;
+    public readonly _scene: Scene;
+
+    /**
+     * The scene associated with this flow graph.
+     */
+    public get scene(): Scene {
+        return this._scene;
+    }
     private _coordinator: FlowGraphCoordinator;
     private _executionContexts: FlowGraphContext[] = [];
     private _sceneEventCoordinator: FlowGraphSceneEventCoordinator;
@@ -202,7 +209,7 @@ export class FlowGraph {
         this._detachEventObserver();
         this._sceneEventCoordinator.dispose();
         // Rebuild with the new scene
-        this._scene = scene;
+        (this as { _scene: Scene })._scene = scene;
         this._scene.constantlyUpdateMeshUnderPointer = true; // ensure pointer info is always up to date for event blocks that need it
         this._sceneEventCoordinator = new FlowGraphSceneEventCoordinator(this._scene);
         // Pre-attach the event observer so that events from the new
@@ -496,10 +503,11 @@ export class FlowGraph {
 
     /**
      * Validates the flow graph and returns all issues found.
+     * Uses the tracked block list for complete validation including unreachable block detection.
      * @returns The validation result containing errors and warnings.
      */
     public validate(): IFlowGraphValidationResult {
-        return ValidateFlowGraph(this);
+        return ValidateFlowGraphWithBlockList(this, this._allBlocks);
     }
 
     /**

@@ -114,7 +114,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
             });
     }
 
-    saveToSnippetServer() {
+    async saveToSnippetServer() {
         const json = SerializationTools.Serialize(this.props.globalState.flowGraph, this.props.globalState);
         const dataToSend = {
             payload: JSON.stringify({ flowGraph: json }),
@@ -126,13 +126,15 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         const snippetId = this.props.globalState.flowGraphSnippetId;
         const url = Constants.SnippetUrl + (snippetId ? "/" + snippetId : "");
 
-        const xmlHttp = new XMLHttpRequest();
-        xmlHttp.onreadystatechange = async () => {
-            if (xmlHttp.readyState !== 4) {
-                return;
-            }
-            if (xmlHttp.status === 200) {
-                const snippet = JSON.parse(xmlHttp.responseText);
+        try {
+            const response = await fetch(url, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(dataToSend),
+            });
+
+            if (response.ok) {
+                const snippet = await response.json();
                 let newId = snippet.id;
                 if (snippet.version && snippet.version !== "0") {
                     newId += "#" + snippet.version;
@@ -162,14 +164,12 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                 this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry("Unable to save flow graph to snippet server", true));
                 this.props.globalState.hostDocument.defaultView!.alert(`Unable to save your flow graph (${(dataToSend.payload.length / 1024).toFixed(0)} KB). Please try again.`);
             }
-        };
-
-        xmlHttp.open("POST", url, true);
-        xmlHttp.setRequestHeader("Content-Type", "application/json");
-        xmlHttp.send(JSON.stringify(dataToSend));
+        } catch {
+            this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry("Unable to save flow graph to snippet server", true));
+        }
     }
 
-    loadFromSnippet(snippetId?: string) {
+    async loadFromSnippet(snippetId?: string) {
         const id = snippetId || this.props.globalState.hostDocument.defaultView!.prompt("Please enter the snippet ID to load");
         if (!id) {
             return;
@@ -178,39 +178,33 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         this.props.globalState.stateManager.onSelectionChangedObservable.notifyObservers(null);
         this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry("Loading flow graph from snippet " + id + "...", false));
 
-        const xmlHttp = new XMLHttpRequest();
-        xmlHttp.onreadystatechange = () => {
-            if (xmlHttp.readyState !== 4) {
-                return;
-            }
-            if (xmlHttp.status === 200) {
-                const snippet = JSON.parse(xmlHttp.responseText);
+        const url = Constants.SnippetUrl + "/" + id.replace(/#/g, "/");
+
+        try {
+            const response = await fetch(url);
+            if (response.ok) {
+                const snippet = await response.json();
                 const jsonPayload = JSON.parse(snippet.jsonPayload);
                 const serializationObject = JSON.parse(jsonPayload.flowGraph);
 
-                const doLoadAsync = async () => {
-                    try {
-                        await SerializationTools.DeserializeAsync(serializationObject, this.props.globalState);
-                        this.props.globalState.flowGraphSnippetId = id;
-                        this.props.globalState.onResetRequiredObservable.notifyObservers(false);
-                        this.props.globalState.stateManager.onSelectionChangedObservable.notifyObservers(null);
-                        this.props.globalState.onClearUndoStack.notifyObservers();
-                        this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry("Flow graph loaded from snippet " + id, false));
-                        this.forceUpdate();
-                    } catch (err) {
-                        this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry("Error loading snippet: " + err, true));
-                    }
-                };
-                void doLoadAsync();
+                try {
+                    await SerializationTools.DeserializeAsync(serializationObject, this.props.globalState);
+                    this.props.globalState.flowGraphSnippetId = id;
+                    this.props.globalState.onResetRequiredObservable.notifyObservers(false);
+                    this.props.globalState.stateManager.onSelectionChangedObservable.notifyObservers(null);
+                    this.props.globalState.onClearUndoStack.notifyObservers();
+                    this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry("Flow graph loaded from snippet " + id, false));
+                    this.forceUpdate();
+                } catch (err) {
+                    this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry("Error loading snippet: " + err, true));
+                }
             } else {
                 this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry("Unable to load snippet " + id, true));
                 this.props.globalState.hostDocument.defaultView!.alert("Unable to load snippet " + id);
             }
-        };
-
-        const url = Constants.SnippetUrl + "/" + id.replace(/#/g, "/");
-        xmlHttp.open("GET", url);
-        xmlHttp.send();
+        } catch {
+            this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry("Unable to load snippet " + id, true));
+        }
     }
 
     override render() {

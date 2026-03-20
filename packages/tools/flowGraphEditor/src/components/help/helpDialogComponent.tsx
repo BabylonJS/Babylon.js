@@ -114,6 +114,8 @@ export class HelpDialogComponent extends React.Component<IHelpDialogProps, IHelp
                                             {topic.sections.map((section, idx) => (
                                                 <div key={idx}>
                                                     {section.heading && <h4>{section.heading}</h4>}
+                                                    {/* Content is developer-authored from helpContent.ts — safe to render as HTML.
+                                                        If this ever accepts user/external content, sanitize with DOMPurify first. */}
                                                     {/* eslint-disable-next-line @typescript-eslint/naming-convention */}
                                                     <div dangerouslySetInnerHTML={{ __html: section.html }} />
                                                 </div>

@@ -232,6 +232,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         globalState.stateManager.onNewNodeCreatedObservable.clear();
 
         globalState.onClearUndoStack.clear();
+        globalState.cancelPendingValidation();
 
         if (this._historyStack) {
             this._historyStack.dispose();
@@ -727,7 +728,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         // Drop at position
         this._graphCanvas.drop(newNode, targetX, targetY, offsetX, offsetY);
 
-        this.forceUpdate();
+        this.setState({});
 
         return newNode;
     }

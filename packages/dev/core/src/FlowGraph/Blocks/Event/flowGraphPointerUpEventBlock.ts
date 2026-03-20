@@ -7,9 +7,10 @@ import { RegisterClass } from "core/Misc/typeStore";
 import { _IsDescendantOf } from "core/FlowGraph/utils";
 import { FlowGraphBlockNames } from "../flowGraphBlockNames";
 import type { FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnection";
-import { RichTypeAny, RichTypeNumber, RichTypeVector3 } from "core/FlowGraph/flowGraphRichTypes";
+import { RichTypeAny, RichTypeNumber } from "core/FlowGraph/flowGraphRichTypes";
 import type { Vector3 } from "core/Maths/math.vector";
 import { FlowGraphEventType } from "core/FlowGraph/flowGraphEventType";
+import type { Nullable } from "core/types";
 
 /**
  * Configuration for the pointer up event block.
@@ -47,12 +48,12 @@ export class FlowGraphPointerUpEventBlock extends FlowGraphEventBlock {
     /**
      * Output connection: The mesh that was picked (if any).
      */
-    public readonly pickedMesh: FlowGraphDataConnection<AbstractMesh>;
+    public readonly pickedMesh: FlowGraphDataConnection<Nullable<AbstractMesh>>;
 
     /**
      * Output connection: The world-space point that was picked (if any).
      */
-    public readonly pickedPoint: FlowGraphDataConnection<Vector3>;
+    public readonly pickedPoint: FlowGraphDataConnection<Nullable<Vector3>>;
 
     /** @internal */
     public override readonly type: FlowGraphEventType = FlowGraphEventType.PointerUp;
@@ -66,7 +67,7 @@ export class FlowGraphPointerUpEventBlock extends FlowGraphEventBlock {
         this.targetMesh = this.registerDataInput("targetMesh", RichTypeAny, config?.targetMesh);
         this.pointerId = this.registerDataOutput("pointerId", RichTypeNumber);
         this.pickedMesh = this.registerDataOutput("pickedMesh", RichTypeAny);
-        this.pickedPoint = this.registerDataOutput("pickedPoint", RichTypeVector3);
+        this.pickedPoint = this.registerDataOutput("pickedPoint", RichTypeAny);
     }
 
     /** @internal */
@@ -80,8 +81,8 @@ export class FlowGraphPointerUpEventBlock extends FlowGraphEventBlock {
         }
 
         this.pointerId.setValue((pointerInfo.event as PointerEvent).pointerId, context);
-        this.pickedMesh.setValue(pickedMesh!, context);
-        this.pickedPoint.setValue(pointerInfo.pickInfo?.pickedPoint!, context);
+        this.pickedMesh.setValue(pickedMesh ?? null, context);
+        this.pickedPoint.setValue(pointerInfo.pickInfo?.pickedPoint ?? null, context);
         this._execute(context);
         return !this.config?.stopPropagation;
     }

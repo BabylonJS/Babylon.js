@@ -29,6 +29,9 @@ interface IScenePreviewComponentState {
 export class ScenePreviewComponent extends React.Component<IScenePreviewComponentProps, IScenePreviewComponentState> {
     private _canvasRef: React.RefObject<HTMLCanvasElement>;
     private _onContextRefreshedObserver: Nullable<Observer<SceneContext>> = null;
+    private _onSceneContextChangedObserver: Nullable<Observer<SceneContext>> = null;
+    private _onSnippetIdChangedObserver: Nullable<Observer<string>> = null;
+    private _onReloadSnippetRequestedObserver: Nullable<Observer<void>> = null;
 
     /** @internal */
     constructor(props: IScenePreviewComponentProps) {
@@ -49,7 +52,7 @@ export class ScenePreviewComponent extends React.Component<IScenePreviewComponen
         if (this.props.globalState.sceneContext) {
             this._watchContext(this.props.globalState.sceneContext);
         }
-        this.props.globalState.onSceneContextChanged.add((ctx) => {
+        this._onSceneContextChangedObserver = this.props.globalState.onSceneContextChanged.add((ctx) => {
             if (ctx) {
                 this._watchContext(ctx);
                 this.setState({ sceneObjectCount: ctx.entries.length });
@@ -57,7 +60,7 @@ export class ScenePreviewComponent extends React.Component<IScenePreviewComponen
         });
 
         // When a graph is loaded from JSON with a stored snippet ID, auto-load the scene
-        this.props.globalState.onSnippetIdChanged.add((snippetId) => {
+        this._onSnippetIdChangedObserver = this.props.globalState.onSnippetIdChanged.add((snippetId) => {
             if (snippetId) {
                 this.setState({ snippetId }, () => {
                     void this.loadSnippetAsync();
@@ -66,7 +69,7 @@ export class ScenePreviewComponent extends React.Component<IScenePreviewComponen
         });
 
         // When a reload is requested (e.g. from the Reset button), re-run the current snippet
-        this.props.globalState.onReloadSnippetRequested.add(() => {
+        this._onReloadSnippetRequestedObserver = this.props.globalState.onReloadSnippetRequested.add(() => {
             if (this.state.snippetId) {
                 void this.loadSnippetAsync();
             }
@@ -76,6 +79,9 @@ export class ScenePreviewComponent extends React.Component<IScenePreviewComponen
     /** @internal */
     override componentWillUnmount() {
         this._unwatchContext();
+        this._onSceneContextChangedObserver?.remove();
+        this._onSnippetIdChangedObserver?.remove();
+        this._onReloadSnippetRequestedObserver?.remove();
     }
 
     private _watchContext(ctx: SceneContext) {

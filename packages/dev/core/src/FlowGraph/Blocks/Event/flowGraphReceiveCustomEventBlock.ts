@@ -45,8 +45,8 @@ export class FlowGraphReceiveCustomEventBlock extends FlowGraphEventBlock {
             const entry = this.config.eventData[key];
             // Handle deserialized config where type may be a string typeName, a plain object
             // with a typeName property (from old JSON serialization), or a proper RichType instance.
-            const richType =
-                typeof entry.type?.serialize === "function" ? entry.type : getRichTypeByFlowGraphType(typeof entry.type === "string" ? entry.type : entry.type?.typeName);
+            const typeKey = typeof entry.type === "string" ? entry.type : entry.type?.typeName;
+            const richType = typeof entry.type?.serialize === "function" ? entry.type : getRichTypeByFlowGraphType(typeKey);
             entry.type = richType;
             this.registerDataOutput(key, richType);
         }

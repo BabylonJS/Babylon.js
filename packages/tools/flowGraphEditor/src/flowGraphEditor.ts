@@ -60,7 +60,7 @@ export class FlowGraphEditor {
             })!;
         }
 
-        const scene = options.hostScene || options.flowGraph._scene;
+        const scene = options.hostScene || options.flowGraph.scene;
         const globalState = new GlobalState(scene);
         globalState.flowGraph = options.flowGraph;
         globalState.hostElement = hostElement;

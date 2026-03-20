@@ -3,7 +3,7 @@ import type { FlowGraphBlock } from "./flowGraphBlock";
 import { FlowGraphExecutionBlock } from "./flowGraphExecutionBlock";
 import type { FlowGraphDataConnection } from "./flowGraphDataConnection";
 import { FlowGraphTypes } from "./flowGraphRichTypes";
-import type { FlowGraphEventBlock } from "./flowGraphEventBlock";
+import { FlowGraphEventBlock } from "./flowGraphEventBlock";
 import type { FlowGraphEventType } from "./flowGraphEventType";
 
 /**
@@ -305,10 +305,7 @@ function _GetEventBlocks(flowGraph: FlowGraph): FlowGraphEventBlock[] {
  * @returns true if it is an event block
  */
 function _IsEventBlock(block: FlowGraphBlock): boolean {
-    // Event blocks have an _executeEvent method — this is the definitive marker.
-    // Note: we do NOT filter on the `type` property because custom event blocks
-    // (e.g. ReceiveCustomEvent) legitimately use NoTrigger.
-    return typeof (block as any)._executeEvent === "function";
+    return block instanceof FlowGraphEventBlock;
 }
 
 /**

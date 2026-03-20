@@ -222,6 +222,17 @@ export class GlobalState {
     private _allEditorBlocks: Nullable<() => FlowGraphBlock[]> = null;
 
     /**
+     * Cancel any pending debounced validation.
+     * Call this during teardown to prevent validation from firing after cleanup.
+     */
+    public cancelPendingValidation(): void {
+        if (this._validationDebounceTimer !== null) {
+            clearTimeout(this._validationDebounceTimer);
+            this._validationDebounceTimer = null;
+        }
+    }
+
+    /**
      * Register a callback that provides the full list of blocks in the editor.
      * @param provider - callback returning all editor blocks
      */
@@ -245,16 +256,19 @@ export class GlobalState {
     private _activePortHighlights = new Set<HTMLElement>();
     /** Minimum interval between highlight pulses per node (ms) */
     private static readonly _HIGHLIGHT_THROTTLE_MS = 100;
-    /** Whether the debug pulse CSS has been injected into the document */
-    private static _DEBUG_STYLE_INJECTED = false;
+    /** Whether the debug pulse CSS has been injected into a given document */
+    private static _DebugStyleInjectedDocs = new WeakSet<Document>();
 
-    /** Inject the CSS keyframe animation for port pulsing (once per document) */
-    private static _InjectDebugStyle(): void {
-        if (GlobalState._DEBUG_STYLE_INJECTED) {
+    /**
+     * Inject the CSS keyframe animation for port pulsing (once per document)
+     * @param doc - the document to inject the style into
+     */
+    private static _InjectDebugStyle(doc: Document): void {
+        if (GlobalState._DebugStyleInjectedDocs.has(doc)) {
             return;
         }
-        GlobalState._DEBUG_STYLE_INJECTED = true;
-        const style = document.createElement("style");
+        GlobalState._DebugStyleInjectedDocs.add(doc);
+        const style = doc.createElement("style");
         style.textContent = `
             @keyframes debug-port-pulse {
                 0%   { box-shadow: 0 0 8px 4px #33B766; }
@@ -265,7 +279,7 @@ export class GlobalState {
                 animation: debug-port-pulse 600ms ease-out forwards;
             }
         `;
-        document.head.appendChild(style);
+        doc.head.appendChild(style);
     }
 
     /**
@@ -273,7 +287,7 @@ export class GlobalState {
      * @param el - the port HTML element to pulse
      */
     private _pulsePortElement(el: HTMLElement): void {
-        GlobalState._InjectDebugStyle();
+        GlobalState._InjectDebugStyle(el.ownerDocument);
         // Remove and re-add to restart the CSS animation if already playing
         delete el.dataset.debugPulse;
         void el.offsetWidth; // force reflow so the browser sees the removal

@@ -90,6 +90,10 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
     private _multiKeyIsPressed = false;
     private _oldY = -1;
 
+    private _keyUpHandler: (() => void) | null = null;
+    private _keyDownHandler: ((evt: KeyboardEvent) => void) | null = null;
+    private _blurHandler: (() => void) | null = null;
+
     public _frameIsMoving = false;
     public _isLoading = false;
     public _targetLinkCandidate: Nullable<NodeLink> = null;
@@ -329,25 +333,21 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
             this.gridSize = DataStorage.ReadNumber("GridSize", 20);
         });
 
-        this.props.stateManager.hostDocument.addEventListener("keyup", () => this.onKeyUp(), false);
-        this.props.stateManager.hostDocument.addEventListener(
-            "keydown",
-            (evt) => {
-                this._altKeyIsPressed = evt.altKey;
-                this._shiftKeyIsPressed = evt.shiftKey;
-                this._multiKeyIsPressed = evt.ctrlKey || evt.metaKey;
-            },
-            false
-        );
-        this.props.stateManager.hostDocument.defaultView!.addEventListener(
-            "blur",
-            () => {
-                this._altKeyIsPressed = false;
-                this._shiftKeyIsPressed = false;
-                this._multiKeyIsPressed = false;
-            },
-            false
-        );
+        this._keyUpHandler = () => this.onKeyUp();
+        this._keyDownHandler = (evt) => {
+            this._altKeyIsPressed = evt.altKey;
+            this._shiftKeyIsPressed = evt.shiftKey;
+            this._multiKeyIsPressed = evt.ctrlKey || evt.metaKey;
+        };
+        this._blurHandler = () => {
+            this._altKeyIsPressed = false;
+            this._shiftKeyIsPressed = false;
+            this._multiKeyIsPressed = false;
+        };
+
+        this.props.stateManager.hostDocument.addEventListener("keyup", this._keyUpHandler, false);
+        this.props.stateManager.hostDocument.addEventListener("keydown", this._keyDownHandler, false);
+        this.props.stateManager.hostDocument.defaultView!.addEventListener("blur", this._blurHandler, false);
 
         // Store additional data to serialization object
         this.props.stateManager.storeEditorData = (editorData, graphFrame) => {
@@ -1007,6 +1007,19 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
 
         this.gridSize = DataStorage.ReadNumber("GridSize", 20);
         this.updateTransform();
+    }
+
+    override componentWillUnmount() {
+        const doc = this.props.stateManager.hostDocument;
+        if (this._keyUpHandler) {
+            doc.removeEventListener("keyup", this._keyUpHandler);
+        }
+        if (this._keyDownHandler) {
+            doc.removeEventListener("keydown", this._keyDownHandler);
+        }
+        if (this._blurHandler) {
+            doc.defaultView?.removeEventListener("blur", this._blurHandler);
+        }
     }
 
     onMove(evt: React.PointerEvent) {

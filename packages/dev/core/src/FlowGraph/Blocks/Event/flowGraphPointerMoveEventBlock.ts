@@ -7,9 +7,10 @@ import { RegisterClass } from "core/Misc/typeStore";
 import { _IsDescendantOf } from "core/FlowGraph/utils";
 import { FlowGraphBlockNames } from "../flowGraphBlockNames";
 import type { FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnection";
-import { RichTypeAny, RichTypeNumber, RichTypeVector3 } from "core/FlowGraph/flowGraphRichTypes";
+import { RichTypeAny, RichTypeNumber } from "core/FlowGraph/flowGraphRichTypes";
 import type { Vector3 } from "core/Maths/math.vector";
 import { FlowGraphEventType } from "core/FlowGraph/flowGraphEventType";
+import type { Nullable } from "core/types";
 
 /**
  * Configuration for the pointer move event block.
@@ -47,12 +48,12 @@ export class FlowGraphPointerMoveEventBlock extends FlowGraphEventBlock {
     /**
      * Output connection: The mesh currently under the pointer (if any).
      */
-    public readonly meshUnderPointer: FlowGraphDataConnection<AbstractMesh>;
+    public readonly meshUnderPointer: FlowGraphDataConnection<Nullable<AbstractMesh>>;
 
     /**
      * Output connection: The world-space point under the pointer (if any).
      */
-    public readonly pickedPoint: FlowGraphDataConnection<Vector3>;
+    public readonly pickedPoint: FlowGraphDataConnection<Nullable<Vector3>>;
 
     /** @internal */
     public override readonly type: FlowGraphEventType = FlowGraphEventType.PointerMove;
@@ -66,10 +67,7 @@ export class FlowGraphPointerMoveEventBlock extends FlowGraphEventBlock {
         this.targetMesh = this.registerDataInput("targetMesh", RichTypeAny, config?.targetMesh);
         this.pointerId = this.registerDataOutput("pointerId", RichTypeNumber);
         this.meshUnderPointer = this.registerDataOutput("meshUnderPointer", RichTypeAny);
-        this.pickedPoint = this.registerDataOutput("pickedPoint", RichTypeVector3);
-        if (config && config.targetMesh) {
-            config.targetMesh.isPickable = true; // ensure the target mesh is pickable if set via config
-        }
+        this.pickedPoint = this.registerDataOutput("pickedPoint", RichTypeAny);
     }
 
     /** @internal */
@@ -83,8 +81,8 @@ export class FlowGraphPointerMoveEventBlock extends FlowGraphEventBlock {
         }
 
         this.pointerId.setValue((pointerInfo.event as PointerEvent).pointerId, context);
-        this.meshUnderPointer.setValue(pickedMesh!, context);
-        this.pickedPoint.setValue(pointerInfo.pickInfo?.pickedPoint!, context);
+        this.meshUnderPointer.setValue(pickedMesh ?? null, context);
+        this.pickedPoint.setValue(pointerInfo.pickInfo?.pickedPoint ?? null, context);
         this._execute(context);
         return !this.config?.stopPropagation;
     }
