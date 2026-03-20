@@ -4,10 +4,10 @@ import { FilesInputStore } from "core/Misc/filesInputStore";
 import { SceneLoader } from "core/Loading/sceneLoader";
 import type { Transform } from "../../components/properties/transformProperties";
 import { makeStyles, tokens, Body1Strong, Button } from "@fluentui/react-components";
-import { ArrowClockwise20Regular, Eye20Regular, EyeOff20Regular, WindowConsole20Regular, Settings20Regular } from "@fluentui/react-icons";
+import { ArrowClockwiseRegular, EyeRegular, EyeOffRegular, WindowConsoleRegular, SettingsRegular } from "@fluentui/react-icons";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Accordion as BabylonAccordion, AccordionSection as BabylonAccordionSection } from "shared-ui-components/fluent/primitives/accordion";
-import { CheckboxPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/checkboxPropertyLine";
+import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
 import { SyncedSliderPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/syncedSliderPropertyLine";
 import { StringDropdownPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/dropdownPropertyLine";
 import { BoneDropdown } from "./boneDropdown";
@@ -19,6 +19,7 @@ import type { AvatarManager } from "./avatarManager";
 import type { AnimationManager } from "./animationManager";
 import type { GizmoType } from "./avatar";
 import { RetargetingConfigDialog } from "./retargetingConfigDialog";
+import { UXContextProvider } from "../../components/uxContextProvider";
 
 /**
  * Mirrors gui.ts _getSourceTransformNodeList: returns animation transform nodes filtered
@@ -60,8 +61,8 @@ const useStyles = makeStyles({
     },
     toolbar: {
         display: "flex",
-        gap: "2px",
-        padding: "4px",
+        gap: tokens.spacingHorizontalXXS,
+        padding: tokens.spacingVerticalXS,
         borderBottom: `1px solid ${tokens.colorNeutralStroke2}`,
         flexShrink: 0,
     },
@@ -109,6 +110,27 @@ const useStyles = makeStyles({
         width: "225px", // 150px (standard) * 1.5 = 50% larger
         boxSizing: "border-box",
         flexShrink: 0,
+    },
+    loadingText: {
+        padding: `${tokens.spacingVerticalXS} ${tokens.spacingHorizontalM}`,
+        fontSize: "12px",
+        color: tokens.colorNeutralForeground3,
+    },
+    dropdownRow: {
+        display: "flex",
+        alignItems: "center",
+        gap: tokens.spacingHorizontalXS,
+    },
+    flexOne: {
+        flex: 1,
+    },
+    indented: {
+        paddingLeft: tokens.spacingHorizontalL,
+    },
+    errorHint: {
+        color: tokens.colorPaletteRedForeground1,
+        fontSize: "12px",
+        paddingLeft: tokens.spacingHorizontalL,
     },
 });
 
@@ -753,19 +775,19 @@ export const AnimationRetargetingPanel: FunctionComponent<AnimationRetargetingPa
                 <Button
                     appearance="transparent"
                     size="small"
-                    icon={isEnabled ? <EyeOff20Regular /> : <Eye20Regular />}
+                    icon={isEnabled ? <EyeOffRegular /> : <EyeRegular />}
                     title={isEnabled ? "Disable viewport" : "Enable viewport"}
                     onClick={() => onSetEnabled(!isEnabled)}
                 />
                 <Button
                     appearance={isConsoleVisible ? "primary" : "transparent"}
                     size="small"
-                    icon={<WindowConsole20Regular />}
+                    icon={<WindowConsoleRegular />}
                     title="Toggle console"
                     disabled={!isEnabled}
                     onClick={onToggleConsole}
                 />
-                <Button appearance="transparent" size="small" icon={<Settings20Regular />} title="Retargeting configuration" onClick={() => setIsDialogOpen(true)} />
+                <Button appearance="transparent" size="small" icon={<SettingsRegular />} title="Retargeting configuration" onClick={() => setIsDialogOpen(true)} />
                 <RetargetingConfigDialog
                     manager={namingSchemeManager}
                     avatarManager={avatarManager}
@@ -780,7 +802,7 @@ export const AnimationRetargetingPanel: FunctionComponent<AnimationRetargetingPa
             {!isEnabled ? (
                 <div className={classes.disabledOverlay}>Extension is disabled -- original scene is shown</div>
             ) : (
-                <>
+                <UXContextProvider>
                     <div className={classes.actionRow}>
                         <ButtonLine
                             label="Retarget"
@@ -798,12 +820,12 @@ export const AnimationRetargetingPanel: FunctionComponent<AnimationRetargetingPa
                         />
                     </div>
                     <div className={classes.scrollContent}>
-                        {loadingText && <div style={{ padding: "4px 12px", fontSize: "12px", color: tokens.colorNeutralForeground3 }}>{loadingText}</div>}
+                        {loadingText && <div className={classes.loadingText}>{loadingText}</div>}
                         <BabylonAccordion>
                             {/* Avatar */}
                             <BabylonAccordionSection title="Avatar">
-                                <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-                                    <div style={{ flex: 1 }}>
+                                <div className={classes.dropdownRow}>
+                                    <div className={classes.flexOne}>
                                         <StringDropdownPropertyLine
                                             label="Name"
                                             description="Select the avatar model to retarget animations onto"
@@ -818,7 +840,7 @@ export const AnimationRetargetingPanel: FunctionComponent<AnimationRetargetingPa
                                     <Button
                                         size="small"
                                         appearance="subtle"
-                                        icon={<ArrowClockwise20Regular />}
+                                        icon={<ArrowClockwiseRegular />}
                                         title="Reload avatar"
                                         disabled={!avatarName}
                                         onClick={() => {
@@ -826,7 +848,7 @@ export const AnimationRetargetingPanel: FunctionComponent<AnimationRetargetingPa
                                         }}
                                     />
                                 </div>
-                                <CheckboxPropertyLine
+                                <SwitchPropertyLine
                                     label="Rescale"
                                     description="Automatically rescale the avatar if it's too large or too small"
                                     value={avatarRescaleAvatar}
@@ -835,7 +857,7 @@ export const AnimationRetargetingPanel: FunctionComponent<AnimationRetargetingPa
                                         void handleLoadAvatar(avatarName, v);
                                     }}
                                 />
-                                <CheckboxPropertyLine
+                                <SwitchPropertyLine
                                     label="Show skeleton"
                                     description="Display the avatar skeleton overlay"
                                     value={avatarShowSkeleton}
@@ -844,7 +866,7 @@ export const AnimationRetargetingPanel: FunctionComponent<AnimationRetargetingPa
                                         managerRef.current?.avatar?.setSkeletonVisible(v);
                                     }}
                                 />
-                                <CheckboxPropertyLine
+                                <SwitchPropertyLine
                                     label="Show skel. local axes"
                                     description="Show local coordinate axes on each skeleton bone (requires Show skeleton)"
                                     value={avatarShowSkeletonLocalAxes}
@@ -895,7 +917,7 @@ export const AnimationRetargetingPanel: FunctionComponent<AnimationRetargetingPa
                             </BabylonAccordionSection>
                             {/* Avatar Gizmo */}
                             <BabylonAccordionSection title="Avatar Gizmo">
-                                <CheckboxPropertyLine
+                                <SwitchPropertyLine
                                     label="Enabled"
                                     description="Enable the transform gizmo to edit bone positions. Only available when the avatar is in rest pose"
                                     value={avatarGizmoEnabled && !isAvatarPlaying}
@@ -936,8 +958,8 @@ export const AnimationRetargetingPanel: FunctionComponent<AnimationRetargetingPa
                             </BabylonAccordionSection>
                             {/* Animation */}
                             <BabylonAccordionSection title="Animation">
-                                <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-                                    <div style={{ flex: 1 }}>
+                                <div className={classes.dropdownRow}>
+                                    <div className={classes.flexOne}>
                                         <StringDropdownPropertyLine
                                             label="Name"
                                             description="Select the animation to retarget onto the avatar"
@@ -952,7 +974,7 @@ export const AnimationRetargetingPanel: FunctionComponent<AnimationRetargetingPa
                                     <Button
                                         size="small"
                                         appearance="subtle"
-                                        icon={<ArrowClockwise20Regular />}
+                                        icon={<ArrowClockwiseRegular />}
                                         title="Reload animation"
                                         disabled={!animationName}
                                         onClick={() => {
@@ -960,7 +982,7 @@ export const AnimationRetargetingPanel: FunctionComponent<AnimationRetargetingPa
                                         }}
                                     />
                                 </div>
-                                <CheckboxPropertyLine
+                                <SwitchPropertyLine
                                     label="Show skel. local axes"
                                     description="Show local coordinate axes on each animation bone"
                                     value={animationShowSkeletonLocalAxes}
@@ -1010,7 +1032,7 @@ export const AnimationRetargetingPanel: FunctionComponent<AnimationRetargetingPa
                             </BabylonAccordionSection>
                             {/* Animation Gizmo */}
                             <BabylonAccordionSection title="Animation Gizmo">
-                                <CheckboxPropertyLine
+                                <SwitchPropertyLine
                                     label="Enabled"
                                     description="Enable the transform gizmo to edit node positions. Only available when the animation is stopped"
                                     value={animationGizmoEnabled && !isAnimPlaying}
@@ -1051,38 +1073,38 @@ export const AnimationRetargetingPanel: FunctionComponent<AnimationRetargetingPa
                             </BabylonAccordionSection>
                             {/* Retarget Options */}
                             <BabylonAccordionSection title="Retarget Options">
-                                <CheckboxPropertyLine
+                                <SwitchPropertyLine
                                     label="Fix animations"
                                     description="Apply fixes to animation data before retargeting"
                                     value={fixAnimations}
                                     onChange={setFixAnimations}
                                 />
-                                <CheckboxPropertyLine
+                                <SwitchPropertyLine
                                     label="Check hierarchy"
                                     description="Verify that the bone hierarchy matches between source and target"
                                     value={checkHierarchy}
                                     onChange={setCheckHierarchy}
                                 />
-                                <CheckboxPropertyLine
+                                <SwitchPropertyLine
                                     label="Retarget keys"
                                     description="Retarget animation keyframes to match the avatar skeleton"
                                     value={retargetAnimationKeys}
                                     onChange={setRetargetAnimationKeys}
                                 />
-                                <CheckboxPropertyLine
+                                <SwitchPropertyLine
                                     label="Fix root position"
                                     description="Correct the root bone position to prevent floating or sinking. Uses the Root node setting"
                                     value={fixRootPosition}
                                     onChange={setFixRootPosition}
                                 />
-                                <CheckboxPropertyLine
+                                <SwitchPropertyLine
                                     label="Fix ground reference"
                                     description="Adjust the animation so feet stay on the ground. Uses the Ground ref. node setting"
                                     value={fixGroundReference}
                                     onChange={setFixGroundReference}
                                 />
-                                <div style={{ paddingLeft: "16px" }}>
-                                    <CheckboxPropertyLine
+                                <div className={classes.indented}>
+                                    <SwitchPropertyLine
                                         label="Dynamic ref. node"
                                         description="Dynamically update the ground reference node each frame (requires Fix ground reference)"
                                         value={fixGroundReferenceDynamicRefNode}
@@ -1102,9 +1124,7 @@ export const AnimationRetargetingPanel: FunctionComponent<AnimationRetargetingPa
                                     </div>
                                 </div>
                                 {rootNodeName !== "Auto" && rootNodeName === groundReferenceNodeName && (
-                                    <span style={{ color: tokens.colorPaletteRedForeground1, fontSize: "12px", paddingLeft: "16px" }}>
-                                        Root node and Ground ref. node must be different.
-                                    </span>
+                                    <span className={classes.errorHint}>Root node and Ground ref. node must be different.</span>
                                 )}
                                 <div className={classes.boneDropdownWrapper}>
                                     <Body1Strong className={classes.boneDropdownLabel}>Ground ref. node</Body1Strong>
@@ -1117,7 +1137,7 @@ export const AnimationRetargetingPanel: FunctionComponent<AnimationRetargetingPa
                                         />
                                     </div>
                                 </div>
-                                <div style={{ paddingLeft: "16px" }}>
+                                <div className={classes.indented}>
                                     <StringDropdownPropertyLine
                                         label="Vertical axis"
                                         description="The vertical axis used for ground reference correction (Auto detects automatically)"
@@ -1130,7 +1150,7 @@ export const AnimationRetargetingPanel: FunctionComponent<AnimationRetargetingPa
                             </BabylonAccordionSection>
                         </BabylonAccordion>
                     </div>
-                </>
+                </UXContextProvider>
             )}
         </div>
     );

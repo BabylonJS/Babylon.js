@@ -22,7 +22,7 @@ import {
     DialogActions,
     Spinner,
 } from "@fluentui/react-components";
-import { Add20Regular, Delete20Regular, Edit20Regular, ArrowUpload20Regular } from "@fluentui/react-icons";
+import { AddRegular, DeleteRegular, EditRegular, ArrowUploadRegular } from "@fluentui/react-icons";
 import { NullEngine } from "core/Engines/nullEngine";
 import { Scene } from "core/scene";
 import { ImportMeshAsync, SceneLoader } from "core/Loading/sceneLoader";
@@ -156,7 +156,7 @@ const useStyles = makeStyles({
     animRow: {
         display: "flex",
         alignItems: "center",
-        padding: `2px ${tokens.spacingHorizontalS}`,
+        padding: `${tokens.spacingVerticalXXS} ${tokens.spacingHorizontalS}`,
         gap: tokens.spacingHorizontalS,
         fontSize: "12px",
         borderBottom: `1px solid ${tokens.colorNeutralStroke2}`,
@@ -675,7 +675,7 @@ export const AnimationsPanel: FunctionComponent<{
 
             <div className={classes.listHeader}>
                 <div className={classes.listButtons}>
-                    <Button size="small" icon={<Add20Regular />} onClick={startAdd} disabled={!!editing}>
+                    <Button size="small" icon={<AddRegular />} onClick={startAdd} disabled={!!editing}>
                         Add
                     </Button>
                 </div>
@@ -690,14 +690,14 @@ export const AnimationsPanel: FunctionComponent<{
                         <Button
                             size="small"
                             appearance="transparent"
-                            icon={<Edit20Regular />}
+                            icon={<EditRegular />}
                             title="Edit"
                             disabled={!!editing}
                             onClick={() => {
                                 void startEdit(animation);
                             }}
                         />
-                        <Button size="small" appearance="transparent" icon={<Delete20Regular />} title="Delete" disabled={!!editing} onClick={() => handleDelete(animation)} />
+                        <Button size="small" appearance="transparent" icon={<DeleteRegular />} title="Delete" disabled={!!editing} onClick={() => handleDelete(animation)} />
                     </div>
                 ))}
             </div>
@@ -745,7 +745,7 @@ export const AnimationsPanel: FunctionComponent<{
                         onDrop={handleDrop}
                         onClick={() => fileInputRef.current?.click()}
                     >
-                        <ArrowUpload20Regular />
+                        <ArrowUploadRegular />
                         <div>Drop file(s) here or click to browse</div>
                         <input ref={fileInputRef} type="file" multiple style={{ display: "none" }} onChange={handleFileInput} />
                     </div>

@@ -25,14 +25,14 @@ import {
     Spinner,
 } from "@fluentui/react-components";
 import {
-    Add20Regular,
-    Delete20Regular,
-    Edit20Regular,
-    ArrowCounterclockwise20Regular,
-    ArrowBidirectionalUpDown20Regular,
-    ArrowDownload20Regular,
-    ArrowUpload20Regular,
-    Dismiss20Regular,
+    AddRegular,
+    DeleteRegular,
+    EditRegular,
+    ArrowCounterclockwiseRegular,
+    ArrowBidirectionalUpDownRegular,
+    ArrowDownloadRegular,
+    ArrowUploadRegular,
+    DismissRegular,
 } from "@fluentui/react-icons";
 import { NullEngine } from "core/Engines/nullEngine";
 import { Scene } from "core/scene";
@@ -162,7 +162,7 @@ const useStyles = makeStyles({
     mappingRow: {
         display: "flex",
         alignItems: "center",
-        padding: `2px ${tokens.spacingHorizontalS}`,
+        padding: `${tokens.spacingVerticalXXS} ${tokens.spacingHorizontalS}`,
         gap: tokens.spacingHorizontalS,
         borderBottom: `1px solid ${tokens.colorNeutralStroke2}`,
         ":last-child": { borderBottom: "none" },
@@ -180,7 +180,7 @@ const useStyles = makeStyles({
     mappingSelect: {
         flex: 1,
         fontSize: "12px",
-        padding: "2px 4px",
+        padding: `${tokens.spacingVerticalXXS} ${tokens.spacingHorizontalXS}`,
         border: `1px solid ${tokens.colorNeutralStroke1}`,
         borderRadius: tokens.borderRadiusSmall,
         backgroundColor: tokens.colorNeutralBackground1,
@@ -228,6 +228,10 @@ const useStyles = makeStyles({
             outline: `2px solid ${tokens.colorCompoundBrandStroke}`,
             outlineOffset: "1px",
         },
+    },
+    titleButtons: {
+        display: "flex",
+        gap: tokens.spacingHorizontalXS,
     },
 });
 
@@ -541,10 +545,10 @@ const SchemesPanel: FunctionComponent<{
 
             <div className={classes.listHeader}>
                 <div className={classes.listButtons}>
-                    <Button size="small" icon={<ArrowCounterclockwise20Regular />} onClick={handleRecreateDefaults} disabled={!!editing}>
+                    <Button size="small" icon={<ArrowCounterclockwiseRegular />} onClick={handleRecreateDefaults} disabled={!!editing}>
                         Recreate Defaults
                     </Button>
-                    <Button size="small" icon={<Add20Regular />} onClick={startAdd} disabled={!!editing}>
+                    <Button size="small" icon={<AddRegular />} onClick={startAdd} disabled={!!editing}>
                         Add
                     </Button>
                 </div>
@@ -559,8 +563,8 @@ const SchemesPanel: FunctionComponent<{
                             <span className={classes.listRowMeta}>
                                 {count} bone{count !== 1 ? "s" : ""}
                             </span>
-                            <Button size="small" appearance="transparent" icon={<Edit20Regular />} title="Edit" disabled={!!editing} onClick={() => startEdit(name)} />
-                            <Button size="small" appearance="transparent" icon={<Delete20Regular />} title="Delete" disabled={!!editing} onClick={() => handleDelete(name)} />
+                            <Button size="small" appearance="transparent" icon={<EditRegular />} title="Edit" disabled={!!editing} onClick={() => startEdit(name)} />
+                            <Button size="small" appearance="transparent" icon={<DeleteRegular />} title="Delete" disabled={!!editing} onClick={() => handleDelete(name)} />
                         </div>
                     );
                 })}
@@ -839,10 +843,10 @@ const RemappingsPanel: FunctionComponent<{
 
             <div className={classes.listHeader}>
                 <div className={classes.listButtons}>
-                    <Button size="small" icon={<ArrowCounterclockwise20Regular />} onClick={handleRecreateDefaults} disabled={!!editing}>
+                    <Button size="small" icon={<ArrowCounterclockwiseRegular />} onClick={handleRecreateDefaults} disabled={!!editing}>
                         Recreate Defaults
                     </Button>
-                    <Button size="small" icon={<Add20Regular />} onClick={startAdd} disabled={!!editing || schemeNames.length < 2}>
+                    <Button size="small" icon={<AddRegular />} onClick={startAdd} disabled={!!editing || schemeNames.length < 2}>
                         Add
                     </Button>
                 </div>
@@ -854,11 +858,11 @@ const RemappingsPanel: FunctionComponent<{
                         <span className={classes.listRowName}>
                             {fromScheme} → {toScheme}
                         </span>
-                        <Button size="small" appearance="transparent" icon={<Edit20Regular />} title="Edit" disabled={!!editing} onClick={() => startEdit(fromScheme, toScheme)} />
+                        <Button size="small" appearance="transparent" icon={<EditRegular />} title="Edit" disabled={!!editing} onClick={() => startEdit(fromScheme, toScheme)} />
                         <Button
                             size="small"
                             appearance="transparent"
-                            icon={<Delete20Regular />}
+                            icon={<DeleteRegular />}
                             title="Delete"
                             disabled={!!editing}
                             onClick={() => handleDelete(fromScheme, toScheme)}
@@ -880,7 +884,7 @@ const RemappingsPanel: FunctionComponent<{
                         </Select>
                     </div>
                     <div style={{ display: "flex", justifyContent: "center" }}>
-                        <Button size="small" appearance="transparent" icon={<ArrowBidirectionalUpDown20Regular />} title="Swap From / To schemes" onClick={handleSwapSchemes} />
+                        <Button size="small" appearance="transparent" icon={<ArrowBidirectionalUpDownRegular />} title="Swap From / To schemes" onClick={handleSwapSchemes} />
                     </div>
                     <div className={classes.formRow}>
                         <Label className={classes.formLabel}>To scheme</Label>
@@ -1062,17 +1066,17 @@ export const RetargetingConfigDialog: FunctionComponent<RetargetingConfigDialogP
                 <DialogBody className={classes.body}>
                     <div className={classes.titleRow}>
                         <DialogTitle action={null}>Retargeting Configuration</DialogTitle>
-                        <div style={{ display: "flex", gap: "4px" }}>
-                            <Button appearance="subtle" icon={<ArrowDownload20Regular />} onClick={handleExport} title="Export configuration" disabled={isEditing} />
+                        <div className={classes.titleButtons}>
+                            <Button appearance="subtle" icon={<ArrowDownloadRegular />} onClick={handleExport} title="Export configuration" disabled={isEditing} />
                             <Button
                                 appearance="subtle"
-                                icon={<ArrowUpload20Regular />}
+                                icon={<ArrowUploadRegular />}
                                 onClick={() => importInputRef.current?.click()}
                                 title="Import configuration"
                                 disabled={isEditing}
                             />
                             <input ref={importInputRef} type="file" accept=".json" style={{ display: "none" }} onChange={handleImportFile} />
-                            <Button appearance="subtle" icon={<Dismiss20Regular />} onClick={handleClose} title="Close" aria-label="Close" />
+                            <Button appearance="subtle" icon={<DismissRegular />} onClick={handleClose} title="Close" aria-label="Close" />
                         </div>
                     </div>
                     {/* Import mode chooser dialog */}

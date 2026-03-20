@@ -4,7 +4,7 @@ import type { IShellService } from "../../services/shellService";
 import { ShellServiceIdentity } from "../../services/shellService";
 
 import { Observable } from "core/Misc/observable";
-import { PersonRunning20Regular } from "@fluentui/react-icons";
+import { PersonRunningRegular } from "@fluentui/react-icons";
 
 import { AnimationRetargetingViewport } from "./animationRetargetingViewport";
 import { AnimationRetargetingPanel, DefaultPanelState } from "./animationRetargetingPanel";
@@ -95,7 +95,7 @@ export const AnimationRetargetingServiceDefinition: ServiceDefinition<[], [IShel
             key: "AnimationRetargetingPanel",
             title: "Animation Retargeting",
             onInfoClick: () => window.open("https://doc.babylonjs.com/features/featuresDeepDive/animation/animationRetargeting/", "_blank"),
-            icon: PersonRunning20Regular,
+            icon: PersonRunningRegular,
             horizontalLocation: "left",
             verticalLocation: "top",
             content: () => (
