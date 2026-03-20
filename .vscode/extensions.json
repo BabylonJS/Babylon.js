@@ -5,8 +5,6 @@
         "esbenp.prettier-vscode",
         "webhint.vscode-webhint",
         "IronGeek.vscode-env",
-        "firsttris.vscode-jest-runner",
-        "ms-playwright.playwright",
-        "orta.vscode-jest"
+        "ms-playwright.playwright"
     ]
 }

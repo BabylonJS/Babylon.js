@@ -2,7 +2,7 @@ import { NullEngine } from "core/Engines";
 import { Scene } from "core/scene";
 import { FlowGraphCoordinator } from "core/FlowGraph/flowGraphCoordinator";
 import { Vector3 } from "core/Maths";
-import { ArcRotateCamera } from "core/Cameras";
+import { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
 import { Logger } from "core/Misc";
 import { ParseFlowGraphAsync } from "core/FlowGraph";
 import { InteractivityGraphToFlowGraphParser } from "loaders/glTF/2.0/Extensions/KHR_interactivity/interactivityGraphParser";
@@ -21,8 +21,8 @@ import { Mesh } from "core/Meshes/mesh";
 describe("glTF interactivity Object Model", () => {
     let engine: NullEngine;
     let scene: Scene;
-    const log: jest.SpyInstance = jest.spyOn(Logger, "Log").mockImplementation(() => {});
-    const errorLog: jest.SpyInstance = jest.spyOn(Logger, "Error").mockImplementation(() => {});
+    const log: ReturnType<typeof vi.spyOn> = vi.spyOn(Logger, "Log").mockImplementation(() => {});
+    const errorLog: ReturnType<typeof vi.spyOn> = vi.spyOn(Logger, "Error").mockImplementation(() => {});
     let renderInterval: any;
 
     async function generateSimpleNodeGraph(

@@ -1,4 +1,4 @@
-import { ArcRotateCamera } from "core/Cameras";
+import { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
 import { Engine, NullEngine } from "core/Engines";
 import { Vector3 } from "core/Maths";
 import { DefaultRenderingPipeline } from "core/PostProcesses";
@@ -37,7 +37,7 @@ describe("Babylon Scene Loader", function () {
 
             const promise = new Promise<void>((res, rej) => {
                 return scene.whenReadyAsync().then(() => {
-                    const createShaderProgramSpy = jest.spyOn(subject, "createShaderProgram");
+                    const createShaderProgramSpy = vi.spyOn(subject, "createShaderProgram");
                     new DefaultRenderingPipeline("default", true, scene, [camera]);
                     // wait for all shaders to be compiled if needed
                     setTimeout(() => {

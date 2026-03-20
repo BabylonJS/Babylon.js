@@ -3,7 +3,7 @@ import { setAndStartTimer } from "core/Misc/timer";
 
 describe("setAndStartTimer", () => {
     it("calls onEnded when timeout is reached", () => {
-        jest.useFakeTimers();
+        vi.useFakeTimers();
 
         const observable = new Observable<void>();
         let endedCalled = false;
@@ -20,17 +20,17 @@ describe("setAndStartTimer", () => {
             },
         });
 
-        jest.advanceTimersByTime(150);
+        vi.advanceTimersByTime(150);
         observable.notifyObservers();
 
         expect(endedCalled).toBe(true);
         expect(abortedCalled).toBe(false);
 
-        jest.useRealTimers();
+        vi.useRealTimers();
     });
 
     it("calls onAborted when breakCondition is met, not onEnded", () => {
-        jest.useFakeTimers();
+        vi.useFakeTimers();
 
         const observable = new Observable<void>();
         let endedCalled = false;
@@ -53,11 +53,11 @@ describe("setAndStartTimer", () => {
         expect(abortedCalled).toBe(true);
         expect(endedCalled).toBe(false);
 
-        jest.useRealTimers();
+        vi.useRealTimers();
     });
 
     it("does not call onEnded when breakCondition fires at the same tick as timeout", () => {
-        jest.useFakeTimers();
+        vi.useFakeTimers();
 
         const observable = new Observable<void>();
         let endedCalled = false;
@@ -76,17 +76,17 @@ describe("setAndStartTimer", () => {
         });
 
         // Advance past the timeout so both conditions would be true simultaneously
-        jest.advanceTimersByTime(200);
+        vi.advanceTimersByTime(200);
         observable.notifyObservers();
 
         expect(abortedCalled).toBe(true);
         expect(endedCalled).toBe(false);
 
-        jest.useRealTimers();
+        vi.useRealTimers();
     });
 
     it("passes data to breakCondition", () => {
-        jest.useFakeTimers();
+        vi.useFakeTimers();
 
         const observable = new Observable<void>();
         let receivedData: any = null;
@@ -107,11 +107,11 @@ describe("setAndStartTimer", () => {
         expect(typeof receivedData.deltaTime).toBe("number");
         expect(typeof receivedData.completeRate).toBe("number");
 
-        jest.useRealTimers();
+        vi.useRealTimers();
     });
 
     it("does not call onTick when timer ends", () => {
-        jest.useFakeTimers();
+        vi.useFakeTimers();
 
         const observable = new Observable<void>();
         let tickCalled = false;
@@ -128,17 +128,17 @@ describe("setAndStartTimer", () => {
             },
         });
 
-        jest.advanceTimersByTime(150);
+        vi.advanceTimersByTime(150);
         observable.notifyObservers();
 
         expect(endedCalled).toBe(true);
         expect(tickCalled).toBe(false);
 
-        jest.useRealTimers();
+        vi.useRealTimers();
     });
 
     it("calls onTick on intermediate ticks before timeout", () => {
-        jest.useFakeTimers();
+        vi.useFakeTimers();
 
         const observable = new Observable<void>();
         let tickCount = 0;
@@ -156,28 +156,28 @@ describe("setAndStartTimer", () => {
         });
 
         // First tick at 50ms - should call onTick
-        jest.advanceTimersByTime(50);
+        vi.advanceTimersByTime(50);
         observable.notifyObservers();
         expect(tickCount).toBe(1);
         expect(endedCalled).toBe(false);
 
         // Second tick at 100ms - should call onTick
-        jest.advanceTimersByTime(50);
+        vi.advanceTimersByTime(50);
         observable.notifyObservers();
         expect(tickCount).toBe(2);
         expect(endedCalled).toBe(false);
 
         // Third tick at 250ms - should call onEnded, not onTick
-        jest.advanceTimersByTime(150);
+        vi.advanceTimersByTime(150);
         observable.notifyObservers();
         expect(tickCount).toBe(2);
         expect(endedCalled).toBe(true);
 
-        jest.useRealTimers();
+        vi.useRealTimers();
     });
 
     it("stops firing after timeout is reached", () => {
-        jest.useFakeTimers();
+        vi.useFakeTimers();
 
         const observable = new Observable<void>();
         let endedCount = 0;
@@ -190,13 +190,13 @@ describe("setAndStartTimer", () => {
             },
         });
 
-        jest.advanceTimersByTime(150);
+        vi.advanceTimersByTime(150);
         observable.notifyObservers();
         observable.notifyObservers();
         observable.notifyObservers();
 
         expect(endedCount).toBe(1);
 
-        jest.useRealTimers();
+        vi.useRealTimers();
     });
 });

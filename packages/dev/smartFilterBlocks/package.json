@@ -14,7 +14,7 @@
     ],
     "scripts": {
         "build": "tsc -b tsconfig.build.json",
-        "test": "jest -c ../../../jest.config.ts --passWithNoTests",
+        "test": "vitest run --passWithNoTests",
         "clean": "rimraf dist && rimraf *.tsbuildinfo -g && rimraf --glob ./src/blocks/**/*.block.ts && rimraf --glob ./src/blocks/**/*.fragment.ts",
         "watch": "build-tools -c dev-watch --packages \"smart-filters-blocks\" -wa"
     },

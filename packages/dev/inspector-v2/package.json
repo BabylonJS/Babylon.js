@@ -8,7 +8,7 @@
     "sideEffects": true,
     "scripts": {
         "build": "npm run clean && npm run compile",
-        "test": "jest -c ../../../jest.config.ts",
+        "test": "vitest run",
         "clean": "rimraf dist && rimraf *.tsbuildinfo -g",
         "compile": "tsc -b tsconfig.build.json",
         "serve": "webpack serve --mode development",

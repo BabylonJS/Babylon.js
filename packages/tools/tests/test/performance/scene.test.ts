@@ -1,3 +1,4 @@
+import { test, expect, Page } from "@playwright/test";
 import { checkPerformanceOfScene, evaluateDefaultScene, getGlobalConfig } from "@tools/test-tools";
 
 // IN TESTS
@@ -9,17 +10,27 @@ const framesToRender = 2500;
 const numberOfPasses = 8;
 const acceptedThreshold = 0.05; // 5% compensation
 
-describe("Performance - scene", () => {
-    jest.setTimeout(40000);
+test.describe("Performance - scene", () => {
+    let page: Page;
 
-    it("Should have same or better performance with default scene", async () => {
+    test.beforeAll(async ({ browser }) => {
+        page = await browser.newPage();
+    });
+
+    test.afterAll(async () => {
+        await page?.close();
+    });
+
+    test("Should have same or better performance with default scene", async () => {
+        test.setTimeout(40000);
         const stable = await checkPerformanceOfScene(page, getGlobalConfig().baseUrl, "stable", evaluateDefaultScene, numberOfPasses, framesToRender);
         const dev = await checkPerformanceOfScene(page, getGlobalConfig().baseUrl, "dev", evaluateDefaultScene, numberOfPasses, framesToRender);
         console.log(`Performance - scene: stable: ${stable}ms, dev: ${dev}ms`);
         expect(dev / stable, `Dev: ${dev}ms, Stable: ${stable}ms`).toBeLessThanOrEqual(1 + acceptedThreshold);
-    }, 40000);
+    });
 
-    it("Should have same or better performance with particle system", async () => {
+    test("Should have same or better performance with particle system", async () => {
+        test.setTimeout(40000);
         // this code will run in the browser
         const createScene = () => {
             if (!window.scene) {
@@ -45,9 +56,10 @@ describe("Performance - scene", () => {
         const stable = await checkPerformanceOfScene(page, getGlobalConfig().baseUrl, "stable", createScene, numberOfPasses, framesToRender);
         const dev = await checkPerformanceOfScene(page, getGlobalConfig().baseUrl, "dev", createScene, numberOfPasses, framesToRender);
         expect(dev / stable, `Dev: ${dev}ms, Stable: ${stable}ms`).toBeLessThanOrEqual(1 + acceptedThreshold);
-    }, 40000);
+    });
 
-    it("Should have same or better performance with follow camera", async () => {
+    test("Should have same or better performance with follow camera", async () => {
+        test.setTimeout(40000);
         // this code will run in the browser
         const createScene = () => {
             const scene = new BABYLON.Scene(window.engine!);
@@ -106,5 +118,5 @@ describe("Performance - scene", () => {
         const stable = await checkPerformanceOfScene(page, getGlobalConfig().baseUrl, "stable", createScene, numberOfPasses, framesToRender);
         const dev = await checkPerformanceOfScene(page, getGlobalConfig().baseUrl, "dev", createScene, numberOfPasses, framesToRender);
         expect(dev / stable, `Dev: ${dev}ms, Stable: ${stable}ms`).toBeLessThanOrEqual(1 + acceptedThreshold);
-    }, 40000);
+    });
 });

@@ -1,11 +1,19 @@
-import { NullEngine } from "core/Engines";
-import type { Engine } from "core/Engines";
+import { NullEngine } from "core/Engines/nullEngine";
+import type { Engine } from "core/Engines/engine";
 import { PointLight } from "core/Lights/pointLight";
 import { ShadowGenerator } from "core/Lights/Shadows/shadowGenerator";
 import { Vector3 } from "core/Maths/math.vector";
 import { Scene } from "core/scene";
 
 import "core/Lights/Shadows/shadowGeneratorSceneComponent";
+
+// Pre-load shader modules that ShadowGenerator dynamically imports during construction.
+// Without these, the fire-and-forget import() in _initShaderSourceAsync may still be
+// resolving when the test environment tears down, causing EnvironmentTeardownError.
+import "core/Shaders/shadowMap.fragment";
+import "core/Shaders/shadowMap.vertex";
+import "core/Shaders/depthBoxBlur.fragment";
+import "core/Shaders/ShadersInclude/shadowMapFragmentSoftTransparentShadow";
 
 describe("ShadowGenerator", () => {
     describe("instantiate", () => {
@@ -21,9 +29,13 @@ describe("ShadowGenerator", () => {
             });
         });
 
+        afterEach(function () {
+            subject.dispose();
+        });
+
         it("should be able to be instantiated with a null engine", () => {
             const scene = new Scene(subject);
-            const light = new PointLight("Point", new Vector3(1,1,1), scene);
+            const light = new PointLight("Point", new Vector3(1, 1, 1), scene);
             const generator = new ShadowGenerator(1024, light);
 
             expect(generator).not.toBeUndefined();

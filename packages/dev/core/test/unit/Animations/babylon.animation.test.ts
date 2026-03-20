@@ -1,6 +1,6 @@
-import { NullEngine } from "core/Engines";
+import { NullEngine } from "core/Engines/nullEngine";
 import { Engine } from "core/Engines/engine";
-import { MeshBuilder } from "core/Meshes";
+import { MeshBuilder } from "core/Meshes/meshBuilder";
 import { Scene } from "core/scene";
 import { Animation } from "core/Animations/animation";
 import "core/Helpers/sceneHelpers";
@@ -25,6 +25,10 @@ describe("Babylon Animation", function () {
 
         // Avoid creating normals in PBR materials.
         subject.getCaps().standardDerivatives = true;
+    });
+
+    afterEach(function () {
+        subject.dispose();
     });
 
     /**

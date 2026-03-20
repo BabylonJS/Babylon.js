@@ -1,3 +1,4 @@
+import { test, expect, Page } from "@playwright/test";
 import { evaluateDisposeEngine, evaluateCreateScene, evaluateInitEngine, getGlobalConfig, logPageErrors } from "@tools/test-tools";
 import type { IAnimationKey } from "core/Animations/animationKey";
 import { Constants } from "core/Engines";
@@ -18,13 +19,23 @@ const debug = process.env.DEBUG === "true";
 /**
  * Describes the test suite
  */
-describe("Babylon glTF Serializer", () => {
-    beforeAll(async () => {
+let page: Page;
+
+test.describe("Babylon glTF Serializer", () => {
+    test.beforeAll(async ({ browser }) => {
+        page = await browser.newPage();
+        await page.goto(getGlobalConfig().baseUrl + `/empty.html`, {
+            waitUntil: "load",
+            timeout: 0,
+        });
+        await page.waitForSelector("#babylon-canvas", { timeout: 20000 });
+        await page.waitForFunction(() => window.BABYLON);
+        page.setDefaultTimeout(0);
         await logPageErrors(page, debug);
     });
-    jest.setTimeout(debug ? 1000000 : 30000);
+    test.setTimeout(debug ? 1000000 : 30000);
 
-    beforeEach(async () => {
+    test.beforeEach(async () => {
         await page.goto(getGlobalConfig().baseUrl + `/empty.html`, {
             waitUntil: "load",
             timeout: 0,
@@ -33,16 +44,19 @@ describe("Babylon glTF Serializer", () => {
         await page.evaluate(evaluateCreateScene);
     });
 
-    afterEach(async () => {
-        debug && (await jestPuppeteer.debug());
+    test.afterEach(async () => {
         await page.evaluate(evaluateDisposeEngine);
+    });
+
+    test.afterAll(async () => {
+        await page.close();
     });
 
     /**
      * This tests the glTF serializer help functions
      */
-    describe("#GLTF Serializer", () => {
-        it("should convert Babylon standard material to metallic roughness", async () => {
+    test.describe("#GLTF Serializer", () => {
+        test("should convert Babylon standard material to metallic roughness", async () => {
             const assertionData = await page.evaluate(() => {
                 const babylonStandardMaterial = new BABYLON.StandardMaterial("specGloss");
                 babylonStandardMaterial.diffuseColor = BABYLON.Color3.White();
@@ -62,7 +76,7 @@ describe("Babylon glTF Serializer", () => {
             expect(assertionData.metallic).toEqual(0);
             expect(assertionData.roughness).toBeCloseTo(0.328809, 1e-6);
         });
-        it("should solve for metallic", async () => {
+        test("should solve for metallic", async () => {
             const assertionData = await page.evaluate(() => {
                 const solveZero = BABYLON.GLTF2.Exporter._SolveMetallic(1.0, 0.0, 1.0);
                 const solveApproxOne = BABYLON.GLTF2.Exporter._SolveMetallic(0.0, 1.0, 1.0);
@@ -74,7 +88,7 @@ describe("Babylon glTF Serializer", () => {
             expect(assertionData.solveZero).toBe(0.0);
             expect(assertionData.solveApproxOne).toBeCloseTo(1.0, 1e-6);
         });
-        it("should serialize empty Babylon window.scene to glTF with only asset property", async () => {
+        test("should serialize empty Babylon window.scene to glTF with only asset property", async () => {
             const assertionData = await page.evaluate(async () => {
                 const glTFData = await BABYLON.GLTF2Export.GLTFAsync(window.scene!, "test");
                 const jsonString = glTFData.files["test.gltf"] as string;
@@ -90,7 +104,7 @@ describe("Babylon glTF Serializer", () => {
             expect(assertionData.version).toEqual("2.0");
             expect(assertionData.generator).toContain("Babylon.js v");
         });
-        it("should serialize sphere geometry in window.scene to glTF", async () => {
+        test("should serialize sphere geometry in window.scene to glTF", async () => {
             const assertionData = await page.evaluate(async () => {
                 BABYLON.MeshBuilder.CreateSphere(
                     "sphere",
@@ -114,7 +128,7 @@ describe("Babylon glTF Serializer", () => {
             expect(assertionData.scenes).toHaveLength(1);
             expect(assertionData.scene).toEqual(0);
         });
-        it("should serialize single component translation animation to glTF", async () => {
+        test("should serialize single component translation animation to glTF", async () => {
             const assertionData = await page.evaluate(async () => {
                 const box = BABYLON.MeshBuilder.CreateBox(
                     "box",
@@ -166,7 +180,7 @@ describe("Babylon glTF Serializer", () => {
             expect(assertionData.animations[0].channels[0].target.path).toEqual("translation");
             expect(assertionData.animations[0].samplers).toHaveLength(1);
         });
-        it("should serialize translation animation to glTF", async () => {
+        test("should serialize translation animation to glTF", async () => {
             const assertionData = await page.evaluate(async () => {
                 const box = BABYLON.MeshBuilder.CreateBox(
                     "box",
@@ -222,7 +236,7 @@ describe("Babylon glTF Serializer", () => {
             expect(assertionData.animations[0].samplers[0].output).toEqual(4);
             expect(assertionData.animations[0].samplers).toHaveLength(1);
         });
-        it("should serialize scale animation to glTF", async () => {
+        test("should serialize scale animation to glTF", async () => {
             const assertionData = await page.evaluate(async () => {
                 const box = BABYLON.MeshBuilder.CreateBox(
                     "box",
@@ -278,7 +292,7 @@ describe("Babylon glTF Serializer", () => {
             expect(assertionData.animations[0].samplers[0].output).toEqual(4);
             expect(assertionData.animations[0].samplers).toHaveLength(1);
         });
-        it("should serialize rotation quaternion animation to glTF", async () => {
+        test("should serialize rotation quaternion animation to glTF", async () => {
             const assertionData = await page.evaluate(async () => {
                 const box = BABYLON.MeshBuilder.CreateBox(
                     "box",
@@ -334,7 +348,7 @@ describe("Babylon glTF Serializer", () => {
             expect(assertionData.animations[0].samplers[0].output).toEqual(4);
             expect(assertionData.animations[0].samplers).toHaveLength(1);
         });
-        it("should serialize combined animations to glTF", async () => {
+        test("should serialize combined animations to glTF", async () => {
             const assertionData = await page.evaluate(async () => {
                 const box = BABYLON.MeshBuilder.CreateBox(
                     "box",
@@ -419,7 +433,7 @@ describe("Babylon glTF Serializer", () => {
             expect(assertionData.animations[1].samplers[0].input).toEqual(5);
             expect(assertionData.animations[1].samplers[0].output).toEqual(6);
         });
-        it("should serialize point light to glTF", async () => {
+        test("should serialize point light to glTF", async () => {
             const intensity = 0.2;
             const red = [1, 0, 0];
             const assertionData = await page.evaluate(
@@ -443,7 +457,7 @@ describe("Babylon glTF Serializer", () => {
             expect(assertionData.nodes).toHaveLength(1);
             expect(assertionData.nodes[0].extensions["KHR_lights_punctual"]["light"]).toEqual(0);
         });
-        it("should serialize spot light to glTF", async () => {
+        test("should serialize spot light to glTF", async () => {
             const intensity = 0.2;
             const red = [1, 0, 0];
             const innerAngle = Math.PI / 8;
@@ -474,7 +488,7 @@ describe("Babylon glTF Serializer", () => {
             expect(assertionData.nodes).toHaveLength(1);
             expect(assertionData.nodes[0].extensions["KHR_lights_punctual"]["light"]).toEqual(0);
         });
-        it("should serialize directional light to glTF", async () => {
+        test("should serialize directional light to glTF", async () => {
             const intensity = 0.2;
             const red = [1, 0, 0];
             const assertionData = await page.evaluate(
@@ -498,7 +512,7 @@ describe("Babylon glTF Serializer", () => {
             expect(assertionData.nodes).toHaveLength(1);
             expect(assertionData.nodes[0].extensions["KHR_lights_punctual"]["light"]).toEqual(0);
         });
-        it("should serialize multiple lights to glTF", async () => {
+        test("should serialize multiple lights to glTF", async () => {
             const assertionData = await page.evaluate(async () => {
                 new BABYLON.PointLight("pointLight", new BABYLON.Vector3(4, 4, 0), window.scene!);
                 new BABYLON.SpotLight("spotLight", new BABYLON.Vector3(-4, 4, 0), new BABYLON.Vector3(0, Math.PI / 4, 0), Math.PI / 4, 2, window.scene!);
@@ -512,7 +526,7 @@ describe("Babylon glTF Serializer", () => {
             expect(assertionData.extensions["KHR_lights_punctual"].lights).toHaveLength(3);
             expect(assertionData.nodes).toHaveLength(3);
         });
-        it("serializes scene and node metadata", async () => {
+        test("serializes scene and node metadata", async () => {
             const assertionData = await page.evaluate(async () => {
                 window.scene!.metadata = { gltf: { extras: { high: "five" } } };
                 const box = BABYLON.CreateBox("box");
@@ -537,7 +551,7 @@ describe("Babylon glTF Serializer", () => {
             expect(box2.extras.bar).toEqual("baz");
         });
 
-        describe("exporting instances", () => {
+        test.describe("exporting instances", () => {
             const instanceCount = 3;
             const test = async (instanceCount: number, skipSource: boolean) => {
                 const shouldExportNode = (node: any) => !skipSource || node.name !== "box";
@@ -550,7 +564,7 @@ describe("Babylon glTF Serializer", () => {
                 return JSON.parse(jsonString);
             };
 
-            it("exports one mesh that is shared by all instances", async () => {
+            test("exports one mesh that is shared by all instances", async () => {
                 const assertionData = await page.evaluate(test, instanceCount, false);
                 expect(assertionData.nodes).toHaveLength(instanceCount + 1);
                 expect(assertionData.meshes).toHaveLength(1);
@@ -559,7 +573,7 @@ describe("Babylon glTF Serializer", () => {
                 }
             });
 
-            it("can export instances without their source mesh", async () => {
+            test("can export instances without their source mesh", async () => {
                 const assertionData = await page.evaluate(test, instanceCount, true);
                 expect(assertionData.nodes).toHaveLength(instanceCount);
                 expect(assertionData.meshes).toHaveLength(1);
@@ -569,7 +583,7 @@ describe("Babylon glTF Serializer", () => {
             });
         });
 
-        it("should not export a root conversion node", async () => {
+        test("should not export a root conversion node", async () => {
             const assertionData = await page.evaluate(async () => {
                 await BABYLON.SceneLoader.AppendAsync("https://assets.babylonjs.com/meshes/Tests/TwoQuads/", "TwoQuads.gltf", window.scene);
                 window.scene!.getMeshByName("__root__")!.name = "renamedRoot";
@@ -581,7 +595,7 @@ describe("Babylon glTF Serializer", () => {
             expect(assertionData.scenes).toHaveLength(1);
             expect(assertionData.scenes[0].nodes).toHaveLength(2);
         });
-        it("should export node animations targeting a meshless root node in a right-handed scene", async () => {
+        test("should export node animations targeting a meshless root node in a right-handed scene", async () => {
             const assertionData = await page.evaluate(async () => {
                 window.scene!.useRightHandedSystem = true;
                 const node = new BABYLON.TransformNode("animTarget", window.scene!);
@@ -604,7 +618,7 @@ describe("Babylon glTF Serializer", () => {
             expect(assertionData.animations[0].channels[0].target.node).toEqual(0);
             expect(assertionData.animations[0].channels[0].target.path).toEqual("translation");
         });
-        it("should export animation group targeting a meshless root node in a right-handed scene", async () => {
+        test("should export animation group targeting a meshless root node in a right-handed scene", async () => {
             const assertionData = await page.evaluate(async () => {
                 window.scene!.useRightHandedSystem = true;
                 const node = new BABYLON.TransformNode("animTarget", window.scene!);
@@ -629,7 +643,7 @@ describe("Babylon glTF Serializer", () => {
             expect(assertionData.animations[0].channels[0].target.node).toEqual(0);
             expect(assertionData.animations[0].channels[0].target.path).toEqual("translation");
         });
-        it("should not duplicate a shared texture between materials", async () => {
+        test("should not duplicate a shared texture between materials", async () => {
             const assertionData = await page.evaluate(async () => {
                 const texture = new BABYLON.Texture("https://assets.babylonjs.com/environments/backgroundGround.png", window.scene!);
                 for (let i = 0; i < 2; i++) {
@@ -644,7 +658,7 @@ describe("Babylon glTF Serializer", () => {
             expect(assertionData.textures).toHaveLength(1);
             expect(assertionData.images).toHaveLength(1);
         });
-        it("should not convert right-handed node transformations", async () => {
+        test("should not convert right-handed node transformations", async () => {
             const transformsRH = {
                 translation: [0.2, 0.3, 0.4],
                 scale: [0.5, 0.6, 0.7],
@@ -669,7 +683,7 @@ describe("Babylon glTF Serializer", () => {
                 expect(node.rotation).toEqual(transformsRH.rotation);
             });
         });
-        it("should consistently convert left-handed node transformations", async () => {
+        test("should consistently convert left-handed node transformations", async () => {
             const transformsLH = {
                 translation: [0.2, 0.3, 0.4],
                 scale: [0.5, 0.6, 0.7],
@@ -698,7 +712,7 @@ describe("Babylon glTF Serializer", () => {
             });
         });
 
-        it("should reparent children of unexported node to nearest ancestor", async () => {
+        test("should reparent children of unexported node to nearest ancestor", async () => {
             const assertionData = await page.evaluate(async () => {
                 const parent = BABYLON.MeshBuilder.CreateBox("parent");
                 const child = BABYLON.MeshBuilder.CreateBox("child");
@@ -720,7 +734,7 @@ describe("Babylon glTF Serializer", () => {
             expect(assertionData.scenes[0].nodes).toContain(1);
         });
 
-        it("converts a shared float MatricesIndicesKind vertex buffer", async () => {
+        test("converts a shared float MatricesIndicesKind vertex buffer", async () => {
             const assertionData = await page.evaluate(async () => {
                 const mesh = BABYLON.MeshBuilder.CreatePlane("original", undefined, window.scene!);
                 const numVertices = mesh.getTotalVertices();
@@ -740,7 +754,7 @@ describe("Babylon glTF Serializer", () => {
             expect(accessorData.componentType).toEqual(Constants.UNSIGNED_BYTE);
         });
 
-        describe("texture image extensions", () => {
+        test.describe("texture image extensions", () => {
             const testRoundtripImage = async (imageUrl: string, mimeType: string, extensionName: string) => {
                 const assertionData = await page.evaluate(async (imageUrl) => {
                     const material = new BABYLON.PBRMaterial("mat");
@@ -761,10 +775,10 @@ describe("Babylon glTF Serializer", () => {
                 const mime = image.mimeType || GetMimeType(image.uri);
                 expect(mime).toEqual(mimeType);
             };
-            it("uses KHR_texture_basisu to export a KTX2 image", async () => {
+            test("uses KHR_texture_basisu to export a KTX2 image", async () => {
                 await testRoundtripImage("textures/ktx2/sample_uastc.ktx2", "image/ktx2", "KHR_texture_basisu");
             });
-            it("uses EXT_texture_webp to export a WEBP image", async () => {
+            test("uses EXT_texture_webp to export a WEBP image", async () => {
                 await testRoundtripImage("https://assets.babylonjs.com/meshes/webp/webp_DefaultMaterial_Normal.webp", "image/webp", "EXT_texture_webp");
             });
         });
