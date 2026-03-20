@@ -56,7 +56,7 @@ Extensions should persist user settings through the `ISettingsStore` service (id
 import { SettingsStoreIdentity } from "./settingsStore";
 
 // Define a setting descriptor
-const MySetting: SettingDescriptor<boolean> = { key: "MyExtension/enabled", default: false };
+const MySetting: SettingDescriptor<boolean> = { key: "MyExtension/enabled", defaultValue: false };
 
 // In your service factory (consuming SettingsStoreIdentity):
 const value = settingsStore.readSetting(MySetting);
