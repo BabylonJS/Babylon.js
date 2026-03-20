@@ -7,6 +7,14 @@ import { Scene } from "core/scene";
 
 import "core/Lights/Shadows/shadowGeneratorSceneComponent";
 
+// Pre-load shader modules that ShadowGenerator dynamically imports during construction.
+// Without these, the fire-and-forget import() in _initShaderSourceAsync may still be
+// resolving when the test environment tears down, causing EnvironmentTeardownError.
+import "core/Shaders/shadowMap.fragment";
+import "core/Shaders/shadowMap.vertex";
+import "core/Shaders/depthBoxBlur.fragment";
+import "core/Shaders/ShadersInclude/shadowMapFragmentSoftTransparentShadow";
+
 describe("ShadowGenerator", () => {
     describe("instantiate", () => {
         let subject: Engine;
