@@ -4,6 +4,7 @@ import { FlowGraphEventBlock } from "../../flowGraphEventBlock";
 import type { Nullable } from "../../../types";
 import { Tools } from "../../../Misc/tools";
 import type { RichType } from "../../flowGraphRichTypes";
+import { getRichTypeByFlowGraphType } from "../../flowGraphRichTypes";
 import type { IFlowGraphBlockConfiguration } from "../../flowGraphBlock";
 import { RegisterClass } from "../../../Misc/typeStore";
 import { FlowGraphBlockNames } from "../flowGraphBlockNames";
@@ -41,7 +42,13 @@ export class FlowGraphReceiveCustomEventBlock extends FlowGraphEventBlock {
         super(config);
         // use event data to register data outputs
         for (const key in this.config.eventData) {
-            this.registerDataOutput(key, this.config.eventData[key].type);
+            const entry = this.config.eventData[key];
+            // Handle deserialized config where type may be a string typeName, a plain object
+            // with a typeName property (from old JSON serialization), or a proper RichType instance.
+            const typeKey = typeof entry.type === "string" ? entry.type : entry.type?.typeName;
+            const richType = typeof entry.type?.serialize === "function" ? entry.type : getRichTypeByFlowGraphType(typeKey);
+            entry.type = richType;
+            this.registerDataOutput(key, richType);
         }
     }
 
@@ -74,6 +81,16 @@ export class FlowGraphReceiveCustomEventBlock extends FlowGraphEventBlock {
 
     public override _executeEvent(_context: FlowGraphContext, _payload: any): boolean {
         return true;
+    }
+
+    public override serialize(serializationObject: any = {}) {
+        super.serialize(serializationObject);
+        // Override the eventData in config to store typeName strings instead of RichType instances
+        const serializedEventData: any = {};
+        for (const key in this.config.eventData) {
+            serializedEventData[key] = { type: this.config.eventData[key].type.typeName };
+        }
+        serializationObject.config.eventData = serializedEventData;
     }
 
     /**

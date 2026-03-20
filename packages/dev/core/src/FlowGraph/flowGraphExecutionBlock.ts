@@ -33,6 +33,14 @@ export abstract class FlowGraphExecutionBlock extends FlowGraphBlock {
      */
     public readonly priority: number = 0;
 
+    /**
+     * The last measured execution time in milliseconds.
+     * Updated by the signal connection when the block is executed.
+     * A value of -1 means no measurement has been taken yet.
+     * @internal
+     */
+    public _lastExecutionTime: number = -1;
+
     protected constructor(config?: IFlowGraphBlockConfiguration) {
         super(config);
         this.signalInputs = [];

@@ -502,6 +502,48 @@
             "problemMatcher": ["$ts-webpack-watch", "$tslint-webpack-watch"]
         },
         {
+            "label": "Flow Graph Editor Serve for core (Dev)",
+            "type": "shell",
+            "command": "npm",
+            "dependsOn": "CDN Serve and watch (Dev)",
+            "runOptions": {
+                "instanceLimit": 1
+            },
+            "options": {
+                "cwd": "${workspaceFolder}",
+                "env": {
+                    "FGE_PORT": "1345"
+                }
+            },
+            "args": ["run", "serve", "-w", "@tools/flow-graph-editor"],
+            "isBackground": true,
+            "presentation": {
+                "group": "serve"
+            },
+            "problemMatcher": ["$ts-webpack-watch", "$tslint-webpack-watch"]
+        },
+        {
+            "label": "Flow Graph Editor Serve (Dev)",
+            "type": "shell",
+            "command": "npm",
+            "dependsOn": "CDN Serve and watch (Dev)",
+            "runOptions": {
+                "instanceLimit": 1
+            },
+            "options": {
+                "cwd": "${workspaceFolder}",
+                "env": {
+                    "FGE_PORT": "1345"
+                }
+            },
+            "args": ["run", "serve", "-w", "@tools/flow-graph-editor"],
+            "isBackground": true,
+            "presentation": {
+                "group": "serve"
+            },
+            "problemMatcher": ["$ts-webpack-watch", "$tslint-webpack-watch"]
+        },
+        {
             "label": "Node Render Graph Editor Serve for core (Dev)",
             "type": "shell",
             "command": "npm",

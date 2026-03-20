@@ -2,11 +2,14 @@ import type { AssetType, FlowGraphAssetType } from "core/FlowGraph/flowGraphAsse
 import type { IFlowGraphBlockConfiguration } from "core/FlowGraph/flowGraphBlock";
 import type { FlowGraphContext } from "core/FlowGraph/flowGraphContext";
 import type { FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnection";
-import { RichTypeAny } from "core/FlowGraph/flowGraphRichTypes";
+import { RichTypeAny, RichTypeString } from "core/FlowGraph/flowGraphRichTypes";
 import { RegisterClass } from "core/Misc/typeStore";
 import { FlowGraphBlockNames } from "../flowGraphBlockNames";
 import { FlowGraphCachedOperationBlock } from "./flowGraphCachedOperationBlock";
 
+/**
+ * Configuration for the FlowGraphGetPropertyBlock.
+ */
 export interface IFlowGraphGetPropertyBlockConfiguration<O extends FlowGraphAssetType> extends IFlowGraphBlockConfiguration {
     /**
      * The name of the property that will be set
@@ -49,6 +52,10 @@ export class FlowGraphGetPropertyBlock<P extends any, O extends FlowGraphAssetTy
      */
     public readonly customGetFunction: FlowGraphDataConnection<(target: AssetType<O>, propertyName: string, context: FlowGraphContext) => P | undefined>;
 
+    /**
+     * Constructs a new FlowGraphGetPropertyBlock.
+     * @param config - the configuration of the block
+     */
     constructor(
         /**
          * the configuration of the block
@@ -57,10 +64,15 @@ export class FlowGraphGetPropertyBlock<P extends any, O extends FlowGraphAssetTy
     ) {
         super(RichTypeAny, config);
         this.object = this.registerDataInput("object", RichTypeAny, config.object);
-        this.propertyName = this.registerDataInput("propertyName", RichTypeAny, config.propertyName);
+        this.propertyName = this.registerDataInput("propertyName", RichTypeString, config.propertyName);
         this.customGetFunction = this.registerDataInput("customGetFunction", RichTypeAny);
     }
 
+    /**
+     * Retrieves the property value from the target object.
+     * @param context - the flow graph context
+     * @returns the property value, or undefined if the target or property name is not set
+     */
     public override _doOperation(context: FlowGraphContext): P | undefined {
         const getter = this.customGetFunction.getValue(context);
         let value;
@@ -86,6 +98,10 @@ export class FlowGraphGetPropertyBlock<P extends any, O extends FlowGraphAssetTy
         return value as P;
     }
 
+    /**
+     * Returns the class name of this block.
+     * @returns the class name
+     */
     public override getClassName(): string {
         return FlowGraphBlockNames.GetProperty;
     }

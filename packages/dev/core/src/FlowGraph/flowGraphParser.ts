@@ -123,6 +123,7 @@ export function ParseFlowGraph(serializationObject: ISerializedFlowGraph, option
             resolvedClasses[i]
         );
         blocks.push(block);
+        graph.addBlock(block);
         if (block instanceof FlowGraphEventBlock) {
             graph.addEventBlock(block);
         }
