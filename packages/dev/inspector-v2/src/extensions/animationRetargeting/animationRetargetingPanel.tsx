@@ -3,7 +3,8 @@ import type { Observable } from "core/Misc/observable";
 import { FilesInputStore } from "core/Misc/filesInputStore";
 import { SceneLoader } from "core/Loading/sceneLoader";
 import type { Transform } from "../../components/properties/transformProperties";
-import { makeStyles, tokens, Body1Strong, Button } from "@fluentui/react-components";
+import { makeStyles, tokens, Body1Strong } from "@fluentui/react-components";
+import { Button } from "shared-ui-components/fluent/primitives/button";
 import { ArrowClockwiseRegular, EyeRegular, EyeOffRegular, WindowConsoleRegular, SettingsRegular } from "@fluentui/react-icons";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Accordion as BabylonAccordion, AccordionSection as BabylonAccordionSection } from "shared-ui-components/fluent/primitives/accordion";
@@ -774,20 +775,18 @@ export const AnimationRetargetingPanel: FunctionComponent<AnimationRetargetingPa
             <div className={classes.toolbar}>
                 <Button
                     appearance="transparent"
-                    size="small"
-                    icon={isEnabled ? <EyeOffRegular /> : <EyeRegular />}
+                    icon={isEnabled ? EyeOffRegular : EyeRegular}
                     title={isEnabled ? "Disable viewport" : "Enable viewport"}
                     onClick={() => onSetEnabled(!isEnabled)}
                 />
                 <Button
                     appearance={isConsoleVisible ? "primary" : "transparent"}
-                    size="small"
-                    icon={<WindowConsoleRegular />}
+                    icon={WindowConsoleRegular}
                     title="Toggle console"
                     disabled={!isEnabled}
                     onClick={onToggleConsole}
                 />
-                <Button appearance="transparent" size="small" icon={<SettingsRegular />} title="Retargeting configuration" onClick={() => setIsDialogOpen(true)} />
+                <Button appearance="transparent" icon={SettingsRegular} title="Retargeting configuration" onClick={() => setIsDialogOpen(true)} />
                 <RetargetingConfigDialog
                     manager={namingSchemeManager}
                     avatarManager={avatarManager}
@@ -838,9 +837,8 @@ export const AnimationRetargetingPanel: FunctionComponent<AnimationRetargetingPa
                                         />
                                     </div>
                                     <Button
-                                        size="small"
                                         appearance="subtle"
-                                        icon={<ArrowClockwiseRegular />}
+                                        icon={ArrowClockwiseRegular}
                                         title="Reload avatar"
                                         disabled={!avatarName}
                                         onClick={() => {
@@ -972,9 +970,8 @@ export const AnimationRetargetingPanel: FunctionComponent<AnimationRetargetingPa
                                         />
                                     </div>
                                     <Button
-                                        size="small"
                                         appearance="subtle"
-                                        icon={<ArrowClockwiseRegular />}
+                                        icon={ArrowClockwiseRegular}
                                         title="Reload animation"
                                         disabled={!animationName}
                                         onClick={() => {

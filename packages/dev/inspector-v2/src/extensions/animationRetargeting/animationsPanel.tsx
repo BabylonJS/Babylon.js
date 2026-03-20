@@ -5,9 +5,7 @@ import type { RestPoseDataUpdate } from "./avatarManager";
 
 import { useState, useCallback, useRef, useEffect } from "react";
 import {
-    Button,
     Input,
-    Select,
     Label,
     makeStyles,
     mergeClasses,
@@ -22,6 +20,9 @@ import {
     DialogActions,
     Spinner,
 } from "@fluentui/react-components";
+import { Button } from "shared-ui-components/fluent/primitives/button";
+import { TextInput } from "shared-ui-components/fluent/primitives/textInput";
+import { StringDropdown } from "shared-ui-components/fluent/primitives/dropdown";
 import { AddRegular, DeleteRegular, EditRegular, ArrowUploadRegular } from "@fluentui/react-icons";
 import { NullEngine } from "core/Engines/nullEngine";
 import { Scene } from "core/scene";
@@ -662,12 +663,8 @@ export const AnimationsPanel: FunctionComponent<{
                             Delete animation <strong>"{confirmDelete?.label}"</strong> and all associated files?
                         </DialogContent>
                         <DialogActions>
-                            <Button appearance="secondary" onClick={() => setConfirmDelete(null)}>
-                                Cancel
-                            </Button>
-                            <Button appearance="primary" onClick={handleConfirmDelete}>
-                                Delete
-                            </Button>
+                            <Button appearance="secondary" label="Cancel" onClick={() => setConfirmDelete(null)} />
+                            <Button appearance="primary" label="Delete" onClick={handleConfirmDelete} />
                         </DialogActions>
                     </DialogBody>
                 </DialogSurface>
@@ -675,9 +672,7 @@ export const AnimationsPanel: FunctionComponent<{
 
             <div className={classes.listHeader}>
                 <div className={classes.listButtons}>
-                    <Button size="small" icon={<AddRegular />} onClick={startAdd} disabled={!!editing}>
-                        Add
-                    </Button>
+                    <Button icon={AddRegular} label="Add" onClick={startAdd} disabled={!!editing} />
                 </div>
             </div>
             <div className={classes.listArea} style={{ flex: editing ? "0 0 auto" : 1, maxHeight: editing ? "140px" : undefined }}>
@@ -688,16 +683,15 @@ export const AnimationsPanel: FunctionComponent<{
                         <span className={classes.listRowMeta}>{animation.source === "url" ? "URL" : "File"}</span>
                         <span className={classes.listRowMeta}>{animation.namingScheme}</span>
                         <Button
-                            size="small"
                             appearance="transparent"
-                            icon={<EditRegular />}
+                            icon={EditRegular}
                             title="Edit"
                             disabled={!!editing}
                             onClick={() => {
                                 void startEdit(animation);
                             }}
                         />
-                        <Button size="small" appearance="transparent" icon={<DeleteRegular />} title="Delete" disabled={!!editing} onClick={() => handleDelete(animation)} />
+                        <Button appearance="transparent" icon={DeleteRegular} title="Delete" disabled={!!editing} onClick={() => handleDelete(animation)} />
                     </div>
                 ))}
             </div>
@@ -709,7 +703,7 @@ export const AnimationsPanel: FunctionComponent<{
                     {/* Name */}
                     <div className={classes.formRow}>
                         <Label className={classes.formLabel}>Name</Label>
-                        <Input className={classes.formControl} size="small" value={editing.name} onChange={(_, d) => setEditing({ ...editing, name: d.value })} />
+                        <TextInput className={classes.formControl} value={editing.name} onChange={(v) => setEditing({ ...editing, name: v })} />
                     </div>
 
                     {/* URL input */}
@@ -807,13 +801,12 @@ export const AnimationsPanel: FunctionComponent<{
                     {/* Naming scheme */}
                     <div className={classes.formRow}>
                         <Label className={classes.formLabel}>Naming scheme</Label>
-                        <Select className={classes.formControl} size="small" value={editing.namingScheme} onChange={(_, d) => setEditing({ ...editing, namingScheme: d.value })}>
-                            {schemeNames.map((n) => (
-                                <option key={n} value={n}>
-                                    {n}
-                                </option>
-                            ))}
-                        </Select>
+                        <StringDropdown
+                            className={classes.formControl}
+                            value={editing.namingScheme}
+                            options={schemeNames.map((n) => ({ label: n, value: n }))}
+                            onChange={(v) => setEditing({ ...editing, namingScheme: v })}
+                        />
                     </div>
 
                     {/* Rest pose data */}
@@ -831,12 +824,8 @@ export const AnimationsPanel: FunctionComponent<{
 
                     {error && <span className={classes.errorText}>{error}</span>}
                     <div className={classes.actionRow}>
-                        <Button size="small" appearance="secondary" onClick={handleCancel}>
-                            Cancel
-                        </Button>
-                        <Button size="small" appearance="primary" onClick={handleSave}>
-                            Save
-                        </Button>
+                        <Button appearance="secondary" label="Cancel" onClick={handleCancel} />
+                        <Button appearance="primary" label="Save" onClick={handleSave} />
                     </div>
                 </div>
             )}

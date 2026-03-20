@@ -11,11 +11,9 @@ import {
     DialogContent,
     DialogActions,
     DialogSurface,
-    Button,
+    Select,
     Tab,
     TabList,
-    Input,
-    Select,
     Label,
     makeStyles,
     mergeClasses,
@@ -24,6 +22,9 @@ import {
     Caption1,
     Spinner,
 } from "@fluentui/react-components";
+import { Button } from "shared-ui-components/fluent/primitives/button";
+import { TextInput } from "shared-ui-components/fluent/primitives/textInput";
+import { StringDropdown } from "shared-ui-components/fluent/primitives/dropdown";
 import {
     AddRegular,
     DeleteRegular,
@@ -532,12 +533,8 @@ const SchemesPanel: FunctionComponent<{
                             Delete scheme <strong>"{confirmDelete}"</strong>? All remappings that reference it will also be removed.
                         </DialogContent>
                         <DialogActions>
-                            <Button appearance="secondary" onClick={() => setConfirmDelete(null)}>
-                                Cancel
-                            </Button>
-                            <Button appearance="primary" onClick={handleConfirmDelete}>
-                                Delete
-                            </Button>
+                            <Button appearance="secondary" label="Cancel" onClick={() => setConfirmDelete(null)} />
+                            <Button appearance="primary" label="Delete" onClick={handleConfirmDelete} />
                         </DialogActions>
                     </DialogBody>
                 </DialogSurface>
@@ -545,12 +542,8 @@ const SchemesPanel: FunctionComponent<{
 
             <div className={classes.listHeader}>
                 <div className={classes.listButtons}>
-                    <Button size="small" icon={<ArrowCounterclockwiseRegular />} onClick={handleRecreateDefaults} disabled={!!editing}>
-                        Recreate Defaults
-                    </Button>
-                    <Button size="small" icon={<AddRegular />} onClick={startAdd} disabled={!!editing}>
-                        Add
-                    </Button>
+                    <Button icon={ArrowCounterclockwiseRegular} label="Recreate Defaults" onClick={handleRecreateDefaults} disabled={!!editing} />
+                    <Button icon={AddRegular} label="Add" onClick={startAdd} disabled={!!editing} />
                 </div>
             </div>
             <div className={classes.listArea} style={{ flex: editing ? "0 0 auto" : 1, maxHeight: editing ? "160px" : undefined }}>
@@ -563,8 +556,8 @@ const SchemesPanel: FunctionComponent<{
                             <span className={classes.listRowMeta}>
                                 {count} bone{count !== 1 ? "s" : ""}
                             </span>
-                            <Button size="small" appearance="transparent" icon={<EditRegular />} title="Edit" disabled={!!editing} onClick={() => startEdit(name)} />
-                            <Button size="small" appearance="transparent" icon={<DeleteRegular />} title="Delete" disabled={!!editing} onClick={() => handleDelete(name)} />
+                            <Button appearance="transparent" icon={EditRegular} title="Edit" disabled={!!editing} onClick={() => startEdit(name)} />
+                            <Button appearance="transparent" icon={DeleteRegular} title="Delete" disabled={!!editing} onClick={() => handleDelete(name)} />
                         </div>
                     );
                 })}
@@ -575,7 +568,7 @@ const SchemesPanel: FunctionComponent<{
                     <Body1Strong>{editing.originalName ? `Editing "${editing.originalName}"` : "New Scheme"}</Body1Strong>
                     <div className={classes.formRow}>
                         <Label className={classes.formLabel}>Name</Label>
-                        <Input className={classes.formControl} value={editing.name} onChange={(_, d) => setEditing({ ...editing, name: d.value })} />
+                        <TextInput className={classes.formControl} value={editing.name} onChange={(v) => setEditing({ ...editing, name: v })} />
                     </div>
                     <div className={classes.formRow}>
                         <Label className={classes.formLabel}>Populate from</Label>
@@ -610,12 +603,8 @@ const SchemesPanel: FunctionComponent<{
                     </div>
                     {error && <span className={classes.errorText}>{error}</span>}
                     <div className={classes.actionRow}>
-                        <Button size="small" appearance="secondary" onClick={handleCancel}>
-                            Cancel
-                        </Button>
-                        <Button size="small" appearance="primary" onClick={handleSave}>
-                            Save
-                        </Button>
+                        <Button appearance="secondary" label="Cancel" onClick={handleCancel} />
+                        <Button appearance="primary" label="Save" onClick={handleSave} />
                     </div>
                 </div>
             )}
@@ -830,12 +819,8 @@ const RemappingsPanel: FunctionComponent<{
                             ?
                         </DialogContent>
                         <DialogActions>
-                            <Button appearance="secondary" onClick={() => setConfirmDelete(null)}>
-                                Cancel
-                            </Button>
-                            <Button appearance="primary" onClick={handleConfirmDelete}>
-                                Delete
-                            </Button>
+                            <Button appearance="secondary" label="Cancel" onClick={() => setConfirmDelete(null)} />
+                            <Button appearance="primary" label="Delete" onClick={handleConfirmDelete} />
                         </DialogActions>
                     </DialogBody>
                 </DialogSurface>
@@ -843,12 +828,8 @@ const RemappingsPanel: FunctionComponent<{
 
             <div className={classes.listHeader}>
                 <div className={classes.listButtons}>
-                    <Button size="small" icon={<ArrowCounterclockwiseRegular />} onClick={handleRecreateDefaults} disabled={!!editing}>
-                        Recreate Defaults
-                    </Button>
-                    <Button size="small" icon={<AddRegular />} onClick={startAdd} disabled={!!editing || schemeNames.length < 2}>
-                        Add
-                    </Button>
+                    <Button icon={ArrowCounterclockwiseRegular} label="Recreate Defaults" onClick={handleRecreateDefaults} disabled={!!editing} />
+                    <Button icon={AddRegular} label="Add" onClick={startAdd} disabled={!!editing || schemeNames.length < 2} />
                 </div>
             </div>
             <div className={classes.listArea} style={{ flex: editing ? "0 0 auto" : 1, maxHeight: editing ? "140px" : undefined }}>
@@ -858,15 +839,8 @@ const RemappingsPanel: FunctionComponent<{
                         <span className={classes.listRowName}>
                             {fromScheme} → {toScheme}
                         </span>
-                        <Button size="small" appearance="transparent" icon={<EditRegular />} title="Edit" disabled={!!editing} onClick={() => startEdit(fromScheme, toScheme)} />
-                        <Button
-                            size="small"
-                            appearance="transparent"
-                            icon={<DeleteRegular />}
-                            title="Delete"
-                            disabled={!!editing}
-                            onClick={() => handleDelete(fromScheme, toScheme)}
-                        />
+                        <Button appearance="transparent" icon={EditRegular} title="Edit" disabled={!!editing} onClick={() => startEdit(fromScheme, toScheme)} />
+                        <Button appearance="transparent" icon={DeleteRegular} title="Delete" disabled={!!editing} onClick={() => handleDelete(fromScheme, toScheme)} />
                     </div>
                 ))}
             </div>
@@ -875,28 +849,26 @@ const RemappingsPanel: FunctionComponent<{
                     <Body1Strong>{editing.isNew ? "New Remapping" : `Editing "${editing.fromScheme}" → "${editing.toScheme}"`}</Body1Strong>
                     <div className={classes.formRow}>
                         <Label className={classes.formLabel}>From scheme</Label>
-                        <Select className={classes.formControl} value={editing.fromScheme} disabled={!editing.isNew} onChange={(_, d) => handleFromSchemeChange(d.value)}>
-                            {schemeNames.map((n) => (
-                                <option key={n} value={n}>
-                                    {n}
-                                </option>
-                            ))}
-                        </Select>
+                        <StringDropdown
+                            className={classes.formControl}
+                            value={editing.fromScheme}
+                            disabled={!editing.isNew}
+                            options={schemeNames.map((n) => ({ label: n, value: n }))}
+                            onChange={(v) => handleFromSchemeChange(v)}
+                        />
                     </div>
                     <div style={{ display: "flex", justifyContent: "center" }}>
-                        <Button size="small" appearance="transparent" icon={<ArrowBidirectionalUpDownRegular />} title="Swap From / To schemes" onClick={handleSwapSchemes} />
+                        <Button appearance="transparent" icon={ArrowBidirectionalUpDownRegular} title="Swap From / To schemes" onClick={handleSwapSchemes} />
                     </div>
                     <div className={classes.formRow}>
                         <Label className={classes.formLabel}>To scheme</Label>
-                        <Select className={classes.formControl} value={editing.toScheme} disabled={!editing.isNew} onChange={(_, d) => handleToSchemeChange(d.value)}>
-                            {schemeNames
-                                .filter((n) => n !== editing.fromScheme)
-                                .map((n) => (
-                                    <option key={n} value={n}>
-                                        {n}
-                                    </option>
-                                ))}
-                        </Select>
+                        <StringDropdown
+                            className={classes.formControl}
+                            value={editing.toScheme}
+                            disabled={!editing.isNew}
+                            options={schemeNames.filter((n) => n !== editing.fromScheme).map((n) => ({ label: n, value: n }))}
+                            onChange={(v) => handleToSchemeChange(v)}
+                        />
                     </div>
                     {conflictLabel && <span className={classes.errorText}>A remapping "{conflictLabel}" already exists. Edit that remapping instead.</span>}
                     <Caption1 style={{ color: tokens.colorNeutralForeground3 }}>{fromSchemeEntries.length} bones — select the target bone for each, or leave blank.</Caption1>
@@ -923,12 +895,8 @@ const RemappingsPanel: FunctionComponent<{
                     </div>
                     {error && <span className={classes.errorText}>{error}</span>}
                     <div className={classes.actionRow}>
-                        <Button size="small" appearance="secondary" onClick={handleCancel}>
-                            Cancel
-                        </Button>
-                        <Button size="small" appearance="primary" onClick={handleSave} disabled={!!conflictLabel || faultyBones.size > 0}>
-                            Save
-                        </Button>
+                        <Button appearance="secondary" label="Cancel" onClick={handleCancel} />
+                        <Button appearance="primary" label="Save" onClick={handleSave} disabled={!!conflictLabel || faultyBones.size > 0} />
                     </div>
                 </div>
             )}
@@ -1067,16 +1035,16 @@ export const RetargetingConfigDialog: FunctionComponent<RetargetingConfigDialogP
                     <div className={classes.titleRow}>
                         <DialogTitle action={null}>Retargeting Configuration</DialogTitle>
                         <div className={classes.titleButtons}>
-                            <Button appearance="subtle" icon={<ArrowDownloadRegular />} onClick={handleExport} title="Export configuration" disabled={isEditing} />
+                            <Button appearance="subtle" icon={ArrowDownloadRegular} onClick={handleExport} title="Export configuration" disabled={isEditing} />
                             <Button
                                 appearance="subtle"
-                                icon={<ArrowUploadRegular />}
+                                icon={ArrowUploadRegular}
                                 onClick={() => importInputRef.current?.click()}
                                 title="Import configuration"
                                 disabled={isEditing}
                             />
                             <input ref={importInputRef} type="file" accept=".json" style={{ display: "none" }} onChange={handleImportFile} />
-                            <Button appearance="subtle" icon={<DismissRegular />} onClick={handleClose} title="Close" aria-label="Close" />
+                            <Button appearance="subtle" icon={DismissRegular} onClick={handleClose} title="Close" />
                         </div>
                     </div>
                     {/* Import mode chooser dialog */}
@@ -1095,25 +1063,21 @@ export const RetargetingConfigDialog: FunctionComponent<RetargetingConfigDialogP
                                     <strong>Replace</strong> all existing data, or <strong>Append</strong> and skip duplicates?
                                 </DialogContent>
                                 <DialogActions>
-                                    <Button appearance="secondary" onClick={() => setPendingImport(null)}>
-                                        Cancel
-                                    </Button>
+                                    <Button appearance="secondary" label="Cancel" onClick={() => setPendingImport(null)} />
                                     <Button
                                         appearance="primary"
+                                        label="Replace"
                                         onClick={() => {
                                             void handleImport("replace");
                                         }}
-                                    >
-                                        Replace
-                                    </Button>
+                                    />
                                     <Button
                                         appearance="primary"
+                                        label="Append"
                                         onClick={() => {
                                             void handleImport("append");
                                         }}
-                                    >
-                                        Append
-                                    </Button>
+                                    />
                                 </DialogActions>
                             </DialogBody>
                         </DialogSurface>
@@ -1132,9 +1096,7 @@ export const RetargetingConfigDialog: FunctionComponent<RetargetingConfigDialogP
                                 <DialogTitle>Import Result</DialogTitle>
                                 <DialogContent>{importResult}</DialogContent>
                                 <DialogActions>
-                                    <Button appearance="primary" onClick={() => setImportResult(null)}>
-                                        OK
-                                    </Button>
+                                    <Button appearance="primary" label="OK" onClick={() => setImportResult(null)} />
                                 </DialogActions>
                             </DialogBody>
                         </DialogSurface>
@@ -1153,18 +1115,15 @@ export const RetargetingConfigDialog: FunctionComponent<RetargetingConfigDialogP
                                 <DialogTitle>Unsaved Changes</DialogTitle>
                                 <DialogContent>You may have unsaved changes. Close anyway and lose them?</DialogContent>
                                 <DialogActions>
-                                    <Button appearance="secondary" onClick={() => setConfirmClose(false)}>
-                                        Cancel
-                                    </Button>
+                                    <Button appearance="secondary" label="Cancel" onClick={() => setConfirmClose(false)} />
                                     <Button
                                         appearance="primary"
+                                        label="Close Anyway"
                                         onClick={() => {
                                             setConfirmClose(false);
                                             onClose();
                                         }}
-                                    >
-                                        Close Anyway
-                                    </Button>
+                                    />
                                 </DialogActions>
                             </DialogBody>
                         </DialogSurface>
