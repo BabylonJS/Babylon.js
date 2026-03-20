@@ -76,6 +76,10 @@ New public APIs should have corresponding playground examples with documentation
 
 `Function.bind` is prohibited; use arrow functions instead. See `.github/instructions/prohibited-apis.instructions.md`.
 
+## Inspector v2
+
+Inspector v2 extensions and UI code must use shared UI components, unsized Fluent icons, Fluent spacing tokens, `makeStyles` over inline styles, and `ISettingsStore` for persistence. See `.github/instructions/inspector.instructions.md`.
+
 ## Tests
 
 New APIs should have Jest tests following the existing test structure and conventions, and visualization tests via Playwright when applicable. See `.github/instructions/tests.instructions.md`.
