@@ -830,6 +830,8 @@ export function PrepareDefinesForIBL(
                 defines.USESPHERICALINVERTEX = false;
                 if (reflectionTexture.irradianceTexture._dominantDirection) {
                     defines.USE_IRRADIANCE_DOMINANT_DIRECTION = true;
+                } else {
+                    defines.USE_IRRADIANCE_DOMINANT_DIRECTION = false;
                 }
             }
             // Assume using spherical polynomial if the reflection texture is a cube map
