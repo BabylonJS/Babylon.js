@@ -2601,12 +2601,12 @@ export class Viewer implements IDisposable {
         this.selectedAnimation = -1;
         this.animationProgress = 0;
 
-        this._loadEnvironmentLightingAbortController?.abort(new AbortError("Thew viewer is being disposed."));
-        this._loadEnvironmentSkyboxAbortController?.abort(new AbortError("Thew viewer is being disposed."));
-        this._loadModelAbortController?.abort(new AbortError("Thew viewer is being disposed."));
-        this._camerasAsHotSpotsAbortController?.abort(new AbortError("Thew viewer is being disposed."));
-        this._shadowsAbortController?.abort(new AbortError("Thew viewer is being disposed."));
-        this._ssaoAbortController?.abort(new AbortError("Thew viewer is being disposed."));
+        this._loadEnvironmentLightingAbortController?.abort(new AbortError("The viewer is being disposed."));
+        this._loadEnvironmentSkyboxAbortController?.abort(new AbortError("The viewer is being disposed."));
+        this._loadModelAbortController?.abort(new AbortError("The viewer is being disposed."));
+        this._camerasAsHotSpotsAbortController?.abort(new AbortError("The viewer is being disposed."));
+        this._shadowsAbortController?.abort(new AbortError("The viewer is being disposed."));
+        this._ssaoAbortController?.abort(new AbortError("The viewer is being disposed."));
 
         this._renderLoopController?.dispose();
         this._activeModel?.dispose();
