@@ -2,6 +2,7 @@ import type { FunctionComponent } from "react";
 import type { AnimationManager, StoredAnimation, AnimationGroupMapping } from "./animationManager";
 import type { NamingSchemeManager } from "./namingSchemeManager";
 import type { RestPoseDataUpdate } from "./avatarManager";
+import type { Nullable } from "core/types";
 
 import { useState, useCallback, useRef, useEffect } from "react";
 import {
@@ -31,7 +32,7 @@ import type { TableColumnDefinition, TableColumnSizingOptions } from "@fluentui/
 import { Button } from "shared-ui-components/fluent/primitives/button";
 import { TextInput } from "shared-ui-components/fluent/primitives/textInput";
 import { StringDropdown } from "shared-ui-components/fluent/primitives/dropdown";
-import { AddRegular, DeleteRegular, EditRegular, ArrowUploadRegular } from "@fluentui/react-icons";
+import { AddRegular, DeleteRegular, EditRegular, ArrowUploadRegular, DocumentArrowLeftRegular } from "@fluentui/react-icons";
 import { NullEngine } from "core/Engines/nullEngine";
 import { Scene } from "core/scene";
 import { ImportMeshAsync, SceneLoader } from "core/Loading/sceneLoader";
@@ -195,7 +196,7 @@ type NodeInfo = {
 type AnimationEdit = {
     id: string | null;
     name: string;
-    sourceType: "url" | "file";
+    sourceType: "url" | "file" | "scene";
     url: string;
     files: File[];
     /** One row per animation group found in the file. */
@@ -203,6 +204,7 @@ type AnimationEdit = {
     rootNodeName: string;
     namingScheme: string;
     restPoseJson: string;
+    sessionOnly?: boolean;
 };
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -261,9 +263,10 @@ function DetectNamingScheme(targetNames: Set<string>, namingSchemeManager: Namin
 export const AnimationsPanel: FunctionComponent<{
     animationManager: AnimationManager;
     namingSchemeManager: NamingSchemeManager;
+    getCurrentScene: () => Nullable<Scene>;
     onMutate: () => void;
     onEditingChange: (editing: boolean) => void;
-}> = ({ animationManager, namingSchemeManager, onMutate, onEditingChange }) => {
+}> = ({ animationManager, namingSchemeManager, getCurrentScene, onMutate, onEditingChange }) => {
     const classes = useStyles();
     const [editing, setEditing] = useState<AnimationEdit | null>(null);
     const [error, setError] = useState<string | null>(null);
@@ -303,7 +306,18 @@ export const AnimationsPanel: FunctionComponent<{
 
     const animationColumns: TableColumnDefinition<StoredAnimation>[] = [
         createTableColumn({ columnId: "name", renderHeaderCell: () => "Name", renderCell: (item) => item.name }),
-        createTableColumn({ columnId: "source", renderHeaderCell: () => "Source", renderCell: (item) => (item.source === "url" ? "URL" : "File") }),
+        createTableColumn({
+            columnId: "source",
+            renderHeaderCell: () => "Source",
+            renderCell: (item) =>
+                item.sessionOnly
+                    ? `${item.source === "scene" ? "Scene" : item.source === "url" ? "URL" : "File"} (session)`
+                    : item.source === "scene"
+                      ? "Scene"
+                      : item.source === "url"
+                        ? "URL"
+                        : "File",
+        }),
         createTableColumn({ columnId: "scheme", renderHeaderCell: () => "Scheme", renderCell: (item) => item.namingScheme }),
         createTableColumn({
             columnId: "actions",
@@ -452,9 +466,22 @@ export const AnimationsPanel: FunctionComponent<{
                 rootNodeName: animation.rootNodeName ?? "",
                 namingScheme: animation.namingScheme,
                 restPoseJson: animation.restPoseUpdate ? JSON.stringify(animation.restPoseUpdate, undefined, 2) : "",
+                sessionOnly: animation.sessionOnly,
             });
             setError(null);
-            if (animation.source === "url" && animation.url) {
+            if (animation.source === "scene") {
+                const scene = getCurrentScene();
+                if (scene) {
+                    const nodes: NodeInfo[] = [];
+                    const rootNodes = scene.rootNodes;
+                    for (let i = 0; i < rootNodes.length; i++) {
+                        const ancestorContinues: boolean[] = [];
+                        ancestorContinues[0] = i < rootNodes.length - 1;
+                        BuildNodeList(rootNodes[i], 0, nodes, ancestorContinues);
+                    }
+                    setNodeList(nodes);
+                }
+            } else if (animation.source === "url" && animation.url) {
                 void loadPreview("url", animation.url, [], false);
             } else if (animation.source === "file" && animation.fileNames?.length) {
                 const files = await animationManager.getFilesAsync(animation.id, animation.fileNames);
@@ -463,8 +490,64 @@ export const AnimationsPanel: FunctionComponent<{
                 }
             }
         },
-        [setEditingWithNotify, loadPreview, animationManager]
+        [setEditingWithNotify, loadPreview, animationManager, getCurrentScene]
     );
+
+    const startImportFromScene = useCallback(() => {
+        const scene = getCurrentScene();
+        if (!scene) {
+            return;
+        }
+
+        const groups = scene.animationGroups;
+        if (groups.length === 0) {
+            setError("No animation groups found in the current scene.");
+            return;
+        }
+
+        // Build mappings from scene animation groups
+        const mappings: AnimationGroupMapping[] = groups.map((g, i) => ({
+            index: i,
+            groupName: g.name,
+            displayName: "",
+        }));
+
+        // Build node tree from the scene
+        const nodes: NodeInfo[] = [];
+        const rootNodes = scene.rootNodes;
+        for (let i = 0; i < rootNodes.length; i++) {
+            const ancestorContinues: boolean[] = [];
+            ancestorContinues[0] = i < rootNodes.length - 1;
+            BuildNodeList(rootNodes[i], 0, nodes, ancestorContinues);
+        }
+        setNodeList(nodes);
+
+        // Auto-detect naming scheme from animation targets
+        let detectedScheme: string | null = null;
+        const targetNames = new Set<string>();
+        for (const group of groups) {
+            for (const ta of group.targetedAnimations) {
+                if (ta.target?.name) {
+                    targetNames.add(ta.target.name as string);
+                }
+            }
+        }
+        detectedScheme = DetectNamingScheme(targetNames, namingSchemeManager);
+
+        setEditingWithNotify({
+            id: null,
+            name: "",
+            sourceType: "scene",
+            url: "",
+            files: [],
+            mappings,
+            rootNodeName: nodes.length > 0 ? nodes[0].name : "",
+            namingScheme: detectedScheme ?? schemeNames[0] ?? "",
+            restPoseJson: "",
+            sessionOnly: true,
+        });
+        setError(null);
+    }, [getCurrentScene, schemeNames, setEditingWithNotify, namingSchemeManager]);
 
     const handleCancel = useCallback(() => {
         setEditingWithNotify(null);
@@ -541,6 +624,7 @@ export const AnimationsPanel: FunctionComponent<{
                 rootNodeName: editing.rootNodeName,
                 animations: editing.mappings.map((m) => ({ ...m, displayName: m.displayName.trim() })),
                 restPoseUpdate,
+                sessionOnly: editing.sessionOnly,
             };
 
             animationManager.addAnimation(animation);
@@ -688,6 +772,7 @@ export const AnimationsPanel: FunctionComponent<{
             <div className={classes.listHeader}>
                 <div className={classes.listButtons}>
                     <Button icon={AddRegular} label="Add" onClick={startAdd} disabled={!!editing} />
+                    <Button icon={DocumentArrowLeftRegular} label="Import from scene" onClick={startImportFromScene} disabled={!!editing || !getCurrentScene()} />
                 </div>
             </div>
             {allAnimations.length === 0 && <span className={classes.emptyMsg}>No custom animations defined.</span>}
@@ -717,43 +802,47 @@ export const AnimationsPanel: FunctionComponent<{
                         <TextInput className={classes.formControl} value={editing.name} onChange={(v) => setEditing({ ...editing, name: v })} />
                     </div>
 
-                    {/* URL input */}
-                    <div className={classes.formRow}>
-                        <Label className={classes.formLabel}>URL</Label>
-                        <Input
-                            className={classes.formControl}
-                            size="small"
-                            value={editing.url}
-                            placeholder="https://..."
-                            onChange={(_, d) => setEditing({ ...editing, url: d.value })}
-                            onKeyDown={(e) => {
-                                if (e.key === "Enter" && editing.url.trim()) {
-                                    setEditing({ ...editing, sourceType: "url", files: [] });
-                                    void loadPreview("url", editing.url, [], true);
-                                }
-                            }}
-                            input={{
-                                onBlur: () => {
-                                    if (editing.url.trim() && editing.sourceType !== "file") {
+                    {/* URL input — hidden for scene-sourced entries */}
+                    {editing.sourceType !== "scene" && (
+                        <div className={classes.formRow}>
+                            <Label className={classes.formLabel}>URL</Label>
+                            <Input
+                                className={classes.formControl}
+                                size="small"
+                                value={editing.url}
+                                placeholder="https://..."
+                                onChange={(_, d) => setEditing({ ...editing, url: d.value })}
+                                onKeyDown={(e) => {
+                                    if (e.key === "Enter" && editing.url.trim()) {
+                                        setEditing({ ...editing, sourceType: "url", files: [] });
                                         void loadPreview("url", editing.url, [], true);
                                     }
-                                },
-                            }}
-                        />
-                    </div>
+                                }}
+                                input={{
+                                    onBlur: () => {
+                                        if (editing.url.trim() && editing.sourceType !== "file") {
+                                            void loadPreview("url", editing.url, [], true);
+                                        }
+                                    },
+                                }}
+                            />
+                        </div>
+                    )}
 
-                    {/* Drop zone */}
-                    <div
-                        className={mergeClasses(classes.dropZone, isDragOver ? classes.dropZoneActive : undefined)}
-                        onDragOver={handleDragOver}
-                        onDragLeave={handleDragLeave}
-                        onDrop={handleDrop}
-                        onClick={() => fileInputRef.current?.click()}
-                    >
-                        <ArrowUploadRegular />
-                        <div>Drop file(s) here or click to browse</div>
-                        <input ref={fileInputRef} type="file" multiple style={{ display: "none" }} onChange={handleFileInput} />
-                    </div>
+                    {/* Drop zone — hidden for scene-sourced entries */}
+                    {editing.sourceType !== "scene" && (
+                        <div
+                            className={mergeClasses(classes.dropZone, isDragOver ? classes.dropZoneActive : undefined)}
+                            onDragOver={handleDragOver}
+                            onDragLeave={handleDragLeave}
+                            onDrop={handleDrop}
+                            onClick={() => fileInputRef.current?.click()}
+                        >
+                            <ArrowUploadRegular />
+                            <div>Drop file(s) here or click to browse</div>
+                            <input ref={fileInputRef} type="file" multiple style={{ display: "none" }} onChange={handleFileInput} />
+                        </div>
+                    )}
 
                     {/* Loading indicator */}
                     {isLoading && (

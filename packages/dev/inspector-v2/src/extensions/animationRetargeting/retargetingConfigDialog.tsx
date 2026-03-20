@@ -2,6 +2,7 @@ import type { FunctionComponent } from "react";
 import type { NamingSchemeManager, BoneEntry } from "./namingSchemeManager";
 import type { AvatarManager, StoredAvatar } from "./avatarManager";
 import type { AnimationManager, StoredAnimation } from "./animationManager";
+import type { Nullable } from "core/types";
 
 import { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import {
@@ -250,7 +251,7 @@ type RemappingRow = {
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-/** Loads a stored avatar or animation into a scene (handles both URL and file sources). */
+/** Loads a stored avatar or animation into a scene (handles URL, file, and scene sources). */
 async function LoadIntoScene(scene: Scene, entry: StoredAvatar | StoredAnimation, manager: { getFilesAsync(id: string, fileNames: string[]): Promise<File[]> }): Promise<void> {
     if (entry.source === "url" && entry.url) {
         await ImportMeshAsync(entry.url, scene);
@@ -269,6 +270,8 @@ async function LoadIntoScene(scene: Scene, entry: StoredAvatar | StoredAnimation
             throw new Error("No loadable scene file found.");
         }
         await ImportMeshAsync(sceneFile.name, scene, { rootUrl: "file:" });
+    } else if (entry.source === "scene") {
+        throw new Error("Scene-sourced entries cannot be loaded into a temporary scene. Use the original PG scene directly.");
     } else {
         throw new Error("No URL or files available for this entry.");
     }
@@ -961,11 +964,12 @@ export type RetargetingConfigDialogProps = {
     manager: NamingSchemeManager;
     avatarManager: AvatarManager;
     animationManager: AnimationManager;
+    getCurrentScene: () => Nullable<Scene>;
     open: boolean;
     onClose: () => void;
 };
 
-export const RetargetingConfigDialog: FunctionComponent<RetargetingConfigDialogProps> = ({ manager, avatarManager, animationManager, open, onClose }) => {
+export const RetargetingConfigDialog: FunctionComponent<RetargetingConfigDialogProps> = ({ manager, avatarManager, animationManager, getCurrentScene, open, onClose }) => {
     const classes = useStyles();
     const [activeTab, setActiveTab] = useState<"avatars" | "animations" | "schemes" | "remappings">("avatars");
     const [version, setVersion] = useState(0);
@@ -1203,9 +1207,21 @@ export const RetargetingConfigDialog: FunctionComponent<RetargetingConfigDialogP
                     </TabList>
                     <DialogContent className={classes.content}>
                         {activeTab === "avatars" ? (
-                            <AvatarsPanel avatarManager={avatarManager} namingSchemeManager={manager} onMutate={onMutate} onEditingChange={onEditingChange} />
+                            <AvatarsPanel
+                                avatarManager={avatarManager}
+                                namingSchemeManager={manager}
+                                getCurrentScene={getCurrentScene}
+                                onMutate={onMutate}
+                                onEditingChange={onEditingChange}
+                            />
                         ) : activeTab === "animations" ? (
-                            <AnimationsPanel animationManager={animationManager} namingSchemeManager={manager} onMutate={onMutate} onEditingChange={onEditingChange} />
+                            <AnimationsPanel
+                                animationManager={animationManager}
+                                namingSchemeManager={manager}
+                                getCurrentScene={getCurrentScene}
+                                onMutate={onMutate}
+                                onEditingChange={onEditingChange}
+                            />
                         ) : activeTab === "schemes" ? (
                             <SchemesPanel
                                 manager={manager}

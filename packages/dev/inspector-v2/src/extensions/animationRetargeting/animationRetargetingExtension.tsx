@@ -45,6 +45,10 @@ export const AnimationRetargetingServiceDefinition: ServiceDefinition<[], [IShel
         // Animation manager — persists across extension lifetime via ISettingsStore + IndexedDB
         const animationManager = new AnimationManager(settingsStore);
 
+        // Purge any session-only entries left over from a previous session
+        avatarManager.purgeSessionOnly();
+        animationManager.purgeSessionOnly();
+
         // Create default entries if both lists are empty (first-time use)
         if (avatarManager.getAllAvatars().length === 0 && animationManager.getAllDisplayNames().length === 0) {
             avatarManager.createDefaults();
@@ -116,6 +120,7 @@ export const AnimationRetargetingServiceDefinition: ServiceDefinition<[], [IShel
                     onConfigChangedObs={onConfigChangedObs}
                     onManagerReadyObs={onManagerReadyObs}
                     getCurrentManager={() => currentManager}
+                    getCurrentScene={() => sceneContext.currentScene}
                     namingSchemeManager={namingSchemeManager}
                     avatarManager={avatarManager}
                     animationManager={animationManager}

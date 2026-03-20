@@ -1,7 +1,10 @@
 import type { FunctionComponent } from "react";
 import type { Observable } from "core/Misc/observable";
+import type { Nullable } from "core/types";
+import type { Scene } from "core/scene";
 import { FilesInputStore } from "core/Misc/filesInputStore";
 import { SceneLoader } from "core/Loading/sceneLoader";
+import { SceneSerializer } from "core/Misc/sceneSerializer";
 import type { Transform } from "../../components/properties/transformProperties";
 import { makeStyles, tokens, Body1Strong } from "@fluentui/react-components";
 import { Button } from "shared-ui-components/fluent/primitives/button";
@@ -205,6 +208,7 @@ export type AnimationRetargetingPanelProps = {
     onConfigChangedObs: Observable<void>;
     onManagerReadyObs: Observable<RetargetingSceneManager>;
     getCurrentManager: () => RetargetingSceneManager | null;
+    getCurrentScene: () => Nullable<Scene>;
     namingSchemeManager: NamingSchemeManager;
     avatarManager: AvatarManager;
     animationManager: AnimationManager;
@@ -220,6 +224,7 @@ export const AnimationRetargetingPanel: FunctionComponent<AnimationRetargetingPa
     onConfigChangedObs,
     onManagerReadyObs,
     getCurrentManager,
+    getCurrentScene,
     namingSchemeManager,
     avatarManager,
     animationManager,
@@ -539,7 +544,16 @@ export const AnimationRetargetingPanel: FunctionComponent<AnimationRetargetingPa
                 const storedAv = avatarManager.getAvatar(s.avatarName);
                 const storedAn = animationManager.getByDisplayName(s.animationName)?.entry;
                 if (storedAv) {
-                    if (storedAv.source === "url" && storedAv.url) {
+                    if (storedAv.source === "scene") {
+                        const pgScene = getCurrentScene();
+                        if (pgScene) {
+                            const rootMesh = pgScene.getMeshByName(storedAv.rootNodeName);
+                            if (rootMesh) {
+                                const serialized = JSON.stringify(SceneSerializer.SerializeMesh(rootMesh, false, true));
+                                void manager.avatar!.loadAsync("data:" + serialized, s.avatarRescaleAvatar, storedAv.restPoseUpdate);
+                            }
+                        }
+                    } else if (storedAv.source === "url" && storedAv.url) {
                         void manager.avatar!.loadAsync(storedAv.url, s.avatarRescaleAvatar, storedAv.restPoseUpdate);
                     } else if (storedAv.source === "file" && storedAv.fileNames?.length) {
                         void (async () => {
@@ -564,7 +578,13 @@ export const AnimationRetargetingPanel: FunctionComponent<AnimationRetargetingPa
                         await manager.animationSource!.loadAsync(path, storedAn.restPoseUpdate, storedAn.rootNodeName);
                         manager.animationSource?.play(stateSnapshotRef.current.animationSpeed);
                     };
-                    if (storedAn.source === "url" && storedAn.url) {
+                    if (storedAn.source === "scene") {
+                        const pgScene = getCurrentScene();
+                        if (pgScene) {
+                            const serialized = JSON.stringify(SceneSerializer.Serialize(pgScene));
+                            void loadAndPlayAsync("data:" + serialized);
+                        }
+                    } else if (storedAn.source === "url" && storedAn.url) {
                         void loadAndPlayAsync(storedAn.url);
                     } else if (storedAn.source === "file" && storedAn.fileNames?.length) {
                         void (async () => {
@@ -656,7 +676,16 @@ export const AnimationRetargetingPanel: FunctionComponent<AnimationRetargetingPa
             setIsAvatarLoaded(false);
             setIsRetargeted(false);
 
-            if (storedAvatar.source === "url" && storedAvatar.url) {
+            if (storedAvatar.source === "scene") {
+                const pgScene = getCurrentScene();
+                if (pgScene) {
+                    const rootMesh = pgScene.getMeshByName(storedAvatar.rootNodeName);
+                    if (rootMesh) {
+                        const serialized = JSON.stringify(SceneSerializer.SerializeMesh(rootMesh, false, true));
+                        void manager.avatar.loadAsync("data:" + serialized, rescale, storedAvatar.restPoseUpdate);
+                    }
+                }
+            } else if (storedAvatar.source === "url" && storedAvatar.url) {
                 void manager.avatar.loadAsync(storedAvatar.url, rescale, storedAvatar.restPoseUpdate);
             } else if (storedAvatar.source === "file" && storedAvatar.fileNames?.length) {
                 const files = await avatarManager.getFilesAsync(storedAvatar.id, storedAvatar.fileNames);
@@ -674,7 +703,7 @@ export const AnimationRetargetingPanel: FunctionComponent<AnimationRetargetingPa
                 }
             }
         },
-        [avatarManager]
+        [avatarManager, getCurrentScene]
     );
 
     const handleLoadAnimation = useCallback(
@@ -692,7 +721,13 @@ export const AnimationRetargetingPanel: FunctionComponent<AnimationRetargetingPa
             setIsRetargeted(false);
 
             let loadPath: string | undefined;
-            if (storedAnimation.source === "url" && storedAnimation.url) {
+            if (storedAnimation.source === "scene") {
+                const pgScene = getCurrentScene();
+                if (pgScene) {
+                    const serialized = JSON.stringify(SceneSerializer.Serialize(pgScene));
+                    loadPath = "data:" + serialized;
+                }
+            } else if (storedAnimation.source === "url" && storedAnimation.url) {
                 loadPath = storedAnimation.url;
             } else if (storedAnimation.source === "file" && storedAnimation.fileNames?.length) {
                 const files = await animationManager.getFilesAsync(storedAnimation.id, storedAnimation.fileNames);
@@ -716,7 +751,7 @@ export const AnimationRetargetingPanel: FunctionComponent<AnimationRetargetingPa
                 manager.animationSource?.play(stateSnapshotRef.current.animationSpeed);
             }
         },
-        [animationManager]
+        [animationManager, getCurrentScene]
     );
 
     // Keep refs up to date so the config-changed handler can call the latest versions
@@ -797,6 +832,7 @@ export const AnimationRetargetingPanel: FunctionComponent<AnimationRetargetingPa
                     manager={namingSchemeManager}
                     avatarManager={avatarManager}
                     animationManager={animationManager}
+                    getCurrentScene={getCurrentScene}
                     open={isDialogOpen}
                     onClose={() => {
                         setIsDialogOpen(false);

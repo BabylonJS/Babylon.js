@@ -21,7 +21,7 @@ export type StoredAnimation = {
     id: string;
     /** User-chosen name for this animation file entry (shown in the list). */
     name: string;
-    source: "url" | "file";
+    source: "url" | "file" | "scene";
     url?: string;
     fileNames?: string[];
     namingScheme: string;
@@ -30,6 +30,8 @@ export type StoredAnimation = {
     /** One entry per animation group in the file. */
     animations: AnimationGroupMapping[];
     restPoseUpdate?: RestPoseDataUpdate;
+    /** When true, this entry is transient and will be purged on next startup. */
+    sessionOnly?: boolean;
 };
 
 type SerializedData = {
@@ -275,22 +277,25 @@ export class AnimationManager {
 
     /**
      * Returns all animations in a JSON-serializable format, including base64-encoded file data for file-based entries.
+     * Session-only entries are excluded from the export.
      */
     public async exportDataAsync(): Promise<Array<StoredAnimation & { fileData?: Record<string, string> }>> {
         return await Promise.all(
-            this._animations.map(async (animation) => {
-                const entry: StoredAnimation & { fileData?: Record<string, string> } = { ...animation };
-                if (animation.source === "file" && animation.fileNames?.length) {
-                    const files = await this.getFilesAsync(animation.id, animation.fileNames);
-                    const pairs = await Promise.all(files.map(async (file) => [file.name, await BlobToBase64(file)] as const));
-                    const fileData: Record<string, string> = {};
-                    for (const [name, b64] of pairs) {
-                        fileData[name] = b64;
+            this._animations
+                .filter((animation) => !animation.sessionOnly)
+                .map(async (animation) => {
+                    const entry: StoredAnimation & { fileData?: Record<string, string> } = { ...animation };
+                    if (animation.source === "file" && animation.fileNames?.length) {
+                        const files = await this.getFilesAsync(animation.id, animation.fileNames);
+                        const pairs = await Promise.all(files.map(async (file) => [file.name, await BlobToBase64(file)] as const));
+                        const fileData: Record<string, string> = {};
+                        for (const [name, b64] of pairs) {
+                            fileData[name] = b64;
+                        }
+                        entry.fileData = fileData;
                     }
-                    entry.fileData = fileData;
-                }
-                return entry;
-            })
+                    return entry;
+                })
         );
     }
 
@@ -358,6 +363,17 @@ export class AnimationManager {
                 rootNodeName: d.rootNode,
                 animations: [{ index: 0, groupName: d.displayName, displayName: d.displayName }],
             });
+        }
+    }
+
+    /**
+     * Removes all session-only entries and saves the updated list.
+     */
+    public purgeSessionOnly(): void {
+        const before = this._animations.length;
+        this._animations = this._animations.filter((a) => !a.sessionOnly);
+        if (this._animations.length !== before) {
+            this._saveToStorage();
         }
     }
 

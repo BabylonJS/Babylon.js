@@ -1,6 +1,7 @@
 import type { FunctionComponent } from "react";
 import type { AvatarManager, StoredAvatar, RestPoseDataUpdate } from "./avatarManager";
 import type { NamingSchemeManager } from "./namingSchemeManager";
+import type { Nullable } from "core/types";
 
 import { useState, useCallback, useRef, useEffect } from "react";
 import {
@@ -30,7 +31,7 @@ import type { TableColumnDefinition, TableColumnSizingOptions } from "@fluentui/
 import { Button } from "shared-ui-components/fluent/primitives/button";
 import { TextInput } from "shared-ui-components/fluent/primitives/textInput";
 import { StringDropdown } from "shared-ui-components/fluent/primitives/dropdown";
-import { AddRegular, DeleteRegular, EditRegular, ArrowUploadRegular } from "@fluentui/react-icons";
+import { AddRegular, DeleteRegular, EditRegular, ArrowUploadRegular, DocumentArrowLeftRegular } from "@fluentui/react-icons";
 import { NullEngine } from "core/Engines/nullEngine";
 import { Scene } from "core/scene";
 import { ImportMeshAsync, SceneLoader } from "core/Loading/sceneLoader";
@@ -157,12 +158,13 @@ type AvatarEdit = {
     id: string | null;
     originalName: string | null;
     name: string;
-    sourceType: "url" | "file";
+    sourceType: "url" | "file" | "scene";
     url: string;
     files: File[];
     rootNodeName: string;
     namingScheme: string;
     restPoseJson: string;
+    sessionOnly?: boolean;
 };
 
 type NodeInfo = {
@@ -236,9 +238,10 @@ function DetectNamingScheme(nodeNames: Set<string>, namingSchemeManager: NamingS
 export const AvatarsPanel: FunctionComponent<{
     avatarManager: AvatarManager;
     namingSchemeManager: NamingSchemeManager;
+    getCurrentScene: () => Nullable<Scene>;
     onMutate: () => void;
     onEditingChange: (editing: boolean) => void;
-}> = ({ avatarManager, namingSchemeManager, onMutate, onEditingChange }) => {
+}> = ({ avatarManager, namingSchemeManager, getCurrentScene, onMutate, onEditingChange }) => {
     const classes = useStyles();
     const [editing, setEditing] = useState<AvatarEdit | null>(null);
     const [error, setError] = useState<string | null>(null);
@@ -280,7 +283,18 @@ export const AvatarsPanel: FunctionComponent<{
 
     const avatarColumns: TableColumnDefinition<StoredAvatar>[] = [
         createTableColumn({ columnId: "name", renderHeaderCell: () => "Name", renderCell: (item) => item.name }),
-        createTableColumn({ columnId: "source", renderHeaderCell: () => "Source", renderCell: (item) => (item.source === "url" ? "URL" : "File") }),
+        createTableColumn({
+            columnId: "source",
+            renderHeaderCell: () => "Source",
+            renderCell: (item) =>
+                item.sessionOnly
+                    ? `${item.source === "scene" ? "Scene" : item.source === "url" ? "URL" : "File"} (session)`
+                    : item.source === "scene"
+                      ? "Scene"
+                      : item.source === "url"
+                        ? "URL"
+                        : "File",
+        }),
         createTableColumn({ columnId: "scheme", renderHeaderCell: () => "Scheme", renderCell: (item) => item.namingScheme }),
         createTableColumn({
             columnId: "actions",
@@ -426,11 +440,24 @@ export const AvatarsPanel: FunctionComponent<{
                 rootNodeName: avatar.rootNodeName,
                 namingScheme: avatar.namingScheme,
                 restPoseJson: avatar.restPoseUpdate ? JSON.stringify(avatar.restPoseUpdate, undefined, 2) : "",
+                sessionOnly: avatar.sessionOnly,
             });
             setError(null);
             setNodeList([]);
             // Auto-load preview
-            if (avatar.source === "url" && avatar.url) {
+            if (avatar.source === "scene") {
+                const scene = getCurrentScene();
+                if (scene) {
+                    const nodes: NodeInfo[] = [];
+                    const rootNodes = scene.rootNodes;
+                    for (let i = 0; i < rootNodes.length; i++) {
+                        const ancestorContinues: boolean[] = [];
+                        ancestorContinues[0] = i < rootNodes.length - 1;
+                        BuildNodeList(rootNodes[i], 0, nodes, ancestorContinues);
+                    }
+                    setNodeList(nodes);
+                }
+            } else if (avatar.source === "url" && avatar.url) {
                 void loadPreview("url", avatar.url, [], false);
             } else if (avatar.source === "file" && avatar.fileNames?.length) {
                 const files = await avatarManager.getFilesAsync(avatar.id, avatar.fileNames);
@@ -439,8 +466,70 @@ export const AvatarsPanel: FunctionComponent<{
                 }
             }
         },
-        [setEditingWithNotify, loadPreview, avatarManager]
+        [setEditingWithNotify, loadPreview, avatarManager, getCurrentScene]
     );
+
+    const startImportFromScene = useCallback(() => {
+        const scene = getCurrentScene();
+        if (!scene) {
+            return;
+        }
+
+        setEditingWithNotify({
+            id: null,
+            originalName: null,
+            name: "",
+            sourceType: "scene",
+            url: "",
+            files: [],
+            rootNodeName: "",
+            namingScheme: schemeNames[0] ?? "",
+            restPoseJson: "",
+            sessionOnly: true,
+        });
+        setError(null);
+
+        // Build node tree directly from the PG scene's root nodes
+        const nodes: NodeInfo[] = [];
+        const rootNodes = scene.rootNodes;
+        for (let i = 0; i < rootNodes.length; i++) {
+            const ancestorContinues: boolean[] = [];
+            ancestorContinues[0] = i < rootNodes.length - 1;
+            BuildNodeList(rootNodes[i], 0, nodes, ancestorContinues);
+        }
+        setNodeList(nodes);
+
+        // Auto-detect naming scheme
+        let detectedScheme: string | null = null;
+        const nodeNames = new Set(nodes.map((n) => n.name));
+        detectedScheme = DetectNamingScheme(nodeNames, namingSchemeManager);
+        if (!detectedScheme) {
+            const boneNames = new Set<string>();
+            for (const mesh of scene.meshes) {
+                if (mesh.skeleton) {
+                    for (const bone of mesh.skeleton.bones) {
+                        boneNames.add(bone.name);
+                    }
+                }
+            }
+            if (boneNames.size > 0) {
+                detectedScheme = DetectNamingScheme(boneNames, namingSchemeManager);
+            }
+        }
+
+        if (nodes.length > 0) {
+            setEditing((prev) => {
+                if (!prev) {
+                    return prev;
+                }
+                return {
+                    ...prev,
+                    rootNodeName: nodes[0].name,
+                    ...(detectedScheme ? { namingScheme: detectedScheme } : {}),
+                };
+            });
+        }
+    }, [getCurrentScene, schemeNames, setEditingWithNotify, namingSchemeManager]);
 
     const handleCancel = useCallback(() => {
         setEditingWithNotify(null);
@@ -514,6 +603,7 @@ export const AvatarsPanel: FunctionComponent<{
                 namingScheme: editing.namingScheme,
                 rootNodeName: editing.rootNodeName,
                 restPoseUpdate,
+                sessionOnly: editing.sessionOnly,
             };
 
             avatarManager.addAvatar(avatar);
@@ -624,6 +714,7 @@ export const AvatarsPanel: FunctionComponent<{
             <div className={classes.listHeader}>
                 <div className={classes.listButtons}>
                     <Button icon={AddRegular} label="Add" onClick={startAdd} disabled={!!editing} />
+                    <Button icon={DocumentArrowLeftRegular} label="Import from scene" onClick={startImportFromScene} disabled={!!editing || !getCurrentScene()} />
                 </div>
             </div>
             {allAvatars.length === 0 && <span className={classes.emptyMsg}>No custom avatars defined.</span>}
@@ -653,43 +744,47 @@ export const AvatarsPanel: FunctionComponent<{
                         <TextInput className={classes.formControl} value={editing.name} onChange={(v) => setEditing({ ...editing, name: v })} />
                     </div>
 
-                    {/* URL input — loads on Enter or blur */}
-                    <div className={classes.formRow}>
-                        <Label className={classes.formLabel}>URL</Label>
-                        <Input
-                            className={classes.formControl}
-                            size="small"
-                            value={editing.url}
-                            placeholder="https://..."
-                            onChange={(_, d) => setEditing({ ...editing, url: d.value })}
-                            onKeyDown={(e) => {
-                                if (e.key === "Enter" && editing.url.trim()) {
-                                    setEditing({ ...editing, sourceType: "url", files: [] });
-                                    void loadPreview("url", editing.url, [], true);
-                                }
-                            }}
-                            input={{
-                                onBlur: () => {
-                                    if (editing.url.trim() && editing.sourceType !== "file") {
+                    {/* URL input — loads on Enter or blur (hidden for scene-sourced entries) */}
+                    {editing.sourceType !== "scene" && (
+                        <div className={classes.formRow}>
+                            <Label className={classes.formLabel}>URL</Label>
+                            <Input
+                                className={classes.formControl}
+                                size="small"
+                                value={editing.url}
+                                placeholder="https://..."
+                                onChange={(_, d) => setEditing({ ...editing, url: d.value })}
+                                onKeyDown={(e) => {
+                                    if (e.key === "Enter" && editing.url.trim()) {
+                                        setEditing({ ...editing, sourceType: "url", files: [] });
                                         void loadPreview("url", editing.url, [], true);
                                     }
-                                },
-                            }}
-                        />
-                    </div>
+                                }}
+                                input={{
+                                    onBlur: () => {
+                                        if (editing.url.trim() && editing.sourceType !== "file") {
+                                            void loadPreview("url", editing.url, [], true);
+                                        }
+                                    },
+                                }}
+                            />
+                        </div>
+                    )}
 
-                    {/* Drop zone — always visible */}
-                    <div
-                        className={mergeClasses(classes.dropZone, isDragOver ? classes.dropZoneActive : undefined)}
-                        onDragOver={handleDragOver}
-                        onDragLeave={handleDragLeave}
-                        onDrop={handleDrop}
-                        onClick={() => fileInputRef.current?.click()}
-                    >
-                        <ArrowUploadRegular />
-                        <div>Drop file(s) here or click to browse</div>
-                        <input ref={fileInputRef} type="file" multiple style={{ display: "none" }} onChange={handleFileInput} />
-                    </div>
+                    {/* Drop zone — hidden for scene-sourced entries */}
+                    {editing.sourceType !== "scene" && (
+                        <div
+                            className={mergeClasses(classes.dropZone, isDragOver ? classes.dropZoneActive : undefined)}
+                            onDragOver={handleDragOver}
+                            onDragLeave={handleDragLeave}
+                            onDrop={handleDrop}
+                            onClick={() => fileInputRef.current?.click()}
+                        >
+                            <ArrowUploadRegular />
+                            <div>Drop file(s) here or click to browse</div>
+                            <input ref={fileInputRef} type="file" multiple style={{ display: "none" }} onChange={handleFileInput} />
+                        </div>
+                    )}
 
                     {/* Loading indicator */}
                     {isLoading && (

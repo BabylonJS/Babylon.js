@@ -11,12 +11,14 @@ export type StoredAvatar = {
     /** Unique, immutable identifier generated at creation time. Used as the IndexedDB key prefix. */
     id: string;
     name: string;
-    source: "url" | "file";
+    source: "url" | "file" | "scene";
     url?: string;
     fileNames?: string[];
     namingScheme: string;
     rootNodeName: string;
     restPoseUpdate?: RestPoseDataUpdate;
+    /** When true, this entry is transient and will be purged on next startup. */
+    sessionOnly?: boolean;
 };
 
 type SerializedData = {
@@ -223,22 +225,25 @@ export class AvatarManager {
 
     /**
      * Returns all avatars in a JSON-serializable format, including base64-encoded file data for file-based entries.
+     * Session-only entries are excluded from the export.
      */
     public async exportDataAsync(): Promise<Array<StoredAvatar & { fileData?: Record<string, string> }>> {
         return await Promise.all(
-            this._avatars.map(async (avatar) => {
-                const entry: StoredAvatar & { fileData?: Record<string, string> } = { ...avatar };
-                if (avatar.source === "file" && avatar.fileNames?.length) {
-                    const files = await this.getFilesAsync(avatar.id, avatar.fileNames);
-                    const pairs = await Promise.all(files.map(async (file) => [file.name, await BlobToBase64(file)] as const));
-                    const fileData: Record<string, string> = {};
-                    for (const [name, b64] of pairs) {
-                        fileData[name] = b64;
+            this._avatars
+                .filter((avatar) => !avatar.sessionOnly)
+                .map(async (avatar) => {
+                    const entry: StoredAvatar & { fileData?: Record<string, string> } = { ...avatar };
+                    if (avatar.source === "file" && avatar.fileNames?.length) {
+                        const files = await this.getFilesAsync(avatar.id, avatar.fileNames);
+                        const pairs = await Promise.all(files.map(async (file) => [file.name, await BlobToBase64(file)] as const));
+                        const fileData: Record<string, string> = {};
+                        for (const [name, b64] of pairs) {
+                            fileData[name] = b64;
+                        }
+                        entry.fileData = fileData;
                     }
-                    entry.fileData = fileData;
-                }
-                return entry;
-            })
+                    return entry;
+                })
         );
     }
 
@@ -303,6 +308,17 @@ export class AvatarManager {
                 namingScheme: d.scheme,
                 rootNodeName: "__root__",
             });
+        }
+    }
+
+    /**
+     * Removes all session-only entries and saves the updated list.
+     */
+    public purgeSessionOnly(): void {
+        const before = this._avatars.length;
+        this._avatars = this._avatars.filter((a) => !a.sessionOnly);
+        if (this._avatars.length !== before) {
+            this._saveToStorage();
         }
     }
 
