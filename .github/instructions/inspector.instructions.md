@@ -6,9 +6,9 @@ applyTo: "packages/dev/inspector-v2/**/*.{ts,tsx}"
 
 ## Use Shared UI Components
 
-Do **not** use raw Fluent UI components (e.g. `Button`, `Input`, `Checkbox`, `Dropdown` from `@fluentui/react-components`) directly for property controls and form elements. Instead, use the wrapper components from `shared-ui-components/fluent/`. These wrappers apply consistent sizing, density, and theming that raw Fluent components miss (e.g. the `ToolContext` size context for compact mode).
+Prefer using the wrapper components from `shared-ui-components/fluent/` for property controls and form elements instead of raw Fluent UI components (e.g. `Button`, `Input`, `Checkbox`, `Dropdown` from `@fluentui/react-components`). These wrappers apply consistent sizing, density, and theming that raw Fluent components miss (e.g. the `ToolContext` size context for compact mode). Use raw Fluent form controls only when a suitable wrapper does not exist or is insufficient for the scenario, and add a brief comment/TODO explaining why.
 
-When reviewing code, flag any direct use of raw Fluent form controls that should use their shared-ui-components equivalent.
+When reviewing code, encourage the use of shared-ui-components wrappers for property controls, and only accept direct use of raw Fluent form controls when wrappers are missing or inadequate and the code includes a short justification/TODO near the usage.
 
 ## Styling Conventions
 
