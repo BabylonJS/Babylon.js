@@ -13,11 +13,11 @@ module.exports = (env) => {
             },
             {
                 static: ["public"],
-                port: process.env.FGE_PORT || 1342,
+                port: process.env.FGE_PORT || 1345,
             }
         ),
         resolve: {
-            extensions: [".js", ".ts", ".tsx", ".scss", "*.svg"],
+            extensions: [".js", ".ts", ".tsx", ".scss", ".svg"],
             alias: {
                 "shared-ui-components": path.resolve("../../dev/sharedUiComponents/src"),
                 "@tools/snippet-loader": path.resolve("../snippetLoader/dist"),

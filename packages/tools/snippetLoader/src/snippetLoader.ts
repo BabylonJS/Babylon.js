@@ -1173,8 +1173,15 @@ function BuildFunctions(
         // free-variable references like `engine` and `canvas` resolve against
         // `globalThis`.  The real Playground sets these before calling
         // createScene — replicate the same behavior here.
+        const g = globalThis as any;
+        const prevEngine = g.engine;
+        const prevCanvas = g.canvas;
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        const BABYLON = g.BABYLON;
+        const prevBaseUrl = BABYLON?.Tools?.BaseUrl;
+        const prevPreprocessUrl = BABYLON?.Tools?.PreprocessUrl;
+
         if (moduleFormat === "script") {
-            const g = globalThis as any;
             g.engine = engine;
             g.canvas = canvas;
         }
@@ -1188,8 +1195,6 @@ function BuildFunctions(
         // execution because the snippet may reset these globals.
         const applyAssetUrlHooks = assetBaseUrl
             ? () => {
-                  // eslint-disable-next-line @typescript-eslint/naming-convention
-                  const BABYLON = (globalThis as any).BABYLON;
                   if (BABYLON?.Tools) {
                       BABYLON.Tools.BaseUrl = "";
                       BABYLON.Tools.PreprocessUrl = (url: string) => {
@@ -1203,47 +1208,59 @@ function BuildFunctions(
             : undefined;
         applyAssetUrlHooks?.();
 
-        // Bind `this` to a proxy for legacy snippet compatibility.
-        let sceneResult: any;
-        const bound = createSceneFn.bind(
-            new Proxy(
-                {},
-                {
-                    get(_target: any, prop: PropertyKey) {
-                        if (prop === "scene") {
-                            return sceneResult;
-                        }
-                        if (prop === "engine") {
-                            return engine;
-                        }
-                        if (prop === "canvas") {
-                            return canvas;
-                        }
-                        return (globalThis as any)[prop];
-                    },
-                    set(_target: any, prop: PropertyKey, value: any) {
-                        if (prop === "scene") {
-                            sceneResult = value;
+        try {
+            // Bind `this` to a proxy for legacy snippet compatibility.
+            let sceneResult: any;
+            const bound = createSceneFn.bind(
+                new Proxy(
+                    {},
+                    {
+                        get(_target: any, prop: PropertyKey) {
+                            if (prop === "scene") {
+                                return sceneResult;
+                            }
+                            if (prop === "engine") {
+                                return engine;
+                            }
+                            if (prop === "canvas") {
+                                return canvas;
+                            }
+                            return (globalThis as any)[prop];
+                        },
+                        set(_target: any, prop: PropertyKey, value: any) {
+                            if (prop === "scene") {
+                                sceneResult = value;
+                                return true;
+                            }
+                            (globalThis as any)[prop] = value;
                             return true;
-                        }
-                        (globalThis as any)[prop] = value;
-                        return true;
-                    },
-                }
-            )
-        );
-        const returnValue = await bound(engine, canvas);
-        // Prefer the explicit return value; fall back to the value set via
-        // `this.scene = ...` in the proxy (common in legacy snippets that
-        // don't return the scene).
-        if (returnValue !== undefined && returnValue !== null) {
-            sceneResult = returnValue;
+                        },
+                    }
+                )
+            );
+            const returnValue = await bound(engine, canvas);
+            // Prefer the explicit return value; fall back to the value set via
+            // `this.scene = ...` in the proxy (common in legacy snippets that
+            // don't return the scene).
+            if (returnValue !== undefined && returnValue !== null) {
+                sceneResult = returnValue;
+            }
+
+            // Re-apply in case the snippet code overwrote BaseUrl/PreprocessUrl.
+            applyAssetUrlHooks?.();
+
+            return sceneResult;
+        } finally {
+            // Restore globals that were mutated for snippet execution
+            if (moduleFormat === "script") {
+                g.engine = prevEngine;
+                g.canvas = prevCanvas;
+            }
+            if (BABYLON?.Tools) {
+                BABYLON.Tools.BaseUrl = prevBaseUrl;
+                BABYLON.Tools.PreprocessUrl = prevPreprocessUrl;
+            }
         }
-
-        // Re-apply in case the snippet code overwrote BaseUrl/PreprocessUrl.
-        applyAssetUrlHooks?.();
-
-        return sceneResult;
     };
 
     // We eagerly load in script mode since it's synchronous, so we can

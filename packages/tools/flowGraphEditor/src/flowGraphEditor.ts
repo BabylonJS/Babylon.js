@@ -101,11 +101,16 @@ export class FlowGraphEditor {
                     this._PopupWindow.close();
                 }
             });
-            window.onbeforeunload = () => {
+            const onBeforeUnload = () => {
                 if (this._PopupWindow) {
                     this._PopupWindow.close();
                 }
             };
+            window.addEventListener("beforeunload", onBeforeUnload);
+            // Clean up when popup closes
+            globalState.onPopupClosedObservable.addOnce(() => {
+                window.removeEventListener("beforeunload", onBeforeUnload);
+            });
         }
     }
 }

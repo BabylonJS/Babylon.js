@@ -7,7 +7,7 @@ const nmeUrl = (process.env.NME_BASE_URL || getGlobalConfig().baseUrl.replace(":
 const ngeUrl = (process.env.NGE_BASE_URL || getGlobalConfig().baseUrl.replace(":1337", process.env.NGE_PORT || ":1343")) + snapshot;
 const guiUrl = (process.env.GUIEDITOR_BASE_URL || getGlobalConfig().baseUrl.replace(":1337", process.env.GUIEDITOR_PORT || ":1341")) + snapshot;
 const nrgeUrl = (process.env.NRGE_BASE_URL || getGlobalConfig().baseUrl.replace(":1337", process.env.NRGE_PORT || ":1344")) + snapshot;
-const fgeUrl = (process.env.FGE_BASE_URL || getGlobalConfig().baseUrl.replace(":1337", process.env.FGE_PORT || ":1342")) + snapshot;
+const _fgeUrl = (process.env.FGE_BASE_URL || getGlobalConfig().baseUrl.replace(":1337", process.env.FGE_PORT || ":1345")) + snapshot;
 
 test.beforeAll(async () => {
     // Set timeout for this hook.

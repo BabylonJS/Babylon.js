@@ -7,7 +7,7 @@ const snapshot = process.env.SNAPSHOT ? "?snapshot=" + process.env.SNAPSHOT : ""
  * Build the base URL for the Flow Graph Editor.
  */
 export function getFgeUrl(): string {
-    return (process.env.FGE_BASE_URL || getGlobalConfig().baseUrl.replace(":1337", process.env.FGE_PORT || ":1342")) + snapshot;
+    return (process.env.FGE_BASE_URL || getGlobalConfig().baseUrl.replace(":1337", process.env.FGE_PORT || ":1345")) + snapshot;
 }
 
 /**
