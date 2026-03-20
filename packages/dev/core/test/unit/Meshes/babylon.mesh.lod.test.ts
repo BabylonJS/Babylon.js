@@ -1,10 +1,12 @@
-import { ArcRotateCamera, Camera } from "core/Cameras";
-import { BoundingSphere } from "core/Culling";
-import type { Engine } from "core/Engines";
-import { Constants, NullEngine } from "core/Engines";
-import { Vector3 } from "core/Maths";
-import type { Mesh } from "core/Meshes";
-import { MeshBuilder } from "core/Meshes";
+import { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
+import { Camera } from "core/Cameras/camera";
+import { BoundingSphere } from "core/Culling/boundingSphere";
+import type { Engine } from "core/Engines/engine";
+import { Constants } from "core/Engines/constants";
+import { NullEngine } from "core/Engines/nullEngine";
+import { Vector3 } from "core/Maths/math.vector";
+import type { Mesh } from "core/Meshes/mesh";
+import { MeshBuilder } from "core/Meshes/meshBuilder";
 import { Scene } from "core/scene";
 
 describe("Babylon Mesh Levels of Details", () => {

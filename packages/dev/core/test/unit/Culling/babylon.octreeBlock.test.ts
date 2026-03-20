@@ -1,12 +1,13 @@
-import { ArcRotateCamera } from "core/Cameras";
-import type { Ray } from "core/Culling";
+import { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
+import type { Ray } from "core/Culling/ray";
 import "core/Culling/Octrees/octreeSceneComponent";
-import type { Engine } from "core/Engines";
-import { NullEngine } from "core/Engines";
-import { Plane, Vector3 } from "core/Maths";
-import type { AbstractMesh } from "core/Meshes";
-import { MeshBuilder } from "core/Meshes";
-import { SmartArrayNoDuplicate } from "core/Misc";
+import type { Engine } from "core/Engines/engine";
+import { NullEngine } from "core/Engines/nullEngine";
+import { Plane } from "core/Maths/math.plane";
+import { Vector3 } from "core/Maths/math.vector";
+import type { AbstractMesh } from "core/Meshes/abstractMesh";
+import { MeshBuilder } from "core/Meshes/meshBuilder";
+import { SmartArrayNoDuplicate } from "core/Misc/smartArray";
 import { Scene } from "core/scene";
 
 describe("OctreeBlock", function () {

@@ -2,11 +2,13 @@
  * @vitest-environment jsdom
  */
 
-import { ArcRotateCamera, FreeCamera } from "core/Cameras";
+import { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
+import { FreeCamera } from "core/Cameras/freeCamera";
 import { PickingInfo } from "core/Collisions/pickingInfo";
+import "core/Culling/ray";
 import { DeviceType, PointerInput } from "core/DeviceInput";
 import { InternalDeviceSourceManager } from "core/DeviceInput/internalDeviceSourceManager";
-import { NullEngine } from "core/Engines";
+import { NullEngine } from "core/Engines/nullEngine";
 import type { Engine } from "core/Engines/engine";
 import type { IPointerEvent, IUIEvent } from "core/Events";
 import { PointerEventTypes } from "core/Events";

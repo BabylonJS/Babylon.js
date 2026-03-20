@@ -4,7 +4,7 @@ import { loggerExample, mathExample, worldPointerExample, doNExample, intMathExa
 import { FlowGraphCoordinator } from "core/FlowGraph/flowGraphCoordinator";
 import { Vector3, Vector4 } from "core/Maths";
 import { Mesh } from "core/Meshes";
-import { ArcRotateCamera } from "core/Cameras";
+import { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
 import { Logger } from "core/Misc";
 import { FlowGraphInteger } from "core/FlowGraph/CustomTypes/flowGraphInteger";
 import { ParseFlowGraphAsync } from "core/FlowGraph";

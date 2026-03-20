@@ -1,4 +1,4 @@
-import { ArcRotateCamera } from "core/Cameras";
+import { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
 import { Engine, NullEngine } from "core/Engines";
 import { Vector3 } from "core/Maths";
 import { DefaultRenderingPipeline } from "core/PostProcesses";

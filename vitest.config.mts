@@ -39,6 +39,12 @@ const createProjectConfig = (type: string) => {
         exclude: ["**/node_modules/**", "**/packages/*/src/**"],
         globals: true,
         environment: "node",
+        // Use child processes (like Jest) instead of worker threads.
+        // Babylon.js has deep side-effect import chains (shaders, scene
+        // components) that resolve asynchronously. With the default 'threads'
+        // pool, pending module resolution can outlive the test and cause
+        // EnvironmentTeardownError. Forked processes exit cleanly.
+        pool: "forks",
         globalSetup,
         setupFiles,
     };

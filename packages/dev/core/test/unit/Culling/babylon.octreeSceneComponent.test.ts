@@ -1,8 +1,9 @@
-import { ArcRotateCamera } from "core/Cameras";
-import { OctreeSceneComponent } from "core/Culling";
-import { Engine, NullEngine } from "core/Engines";
-import { Vector3 } from "core/Maths";
-import { MeshBuilder } from "core/Meshes";
+import { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
+import { OctreeSceneComponent } from "core/Culling/Octrees/octreeSceneComponent";
+import { Engine } from "core/Engines/engine";
+import { NullEngine } from "core/Engines/nullEngine";
+import { Vector3 } from "core/Maths/math.vector";
+import { MeshBuilder } from "core/Meshes/meshBuilder";
 import { Scene } from "core/scene";
 
 describe("OctreeSceneComponent", () => {
