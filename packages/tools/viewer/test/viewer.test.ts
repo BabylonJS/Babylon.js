@@ -65,14 +65,6 @@ async function expectScreenshotMatch(page: Page, name: string, minFrameCount = 1
     });
     console.log("Viewer is idle.");
 
-    // Wait for additional frames to render after the current point, ensuring visual stability.
-    const currentFrameId = await page.evaluate(() => {
-        const viewer = document.querySelector("babylon-viewer") as ViewerElement;
-        return viewer.viewerDetails?.scene.getEngine()?.frameId ?? 0;
-    });
-    const renderedFrames = await waitForFrameCount(page, currentFrameId + minFrameCount);
-    console.log(`${renderedFrames} total frames rendered before screenshot comparison.`);
-
     await expect(page.locator("babylon-viewer")).toHaveScreenshot(name, {
         threshold: 0.035,
         maxDiffPixelRatio: 0.011,
