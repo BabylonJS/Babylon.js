@@ -1,21 +1,18 @@
 
-### Addons
-
-- Atmosphere updates - by [kircher1](https://github.com/kircher1) ([#18119](https://github.com/BabylonJS/Babylon.js/pull/18119))
-
 ### Core
 
-- ImageProcessingMixin: correctly invoke decorator factory - by [kzhsw](https://github.com/kzhsw) ([#18126](https://github.com/BabylonJS/Babylon.js/pull/18126))
-- Texture: Fix parsing serialized base64 images - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#18121](https://github.com/BabylonJS/Babylon.js/pull/18121))
-- Inspector v2: Texture preview layer selector - by [ryantrem](https://github.com/ryantrem) ([#18100](https://github.com/BabylonJS/Babylon.js/pull/18100))
+- Viewer: Fix environment bug and IBL irradiance direction bug - [_Bug Fix_] by [ryantrem](https://github.com/ryantrem) ([#18138](https://github.com/BabylonJS/Babylon.js/pull/18138))
+- Fix FlowGraphCoordinator not adding itself to SceneCoordinators list - by [marns](https://github.com/marns) ([#18128](https://github.com/BabylonJS/Babylon.js/pull/18128))
+- Solid Particle Systems: Fix vertex colors when they only have 3 components - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#18131](https://github.com/BabylonJS/Babylon.js/pull/18131))
 
 ### Inspector
 
-- Inspector v2: Clustered lights - by [ryantrem](https://github.com/ryantrem) ([#18124](https://github.com/BabylonJS/Babylon.js/pull/18124))
-- Optimize the code - by [Jeggery](https://github.com/Jeggery) ([#18120](https://github.com/BabylonJS/Babylon.js/pull/18120))
-- Inspector v2: Texture preview layer selector - by [ryantrem](https://github.com/ryantrem) ([#18100](https://github.com/BabylonJS/Babylon.js/pull/18100))
-- Update Havok - by [sebavan](https://github.com/sebavan) ([#18113](https://github.com/BabylonJS/Babylon.js/pull/18113))
+- Inspector v2: Extension avatar image support - by [ryantrem](https://github.com/ryantrem) ([#18132](https://github.com/BabylonJS/Babylon.js/pull/18132))
 
-### Loaders
+### Playground
 
-- Simplify glTF texture naming logic by extracting duplicate conditional - by [github-actions[bot]](https://github.com/apps/github-actions) ([#18117](https://github.com/BabylonJS/Babylon.js/pull/18117))
+- Playground: Fix the wrong “Changes will be lost” pop-up window and the issue where the snippet ID changed after saving - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#18133](https://github.com/BabylonJS/Babylon.js/pull/18133))
+
+### Viewer
+
+- Viewer: Fix environment bug and IBL irradiance direction bug - [_Bug Fix_] by [ryantrem](https://github.com/ryantrem) ([#18138](https://github.com/BabylonJS/Babylon.js/pull/18138))
