@@ -764,7 +764,7 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
         height = Math.min(maxHeight, height);
 
         try {
-            if (this._texture.isCube) {
+            if (this._texture.isCube || this._texture.is2DArray) {
                 return engine._readTexturePixels(this._texture, width, height, faceIndex, level, buffer, flushRenderer, noDataConversion, x, y);
             }
 

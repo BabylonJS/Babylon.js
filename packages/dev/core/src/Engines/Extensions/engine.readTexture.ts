@@ -66,7 +66,9 @@ ThinEngine.prototype._readTexturePixelsSync = function (
     }
     gl.bindFramebuffer(gl.FRAMEBUFFER, this._dummyFramebuffer);
 
-    if (faceIndex > -1) {
+    if (faceIndex > -1 && (texture.is2DArray || texture.is3D)) {
+        gl.framebufferTextureLayer(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, texture._hardwareTexture?.underlyingResource, level, faceIndex);
+    } else if (faceIndex > -1) {
         gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex, texture._hardwareTexture?.underlyingResource, level);
     } else {
         gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture._hardwareTexture?.underlyingResource, level);
