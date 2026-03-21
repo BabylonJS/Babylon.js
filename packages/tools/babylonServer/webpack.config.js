@@ -78,7 +78,7 @@ module.exports = (env) => {
                 enableLiveReload: env.enableLiveReload,
             },
             {
-                port: env.cdnPort || env.CDN_PORT || 1337,
+                port: env.cdnPort || env.CDN_PORT || process.env.CDN_PORT || 1337,
                 static: ["public", "declarations", "../playground/public"],
                 showBuildProcess: true,
             }
