@@ -12,7 +12,7 @@ export const getGlobalConfig = (overrideConfig: { root?: string; baseUrl?: strin
     if (overrideConfig.usesDevHost) {
         baseUrl = (checkArgs(["--enable-https"], true) ? "https" : "http") + "://localhost:1338";
     } else {
-        baseUrl = process.env.CDN_BASE_URL || (checkArgs(["--enable-https"], true) ? "https" : "http") + "://localhost:1337";
+        baseUrl = process.env.CDN_BASE_URL || (checkArgs(["--enable-https"], true) ? "https" : "http") + "://localhost:" + (process.env.CDN_PORT || 1337);
     }
 
     return {

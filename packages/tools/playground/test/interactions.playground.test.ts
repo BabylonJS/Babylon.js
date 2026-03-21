@@ -3,7 +3,8 @@ import { getGlobalConfig } from "@tools/test-tools";
 
 // if running in the CI we need to use the babylon snapshot when loading the tools
 const snapshot = process.env.SNAPSHOT ? "?snapshot=" + process.env.SNAPSHOT : "";
-const url = (process.env.PLAYGROUND_BASE_URL || getGlobalConfig().baseUrl.replace(":1337", process.env.PLAYGROUND_PORT || ":1338")) + snapshot;
+const cdnPort = ":" + (process.env.CDN_PORT || 1337);
+const url = (process.env.PLAYGROUND_BASE_URL || getGlobalConfig().baseUrl.replace(cdnPort, process.env.PLAYGROUND_PORT || ":1338")) + snapshot;
 
 test("Playground is loaded (Desktop)", async ({ page }) => {
     await page.goto(url, {

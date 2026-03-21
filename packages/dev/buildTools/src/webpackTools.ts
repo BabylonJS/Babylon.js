@@ -189,6 +189,7 @@ export const commonDevWebpackConfiguration = (
         port: number;
         static?: string[];
         showBuildProgress?: boolean;
+        cdnPort?: number | string;
     },
     additionalPlugins?: WebpackPluginInstance[]
 ) => {
@@ -229,6 +230,14 @@ export const commonDevWebpackConfiguration = (
                       progress: devServerConfig.showBuildProgress,
                   },
                   allowedHosts: process.env.ALLOWED_HOSTS ? process.env.ALLOWED_HOSTS.split(",") : undefined,
+                  setupMiddlewares: (middlewares: any[], devServer: any) => {
+                      const cdnPort = devServerConfig.cdnPort || process.env.CDN_PORT || 1337;
+                      devServer.app.get("/cdn-config.js", (_req: any, res: any) => {
+                          res.type("application/javascript");
+                          res.send(`window.__CDN_PORT__ = ${Number(cdnPort)};`);
+                      });
+                      return middlewares;
+                  },
               }
             : undefined,
         output: env.outputFilename
