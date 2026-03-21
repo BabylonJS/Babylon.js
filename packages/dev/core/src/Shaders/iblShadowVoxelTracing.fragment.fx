@@ -1,6 +1,6 @@
 precision highp sampler2D;
 precision highp sampler3D;
-#define PI 3.1415927
+#include<helperFunctions>
 varying vec2 vUV;
 
 #define DISABLE_UNIFORMITY_ANALYSIS
@@ -46,7 +46,6 @@ uniform mat4 invViewMtx;
 uniform mat4 wsNormalizationMtx;
 uniform mat4 invVPMtx;
 
-#define PI 3.1415927
 #define GOLD 0.618034
 
 struct AABB3f {
@@ -100,10 +99,6 @@ uint hash(uint i) {
   return i;
 }
 
-float uint2float(uint i) {
-  return uintBitsToFloat(0x3F800000u | (i >> 9u)) - 1.0;
-}
-
 vec3 uv_to_normal(vec2 uv) {
   vec3 N;
 
@@ -115,11 +110,6 @@ vec3 uv_to_normal(vec2 uv) {
   N.z = sin(theta) * sin(phi);
   N.y = cos(phi);
   return N;
-}
-
-vec2 plasticSequence(const uint rstate) {
-  return vec2(uint2float(rstate * 3242174889u),
-              uint2float(rstate * 2447445414u));
 }
 
 float goldenSequence(const uint rstate) {

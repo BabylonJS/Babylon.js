@@ -38,7 +38,7 @@
 
         #if (defined(USESPHERICALFROMREFLECTIONMAP) && (!defined(NORMAL) || !defined(USESPHERICALINVERTEX))) || (defined(USEIRRADIANCEMAP) && defined(REFLECTIONMAP_3D))
             var irradianceVector = (iblMatrix * vec4f(surfaceNormal, 0.0f)).xyz;
-            let irradianceView = (iblMatrix * vec4f(viewDirectionW, 0.0f)).xyz;
+            var irradianceView = (iblMatrix * vec4f(viewDirectionW, 0.0f)).xyz;
             #if !defined(USE_IRRADIANCE_DOMINANT_DIRECTION) && !defined(REALTIME_FILTERING)
                 // Approximate diffuse roughness by bending the surface normal away from the view.
                 #if BASE_DIFFUSE_MODEL != BRDF_DIFFUSE_MODEL_LAMBERT && BASE_DIFFUSE_MODEL != BRDF_DIFFUSE_MODEL_LEGACY
@@ -50,11 +50,13 @@
             #endif
 
             #ifdef REFLECTIONMAP_OPPOSITEZ
-                irradianceVector.z *= -1.0f;
+                irradianceVector.z *= -1.0;
+                irradianceView.z *= -1.0;
             #endif
 
             #ifdef INVERTCUBICMAP
-                irradianceVector.y *= -1.0f;
+                irradianceVector.y *= -1.0;
+                irradianceView.y *= -1.0;
             #endif
         #endif
         #ifdef USESPHERICALFROMREFLECTIONMAP
@@ -317,7 +319,7 @@
         return environmentRadiance.rgb;
     }
 #endif
-
+    #ifdef ENVIRONMENTBRDF
     fn conductorIblFresnel(reflectance: ReflectanceParams, NdotV: f32, roughness: f32, environmentBrdf: vec3f) -> vec3f
     {
         #if (CONDUCTOR_SPECULAR_MODEL == CONDUCTOR_SPECULAR_MODEL_OPENPBR)
@@ -329,4 +331,5 @@
             return getReflectanceFromBRDFLookup(reflectance.coloredF0, reflectance.coloredF90, environmentBrdf);
         #endif
     }
+    #endif
 #endif

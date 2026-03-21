@@ -5,7 +5,7 @@ var transmission_weight: f32 = uniforms.vTransmissionWeight;
 var transmission_color: vec3f = uniforms.vTransmissionColor.rgb;
 var transmission_depth: f32 = uniforms.vTransmissionDepth;
 var transmission_scatter: vec3f = uniforms.vTransmissionScatter.rgb;
-var transmission_scatter_anisotropy: f32 = uniforms.vTransmissionScatterAnisotropy;
+var transmission_scatter_anisotropy: f32 = clamp(uniforms.vTransmissionScatterAnisotropy, -0.9999f, 0.9999f);
 var transmission_dispersion_scale: f32 = uniforms.vTransmissionDispersionScale;
 var transmission_dispersion_abbe_number: f32 = uniforms.vTransmissionDispersionAbbeNumber;
 
