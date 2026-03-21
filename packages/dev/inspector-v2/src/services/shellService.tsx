@@ -9,6 +9,7 @@ import {
     Button,
     Divider,
     Toolbar as FluentToolbar,
+    Subtitle2Stronger,
     makeStyles,
     Menu,
     MenuGroup,
@@ -19,7 +20,6 @@ import {
     MenuTrigger,
     mergeClasses,
     SplitButton,
-    Subtitle2Stronger,
     tokens,
     ToolbarRadioButton,
 } from "@fluentui/react-components";
@@ -620,7 +620,12 @@ const DockMenu: FunctionComponent<
     );
 };
 
-const PaneHeader: FunctionComponent<{ id: string; title: string; icon?: ComponentType; dockOptions: Map<DockLocation, (sidePaneKey: string) => void> }> = (props) => {
+const PaneHeader: FunctionComponent<{
+    id: string;
+    title: string;
+    icon?: ComponentType;
+    dockOptions: Map<DockLocation, (sidePaneKey: string) => void>;
+}> = (props) => {
     const { id, title, dockOptions } = props;
 
     const classes = useStyles();

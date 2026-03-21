@@ -35,4 +35,12 @@ export const DefaultInspectorExtensionFeed = new BuiltInsExtensionFeed("Inspecto
         ...BabylonWebResources,
         getExtensionModuleAsync: async () => await import("../services/panes/tools/reflectorService"),
     },
+    {
+        name: "Animation Retargeting",
+        description: "Retarget animations from one skeleton to another using AnimatorAvatar. Includes a dedicated 3D viewport with dual-camera preview.",
+        keywords: ["animation", "retargeting", "skeleton", "avatar", "bones"],
+        ...BabylonWebResources,
+        author: { name: "Babylon.js", forumUserName: "" },
+        getExtensionModuleAsync: async () => await import("../extensions/animationRetargeting/animationRetargetingExtension"),
+    },
 ]);
