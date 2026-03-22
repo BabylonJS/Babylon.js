@@ -3,6 +3,7 @@ import type { IPointerEvent } from "../../Events/deviceInputEvents";
 import type { PointerTouch } from "../../Events/pointerEvents";
 import type { Nullable } from "../../types";
 import { OrbitCameraPointersInput } from "./orbitCameraPointersInput";
+import { Vector3Distance } from "../../Maths/math.vector.functions";
 
 /**
  * Geospatial camera inputs can simulate dragging the globe around or tilting the camera around some point on the globe
@@ -38,6 +39,14 @@ export class GeospatialCameraPointersInput extends OrbitCameraPointersInput {
      */
     public pinchToPanMax: number = 20;
 
+    private _isRotationButtonDown = false;
+    private _isMultiTouchPanning = false;
+
+    /** Returns true if any rotation is active (e.g., mouse rotation or multi-touch pan). */
+    public get isRotating(): boolean {
+        return this._isRotationButtonDown || this._isMultiTouchPanning;
+    }
+
     public override getClassName(): string {
         return "GeospatialCameraPointersInput";
     }
@@ -48,6 +57,10 @@ export class GeospatialCameraPointersInput extends OrbitCameraPointersInput {
         switch (evt.button) {
             case 0: // Left button - drag/pan globe under cursor
                 this.camera.movement.startDrag(scene.pointerX, scene.pointerY);
+                break;
+            case 1: // Middle button - rotation
+            case 2: // Right button - rotation
+                this._isRotationButtonDown = true;
                 break;
             default:
                 break;
@@ -96,7 +109,7 @@ export class GeospatialCameraPointersInput extends OrbitCameraPointersInput {
                 const pickResult = scene.pick(canvasX, canvasY, this.camera.movement.pickPredicate);
                 if (pickResult?.pickedPoint) {
                     // Scale zoom by distance to picked point
-                    const distanceToPoint = this.camera.position.subtract(pickResult.pickedPoint).length();
+                    const distanceToPoint = Vector3Distance(this.camera.position, pickResult.pickedPoint);
                     const zoomDistance = pinchDelta * distanceToPoint * 0.005;
                     const clampedZoom = this.camera.limits.clampZoomDistance(zoomDistance, this.camera.radius, distanceToPoint);
                     this.camera.zoomToPoint(pickResult.pickedPoint, clampedZoom);
@@ -119,6 +132,7 @@ export class GeospatialCameraPointersInput extends OrbitCameraPointersInput {
      */
     protected override _computeMultiTouchPanning(previousMultiTouchPanPosition: Nullable<PointerTouch>, multiTouchPanPosition: Nullable<PointerTouch>): void {
         if (previousMultiTouchPanPosition && multiTouchPanPosition) {
+            this._isMultiTouchPanning = true;
             const moveDeltaX = multiTouchPanPosition.x - previousMultiTouchPanPosition.x;
             const moveDeltaY = multiTouchPanPosition.y - previousMultiTouchPanPosition.y;
             this._handleTilt(moveDeltaX, moveDeltaY);
@@ -147,6 +161,7 @@ export class GeospatialCameraPointersInput extends OrbitCameraPointersInput {
         if (pinchSquaredDistance === 0 && multiTouchPanPosition === null) {
             this._initialPinchSquaredDistance = 0;
             this._pinchCentroid = null;
+            this._isMultiTouchPanning = false;
             super.onMultiTouch(pointA, pointB, previousPinchSquaredDistance, pinchSquaredDistance, previousMultiTouchPanPosition, multiTouchPanPosition);
             return;
         }
@@ -166,12 +181,16 @@ export class GeospatialCameraPointersInput extends OrbitCameraPointersInput {
     public override onButtonUp(_evt: IPointerEvent): void {
         this.camera.movement.stopDrag();
         this.camera.movement.activeInput = false;
+        this._isRotationButtonDown = false;
+        this._isMultiTouchPanning = false;
         this._initialPinchSquaredDistance = 0;
         this._pinchCentroid = null;
         super.onButtonUp(_evt);
     }
 
     public override onLostFocus(): void {
+        this._isRotationButtonDown = false;
+        this._isMultiTouchPanning = false;
         this._initialPinchSquaredDistance = 0;
         this._pinchCentroid = null;
         super.onLostFocus();
