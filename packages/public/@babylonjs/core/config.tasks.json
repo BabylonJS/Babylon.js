@@ -26,6 +26,10 @@
         {
             "command": "cp",
             "args": ["-f", "../../../tools/babylonServer/public/twgsl", "--to", "./assets/twgsl"]
+        },
+        {
+            "command": "cp",
+            "args": ["-f", "../../../tools/babylonServer/public/meshopt_decoder.js", "--to", "./assets/meshopt"]
         }
     ]
 }
