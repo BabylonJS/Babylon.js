@@ -266,3 +266,29 @@ test('shadow-quality="high"', async ({ page }) => {
         return (viewerElement as ViewerElement).viewerDetails;
     }, viewerElementHandle);
 });
+
+test("concurrent lighting and skybox environment updates", async ({ page }) => {
+    const viewerElementHandle = await attachViewerElement(
+        page,
+        `
+        <babylon-viewer render-when-idle
+            source="https://assets.babylonjs.com/meshes/boombox.glb"
+            environment="auto"
+        >
+        </babylon-viewer>
+        `
+    );
+
+    // Trigger back-to-back lighting-only and skybox-only updates without awaiting them individually.
+    // This exercises the separate abort controllers and locks to ensure they don't cancel each other.
+    await page.waitForFunction(async (viewerElement) => {
+        const viewer = (viewerElement as ViewerElement).viewerDetails?.viewer;
+        if (!viewer) {
+            return false;
+        }
+
+        const results = await Promise.allSettled([viewer.resetEnvironment({ lighting: true }), viewer.resetEnvironment({ skybox: true })]);
+
+        return results.every((r) => r.status === "fulfilled");
+    }, viewerElementHandle);
+});

@@ -915,8 +915,11 @@ export class Viewer implements IDisposable {
     private readonly _loadModelLock = new AsyncLock();
     private _loadModelAbortController: Nullable<AbortController> = null;
 
-    private readonly _loadEnvironmentLock = new AsyncLock();
-    private _loadEnvironmentAbortController: Nullable<AbortController> = null;
+    private readonly _loadEnvironmentLightingLock = new AsyncLock();
+    private _loadEnvironmentLightingAbortController: Nullable<AbortController> = null;
+
+    private readonly _loadEnvironmentSkyboxLock = new AsyncLock();
+    private _loadEnvironmentSkyboxAbortController: Nullable<AbortController> = null;
 
     private _camerasAsHotSpotsAbortController: Nullable<AbortController> = null;
 
@@ -1883,7 +1886,12 @@ export class Viewer implements IDisposable {
         ]);
 
         // cancel if the model is unloaded before the shadows are created
-        this._throwIfDisposedOrAborted(abortSignal, this._loadModelAbortController?.signal, this._loadEnvironmentAbortController?.signal);
+        this._throwIfDisposedOrAborted(
+            abortSignal,
+            this._loadModelAbortController?.signal,
+            this._loadEnvironmentLightingAbortController?.signal,
+            this._loadEnvironmentSkyboxAbortController?.signal
+        );
 
         let high = this._shadowState.high;
 
@@ -2051,7 +2059,12 @@ export class Viewer implements IDisposable {
         ]);
 
         // cancel if the model is unloaded before the shadows are created
-        this._throwIfDisposedOrAborted(abortSignal, this._loadModelAbortController?.signal, this._loadEnvironmentAbortController?.signal);
+        this._throwIfDisposedOrAborted(
+            abortSignal,
+            this._loadModelAbortController?.signal,
+            this._loadEnvironmentLightingAbortController?.signal,
+            this._loadEnvironmentSkyboxAbortController?.signal
+        );
 
         let normal = this._shadowState.normal;
 
@@ -2070,7 +2083,12 @@ export class Viewer implements IDisposable {
 
         const iblCdfGenerator = normal?.iblDirection.iblCdfGenerator ? normal?.iblDirection.iblCdfGenerator : new IblCdfGenerator(this._engine);
         const iblDirection = await this._findIblDominantDirection(iblCdfGenerator);
-        this._throwIfDisposedOrAborted(abortSignal, this._loadModelAbortController?.signal, this._loadEnvironmentAbortController?.signal);
+        this._throwIfDisposedOrAborted(
+            abortSignal,
+            this._loadModelAbortController?.signal,
+            this._loadEnvironmentLightingAbortController?.signal,
+            this._loadEnvironmentSkyboxAbortController?.signal
+        );
 
         this._snapshotHelper?.disableSnapshotRendering();
 
@@ -2288,11 +2306,24 @@ export class Viewer implements IDisposable {
             options = { ...options, extension: ".env" };
         }
 
-        this._loadEnvironmentAbortController?.abort(new AbortError("New environment is being loaded before previous environment finished loading."));
-        const loadEnvironmentAbortController = (this._loadEnvironmentAbortController = new AbortController());
+        const locks: AsyncLock[] = [];
+        const internalAbortSignals: AbortSignal[] = [];
 
-        await this._loadEnvironmentLock.lockAsync(async () => {
-            throwIfAborted(abortSignal, loadEnvironmentAbortController.signal);
+        if (options.lighting) {
+            this._loadEnvironmentLightingAbortController?.abort(new AbortError("New environment lighting is being loaded before previous environment lighting finished loading."));
+            const lightingAbortController = (this._loadEnvironmentLightingAbortController = new AbortController());
+            locks.push(this._loadEnvironmentLightingLock);
+            internalAbortSignals.push(lightingAbortController.signal);
+        }
+        if (options.skybox) {
+            this._loadEnvironmentSkyboxAbortController?.abort(new AbortError("New environment skybox is being loaded before previous environment skybox finished loading."));
+            const skyboxAbortController = (this._loadEnvironmentSkyboxAbortController = new AbortController());
+            locks.push(this._loadEnvironmentSkyboxLock);
+            internalAbortSignals.push(skyboxAbortController.signal);
+        }
+
+        await AsyncLock.LockAsync(async () => {
+            throwIfAborted(abortSignal, ...internalAbortSignals);
 
             const getDefaultEnvironmentUrlAsync = async () => (await import("./defaultEnvironment")).default;
 
@@ -2406,7 +2437,7 @@ export class Viewer implements IDisposable {
                 this._snapshotHelper?.enableSnapshotRendering();
                 this._markSceneMutated();
             }
-        });
+        }, locks);
     }
 
     /**
@@ -2570,11 +2601,12 @@ export class Viewer implements IDisposable {
         this.selectedAnimation = -1;
         this.animationProgress = 0;
 
-        this._loadEnvironmentAbortController?.abort(new AbortError("Thew viewer is being disposed."));
-        this._loadModelAbortController?.abort(new AbortError("Thew viewer is being disposed."));
-        this._camerasAsHotSpotsAbortController?.abort(new AbortError("Thew viewer is being disposed."));
-        this._shadowsAbortController?.abort(new AbortError("Thew viewer is being disposed."));
-        this._ssaoAbortController?.abort(new AbortError("Thew viewer is being disposed."));
+        this._loadEnvironmentLightingAbortController?.abort(new AbortError("The viewer is being disposed."));
+        this._loadEnvironmentSkyboxAbortController?.abort(new AbortError("The viewer is being disposed."));
+        this._loadModelAbortController?.abort(new AbortError("The viewer is being disposed."));
+        this._camerasAsHotSpotsAbortController?.abort(new AbortError("The viewer is being disposed."));
+        this._shadowsAbortController?.abort(new AbortError("The viewer is being disposed."));
+        this._ssaoAbortController?.abort(new AbortError("The viewer is being disposed."));
 
         this._renderLoopController?.dispose();
         this._activeModel?.dispose();
