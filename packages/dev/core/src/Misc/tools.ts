@@ -623,7 +623,7 @@ export class Tools {
                 }
             } catch (e) {
                 // if in a module type worker, importScripts is not available; use import instead
-                if (e instanceof TypeError && e.message.includes("importScripts")) {
+                if (e instanceof TypeError) {
                     // avoid static analysis of this import in webpack builds, which causes false positive errors
                     const dynamicImport = new Function("url", "return import(url)");
                     dynamicImport(scriptUrl)
