@@ -8,6 +8,10 @@ import { DarkTheme, LightTheme } from "../themes/babylonTheme";
 import { useObservableState } from "./observableHooks";
 import { useResource } from "./resourceHooks";
 
+/**
+ * Hook that provides the current theme mode state and controls for changing it.
+ * @returns An object with the current dark mode state, theme mode, and functions to set or toggle the theme.
+ */
 export function useThemeMode() {
     const settingsStore = useSettingsStore();
     const themeResolver = useResource(useCallback(() => (settingsStore ? new ThemeResolver(settingsStore) : undefined), [settingsStore]));
@@ -37,6 +41,11 @@ export function useThemeMode() {
     return state;
 }
 
+/**
+ * Hook that returns the current Fluent UI theme based on the active theme mode.
+ * @param invert If true, inverts the theme (returns light theme in dark mode and vice versa). Defaults to false.
+ * @returns The current Fluent UI theme object.
+ */
 export function useTheme(invert = false) {
     const { isDarkMode } = useThemeMode();
     return isDarkMode !== invert ? DarkTheme : LightTheme;

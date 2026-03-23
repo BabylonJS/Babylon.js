@@ -3,6 +3,7 @@ import type { ISceneContext } from "../../sceneContext";
 import type { IWatcherService } from "../../watcherService";
 import type { ISceneExplorerService } from "./sceneExplorerService";
 
+import { tokens } from "@fluentui/react-components";
 import { ImageEditRegular, ImageRegular } from "@fluentui/react-icons";
 
 import { DynamicTexture } from "core/Materials/Textures/dynamicTexture";
@@ -44,7 +45,8 @@ export const TextureExplorerServiceDefinition: ServiceDefinition<[], [ISceneExpl
                     },
                 };
             },
-            entityIcon: ({ entity: texture }) => (texture instanceof DynamicTexture ? <ImageEditRegular /> : <ImageRegular />),
+            entityIcon: ({ entity: texture }) =>
+                texture instanceof DynamicTexture ? <ImageEditRegular color={tokens.colorPaletteGrapeForeground2} /> : <ImageRegular color={tokens.colorPaletteGrapeForeground2} />,
             getEntityAddedObservables: () => [scene.onNewTextureAddedObservable],
             getEntityRemovedObservables: () => [scene.onTextureRemovedObservable],
         });

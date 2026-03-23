@@ -118,15 +118,13 @@ export class SheenBlock extends NodeMaterialBlock {
      * @returns the shader code
      */
     public getCode(reflectionBlock: Nullable<ReflectionBlock>, state: NodeMaterialBuildState): string {
-        let code = "";
-
         const color = this.color.isConnected ? this.color.associatedVariableName : `vec3${state.fSuffix}(1.)`;
         const intensity = this.intensity.isConnected ? this.intensity.associatedVariableName : "1.";
         const roughness = this.roughness.isConnected ? this.roughness.associatedVariableName : "0.";
         const texture = `vec4${state.fSuffix}(0.)`;
         const isWebGPU = state.shaderLanguage === ShaderLanguage.WGSL;
 
-        code = `#ifdef SHEEN
+        const code = `#ifdef SHEEN
             ${isWebGPU ? "var sheenOut: sheenOutParams" : "sheenOutParams sheenOut"};
 
             ${state._declareLocalVar("vSheenColor", NodeMaterialBlockConnectionPointTypes.Vector4)} = vec4${state.fSuffix}(${color}, ${intensity});

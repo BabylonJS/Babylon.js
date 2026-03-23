@@ -431,7 +431,7 @@ export const MeshesContent: FunctionComponent<{ scene: Scene; selectionService: 
                         />
                     </div>
                 </SettingsPopover>
-                <input ref={fileInputRef} type="file" accept={`${supportedModelExtensions.join(",")}`} multiple style={{ display: "none" }} onChange={handleLocalMeshImport} />
+                <input ref={fileInputRef} type="file" accept={supportedModelExtensions.join(",")} multiple style={{ display: "none" }} onChange={handleLocalMeshImport} />
             </QuickCreateRow>
         </QuickCreateSection>
     );

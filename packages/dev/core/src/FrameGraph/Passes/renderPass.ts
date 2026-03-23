@@ -153,15 +153,11 @@ export class FrameGraphRenderPass extends FrameGraphPass<FrameGraphRenderContext
 
     /** @internal */
     public override _execute() {
-        const currentDebugMarkers = this._context.enableDebugMarkers;
-
-        this._context.enableDebugMarkers = !this._parentTask._disableDebugMarkers;
         this._context.bindRenderTarget(this._frameGraphRenderTarget);
 
         super._execute();
 
         this._context.restoreDefaultFramebuffer();
-        this._context.enableDebugMarkers = currentDebugMarkers;
     }
 
     /** @internal */

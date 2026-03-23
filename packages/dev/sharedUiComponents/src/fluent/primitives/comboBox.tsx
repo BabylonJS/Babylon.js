@@ -14,8 +14,8 @@ const useStyles = makeStyles({
         maxWidth: "400px",
     },
     comboBox: {
-        width: CustomTokens.inputWidth,
-        minWidth: CustomTokens.inputWidth,
+        width: CustomTokens.valueWidth,
+        minWidth: CustomTokens.valueWidth,
         boxSizing: "border-box",
     },
     input: {

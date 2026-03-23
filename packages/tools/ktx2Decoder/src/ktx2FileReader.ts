@@ -213,8 +213,6 @@ export class KTX2FileReader {
             });
         }
 
-        offsetInFile += levelReader.byteOffset;
-
         /**
          * Get the data format descriptor (DFD) blocks
          */

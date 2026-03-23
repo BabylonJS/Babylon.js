@@ -28,7 +28,7 @@ export const App: FunctionComponent = () => {
                     )}
                 </div>
             </SplitContainer>
-            <div className="blocker">Viewer Configurator needs a horizontal resolution of at least 900px</div>
+            <div className="blocker">Viewer Configurator needs a horizontal resolution of at least 600px</div>
         </>
     );
 };

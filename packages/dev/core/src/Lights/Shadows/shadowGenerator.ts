@@ -841,6 +841,8 @@ export class ShadowGenerator implements IShadowGenerator {
     protected _scene: Scene;
     protected _useRedTextureType: boolean;
     protected _lightDirection = Vector3.Zero();
+    protected _usefullFloatFirst: boolean;
+    protected _forceGLSL: boolean;
 
     protected _viewMatrix = Matrix.Zero();
     protected _projectionMatrix = Matrix.Zero();
@@ -885,6 +887,73 @@ export class ShadowGenerator implements IShadowGenerator {
     }
 
     /**
+     * Gets or sets the light that is casting the shadows
+     */
+    public get light(): IShadowLight {
+        return this._light;
+    }
+
+    public set light(light: IShadowLight) {
+        if (this._light === light) {
+            return;
+        }
+        this.dispose(false);
+        this._light = light;
+        this._createInstance();
+    }
+
+    /**
+     * Gets or sets a value indicating whether the shadow map should use full float texture type (instead of half float, which is the default).
+     * Use this option when you need more precision (for self shadowing, for instance).
+     */
+    public get useFloat32TextureType(): boolean {
+        return this._usefullFloatFirst;
+    }
+
+    public set useFloat32TextureType(useFloat32TextureType: boolean) {
+        if (this._usefullFloatFirst === useFloat32TextureType) {
+            return;
+        }
+        this.dispose(false);
+        this._usefullFloatFirst = useFloat32TextureType;
+        this._createInstance();
+    }
+
+    /**
+     * Gets or sets the camera associated with this shadow generator.
+     * When null, the scene's active camera is used at render time.
+     */
+    public get camera(): Nullable<Camera> {
+        return this._camera;
+    }
+
+    public set camera(camera: Nullable<Camera>) {
+        if (this._camera === camera) {
+            return;
+        }
+        this.dispose(false);
+        this._camera = camera;
+        this._createInstance();
+    }
+
+    /**
+     * Gets or sets a value indicating whether the shadow map should use a red-channel-only texture format.
+     * Using a single-channel format reduces memory usage when color data is not needed.
+     */
+    public get useRedTextureFormat(): boolean {
+        return this._useRedTextureType;
+    }
+
+    public set useRedTextureFormat(useRedTextureFormat: boolean) {
+        if (this._useRedTextureType === useRedTextureFormat) {
+            return;
+        }
+        this.dispose(false);
+        this._useRedTextureType = useRedTextureFormat;
+        this._createInstance();
+    }
+
+    /**
      * Creates a ShadowGenerator object.
      * A ShadowGenerator is the required tool to use the shadows.
      * Each light casting shadows needs to use its own ShadowGenerator.
@@ -899,19 +968,25 @@ export class ShadowGenerator implements IShadowGenerator {
     constructor(mapSize: number, light: IShadowLight, usefullFloatFirst?: boolean, camera?: Nullable<Camera>, useRedTextureType?: boolean, forceGLSL = false) {
         this._mapSize = mapSize;
         this._light = light;
+        this._usefullFloatFirst = !!usefullFloatFirst;
         this._scene = light.getScene();
         this._camera = camera ?? null;
         this._useRedTextureType = !!useRedTextureType;
+        this._forceGLSL = forceGLSL;
 
+        this._createInstance();
+    }
+
+    private _createInstance() {
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        this._initShaderSourceAsync(forceGLSL);
+        this._initShaderSourceAsync(this._forceGLSL);
 
-        let shadowGenerators = light._shadowGenerators;
+        let shadowGenerators = this._light._shadowGenerators;
         if (!shadowGenerators) {
-            shadowGenerators = light._shadowGenerators = new Map();
+            shadowGenerators = this._light._shadowGenerators = new Map();
         }
         shadowGenerators.set(this._camera, this);
-        this.id = light.id;
+        this.id = this._light.id;
         this._useUBO = this._scene.getEngine().supportsUniformBuffers;
 
         if (this._useUBO) {
@@ -923,7 +998,7 @@ export class ShadowGenerator implements IShadowGenerator {
         // Texture type fallback from float to int if not supported.
         const caps = this._scene.getEngine().getCaps();
 
-        if (!usefullFloatFirst) {
+        if (!this._usefullFloatFirst) {
             if (caps.textureHalfFloatRender && caps.textureHalfFloatLinearFiltering) {
                 this._textureType = Constants.TEXTURETYPE_HALF_FLOAT;
             } else if (caps.textureFloatRender && caps.textureFloatLinearFiltering) {
@@ -1048,7 +1123,6 @@ export class ShadowGenerator implements IShadowGenerator {
         this._shadowMap.onBeforeBindObservable.add(() => {
             this._currentSceneUBO = this._scene.getSceneUniformBuffer();
             if (engine._enableGPUDebugMarkers) {
-                engine.restoreDefaultFramebuffer(true);
                 engine._debugPushGroup?.(`Shadow map generation for pass id ${engine.currentRenderPassId}`);
             }
         });
@@ -2061,9 +2135,10 @@ export class ShadowGenerator implements IShadowGenerator {
 
     /**
      * Disposes the ShadowGenerator.
+     * @param clearObservables Defines whether to clear the observables or not (true by default).
      * Returns nothing.
      */
-    public dispose(): void {
+    public dispose(clearObservables: boolean = true): void {
         this._disposeRTTandPostProcesses();
 
         this._disposeSceneUBOs();
@@ -2084,10 +2159,12 @@ export class ShadowGenerator implements IShadowGenerator {
             this._light._markMeshesAsLightDirty();
         }
 
-        this.onBeforeShadowMapRenderMeshObservable.clear();
-        this.onBeforeShadowMapRenderObservable.clear();
-        this.onAfterShadowMapRenderMeshObservable.clear();
-        this.onAfterShadowMapRenderObservable.clear();
+        if (clearObservables) {
+            this.onBeforeShadowMapRenderMeshObservable.clear();
+            this.onBeforeShadowMapRenderObservable.clear();
+            this.onAfterShadowMapRenderMeshObservable.clear();
+            this.onAfterShadowMapRenderObservable.clear();
+        }
     }
 
     /**

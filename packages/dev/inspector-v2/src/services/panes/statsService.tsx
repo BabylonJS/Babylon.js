@@ -17,6 +17,9 @@ import { ObservableCollection } from "../../misc/observableCollection";
 import { SceneContextIdentity } from "../sceneContext";
 import { ShellServiceIdentity } from "../shellService";
 
+/**
+ * The unique identity symbol for the stats service.
+ */
 export const StatsServiceIdentity = Symbol("StatsService");
 
 /**

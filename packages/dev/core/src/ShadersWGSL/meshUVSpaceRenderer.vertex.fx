@@ -16,8 +16,8 @@ varying vDecalTC: vec2f;
 
 @vertex
 fn main(input : VertexInputs) -> FragmentInputs {
-    var positionUpdated: vec3f = input.position;
-    var normalUpdated: vec3f = input.normal;
+    var positionUpdated: vec3f = vertexInputs.position;
+    var normalUpdated: vec3f = vertexInputs.normal;
 
     #include<morphTargetsVertexGlobal>
     #include<morphTargetsVertex>[0..maxSimultaneousMorphTargets]
@@ -48,5 +48,5 @@ fn main(input : VertexInputs) -> FragmentInputs {
     var decalTC: vec3f = (uniforms.projMatrix * worldPos).xyz;
     vertexOutputs.vDecalTC = decalTC.xy;
 
-    vertexOutputs.position = vec4f(input.uv * 2.0 - 1.0, select(decalTC.z, 2., normalView.z > 0.0), 1.0);
+    vertexOutputs.position = vec4f(vertexInputs.uv * 2.0 - 1.0, select(decalTC.z, 2., normalView.z > 0.0), 1.0);
 }

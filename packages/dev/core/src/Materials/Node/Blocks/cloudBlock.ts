@@ -193,7 +193,7 @@ export class CloudBlock extends NodeMaterialBlock {
             state.compilationString += `${localVariable}.z += 0.1 * ${this.offsetZ.associatedVariableName};\n`;
         }
 
-        let chaosValue = "";
+        let chaosValue: string;
         if (this.chaos.isConnected) {
             chaosValue = this.chaos.associatedVariableName;
         } else {

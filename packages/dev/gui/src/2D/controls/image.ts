@@ -751,8 +751,9 @@ export class Image extends Control {
                 let elemMatrixD = 1;
                 let elemMatrixE = 0;
                 let elemMatrixF = 0;
-                const mainMatrix = elem.transform.baseVal.consolidate()!.matrix;
-                if (elem.transform && elem.transform.baseVal.consolidate()) {
+                const consolidatedTransform = elem.transform?.baseVal.consolidate();
+                if (consolidatedTransform) {
+                    const mainMatrix = consolidatedTransform.matrix;
                     elemMatrixA = mainMatrix.a;
                     elemMatrixD = mainMatrix.d;
                     elemMatrixE = mainMatrix.e;

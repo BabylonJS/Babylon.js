@@ -21,7 +21,9 @@ void main(void) {
 #if MAX_DRAW_BUFFERS > 4
     glFragData[4] = normPos.z >= nearPlane + 4.0 * stepSize && normPos.z < nearPlane + 5.0 * stepSize ? 1.0 : 0.0;
     glFragData[5] = normPos.z >= nearPlane + 5.0 * stepSize && normPos.z < nearPlane + 6.0 * stepSize ? 1.0 : 0.0;
+#if MAX_DRAW_BUFFERS > 6
     glFragData[6] = normPos.z >= nearPlane + 6.0 * stepSize && normPos.z < nearPlane + 7.0 * stepSize ? 1.0 : 0.0;
     glFragData[7] = normPos.z >= nearPlane + 7.0 * stepSize && normPos.z < nearPlane + 8.0 * stepSize ? 1.0 : 0.0;
+#endif
 #endif
 }

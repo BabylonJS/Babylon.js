@@ -196,19 +196,6 @@ export class DepthRenderer {
             engine.clear(this.clearColor, true, true, true);
         });
 
-        this._depthMap.onBeforeBindObservable.add(() => {
-            if (engine._enableGPUDebugMarkers) {
-                engine.restoreDefaultFramebuffer(true);
-                engine._debugPushGroup?.(`Depth renderer`);
-            }
-        });
-
-        this._depthMap.onAfterUnbindObservable.add(() => {
-            if (engine._enableGPUDebugMarkers) {
-                engine._debugPopGroup?.();
-            }
-        });
-
         this._depthMap.customIsReadyFunction = (mesh: AbstractMesh, refreshRate: number, preWarm?: boolean) => {
             if ((preWarm || refreshRate === 0) && mesh.subMeshes) {
                 for (let i = 0; i < mesh.subMeshes.length; ++i) {

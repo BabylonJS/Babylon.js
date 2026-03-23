@@ -78,7 +78,7 @@ export const FrameBar: FunctionComponent<FrameBarProps> = ({ width }) => {
         }
 
         // Determine tick spacing based on zoom level
-        let tickSpacing = 10;
+        let tickSpacing: number;
         if (range > 500) {
             tickSpacing = 100;
         } else if (range > 200) {

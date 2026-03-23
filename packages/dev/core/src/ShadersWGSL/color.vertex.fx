@@ -41,7 +41,7 @@ fn main(input : VertexInputs) -> FragmentInputs {
 #include<instancesVertex>
 #include<bonesVertex>
 #include<bakedVertexAnimation>
-    var worldPos: vec4f = finalWorld *  vec4f(input.position, 1.0);
+    var worldPos: vec4f = finalWorld *  vec4f(vertexInputs.position, 1.0);
 
 	vertexOutputs.position = uniforms.viewProjection * worldPos;
 

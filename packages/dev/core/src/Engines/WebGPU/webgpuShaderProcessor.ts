@@ -105,7 +105,7 @@ export abstract class WebGPUShaderProcessor implements IShaderProcessor {
     protected abstract _generateLeftOverUBOCode(name: string, uniformBufferDescription: WebGPUBufferDescription): string;
 
     protected _addUniformToLeftOverUBO(name: string, uniformType: string, preProcessors: { [key: string]: string }): void {
-        let length = 0;
+        let length: number;
 
         [name, uniformType, length] = this._getArraySize(name, uniformType, preProcessors);
 

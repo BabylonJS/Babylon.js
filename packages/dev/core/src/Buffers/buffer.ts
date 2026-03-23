@@ -528,7 +528,7 @@ export class VertexBuffer {
         divisor = 1,
         takeBufferOwnership = false
     ) {
-        let updatable = false;
+        let updatable: boolean;
 
         this.engine = engine;
 

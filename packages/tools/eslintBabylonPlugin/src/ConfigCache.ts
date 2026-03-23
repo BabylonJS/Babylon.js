@@ -51,7 +51,7 @@ export class ConfigCache {
 
         const nowMs: number = ConfigCache._GetTimeInMs();
 
-        let cachedConfig: ICachedConfig | undefined = undefined;
+        let cachedConfig: ICachedConfig | undefined;
 
         // Do we have a cached object?
         cachedConfig = ConfigCache._CachedConfigs.get(cacheKey);

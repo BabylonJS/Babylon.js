@@ -33,7 +33,7 @@ export class DownloadManager {
                 throw new Error("esbuild not found in imported module");
             }
         } catch (error) {
-            throw new Error(`Could not load esbuild: ${error}`);
+            throw new Error(`Could not load esbuild: ${error}`, { cause: error });
         }
         if (!(esbuild as any).__pgInit) {
             await esbuild.initialize({

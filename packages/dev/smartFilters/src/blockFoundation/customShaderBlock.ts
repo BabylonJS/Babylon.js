@@ -325,7 +325,7 @@ export class CustomShaderBlock extends ShaderBlock {
         }
 
         // Validate the default value based on the connection point type
-        let returnValue: Nullable<ConnectionPointValue<U>> = null;
+        let returnValue: Nullable<ConnectionPointValue<U>>;
         switch (connectionPointType) {
             case ConnectionPointType.Float:
                 returnValue = typeof defaultValue === "number" ? defaultValue : null;

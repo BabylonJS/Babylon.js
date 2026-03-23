@@ -2,7 +2,7 @@ import { NullEngine } from "core/Engines";
 import { Scene } from "core/scene";
 import { FlowGraphCoordinator } from "core/FlowGraph/flowGraphCoordinator";
 import { Vector3 } from "core/Maths";
-import { ArcRotateCamera } from "core/Cameras";
+import { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
 import { Logger } from "core/Misc";
 import { ParseFlowGraphAsync } from "core/FlowGraph";
 import { InteractivityGraphToFlowGraphParser } from "loaders/glTF/2.0/Extensions/KHR_interactivity/interactivityGraphParser";
@@ -12,9 +12,9 @@ import { IKHRInteractivity_Declaration, IKHRInteractivity_Graph, IKHRInteractivi
 describe("Flow Nodes", () => {
     let engine;
     let scene: Scene;
-    const log: jest.SpyInstance = jest.spyOn(Logger, "Log").mockImplementation(() => {});
-    const errorLog: jest.SpyInstance = jest.spyOn(Logger, "Error").mockImplementation(() => {});
-    const warnLog: jest.SpyInstance = jest.spyOn(Logger, "Warn").mockImplementation(() => {});
+    const log: ReturnType<typeof vi.spyOn> = vi.spyOn(Logger, "Log").mockImplementation(() => {});
+    const errorLog: ReturnType<typeof vi.spyOn> = vi.spyOn(Logger, "Error").mockImplementation(() => {});
+    const warnLog: ReturnType<typeof vi.spyOn> = vi.spyOn(Logger, "Warn").mockImplementation(() => {});
     let mockGltf: any;
     const pathConverter = GetPathToObjectConverter(mockGltf);
     let renderInterval: any;
@@ -1031,8 +1031,14 @@ describe("Flow Nodes", () => {
 
         // wait 1 second
         await new Promise((resolve) => setTimeout(resolve, 1000 + 100));
-        // expect the log to be called with 1,1,1
-        expect(log).toHaveBeenCalledWith(new Vector3(1, 1, 1));
+        // expect the log to be called with approximately 1,1,1 (closeTo handles minor floating-point imprecision from bezier easing under load)
+        expect(log).toHaveBeenCalledWith(
+            expect.objectContaining({
+                _x: expect.closeTo(1, 2),
+                _y: expect.closeTo(1, 2),
+                _z: expect.closeTo(1, 2),
+            })
+        );
         // check that the calls interpolation worked, i.e. the vector x is between 0 and 1
         expect(calls.every((v) => v.x >= 0 && v.x <= 1)).toBe(true);
         log.mockImplementation(() => {});

@@ -79,7 +79,7 @@ export async function SaveToSnippetServer(config: SaveToSnippetConfig): Promise<
     } catch (e) {
         const errorMsg = `Unable to save your ${entityName ?? "content"}: ${e}`;
         alert(errorMsg);
-        throw new Error(errorMsg);
+        throw new Error(errorMsg, { cause: e });
     }
 
     if (!response.ok) {
@@ -140,7 +140,7 @@ export async function LoadFromSnippetServer(config: LoadFromSnippetConfig): Prom
     } catch (e) {
         const errorMsg = `Unable to load your ${entityName ?? "content"}: ${e}`;
         alert(errorMsg);
-        throw new Error(errorMsg);
+        throw new Error(errorMsg, { cause: e });
     }
 
     if (!response.ok) {

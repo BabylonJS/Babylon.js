@@ -59,7 +59,7 @@ fn main(input : VertexInputs) -> FragmentInputs {
 
 
 #ifdef REFLECTIONMAP_SKYBOX
-    vertexOutputs.vPositionUVW = input.position;
+    vertexOutputs.vPositionUVW = vertexInputs.position;
 #endif
 
 #include<instancesVertex>
@@ -68,15 +68,15 @@ fn main(input : VertexInputs) -> FragmentInputs {
 
 #ifdef MULTIVIEW
 	if (gl_ViewID_OVR == 0u) {
-		vertexOutputs.position = scene.viewProjection * finalWorld *  vec4f(input.position, 1.0);
+		vertexOutputs.position = scene.viewProjection * finalWorld *  vec4f(vertexInputs.position, 1.0);
 	} else {
-		vertexOutputs.position = scene.viewProjectionR * finalWorld *  vec4f(input.position, 1.0);
+		vertexOutputs.position = scene.viewProjectionR * finalWorld *  vec4f(vertexInputs.position, 1.0);
 	}
 #else
-	vertexOutputs.position = scene.viewProjection * finalWorld *  vec4f(input.position, 1.0);
+	vertexOutputs.position = scene.viewProjection * finalWorld *  vec4f(vertexInputs.position, 1.0);
 #endif
 
-	var worldPos: vec4f = finalWorld *  vec4f(input.position, 1.0);
+	var worldPos: vec4f = finalWorld *  vec4f(vertexInputs.position, 1.0);
 	vertexOutputs.vPositionW =  worldPos.xyz;
 
 #ifdef NORMAL
@@ -86,11 +86,11 @@ fn main(input : VertexInputs) -> FragmentInputs {
 		normalWorld = transposeMat3(inverseMat3(normalWorld));
 	#endif
 
-	vertexOutputs.vNormalW = normalize(normalWorld * input.normal);
+	vertexOutputs.vNormalW = normalize(normalWorld * vertexInputs.normal);
 #endif
 
 #if defined(REFLECTIONMAP_EQUIRECTANGULAR_FIXED) || defined(REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED)
-    vertexOutputs.vDirectionW = normalize((finalWorld * vec4f(input.position, 0.0)).xyz);
+    vertexOutputs.vDirectionW = normalize((finalWorld * vec4f(vertexInputs.position, 0.0)).xyz);
 
 
     #ifdef EQUIRECTANGULAR_RELFECTION_FOV
@@ -107,12 +107,12 @@ fn main(input : VertexInputs) -> FragmentInputs {
 #ifndef UV1
     var uv: vec2f = vec2f(0., 0.);
 #else
-    var uv = input.uv;
+    var uv = vertexInputs.uv;
 #endif
 #ifndef UV2
     var uv2: vec2f = vec2f(0., 0.);
 #else
-    var uv2 = input.uv2;
+    var uv2 = vertexInputs.uv2;
 #endif
 
 #ifdef MAINUV1

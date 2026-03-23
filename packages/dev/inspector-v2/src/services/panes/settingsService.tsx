@@ -16,6 +16,9 @@ import { CompactModeSettingDescriptor, DisableCopySettingDescriptor, UseDegreesS
 import { SceneContextIdentity } from "../sceneContext";
 import { ShellServiceIdentity } from "../shellService";
 
+/**
+ * The unique identity symbol for the settings service.
+ */
 export const SettingsServiceIdentity = Symbol("SettingsService");
 
 /**

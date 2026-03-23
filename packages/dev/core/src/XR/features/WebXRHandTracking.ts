@@ -385,9 +385,8 @@ export class WebXRHand implements IDisposable {
             // Set the rotation quaternion so we can use it later for tracking.
             if (!_jointMeshes[jointIdx].rotationQuaternion) {
                 _jointMeshes[jointIdx].rotationQuaternion = new Quaternion();
-            } else {
-                _jointMeshes[jointIdx].rotationQuaternion!.set(0, 0, 0, 1);
             }
+            _jointMeshes[jointIdx].rotationQuaternion!.set(0, 0, 0, 1);
         }
 
         if (_handMesh) {
@@ -586,6 +585,7 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
     private static _GenerateTrackedJointMeshes(options: IWebXRHandTrackingOptions, originalMesh: AbstractMesh): { left: AbstractMesh[]; right: AbstractMesh[] } {
         const meshes: { left: AbstractMesh[]; right: AbstractMesh[] } = { left: [], right: [] };
 
+        originalMesh.isVisible = !!options.jointMeshes?.keepOriginalVisible;
         for (const handedness of ["left", "right"] as const) {
             const h = handedness as "left" | "right";
             const trackedMeshes: AbstractMesh[] = [];
@@ -618,7 +618,7 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
                     if (physicsVersion === 2) {
                         // V2 physics
                         const impostorType = props?.impostorType !== undefined ? props.impostorType : PhysicsImpostor.SphereImpostor;
-                        let shapeType = PhysicsShapeType.SPHERE;
+                        let shapeType: PhysicsShapeType;
 
                         // Map v1 impostor types to v2 shape types
                         switch (impostorType) {
@@ -653,9 +653,7 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
                         newInstance.physicsImpostor = new PhysicsImpostor(newInstance, type, props ? { mass: 0, ...props } : { mass: 0 });
                     }
                 }
-                if (options.jointMeshes?.invisible) {
-                    newInstance.isVisible = false;
-                }
+                newInstance.isVisible = false;
                 newInstance.rotationQuaternion = new Quaternion();
                 trackedMeshes.push(newInstance);
             }

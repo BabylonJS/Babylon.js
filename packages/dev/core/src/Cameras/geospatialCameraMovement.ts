@@ -70,9 +70,9 @@ export class GeospatialCameraMovement extends CameraMovement {
      * @param result The vector to store the calculated up vector
      * @returns The calculated up vector
      */
-    public calculateUpVectorFromPoint(point: Vector3, result: Vector3): Vector3 {
+    public calculateUpVectorFromPointToRef = (point: Vector3, result: Vector3): Vector3 => {
         return point.normalizeToRef(result);
-    }
+    };
 
     public startDrag(pointerX: number, pointerY: number) {
         const pickResult = this._scene.pick(pointerX, pointerY, this.pickPredicate);
@@ -100,7 +100,7 @@ export class GeospatialCameraMovement extends CameraMovement {
      */
     private _recalculateDragPlaneHitPoint(hitPointRadius: number, ray: Ray, localToEcefResult: Matrix): void {
         // Use the camera's geocentric normal to find the dragPlaneOriginPoint which lives at hitPointRadius along the camera's geocentric normal
-        this.calculateUpVectorFromPoint(this._cameraPosition, this._dragPlaneNormal);
+        this.calculateUpVectorFromPointToRef(this._cameraPosition, this._dragPlaneNormal);
         this._dragPlaneNormal.scaleToRef(hitPointRadius, this._dragPlaneOriginPointEcef);
 
         // The dragPlaneOffsetVector will later be recalculated when drag occurs, and the delta between the offset vectors will be applied to localTranslation
@@ -110,7 +110,7 @@ export class GeospatialCameraMovement extends CameraMovement {
             TmpVectors.Vector3[1],
             TmpVectors.Vector3[2],
             this._scene.useRightHandedSystem,
-            this.calculateUpVectorFromPoint
+            this.calculateUpVectorFromPointToRef
         );
         const localToEcef = Matrix.FromXYZAxesToRef(TmpVectors.Vector3[0], TmpVectors.Vector3[1], TmpVectors.Vector3[2], localToEcefResult);
         localToEcef.setTranslationFromFloats(this._dragPlaneOriginPointEcef.x, this._dragPlaneOriginPointEcef.y, this._dragPlaneOriginPointEcef.z);
@@ -163,7 +163,7 @@ export class GeospatialCameraMovement extends CameraMovement {
             const currentRadius = this._cameraPosition.length();
             // Dampen the pan speed based on latitude (slower near poles)
             const upAtCenter = TmpVectors.Vector3[7];
-            this.calculateUpVectorFromPoint(cameraCenter, upAtCenter);
+            this.calculateUpVectorFromPointToRef(cameraCenter, upAtCenter);
             // Latitude is derived from the Z component of the up vector (ECEF convention: Z = polar axis)
             const sineOfSphericalLat = upAtCenter.z;
             const cosOfSphericalLat = Math.sqrt(1 - Math.min(1, sineOfSphericalLat * sineOfSphericalLat));
@@ -263,7 +263,7 @@ function IntersectRayWithPlaneToRef(ray: Ray, plane: Plane, ref: Vector3): boole
  * @param refNorth - Receives the north direction
  * @param refUp - Receives the up (outward) direction
  * @param useRightHandedSystem - Whether the scene uses a right-handed coordinate system (default: false)
- * @param calculateUpVectorFromPoint - Optional function to calculate the up vector from a point. If supplied, this function will be used instead of assuming a spherical geocentric normal, allowing support for non-spherical planets or custom up vector logic.
+ * @param calculateUpVectorFromPointToRef - Optional function to calculate the up vector from a point. If supplied, this function will be used instead of assuming a spherical geocentric normal, allowing support for non-spherical planets or custom up vector logic.
  * @internal
  */
 export function ComputeLocalBasisToRefs(
@@ -272,10 +272,10 @@ export function ComputeLocalBasisToRefs(
     refNorth: Vector3,
     refUp: Vector3,
     useRightHandedSystem: boolean = false,
-    calculateUpVectorFromPoint?: (point: Vector3, result: Vector3) => Vector3
+    calculateUpVectorFromPointToRef?: (point: Vector3, result: Vector3) => Vector3
 ): void {
-    if (calculateUpVectorFromPoint) {
-        calculateUpVectorFromPoint(worldPos, refUp);
+    if (calculateUpVectorFromPointToRef) {
+        calculateUpVectorFromPointToRef(worldPos, refUp);
     } else {
         // up = normalized position (geocentric normal)
         refUp.copyFrom(worldPos).normalize();

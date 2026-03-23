@@ -2,6 +2,7 @@
 /* eslint-disable @typescript-eslint/no-restricted-imports */
 export * from "loaders/index";
 export * from "./legacy-bvhFileLoader";
+export * from "./legacy-dynamic";
 export * from "./legacy-glTF";
 export * from "./legacy-glTF1";
 export * from "./legacy-glTF2";

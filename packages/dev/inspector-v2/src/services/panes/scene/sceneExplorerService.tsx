@@ -15,6 +15,9 @@ import { SceneContextIdentity } from "../../sceneContext";
 import { SelectionServiceIdentity } from "../../selectionService";
 import { ShellServiceIdentity } from "../../shellService";
 
+/**
+ * The unique identity symbol for the scene explorer service.
+ */
 export const SceneExplorerServiceIdentity = Symbol("SceneExplorer");
 
 /**

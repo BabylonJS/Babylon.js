@@ -2,7 +2,7 @@ import type { FunctionComponent } from "react";
 
 import { Body1, Button, makeStyles, tokens, Tooltip } from "@fluentui/react-components";
 import { ArrowUndoRegular, BracesDismiss16Regular, BracesRegular, SaveRegular } from "@fluentui/react-icons";
-import { useContext, useMemo, useState } from "react";
+import { useContext, useEffect, useMemo, useState } from "react";
 
 import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
 import { ToolContext } from "shared-ui-components/fluent/hoc/fluentToolWrapper";
@@ -84,9 +84,12 @@ function StringifyMetadata(metadata: unknown, format: boolean) {
     }
 
     if (metadata) {
-        if (ObjectCanSafelyStringify(metadata)) {
+        // Try JSON.stringify even for objects with functions — it safely omits
+        // function-valued and undefined properties. Only fall back to String()
+        // for cases that actually throw (e.g. circular references).
+        try {
             return JSON.stringify(metadata, undefined, format ? PrettyJSONIndent : undefined);
-        } else {
+        } catch {
             return String(metadata);
         }
     }
@@ -172,6 +175,10 @@ export const MetadataProperties: FunctionComponent<{ entity: IMetadataContainer 
     const isReadonly = canPreventObjectCorruption && preventObjectCorruption;
 
     const [editedMetadata, setEditedMetadata] = useState(stringifiedMetadata);
+    useEffect(() => {
+        setEditedMetadata(stringifiedMetadata);
+    }, [stringifiedMetadata]);
+
     const isEditedMetadataJSON = useMemo(() => IsParsable(editedMetadata), [editedMetadata]);
     const unformattedEditedMetadata = useMemo(() => Restringify(editedMetadata, false), [editedMetadata]);
 

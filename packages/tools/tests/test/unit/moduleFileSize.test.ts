@@ -6,8 +6,8 @@ import * as https from "https";
 // Performance tests require the PROD version of the CDN (babylon-server)
 
 let skipUnneededTest = false;
-let fileSizes;
-let fileSizesBaseline;
+let fileSizes: Record<string, number>;
+let fileSizesBaseline: Record<string, number>;
 
 describe("ES6 modules files size", () => {
     beforeAll(async () => {
@@ -33,7 +33,7 @@ describe("ES6 modules files size", () => {
             }
             https
                 .get(getGlobalConfig().baseUrl + "/fileSizes.json", (res) => {
-                    let data = [];
+                    let data: Buffer[] = [];
                     const headerDate = res.headers && res.headers.date ? res.headers.date : "no response date";
                     console.log("Status Code:", res.statusCode);
                     console.log("Date in Response header:", headerDate);
@@ -44,7 +44,7 @@ describe("ES6 modules files size", () => {
 
                     res.on("end", () => {
                         resolve({
-                            status: res.statusCode,
+                            status: res.statusCode ?? 0,
                             data: Buffer.concat(data).toString(),
                         });
                     });

@@ -53,7 +53,7 @@ function Rgbe2float(float32array: Float32Array, red: number, green: number, blue
 
 function ReadStringLine(uint8array: Uint8Array, startIndex: number): string {
     let line = "";
-    let character = "";
+    let character: string;
 
     for (let i = startIndex; i < uint8array.length - startIndex; i++) {
         character = String.fromCharCode(uint8array[i]);
@@ -78,9 +78,6 @@ function ReadStringLine(uint8array: Uint8Array, startIndex: number): string {
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export function RGBE_ReadHeader(uint8array: Uint8Array): HDRInfo {
-    let height: number = 0;
-    let width: number = 0;
-
     let line = ReadStringLine(uint8array, 0);
     if (line[0] != "#" || line[1] != "?") {
         // eslint-disable-next-line no-throw-literal
@@ -118,8 +115,8 @@ export function RGBE_ReadHeader(uint8array: Uint8Array): HDRInfo {
         // eslint-disable-next-line no-throw-literal
         throw "HDR Bad header format, no size";
     }
-    width = parseInt(match[2]);
-    height = parseInt(match[1]);
+    const width = parseInt(match[2]);
+    const height = parseInt(match[1]);
 
     if (width < 8 || width > 0x7fff) {
         // eslint-disable-next-line no-throw-literal
@@ -180,9 +177,7 @@ function ReadRGBEPixelsRLE(uint8array: Uint8Array, hdrInfo: HDRInfo): Float32Arr
 
     let a: number, b: number, c: number, d: number, count: number;
     let dataIndex = hdrInfo.dataPosition;
-    let index = 0,
-        endIndex = 0,
-        i = 0;
+    let index: number, endIndex: number, i: number;
 
     const scanLineArrayBuffer = new ArrayBuffer(scanlineWidth * 4); // four channel R G B E
     const scanLineArray = new Uint8Array(scanLineArrayBuffer);

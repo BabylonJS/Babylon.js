@@ -621,7 +621,7 @@ async function loadDataAsync(
         // plugin call. Given this, options are only supported for plugins that provide a factory function.
         if (IsFactory(registeredPlugin.plugin)) {
             const pluginFactory = registeredPlugin.plugin;
-            const partialPlugin = pluginFactory.createPlugin(pluginOptions ?? {});
+            const partialPlugin = pluginFactory.createPlugin((pluginOptions ?? {}) as SceneLoaderPluginOptions);
             if (partialPlugin instanceof Promise) {
                 // eslint-disable-next-line github/no-then
                 partialPlugin.then(callback).catch((error) => {

@@ -98,7 +98,7 @@ export class PanoramaToCubeMapTools {
             throw "ConvertPanoramaToCubemap: input cannot be null";
         }
 
-        let stride = 0;
+        let stride: number;
         if (float32Array.length != inputWidth * inputHeight * 3) {
             if (float32Array.length != inputWidth * inputHeight * 4) {
                 // eslint-disable-next-line no-throw-literal

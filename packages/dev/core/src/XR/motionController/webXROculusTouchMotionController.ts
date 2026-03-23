@@ -44,7 +44,7 @@ export class WebXROculusTouchMotionController extends WebXRAbstractMotionControl
     }
 
     protected _getFilenameAndPath(): { filename: string; path: string } {
-        let filename = "";
+        let filename: string;
         if (this.handedness === "left") {
             filename = WebXROculusTouchMotionController.MODEL_LEFT_FILENAME;
         } else {

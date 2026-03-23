@@ -417,7 +417,7 @@ export class SpriteManager implements ISpriteManager {
             } catch (e) {
                 this._fromPacked = false;
                 this._packedAndReady = false;
-                throw new Error("Invalid JSON from string. Spritesheet managed with constant cell size.");
+                throw new Error("Invalid JSON from string. Spritesheet managed with constant cell size.", { cause: e });
             }
         } else {
             const re = /\./g;
@@ -442,7 +442,7 @@ export class SpriteManager implements ISpriteManager {
                 } catch (e) {
                     this._fromPacked = false;
                     this._packedAndReady = false;
-                    throw new Error("Invalid JSON format. Please check documentation for format specifications.");
+                    throw new Error("Invalid JSON format. Please check documentation for format specifications.", { cause: e });
                 }
             };
             Tools.LoadFile(jsonUrl, onload, undefined, undefined, false, onerror);
@@ -497,8 +497,8 @@ export class SpriteManager implements ISpriteManager {
         const pickedPoint = TmpVectors.Vector3[0];
         const cameraSpacePosition = TmpVectors.Vector3[1];
         const cameraView = camera.getViewMatrix();
-        let activeRay: Ray = ray;
-        let pickedRay: Ray = ray;
+        let activeRay: Ray;
+        let pickedRay!: Ray;
 
         for (let index = 0; index < count; index++) {
             const sprite = this.sprites[index];

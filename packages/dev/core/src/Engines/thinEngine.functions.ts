@@ -331,7 +331,7 @@ function CompileRawShader(source: string, type: string, gl: WebGLContext, _conte
 
     if (!shader) {
         let error: GLenum = gl.NO_ERROR;
-        let tempError: GLenum = gl.NO_ERROR;
+        let tempError: GLenum;
         while ((tempError = gl.getError()) !== gl.NO_ERROR) {
             error = tempError;
         }

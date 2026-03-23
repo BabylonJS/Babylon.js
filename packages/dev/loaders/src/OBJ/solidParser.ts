@@ -258,7 +258,7 @@ export class SolidParser {
             this._tuplePosNorm.length = 0;
             this._curPositionInIndices = 0;
         } catch (e) {
-            throw new Error("Unable to unwrap data while parsing OBJ data.");
+            throw new Error("Unable to unwrap data while parsing OBJ data.", { cause: e });
         }
     }
 

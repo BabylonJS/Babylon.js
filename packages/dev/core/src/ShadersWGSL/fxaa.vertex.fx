@@ -22,7 +22,7 @@ fn main(input : VertexInputs) -> FragmentInputs {
 
 #define CUSTOM_VERTEX_MAIN_BEGIN
 	
-	vertexOutputs.vUV = (input.position * madd + madd);
+	vertexOutputs.vUV = (vertexInputs.position * madd + madd);
 
 	vertexOutputs.sampleCoordS = vertexOutputs.vUV +  vec2f( 0.0, 1.0) * uniforms.texelSize;
 	vertexOutputs.sampleCoordE = vertexOutputs.vUV +  vec2f( 1.0, 0.0) * uniforms.texelSize;
@@ -34,7 +34,7 @@ fn main(input : VertexInputs) -> FragmentInputs {
 	vertexOutputs.sampleCoordNE = vertexOutputs.vUV +  vec2f( 1.0,-1.0) * uniforms.texelSize;
 	vertexOutputs.sampleCoordSW = vertexOutputs.vUV +  vec2f(-1.0, 1.0) * uniforms.texelSize;
 
-	vertexOutputs.position = vec4f(input.position, 0.0, 1.0);
+	vertexOutputs.position = vec4f(vertexInputs.position, 0.0, 1.0);
 
 #define CUSTOM_VERTEX_MAIN_END
 }

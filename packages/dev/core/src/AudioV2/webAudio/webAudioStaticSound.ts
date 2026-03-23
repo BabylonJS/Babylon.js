@@ -8,7 +8,7 @@ import type { IStaticSoundInstanceOptions } from "../abstractAudio/staticSoundIn
 import { _StaticSoundInstance } from "../abstractAudio/staticSoundInstance";
 import { _HasSpatialAudioOptions, type AbstractSpatialAudio } from "../abstractAudio/subProperties/abstractSpatialAudio";
 import { _StereoAudio } from "../abstractAudio/subProperties/stereoAudio";
-import { _CleanUrl, _FileExtensionRegex } from "../audioUtils";
+import { _CleanUrl, _FileExtensionRegex, _LoadArrayBufferFromUrlAsync } from "../audioUtils";
 import { SoundState } from "../soundState";
 import { _WebAudioParameterComponent } from "./components/webAudioParameterComponent";
 import { _WebAudioBusAndSoundSubGraph } from "./subNodes/webAudioBusAndSoundSubGraph";
@@ -250,7 +250,8 @@ export class _WebAudioStaticSoundBuffer extends StaticSoundBuffer {
 
     private async _initFromUrlAsync(url: string): Promise<void> {
         url = _CleanUrl(url);
-        await this._initFromArrayBufferAsync(await (await fetch(url)).arrayBuffer());
+        const { data } = await _LoadArrayBufferFromUrlAsync(url);
+        await this._initFromArrayBufferAsync(data);
     }
 
     private async _initFromUrlsAsync(urls: string[], skipCodecCheck: boolean): Promise<void> {

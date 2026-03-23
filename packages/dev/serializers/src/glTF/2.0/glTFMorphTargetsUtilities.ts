@@ -42,8 +42,8 @@ export function BuildMorphTargetBuffers(
     const flipX = convertToRightHanded ? -1 : 1;
     const floatSize = 4;
     const difference = Vector3.Zero();
-    let vertexStart = 0;
-    let vertexCount = 0;
+    let vertexStart: number;
+    let vertexCount: number;
 
     if (morphTarget.hasPositions) {
         const morphPositions = morphTarget.getPositions()!;

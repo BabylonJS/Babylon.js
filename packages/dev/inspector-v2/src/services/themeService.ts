@@ -8,13 +8,23 @@ import { Observable } from "core/Misc/observable";
 import { DarkTheme, LightTheme } from "../themes/babylonTheme";
 import { SettingsStoreIdentity } from "./settingsStore";
 
+/**
+ * Represents the theme mode preference.
+ */
 export type ThemeMode = "system" | "light" | "dark";
 
+/**
+ * The setting descriptor for persisting the theme mode preference.
+ */
 export const ThemeModeSettingDescriptor: SettingDescriptor<ThemeMode> = {
     key: "ThemeMode",
     defaultValue: "system",
 };
 
+/**
+ * Resolves the current theme based on user preference and system settings.
+ * Listens for changes to both the persisted theme mode and the OS-level dark mode preference.
+ */
 export class ThemeResolver implements IDisposable {
     private readonly _darkModeMediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
     private readonly _onChanged = new Observable<void>();
@@ -60,6 +70,9 @@ export class ThemeResolver implements IDisposable {
     }
 }
 
+/**
+ * The unique identity symbol for the theme service.
+ */
 export const ThemeServiceIdentity = Symbol("ThemeService");
 
 /**

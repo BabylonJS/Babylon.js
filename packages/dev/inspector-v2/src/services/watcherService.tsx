@@ -41,17 +41,40 @@ const WatcherSettingDescriptor: SettingDescriptor<WatcherSettings> = {
     },
 };
 
+/**
+ * The unique identity symbol for the watcher service.
+ */
 export const WatcherServiceIdentity = Symbol("WatcherService");
 
+/**
+ * Watches for property changes on objects, using either interception, polling, or manual refresh.
+ */
 export interface IWatcherService extends IService<typeof WatcherServiceIdentity> {
+    /**
+     * Watches a property on an object and calls the callback whenever it changes.
+     * @param target The object containing the property to watch.
+     * @param propertyKey The key of the property to watch.
+     * @param onChanged A callback that is called with the new value when the property changes.
+     * @returns A disposable that stops watching when disposed.
+     */
     watchProperty<T extends object, K extends keyof T>(
         target: T,
         propertyKey: string extends K ? never : number extends K ? never : symbol extends K ? never : K,
         onChanged: (value: NonNullable<T[K]>) => void
     ): IDisposable;
 
+    /**
+     * Watches a property on an object and calls the callback whenever it changes.
+     * @param target The object containing the property to watch.
+     * @param propertyKey The key of the property to watch.
+     * @param onChanged A callback that is called with the new value when the property changes.
+     * @returns A disposable that stops watching when disposed.
+     */
     watchProperty<T extends object>(target: T, propertyKey: keyof T, onChanged: (value: unknown) => void): IDisposable;
 
+    /**
+     * Manually triggers a refresh of all watched properties.
+     */
     refresh(): void;
 }
 

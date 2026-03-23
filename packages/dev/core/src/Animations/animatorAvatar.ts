@@ -1,20 +1,8 @@
-import type {
-    AbstractMesh,
-    MorphTargetManager,
-    Immutable,
-    Bone,
-    Nullable,
-    MorphTarget,
-    AnimationGroup,
-    Animation,
-    Node,
-    Skeleton,
-    TargetedAnimation,
-    DeepImmutableObject,
-} from "core/index";
+import type { MorphTargetManager, Immutable, Bone, Nullable, MorphTarget, AnimationGroup, Animation, Node, Skeleton, TargetedAnimation, DeepImmutableObject } from "core/index";
 import { Vector3, Quaternion, TmpVectors, Matrix } from "core/Maths/math.vector";
 import { Logger } from "../Misc/logger";
 import { TransformNode } from "../Meshes/transformNode";
+import { AbstractMesh } from "../Meshes/abstractMesh";
 
 /**
  * Options for retargeting an animation group to an avatar.
@@ -101,7 +89,7 @@ export interface IRetargetOptions {
     mapNodeNames?: Map<string, string>;
 }
 
-type TransformNodeNameToNode = Map<string, { node: TransformNode; initialTransformations: { position: Vector3; scaling: Vector3; quaternion: Quaternion } }>;
+type TransformNodeNameToNode = Map<string, { node: TransformNode; initialTransformations: { position: Vector3; scaling: Vector3; quaternion?: Quaternion; rotation: Vector3 } }>;
 
 /**
  * Represents an animator avatar that manages meshes, skeletons and morph target managers for a hierarchical transform node and mesh structure.
@@ -146,11 +134,13 @@ export class AnimatorAvatar {
      * @param name - The name to assign to this avatar and its root node
      * @param rootNode - The root node of the avatar hierarchy. This node and its descendants will be scanned for meshes, skeletons and morph target managers. If not provided, you are expected to manually manage meshes, skeletons and morph target managers.
      * @param _disposeResources - Indicates whether to dispose of resources (meshes, skeletons, morph target managers, root node and descendants + materials and textures) when the avatar is disposed (true by default)
+     * @param setAvatarName - Indicates whether to set the name of the root node to the avatar name. Default is true. Set this to false if you don't want the root node to be renamed, or if you want to set it to a different name after creating the avatar.
      */
     constructor(
         public readonly name: string,
         public readonly rootNode?: TransformNode,
-        private _disposeResources = true
+        private _disposeResources = true,
+        setAvatarName = true
     ) {
         this.meshes = [];
         this.skeletons = new Set<Skeleton>();
@@ -160,29 +150,34 @@ export class AnimatorAvatar {
             return;
         }
 
-        rootNode.name = name;
+        if (setAvatarName) {
+            rootNode.name = name;
+        }
 
-        rootNode
-            .getChildMeshes(false, (node) => {
-                const mesh = node as AbstractMesh;
-                return mesh.getTotalVertices && mesh.getTotalVertices() > 0;
-            })
-            .forEach((mesh) => {
-                this.meshes.push(mesh);
+        if (rootNode instanceof AbstractMesh && rootNode.getTotalVertices() > 0) {
+            this._collectMesh(rootNode);
+        }
 
-                if (mesh.skeleton) {
-                    this.skeletons.add(mesh.skeleton);
-                }
+        rootNode.getChildMeshes(false).forEach((mesh) => {
+            if (mesh.getTotalVertices() > 0) {
+                this._collectMesh(mesh);
+            }
+        });
+    }
 
-                if (mesh.morphTargetManager) {
-                    mesh.morphTargetManager.meshName = mesh.name;
-                    mesh.morphTargetManager.numMaxInfluencers = mesh.morphTargetManager.numTargets;
+    private _collectMesh(mesh: AbstractMesh) {
+        this.meshes.push(mesh);
 
-                    this.morphTargetManagers.add(mesh.morphTargetManager);
-                }
-            });
+        if (mesh.skeleton) {
+            this.skeletons.add(mesh.skeleton);
+        }
 
-        this._computeBoneWorldMatrices();
+        if (mesh.morphTargetManager) {
+            mesh.morphTargetManager.meshName = mesh.name;
+            mesh.morphTargetManager.numMaxInfluencers = mesh.morphTargetManager.numTargets;
+
+            this.morphTargetManagers.add(mesh.morphTargetManager);
+        }
     }
 
     /**
@@ -194,7 +189,7 @@ export class AnimatorAvatar {
         const isName = !this._isTransformNode(nameOrTransformNode);
         const iterator = this.skeletons.keys();
 
-        let bone: Nullable<Bone> = null;
+        let bone: Nullable<Bone>;
 
         for (let key = iterator.next(); key.done !== true; key = iterator.next()) {
             const skeleton = key.value;
@@ -271,19 +266,20 @@ export class AnimatorAvatar {
 
                 lstSourceTransformNodes.add(tn);
 
-                if (!tn.rotationQuaternion) {
-                    tn.rotationQuaternion = Quaternion.FromEulerAngles(tn.rotation.x, tn.rotation.y, tn.rotation.z);
-                    tn.rotation.setAll(0);
-                }
-
                 sourceTransformNodeNameToNode.set(mapNodeNames.get(tn.name) ?? tn.name, {
                     node: tn,
                     initialTransformations: {
                         position: tn.position.clone(),
                         scaling: tn.scaling.clone(),
-                        quaternion: tn.rotationQuaternion.clone(),
+                        quaternion: tn.rotationQuaternion?.clone(),
+                        rotation: tn.rotation.clone(),
                     },
                 });
+
+                if (!tn.rotationQuaternion) {
+                    tn.rotationQuaternion = Quaternion.FromEulerAngles(tn.rotation.x, tn.rotation.y, tn.rotation.z);
+                    tn.rotation.setAll(0);
+                }
             }
         }
 
@@ -339,9 +335,9 @@ export class AnimatorAvatar {
                             Logger.Warn(
                                 `RetargetAnimationGroup - Avatar '${this.name}', AnimationGroup '${animationGroup.name}': "${sourceTransformNodeName}" bone not found in any skeleton of avatar: animation removed.`
                             );
-                            animationGroup.targetedAnimations.splice(i, 1);
-                            i--;
                         }
+                        animationGroup.targetedAnimations.splice(i, 1);
+                        i--;
                         break;
                     }
 
@@ -465,6 +461,7 @@ export class AnimatorAvatar {
 
     private _computeBoneWorldMatrices() {
         this.skeletons.forEach((skeleton) => {
+            skeleton.returnToRest();
             skeleton.prepare(true);
 
             skeleton.bones.forEach((bone) => {
@@ -775,7 +772,7 @@ export class AnimatorAvatar {
             return null;
         }
 
-        let targetGroundReferenceTransformNodeOrBone: Nullable<TransformNode | Bone> = null;
+        let targetGroundReferenceTransformNodeOrBone: Nullable<TransformNode | Bone>;
 
         if (targetRootTransformNodeOrBone instanceof TransformNode) {
             targetGroundReferenceTransformNodeOrBone = this.findBoneByTransformNode(remappedGroundReferenceNodeName)?._linkedTransformNode!;
@@ -842,9 +839,13 @@ export class AnimatorAvatar {
 
         sourceTransformNodeNameToNode.forEach((data) => {
             const { node, initialTransformations } = data;
-            node.position = initialTransformations.position;
-            node.scaling = initialTransformations.scaling;
-            node.rotationQuaternion = initialTransformations.quaternion;
+            node.position.copyFrom(initialTransformations.position);
+            node.scaling.copyFrom(initialTransformations.scaling);
+            if (initialTransformations.quaternion) {
+                node.rotationQuaternion!.copyFrom(initialTransformations.quaternion);
+            } else {
+                node.rotation.copyFrom(initialTransformations.rotation);
+            }
             node.computeWorldMatrix(true);
         });
     }

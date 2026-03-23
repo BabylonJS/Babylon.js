@@ -266,14 +266,14 @@ fn main(input : VertexInputs) -> FragmentInputs {
 
   // We're going to calculate the updated position for each vertex of the triangle
   // so that we can compute the triangle normal.
-  var thisTriIndex : u32 = input.vertexIndex; // index in the triangle (0,1,2) of this invocation
+  var thisTriIndex : u32 = vertexInputs.vertexIndex; // index in the triangle (0,1,2) of this invocation
   for (var i: u32 = 0u; i < 3u; i = i + 1u) {
-    var provokingVertNum : u32 = input.vertexIndex / 3 * 3;
+    var provokingVertNum : u32 = vertexInputs.vertexIndex / 3 * 3;
     let vertIdx = readVertexIndex(provokingVertNum + i);
 
     // We need to know which vertex of the triangle corresponds to this invocation
     // so that we can output the correct position at the end.
-    if (provokingVertNum + i == input.vertexIndex) {
+    if (provokingVertNum + i == vertexInputs.vertexIndex) {
       thisTriIndex = i;
     }
     var positionUpdated = readVertexPosition(uniforms.vp_position_info, vertIdx);

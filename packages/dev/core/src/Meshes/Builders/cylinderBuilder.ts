@@ -96,10 +96,10 @@ export function CreateCylinderVertexData(options: {
     let i: number;
     let j: number;
     let r: number;
-    let ringIdx: number = 1;
+    let ringIdx: number;
     let s: number = 1; // surface index
     let cs: number = 0;
-    let v: number = 0;
+    let v: number;
 
     for (i = 0; i <= subdivisions; i++) {
         h = i / subdivisions;

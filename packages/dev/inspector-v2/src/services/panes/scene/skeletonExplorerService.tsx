@@ -4,6 +4,7 @@ import type { ISceneContext } from "../../sceneContext";
 import type { IWatcherService } from "../../watcherService";
 import type { ISceneExplorerService } from "./sceneExplorerService";
 
+import { tokens } from "@fluentui/react-components";
 import { DataLineRegular, PersonWalkingRegular } from "@fluentui/react-icons";
 
 import { Skeleton } from "core/Bones/skeleton";
@@ -39,7 +40,7 @@ export const SkeletonExplorerServiceDefinition: ServiceDefinition<[], [ISceneExp
 
                 return {
                     get name() {
-                        return skeletonOrBone.name;
+                        return skeletonOrBone.name || `Unnamed ${skeletonOrBone.getClassName()}`;
                     },
                     onChange: onChangeObservable,
                     dispose: () => {
@@ -49,7 +50,12 @@ export const SkeletonExplorerServiceDefinition: ServiceDefinition<[], [ISceneExp
                     },
                 };
             },
-            entityIcon: ({ entity: skeletonOrBone }) => (skeletonOrBone instanceof Skeleton ? <PersonWalkingRegular /> : <DataLineRegular />),
+            entityIcon: ({ entity: skeletonOrBone }) =>
+                skeletonOrBone instanceof Skeleton ? (
+                    <PersonWalkingRegular color={tokens.colorPaletteAnchorForeground2} />
+                ) : (
+                    <DataLineRegular color={tokens.colorPaletteBeigeForeground2} />
+                ),
             getEntityAddedObservables: () => [scene.onNewSkeletonAddedObservable],
             getEntityRemovedObservables: () => [scene.onSkeletonRemovedObservable],
             getEntityMovedObservables: () => [boneMovedObservable],

@@ -11,6 +11,9 @@ import { ToolsPane } from "../../components/tools/toolsPane";
 import { SceneContextIdentity } from "../sceneContext";
 import type { ISceneContext } from "../sceneContext";
 
+/**
+ * The unique identity symbol for the tools service.
+ */
 export const ToolsServiceIdentity = Symbol("ToolsService");
 
 /**

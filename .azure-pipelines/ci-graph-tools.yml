@@ -1,0 +1,172 @@
+# =============================================================================
+# GraphTools-CI Pipeline (Definition ID: 33)
+# Converted from Azure DevOps Classic Pipeline
+#
+# Triggers on PRs that touch graph tool editor files.
+# Builds NME, NGE, NRGE, GUI Editor, NPE, deploys snapshots, and runs
+# Playwright tests.
+#
+# Secret variables (configure in pipeline UI):
+#   - BASIC_AUTH
+#   - DEPLOYMENT_SERVER
+# =============================================================================
+
+trigger: none
+
+pr:
+    branches:
+        include:
+            - master
+    paths:
+        include:
+            - packages/tools/nodeEditor/**/*.*
+            - packages/tools/nodeGeometryEditor/**/*.*
+            - packages/tools/nodeRenderGraphEditor/**/*.*
+            - packages/tools/guiEditor/**/*.*
+            - packages/dev/sharedUiComponents/**/*.*
+            - packages/dev/buildTools/src/webpackTools.ts
+            - "**/*interaction.tools*"
+
+variables:
+    - group: BabylonJS-CI-Infrastructure
+    - name: BuildName
+      value: $(Build.SourceBranch)
+
+pool:
+    vmImage: ubuntu-latest
+
+jobs:
+    - job: TestTools
+      displayName: "Test tools"
+      steps:
+          - checkout: self
+            clean: true
+            fetchTags: false
+
+          - task: NodeTool@0
+            displayName: "Use Node 22.4.1"
+            inputs:
+                versionSpec: "22.4.1"
+
+          - task: Npm@1
+            displayName: "npm install"
+            inputs:
+                command: install
+
+          - task: Npm@1
+            displayName: "npm build:dev"
+            inputs:
+                command: custom
+                customCommand: "run build:dev"
+
+          - template: templates/check-snapshot-exists.yml
+            parameters:
+                snapshotPath: "TOOLS/$(BuildName)"
+                displayName: "Check snapshot existence"
+
+          - task: Npm@1
+            displayName: "npm build nodeEditor"
+            inputs:
+                command: custom
+                customCommand: "run build:deployment -w @tools/node-editor"
+
+          - task: Npm@1
+            displayName: "npm build nodeGeometryEditor"
+            inputs:
+                command: custom
+                customCommand: "run build:deployment -w @tools/node-geometry-editor"
+
+          - task: Npm@1
+            displayName: "npm build nodeRenderGraphEditor"
+            inputs:
+                command: custom
+                customCommand: "run build:deployment -w @tools/node-render-graph-editor"
+
+          - task: Npm@1
+            displayName: "npm build guiEditor"
+            inputs:
+                command: custom
+                customCommand: "run build:deployment -w @tools/gui-editor"
+
+          - task: Npm@1
+            displayName: "npm build nodeParticleEditor"
+            inputs:
+                command: custom
+                customCommand: "run build:deployment -w @tools/node-particle-editor"
+
+          - template: templates/wait-for-snapshot.yml
+            parameters:
+                displayName: "Wait for Babylon snapshot"
+
+          - template: templates/deploy-tool.yml
+            parameters:
+                toolPackageDir: "packages/tools/nodeEditor"
+                deployPath: "TOOLS/$(BuildName)/nodeEditor"
+                displayName: "Deploy NME"
+
+          - template: templates/deploy-tool.yml
+            parameters:
+                toolPackageDir: "packages/tools/nodeGeometryEditor"
+                deployPath: "TOOLS/$(BuildName)/nodeGeometryEditor"
+                displayName: "Deploy NGE"
+
+          - template: templates/deploy-tool.yml
+            parameters:
+                toolPackageDir: "packages/tools/nodeRenderGraphEditor"
+                deployPath: "TOOLS/$(BuildName)/nodeRenderGraphEditor"
+                displayName: "Deploy NRGE"
+
+          - template: templates/deploy-tool.yml
+            parameters:
+                toolPackageDir: "packages/tools/guiEditor"
+                deployPath: "TOOLS/$(BuildName)/guiEditor"
+                displayName: "Deploy GUI Editor"
+
+          - template: templates/deploy-tool.yml
+            parameters:
+                toolPackageDir: "packages/tools/nodeParticleEditor"
+                deployPath: "TOOLS/$(BuildName)/nodeParticleEditor"
+                displayName: "Deploy NPE"
+
+          - script: |
+                npx playwright install --with-deps
+                npx playwright test --project=graphTools
+            displayName: "Test tools"
+            env:
+                CI: "true"
+                BROWSER: "Chrome"
+                NME_BASE_URL: "$(SNAPSHOT_CDN_URL)/TOOLS/$(BuildName)/nodeEditor/"
+                NGE_BASE_URL: "$(SNAPSHOT_CDN_URL)/TOOLS/$(BuildName)/nodeGeometryEditor/"
+                NRGE_BASE_URL: "$(SNAPSHOT_CDN_URL)/TOOLS/$(BuildName)/nodeRenderGraphEditor/"
+                GUIEDITOR_BASE_URL: "$(SNAPSHOT_CDN_URL)/TOOLS/$(BuildName)/guiEditor/"
+                SNAPSHOT: "$(BuildName)"
+
+          - template: templates/upload-test-results.yml
+            parameters:
+                deployPath: "TOOLS/$(BuildName)/testResults"
+
+          - task: GitHubComment@0
+            displayName: "Tests failed message"
+            condition: failed()
+            inputs:
+                gitHubConnection: "$(GITHUB_SERVICE_CONNECTION)"
+                repositoryName: "$(Build.Repository.Name)"
+                comment: |
+                    Graph tools CI has failed you can find the test results at:
+
+                    $(SNAPSHOT_CDN_URL)/TOOLS/$(BuildName)/testResults/
+
+          - task: GitHubComment@0
+            displayName: "Tests success"
+            condition: succeeded()
+            inputs:
+                gitHubConnection: "$(GITHUB_SERVICE_CONNECTION)"
+                repositoryName: "$(Build.Repository.Name)"
+                comment: |
+                    You have made possible changes to one or more graph tools. To test the snapshots:
+
+                    $(SNAPSHOT_CDN_URL)/TOOLS/$(BuildName)/nodeEditor/
+                    $(SNAPSHOT_CDN_URL)/TOOLS/$(BuildName)/nodeGeometryEditor/
+                    $(SNAPSHOT_CDN_URL)/TOOLS/$(BuildName)/nodeParticleEditor/
+                    $(SNAPSHOT_CDN_URL)/TOOLS/$(BuildName)/nodeRenderGraphEditor/
+                    $(SNAPSHOT_CDN_URL)/TOOLS/$(BuildName)/guiEditor/

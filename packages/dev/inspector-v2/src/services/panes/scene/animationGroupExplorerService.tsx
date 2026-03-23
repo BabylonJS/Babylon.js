@@ -4,6 +4,7 @@ import type { ISceneContext } from "../../sceneContext";
 import type { IWatcherService } from "../../watcherService";
 import type { ISceneExplorerService } from "./sceneExplorerService";
 
+import { tokens } from "@fluentui/react-components";
 import { FilmstripRegular, PauseFilled, PlayFilled, StackRegular } from "@fluentui/react-icons";
 
 import { AnimationGroup } from "core/Animations/animationGroup";
@@ -36,7 +37,7 @@ export const AnimationGroupExplorerServiceDefinition: ServiceDefinition<[], [ISc
 
                 return {
                     get name() {
-                        return namedEntity.name;
+                        return namedEntity.name || "Unnamed AnimationGroup";
                     },
                     onChange: onChangeObservable,
                     dispose: () => {
@@ -45,7 +46,8 @@ export const AnimationGroupExplorerServiceDefinition: ServiceDefinition<[], [ISc
                     },
                 };
             },
-            entityIcon: ({ entity }) => (entity instanceof AnimationGroup ? <StackRegular /> : <FilmstripRegular />),
+            entityIcon: ({ entity }) =>
+                entity instanceof AnimationGroup ? <StackRegular color={tokens.colorPaletteBlueForeground2} /> : <FilmstripRegular color={tokens.colorPaletteBlueForeground2} />,
             getEntityAddedObservables: () => [scene.onNewAnimationGroupAddedObservable],
             getEntityRemovedObservables: () => [scene.onAnimationGroupRemovedObservable],
         });

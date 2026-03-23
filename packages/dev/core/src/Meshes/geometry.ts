@@ -1058,7 +1058,7 @@ export class Geometry implements IGetSetVerticesData {
             let numElements = this._totalVertices;
             if (vb.getIsInstanced()) {
                 // Do our best with the data we have to find a number of instances when the vertex buffer is instanced...
-                let bufferDataByteSize = 0;
+                let bufferDataByteSize: number;
                 if (bufferData instanceof Array) {
                     bufferDataByteSize = bufferData.length * 4;
                 } else {
@@ -1564,7 +1564,7 @@ export class Geometry implements IGetSetVerticesData {
         if (!SceneLoaderFlags.CleanBoneMatrixWeights) {
             return;
         }
-        let noInfluenceBoneIndex = 0.0;
+        let noInfluenceBoneIndex: number;
         if (parsedGeometry.skeletonId > -1) {
             const skeleton = mesh.getScene().getLastSkeletonById(parsedGeometry.skeletonId);
 

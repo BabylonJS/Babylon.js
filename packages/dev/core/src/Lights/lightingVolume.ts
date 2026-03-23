@@ -1,4 +1,4 @@
-import type { AbstractEngine, Engine, Nullable, RenderTargetWrapper, Scene, ShadowGenerator, WebGPUEngine } from "core/index";
+import type { AbstractEngine, Engine, InternalTexture, Nullable, RenderTargetWrapper, Scene, ShadowGenerator, WebGPUEngine } from "core/index";
 import { AbortError } from "core/Misc/error";
 import { Constants } from "core/Engines/constants";
 import { Matrix, Vector3, TmpVectors } from "core/Maths/math.vector";
@@ -40,6 +40,7 @@ export class LightingVolume {
     private _positions: Float32Array;
     private _indices: number[];
     private _needFullUpdateUBO = true;
+    private _currentShadowDepthTexture: Nullable<InternalTexture>;
 
     private _shadowGenerator?: ShadowGenerator;
     /**
@@ -219,8 +220,16 @@ export class LightingVolume {
             this._uBuffer!.updateMatrix("invViewProjMatrix", this._shadowGenerator.getTransformMatrix().invertToRef(TmpVectors.Matrix[0]));
 
             if (this._engine._enableGPUDebugMarkers) {
-                this._engine.restoreDefaultFramebuffer(true);
                 this._engine._debugPushGroup?.(`Update lighting volume (${this._name})`);
+            }
+
+            const depthTexture = this._shadowGenerator.getShadowMap()?.depthStencilTexture;
+            if (depthTexture && depthTexture !== this._currentShadowDepthTexture) {
+                this._currentShadowDepthTexture = depthTexture!;
+                this._cs!.triggerContextRebuild = this._cs!.fastMode;
+                this._cs2!.triggerContextRebuild = this._cs2!.fastMode;
+                this._cs!.setInternalTexture("shadowMap", depthTexture);
+                this._cs2!.setInternalTexture("shadowMap", depthTexture);
             }
 
             if (this._needUpdateGeometry()) {
@@ -311,6 +320,7 @@ export class LightingVolume {
 
         if (this._shadowGenerator) {
             const depthTexture = this._shadowGenerator.getShadowMap()?.depthStencilTexture;
+            this._currentShadowDepthTexture = depthTexture || null;
             if (depthTexture) {
                 this._cs?.setInternalTexture("shadowMap", depthTexture);
                 this._cs2?.setInternalTexture("shadowMap", depthTexture);
@@ -598,7 +608,7 @@ export class LightingVolume {
             Vector3.TransformCoordinatesToRef(TmpVec3, invViewMatrix, TmpVec3);
             this._positions[vIndex++] = TmpVec3.x;
             this._positions[vIndex++] = TmpVec3.y;
-            this._positions[vIndex++] = TmpVec3.z;
+            this._positions[vIndex] = TmpVec3.z;
         }
 
         this._mesh.setVerticesData("position", this._positions);

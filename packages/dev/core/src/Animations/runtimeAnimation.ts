@@ -526,7 +526,7 @@ export class RuntimeAnimation {
         let returnValue = true;
         let currentFrame: number;
         const events = this._events;
-        let frameRange = 0;
+        let frameRange: number;
 
         if (!this._coreRuntimeAnimation) {
             // Check limits

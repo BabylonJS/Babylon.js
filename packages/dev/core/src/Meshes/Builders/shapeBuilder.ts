@@ -328,19 +328,18 @@ function ExtrudeShapeGeneric(
         return shapePaths;
     };
     const scaleVector = scale !== null ? new Vector3(scale, scale, scale) : null;
-    let path3D;
     let pathArray;
     if (instance) {
         // instance update
         const storage = instance._creationDataStorage!;
-        path3D = firstNormal ? storage.path3D.update(curve, firstNormal) : storage.path3D.update(curve);
+        firstNormal ? storage.path3D.update(curve, firstNormal) : storage.path3D.update(curve);
         pathArray = extrusionPathArray(shape, curve, storage.path3D, storage.pathArray, scaleVector, rotation, scaleFunction, rotateFunction, storage.cap, custom, adjustFrame);
         instance = CreateRibbon("", { pathArray, closeArray: false, closePath: false, offset: 0, updatable: false, sideOrientation: 0, instance }, scene || undefined);
 
         return instance;
     }
     // extruded shape creation
-    path3D = firstNormal ? new Path3D(curve, firstNormal) : new Path3D(curve);
+    const path3D = firstNormal ? new Path3D(curve, firstNormal) : new Path3D(curve);
     const newShapePaths = new Array<Array<Vector3>>();
     cap = cap < 0 || cap > 3 ? 0 : cap;
     pathArray = extrusionPathArray(shape, curve, path3D, newShapePaths, scaleVector, rotation, scaleFunction, rotateFunction, cap, custom, adjustFrame);

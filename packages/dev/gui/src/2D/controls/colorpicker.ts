@@ -250,10 +250,9 @@ export class ColorPicker extends Control {
                 data[index] = color.r * 255;
                 data[index + 1] = color.g * 255;
                 data[index + 2] = color.b * 255;
-                let alphaRatio = (dist - innerRadius) / (radius - innerRadius);
 
                 //apply less alpha to bigger color pickers
-                let alphaAmount = 0.2;
+                let alphaAmount: number;
                 const maxAlpha = 0.2;
                 const minAlpha = 0.04;
                 const lowerRadius = 50;
@@ -267,7 +266,7 @@ export class ColorPicker extends Control {
                     alphaAmount = ((minAlpha - maxAlpha) * (radius - lowerRadius)) / (upperRadius - lowerRadius) + maxAlpha;
                 }
 
-                alphaRatio = (dist - innerRadius) / (radius - innerRadius);
+                const alphaRatio = (dist - innerRadius) / (radius - innerRadius);
 
                 if (alphaRatio < alphaAmount) {
                     data[index + 3] = 255 * (alphaRatio / alphaAmount);

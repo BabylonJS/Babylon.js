@@ -13,10 +13,6 @@
         "compile": "tsc -b tsconfig.build.json"
     },
     "sideEffects": true,
-    "devDependencies": {
-        "@types/mv": "^2.1.2",
-        "mv": "^2.1.1"
-    },
     "bin": {
         "build-tools": "./dist/index.js"
     },

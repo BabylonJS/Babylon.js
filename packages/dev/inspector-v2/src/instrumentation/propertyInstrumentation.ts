@@ -33,6 +33,9 @@ export function IsPropertyReadonly(propertyDescriptor: PropertyDescriptor): bool
     return propertyDescriptor.writable === false || (propertyDescriptor.writable === undefined && !propertyDescriptor.set);
 }
 
+/**
+ * Hooks that can be registered on a property to intercept its setter.
+ */
 export type PropertyHooks<T = unknown> = {
     /**
      * This function will be called after the hooked property is set.

@@ -213,7 +213,7 @@ export class BlockTools {
     }
 
     public static GetColorFromConnectionNodeType(type: NodeRenderGraphBlockConnectionPointTypes) {
-        let color = "#964848";
+        let color: string;
         switch (type) {
             case NodeRenderGraphBlockConnectionPointTypes.ObjectList:
                 color = "#84995c";

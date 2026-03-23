@@ -145,7 +145,6 @@ export class WebXRControllerPhysics extends WebXRAbstractFeature {
                         );
 
                         aggregate.body.setMotionType(PhysicsMotionType.ANIMATED);
-                        aggregate.body.disableSync = true;
 
                         const controllerMesh = xrController.grip || xrController.pointer;
                         this._controllers[xrController.uniqueId] = {
@@ -241,7 +240,6 @@ export class WebXRControllerPhysics extends WebXRAbstractFeature {
         );
 
         aggregate.body.setMotionType(PhysicsMotionType.ANIMATED);
-        aggregate.body.disableSync = true;
 
         this._controllers[xrController.uniqueId] = {
             xrController,

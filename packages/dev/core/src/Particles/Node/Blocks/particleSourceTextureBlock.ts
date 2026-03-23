@@ -101,6 +101,22 @@ export class ParticleTextureSourceBlock extends NodeParticleBlock {
     }
 
     /**
+     * Gets the texture set on this block.
+     * This value will not be serialized.
+     */
+    public get texture(): Nullable<BaseTexture> {
+        return this.sourceTexture;
+    }
+
+    /**
+     * Sets the texture to be used by this block.
+     * This value will not be serialized.
+     */
+    public set texture(value: Nullable<BaseTexture>) {
+        this.sourceTexture = value;
+    }
+
+    /**
      * Create a new ParticleTextureSourceBlock
      * @param name defines the block name
      */
@@ -121,7 +137,7 @@ export class ParticleTextureSourceBlock extends NodeParticleBlock {
     /**
      * Gets the texture output component
      */
-    public get texture(): NodeParticleConnectionPoint {
+    public get textureOutput(): NodeParticleConnectionPoint {
         return this._outputs[0];
     }
 
@@ -130,7 +146,7 @@ export class ParticleTextureSourceBlock extends NodeParticleBlock {
      * @returns a promise that resolves to the texture content, including width, height, and pixel data
      */
     async extractTextureContentAsync() {
-        if (!this.texture._storedValue && !this._sourceTexture) {
+        if (!this.textureOutput._storedValue && !this._sourceTexture) {
             return null;
         }
 
@@ -138,7 +154,7 @@ export class ParticleTextureSourceBlock extends NodeParticleBlock {
             return this._cachedData;
         }
 
-        const texture = this.texture._storedValue || this._sourceTexture;
+        const texture = this.textureOutput._storedValue || this._sourceTexture;
         return await new Promise<
             Nullable<{
                 width: number;
@@ -213,12 +229,12 @@ export class ParticleTextureSourceBlock extends NodeParticleBlock {
                     const tex = new Texture(url, state.scene, undefined, invertY);
                     this._copyTextureProperties(this._sourceTexture, tex);
                     this._clonedTextures.push(tex);
-                    this.texture._storedValue = tex;
+                    this.textureOutput._storedValue = tex;
                     return;
                 }
                 // No URL available - use the source texture directly as fallback
                 // This may not render correctly but avoids breaking completely
-                this.texture._storedValue = this._sourceTexture;
+                this.textureOutput._storedValue = this._sourceTexture;
                 return;
             }
 
@@ -226,28 +242,28 @@ export class ParticleTextureSourceBlock extends NodeParticleBlock {
             const cloned = this._sourceTexture.clone();
             if (cloned) {
                 this._clonedTextures.push(cloned);
-                this.texture._storedValue = cloned;
+                this.textureOutput._storedValue = cloned;
             } else {
-                this.texture._storedValue = this._sourceTexture;
+                this.textureOutput._storedValue = this._sourceTexture;
             }
             return;
         }
 
         if (!this._textureDataUrl && !this._url) {
-            this.texture._storedValue = null;
+            this.textureOutput._storedValue = null;
             return;
         }
 
         if (this._textureDataUrl) {
             const tex = new Texture(this._textureDataUrl, state.scene, undefined, this.invertY);
             this._clonedTextures.push(tex);
-            this.texture._storedValue = tex;
+            this.textureOutput._storedValue = tex;
             return;
         }
 
         const tex = new Texture(this._url, state.scene, undefined, this.invertY);
         this._clonedTextures.push(tex);
-        this.texture._storedValue = tex;
+        this.textureOutput._storedValue = tex;
     }
 
     /**
@@ -293,7 +309,7 @@ export class ParticleTextureSourceBlock extends NodeParticleBlock {
             tex.dispose();
         }
         this._clonedTextures = [];
-        this.texture._storedValue = null;
+        this.textureOutput._storedValue = null;
         // Never dispose _sourceTexture - it's owned by the caller
         super.dispose();
     }

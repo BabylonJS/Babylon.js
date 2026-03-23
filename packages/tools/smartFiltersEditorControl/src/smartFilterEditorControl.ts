@@ -142,7 +142,7 @@ export type SmartFilterEditorOptions = {
 
     /**
      * If supplied, the editor will call this function when the user tries to delete a custom block
-     * @param blockEditorRegistration - The block editor registration of the custom block to delete
+     * @param blockRegistration - The block editor registration of the custom block to delete
      */
     deleteCustomBlock?: (blockRegistration: IBlockRegistration) => void;
 

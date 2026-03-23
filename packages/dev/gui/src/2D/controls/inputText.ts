@@ -876,7 +876,7 @@ export class InputText extends Control {
      * @internal
      */
     protected _onPasteText(ev: ClipboardEvent): void {
-        let data: string = "";
+        let data: string;
         if (ev.clipboardData && ev.clipboardData.types.indexOf("text/plain") !== -1) {
             data = ev.clipboardData.getData("text/plain");
         } else {

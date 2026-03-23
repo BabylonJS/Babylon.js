@@ -3,6 +3,14 @@ import type { PropertyLineProps } from "./propertyLine";
 import { SyncedSliderInput } from "../../primitives/syncedSlider";
 import type { SyncedSliderProps } from "../../primitives/syncedSlider";
 import { forwardRef } from "react";
+import { makeStyles, mergeClasses } from "@fluentui/react-components";
+import { UniformWidthStyling } from "../../primitives/utils";
+
+const useStyles = makeStyles({
+    uniformWidth: {
+        ...UniformWidthStyling,
+    },
+});
 
 type SyncedSliderPropertyProps = SyncedSliderProps & PropertyLineProps<number>;
 /**
@@ -12,10 +20,11 @@ type SyncedSliderPropertyProps = SyncedSliderProps & PropertyLineProps<number>;
  */
 export const SyncedSliderPropertyLine = forwardRef<HTMLDivElement, SyncedSliderPropertyProps>((props, ref): React.ReactElement => {
     SyncedSliderPropertyLine.displayName = "SyncedSliderPropertyLine";
+    const classes = useStyles();
     const { label, description, ...sliderProps } = props;
     return (
         <PropertyLine ref={ref} {...props}>
-            <SyncedSliderInput {...sliderProps} />
+            <SyncedSliderInput {...sliderProps} className={mergeClasses(classes.uniformWidth, props.className)} />
         </PropertyLine>
     );
 });

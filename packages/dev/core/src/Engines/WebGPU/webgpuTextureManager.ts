@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 /* eslint-disable babylonjs/available */
-/* eslint-disable jsdoc/require-jsdoc */
 // License for the mipmap generation code:
 //
 // Copyright 2020 Brandon Jones
@@ -603,6 +602,7 @@ export class WebGPUTextureManager {
 
         if (useOwnCommandEncoder) {
             this._device.queue.submit([commandEncoder!.finish()]);
+            // eslint-disable-next-line no-useless-assignment
             commandEncoder = null as any;
         }
     }
@@ -769,6 +769,7 @@ export class WebGPUTextureManager {
 
         if (useOwnCommandEncoder) {
             this._device.queue.submit([commandEncoder!.finish()]);
+            // eslint-disable-next-line no-useless-assignment
             commandEncoder = null as any;
         }
     }
@@ -913,6 +914,7 @@ export class WebGPUTextureManager {
 
         if (useOwnCommandEncoder) {
             this._device.queue.submit([commandEncoder!.finish()]);
+            // eslint-disable-next-line no-useless-assignment
             commandEncoder = null as any;
         }
     }
@@ -1007,6 +1009,7 @@ export class WebGPUTextureManager {
 
         if (useOwnCommandEncoder) {
             this._device.queue.submit([commandEncoder!.finish()]);
+            // eslint-disable-next-line no-useless-assignment
             commandEncoder = null as any;
         }
     }
@@ -1032,6 +1035,7 @@ export class WebGPUTextureManager {
 
         const gpuTextureWrapper = texture._hardwareTexture as WebGPUHardwareTexture;
         const isStorageTexture = ((creationFlags ?? 0) & Constants.TEXTURE_CREATIONFLAG_STORAGE) !== 0;
+        const label = texture.label ? texture.label + "_InternalUniqueId" + texture.uniqueId : "InternalUniqueId" + texture.uniqueId;
 
         gpuTextureWrapper.format = gpuTextureWrapper.originalFormat = WebGPUTextureHelper.GetWebGPUTextureFormat(texture.type, texture.format, texture._useSRGBBuffer);
 
@@ -1079,7 +1083,7 @@ export class WebGPUTextureManager {
                 this._commandEncoderForCreation,
                 gpuTextureWrapper.textureUsages,
                 gpuTextureWrapper.textureAdditionalUsages,
-                texture.label
+                label
             );
 
             gpuTextureWrapper.set(gpuTexture);
@@ -1092,7 +1096,7 @@ export class WebGPUTextureManager {
                 {
                     label: `BabylonWebGPUDevice${this._engine.uniqueId}_TextureViewCube${texture.is2DArray ? "_Array" + layerCount : ""}_${width}x${height}_${
                         hasMipMaps ? "wmips" : "womips"
-                    }_${format}_${dimension}_${aspect}_${texture.label ?? "noname"}`,
+                    }_${format}_${dimension}_${aspect}_${label}`,
                     format,
                     dimension,
                     mipLevelCount: mipmapCount,
@@ -1116,7 +1120,7 @@ export class WebGPUTextureManager {
                 this._commandEncoderForCreation,
                 gpuTextureWrapper.textureUsages,
                 gpuTextureWrapper.textureAdditionalUsages,
-                texture.label
+                label
             );
 
             gpuTextureWrapper.set(gpuTexture);
@@ -1134,7 +1138,7 @@ export class WebGPUTextureManager {
                 {
                     label: `BabylonWebGPUDevice${this._engine.uniqueId}_TextureView${texture.is3D ? "3D" : "2D"}${
                         texture.is2DArray ? "_Array" + arrayLayerCount : ""
-                    }_${width}x${height}${texture.is3D ? "x" + layerCount : ""}_${hasMipMaps ? "wmips" : "womips"}_${format}_${dimension}_${aspect}_${texture.label ?? "noname"}`,
+                    }_${width}x${height}${texture.is3D ? "x" + layerCount : ""}_${hasMipMaps ? "wmips" : "womips"}_${format}_${dimension}_${aspect}_${label}`,
                     format,
                     dimension,
                     mipLevelCount: mipmapCount,
@@ -1183,7 +1187,16 @@ export class WebGPUTextureManager {
             label: `BabylonWebGPUDevice${this._engine.uniqueId}_resolveMSAADepthTexture${msaaTexture.label ? "_" + msaaTexture.label : ""}`,
             colorAttachments: [
                 {
-                    view: outputTexture,
+                    // Note: the WebGPU spec allows passing a GPUTexture directly as the view, but Safari rejects it (non-compliant).
+                    // We explicitly create a GPUTextureView to work around this Safari bug.
+                    view: outputTexture.createView({
+                        format,
+                        dimension: WebGPUConstants.TextureViewDimension.E2d,
+                        baseMipLevel: 0,
+                        mipLevelCount: 1,
+                        arrayLayerCount: 1,
+                        baseArrayLayer: 0,
+                    }),
                     loadOp: WebGPUConstants.LoadOp.Load,
                     storeOp: WebGPUConstants.StoreOp.Store,
                 },
@@ -1220,6 +1233,7 @@ export class WebGPUTextureManager {
 
         if (useOwnCommandEncoder) {
             this._device.queue.submit([commandEncoder!.finish()]);
+            // eslint-disable-next-line no-useless-assignment
             commandEncoder = null as any;
         }
     }

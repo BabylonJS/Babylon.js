@@ -170,7 +170,7 @@ export class MultiMaterial extends Material {
         const newMultiMaterial = new MultiMaterial(name, this.getScene());
 
         for (let index = 0; index < this.subMaterials.length; index++) {
-            let subMaterial: Nullable<Material> = null;
+            let subMaterial: Nullable<Material>;
             const current = this.subMaterials[index];
             if (cloneChildren && current) {
                 subMaterial = current.clone(name + "-" + current.name);

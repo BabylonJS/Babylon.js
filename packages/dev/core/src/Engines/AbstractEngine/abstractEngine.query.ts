@@ -28,6 +28,9 @@ export class _OcclusionDataStorage {
 
     /** @internal */
     public forceRenderingWhenOccluded = false;
+
+    /** @internal */
+    public occlusionForRenderPassId = -1;
 }
 
 declare module "../../Engines/abstractEngine" {
@@ -159,6 +162,12 @@ declare module "../../Meshes/abstractMesh" {
          * @see https://doc.babylonjs.com/features/featuresDeepDive/occlusionQueries
          */
         forceRenderingWhenOccluded: boolean;
+
+        /**
+         * This number indicates the render pass id used to run the occlusion query. The default value is -1, which means run the occlusion query in all render passes.
+         * @see https://doc.babylonjs.com/features/featuresDeepDive/occlusionQueries
+         */
+        occlusionForRenderPassId: number;
     }
 }
 Object.defineProperty(AbstractMesh.prototype, "isOcclusionQueryInProgress", {
@@ -238,8 +247,19 @@ Object.defineProperty(AbstractMesh.prototype, "forceRenderingWhenOccluded", {
     configurable: true,
 });
 
+Object.defineProperty(AbstractMesh.prototype, "occlusionForRenderPassId", {
+    get: function (this: AbstractMesh) {
+        return this._occlusionDataStorage.occlusionForRenderPassId;
+    },
+    set: function (this: AbstractMesh, value: number) {
+        this._occlusionDataStorage.occlusionForRenderPassId = value;
+    },
+    enumerable: true,
+    configurable: true,
+});
+
 // We also need to update AbstractMesh as there is a portion of the code there
-AbstractMesh.prototype._checkOcclusionQuery = function () {
+AbstractMesh.prototype._checkOcclusionQuery = function (checkOnly: boolean) {
     const dataStorage = this._occlusionDataStorage;
 
     if (dataStorage.occlusionType === AbstractMesh.OCCLUSION_TYPE_NONE) {
@@ -282,6 +302,10 @@ AbstractMesh.prototype._checkOcclusionQuery = function () {
                 return dataStorage.occlusionType === AbstractMesh.OCCLUSION_TYPE_OPTIMISTIC ? false : dataStorage.isOccluded;
             }
         }
+    }
+
+    if (checkOnly) {
+        return dataStorage.isOccluded;
     }
 
     const scene = this.getScene();

@@ -174,7 +174,7 @@ export class FogBlock extends NodeMaterialBlock {
             state.sharedData.blocksWithDefines.push(this);
             state.sharedData.bindableBlocks.push(this);
 
-            let replaceStrings = [];
+            let replaceStrings: { search: RegExp; replace: string }[];
             let prefix1 = "";
             let prefix2 = "";
 

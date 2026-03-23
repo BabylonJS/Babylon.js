@@ -1,4 +1,4 @@
-import { ArcRotateCamera } from "core/Cameras";
+import { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
 import type { Engine } from "core/Engines";
 import { NullEngine } from "core/Engines";
 import type { FlowGraphContext, FlowGraph } from "core/FlowGraph";
@@ -37,12 +37,12 @@ describe("Flow Graph Execution Nodes", () => {
             lockstepMaxSteps: 1,
         });
 
-        Logger.Log = jest.fn();
+        Logger.Log = vi.fn();
         scene = new Scene(engine);
         flowGraphCoordinator = new FlowGraphCoordinator({ scene });
         flowGraph = flowGraphCoordinator.createGraph();
         flowGraphContext = flowGraph.createContext();
-        const cam = new ArcRotateCamera("cam", 0, 0, 0, new Vector3(0, 0, 0), scene);
+        new ArcRotateCamera("cam", 0, 0, 0, new Vector3(0, 0, 0), scene);
     });
 
     it("Branch Block", () => {

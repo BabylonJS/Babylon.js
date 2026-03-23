@@ -5,7 +5,7 @@
 
 import * as path from "path";
 import { globSync } from "glob";
-import * as fs from "fs-extra";
+import * as fs from "fs";
 import { checkArgs } from "./utils.js";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention, no-restricted-syntax, jsdoc/require-jsdoc

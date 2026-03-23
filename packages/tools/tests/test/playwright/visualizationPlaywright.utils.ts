@@ -6,7 +6,6 @@ import { getGlobalConfig } from "@tools/test-tools";
 
 export const evaluatePlaywrightVisTests = async (
     engineType = "webgl2",
-    useLargeWorldRendering = false,
     testFileName = "config",
     debug = false,
     debugWait = false,
@@ -44,10 +43,7 @@ export const evaluatePlaywrightVisTests = async (
             const re = new RegExp(regex, "i");
             return re.test(test.title);
         });
-        return (
-            !(externallyExcluded || test.excludeFromAutomaticTesting || (test.excludedEngines && test.excludedEngines.includes(engineType))) &&
-            useLargeWorldRendering === (test.useLargeWorldRendering ?? false)
-        );
+        return !(externallyExcluded || test.excludeFromAutomaticTesting || (test.excludedEngines && test.excludedEngines.includes(engineType)));
     });
 
     function log(msg: any, title?: string) {
@@ -93,16 +89,6 @@ export const evaluatePlaywrightVisTests = async (
                 window.engine = null;
             }
         });
-
-        const rendererData = await page.evaluate(evaluateInitEngineForVisualization, {
-            engineName: engineType,
-            useLargeWorldRendering: useLargeWorldRendering,
-            useReverseDepthBuffer: "false",
-            useNonCompatibilityMode: " false",
-            baseUrl: getGlobalConfig({ root: config.root }).baseUrl,
-        });
-
-        log(rendererData.renderer);
     });
 
     test.afterEach(async () => {
@@ -128,6 +114,17 @@ export const evaluatePlaywrightVisTests = async (
             page.on("console", logCallback);
             console.log("Running test: " + testCase.title, ". Meta: ", testCase.playgroundId || testCase.scriptToRun || testCase.sceneFilename);
             test.setTimeout(timeout);
+
+            // Initialize engine with per-test options from the test case config
+            const rendererData = await page.evaluate(evaluateInitEngineForVisualization, {
+                engineName: engineType,
+                useLargeWorldRendering: testCase.useLargeWorldRendering ?? false,
+                useReverseDepthBuffer: testCase.useReverseDepthBuffer ?? "false",
+                useNonCompatibilityMode: testCase.useNonCompatibilityMode ?? "false",
+                baseUrl: getGlobalConfig({ root: config.root }).baseUrl,
+            });
+            log(rendererData.renderer);
+
             if (optionalStateChanges?.beforeScene) {
                 await optionalStateChanges.beforeScene(page);
             }

@@ -159,7 +159,7 @@ export const debounce = <T extends (...args: any[]) => any>(callback: T, waitFor
 export function findRootDirectory(): string {
     let localPackageJSON = { name: "" };
     let basePath: string = process.cwd();
-    let currentRoot = basePath;
+    let currentRoot: string;
     do {
         try {
             localPackageJSON = JSON.parse(fs.readFileSync(path.join(basePath, "./package.json")).toString());

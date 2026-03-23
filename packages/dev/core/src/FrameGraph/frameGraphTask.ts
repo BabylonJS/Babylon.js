@@ -59,9 +59,6 @@ export abstract class FrameGraphTask {
      */
     public dependencies?: Set<FrameGraphTextureHandle>;
 
-    /** @internal */
-    public _disableDebugMarkers = false;
-
     /**
      * Records the task in the frame graph. Use this function to add content (render passes, ...) to the task.
      * @param skipCreationOfDisabledPasses If true, the disabled passe(s) won't be created.
@@ -229,15 +226,13 @@ export abstract class FrameGraphTask {
 
         this.onBeforeTaskExecute.notifyObservers(this);
 
-        if (!this._disableDebugMarkers) {
-            this._frameGraph.engine._debugPushGroup?.(`${this.getClassName()} (${this.name})`);
-        }
+        this._frameGraph.engine._debugPushGroup?.(`${this.getClassName()} (${this.name})`);
 
-        for (const pass of passes) {
-            pass._execute();
-        }
-
-        if (!this._disableDebugMarkers) {
+        try {
+            for (const pass of passes) {
+                pass._execute();
+            }
+        } finally {
             this._frameGraph.engine._debugPopGroup?.();
         }
 
@@ -246,19 +241,17 @@ export abstract class FrameGraphTask {
 
     /** @internal */
     public _initializePasses() {
-        if (!this._disableDebugMarkers) {
-            this._frameGraph.engine._debugPushGroup?.(`${this.getClassName()} (${this.name})`);
-        }
+        this._frameGraph.engine._debugPushGroup?.(`${this.getClassName()} (${this.name})`);
 
-        for (const pass of this._passes) {
-            pass._initialize();
-        }
+        try {
+            for (const pass of this._passes) {
+                pass._initialize();
+            }
 
-        for (const pass of this._passesDisabled) {
-            pass._initialize();
-        }
-
-        if (!this._disableDebugMarkers) {
+            for (const pass of this._passesDisabled) {
+                pass._initialize();
+            }
+        } finally {
             this._frameGraph.engine._debugPopGroup?.();
         }
     }

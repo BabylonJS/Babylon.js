@@ -193,7 +193,7 @@ export class InstantiateOnVolumeBlock extends NodeGeometryBlock implements INode
             }
 
             // Processing
-            let instanceGeometry: Nullable<VertexData> = null;
+            let instanceGeometry: Nullable<VertexData>;
             const instanceCount = this.count.getConnectedValue(state);
             const additionalVertexData: VertexData[] = [];
             const boundingInfo = extractMinAndMax(this._vertexData.positions, 0, this._vertexData.positions.length / 3);

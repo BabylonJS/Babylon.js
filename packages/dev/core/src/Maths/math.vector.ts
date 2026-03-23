@@ -5314,7 +5314,7 @@ export class Quaternion implements Tensor<Tuple<number, 4>, Quaternion>, IQuater
      * @returns the angle in radians
      */
     public toAxisAngleToRef<T extends Vector3>(axis: T): number {
-        let angle = 0;
+        let angle: number;
         const sinHalfAngle = Math.sqrt(this._x * this._x + this._y * this._y + this._z * this._z);
         const cosHalfAngle = this._w;
 

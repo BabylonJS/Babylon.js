@@ -54,7 +54,7 @@ export class Control3D implements IDisposable, IBehaviorAware<Control3D> {
     /** Gets or sets the control scaling in world space */
     public get scaling(): Vector3 {
         if (!this._node) {
-            this._scaling = this.scaling || new Vector3(1, 1, 1);
+            this._scaling = this._scaling || new Vector3(1, 1, 1);
             return this._scaling;
         }
 

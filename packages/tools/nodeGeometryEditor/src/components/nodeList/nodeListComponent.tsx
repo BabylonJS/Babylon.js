@@ -150,6 +150,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         AggregatorBlock: "Block used to aggregate values from a geometry",
         CleanGeometryBlock: "Try to clean a geometry",
         SubdivideBlock: "Subdivide a geometry using Catmull-Clark algorithm",
+        ExtrudeBlock: "Extrude a geometry along its face normal by a configurable depth",
         EaseBlock: "Block used to apply easing on a value",
     };
 
@@ -345,6 +346,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 "LatticeBlock",
                 "AggregatorBlock",
                 "SubdivideBlock",
+                "ExtrudeBlock",
             ],
             Noises: ["RandomBlock", "NoiseBlock"],
             Textures: ["TextureBlock", "TextureFetchBlock"],
@@ -412,7 +414,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 }
             }
             NodeLedger.NameFormatter = (name) => {
-                let finalName = name;
+                let finalName: string;
                 // custom frame
                 if (name.endsWith("Custom")) {
                     const nameIndex = name.lastIndexOf("Custom");

@@ -9,7 +9,7 @@ RawParams.forEach((value, key) => SearchParams.set(key.toLowerCase(), value));
 const ExpQsp = SearchParams.get("exp");
 
 // Sanitize the input to only allow certain strings
-let ImportPromise: Promise<any> | undefined = undefined;
+let ImportPromise: Promise<any> | undefined;
 switch (ExpQsp) {
     case "lottie": {
         ImportPromise = import("./lottie/main");

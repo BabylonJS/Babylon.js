@@ -13,6 +13,9 @@ import { ObservableCollection } from "../../misc/observableCollection";
 import { SceneContextIdentity } from "../sceneContext";
 import { ShellServiceIdentity } from "../shellService";
 
+/**
+ * The unique identity symbol for the debug service.
+ */
 export const DebugServiceIdentity = Symbol("DebugService");
 
 /**

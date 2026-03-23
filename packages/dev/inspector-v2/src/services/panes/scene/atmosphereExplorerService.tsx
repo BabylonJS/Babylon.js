@@ -4,6 +4,7 @@ import type { ISceneContext } from "../../sceneContext";
 import type { IWatcherService } from "../../watcherService";
 import type { ISceneExplorerService } from "./sceneExplorerService";
 
+import { tokens } from "@fluentui/react-components";
 import { WeatherSunnyLowFilled } from "@fluentui/react-icons";
 
 import { Observable } from "core/Misc/observable";
@@ -31,7 +32,7 @@ export const AtmosphereExplorerServiceDefinition: ServiceDefinition<[], [ISceneE
 
                 return {
                     get name() {
-                        return atmosphere.name;
+                        return atmosphere.name || `Unnamed ${atmosphere.getClassName()}`;
                     },
                     onChange: onChangeObservable,
                     dispose: () => {
@@ -40,7 +41,7 @@ export const AtmosphereExplorerServiceDefinition: ServiceDefinition<[], [ISceneE
                     },
                 };
             },
-            entityIcon: () => <WeatherSunnyLowFilled />,
+            entityIcon: () => <WeatherSunnyLowFilled color={tokens.colorPaletteYellowForeground2} />,
             // TODO in order for inspector UX to display atmosphere created after inspector is created
             getEntityAddedObservables: () => [],
             getEntityRemovedObservables: () => [],

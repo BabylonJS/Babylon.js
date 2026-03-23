@@ -85,6 +85,7 @@ export class Container extends Control {
             this.height = "100%";
         }
 
+        this._rebuildLayout = true;
         this._markAsDirty();
     }
 
@@ -105,6 +106,7 @@ export class Container extends Control {
             this.width = "100%";
         }
 
+        this._rebuildLayout = true;
         this._markAsDirty();
     }
 
@@ -196,7 +198,7 @@ export class Container extends Control {
      */
     public getChildByType(name: string, type: string): Nullable<Control> {
         for (const child of this.children) {
-            if (child.typeName === type) {
+            if (child.name === name && child.typeName === type) {
                 return child;
             }
         }
@@ -492,7 +494,7 @@ export class Container extends Control {
             rebuildCount++;
         } while (this._rebuildLayout && rebuildCount < this.maxLayoutCycle);
 
-        if (rebuildCount >= 3 && this.logLayoutCycleErrors) {
+        if (this._rebuildLayout && rebuildCount >= this.maxLayoutCycle && this.logLayoutCycleErrors) {
             Logger.Error(`Layout cycle detected in GUI (Container name=${this.name}, uniqueId=${this.uniqueId})`);
         }
 

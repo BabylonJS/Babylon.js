@@ -330,8 +330,7 @@ export class GreasedLineMesh extends GreasedLineBaseMesh {
 
         const intersects = [];
         if (indices && positions && widths) {
-            let i = 0,
-                l = 0;
+            let i: number, l: number;
             for (i = 0, l = indices.length - 1; i < l; i += 3) {
                 const a = indices[i];
                 const b = indices[i + 1];
@@ -361,7 +360,6 @@ export class GreasedLineMesh extends GreasedLineBaseMesh {
                     }
                 }
             }
-            i = l;
         }
 
         return intersects;

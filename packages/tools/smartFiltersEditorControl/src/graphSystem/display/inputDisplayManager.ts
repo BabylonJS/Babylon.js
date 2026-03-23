@@ -28,7 +28,7 @@ export class InputDisplayManager implements IDisplayManager {
     }
 
     public getBackgroundColor(nodeData: INodeData): string {
-        let color = "";
+        let color: string;
         const inputBlock = nodeData.data as AnyInputBlock;
 
         switch (inputBlock.type) {

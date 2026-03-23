@@ -17,7 +17,7 @@ import type { IAssetContainer } from "core/IAssetContainer";
 // Adds the parser to the scene parsers.
 AddParser(SceneComponentConstants.NAME_AUDIO, (parsedData: any, scene: Scene, container: AssetContainer, rootUrl: string) => {
     // TODO: add sound
-    let loadedSounds: Sound[] = [];
+    const loadedSounds: Sound[] = [];
     let loadedSound: Sound;
     container.sounds = container.sounds || [];
     if (parsedData.sounds !== undefined && parsedData.sounds !== null) {
@@ -39,8 +39,6 @@ AddParser(SceneComponentConstants.NAME_AUDIO, (parsedData: any, scene: Scene, co
             }
         }
     }
-
-    loadedSounds = [];
 });
 
 declare module "../scene" {

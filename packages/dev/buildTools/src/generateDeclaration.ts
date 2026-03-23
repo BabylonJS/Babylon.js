@@ -459,7 +459,7 @@ function GetPackageDeclaration(
     if (globalIndex !== -1) {
         // find where the ending } is. What we do is we count +1 if we find a { and -1 if we find a }. when we get to 0, this is the end of the global
         let count = 1;
-        let i = -1;
+        let i: number;
         for (i = globalIndex + 9; i < processedSource.length; i++) {
             if (processedSource[i] === "{") {
                 count++;

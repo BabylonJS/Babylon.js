@@ -65,7 +65,7 @@ describe("CloudPoint", () => {
                 getBoundingInfo: () => boundingInfo,
             } as Mesh;
 
-            expect(() => cloudPointWithoutMesh.intersectsMesh(mesh, true)).toThrowError();
+            expect(() => cloudPointWithoutMesh.intersectsMesh(mesh, true)).toThrow();
         });
 
         // Check intersect by sphere

@@ -14,12 +14,12 @@ Install the package using npm:
 npm install babylonjs-inspector
 ```
 
-The simplest way to use `Inspector` is to call the `BABYLON.ShowInspector` function, passing in your scene:
+The simplest way to use `Inspector` is to call the `INSPECTOR.ShowInspector` function, passing in your scene:
 
 ```ts
 // Your code that sets up a Babylon.js scene...
 
-BABYLON.ShowInspector(scene);
+INSPECTOR.ShowInspector(scene);
 ```
 
 ```html
@@ -30,7 +30,7 @@ BABYLON.ShowInspector(scene);
         <script>
             // Your code that sets up a Babylon.js scene...
 
-            BABYLON.ShowInspector(scene);
+            INSPECTOR.ShowInspector(scene);
         </script>
     </body>
 </html>

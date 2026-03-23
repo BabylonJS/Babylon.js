@@ -135,7 +135,7 @@ export const SplitContainer: React.FC<PropsWithChildren<ISplitContainerProps>> =
             }
 
             const child = children[i] as HTMLElement;
-            let childsize = 0;
+            let childsize: number;
             if (props.direction === SplitDirection.Horizontal) {
                 childsize = child.getBoundingClientRect().width;
             } else {
@@ -196,7 +196,7 @@ export const SplitContainer: React.FC<PropsWithChildren<ISplitContainerProps>> =
             return;
         }
 
-        let current = 0;
+        let current: number;
         if (controlledSide === ControlledSize.First) {
             current = sourceIndex - 1;
         } else {
@@ -277,8 +277,8 @@ export const SplitContainer: React.FC<PropsWithChildren<ISplitContainerProps>> =
             return;
         }
 
-        let current = 0;
-        let other = 0;
+        let current: number;
+        let other: number;
         if (controlledSide === ControlledSize.First) {
             current = sourceIndex - 1;
             other = sourceIndex + 1;

@@ -202,7 +202,7 @@ export class KHR_materials_fuzz implements IGLTFExporterExtensionV2 {
                     fuzzInfo.fuzzTexture = this._exporter._materialExporter.getTextureInfo(babylonMaterial.fuzzWeightTexture) ?? undefined;
                 }
 
-                let fuzzColorTexture: Nullable<BaseTexture> = null;
+                let fuzzColorTexture: Nullable<BaseTexture>;
                 if (babylonMaterial.fuzzColorTexture) {
                     if (this._mergedTexturesMap[babylonMaterial.fuzzColorTexture.uniqueId]) {
                         fuzzColorTexture = this._mergedTexturesMap[babylonMaterial.fuzzColorTexture.uniqueId];
@@ -212,7 +212,7 @@ export class KHR_materials_fuzz implements IGLTFExporterExtensionV2 {
                     fuzzInfo.fuzzColorTexture = this._exporter._materialExporter.getTextureInfo(fuzzColorTexture) ?? undefined;
                 }
 
-                let fuzzRoughnessTexture: Nullable<BaseTexture> = null;
+                let fuzzRoughnessTexture: Nullable<BaseTexture>;
                 if (babylonMaterial.fuzzRoughnessTexture) {
                     if (this._mergedTexturesMap[babylonMaterial.fuzzRoughnessTexture.uniqueId]) {
                         fuzzRoughnessTexture = this._mergedTexturesMap[babylonMaterial.fuzzRoughnessTexture.uniqueId];

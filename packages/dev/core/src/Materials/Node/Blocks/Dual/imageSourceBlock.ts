@@ -133,7 +133,7 @@ export class ImageSourceBlock extends NodeMaterialBlock {
         }
 
         if (this.dimensions.isConnected) {
-            let affect: string = "";
+            let affect: string;
             if (state.shaderLanguage === ShaderLanguage.WGSL) {
                 affect = `vec2f(textureDimensions(${this._samplerName}, 0).xy)`;
             } else {

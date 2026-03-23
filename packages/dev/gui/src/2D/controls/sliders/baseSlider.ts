@@ -285,11 +285,9 @@ export class BaseSlider extends Control {
      * @internal
      */
     protected _updateValueFromPointer(x: number, y: number): void {
-        if (this.rotation != 0) {
-            this._invertTransformMatrix.transformCoordinates(x, y, this._transformedPosition);
-            x = this._transformedPosition.x;
-            y = this._transformedPosition.y;
-        }
+        this._invertTransformMatrix.transformCoordinates(x, y, this._transformedPosition);
+        x = this._transformedPosition.x;
+        y = this._transformedPosition.y;
 
         let value: number;
         if (this._isVertical) {

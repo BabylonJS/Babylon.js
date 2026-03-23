@@ -28,8 +28,8 @@ fn main(input : VertexInputs) -> FragmentInputs {
 
     var worldViewProjection: mat4x4f = scene.viewProjection * finalWorld;
 
-	var viewPosition: vec4f = worldViewProjection *  vec4f(input.position, 1.0);
-	var viewPositionNext: vec4f = worldViewProjection *  vec4f(input.normal.xyz, 1.0);
+	var viewPosition: vec4f = worldViewProjection *  vec4f(vertexInputs.position, 1.0);
+	var viewPositionNext: vec4f = worldViewProjection *  vec4f(vertexInputs.normal.xyz, 1.0);
 
 	var currentScreen: vec2f = viewPosition.xy / viewPosition.w;
 	var nextScreen: vec2f = viewPositionNext.xy / viewPositionNext.w;
@@ -43,11 +43,11 @@ fn main(input : VertexInputs) -> FragmentInputs {
 	normalDir *= uniforms.width / 2.0;
 	normalDir = vec2f(normalDir.x / uniforms.aspectRatio, normalDir.y);
 
-	var offset: vec4f =  vec4f(normalDir * input.normal.w, 0.0, 0.0);
+	var offset: vec4f =  vec4f(normalDir * vertexInputs.normal.w, 0.0, 0.0);
 	vertexOutputs.position = viewPosition + offset;
 
 #if defined(CLIPPLANE) || defined(CLIPPLANE2) || defined(CLIPPLANE3) || defined(CLIPPLANE4) || defined(CLIPPLANE5) || defined(CLIPPLANE6)
-    var worldPos: vec4f = finalWorld * vec4f(input.position, 1.0);
+    var worldPos: vec4f = finalWorld * vec4f(vertexInputs.position, 1.0);
     #include<clipPlaneVertex>
 #endif
 

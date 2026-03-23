@@ -251,7 +251,7 @@ export class _WebAudioEngine extends AudioEngineV2 {
         try {
             mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
         } catch (e) {
-            throw new Error("Unable to access microphone: " + e);
+            throw new Error("Unable to access microphone: " + e, { cause: e });
         }
 
         return await this.createSoundSourceAsync(name, new MediaStreamAudioSourceNode(this._audioContext, { mediaStream }), {

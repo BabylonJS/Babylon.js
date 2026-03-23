@@ -71,6 +71,8 @@ export class WebGL2ParticleSystem implements IGPUParticleSystemPlatform {
                 "height",
                 "coneAngle",
                 "stopFactor",
+                "emitIndex",
+                "emitCount",
                 "angleRange",
                 "radiusRange",
                 "cellInfos",
@@ -309,7 +311,6 @@ export class WebGL2ParticleSystem implements IGPUParticleSystemPlatform {
             offset += 1;
             if (this._parent.spriteRandomStartCell) {
                 updateVertexBuffers["cellStartOffset"] = source.createVertexBuffer("cellStartOffset", offset, 1);
-                offset += 1;
             }
         }
 

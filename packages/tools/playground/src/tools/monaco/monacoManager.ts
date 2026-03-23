@@ -4,7 +4,7 @@ import * as monaco from "monaco-editor/esm/vs/editor/editor.api";
 import type { GlobalState } from "../../globalState";
 import { Utilities } from "../utilities";
 import { Logger, Observable } from "@dev/core";
-import { debounce } from "ts-debounce";
+import { debounce } from "../debounce";
 import { v5 as uuidv5 } from "uuid";
 
 import { EditorHost } from "./editor/editorHost";
@@ -165,6 +165,7 @@ export class MonacoManager {
 
             globalState.onRunRequiredObservable.notifyObservers();
             this._hydrating = false;
+            this._files.setDirty(false);
 
             const lastLocalJson = ReadLastLocal(this.globalState);
             if (lastLocalJson) {
@@ -557,6 +558,7 @@ export class MonacoManager {
             "https://preview.babylonjs.com/proceduralTexturesLibrary/babylonjs.proceduralTextures.d.ts",
             "https://preview.babylonjs.com/serializers/babylonjs.serializers.d.ts",
             "https://preview.babylonjs.com/inspector/babylon.inspector.d.ts",
+            "https://preview.babylonjs.com/inspector/babylon.inspector-v2.d.ts",
             "https://preview.babylonjs.com/accessibility/babylon.accessibility.d.ts",
             "https://preview.babylonjs.com/addons/babylonjs.addons.d.ts",
             "https://preview.babylonjs.com/glTF2Interface/babylon.glTF2Interface.d.ts",
@@ -564,7 +566,7 @@ export class MonacoManager {
         ];
 
         // snapshot/version/local overrides
-        let snapshot = "";
+        let snapshot: string;
         if (window.location.search.indexOf("snapshot=") !== -1) {
             snapshot = window.location.search.split("snapshot=")[1].split("&")[0];
             for (let i = 0; i < declarations.length; i++) {
@@ -572,7 +574,7 @@ export class MonacoManager {
             }
         }
 
-        let version = "";
+        let version: string;
         if (window.location.search.indexOf("version=") !== -1) {
             version = window.location.search.split("version=")[1].split("&")[0];
             for (let i = 0; i < declarations.length; i++) {
@@ -761,7 +763,14 @@ export { Playground };`;
         this.globalState.importsMap = {};
         this.globalState.entryFilePath = undefined as any;
         this.globalState.activeFilePath = undefined as any;
-        this.globalState.currentSnippetToken = "";
+
+        // Only clear the snippet token when not loading a snippet.
+        // During loading, a language switch fires onLanguageChangedObservable which
+        // calls this method; clearing the token here would cause the next save to
+        // create a new snippet instead of incrementing the revision.
+        if (!this.globalState.loadingCodeInProgress) {
+            this.globalState.currentSnippetToken = "";
+        }
 
         this.globalState.onFilesChangedObservable.notifyObservers();
         this.globalState.onManifestChangedObservable.notifyObservers();

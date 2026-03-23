@@ -439,7 +439,7 @@ export class MultiRenderTarget extends RenderTargetTexture {
             this._multiRenderTargetOptions.useSRGBBuffers[index] = texture._useSRGBBuffer;
         }
         if (this._multiRenderTargetOptions.targetTypes && this._multiRenderTargetOptions.targetTypes[index] !== -1) {
-            let target: number = 0;
+            let target: number;
             if (texture.is2DArray) {
                 target = Constants.TEXTURE_2D_ARRAY;
             } else if (texture.isCube) {

@@ -1,13 +1,15 @@
-import type { IDisposable, Nullable } from "core/index";
+import type { FrameGraphTask, IDisposable, Nullable } from "core/index";
 import type { ServiceDefinition } from "../../../modularity/serviceDefinition";
 import type { IGizmoService } from "../../gizmoService";
 import type { ISceneContext } from "../../sceneContext";
 import type { IWatcherService } from "../../watcherService";
 import type { ISceneExplorerService } from "./sceneExplorerService";
 
+import { tokens } from "@fluentui/react-components";
 import {
     BorderNoneRegular,
     BorderOutsideRegular,
+    BubbleMultipleRegular,
     CameraRegular,
     EditRegular,
     EyeOffRegular,
@@ -21,6 +23,7 @@ import {
 } from "@fluentui/react-icons";
 
 import { Camera } from "core/Cameras/camera";
+import { FindMainCamera } from "core/FrameGraph/frameGraphUtils";
 import { ClusteredLightContainer } from "core/Lights/Clustered/clusteredLightContainer";
 import { Light } from "core/Lights/light";
 import { AbstractMesh } from "core/Meshes/abstractMesh";
@@ -35,9 +38,12 @@ import { SceneContextIdentity } from "../../sceneContext";
 import { WatcherServiceIdentity } from "../../watcherService";
 import { DefaultCommandsOrder, DefaultSectionsOrder } from "./defaultSectionsMetadata";
 import { SceneExplorerServiceIdentity } from "./sceneExplorerService";
-import { FindMainCamera, FindMainObjectRenderer } from "core/FrameGraph/frameGraphUtils";
 
 import "core/Rendering/boundingBoxRenderer";
+
+function IsCameraFrameGraphTask(task: FrameGraphTask): task is FrameGraphTask & { camera: Camera } {
+    return (task as Partial<{ camera: Camera }>).camera instanceof Camera;
+}
 
 export const NodeExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplorerService, ISceneContext, IGizmoService, IWatcherService]> = {
     friendlyName: "Node Explorer",
@@ -95,7 +101,7 @@ export const NodeExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplore
 
                 return {
                     get name() {
-                        return node.name;
+                        return node.name || `Unnamed ${node.getClassName()}`;
                     },
                     onChange: onChangeObservable,
                     dispose: () => {
@@ -107,13 +113,15 @@ export const NodeExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplore
             },
             entityIcon: ({ entity: node }) =>
                 node instanceof AbstractMesh ? (
-                    <MeshIcon />
+                    <MeshIcon color={tokens.colorPaletteBlueForeground2} />
                 ) : node instanceof TransformNode ? (
-                    <MyLocationRegular />
+                    <MyLocationRegular color={tokens.colorPaletteBlueForeground2} />
                 ) : node instanceof Camera ? (
-                    <CameraRegular />
+                    <CameraRegular color={tokens.colorPaletteGreenForeground2} />
+                ) : node instanceof ClusteredLightContainer ? (
+                    <BubbleMultipleRegular color={tokens.colorPaletteYellowForeground2} />
                 ) : node instanceof Light ? (
-                    <LightbulbRegular />
+                    <LightbulbRegular color={tokens.colorPaletteYellowForeground2} />
                 ) : (
                     <></>
                 ),
@@ -245,15 +253,28 @@ export const NodeExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplore
                     set isEnabled(enabled: boolean) {
                         const activeCamera = getActiveCamera();
                         if (enabled && activeCamera !== camera) {
-                            activeCamera?.detachControl();
                             if (scene.frameGraph) {
-                                const objectRenderer = FindMainObjectRenderer(scene.frameGraph);
-                                if (objectRenderer) {
-                                    objectRenderer.camera = camera;
-                                    onChangeObservable.notifyObservers(); // manual trigger, because scene.onActiveCameraChanged won't be triggered by the line above
-                                    camera.attachControl(true);
-                                }
+                                void (async (frameGraph) => {
+                                    let updated = false;
+                                    const nrg = frameGraph.getLinkedNodeRenderGraph();
+                                    if (nrg) {
+                                        updated = await nrg.replaceCameraAsync(activeCamera, camera);
+                                    } else {
+                                        for (const task of frameGraph.tasks) {
+                                            if (IsCameraFrameGraphTask(task)) {
+                                                task.camera = camera;
+                                                updated = true;
+                                            }
+                                        }
+                                    }
+                                    if (updated) {
+                                        activeCamera?.detachControl();
+                                        camera.attachControl(true);
+                                        onChangeObservable.notifyObservers();
+                                    }
+                                })(scene.frameGraph);
                             } else {
+                                activeCamera?.detachControl();
                                 scene.activeCamera = camera;
                                 camera.attachControl(true);
                             }

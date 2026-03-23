@@ -128,7 +128,7 @@ export class TrailMesh extends Mesh {
         const normals: Array<number> = [];
         const indices: Array<number> = [];
         const uvs: Array<number> = [];
-        let meshCenter = Vector3.Zero();
+        let meshCenter: Vector3;
         if (this._generator instanceof AbstractMesh && this._generator.hasBoundingInfo) {
             meshCenter = this._generator.getBoundingInfo().boundingBox.centerWorld;
         } else {

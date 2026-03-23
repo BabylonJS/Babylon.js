@@ -53,6 +53,9 @@ import { MakePopoverTeachingMoment } from "../hooks/teachingMomentHooks";
 import { useResizeHandle } from "../hooks/useResizeHandle";
 import { ObservableCollection } from "../misc/observableCollection";
 
+/**
+ * Setting descriptor for persisting side pane dock location overrides.
+ */
 export const SidePaneDockOverridesSettingDescriptor: SettingDescriptor<
     Record<string, Readonly<{ horizontalLocation: HorizontalLocation; verticalLocation: VerticalLocation }> | undefined>
 > = {
@@ -60,27 +63,46 @@ export const SidePaneDockOverridesSettingDescriptor: SettingDescriptor<
     defaultValue: {},
 };
 
+/**
+ * Setting descriptor for persisting the left side pane width adjustment.
+ */
 export const LeftSidePaneWidthAdjustSettingDescriptor: SettingDescriptor<number> = {
     key: "Shell/LeftPane/WidthAdjust",
     defaultValue: 0,
 };
 
+/**
+ * Setting descriptor for persisting the left side pane height adjustment.
+ */
 export const LeftSidePaneHeightAdjustSettingDescriptor: SettingDescriptor<number> = {
     key: "Shell/LeftPane/HeightAdjust",
     defaultValue: 0,
 };
 
+/**
+ * Setting descriptor for persisting the right side pane width adjustment.
+ */
 export const RightSidePaneWidthAdjustSettingDescriptor: SettingDescriptor<number> = {
     key: "Shell/RightPane/WidthAdjust",
     defaultValue: 0,
 };
 
+/**
+ * Setting descriptor for persisting the right side pane height adjustment.
+ */
 export const RightSidePaneHeightAdjustSettingDescriptor: SettingDescriptor<number> = {
     key: "Shell/RightPane/HeightAdjust",
     defaultValue: 0,
 };
 
+/**
+ * Represents a horizontal location in the shell layout.
+ */
 export type HorizontalLocation = "left" | "right";
+
+/**
+ * Represents a vertical location in the shell layout.
+ */
 export type VerticalLocation = "top" | "bottom";
 
 type TeachingMomentInfo = boolean | { readonly title: string; readonly description: string };
@@ -227,6 +249,9 @@ export type CentralContentDefinition = {
     order?: number;
 };
 
+/**
+ * The unique identity symbol for the root component service.
+ */
 export const RootComponentServiceIdentity = Symbol("RootComponent");
 
 /**
@@ -239,6 +264,9 @@ export interface IRootComponentService extends IService<typeof RootComponentServ
     readonly rootComponent: ComponentType;
 }
 
+/**
+ * The unique identity symbol for the shell service.
+ */
 export const ShellServiceIdentity = Symbol("ShellService");
 
 /**
@@ -446,7 +474,17 @@ const useStyles = makeStyles({
     },
     paneHeaderText: {
         flex: 1,
+    },
+    paneHeaderTextNoIcon: {
         marginLeft: tokens.spacingHorizontalM,
+    },
+    paneHeaderIcon: {
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        height: "100%",
+        aspectRatio: "1",
+        fontSize: "20px",
     },
     paneHeaderButton: {
         color: "inherit",
@@ -582,14 +620,19 @@ const DockMenu: FunctionComponent<
     );
 };
 
-const PaneHeader: FunctionComponent<{ id: string; title: string; dockOptions: Map<DockLocation, (sidePaneKey: string) => void> }> = (props) => {
+const PaneHeader: FunctionComponent<{ id: string; title: string; icon?: ComponentType; dockOptions: Map<DockLocation, (sidePaneKey: string) => void> }> = (props) => {
     const { id, title, dockOptions } = props;
 
     const classes = useStyles();
 
     return (
         <div className={classes.paneHeaderDiv}>
-            <Subtitle2Stronger className={classes.paneHeaderText}>{title}</Subtitle2Stronger>
+            {props.icon && (
+                <div className={classes.paneHeaderIcon}>
+                    <props.icon />
+                </div>
+            )}
+            <Subtitle2Stronger className={mergeClasses(classes.paneHeaderText, !props.icon && classes.paneHeaderTextNoIcon)}>{title}</Subtitle2Stronger>
             <DockMenu sidePaneId={id} dockOptions={dockOptions}>
                 <Button className={classes.paneHeaderButton} appearance="transparent" icon={<MoreHorizontalRegular />} />
             </DockMenu>
@@ -1023,7 +1066,12 @@ function usePane(
                     <div className={classes.paneContent}>
                         {topSelectedTab && (
                             <>
-                                <PaneHeader id={topSelectedTab.key} title={topSelectedTab.title} dockOptions={validTopDockOptions} />
+                                <PaneHeader
+                                    id={topSelectedTab.key}
+                                    title={topSelectedTab.title}
+                                    icon={topPanes.length > 1 ? undefined : topSelectedTab.icon}
+                                    dockOptions={validTopDockOptions}
+                                />
                                 {/* Render all panes to retain their state even when they are not selected, but only display the selected pane. */}
                                 {topPanes
                                     .filter((pane) => pane.key === topSelectedTab.key || pane.keepMounted)
@@ -1058,7 +1106,12 @@ function usePane(
                     >
                         {bottomSelectedTab && (
                             <>
-                                <PaneHeader id={bottomSelectedTab.key} title={bottomSelectedTab.title} dockOptions={validBottomDockOptions} />
+                                <PaneHeader
+                                    id={bottomSelectedTab.key}
+                                    title={bottomSelectedTab.title}
+                                    icon={bottomPanes.length > 1 ? undefined : bottomSelectedTab.icon}
+                                    dockOptions={validBottomDockOptions}
+                                />
                                 {/* Render all panes to retain their state even when they are not selected, but only display the selected pane. */}
                                 {bottomPanes
                                     .filter((pane) => pane.key === bottomSelectedTab.key || pane.keepMounted)

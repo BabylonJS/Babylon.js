@@ -49,6 +49,7 @@ export interface IFlowGraphParseOptions {
      * A function that parses complex values in a scene.
      * @param key the key of the value
      * @param serializationObject the object to read the value from
+     * @param assetsContainer the assets container
      * @param scene the scene to read the value from
      */
     valueParseFunction?: (key: string, serializationObject: any, assetsContainer: IAssetContainer, scene: Scene) => any;

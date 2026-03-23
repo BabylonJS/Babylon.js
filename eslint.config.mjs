@@ -4,7 +4,7 @@ import globals from "globals";
 import tseslint from "typescript-eslint";
 import eslintPluginPrettier from "eslint-plugin-prettier";
 import eslintConfigPrettier from "eslint-config-prettier";
-import eslintPluginJest from "eslint-plugin-jest";
+import eslintPluginVitest from "@vitest/eslint-plugin";
 import eslintPluginJsdoc from "eslint-plugin-jsdoc";
 import eslintPluginGithub from "eslint-plugin-github";
 import eslintPluginImport from "eslint-plugin-import";
@@ -172,7 +172,6 @@ export default tseslint.config(
             globals: {
                 ...globals.browser,
                 ...globals.node,
-                ...globals.jest,
             },
             parser: tseslint.parser,
             parserOptions: {
@@ -202,7 +201,7 @@ export default tseslint.config(
             jsdoc: eslintPluginJsdoc,
             github: eslintPluginGithub,
             import: eslintPluginImport,
-            jest: eslintPluginJest,
+            vitest: eslintPluginVitest,
         },
         settings: {
             react: {
@@ -217,9 +216,9 @@ export default tseslint.config(
     },
 
     // ===========================================
-    // Jest plugin config
+    // Vitest plugin config
     // ===========================================
-    eslintPluginJest.configs["flat/recommended"],
+    eslintPluginVitest.configs.recommended,
 
     // ===========================================
     // Global rules (apply to all matched files)
@@ -248,9 +247,9 @@ export default tseslint.config(
             "template-curly-spacing": "error",
             "template-tag-spacing": "error",
 
-            // Jest rules
-            "jest/no-standalone-expect": ["error", { additionalTestBlockFunctions: ["afterEach"] }],
-            "jest/valid-expect": "off",
+            // Vitest rules
+            "vitest/no-standalone-expect": ["error", { additionalTestBlockFunctions: ["afterEach"] }],
+            "vitest/valid-expect": "off",
 
             // Babylon.js custom rules
             "babylonjs/syntax": "warn",
@@ -703,6 +702,29 @@ export default tseslint.config(
         files: ["packages/dev/**/*.{ts,tsx}"],
         rules: {
             "babylonjs/no-directory-barrel-imports": "error",
+        },
+    },
+
+    // ===========================================
+    // UMD ES5 downlevel iteration guard
+    // These dev packages are compiled into UMD bundles targeting ES5
+    // without --downlevelIteration. for...of and spread on non-array
+    // iterables (Set, Map, generators, etc.) silently produce broken
+    // code. This rule catches those patterns at lint time.
+    // ===========================================
+    {
+        files: [
+            "packages/dev/core/src/**/*.ts",
+            "packages/dev/gui/src/**/*.ts",
+            "packages/dev/loaders/src/**/*.ts",
+            "packages/dev/materials/src/**/*.ts",
+            "packages/dev/serializers/src/**/*.ts",
+            "packages/dev/postProcesses/src/**/*.ts",
+            "packages/dev/proceduralTextures/src/**/*.ts",
+            "packages/dev/addons/src/**/*.ts",
+        ],
+        rules: {
+            "babylonjs/no-downlevel-iteration": "error",
         },
     }
 );

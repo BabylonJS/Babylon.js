@@ -135,7 +135,7 @@ export function CreateTiledBoxVertexData(options: {
     const faceNormals: Array<Array<Vector3>> = [];
 
     const newFaceUV: Array<Array<number>> = [];
-    let lu: number = 0;
+    let lu: number;
 
     let li: number = 0;
 

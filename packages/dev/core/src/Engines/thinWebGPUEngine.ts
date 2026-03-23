@@ -25,13 +25,9 @@ export abstract class ThinWebGPUEngine extends AbstractEngine {
     /** @internal */
     public dbgSanityChecks = true;
     /** @internal */
-    public dbgVerboseLogsNumFrames = 10;
-    /** @internal */
     public dbgLogIfNotDrawWrapper = true;
     /** @internal */
     public dbgShowEmptyEnableEffectCalls = true;
-    /** @internal */
-    public dbgVerboseLogsForFirstFrames = false;
 
     /** @internal */
     public _textureHelper: WebGPUTextureManager;
@@ -56,6 +52,15 @@ export abstract class ThinWebGPUEngine extends AbstractEngine {
     public _timestampQuery: WebGPUTimestampQuery;
     /** @internal */
     public _timestampIndex = 0;
+
+    /** @internal */
+    public _showGPUDebugMarkersLog = false;
+    /** @internal */
+    public _debugMarkersEncoderGroups: string[] = [];
+    /** @internal */
+    public _debugMarkersPassGroups: string[] = [];
+    /** @internal */
+    public _debugMarkersPendingEncoderPops = 0;
 
     /**
      * Gets the GPU time spent in the main render pass for the last frame rendered (in nanoseconds).
@@ -96,6 +101,8 @@ export abstract class ThinWebGPUEngine extends AbstractEngine {
             return 0;
         }
 
+        this._debugPopBeforeEndOfEncoder();
+
         const currentPassIndex = this._currentPassIsMainPass() ? 2 : 1;
 
         if (!this._snapshotRendering.endRenderPass(this._currentRenderPass) && !this.compatibilityMode) {
@@ -112,21 +119,8 @@ export abstract class ThinWebGPUEngine extends AbstractEngine {
         );
         this._timestampIndex += 2;
 
-        if (this.dbgVerboseLogsForFirstFrames) {
-            if ((this as any)._count === undefined) {
-                (this as any)._count = 0;
-            }
-            if (!(this as any)._count || (this as any)._count < this.dbgVerboseLogsNumFrames) {
-                Logger.Log(
-                    "frame #" +
-                        (this as any)._count +
-                        " - " +
-                        (currentPassIndex === 2 ? "main" : "render target") +
-                        " end pass" +
-                        (currentPassIndex === 1 ? " - internalTexture.uniqueId=" + this._currentRenderTarget?.texture?.uniqueId : "")
-                );
-            }
-        }
+        this._debugPendingPop(this._currentRenderPass);
+
         this._currentRenderPass = null;
 
         return currentPassIndex;
@@ -151,26 +145,6 @@ export abstract class ThinWebGPUEngine extends AbstractEngine {
 
         const mipmapCount = WebGPUTextureHelper.ComputeNumMipmapLevels(texture.width, texture.height);
 
-        if (this.dbgVerboseLogsForFirstFrames) {
-            if ((this as any)._count === undefined) {
-                (this as any)._count = 0;
-            }
-            if (!(this as any)._count || (this as any)._count < this.dbgVerboseLogsNumFrames) {
-                Logger.Log(
-                    "frame #" +
-                        (this as any)._count +
-                        " - generate mipmaps - width=" +
-                        texture.width +
-                        ", height=" +
-                        texture.height +
-                        ", isCube=" +
-                        texture.isCube +
-                        ", command encoder=" +
-                        (commandEncoder === this._renderEncoder ? "render" : "copy")
-                );
-            }
-        }
-
         if (texture.isCube) {
             this._textureHelper.generateCubeMipmaps(gpuHardwareTexture, mipmapCount, commandEncoder);
         } else if (texture._source === InternalTextureSource.Raw || texture._source === InternalTextureSource.Raw2DArray) {
@@ -178,5 +152,70 @@ export abstract class ThinWebGPUEngine extends AbstractEngine {
         } else {
             this._textureHelper.generateMipmaps(gpuHardwareTexture, mipmapCount, 0, commandEncoder);
         }
+    }
+
+    protected _debugPopBeforeEndOfEncoder() {
+        if (!this._enableGPUDebugMarkers) {
+            return;
+        }
+
+        // When a render pass is active, pop its groups; otherwise pop encoder-level groups.
+        // Pass-level groups are never pushed on the encoder, so we never pop them from it.
+        const groups = this._currentRenderPass ? this._debugMarkersPassGroups : this._debugMarkersEncoderGroups;
+        const target = this._currentRenderPass ?? this._renderEncoder;
+
+        for (let i = groups.length - 1; i >= 0; --i) {
+            if (this._showGPUDebugMarkersLog) {
+                Logger.Log(
+                    `[${this.frameId}] [E${this._debugMarkersEncoderGroups.length}|P${this._debugMarkersPassGroups.length}] [automatic] Popping debug group '${groups[i]}' on '${target.label}'.`
+                );
+            }
+            target.popDebugGroup();
+        }
+    }
+
+    protected _debugPushAfterStartOfEncoder() {
+        if (!this._enableGPUDebugMarkers) {
+            return;
+        }
+
+        // When a render pass is active, re-push its floating groups onto it; otherwise re-push
+        // encoder-level groups onto the new render encoder.
+        // Pass-level groups stay floating until the next render pass starts.
+        const groups = this._currentRenderPass ? this._debugMarkersPassGroups : this._debugMarkersEncoderGroups;
+        const target = this._currentRenderPass ?? this._renderEncoder;
+
+        for (const groupName of groups) {
+            if (this._showGPUDebugMarkersLog) {
+                Logger.Log(
+                    `[${this.frameId}] [E${this._debugMarkersEncoderGroups.length}|P${this._debugMarkersPassGroups.length}] [automatic] Pushing debug group '${groupName}' on '${target.label}'.`
+                );
+            }
+            target.pushDebugGroup(groupName);
+        }
+    }
+
+    protected _debugPendingPop(currentRenderPass: GPURenderPassEncoder) {
+        if (!this._enableGPUDebugMarkers) {
+            return;
+        }
+
+        // The user popped encoder-level groups while a render pass was active (the pass was the live
+        // object, so the pops were deferred). Now that the pass has ended we replay them on the render
+        // encoder. Because _debugMarkersEncoderGroups only ever contains encoder-level entries, popping
+        // from it here can never accidentally consume a pass-level group.
+        while (this._debugMarkersPendingEncoderPops-- > 0) {
+            const groupName = this._debugMarkersEncoderGroups.pop();
+
+            if (this._showGPUDebugMarkersLog) {
+                Logger.Log(
+                    `[${this.frameId}] [E${this._debugMarkersEncoderGroups.length}|P${this._debugMarkersPassGroups.length}] [automatic] Popping debug group '${groupName}' on render encoder '${this._renderEncoder.label}' after the end of render pass '${currentRenderPass.label}'.`
+                );
+            }
+
+            this._renderEncoder.popDebugGroup();
+        }
+
+        this._debugMarkersPendingEncoderPops = 0;
     }
 }

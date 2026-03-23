@@ -85,7 +85,7 @@ export class SaveManager {
                 if (xmlHttp.status === 200) {
                     const snippet = JSON.parse(xmlHttp.responseText);
                     if (location.pathname && location.pathname.indexOf("pg/") !== -1) {
-                        let newHref = location.href;
+                        let newHref: string;
                         if (location.pathname.indexOf("revision") !== -1) {
                             newHref = location.href.replace(/revision\/(\d+)/, "revision/" + snippet.version);
                         } else {
@@ -94,7 +94,7 @@ export class SaveManager {
                         this._replaceUrlSilently(newHref);
                     } else if (location.search && location.search.indexOf("pg=") !== -1) {
                         const currentQuery = Utilities.ParseQuery();
-                        let newHref = location.href;
+                        let newHref: string;
                         if (currentQuery.revision) {
                             newHref = location.href.replace(/revision=(\d+)/, "revision=" + snippet.version);
                         } else {

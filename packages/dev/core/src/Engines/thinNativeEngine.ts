@@ -384,7 +384,6 @@ export class ThinNativeEngine extends ThinEngine {
             supportSpriteInstancing: false,
             forceVertexBufferStrideAndOffsetMultiple4Bytes: true,
             _checkNonFloatVertexBuffersDontRecreatePipelineContext: false,
-            _collectUbosUpdatedInFrame: false,
         };
 
         Logger.Log("Babylon Native (v" + AbstractEngine.Version + ") launched");
@@ -877,7 +876,7 @@ export class ThinNativeEngine extends ThinEngine {
                 onSuccess();
             } catch (e) {
                 const message = e?.message;
-                throw new Error("SHADER ERROR" + (typeof message === "string" ? "\n" + message : ""));
+                throw new Error("SHADER ERROR" + (typeof message === "string" ? "\n" + message : ""), { cause: e });
             }
         }
 
@@ -1652,10 +1651,6 @@ export class ThinNativeEngine extends ThinEngine {
      * @param format defines the format of the data
      */
     public override updateDynamicTexture(texture: Nullable<InternalTexture>, canvas: any, invertY: boolean, premulAlpha: boolean = false, format?: number): void {
-        if (premulAlpha === void 0) {
-            premulAlpha = false;
-        }
-
         if (!!texture && !!texture._hardwareTexture) {
             const destination = texture._hardwareTexture.underlyingResource;
             const context = canvas.getContext();
@@ -2117,7 +2112,7 @@ export class ThinNativeEngine extends ThinEngine {
         _delayGPUTextureCreation = true,
         source = InternalTextureSource.Unknown
     ): InternalTexture {
-        let generateMipMaps = false;
+        let generateMipMaps: boolean;
         let type = Constants.TEXTURETYPE_UNSIGNED_BYTE;
         let samplingMode = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE;
         let format = Constants.TEXTUREFORMAT_RGBA;

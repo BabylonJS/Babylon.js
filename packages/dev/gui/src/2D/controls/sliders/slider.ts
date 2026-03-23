@@ -133,7 +133,7 @@ export class Slider extends BaseSlider {
         const width = this._renderWidth;
         const height = this._renderHeight;
 
-        let radius = 0;
+        let radius: number;
 
         if (this.isThumbClamped && this.isThumbCircle) {
             if (this.isVertical) {
