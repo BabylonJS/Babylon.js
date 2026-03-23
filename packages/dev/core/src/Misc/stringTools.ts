@@ -71,7 +71,7 @@ function JsEncodeArrayBufferToBase64(bytes: Uint8Array): string {
 }
 
 function JsDecodeBase64ToBinary(base64Data: string): ArrayBuffer {
-    const decodedString = atob(base64Data);
+    const decodedString = DecodeBase64ToString(base64Data);
     const bufferLength = decodedString.length;
     const bufferView = new Uint8Array(new ArrayBuffer(bufferLength));
 
