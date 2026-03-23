@@ -12,7 +12,7 @@
     ],
     "scripts": {
         "build": "npm run clean && npm run compile",
-        "test": "jest -c ../../../jest.config.ts",
+        "test": "vitest run",
         "clean": "rimraf dist && rimraf tsconfig.build.tsbuildinfo",
         "lint": "npm run lint:check",
         "lint:check": "eslint \"src/**/*.{ts,tsx}\"",

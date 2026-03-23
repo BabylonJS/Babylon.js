@@ -2275,10 +2275,12 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 }
                 world.copyToArray(instanceStorage.instancesData, offset);
 
-                // Apply floatingOriginOffset to underlying data sent to buffer
-                instanceStorage.instancesData[offset + 12] -= floatingOriginOffset.x;
-                instanceStorage.instancesData[offset + 13] -= floatingOriginOffset.y;
-                instanceStorage.instancesData[offset + 14] -= floatingOriginOffset.z;
+                // Apply floatingOriginOffset to underlying data sent to buffer.
+                // Subtract from Float64 source to preserve precision at large coordinates.
+                const worldM = world.asArray();
+                instanceStorage.instancesData[offset + 12] = worldM[12] - floatingOriginOffset.x;
+                instanceStorage.instancesData[offset + 13] = worldM[13] - floatingOriginOffset.y;
+                instanceStorage.instancesData[offset + 14] = worldM[14] - floatingOriginOffset.z;
 
                 offset += 16;
                 instancesCount++;
@@ -2310,10 +2312,12 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                         }
                     }
 
-                    // Apply floatingOriginOffset to underlying data sent to buffer
-                    instanceStorage.instancesData[offset + 12] -= floatingOriginOffset.x;
-                    instanceStorage.instancesData[offset + 13] -= floatingOriginOffset.y;
-                    instanceStorage.instancesData[offset + 14] -= floatingOriginOffset.z;
+                    // Apply floatingOriginOffset to underlying data sent to buffer.
+                    // Subtract from Float64 source to preserve precision at large coordinates.
+                    const matrixM = matrix.asArray();
+                    instanceStorage.instancesData[offset + 12] = matrixM[12] - floatingOriginOffset.x;
+                    instanceStorage.instancesData[offset + 13] = matrixM[13] - floatingOriginOffset.y;
+                    instanceStorage.instancesData[offset + 14] = matrixM[14] - floatingOriginOffset.z;
 
                     offset += 16;
                     instancesCount++;
@@ -2696,6 +2700,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      */
     public render(subMesh: SubMesh, enableAlphaMode: boolean, effectiveMeshReplacement?: AbstractMesh): Mesh {
         const scene = this.getScene();
+        const engine = scene.getEngine();
 
         if (this._internalAbstractMeshDataInfo._isActiveIntermediate) {
             this._internalAbstractMeshDataInfo._isActiveIntermediate = false;
@@ -2705,8 +2710,12 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         const numActiveCameras = scene.activeCameras?.length ?? 0;
         const canCheckOcclusionQuery = (numActiveCameras > 1 && scene.activeCamera === scene.activeCameras![0]) || numActiveCameras <= 1;
+        const occlusionCheckOnly =
+            this._occlusionDataStorage &&
+            this._occlusionDataStorage.occlusionForRenderPassId !== -1 &&
+            this._occlusionDataStorage.occlusionForRenderPassId !== engine.currentRenderPassId;
 
-        if (canCheckOcclusionQuery && this._checkOcclusionQuery() && !this._occlusionDataStorage.forceRenderingWhenOccluded) {
+        if (canCheckOcclusionQuery && this._checkOcclusionQuery(occlusionCheckOnly) && !this._occlusionDataStorage.forceRenderingWhenOccluded) {
             return this;
         }
 
@@ -2722,7 +2731,6 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             return this;
         }
 
-        const engine = scene.getEngine();
         let oldCameraMaxZ = 0;
         let oldCamera: Nullable<Camera> = null;
         if (this.ignoreCameraMaxZ && scene.activeCamera && !scene._isInIntermediateRendering()) {

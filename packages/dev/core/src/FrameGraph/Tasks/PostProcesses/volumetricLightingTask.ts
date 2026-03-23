@@ -169,6 +169,12 @@ export class FrameGraphVolumetricLightingTask extends FrameGraphTask {
     constructor(name: string, frameGraph: FrameGraph, enableExtinction = false) {
         super(name, frameGraph);
 
+        if (!FrameGraphVolumetricLightingTask.IsSupported(frameGraph.engine, enableExtinction)) {
+            throw new Error(
+                `FrameGraphVolumetricLightingTask "${name}": the current configuration is not supported. Use FrameGraphVolumetricLightingTask.IsSupported(engine, enableExtinction) to check before creating this task.`
+            );
+        }
+
         this.enableExtinction = enableExtinction;
 
         const isWebGPU = this._frameGraph.engine.isWebGPU;

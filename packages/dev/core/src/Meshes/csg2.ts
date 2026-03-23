@@ -476,7 +476,7 @@ export function IsCSG2Ready() {
  */
 export async function InitializeCSG2Async(options?: Partial<ICSG2Options>) {
     const localOptions = {
-        manifoldUrl: "https://unpkg.com/manifold-3d@3.3.0",
+        manifoldUrl: "https://unpkg.com/manifold-3d@3.4.0",
         ...options,
     };
 

@@ -251,4 +251,25 @@ export class EquiRectangularCubeTexture extends BaseTexture {
 
         return newTexture;
     }
+
+    /**
+     * Finish the loading sequence of a texture flagged as delayed load.
+     * @internal
+     */
+    public override delayLoad(): void {
+        if (this.delayLoadState !== Constants.DELAYLOADSTATE_NOTLOADED) {
+            return;
+        }
+
+        this._texture = this._getFromCache(this.url, this._noMipmap, undefined, undefined, undefined, this.isCube);
+
+        if (!this._texture) {
+            this.delayLoadState = Constants.DELAYLOADSTATE_LOADED;
+            this._loadImage(() => {
+                this._loadTexture();
+            }, this._onError);
+        } else {
+            this.delayLoadState = Constants.DELAYLOADSTATE_LOADED;
+        }
+    }
 }

@@ -35,7 +35,7 @@ export type EntitySelectorProps<T extends Entity> = (PrimitiveProps<Nullable<T>>
     /**
      * Optional default value that enables clearing the current linked entity
      */
-    defaultValue?: T;
+    defaultValue?: Nullable<T>;
 };
 
 const useStyles = makeStyles({

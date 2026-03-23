@@ -8,7 +8,7 @@ import { AnimationRange } from "core/Animations";
 import { ImportMeshAsync } from "core/Loading";
 import type { Mesh } from "core/Meshes";
 import "core/Animations/animatable";
-import { FreeCamera } from "core/Cameras";
+import { FreeCamera } from "core/Cameras/freeCamera";
 import { Vector3 } from "core/Maths";
 
 /**

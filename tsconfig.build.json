@@ -23,6 +23,7 @@
         "lib": [
             "es5",
             "dom",
+            "dom.iterable",
             "es2015.promise",
             "es2015.collection",
             "es2015.iterable",
@@ -55,6 +56,7 @@
             "ktx2decoder/*": ["tools/ktx2Decoder/dist/*"],
             "vsm": ["tools/vsm/dist/*"],
             "smart-filters": ["dev/smartFilters/dist"],
+            "smart-filters/*": ["dev/smartFilters/dist/*"],
             "smart-filters-blocks": ["dev/smartFilterBlocks/dist"],
             "smart-filters-blocks/*": ["dev/smartFilterBlocks/dist/*"],
             "smart-filters-editor-control": ["tools/smartFiltersEditorControl/dist"]

@@ -72,6 +72,7 @@
             "@tools/snippet-loader": ["tools/snippetLoader/src"],
             "@tools/snippet-loader/*": ["tools/snippetLoader/src/*"],
             "smart-filters": ["dev/smartFilters/src"],
+            "smart-filters/*": ["dev/smartFilters/src/*"],
             "smart-filters-blocks": ["dev/smartFilterBlocks/src"],
             "smart-filters-blocks/*": ["dev/smartFilterBlocks/src/*"],
             "smart-filters-editor-control": ["tools/smartFiltersEditorControl/src"],

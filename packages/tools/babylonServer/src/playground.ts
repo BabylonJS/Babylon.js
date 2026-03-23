@@ -1,5 +1,5 @@
-import { loadSnippet } from "@tools/snippet-loader";
-import type { PlaygroundSnippetResult } from "@tools/snippet-loader";
+import { LoadSnippet } from "@tools/snippet-loader";
+import type { IPlaygroundSnippetResult } from "@tools/snippet-loader";
 
 /**
  * Loads a playground snippet by ID and returns the fully-parsed result.
@@ -7,11 +7,11 @@ import type { PlaygroundSnippetResult } from "@tools/snippet-loader";
  * `result.createScene(engine, canvas)` to run the snippet.
  *
  * @param playgroundId - The snippet ID (e.g. "ABC123#0").
- * @returns The parsed {@link PlaygroundSnippetResult}.
+ * @returns The parsed {@link IPlaygroundSnippetResult}.
  * @throws If the snippet is not a playground type.
  */
-export const LoadPlaygroundAsync = async (playgroundId: string): Promise<PlaygroundSnippetResult> => {
-    const result = await loadSnippet(playgroundId, { moduleFormat: "esm" });
+export const LoadPlaygroundAsync = async (playgroundId: string): Promise<IPlaygroundSnippetResult> => {
+    const result = await LoadSnippet(playgroundId, { moduleFormat: "esm" });
     if (result.type !== "playground") {
         throw new Error(`Snippet "${playgroundId}" is not a playground snippet (type: ${result.type})`);
     }

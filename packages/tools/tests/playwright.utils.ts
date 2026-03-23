@@ -51,8 +51,13 @@ export function getBabylonServerTestsList() {
         },
         {
             name: "performance",
-            testMatch: "**/performance.test.ts",
+            testMatch: ["**/test/performance/**/*.test.ts", "**/test/playwright/performance.test.ts"],
             use: getUseDefinition("Performance"),
+        },
+        {
+            name: "integration",
+            testMatch: "**/test/integration/**/*.test.ts",
+            use: getUseDefinition("Integration"),
         },
         {
             name: "playground",

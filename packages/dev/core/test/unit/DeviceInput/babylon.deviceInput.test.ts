@@ -6,25 +6,21 @@ import type { Engine } from "core/Engines/engine";
 import { NullEngine } from "core/Engines/nullEngine";
 import type { IPointerEvent, IUIEvent } from "core/Events";
 import type { Nullable } from "core/types";
-import type { ITestDeviceInputSystem} from "./testDeviceInputSystem";
+import type { ITestDeviceInputSystem } from "./testDeviceInputSystem";
 import { TestDeviceInputSystem } from "./testDeviceInputSystem";
 import { DeviceEventFactory } from "core/DeviceInput/eventFactory";
 
-jest.mock("core/DeviceInput/webDeviceInputSystem", () => {
+vi.mock("core/DeviceInput/webDeviceInputSystem", () => {
     return {
         // eslint-disable-next-line @typescript-eslint/naming-convention
-        WebDeviceInputSystem: jest
-            .fn()
-            .mockImplementation(
-                (
-                    engine: Engine,
-                    onDeviceConnected: (deviceType: DeviceType, deviceSlot: number) => void,
-                    onDeviceDisconnected: (deviceType: DeviceType, deviceSlot: number) => void,
-                    onInputChanged: (deviceType: DeviceType, deviceSlot: number, eventData: IUIEvent) => void
-                ) => {
-                    return new TestDeviceInputSystem(engine, onDeviceConnected, onDeviceDisconnected, onInputChanged);
-                }
-            ),
+        WebDeviceInputSystem: function (
+            engine: Engine,
+            onDeviceConnected: (deviceType: DeviceType, deviceSlot: number) => void,
+            onDeviceDisconnected: (deviceType: DeviceType, deviceSlot: number) => void,
+            onInputChanged: (deviceType: DeviceType, deviceSlot: number, eventData: IUIEvent) => void
+        ) {
+            return new TestDeviceInputSystem(engine, onDeviceConnected, onDeviceDisconnected, onInputChanged);
+        },
     };
 });
 
@@ -200,9 +196,9 @@ describe("DeviceSourceManager", () => {
         engine!._deviceSourceManager = new InternalDeviceSourceManager(engine!);
         const internalDeviceSourceManager = engine!._deviceSourceManager!;
 
-        const registerSpy = jest.spyOn(internalDeviceSourceManager, "registerManager");
-        const unregisterSpy = jest.spyOn(internalDeviceSourceManager, "unregisterManager");
-        const disposeSpy = jest.spyOn(internalDeviceSourceManager, "dispose");
+        const registerSpy = vi.spyOn(internalDeviceSourceManager, "registerManager");
+        const unregisterSpy = vi.spyOn(internalDeviceSourceManager, "unregisterManager");
+        const disposeSpy = vi.spyOn(internalDeviceSourceManager, "dispose");
 
         // When we use these constructors, it should pull our pre-made IDSM
         const deviceSourceManager = new DeviceSourceManager(engine!);
@@ -224,45 +220,45 @@ describe("DeviceSourceManager", () => {
         expect(disposeSpy).toHaveBeenCalledTimes(1);
     });
 
-    it ("DeviceEventFactory can create proper pointer events", () => {
+    it("DeviceEventFactory can create proper pointer events", () => {
         const deviceInputSystem = new TestDeviceInputSystem(
             engine!,
             () => {},
             () => {},
             () => {}
         );
-    
+
         // Connect device and grab DeviceSource
         deviceInputSystem.connectDevice(DeviceType.Mouse, 0, TestDeviceInputSystem.MAX_POINTER_INPUTS);
-    
+
         // Click down the three main mouse buttons
         deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.LeftClick, 1);
         deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.MiddleClick, 1);
         deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.RightClick, 1);
-    
+
         // Create a pointer event
         const threeButtonsEvent = DeviceEventFactory.CreateDeviceEvent(DeviceType.Mouse, 0, PointerInput.Move, 1, deviceInputSystem) as IPointerEvent;
-    
+
         // Verify that the three buttons are pressed down
         expect(threeButtonsEvent.buttons).toBe(7);
-    
+
         // Release middle button and verify that it's no longer pressed
         deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.MiddleClick, 0);
-    
+
         // Create a pointer event
         const twoButtonsEvent = DeviceEventFactory.CreateDeviceEvent(DeviceType.Mouse, 0, PointerInput.MiddleClick, 0, deviceInputSystem) as IPointerEvent;
-    
+
         // Verify that two buttons are pressed down and the middle is released
         expect(twoButtonsEvent.buttons).toBe(3);
         expect(twoButtonsEvent.button).toBe(1);
-    
+
         // Release the rest of the buttons
         deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.LeftClick, 0);
         deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.RightClick, 0);
-    
+
         // Create a pointer event
         const noButtonsEvent = DeviceEventFactory.CreateDeviceEvent(DeviceType.Mouse, 0, PointerInput.Move, 1, deviceInputSystem) as IPointerEvent;
-    
+
         // Verify that no buttons are pressed down
         expect(noButtonsEvent.buttons).toBe(0);
     });

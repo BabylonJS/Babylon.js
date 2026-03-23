@@ -520,18 +520,20 @@ export class PhysicsBody {
 
     /**
      * Returns an observable that will be notified for when a collision starts or continues for this PhysicsBody
+     * @param instanceIndex - optionally, the index of the instance in the body
      * @returns Observable
      */
-    public getCollisionObservable(): Observable<IPhysicsCollisionEvent> {
-        return this._physicsPlugin.getCollisionObservable(this);
+    public getCollisionObservable(instanceIndex?: number): Observable<IPhysicsCollisionEvent> {
+        return this._physicsPlugin.getCollisionObservable(this, instanceIndex);
     }
 
     /**
      * Returns an observable that will be notified when the body has finished colliding with another body
-     * @returns
+     * @param instanceIndex - optionally, the index of the instance in the body
+     * @returns Observable
      */
-    public getCollisionEndedObservable(): Observable<IBasePhysicsCollisionEvent> {
-        return this._physicsPlugin.getCollisionEndedObservable(this);
+    public getCollisionEndedObservable(instanceIndex?: number): Observable<IBasePhysicsCollisionEvent> {
+        return this._physicsPlugin.getCollisionEndedObservable(this, instanceIndex);
     }
 
     /**
