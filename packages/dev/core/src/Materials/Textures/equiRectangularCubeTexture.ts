@@ -262,14 +262,12 @@ export class EquiRectangularCubeTexture extends BaseTexture {
         }
 
         this._texture = this._getFromCache(this.url, this._noMipmap, undefined, undefined, undefined, this.isCube);
+        this.delayLoadState = Constants.DELAYLOADSTATE_LOADED;
 
         if (!this._texture) {
-            this.delayLoadState = Constants.DELAYLOADSTATE_LOADED;
             this._loadImage(() => {
                 this._loadTexture();
             }, this._onError);
-        } else {
-            this.delayLoadState = Constants.DELAYLOADSTATE_LOADED;
         }
     }
 }

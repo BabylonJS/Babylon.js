@@ -1,6 +1,6 @@
 {
     "name": "@babylonjs/core",
-    "version": "8.56.1",
+    "version": "8.56.2",
     "main": "index.js",
     "module": "index.js",
     "types": "index.d.ts",
@@ -9,6 +9,7 @@
         "**/*.d.ts",
         "**/*.map",
         "**/*.wasm",
+        "**/*.license",
         "readme.md",
         "license.md",
         "NOTICE.md"
