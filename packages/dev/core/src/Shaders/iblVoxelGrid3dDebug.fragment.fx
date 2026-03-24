@@ -4,7 +4,6 @@ varying vec2 vUV;
 
 uniform sampler3D voxelTexture;
 uniform sampler2D voxelSlabTexture;
-uniform sampler2D textureSampler;
 
 uniform vec4 sizeParams;
 #define offsetX sizeParams.x
@@ -17,7 +16,6 @@ void main(void) {
 
     vec2 uv =
         vec2((offsetX + vUV.x) * widthScale, (offsetY + vUV.y) * heightScale);
-    vec4 background = texture2D(textureSampler, vUV);
     vec4 voxelSlab = texture2D(voxelSlabTexture, vUV);
 
     // ***** Display all slices as a grid *******
@@ -40,7 +38,7 @@ void main(void) {
                      .rgb;
 
     if (uv.x < 0.0 || uv.x > 1.0 || uv.y < 0.0 || uv.y > 1.0) {
-      gl_FragColor.rgba = background;
+      gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
     } else {
       if (outBounds) {
         voxel = vec3(0.15, 0.0, 0.0);
@@ -50,8 +48,6 @@ void main(void) {
         }
         voxel.r += mip_separator;
       }
-      glFragColor.rgb = mix(background.rgb, voxelSlab.rgb, voxelSlab.a) + voxel;
-
-      glFragColor.a = 1.0;
+      glFragColor = vec4(voxelSlab.rgb * voxelSlab.a + voxel, 1.0);
     }
 }

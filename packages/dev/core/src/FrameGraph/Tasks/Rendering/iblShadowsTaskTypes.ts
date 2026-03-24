@@ -24,19 +24,10 @@ export interface IFrameGraphIblShadowsTracingOptions extends IFrameGraphIblShado
 }
 
 /**
- * Options used to configure the IBL shadows spatial blur task.
- */
-export interface IFrameGraphIblShadowsBlurOptions extends IFrameGraphIblShadowsCommonOptions {
-    worldScale?: number;
-    iterationCount?: number;
-}
-
-/**
  * Options used to configure the IBL shadows accumulation task.
  */
 export interface IFrameGraphIblShadowsAccumulationOptions extends IFrameGraphIblShadowsCommonOptions {
     remanence?: number;
-    reset?: boolean;
 }
 
 /**
@@ -45,6 +36,5 @@ export interface IFrameGraphIblShadowsAccumulationOptions extends IFrameGraphIbl
 export interface IFrameGraphIblShadowsVoxelizationOptions extends IFrameGraphIblShadowsCommonOptions {
     resolutionExp?: number;
     triPlanarVoxelization?: boolean;
-    voxelGridSize?: number;
     refreshRate?: number;
 }

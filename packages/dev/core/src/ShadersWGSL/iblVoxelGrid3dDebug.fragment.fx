@@ -4,8 +4,6 @@ var voxelTextureSampler: sampler;
 var voxelTexture: texture_3d<f32>;
 var voxelSlabTextureSampler: sampler;
 var voxelSlabTexture: texture_2d<f32>;
-var textureSamplerSampler: sampler;
-var textureSampler: texture_2d<f32>;
 
 uniform sizeParams: vec4f;
 #define offsetX uniforms.sizeParams.x
@@ -19,7 +17,6 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
 
     var uv: vec2f =
          vec2f((offsetX + input.vUV.x) * widthScale, (offsetY + input.vUV.y) * heightScale);
-    var background: vec4f = textureSample(textureSampler, textureSamplerSampler, input.vUV);
     var voxelSlab: vec4f = textureSample(voxelSlabTexture, voxelSlabTextureSampler, input.vUV);
 
     // ***** Display all slices as a grid *******
@@ -41,7 +38,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
                              i32(uniforms.mipNumber)).rgb;
 
     if (uv.x < 0.0 || uv.x > 1.0 || uv.y < 0.0 || uv.y > 1.0) {
-      fragmentOutputs.color = background;
+      fragmentOutputs.color = vec4f(0.0, 0.0, 0.0, 1.0);
     } else {
       if (outBounds) {
         voxel =  vec3f(0.15, 0.0, 0.0);
@@ -51,6 +48,6 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
         // }
         voxel.r += mip_separator;
       }
-      fragmentOutputs.color = vec4f(mix(background.rgb, voxelSlab.rgb, voxelSlab.a) + voxel, 1.0);
+      fragmentOutputs.color = vec4f(voxelSlab.rgb * voxelSlab.a + voxel, 1.0);
     }
 }

@@ -1,5 +1,6 @@
 import type { DrawWrapper, FrameGraph, FrameGraphTextureCreationOptions, FrameGraphTextureHandle } from "core/index";
 import { Constants } from "core/Engines/constants";
+import type { FrameGraphIblShadowsVoxelizationTask } from "./iblShadowsVoxelizationTask";
 import { Vector4 } from "core/Maths/math.vector";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { ThinCustomPostProcess } from "core/PostProcesses/thinCustomPostProcess";
@@ -15,8 +16,8 @@ export class FrameGraphIblShadowsSpatialBlurTask extends FrameGraphTask {
     public depthTexture?: FrameGraphTextureHandle;
     public normalTexture?: FrameGraphTextureHandle;
 
-    public worldScale = 1;
-    public iterationCount = 1;
+    /** Voxelization task providing the dynamic voxelGridSize used as worldScale. */
+    public voxelizationTask?: FrameGraphIblShadowsVoxelizationTask;
 
     public readonly outputTexture: FrameGraphTextureHandle;
 
@@ -51,12 +52,8 @@ export class FrameGraphIblShadowsSpatialBlurTask extends FrameGraphTask {
             throw new Error(`FrameGraphIblShadowsSpatialBlurTask ${this.name}: sourceTexture, depthTexture and normalTexture are required`);
         }
 
-        if (this.iterationCount < 1) {
-            throw new Error(`FrameGraphIblShadowsSpatialBlurTask ${this.name}: iterationCount must be >= 1`);
-        }
-
-        if (this.worldScale <= 0) {
-            throw new Error(`FrameGraphIblShadowsSpatialBlurTask ${this.name}: worldScale must be > 0`);
+        if (this.voxelizationTask?.voxelGridSize !== undefined && this.voxelizationTask.voxelGridSize <= 0) {
+            throw new Error(`FrameGraphIblShadowsSpatialBlurTask ${this.name}: voxelizationTask.voxelGridSize must be > 0`);
         }
 
         const textureManager = this._frameGraph.textureManager;
@@ -89,7 +86,8 @@ export class FrameGraphIblShadowsSpatialBlurTask extends FrameGraphTask {
             context.setTextureSamplingMode(this.depthTexture!, Constants.TEXTURE_NEAREST_SAMPLINGMODE);
             context.setTextureSamplingMode(this.normalTexture!, Constants.TEXTURE_NEAREST_SAMPLINGMODE);
 
-            this._blurParameters.set(this.iterationCount, this.worldScale, 0.0, 0.0);
+            const iterationCount = 1;
+            this._blurParameters.set(iterationCount, this.voxelizationTask?.voxelGridSize ?? 1.0, 0.0, 0.0);
 
             context.applyFullScreenEffect(
                 this._postProcessDrawWrapper,

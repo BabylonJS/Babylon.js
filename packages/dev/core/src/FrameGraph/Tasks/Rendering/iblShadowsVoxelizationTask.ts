@@ -1,5 +1,6 @@
-import type { Camera, FrameGraph, FrameGraphObjectList, FrameGraphTextureHandle, Mesh } from "core/index";
+import type { Camera, FrameGraph, FrameGraphObjectList, FrameGraphTextureHandle, Mesh, Observer } from "core/index";
 import { Matrix, Quaternion, Vector3 } from "core/Maths/math.vector";
+import { Observable } from "core/Misc/observable";
 import { _IblShadowsVoxelRenderer } from "core/Rendering/IBLShadows/iblShadowsVoxelRenderer";
 import { FrameGraphTask } from "../../frameGraphTask";
 
@@ -7,6 +8,11 @@ import { FrameGraphTask } from "../../frameGraphTask";
  * Task used to voxelize shadow casting objects for IBL shadows.
  */
 export class FrameGraphIblShadowsVoxelizationTask extends FrameGraphTask {
+    /**
+     * Observable raised when voxelization completes.
+     */
+    public readonly onVoxelizationCompleteObservable = new Observable<void>();
+
     /**
      * Camera used by debug slab rendering.
      */
@@ -25,7 +31,27 @@ export class FrameGraphIblShadowsVoxelizationTask extends FrameGraphTask {
     /**
      * Voxel grid resolution exponent. Actual resolution is 2^resolutionExp.
      */
-    public resolutionExp = 6;
+    private _resolutionExp = 6;
+    /**
+     * Sets voxel grid resolution exponent. Actual resolution is 2^resolutionExp.
+     */
+    public set resolutionExp(value: number) {
+        const newValue = Math.round(Math.max(1, Math.min(value, 8)));
+        if (newValue === this._resolutionExp) {
+            return;
+        }
+        this._resolutionExp = newValue;
+        if (this._voxelRenderer) {
+            this._voxelRenderer.voxelResolutionExp = this._resolutionExp;
+        }
+        this.dirty = true;
+    }
+    /**
+     * Gets voxel grid resolution exponent. Actual resolution is 2^resolutionExp.
+     */
+    public get resolutionExp(): number {
+        return this._resolutionExp;
+    }
 
     /**
      * Enables tri-planar voxelization mode.
@@ -68,6 +94,9 @@ export class FrameGraphIblShadowsVoxelizationTask extends FrameGraphTask {
     private _voxelRenderer?: _IblShadowsVoxelRenderer;
     private _voxelRendererResolutionExp?: number;
     private _voxelRendererTriPlanar?: boolean;
+    private _voxelizationCompleteObserver: Observer<void> | null = null;
+    private _voxelGridTextureHandle?: FrameGraphTextureHandle;
+    private _voxelSlabTextureHandle?: FrameGraphTextureHandle;
     private _frameCounter = 0;
 
     /**
@@ -106,15 +135,18 @@ export class FrameGraphIblShadowsVoxelizationTask extends FrameGraphTask {
     }
 
     /**
+     * Recomputes voxel world bounds from the current object list and updates worldScaleMatrix.
+     */
+    public updateSceneBounds(): void {
+        this._updateWorldScaleMatrix();
+    }
+
+    /**
      * Records the voxelization passes.
      */
     public override record() {
         if (this.objectList === undefined) {
             throw new Error(`FrameGraphIblShadowsVoxelizationTask ${this.name}: objectList is required`);
-        }
-
-        if (this.resolutionExp < 4 || this.resolutionExp > 9) {
-            throw new Error(`FrameGraphIblShadowsVoxelizationTask ${this.name}: resolutionExp must be in the [4, 9] range`);
         }
 
         if (this.voxelGridSize <= 0) {
@@ -130,25 +162,7 @@ export class FrameGraphIblShadowsVoxelizationTask extends FrameGraphTask {
         this._voxelRenderer!.voxelDebugEnabled = this.debugEnabled;
         this._updateWorldScaleMatrix();
 
-        // Voxel Grid Texture
-        const voxelTexture = this._voxelRenderer!.getVoxelGrid();
-        const voxelInternalTexture = voxelTexture.getInternalTexture();
-        if (!voxelInternalTexture) {
-            throw new Error(`FrameGraphIblShadowsVoxelizationTask ${this.name}: voxel renderer texture is unavailable`);
-        }
-        const voxelTextureHandle = this._frameGraph.textureManager.importTexture(`${this.name} Voxel Grid`, voxelInternalTexture);
-        this._frameGraph.textureManager.resolveDanglingHandle(this.outputVoxelGridTexture, voxelTextureHandle);
-
-        // Voxel slab debug texture (rendered with _voxelSlabDebugMaterial).
-        if (this.debugEnabled) {
-            const voxelSlabTexture = this._voxelRenderer!.getVoxelSlabDebugTexture();
-            const voxelSlabInternalTexture = voxelSlabTexture?.getInternalTexture();
-            if (!voxelSlabInternalTexture) {
-                throw new Error(`FrameGraphIblShadowsVoxelizationTask ${this.name}: voxel slab debug texture is unavailable`);
-            }
-            const voxelSlabTextureHandle = this._frameGraph.textureManager.importTexture(`${this.name} Voxel Slab Debug`, voxelSlabInternalTexture);
-            this._frameGraph.textureManager.resolveDanglingHandle(this.outputVoxelSlabTexture, voxelSlabTextureHandle);
-        }
+        this._updateOutputTextureHandlesFromRenderer();
 
         const voxelRT = this._voxelRenderer!.getRT();
         const voxelRTInternalTexture = voxelRT.getInternalTexture();
@@ -163,16 +177,27 @@ export class FrameGraphIblShadowsVoxelizationTask extends FrameGraphTask {
         if (this.debugEnabled) {
             pass.addDependencies(this.outputVoxelSlabTexture);
         }
-        pass.setExecuteFunc((_context) => {
+        pass.setExecuteFunc((context) => {
+            context.restoreDefaultFramebuffer();
+
             this._frameCounter++;
             const shouldRefreshFromRate = this.refreshRate > 0 && (this._frameCounter - 1) % this.refreshRate === 0;
+
+            if (this._voxelRenderer!.isVoxelizationInProgress()) {
+                this._voxelRenderer!.processVoxelization();
+                return;
+            }
 
             if (this.dirty || shouldRefreshFromRate) {
                 this._ensureVoxelRenderer();
                 this._updateWorldScaleMatrix();
                 this._voxelRenderer!.setWorldScaleMatrix(this.worldScaleMatrix);
-                this._voxelRenderer!.updateVoxelGrid(this.objectList!.meshes as Mesh[]);
+                this._voxelRenderer!.updateVoxelGrid(this.objectList!.meshes as Mesh[], false);
                 this.dirty = false;
+            }
+
+            if (this._voxelRenderer!.isVoxelizationInProgress()) {
+                this._voxelRenderer!.processVoxelization();
             }
         });
 
@@ -189,8 +214,10 @@ export class FrameGraphIblShadowsVoxelizationTask extends FrameGraphTask {
      * Disposes internal resources.
      */
     public override dispose(): void {
+        this._detachVoxelizationObserver();
         this._voxelRenderer?.dispose();
         this._voxelRenderer = undefined;
+        this.onVoxelizationCompleteObservable.clear();
         super.dispose();
     }
 
@@ -203,8 +230,30 @@ export class FrameGraphIblShadowsVoxelizationTask extends FrameGraphTask {
 
         this._voxelRenderer?.dispose();
         this._voxelRenderer = new _IblShadowsVoxelRenderer(this._frameGraph.scene, {} as never, this.resolutionExp, this.triPlanarVoxelization);
+        this._attachVoxelizationObserver();
         this._voxelRendererResolutionExp = this.resolutionExp;
         this._voxelRendererTriPlanar = this.triPlanarVoxelization;
+    }
+
+    private _attachVoxelizationObserver(): void {
+        this._detachVoxelizationObserver();
+
+        if (!this._voxelRenderer) {
+            return;
+        }
+
+        this._voxelizationCompleteObserver = this._voxelRenderer.onVoxelizationCompleteObservable.add(() => {
+            this._updateOutputTextureHandlesFromRenderer();
+            this.onVoxelizationCompleteObservable.notifyObservers();
+        });
+    }
+
+    private _detachVoxelizationObserver(): void {
+        if (this._voxelRenderer && this._voxelizationCompleteObserver) {
+            this._voxelRenderer.onVoxelizationCompleteObservable.remove(this._voxelizationCompleteObserver);
+        }
+
+        this._voxelizationCompleteObserver = null;
     }
 
     private _updateWorldScaleMatrix(): void {
@@ -233,5 +282,27 @@ export class FrameGraphIblShadowsVoxelizationTask extends FrameGraphTask {
         const invWorldScaleMatrix = Matrix.Compose(new Vector3(1.0 / halfSize, 1.0 / halfSize, 1.0 / halfSize), new Quaternion(), Vector3.Zero());
         const invTranslationMatrix = Matrix.Compose(new Vector3(1.0, 1.0, 1.0), new Quaternion(), centerOffset);
         invTranslationMatrix.multiplyToRef(invWorldScaleMatrix, this.worldScaleMatrix);
+    }
+
+    private _updateOutputTextureHandlesFromRenderer(): void {
+        const voxelTexture = this._voxelRenderer!.getVoxelGrid();
+        const voxelInternalTexture = voxelTexture.getInternalTexture();
+        if (!voxelInternalTexture) {
+            throw new Error(`FrameGraphIblShadowsVoxelizationTask ${this.name}: voxel renderer texture is unavailable`);
+        }
+
+        this._voxelGridTextureHandle = this._frameGraph.textureManager.importTexture(`${this.name} Voxel Grid`, voxelInternalTexture, this._voxelGridTextureHandle);
+        this._frameGraph.textureManager.resolveDanglingHandle(this.outputVoxelGridTexture, this._voxelGridTextureHandle);
+
+        if (this.debugEnabled) {
+            const voxelSlabTexture = this._voxelRenderer!.getVoxelSlabDebugTexture();
+            const voxelSlabInternalTexture = voxelSlabTexture?.getInternalTexture();
+            if (!voxelSlabInternalTexture) {
+                throw new Error(`FrameGraphIblShadowsVoxelizationTask ${this.name}: voxel slab debug texture is unavailable`);
+            }
+
+            this._voxelSlabTextureHandle = this._frameGraph.textureManager.importTexture(`${this.name} Voxel Slab Debug`, voxelSlabInternalTexture, this._voxelSlabTextureHandle);
+            this._frameGraph.textureManager.resolveDanglingHandle(this.outputVoxelSlabTexture, this._voxelSlabTextureHandle);
+        }
     }
 }

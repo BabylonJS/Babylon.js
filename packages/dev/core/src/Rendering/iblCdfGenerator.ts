@@ -20,6 +20,7 @@ import type { Nullable } from "../types";
 import { EngineStore } from "../Engines/engineStore";
 import { Logger } from "../Misc/logger";
 import { _RetryWithInterval } from "../Misc/timingTools";
+import type { Observer } from "../Misc/observable";
 
 /**
  * Build cdf maps to be used for IBL importance sampling.
@@ -30,11 +31,14 @@ export class IblCdfGenerator {
 
     private _cdfyPT: ProceduralTexture;
     private _cdfxPT: ProceduralTexture;
-    private _icdfPT: ProceduralTexture;
+    private _icdfPT: Nullable<ProceduralTexture>;
     private _scaledLuminancePT: ProceduralTexture;
     private _dominantDirectionPT: ProceduralTexture;
     private _iblSource: Nullable<BaseTexture>;
     private _dummyTexture: RawTexture;
+    private _iblSourceLoadObserver: Nullable<Observer<BaseTexture>> = null;
+    private _iblSourceObservedTexture: Nullable<BaseTexture> = null;
+    private _iblSourceReadyRetryObserver: Nullable<() => void> = null;
 
     private _cachedDominantDirection: Nullable<Vector3> = null;
 
@@ -64,24 +68,70 @@ export class IblCdfGenerator {
         if (this._iblSource === source) {
             return;
         }
+
+        this._clearIblSourceReadinessObservers();
         this._disposeTextures();
         this._iblSource = source;
+
         if (!source) {
             return;
         }
-        if (source.isCube) {
-            if (source.isReadyOrNotBlocking()) {
-                this._recreateAssetsFromNewIbl();
-            } else {
-                (source as CubeTexture).onLoadObservable.addOnce(this._recreateAssetsFromNewIbl.bind(this, source));
+
+        this._iblSourceObservedTexture = source;
+
+        const recreateFromObservedSourceIfReady = () => {
+            if (this._iblSource !== source || !this._isIblSourceReady(source)) {
+                return;
             }
-        } else {
-            if (source.isReadyOrNotBlocking()) {
-                this._recreateAssetsFromNewIbl();
-            } else {
-                (source as Texture).onLoadObservable.addOnce(this._recreateAssetsFromNewIbl.bind(this, source));
-            }
+
+            this._clearIblSourceReadinessObservers();
+            this._recreateAssetsFromNewIbl();
+        };
+
+        if (this._isIblSourceReady(source)) {
+            this._recreateAssetsFromNewIbl();
+            return;
         }
+
+        const onLoadObservable = (source as any).onLoadObservable as Nullable<Observable<BaseTexture>>;
+        if (onLoadObservable) {
+            this._iblSourceLoadObserver = onLoadObservable.addOnce(recreateFromObservedSourceIfReady);
+        }
+
+        this._iblSourceReadyRetryObserver = _RetryWithInterval(
+            () => this._iblSource !== source || this._isIblSourceReady(source),
+            recreateFromObservedSourceIfReady,
+            undefined,
+            16,
+            30000,
+            false
+        );
+    }
+
+    private _isIblSourceReady(source: BaseTexture): boolean {
+        if (!source.isReadyOrNotBlocking()) {
+            return false;
+        }
+
+        if (!source.isCube) {
+            return true;
+        }
+
+        const internalTexture = (source as CubeTexture).getInternalTexture();
+        return !!internalTexture && internalTexture.isReady;
+    }
+
+    private _clearIblSourceReadinessObservers() {
+        this._iblSourceReadyRetryObserver?.();
+        this._iblSourceReadyRetryObserver = null;
+
+        const observedTexture = this._iblSourceObservedTexture as any;
+        if (observedTexture?.onLoadObservable && this._iblSourceLoadObserver) {
+            observedTexture.onLoadObservable.remove(this._iblSourceLoadObserver);
+        }
+        this._iblSourceLoadObserver = null;
+
+        this._iblSourceObservedTexture = null;
     }
 
     private _recreateAssetsFromNewIbl() {
@@ -181,6 +231,13 @@ export class IblCdfGenerator {
      */
     public onGeneratedObservable: Observable<void> = new Observable<void>();
 
+    /**
+     * Observable that triggers when CDF texture references change.
+     * It is raised after disposing textures (so fallback ICDF can be used)
+     * and after creating new textures (so consumers can rebind immediately).
+     */
+    public onTextureChangedObservable: Observable<void> = new Observable<void>();
+
     private _createTextures() {
         const size: TextureSize = this._iblSource ? { width: this._iblSource.getSize().width, height: this._iblSource.getSize().height } : { width: 1, height: 1 };
         if (!this._iblSource) {
@@ -196,7 +253,6 @@ export class IblCdfGenerator {
             );
             this._iblSource.name = "Placeholder IBL Source";
         }
-
         if (this._iblSource.isCube) {
             size.width *= 4;
             size.height *= 2;
@@ -296,6 +352,8 @@ export class IblCdfGenerator {
         this._dominantDirectionPT.setTexture("icdfSampler", this._icdfPT);
         this._dominantDirectionPT.refreshRate = 0;
         this._dominantDirectionPT.defines = "#define NUM_SAMPLES 32u\n";
+
+        this.onTextureChangedObservable.notifyObservers();
     }
 
     private _disposeTextures() {
@@ -304,6 +362,9 @@ export class IblCdfGenerator {
         this._icdfPT?.dispose();
         this._scaledLuminancePT?.dispose();
         this._dominantDirectionPT?.dispose();
+        this._icdfPT = null;
+
+        this.onTextureChangedObservable.notifyObservers();
     }
 
     private _createDebugPass() {
@@ -370,10 +431,9 @@ export class IblCdfGenerator {
      * Explicitly trigger generation of CDF maps when they are ready to render.
      * @returns Promise that resolves when the CDF maps are rendered.
      */
-    // eslint-disable-next-line @typescript-eslint/naming-convention, @typescript-eslint/promise-function-async
+    // eslint-disable-next-line @typescript-eslint/promise-function-async
     public renderWhenReady(): Promise<void> {
         this._cachedDominantDirection = null;
-
         // Even if a IBL source must be set before calling this function, _icdfPT may not yet be created because the creation may be asynchronous (see @set iblSource).
         const icdfPTPromise = new Promise((resolve, reject) => {
             _RetryWithInterval(
@@ -385,12 +445,9 @@ export class IblCdfGenerator {
 
         // eslint-disable-next-line github/no-then, @typescript-eslint/promise-function-async
         return icdfPTPromise.then(() => {
-            // Once the textures are generated, notify that they are ready to use.
-            this._icdfPT.onGeneratedObservable.addOnce(() => {
-                this.onGeneratedObservable.notifyObservers();
-            });
+            const icdfTexture = this._icdfPT;
             const promises: Array<Promise<void>> = [];
-            const renderTargets: Array<ProceduralTexture> = [this._cdfyPT, this._cdfxPT, this._scaledLuminancePT, this._icdfPT];
+            const renderTargets: Array<ProceduralTexture> = [this._cdfyPT, this._cdfxPT, this._scaledLuminancePT, icdfTexture!];
             for (const target of renderTargets) {
                 promises.push(
                     new Promise((resolve) => {
@@ -458,6 +515,7 @@ export class IblCdfGenerator {
      * Disposes the CDF renderer and associated resources
      */
     public dispose() {
+        this._clearIblSourceReadinessObservers();
         this._disposeTextures();
         this._dummyTexture.dispose();
         if (this._debugPass) {

@@ -138,6 +138,12 @@ export class HDRFiltering {
         // Cleanup
         this._effectRenderer.restoreStates();
         this._engine.restoreDefaultFramebuffer();
+
+        // Preserve irradiance texture while swapping the main reflection texture.
+        // The release path disposes integrated irradiance by default, but radiance prefiltering
+        // should not invalidate an already generated irradiance texture.
+        const irradianceTexture = texture._texture!._irradianceTexture;
+        texture._texture!._irradianceTexture = null;
         this._engine._releaseTexture(texture._texture!);
 
         // Internal Swap
@@ -145,6 +151,7 @@ export class HDRFiltering {
         const format = outputTexture.texture!.format;
 
         outputTexture._swapAndDie(texture._texture!);
+        texture._texture!._irradianceTexture = irradianceTexture;
 
         texture._texture!.type = type;
         texture._texture!.format = format;

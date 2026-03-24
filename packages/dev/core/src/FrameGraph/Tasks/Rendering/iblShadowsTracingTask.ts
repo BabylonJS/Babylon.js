@@ -1,9 +1,12 @@
 import type { Camera, DrawWrapper, FrameGraph, FrameGraphTextureCreationOptions, FrameGraphTextureHandle } from "core/index";
 import { Constants } from "core/Engines/constants";
+import type { FrameGraphIblShadowsVoxelizationTask } from "./iblShadowsVoxelizationTask";
 import { Matrix, Vector4 } from "core/Maths/math.vector";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { ThinCustomPostProcess } from "core/PostProcesses/thinCustomPostProcess";
 import { FrameGraphTask } from "../../frameGraphTask";
+import { Color4 } from "core/Maths/math.color";
+import type { CubeTexture } from "core/Materials/Textures/cubeTexture";
 import "../../../Shaders/iblShadowVoxelTracing.fragment";
 import "../../../ShadersWGSL/iblShadowVoxelTracing.fragment";
 
@@ -24,8 +27,12 @@ export class FrameGraphIblShadowsTracingTask extends FrameGraphTask {
     public ssShadowOpacity = 1;
     public ssShadowSampleCount = 16;
     public ssShadowStride = 8;
+    /** Scale factor applied to voxelGridSize / 2^resolutionExp to get the max SSS ray distance. */
     public ssShadowDistanceScale = 1.25;
-    public ssShadowThicknessScale = 1;
+    /** Scale factor applied to voxelGridSize to get the SSS surface thickness. */
+    public ssShadowThicknessScale = 1.0;
+    /** Voxelization task providing dynamic voxelGridSize and resolutionExp for SSS parameter derivation. */
+    public voxelizationTask?: FrameGraphIblShadowsVoxelizationTask;
     public envRotation = 0;
     public coloredShadows = false;
     public voxelNormalBias = 1.4;
@@ -143,9 +150,6 @@ export class FrameGraphIblShadowsTracingTask extends FrameGraphTask {
             if (this.blueNoiseTexture !== undefined) {
                 context.setTextureSamplingMode(this.blueNoiseTexture, Constants.TEXTURE_NEAREST_SAMPLINGMODE);
             }
-            if (this.environmentTexture !== undefined) {
-                context.setTextureSamplingMode(this.environmentTexture, Constants.TEXTURE_TRILINEAR_SAMPLINGMODE);
-            }
 
             this._updateDefines();
 
@@ -159,9 +163,19 @@ export class FrameGraphIblShadowsTracingTask extends FrameGraphTask {
             const highestMip = Math.floor(Math.log2(Math.max(1, voxelGridSize.width)));
 
             this._frameId++;
-            this._shadowParameters.set(this.sampleDirections, this._frameId, 1.0, this.envRotation);
+            let rotation = 0.0;
+            if (this.environmentTexture) {
+                rotation = (this._frameGraph.scene.environmentTexture as CubeTexture).rotationY ?? 0;
+            }
+            rotation = this._frameGraph.scene.useRightHandedSystem ? -(rotation + 0.5 * Math.PI) : rotation - 0.5 * Math.PI;
+            rotation = rotation % (2.0 * Math.PI);
+            this._shadowParameters.set(this.sampleDirections, this._frameId, 1.0, rotation);
             this._voxelBiasParameters.set(this.voxelNormalBias, this.voxelDirectionBias, highestMip, 0.0);
-            this._sssParameters.set(this.ssShadowSampleCount, this.ssShadowStride, 0.05 * this.ssShadowDistanceScale, 0.5 * this.ssShadowThicknessScale);
+            const gridSize = this.voxelizationTask?.voxelGridSize ?? 1.0;
+            const resExp = this.voxelizationTask?.resolutionExp ?? 6;
+            const sssMaxDist = (this.ssShadowDistanceScale * gridSize) / (1 << resExp);
+            const sssThickness = this.ssShadowThicknessScale * 0.005 * gridSize;
+            this._sssParameters.set(this.ssShadowSampleCount, this.ssShadowStride, sssMaxDist, sssThickness);
             this._opacityParameters.set(this.voxelShadowOpacity, this.ssShadowOpacity, 0.0, 0.0);
 
             context.applyFullScreenEffect(
@@ -204,8 +218,9 @@ export class FrameGraphIblShadowsTracingTask extends FrameGraphTask {
 
         passDisabled.addDependencies(this.depthTexture);
         passDisabled.setRenderTarget(this.outputTexture);
+        const disabledColor = new Color4(1, 1, 1, 1);
         passDisabled.setExecuteFunc((context) => {
-            context.clear(null, true, false, false);
+            context.clear(disabledColor, true, false, false);
         });
     }
 
