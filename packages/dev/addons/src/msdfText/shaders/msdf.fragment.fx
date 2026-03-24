@@ -20,13 +20,19 @@ void main(void)
     vec3 s = texture2D(fontAtlas, atlasUV).rgb;
     float sigDist = median(s) - 0.5 + thickness;
 
-    float alpha = clamp(sigDist / fwidth(sigDist) + 0.5, 0.0, 1.0);
+    // Floor fwidth to avoid NaN/Inf when sigDist is constant across a derivative quad
+    // (happens at high atlas->screen upsample where neighboring fragments hit the same texel).
+    float w = max(fwidth(sigDist), 0.0001);
+    float alpha = clamp(sigDist / w + 0.5, 0.0, 1.0);
 
     float sigDistOutset = sigDist + uStrokeOutsetWidth * 0.5;
     float sigDistInset = sigDist - uStrokeInsetWidth * 0.5;
 
-    float outset = clamp(sigDistOutset / fwidth(sigDistOutset) + 0.5, 0.0, 1.0);
-    float inset = 1.0 - clamp(sigDistInset / fwidth(sigDistInset) + 0.5, 0.0, 1.0);
+    float wOutset = max(fwidth(sigDistOutset), 0.0001);
+    float wInset = max(fwidth(sigDistInset), 0.0001);
+
+    float outset = clamp(sigDistOutset / wOutset + 0.5, 0.0, 1.0);
+    float inset = 1.0 - clamp(sigDistInset / wInset + 0.5, 0.0, 1.0);
 
     float border = outset * inset;
 

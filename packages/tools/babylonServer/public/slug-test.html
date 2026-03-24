@@ -1,0 +1,1192 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <title>Slug vs MSDF Font Comparison</title>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, user-scalable=no" />
+        <style>
+            html, body { width: 100%; height: 100%; padding: 0; margin: 0; background: #0d0d1a; }
+            #wrapper { width: 100%; height: 100%; display: flex; overflow: hidden; }
+            canvas { width: 100%; height: 100%; }
+            #controls { position: absolute; top: 10px; right: 10px; color: #ccc; font: 13px monospace;
+                        background: rgba(0,0,0,0.92); padding: 12px; border-radius: 6px; z-index: 10;
+                        min-width: 320px; }
+            #controls label { display: block; margin: 4px 0; }
+            #controls input[type=range] { width: 160px; vertical-align: middle; }
+            #controls input[type=text] { width: 200px; background: #222; color: #fff; border: 1px solid #555;
+                                          padding: 3px 6px; font: 13px monospace; }
+            #controls .val { display: inline-block; width: 50px; text-align: right; }
+            #controls .section { margin-top: 8px; padding-top: 6px; border-top: 1px solid #444; }
+            .mode-btn { padding: 6px 16px; margin: 2px; cursor: pointer; border: 1px solid #666;
+                        background: #333; color: #ccc; font: 13px monospace; border-radius: 3px; }
+            .mode-btn.active { background: #06a; color: #fff; border-color: #08f; }
+            .mode-btn:disabled, .mode-btn:disabled.active { opacity: 0.35; cursor: not-allowed;
+                        background: #333; color: #888; border-color: #555; }
+            #atlasPanel { position: absolute; bottom: 10px; left: 10px; z-index: 10;
+                          background: rgba(0,0,0,0.85); padding: 10px; border-radius: 6px;
+                          color: #ccc; font: 11px monospace; display: none; max-width: 90vw; overflow-x: auto; }
+            #atlasPanel.visible { display: flex; gap: 16px; }
+            .atlas-col { display: flex; flex-direction: column; align-items: center; }
+            .atlas-col canvas { border: 1px solid #444; image-rendering: pixelated; background: #111; }
+            .atlas-label { margin-bottom: 4px; font-weight: bold; }
+        </style>
+    </head>
+    <body>
+        <div id="controls">
+            <div>
+                <button class="mode-btn active" id="btnSlug">Slug (GPU curves)</button>
+                <button class="mode-btn" id="btnMsdf">MSDF (atlas)</button>
+                <button class="mode-btn" id="btnDiff">Diff</button>
+            </div>
+            <div id="modeInfo" style="margin:4px 0;color:#8f8;font-size:11px">Slug: resolution-independent GPU bezier rendering</div>
+            <div id="engineInfo" style="font-size:11px;color:#888"></div>
+            <label>Font: <select id="fontSelect" style="background:#222;color:#fff;border:1px solid #555;padding:3px 6px;font:13px monospace">
+                <option value="Roboto-Regular.ttf">Roboto</option>
+                <option value="Inter.ttf">Inter</option>
+                <option value="PlayfairDisplay.ttf" selected>Playfair Display</option>
+                <option value="Pacifico-Regular.ttf">Pacifico</option>
+                <option value="NotoSansSC-Regular.otf">Noto Sans SC (CJK)</option>
+            </select></label>
+            <label>Preset: <select id="presetSelect" style="background:#222;color:#fff;border:1px solid #555;padding:3px 6px;font:13px monospace">
+                <option value="">Custom</option>
+                <option value="hello">Hello Slug!</option>
+                <option value="pangram">Pangram</option>
+                <option value="lorem">Lorem Ipsum (1 page)</option>
+                <option value="war1">War and Peace Ch.1 (~11K)</option>
+                <option value="war5">War and Peace Ch.1-5 (~47K)</option>
+                <option value="warfull" selected>War and Peace — Full (~3.3M)</option>
+                <option value="cnHello">中文：你好</option>
+                <option value="cnPangram">中文：诗词</option>
+                <option value="cnPara">中文：段落</option>
+            </select></label>
+            <label>Text: <input type="text" id="txtInput" value="Hello Slug!"></label>
+            <label>Size: <input type="range" id="sizeSlider" min="12" max="300" value="30"> <span class="val" id="sizeVal">30</span></label>
+            <label>Rotate: <input type="range" id="rotSlider" min="-180" max="180" value="0"> <span class="val" id="rotVal">0deg</span></label>
+            <label>Scale: <input type="range" id="scaleSlider" min="1" max="40000" value="100"> <span class="val" id="scaleVal">1.0</span></label>
+            <label class="section">
+                R:<input type="range" id="rSlider" min="0" max="100" value="0" style="width:80px">
+                G:<input type="range" id="gSlider" min="0" max="100" value="0" style="width:80px">
+                B:<input type="range" id="bSlider" min="0" max="100" value="0" style="width:80px">
+            </label>
+            <div class="section" style="font-size:11px;color:#888">
+                Drag: pan | Wheel: zoom | Shift+Wheel: rotate
+            </div>
+            <div id="texStats" class="section" style="font-size:11px;color:#aaa;line-height:1.6"></div>
+            <label class="section">MSDF source:
+                <button class="mode-btn active" id="btnMsdfDynamic" style="padding:4px 10px;font-size:11px">Dynamic</button>
+                <button class="mode-btn" id="btnMsdfStatic" style="padding:4px 10px;font-size:11px" title="Use a pre-baked bmFont JSON + PNG atlas shipped with the font (Latin fonts only).">Prebaked</button>
+            </label>
+            <label style="font-size:11px" title="Prebaked only: downscale the atlas (per-channel median, MSDF-aware) so its bytes ≤ Slug's curve+band bytes.">
+                <input type="checkbox" id="msdfMatchSlug" style="vertical-align:middle"> Match Slug memory
+            </label>
+            <label>MSDF cell size: <select id="msdfSizeSelect" style="background:#222;color:#fff;border:1px solid #555;padding:3px 6px;font:13px monospace" title="Dynamic atlas only — ignored when MSDF source is Prebaked.">
+                <option value="16">16 px</option>
+                <option value="24">24 px</option>
+                <option value="32" selected>32 px</option>
+                <option value="48">48 px</option>
+                <option value="64">64 px</option>
+                <option value="96">96 px</option>
+                <option value="128">128 px</option>
+            </select></label>
+            <div class="section">
+                <button class="mode-btn" id="btnAtlas" style="width:100%">Show Atlas Textures</button>
+                <button class="mode-btn" id="btnFlush" style="width:100%;margin-top:4px" title="Dispose and recreate Slug curve/band textures and MSDF atlas texture (also bypasses the browser HTTP cache for the underlying font files).">Flush Font Caches</button>
+            </div>
+            <div id="perfStats" class="section" style="font-size:11px;color:#aaa;line-height:1.5"></div>
+            <div id="buildTimings" class="section" style="font-size:11px;color:#aaa;line-height:1.5"></div>
+        </div>
+        <div id="atlasPanel">
+            <div class="atlas-col" id="slugAtlasCol">
+                <div class="atlas-label" style="color:#8f8">Slug — Curve Data</div>
+                <canvas id="slugCurveCanvas"></canvas>
+                <div class="atlas-label" style="color:#8f8;margin-top:8px">Slug — Band Data</div>
+                <canvas id="slugBandCanvas"></canvas>
+            </div>
+            <div class="atlas-col" id="msdfAtlasCol">
+                <div class="atlas-label" style="color:#88f">MSDF — Atlas</div>
+                <canvas id="msdfAtlasCanvas"></canvas>
+            </div>
+        </div>
+        <div id="wrapper">
+            <canvas id="babylon-canvas"></canvas>
+        </div>
+
+        <script src="babylon.js"></script>
+        <script src="addons/babylonjs.addons.js"></script>
+
+        <script>
+            (async function () {
+                try {
+                    var canvas = document.getElementById("babylon-canvas");
+                    var useWebGPU = location.search.indexOf("webgpu") !== -1;
+                    var engine;
+                    if (useWebGPU) {
+                        engine = new BABYLON.WebGPUEngine(canvas, { antialias: true });
+                        await engine.initAsync();
+                    } else {
+                        engine = new BABYLON.Engine(canvas, true);
+                    }
+                    document.getElementById("engineInfo").textContent =
+                        "Engine: " + (useWebGPU ? "WebGPU (WGSL)" : "WebGL2 (GLSL)") +
+                        "  —  add ?webgpu to URL to switch";
+                    var scene = new BABYLON.Scene(engine);
+                    scene.clearColor = new BABYLON.Color4(0.627, 0.663, 0.686, 1); // wdobbie-style gray
+
+                    var camera = new BABYLON.FreeCamera("cam", new BABYLON.Vector3(0, 0, -1), scene);
+                    camera.mode = BABYLON.Camera.ORTHOGRAPHIC_CAMERA;
+                    camera.minZ = -100;
+                    camera.maxZ = 100;
+                    camera.detachControl();
+
+                    // ===== PERFORMANCE INSTRUMENTATION =====
+                    var sceneInstr = new BABYLON.SceneInstrumentation(scene);
+                    sceneInstr.captureFrameTime = true;
+                    sceneInstr.captureRenderTime = true;
+                    sceneInstr.captureActiveMeshesEvaluationTime = true;
+
+                    var engineInstr = new BABYLON.EngineInstrumentation(engine);
+                    engineInstr.captureGPUFrameTime = true;
+                    engineInstr.captureShaderCompilationTime = true;
+
+                    var perfDiv = document.getElementById("perfStats");
+                    var buildTimingsDiv = document.getElementById("buildTimings");
+                    var lastMsdfAtlasMs = null;     // CreateDynamicMsdfFontAssetAsync — text-shaper bake + PNG → Texture
+                    var lastSlugAtlasMs = null;     // slugRenderer.setTextData — curve/band texture upload
+                    var lastSlugFontReloadMs = null; // SlugFontAsset.CreateAsync + new SlugTextRenderer (flush only)
+                    var lastFlushTotalMs = null;     // Wall-clock for the entire flushFontCaches call
+                    function updateBuildTimings() {
+                        function fmt(ms) { return ms === null ? "—" : ms.toFixed(1) + " ms"; }
+                        var html =
+                            "<b>MSDF atlas:</b> " + fmt(lastMsdfAtlasMs) +
+                            " &nbsp; <b>Slug atlas:</b> " + fmt(lastSlugAtlasMs);
+                        if (lastSlugFontReloadMs !== null || lastFlushTotalMs !== null) {
+                            html += "<br><b>Flush — Slug font reload:</b> " + fmt(lastSlugFontReloadMs) +
+                                    " &nbsp; <b>total:</b> " + fmt(lastFlushTotalMs);
+                        }
+                        buildTimingsDiv.innerHTML = html;
+                    }
+                    updateBuildTimings();
+                    var perfFrameCount = 0;
+                    scene.onAfterRenderObservable.add(function() {
+                        perfFrameCount++;
+                        if (perfFrameCount % 30 !== 0) return; // update every 30 frames
+                        var fps = engine.getFps().toFixed(1);
+                        var frameTime = sceneInstr.frameTimeCounter.lastSecAverage.toFixed(2);
+                        var renderTime = sceneInstr.renderTimeCounter.lastSecAverage.toFixed(2);
+                        var gpuTime = engineInstr.gpuFrameTimeCounter.lastSecAverage;
+                        var gpuStr = gpuTime > 0 ? (gpuTime / 1000000).toFixed(3) + " ms" : "N/A";
+                        var drawCalls = frameDrawCalls;
+                        perfDiv.innerHTML =
+                            "<b>FPS:</b> " + fps +
+                            " &nbsp; <b>Frame:</b> " + frameTime + " ms" +
+                            " &nbsp; <b>Render:</b> " + renderTime + " ms" +
+                            "<br><b>GPU:</b> " + gpuStr +
+                            " &nbsp; <b>Draw calls:</b> " + drawCalls +
+                            " &nbsp; <b>Pages:</b> " + pagePositions.length;
+                    });
+
+                    function updateOrtho() {
+                        var w = engine.getRenderWidth();
+                        var h = engine.getRenderHeight();
+                        camera.orthoLeft   = -w / 2;
+                        camera.orthoRight  =  w / 2;
+                        camera.orthoBottom = -h / 2;
+                        camera.orthoTop    =  h / 2;
+                    }
+                    updateOrtho();
+
+                    // ===== SLUG RENDERER =====
+                    var slugFont = await BABYLON.SlugFontAsset.CreateAsync("/PlayfairDisplay.ttf");
+                    var slugRenderer = await BABYLON.SlugTextRenderer.CreateAsync(slugFont, engine, scene);
+                    slugRenderer.ignoreDepthBuffer = true;
+
+                    // ===== MSDF RENDERER =====
+                    // Dynamic MSDF: atlas is baked at runtime from text-shaper using the same Font
+                    // instance Slug uses, so MSDF works for every font (including CJK) and the atlas
+                    // never carries glyphs that aren't in the current text.
+                    var msdfParagraphOpts = { textAlign: "left", translate: null, letterSpacing: 0 };
+                    var msdfFontAsset = null, msdfSingleRenderer = null, msdfBaselineMatrix = null;
+                    var msdfBuiltText = "";
+                    var msdfCellSize = 32;
+
+                    var msdfSizeSelect = document.getElementById("msdfSizeSelect");
+                    msdfSizeSelect.addEventListener("change", function() {
+                        msdfCellSize = parseInt(msdfSizeSelect.value);
+                        rebuildAll();
+                    });
+
+                    var currentFontUrl = "PlayfairDisplay.ttf";
+
+                    // ===== MSDF SOURCE TOGGLE =====
+                    // "dynamic": atlas baked at runtime from text-shaper, covers only the glyphs
+                    //            in `currentText`. Works for any font (including CJK).
+                    // "static":  pre-baked bmFont JSON + PNG shipped alongside the .ttf in /public.
+                    //            Only Latin fonts ship with one; CJK fonts force-fall back to dynamic.
+                    var msdfSource = "dynamic";
+                    var currentMsdfSource = "dynamic"; // what the last rebuildAll actually used
+                    var msdfMatchSlug = false;          // prebaked-only: downscale atlas to Slug bytes
+                    var currentMsdfMatched = false;     // whether the last build was actually downscaled
+                    var btnMsdfDynamic = document.getElementById("btnMsdfDynamic");
+                    var btnMsdfStatic = document.getElementById("btnMsdfStatic");
+                    var chkMsdfMatchSlug = document.getElementById("msdfMatchSlug");
+
+                    function hasStaticMsdf(url) {
+                        // Fonts that ship with a pre-baked .json + .png in /public.
+                        return /^(?:Roboto-Regular|Inter|PlayfairDisplay|Pacifico-Regular)\.[ot]tf$/i.test(url);
+                    }
+                    function effectiveMsdfSource() {
+                        return (msdfSource === "static" && hasStaticMsdf(currentFontUrl)) ? "static" : "dynamic";
+                    }
+                    function updateMsdfSourceUI() {
+                        var staticOk = hasStaticMsdf(currentFontUrl);
+                        var eff = effectiveMsdfSource();
+                        btnMsdfDynamic.className = "mode-btn" + (eff === "dynamic" ? " active" : "");
+                        btnMsdfStatic.className = "mode-btn" + (eff === "static" ? " active" : "");
+                        btnMsdfStatic.disabled = !staticOk;
+                        btnMsdfStatic.title = staticOk
+                            ? "Use a pre-baked bmFont JSON + PNG atlas shipped with the font."
+                            : "No pre-baked atlas ships with this font — Dynamic only.";
+                        // Cell-size only applies to dynamic baking.
+                        msdfSizeSelect.disabled = (eff === "static");
+                        // Match Slug memory only applies to prebaked downscale.
+                        chkMsdfMatchSlug.disabled = (eff !== "static");
+                        chkMsdfMatchSlug.parentElement.style.opacity = (eff === "static") ? "1" : "0.45";
+                    }
+                    btnMsdfDynamic.addEventListener("click", function() {
+                        if (msdfSource === "dynamic") return;
+                        msdfSource = "dynamic";
+                        updateMsdfSourceUI();
+                        rebuildAll();
+                    });
+                    btnMsdfStatic.addEventListener("click", function() {
+                        if (btnMsdfStatic.disabled || msdfSource === "static") return;
+                        msdfSource = "static";
+                        updateMsdfSourceUI();
+                        rebuildAll();
+                    });
+                    chkMsdfMatchSlug.addEventListener("change", function() {
+                        msdfMatchSlug = chkMsdfMatchSlug.checked;
+                        if (effectiveMsdfSource() === "static") rebuildAll();
+                    });
+
+                    // Median of a sorted byte array. For even counts, returns the average of the
+                    // two middle samples (rounded down to int — values are 0..255).
+                    function medianSortedBytes(a) {
+                        var n = a.length;
+                        if (n === 0) return 0;
+                        return (n & 1) ? a[(n - 1) >> 1] : (a[(n >> 1) - 1] + a[n >> 1]) >> 1;
+                    }
+
+                    // MSDF-aware downscale: each MSDF channel is an independent signed distance
+                    // field, and the shader reconstructs the final distance with `median(rgb)`.
+                    // A naïve RGBA bilinear/box average (what the browser does in <canvas>) blends
+                    // the three channels' distances together — and across feature edges, that can
+                    // collapse the sharp +d/-d transitions that give MSDF its corner sharpness, or
+                    // pull all three channels toward 128 (= on the edge) producing speckle.
+                    //
+                    // Instead, sample each destination pixel as the per-channel MEDIAN of all
+                    // source pixels falling inside its source box. Median is robust to the
+                    // ±distance discontinuities that exist *between* MSDF channels at a feature
+                    // edge, so it preserves the edge classification better than averaging while
+                    // still producing a continuous output. Alpha is forced to 255 — MSDF PNGs are
+                    // fully opaque and we don't want any spurious premultiplication.
+                    function downscaleMsdfRgba(srcRgba, sw, sh, dw, dh) {
+                        var dst = new Uint8Array(dw * dh * 4);
+                        var sxScale = sw / dw;
+                        var syScale = sh / dh;
+                        var rs = [], gs = [], bs = [];
+                        for (var dy = 0; dy < dh; dy++) {
+                            var sy0 = Math.floor(dy * syScale);
+                            var sy1 = Math.floor((dy + 1) * syScale);
+                            if (sy1 <= sy0) sy1 = sy0 + 1;
+                            if (sy1 > sh) sy1 = sh;
+                            for (var dx = 0; dx < dw; dx++) {
+                                var sx0 = Math.floor(dx * sxScale);
+                                var sx1 = Math.floor((dx + 1) * sxScale);
+                                if (sx1 <= sx0) sx1 = sx0 + 1;
+                                if (sx1 > sw) sx1 = sw;
+                                rs.length = 0; gs.length = 0; bs.length = 0;
+                                for (var sy = sy0; sy < sy1; sy++) {
+                                    var rowBase = sy * sw * 4;
+                                    for (var sx = sx0; sx < sx1; sx++) {
+                                        var si = rowBase + sx * 4;
+                                        rs.push(srcRgba[si]);
+                                        gs.push(srcRgba[si + 1]);
+                                        bs.push(srcRgba[si + 2]);
+                                    }
+                                }
+                                rs.sort(function (a, b) { return a - b; });
+                                gs.sort(function (a, b) { return a - b; });
+                                bs.sort(function (a, b) { return a - b; });
+                                var di = (dy * dw + dx) * 4;
+                                dst[di]     = medianSortedBytes(rs);
+                                dst[di + 1] = medianSortedBytes(gs);
+                                dst[di + 2] = medianSortedBytes(bs);
+                                dst[di + 3] = 255;
+                            }
+                        }
+                        return dst;
+                    }
+
+                    // Load a PNG and read its raw RGBA bytes at native size. No resize is done by
+                    // the canvas — we draw 1:1 so `getImageData` returns the original encoded MSDF
+                    // bytes (browsers may de-premultiply alpha; MSDF PNGs are opaque so this is a
+                    // no-op).
+                    function loadPngRgba(url) {
+                        return new Promise(function (resolve, reject) {
+                            var img = new Image();
+                            img.crossOrigin = "anonymous";
+                            img.onload = function () {
+                                var w = img.naturalWidth || img.width;
+                                var h = img.naturalHeight || img.height;
+                                var c = document.createElement("canvas");
+                                c.width = w; c.height = h;
+                                var ctx = c.getContext("2d");
+                                ctx.imageSmoothingEnabled = false;
+                                ctx.drawImage(img, 0, 0);
+                                var imgData = ctx.getImageData(0, 0, w, h);
+                                resolve({ rgba: new Uint8Array(imgData.data.buffer.slice(0)), width: w, height: h });
+                            };
+                            img.onerror = function (e) { reject(new Error("Image load failed: " + url)); };
+                            img.src = url;
+                        });
+                    }
+
+                    // Build a Babylon FontAsset from a pre-baked bmFont JSON + PNG. When
+                    // `targetBytes` is set, the atlas is downscaled (MSDF-aware median per channel,
+                    // see downscaleMsdfRgba) so its byte size doesn't exceed that budget. UVs are
+                    // unchanged: char coords are still `x/scaleW`, both in the JSON's original
+                    // pixel space, so normalized UVs are identical regardless of texture
+                    // resolution — only fidelity changes.
+                    async function buildStaticMsdfFontAsset(fontUrl, sceneArg, targetBytes) {
+                        var base = fontUrl.replace(/\.[ot]tf$/i, "");
+                        var jsonUrl = "/" + base + ".json";
+                        var resp = await fetch(jsonUrl);
+                        if (!resp.ok) throw new Error("Static MSDF JSON not found: " + jsonUrl);
+                        var jsonText = await resp.text();
+                        var def = JSON.parse(jsonText);
+                        var pngUrl = "/" + (def.pages && def.pages[0] ? def.pages[0] : base + ".png");
+
+                        if (!targetBytes || targetBytes <= 0) {
+                            return new BABYLON.FontAsset(jsonText, pngUrl, sceneArg);
+                        }
+                        var src = await loadPngRgba(pngUrl);
+                        var fullBytes = src.width * src.height * 4;
+                        if (fullBytes <= targetBytes) {
+                            // No downscale needed — use the original PNG via Texture URL load.
+                            return new BABYLON.FontAsset(jsonText, pngUrl, sceneArg);
+                        }
+                        var f = Math.sqrt(targetBytes / fullBytes);
+                        var dw = Math.max(8, Math.round(src.width * f));
+                        var dh = Math.max(8, Math.round(src.height * f));
+                        var rgba = downscaleMsdfRgba(src.rgba, src.width, src.height, dw, dh);
+                        var tex = BABYLON.RawTexture.CreateRGBATexture(
+                            rgba, dw, dh, sceneArg,
+                            /* generateMipMaps */ false,
+                            /* invertY */ false,
+                            /* samplingMode */ BABYLON.Texture.LINEAR_LINEAR,
+                            /* type */ BABYLON.Constants.TEXTURETYPE_UNSIGNED_BYTE,
+                            /* creationFlags */ 0,
+                            /* useSRGBBuffer */ false
+                        );
+                        tex.anisotropicFilteringLevel = 1;
+                        tex.gammaSpace = false;
+                        tex.wrapU = BABYLON.Texture.CLAMP_ADDRESSMODE;
+                        tex.wrapV = BABYLON.Texture.CLAMP_ADDRESSMODE;
+                        tex.name = "StaticMSDF-matched-" + dw + "x" + dh;
+                        var asset = new BABYLON.FontAsset(jsonText, pngUrl, sceneArg, { existingTextures: [tex] });
+                        // Stash the downscaled bytes + dims for the atlas-view panel and texStats.
+                        asset._dynamicAtlasRgba = rgba;
+                        asset._dynamicAtlasWidth = dw;
+                        asset._dynamicAtlasHeight = dh;
+                        return asset;
+                    }
+
+                    // ===== STATE =====
+                    var mode = "slug";
+                    var currentText = "Hello Slug!";
+                    var currentSize = 30;
+                    var mouseX = 0, mouseY = 0, mouseRot = 0, mouseScale = 1.0;
+                    var msdfNeedRebuild = false;
+                    var fontLoading = false;
+
+                    // ===== CONTROLS =====
+                    var txtInput = document.getElementById("txtInput");
+                    var fontSelect = document.getElementById("fontSelect");
+                    var sizeSlider = document.getElementById("sizeSlider");
+                    var rotSlider = document.getElementById("rotSlider");
+                    var scaleSlider = document.getElementById("scaleSlider");
+                    var rSlider = document.getElementById("rSlider");
+                    var gSlider = document.getElementById("gSlider");
+                    var bSlider = document.getElementById("bSlider");
+                    var btnSlug = document.getElementById("btnSlug");
+                    var btnMsdf = document.getElementById("btnMsdf");
+                    var modeInfo = document.getElementById("modeInfo");
+
+                    async function switchFont(url) {
+                        if (url === currentFontUrl || fontLoading) return;
+                        fontLoading = true;
+                        fontSelect.disabled = true;
+                        try {
+                            // Load new Slug font. The dynamic MSDF atlas is rebuilt against this
+                            // new font inside rebuildAll, so it always reflects the active glyph
+                            // outlines.
+                            var newFont = await BABYLON.SlugFontAsset.CreateAsync("/" + url);
+                            slugRenderer.dispose();
+                            slugFont.dispose();
+                            slugFont = newFont;
+                            slugRenderer = await BABYLON.SlugTextRenderer.CreateAsync(newFont, engine, scene);
+                            slugRenderer.ignoreDepthBuffer = true;
+
+                            currentFontUrl = url;
+                            updateMsdfSourceUI();
+                            await rebuildAll();
+                        } catch (e) {
+                            console.error("Font load failed:", e);
+                        }
+                        fontLoading = false;
+                        fontSelect.disabled = false;
+                    }
+
+                    // Detect CJK characters (Han, kana, fullwidth, CJK punctuation).
+                    function hasCJK(text) {
+                        return /[\u3000-\u9FFF\u3400-\u4DBF\uF900-\uFAFF\uFF00-\uFFEF]/.test(text);
+                    }
+                    function isCjkCapableFont(url) {
+                        return /NotoSans.*SC|NotoSansSC/i.test(url);
+                    }
+                    // Remember the last Latin font picked so we can restore it when switching
+                    // back from a CJK preset.
+                    var lastLatinFontUrl = isCjkCapableFont(currentFontUrl) ? "Roboto-Regular.ttf" : currentFontUrl;
+
+                    fontSelect.addEventListener("change", async function() {
+                        var url = fontSelect.value;
+                        if (!isCjkCapableFont(url)) lastLatinFontUrl = url;
+                        await switchFont(url);
+                    });
+
+                    var btnFlush = document.getElementById("btnFlush");
+                    async function flushFontCaches() {
+                        if (fontLoading) return;
+                        fontLoading = true;
+                        fontSelect.disabled = true;
+                        btnFlush.disabled = true;
+                        var originalLabel = btnFlush.textContent;
+                        btnFlush.textContent = "Flushing…";
+                        console.time("Flush font caches");
+                        var flushT0 = performance.now();
+                        var slugReloadMs = null;
+                        try {
+                            // Cache-busting query so the browser also re-fetches the font file
+                            // from the network instead of returning a stale HTTP cache entry.
+                            var bust = "?flush=" + Date.now();
+                            var url = currentFontUrl;
+
+                            // Re-load Slug font: forces a fresh font download and re-creates
+                            // the curve/band RGBA32F textures on the GPU on next setTextData.
+                            var slugReloadT0 = performance.now();
+                            var newFont = await BABYLON.SlugFontAsset.CreateAsync("/" + url + bust);
+                            slugRenderer.dispose();
+                            slugFont.dispose();
+                            slugFont = newFont;
+                            slugRenderer = await BABYLON.SlugTextRenderer.CreateAsync(newFont, engine, scene);
+                            slugRenderer.ignoreDepthBuffer = true;
+                            slugReloadMs = performance.now() - slugReloadT0;
+
+                            // The dynamic MSDF FontAsset and its texture will be rebuilt from
+                            // scratch inside rebuildAll below.
+                            await rebuildAll();
+                            updateColor();
+                        } catch (e) {
+                            console.error("Flush failed:", e);
+                        }
+                        lastSlugFontReloadMs = slugReloadMs;
+                        lastFlushTotalMs = performance.now() - flushT0;
+                        updateBuildTimings();
+                        console.timeEnd("Flush font caches");
+                        btnFlush.textContent = originalLabel;
+                        btnFlush.disabled = false;
+                        fontLoading = false;
+                        fontSelect.disabled = false;
+                    }
+                    btnFlush.addEventListener("click", flushFontCaches);
+
+                    var btnDiff = document.getElementById("btnDiff");
+
+                    function setMode(m) {
+                        mode = m;
+                        btnSlug.className = "mode-btn" + (m === "slug" ? " active" : "");
+                        btnMsdf.className = "mode-btn" + (m === "msdf" ? " active" : "");
+                        btnDiff.className = "mode-btn" + (m === "diff" ? " active" : "");
+                        var info = { slug: "Slug: resolution-independent GPU bezier rendering",
+                                     msdf: "MSDF: dynamic multi-channel signed distance field atlas",
+                                     diff: "Diff: green=Slug only, magenta=MSDF only, white=both" };
+                        var colors = { slug: "#8f8", msdf: "#88f", diff: "#ff8" };
+                        modeInfo.textContent = info[m];
+                        modeInfo.style.color = colors[m];
+                    }
+                    btnSlug.addEventListener("click", function() { setMode("slug"); });
+                    btnMsdf.addEventListener("click", function() { setMode("msdf"); });
+                    btnDiff.addEventListener("click", function() { setMode("diff"); });
+
+                    function rebuildText() {
+                        if (!activePreset) {
+                            currentText = txtInput.value || "Hello";
+                        }
+                        currentSize = parseInt(sizeSlider.value);
+                        rebuildAll();
+                    }
+
+                    // ===== TEXT PRESETS =====
+                    var presetSelect = document.getElementById("presetSelect");
+                    var presetTexts = {
+                        hello: "Hello Slug!",
+                        pangram: "The quick brown fox jumps over the lazy dog.\nPack my box with five dozen liquor jugs.\nHow vexingly quick daft zebras jump!\nThe five boxing wizards jump quickly.\nJinxed wizards pluck ivy from the big quilt.",
+                        lorem: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.\n\nSed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem.",
+                        cnHello: "你好，世界！\n欢迎使用 Slug 字形渲染。",
+                        cnPangram: "春眠不觉晓，处处闻啼鸟。\n夜来风雨声，花落知多少。\n\n床前明月光，疑是地上霜。\n举头望明月，低头思故乡。\n\n白日依山尽，黄河入海流。\n欲穷千里目，更上一层楼。",
+                        cnPara: "本演示比较两种文本渲染方案。\n\nSlug 算法直接在 GPU 上使用贝塞尔曲线对字形进行光栅化，因此可以在任意缩放级别下保持锐利清晰，并且只需上传当前文本所用字形的曲线数据。\n\n而 MSDF 方案依赖预先烘焙的多通道距离场图集，每种字体都必须事先生成一张包含所有字符的纹理。\n\n对于汉字这类字符集庞大的文字系统，预先烘焙整张 MSDF 图集既费时又占内存，而 Slug 则可以即时从字体文件中提取所需字形。",
+                    };
+                    var presetCache = {};
+
+                    async function loadPreset(key) {
+                        if (presetTexts[key]) return presetTexts[key];
+                        if (presetCache[key]) return presetCache[key];
+                        var urls = { war1: "/war-ch1.txt", war5: "/war-ch5.txt", warfull: "/war-and-peace.txt" };
+                        if (urls[key]) {
+                            var resp = await fetch(urls[key]);
+                            var text = await resp.text();
+                            presetCache[key] = text;
+                            return text;
+                        }
+                        return "Hello Slug!";
+                    }
+
+                    var activePreset = "warfull";
+                    presetSelect.addEventListener("change", async function() {
+                        var key = presetSelect.value;
+                        if (!key) return;
+                        activePreset = key;
+                        presetSelect.disabled = true;
+                        var text = await loadPreset(key);
+                        currentText = text;
+                        currentSize = parseInt(sizeSlider.value);
+                        txtInput.value = text.length > 200 ? text.substring(0, 200) + "… (" + text.length + " chars)" : text;
+
+                        // Auto-switch font to match script:
+                        //   - CJK text on a Latin font → switch to Noto Sans SC.
+                        //   - Latin text on Noto Sans SC → restore last-chosen Latin font.
+                        // switchFont() calls rebuildAll() itself when it actually changes font.
+                        var textHasCJK = hasCJK(text);
+                        if (textHasCJK && !isCjkCapableFont(currentFontUrl)) {
+                            fontSelect.value = "NotoSansSC-Regular.otf";
+                            presetSelect.disabled = false;
+                            await switchFont("NotoSansSC-Regular.otf");
+                            return;
+                        } else if (!textHasCJK && isCjkCapableFont(currentFontUrl)) {
+                            fontSelect.value = lastLatinFontUrl;
+                            presetSelect.disabled = false;
+                            await switchFont(lastLatinFontUrl);
+                            return;
+                        }
+                        presetSelect.disabled = false;
+                        await rebuildAll();
+                    });
+                    txtInput.addEventListener("input", function() {
+                        presetSelect.value = "";
+                        activePreset = "";
+                        currentText = txtInput.value || "Hello";
+                        currentSize = parseInt(sizeSlider.value);
+                        rebuildAll();
+                    });
+
+                    // ===== PAGE GRID SYSTEM =====
+                    var PAGE_ASPECT = 8.5 / 11; // US Letter aspect ratio (width/height)
+                    var PAGE_HEIGHT_PX = 2000;   // Fixed page height in pixels
+                    var PAGE_WIDTH_PX = PAGE_HEIGHT_PX * PAGE_ASPECT;
+                    var PAGE_MARGIN = 80;        // Margin inside page in pixels
+                    var pagePositions = [];
+                    var pageWidth = PAGE_WIDTH_PX;
+                    var pageHeight = PAGE_HEIGHT_PX;
+
+                    function splitIntoPages(text, fontSize) {
+                        // Content area inside margins
+                        var contentW = PAGE_WIDTH_PX - PAGE_MARGIN * 2;
+                        var contentH = PAGE_HEIGHT_PX - PAGE_MARGIN * 2;
+                        // Use MSDF font metrics for accurate line height
+                        var bmFontScale = msdfFontAsset.scale; // 1/info.size
+                        var bmLineHeight = msdfFontAsset._font.common.lineHeight;
+                        var lineH = bmLineHeight * bmFontScale * fontSize;
+                        var linesPerPage = Math.max(1, Math.floor(contentH / lineH));
+                        // Use MSDF metrics for char width estimate too
+                        // Average xadvance across all chars
+                        var chars = msdfFontAsset._font.chars;
+                        var totalAdv = 0, count = 0;
+                        for (var ci = 0; ci < chars.length; ci++) {
+                            if (chars[ci].xadvance > 0) { totalAdv += chars[ci].xadvance; count++; }
+                        }
+                        var avgAdvance = count > 0 ? totalAdv / count : 10;
+                        var avgCharWidth = avgAdvance * bmFontScale * fontSize;
+                        var charsPerLine = Math.max(1, Math.floor(contentW / avgCharWidth));
+
+                        var allLines = text.split("\n");
+                        var pages = [];
+                        var currentPage = [];
+                        var currentVisualLines = 0;
+                        for (var i = 0; i < allLines.length; i++) {
+                            var line = allLines[i];
+                            var visualLines = line.length === 0 ? 1 : Math.ceil(line.length / charsPerLine);
+                            if (currentVisualLines + visualLines > linesPerPage && currentPage.length > 0) {
+                                pages.push(currentPage.join("\n"));
+                                currentPage = [];
+                                currentVisualLines = 0;
+                            }
+                            currentPage.push(line);
+                            currentVisualLines += visualLines;
+                        }
+                        if (currentPage.length > 0) pages.push(currentPage.join("\n"));
+                        return pages;
+                    }
+
+                    function computeGridLayout(numPages) {
+                        var gap = 40;
+                        // Auto-compute columns based on count: sqrt-ish for book-like feel
+                        var cols = Math.max(1, Math.min(50, Math.ceil(Math.sqrt(numPages * PAGE_ASPECT))));
+                        var positions = [];
+                        for (var i = 0; i < numPages; i++) {
+                            var col = i % cols;
+                            var row = Math.floor(i / cols);
+                            positions.push({
+                                x: col * (PAGE_WIDTH_PX + gap),
+                                y: -row * (PAGE_HEIGHT_PX + gap)
+                            });
+                        }
+                        return positions;
+                    }
+
+                    var rebuildGen = 0;
+                    async function rebuildAll() {
+                        var myGen = ++rebuildGen;
+                        var contentW = PAGE_WIDTH_PX - PAGE_MARGIN * 2;
+
+                        // Build MSDF font asset — either a fresh dynamic atlas covering only the
+                        // glyphs in `currentText`, or a pre-baked bmFont JSON + PNG shipped with
+                        // the font (when "Prebaked" is selected and one is available). The build
+                        // is async (PNG decode for prebaked, canvas → texture for dynamic), so we
+                        // only swap the new asset in if no newer rebuildAll has started meanwhile.
+                        //
+                        // When "Match Slug memory" is on in prebaked mode, we downscale the atlas
+                        // (per-channel MSDF-aware median) so its bytes don't exceed the previous
+                        // Slug build's curve+band byte total. The budget comes from the *previous*
+                        // Slug build because rebuildAll builds MSDF first; Slug texture sizes are
+                        // stable enough across rebuilds for this to converge in one frame.
+                        var useStaticMsdf = (effectiveMsdfSource() === "static");
+                        var matchTargetBytes = 0;
+                        var wantMatched = useStaticMsdf && msdfMatchSlug;
+                        if (wantMatched) {
+                            var prevTd = slugRenderer && slugRenderer._textData;
+                            if (prevTd) {
+                                matchTargetBytes = (4096 * prevTd.curveTexHeight + 4096 * prevTd.bandTexHeight) * 16;
+                            }
+                        }
+                        var msdfBuildLabel = useStaticMsdf
+                            ? (matchTargetBytes ? "Static MSDF font load (Slug-matched)" : "Static MSDF font load")
+                            : "Dynamic MSDF atlas build";
+                        console.time(msdfBuildLabel);
+                        var msdfAtlasT0 = performance.now();
+                        var newAsset = useStaticMsdf
+                            ? await buildStaticMsdfFontAsset(currentFontUrl, scene, matchTargetBytes)
+                            : await BABYLON.CreateDynamicMsdfFontAssetAsync(
+                                slugFont, currentText, scene, { fontSize: msdfCellSize }
+                            );
+                        lastMsdfAtlasMs = performance.now() - msdfAtlasT0;
+                        console.timeEnd(msdfBuildLabel);
+                        currentMsdfSource = useStaticMsdf ? "static" : "dynamic";
+                        currentMsdfMatched = wantMatched && !!newAsset._dynamicAtlasRgba;
+                        if (myGen !== rebuildGen) { newAsset.dispose(); return; }
+
+                        if (msdfSingleRenderer) { msdfSingleRenderer.dispose(); msdfSingleRenderer = null; }
+                        if (msdfFontAsset)      { msdfFontAsset.dispose(); }
+                        msdfFontAsset = newAsset;
+                        msdfBaselineMatrix = BABYLON.Matrix.Translation(
+                            0, (msdfFontAsset._font.common.base - 1.0) * msdfFontAsset.scale, 0
+                        );
+
+                        var fontScale = msdfFontAsset.scale;
+                        var textChunks = splitIntoPages(currentText, currentSize);
+                        var numPages = textChunks.length;
+                        pageWidth = PAGE_WIDTH_PX;
+                        pageHeight = PAGE_HEIGHT_PX;
+                        pagePositions = computeGridLayout(numPages);
+
+                        console.log("Building " + numPages + " page(s), " + currentText.length + " chars at " + currentSize + "px");
+
+                        // Single call: shared glyph textures, per-page vertex layout
+                        // But ALSO build MSDF so we can drive Slug from MSDF's glyph positions
+                        var msdfMaxWidth = contentW / (fontScale * currentSize);
+                        var msdfOpts = Object.assign({}, msdfParagraphOpts);
+                        if (currentText.length > 100) msdfOpts.maxWidth = msdfMaxWidth;
+
+                        var r = await BABYLON.TextRenderer.CreateTextRendererAsync(msdfFontAsset, engine);
+                        if (myGen !== rebuildGen) { r.dispose(); return; }
+                        r.ignoreDepthBuffer = true;
+
+                        console.time("MSDF build");
+                        var pageGlyphInfo = [];
+                        for (var i = 0; i < numPages; i++) {
+                            var pp = pagePositions[i];
+                            var para = new BABYLON.SdfTextParagraph(textChunks[i], msdfFontAsset, msdfOpts);
+                            var glyphs = para.glyphs.filter(function(g) { return g.char.page >= 0; });
+                            var charCodes = glyphs.map(function(g) { return g.char.id; });
+                            var beforeCount = r._charMatrices.length;
+                            r.addParagraph(textChunks[i], msdfOpts, BABYLON.Matrix.Identity());
+                            var afterCount = r._charMatrices.length;
+                            var offsetX = pp.x + PAGE_MARGIN;
+                            var offsetY = pp.y - PAGE_MARGIN;
+                            if (offsetX !== 0 || offsetY !== 0) {
+                                var dxFu = offsetX / currentSize;
+                                var dyFu = offsetY / currentSize;
+                                for (var mi = beforeCount; mi < afterCount; mi += 16) {
+                                    r._charMatrices[mi + 12] += dxFu;
+                                    r._charMatrices[mi + 13] += dyFu;
+                                }
+                            }
+                            pageGlyphInfo.push({ charCodes: charCodes, glyphs: glyphs, start: beforeCount, end: afterCount });
+                        }
+                        console.timeEnd("MSDF build");
+                        msdfSingleRenderer = r;
+                        msdfBuiltText = currentText;
+                        msdfNeedRebuild = false;
+
+                        // Build Slug from MSDF's paragraph glyph layout for identical positioning.
+                        // Extract baseline origins from paragraph glyphs (not from matrices).
+                        console.time("Slug build from MSDF positions");
+                        var slugAtlasT0 = performance.now();
+                        var baseBmFont = msdfFontAsset._font.common.base; // baseline offset from line top in bmFont pixels
+                        var allSlugGlyphs = [];
+                        for (var pi = 0; pi < pageGlyphInfo.length; pi++) {
+                            var info = pageGlyphInfo[pi];
+                            var pp = pagePositions[pi];
+                            var offsetX = pp.x + PAGE_MARGIN;
+                            var offsetY = pp.y - PAGE_MARGIN;
+                            for (var gi = 0; gi < info.glyphs.length; gi++) {
+                                var g = info.glyphs[gi];
+                                // Glyph baseline origin in pixel space:
+                                // g.x = horizontal cursor position in bmFont pixels
+                                // g.y = vertical position (line top) in bmFont pixels, Y-down
+                                // baseBmFont = distance from line top to baseline in bmFont pixels
+                                // So baseline Y in bmFont Y-down = g.y + baseBmFont
+                                // In MSDF Y-up font-unit space: (1.0 - g.y - baseBmFont) * fontScale
+                                var originX = g.x * fontScale * currentSize + offsetX;
+                                var originY = (1.0 - g.y - baseBmFont) * fontScale * currentSize + offsetY;
+                                allSlugGlyphs.push({
+                                    charCode: g.char.id,
+                                    x: originX,
+                                    y: originY
+                                });
+                            }
+                        }
+                        var merged = BABYLON.prepareTextFromGlyphs(slugFont.font, allSlugGlyphs, currentSize);
+                        slugRenderer.setTextData(merged);
+                        lastSlugAtlasMs = performance.now() - slugAtlasT0;
+                        console.timeEnd("Slug build from MSDF positions");
+
+                        updateBuildTimings();
+
+                        setTimeout(updateTexStats, 50);
+                        buildPageBackgrounds();
+                        msdfTextChunks = textChunks;
+                        console.log("Build complete: " + numPages + " pages, " + merged.vertices.length / 20 + " verts");
+                    }
+                    var msdfTextChunks = ["Hello Slug!"];
+
+                    function formatBytes(bytes) {
+                        if (bytes < 1024) return bytes + " B";
+                        if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB";
+                        return (bytes / (1024 * 1024)).toFixed(2) + " MB";
+                    }
+
+                    function updateTexStats() {
+                        var lines = [];
+                        lines.push("<b>" + currentText.length.toLocaleString() + " chars, " + pagePositions.length + " page(s)</b>");
+                        // Slug stats from single merged renderer
+                        var td = slugRenderer._textData;
+                        if (td) {
+                            var totalCurveBytes = 4096 * td.curveTexHeight * 16;
+                            var totalBandBytes = 4096 * td.bandTexHeight * 16;
+                            var totalVerts = td.vertices.length / 20;
+                            var totalIdx = td.indices.length;
+                            lines.push("<span style='color:#8f8'>Slug</span>: " +
+                                "curves " + formatBytes(totalCurveBytes) + ", " +
+                                "bands " + formatBytes(totalBandBytes));
+                            lines.push("  " + totalVerts + " verts, " + totalIdx + " indices, " +
+                                "total: <b>" + formatBytes(totalCurveBytes + totalBandBytes) + "</b>");
+                        }
+                        // MSDF stats
+                        if (msdfFontAsset) {
+                            var msdfTex = msdfFontAsset.textures[0];
+                            if (msdfTex) {
+                                // Prefer the actual atlas dimensions (downscaled or dynamic) over
+                                // the JSON's scaleW/scaleH so memory totals reflect what's really
+                                // on the GPU after a "Match Slug memory" downscale.
+                                var aw = msdfFontAsset._dynamicAtlasWidth || msdfFontAsset._font.common.scaleW;
+                                var ah = msdfFontAsset._dynamicAtlasHeight || msdfFontAsset._font.common.scaleH;
+                                var msdfBytes = aw * ah * 4;
+                                var glyphCount = msdfFontAsset._font.chars.length;
+                                var srcLabel = currentMsdfSource === "static"
+                                    ? (currentMsdfMatched ? "prebaked, Slug-matched" : "prebaked")
+                                    : "dynamic " + msdfCellSize + "px";
+                                lines.push("<span style='color:#88f'>MSDF</span>: " +
+                                    "atlas " + aw + "×" + ah + " @ " + srcLabel + " (" + formatBytes(msdfBytes) + "), " +
+                                    glyphCount + " glyphs");
+                            }
+                        }
+                        document.getElementById("texStats").innerHTML = lines.join("<br>");
+                        if (atlasVisible) updateAtlasView();
+                    }
+
+                    var atlasVisible = false;
+                    var btnAtlas = document.getElementById("btnAtlas");
+                    var atlasPanel = document.getElementById("atlasPanel");
+                    btnAtlas.addEventListener("click", function() {
+                        atlasVisible = !atlasVisible;
+                        atlasPanel.className = atlasVisible ? "visible" : "";
+                        btnAtlas.textContent = atlasVisible ? "Hide Atlas Textures" : "Show Atlas Textures";
+                        if (atlasVisible) updateAtlasView();
+                    });
+
+                    function renderFloat32ToCanvas(canvas, data, texW, texH, maxDisplayW) {
+                        // data is Float32Array RGBA, visualize magnitude as grayscale
+                        var scale = Math.min(1, maxDisplayW / texW);
+                        var dw = Math.round(texW * scale), dh = Math.max(1, Math.round(texH * scale));
+                        canvas.width = dw; canvas.height = dh;
+                        canvas.style.width = dw + "px"; canvas.style.height = dh + "px";
+                        var ctx = canvas.getContext("2d");
+                        var img = ctx.createImageData(texW, texH);
+                        // Find max value for normalization
+                        var maxVal = 0;
+                        for (var i = 0; i < data.length; i++) {
+                            var v = Math.abs(data[i]);
+                            if (v > maxVal && isFinite(v)) maxVal = v;
+                        }
+                        var invMax = maxVal > 0 ? 255 / maxVal : 0;
+                        for (var y = 0; y < texH; y++) {
+                            for (var x = 0; x < texW; x++) {
+                                var si = (y * texW + x) * 4;
+                                var di = (y * texW + x) * 4;
+                                var r = Math.min(255, Math.abs(data[si]) * invMax) | 0;
+                                var g = Math.min(255, Math.abs(data[si+1]) * invMax) | 0;
+                                var b = Math.min(255, Math.abs(data[si+2]) * invMax) | 0;
+                                var a = data[si+3] !== 0 ? 255 : (r+g+b > 0 ? 255 : 0);
+                                img.data[di] = r; img.data[di+1] = g; img.data[di+2] = b; img.data[di+3] = a;
+                            }
+                        }
+                        // Draw at full res then scale
+                        var tmp = document.createElement("canvas");
+                        tmp.width = texW; tmp.height = texH;
+                        tmp.getContext("2d").putImageData(img, 0, 0);
+                        ctx.imageSmoothingEnabled = false;
+                        ctx.drawImage(tmp, 0, 0, dw, dh);
+                    }
+
+                    function updateAtlasView() {
+                        var maxW = 400;
+                        // Slug curve texture
+                        var td = slugRenderer._textData;
+                        if (td) {
+                            renderFloat32ToCanvas(
+                                document.getElementById("slugCurveCanvas"),
+                                td.curveTexData, 4096, td.curveTexHeight, maxW
+                            );
+                            renderFloat32ToCanvas(
+                                document.getElementById("slugBandCanvas"),
+                                td.bandTexData, 4096, td.bandTexHeight, maxW
+                            );
+                        }
+                        // MSDF atlas — render from the loaded image (or clear when not available)
+                        var msdfCanvas = document.getElementById("msdfAtlasCanvas");
+                        if (!msdfFontAsset) {
+                            msdfCanvas.width = 1; msdfCanvas.height = 1;
+                            msdfCanvas.style.width = "auto"; msdfCanvas.style.height = "auto";
+                            msdfCanvas.getContext("2d").clearRect(0, 0, 1, 1);
+                            return;
+                        }
+                        var msdfTex = msdfFontAsset.textures[0];
+                        if (msdfTex && msdfTex._texture && msdfTex._texture._hardwareTexture) {
+                            var tw = msdfFontAsset._font.common.scaleW;
+                            var th = msdfFontAsset._font.common.scaleH;
+                            var scale = Math.min(1, maxW / tw);
+                            var dw = Math.round(tw * scale), dh = Math.round(th * scale);
+                            msdfCanvas.width = dw; msdfCanvas.height = dh;
+                            msdfCanvas.style.width = dw + "px"; msdfCanvas.style.height = dh + "px";
+
+                            // Dynamic MSDF stashes the raw atlas bytes on the FontAsset for
+                            // exactly this purpose. Render them straight to the canvas.
+                            var rgba = msdfFontAsset._dynamicAtlasRgba;
+                            var srcW = msdfFontAsset._dynamicAtlasWidth || tw;
+                            var srcH = msdfFontAsset._dynamicAtlasHeight || th;
+                            if (rgba) {
+                                var tmp = document.createElement("canvas");
+                                tmp.width = srcW; tmp.height = srcH;
+                                var tmpCtx = tmp.getContext("2d");
+                                var img = tmpCtx.createImageData(srcW, srcH);
+                                img.data.set(rgba);
+                                tmpCtx.putImageData(img, 0, 0);
+                                var ctx = msdfCanvas.getContext("2d");
+                                ctx.imageSmoothingEnabled = false;
+                                ctx.clearRect(0, 0, dw, dh);
+                                ctx.drawImage(tmp, 0, 0, dw, dh);
+                            } else {
+                                // Legacy path: pre-baked atlas with a real PNG URL in pages[0].
+                                var pageUrl = msdfFontAsset._font.pages[0];
+                                if (pageUrl && pageUrl.indexOf("dynamic-msdf:") !== 0) {
+                                    var imgEl = new Image();
+                                    imgEl.crossOrigin = "anonymous";
+                                    imgEl.onload = function() {
+                                        var ctx2 = msdfCanvas.getContext("2d");
+                                        ctx2.imageSmoothingEnabled = false;
+                                        ctx2.drawImage(imgEl, 0, 0, dw, dh);
+                                    };
+                                    imgEl.src = pageUrl;
+                                }
+                            }
+                        }
+                    }
+
+                    var msdfRebuildGeneration = 0;
+                    async function rebuildMsdf() {
+                        // MSDF is now built inside rebuildAll() together with Slug
+                        msdfNeedRebuild = false;
+                    }
+
+                    function getTransform() {
+                        var rot = mouseRot * Math.PI / 180;
+                        var sc = mouseScale;
+                        var cos = Math.cos(rot) * sc;
+                        var sin = Math.sin(rot) * sc;
+                        return { cos: cos, sin: sin, tx: mouseX, ty: mouseY };
+                    }
+
+                    function updateWorldMatrix() {
+                        // Transforms are applied per-page in the render loop
+                    }
+
+                    function updateColor() {
+                        var c = {
+                            r: parseInt(rSlider.value) / 100,
+                            g: parseInt(gSlider.value) / 100,
+                            b: parseInt(bSlider.value) / 100,
+                            a: 1.0
+                        };
+                        slugRenderer.color = c;
+                        if (msdfSingleRenderer) msdfSingleRenderer.color = c;
+                    }
+
+                    function updateLabels() {
+                        document.getElementById("sizeVal").textContent = sizeSlider.value;
+                        document.getElementById("rotVal").textContent = rotSlider.value + "deg";
+                        document.getElementById("scaleVal").textContent = (parseFloat(scaleSlider.value) / 100).toFixed(2);
+                    }
+
+                    sizeSlider.addEventListener("input", function() { rebuildText(); updateLabels(); });
+                    rotSlider.addEventListener("input", function() { mouseRot = parseFloat(rotSlider.value); updateWorldMatrix(); updateLabels(); });
+                    scaleSlider.addEventListener("input", function() { mouseScale = parseFloat(scaleSlider.value) / 100; updateWorldMatrix(); updateLabels(); });
+                    rSlider.addEventListener("input", updateColor);
+                    gSlider.addEventListener("input", updateColor);
+                    bSlider.addEventListener("input", updateColor);
+
+                    updateMsdfSourceUI();
+                    rebuildText();
+
+                    // ===== MOUSE =====
+                    var dragging = false, lastMX = 0, lastMY = 0;
+
+                    canvas.addEventListener("pointerdown", function(e) {
+                        dragging = true;
+                        lastMX = e.clientX; lastMY = e.clientY;
+                        canvas.setPointerCapture(e.pointerId);
+                        e.stopPropagation();
+                    }, true);
+                    canvas.addEventListener("pointerup", function(e) {
+                        dragging = false;
+                        canvas.releasePointerCapture(e.pointerId);
+                    }, true);
+                    canvas.addEventListener("pointermove", function(e) {
+                        if (!dragging) return;
+                        mouseX += e.clientX - lastMX;
+                        mouseY -= e.clientY - lastMY;
+                        lastMX = e.clientX; lastMY = e.clientY;
+                        updateWorldMatrix();
+                        e.stopPropagation();
+                    }, true);
+                    canvas.addEventListener("wheel", function(e) {
+                        e.preventDefault();
+                        if (e.shiftKey) {
+                            mouseRot += e.deltaY * 0.2;
+                            mouseRot = Math.max(-180, Math.min(180, mouseRot));
+                            rotSlider.value = Math.round(mouseRot);
+                        } else {
+                            var oldScale = mouseScale;
+                            mouseScale *= e.deltaY > 0 ? 0.92 : 1.08;
+                            mouseScale = Math.max(0.01, Math.min(400.0, mouseScale));
+                            var ratio = mouseScale / oldScale;
+                            // Zoom toward mouse cursor: keep world point under cursor fixed
+                            var rect = canvas.getBoundingClientRect();
+                            var cx = e.clientX - rect.left - rect.width / 2;
+                            var cy = -(e.clientY - rect.top - rect.height / 2);
+                            mouseX = cx + (mouseX - cx) * ratio;
+                            mouseY = cy + (mouseY - cy) * ratio;
+                            scaleSlider.value = Math.min(40000, Math.round(mouseScale * 100));
+                        }
+                        updateWorldMatrix();
+                        updateLabels();
+                    }, { passive: false });
+
+                    // ===== PAGE BACKGROUND RENDERER =====
+                    // Simple white quad renderer for page backgrounds
+                    var pageBgEffect = null;
+                    var pageBgVB = null;
+                    var pageBgIB = null;
+                    var pageBgVAO = null;
+                    var pageBgVertexBuffers = {};
+                    var pageBgIdxCount = 0;
+
+                    function buildPageBackgrounds() {
+                        // Clean up old
+                        if (pageBgVB) { pageBgVB.dispose(); pageBgVB = null; }
+                        if (pageBgIB) { engine._releaseBuffer(pageBgIB); pageBgIB = null; }
+                        if (pageBgVAO) { engine.releaseVertexArrayObject(pageBgVAO); pageBgVAO = null; }
+                        pageBgVertexBuffers = {};
+
+                        if (pagePositions.length === 0) { pageBgIdxCount = 0; return; }
+
+                        var n = pagePositions.length;
+                        var verts = new Float32Array(n * 4 * 2); // 4 corners × 2 floats (x,y)
+                        var idxs = new Uint32Array(n * 6);
+
+                        for (var i = 0; i < n; i++) {
+                            var pp = pagePositions[i];
+                            var x0 = pp.x, y0 = pp.y - PAGE_HEIGHT_PX;
+                            var x1 = pp.x + PAGE_WIDTH_PX, y1 = pp.y;
+                            var vi = i * 8;
+                            verts[vi]   = x0; verts[vi+1] = y0;
+                            verts[vi+2] = x1; verts[vi+3] = y0;
+                            verts[vi+4] = x1; verts[vi+5] = y1;
+                            verts[vi+6] = x0; verts[vi+7] = y1;
+                            var ii = i * 6, base = i * 4;
+                            idxs[ii]   = base; idxs[ii+1] = base+1; idxs[ii+2] = base+2;
+                            idxs[ii+3] = base; idxs[ii+4] = base+2; idxs[ii+5] = base+3;
+                        }
+
+                        pageBgVB = new BABYLON.Buffer(engine, verts, false, 2);
+                        pageBgVertexBuffers["position"] = pageBgVB.createVertexBuffer("position", 0, 2, 2);
+                        pageBgIB = engine.createIndexBuffer(idxs);
+                        pageBgIdxCount = idxs.length;
+                    }
+
+                    // Create a minimal white-quad shader
+                    var pageBgDW = null;
+                    (async function() {
+                        var vsrc = "precision highp float;\nattribute vec2 position;\nuniform mat4 mvp;\nvoid main(void) { gl_Position = mvp * vec4(position, 0.0, 1.0); }";
+                        var fsrc = "precision highp float;\nuniform vec4 pageColor;\nvoid main(void) { gl_FragColor = pageColor; }";
+                        pageBgEffect = engine.createEffect(
+                            { vertexSource: vsrc, fragmentSource: fsrc },
+                            ["position"], ["mvp", "pageColor"], [], ""
+                        );
+                        pageBgDW = new BABYLON.DrawWrapper(engine);
+                    })();
+
+                    function drawPageBackgrounds(mvpMat) {
+                        if (!pageBgEffect || !pageBgEffect.isReady() || pageBgIdxCount === 0 || !pageBgDW) return;
+                        pageBgDW.effect = pageBgEffect;
+                        engine.enableEffect(pageBgDW);
+                        engine.setDepthBuffer(false);
+                        engine.setAlphaMode(BABYLON.Constants.ALPHA_DISABLE);
+                        pageBgEffect.setMatrix("mvp", mvpMat);
+                        pageBgEffect.setFloat4("pageColor", 1, 1, 1, 1); // white paper
+                        engine.bindBuffers(pageBgVertexBuffers, pageBgIB, pageBgEffect);
+                        engine.drawElementsType(BABYLON.Constants.MATERIAL_TriangleFillMode, 0, pageBgIdxCount);
+                        frameDrawCalls++;
+                    }
+
+                    // ===== RENDER =====
+                    var frameDrawCalls = 0;
+                    scene.onAfterRenderObservable.add(function () {
+                        var rot = mouseRot * Math.PI / 180;
+                        var sc = mouseScale;
+                        var viewMat = camera.getViewMatrix();
+                        var projMat = camera.getProjectionMatrix();
+                        frameDrawCalls = 0;
+
+                        if (msdfNeedRebuild) rebuildMsdf();
+
+                        // Compute pixel-space transform MVP (used by Slug and page backgrounds)
+                        var t = getTransform();
+                        var worldMat = BABYLON.Matrix.FromValues(
+                            t.cos, t.sin, 0, 0,
+                            -t.sin, t.cos, 0, 0,
+                            0, 0, 1, 0,
+                            t.tx, t.ty, 0, 1
+                        );
+                        var tmpMat = new BABYLON.Matrix();
+                        worldMat.multiplyToRef(viewMat, tmpMat);
+                        var pixelMvp = new BABYLON.Matrix();
+                        tmpMat.multiplyToRef(projMat, pixelMvp);
+
+                        // Draw page backgrounds (white rectangles) before text
+                        // Page positions are in pixel space, so always use pixel-space MVP
+                        drawPageBackgrounds(pixelMvp);
+
+                        var userColor = {
+                            r: parseInt(rSlider.value) / 100,
+                            g: parseInt(gSlider.value) / 100,
+                            b: parseInt(bSlider.value) / 100,
+                            a: 1.0
+                        };
+
+                        // Slug: single renderer with all pages merged — one draw call
+                        if (mode === "slug" || mode === "diff") {
+                            var m = slugRenderer.worldMatrix.asArray();
+                            m[0] = t.cos;   m[1] = t.sin;   m[2] = 0;  m[3] = 0;
+                            m[4] = -t.sin;  m[5] = t.cos;   m[6] = 0;  m[7] = 0;
+                            m[8] = 0;       m[9] = 0;       m[10] = 1; m[11] = 0;
+                            m[12] = t.tx;   m[13] = t.ty;   m[14] = 0; m[15] = 1;
+                            slugRenderer.color = mode === "diff" ? { r: 0, g: 1, b: 0, a: 1 } : userColor;
+                            if (mode === "diff") engine.setAlphaMode(BABYLON.Constants.ALPHA_ADD);
+                            slugRenderer.render(viewMat, projMat);
+                            frameDrawCalls++;
+                        }
+
+                        // MSDF: uses pixel-space world matrix baked into transformMatrix
+                        // The MSDF transform = scale(currentSize) × rotation × translation
+                        // Page positions are already in pixel space in _charMatrices
+                        if ((mode === "msdf" || mode === "diff") && msdfSingleRenderer) {
+                            var mcos = Math.cos(rot) * sc * currentSize;
+                            var msin = Math.sin(rot) * sc * currentSize;
+                            var mat = BABYLON.Matrix.FromValues(
+                                mcos,  msin,  0, 0,
+                                -msin, mcos,  0, 0,
+                                0,     0,     1, 0,
+                                mouseX, mouseY, 0, 1
+                            );
+                            msdfSingleRenderer.transformMatrix = mat;
+                            msdfSingleRenderer.color = mode === "diff" ? { r: 1, g: 0, b: 1, a: 1 } : userColor;
+                            msdfSingleRenderer.parent = null;
+                            msdfSingleRenderer.render(viewMat, projMat);
+                            frameDrawCalls++;
+                        }
+                        if (mode === "diff") engine.setAlphaMode(BABYLON.Constants.ALPHA_DISABLE);
+                    });
+
+                    engine.runRenderLoop(function () { scene.render(); });
+                    window.addEventListener("resize", function () { engine.resize(); updateOrtho(); });
+
+                    // Load default preset (War and Peace — Full)
+                    presetSelect.dispatchEvent(new Event("change"));
+                } catch (e) {
+                    console.error(e);
+                }
+            })();
+        </script>
+    </body>
+</html>

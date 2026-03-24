@@ -9,6 +9,28 @@ enum CharCode {
 }
 
 /**
+ * Options for FontAsset's underlying texture.
+ */
+export interface FontAssetTextureOptions {
+    /** Disable mipmap generation (default: false). Recommended for dynamically baked SDF/MSDF atlases. */
+    noMipmap?: boolean;
+    /** Sampling mode override (e.g. Texture.LINEAR_LINEAR for non-mipmapped). */
+    samplingMode?: number;
+    /** Anisotropic filtering level (default: 16). MSDF generally wants 1. */
+    anisotropicFilteringLevel?: number;
+    /** Treat the texture as linear-space (default: true keeps existing sRGB-correct behavior). */
+    gammaSpace?: boolean;
+    /**
+     * Pre-built page textures. When provided, FontAsset will use these directly
+     * instead of creating textures from the `textureUrl`/`_font.pages[]` URLs.
+     * Length must match the number of pages (typically 1). All other options
+     * above are ignored when this is set — the caller is responsible for
+     * configuring sampling/aniso/gamma on the provided textures.
+     */
+    existingTextures?: Texture[];
+}
+
+/**
  * Class representing a font asset for SDF (Signed Distance Field) rendering.
  */
 export class FontAsset implements IDisposable {
@@ -34,8 +56,9 @@ export class FontAsset implements IDisposable {
      * @param definitionData defines the font data in JSON format.
      * @param textureUrl defines the url of the texture to use for the font.
      * @param scene defines the hosting scene.
+     * @param textureOptions optional overrides for the page texture (mipmaps, sampling, anisotropy, gamma).
      */
-    public constructor(definitionData: string, textureUrl: string, scene?: Scene) {
+    public constructor(definitionData: string, textureUrl: string, scene?: Scene, textureOptions?: FontAssetTextureOptions) {
         this._font = JSON.parse(definitionData) as SdfFont;
         // So far we only consider one page
         this._font.pages = [textureUrl];
@@ -54,11 +77,21 @@ export class FontAsset implements IDisposable {
         this._updateFallbacks();
 
         this.scale = 1 / this._font.info.size;
-        this.textures = this._font.pages.map((page) => {
-            const texture = new Texture(page, scene, { noMipmap: false, invertY: false });
-            texture.anisotropicFilteringLevel = 16;
-            return texture;
-        });
+        if (textureOptions?.existingTextures && textureOptions.existingTextures.length === this._font.pages.length) {
+            this.textures = textureOptions.existingTextures.slice();
+        } else {
+            const noMipmap = textureOptions?.noMipmap ?? false;
+            const aniso = textureOptions?.anisotropicFilteringLevel ?? 16;
+            const samplingMode = textureOptions?.samplingMode;
+            this.textures = this._font.pages.map((page) => {
+                const texture = new Texture(page, scene, { noMipmap, invertY: false, samplingMode });
+                texture.anisotropicFilteringLevel = aniso;
+                if (textureOptions?.gammaSpace !== undefined) {
+                    texture.gammaSpace = textureOptions.gammaSpace;
+                }
+                return texture;
+            });
+        }
     }
 
     dispose(): void {
