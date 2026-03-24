@@ -2408,7 +2408,9 @@ export class Viewer implements IDisposable {
                         const oldReflectionTexture = this._reflectionTexture;
                         if (lightingUrl === this._skyboxTexture?.url) {
                             // If the lighting url is the same as the skybox url, clone the skybox texture.
-                            this._setEnvironmentLighting(this._skyboxTexture.clone());
+                            const environmentTexture = this._skyboxTexture.clone();
+                            environmentTexture.coordinatesMode = Texture.CUBIC_MODE;
+                            this._setEnvironmentLighting(environmentTexture);
                         } else {
                             // Otherwise, create a new cube texture from the lighting url.
                             let lightingOptions = options;
