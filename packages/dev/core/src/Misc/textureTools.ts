@@ -396,7 +396,7 @@ async function ReadPixelsUsingRTT(texture: BaseTexture, width: number, height: n
 
             //Reading datas from WebGL
             const bufferView = await engine.readPixels(0, 0, width, height);
-            const data = new Uint8Array(bufferView.buffer, 0, bufferView.byteLength);
+            const data = new Uint8Array(bufferView.buffer, bufferView.byteOffset, bufferView.byteLength);
 
             // Unbind
             engine.unBindFramebuffer(rtt.renderTarget);
@@ -415,6 +415,7 @@ async function ReadPixelsUsingRTT(texture: BaseTexture, width: number, height: n
  * Gets the pixel data of the specified texture, either by reading it directly
  * or by rendering it to an intermediate RGBA texture and retrieving the bytes from it.
  * This is convenient to get 8-bit RGBA values for a texture in a GPU compressed format.
+ * When direct readback returns non-RGBA channel layouts, the result is normalized to RGBA8.
  * @param texture the source texture
  * @param width the target width of the result, which does not have to match the source texture width
  * @param height the target height of the result, which does not have to match the source texture height
@@ -444,9 +445,10 @@ export async function GetTextureDataAsync(
     // If the internal texture format is compressed, we cannot read the pixels directly.
     // If we're resizing the texture, we need to use a render target texture.
     // forceRTT can be used to ensure correct orientation and gamma for cube maps.
+    // 3D textures must also use RTT because direct readPixels does not expose slice selection.
     if (forceRTT || is3DTexture || IsCompressedTextureFormat(texture.textureFormat) || targetWidth !== textureWidth || targetHeight !== textureHeight) {
-        if (texture.is2DArray || texture.is3D) {
-            throw new Error(`Reading pixels from 2D array or 3D textures with ${forceRTT ? "RTT" : "compression"} is not supported.`);
+        if (texture.is2DArray) {
+            throw new Error(`Reading pixels from 2D array textures with ${forceRTT ? "RTT" : "compression"} is not supported.`);
         }
         return await ReadPixelsUsingRTT(texture, targetWidth, targetHeight, face, lod, slice);
     }
@@ -465,6 +467,52 @@ export async function GetTextureDataAsync(
             data2[n] = Math.round(Clamp(v) * 255);
         }
         data = data2;
+    }
+
+    // Some backends (notably WebGPU for single/dual/triple channel formats) can return
+    // readback data that is not RGBA8. The inspector preview pipeline expects 4 bytes
+    // per pixel, so normalize to RGBA here when needed.
+    const pixelCount = targetWidth * targetHeight;
+    const expectedLength = pixelCount * 4;
+
+    if (data.length !== expectedLength) {
+        const componentCount = pixelCount === 0 ? 0 : data.length / pixelCount;
+
+        if (componentCount === 1 || componentCount === 2 || componentCount === 3) {
+            const normalizedData = new Uint8Array(expectedLength);
+
+            for (let pixel = 0, src = 0, dst = 0; pixel < pixelCount; pixel++, dst += 4) {
+                const c0 = data[src++];
+
+                if (componentCount === 1) {
+                    // Luminance/R-style data: replicate to RGB and use opaque alpha.
+                    normalizedData[dst] = c0;
+                    normalizedData[dst + 1] = c0;
+                    normalizedData[dst + 2] = c0;
+                    normalizedData[dst + 3] = 255;
+                    continue;
+                }
+
+                const c1 = data[src++];
+                if (componentCount === 2) {
+                    // Two-channel data has no standard blue/alpha semantics for preview,
+                    // so preserve R/G, clear B, and force opaque alpha.
+                    normalizedData[dst] = c0;
+                    normalizedData[dst + 1] = c1;
+                    normalizedData[dst + 2] = 0;
+                    normalizedData[dst + 3] = 255;
+                    continue;
+                }
+
+                // RGB data: append an opaque alpha channel.
+                normalizedData[dst] = c0;
+                normalizedData[dst + 1] = c1;
+                normalizedData[dst + 2] = data[src++];
+                normalizedData[dst + 3] = 255;
+            }
+
+            return normalizedData;
+        }
     }
 
     return data;

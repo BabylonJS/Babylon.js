@@ -58,6 +58,28 @@ export async function ApplyChannelsToTextureDataAsync(
         for (let i = 3; i < width * height * 4; i += 4) {
             data[i] = 255;
         }
+    } else if (texture.getScene()?.getEngine().isWebGPU) {
+        let alphaAllZero = true;
+        let hasNonZeroColor = false;
+
+        for (let i = 0; i < width * height * 4; i += 4) {
+            if (data[i] !== 0 || data[i + 1] !== 0 || data[i + 2] !== 0) {
+                hasNonZeroColor = true;
+            }
+
+            if (data[i + 3] !== 0) {
+                alphaAllZero = false;
+                break;
+            }
+        }
+
+        // Some WebGPU RTT readback paths can return zeroed alpha for textures that
+        // are effectively opaque in source data. In that case, force opaque preview.
+        if (alphaAllZero && hasNonZeroColor) {
+            for (let i = 3; i < width * height * 4; i += 4) {
+                data[i] = 255;
+            }
+        }
     }
 
     if (!channels.R || !channels.G || !channels.B || !channels.A) {
@@ -134,9 +156,23 @@ export async function ApplyChannelsToTextureDataAsync(
 
 function _TextureFormatHasNoAlpha(format: number): boolean {
     switch (format) {
+        case Constants.TEXTUREFORMAT_LUMINANCE:
         case Constants.TEXTUREFORMAT_R:
+        case Constants.TEXTUREFORMAT_R16_UNORM:
+        case Constants.TEXTUREFORMAT_R16_SNORM:
         case Constants.TEXTUREFORMAT_RG:
+        case Constants.TEXTUREFORMAT_RG16_UNORM:
+        case Constants.TEXTUREFORMAT_RG16_SNORM:
         case Constants.TEXTUREFORMAT_RGB:
+        case Constants.TEXTUREFORMAT_RGB16_UNORM:
+        case Constants.TEXTUREFORMAT_RGB16_SNORM:
+        case Constants.TEXTUREFORMAT_DEPTH16:
+        case Constants.TEXTUREFORMAT_DEPTH24:
+        case Constants.TEXTUREFORMAT_DEPTH24_STENCIL8:
+        case Constants.TEXTUREFORMAT_DEPTH24UNORM_STENCIL8:
+        case Constants.TEXTUREFORMAT_DEPTH32_FLOAT:
+        case Constants.TEXTUREFORMAT_DEPTH32FLOAT_STENCIL8:
+        case Constants.TEXTUREFORMAT_STENCIL8:
         case Constants.TEXTUREFORMAT_RED_INTEGER:
         case Constants.TEXTUREFORMAT_RG_INTEGER:
         case Constants.TEXTUREFORMAT_RGB_INTEGER:
