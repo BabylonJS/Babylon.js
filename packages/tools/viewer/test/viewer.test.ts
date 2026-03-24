@@ -102,7 +102,11 @@ async function attachViewerElement(page: Page, viewerHtml: string) {
     // Wait for viewerDetails to be available and loading to finish.
     await page.waitForFunction((viewerElement) => {
         const details = viewerElement && (viewerElement as ViewerElement).viewerDetails;
-        return details && details.viewer.loadingProgress === false;
+        if (details && details.viewer.loadingProgress === false) {
+            details.viewer.showDebugLogs = true;
+            return true;
+        }
+        return false;
     }, viewerElementHandle);
 
     // viewerElementHandle cannot be null at this point since we already waited for it to become valid in the browser context above.
@@ -113,7 +117,7 @@ test("viewerDetails available", async ({ page }) => {
     const viewerElementHandle = await attachViewerElement(
         page,
         `
-        <babylon-viewer render-when-idle>
+        <babylon-viewer>
         </babylon-viewer>
         `
     );
@@ -131,7 +135,7 @@ test("animation-auto-play", async ({ page }) => {
     const viewerElementHandle = await attachViewerElement(
         page,
         `
-        <babylon-viewer render-when-idle
+        <babylon-viewer
             source="https://assets.babylonjs.com/meshes/ufo.glb"
             animation-auto-play
         >
@@ -153,7 +157,7 @@ test('selected-animation="n"', async ({ page }) => {
     const viewerElementHandle = await attachViewerElement(
         page,
         `
-        <babylon-viewer render-when-idle
+        <babylon-viewer
             source="https://assets.babylonjs.com/meshes/ufo.glb"
             selected-animation="1"
         >
@@ -178,7 +182,7 @@ test('camera-orbit="a b r"', async ({ page }) => {
     const viewerElementHandle = await attachViewerElement(
         page,
         `
-        <babylon-viewer render-when-idle
+        <babylon-viewer
             source="https://assets.babylonjs.com/meshes/boombox.glb"
             camera-orbit=" 1 2 0.1 "
         >
@@ -204,7 +208,7 @@ test('camera-target="x y z"', async ({ page }) => {
     const viewerElementHandle = await attachViewerElement(
         page,
         `
-        <babylon-viewer render-when-idle
+        <babylon-viewer
             source="https://assets.babylonjs.com/meshes/boombox.glb"
             camera-target=" 1 2 3 "
         >
@@ -227,7 +231,7 @@ test('tone-mapping="none"', async ({ page }) => {
     const viewerElementHandle = await attachViewerElement(
         page,
         `
-        <babylon-viewer render-when-idle
+        <babylon-viewer
             source="https://assets.babylonjs.com/meshes/boombox.glb"
             tone-mapping="none"
         >
@@ -253,7 +257,7 @@ test('material-variant="name"', async ({ page }) => {
     const viewerElementHandle = await attachViewerElement(
         page,
         `
-        <babylon-viewer render-when-idle
+        <babylon-viewer
             source="https://assets.babylonjs.com/meshes/shoe_variants.glb"
             material-variant="street"
         >
@@ -279,7 +283,7 @@ test('environment="auto"', async ({ page }) => {
     const viewerElementHandle = await attachViewerElement(
         page,
         `
-        <babylon-viewer render-when-idle
+        <babylon-viewer
             environment="auto"
         >
         </babylon-viewer>
@@ -306,7 +310,7 @@ test('shadow-quality="high"', async ({ page }) => {
     const viewerElementHandle = await attachViewerElement(
         page,
         `
-        <babylon-viewer render-when-idle
+        <babylon-viewer
             source="https://assets.babylonjs.com/meshes/Demos/optimized/acrobaticPlane_variants.glb"
             shadow-quality="high"
         >
@@ -328,7 +332,7 @@ test("concurrent lighting and skybox environment updates", async ({ page }) => {
     const viewerElementHandle = await attachViewerElement(
         page,
         `
-        <babylon-viewer render-when-idle
+        <babylon-viewer
             source="https://assets.babylonjs.com/meshes/boombox.glb"
             environment="auto"
         >
@@ -359,7 +363,7 @@ test("load model from URL", async ({ page }) => {
     await attachViewerElement(
         page,
         `
-        <babylon-viewer render-when-idle
+        <babylon-viewer
             source="https://assets.babylonjs.com/meshes/boombox.glb"
         >
         </babylon-viewer>
@@ -381,7 +385,7 @@ test("change model source", async ({ page }) => {
     const viewerElementHandle = await attachViewerElement(
         page,
         `
-        <babylon-viewer render-when-idle
+        <babylon-viewer
             source="https://assets.babylonjs.com/meshes/boombox.glb"
         >
         </babylon-viewer>
@@ -403,7 +407,7 @@ test("clear model", async ({ page }) => {
     const viewerElementHandle = await attachViewerElement(
         page,
         `
-        <babylon-viewer render-when-idle
+        <babylon-viewer
             source="https://assets.babylonjs.com/meshes/boombox.glb"
         >
         </babylon-viewer>
@@ -436,7 +440,7 @@ test("invalid model source fires modelerror", async ({ page }) => {
         return new Promise<boolean>((resolve, reject) => {
             const timeout = setTimeout(() => reject(new Error("modelerror event not fired")), 15000);
             const container = document.createElement("div");
-            container.innerHTML = '<babylon-viewer render-when-idle source="https://assets.babylonjs.com/meshes/nonexistent_model_12345.glb"></babylon-viewer>';
+            container.innerHTML = '<babylon-viewer source="https://assets.babylonjs.com/meshes/nonexistent_model_12345.glb"></babylon-viewer>';
             const viewer = container.querySelector("babylon-viewer")!;
             viewer.addEventListener(
                 "modelerror",
@@ -461,7 +465,7 @@ test("environment lighting with model", async ({ page }) => {
     await attachViewerElement(
         page,
         `
-        <babylon-viewer render-when-idle
+        <babylon-viewer
             source="https://assets.babylonjs.com/meshes/boombox.glb"
             environment-lighting="https://assets.babylonjs.com/environments/environmentSpecular.env"
         >
@@ -484,7 +488,7 @@ test("environment skybox", async ({ page }) => {
     await attachViewerElement(
         page,
         `
-        <babylon-viewer render-when-idle
+        <babylon-viewer
             source="https://assets.babylonjs.com/meshes/boombox.glb"
             environment-skybox="https://assets.babylonjs.com/environments/environmentSpecular.env"
         >
@@ -500,7 +504,7 @@ test("environment-intensity", async ({ page }) => {
     await attachViewerElement(
         page,
         `
-        <babylon-viewer render-when-idle
+        <babylon-viewer
             source="https://assets.babylonjs.com/meshes/boombox.glb"
             environment="auto"
             environment-intensity="2"
@@ -524,7 +528,7 @@ test("environment-rotation", async ({ page }) => {
     await attachViewerElement(
         page,
         `
-        <babylon-viewer render-when-idle
+        <babylon-viewer
             source="https://assets.babylonjs.com/meshes/boombox.glb"
             environment="auto"
             environment-rotation="1.5"
@@ -548,7 +552,7 @@ test("skybox-blur", async ({ page }) => {
     await attachViewerElement(
         page,
         `
-        <babylon-viewer render-when-idle
+        <babylon-viewer
             source="https://assets.babylonjs.com/meshes/boombox.glb"
             environment-skybox="https://assets.babylonjs.com/environments/environmentSpecular.env"
             skybox-blur="0.8"
@@ -569,7 +573,7 @@ test('tone-mapping="standard"', async ({ page }) => {
     await attachViewerElement(
         page,
         `
-        <babylon-viewer render-when-idle
+        <babylon-viewer
             source="https://assets.babylonjs.com/meshes/boombox.glb"
             tone-mapping="standard"
         >
@@ -592,7 +596,7 @@ test('tone-mapping="aces"', async ({ page }) => {
     await attachViewerElement(
         page,
         `
-        <babylon-viewer render-when-idle
+        <babylon-viewer
             source="https://assets.babylonjs.com/meshes/boombox.glb"
             tone-mapping="aces"
         >
@@ -615,7 +619,7 @@ test('tone-mapping="neutral"', async ({ page }) => {
     await attachViewerElement(
         page,
         `
-        <babylon-viewer render-when-idle
+        <babylon-viewer
             source="https://assets.babylonjs.com/meshes/boombox.glb"
             tone-mapping="neutral"
         >
@@ -635,7 +639,7 @@ test("camera-auto-orbit", async ({ page }) => {
     const viewerElementHandle = await attachViewerElement(
         page,
         `
-        <babylon-viewer render-when-idle
+        <babylon-viewer
             source="https://assets.babylonjs.com/meshes/boombox.glb"
             camera-auto-orbit
             camera-auto-orbit-speed="0.1"
@@ -665,7 +669,7 @@ test("resetCamera()", async ({ page }) => {
     const viewerElementHandle = await attachViewerElement(
         page,
         `
-        <babylon-viewer render-when-idle
+        <babylon-viewer
             source="https://assets.babylonjs.com/meshes/boombox.glb"
             camera-orbit="2 auto auto"
         >
@@ -698,7 +702,7 @@ test('shadow-quality="none"', async ({ page }) => {
     await attachViewerElement(
         page,
         `
-        <babylon-viewer render-when-idle
+        <babylon-viewer
             source="https://assets.babylonjs.com/meshes/boombox.glb"
             shadow-quality="none"
         >
@@ -721,7 +725,7 @@ test('shadow-quality="normal"', async ({ page }) => {
     await attachViewerElement(
         page,
         `
-        <babylon-viewer render-when-idle
+        <babylon-viewer
             source="https://assets.babylonjs.com/meshes/boombox.glb"
             shadow-quality="normal"
         >
@@ -748,7 +752,7 @@ test("materialVariants list", async ({ page }) => {
     const viewerElementHandle = await attachViewerElement(
         page,
         `
-        <babylon-viewer render-when-idle
+        <babylon-viewer
             source="https://assets.babylonjs.com/meshes/shoe_variants.glb"
         >
         </babylon-viewer>
@@ -770,7 +774,7 @@ test("change material variant dynamically", async ({ page }) => {
     const viewerElementHandle = await attachViewerElement(
         page,
         `
-        <babylon-viewer render-when-idle
+        <babylon-viewer
             source="https://assets.babylonjs.com/meshes/shoe_variants.glb"
             material-variant="street"
         >
@@ -807,7 +811,7 @@ test('clear-color="red"', async ({ page }) => {
     await attachViewerElement(
         page,
         `
-        <babylon-viewer render-when-idle
+        <babylon-viewer
             source="https://assets.babylonjs.com/meshes/boombox.glb"
             clear-color="red"
         >
@@ -827,7 +831,7 @@ test("toggleAnimation()", async ({ page }) => {
     const viewerElementHandle = await attachViewerElement(
         page,
         `
-        <babylon-viewer render-when-idle
+        <babylon-viewer
             source="https://assets.babylonjs.com/meshes/ufo.glb"
         >
         </babylon-viewer>
@@ -867,7 +871,7 @@ test("animation speed", async ({ page }) => {
     const viewerElementHandle = await attachViewerElement(
         page,
         `
-        <babylon-viewer render-when-idle
+        <babylon-viewer
             source="https://assets.babylonjs.com/meshes/ufo.glb"
             animation-speed="2"
         >
@@ -887,7 +891,7 @@ test("animations list", async ({ page }) => {
     const viewerElementHandle = await attachViewerElement(
         page,
         `
-        <babylon-viewer render-when-idle
+        <babylon-viewer
             source="https://assets.babylonjs.com/meshes/ufo.glb"
         >
         </babylon-viewer>
@@ -915,7 +919,7 @@ test("viewerready event", async ({ page }) => {
     const readyPromise = page.evaluate(() => {
         return new Promise<boolean>((resolve) => {
             const container = document.createElement("div");
-            container.innerHTML = "<babylon-viewer render-when-idle></babylon-viewer>";
+            container.innerHTML = "<babylon-viewer></babylon-viewer>";
             const viewer = container.querySelector("babylon-viewer")!;
             viewer.addEventListener("viewerready", () => resolve(true), { once: true });
             document.body.appendChild(container);
@@ -932,7 +936,7 @@ test("modelchange event", async ({ page }) => {
     const modelChangePromise = page.evaluate(() => {
         return new Promise<string | null>((resolve) => {
             const container = document.createElement("div");
-            container.innerHTML = '<babylon-viewer render-when-idle source="https://assets.babylonjs.com/meshes/boombox.glb"></babylon-viewer>';
+            container.innerHTML = '<babylon-viewer source="https://assets.babylonjs.com/meshes/boombox.glb"></babylon-viewer>';
             const viewer = container.querySelector("babylon-viewer")!;
             viewer.addEventListener("modelchange", ((e: CustomEvent) => resolve(e.detail)) as EventListener, { once: true });
             document.body.appendChild(container);
@@ -947,7 +951,7 @@ test("selectedanimationchange event", async ({ page }) => {
     const viewerElementHandle = await attachViewerElement(
         page,
         `
-        <babylon-viewer render-when-idle
+        <babylon-viewer
             source="https://assets.babylonjs.com/meshes/ufo.glb"
         >
         </babylon-viewer>
@@ -970,7 +974,7 @@ test("animationplayingchange event", async ({ page }) => {
     const viewerElementHandle = await attachViewerElement(
         page,
         `
-        <babylon-viewer render-when-idle
+        <babylon-viewer
             source="https://assets.babylonjs.com/meshes/ufo.glb"
         >
         </babylon-viewer>
@@ -997,7 +1001,7 @@ test("element removal and re-addition", async ({ page }) => {
     const viewerElementHandle = await attachViewerElement(
         page,
         `
-        <babylon-viewer render-when-idle
+        <babylon-viewer
             source="https://assets.babylonjs.com/meshes/boombox.glb"
         >
         </babylon-viewer>
@@ -1017,7 +1021,7 @@ test("element removal and re-addition", async ({ page }) => {
     // Re-add a new viewer element
     await page.evaluate(() => {
         const container = document.createElement("div");
-        container.innerHTML = '<babylon-viewer render-when-idle source="https://assets.babylonjs.com/meshes/boombox.glb"></babylon-viewer>';
+        container.innerHTML = '<babylon-viewer source="https://assets.babylonjs.com/meshes/boombox.glb"></babylon-viewer>';
         document.body.appendChild(container);
     });
 
@@ -1034,7 +1038,7 @@ test("reload()", async ({ page }) => {
     const viewerElementHandle = await attachViewerElement(
         page,
         `
-        <babylon-viewer render-when-idle
+        <babylon-viewer
             source="https://assets.babylonjs.com/meshes/boombox.glb"
         >
         </babylon-viewer>
@@ -1065,7 +1069,7 @@ test("isIdle state transitions", async ({ page }) => {
     const viewerElementHandle = await attachViewerElement(
         page,
         `
-        <babylon-viewer render-when-idle
+        <babylon-viewer
             source="https://assets.babylonjs.com/meshes/boombox.glb"
         >
         </babylon-viewer>
@@ -1098,7 +1102,7 @@ test("reset() restores initial state", async ({ page }) => {
     const viewerElementHandle = await attachViewerElement(
         page,
         `
-        <babylon-viewer render-when-idle
+        <babylon-viewer
             source="https://assets.babylonjs.com/meshes/boombox.glb"
         >
         </babylon-viewer>

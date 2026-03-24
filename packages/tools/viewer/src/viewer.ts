@@ -886,7 +886,7 @@ export class Viewer implements IDisposable {
     private readonly _defaultHardwareScalingLevel: number;
     private _lastHardwareScalingLevel: number;
     private _renderedLastFrame: Nullable<boolean> = null;
-    private _isIdle = true;
+    private _isIdle = false;
     private _sceneOptimizer: Nullable<SceneOptimizer> = null;
 
     private readonly _tempVectors = BuildTuple(4, Vector3.Zero);
@@ -2034,9 +2034,9 @@ export class Viewer implements IDisposable {
         high.pipeline.resetAccumulation();
         // shadow map
         this._shadowState.normal?.ground.setEnabled(false);
-        this._startIblShadowsRenderTime();
 
         this._shadowState.high = high;
+        this._startIblShadowsRenderTime();
 
         this._snapshotHelper?.enableSnapshotRendering();
         this._markSceneMutated();
@@ -2341,138 +2341,144 @@ export class Viewer implements IDisposable {
             controller.signal.addEventListener("abort", checkAllAborted);
         }
 
-        await AsyncLock.LockAsync(async () => {
-            throwIfAborted(abortSignal, compositeAbortController.signal);
+        try {
+            await AsyncLock.LockAsync(async () => {
+                throwIfAborted(abortSignal, compositeAbortController.signal);
 
-            const getDefaultEnvironmentUrlAsync = async () => (await import("./defaultEnvironment")).default;
+                const getDefaultEnvironmentUrlAsync = async () => (await import("./defaultEnvironment")).default;
 
-            const whenTextureLoadedAsync = async (cubeTexture: CubeTexture | HDRCubeTexture) => {
-                await new Promise<void>((resolve, reject) => {
-                    const successObserver = (cubeTexture.onLoadObservable as Observable<unknown>).addOnce(() => {
-                        errorObserver.remove();
-                        resolve();
-                    });
-
-                    const errorObserver = Texture.OnTextureLoadErrorObservable.add((texture) => {
-                        if (texture === cubeTexture) {
-                            successObserver.remove();
+                const whenTextureLoadedAsync = async (cubeTexture: CubeTexture | HDRCubeTexture) => {
+                    await new Promise<void>((resolve, reject) => {
+                        const successObserver = (cubeTexture.onLoadObservable as Observable<unknown>).addOnce(() => {
                             errorObserver.remove();
-                            reject(new Error("Failed to load environment texture."));
-                        }
+                            resolve();
+                        });
+
+                        const errorObserver = Texture.OnTextureLoadErrorObservable.add((texture) => {
+                            if (texture === cubeTexture) {
+                                successObserver.remove();
+                                errorObserver.remove();
+                                reject(new Error("Failed to load environment texture."));
+                            }
+                        });
                     });
-                });
-            };
+                };
 
-            const mode: EnvironmentMode = !url ? "none" : url === "auto" ? "auto" : "url";
+                const mode: EnvironmentMode = !url ? "none" : url === "auto" ? "auto" : "url";
 
-            this._environmentLightingMode = options.lighting ? mode : this._environmentLightingMode;
-            this._environmentSkyboxMode = options.skybox ? mode : this._environmentSkyboxMode;
+                this._environmentLightingMode = options.lighting ? mode : this._environmentLightingMode;
+                this._environmentSkyboxMode = options.skybox ? mode : this._environmentSkyboxMode;
 
-            let lightingUrl: Nullable<string | undefined> = this._reflectionTexture?.url;
-            let skyboxUrl: Nullable<string | undefined> = this._skyboxTexture?.url;
+                let lightingUrl: Nullable<string | undefined> = this._reflectionTexture?.url;
+                let skyboxUrl: Nullable<string | undefined> = this._skyboxTexture?.url;
 
-            this._snapshotHelper?.disableSnapshotRendering();
+                this._snapshotHelper?.disableSnapshotRendering();
 
-            try {
-                // If both modes are auto, use the default environment.
-                if (this._environmentLightingMode === "auto" && this._environmentSkyboxMode === "auto") {
-                    lightingUrl = skyboxUrl = await getDefaultEnvironmentUrlAsync();
-                } else {
-                    // If the lighting mode is not auto and we are updating the lighting, use the provided url.
-                    if (this._environmentLightingMode !== "auto" && options.lighting) {
-                        lightingUrl = url;
-                    }
-
-                    // If the skybox mode is not auto and we are updating the skybox, use the provided url.
-                    if (this._environmentSkyboxMode !== "auto" && options.skybox) {
-                        skyboxUrl = url;
-                    }
-
-                    // If the lighting mode is auto, use the skybox texture if there is one, otherwise use the default environment.
-                    if (this._environmentLightingMode === "auto") {
-                        lightingUrl = skyboxUrl ?? (await getDefaultEnvironmentUrlAsync());
-                    }
-
-                    // If the skybox mode is auto, use the lighting texture if there is one, otherwise use the default environment.
-                    if (this._environmentSkyboxMode === "auto") {
-                        skyboxUrl = lightingUrl ?? (await getDefaultEnvironmentUrlAsync());
-                    }
-                }
-
-                const newTexturePromises: Promise<void>[] = [];
-
-                // If the lighting url is not the same as the current lighting url, load the new lighting texture.
-                if (lightingUrl !== this._reflectionTexture?.url) {
-                    if (lightingUrl) {
-                        // Load the new reflection texture before disposing the old one.
-                        const oldReflectionTexture = this._reflectionTexture;
-                        if (lightingUrl === this._skyboxTexture?.url) {
-                            // If the lighting url is the same as the skybox url, clone the skybox texture.
-                            const environmentTexture = this._skyboxTexture.clone();
-                            environmentTexture.coordinatesMode = Texture.CUBIC_MODE;
-                            this._setEnvironmentLighting(environmentTexture);
-                        } else {
-                            // Otherwise, create a new cube texture from the lighting url.
-                            let lightingOptions = options;
-                            if (this._environmentLightingMode === "auto") {
-                                lightingOptions = { ...lightingOptions, extension: ".env" };
-                            }
-                            const lightingTexture = await createCubeTexture(lightingUrl, this._scene, lightingOptions.extension);
-                            newTexturePromises.push(whenTextureLoadedAsync(lightingTexture));
-                            this._setEnvironmentLighting(lightingTexture);
-                        }
-                        oldReflectionTexture?.dispose();
+                try {
+                    // If both modes are auto, use the default environment.
+                    if (this._environmentLightingMode === "auto" && this._environmentSkyboxMode === "auto") {
+                        lightingUrl = skyboxUrl = await getDefaultEnvironmentUrlAsync();
                     } else {
-                        // No new lighting url — dispose the old texture and clear.
-                        this._reflectionTexture?.dispose();
-                        this._reflectionTexture = null;
-                        this._scene.environmentTexture = null;
-                    }
-                }
-
-                // If the skybox url is not the same as the current skybox url, load the new skybox texture.
-                if (skyboxUrl !== this._skyboxTexture?.url) {
-                    if (skyboxUrl) {
-                        // Load the new skybox texture before disposing the old one.
-                        const oldSkybox = this._skybox;
-                        const oldSkyboxTexture = this._skyboxTexture;
-                        if (skyboxUrl === this._reflectionTexture?.url) {
-                            // If the skybox url is the same as the lighting url, clone the lighting texture.
-                            this._setEnvironmentSkybox(this._reflectionTexture.clone());
-                        } else {
-                            // Otherwise, create a new cube texture from the skybox url.
-                            let skyboxOptions = options;
-                            if (this._environmentSkyboxMode === "auto") {
-                                skyboxOptions = { ...skyboxOptions, extension: ".env" };
-                            }
-                            const skyboxTexture = await createCubeTexture(skyboxUrl, this._scene, skyboxOptions.extension);
-                            newTexturePromises.push(whenTextureLoadedAsync(skyboxTexture));
-                            this._setEnvironmentSkybox(skyboxTexture);
+                        // If the lighting mode is not auto and we are updating the lighting, use the provided url.
+                        if (this._environmentLightingMode !== "auto" && options.lighting) {
+                            lightingUrl = url;
                         }
-                        oldSkybox?.dispose(undefined, true);
-                        oldSkyboxTexture?.dispose();
-                    } else {
-                        // No new skybox url — dispose and clear.
-                        this._skybox?.dispose(undefined, true);
-                        this._skyboxTexture = null;
-                        this._skybox = null;
-                        this._updateAutoClear();
+
+                        // If the skybox mode is not auto and we are updating the skybox, use the provided url.
+                        if (this._environmentSkyboxMode !== "auto" && options.skybox) {
+                            skyboxUrl = url;
+                        }
+
+                        // If the lighting mode is auto, use the skybox texture if there is one, otherwise use the default environment.
+                        if (this._environmentLightingMode === "auto") {
+                            lightingUrl = skyboxUrl ?? (await getDefaultEnvironmentUrlAsync());
+                        }
+
+                        // If the skybox mode is auto, use the lighting texture if there is one, otherwise use the default environment.
+                        if (this._environmentSkyboxMode === "auto") {
+                            skyboxUrl = lightingUrl ?? (await getDefaultEnvironmentUrlAsync());
+                        }
                     }
+
+                    const newTexturePromises: Promise<void>[] = [];
+
+                    // If the lighting url is not the same as the current lighting url, load the new lighting texture.
+                    if (lightingUrl !== this._reflectionTexture?.url) {
+                        if (lightingUrl) {
+                            // Load the new reflection texture before disposing the old one.
+                            const oldReflectionTexture = this._reflectionTexture;
+                            if (lightingUrl === this._skyboxTexture?.url) {
+                                // If the lighting url is the same as the skybox url, clone the skybox texture.
+                                const environmentTexture = this._skyboxTexture.clone();
+                                environmentTexture.coordinatesMode = Texture.CUBIC_MODE;
+                                this._setEnvironmentLighting(environmentTexture);
+                            } else {
+                                // Otherwise, create a new cube texture from the lighting url.
+                                let lightingOptions = options;
+                                if (this._environmentLightingMode === "auto") {
+                                    lightingOptions = { ...lightingOptions, extension: ".env" };
+                                }
+                                const lightingTexture = await createCubeTexture(lightingUrl, this._scene, lightingOptions.extension);
+                                newTexturePromises.push(whenTextureLoadedAsync(lightingTexture));
+                                this._setEnvironmentLighting(lightingTexture);
+                            }
+                            oldReflectionTexture?.dispose();
+                        } else {
+                            // No new lighting url — dispose the old texture and clear.
+                            this._reflectionTexture?.dispose();
+                            this._reflectionTexture = null;
+                            this._scene.environmentTexture = null;
+                        }
+                    }
+
+                    // If the skybox url is not the same as the current skybox url, load the new skybox texture.
+                    if (skyboxUrl !== this._skyboxTexture?.url) {
+                        if (skyboxUrl) {
+                            // Load the new skybox texture before disposing the old one.
+                            const oldSkybox = this._skybox;
+                            const oldSkyboxTexture = this._skyboxTexture;
+                            if (skyboxUrl === this._reflectionTexture?.url) {
+                                // If the skybox url is the same as the lighting url, clone the lighting texture.
+                                this._setEnvironmentSkybox(this._reflectionTexture.clone());
+                            } else {
+                                // Otherwise, create a new cube texture from the skybox url.
+                                let skyboxOptions = options;
+                                if (this._environmentSkyboxMode === "auto") {
+                                    skyboxOptions = { ...skyboxOptions, extension: ".env" };
+                                }
+                                const skyboxTexture = await createCubeTexture(skyboxUrl, this._scene, skyboxOptions.extension);
+                                newTexturePromises.push(whenTextureLoadedAsync(skyboxTexture));
+                                this._setEnvironmentSkybox(skyboxTexture);
+                            }
+                            oldSkybox?.dispose(undefined, true);
+                            oldSkyboxTexture?.dispose();
+                        } else {
+                            // No new skybox url — dispose and clear.
+                            this._skybox?.dispose(undefined, true);
+                            this._skyboxTexture = null;
+                            this._skybox = null;
+                            this._updateAutoClear();
+                        }
+                    }
+
+                    await Promise.all(newTexturePromises);
+
+                    this._updateLight();
+                    observePromise(this._updateShadows());
+                    this.onEnvironmentChanged.notifyObservers();
+                } catch (e) {
+                    this.onEnvironmentError.notifyObservers(e);
+                    throw e;
+                } finally {
+                    this._snapshotHelper?.enableSnapshotRendering();
+                    this._markSceneMutated();
                 }
-
-                await Promise.all(newTexturePromises);
-
-                this._updateLight();
-                observePromise(this._updateShadows());
-                this.onEnvironmentChanged.notifyObservers();
-            } catch (e) {
-                this.onEnvironmentError.notifyObservers(e);
-                throw e;
-            } finally {
-                this._snapshotHelper?.enableSnapshotRendering();
-                this._markSceneMutated();
+            }, locks);
+        } finally {
+            for (const controller of internalAbortControllers) {
+                controller.signal.removeEventListener("abort", checkAllAborted);
             }
-        }, locks);
+        }
     }
 
     /**
