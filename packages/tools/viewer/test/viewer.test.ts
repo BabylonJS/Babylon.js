@@ -480,22 +480,21 @@ test("environment lighting with model", async ({ page }) => {
     await expectScreenshotMatch(page, "viewer-env-lighting.png");
 });
 
-// TODO: The scene is not rendered correctly in this scenario. Need to investigate.
-// test("environment skybox", async ({ page }) => {
-//     await attachViewerElement(
-//         page,
-//         `
-//         <babylon-viewer render-when-idle
-//             source="https://assets.babylonjs.com/meshes/boombox.glb"
-//             environment-skybox="https://assets.babylonjs.com/environments/environmentSpecular.env"
-//         >
-//         </babylon-viewer>
-//         `
-//     );
+test("environment skybox", async ({ page }) => {
+    await attachViewerElement(
+        page,
+        `
+        <babylon-viewer render-when-idle
+            source="https://assets.babylonjs.com/meshes/boombox.glb"
+            environment-skybox="https://assets.babylonjs.com/environments/environmentSpecular.env"
+        >
+        </babylon-viewer>
+        `
+    );
 
-//     await waitForModelLoaded(page);
-//     await expectScreenshotMatch(page, "viewer-env-skybox.png");
-// });
+    await waitForModelLoaded(page);
+    await expectScreenshotMatch(page, "viewer-env-skybox.png");
+});
 
 test("environment-intensity", async ({ page }) => {
     await attachViewerElement(
@@ -545,23 +544,22 @@ test("environment-rotation", async ({ page }) => {
     await expectScreenshotMatch(page, "viewer-env-rotation.png");
 });
 
-// TODO: The scene is not rendered correctly in this scenario. Need to investigate.
-// test("skybox-blur", async ({ page }) => {
-//     await attachViewerElement(
-//         page,
-//         `
-//         <babylon-viewer render-when-idle
-//             source="https://assets.babylonjs.com/meshes/boombox.glb"
-//             environment-skybox="https://assets.babylonjs.com/environments/environmentSpecular.env"
-//             skybox-blur="0.8"
-//         >
-//         </babylon-viewer>
-//         `
-//     );
+test("skybox-blur", async ({ page }) => {
+    await attachViewerElement(
+        page,
+        `
+        <babylon-viewer render-when-idle
+            source="https://assets.babylonjs.com/meshes/boombox.glb"
+            environment-skybox="https://assets.babylonjs.com/environments/environmentSpecular.env"
+            skybox-blur="0.8"
+        >
+        </babylon-viewer>
+        `
+    );
 
-//     await waitForModelLoaded(page);
-//     await expectScreenshotMatch(page, "viewer-skybox-blur.png");
-// });
+    await waitForModelLoaded(page);
+    await expectScreenshotMatch(page, "viewer-skybox-blur.png");
+});
 
 // ============================================================
 // Post-Processing
