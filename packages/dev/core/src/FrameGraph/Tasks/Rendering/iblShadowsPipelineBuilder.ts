@@ -9,7 +9,6 @@ import { IBLShadowsPluginMaterial } from "core/Rendering/IBLShadows/iblShadowsPl
 import { FrameGraphIblShadowsAccumulationTask } from "./iblShadowsAccumulationTask";
 import { FrameGraphIblShadowsSpatialBlurTask } from "./iblShadowsSpatialBlurTask";
 import { FrameGraphIblShadowsTracingTask } from "./iblShadowsTracingTask";
-import { FrameGraphIblShadowsVoxelDebugTask } from "./iblShadowsVoxelDebugTask";
 import { FrameGraphIblShadowsVoxelizationTask } from "./iblShadowsVoxelizationTask";
 import type { FrameGraphGeometryRendererTask } from "./geometryRendererTask";
 import type { IFrameGraphIblShadowsAccumulationOptions, IFrameGraphIblShadowsTracingOptions, IFrameGraphIblShadowsVoxelizationOptions } from "./iblShadowsTaskTypes";
@@ -24,40 +23,6 @@ interface IFrameGraphIblShadowsGBufferHandles {
     normalTexture: FrameGraphTextureHandle;
     positionTexture: FrameGraphTextureHandle;
     velocityTexture: FrameGraphTextureHandle;
-}
-
-/**
- * Optional voxel debug view configuration.
- */
-export interface IFrameGraphIblShadowsVoxelDebugInput {
-    /**
-     * Enables the voxel debug pass.
-     */
-    enabled?: boolean;
-    /**
-     * Target texture used to render the voxel debug output.
-     */
-    targetTexture: FrameGraphTextureHandle;
-    /**
-     * Horizontal offset in normalized screen space.
-     */
-    x?: number;
-    /**
-     * Vertical offset in normalized screen space.
-     */
-    y?: number;
-    /**
-     * Width scale in normalized screen space.
-     */
-    widthScale?: number;
-    /**
-     * Height scale in normalized screen space.
-     */
-    heightScale?: number;
-    /**
-     * Mip level displayed by the debug pass.
-     */
-    mipNumber?: number;
 }
 
 /**
@@ -101,10 +66,6 @@ export interface IFrameGraphIblShadowsPipelineBuildInput {
      */
     gbufferVelocityTexture?: FrameGraphTextureHandle;
     /**
-     * Optional voxel debug pass configuration.
-     */
-    voxelDebug?: IFrameGraphIblShadowsVoxelDebugInput;
-    /**
      * Options used to configure the IBL shadows pipeline tasks.
      */
     options?: IFrameGraphIblShadowsTracingOptions & IFrameGraphIblShadowsAccumulationOptions & IFrameGraphIblShadowsVoxelizationOptions;
@@ -118,10 +79,6 @@ export interface IFrameGraphIblShadowsPipelineBuildResult {
      * Voxelization task used by the pipeline.
      */
     voxelizationTask: FrameGraphIblShadowsVoxelizationTask;
-    /**
-     * Optional voxel debug task when debug input is enabled.
-     */
-    voxelDebugTask?: FrameGraphIblShadowsVoxelDebugTask;
     /**
      * Tracing task used by the pipeline.
      */
@@ -221,7 +178,6 @@ export function BuildIblShadowsFrameGraphPipeline(input: IFrameGraphIblShadowsPi
     voxelizationTask.resolutionExp = options?.resolutionExp ?? voxelizationTask.resolutionExp;
     voxelizationTask.triPlanarVoxelization = options?.triPlanarVoxelization ?? voxelizationTask.triPlanarVoxelization;
     voxelizationTask.refreshRate = options?.refreshRate ?? voxelizationTask.refreshRate;
-    voxelizationTask.debugEnabled = input.voxelDebug?.enabled ?? false;
 
     const tracingTask = new FrameGraphIblShadowsTracingTask(`${input.name} Tracing`, input.frameGraph);
     tracingTask.camera = input.camera;
@@ -282,23 +238,8 @@ export function BuildIblShadowsFrameGraphPipeline(input: IFrameGraphIblShadowsPi
         accumulationTask.isMoving = true;
     });
 
-    let voxelDebugTask: FrameGraphIblShadowsVoxelDebugTask | undefined;
-    if (input.voxelDebug?.enabled && input.voxelDebug.targetTexture !== undefined) {
-        voxelDebugTask = new FrameGraphIblShadowsVoxelDebugTask(`${input.name} Voxel Debug`, input.frameGraph);
-        voxelDebugTask.voxelTexture = voxelizationTask.outputVoxelGridTexture;
-        voxelDebugTask.voxelSlabTexture = voxelizationTask.outputVoxelSlabTexture;
-        voxelDebugTask.targetTexture = input.voxelDebug.targetTexture;
-        voxelDebugTask.setDebugDisplayParams(input.voxelDebug.x ?? 0, input.voxelDebug.y ?? 0, input.voxelDebug.widthScale ?? 1, input.voxelDebug.heightScale ?? 1);
-        voxelDebugTask.mipNumber = input.voxelDebug.mipNumber ?? 0;
-    }
-
     voxelizationTask.onVoxelizationCompleteObservable.add(() => {
         tracingTask.voxelGridTexture = voxelizationTask.outputVoxelGridTexture;
-
-        if (voxelDebugTask) {
-            voxelDebugTask.voxelTexture = voxelizationTask.outputVoxelGridTexture;
-            voxelDebugTask.voxelSlabTexture = voxelizationTask.outputVoxelSlabTexture;
-        }
 
         accumulationTask.reset = true;
     });
@@ -734,7 +675,6 @@ export function BuildIblShadowsFrameGraphPipeline(input: IFrameGraphIblShadowsPi
     // to the frame graph in the correct order.
     return {
         voxelizationTask,
-        voxelDebugTask,
         tracingTask,
         spatialBlurTask,
         accumulationTask,

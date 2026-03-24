@@ -57,7 +57,6 @@ export * from "./Tasks/Rendering/iblShadowsPipelineBuilder";
 export * from "./Tasks/Rendering/iblShadowsSpatialBlurTask";
 export * from "./Tasks/Rendering/iblShadowsTaskTypes";
 export * from "./Tasks/Rendering/iblShadowsTracingTask";
-export * from "./Tasks/Rendering/iblShadowsVoxelDebugTask";
 export * from "./Tasks/Rendering/iblShadowsVoxelizationTask";
 export * from "./Tasks/Rendering/objectRendererTask";
 export * from "./Tasks/Rendering/shadowGeneratorTask";
