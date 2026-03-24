@@ -1,4 +1,4 @@
-jest.mock(
+vi.mock(
     "monaco-editor/esm/vs/language/typescript/lib/typescriptServices",
     () => ({
         typescript: {
@@ -130,7 +130,7 @@ describe("snippetLoader", () => {
             code: "export const createScene = function () { return { ok: true }; };",
         });
 
-        const createObjectURLSpy = jest.spyOn(URL, "createObjectURL").mockImplementation(() => {
+        const createObjectURLSpy = vi.spyOn(URL, "createObjectURL").mockImplementation(() => {
             throw new Error("should not execute during parse");
         });
 

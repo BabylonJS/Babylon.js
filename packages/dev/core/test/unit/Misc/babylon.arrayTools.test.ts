@@ -3,12 +3,12 @@ import { _ObserveArray } from "core/Misc/arrayTools";
 /**
  * Describes the test suite.
  */
- describe("ArrayTools", function () {
-    jest.setTimeout(10000);
+describe("ArrayTools", function () {
+    vi.setConfig({ testTimeout: 10000 });
 
     describe("#observe array", () => {
         it("should be able to listen to push", () => {
-            const listener = jest.fn();
+            const listener = vi.fn();
 
             const array: number[] = [];
             array.push(1);
@@ -21,19 +21,21 @@ import { _ObserveArray } from "core/Misc/arrayTools";
             expect(array.length).toEqual(2);
         });
 
-        it("should have updated values in callback", (done) => {
-            const array: number[] = [];
-            array.push(1);
-            const listener = () => {
-                expect(array.length).toEqual(2);
-                done();
-            };
-            _ObserveArray(array, listener);
-            array.push(2);
+        it("should have updated values in callback", () => {
+            return new Promise<void>((resolve) => {
+                const array: number[] = [];
+                array.push(1);
+                const listener = () => {
+                    expect(array.length).toEqual(2);
+                    resolve();
+                };
+                _ObserveArray(array, listener);
+                array.push(2);
+            });
         });
 
         it("should be able to listen to shift", () => {
-            const listener = jest.fn();
+            const listener = vi.fn();
 
             const array = [1, 2, 3];
             array.shift();
@@ -49,12 +51,12 @@ import { _ObserveArray } from "core/Misc/arrayTools";
         it("should be able to hook several times", () => {
             const array = [1, 2, 3];
 
-            const listener = jest.fn();
+            const listener = vi.fn();
             _ObserveArray(array, listener);
             array.push(4);
             expect(listener).toHaveBeenCalledWith("push", 3);
 
-            const listener2 = jest.fn();
+            const listener2 = vi.fn();
             _ObserveArray(array, listener2);
             array.push(5);
             expect(listener).toHaveBeenCalledTimes(2);
@@ -67,7 +69,7 @@ import { _ObserveArray } from "core/Misc/arrayTools";
 
     describe("#unobserve array", () => {
         it("should stop listening to pop", () => {
-            const listener = jest.fn();
+            const listener = vi.fn();
 
             const array = [1, 2, 3, 4];
             array.pop();
@@ -90,10 +92,10 @@ import { _ObserveArray } from "core/Misc/arrayTools";
         it("should stop listening to in a chain", () => {
             const array: number[] = [];
 
-            const listener1 = jest.fn();
-            const listener2 = jest.fn();
-            const listener3 = jest.fn();
-            const listener4 = jest.fn();
+            const listener1 = vi.fn();
+            const listener2 = vi.fn();
+            const listener3 = vi.fn();
+            const listener4 = vi.fn();
 
             const unObserve1 = _ObserveArray(array, listener1);
             const unObserve2 = _ObserveArray(array, listener2);
@@ -157,4 +159,4 @@ import { _ObserveArray } from "core/Misc/arrayTools";
             expect(array.length).toEqual(5);
         });
     });
- });
+});

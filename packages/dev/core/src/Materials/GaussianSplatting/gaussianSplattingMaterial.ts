@@ -624,6 +624,7 @@ export class GaussianSplattingMaterial extends PushMaterial {
                 needAlphaBlending: alphaBlendedDepth,
             }
         );
+        shaderMaterial.backFaceCulling = false;
         shaderMaterial.onBindObservable.add((mesh: AbstractMesh) => {
             const gsMaterial = mesh.material as GaussianSplattingMaterial;
             const gsMesh = mesh as GaussianSplattingMesh;
@@ -648,6 +649,7 @@ export class GaussianSplattingMaterial extends PushMaterial {
                 shaderLanguage: shaderLanguage,
             }
         );
+        shaderMaterial.backFaceCulling = false;
 
         const shadowDepthWrapper = new ShadowDepthWrapper(shaderMaterial, scene, {
             standalone: true,

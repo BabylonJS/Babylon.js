@@ -82,4 +82,4 @@ Inspector v2 extensions and UI code must use shared UI components, unsized Fluen
 
 ## Tests
 
-New APIs should have Jest tests following the existing test structure and conventions, and visualization tests via Playwright when applicable. See `.github/instructions/tests.instructions.md`.
+New APIs should have vitest tests following the existing test structure and conventions, and visualization tests via Playwright when applicable. See `.github/instructions/tests.instructions.md`.

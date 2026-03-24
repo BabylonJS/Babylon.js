@@ -172,6 +172,5 @@ export function defaultValueParseFunction(key: string, serializationObject: any,
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export function needsPathConverter(className: string) {
     // I am not using the ClassName property here because it was causing a circular dependency
-    // that jest didn't like!
     return className === FlowGraphBlockNames.JsonPointerParser;
 }

@@ -2275,10 +2275,12 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 }
                 world.copyToArray(instanceStorage.instancesData, offset);
 
-                // Apply floatingOriginOffset to underlying data sent to buffer
-                instanceStorage.instancesData[offset + 12] -= floatingOriginOffset.x;
-                instanceStorage.instancesData[offset + 13] -= floatingOriginOffset.y;
-                instanceStorage.instancesData[offset + 14] -= floatingOriginOffset.z;
+                // Apply floatingOriginOffset to underlying data sent to buffer.
+                // Subtract from Float64 source to preserve precision at large coordinates.
+                const worldM = world.asArray();
+                instanceStorage.instancesData[offset + 12] = worldM[12] - floatingOriginOffset.x;
+                instanceStorage.instancesData[offset + 13] = worldM[13] - floatingOriginOffset.y;
+                instanceStorage.instancesData[offset + 14] = worldM[14] - floatingOriginOffset.z;
 
                 offset += 16;
                 instancesCount++;
@@ -2310,10 +2312,12 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                         }
                     }
 
-                    // Apply floatingOriginOffset to underlying data sent to buffer
-                    instanceStorage.instancesData[offset + 12] -= floatingOriginOffset.x;
-                    instanceStorage.instancesData[offset + 13] -= floatingOriginOffset.y;
-                    instanceStorage.instancesData[offset + 14] -= floatingOriginOffset.z;
+                    // Apply floatingOriginOffset to underlying data sent to buffer.
+                    // Subtract from Float64 source to preserve precision at large coordinates.
+                    const matrixM = matrix.asArray();
+                    instanceStorage.instancesData[offset + 12] = matrixM[12] - floatingOriginOffset.x;
+                    instanceStorage.instancesData[offset + 13] = matrixM[13] - floatingOriginOffset.y;
+                    instanceStorage.instancesData[offset + 14] = matrixM[14] - floatingOriginOffset.z;
 
                     offset += 16;
                     instancesCount++;

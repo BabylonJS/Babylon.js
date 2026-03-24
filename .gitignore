@@ -22,7 +22,6 @@ shaders/**/*.ts
 **/[Ss]haders/**/*.ts
 **/[Ss]hadersInclude/**/*.ts
 **/[Ss]hadersWGSL/**/*.ts
-jest-screenshot-report/
 junit.xml
 .env
 *.pem

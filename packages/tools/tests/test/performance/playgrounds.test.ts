@@ -1,3 +1,4 @@
+import { test, expect, Page } from "@playwright/test";
 import { evaluatePrepareScene, getGlobalConfig, checkPerformanceOfScene } from "@tools/test-tools";
 
 const framesToRender = 2000;
@@ -9,13 +10,20 @@ const playgrounds = ["#WIR77Z", "#2AH4YH", "#YEZPVT", "#6HWS9M#28", "#XCPP9Y#1",
 // IN TESTS
 // declare const BABYLON: typeof import("core/index");
 
-describe("Playground Memory Leaks", () => {
-    jest.setTimeout(40000);
+test.describe("Playground Performance", () => {
+    let page: Page;
 
-    // eslint-disable-next-line jest/expect-expect
-    test.each(playgrounds)(
-        "Performance for playground %s",
-        async (playgroundId) => {
+    test.beforeAll(async ({ browser }) => {
+        page = await browser.newPage();
+    });
+
+    test.afterAll(async () => {
+        await page?.close();
+    });
+
+    for (const playgroundId of playgrounds) {
+        test(`Performance for playground ${playgroundId}`, async () => {
+            test.setTimeout(40000);
             const globalConfig = getGlobalConfig();
             const stable = await checkPerformanceOfScene(
                 page,
@@ -43,7 +51,6 @@ describe("Playground Memory Leaks", () => {
             );
             console.log(`Performance - scene: stable: ${stable}ms, dev: ${dev}ms`);
             expect(dev / stable, `Dev: ${dev}ms, Stable: ${stable}ms`).toBeLessThanOrEqual(1 + acceptedThreshold);
-        },
-        40000
-    );
+        });
+    }
 });
