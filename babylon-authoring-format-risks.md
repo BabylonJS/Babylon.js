@@ -4,16 +4,16 @@
 
 | Risk | Milestone | Severity | Why |
 |------|-----------|----------|-----|
-| **Override tracking from Inspector edits** | M5 | 🔴 High | Hardest technical problem — no existing hook for intercepting property changes and distinguishing original values from override values. Could force changes to Inspector v2's core binding system. |
-| **Browser file I/O (no "just save")** | M2, M4 | 🔴 High | Browsers can't write files without user interaction. File System Access API is Chrome/Edge only. Affects save UX and drag-and-drop persistence. |
+| **Override tracking from Inspector edits** | M6 | 🔴 High | Hardest technical problem — no existing hook for intercepting property changes and distinguishing original values from override values. Could force changes to Inspector v2's core binding system. |
+| **Browser file I/O (no "just save")** | M3, M2 | 🔴 High | Browsers can't write files without user interaction. File System Access API is Chrome/Edge only. Affects save UX and drag-and-drop persistence. |
 | **Name collisions across linked assets** | M1 | 🟢 Low | Mitigated by container-scoped lookup — each key's overrides search within its own AssetContainer, not the whole scene. Index fallback for within-key duplicates. |
-| **Drag-and-drop gives blobs, not URIs** | M4 | 🟡 Medium | File drops don't give persistent paths. Solvable with URL input as primary method, file picker as progressive enhancement. |
-| **glTF export fidelity** | M6 | 🟡 Medium | Some Babylon features don't survive GLB export. Known limitation — mitigated by offering .babylon export as alternative. |
-| **URI resolution ambiguity** | M2 | 🟡 Medium | Relative paths resolve differently in dev vs. deployed. Standard web problem — solvable with clear documentation. |
+| **Drag-and-drop gives blobs, not URIs** | M2 | 🟡 Medium | File drops don't give persistent paths. Solvable with URL input as primary method, file picker as progressive enhancement. |
+| **glTF export fidelity** | M7 | 🟡 Medium | Some Babylon features don't survive GLB export. Known limitation — mitigated by offering .babylon export as alternative. |
+| **URI resolution ambiguity** | M3 | 🟡 Medium | Relative paths resolve differently in dev vs. deployed. Standard web problem — solvable with clear documentation. |
 | **API surface lock-in** | All | 🟡 Medium | Public APIs are permanent. Mitigated by API review before shipping M1 and possibly shipping as `@beta`. |
 | Everything else | Various | 🟢 Low | Normal engineering work — parallel loading, schema versioning, round-trip testing. Handled during implementation. |
 
-**Bottom line:** Two risks worth flagging to the team — override tracking (M5) and browser save UX (M2/M4). Everything else is either a design decision to make or standard engineering work.
+**Bottom line:** Two risks worth flagging to the team — override tracking (M6) and browser save UX (M3/M2). Everything else is either a design decision to make or standard engineering work.
 
 ---
 
@@ -44,7 +44,34 @@ Each key produces an `AssetContainer`. When you call `addAllToScene()`, objects 
 
 ---
 
-## M2 — Authoring File Save/Load
+## M2 — Inspector: Assembly Tool
+
+### Risks
+
+**Drag-and-drop in browser is unreliable**
+Browser drag-and-drop APIs have inconsistent behavior across browsers (especially for local files vs. URLs). File drops give `File` objects but no path information — you get a blob, not a URI you can persist in the authoring file.
+
+*Severity: High. Mitigation: for local files, use `URL.createObjectURL()` as a temporary URI during the session, but the user must provide a real URI (or copy the file to a known location) before saving. This is an awkward UX.*
+
+**File picker limitations**
+The File System Access API (`showOpenFilePicker`) works in Chrome/Edge but not Firefox/Safari. Without it, file selection is limited to `<input type="file">` which doesn't give you a persistent path.
+
+*Severity: High for cross-browser. Mitigation: accept URL input as the primary method, file picker as a progressive enhancement. For local dev, recommend a dev server that serves assets from a known directory.*
+
+**Undo complexity**
+Adding undo for assembly operations (add/remove/swap keys) requires tracking state changes in a reversible way. If adding a key triggers asset loading, undo means unloading. If swapping a key means the old container was disposed, undo means re-loading the old asset (slow, network-dependent).
+
+*Severity: Medium. Mitigation: for v1, undo may just mean "reload the last saved authoring file" rather than a granular undo stack.*
+
+### Unknowns
+
+- When dragging a file, how do we auto-generate a key name? Filename minus extension? Prompt the user?
+- Should the assembly tool support reordering keys (does order matter)?
+- Can you drag a `.babylon` or `.obj` file, or only `.glb`/`.gltf`?
+
+---
+
+## M3 — Authoring File Save/Load
 
 ### Risks
 
@@ -76,7 +103,28 @@ There's no "just save to the same file" in a browser.
 
 ---
 
-## M3 — Inspector: Scene Explorer
+## M4 — Override System
+
+### Risks
+
+**Value resolution edge cases**
+Converting JSON values to Babylon types relies on heuristics (e.g., 3-number array + "color" in the property name → Color3, otherwise Vector3). Ambiguous cases will produce wrong types silently.
+
+*Severity: Low. Mitigation: rigorous tests for every type, allow explicit type hints in the override schema if heuristics aren't sufficient.*
+
+**Original value snapshot memory**
+Snapshotting all overridable property values at load time (for "reset to source") could use significant memory for complex scenes with many materials and properties.
+
+*Severity: Low. Mitigation: only snapshot properties that actually have overrides registered, not all properties upfront.*
+
+### Unknowns
+
+- What properties should be overridable? Start with a whitelist (transform, material scalars, material colors, textures) or allow anything?
+- Should overrides support nested property paths (e.g., `"material.subSurface.thickness"`) or only one level deep?
+
+---
+
+## M5 — Inspector: Scene Explorer
 
 ### Risks
 
@@ -98,34 +146,7 @@ The scene explorer tree needs to update when keys are added/removed/reloaded. Th
 
 ---
 
-## M4 — Inspector: Assembly Tool
-
-### Risks
-
-**Drag-and-drop in browser is unreliable**
-Browser drag-and-drop APIs have inconsistent behavior across browsers (especially for local files vs. URLs). File drops give `File` objects but no path information — you get a blob, not a URI you can persist in the authoring file.
-
-*Severity: High. Mitigation: for local files, use `URL.createObjectURL()` as a temporary URI during the session, but the user must provide a real URI (or copy the file to a known location) before saving. This is an awkward UX.*
-
-**File picker limitations**
-The File System Access API (`showOpenFilePicker`) works in Chrome/Edge but not Firefox/Safari. Without it, file selection is limited to `<input type="file">` which doesn't give you a persistent path.
-
-*Severity: High for cross-browser. Mitigation: accept URL input as the primary method, file picker as a progressive enhancement. For local dev, recommend a dev server that serves assets from a known directory.*
-
-**Undo complexity**
-Adding undo for assembly operations (add/remove/swap keys) requires tracking state changes in a reversible way. If adding a key triggers asset loading, undo means unloading. If swapping a key means the old container was disposed, undo means re-loading the old asset (slow, network-dependent).
-
-*Severity: Medium. Mitigation: for v1, undo may just mean "reload the last saved authoring file" rather than a granular undo stack.*
-
-### Unknowns
-
-- When dragging a file, how do we auto-generate a key name? Filename minus extension? Prompt the user?
-- Should the assembly tool support reordering keys (does order matter)?
-- Can you drag a `.babylon` or `.obj` file, or only `.glb`/`.gltf`?
-
----
-
-## M5 — Inspector: Override Editing
+## M6 — Inspector: Override Editing
 
 ### Risks
 
@@ -160,7 +181,7 @@ An override stores a value as JSON (e.g., `[1, 0, 0]`). When loaded, it's conver
 
 ---
 
-## M6 — Export / Bake
+## M7 — Export / Bake
 
 ### Risks
 
@@ -201,11 +222,11 @@ Once SmartLoader ships as a public API, it must maintain backward compatibility 
 *Mitigation: get API review from Gary/Sebastien before shipping M1. Consider shipping as `@beta` initially.*
 
 ### Inspector v2 is relatively new
-Inspector v2's service-based architecture is still evolving. Building SmartLoader extensions (M3-M5) against it means our code could break if Inspector v2 refactors its service interfaces.
+Inspector v2's service-based architecture is still evolving. Building SmartLoader extensions (M2, M5-M6) against it means our code could break if Inspector v2 refactors its service interfaces.
 
 *Mitigation: stay close to established patterns (statsService, materialProperties). Don't depend on internal APIs.*
 
 ### Testing complexity
 SmartLoader integrates with: SceneLoader, AssetContainer, Inspector v2, GLTF2Export, SceneSerializer, and the browser File API. End-to-end testing across all of these is hard to automate.
 
-*Mitigation: heavy unit testing with mocks for M1-M2. Integration testing for M3-M5 requires Inspector running in a browser (Playwright). Export testing (M6) needs asset comparison tools.*
+*Mitigation: heavy unit testing with mocks for M1, M3-M4. Integration testing for M2, M5-M6 requires Inspector running in a browser (Playwright). Export testing (M7) needs asset comparison tools.*

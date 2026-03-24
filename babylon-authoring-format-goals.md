@@ -180,31 +180,37 @@ This mirrors the `.gltf` (external refs) vs `.glb` (self-contained) distinction 
 
 **What it enables:** Decouples code from concrete assets. Changing what `"sodaCan"` points to doesn't require code changes.
 
-### Milestone 2 — Authoring File Save/Load
-
-**Goal:** Persist the link table, provenance, and overrides to a file. Reload a scene from the authoring file.
-
-**What it enables:** Session persistence — close and reopen a scene without losing assembly decisions.
-
-### Milestone 3 — Inspector: Scene Explorer
-
-**Goal:** Inspector shows linkable keys and resolved assets. Scene objects are attributed to their source keys.
-
-**What it enables:** Visual iteration — see what's linked, understand where each object came from.
-
-### Milestone 4 — Inspector: Assembly Tool
+### Milestone 2 — Inspector: Assembly Tool
 
 **Goal:** A dedicated Inspector pane for composing scenes from linked assets — drag-and-drop files, browse and select assets, add/remove/swap keys.
 
 **What it enables:** Scene composition without code — drag a GLB into the scene, swap what a key points to via a file picker, visually arrange and manage linked assets.
 
-### Milestone 5 — Inspector: Override Editing
+### Milestone 3 — Authoring File Save/Load
+
+**Goal:** Persist the link table, provenance, and overrides to a file. Reload a scene from the authoring file.
+
+**What it enables:** Session persistence — close and reopen a scene without losing assembly decisions.
+
+### Milestone 4 — Override System
+
+**Goal:** Apply property diffs to loaded objects without modifying source assets.
+
+**What it enables:** Non-destructive changes — "set this material to red" is stored as a diff, not baked into the GLB.
+
+### Milestone 5 — Inspector: Scene Explorer
+
+**Goal:** Inspector shows linkable keys and resolved assets. Scene objects are attributed to their source keys.
+
+**What it enables:** Visual iteration — see what's linked, understand where each object came from.
+
+### Milestone 6 — Inspector: Override Editing
 
 **Goal:** Track Inspector edits on keyed objects and persist them as overrides in the authoring file.
 
 **What it enables:** The "change a color in Inspector and save it" workflow — non-destructive edits without touching source assets.
 
-### Milestone 6 — Export / Bake to Delivery Format
+### Milestone 7 — Export / Bake to Delivery Format
 
 **Goal:** Bake the authoring file into a lean `.glb` or `.babylon` for deployment, or ship the authoring file directly alongside its linked assets.
 

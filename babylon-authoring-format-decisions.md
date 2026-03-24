@@ -30,7 +30,7 @@ A running list of decisions made, alternatives considered, and questions that ne
 
 ---
 
-### 3. Milestone ordering: Override editing (M5) before Export/Bake (M6)
+### 3. Milestone ordering: Override editing (M6) before Export/Bake (M7)
 
 **Decision:** Build override editing first, then export.
 
@@ -54,9 +54,9 @@ A running list of decisions made, alternatives considered, and questions that ne
 
 ---
 
-### 5. Assembly tool as a dedicated Inspector pane (M4)
+### 5. Assembly tool as a dedicated Inspector pane (M2)
 
-**Decision:** Build a separate Assembly pane in Inspector with drag-and-drop, asset browser, and key management — distinct from the scene explorer (M3) and override editing (M5).
+**Decision:** Build a separate Assembly pane in Inspector with drag-and-drop, asset browser, and key management — distinct from the scene explorer (M5) and override editing (M6).
 
 **Why:** Assembly (managing the link table — what keys exist, what files they point to) is conceptually different from override editing (tweaking properties on loaded objects). The scene explorer shows what's there; the assembly tool lets you change what's there; the override editor lets you refine what's loaded.
 
@@ -84,7 +84,7 @@ A running list of decisions made, alternatives considered, and questions that ne
 
 **Why:** Backward compatibility. Existing `.babylon` files, glTF loading, and Inspector behavior are completely unaffected. SmartLoader is opt-in — scenes that don't use it work exactly as before.
 
-**Risk area:** Override tracking from Inspector edits (M5) may need hooks in Inspector's property binding system. If so, these must be opt-in and only activate when a SmartLoader is present on the scene.
+**Risk area:** Override tracking from Inspector edits (M6) may need hooks in Inspector's property binding system. If so, these must be opt-in and only activate when a SmartLoader is present on the scene.
 
 **Who should weigh in:** Gary (backward compat), Ryan (Inspector architecture)
 
@@ -164,7 +164,7 @@ A running list of decisions made, alternatives considered, and questions that ne
 
 ---
 
-### 14. Undo support scope in Assembly tool (M4)
+### 14. Undo support scope in Assembly tool (M2)
 
 **Question:** How deep should undo go?
 

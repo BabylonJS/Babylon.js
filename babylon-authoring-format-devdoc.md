@@ -309,14 +309,35 @@ This is a known issue to solve in M1.
 **Observable pattern** (following Babylon conventions):
 ```typescript
 public readonly onAssetLoadedObservable: Observable<{ key: string; container: AssetContainer }>;
-public readonly onOverrideAppliedObservable: Observable<{ override: IOverride; target: unknown }>;
 public readonly onLinkChangedObservable: Observable<{ key: string; entry: ILinkEntry }>;
+```
 
 **Barrel export:** Add `export * from "./Loading/SmartLoader/index"` to `packages/dev/core/src/index.ts`.
 
 ---
 
-### M2 — Authoring File Save/Load
+### M2 — Inspector: Assembly Tool
+
+**Pane type:** Separate side pane in Inspector — distinct from the scene explorer.
+
+**Key UI components:**
+
+1. **Link list** — table showing all keys, their resolved URIs, and object counts.
+2. **Add key** — button that opens a dialog: enter key name + pick a file (URL input or file picker).
+3. **Swap file** — click a key's URI → opens file picker or URL input → updates the link and triggers a reload.
+4. **Remove key** — context menu action → unloads the key's objects, removes from link table.
+5. **Drag-and-drop** — drop a `.glb`/`.gltf` onto the pane or the viewport → auto-generates a key name from the filename → registers link → loads asset.
+
+**How drag-and-drop works technically:**
+- Attach `dragover` and `drop` event listeners to the pane element and optionally the canvas
+- On drop, read `event.dataTransfer.files` or `event.dataTransfer.getData("text/uri-list")`
+- For files: create an object URL via `URL.createObjectURL(file)`, register as link, load
+- For URIs: register the URI directly as a link, load
+- Auto-generate key name from filename (e.g., `soda_can.glb` → `"sodaCan"`) with collision avoidance
+
+---
+
+### M3 — Authoring File Save/Load
 
 **Serialization** (`saveAuthoringFile()`):
 - Iterate the link table → write to plain object
@@ -346,7 +367,30 @@ public readonly onLinkChangedObservable: Observable<{ key: string; entry: ILinkE
 
 ---
 
-### M3 — Inspector: Scene Explorer
+### M4 — Override System
+
+**Override data model:** `IOverride` — key, target (dot-path `"collection.objectName"`), property, value.
+
+**Value resolution** — converts JSON shorthand to Babylon types:
+- `"#ff0000"` → `Color3.FromHexString()`
+- `[1, 0, 0]` on a color property → `Color3`
+- `[1, 2, 3]` on a non-color property → `Vector3`
+- `[1, 0, 0, 1]` → `Color4`
+- `{ url: "path.png" }` → `new Texture()`
+- Scalars, booleans, strings → pass-through
+
+**Application:** After loading a key's AssetContainer, iterate registered overrides for that key. Resolve the target within the container (not the scene). Apply the value.
+
+**Original value snapshots:** Before applying overrides, snapshot the current value of each overridden property. Store in memory (not in authoring file). Used by M6's "reset to source" feature.
+
+**Observable:**
+```typescript
+public readonly onOverrideAppliedObservable: Observable<{ override: IOverride; target: unknown }>;
+```
+
+---
+
+### M5 — Inspector: Scene Explorer
 
 **Where it lives:** `packages/dev/inspector-v2/src/extensions/smartLoader/`
 
@@ -381,28 +425,7 @@ Inspector v2 uses a service-based architecture. Adding a new section requires:
 
 ---
 
-### M4 — Inspector: Assembly Tool
-
-**Pane type:** Separate side pane in Inspector — distinct from the scene explorer.
-
-**Key UI components:**
-
-1. **Link list** — table showing all keys, their resolved URIs, and object counts.
-2. **Add key** — button that opens a dialog: enter key name + pick a file (URL input or file picker).
-3. **Swap file** — click a key's URI → opens file picker or URL input → updates the link and triggers a reload.
-4. **Remove key** — context menu action → unloads the key's objects, removes from link table.
-5. **Drag-and-drop** — drop a `.glb`/`.gltf` onto the pane or the viewport → auto-generates a key name from the filename → registers link → loads asset.
-
-**How drag-and-drop works technically:**
-- Attach `dragover` and `drop` event listeners to the pane element and optionally the canvas
-- On drop, read `event.dataTransfer.files` or `event.dataTransfer.getData("text/uri-list")`
-- For files: create an object URL via `URL.createObjectURL(file)`, register as link, load
-- For URIs: register the URI directly as a link, load
-- Auto-generate key name from filename (e.g., `soda_can.glb` → `"sodaCan"`) with collision avoidance
-
----
-
-### M5 — Inspector: Override Editing
+### M6 — Inspector: Override Editing
 
 **The core challenge:** When a user edits a property in Inspector (e.g., changes a material's color), Inspector directly mutates the object. We need to intercept this mutation and also record it as an override in the SmartLoader.
 
@@ -416,7 +439,7 @@ Inspector v2 uses a service-based architecture. Adding a new section requires:
 
 1. When a SmartLoader-loaded object is selected in Inspector, the SmartLoader service activates property watching on that object.
 2. Inspector v2 already fires `PropertyChangeInfo` notifications (with `oldValue` and `newValue`) via `notifyPropertyChanged()`. This is the hook we need.
-3. When a watched property changes, compare the new value to the **original value** (snapshotted at load time, before any overrides were applied). If different, create or update an override entry in the SmartLoader.
+3. When a watched property changes, compare the new value to the **original value** (snapshotted in M4, before any overrides were applied). If different, create or update an override entry via M4's override system.
 4. The override is immediately reflected in `getOverrides()` and will be persisted on the next `saveAuthoringFile()`.
 
 **Original value snapshots:**
@@ -430,7 +453,7 @@ Inspector v2 uses a service-based architecture. Adding a new section requires:
 
 ---
 
-### M6 — Export / Bake
+### M7 — Export / Bake
 
 **Requirements:**
 1. Load all linked assets into a single scene
@@ -472,4 +495,4 @@ Both use the same bake pipeline — only the final serialization step differs.
 
 ---
 
-*Note: Automatic file watching (smart reload) was considered but deferred. Manual reload is available via the assembly tool context menu (M4) and the `reloadAsync(key)` API (M1). Teams can wire up their own file watchers that call `reloadAsync` if they want automation.*
+*Note: Automatic file watching (smart reload) was considered but deferred. Manual reload is available via the assembly tool context menu (M2) and the `reloadAsync(key)` API (M1). Teams can wire up their own file watchers that call `reloadAsync` if they want automation.*

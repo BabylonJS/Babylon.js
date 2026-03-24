@@ -19,19 +19,18 @@
 1. **SmartLoader class** — core class with link table management (`addLink`, `removeLink`, `getLink`, `getLinks`). Maps logical keys to `ILinkEntry` (URI, loader type hint, file extension).
 2. **`loadAsync(key)`** — resolve key via link table, load asset using `LoadAssetContainerAsync` from the existing SceneLoader plugin system (glTF, OBJ, Babylon, Draco, etc.). Returns an `AssetContainer` scoped to this key. Must handle shared resource disposal safely across containers (see devdoc for details).
 3. **Provenance tracking** — record which scene objects (meshes, materials, textures, transforms, skeletons, animation groups) were created from each key. Enables Inspector attribution and selective reload.
-4. **Override system** — post-load property modifications using dot-path targeting (e.g., `"materials.canPaint"` + `"albedoColor"`). Value resolution for common types: scalar, hex→Color3, array→Vector3/Color3/Color4, `{url}→Texture`, Quaternion.
-5. **`addAllToScene()` convenience** — one-call `loadAndAddToSceneAsync(key)` that loads and adds to scene.
-6. **Multi-key loading** — `loadAllAsync()` to load all registered keys in parallel.
-7. **Reload support** — `reloadAsync(key)` that disposes the old container and loads fresh, preserving overrides.
-8. **Individual unload** — `unloadAsync(key)` to dispose a single key's container and clean up provenance.
-9. **Observables** — `onAssetLoadedObservable`, `onOverrideAppliedObservable`, `onLinkChangedObservable` (needed for Inspector integration later).
-10. **Error handling** — try-catch in `loadAsync`, validation of override targets, graceful fallback for partial failures, meaningful error messages.
-11. **Disposal** — `dispose()` to clear all containers, provenance, overrides, links.
-12. **Types** — `ILinkEntry`, `IProvenance`, `IOverride`, `ISmartLoaderConfig` interfaces.
-13. **Barrel exports** — export SmartLoader from `packages/dev/core/src/index.ts`.
-14. **Doc comments** — all public APIs with complete JSDoc per Babylon conventions.
-15. **Playground example** — demonstrating keyed loading with link swapping.
-16. **Unit tests** — full coverage: link table, loading, provenance, overrides, value resolution, error handling, disposal.
+4. **`addAllToScene()` convenience** — one-call `loadAndAddToSceneAsync(key)` that loads and adds to scene.
+5. **Multi-key loading** — `loadAllAsync()` to load all registered keys in parallel.
+6. **Reload support** — `reloadAsync(key)` that disposes the old container and loads fresh.
+7. **Individual unload** — `unloadAsync(key)` to dispose a single key's container and clean up provenance.
+8. **Observables** — `onAssetLoadedObservable`, `onLinkChangedObservable` (needed for Inspector integration later).
+9. **Error handling** — try-catch in `loadAsync`, graceful fallback for partial failures, meaningful error messages.
+10. **Disposal** — `dispose()` to clear all containers, provenance, links.
+11. **Types** — `ILinkEntry`, `IProvenance`, `ISmartLoaderConfig` interfaces.
+12. **Barrel exports** — export SmartLoader from `packages/dev/core/src/index.ts`.
+13. **Doc comments** — all public APIs with complete JSDoc per Babylon conventions.
+14. **Playground example** — demonstrating keyed loading with link swapping.
+15. **Unit tests** — full coverage: link table, loading, provenance, error handling, disposal.
 
 ### Estimate
 
@@ -40,18 +39,65 @@
 | SmartLoader class + link table + types | 1 day | 2 hours |
 | `loadAsync` + SceneLoader integration | 1 day | 3 hours |
 | Provenance tracking | 0.5 days | 1 hour |
-| Override system + value resolution | 1.5 days | 3 hours |
 | Convenience methods (addToScene, loadAll, reload, unload) | 1.5 days | 3 hours |
-| Observables | 1 day | 1 hour |
+| Observables | 0.5 days | 30 min |
 | Error handling + disposal (incl. shared resource safety) | 1 day | 4 hours |
 | Doc comments + barrel exports + build | 0.5 days | 30 min |
 | Playground example | 0.5 days | 1 hour |
-| Tests | 2 days | 2 hours |
-| **Total** | **~10.5 days** | **~3 days** |
+| Tests | 1 day | 1 hour |
+| **Total** | **~7.5 days** | **~2 days** |
 
 ---
 
-## Milestone 2 — Authoring File Save/Load
+## Milestone 2 — Inspector Integration: Assembly Tool
+
+**Goal:** A dedicated Inspector pane for composing scenes from linked assets — drag-and-drop files, browse and select assets, add/remove/swap keys, and visually arrange the scene.
+
+**User-facing capability:** Open the Assembly pane in Inspector. Drag a `.glb` file onto it — a new key is created and the asset loads into the scene. Browse a folder of assets and click to add them. Select an existing key and swap its file via a file picker or URL input. Remove a key and its objects disappear from the scene.
+
+This is the "assembly tool" Patrick described:
+> "Ideally, we would have some sort of tool where I can take mesh, textures, maybe even node materials, and pull it into one scene and then assemble from there."
+
+### How this differs from M5 (scene explorer) and M6 (override editing)
+
+| Concern | Milestone | What you're doing |
+|---------|-----------|-------------------|
+| **See** linked assets and provenance | M5 — Scene Explorer | Read-only visibility into what's loaded and where it came from |
+| **Compose** the scene from assets | **M2 — Assembly Tool** | Add/remove/swap linked assets, create new keys, drag-and-drop |
+| **Tweak** properties on loaded objects | M6 — Override Editing | Edit material colors, roughness, position — saved as diffs |
+
+### Work items
+
+1. **Assembly pane** — new side pane in Inspector (`shellService.addSidePane()`) with dedicated UI for managing the link table.
+2. **Drag-and-drop support** — drop `.glb`, `.gltf`, texture files onto the pane or the viewport. Create a new key automatically (or prompt for a key name), register the link, and load the asset.
+3. **Asset browser** — file/URL picker for selecting assets to add or swap. If running in a local dev environment, optionally browse a directory of assets.
+4. **Key management UI** — list of all keys with: current file, object count, actions (swap file, reload, remove). Inline editing of key names.
+5. **Swap file for existing key** — change what a key points to via file picker or URL input. Triggers unload → reload with overrides preserved.
+6. **Add/remove keys** — add a new empty key and assign a file, or remove a key and dispose its loaded objects.
+7. **Scene graph integration** — when a new key is added, its objects appear in the scene and in the M5 scene explorer section. When removed, they disappear cleanly.
+8. **Undo support** — at minimum, undo the last add/remove/swap operation.
+
+### Dependencies
+
+- Milestone 1 (runtime API)
+
+### Estimate
+
+| Task | Without AI | With AI |
+|------|-----------|---------|
+| Assembly pane (service + shell registration) | 1 day | 2 hours |
+| Drag-and-drop support | 2 days | 4 hours |
+| Asset browser / file picker | 2 days | 4 hours |
+| Key management UI (list, inline edit, actions) | 2 days | 3 hours |
+| Swap / add / remove logic | 1.5 days | 2 hours |
+| Scene graph integration | 1 day | 2 hours |
+| Undo support | 1 day | 3 hours |
+| Testing + polish | 1.5 days | 3 hours |
+| **Total** | **~12 days** | **~3 days** |
+
+---
+
+## Milestone 3 — Authoring File Save/Load
 
 **Goal:** Persist the link table, provenance, and overrides to a JSON file. Reload a scene from the authoring file and get back exactly what you had.
 
@@ -60,7 +106,7 @@
 ### Work items
 
 1. **Define file extension and MIME type** — `.babylon-authoring`? `.bscene`? Needs a decision.
-2. **Schema versioning** — add a `version` field to `IAuthoringFile` so we can evolve the format without breaking old files.
+2. **Schema versioning** — add a `version` field to `IAuthoringFile` so we can evolve the format without breaking old files. The schema accommodates overrides (as an empty array) even though the Override System is a separate milestone.
 3. **Validate on load** — schema validation when loading an authoring file (required fields, type checks, unknown key warnings).
 4. **Relative vs. absolute URI resolution** — ensure links resolve correctly relative to the authoring file's location, not the HTML page.
 5. **Round-trip fidelity tests** — save → load → save and verify the files match.
@@ -86,7 +132,45 @@
 
 ---
 
-## Milestone 3 — Inspector Integration: Scene Explorer
+## Milestone 4 — Override System
+
+**Goal:** Apply property diffs to loaded objects after loading. An override says "on the material named canPaint from the sodaCan key, set albedoColor to red." The source asset is never modified — overrides are layered on top at load time.
+
+**User-facing capability:** A developer registers an override, and the next time the key is loaded (or immediately if already loaded), the property is changed. Reloading the asset reapplies overrides automatically.
+
+### Work items
+
+1. **Override data model** — `IOverride` interface: key, target (dot-path), property, value.
+2. **Value resolution** — convert JSON shorthand to Babylon types: hex→Color3, arrays→Vector3/Color3/Color4, `{url}`→Texture, scalars, Quaternion.
+3. **Override application** — after loading, apply overrides scoped to the key's AssetContainer. Search within the container, not the scene.
+4. **Add/remove/query overrides** — `addOverride()`, `removeOverride()`, `getOverrides(key?)`.
+5. **Original value snapshots** — snapshot overridable property values at load time (before overrides) for later "reset to source" in M6.
+6. **Override on reload** — when `reloadAsync(key)` runs, reapply overrides to the new container.
+7. **Observable** — `onOverrideAppliedObservable`.
+8. **Validation** — warn when override target not found, validate property names.
+9. **Tests** — all value types, edge cases (missing target, unknown property, duplicate overrides).
+
+### Dependencies
+
+- Milestone 1 (runtime API)
+
+### Estimate
+
+| Task | Without AI | With AI |
+|------|-----------|---------|
+| Override data model + types | 0.5 days | 30 min |
+| Value resolution (all types) | 1 day | 2 hours |
+| Override application (container-scoped) | 0.5 days | 1 hour |
+| Add/remove/query API | 0.5 days | 30 min |
+| Original value snapshots | 0.5 days | 1 hour |
+| Override on reload integration | 0.5 days | 1 hour |
+| Validation + observable | 0.5 days | 30 min |
+| Tests | 0.5 days | 30 min |
+| **Total** | **~4.5 days** | **~1 day** |
+
+---
+
+## Milestone 5 — Inspector Integration: Scene Explorer
 
 **Goal:** Inspector v2 shows SmartLoader keys in the scene explorer. Users can see which objects were loaded from which key, and interact with keys as first-class entities.
 
@@ -127,56 +211,7 @@ Inspector v2 uses a **service-based architecture**:
 
 ---
 
-## Milestone 4 — Inspector Integration: Assembly Tool
-
-**Goal:** A dedicated Inspector pane for composing scenes from linked assets — drag-and-drop files, browse and select assets, add/remove/swap keys, and visually arrange the scene.
-
-**User-facing capability:** Open the Assembly pane in Inspector. Drag a `.glb` file onto it — a new key is created and the asset loads into the scene. Browse a folder of assets and click to add them. Select an existing key and swap its file via a file picker or URL input. Remove a key and its objects disappear from the scene.
-
-This is the "assembly tool" Patrick described:
-> "Ideally, we would have some sort of tool where I can take mesh, textures, maybe even node materials, and pull it into one scene and then assemble from there."
-
-### How this differs from M3 (scene explorer) and M5 (override editing)
-
-| Concern | Milestone | What you're doing |
-|---------|-----------|-------------------|
-| **See** linked assets and provenance | M3 — Scene Explorer | Read-only visibility into what's loaded and where it came from |
-| **Compose** the scene from assets | **M4 — Assembly Tool** | Add/remove/swap linked assets, create new keys, drag-and-drop |
-| **Tweak** properties on loaded objects | M5 — Override Editing | Edit material colors, roughness, position — saved as diffs |
-
-### Work items
-
-1. **Assembly pane** — new side pane in Inspector (`shellService.addSidePane()`) with dedicated UI for managing the link table.
-2. **Drag-and-drop support** — drop `.glb`, `.gltf`, texture files onto the pane or the viewport. Create a new key automatically (or prompt for a key name), register the link, and load the asset.
-3. **Asset browser** — file/URL picker for selecting assets to add or swap. If running in a local dev environment, optionally browse a directory of assets.
-4. **Key management UI** — list of all keys with: current file, object count, actions (swap file, reload, remove). Inline editing of key names.
-5. **Swap file for existing key** — change what a key points to via file picker or URL input. Triggers unload → reload with overrides preserved.
-6. **Add/remove keys** — add a new empty key and assign a file, or remove a key and dispose its loaded objects.
-7. **Scene graph integration** — when a new key is added, its objects appear in the scene and in the M3 scene explorer section. When removed, they disappear cleanly.
-8. **Undo support** — at minimum, undo the last add/remove/swap operation.
-
-### Dependencies
-
-- Milestone 1 (runtime API)
-- Milestone 3 (scene explorer, so new keys appear in the tree)
-
-### Estimate
-
-| Task | Without AI | With AI |
-|------|-----------|---------|
-| Assembly pane (service + shell registration) | 1 day | 2 hours |
-| Drag-and-drop support | 2 days | 4 hours |
-| Asset browser / file picker | 2 days | 4 hours |
-| Key management UI (list, inline edit, actions) | 2 days | 3 hours |
-| Swap / add / remove logic | 1.5 days | 2 hours |
-| Scene graph integration | 1 day | 2 hours |
-| Undo support | 1 day | 3 hours |
-| Testing + polish | 1.5 days | 3 hours |
-| **Total** | **~12 days** | **~3 days** |
-
----
-
-## Milestone 5 — Inspector Integration: Properties & Override Editing
+## Milestone 6 — Inspector Integration: Properties & Override Editing
 
 **Goal:** When a SmartLoader-loaded object is selected, the Properties pane shows its linked asset info and lets you edit overrides visually. Changes are tracked as overrides, not baked into the source.
 
@@ -196,8 +231,9 @@ This is the scenario David described: "run inspector, `getObjByKey(foo)`, if you
 
 ### Dependencies
 
-- Milestone 3 (Inspector scene explorer integration)
-- Milestone 2 (authoring file save, so overrides can be persisted)
+- Milestone 4 (override system)
+- Milestone 3 (authoring file save, so overrides can be persisted)
+- Milestone 5 (Inspector scene explorer, which identifies SmartLoader objects)
 
 ### Estimate
 
@@ -214,7 +250,7 @@ This is the scenario David described: "run inspector, `getObjByKey(foo)`, if you
 
 ---
 
-## Milestone 6 — Export / Bake to Delivery Format
+## Milestone 7 — Export / Bake to Delivery Format
 
 **Goal:** Take an authoring file and produce a self-contained delivery file (GLB or .babylon) with all links resolved and overrides baked in.
 
@@ -250,7 +286,8 @@ Both should be supported. GLB for portability, .babylon for maximum Babylon.js f
 ### Dependencies
 
 - Milestone 1 (runtime API)
-- Milestone 5 (overrides, so there's something meaningful to bake)
+- Milestone 4 (override system)
+- Milestone 6 (overrides via Inspector, so there's something meaningful to bake)
 
 ### Estimate
 
@@ -272,25 +309,26 @@ Both should be supported. GLB for portability, .babylon for maximum Babylon.js f
 
 | Milestone | Scope | Without AI | With AI | Cumulative (With AI) |
 |-----------|-------|-----------|---------|---------------------|
-| **M1** — Keyed Loading API | Runtime API, playground example | ~10.5 days | ~3 days | 3 days |
-| **M2** — Authoring File Save/Load | Persist + reload scenes | ~8 days | ~2 days | 5 days |
-| **M3** — Inspector: Scene Explorer | See linked assets in Inspector | ~7 days | ~2 days | 7 days |
-| **M4** — Inspector: Assembly Tool | Drag-and-drop, add/remove/swap keys | ~12 days | ~3 days | 10 days |
-| **M5** — Inspector: Override Editing | Edit overrides visually, David's scenario | ~9.5 days | ~3 days | 13 days |
-| **M6** — Export / Bake | Ship as GLB or .babylon | ~10 days | ~2.5 days | 15.5 days |
+| **M1** — Keyed Loading | Runtime API, playground example | ~7.5 days | ~2 days | 2 days |
+| **M2** — Inspector: Assembly Tool | Drag-and-drop, add/remove/swap keys | ~12 days | ~3 days | 5 days |
+| **M3** — Authoring File Save/Load | Persist + reload scenes | ~8 days | ~2 days | 7 days |
+| **M4** — Override System | Property diffs, value resolution | ~4.5 days | ~1 day | 8 days |
+| **M5** — Inspector: Scene Explorer | See linked assets in Inspector | ~7 days | ~2 days | 10 days |
+| **M6** — Inspector: Override Editing | Edit overrides visually, David's scenario | ~9.5 days | ~3 days | 13 days |
+| **M7** — Export / Bake | Ship as GLB or .babylon | ~10 days | ~2.5 days | 15.5 days |
 
 **Without AI: ~11.5 weeks.** With AI: **~15.5 working days (~3 weeks) at 85% allocation.**
 
-The "With AI" column reflects that AI generates boilerplate, tests, types, and UI components in minutes. The remaining time is design decisions, integration debugging, build/verify cycles, and the genuinely hard problems (M5 override tracking, shared resource disposal).
+The "With AI" column reflects that AI generates boilerplate, tests, types, and UI components in minutes. The remaining time is design decisions, integration debugging, build/verify cycles, and the genuinely hard problems (M6 override tracking, shared resource disposal).
 
-*Note: Manual reload is available via the assembly tool context menu (M4) and the `reloadAsync(key)` API (M1). Automatic file watching (smart reload) was considered but deferred — teams can wire up their own file watchers that call `reloadAsync` if they want automation.*
+*Note: Manual reload is available via the assembly tool context menu (M2) and the `reloadAsync(key)` API (M1). Automatic file watching (smart reload) was considered but deferred — teams can wire up their own file watchers that call `reloadAsync` if they want automation.*
 
 ### Parallelization opportunities
 
-- M3 (Inspector scene explorer) can start as soon as M1 is done, in parallel with M2
-- M6 (export) depends on M1 but not strictly on M3–M5 — could be started earlier if needed
+- M2 (Inspector assembly tool), M3 (save/load), M4 (override system), and M5 (Inspector scene explorer) can all start as soon as M1 is done, in parallel
+- M7 (export) depends on M1+M4 but not strictly on M2/M3/M5 — could be started earlier if needed
 
-With parallelization, the critical path could compress to **~2.5 weeks**.
+With parallelization, the critical path could compress to **~2 weeks**.
 
 ### Backward compatibility considerations
 
@@ -298,14 +336,14 @@ SmartLoader is entirely **new API surface** — it doesn't modify existing class
 - **No breaking changes** to existing loading, serialization, or Inspector behavior
 - Existing `.babylon` files and glTF loading are unaffected
 - SmartLoader is opt-in — scenes that don't use it work exactly as before
-- The SceneLoader plugin registration (M2) must be additive — a new plugin, not a modification of existing ones
-- Inspector panes (M3/M4) are extensions, not modifications of existing panes
-- Export (M6) uses existing `GLTF2Export` and `SceneSerializer` as-is — no changes needed to those APIs
+- The SceneLoader plugin registration (M3) must be additive — a new plugin, not a modification of existing ones
+- Inspector panes (M2/M5) are extensions, not modifications of existing panes
+- Export (M7) uses existing `GLTF2Export` and `SceneSerializer` as-is — no changes needed to those APIs
 
-The only risk area is **M5 (override tracking from Inspector edits)** — if intercepting property changes requires modifying Inspector's core property binding system, that could touch existing behavior. Design this as an opt-in hook that only activates when a SmartLoader is present on the scene.
+The only risk area is **M6 (override tracking from Inspector edits)** — if intercepting property changes requires modifying Inspector's core property binding system, that could touch existing behavior. Design this as an opt-in hook that only activates when a SmartLoader is present on the scene.
 
 ### Risk factors
 
 - **Inspector integration complexity** — the service-based architecture is well-documented but has a learning curve. First pane will be slower; subsequent work will be faster.
-- **Override tracking from Inspector edits** (M5) — intercepting property changes in Inspector and routing them through SmartLoader is the most architecturally complex piece. May require changes to Inspector's property binding system.
-- **GLB re-export fidelity** (M6) — re-exporting loaded glTF content through `GLTF2Export` may have edge cases with extensions, custom materials, or complex hierarchies.
+- **Override tracking from Inspector edits** (M6) — intercepting property changes in Inspector and routing them through SmartLoader is the most architecturally complex piece. May require changes to Inspector's property binding system.
+- **GLB re-export fidelity** (M7) — re-exporting loaded glTF content through `GLTF2Export` may have edge cases with extensions, custom materials, or complex hierarchies.
