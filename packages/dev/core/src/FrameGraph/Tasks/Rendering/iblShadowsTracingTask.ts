@@ -230,7 +230,7 @@ export class FrameGraphIblShadowsTracingTask extends FrameGraphTask {
     }
 
     protected _updateDefines(): void {
-        const defines: string[] = [];
+        const defines: string[] = ["#define WORLD_NORMAL_UNSIGNED"];
 
         if (this._frameGraph.scene.useRightHandedSystem) {
             defines.push("#define RIGHT_HANDED");
