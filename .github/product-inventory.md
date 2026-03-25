@@ -104,6 +104,7 @@ packages/
 │   ├── smartFilters/
 │   ├── smartFilterBlocks/
 │   ├── lottiePlayer/
+│   ├── inspector/
 │   ├── inspector-v2/
 │   └── sharedUiComponents/
 └── tools/                # Implementation packages for tools and editors
