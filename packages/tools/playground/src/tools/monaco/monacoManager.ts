@@ -165,6 +165,7 @@ export class MonacoManager {
 
             globalState.onRunRequiredObservable.notifyObservers();
             this._hydrating = false;
+            this._files.setDirty(false);
 
             const lastLocalJson = ReadLastLocal(this.globalState);
             if (lastLocalJson) {
@@ -762,7 +763,14 @@ export { Playground };`;
         this.globalState.importsMap = {};
         this.globalState.entryFilePath = undefined as any;
         this.globalState.activeFilePath = undefined as any;
-        this.globalState.currentSnippetToken = "";
+
+        // Only clear the snippet token when not loading a snippet.
+        // During loading, a language switch fires onLanguageChangedObservable which
+        // calls this method; clearing the token here would cause the next save to
+        // create a new snippet instead of incrementing the revision.
+        if (!this.globalState.loadingCodeInProgress) {
+            this.globalState.currentSnippetToken = "";
+        }
 
         this.globalState.onFilesChangedObservable.notifyObservers();
         this.globalState.onManifestChangedObservable.notifyObservers();

@@ -18,6 +18,16 @@ export enum RuntimeMode {
     Full = 1,
     Frame = 2,
 }
+
+export interface IEngineSwitchDialogOptions {
+    currentEngine: string;
+    targetEngine: string;
+}
+
+export interface IEngineSwitchDialogRequest extends IEngineSwitchDialogOptions {
+    resolve: (shouldSwitch: boolean) => void;
+}
+
 export class GlobalState {
     // eslint-disable-next-line @typescript-eslint/naming-convention
     public readonly MobileSizeTrigger = 1024;
@@ -98,8 +108,15 @@ export class GlobalState {
     public onManifestChangedObservable = new Observable<void>();
     public onFilesOrderChangedObservable = new Observable<void>();
     public onV2HydrateRequiredObservable = new Observable<V2Manifest>();
+    public onEngineSwitchDialogRequiredObservable = new Observable<IEngineSwitchDialogRequest>();
 
     public loadingCodeInProgress = false;
     public onCodeLoaded = new Observable<string>();
     public doNotRun = false;
+
+    public async showEngineSwitchDialogAsync(options: IEngineSwitchDialogOptions): Promise<boolean> {
+        return await new Promise((resolve) => {
+            this.onEngineSwitchDialogRequiredObservable.notifyObservers({ ...options, resolve });
+        });
+    }
 }

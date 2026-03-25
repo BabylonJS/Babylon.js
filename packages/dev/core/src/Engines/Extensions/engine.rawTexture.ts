@@ -471,8 +471,8 @@ ThinEngine.prototype.createRawCubeTextureFromUrl = function (
 
     const onerror = (request?: IWebRequest, exception?: any) => {
         scene?.removePendingData(texture);
-        if (onError && request) {
-            onError(request.status + " " + request.statusText, exception);
+        if (onError) {
+            onError(request ? request.status + " " + request.statusText : "Failed to parse texture data", exception);
         }
     };
 

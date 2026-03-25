@@ -23,7 +23,7 @@ export class Transcoder {
      * When set, unversioned CDN URLs will be rewritten to include this version prefix.
      * @internal
      */
-    public static CdnVersion = "8.54.2";
+    public static CdnVersion = "8.56.2";
 
     private static readonly _DefaultCdnUrl = "https://cdn.babylonjs.com";
 
@@ -35,7 +35,11 @@ export class Transcoder {
                 wasmUrl = wasmUrl.replace(Transcoder._DefaultCdnUrl, baseUrl);
             } else if (Transcoder.CdnVersion) {
                 const versionedBase = `${Transcoder._DefaultCdnUrl}/v${Transcoder.CdnVersion}`;
-                wasmUrl = wasmUrl.replace(Transcoder._DefaultCdnUrl, versionedBase);
+                // Guard against double-versioning if the URL already contains the version prefix
+                // (e.g. when GetWasmUrl is called multiple times on the same URL)
+                if (!wasmUrl.startsWith(versionedBase)) {
+                    wasmUrl = wasmUrl.replace(Transcoder._DefaultCdnUrl, versionedBase);
+                }
             }
         }
         return wasmUrl;

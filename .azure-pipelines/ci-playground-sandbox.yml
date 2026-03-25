@@ -1,0 +1,218 @@
+# =============================================================================
+# Playground-Sandbox-CI Pipeline (Definition ID: 32)
+# Converted from Azure DevOps Classic Pipeline
+#
+# Triggers on PRs that touch playground, sandbox, or inspector-v2 files.
+# Builds and tests both Playground and Sandbox in parallel jobs.
+#
+# Secret variables (configure in pipeline UI):
+#   - BASIC_AUTH
+#   - DEPLOYMENT_SERVER
+# =============================================================================
+
+trigger: none
+
+pr:
+    branches:
+        include:
+            - master
+    paths:
+        include:
+            - packages/tools/playground/**/*.*
+            - packages/tools/sandbox/**/*.*
+            - packages/dev/sharedUiComponents/**/*.*
+            - "**/*playground*"
+            - packages/dev/buildTools/src/webpackTools.ts
+            - "**/*sandbox*"
+            - packages/dev/inspector-v2/**/*.*
+
+variables:
+    - group: BabylonJS-CI-Infrastructure
+    - name: BuildName
+      value: $(Build.SourceBranch)
+
+pool:
+    vmImage: ubuntu-24.04
+
+jobs:
+    # ============================================================================
+    # PLAYGROUND TESTS
+    # ============================================================================
+    - job: PlaygroundTests
+      displayName: "Playground tests"
+      steps:
+          - checkout: self
+            clean: true
+            fetchTags: false
+
+          - task: NodeTool@0
+            displayName: "Use Node 22.4.1"
+            inputs:
+                versionSpec: "22.4.1"
+
+          - task: Npm@1
+            displayName: "npm install"
+            inputs:
+                command: install
+
+          - template: templates/check-snapshot-exists.yml
+            parameters:
+                snapshotPath: "PLAYGROUND/$(BuildName)"
+
+          - task: Npm@1
+            displayName: "npm build:dev"
+            inputs:
+                command: custom
+                customCommand: "run build:dev"
+
+          - task: Npm@1
+            displayName: "npm typecheck playground"
+            inputs:
+                command: custom
+                customCommand: "run typecheck -w @tools/playground"
+
+          - task: Npm@1
+            displayName: "npm build playground"
+            inputs:
+                command: custom
+                customCommand: "run build:deployment -w @tools/playground"
+
+          - template: templates/wait-for-snapshot.yml
+
+          - script: |
+                # Remove scenes/textures from public — not needed for testing
+                rm -rf packages/tools/playground/public/scenes
+                rm -rf packages/tools/playground/public/textures
+            displayName: "Remove scenes and textures from playground public"
+
+          - template: templates/deploy-tool.yml
+            parameters:
+                toolPackageDir: "packages/tools/playground"
+                deployPath: "PLAYGROUND/$(BuildName)"
+                displayName: "Deploy playground snapshot"
+
+          - script: |
+                npx playwright install --with-deps
+                npx playwright test --project=playground
+            displayName: "Test playground"
+            env:
+                CI: "true"
+                PLAYGROUND_BASE_URL: "$(SNAPSHOT_CDN_URL)/PLAYGROUND/$(BuildName)/"
+                BROWSER: "Chrome"
+                SNAPSHOT: "$(BuildName)"
+
+          - template: templates/upload-test-results.yml
+            parameters:
+                deployPath: "PLAYGROUND/$(BuildName)/testResults"
+
+          - task: GitHubComment@0
+            displayName: "Writing GitHub comment - test or build failed"
+            condition: failed()
+            inputs:
+                gitHubConnection: "$(GITHUB_SERVICE_CONNECTION)"
+                repositoryName: "$(Build.Repository.Name)"
+                comment: |
+                    Building or testing the playground has failed.
+
+                    If the tests failed, results can be found here:
+                    $(SNAPSHOT_CDN_URL)/PLAYGROUND/$(BuildName)/testResults/
+
+          - task: GitHubComment@0
+            displayName: "Writing GitHub comment"
+            condition: succeeded()
+            inputs:
+                gitHubConnection: "$(GITHUB_SERVICE_CONNECTION)"
+                repositoryName: "$(Build.Repository.Name)"
+                comment: |
+                    You have made possible changes to the playground.
+                    You can test the snapshot here:
+
+                    $(SNAPSHOT_CDN_URL)/PLAYGROUND/$(BuildName)/
+
+                    The snapshot playground with the CDN snapshot (only when available):
+
+                    $(SNAPSHOT_CDN_URL)/PLAYGROUND/$(BuildName)/?snapshot=$(BuildName)
+
+                    Note that neither Babylon scenes nor textures are uploaded to the snapshot directory, so some playgrounds won't work correctly.
+
+    # ============================================================================
+    # SANDBOX TESTS
+    # ============================================================================
+    - job: SandboxTests
+      displayName: "Test sandbox"
+      steps:
+          - checkout: self
+            clean: true
+            fetchTags: false
+
+          - task: NodeTool@0
+            displayName: "Use Node 22.4.1"
+            inputs:
+                versionSpec: "22.4.1"
+
+          - task: Npm@1
+            displayName: "npm install"
+            inputs:
+                command: install
+
+          - template: templates/check-snapshot-exists.yml
+            parameters:
+                snapshotPath: "SANDBOX/$(BuildName)"
+
+          - task: Npm@1
+            displayName: "npm build:dev"
+            inputs:
+                command: custom
+                customCommand: "run build:dev"
+
+          - task: Npm@1
+            displayName: "npm build sandbox"
+            inputs:
+                command: custom
+                customCommand: "run build:deployment -w @tools/sandbox"
+
+          - template: templates/wait-for-snapshot.yml
+
+          - template: templates/deploy-tool.yml
+            parameters:
+                toolPackageDir: "packages/tools/sandbox"
+                deployPath: "SANDBOX/$(BuildName)"
+                displayName: "Deploy sandbox snapshot"
+
+          - script: |
+                npx playwright install --with-deps
+                npx playwright test --project=sandbox
+            displayName: "Test sandbox"
+            env:
+                CI: "true"
+                SANDBOX_BASE_URL: "$(SNAPSHOT_CDN_URL)/SANDBOX/$(BuildName)/"
+                BROWSER: "Chrome"
+                SNAPSHOT: "$(BuildName)"
+
+          - template: templates/upload-test-results.yml
+            parameters:
+                deployPath: "SANDBOX/$(BuildName)/testResults"
+
+          - task: GitHubComment@0
+            displayName: "Writing GitHub comment - test or build failed"
+            condition: failed()
+            inputs:
+                gitHubConnection: "$(GITHUB_SERVICE_CONNECTION)"
+                repositoryName: "$(Build.Repository.Name)"
+                comment: |
+                    Building or testing the sandbox has failed.
+
+                    If the tests failed, results can be found here:
+                    $(SNAPSHOT_CDN_URL)/SANDBOX/$(BuildName)/testResults/
+
+          - task: GitHubComment@0
+            displayName: "Writing GitHub comment"
+            condition: succeeded()
+            inputs:
+                gitHubConnection: "$(GITHUB_SERVICE_CONNECTION)"
+                repositoryName: "$(Build.Repository.Name)"
+                comment: |
+                    You have changed file(s) that made possible changes to the sandbox.
+                    You can test the sandbox snapshot here:
+
+                    $(SNAPSHOT_CDN_URL)/SANDBOX/$(BuildName)/

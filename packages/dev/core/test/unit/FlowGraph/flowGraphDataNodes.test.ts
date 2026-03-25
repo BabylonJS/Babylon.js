@@ -20,7 +20,7 @@ describe("Flow Graph Data Nodes", () => {
             deterministicLockstep: false,
             lockstepMaxSteps: 1,
         });
-        Logger.Log = jest.fn();
+        Logger.Log = vi.fn();
 
         scene = new Scene(engine);
         flowGraphCoordinator = new FlowGraphCoordinator({ scene });
@@ -63,7 +63,7 @@ describe("Flow Graph Data Nodes", () => {
         const mockedRandom = (): number => {
             return mockRandomIndex++;
         };
-        const random = jest.spyOn(global.Math, "random").mockImplementation(mockedRandom);
+        const random = vi.spyOn(global.Math, "random").mockImplementation(mockedRandom);
         // add a number to itself, which should only trigger the random number block once and cache the result
         add.a.connectTo(rnd.value);
         add.b.connectTo(rnd.value);

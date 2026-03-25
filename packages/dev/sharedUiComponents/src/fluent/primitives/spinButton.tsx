@@ -294,8 +294,8 @@ export const SpinButton = forwardRef<HTMLInputElement, SpinButtonProps>((props, 
     const input = (
         <div
             className={props.infoLabel ? undefined : props.className}
-            onMouseEnter={() => setIsHovered(true)}
-            onMouseLeave={() => {
+            onPointerEnter={(e) => e.pointerType === "mouse" && setIsHovered(true)}
+            onPointerLeave={() => {
                 if (!isDragging) {
                     setIsHovered(false);
                 }

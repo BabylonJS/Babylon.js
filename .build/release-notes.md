@@ -1,16 +1,40 @@
 
+### Addons
+
+- Migrate from Jest to Vitest - by [RaananW](https://github.com/RaananW) ([#18136](https://github.com/BabylonJS/Babylon.js/pull/18136))
+
 ### Core
 
-- Add support for versioned CDN URLs in Tools and Transcoder classes - by [RaananW](https://github.com/RaananW) ([#18047](https://github.com/BabylonJS/Babylon.js/pull/18047))
-- Option for GPU particles to behave like CPU particles - by [VicenteCartas](https://github.com/VicenteCartas) ([#18057](https://github.com/BabylonJS/Babylon.js/pull/18057))
-- NPE Texture block .texture updates - [_Breaking Change_] by [VicenteCartas](https://github.com/VicenteCartas) ([#18058](https://github.com/BabylonJS/Babylon.js/pull/18058))
-- Fix setAndStartTimer: onAborted and onEnded both firing, missing data arg, onTick on terminal tick - by [sgottschlich](https://github.com/sgottschlich) ([#18051](https://github.com/BabylonJS/Babylon.js/pull/18051))
-- WebGPU: Fix implementation of debug markers - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#18050](https://github.com/BabylonJS/Babylon.js/pull/18050))
-- More geo math helpers - by [kircher1](https://github.com/kircher1) ([#18044](https://github.com/BabylonJS/Babylon.js/pull/18044))
-- Upgrade ESLint to 10 - by [RaananW](https://github.com/RaananW) ([#18025](https://github.com/BabylonJS/Babylon.js/pull/18025))
-- Inspector v2: Fix change camera when a frame graph is defined at scene level - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#18036](https://github.com/BabylonJS/Babylon.js/pull/18036))
-- Scene ready check for atmosphere add-on - by [kircher1](https://github.com/kircher1) ([#18000](https://github.com/BabylonJS/Babylon.js/pull/18000))
+- fix: properly report errors when loading invalid HDR texture files - [_Bug Fix_] by [RaananW](https://github.com/RaananW) ([#18153](https://github.com/BabylonJS/Babylon.js/pull/18153))
+- Add instance support for CollisionObservable - [_Bug Fix_] by [CedricGuillemet](https://github.com/CedricGuillemet) ([#18152](https://github.com/BabylonJS/Babylon.js/pull/18152))
+- Implement delayed loading for EquiRectangularCubeTexture - by [kzhsw](https://github.com/kzhsw) ([#18141](https://github.com/BabylonJS/Babylon.js/pull/18141))
+- Migrate from Jest to Vitest - by [RaananW](https://github.com/RaananW) ([#18136](https://github.com/BabylonJS/Babylon.js/pull/18136))
+- Preserve Float64 precision for instance buffer floating origin offset - [_Bug Fix_] by [georginahalpern](https://github.com/georginahalpern) ([#18137](https://github.com/BabylonJS/Babylon.js/pull/18137))
+
+### GUI
+
+- Migrate from Jest to Vitest - by [RaananW](https://github.com/RaananW) ([#18136](https://github.com/BabylonJS/Babylon.js/pull/18136))
+
+### Inspector
+
+- Migrate from Jest to Vitest - by [RaananW](https://github.com/RaananW) ([#18136](https://github.com/BabylonJS/Babylon.js/pull/18136))
+
+### Loaders
+
+- Migrate from Jest to Vitest - by [RaananW](https://github.com/RaananW) ([#18136](https://github.com/BabylonJS/Babylon.js/pull/18136))
+
+### Lottie Player
+
+- Migrate from Jest to Vitest - by [RaananW](https://github.com/RaananW) ([#18136](https://github.com/BabylonJS/Babylon.js/pull/18136))
+
+### Sandbox
+
+- fix(sandbox): use network-first strategy for versioned Babylon.js resources in service worker - [_Bug Fix_] by [RaananW](https://github.com/RaananW) ([#18145](https://github.com/BabylonJS/Babylon.js/pull/18145))
 
 ### Serializers
 
-- fix: gltf export dropping animations on meshless nodes in right-handed scenes - by [marns](https://github.com/marns) ([#18039](https://github.com/BabylonJS/Babylon.js/pull/18039))
+- Migrate from Jest to Vitest - by [RaananW](https://github.com/RaananW) ([#18136](https://github.com/BabylonJS/Babylon.js/pull/18136))
+
+### Smart Filters
+
+- Migrate from Jest to Vitest - by [RaananW](https://github.com/RaananW) ([#18136](https://github.com/BabylonJS/Babylon.js/pull/18136))

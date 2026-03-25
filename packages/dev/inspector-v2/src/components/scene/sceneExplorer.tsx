@@ -822,9 +822,11 @@ const EntityTreeItem: FunctionComponent<
                             className: classes.treeItemLayoutMain,
                         }}
                     >
-                        <Body1 wrap={false} truncate>
-                            {name}
-                        </Body1>
+                        <Tooltip content={name} relationship="description">
+                            <Body1 wrap={false} truncate>
+                                {name}
+                            </Body1>
+                        </Tooltip>
                     </TreeItemLayout>
                 </FlatTreeItem>
             </MenuTrigger>

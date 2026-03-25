@@ -172,8 +172,8 @@ describe("Scene Materials", () => {
             const materialX = new StandardMaterial("materialX", scene);
             const materialY = new StandardMaterial("materialY", scene);
 
-            const materialXSpy = jest.spyOn(materialX, "markAsDirty");
-            const materialYSpy = jest.spyOn(materialY, "markAsDirty");
+            const materialXSpy = vi.spyOn(materialX, "markAsDirty");
+            const materialYSpy = vi.spyOn(materialY, "markAsDirty");
 
             scene.markAllMaterialsAsDirty(Material.TextureDirtyFlag);
 
@@ -190,8 +190,8 @@ describe("Scene Materials", () => {
             const materialX = new StandardMaterial("materialX", scene);
             const materialY = new StandardMaterial("materialY", scene);
 
-            const materialXSpy = jest.spyOn(materialX, "markAsDirty");
-            const materialYSpy = jest.spyOn(materialY, "markAsDirty");
+            const materialXSpy = vi.spyOn(materialX, "markAsDirty");
+            const materialYSpy = vi.spyOn(materialY, "markAsDirty");
 
             scene.markAllMaterialsAsDirty(Material.TextureDirtyFlag, (material) => material.name === "materialX");
 
@@ -213,9 +213,9 @@ describe("Scene Materials", () => {
             const materialY = new StandardMaterial("materialY", scene);
             const materialZ = new StandardMaterial("materialZ", secondaryScene);
 
-            const materialXSpy = jest.spyOn(materialX, "freeze");
-            const materialYSpy = jest.spyOn(materialY, "freeze");
-            const materialZSpy = jest.spyOn(materialZ, "freeze");
+            const materialXSpy = vi.spyOn(materialX, "freeze");
+            const materialYSpy = vi.spyOn(materialY, "freeze");
+            const materialZSpy = vi.spyOn(materialZ, "freeze");
 
             scene.freezeMaterials();
 
@@ -236,10 +236,10 @@ describe("Scene Materials", () => {
             multiMaterial.subMaterials.push(materialY);
             multiMaterial.subMaterials.push(materialZ);
 
-            const multiMaterialSpy = jest.spyOn(multiMaterial, "freeze");
-            const materialXSpy = jest.spyOn(materialX, "freeze");
-            const materialYSpy = jest.spyOn(materialY, "freeze");
-            const materialZSpy = jest.spyOn(materialZ, "freeze");
+            const multiMaterialSpy = vi.spyOn(multiMaterial, "freeze");
+            const materialXSpy = vi.spyOn(materialX, "freeze");
+            const materialYSpy = vi.spyOn(materialY, "freeze");
+            const materialZSpy = vi.spyOn(materialZ, "freeze");
 
             scene.freezeMaterials();
 
@@ -257,9 +257,9 @@ describe("Scene Materials", () => {
             const materialY = new StandardMaterial("materialY", scene);
             const materialZ = new StandardMaterial("materialZ", secondaryScene);
 
-            const materialXSpy = jest.spyOn(materialX, "unfreeze");
-            const materialYSpy = jest.spyOn(materialY, "unfreeze");
-            const materialZSpy = jest.spyOn(materialZ, "unfreeze");
+            const materialXSpy = vi.spyOn(materialX, "unfreeze");
+            const materialYSpy = vi.spyOn(materialY, "unfreeze");
+            const materialZSpy = vi.spyOn(materialZ, "unfreeze");
 
             scene.unfreezeMaterials();
 
@@ -280,10 +280,10 @@ describe("Scene Materials", () => {
             multiMaterial.subMaterials.push(materialY);
             multiMaterial.subMaterials.push(materialZ);
 
-            const multiMaterialSpy = jest.spyOn(multiMaterial, "unfreeze");
-            const materialXSpy = jest.spyOn(materialX, "unfreeze");
-            const materialYSpy = jest.spyOn(materialY, "unfreeze");
-            const materialZSpy = jest.spyOn(materialZ, "unfreeze");
+            const multiMaterialSpy = vi.spyOn(multiMaterial, "unfreeze");
+            const materialXSpy = vi.spyOn(materialX, "unfreeze");
+            const materialYSpy = vi.spyOn(materialY, "unfreeze");
+            const materialZSpy = vi.spyOn(materialZ, "unfreeze");
 
             scene.unfreezeMaterials();
 

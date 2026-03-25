@@ -269,7 +269,7 @@ export class AtmospherePBRMaterialPlugin extends MaterialPluginBase {
 
                 // Add a contribution here to estimate indirect lighting.
                 const float r = 0.2;
-                float indirect = getLuminance(environmentIrradiance) / max(0.00001, 1. - r);
+                float indirect = getLuminanceUnclamped(environmentIrradiance) / max(0.00001, 1. - r);
                 environmentIrradiance *= irradianceScale;
                 environmentIrradiance += indirect;
 
@@ -341,7 +341,7 @@ export class AtmospherePBRMaterialPlugin extends MaterialPluginBase {
 
                 // Add a contribution here to estimate indirect lighting.
                 const r = 0.2;
-                var indirect = getLuminance(environmentIrradiance) / max(0.00001, 1.0 - r);
+                var indirect = getLuminanceUnclamped(environmentIrradiance) / max(0.00001, 1.0 - r);
                 environmentIrradiance *= irradianceScale;
                 environmentIrradiance += indirect;
 

@@ -5,12 +5,14 @@ import type { BaseTexture } from "core/index";
 import { Button, Toolbar, ToolbarButton, makeStyles, tokens } from "@fluentui/react-components";
 import { useCallback, useContext, useEffect, useImperativeHandle, useRef, useState } from "react";
 
+import { Clamp } from "core/Maths/math.scalar.functions";
 import { WhenTextureReadyAsync } from "core/Misc/textureTools";
 import { ToolContext } from "shared-ui-components/fluent/hoc/fluentToolWrapper";
+import { LineContainer } from "shared-ui-components/fluent/hoc/propertyLines/propertyLine";
+import { SyncedSliderPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/syncedSliderPropertyLine";
+import { AccordionContext } from "shared-ui-components/fluent/primitives/accordion.contexts";
 import { useProperty } from "../../../hooks/compoundPropertyHooks";
 import { ApplyChannelsToTextureDataAsync } from "../../../misc/textureTools";
-import { LineContainer } from "shared-ui-components/fluent/hoc/propertyLines/propertyLine";
-import { AccordionContext } from "shared-ui-components/fluent/primitives/accordion.contexts";
 
 const useStyles = makeStyles({
     root: {
@@ -20,6 +22,7 @@ const useStyles = makeStyles({
     controls: {
         display: "flex",
         gap: tokens.spacingHorizontalXS,
+        padding: 0,
     },
     controlButton: {
         minWidth: "auto",
@@ -40,7 +43,7 @@ const useStyles = makeStyles({
         display: "flex",
         justifyContent: "center",
         marginTop: tokens.spacingVerticalXS,
-        marginBottom: tokens.spacingVerticalS,
+        marginBottom: tokens.spacingVerticalXS,
         width: "100%",
     },
 });
@@ -76,8 +79,17 @@ export const TexturePreview: FunctionComponent<TexturePreviewProps> = (props) =>
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const [channels, setChannels] = useState<(typeof TextureChannelStates)[keyof typeof TextureChannelStates]>(TextureChannelStates.ALL);
     const [face, setFace] = useState(0);
+    const [layer, setLayer] = useState(0);
     const [canvasStyle, setCanvasStyle] = useState<CSSProperties>();
     const internalTexture = useProperty(texture, "_texture");
+
+    const showLayerDropdown = texture.is2DArray;
+
+    const layerCount = texture.is2DArray && internalTexture ? internalTexture.depth : 0;
+
+    useEffect(() => {
+        setLayer((layer) => Clamp(layer, 0, Math.max(0, layerCount - 1)));
+    }, [layerCount]);
 
     const { size } = useContext(ToolContext);
 
@@ -105,7 +117,7 @@ export const TexturePreview: FunctionComponent<TexturePreviewProps> = (props) =>
             setCanvasStyle({ width: imageWidth });
 
             // Fetch texture data BEFORE clearing the canvas to avoid flicker
-            const data = await ApplyChannelsToTextureDataAsync(texture, textureWidth, textureHeight, face, channels);
+            const data = await ApplyChannelsToTextureDataAsync(texture, textureWidth, textureHeight, texture.is2DArray ? layer : face, channels);
 
             // Now set canvas dimensions (this clears the canvas) and draw immediately
             canvas.width = canvasWidth;
@@ -121,7 +133,7 @@ export const TexturePreview: FunctionComponent<TexturePreviewProps> = (props) =>
         } catch {
             // If we fail, leave the canvas empty
         }
-    }, [texture, face, channels, offsetX, offsetY, width, height, internalTexture]);
+    }, [texture, face, channels, offsetX, offsetY, width, height, internalTexture, layer]);
 
     useImperativeHandle(imperativeRef, () => ({ refresh: updatePreviewAsync }), [updatePreviewAsync]);
 
@@ -162,6 +174,9 @@ export const TexturePreview: FunctionComponent<TexturePreviewProps> = (props) =>
                 <div className={classes.previewContainer}>
                     <canvas ref={canvasRef} className={classes.preview} style={canvasStyle} />
                 </div>
+                {!disableToolbar && showLayerDropdown && layerCount > 0 && (
+                    <SyncedSliderPropertyLine label="Layer" value={layer} onChange={setLayer} min={0} max={layerCount - 1} step={1} />
+                )}
                 {texture.isRenderTarget && (
                     <Button
                         appearance="outline"

@@ -503,7 +503,7 @@ export class Tools {
      * When set, unversioned CDN URLs will be rewritten to include this version prefix.
      * @internal
      */
-    public static _CdnVersion = "8.54.2";
+    public static _CdnVersion = "8.56.2";
 
     /**
      * @internal
@@ -550,7 +550,11 @@ export class Tools {
             } else if (Tools._CdnVersion) {
                 // If a CDN version is set (injected at build time), rewrite unversioned CDN URLs to versioned ones
                 const versionedBase = `${Tools._DefaultCdnUrl}/v${Tools._CdnVersion}`;
-                scriptUrl = scriptUrl.replace(Tools._DefaultCdnUrl, versionedBase);
+                // Guard against double-versioning if the URL already contains the version prefix
+                // (e.g. when GetBabylonScriptURL is called multiple times on the same URL)
+                if (!scriptUrl.startsWith(versionedBase)) {
+                    scriptUrl = scriptUrl.replace(Tools._DefaultCdnUrl, versionedBase);
+                }
             }
         }
 

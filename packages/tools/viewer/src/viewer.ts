@@ -445,6 +445,11 @@ export type ViewerDetails = {
      * @returns A PickingInfo if an object was picked, otherwise null.
      */
     pick(screenX: number, screenY: number): Promise<Nullable<PickingInfo>>;
+
+    /**
+     * True if the viewer's render loop is currently suspended (not actively rendering).
+     */
+    readonly isIdle: boolean;
 };
 
 /**
@@ -881,6 +886,7 @@ export class Viewer implements IDisposable {
     private readonly _defaultHardwareScalingLevel: number;
     private _lastHardwareScalingLevel: number;
     private _renderedLastFrame: Nullable<boolean> = null;
+    private _isIdle = false;
     private _sceneOptimizer: Nullable<SceneOptimizer> = null;
 
     private readonly _tempVectors = BuildTuple(4, Vector3.Zero);
@@ -915,8 +921,11 @@ export class Viewer implements IDisposable {
     private readonly _loadModelLock = new AsyncLock();
     private _loadModelAbortController: Nullable<AbortController> = null;
 
-    private readonly _loadEnvironmentLock = new AsyncLock();
-    private _loadEnvironmentAbortController: Nullable<AbortController> = null;
+    private readonly _loadEnvironmentLightingLock = new AsyncLock();
+    private _loadEnvironmentLightingAbortController: Nullable<AbortController> = null;
+
+    private readonly _loadEnvironmentSkyboxLock = new AsyncLock();
+    private _loadEnvironmentSkyboxAbortController: Nullable<AbortController> = null;
 
     private _camerasAsHotSpotsAbortController: Nullable<AbortController> = null;
 
@@ -1063,6 +1072,9 @@ export class Viewer implements IDisposable {
             suspendRendering: () => this._suspendRendering(),
             markSceneMutated: () => this._markSceneMutated(),
             pick: async (screenX: number, screenY: number) => await this._pick(screenX, screenY),
+            get isIdle() {
+                return viewer._isIdle;
+            },
         });
 
         this._reset(false, "source", "environment", "post-processing");
@@ -1883,7 +1895,12 @@ export class Viewer implements IDisposable {
         ]);
 
         // cancel if the model is unloaded before the shadows are created
-        this._throwIfDisposedOrAborted(abortSignal, this._loadModelAbortController?.signal, this._loadEnvironmentAbortController?.signal);
+        this._throwIfDisposedOrAborted(
+            abortSignal,
+            this._loadModelAbortController?.signal,
+            this._loadEnvironmentLightingAbortController?.signal,
+            this._loadEnvironmentSkyboxAbortController?.signal
+        );
 
         let high = this._shadowState.high;
 
@@ -2017,9 +2034,9 @@ export class Viewer implements IDisposable {
         high.pipeline.resetAccumulation();
         // shadow map
         this._shadowState.normal?.ground.setEnabled(false);
-        this._startIblShadowsRenderTime();
 
         this._shadowState.high = high;
+        this._startIblShadowsRenderTime();
 
         this._snapshotHelper?.enableSnapshotRendering();
         this._markSceneMutated();
@@ -2051,7 +2068,12 @@ export class Viewer implements IDisposable {
         ]);
 
         // cancel if the model is unloaded before the shadows are created
-        this._throwIfDisposedOrAborted(abortSignal, this._loadModelAbortController?.signal, this._loadEnvironmentAbortController?.signal);
+        this._throwIfDisposedOrAborted(
+            abortSignal,
+            this._loadModelAbortController?.signal,
+            this._loadEnvironmentLightingAbortController?.signal,
+            this._loadEnvironmentSkyboxAbortController?.signal
+        );
 
         let normal = this._shadowState.normal;
 
@@ -2070,7 +2092,12 @@ export class Viewer implements IDisposable {
 
         const iblCdfGenerator = normal?.iblDirection.iblCdfGenerator ? normal?.iblDirection.iblCdfGenerator : new IblCdfGenerator(this._engine);
         const iblDirection = await this._findIblDominantDirection(iblCdfGenerator);
-        this._throwIfDisposedOrAborted(abortSignal, this._loadModelAbortController?.signal, this._loadEnvironmentAbortController?.signal);
+        this._throwIfDisposedOrAborted(
+            abortSignal,
+            this._loadModelAbortController?.signal,
+            this._loadEnvironmentLightingAbortController?.signal,
+            this._loadEnvironmentSkyboxAbortController?.signal
+        );
 
         this._snapshotHelper?.disableSnapshotRendering();
 
@@ -2284,129 +2311,174 @@ export class Viewer implements IDisposable {
         }
 
         url = url?.trim();
-        if (url === "auto") {
-            options = { ...options, extension: ".env" };
+
+        const locks: AsyncLock[] = [];
+        const internalAbortControllers: AbortController[] = [];
+
+        if (options.lighting) {
+            this._loadEnvironmentLightingAbortController?.abort(new AbortError("New environment lighting is being loaded before previous environment lighting finished loading."));
+            const lightingAbortController = (this._loadEnvironmentLightingAbortController = new AbortController());
+            locks.push(this._loadEnvironmentLightingLock);
+            internalAbortControllers.push(lightingAbortController);
+        }
+        if (options.skybox) {
+            this._loadEnvironmentSkyboxAbortController?.abort(new AbortError("New environment skybox is being loaded before previous environment skybox finished loading."));
+            const skyboxAbortController = (this._loadEnvironmentSkyboxAbortController = new AbortController());
+            locks.push(this._loadEnvironmentSkyboxLock);
+            internalAbortControllers.push(skyboxAbortController);
         }
 
-        this._loadEnvironmentAbortController?.abort(new AbortError("New environment is being loaded before previous environment finished loading."));
-        const loadEnvironmentAbortController = (this._loadEnvironmentAbortController = new AbortController());
-
-        await this._loadEnvironmentLock.lockAsync(async () => {
-            throwIfAborted(abortSignal, loadEnvironmentAbortController.signal);
-
-            const getDefaultEnvironmentUrlAsync = async () => (await import("./defaultEnvironment")).default;
-
-            const whenTextureLoadedAsync = async (cubeTexture: CubeTexture | HDRCubeTexture) => {
-                await new Promise<void>((resolve, reject) => {
-                    const successObserver = (cubeTexture.onLoadObservable as Observable<unknown>).addOnce(() => {
-                        errorObserver.remove();
-                        resolve();
-                    });
-
-                    const errorObserver = Texture.OnTextureLoadErrorObservable.add((texture) => {
-                        if (texture === cubeTexture) {
-                            successObserver.remove();
-                            errorObserver.remove();
-                            reject(new Error("Failed to load environment texture."));
-                        }
-                    });
-                });
-            };
-
-            const mode: EnvironmentMode = !url ? "none" : url === "auto" ? "auto" : "url";
-
-            this._environmentLightingMode = options.lighting ? mode : this._environmentLightingMode;
-            this._environmentSkyboxMode = options.skybox ? mode : this._environmentSkyboxMode;
-
-            let lightingUrl: Nullable<string | undefined> = this._reflectionTexture?.url;
-            let skyboxUrl: Nullable<string | undefined> = this._skyboxTexture?.url;
-
-            this._snapshotHelper?.disableSnapshotRendering();
-
-            try {
-                // If both modes are auto, use the default environment.
-                if (this._environmentLightingMode === "auto" && this._environmentSkyboxMode === "auto") {
-                    lightingUrl = skyboxUrl = await getDefaultEnvironmentUrlAsync();
-                } else {
-                    // If the lighting mode is not auto and we are updating the lighting, use the provided url.
-                    if (this._environmentLightingMode !== "auto" && options.lighting) {
-                        lightingUrl = url;
-                    }
-
-                    // If the skybox mode is not auto and we are updating the skybox, use the provided url.
-                    if (this._environmentSkyboxMode !== "auto" && options.skybox) {
-                        skyboxUrl = url;
-                    }
-
-                    // If the lighting mode is auto, use the skybox texture if there is one, otherwise use the default environment.
-                    if (this._environmentLightingMode === "auto") {
-                        lightingUrl = skyboxUrl ?? (await getDefaultEnvironmentUrlAsync());
-                    }
-
-                    // If the skybox mode is auto, use the lighting texture if there is one, otherwise use the default environment.
-                    if (this._environmentSkyboxMode === "auto") {
-                        skyboxUrl = lightingUrl ?? (await getDefaultEnvironmentUrlAsync());
-                    }
-                }
-
-                const newTexturePromises: Promise<void>[] = [];
-
-                // If the lighting url is not the same as the current lighting url, load the new lighting texture.
-                if (lightingUrl !== this._reflectionTexture?.url) {
-                    // Dispose the existing lighting texture if it exists.
-                    this._reflectionTexture?.dispose();
-                    this._reflectionTexture = null;
-                    this._scene.environmentTexture = null;
-
-                    // Load the new lighting texture if there is a target url.
-                    if (lightingUrl) {
-                        if (lightingUrl === this._skyboxTexture?.url) {
-                            // If the lighting url is the same as the skybox url, clone the skybox texture.
-                            this._setEnvironmentLighting(this._skyboxTexture.clone());
-                        } else {
-                            // Otherwise, create a new cube texture from the lighting url.
-                            const lightingTexture = await createCubeTexture(lightingUrl, this._scene, options.extension);
-                            newTexturePromises.push(whenTextureLoadedAsync(lightingTexture));
-                            this._setEnvironmentLighting(lightingTexture);
-                        }
-                    }
-                }
-
-                // If the skybox url is not the same as the current skybox url, load the new skybox texture.
-                if (skyboxUrl !== this._skyboxTexture?.url) {
-                    // Dispose the existing skybox texture if it exists.
-                    this._skybox?.dispose(undefined, true);
-                    this._skyboxTexture = null;
-                    this._skybox = null;
-                    this._updateAutoClear();
-
-                    // Load the new skybox texture if there is a target url.
-                    if (skyboxUrl) {
-                        if (skyboxUrl === this._reflectionTexture?.url) {
-                            // If the skybox url is the same as the lighting url, clone the lighting texture.
-                            this._setEnvironmentSkybox(this._reflectionTexture.clone());
-                        } else {
-                            // Otherwise, create a new cube texture from the skybox url.
-                            const skyboxTexture = await createCubeTexture(skyboxUrl, this._scene, options.extension);
-                            newTexturePromises.push(whenTextureLoadedAsync(skyboxTexture));
-                            this._setEnvironmentSkybox(skyboxTexture);
-                        }
-                    }
-                }
-
-                await Promise.all(newTexturePromises);
-
-                this._updateLight();
-                observePromise(this._updateShadows());
-                this.onEnvironmentChanged.notifyObservers();
-            } catch (e) {
-                this.onEnvironmentError.notifyObservers(e);
-                throw e;
-            } finally {
-                this._snapshotHelper?.enableSnapshotRendering();
-                this._markSceneMutated();
+        // Create a composite abort signal that only aborts when ALL internal abort controllers
+        // have been aborted. This ensures that e.g. a skybox-only update doesn't cancel an
+        // in-progress lighting update (or vice versa) when both were requested together.
+        const compositeAbortController = new AbortController();
+        const checkAllAborted = () => {
+            if (internalAbortControllers.every((c) => c.signal.aborted)) {
+                compositeAbortController.abort(new AbortError(internalAbortControllers.map((controller) => controller.signal.reason).join(" | ")));
             }
-        });
+        };
+        for (const controller of internalAbortControllers) {
+            controller.signal.addEventListener("abort", checkAllAborted);
+        }
+
+        try {
+            await AsyncLock.LockAsync(async () => {
+                throwIfAborted(abortSignal, compositeAbortController.signal);
+
+                const getDefaultEnvironmentUrlAsync = async () => (await import("./defaultEnvironment")).default;
+
+                const whenTextureLoadedAsync = async (cubeTexture: CubeTexture | HDRCubeTexture) => {
+                    await new Promise<void>((resolve, reject) => {
+                        const successObserver = (cubeTexture.onLoadObservable as Observable<unknown>).addOnce(() => {
+                            errorObserver.remove();
+                            resolve();
+                        });
+
+                        const errorObserver = Texture.OnTextureLoadErrorObservable.add((texture) => {
+                            if (texture === cubeTexture) {
+                                successObserver.remove();
+                                errorObserver.remove();
+                                reject(new Error("Failed to load environment texture."));
+                            }
+                        });
+                    });
+                };
+
+                const mode: EnvironmentMode = !url ? "none" : url === "auto" ? "auto" : "url";
+
+                this._environmentLightingMode = options.lighting ? mode : this._environmentLightingMode;
+                this._environmentSkyboxMode = options.skybox ? mode : this._environmentSkyboxMode;
+
+                let lightingUrl: Nullable<string | undefined> = this._reflectionTexture?.url;
+                let skyboxUrl: Nullable<string | undefined> = this._skyboxTexture?.url;
+
+                this._snapshotHelper?.disableSnapshotRendering();
+
+                try {
+                    // If both modes are auto, use the default environment.
+                    if (this._environmentLightingMode === "auto" && this._environmentSkyboxMode === "auto") {
+                        lightingUrl = skyboxUrl = await getDefaultEnvironmentUrlAsync();
+                    } else {
+                        // If the lighting mode is not auto and we are updating the lighting, use the provided url.
+                        if (this._environmentLightingMode !== "auto" && options.lighting) {
+                            lightingUrl = url;
+                        }
+
+                        // If the skybox mode is not auto and we are updating the skybox, use the provided url.
+                        if (this._environmentSkyboxMode !== "auto" && options.skybox) {
+                            skyboxUrl = url;
+                        }
+
+                        // If the lighting mode is auto, use the skybox texture if there is one, otherwise use the default environment.
+                        if (this._environmentLightingMode === "auto") {
+                            lightingUrl = skyboxUrl ?? (await getDefaultEnvironmentUrlAsync());
+                        }
+
+                        // If the skybox mode is auto, use the lighting texture if there is one, otherwise use the default environment.
+                        if (this._environmentSkyboxMode === "auto") {
+                            skyboxUrl = lightingUrl ?? (await getDefaultEnvironmentUrlAsync());
+                        }
+                    }
+
+                    const newTexturePromises: Promise<void>[] = [];
+
+                    // If the lighting url is not the same as the current lighting url, load the new lighting texture.
+                    if (lightingUrl !== this._reflectionTexture?.url) {
+                        if (lightingUrl) {
+                            // Load the new reflection texture before disposing the old one.
+                            const oldReflectionTexture = this._reflectionTexture;
+                            if (lightingUrl === this._skyboxTexture?.url) {
+                                // If the lighting url is the same as the skybox url, clone the skybox texture.
+                                const environmentTexture = this._skyboxTexture.clone();
+                                environmentTexture.coordinatesMode = Texture.CUBIC_MODE;
+                                this._setEnvironmentLighting(environmentTexture);
+                            } else {
+                                // Otherwise, create a new cube texture from the lighting url.
+                                let lightingOptions = options;
+                                if (this._environmentLightingMode === "auto") {
+                                    lightingOptions = { ...lightingOptions, extension: ".env" };
+                                }
+                                const lightingTexture = await createCubeTexture(lightingUrl, this._scene, lightingOptions.extension);
+                                newTexturePromises.push(whenTextureLoadedAsync(lightingTexture));
+                                this._setEnvironmentLighting(lightingTexture);
+                            }
+                            oldReflectionTexture?.dispose();
+                        } else {
+                            // No new lighting url — dispose the old texture and clear.
+                            this._reflectionTexture?.dispose();
+                            this._reflectionTexture = null;
+                            this._scene.environmentTexture = null;
+                        }
+                    }
+
+                    // If the skybox url is not the same as the current skybox url, load the new skybox texture.
+                    if (skyboxUrl !== this._skyboxTexture?.url) {
+                        if (skyboxUrl) {
+                            // Load the new skybox texture before disposing the old one.
+                            const oldSkybox = this._skybox;
+                            const oldSkyboxTexture = this._skyboxTexture;
+                            if (skyboxUrl === this._reflectionTexture?.url) {
+                                // If the skybox url is the same as the lighting url, clone the lighting texture.
+                                this._setEnvironmentSkybox(this._reflectionTexture.clone());
+                            } else {
+                                // Otherwise, create a new cube texture from the skybox url.
+                                let skyboxOptions = options;
+                                if (this._environmentSkyboxMode === "auto") {
+                                    skyboxOptions = { ...skyboxOptions, extension: ".env" };
+                                }
+                                const skyboxTexture = await createCubeTexture(skyboxUrl, this._scene, skyboxOptions.extension);
+                                newTexturePromises.push(whenTextureLoadedAsync(skyboxTexture));
+                                this._setEnvironmentSkybox(skyboxTexture);
+                            }
+                            oldSkybox?.dispose(undefined, true);
+                            oldSkyboxTexture?.dispose();
+                        } else {
+                            // No new skybox url — dispose and clear.
+                            this._skybox?.dispose(undefined, true);
+                            this._skyboxTexture = null;
+                            this._skybox = null;
+                            this._updateAutoClear();
+                        }
+                    }
+
+                    await Promise.all(newTexturePromises);
+
+                    this._updateLight();
+                    observePromise(this._updateShadows());
+                    this.onEnvironmentChanged.notifyObservers();
+                } catch (e) {
+                    this.onEnvironmentError.notifyObservers(e);
+                    throw e;
+                } finally {
+                    this._snapshotHelper?.enableSnapshotRendering();
+                    this._markSceneMutated();
+                }
+            }, locks);
+        } finally {
+            for (const controller of internalAbortControllers) {
+                controller.signal.removeEventListener("abort", checkAllAborted);
+            }
+        }
     }
 
     /**
@@ -2570,11 +2642,12 @@ export class Viewer implements IDisposable {
         this.selectedAnimation = -1;
         this.animationProgress = 0;
 
-        this._loadEnvironmentAbortController?.abort(new AbortError("Thew viewer is being disposed."));
-        this._loadModelAbortController?.abort(new AbortError("Thew viewer is being disposed."));
-        this._camerasAsHotSpotsAbortController?.abort(new AbortError("Thew viewer is being disposed."));
-        this._shadowsAbortController?.abort(new AbortError("Thew viewer is being disposed."));
-        this._ssaoAbortController?.abort(new AbortError("Thew viewer is being disposed."));
+        this._loadEnvironmentLightingAbortController?.abort(new AbortError("The viewer is being disposed."));
+        this._loadEnvironmentSkyboxAbortController?.abort(new AbortError("The viewer is being disposed."));
+        this._loadModelAbortController?.abort(new AbortError("The viewer is being disposed."));
+        this._camerasAsHotSpotsAbortController?.abort(new AbortError("The viewer is being disposed."));
+        this._shadowsAbortController?.abort(new AbortError("The viewer is being disposed."));
+        this._ssaoAbortController?.abort(new AbortError("The viewer is being disposed."));
 
         this._renderLoopController?.dispose();
         this._activeModel?.dispose();
@@ -2794,6 +2867,7 @@ export class Viewer implements IDisposable {
 
             const onRenderingResumed = () => {
                 this._log("Viewer Resumed Rendering");
+                this._isIdle = false;
                 // Resume rendering with the hardware scaling level from prior to suspending.
                 this._engine.setHardwareScalingLevel(this._lastHardwareScalingLevel);
                 this._engine.performanceMonitor.enable();
@@ -2803,6 +2877,7 @@ export class Viewer implements IDisposable {
 
             const onRenderingSuspended = () => {
                 this._log("Viewer Suspended Rendering");
+                this._isIdle = true;
                 this._renderedLastFrame = false;
                 renderedReadyFrame = false;
                 // Take note of the current hardware scaling level for when rendering is resumed.
