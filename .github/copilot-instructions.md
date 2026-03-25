@@ -28,7 +28,7 @@ For detailed architecture documentation of each product, see the files in [archi
 
 ## Code review requirements
 
-When When reviewing a PR you must follow the instructions in `.github/instructions/code-review.instructions.md`
+When reviewing a PR you must follow the instructions in `.github/instructions/code-review.instructions.md`
 
 ## Critical repo-wide coding practices
 
