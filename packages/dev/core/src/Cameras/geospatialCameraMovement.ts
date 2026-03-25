@@ -12,6 +12,65 @@ import type { PickingInfo } from "../Collisions/pickingInfo";
 import type { Nullable } from "../types";
 import type { InterpolatingBehavior } from "../Behaviors/Cameras/interpolatingBehavior";
 import type { GeospatialCamera } from "./geospatialCamera";
+import type { InputMapEntry } from "./cameraInteractions";
+
+// ── Geospatial handler types ────────────────────────────────────────
+
+/**
+ * Handler for geospatial pan (globe drag) interactions.
+ * Pan uses screen coordinates because the geospatial camera anchors the cursor to the globe surface.
+ */
+export type GeospatialPanHandler = {
+    /** Begin a pan gesture at screen position */
+    start(screenX: number, screenY: number): void;
+    /** Continue panning to new screen position */
+    update(screenX: number, screenY: number): void;
+    /** End the pan gesture */
+    stop(): void;
+};
+
+/**
+ * Handler for geospatial rotate (tilt) interactions.
+ * Accepts pre-scaled pixel deltas for yaw and pitch.
+ */
+export type GeospatialRotateHandler = {
+    /** Apply rotation from pixel deltas (pre-scaled by input sensitivity) */
+    update(deltaX: number, deltaY: number): void;
+};
+
+/**
+ * Handler for geospatial zoom interactions.
+ */
+export type GeospatialZoomHandler = {
+    /** Zoom by a delta value, optionally toward cursor position */
+    zoomByDelta(delta: number, toCursor: boolean): void;
+};
+
+/**
+ * Handler for geospatial fly-to interactions.
+ */
+export type GeospatialFlyToHandler = {
+    /** Animate the camera to a target point on the globe */
+    flyTo(target: Vector3): Promise<void>;
+};
+
+/**
+ * Handler shape for geospatial camera interactions.
+ * Property names are the canonical interaction type strings used in inputMap entries.
+ */
+export type GeospatialHandlers = {
+    /** Handler for pan (globe drag) interactions */
+    pan: GeospatialPanHandler;
+    /** Handler for rotate (tilt) interactions */
+    rotate: GeospatialRotateHandler;
+    /** Handler for zoom interactions */
+    zoom: GeospatialZoomHandler;
+    /** Handler for fly-to interactions */
+    flyTo: GeospatialFlyToHandler;
+};
+
+/** Interaction type string for geospatial camera, derived from handler property names */
+export type GeospatialInteraction = keyof GeospatialHandlers;
 
 /**
  * Geospatial-specific camera movement system that extends the base movement with
@@ -33,6 +92,17 @@ export class GeospatialCameraMovement extends CameraMovement {
     public computedPerFrameZoomPickPoint?: Vector3;
 
     public zoomToCursor: boolean = true;
+
+    /**
+     * Interaction handlers for geospatial camera.
+     * Override individual handlers to customize camera behavior without changing input mapping.
+     */
+    public handlers: Partial<GeospatialHandlers> = {};
+
+    /**
+     * Input-to-interaction mapping rules, constrained to valid geospatial interaction types.
+     */
+    public override inputMap: InputMapEntry<GeospatialInteraction>[] = [];
 
     private _tempPickingRay: Ray;
 
@@ -60,6 +130,41 @@ export class GeospatialCameraMovement extends CameraMovement {
         this.rotationXSpeed = Math.PI / 500; // Move 1/500th of a half circle per pixel
         this.rotationYSpeed = Math.PI / 500; // Move 1/500th of a half circle per pixel
         this.zoomSpeed = 2; // Base zoom speed; actual speed is scaled based on altitude
+
+        this.handlers = {
+            pan: {
+                start: (screenX, screenY) => {
+                    this.startDrag(screenX, screenY);
+                },
+                update: (screenX, screenY) => {
+                    this.handleDrag(screenX, screenY);
+                },
+                stop: () => {
+                    this.stopDrag();
+                },
+            },
+            rotate: {
+                update: (deltaX, deltaY) => {
+                    this.rotationAccumulatedPixels.y += deltaX;
+                    this.rotationAccumulatedPixels.x += deltaY;
+                },
+            },
+            zoom: {
+                zoomByDelta: (delta, toCursor) => {
+                    this.handleZoom(delta, toCursor);
+                },
+            },
+        };
+
+        this.inputMap = [
+            { source: "pointer", button: 0, interaction: "pan" },
+            { source: "pointer", button: 1, interaction: "rotate" },
+            { source: "pointer", button: 2, interaction: "rotate" },
+            { source: "wheel", interaction: "zoom" },
+            { source: "keyboard", modifiers: { ctrl: true }, interaction: "rotate" },
+            { source: "keyboard", modifiers: { alt: true }, interaction: "rotate" },
+            { source: "keyboard", interaction: "pan" },
+        ];
     }
 
     /**

@@ -2,6 +2,7 @@ import type { Scene } from "../scene";
 import { Vector3 } from "../Maths/math.vector";
 import { Epsilon } from "../Maths/math.constants";
 import type { InterpolatingBehavior } from "../Behaviors/Cameras/interpolatingBehavior";
+import type { InputMapEntry, InputConditions, InputSource, InputModifiers } from "./cameraInteractions";
 
 const FrameDurationAt60FPS = 1000 / 60;
 /**
@@ -16,6 +17,82 @@ export class CameraMovement {
      * This helps us differentiate between 0 pixel delta due to no input vs user actively holding still
      */
     public activeInput: boolean = false;
+
+    /**
+     * Ordered list of input-to-interaction mapping rules. First matching entry wins.
+     * Each entry maps a physical input source (+ optional conditions like button or modifier keys) to a semantic interaction type.
+     *
+     * Override this array to reconfigure which physical inputs trigger which camera interactions.
+     * @example
+     * ```ts
+     * // Map-style navigation: left-click pans, right-click rotates
+     * camera.movement.inputMap = [
+     *     { source: "pointer", button: 0, interaction: "pan" },
+     *     { source: "pointer", button: 2, interaction: "rotate" },
+     *     { source: "wheel",              interaction: "zoom" },
+     * ];
+     * ```
+     */
+    public inputMap: InputMapEntry[] = [];
+
+    /**
+     * Resolves a physical input event to a semantic interaction type by walking the inputMap.
+     * Returns the interaction string of the first matching entry, or "none" if no entry matches.
+     * The returned string corresponds to a handler property name on the camera's movement subclass.
+     * @param source - The physical input source (e.g. "pointer", "keyboard")
+     * @param conditions - Optional conditions to match against (button, modifiers, touchCount)
+     * @returns The resolved interaction type string, or "none"
+     */
+    public resolveInteraction(source: InputSource, conditions?: InputConditions): string {
+        for (const entry of this.inputMap) {
+            if (entry.source !== source) {
+                continue;
+            }
+            switch (entry.source) {
+                case "pointer":
+                    if (entry.button !== undefined && entry.button !== conditions?.button) {
+                        continue;
+                    }
+                    if (!this._matchModifiers(entry.modifiers, conditions?.modifiers)) {
+                        continue;
+                    }
+                    break;
+                case "wheel":
+                    if (!this._matchModifiers(entry.modifiers, conditions?.modifiers)) {
+                        continue;
+                    }
+                    break;
+                case "touch":
+                    if (entry.touchCount !== undefined && entry.touchCount !== conditions?.touchCount) {
+                        continue;
+                    }
+                    break;
+                case "keyboard":
+                    if (!this._matchModifiers(entry.modifiers, conditions?.modifiers)) {
+                        continue;
+                    }
+                    break;
+            }
+            return entry.interaction;
+        }
+        return "none";
+    }
+
+    private _matchModifiers(entryModifiers?: InputModifiers, conditionModifiers?: InputModifiers): boolean {
+        if (!entryModifiers) {
+            return true;
+        }
+        if (entryModifiers.ctrl !== undefined && entryModifiers.ctrl !== (conditionModifiers?.ctrl ?? false)) {
+            return false;
+        }
+        if (entryModifiers.shift !== undefined && entryModifiers.shift !== (conditionModifiers?.shift ?? false)) {
+            return false;
+        }
+        if (entryModifiers.alt !== undefined && entryModifiers.alt !== (conditionModifiers?.alt ?? false)) {
+            return false;
+        }
+        return true;
+    }
 
     /**
      * ------------ Speed ----------------

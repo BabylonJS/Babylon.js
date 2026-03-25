@@ -69,6 +69,9 @@ export class GeospatialCamera extends Camera {
         this.addBehavior(this._flyingBehavior);
 
         this.movement = new GeospatialCameraMovement(scene, this._limits, this.position, this.center, this._lookAtVector, options.pickPredicate, this._flyingBehavior);
+        this.movement.handlers.flyTo = {
+            flyTo: (target) => this.flyToPointAsync(target),
+        };
         this._resetToDefault(this._limits);
 
         this.inputs = new GeospatialCameraInputsManager(this);

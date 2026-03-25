@@ -4,22 +4,23 @@
 
 Camera input configuration is handled through scattered, ad-hoc boolean flags:
 
-| Flag | Location | What it controls |
-|---|---|---|
-| `useCtrlForPanning` | `ArcRotateCamera.attachControl()` | Whether ctrl+arrows pan instead of rotate |
-| `multiTouchPanAndZoom` | `OrbitCameraPointersInput` | Whether two-finger gestures can pan and zoom simultaneously |
-| `allowZoomWhilePointerRotating` (PR #18150) | `GeospatialCameraMouseWheelInput` | Whether wheel zoom works during pointer rotation |
+| Flag                                        | Location                          | What it controls                                            |
+| ------------------------------------------- | --------------------------------- | ----------------------------------------------------------- |
+| `useCtrlForPanning`                         | `ArcRotateCamera.attachControl()` | Whether ctrl+arrows pan instead of rotate                   |
+| `multiTouchPanAndZoom`                      | `OrbitCameraPointersInput`        | Whether two-finger gestures can pan and zoom simultaneously |
+| `allowZoomWhilePointerRotating` (PR #18150) | `GeospatialCameraMouseWheelInput` | Whether wheel zoom works during pointer rotation            |
 
 Each new configuration need adds another boolean, another conditional, and often requires one input to inspect a sibling input's state. This doesn't scale, and the flag combinatorics become hard to reason about.
 
 **Motivating examples:**
+
 - [PR #18150](https://github.com/BabylonJS/Babylon.js/pull/18150): Geo camera wheel zoom during rotation. The wheel input reaches into the pointer input via `this.camera.inputs.attached["pointers"]` with a string key + cast.
 - [Forum thread](https://forum.babylonjs.com/t/panning-arcrotatecamera-with-keyboard-without-using-ctrl-key/19878): Community request to swap pan/rotate on ArcRotateCamera. Currently requires modifying `attachControl` signature.
 - Post-9.0 camera input rework (georgie/amoebachant) for framerate-independent movement.
 
 ## Proposed Architecture
 
-Three composable layers, each answering one question:
+Two composable layers, each answering one question:
 
 ```
 ┌───────────────────────────────────────────────────────┐
@@ -27,15 +28,11 @@ Three composable layers, each answering one question:
 │  ↓                                                    │
 │ [Layer 1: Input Mapping]                              │
 │  "What interaction does this gesture mean?"           │
-│  Produces: InteractionType + InputSource              │
+│  Declarative map: source + condition → interaction     │
 │  ↓                                                    │
-│ [Layer 2: Conflict Matrix]                            │
-│  "Can these interactions happen at the same time?"    │
-│  Checks: type + source against conflict rules         │
-│  ↓                                                    │
-│ [Layer 3: Interaction Handlers]                       │
+│ [Layer 2: Interaction Handlers]                       │
 │  "What does this interaction do to the camera?"       │
-│  Keyed by: InteractionType only (source-agnostic)     │
+│  Keyed by: interaction name only (source-agnostic)    │
 │  ↓                                                    │
 │ Camera state updated                                  │
 │  ↓                                                    │
@@ -48,360 +45,323 @@ Three composable layers, each answering one question:
 
 ### Terminology
 
-| Term | Means | Example |
-|---|---|---|
-| **Input** | Physical device event processor (existing concept) | `GeospatialCameraPointersInput` |
-| **Interaction** | Semantic action type + input source (new) | `{ type: Rotate, source: Pointer }` |
-| **Interaction Handler** | Executes a semantic action on the camera (new, typed per interaction) | `GlobeDragHandler`, `TiltHandler` |
-| **Behavior** | Post-input reactive modifier (existing, unchanged) | `AutoRotationBehavior` |
+| Term                    | Means                                                                 | Example                                            |
+| ----------------------- | --------------------------------------------------------------------- | -------------------------------------------------- |
+| **Input**               | Physical device event processor (existing concept)                    | `GeospatialCameraPointersInput`                    |
+| **Interaction**         | Semantic action the camera performs (new)                             | `"rotate"`, `"pan"`, `"zoom"`                      |
+| **Input Map Entry**     | Declarative rule: source + condition → interaction (new)              | `{ source: Pointer, button: 0, interaction: Pan }` |
+| **Interaction Handler** | Executes a semantic action on the camera (new, typed per interaction) | `GlobeDragHandler`, `TiltHandler`                  |
+| **Behavior**            | Post-input reactive modifier (existing, unchanged)                    | `AutoRotationBehavior`                             |
 
 ---
 
 ## Core Types
 
 ```ts
-/** What the camera is doing (semantic action) */
-enum InteractionType {
-    None,
-    Pan,
-    Rotate,
-    Zoom,
-    FlyTo,
-    // extensible per camera type
-}
-
 /** Where the interaction originated (physical device) */
-enum InputSource {
-    Pointer,   // mouse buttons
-    Wheel,     // scroll wheel
-    Touch,     // touch screen
-    Keyboard,  // arrow keys, etc.
-}
+type InputSource = "pointer" | "wheel" | "touch" | "keyboard";
 
-/** A specific active interaction: what + who */
-interface ActiveInteraction {
-    type: InteractionType;
-    source: InputSource;
+type InputModifiers = { ctrl?: boolean; shift?: boolean; alt?: boolean };
+
+/**
+ * InputMapEntry is a discriminated union on `source`.
+ * Each variant only exposes fields relevant to that source — e.g. `button` only
+ * exists on pointer entries, `touchCount` only on touch entries.
+ */
+type PointerInputMapEntry<T extends string = string> = {
+    source: "pointer";  interaction: T;  button?: number;  modifiers?: InputModifiers;
+};
+type WheelInputMapEntry<T extends string = string> = {
+    source: "wheel";    interaction: T;  modifiers?: InputModifiers;
+};
+type TouchInputMapEntry<T extends string = string> = {
+    source: "touch";    interaction: T;  touchCount?: number;
+};
+type KeyboardInputMapEntry<T extends string = string> = {
+    source: "keyboard"; interaction: T;  modifiers?: InputModifiers;
+};
+
+type InputMapEntry<T extends string = string> =
+    | PointerInputMapEntry<T>
+    | WheelInputMapEntry<T>
+    | TouchInputMapEntry<T>
+    | KeyboardInputMapEntry<T>;
+// { source: "pointer", button: 0, touchCount: 1 } → compile error (touchCount not on pointer)
+```
+
+The base `CameraMovement` class provides the `inputMap` and `resolveInteraction()` infrastructure. It does not define `handlers` — each camera's movement subclass declares its own typed `handlers` property.
+
+```ts
+class CameraMovement {
+    /** Ordered list of input-to-interaction rules. First match wins. */
+    public inputMap: InputMapEntry[] = [];
+
+    /** Find the interaction type for a given source and conditions */
+    public resolveInteraction(source: InputSource, conditions?: InputConditions): string {
+        for (const entry of this.inputMap) {
+            if (entry.source !== source) continue;
+            // switch narrows the union — each case only checks fields that exist on that variant
+            switch (entry.source) {
+                case "pointer":
+                    if (entry.button !== undefined && entry.button !== conditions?.button) continue;
+                    if (!this._matchModifiers(entry.modifiers, conditions?.modifiers)) continue;
+                    break;
+                case "wheel":
+                    if (!this._matchModifiers(entry.modifiers, conditions?.modifiers)) continue;
+                    break;
+                case "touch":
+                    if (entry.touchCount !== undefined && entry.touchCount !== conditions?.touchCount) continue;
+                    break;
+                case "keyboard":
+                    if (!this._matchModifiers(entry.modifiers, conditions?.modifiers)) continue;
+                    break;
+            }
+            return entry.interaction;
+        }
+        return "none";
+    }
 }
 ```
 
-### Where source matters
-
-| Layer | Uses source? | Why |
-|---|---|---|
-| Input Mapping | Produces it | Physical event → type + source |
-| Conflict Matrix | **Yes** | Different sources have different coexistence rules |
-| Active Interactions Set | **Yes** | Tracks what's active with source |
-| Interaction Handlers | **No** | Handlers care about *what*, not *who* |
-
 ---
+
+## Camera-Specific Handler Types
+
+Each camera's movement subclass defines its own `handlers` property with its own typed handler types. Different cameras can have completely different handler APIs — the base class doesn't constrain them. TypeScript enforces the correct types per camera because input classes reference the concrete movement type.
+
+### Geospatial camera
+
+```ts
+type GeospatialPanHandler = {
+    start(screenX: number, screenY: number): void;
+    update(screenX: number, screenY: number): void;
+    stop(): void;
+};
+
+type GeospatialRotateHandler = {
+    update(deltaX: number, deltaY: number): void;
+};
+
+type GeospatialZoomHandler = {
+    zoomByDelta(delta: number, toCursor: boolean): void;
+};
+
+type GeospatialFlyToHandler = {
+    flyTo(target: Vector3): Promise<void>;
+};
+
+type GeospatialHandlers = {
+    pan: GeospatialPanHandler;
+    rotate: GeospatialRotateHandler;
+    zoom: GeospatialZoomHandler;
+    flyTo: GeospatialFlyToHandler;
+};
+
+class GeospatialCameraMovement extends CameraMovement {
+    public override inputMap: InputMapEntry<keyof GeospatialHandlers>[] = [];
+    public handlers: Partial<GeospatialHandlers> = {};
+}
+// inputMap interaction field only accepts "pan" | "rotate" | "zoom" | "flyTo"
+// { interaction: "typo" } is a compile error
+```
+
+### ArcRotateCamera (different handler APIs)
+
+```ts
+type ArcRotatePanHandler = {
+    pan(deltaAlpha: number, deltaBeta: number): void;
+};
+
+type ArcRotateRotateHandler = {
+    orbit(deltaAlpha: number, deltaBeta: number): void;
+};
+
+type ArcRotateZoomHandler = {
+    zoomByRadius(deltaRadius: number): void;
+};
+
+type ArcRotateHandlers = {
+    pan: ArcRotatePanHandler;
+    rotate: ArcRotateRotateHandler;
+    zoom: ArcRotateZoomHandler;
+};
+
+class ArcRotateCameraMovement extends CameraMovement {
+    public override inputMap: InputMapEntry<keyof ArcRotateHandlers>[] = [];
+    public handlers: Partial<ArcRotateHandlers> = {};
+}
+// inputMap interaction field only accepts "pan" | "rotate" | "zoom"
+```
+
+The same `"pan"` string in the input map means different things for different cameras — geospatial pan drags the globe with screen coordinates, arc-rotate pan moves by angular offsets. TypeScript ensures each camera's input classes call the correct handler methods.
 
 ## Layer 1: Input Mapping
 
-Maps physical gestures to semantic interactions. Replaces hardcoded `switch (evt.button)` blocks and `_ctrlPressed` booleans.
+Maps physical gestures to semantic interactions via a declarative data structure on the movement class. Each entry says "when _this source_ fires with _these conditions_, it means _this interaction_." First matching entry wins.
 
-### Interface
-
-```ts
-interface InputContext {
-    device: InputSource;
-    button?: number;         // mouse button (0=left, 1=middle, 2=right)
-    key?: string;            // keyboard key
-    modifiers: {
-        ctrl: boolean;
-        shift: boolean;
-        alt: boolean;
-    };
-    touchCount?: number;     // number of active touches
-}
-
-/** Returns the interaction type; source is inferred from context.device */
-type InputMappingFunction = (context: InputContext) => InteractionType;
-```
-
-The mapping function returns `InteractionType`. The `InputSource` is automatically derived from `context.device`, so the resulting `ActiveInteraction` is `{ type: mapping(ctx), source: ctx.device }`.
-
-### Default mappings (per camera type)
+### Default input maps (per camera type)
 
 **Geospatial camera:**
+
 ```ts
-const geoDefault: InputMappingFunction = (ctx) => {
-    if (ctx.device === InputSource.Pointer) {
-        if (ctx.button === 0) return InteractionType.Pan;
-        if (ctx.button === 1 || ctx.button === 2) return InteractionType.Rotate;
-    }
-    if (ctx.device === InputSource.Touch) {
-        if (ctx.touchCount === 1) return InteractionType.Pan;
-    }
-    if (ctx.device === InputSource.Wheel) {
-        return InteractionType.Zoom;
-    }
-    return InteractionType.None;
-};
+camera.movement.inputMap = [
+    { source: "pointer", button: 0, interaction: "pan" },
+    { source: "pointer", button: 1, interaction: "rotate" },
+    { source: "pointer", button: 2, interaction: "rotate" },
+    { source: "touch", touchCount: 1, interaction: "pan" },
+    { source: "wheel", interaction: "zoom" },
+    { source: "keyboard", modifiers: { ctrl: true }, interaction: "rotate" },
+    { source: "keyboard", modifiers: { alt: true }, interaction: "rotate" },
+    { source: "keyboard", interaction: "pan" },
+];
 ```
 
 **ArcRotateCamera (current behavior):**
-```ts
-const arcRotateDefault: InputMappingFunction = (ctx) => {
-    if (ctx.device === InputSource.Keyboard) {
-        return ctx.modifiers.ctrl ? InteractionType.Pan : InteractionType.Rotate;
-    }
-    if (ctx.device === InputSource.Pointer) {
-        if (ctx.button === 0) return InteractionType.Rotate;
-        if (ctx.button === 2) return InteractionType.Pan;
-    }
-    return InteractionType.None;
-};
-```
-
-### User override (forum thread ask)
-```ts
-// "I want default arrows to pan, ctrl+arrows to rotate"
-camera.inputMapping = (ctx) => {
-    if (ctx.device === InputSource.Keyboard) {
-        return ctx.modifiers.ctrl ? InteractionType.Rotate : InteractionType.Pan;
-    }
-    return arcRotateDefault(ctx); // everything else unchanged
-};
-```
-
-### What it replaces
-- `useCtrlForPanning` parameter on `attachControl()`
-- Hardcoded `switch (evt.button)` in input classes
-- `_ctrlPressed` internal state tracking
-
----
-
-## Layer 2: Conflict Matrix
-
-Declares which interactions cannot coexist. Supports source-specific rules to distinguish e.g. wheel zoom during pointer rotation (allowed) from touch zoom during touch rotation (blocked).
-
-### Interface
 
 ```ts
-/** A pattern that matches active interactions. Omitting source = wildcard (any source). */
-interface InteractionPattern {
-    type: InteractionType;
-    source?: InputSource;    // undefined = matches any source
-}
-
-/** Two interaction patterns that cannot coexist. Symmetric. */
-interface InteractionConflict {
-    a: InteractionPattern;
-    b: InteractionPattern;
-}
-
-class CameraMovement {
-    /** Currently active interactions (gesture-level state, not frame deltas) */
-    public activeInteractions = new Set<ActiveInteraction>();
-
-    /** Pairs of interactions that cannot coexist */
-    public interactionConflicts: InteractionConflict[] = [];
-
-    /** Check if an interaction is allowed given current active interactions */
-    public canPerform(interaction: ActiveInteraction): boolean {
-        for (const active of this.activeInteractions) {
-            for (const conflict of this.interactionConflicts) {
-                if ((this._matches(active, conflict.a) && this._matches(interaction, conflict.b)) ||
-                    (this._matches(active, conflict.b) && this._matches(interaction, conflict.a))) {
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
-
-    private _matches(interaction: ActiveInteraction, pattern: InteractionPattern): boolean {
-        return interaction.type === pattern.type &&
-               (pattern.source === undefined || interaction.source === pattern.source);
-    }
-}
-```
-
-### Default conflicts (geospatial camera)
-
-```ts
-this.movement.interactionConflicts = [
-    // Pan blocks all zoom (regardless of source)
-    { a: { type: InteractionType.Pan },    b: { type: InteractionType.Zoom } },
-
-    // Touch rotation blocks touch zoom (no pinch-zoom while two-finger rotating)
-    { a: { type: InteractionType.Rotate, source: InputSource.Touch },
-      b: { type: InteractionType.Zoom,   source: InputSource.Touch } },
-
-    // Pointer rotation blocks wheel zoom (current default behavior)
-    { a: { type: InteractionType.Rotate, source: InputSource.Pointer },
-      b: { type: InteractionType.Zoom,   source: InputSource.Wheel } },
+camera.movement.inputMap = [
+    { source: "pointer", button: 0, interaction: "rotate" },
+    { source: "pointer", button: 2, interaction: "pan" },
+    { source: "wheel", interaction: "zoom" },
+    { source: "keyboard", modifiers: { ctrl: true }, interaction: "pan" },
+    { source: "keyboard", interaction: "rotate" },
 ];
 ```
 
-### User override (PR #18150 ask)
+Note: more-specific entries (with modifiers) must come **before** less-specific entries for the same source, since first match wins.
+
+### User override examples
 
 ```ts
-// "Allow wheel zoom while pointer-rotating"
-// Just remove the pointer-rotate ↔ wheel-zoom entry:
-camera.movement.interactionConflicts = [
-    { a: { type: InteractionType.Pan },    b: { type: InteractionType.Zoom } },
-    { a: { type: InteractionType.Rotate, source: InputSource.Touch },
-      b: { type: InteractionType.Zoom,   source: InputSource.Touch } },
-    // pointer-rotate ↔ wheel-zoom conflict gone
+// "I want left-click to pan, right-click to rotate" (map-style navigation)
+// Just reassign the pointer entries:
+camera.movement.inputMap = [
+    { source: "pointer", button: 0, interaction: "pan" },
+    { source: "pointer", button: 2, interaction: "rotate" },
+    { source: "wheel", interaction: "zoom" },
+    { source: "keyboard", interaction: "rotate" },
 ];
 ```
 
-### How `multiTouchPanAndZoom` maps
 ```ts
-// multiTouchPanAndZoom = false (blocks simultaneous touch pan + touch zoom)
-{ a: { type: InteractionType.Pan, source: InputSource.Touch },
-  b: { type: InteractionType.Zoom, source: InputSource.Touch } }
-
-// multiTouchPanAndZoom = true → omit this entry
+// "I want default arrows to pan, ctrl+arrows to rotate" (forum thread ask)
+// Just reorder the keyboard entries:
+camera.movement.inputMap = [
+    ...camera.movement.inputMap.filter((e) => e.source !== "keyboard"),
+    { source: "keyboard", modifiers: { ctrl: true }, interaction: "rotate" },
+    { source: "keyboard", interaction: "pan" },
+];
 ```
 
-### How inputs participate
-
-Inputs register/deregister gesture state on the movement class. They no longer inspect each other.
+### How inputs use the map
 
 ```ts
 // Pointer input
 onButtonDown(evt) {
-    const interactionType = this.camera.inputMapping({
-        device: InputSource.Pointer, button: evt.button, modifiers: { ... }
+    this._activeType = this.camera.movement.resolveInteraction("pointer", {
+        button: evt.button, modifiers: { ctrl: evt.ctrlKey, ... }
     });
-    const interaction = { type: interactionType, source: InputSource.Pointer };
-    this.camera.movement.activeInteractions.add(interaction);
-    this._activeInteraction = interaction; // track for cleanup
+    if (this._activeType === "pan") {
+        this.camera.movement.handlers.pan?.start(scene.pointerX, scene.pointerY);
+    }
 }
 
-onButtonUp(evt) {
-    if (this._activeInteraction) {
-        this.camera.movement.activeInteractions.delete(this._activeInteraction);
-        this._activeInteraction = null;
+onTouch(point, offsetX, offsetY) {
+    if (this._activeType === "pan") {
+        this.camera.movement.handlers.pan?.update(scene.pointerX, scene.pointerY);
+    } else if (this._activeType === "rotate") {
+        this.camera.movement.handlers.rotate?.update(offsetX, offsetY);
     }
 }
 
 // Wheel input
 checkInputs() {
-    const interaction = { type: InteractionType.Zoom, source: InputSource.Wheel };
-    if (this.camera.movement.canPerform(interaction)) {
-        const handler = this.camera.movement.getHandler(InteractionType.Zoom);
-        handler?.zoomByDelta(this._wheelDeltaY, cursorX, cursorY);
-    }
-    super.checkInputs();
+    this.camera.movement.handlers.zoom?.zoomByDelta(this._wheelDeltaY, true);
 }
 ```
 
 ### What it replaces
+
+- `useCtrlForPanning` parameter on `attachControl()`
+- Hardcoded `switch (evt.button)` in input classes
+- `_ctrlPressed` internal state tracking
 - `allowZoomWhilePointerRotating` on wheel input
 - `multiTouchPanAndZoom` on pointer input
-- `if (this.isDragging || this.rotationAccumulatedPixels.lengthSquared() > Epsilon)` in movement class
 - Any input reaching into a sibling via `this.camera.inputs.attached["..."]`
 
-### Key design decision: gesture state, not frame deltas
+### Performance: avoiding allocations in the render loop
 
-The current code checks `rotationAccumulatedPixels.lengthSquared() > Epsilon` per frame. If a user holds right-click but pauses mouse motion, the delta goes to zero and zoom re-enables mid-gesture. `activeInteractions` tracks button-down/button-up state, which correctly represents "the user is in a rotation gesture" regardless of per-frame motion.
+`resolveInteraction()` accepts an `InputConditions` object. For event-driven inputs (pointer `onButtonDown`, `onButtonUp`), allocating this inline is fine — these don't run per frame. But for inputs whose `checkInputs()` runs every frame (keyboard with held keys), the conditions object must be **cached and mutated**, not allocated:
+
+```ts
+// ❌ Bad: allocates every frame
+checkInputs() {
+    const interaction = this.camera.movement.resolveInteraction("keyboard", {
+        modifiers: { ctrl: this._modifierPressed, alt: this._modifierPressed }
+    });
+}
+
+// ✅ Good: cache once, mutate per frame
+private _keyboardConditions: InputConditions = { modifiers: { ctrl: false, alt: false } };
+
+checkInputs() {
+    this._keyboardConditions.modifiers!.ctrl = this._modifierPressed;
+    this._keyboardConditions.modifiers!.alt = this._modifierPressed;
+    const interaction = this.camera.movement.resolveInteraction("keyboard", this._keyboardConditions);
+}
+```
+
+This follows the existing Babylon.js pattern (e.g. `TmpVectors`) of pre-allocating reusable objects to avoid GC pressure in the render loop. The `resolveInteraction()` scan itself (6–8 string comparisons) is negligible.
 
 ---
 
-## Layer 3: Interaction Handlers
+## Layer 2: Interaction Handlers
 
-Defines what each interaction actually does to the camera. Each interaction type has its own typed handler interface, because different interactions have fundamentally different data shapes (pan takes screen coords, zoom is scalar, flyTo is async).
+Defines what each interaction actually does to the camera. Handler types are defined per camera type (see Camera-Specific Handler Types above). The `handlers` property lives on each movement subclass — the base class provides the input map infrastructure, each subclass provides its own typed handlers.
 
-### Typed handler interfaces
+### Handlers are keyed by interaction name (not source)
 
-```ts
-interface PanHandler {
-    /** Begin a pan gesture at screen position */
-    start(screenX: number, screenY: number): void;
-    /** Continue panning to new screen position */
-    update(screenX: number, screenY: number): void;
-    /** End the pan gesture */
-    stop(): void;
-}
-
-interface RotateHandler {
-    /** Apply rotation from pixel deltas */
-    update(deltaX: number, deltaY: number): void;
-}
-
-interface ZoomHandler {
-    /** Zoom by a scroll/pinch delta, optionally toward a screen position */
-    zoomByDelta(delta: number, cursorScreenX?: number, cursorScreenY?: number): void;
-    /** Zoom toward a specific world point by a distance */
-    zoomToPoint(point: Vector3, distance: number): void;
-}
-
-interface FlyToHandler {
-    /** Animate the camera to a target point */
-    flyTo(target: Vector3): Promise<void>;
-}
-```
-
-### Type-safe registry
-
-```ts
-/** Maps interaction types to their typed handler interfaces */
-interface InteractionHandlerMap {
-    [InteractionType.Pan]: PanHandler;
-    [InteractionType.Rotate]: RotateHandler;
-    [InteractionType.Zoom]: ZoomHandler;
-    [InteractionType.FlyTo]: FlyToHandler;
-}
-
-class CameraMovement {
-    private _handlers = new Map<InteractionType, unknown>();
-
-    public setHandler<K extends InteractionType>(
-        interaction: K,
-        handler: InteractionHandlerMap[K]
-    ): void {
-        this._handlers.set(interaction, handler);
-    }
-
-    public getHandler<K extends InteractionType>(
-        interaction: K
-    ): InteractionHandlerMap[K] | undefined {
-        return this._handlers.get(interaction) as InteractionHandlerMap[K] | undefined;
-    }
-}
-```
-
-### Handlers are keyed by InteractionType only (not source)
-
-A `PanHandler` doesn't care whether the pan was triggered by a mouse drag or a keyboard arrow press — it just knows how to pan the camera. The source distinction is handled entirely by the input mapping and conflict matrix layers.
+A `PanHandler` doesn't care whether the pan was triggered by a mouse drag or a keyboard arrow press — it just knows how to pan the camera. The source distinction is handled entirely by the input mapping layer.
 
 ### Default handlers (geospatial camera)
 
 ```ts
-camera.movement.setHandler(InteractionType.Pan, new GlobeDragHandler(camera));
-camera.movement.setHandler(InteractionType.Rotate, new TiltHandler(camera));
-camera.movement.setHandler(InteractionType.Zoom, new ZoomToPointHandler(camera));
-camera.movement.setHandler(InteractionType.FlyTo, new FlyToPointHandler(camera));
+// Pan, rotate, zoom handlers set up by GeospatialCameraMovement constructor
+// (delegates to existing movement methods: startDrag, handleDrag, stopDrag, handleZoom, etc.)
+
+// flyTo handler wired up by GeospatialCamera constructor
+// (lives on camera because it calls camera.flyToPointAsync, avoiding circular dependency)
+camera.movement.handlers.flyTo = {
+    flyTo: (target) => camera.flyToPointAsync(target),
+};
 ```
 
 ### How inputs call handlers
 
-Inputs know the physical shape of their data and call the appropriate handler method:
+Inputs resolve their interaction type via `resolveInteraction()` (Layer 1), then call the appropriate handler via `handlers.*`:
 
 ```ts
 // Pointer input — pan gesture
 onButtonDown(evt) {
-    const type = this.camera.inputMapping({ device: InputSource.Pointer, button: evt.button, ... });
-    if (type === InteractionType.Pan) {
-        this.camera.movement.getHandler(InteractionType.Pan)?.start(scene.pointerX, scene.pointerY);
+    this._activeType = this.camera.movement.resolveInteraction("pointer", {
+        button: evt.button, modifiers: { ctrl: evt.ctrlKey, ... }
+    });
+    if (this._activeType === "pan") {
+        this.camera.movement.handlers.pan?.start(scene.pointerX, scene.pointerY);
     }
 }
 
 onTouch(point, offsetX, offsetY) {
-    if (this._activeType === InteractionType.Pan) {
-        this.camera.movement.getHandler(InteractionType.Pan)?.update(scene.pointerX, scene.pointerY);
-    } else if (this._activeType === InteractionType.Rotate) {
-        this.camera.movement.getHandler(InteractionType.Rotate)?.update(offsetX, offsetY);
+    if (this._activeType === "pan") {
+        this.camera.movement.handlers.pan?.update(scene.pointerX, scene.pointerY);
+    } else if (this._activeType === "rotate") {
+        this.camera.movement.handlers.rotate?.update(offsetX, offsetY);
     }
 }
 
 onButtonUp(evt) {
-    if (this._activeType === InteractionType.Pan) {
-        this.camera.movement.getHandler(InteractionType.Pan)?.stop();
+    if (this._activeType === "pan") {
+        this.camera.movement.handlers.pan?.stop();
     }
 }
 
@@ -409,7 +369,7 @@ onButtonUp(evt) {
 onDoubleTap() {
     const pickResult = scene.pick(scene.pointerX, scene.pointerY);
     if (pickResult.pickedPoint) {
-        this.camera.movement.getHandler(InteractionType.FlyTo)?.flyTo(pickResult.pickedPoint);
+        this.camera.movement.handlers.flyTo?.flyTo(pickResult.pickedPoint);
     }
 }
 ```
@@ -418,17 +378,19 @@ onDoubleTap() {
 
 ```ts
 // "I want right-click to orbit around the picked point, not the camera target"
-camera.movement.setHandler(InteractionType.Rotate, new OrbitAroundPickPointHandler(camera));
-// Input mapping and conflict matrix unchanged
+camera.movement.handlers.rotate = new OrbitAroundPickPointHandler(camera);
+// Input mapping unchanged — still maps right-click to "rotate"
+// OrbitAroundPickPointHandler must implement GeospatialRotateHandler
 ```
 
 ```ts
 // "I want pan to have inertia"
-camera.movement.setHandler(InteractionType.Pan, new InertiaPanHandler(camera));
-// Same PanHandler interface, different implementation
+camera.movement.handlers.pan = new InertiaPanHandler(camera);
+// Must implement GeospatialPanHandler (start/update/stop with screen coords)
 ```
 
 ### What it replaces
+
 - Hardcoded `handleDrag()`, `handleZoom()`, `_handleTilt()` scattered across input classes
 - Movement logic that's split between inputs and the movement class
 
@@ -438,16 +400,7 @@ camera.movement.setHandler(InteractionType.Pan, new InertiaPanHandler(camera));
 
 The existing `Behavior<T>` system is **unchanged and complementary**. Behaviors attach to cameras via `addBehavior()`, run after `onAfterCheckInputsObservable`, and apply secondary effects (auto-rotate when idle, bounce at limits, frame a mesh, adjust clip planes).
 
-The three-layer system runs *before* behaviors — it produces the core camera movement that behaviors then react to.
-
-Existing behaviors may benefit from the conflict matrix:
-```ts
-// AutoRotationBehavior currently tracks pointer events independently to detect idle.
-// With activeInteractions, it could simply check:
-if (movement.activeInteractions.size === 0) {
-    // No user interaction — start auto-rotate countdown
-}
-```
+The two-layer system runs _before_ behaviors — it produces the core camera movement that behaviors then react to.
 
 ---
 
@@ -457,40 +410,38 @@ if (movement.activeInteractions.size === 0) {
 
 **Before (PR approach):** New `allowZoomWhilePointerRotating` boolean on wheel input + wheel input queries pointer input via `this.camera.inputs.attached["pointers"]` string-keyed lookup + cast.
 
-**After:** Remove one source-specific entry from the conflict matrix.
-```ts
-camera.movement.interactionConflicts = [
-    { a: { type: Pan },    b: { type: Zoom } },
-    { a: { type: Rotate, source: Touch },  b: { type: Zoom, source: Touch } },
-    // pointer-rotate ↔ wheel-zoom conflict was here, now removed
-];
-```
+**After:** The wheel input resolves its interaction type through the input map and calls the zoom handler directly. No cross-input inspection needed — whether zoom is allowed during rotation is an input-level concern (the wheel input simply doesn't know or care what the pointer input is doing).
 
 ### Example 2: Forum thread (swap pan/rotate for ArcRotateCamera)
 
 **Before:** Modify `attachControl()` signature, add `CtrlKeyBehaviours` enum.
 
-**After:** Override the input mapping function.
+**After:** Update the input map.
+
 ```ts
-camera.inputMapping = (ctx) => {
-    if (ctx.device === InputSource.Keyboard) {
-        return ctx.modifiers.ctrl ? InteractionType.Rotate : InteractionType.Pan;
-    }
-    return arcRotateDefault(ctx);
-};
+camera.movement.inputMap = [
+    { source: "pointer", button: 0, interaction: "rotate" },
+    { source: "pointer", button: 2, interaction: "pan" },
+    { source: "wheel", interaction: "zoom" },
+    // Swapped: ctrl+arrows = rotate, plain arrows = pan
+    { source: "keyboard", modifiers: { ctrl: true }, interaction: "rotate" },
+    { source: "keyboard", interaction: "pan" },
+];
 ```
 
 ### Example 3: Map-style navigation
 
 **Before:** Subclass pointer input, override `onButtonDown`/`onTouch`.
 
-**After:** Override the input mapping function.
+**After:** Update two entries in the input map.
+
 ```ts
-camera.inputMapping = (ctx) => {
-    if (ctx.device === InputSource.Pointer && ctx.button === 0) return InteractionType.Pan;
-    if (ctx.device === InputSource.Pointer && ctx.button === 2) return InteractionType.Rotate;
-    return defaultMapping(ctx);
-};
+camera.movement.inputMap = [
+    { source: "pointer", button: 0, interaction: "pan" },
+    { source: "pointer", button: 2, interaction: "rotate" },
+    { source: "wheel", interaction: "zoom" },
+    { source: "keyboard", interaction: "rotate" },
+];
 ```
 
 ### Example 4: Custom orbit-around-pick-point
@@ -498,57 +449,46 @@ camera.inputMapping = (ctx) => {
 **Before:** Subclass input class, override movement methods.
 
 **After:** Swap one interaction handler (type-safe).
+
 ```ts
-camera.movement.setHandler(InteractionType.Rotate, new OrbitAroundPickPointHandler(camera));
+camera.movement.handlers.rotate = new OrbitAroundPickPointHandler(camera);
 ```
 
 ### Example 5: Allow multitouch pan + zoom on orbit camera
 
 **Before:** Set `multiTouchPanAndZoom = true` on pointer input.
 
-**After:** Remove the touch-pan ↔ touch-zoom conflict entry.
+**After:** Multi-touch classification stays inside the pointer input (it's a gesture-detection concern, not a mapping concern). The pointer input determines whether a two-finger gesture is a pan, zoom, or both, and calls the appropriate handler(s).
 
 ---
 
 ## Implementation Staging
 
-The three layers are independent and can be shipped incrementally.
+The two layers are independent and can be shipped incrementally.
 
-### Phase 1: Conflict Matrix (smallest, unblocks PR #18150)
+### Phase 1: Input Mapping (unblocks forum thread, simplifies PR #18150)
 
-**Scope:** Movement class gets `activeInteractions`, `interactionConflicts`, `canPerform()` with source-aware matching. Existing inputs register/deregister gesture state. Movement class uses `canPerform()` instead of hardcoded conditionals.
-
-**Changes:**
-- `InteractionType` enum, `InputSource` enum, `ActiveInteraction` interface, `InteractionPattern` interface, `InteractionConflict` interface (new file)
-- `CameraMovement` / `GeospatialCameraMovement`: add `activeInteractions`, `interactionConflicts`, `canPerform()`, `_matches()`
-- `GeospatialCameraPointersInput`: register/deregister interactions on button down/up/lost-focus
-- `GeospatialCameraMouseWheelInput`: check `canPerform({ type: Zoom, source: Wheel })` before applying
-- Remove `rotationAccumulatedPixels.lengthSquared() > Epsilon` check from movement class
-
-**Backward compat:** Fully backward compatible. New API is additive. Default conflict list preserves current behavior.
-
-### Phase 2: Input Mapping (addresses forum thread, post-9.0)
-
-**Scope:** Extract gesture→interaction mapping from hardcoded switch statements into a configurable function. Each camera type provides a default.
+**Scope:** Movement class gets `inputMap` array and `resolveInteraction()`. Each movement subclass defines its own typed `handlers` property. Existing inputs use them instead of hardcoding button→action logic.
 
 **Changes:**
-- `InputContext` interface, `InputMappingFunction` type (new)
-- Camera base class or movement class gets `inputMapping` property
-- Refactor existing input classes to call mapping function instead of hardcoding button→action
+
+- `InputSource` (string literal union), `InputMapEntry` type (new file)
+- `CameraMovement`: add `inputMap`, `resolveInteraction()`
+- Each camera movement subclass: define `handlers` property with camera-specific handler types (e.g. `GeospatialHandlers`, `ArcRotateHandlers`)
+- Refactor existing input classes to call `resolveInteraction()` and `handlers.*` instead of hardcoded switch/if chains
 - Deprecate `useCtrlForPanning` on `attachControl()`
 
-**Backward compat:** Default mapping functions reproduce current behavior. `useCtrlForPanning` sets the mapping function internally during deprecation period.
+**Backward compat:** Fully backward compatible. Default input maps and handlers reproduce current behavior. `useCtrlForPanning` sets the map internally during deprecation period.
 
-### Phase 3: Interaction Handlers (largest refactor)
+### Phase 2: Handler extraction (largest refactor)
 
-**Scope:** Extract movement logic from input classes and movement class into pluggable, typed, per-interaction handlers.
+**Scope:** Extract movement logic from movement class into standalone handler classes that can be composed and reused across camera types.
 
 **Changes:**
-- Typed handler interfaces: `PanHandler`, `RotateHandler`, `ZoomHandler`, `FlyToHandler` (new)
-- `InteractionHandlerMap` type mapping, type-safe `setHandler()` / `getHandler()` on movement class
-- Concrete handlers extracted from existing code (`GlobeDragHandler`, `TiltHandler`, `ZoomToPointHandler`, etc.)
-- Movement class becomes a thin coordinator: routes interactions to handlers, manages state
-- Input classes become thin: map events, register gestures, call typed handler methods
+
+- Concrete handler classes extracted from existing code (`GlobeDragHandler`, `TiltHandler`, `ZoomToPointHandler`, etc.)
+- Movement class becomes a thin coordinator: owns `inputMap`, `handlers`, accumulated pixel state, inertia
+- Input classes become thin: map events via `resolveInteraction()`, call handler methods
 
 **Backward compat:** Internal refactor. Public API surface of inputs and movement class preserved via delegation.
 
@@ -556,12 +496,10 @@ The three layers are independent and can be shipped incrementally.
 
 ## Open Questions
 
-1. **Where does the mapping function live?** On the camera, on the movement class, or on the inputs manager?
+1. **Multi-touch classification:** Two-finger gestures can be pinch (zoom) or pan depending on finger movement. This classification currently happens inside the pointer input. Does it move to the mapping layer (via `touchCount` or similar) or stay in the input as gesture detection?
 
-2. **Multi-touch classification:** Two-finger gestures can be pinch (zoom) or pan (rotate) depending on finger movement. This classification currently happens inside the pointer input. Does it move to the mapping layer or stay in the input?
+2. **Backward compatibility for `multiTouchPanAndZoom`:** This flag on `OrbitCameraPointersInput` controls both what a two-finger gesture means (pan vs zoom vs both) and whether they can happen simultaneously. Migration path needs care.
 
-3. **Backward compatibility for `multiTouchPanAndZoom`:** This flag on `OrbitCameraPointersInput` controls both the mapping (two-finger = pan+zoom vs pan-only) and the conflict (can they coexist). In the new model these are separate layers. Migration path needs care.
+3. **Extensibility:** If a camera type adds a new interaction (e.g. `tilt`), it just adds a property to its own handlers type. No base class changes needed.
 
-4. **Extensibility of InteractionHandlerMap:** If a camera type adds a new `InteractionType`, how does it extend the handler map type? Module augmentation, or a more open-ended registry?
-
-5. **Conflict matrix mutability:** Should the conflict list be mutable at runtime (e.g. toggling a conflict during a session), or set once at init? If mutable, do we need eviction of active interactions that become conflicted?
+4. **Interaction coexistence:** Without a conflict matrix, cross-input blocking (e.g. "don't zoom while panning") stays inside individual inputs or the movement class. If this becomes a recurring need, a lightweight conflict mechanism could be added later without changing the input map or handler layers.

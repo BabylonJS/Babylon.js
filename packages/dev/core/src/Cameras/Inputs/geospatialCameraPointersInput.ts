@@ -8,9 +8,8 @@ import { OrbitCameraPointersInput } from "./orbitCameraPointersInput";
  * Geospatial camera inputs can simulate dragging the globe around or tilting the camera around some point on the globe
  * This class will update the GeospatialCameraMovement class's movementDeltaCurrentFrame, and the camera is responsible for using these updates to calculate viewMatrix appropriately
  *
- * Left mouse button: drag globe
- * Middle mouse button: tilt globe
- * Right mouse button: tilt globe
+ * Uses the inputMap on the movement class to determine which button maps to which interaction.
+ * Default: Left mouse button = pan (drag globe), Middle/Right mouse button = rotate (tilt)
  *
  */
 export class GeospatialCameraPointersInput extends OrbitCameraPointersInput {
@@ -18,6 +17,9 @@ export class GeospatialCameraPointersInput extends OrbitCameraPointersInput {
 
     private _initialPinchSquaredDistance: number = 0;
     private _pinchCentroid: Nullable<PointerTouch> = null;
+
+    /** The resolved interaction type for the current pointer gesture */
+    private _activeType: string = "none";
 
     /**
      * Defines the rotation sensitivity of the pointer when rotating camera around the x axis (pitch)
@@ -45,27 +47,21 @@ export class GeospatialCameraPointersInput extends OrbitCameraPointersInput {
     public override onButtonDown(evt: IPointerEvent): void {
         this.camera.movement.activeInput = true;
         const scene = this.camera.getScene();
-        switch (evt.button) {
-            case 0: // Left button - drag/pan globe under cursor
-                this.camera.movement.startDrag(scene.pointerX, scene.pointerY);
-                break;
-            default:
-                break;
+
+        this._activeType = this.camera.movement.resolveInteraction("pointer", { button: evt.button });
+
+        if (this._activeType === "pan") {
+            this.camera.movement.handlers.pan?.start(scene.pointerX, scene.pointerY);
         }
     }
 
     public override onTouch(point: Nullable<PointerTouch>, offsetX: number, offsetY: number): void {
-        // Single finger touch (no button property) or left button (button 0) = drag
-        const button = point?.button ?? 0; // Default to button 0 (drag) if undefined
         const scene = this.camera.getScene();
-        switch (button) {
-            case 0: // Left button / single touch - drag/pan globe under cursor
-                this.camera.movement.handleDrag(scene.pointerX, scene.pointerY);
-                break;
-            case 1: // Middle button - tilt camera
-            case 2: // Right button - tilt camera
-                this._handleTilt(offsetX, offsetY);
-                break;
+
+        if (this._activeType === "pan") {
+            this.camera.movement.handlers.pan?.update(scene.pointerX, scene.pointerY);
+        } else if (this._activeType === "rotate") {
+            this.camera.movement.handlers.rotate?.update(offsetX * this.yawSensitivity, -offsetY * this.pitchSensitivity);
         }
     }
 
@@ -121,14 +117,14 @@ export class GeospatialCameraPointersInput extends OrbitCameraPointersInput {
         if (previousMultiTouchPanPosition && multiTouchPanPosition) {
             const moveDeltaX = multiTouchPanPosition.x - previousMultiTouchPanPosition.x;
             const moveDeltaY = multiTouchPanPosition.y - previousMultiTouchPanPosition.y;
-            this._handleTilt(moveDeltaX, moveDeltaY);
+            this.camera.movement.handlers.rotate?.update(moveDeltaX * this.yawSensitivity, -moveDeltaY * this.pitchSensitivity);
         }
     }
 
     public override onDoubleTap(type: string): void {
         const pickResult = this.camera._scene.pick(this.camera._scene.pointerX, this.camera._scene.pointerY, this.camera.movement.pickPredicate);
         if (pickResult.pickedPoint) {
-            void this.camera.flyToPointAsync(pickResult.pickedPoint);
+            this.camera.movement.handlers.flyTo?.flyTo(pickResult.pickedPoint);
         }
     }
 
@@ -164,7 +160,10 @@ export class GeospatialCameraPointersInput extends OrbitCameraPointersInput {
     }
 
     public override onButtonUp(_evt: IPointerEvent): void {
-        this.camera.movement.stopDrag();
+        if (this._activeType === "pan") {
+            this.camera.movement.handlers.pan?.stop();
+        }
+        this._activeType = "none";
         this.camera.movement.activeInput = false;
         this._initialPinchSquaredDistance = 0;
         this._pinchCentroid = null;
@@ -172,13 +171,9 @@ export class GeospatialCameraPointersInput extends OrbitCameraPointersInput {
     }
 
     public override onLostFocus(): void {
+        this._activeType = "none";
         this._initialPinchSquaredDistance = 0;
         this._pinchCentroid = null;
         super.onLostFocus();
-    }
-
-    private _handleTilt(deltaX: number, deltaY: number): void {
-        this.camera.movement.rotationAccumulatedPixels.y += deltaX * this.yawSensitivity; // yaw - looking side to side
-        this.camera.movement.rotationAccumulatedPixels.x -= deltaY * this.pitchSensitivity; // pitch - look up towards sky / down towards ground
     }
 }
