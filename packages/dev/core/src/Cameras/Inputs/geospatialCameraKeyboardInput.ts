@@ -198,11 +198,11 @@ export class GeospatialCameraKeyboardInput implements ICameraInput<GeospatialCam
 
                 // Zoom keys always map to zoom regardless of modifiers
                 if (this.keysZoomIn.indexOf(keyCode) !== -1) {
-                    movement.handlers.zoom?.(this.zoomSensitivity, false);
+                    movement.handlers.zoom(this.zoomSensitivity, false);
                     continue;
                 }
                 if (this.keysZoomOut.indexOf(keyCode) !== -1) {
-                    movement.handlers.zoom?.(-this.zoomSensitivity, false);
+                    movement.handlers.zoom(-this.zoomSensitivity, false);
                     continue;
                 }
 
@@ -213,13 +213,13 @@ export class GeospatialCameraKeyboardInput implements ICameraInput<GeospatialCam
 
                 if (interaction === "rotate") {
                     if (this.keysLeft.indexOf(keyCode) !== -1) {
-                        movement.handlers.rotate?.(-this.rotationSensitivity, 0);
+                        movement.handlers.rotate(-this.rotationSensitivity, 0);
                     } else if (this.keysRight.indexOf(keyCode) !== -1) {
-                        movement.handlers.rotate?.(this.rotationSensitivity, 0);
+                        movement.handlers.rotate(this.rotationSensitivity, 0);
                     } else if (this.keysUp.indexOf(keyCode) !== -1) {
-                        movement.handlers.rotate?.(0, -this.rotationSensitivity);
+                        movement.handlers.rotate(0, -this.rotationSensitivity);
                     } else if (this.keysDown.indexOf(keyCode) !== -1) {
-                        movement.handlers.rotate?.(0, this.rotationSensitivity);
+                        movement.handlers.rotate(0, this.rotationSensitivity);
                     }
                 } else if (interaction === "pan") {
                     // Call into movement class handleDrag so that behavior matches that of pointer input, simulating drag from center of screen.
@@ -228,17 +228,17 @@ export class GeospatialCameraKeyboardInput implements ICameraInput<GeospatialCam
                     const hardwareScaling = this._engine.getHardwareScalingLevel();
                     const centerX = (this._engine.getRenderWidth() / 2) * hardwareScaling;
                     const centerY = (this._engine.getRenderHeight() / 2) * hardwareScaling;
-                    movement.handlers.pan?.start(centerX, centerY);
+                    movement.handlers.pan.start(centerX, centerY);
                     if (this.keysLeft.indexOf(keyCode) !== -1) {
-                        movement.handlers.pan?.update(centerX + this.panSensitivity, centerY);
+                        movement.handlers.pan.update(centerX + this.panSensitivity, centerY);
                     } else if (this.keysRight.indexOf(keyCode) !== -1) {
-                        movement.handlers.pan?.update(centerX - this.panSensitivity, centerY);
+                        movement.handlers.pan.update(centerX - this.panSensitivity, centerY);
                     } else if (this.keysUp.indexOf(keyCode) !== -1) {
-                        movement.handlers.pan?.update(centerX, centerY + this.panSensitivity);
+                        movement.handlers.pan.update(centerX, centerY + this.panSensitivity);
                     } else if (this.keysDown.indexOf(keyCode) !== -1) {
-                        movement.handlers.pan?.update(centerX, centerY - this.panSensitivity);
+                        movement.handlers.pan.update(centerX, centerY - this.panSensitivity);
                     }
-                    movement.handlers.pan?.stop();
+                    movement.handlers.pan.stop();
                 }
             }
         }

@@ -51,7 +51,7 @@ export class GeospatialCameraPointersInput extends OrbitCameraPointersInput {
         this._activeType = this.camera.movement.resolveInteraction("pointer", { button: evt.button });
 
         if (this._activeType === "pan") {
-            this.camera.movement.handlers.pan?.start(scene.pointerX, scene.pointerY);
+            this.camera.movement.handlers.pan.start(scene.pointerX, scene.pointerY);
         }
     }
 
@@ -59,9 +59,9 @@ export class GeospatialCameraPointersInput extends OrbitCameraPointersInput {
         const scene = this.camera.getScene();
 
         if (this._activeType === "pan") {
-            this.camera.movement.handlers.pan?.update(scene.pointerX, scene.pointerY);
+            this.camera.movement.handlers.pan.update(scene.pointerX, scene.pointerY);
         } else if (this._activeType === "rotate") {
-            this.camera.movement.handlers.rotate?.(offsetX * this.yawSensitivity, -offsetY * this.pitchSensitivity);
+            this.camera.movement.handlers.rotate(offsetX * this.yawSensitivity, -offsetY * this.pitchSensitivity);
         }
     }
 
@@ -117,14 +117,14 @@ export class GeospatialCameraPointersInput extends OrbitCameraPointersInput {
         if (previousMultiTouchPanPosition && multiTouchPanPosition) {
             const moveDeltaX = multiTouchPanPosition.x - previousMultiTouchPanPosition.x;
             const moveDeltaY = multiTouchPanPosition.y - previousMultiTouchPanPosition.y;
-            this.camera.movement.handlers.rotate?.(moveDeltaX * this.yawSensitivity, -moveDeltaY * this.pitchSensitivity);
+            this.camera.movement.handlers.rotate(moveDeltaX * this.yawSensitivity, -moveDeltaY * this.pitchSensitivity);
         }
     }
 
     public override onDoubleTap(type: string): void {
         const pickResult = this.camera._scene.pick(this.camera._scene.pointerX, this.camera._scene.pointerY, this.camera.movement.pickPredicate);
         if (pickResult.pickedPoint) {
-            this.camera.movement.handlers.flyTo?.(pickResult.pickedPoint);
+            void this.camera.flyToPointAsync(pickResult.pickedPoint);
         }
     }
 
@@ -161,7 +161,7 @@ export class GeospatialCameraPointersInput extends OrbitCameraPointersInput {
 
     public override onButtonUp(_evt: IPointerEvent): void {
         if (this._activeType === "pan") {
-            this.camera.movement.handlers.pan?.stop();
+            this.camera.movement.handlers.pan.stop();
         }
         this._activeType = "none";
         this.camera.movement.activeInput = false;

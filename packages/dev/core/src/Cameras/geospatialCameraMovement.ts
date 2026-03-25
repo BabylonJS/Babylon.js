@@ -42,8 +42,6 @@ export type GeospatialHandlers = {
     rotate: (deltaX: number, deltaY: number) => void;
     /** Handler for zoom interactions — accepts delta and whether to zoom toward cursor */
     zoom: (delta: number, toCursor: boolean) => void;
-    /** Handler for fly-to interactions — animates camera to target point */
-    flyTo: (target: Vector3) => Promise<void>;
 };
 
 /** Interaction type string for geospatial camera, derived from handler property names */
@@ -74,7 +72,7 @@ export class GeospatialCameraMovement extends CameraMovement {
      * Interaction handlers for geospatial camera.
      * Override individual handlers to customize camera behavior without changing input mapping.
      */
-    public handlers: Partial<GeospatialHandlers> = {};
+    public handlers: GeospatialHandlers;
 
     /**
      * Input-to-interaction mapping rules, constrained to valid geospatial interaction types.

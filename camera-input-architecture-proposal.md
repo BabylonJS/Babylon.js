@@ -69,23 +69,28 @@ type InputModifiers = { ctrl?: boolean; shift?: boolean; alt?: boolean };
  * exists on pointer entries, `touchCount` only on touch entries.
  */
 type PointerInputMapEntry<T extends string = string> = {
-    source: "pointer";  interaction: T;  button?: number;  modifiers?: InputModifiers;
+    source: "pointer";
+    interaction: T;
+    button?: number;
+    modifiers?: InputModifiers;
 };
 type WheelInputMapEntry<T extends string = string> = {
-    source: "wheel";    interaction: T;  modifiers?: InputModifiers;
+    source: "wheel";
+    interaction: T;
+    modifiers?: InputModifiers;
 };
 type TouchInputMapEntry<T extends string = string> = {
-    source: "touch";    interaction: T;  touchCount?: number;
+    source: "touch";
+    interaction: T;
+    touchCount?: number;
 };
 type KeyboardInputMapEntry<T extends string = string> = {
-    source: "keyboard"; interaction: T;  modifiers?: InputModifiers;
+    source: "keyboard";
+    interaction: T;
+    modifiers?: InputModifiers;
 };
 
-type InputMapEntry<T extends string = string> =
-    | PointerInputMapEntry<T>
-    | WheelInputMapEntry<T>
-    | TouchInputMapEntry<T>
-    | KeyboardInputMapEntry<T>;
+type InputMapEntry<T extends string = string> = PointerInputMapEntry<T> | WheelInputMapEntry<T> | TouchInputMapEntry<T> | KeyboardInputMapEntry<T>;
 // { source: "pointer", button: 0, touchCount: 1 } → compile error (touchCount not on pointer)
 ```
 
@@ -126,15 +131,14 @@ type GeospatialPanHandler = {
 
 /** Single-method handlers are plain functions */
 type GeospatialHandlers = {
-    pan: GeospatialPanHandler;                           // object — needs lifecycle
-    rotate: (deltaX: number, deltaY: number) => void;    // function — single operation
-    zoom: (delta: number, toCursor: boolean) => void;    // function — single operation
-    flyTo: (target: Vector3) => Promise<void>;           // function — single operation
+    pan: GeospatialPanHandler; // object — needs lifecycle
+    rotate: (deltaX: number, deltaY: number) => void; // function — single operation
+    zoom: (delta: number, toCursor: boolean) => void; // function — single operation
 };
 
 class GeospatialCameraMovement extends CameraMovement {
     public override inputMap: InputMapEntry<keyof GeospatialHandlers>[] = [];
-    public handlers: Partial<GeospatialHandlers> = {};
+    public handlers: GeospatialHandlers;
 }
 ```
 
@@ -172,12 +176,12 @@ class ArcRotateCameraMovement extends CameraMovement {
         };
 
         this.inputMap = [
-            { source: "pointer", button: 0,                interaction: "rotate" },
-            { source: "pointer", button: 2,                interaction: "pan" },
-            { source: "wheel",                             interaction: "zoom" },
+            { source: "pointer", button: 0, interaction: "rotate" },
+            { source: "pointer", button: 2, interaction: "pan" },
+            { source: "wheel", interaction: "zoom" },
             { source: "keyboard", modifiers: { ctrl: true }, interaction: "pan" },
-            { source: "keyboard", modifiers: { alt: true },  interaction: "zoom" },
-            { source: "keyboard",                            interaction: "rotate" },
+            { source: "keyboard", modifiers: { alt: true }, interaction: "zoom" },
+            { source: "keyboard", interaction: "rotate" },
         ];
     }
 }
@@ -186,6 +190,7 @@ class ArcRotateCameraMovement extends CameraMovement {
 This is a significant shift from the current ArcRotateCamera: inputs no longer write directly to `camera.inertialAlphaOffset` etc. Instead they write pixel deltas to the movement class's accumulators (`panAccumulatedPixels`, `rotationAccumulatedPixels`, `zoomAccumulatedPixels`), and `computeCurrentFrameDeltas()` converts those to framerate-independent deltas with proper inertia. The camera's `_checkInputs()` reads the resulting `panDeltaCurrentFrame`, `rotationDeltaCurrentFrame`, `zoomDeltaCurrentFrame` and applies them to `alpha`, `beta`, `radius`, and `target`.
 
 **What this replaces:**
+
 - `_useCtrlForPanning` boolean on `attachControl()`
 - `_panningMouseButton` configuration
 - `_isPanClick` internal state
@@ -195,13 +200,14 @@ This is a significant shift from the current ArcRotateCamera: inputs no longer w
 - The legacy per-frame inertia system (replaced by `CameraMovement.computeCurrentFrameDeltas()`)
 
 **User override (the forum thread ask — swap pan/rotate):**
+
 ```ts
 camera.movement.inputMap = [
-    { source: "pointer", button: 0,                interaction: "pan" },
-    { source: "pointer", button: 2,                interaction: "rotate" },
-    { source: "wheel",                             interaction: "zoom" },
+    { source: "pointer", button: 0, interaction: "pan" },
+    { source: "pointer", button: 2, interaction: "rotate" },
+    { source: "wheel", interaction: "zoom" },
     { source: "keyboard", modifiers: { ctrl: true }, interaction: "rotate" },
-    { source: "keyboard",                            interaction: "pan" },
+    { source: "keyboard", interaction: "pan" },
 ];
 // No new booleans, no CtrlKeyBehaviours enum, no code changes — just data
 ```
@@ -337,10 +343,6 @@ A `PanHandler` doesn't care whether the pan was triggered by a mouse drag or a k
 ```ts
 // Pan, rotate, zoom handlers set up by GeospatialCameraMovement constructor
 // (delegates to existing movement methods: startDrag, handleDrag, stopDrag, handleZoom, etc.)
-
-// flyTo handler wired up by GeospatialCamera constructor
-// (lives on camera because it calls camera.flyToPointAsync, avoiding circular dependency)
-camera.movement.handlers.flyTo = (target) => camera.flyToPointAsync(target);
 ```
 
 ### How inputs call handlers
@@ -375,13 +377,6 @@ checkInputs() {
     this.camera.movement.handlers.zoom?.(this._wheelDeltaY, true);
 }
 
-// Double-tap — direct function call
-onDoubleTap() {
-    const pickResult = scene.pick(scene.pointerX, scene.pointerY);
-    if (pickResult.pickedPoint) {
-        this.camera.movement.handlers.flyTo?.(pickResult.pickedPoint);
-    }
-}
 ```
 
 ### User override (custom mechanics)

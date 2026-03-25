@@ -198,29 +198,29 @@ export class ArcRotateCameraKeyboardMoveInput implements ICameraInput<ArcRotateC
 
                     if (interaction === "pan") {
                         if (this.keysLeft.indexOf(keyCode) !== -1) {
-                            movement.handlers.pan?.(-1 / this.panningSensibility, 0);
+                            movement.handlers.pan(-1 / this.panningSensibility, 0);
                         } else if (this.keysRight.indexOf(keyCode) !== -1) {
-                            movement.handlers.pan?.(1 / this.panningSensibility, 0);
+                            movement.handlers.pan(1 / this.panningSensibility, 0);
                         } else if (this.keysUp.indexOf(keyCode) !== -1) {
-                            movement.handlers.pan?.(0, 1 / this.panningSensibility);
+                            movement.handlers.pan(0, 1 / this.panningSensibility);
                         } else if (this.keysDown.indexOf(keyCode) !== -1) {
-                            movement.handlers.pan?.(0, -1 / this.panningSensibility);
+                            movement.handlers.pan(0, -1 / this.panningSensibility);
                         }
                     } else if (interaction === "zoom") {
                         if (this.keysUp.indexOf(keyCode) !== -1) {
-                            movement.handlers.zoom?.(1 / this.zoomingSensibility);
+                            movement.handlers.zoom(1 / this.zoomingSensibility);
                         } else if (this.keysDown.indexOf(keyCode) !== -1) {
-                            movement.handlers.zoom?.(-1 / this.zoomingSensibility);
+                            movement.handlers.zoom(-1 / this.zoomingSensibility);
                         }
                     } else if (interaction === "rotate") {
                         if (this.keysLeft.indexOf(keyCode) !== -1) {
-                            movement.handlers.rotate?.(-this.angularSpeed, 0);
+                            movement.handlers.rotate(-this.angularSpeed, 0);
                         } else if (this.keysRight.indexOf(keyCode) !== -1) {
-                            movement.handlers.rotate?.(this.angularSpeed, 0);
+                            movement.handlers.rotate(this.angularSpeed, 0);
                         } else if (this.keysUp.indexOf(keyCode) !== -1) {
-                            movement.handlers.rotate?.(0, -this.angularSpeed);
+                            movement.handlers.rotate(0, -this.angularSpeed);
                         } else if (this.keysDown.indexOf(keyCode) !== -1) {
-                            movement.handlers.rotate?.(0, this.angularSpeed);
+                            movement.handlers.rotate(0, this.angularSpeed);
                         }
                     }
 
