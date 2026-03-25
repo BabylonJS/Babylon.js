@@ -4,7 +4,7 @@ import type { Material } from "core/Materials/material";
 import { PBRBaseMaterial } from "core/Materials/PBR/pbrBaseMaterial";
 import { OpenPBRMaterial } from "core/Materials/PBR/openpbrMaterial";
 import { StandardMaterial } from "core/Materials/standardMaterial";
-import { GeometryBufferRenderer } from "core/Rendering/geometryBufferRenderer";
+import { GeometryBufferRenderer, type IGeometryBufferTextureTypeAndFormat } from "core/Rendering/geometryBufferRenderer";
 import { IBLShadowsPluginMaterial } from "core/Rendering/IBLShadows/iblShadowsPluginMaterial";
 import { FrameGraphIblShadowsAccumulationTask } from "./iblShadowsAccumulationTask";
 import { FrameGraphIblShadowsSpatialBlurTask } from "./iblShadowsSpatialBlurTask";
@@ -15,6 +15,7 @@ import type { IFrameGraphIblShadowsAccumulationOptions, IFrameGraphIblShadowsTra
 import { Texture } from "core/Materials/Textures/texture";
 import { Tools } from "core/Misc/tools";
 import { Observable } from "core/Misc/observable";
+import { Logger } from "core/Misc/logger";
 import "../../../Rendering/geometryBufferRendererSceneComponent";
 import "../../../Rendering/iblCdfGeneratorSceneComponent";
 
@@ -707,6 +708,11 @@ function _ResolveGBufferTextureHandles(input: IFrameGraphIblShadowsPipelineBuild
         return _ResolveFromGeometryRendererTask(gbufferTasks[0] as FrameGraphGeometryRendererTask);
     }
 
+    Logger.Warn(
+        `BuildIblShadowsFrameGraphPipeline ${input.name}: falling back to GeometryBufferRenderer because no FrameGraphGeometryRendererTask was provided or discovered. ` +
+            `Using a frame graph geometryRendererTask is preferred.`
+    );
+
     return _ResolveFromGeometryBufferRenderer(input);
 }
 
@@ -737,23 +743,27 @@ function _ResolveFromGeometryRendererTask(gbufferTask: FrameGraphGeometryRendere
 
 function _ResolveFromGeometryBufferRenderer(input: IFrameGraphIblShadowsPipelineBuildInput): IFrameGraphIblShadowsGBufferHandles {
     const scene = input.frameGraph.scene;
-    const textureTypesAndFormats: { [key: number]: { textureType: number; textureFormat: number } } = {};
+    const textureTypesAndFormats: { [key: number]: IGeometryBufferTextureTypeAndFormat } = {};
 
     textureTypesAndFormats[GeometryBufferRenderer.SCREENSPACE_DEPTH_TEXTURE_TYPE] = {
         textureFormat: Constants.TEXTUREFORMAT_R,
         textureType: Constants.TEXTURETYPE_FLOAT,
+        samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
     };
     textureTypesAndFormats[GeometryBufferRenderer.VELOCITY_LINEAR_TEXTURE_TYPE] = {
         textureFormat: Constants.TEXTUREFORMAT_RG,
         textureType: Constants.TEXTURETYPE_HALF_FLOAT,
+        samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
     };
     textureTypesAndFormats[GeometryBufferRenderer.POSITION_TEXTURE_TYPE] = {
         textureFormat: Constants.TEXTUREFORMAT_RGBA,
         textureType: Constants.TEXTURETYPE_HALF_FLOAT,
+        samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
     };
     textureTypesAndFormats[GeometryBufferRenderer.NORMAL_TEXTURE_TYPE] = {
         textureFormat: Constants.TEXTUREFORMAT_RGBA,
         textureType: Constants.TEXTURETYPE_HALF_FLOAT,
+        samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
     };
 
     const geometryBufferRenderer = scene.geometryBufferRenderer ?? scene.enableGeometryBufferRenderer(undefined, Constants.TEXTUREFORMAT_DEPTH32_FLOAT, textureTypesAndFormats);

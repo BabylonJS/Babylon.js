@@ -16,7 +16,7 @@ import { PostProcessRenderPipeline } from "../../PostProcesses/RenderPipeline/po
 import { PostProcessRenderEffect } from "core/PostProcesses/RenderPipeline/postProcessRenderEffect";
 import type { Camera } from "core/Cameras/camera";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
-import { GeometryBufferRenderer } from "core/Rendering/geometryBufferRenderer";
+import { GeometryBufferRenderer, type IGeometryBufferTextureTypeAndFormat } from "core/Rendering/geometryBufferRenderer";
 import { RawTexture } from "core/Materials/Textures/rawTexture";
 import { RawTexture3D } from "core/Materials/Textures/rawTexture3D";
 import { Engine } from "core/Engines/engine";
@@ -796,11 +796,27 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
         this._dummyTexture3d = new RawTexture3D(blackPixels, 1, 1, 1, Engine.TEXTUREFORMAT_RGBA, scene, false);
 
         // Setup the geometry buffer target formats
-        const textureTypesAndFormats: { [key: number]: { textureType: number; textureFormat: number } } = {};
-        textureTypesAndFormats[GeometryBufferRenderer.SCREENSPACE_DEPTH_TEXTURE_TYPE] = { textureFormat: Constants.TEXTUREFORMAT_R, textureType: Constants.TEXTURETYPE_FLOAT };
-        textureTypesAndFormats[GeometryBufferRenderer.VELOCITY_LINEAR_TEXTURE_TYPE] = { textureFormat: Constants.TEXTUREFORMAT_RG, textureType: Constants.TEXTURETYPE_HALF_FLOAT };
-        textureTypesAndFormats[GeometryBufferRenderer.POSITION_TEXTURE_TYPE] = { textureFormat: Constants.TEXTUREFORMAT_RGBA, textureType: Constants.TEXTURETYPE_HALF_FLOAT };
-        textureTypesAndFormats[GeometryBufferRenderer.NORMAL_TEXTURE_TYPE] = { textureFormat: Constants.TEXTUREFORMAT_RGBA, textureType: Constants.TEXTURETYPE_HALF_FLOAT };
+        const textureTypesAndFormats: { [key: number]: IGeometryBufferTextureTypeAndFormat } = {};
+        textureTypesAndFormats[GeometryBufferRenderer.SCREENSPACE_DEPTH_TEXTURE_TYPE] = {
+            textureFormat: Constants.TEXTUREFORMAT_R,
+            textureType: Constants.TEXTURETYPE_FLOAT,
+            samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
+        };
+        textureTypesAndFormats[GeometryBufferRenderer.VELOCITY_LINEAR_TEXTURE_TYPE] = {
+            textureFormat: Constants.TEXTUREFORMAT_RG,
+            textureType: Constants.TEXTURETYPE_HALF_FLOAT,
+            samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
+        };
+        textureTypesAndFormats[GeometryBufferRenderer.POSITION_TEXTURE_TYPE] = {
+            textureFormat: Constants.TEXTUREFORMAT_RGBA,
+            textureType: Constants.TEXTURETYPE_HALF_FLOAT,
+            samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
+        };
+        textureTypesAndFormats[GeometryBufferRenderer.NORMAL_TEXTURE_TYPE] = {
+            textureFormat: Constants.TEXTUREFORMAT_RGBA,
+            textureType: Constants.TEXTURETYPE_HALF_FLOAT,
+            samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
+        };
         const geometryBufferRenderer = scene.enableGeometryBufferRenderer(undefined, Constants.TEXTUREFORMAT_DEPTH32_FLOAT, textureTypesAndFormats);
         if (!geometryBufferRenderer) {
             Logger.Error("Geometry buffer renderer is required for IBL shadows to work.");
