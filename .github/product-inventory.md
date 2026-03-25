@@ -125,7 +125,7 @@ packages/
 
 ## Architecture Documentation
 
-For detailed architecture information about each product, see the files in [.github/architecture/](.github/architecture/):
+For detailed architecture information about each product, see the files in [architecture/](architecture/):
 
 - [Core](architecture/core.md)
 - [GUI](architecture/gui.md)
