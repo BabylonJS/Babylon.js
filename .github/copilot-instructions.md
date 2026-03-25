@@ -8,24 +8,6 @@ For a complete inventory of all public `@babylonjs` npm packages and their corre
 
 For detailed architecture documentation of each product, see the files in [architecture/](architecture/):
 
-- [Core](architecture/core.md) — Main 3D engine: scene graph, rendering, materials, cameras, lights, animation, physics, XR
-- [GUI](architecture/gui.md) — 2D texture-based and 3D world-space UI systems
-- [Loaders](architecture/loaders.md) — Asset import plugins (glTF, OBJ, STL, BVH, SPLAT)
-- [Materials](architecture/materials.md) — Specialized material library (water, sky, fur, cel, grid, etc.)
-- [Serializers](architecture/serializers.md) — Scene export plugins (glTF, OBJ, STL, USDZ, BVH, 3MF)
-- [Post-Processes](architecture/post-processes.md) — Additional screen-space effects
-- [Procedural Textures](architecture/procedural-textures.md) — GPU-generated textures
-- [Addons](architecture/addons.md) — Optional modules (atmosphere, HTML mesh, MSDF text, navigation)
-- [Smart Filters](architecture/smart-filters.md) — Graph-based GPU image-processing pipeline
-- [Lottie Player](architecture/lottie-player.md) — Lottie animation runtime
-- [Inspector](architecture/inspector.md) — React + Fluent UI scene debugging tool
-- [Viewer](architecture/viewer.md) — Drop-in web component for 3D model display
-- [Node Editors](architecture/node-editors.md) — Visual graph editors (materials, geometry, particles, render graphs)
-- [GUI Editor](architecture/gui-editor.md) — Visual GUI layout editor
-- [KTX2 Decoder](architecture/ktx2decoder.md) — Compressed texture transcoding
-- [Accessibility](architecture/accessibility.md) — DOM twin rendering for screen readers
-- [Shared UI Components](architecture/shared-ui-components.md) — Reusable React component library for editors
-
 ## Code review requirements
 
 When reviewing a PR you must follow the instructions in `.github/instructions/code-review.instructions.md`
