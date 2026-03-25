@@ -38,7 +38,7 @@ export class ArcRotateCameraMovement extends CameraMovement {
      * Interaction handlers for arc-rotate camera.
      * Override individual handlers to customize camera behavior without changing input mapping.
      */
-    public handlers: Partial<ArcRotateHandlers> = {};
+    public handlers: ArcRotateHandlers;
 
     /**
      * Input-to-interaction mapping rules, constrained to valid arc-rotate interaction types.
