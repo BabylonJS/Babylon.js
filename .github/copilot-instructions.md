@@ -1,5 +1,7 @@
 # Babylon.js Copilot Instructions
 
+Extensive documentation for Babylon.js can be found at <https://doc.babylonjs.com/>.
+
 ## Product and Architecture Reference
 
 For a complete inventory of all public `@babylonjs` npm packages and their corresponding implementation packages, see [product-inventory.md](product-inventory.md).
