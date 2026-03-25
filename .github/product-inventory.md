@@ -18,7 +18,7 @@ This document catalogs all public npm packages published under the `@babylonjs` 
 | Smart Filters Blocks | `@babylonjs/smart-filters-blocks` | `@dev/smart-filters-blocks` | `packages/dev/smartFilterBlocks` |
 | Lottie Player | `@babylonjs/lottie-player` | `@dev/lottie-player` | `packages/dev/lottiePlayer` |
 | Inspector | `@babylonjs/inspector` | `@dev/inspector` | `packages/dev/inspector-v2` |
-| Inspector (Legacy) | `@babylonjs/inspector-legacy` | `@dev/inspector-legacy` | `packages/dev/inspector-v2/src/legacy` |
+| Inspector (Legacy) | `@babylonjs/inspector-legacy` | `@dev/inspector-legacy` | `packages/dev/inspector` |
 | Viewer | `@babylonjs/viewer` | `@tools/viewer` | `packages/tools/viewer` |
 | Node Editor | `@babylonjs/node-editor` | `@tools/node-editor` | `packages/tools/nodeEditor` |
 | Node Geometry Editor | `@babylonjs/node-geometry-editor` | `@tools/node-geometry-editor` | `packages/tools/nodeGeometryEditor` |
