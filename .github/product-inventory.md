@@ -120,6 +120,7 @@ packages/
     ├── viewer-configurator/    # Viewer configuration tool (not published to npm)
     ├── ktx2Decoder/
     ├── accessibility/
+    ├── testTools/
     └── tests/
 ```
 
