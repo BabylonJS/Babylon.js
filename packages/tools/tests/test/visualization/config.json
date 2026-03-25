@@ -3484,6 +3484,12 @@
             "renderCount": 5
         },
         {
+            "title": "OpenPBR Subsurface Color Scaling - IBL",
+            "playgroundId": "#GRQHVV#302",
+            "excludedEngines": ["webgl1"],
+            "renderCount": 5
+        },
+        {
             "title": "OpenPBR Thin Walled Transmission IOR vs Roughness - IBL",
             "playgroundId": "#GRQHVV#240",
             "excludedEngines": ["webgl1"],
