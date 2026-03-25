@@ -19,6 +19,7 @@ import { ArcRotateCameraInputsManager } from "../Cameras/arcRotateCameraInputsMa
 import { Epsilon } from "../Maths/math.constants";
 import { Tools } from "../Misc/tools";
 import { RegisterClass } from "../Misc/typeStore";
+import { ArcRotateCameraMovement } from "./arcRotateCameraMovement";
 
 import type { Collider } from "../Collisions/collider";
 import type { TransformNode } from "core/Meshes/transformNode";
@@ -596,6 +597,9 @@ export class ArcRotateCamera extends TargetCamera {
      * Defines the input associated to the camera.
      */
     public override inputs: ArcRotateCameraInputsManager;
+
+    /** Movement controller that turns input pixel deltas into framerate-independent deltas. When undefined, legacy inertial system is used. */
+    public movement?: ArcRotateCameraMovement;
 
     /** @internal */
     public override _reset: () => void;

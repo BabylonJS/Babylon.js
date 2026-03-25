@@ -198,11 +198,11 @@ export class GeospatialCameraKeyboardInput implements ICameraInput<GeospatialCam
 
                 // Zoom keys always map to zoom regardless of modifiers
                 if (this.keysZoomIn.indexOf(keyCode) !== -1) {
-                    movement.handlers.zoom?.zoomByDelta(this.zoomSensitivity, false);
+                    movement.handlers.zoom?.(this.zoomSensitivity, false);
                     continue;
                 }
                 if (this.keysZoomOut.indexOf(keyCode) !== -1) {
-                    movement.handlers.zoom?.zoomByDelta(-this.zoomSensitivity, false);
+                    movement.handlers.zoom?.(-this.zoomSensitivity, false);
                     continue;
                 }
 
@@ -213,13 +213,13 @@ export class GeospatialCameraKeyboardInput implements ICameraInput<GeospatialCam
 
                 if (interaction === "rotate") {
                     if (this.keysLeft.indexOf(keyCode) !== -1) {
-                        movement.handlers.rotate?.update(-this.rotationSensitivity, 0);
+                        movement.handlers.rotate?.(-this.rotationSensitivity, 0);
                     } else if (this.keysRight.indexOf(keyCode) !== -1) {
-                        movement.handlers.rotate?.update(this.rotationSensitivity, 0);
+                        movement.handlers.rotate?.(this.rotationSensitivity, 0);
                     } else if (this.keysUp.indexOf(keyCode) !== -1) {
-                        movement.handlers.rotate?.update(0, -this.rotationSensitivity);
+                        movement.handlers.rotate?.(0, -this.rotationSensitivity);
                     } else if (this.keysDown.indexOf(keyCode) !== -1) {
-                        movement.handlers.rotate?.update(0, this.rotationSensitivity);
+                        movement.handlers.rotate?.(0, this.rotationSensitivity);
                     }
                 } else if (interaction === "pan") {
                     // Call into movement class handleDrag so that behavior matches that of pointer input, simulating drag from center of screen.

@@ -22,3 +22,4 @@ export * from "./RigModes/index";
 export * from "./geospatialCamera";
 export * from "./cameraInteractions";
 export * from "./geospatialCameraMovement";
+export * from "./arcRotateCameraMovement";

@@ -61,7 +61,7 @@ export class GeospatialCameraPointersInput extends OrbitCameraPointersInput {
         if (this._activeType === "pan") {
             this.camera.movement.handlers.pan?.update(scene.pointerX, scene.pointerY);
         } else if (this._activeType === "rotate") {
-            this.camera.movement.handlers.rotate?.update(offsetX * this.yawSensitivity, -offsetY * this.pitchSensitivity);
+            this.camera.movement.handlers.rotate?.(offsetX * this.yawSensitivity, -offsetY * this.pitchSensitivity);
         }
     }
 
@@ -117,14 +117,14 @@ export class GeospatialCameraPointersInput extends OrbitCameraPointersInput {
         if (previousMultiTouchPanPosition && multiTouchPanPosition) {
             const moveDeltaX = multiTouchPanPosition.x - previousMultiTouchPanPosition.x;
             const moveDeltaY = multiTouchPanPosition.y - previousMultiTouchPanPosition.y;
-            this.camera.movement.handlers.rotate?.update(moveDeltaX * this.yawSensitivity, -moveDeltaY * this.pitchSensitivity);
+            this.camera.movement.handlers.rotate?.(moveDeltaX * this.yawSensitivity, -moveDeltaY * this.pitchSensitivity);
         }
     }
 
     public override onDoubleTap(type: string): void {
         const pickResult = this.camera._scene.pick(this.camera._scene.pointerX, this.camera._scene.pointerY, this.camera.movement.pickPredicate);
         if (pickResult.pickedPoint) {
-            this.camera.movement.handlers.flyTo?.flyTo(pickResult.pickedPoint);
+            this.camera.movement.handlers.flyTo?.(pickResult.pickedPoint);
         }
     }
 

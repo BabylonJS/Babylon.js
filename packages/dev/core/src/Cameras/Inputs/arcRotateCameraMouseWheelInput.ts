@@ -135,7 +135,11 @@ export class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCam
 
                     this._zoomToMouse(delta);
                 } else {
-                    this.camera.inertialRadiusOffset += delta;
+                    if (this.camera.movement) {
+                        this.camera.movement.handlers.zoom?.(delta);
+                    } else {
+                        this.camera.inertialRadiusOffset += delta;
+                    }
                 }
             }
 

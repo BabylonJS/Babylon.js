@@ -96,26 +96,11 @@ class CameraMovement {
     /** Ordered list of input-to-interaction rules. First match wins. */
     public inputMap: InputMapEntry[] = [];
 
-    /** Find the interaction type for a given source and conditions */
+    /** Find the interaction type for a given source and conditions. Returns "none" if no match. */
     public resolveInteraction(source: InputSource, conditions?: InputConditions): string {
         for (const entry of this.inputMap) {
             if (entry.source !== source) continue;
-            // switch narrows the union — each case only checks fields that exist on that variant
-            switch (entry.source) {
-                case "pointer":
-                    if (entry.button !== undefined && entry.button !== conditions?.button) continue;
-                    if (!this._matchModifiers(entry.modifiers, conditions?.modifiers)) continue;
-                    break;
-                case "wheel":
-                    if (!this._matchModifiers(entry.modifiers, conditions?.modifiers)) continue;
-                    break;
-                case "touch":
-                    if (entry.touchCount !== undefined && entry.touchCount !== conditions?.touchCount) continue;
-                    break;
-                case "keyboard":
-                    if (!this._matchModifiers(entry.modifiers, conditions?.modifiers)) continue;
-                    break;
-            }
+            if (!this._matchEntry(entry, conditions)) continue;
             return entry.interaction;
         }
         return "none";
@@ -132,68 +117,94 @@ Each camera's movement subclass defines its own `handlers` property with its own
 ### Geospatial camera
 
 ```ts
+/** Pan needs a lifecycle (start/update/stop) for globe drag plane setup/teardown */
 type GeospatialPanHandler = {
     start(screenX: number, screenY: number): void;
     update(screenX: number, screenY: number): void;
     stop(): void;
 };
 
-type GeospatialRotateHandler = {
-    update(deltaX: number, deltaY: number): void;
-};
-
-type GeospatialZoomHandler = {
-    zoomByDelta(delta: number, toCursor: boolean): void;
-};
-
-type GeospatialFlyToHandler = {
-    flyTo(target: Vector3): Promise<void>;
-};
-
+/** Single-method handlers are plain functions */
 type GeospatialHandlers = {
-    pan: GeospatialPanHandler;
-    rotate: GeospatialRotateHandler;
-    zoom: GeospatialZoomHandler;
-    flyTo: GeospatialFlyToHandler;
+    pan: GeospatialPanHandler;                           // object — needs lifecycle
+    rotate: (deltaX: number, deltaY: number) => void;    // function — single operation
+    zoom: (delta: number, toCursor: boolean) => void;    // function — single operation
+    flyTo: (target: Vector3) => Promise<void>;           // function — single operation
 };
 
 class GeospatialCameraMovement extends CameraMovement {
     public override inputMap: InputMapEntry<keyof GeospatialHandlers>[] = [];
     public handlers: Partial<GeospatialHandlers> = {};
 }
-// inputMap interaction field only accepts "pan" | "rotate" | "zoom" | "flyTo"
-// { interaction: "typo" } is a compile error
 ```
 
-### ArcRotateCamera (different handler APIs)
+### ArcRotateCamera
+
+ArcRotateCamera currently has no movement class — inertial offsets (`inertialAlphaOffset`, `inertialBetaOffset`, etc.) live directly on the camera and are applied/decayed in `_checkInputs()`. Introducing `ArcRotateCameraMovement` migrates this to the framerate-independent movement system (PR #18030) while adding the input map + handlers pattern.
 
 ```ts
-type ArcRotatePanHandler = {
-    pan(deltaAlpha: number, deltaBeta: number): void;
-};
-
-type ArcRotateRotateHandler = {
-    orbit(deltaAlpha: number, deltaBeta: number): void;
-};
-
-type ArcRotateZoomHandler = {
-    zoomByRadius(deltaRadius: number): void;
-};
-
+/** All handlers are plain functions — no lifecycle needed */
 type ArcRotateHandlers = {
-    pan: ArcRotatePanHandler;
-    rotate: ArcRotateRotateHandler;
-    zoom: ArcRotateZoomHandler;
+    pan: (deltaX: number, deltaY: number) => void;
+    rotate: (deltaX: number, deltaY: number) => void;
+    zoom: (delta: number) => void;
 };
 
 class ArcRotateCameraMovement extends CameraMovement {
     public override inputMap: InputMapEntry<keyof ArcRotateHandlers>[] = [];
     public handlers: Partial<ArcRotateHandlers> = {};
+
+    constructor(scene: Scene, cameraPosition: Vector3) {
+        super(scene, cameraPosition);
+
+        this.handlers = {
+            pan: (deltaX, deltaY) => {
+                this.panAccumulatedPixels.x += deltaX;
+                this.panAccumulatedPixels.y += deltaY;
+            },
+            rotate: (deltaX, deltaY) => {
+                this.rotationAccumulatedPixels.x += deltaX;
+                this.rotationAccumulatedPixels.y += deltaY;
+            },
+            zoom: (delta) => {
+                this.zoomAccumulatedPixels += delta;
+            },
+        };
+
+        this.inputMap = [
+            { source: "pointer", button: 0,                interaction: "rotate" },
+            { source: "pointer", button: 2,                interaction: "pan" },
+            { source: "wheel",                             interaction: "zoom" },
+            { source: "keyboard", modifiers: { ctrl: true }, interaction: "pan" },
+            { source: "keyboard", modifiers: { alt: true },  interaction: "zoom" },
+            { source: "keyboard",                            interaction: "rotate" },
+        ];
+    }
 }
-// inputMap interaction field only accepts "pan" | "rotate" | "zoom"
 ```
 
-The same `"pan"` string in the input map means different things for different cameras — geospatial pan drags the globe with screen coordinates, arc-rotate pan moves by angular offsets. TypeScript ensures each camera's input classes call the correct handler methods.
+This is a significant shift from the current ArcRotateCamera: inputs no longer write directly to `camera.inertialAlphaOffset` etc. Instead they write pixel deltas to the movement class's accumulators (`panAccumulatedPixels`, `rotationAccumulatedPixels`, `zoomAccumulatedPixels`), and `computeCurrentFrameDeltas()` converts those to framerate-independent deltas with proper inertia. The camera's `_checkInputs()` reads the resulting `panDeltaCurrentFrame`, `rotationDeltaCurrentFrame`, `zoomDeltaCurrentFrame` and applies them to `alpha`, `beta`, `radius`, and `target`.
+
+**What this replaces:**
+- `_useCtrlForPanning` boolean on `attachControl()`
+- `_panningMouseButton` configuration
+- `_isPanClick` internal state
+- `_ctrlKey && camera._useCtrlForPanning` checks in `onTouch()`
+- `useAltToZoom` boolean on keyboard input
+- Hardcoded `switch/if` chains in every input class
+- The legacy per-frame inertia system (replaced by `CameraMovement.computeCurrentFrameDeltas()`)
+
+**User override (the forum thread ask — swap pan/rotate):**
+```ts
+camera.movement.inputMap = [
+    { source: "pointer", button: 0,                interaction: "pan" },
+    { source: "pointer", button: 2,                interaction: "rotate" },
+    { source: "wheel",                             interaction: "zoom" },
+    { source: "keyboard", modifiers: { ctrl: true }, interaction: "rotate" },
+    { source: "keyboard",                            interaction: "pan" },
+];
+// No new booleans, no CtrlKeyBehaviours enum, no code changes — just data
+```
 
 ## Layer 1: Input Mapping
 
@@ -258,9 +269,7 @@ camera.movement.inputMap = [
 ```ts
 // Pointer input
 onButtonDown(evt) {
-    this._activeType = this.camera.movement.resolveInteraction("pointer", {
-        button: evt.button, modifiers: { ctrl: evt.ctrlKey, ... }
-    });
+    this._activeType = this.camera.movement.resolveInteraction("pointer", { button: evt.button });
     if (this._activeType === "pan") {
         this.camera.movement.handlers.pan?.start(scene.pointerX, scene.pointerY);
     }
@@ -270,13 +279,13 @@ onTouch(point, offsetX, offsetY) {
     if (this._activeType === "pan") {
         this.camera.movement.handlers.pan?.update(scene.pointerX, scene.pointerY);
     } else if (this._activeType === "rotate") {
-        this.camera.movement.handlers.rotate?.update(offsetX, offsetY);
+        this.camera.movement.handlers.rotate?.(offsetX, offsetY);
     }
 }
 
 // Wheel input
 checkInputs() {
-    this.camera.movement.handlers.zoom?.zoomByDelta(this._wheelDeltaY, true);
+    this.camera.movement.handlers.zoom?.(this._wheelDeltaY, true);
 }
 ```
 
@@ -331,21 +340,17 @@ A `PanHandler` doesn't care whether the pan was triggered by a mouse drag or a k
 
 // flyTo handler wired up by GeospatialCamera constructor
 // (lives on camera because it calls camera.flyToPointAsync, avoiding circular dependency)
-camera.movement.handlers.flyTo = {
-    flyTo: (target) => camera.flyToPointAsync(target),
-};
+camera.movement.handlers.flyTo = (target) => camera.flyToPointAsync(target);
 ```
 
 ### How inputs call handlers
 
-Inputs resolve their interaction type via `resolveInteraction()` (Layer 1), then call the appropriate handler via `handlers.*`:
+Inputs resolve their interaction type via `resolveInteraction()` (Layer 1), then call the appropriate handler via `handlers.*`. Single-method handlers are called directly as functions; multi-method handlers (pan) use their method names:
 
 ```ts
-// Pointer input — pan gesture
+// Pointer input — pan gesture (object handler with lifecycle)
 onButtonDown(evt) {
-    this._activeType = this.camera.movement.resolveInteraction("pointer", {
-        button: evt.button, modifiers: { ctrl: evt.ctrlKey, ... }
-    });
+    this._activeType = this.camera.movement.resolveInteraction("pointer", { button: evt.button });
     if (this._activeType === "pan") {
         this.camera.movement.handlers.pan?.start(scene.pointerX, scene.pointerY);
     }
@@ -355,7 +360,7 @@ onTouch(point, offsetX, offsetY) {
     if (this._activeType === "pan") {
         this.camera.movement.handlers.pan?.update(scene.pointerX, scene.pointerY);
     } else if (this._activeType === "rotate") {
-        this.camera.movement.handlers.rotate?.update(offsetX, offsetY);
+        this.camera.movement.handlers.rotate?.(offsetX, offsetY);  // direct function call
     }
 }
 
@@ -365,11 +370,16 @@ onButtonUp(evt) {
     }
 }
 
-// Double-tap — flyTo
+// Wheel input — direct function call
+checkInputs() {
+    this.camera.movement.handlers.zoom?.(this._wheelDeltaY, true);
+}
+
+// Double-tap — direct function call
 onDoubleTap() {
     const pickResult = scene.pick(scene.pointerX, scene.pointerY);
     if (pickResult.pickedPoint) {
-        this.camera.movement.handlers.flyTo?.flyTo(pickResult.pickedPoint);
+        this.camera.movement.handlers.flyTo?.(pickResult.pickedPoint);
     }
 }
 ```
@@ -378,13 +388,16 @@ onDoubleTap() {
 
 ```ts
 // "I want right-click to orbit around the picked point, not the camera target"
-camera.movement.handlers.rotate = new OrbitAroundPickPointHandler(camera);
+// Just assign a function that implements (deltaX, deltaY) => void
+camera.movement.handlers.rotate = (deltaX, deltaY) => {
+    myCustomOrbitLogic(camera, deltaX, deltaY);
+};
 // Input mapping unchanged — still maps right-click to "rotate"
-// OrbitAroundPickPointHandler must implement GeospatialRotateHandler
 ```
 
 ```ts
 // "I want pan to have inertia"
+// Pan is an object with start/update/stop — replace the whole object
 camera.movement.handlers.pan = new InertiaPanHandler(camera);
 // Must implement GeospatialPanHandler (start/update/stop with screen coords)
 ```

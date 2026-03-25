@@ -18,7 +18,8 @@ import type { InputMapEntry } from "./cameraInteractions";
 
 /**
  * Handler for geospatial pan (globe drag) interactions.
- * Pan uses screen coordinates because the geospatial camera anchors the cursor to the globe surface.
+ * Pan uses screen coordinates and needs a lifecycle (start/update/stop) because
+ * it establishes a drag plane on the globe surface to anchor the cursor.
  */
 export type GeospatialPanHandler = {
     /** Begin a pan gesture at screen position */
@@ -30,43 +31,19 @@ export type GeospatialPanHandler = {
 };
 
 /**
- * Handler for geospatial rotate (tilt) interactions.
- * Accepts pre-scaled pixel deltas for yaw and pitch.
- */
-export type GeospatialRotateHandler = {
-    /** Apply rotation from pixel deltas (pre-scaled by input sensitivity) */
-    update(deltaX: number, deltaY: number): void;
-};
-
-/**
- * Handler for geospatial zoom interactions.
- */
-export type GeospatialZoomHandler = {
-    /** Zoom by a delta value, optionally toward cursor position */
-    zoomByDelta(delta: number, toCursor: boolean): void;
-};
-
-/**
- * Handler for geospatial fly-to interactions.
- */
-export type GeospatialFlyToHandler = {
-    /** Animate the camera to a target point on the globe */
-    flyTo(target: Vector3): Promise<void>;
-};
-
-/**
  * Handler shape for geospatial camera interactions.
  * Property names are the canonical interaction type strings used in inputMap entries.
+ * Single-method handlers are plain functions; multi-method handlers (pan) are objects.
  */
 export type GeospatialHandlers = {
-    /** Handler for pan (globe drag) interactions */
+    /** Handler for pan (globe drag) interactions — object because it needs start/update/stop lifecycle */
     pan: GeospatialPanHandler;
-    /** Handler for rotate (tilt) interactions */
-    rotate: GeospatialRotateHandler;
-    /** Handler for zoom interactions */
-    zoom: GeospatialZoomHandler;
-    /** Handler for fly-to interactions */
-    flyTo: GeospatialFlyToHandler;
+    /** Handler for rotate (tilt) interactions — accepts pre-scaled pixel deltas (deltaX, deltaY) */
+    rotate: (deltaX: number, deltaY: number) => void;
+    /** Handler for zoom interactions — accepts delta and whether to zoom toward cursor */
+    zoom: (delta: number, toCursor: boolean) => void;
+    /** Handler for fly-to interactions — animates camera to target point */
+    flyTo: (target: Vector3) => Promise<void>;
 };
 
 /** Interaction type string for geospatial camera, derived from handler property names */
@@ -143,16 +120,12 @@ export class GeospatialCameraMovement extends CameraMovement {
                     this.stopDrag();
                 },
             },
-            rotate: {
-                update: (deltaX, deltaY) => {
-                    this.rotationAccumulatedPixels.y += deltaX;
-                    this.rotationAccumulatedPixels.x += deltaY;
-                },
+            rotate: (deltaX, deltaY) => {
+                this.rotationAccumulatedPixels.y += deltaX;
+                this.rotationAccumulatedPixels.x += deltaY;
             },
-            zoom: {
-                zoomByDelta: (delta, toCursor) => {
-                    this.handleZoom(delta, toCursor);
-                },
+            zoom: (delta, toCursor) => {
+                this.handleZoom(delta, toCursor);
             },
         };
 

@@ -9,6 +9,7 @@ import type { KeyboardInfo } from "../../Events/keyboardEvents";
 import { KeyboardEventTypes } from "../../Events/keyboardEvents";
 import { Tools } from "../../Misc/tools";
 import type { AbstractEngine } from "../../Engines/abstractEngine";
+import type { InputConditions } from "../cameraInteractions";
 
 /**
  * Manage the keyboard inputs to control the movement of an arc rotate camera.
@@ -85,6 +86,9 @@ export class ArcRotateCameraKeyboardMoveInput implements ICameraInput<ArcRotateC
     private _onKeyboardObserver: Nullable<Observer<KeyboardInfo>>;
     private _engine: AbstractEngine;
     private _scene: Scene;
+
+    /** Cached conditions object to avoid per-frame allocations in checkInputs */
+    private _keyboardConditions: InputConditions = { modifiers: { ctrl: false, alt: false } };
 
     /**
      * Attach the input controls to a specific dom element to get the input from.
@@ -182,39 +186,86 @@ export class ArcRotateCameraKeyboardMoveInput implements ICameraInput<ArcRotateC
         if (this._onKeyboardObserver) {
             const camera = this.camera;
 
-            for (let index = 0; index < this._keys.length; index++) {
-                const keyCode = this._keys[index];
-                if (this.keysLeft.indexOf(keyCode) !== -1) {
-                    if (this._ctrlPressed && this.camera._useCtrlForPanning) {
-                        camera.inertialPanningX -= 1 / this.panningSensibility;
-                    } else {
-                        camera.inertialAlphaOffset -= this.angularSpeed;
+            if (camera.movement) {
+                const movement = camera.movement;
+                // Update cached conditions (avoids per-frame allocations)
+                this._keyboardConditions.modifiers!.ctrl = this._ctrlPressed;
+                this._keyboardConditions.modifiers!.alt = this._altPressed;
+                const interaction = movement.resolveInteraction("keyboard", this._keyboardConditions);
+
+                for (let index = 0; index < this._keys.length; index++) {
+                    const keyCode = this._keys[index];
+
+                    if (interaction === "pan") {
+                        if (this.keysLeft.indexOf(keyCode) !== -1) {
+                            movement.handlers.pan?.(-1 / this.panningSensibility, 0);
+                        } else if (this.keysRight.indexOf(keyCode) !== -1) {
+                            movement.handlers.pan?.(1 / this.panningSensibility, 0);
+                        } else if (this.keysUp.indexOf(keyCode) !== -1) {
+                            movement.handlers.pan?.(0, 1 / this.panningSensibility);
+                        } else if (this.keysDown.indexOf(keyCode) !== -1) {
+                            movement.handlers.pan?.(0, -1 / this.panningSensibility);
+                        }
+                    } else if (interaction === "zoom") {
+                        if (this.keysUp.indexOf(keyCode) !== -1) {
+                            movement.handlers.zoom?.(1 / this.zoomingSensibility);
+                        } else if (this.keysDown.indexOf(keyCode) !== -1) {
+                            movement.handlers.zoom?.(-1 / this.zoomingSensibility);
+                        }
+                    } else if (interaction === "rotate") {
+                        if (this.keysLeft.indexOf(keyCode) !== -1) {
+                            movement.handlers.rotate?.(-this.angularSpeed, 0);
+                        } else if (this.keysRight.indexOf(keyCode) !== -1) {
+                            movement.handlers.rotate?.(this.angularSpeed, 0);
+                        } else if (this.keysUp.indexOf(keyCode) !== -1) {
+                            movement.handlers.rotate?.(0, -this.angularSpeed);
+                        } else if (this.keysDown.indexOf(keyCode) !== -1) {
+                            movement.handlers.rotate?.(0, this.angularSpeed);
+                        }
                     }
-                } else if (this.keysUp.indexOf(keyCode) !== -1) {
-                    if (this._ctrlPressed && this.camera._useCtrlForPanning) {
-                        camera.inertialPanningY += 1 / this.panningSensibility;
-                    } else if (this._altPressed && this.useAltToZoom) {
-                        camera.inertialRadiusOffset += 1 / this.zoomingSensibility;
-                    } else {
-                        camera.inertialBetaOffset -= this.angularSpeed;
+
+                    if (this.keysReset.indexOf(keyCode) !== -1) {
+                        if (camera.useInputToRestoreState) {
+                            camera.restoreState();
+                        }
                     }
-                } else if (this.keysRight.indexOf(keyCode) !== -1) {
-                    if (this._ctrlPressed && this.camera._useCtrlForPanning) {
-                        camera.inertialPanningX += 1 / this.panningSensibility;
-                    } else {
-                        camera.inertialAlphaOffset += this.angularSpeed;
-                    }
-                } else if (this.keysDown.indexOf(keyCode) !== -1) {
-                    if (this._ctrlPressed && this.camera._useCtrlForPanning) {
-                        camera.inertialPanningY -= 1 / this.panningSensibility;
-                    } else if (this._altPressed && this.useAltToZoom) {
-                        camera.inertialRadiusOffset -= 1 / this.zoomingSensibility;
-                    } else {
-                        camera.inertialBetaOffset += this.angularSpeed;
-                    }
-                } else if (this.keysReset.indexOf(keyCode) !== -1) {
-                    if (camera.useInputToRestoreState) {
-                        camera.restoreState();
+                }
+            } else {
+                // Legacy path
+                for (let index = 0; index < this._keys.length; index++) {
+                    const keyCode = this._keys[index];
+                    if (this.keysLeft.indexOf(keyCode) !== -1) {
+                        if (this._ctrlPressed && this.camera._useCtrlForPanning) {
+                            camera.inertialPanningX -= 1 / this.panningSensibility;
+                        } else {
+                            camera.inertialAlphaOffset -= this.angularSpeed;
+                        }
+                    } else if (this.keysUp.indexOf(keyCode) !== -1) {
+                        if (this._ctrlPressed && this.camera._useCtrlForPanning) {
+                            camera.inertialPanningY += 1 / this.panningSensibility;
+                        } else if (this._altPressed && this.useAltToZoom) {
+                            camera.inertialRadiusOffset += 1 / this.zoomingSensibility;
+                        } else {
+                            camera.inertialBetaOffset -= this.angularSpeed;
+                        }
+                    } else if (this.keysRight.indexOf(keyCode) !== -1) {
+                        if (this._ctrlPressed && this.camera._useCtrlForPanning) {
+                            camera.inertialPanningX += 1 / this.panningSensibility;
+                        } else {
+                            camera.inertialAlphaOffset += this.angularSpeed;
+                        }
+                    } else if (this.keysDown.indexOf(keyCode) !== -1) {
+                        if (this._ctrlPressed && this.camera._useCtrlForPanning) {
+                            camera.inertialPanningY -= 1 / this.panningSensibility;
+                        } else if (this._altPressed && this.useAltToZoom) {
+                            camera.inertialRadiusOffset -= 1 / this.zoomingSensibility;
+                        } else {
+                            camera.inertialBetaOffset += this.angularSpeed;
+                        }
+                    } else if (this.keysReset.indexOf(keyCode) !== -1) {
+                        if (camera.useInputToRestoreState) {
+                            camera.restoreState();
+                        }
                     }
                 }
             }
