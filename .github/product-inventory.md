@@ -28,7 +28,7 @@ This document catalogs all public npm packages published under the `@babylonjs` 
 | KTX2 Decoder | `@babylonjs/ktx2decoder` | `@tools/ktx2decoder` | `packages/tools/ktx2Decoder` |
 | Accessibility | `@babylonjs/accessibility` | `@tools/accessibility` | `packages/tools/accessibility` |
 | Shared UI Components | `@babylonjs/shared-ui-components` | `@dev/shared-ui-components` | `packages/dev/sharedUiComponents` |
-| Test Tools | `@babylonjs/test-tools` | `@dev/test-tools` | `packages/tools/tests` |
+| Test Tools | `@babylonjs/test-tools` | `@tools/test-tools` | `packages/tools/testTools` |
 
 ## Product Categories
 
