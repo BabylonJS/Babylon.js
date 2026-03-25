@@ -511,6 +511,43 @@ export class GaussianSplattingMaterial extends PushMaterial {
         this._afterBind(mesh, this._activeEffect, subMesh);
     }
 
+    /**
+     * Creates a configured ShaderMaterial for Gaussian Splatting depth rendering
+     * @param name material name
+     * @param scene scene it belongs to
+     * @param shaderLanguage GLSL or WGSL
+     * @param defines optional shader defines
+     * @param needAlphaBlending whether alpha blending is needed
+     * @returns configured ShaderMaterial
+     */
+    private static _CreateGaussianSplattingDepthShaderMaterial(
+        name: string,
+        scene: Scene,
+        shaderLanguage: ShaderLanguage,
+        defines?: string[],
+        needAlphaBlending?: boolean
+    ): ShaderMaterial {
+        const shaderMaterial = new ShaderMaterial(
+            name,
+            scene,
+            {
+                vertex: "gaussianSplattingDepth",
+                fragment: "gaussianSplattingDepth",
+            },
+            {
+                attributes: GaussianSplattingMaterial._Attribs,
+                uniforms: GaussianSplattingMaterial._Uniforms,
+                samplers: GaussianSplattingMaterial._Samplers,
+                uniformBuffers: GaussianSplattingMaterial._UniformBuffers,
+                shaderLanguage: shaderLanguage,
+                defines: defines,
+                needAlphaBlending: needAlphaBlending,
+            }
+        );
+        shaderMaterial.backFaceCulling = false;
+        return shaderMaterial;
+    }
+
     protected static _BindEffectUniforms(gsMesh: GaussianSplattingMesh, gsMaterial: GaussianSplattingMaterial, shaderMaterial: ShaderMaterial, scene: Scene): void {
         const engine = scene.getEngine();
         const effect = shaderMaterial.getEffect()!;
@@ -607,24 +644,14 @@ export class GaussianSplattingMaterial extends PushMaterial {
             defines.push(`#define MAX_PART_COUNT ${GetGaussianSplattingMaxPartCount(scene.getEngine())}`);
         }
 
-        const shaderMaterial = new ShaderMaterial(
+        const shaderMaterial = GaussianSplattingMaterial._CreateGaussianSplattingDepthShaderMaterial(
             "gaussianSplattingDepthRender",
             scene,
-            {
-                vertex: "gaussianSplattingDepth",
-                fragment: "gaussianSplattingDepth",
-            },
-            {
-                attributes: GaussianSplattingMaterial._Attribs,
-                uniforms: GaussianSplattingMaterial._Uniforms,
-                samplers: GaussianSplattingMaterial._Samplers,
-                uniformBuffers: GaussianSplattingMaterial._UniformBuffers,
-                shaderLanguage: shaderLanguage,
-                defines: defines,
-                needAlphaBlending: alphaBlendedDepth,
-            }
+            shaderLanguage,
+            defines,
+            alphaBlendedDepth
         );
-        shaderMaterial.backFaceCulling = false;
+
         shaderMaterial.onBindObservable.add((mesh: AbstractMesh) => {
             const gsMaterial = mesh.material as GaussianSplattingMaterial;
             const gsMesh = mesh as GaussianSplattingMesh;
@@ -634,22 +661,11 @@ export class GaussianSplattingMaterial extends PushMaterial {
     }
 
     protected static _MakeGaussianSplattingShadowDepthWrapper(scene: Scene, shaderLanguage: ShaderLanguage): ShadowDepthWrapper {
-        const shaderMaterial = new ShaderMaterial(
+        const shaderMaterial = GaussianSplattingMaterial._CreateGaussianSplattingDepthShaderMaterial(
             "gaussianSplattingDepth",
             scene,
-            {
-                vertex: "gaussianSplattingDepth",
-                fragment: "gaussianSplattingDepth",
-            },
-            {
-                attributes: GaussianSplattingMaterial._Attribs,
-                uniforms: GaussianSplattingMaterial._Uniforms,
-                samplers: GaussianSplattingMaterial._Samplers,
-                uniformBuffers: GaussianSplattingMaterial._UniformBuffers,
-                shaderLanguage: shaderLanguage,
-            }
+            shaderLanguage
         );
-        shaderMaterial.backFaceCulling = false;
 
         const shadowDepthWrapper = new ShadowDepthWrapper(shaderMaterial, scene, {
             standalone: true,
