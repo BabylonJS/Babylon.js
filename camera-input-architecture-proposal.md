@@ -49,7 +49,7 @@ Two composable layers, each answering one question:
 | ----------------------- | --------------------------------------------------------------------- | -------------------------------------------------- |
 | **Input**               | Physical device event processor (existing concept)                    | `GeospatialCameraPointersInput`                    |
 | **Interaction**         | Semantic action the camera performs (new)                             | `"rotate"`, `"pan"`, `"zoom"`                      |
-| **Input Map Entry**     | Declarative rule: source + condition → interaction (new)              | `{ source: Pointer, button: 0, interaction: Pan }` |
+| **Input Map Entry**     | Declarative rule: source + condition → interaction (new)              | `{ source: "pointer", button: 0, interaction: "pan" }` |
 | **Interaction Handler** | Executes a semantic action on the camera (new, typed per interaction) | `GlobeDragHandler`, `TiltHandler`                  |
 | **Behavior**            | Post-input reactive modifier (existing, unchanged)                    | `AutoRotationBehavior`                             |
 
@@ -156,7 +156,7 @@ type ArcRotateHandlers = {
 
 class ArcRotateCameraMovement extends CameraMovement {
     public override inputMap: InputMapEntry<keyof ArcRotateHandlers>[] = [];
-    public handlers: Partial<ArcRotateHandlers> = {};
+    public handlers: ArcRotateHandlers;
 
     constructor(scene: Scene, cameraPosition: Vector3) {
         super(scene, cameraPosition);
@@ -277,21 +277,21 @@ camera.movement.inputMap = [
 onButtonDown(evt) {
     this._activeType = this.camera.movement.resolveInteraction("pointer", { button: evt.button });
     if (this._activeType === "pan") {
-        this.camera.movement.handlers.pan?.start(scene.pointerX, scene.pointerY);
+        this.camera.movement.handlers.pan.start(scene.pointerX, scene.pointerY);
     }
 }
 
 onTouch(point, offsetX, offsetY) {
     if (this._activeType === "pan") {
-        this.camera.movement.handlers.pan?.update(scene.pointerX, scene.pointerY);
+        this.camera.movement.handlers.pan.update(scene.pointerX, scene.pointerY);
     } else if (this._activeType === "rotate") {
-        this.camera.movement.handlers.rotate?.(offsetX, offsetY);
+        this.camera.movement.handlers.rotate(offsetX, offsetY);
     }
 }
 
 // Wheel input
 checkInputs() {
-    this.camera.movement.handlers.zoom?.(this._wheelDeltaY, true);
+    this.camera.movement.handlers.zoom(this._wheelDeltaY, true);
 }
 ```
 
@@ -354,27 +354,27 @@ Inputs resolve their interaction type via `resolveInteraction()` (Layer 1), then
 onButtonDown(evt) {
     this._activeType = this.camera.movement.resolveInteraction("pointer", { button: evt.button });
     if (this._activeType === "pan") {
-        this.camera.movement.handlers.pan?.start(scene.pointerX, scene.pointerY);
+        this.camera.movement.handlers.pan.start(scene.pointerX, scene.pointerY);
     }
 }
 
 onTouch(point, offsetX, offsetY) {
     if (this._activeType === "pan") {
-        this.camera.movement.handlers.pan?.update(scene.pointerX, scene.pointerY);
+        this.camera.movement.handlers.pan.update(scene.pointerX, scene.pointerY);
     } else if (this._activeType === "rotate") {
-        this.camera.movement.handlers.rotate?.(offsetX, offsetY);  // direct function call
+        this.camera.movement.handlers.rotate(offsetX, offsetY);  // direct function call
     }
 }
 
 onButtonUp(evt) {
     if (this._activeType === "pan") {
-        this.camera.movement.handlers.pan?.stop();
+        this.camera.movement.handlers.pan.stop();
     }
 }
 
 // Wheel input — direct function call
 checkInputs() {
-    this.camera.movement.handlers.zoom?.(this._wheelDeltaY, true);
+    this.camera.movement.handlers.zoom(this._wheelDeltaY, true);
 }
 
 ```
