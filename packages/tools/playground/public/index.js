@@ -49,7 +49,7 @@ var Versions = {
         { url: "https://cdn.babylonjs.com/v8.56.2/babylon.js", instantResolve: false },
         { url: "https://cdn.babylonjs.com/v8.56.2/addons/babylonjs.addons.js", instantResolve: false },
         { url: "https://cdn.babylonjs.com/v8.56.2/gui/babylon.gui.min.js", instantResolve: false },
-        { url: "https://cdn.babylonjs.com/v8.56.2/inspector/babylon.inspector.bundle.js", instantResolve: true },
+        { url: "https://cdn.babylonjs.com/v8.56.2/inspector/babylon.inspector-v2.bundle.js", instantResolve: true },
         { url: "https://cdn.babylonjs.com/v8.56.2/nodeEditor/babylon.nodeEditor.js", instantResolve: true },
         { url: "https://cdn.babylonjs.com/v8.56.2/nodeGeometryEditor/babylon.nodeGeometryEditor.js", instantResolve: true },
         { url: "https://cdn.babylonjs.com/v8.56.2/nodeRenderGraphEditor/babylon.nodeRenderGraphEditor.js", instantResolve: true },
