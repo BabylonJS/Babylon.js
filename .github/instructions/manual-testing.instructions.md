@@ -16,6 +16,8 @@ Wait for "compiled successfully" then continue.
 Launch the tool in the browser by navigating to the following URL using playwright-cli:
 `http://localhost:1346`
 
+Use the `.github\instructions\editor-interaction.instructions.md` instructions for interacting with SFE.
+
 ## Node Material Editor (NME)
 
 To test NME, you need to build the dev packages, start the CDN server, and then start the Node Editor dev server. Here are the commands you need to run in order:
@@ -31,6 +33,8 @@ Wait for "compiled successfully" then continue.
 
 Launch the tool in the browser by navigating to the following URL using playwright-cli:
 `http://localhost:1340`
+
+Use the `.github\instructions\editor-interaction.instructions.md` instructions for interacting with NME.
 
 ## GUI Editor
 
@@ -48,6 +52,8 @@ Wait for "compiled successfully" then continue.
 Launch the tool in the browser by navigating to the following URL using playwright-cli:
 `http://localhost:1341`
 
+Use the `.github\instructions\editor-interaction.instructions.md` instructions for interacting with the GUI Editor.
+
 ## Node Geometry Editor (NGE)
 
 To test NGE, you need to build the dev packages, start the CDN server, and then start the Node Geometry Editor dev server. Here are the commands you need to run in order:
@@ -63,6 +69,8 @@ Wait for "compiled successfully" then continue.
 
 Launch the tool in the browser by navigating to the following URL using playwright-cli:
 `http://localhost:1343`
+
+Use the `.github\instructions\editor-interaction.instructions.md` instructions for interacting with NGE.
 
 ## Node Render Graph Editor (NRGE)
 
@@ -80,6 +88,8 @@ Wait for "compiled successfully" then continue.
 Launch the tool in the browser by navigating to the following URL using playwright-cli:
 `http://localhost:1344`
 
+Use the `.github\instructions\editor-interaction.instructions.md` instructions for interacting with NRGE.
+
 ## Node Particle Editor (NPE)
 
 To test NPE, you need to build the dev packages, start the CDN server, and then start the Node Particle Editor dev server. Here are the commands you need to run in order:
@@ -95,3 +105,5 @@ Wait for "compiled successfully" then continue.
 
 Launch the tool in the browser by navigating to the following URL using playwright-cli:
 `http://localhost:1345`
+
+Use the `.github\instructions\editor-interaction.instructions.md` instructions for interacting with NPE.
