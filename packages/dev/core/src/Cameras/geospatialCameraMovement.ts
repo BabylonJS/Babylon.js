@@ -100,10 +100,10 @@ export class GeospatialCameraMovement extends CameraMovement {
      */
     private _recalculateDragPlaneHitPoint(hitPointRadius: number, ray: Ray, localToEcefResult: Matrix): void {
         // Use the camera's geocentric normal to find the dragPlaneOriginPoint which lives at hitPointRadius along the camera's geocentric normal
-        this.calculateUpVectorFromPointToRef(this._cameraPosition, this._dragPlaneNormal);
-        this._dragPlaneNormal.scaleToRef(hitPointRadius, this._dragPlaneOriginPointEcef);
+        this._cameraPosition.scaleToRef(hitPointRadius / this._cameraPosition.length(), this._dragPlaneOriginPointEcef);
 
         // The dragPlaneOffsetVector will later be recalculated when drag occurs, and the delta between the offset vectors will be applied to localTranslation
+        this.calculateUpVectorFromPointToRef(this._dragPlaneOriginPointEcef, this._dragPlaneNormal);
         ComputeLocalBasisToRefs(
             this._dragPlaneOriginPointEcef,
             TmpVectors.Vector3[0],
