@@ -26,27 +26,11 @@ npm run test:interactions
 
 # Visualization (Playwright) Tests
 
-Tests that validate a visual result in the browser use Playwright. To add a new visualization test, append an entry to the JSON config file at `packages/tools/tests/test/visualization/config.json`. Each entry requires a `title` and typically a `playgroundId` (e.g. `"#ABC123#5"`) pointing to a saved Babylon.js Playground snippet.
+Tests that validate a visual result in the browser use Playwright.
 
-Optional fields include:
-
-- `referenceImage` — PNG filename in `ReferenceImages/`; defaults to `title` if omitted.
-- `renderCount` — number of frames to render before capturing (default 1).
-- `errorRatio` — allowed pixel-diff percentage (default ~1.1%).
-- `excludedEngines` — array of engines to skip, e.g. `["webgl1"]`.
-- `excludeFromAutomaticTesting` — boolean to skip the test entirely.
-- `replace` / `replaceUrl` — comma-separated string pairs for patching playground code or URLs.
-- `useLargeWorldRendering`, `useReverseDepthBuffer`, `useNonCompatibilityMode` — per-test engine flags.
-
-Reference images live in `packages/tools/tests/test/visualization/ReferenceImages/` (with a `webgpu/` subdirectory for WebGPU-specific baselines). To generate or update a reference image, run the tests with `--update-snapshots`:
-
-```
-npx playwright test --config playwright.config.ts --project=webgl2 --update-snapshots -g "Your Test Title"
-```
-
-The test files themselves (e.g. `visualization.webgl2.test.ts`, `visualization.webgpu.test.ts`) are thin wrappers that call `evaluatePlaywrightVisTests(engineType, configFileName)` from `visualizationPlaywright.utils.ts` — you should not need to modify them when adding a standard test.
-
-For devhost-based tests (e.g. Lottie), add entries to a separate config like `config.lottie.json` using a `devHostQsps` field instead of `playgroundId`, and optionally set `readySelector` and `screenshotDelayMs`.
+Babylon.js-specific guidance for where visualization tests live, how to add config entries,
+how to generate reference images, how to run them locally, and how to handle devhost-based
+visual tests lives in `.github/instructions/visual-tests.instructions.md`.
 
 # Babylon Serializer
 
