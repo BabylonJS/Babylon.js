@@ -104,6 +104,7 @@ packages/
 │   ├── smartFilters/
 │   ├── smartFilterBlocks/
 │   ├── lottiePlayer/
+│   ├── inspector/
 │   ├── inspector-v2/
 │   └── sharedUiComponents/
 └── tools/                # Implementation packages for tools and editors
@@ -119,6 +120,7 @@ packages/
     ├── viewer-configurator/    # Viewer configuration tool (not published to npm)
     ├── ktx2Decoder/
     ├── accessibility/
+    ├── testTools/
     └── tests/
 ```
 
