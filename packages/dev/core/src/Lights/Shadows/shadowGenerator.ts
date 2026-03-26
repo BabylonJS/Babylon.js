@@ -1799,7 +1799,7 @@ export class ShadowGenerator implements IShadowGenerator {
                     "biasAndScaleSM",
                     "morphTargetInfluences",
                     "morphTargetCount",
-                    "boneTextureWidth",
+                    "boneTextureInfo",
                     "softTransparentShadowSM",
                     "morphTargetTextureInfo",
                     "morphTargetTextureIndices",

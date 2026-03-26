@@ -111,7 +111,7 @@ export class TransformFeedbackBoundingHelper implements IBoundingInfoHelperPlatf
             const join = defines.join("\n");
             if (!this._effects[join]) {
                 const uniforms = [
-                    "boneTextureWidth",
+                    "boneTextureInfo",
                     "mBones",
                     "morphTargetInfluences",
                     "morphTargetCount",

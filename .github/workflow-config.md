@@ -35,6 +35,10 @@ Smart Filters Editor (SFE), Node Particle Editor (NPE), and the Viewer.
 When creating HTML mocks, match the look and feel of the tool's existing UI. Don't guess at
 what the tool looks like — read the UI code and create a close approximation.
 
+## Manual testing
+
+To manually test see the instructions in `.github/instructions/manual-testing.instructions.md`
+
 ## Test conventions
 
 ### Unit tests

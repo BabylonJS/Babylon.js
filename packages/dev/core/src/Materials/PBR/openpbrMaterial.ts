@@ -2689,7 +2689,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
             "vLightingIntensity",
             "logarithmicDepthConstant",
             "vTangentSpaceParams",
-            "boneTextureWidth",
+            "boneTextureInfo",
             "vDebugMode",
             "morphTargetTextureInfo",
             "morphTargetTextureIndices",
