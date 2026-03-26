@@ -459,6 +459,47 @@ test("invalid model source fires modelerror", async ({ page }) => {
 });
 
 // ============================================================
+// Gaussian Splatting
+// ============================================================
+
+test("load SPZ gaussian splat model", async ({ page }) => {
+    await attachViewerElement(
+        page,
+        `
+        <babylon-viewer
+            source="https://assets.babylonjs.com/splats/hornedlizard.spz"
+        >
+        </babylon-viewer>
+        `
+    );
+
+    await waitForModelLoaded(page);
+
+    const splatMeshInfo = await page.evaluate(() => {
+        const viewer = document.querySelector("babylon-viewer") as ViewerElement;
+        const meshes = viewer.viewerDetails?.scene.meshes;
+        if (!meshes) return null;
+        for (const mesh of meshes) {
+            if (mesh.getClassName() === "GaussianSplattingMesh") {
+                return {
+                    scalingY: mesh.scaling.y,
+                    scalingZ: mesh.scaling.z,
+                };
+            }
+        }
+        return null;
+    });
+
+    // SPZ files use RUB convention (Right-Up-Back, right-handed).
+    // The loader should negate Z (not Y) to convert to Babylon's left-handed system.
+    expect(splatMeshInfo).not.toBeNull();
+    expect(splatMeshInfo!.scalingY).toBe(1);
+    expect(splatMeshInfo!.scalingZ).toBe(-1);
+
+    await expectScreenshotMatch(page, "viewer-load-spz-splat.png");
+});
+
+// ============================================================
 // Environment
 // ============================================================
 
