@@ -1451,7 +1451,7 @@ export abstract class PBRBaseMaterial extends PBRBaseMaterialBase {
             "vLightingIntensity",
             "logarithmicDepthConstant",
             "vTangentSpaceParams",
-            "boneTextureWidth",
+            "boneTextureInfo",
             "vDebugMode",
             "morphTargetTextureInfo",
             "morphTargetTextureIndices",

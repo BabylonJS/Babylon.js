@@ -699,7 +699,7 @@ export class ThinEffectLayer {
                 "glowColor",
                 "morphTargetInfluences",
                 "morphTargetCount",
-                "boneTextureWidth",
+                "boneTextureInfo",
                 "diffuseMatrix",
                 "emissiveMatrix",
                 "opacityMatrix",

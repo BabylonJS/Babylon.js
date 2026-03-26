@@ -45,6 +45,18 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
             });
     }
 
+    private _reloadWithEngineVersion(engineVersion: "WebGL2" | "WebGL" | "WebGPU") {
+        Utilities.MarkManualEngineSwitchReload();
+        Utilities.StoreStringToStore("engineVersion", engineVersion, true);
+
+        if (engineVersion !== "WebGPU" && location.search.indexOf("webgpu") !== -1) {
+            location.search = location.search.replace("webgpu", "");
+            return;
+        }
+
+        window.location.reload();
+    }
+
     private _load() {
         this.props.globalState.onLanguageChangedObservable.add(() => {
             this.forceUpdate();
@@ -193,7 +205,15 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                 tooltip: "Loads the Babylon Toolkit into the playground",
                 storeKey: "babylon-toolkit",
                 defaultValue: false,
-                onCheck: () => {},
+                onCheck: (value: boolean) => {
+                    if (!value) {
+                        try {
+                            localStorage.removeItem("babylon-toolkit-used");
+                        } catch {
+                            // Ignore storage errors
+                        }
+                    }
+                },
             },
             {
                 label: "Auto-run",
@@ -251,12 +271,7 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                 storeKey: "engineVersion",
                 isActive: activeEngineVersion === "WebGL2",
                 onClick: () => {
-                    Utilities.StoreStringToStore("engineVersion", "WebGL2", true);
-                    if (location.search.indexOf("webgpu") !== -1) {
-                        location.search = location.search.replace("webgpu", "");
-                    } else {
-                        window.location.reload();
-                    }
+                    this._reloadWithEngineVersion("WebGL2");
                 },
                 validate: () => window.confirm(Utilities.GetCodeLostConfirmationMessage("version")),
             },
@@ -266,15 +281,7 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                 storeKey: "engineVersion",
                 isActive: activeEngineVersion === "WebGL",
                 onClick: () => {
-                    if (location.search.indexOf("webgpu") !== -1) {
-                        location.search = location.search.replace("webgpu", "");
-                    }
-                    Utilities.StoreStringToStore("engineVersion", "WebGL", true);
-                    if (location.search.indexOf("webgpu") !== -1) {
-                        location.search = location.search.replace("webgpu", "");
-                    } else {
-                        window.location.reload();
-                    }
+                    this._reloadWithEngineVersion("WebGL");
                 },
                 validate: () => window.confirm(Utilities.GetCodeLostConfirmationMessage("version")),
             },
@@ -304,8 +311,7 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                 storeKey: "engineVersion",
                 isActive: activeEngineVersion === "WebGPU",
                 onClick: () => {
-                    Utilities.StoreStringToStore("engineVersion", "WebGPU", true);
-                    window.location.reload();
+                    this._reloadWithEngineVersion("WebGPU");
                 },
                 validate: () => window.confirm(Utilities.GetCodeLostConfirmationMessage("version")),
             });

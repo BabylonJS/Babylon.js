@@ -3803,6 +3803,10 @@
             "playgroundId": "#24HWT9#25",
             "renderCount": 10,
             "excludedEngines": ["webgl1", "webgl2"]
+        },
+        {
+            "title": "Selection outline layer with instances",
+            "playgroundId": "#ADUC74#28"
         }
     ]
 }

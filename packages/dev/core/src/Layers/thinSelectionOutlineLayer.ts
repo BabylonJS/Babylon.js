@@ -289,7 +289,7 @@ export class ThinSelectionOutlineLayer extends ThinEffectLayer {
                 "view",
                 "morphTargetInfluences",
                 "morphTargetCount",
-                "boneTextureWidth",
+                "boneTextureInfo",
                 "diffuseMatrix",
                 "morphTargetTextureInfo",
                 "morphTargetTextureIndices",
@@ -660,6 +660,18 @@ export class ThinSelectionOutlineLayer extends ThinEffectLayer {
             const mesh = this._selection[index] as Mesh;
             if (mesh._userInstancedBuffersStorage) {
                 const kind = ThinSelectionOutlineLayer.InstanceSelectionIdAttributeName;
+
+                // Dispose per-pass VBOs for this layer's own render passes only (WebGPU)
+                if (mesh._userInstancedBuffersStorage.renderPasses) {
+                    for (const passId of this._objectRenderer.renderPassIds) {
+                        const passVBOs = mesh._userInstancedBuffersStorage.renderPasses[passId];
+                        if (passVBOs?.[kind]) {
+                            passVBOs[kind]!.dispose();
+                            delete passVBOs[kind];
+                        }
+                    }
+                }
+
                 mesh._userInstancedBuffersStorage.vertexBuffers[kind]?.dispose();
 
                 const vao = mesh._userInstancedBuffersStorage.vertexArrayObjects?.[kind];

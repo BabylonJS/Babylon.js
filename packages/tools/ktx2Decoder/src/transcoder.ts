@@ -23,7 +23,7 @@ export class Transcoder {
      * When set, unversioned CDN URLs will be rewritten to include this version prefix.
      * @internal
      */
-    public static CdnVersion = "8.54.3";
+    public static CdnVersion = "9.0.0";
 
     private static readonly _DefaultCdnUrl = "https://cdn.babylonjs.com";
 

@@ -22,6 +22,7 @@ import { TransformNode } from "core/Meshes/transformNode";
 import { DynamicTexture } from "core/Materials/Textures/dynamicTexture";
 import { StandardMaterial } from "core/Materials/standardMaterial";
 import { MeshShapeBlock } from "core/Particles/Node/Blocks/Emitters/meshShapeBlock";
+import type { FramingBehavior } from "core/Behaviors/Cameras/framingBehavior";
 
 export class PreviewManager {
     private _nodeParticleSystemSet: NodeParticleSystemSet;
@@ -63,6 +64,7 @@ export class PreviewManager {
         this._camera.minZ = 0.001;
         this._camera.attachControl(false);
         this._camera.useFramingBehavior = true;
+        (this._camera.getBehaviorByName("Framing") as FramingBehavior).elevationReturnTime = -1;
         this._camera.wheelDeltaPercentage = 0.01;
         this._camera.pinchDeltaPercentage = 0.01;
 

@@ -560,7 +560,7 @@ export class DepthRenderer {
             const uniforms = [
                 "world",
                 "mBones",
-                "boneTextureWidth",
+                "boneTextureInfo",
                 "pointSize",
                 "viewProjection",
                 "view",

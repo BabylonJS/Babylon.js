@@ -769,8 +769,8 @@ export class ShaderMaterial extends PushMaterial {
             if (skeleton.isUsingTextureForMatrices) {
                 defines.push("#define BONETEXTURE");
 
-                if (uniforms.indexOf("boneTextureWidth") === -1) {
-                    uniforms.push("boneTextureWidth");
+                if (uniforms.indexOf("boneTextureInfo") === -1) {
+                    uniforms.push("boneTextureInfo");
                 }
 
                 if (this._options.samplers.indexOf("boneSampler") === -1) {

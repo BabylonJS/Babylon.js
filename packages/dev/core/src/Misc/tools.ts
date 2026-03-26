@@ -233,8 +233,8 @@ export class Tools {
      * @param color defines the output color
      */
     public static FetchToRef(u: number, v: number, width: number, height: number, pixels: Uint8Array, color: IColor4Like): void {
-        const wrappedU = (Math.abs(u) * width) % width | 0;
-        const wrappedV = (Math.abs(v) * height) % height | 0;
+        const wrappedU = ((Math.abs(u) * width) % width) | 0;
+        const wrappedV = ((Math.abs(v) * height) % height) | 0;
 
         const position = (wrappedU + wrappedV * width) * 4;
         color.r = pixels[position] / 255;
@@ -503,7 +503,7 @@ export class Tools {
      * When set, unversioned CDN URLs will be rewritten to include this version prefix.
      * @internal
      */
-    public static _CdnVersion = "8.54.3";
+    public static _CdnVersion = "9.0.0";
 
     /**
      * @internal

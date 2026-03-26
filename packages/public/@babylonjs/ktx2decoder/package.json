@@ -1,6 +1,6 @@
 {
     "name": "@babylonjs/ktx2decoder",
-    "version": "8.54.3",
+    "version": "9.0.0",
     "main": "index.js",
     "module": "index.js",
     "types": "index.d.ts",
@@ -10,21 +10,22 @@
         "**/*.map",
         "**/*.wasm",
         "readme.md",
-        "license.md"
+        "license.md",
+        "NOTICE.md"
     ],
     "scripts": {
         "build": "npm run clean && npm run compile",
         "clean": "rimraf dist && rimraf *.tsbuildinfo -g && rimraf \"./**/*.!(md|json|build.json|lts.json)\" -g",
         "compile": "tsc -b tsconfig.build.json",
-        "postcompile": "build-tools -c add-js-to-es6 && build-tools -c cp -f \"../../../tools/babylonServer/public/ktx2Transcoders/1\" -t ./wasm"
+        "postcompile": "build-tools -c add-js-to-es6 && build-tools -c cp -f \"../../../tools/babylonServer/public/ktx2Transcoders/1\" -t ./wasm && build-tools -c cp -f \"../../../tools/babylonServer/public/zstddec.wasm\" -t ./wasm"
     },
     "devDependencies": {
-        "@babylonjs/core": "8.54.3",
+        "@babylonjs/core": "9.0.0",
         "@dev/build-tools": "^1.0.0",
         "@tools/ktx2decoder": "^1.0.0"
     },
     "peerDependencies": {
-        "@babylonjs/core": "^8.0.0"
+        "@babylonjs/core": "^9.0.0"
     },
     "keywords": [
         "3D",

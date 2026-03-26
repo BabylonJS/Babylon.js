@@ -337,7 +337,7 @@ export class MaterialHelperGeometryRendering {
             if (mesh.useBones && mesh.computeBonesUsingShaders && mesh.skeleton) {
                 const skeleton = mesh.skeleton;
 
-                if (!skeleton.isUsingTextureForMatrices || effect.getUniformIndex("boneTextureWidth") === -1) {
+                if (!skeleton.isUsingTextureForMatrices || effect.getUniformIndex("boneTextureInfo") === -1) {
                     const matrices = skeleton.getTransformMatrices(mesh);
 
                     if (matrices) {

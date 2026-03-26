@@ -1703,9 +1703,12 @@ export abstract class AbstractEngine {
             if (!buffer) {
                 this._loadFile(
                     url,
-                    (data) => {
-                        // eslint-disable-next-line @typescript-eslint/no-floating-promises
-                        callbackAsync(new Uint8Array(data as ArrayBuffer));
+                    async (data) => {
+                        try {
+                            await callbackAsync(new Uint8Array(data as ArrayBuffer));
+                        } catch (reason) {
+                            onInternalError("Failed to parse texture data", reason);
+                        }
                     },
                     undefined,
                     scene ? scene.offlineProvider : undefined,
@@ -1715,12 +1718,17 @@ export abstract class AbstractEngine {
                     }
                 );
             } else {
+                const processBufferAsync = async (data: ArrayBufferView) => {
+                    try {
+                        await callbackAsync(data);
+                    } catch (reason) {
+                        onInternalError("Failed to parse texture data", reason);
+                    }
+                };
                 if (buffer instanceof ArrayBuffer) {
-                    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-                    callbackAsync(new Uint8Array(buffer));
+                    void processBufferAsync(new Uint8Array(buffer));
                 } else if (ArrayBuffer.isView(buffer)) {
-                    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-                    callbackAsync(buffer);
+                    void processBufferAsync(buffer);
                 } else {
                     if (onError) {
                         onError("Unable to load: only ArrayBuffer or ArrayBufferView is supported", null);
@@ -1922,14 +1930,14 @@ export abstract class AbstractEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@8.54.3";
+        return "babylonjs@9.0.0";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "8.54.3";
+        return "9.0.0";
     }
 
     /**

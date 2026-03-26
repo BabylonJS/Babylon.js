@@ -1,6 +1,6 @@
 {
     "name": "@babylonjs/node-render-graph-editor",
-    "version": "8.54.3",
+    "version": "9.0.0",
     "main": "dist/babylon.nodeRenderGraphEditor.js",
     "module": "dist/babylon.nodeRenderGraphEditor.js",
     "esnext": "dist/babylon.nodeRenderGraphEditor.js",
@@ -18,12 +18,12 @@
         "clean": "rimraf dist"
     },
     "peerDependencies": {
-        "@babylonjs/core": "^8.0.0",
+        "@babylonjs/core": "^9.0.0",
         "@types/react": ">=16.7.3",
         "@types/react-dom": ">=16.0.9"
     },
     "devDependencies": {
-        "@babylonjs/core": "8.54.3",
+        "@babylonjs/core": "9.0.0",
         "@tools/node-render-graph-editor": "1.0.0",
         "react": "^18.2.0",
         "react-dom": "^18.2.0"

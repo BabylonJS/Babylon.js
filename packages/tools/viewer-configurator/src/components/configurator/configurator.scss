@@ -53,10 +53,13 @@
     }
 
     .stickyContainer {
-        position: sticky;
-        top: 0;
         z-index: 100;
         background: $primary-background;
+
+        @media (min-height: 600px) {
+            position: sticky;
+            top: 0;
+        }
     }
 
     .configuratorHeader {

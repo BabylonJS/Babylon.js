@@ -34,6 +34,7 @@ Node.AddNodeConstructor("Light_Type_5", (name, scene) => {
 });
 
 const DefaultDepthSlices = 16;
+const MobileClusteredLightBatchSize = 8;
 
 /**
  * A special light that renders all its associated spot or point lights using a clustered or forward+ system.
@@ -52,7 +53,8 @@ export class ClusteredLightContainer extends Light {
                 return 0;
             }
             // Due to the use of floats we want to limit lights to the precision of floats
-            return caps.shaderFloatPrecision;
+            // The reduced precision for mobiles is because some devices (like Samsung Galaxy) report support for R32F but actually create the texture with less precision.
+            return engine.hostInformation.isMobile ? MobileClusteredLightBatchSize : caps.shaderFloatPrecision;
         } else {
             // WebGL 1 is not supported due to lack of dynamic for loops
             return 0;

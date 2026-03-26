@@ -1,28 +1,13 @@
 /* eslint-disable jsdoc/require-jsdoc */
-import { DecodeBase64ToBinary, Logger } from "@dev/core";
+import { Logger } from "@dev/core";
 import type { GlobalState } from "../globalState";
 import { Utilities } from "./utilities";
 import { ReadLastLocal } from "./localSession";
-import type { SnippetData, SnippetPayload } from "./snippet";
-import { ManifestVersion, type V2Manifest } from "./snippet";
+import { ManifestVersion } from "./snippet";
+import { FetchSnippet, ParseSnippetResponse } from "@tools/snippet-loader";
+import type { ISnippetServerResponse, IPlaygroundSnippetResult } from "@tools/snippet-loader";
 
-const DecodeBase64ToString = (base64Data: string): string => {
-    return atob(base64Data);
-};
-
-// Taken from 5.X StringUtils and added so that older playgrounds can still be loaded
-// This can be removed once we no longer support loading playgrounds older than 5.X
-const DecodeBase64ToBinaryReproduced = (base64Data: string): ArrayBuffer => {
-    const decodedString = DecodeBase64ToString(base64Data);
-    const bufferLength = decodedString.length;
-    const bufferView = new Uint8Array(new ArrayBuffer(bufferLength));
-
-    for (let i = 0; i < bufferLength; i++) {
-        bufferView[i] = decodedString.charCodeAt(i);
-    }
-
-    return bufferView.buffer;
-};
+const HydrationObserverTimeoutMs = 10000;
 export class LoadManager {
     private _previousHash = "";
 
@@ -38,7 +23,8 @@ export class LoadManager {
             location.hash = id;
 
             if (location.hash === prevHash) {
-                this._loadPlayground(id);
+                // Setting the same hash does not fire hashchange, so load it directly here.
+                this._loadPlayground(id, false);
             }
         });
 
@@ -47,12 +33,35 @@ export class LoadManager {
             const json = await this._pickJsonFileAsync();
             if (json) {
                 location.hash = "";
-                // eslint-disable-next-line
-                this._processJsonPayloadAsync(json);
+                this._processJsonPayloadFromString(json);
             } else {
                 globalState.onDisplayWaitRingObservable.notifyObservers(false);
             }
         });
+    }
+
+    private _notifyLoadFailure(message: string) {
+        Logger.Error(message);
+        this.globalState.loadingCodeInProgress = false;
+        this.globalState.onCodeLoaded.notifyObservers("");
+        this.globalState.onDisplayWaitRingObservable.notifyObservers(false);
+        this.globalState.onErrorObservable.notifyObservers({ message });
+    }
+
+    private async _waitForHydrationObserverAsync() {
+        const startTime = Date.now();
+
+        while (!this.globalState.onV2HydrateRequiredObservable.hasObservers()) {
+            if (Date.now() - startTime >= HydrationObserverTimeoutMs) {
+                this._notifyLoadFailure("The playground editor timed out while preparing the loaded snippet.");
+                return false;
+            }
+
+            // eslint-disable-next-line
+            await new Promise((res) => setTimeout(res, 10));
+        }
+
+        return true;
     }
 
     private async _pickJsonFileAsync() {
@@ -127,6 +136,9 @@ export class LoadManager {
                 }
             }
         }
+        // Manual engine switches trigger a full reload.
+        // Consume the one-shot flag here so only the next hash-based load can suppress the dialog.
+        const suppressEngineSwitchDialog = Utilities.ConsumeManualEngineSwitchReload();
         if (pgHash) {
             const match = pgHash.match(/^(#[A-Za-z\d]*)(%23)([\d]+)$/);
             if (match) {
@@ -134,128 +146,86 @@ export class LoadManager {
                 parent.location.hash = pgHash;
             }
             this._previousHash = pgHash;
-            this._loadPlayground(pgHash.substring(1));
+            this._loadPlayground(pgHash.substring(1), suppressEngineSwitchDialog);
         }
     }
 
-    // These are potential variables defined by existing Playgrounds
-    // That need to be exported in order to work in V2 format
-    private readonly _jsFunctions = [
-        "delayCreateScene",
-        "createScene",
-        "CreateScene",
-        "createscene",
+    /**
+     * Processes a parsed playground snippet result from the snippet loader,
+     * applying engine switch logic and hydrating the editor.
+     * @param result - The parsed playground snippet result
+     * @param suppressEngineSwitchDialog - Whether to suppress the engine switch dialog
+     */
+    private async _processPlaygroundResultAsync(result: IPlaygroundSnippetResult, suppressEngineSwitchDialog = false) {
+        // Apply metadata
+        this.globalState.currentSnippetTitle = result.metadata.name || "";
+        this.globalState.currentSnippetDescription = result.metadata.description || "";
+        this.globalState.currentSnippetTags = result.metadata.tags || "";
 
-        // Engine
-        "createEngine",
-    ];
-    private async _processJsonPayloadAsync(data: string) {
-        const snippet = JSON.parse(data) as SnippetData;
-        // Check if title / descr / tags are already set
-        if (snippet.name != null && snippet.name != "") {
-            this.globalState.currentSnippetTitle = snippet.name;
-        } else {
-            this.globalState.currentSnippetTitle = "";
-        }
-
-        if (snippet.description != null && snippet.description != "") {
-            this.globalState.currentSnippetDescription = snippet.description;
-        } else {
-            this.globalState.currentSnippetDescription = "";
-        }
-
-        if (snippet.tags != null && snippet.tags != "") {
-            this.globalState.currentSnippetTags = snippet.tags;
-        } else {
-            this.globalState.currentSnippetTags = "";
-        }
-
-        // Extract code
-        const payload = JSON.parse(snippet.jsonPayload ?? snippet.payload ?? "") as SnippetPayload;
-        let code: string = payload.code.toString();
-
-        if (payload.unicode) {
-            // Need to decode
-            const encodedData = payload.unicode;
-            const decoder = new TextDecoder("utf8");
-
-            code = decoder.decode((DecodeBase64ToBinary || DecodeBase64ToBinaryReproduced)(encodedData));
-        }
-
-        // check the engine
-        if (payload.engine && ["WebGL1", "WebGL2", "WebGPU"].includes(payload.engine)) {
-            // check if an engine is forced in the URL
+        // Check the engine
+        if (result.engineType && ["WebGL1", "WebGL2", "WebGPU"].includes(result.engineType)) {
+            const targetEngine = result.engineType;
             const url = new URL(window.location.href);
             const engineInURL = url.searchParams.get("engine") || url.search.includes("webgpu");
-            // get the current engine
             const currentEngine = Utilities.ReadStringFromStore("engineVersion", "WebGL2", true);
-            if (!engineInURL && currentEngine !== payload.engine) {
+            if (!engineInURL && currentEngine !== targetEngine && !suppressEngineSwitchDialog) {
                 if (
-                    window.confirm(
-                        `The engine version in this playground (${payload.engine}) is different from the one you are currently using (${currentEngine}).
-Confirm to switch to ${payload.engine}, cancel to keep ${currentEngine}`
-                    )
+                    await this.globalState.showEngineSwitchDialogAsync({
+                        currentEngine,
+                        targetEngine,
+                    })
                 ) {
-                    Utilities.StoreStringToStore("engineVersion", payload.engine, true);
-                    this.globalState.onEngineChangedObservable.notifyObservers(payload.engine);
+                    Utilities.StoreStringToStore("engineVersion", targetEngine, true);
+                    this.globalState.onEngineChangedObservable.notifyObservers(targetEngine);
                 }
             }
         }
 
-        try {
-            const manifestPayload = JSON.parse(code);
-            if (manifestPayload && manifestPayload.files && typeof manifestPayload.files === "object") {
-                const v2 = manifestPayload as V2Manifest;
+        if (result.isMultiFile && result.manifest) {
+            const v2 = result.manifest;
 
-                if (v2.language !== this.globalState.language) {
-                    Utilities.SwitchLanguage(v2.language, this.globalState, true);
-                }
+            if (v2.language !== this.globalState.language) {
+                Utilities.SwitchLanguage(v2.language, this.globalState, true);
+            }
 
-                // In the case we're loading from a #local revision id,
-                // The execution flow reaches this block before MonacoManager has been instantiated
-                // And the observable attached. Instead of refactoring the instantiation flow
-                // We can handle this one-off case here
-                while (!this.globalState.onV2HydrateRequiredObservable.hasObservers()) {
-                    // eslint-disable-next-line
-                    await new Promise((res) => setTimeout(res, 10));
-                }
-                this.globalState.onV2HydrateRequiredObservable.notifyObservers({
-                    v: ManifestVersion,
-                    files: v2.files,
-                    entry: v2.entry || (v2.language === "JS" ? "index.js" : "index.ts"),
-                    imports: v2.imports || {},
-                    language: v2.language,
-                });
-
-                this.globalState.loadingCodeInProgress = false;
-                this.globalState.onMetadataUpdatedObservable.notifyObservers();
-
+            // In the case we're loading from a #local revision id,
+            // The execution flow reaches this block before MonacoManager has been instantiated
+            // And the observable attached. Instead of refactoring the instantiation flow
+            // We can handle this one-off case here
+            const hasHydrationObserver = await this._waitForHydrationObserverAsync();
+            if (!hasHydrationObserver) {
                 return;
             }
-        } catch (e: any) {
-            Logger.Warn("Loading legacy snippet");
+            this.globalState.onV2HydrateRequiredObservable.notifyObservers({
+                v: ManifestVersion,
+                files: v2.files,
+                entry: v2.entry || (v2.language === "JS" ? "index.js" : "index.ts"),
+                imports: v2.imports || {},
+                language: v2.language,
+            });
+
+            this.globalState.loadingCodeInProgress = false;
+            this.globalState.onMetadataUpdatedObservable.notifyObservers();
+            return;
         }
 
-        const guessed = this._guessLanguageFromCode(code); // "TS" | "JS"
-        if (guessed !== this.globalState.language) {
-            Utilities.SwitchLanguage(guessed, this.globalState, true);
+        // V1 legacy snippet — the snippet loader already appended export statements
+        // and normalised the code into a files map
+        const language = result.language;
+        if (language !== this.globalState.language) {
+            Utilities.SwitchLanguage(language, this.globalState, true);
         }
-        // In this case we are loading a v1 playground snippet
-        // And in all likelihood it didn't include export statements
-        // Since that would not have run in the old playground
-        // So we append to the end of the file to satisfy our module-based runner
-        const fileName = guessed === "TS" ? "index.ts" : "index.js";
-        code += `\nexport default ${guessed === "TS" ? "Playground" : (this._jsFunctions.find((fn) => code.includes(fn)) ?? "createScene")}\n`;
-        if (guessed === "JS" && code.includes("createEngine")) {
-            code += `\nexport { createEngine }\n`;
-        }
+
+        const fileName = language === "TS" ? "index.ts" : "index.js";
+        const code = result.files[fileName] ?? result.code;
+
         queueMicrotask(() => {
             this.globalState.onV2HydrateRequiredObservable.notifyObservers({
                 v: ManifestVersion,
                 files: { [fileName]: code },
                 entry: fileName,
                 imports: {},
-                language: guessed,
+                language,
             });
         });
 
@@ -263,7 +233,33 @@ Confirm to switch to ${payload.engine}, cancel to keep ${currentEngine}`
         this.globalState.onMetadataUpdatedObservable.notifyObservers();
     }
 
-    private _loadPlayground(id: string) {
+    /**
+     * Processes a raw JSON payload string (from local storage or file).
+     * Parses via the snippet loader and delegates to _processPlaygroundResultAsync.
+     * @param data - The raw JSON string to parse
+     * @param suppressEngineSwitchDialog - Whether to suppress the engine switch dialog
+     */
+    private _processJsonPayloadFromString(data: string, suppressEngineSwitchDialog = false) {
+        // eslint-disable-next-line github/no-then
+        void this._processJsonPayloadFromStringAsync(data, suppressEngineSwitchDialog).catch((error) => {
+            const message = error instanceof Error ? error.message : "Failed to process the playground snippet.";
+            this._notifyLoadFailure(message);
+        });
+    }
+
+    private async _processJsonPayloadFromStringAsync(data: string, suppressEngineSwitchDialog = false) {
+        const response = JSON.parse(data) as ISnippetServerResponse;
+        const snippetId = this.globalState.currentSnippetToken ? `${this.globalState.currentSnippetToken}#${this.globalState.currentSnippetRevision || "0"}` : "local#0";
+        const result = await ParseSnippetResponse(response, snippetId, { moduleFormat: "esm" });
+
+        if (result.type !== "playground") {
+            throw new Error(`Expected a playground snippet but got "${result.type}".`);
+        }
+
+        await this._processPlaygroundResultAsync(result, suppressEngineSwitchDialog);
+    }
+
+    private _loadPlayground(id: string, suppressEngineSwitchDialog = false) {
         this.globalState.loadingCodeInProgress = true;
         try {
             if (id[0] === "#") {
@@ -278,63 +274,31 @@ Confirm to switch to ${payload.engine}, cancel to keep ${currentEngine}`
             if (this.globalState.currentSnippetRevision === "local") {
                 const localRevision = ReadLastLocal(this.globalState);
                 if (localRevision) {
-                    // eslint-disable-next-line
-                    this._processJsonPayloadAsync(localRevision);
+                    this._processJsonPayloadFromString(localRevision, suppressEngineSwitchDialog);
                     return;
                 }
             }
 
-            const xmlHttp = new XMLHttpRequest();
-            xmlHttp.onreadystatechange = () => {
-                if (xmlHttp.readyState === 4) {
-                    if (xmlHttp.status === 200) {
-                        // eslint-disable-next-line
-                        this._processJsonPayloadAsync(xmlHttp.responseText);
-                    }
-                }
-            };
-
-            // defensive-handling a safari issue
-            id.replace(/%23/g, "#");
-
-            xmlHttp.open("GET", this.globalState.SnippetServerUrl + "/" + id.replace(/#/g, "/"));
-            xmlHttp.send();
-        } catch {
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            this.globalState.loadingCodeInProgress = false;
-            this.globalState.onCodeLoaded.notifyObservers("");
+            // Use the snippet loader to fetch and parse the snippet
+            // eslint-disable-next-line github/no-then
+            void this._fetchAndProcessSnippetAsync(id, suppressEngineSwitchDialog).catch((error) => {
+                const message = error instanceof Error ? error.message : `Failed to load playground ${id}.`;
+                this._notifyLoadFailure(message);
+            });
+        } catch (error) {
+            const message = error instanceof Error ? error.message : `Failed to start loading playground ${id}.`;
+            this._notifyLoadFailure(message);
         }
     }
-    private _guessLanguageFromCode(code: string): "TS" | "JS" {
-        if (code.includes("class Playground")) {
-            return "TS";
-        }
-        if (this._jsFunctions.some((fn) => code.includes(fn))) {
-            return "JS";
-        }
-        if (!code) {
-            return this.globalState.language as "TS" | "JS";
+
+    private async _fetchAndProcessSnippetAsync(id: string, suppressEngineSwitchDialog: boolean) {
+        const serverResponse = await FetchSnippet(id, this.globalState.SnippetServerUrl);
+        const result = await ParseSnippetResponse(serverResponse, id, { moduleFormat: "esm" });
+
+        if (result.type !== "playground") {
+            throw new Error(`Expected a playground snippet but got "${result.type}".`);
         }
 
-        // Strong TS signals
-        const tsSignals = [
-            /\binterface\s+[A-Za-z_]\w*/m, // interface Foo
-            /\benum\s+[A-Za-z_]\w*/m, // enum X
-            /\btype\s+[A-Za-z_]\w*\s*=/m, // type T = ...
-            /\bimplements\s+[A-Za-z_]/m, // class C implements X
-            /\breadonly\b/m, // readonly
-            /\bpublic\b|\bprivate\b|\bprotected\b/m, // visibility modifiers
-            /\babstract\s+class\b/m, // abstract class
-            /\bas\s+const\b/m, // as const
-            /\bimport\s+type\s+/m, // import type { X }
-        ];
-
-        const hasTypeAnn = /[:]\s*[A-Za-z_$][\w$.<>,\s?\\[\]|&]*\b(?![:=])/m.test(code);
-
-        if (tsSignals.some((r) => r.test(code)) || hasTypeAnn) {
-            return "TS";
-        }
-
-        return "JS";
+        await this._processPlaygroundResultAsync(result, suppressEngineSwitchDialog);
     }
 }

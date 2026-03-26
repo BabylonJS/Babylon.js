@@ -88,7 +88,12 @@ export const ColorPickerPopup = forwardRef<HTMLButtonElement, ColorPickerProps<C
     const gammaColor = useMemo(() => (isPropertyLinear ? color.toGammaSpace() : color), [color, isPropertyLinear]);
 
     /** Color in the user-selected display space — used for numeric inputs (RGB, HSV, Hex) */
-    const displayColor = useMemo(() => (isLinear === isPropertyLinear ? color : isLinear ? color.toLinearSpace() : color.toGammaSpace()), [color, isLinear, isPropertyLinear]);
+    const displayColor = useMemo(() => {
+        if (isLinear === isPropertyLinear) {
+            return color;
+        }
+        return isLinear ? color.toLinearSpace() : color.toGammaSpace();
+    }, [color, isLinear, isPropertyLinear]);
 
     const handleColorPickerChange: FluentColorPickerProps["onColorChange"] = (_, data) => {
         // The visual picker always operates in gamma space, convert back to property space
@@ -187,7 +192,7 @@ export const ColorPickerPopup = forwardRef<HTMLButtonElement, ColorPickerProps<C
                 </div>
 
                 <div className={classes.inputRow}>
-                    <InputHexField title="Hexadecimal" value={displayColor} isLinear={isLinear} ispropertyLinear={isPropertyLinear} onChange={handleDisplayChange} />
+                    <InputHexField title="Hexadecimal" value={displayColor} isLinear={isLinear} isPropertyLinear={isPropertyLinear} onChange={handleDisplayChange} />
                 </div>
             </div>
         </Popover>
@@ -196,7 +201,7 @@ export const ColorPickerPopup = forwardRef<HTMLButtonElement, ColorPickerProps<C
 
 export type InputHexProps = PrimitiveProps<Color3 | Color4> & {
     isLinear?: boolean;
-    ispropertyLinear?: boolean;
+    isPropertyLinear?: boolean;
 };
 
 /**
@@ -238,11 +243,11 @@ function colorFromHex(hex: string, original: Color3 | Color4): Color3 | Color4 {
  */
 export const InputHexField: FunctionComponent<InputHexProps> = (props) => {
     const classes = useColorPickerStyles();
-    const { title, value, onChange, isLinear, ispropertyLinear } = props;
+    const { title, value, onChange, isLinear, isPropertyLinear } = props;
 
-    const displayMismatchesproperty = (isLinear ?? false) !== (ispropertyLinear ?? false);
+    const displayMismatchesProperty = (isLinear ?? false) !== (isPropertyLinear ?? false);
     const displaySpace = isLinear ? "linear" : "gamma";
-    const propertySpace = ispropertyLinear ? "linear" : "gamma";
+    const propertySpace = isPropertyLinear ? "linear" : "gamma";
     const isColor4 = value instanceof Color4;
     const colorClass = isColor4 ? "Color4" : "Color3";
 
@@ -260,7 +265,7 @@ export const InputHexField: FunctionComponent<InputHexProps> = (props) => {
                           info: (
                               <Body1>
                                   This hex value is in <Body1Strong>{displaySpace}</Body1Strong> space
-                                  {displayMismatchesproperty ? (
+                                  {displayMismatchesProperty ? (
                                       <Body1>
                                           , but the property stores its color in <Body1Strong>{propertySpace}</Body1Strong> space.
                                           <br />

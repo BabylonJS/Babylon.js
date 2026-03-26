@@ -443,10 +443,10 @@ export function BindBonesParameters(mesh?: AbstractMesh, effect?: Effect, prePas
     if (mesh.useBones && mesh.computeBonesUsingShaders && mesh.skeleton) {
         const skeleton = mesh.skeleton;
 
-        if (skeleton.isUsingTextureForMatrices && effect.getUniformIndex("boneTextureWidth") > -1) {
+        if (skeleton.isUsingTextureForMatrices && effect.getUniformIndex("boneTextureInfo") > -1) {
             const boneTexture = skeleton.getTransformMatrixTexture(mesh);
             effect.setTexture("boneSampler", boneTexture);
-            effect.setFloat("boneTextureWidth", 4.0 * (skeleton.bones.length + 1));
+            effect.setFloat2("boneTextureInfo", skeleton._textureWidth, skeleton._textureHeight);
         } else {
             const matrices = skeleton.getTransformMatrices(mesh);
 
@@ -830,6 +830,8 @@ export function PrepareDefinesForIBL(
                 defines.USESPHERICALINVERTEX = false;
                 if (reflectionTexture.irradianceTexture._dominantDirection) {
                     defines.USE_IRRADIANCE_DOMINANT_DIRECTION = true;
+                } else {
+                    defines.USE_IRRADIANCE_DOMINANT_DIRECTION = false;
                 }
             }
             // Assume using spherical polynomial if the reflection texture is a cube map

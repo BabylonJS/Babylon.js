@@ -31,6 +31,13 @@ const MaterialPlugin = "atmo-pbr";
 
 const AerialPerspectiveLutLayers = 32;
 
+const TransmittanceSampleCount = 128;
+const SkyViewLutSampleCount = 30;
+const MultiScatteringLutSampleCount = 64;
+const MultiScatteringAzimuthSampleCount = 16;
+const MultiScatteringInclinationSampleCount = 8;
+const DiffuseSkyIrradianceLutSampleCount = 32;
+
 let UniqueId = 0;
 
 /**
@@ -627,6 +634,14 @@ export class Atmosphere implements IDisposable {
             atmosphereUbo.addUniform("cameraNearPlane", 1);
             atmosphereUbo.addUniform("originHeight", 1);
             atmosphereUbo.addUniform("sinCameraAtmosphereHorizonAngleFromNadir", 1);
+            atmosphereUbo.addUniform("transmittanceSampleCount", 1);
+            // 16-byte boundary
+            atmosphereUbo.addUniform("skyViewLutSampleCount", 1);
+            atmosphereUbo.addUniform("multiScatteringLutSampleCount", 1);
+            atmosphereUbo.addUniform("multiScatteringAzimuthSampleCount", 1);
+            atmosphereUbo.addUniform("multiScatteringInclinationSampleCount", 1);
+            // 16-byte boundary
+            atmosphereUbo.addUniform("diffuseSkyIrradianceLutSampleCount", 1);
             atmosphereUbo.create();
         }
         return this._atmosphereUbo;
@@ -919,6 +934,10 @@ export class Atmosphere implements IDisposable {
                 this._aerialPerspectiveRadianceBias
             );
         }
+
+        // Read back LUT data from the GPU if a readback is pending (deferred from a previous render call).
+        void this._transmittanceLut?.readPixelsAsync();
+        void this._diffuseSkyIrradianceLut?.readPixelsAsync();
 
         this.renderGlobalLuts(); // Start rendering of global LUTs during readiness polling.
 
@@ -1408,6 +1427,12 @@ export class Atmosphere implements IDisposable {
         ubo.updateFloat("cameraNearPlane", cameraAtmosphereVariables.cameraNearPlane);
         ubo.updateFloat("originHeight", this._originHeight);
         ubo.updateFloat("sinCameraAtmosphereHorizonAngleFromNadir", cameraAtmosphereVariables.sinCameraAtmosphereHorizonAngleFromNadir);
+        ubo.updateFloat("transmittanceSampleCount", TransmittanceSampleCount);
+        ubo.updateFloat("skyViewLutSampleCount", SkyViewLutSampleCount);
+        ubo.updateFloat("multiScatteringLutSampleCount", MultiScatteringLutSampleCount);
+        ubo.updateFloat("multiScatteringAzimuthSampleCount", MultiScatteringAzimuthSampleCount);
+        ubo.updateFloat("multiScatteringInclinationSampleCount", MultiScatteringInclinationSampleCount);
+        ubo.updateFloat("diffuseSkyIrradianceLutSampleCount", DiffuseSkyIrradianceLutSampleCount);
         ubo.updateFloat("atmosphereExposure", this._exposure);
     }
 

@@ -63,8 +63,8 @@ export function InterceptFunction<T extends object>(target: T, propertyKey: keyo
         hooksMap.set(propertyKey, (hooksForKey = []));
         if (
             // Replace the function with a new one that calls the hooks in addition to the original function.
-            !Reflect.set(target, propertyKey, (...args: unknown[]) => {
-                const result = Reflect.apply(originalFunction, target, args);
+            !Reflect.set(target, propertyKey, function (this: unknown, ...args: unknown[]) {
+                const result = Reflect.apply(originalFunction, this, args);
                 for (const { afterCall } of hooksForKey!) {
                     afterCall?.(...args);
                 }
