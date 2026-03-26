@@ -397,7 +397,11 @@ export async function CreateV2Runner(manifest: V2Manifest, opts: V2RunnerOptions
                     location.href.includes("BabylonToolkit") ||
                     ((): boolean => {
                         try {
-                            return localStorage.getItem("babylon-toolkit") === "true" || localStorage.getItem("babylon-toolkit-used") === "true";
+                            const explicit = localStorage.getItem("babylon-toolkit");
+                            if (explicit === "false") {
+                                return false;
+                            }
+                            return explicit === "true" || localStorage.getItem("babylon-toolkit-used") === "true";
                         } catch {
                             return false;
                         }

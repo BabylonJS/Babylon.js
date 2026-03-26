@@ -51,6 +51,12 @@ export class Skeleton implements IAnimatable {
     private _synchronizedWithMesh: AbstractMesh;
     private _currentRenderId = -1;
 
+    /** @internal */
+    public _textureWidth = 0;
+
+    /** @internal */
+    public _textureHeight = 1;
+
     private _ranges: { [name: string]: Nullable<AnimationRange> } = {};
 
     private _absoluteTransformIsDirty = true;
@@ -538,6 +544,24 @@ export class Skeleton implements IAnimatable {
         this._identity.copyToArray(targetMatrix, this.bones.length * 16);
     }
 
+    private _computeTextureSize(): number {
+        const requiredElementCount = 4 * (this.bones.length + 1); // 16 element -> RGBA x 4
+        let requiredTextureWidth = requiredElementCount;
+        let requiredTextureHeight = 1;
+
+        if (this.isUsingTextureForMatrices) {
+            const maxTextureSize = this.getScene().getEngine().getCaps().maxTextureSize & ~3; // must be a multiple of 4
+            if (maxTextureSize < requiredTextureWidth) {
+                requiredTextureWidth = maxTextureSize;
+                requiredTextureHeight = Math.ceil(requiredElementCount / maxTextureSize);
+            }
+        }
+        this._textureWidth = requiredTextureWidth;
+        this._textureHeight = requiredTextureHeight;
+
+        return this._textureWidth * this._textureHeight * 4; // 4 floats per RGBA pixel
+    }
+
     /**
      * Build all resources required to render a skeleton
      * @param dontCheckFrameId defines a boolean indicating if prepare should be run without checking first the current frame id (default: false)
@@ -567,13 +591,20 @@ export class Skeleton implements IAnimatable {
             }
         }
 
+        let requiredTransformBufferElementCount: Nullable<number> = null;
+
         if (this.needInitialSkinMatrix) {
             for (const mesh of this._meshesWithPoseMatrix) {
                 const poseMatrix = mesh.getPoseMatrix();
 
                 let needsUpdate = this._isDirty;
-                if (!mesh._bonesTransformMatrices || mesh._bonesTransformMatrices.length !== 16 * (this.bones.length + 1)) {
-                    mesh._bonesTransformMatrices = new Float32Array(16 * (this.bones.length + 1));
+
+                if (requiredTransformBufferElementCount === null) {
+                    requiredTransformBufferElementCount = this._computeTextureSize();
+                }
+
+                if (!mesh._bonesTransformMatrices || mesh._bonesTransformMatrices.length !== requiredTransformBufferElementCount) {
+                    mesh._bonesTransformMatrices = new Float32Array(requiredTransformBufferElementCount);
                     needsUpdate = true;
                 }
 
@@ -594,16 +625,17 @@ export class Skeleton implements IAnimatable {
                     }
 
                     if (this.isUsingTextureForMatrices) {
-                        const textureWidth = (this.bones.length + 1) * 4;
-                        if (!mesh._transformMatrixTexture || mesh._transformMatrixTexture.getSize().width !== textureWidth) {
+                        const meshTextureSize = mesh._transformMatrixTexture?.getSize();
+                        const meshTextureElementCount = meshTextureSize ? meshTextureSize.width * meshTextureSize.height * 4 : 0;
+                        if (!mesh._transformMatrixTexture || meshTextureElementCount !== requiredTransformBufferElementCount) {
                             if (mesh._transformMatrixTexture) {
                                 mesh._transformMatrixTexture.dispose();
                             }
 
                             mesh._transformMatrixTexture = RawTexture.CreateRGBATexture(
                                 mesh._bonesTransformMatrices,
-                                (this.bones.length + 1) * 4,
-                                1,
+                                this._textureWidth,
+                                this._textureHeight,
                                 this._scene,
                                 false,
                                 false,
@@ -625,8 +657,12 @@ export class Skeleton implements IAnimatable {
                 return;
             }
 
-            if (!this._transformMatrices || this._transformMatrices.length !== 16 * (this.bones.length + 1)) {
-                this._transformMatrices = new Float32Array(16 * (this.bones.length + 1));
+            if (requiredTransformBufferElementCount === null) {
+                requiredTransformBufferElementCount = this._computeTextureSize();
+            }
+
+            if (!this._transformMatrices || this._transformMatrices.length !== requiredTransformBufferElementCount) {
+                this._transformMatrices = new Float32Array(requiredTransformBufferElementCount);
 
                 if (this.isUsingTextureForMatrices) {
                     if (this._transformMatrixTexture) {
@@ -635,8 +671,8 @@ export class Skeleton implements IAnimatable {
 
                     this._transformMatrixTexture = RawTexture.CreateRGBATexture(
                         this._transformMatrices,
-                        (this.bones.length + 1) * 4,
-                        1,
+                        this._textureWidth,
+                        this._textureHeight,
                         this._scene,
                         false,
                         false,

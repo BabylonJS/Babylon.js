@@ -289,7 +289,7 @@ export class ThinSelectionOutlineLayer extends ThinEffectLayer {
                 "view",
                 "morphTargetInfluences",
                 "morphTargetCount",
-                "boneTextureWidth",
+                "boneTextureInfo",
                 "diffuseMatrix",
                 "morphTargetTextureInfo",
                 "morphTargetTextureIndices",

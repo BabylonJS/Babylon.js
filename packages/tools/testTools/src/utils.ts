@@ -15,7 +15,6 @@ interface Page {
 }
 
 declare const page: Page;
-declare const jestPuppeteer: { debug: () => Promise<void>; resetBrowser: () => Promise<void> };
 declare const BABYLON: typeof window.BABYLON;
 
 const ClassesToCheck = ["BABYLON.Camera", "BABYLON.TransformNode", "BABYLON.Scene", "BABYLON.Vector3", "BABYLON.BaseTexture", "BABYLON.Material"];
