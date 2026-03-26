@@ -437,10 +437,41 @@ export class GaussianSplattingCompoundMesh extends GaussianSplattingMesh {
             // Full rebuild path: re-derive all existing splats from their source references.
             if (splatCountA > 0) {
                 if (this._partProxies.length > 0) {
-                    // Already compound: rebuild each existing part from its proxy's source mesh.
-                    // Proxies are in part-index order so dstOffsets are correct.
+                    // Already compound: rebuild each existing part from its source.
+                    // _partProxies is sparse — part 0 belongs to the compound mesh itself
+                    // (no proxy entry), so handle it separately before iterating proxies.
                     let rebuildOffset = 0;
-                    for (const proxy of this._partProxies) {
+
+                    // Rebuild part 0 from the compound mesh's own _splatsData.
+                    if (this._splatsData) {
+                        const proxyVertexCount = this._partProxies.reduce((sum, proxy) => sum + (proxy ? proxy.proxiedMesh._vertexCount : 0), 0);
+                        const part0Count = splatCountA - proxyVertexCount;
+                        if (part0Count > 0) {
+                            const uBufA = new Uint8Array(this._splatsData);
+                            const fBufA = new Float32Array(this._splatsData);
+                            for (let i = 0; i < part0Count; i++) {
+                                this._makeSplat(i, fBufA, uBufA, covA, covB, colorArray, minimum, maximum, false);
+                            }
+                            if (sh && this._shData) {
+                                const bytesPerTexel = 16;
+                                for (let texIdx = 0; texIdx < sh.length; texIdx++) {
+                                    if (texIdx < this._shData.length) {
+                                        sh[texIdx].set(this._shData[texIdx].subarray(0, part0Count * bytesPerTexel), 0);
+                                    }
+                                }
+                            }
+                            rebuildOffset += part0Count;
+                        }
+                    }
+
+                    // Rebuild parts 1+ from their respective proxy source meshes.
+                    // Use an index-based loop because _partProxies is sparse (part 0 is
+                    // never assigned a proxy, leaving _partProxies[0] undefined).
+                    for (let partIndex = 1; partIndex < this._partProxies.length; partIndex++) {
+                        const proxy = this._partProxies[partIndex];
+                        if (!proxy || !proxy.proxiedMesh) {
+                            continue;
+                        }
                         this._appendSourceToArrays(proxy.proxiedMesh, rebuildOffset, covA, covB, colorArray, sh, minimum, maximum);
                         rebuildOffset += proxy.proxiedMesh._vertexCount;
                     }
