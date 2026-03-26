@@ -2,6 +2,7 @@
  * Read a Babylon.js playground snippet from the snippet server and extract the code.
  *
  * The snippet server URL format uses a slash separator: https://snippet.babylonjs.com/{ID}/{VERSION}
+ * If no revision is provided, the helper defaults to revision 0.
  * Note: The # separator (for example #ABC123#5) is a playgroundId format, not a valid URL.
  *
  * Usage:
@@ -12,6 +13,7 @@
  *   node .github/scripts/visual-testing/read-snippet.js "#ABC123#5"
  *   node .github/scripts/visual-testing/read-snippet.js "#ABC123#5" --save out.js
  *   node .github/scripts/visual-testing/read-snippet.js "ABC123" "5"
+ *   node .github/scripts/visual-testing/read-snippet.js "ABC123"
  */
 
 const fs = require("fs");
@@ -36,7 +38,8 @@ function parsePlaygroundId(input, versionArg) {
 }
 
 function fetchSnippet(id, version) {
-    const path = version !== null ? `/${id}/${version}` : `/${id}`;
+    const normalizedVersion = version ?? "0";
+    const path = `/${id}/${normalizedVersion}`;
 
     return new Promise((resolve, reject) => {
         const options = {
@@ -68,9 +71,18 @@ function fetchSnippet(id, version) {
     });
 }
 
+function decodeBase64ToString(base64Data) {
+    return Buffer.from(base64Data, "base64").toString("utf8");
+}
+
 function extractCode(snippetResponse) {
-    const payload = JSON.parse(snippetResponse.jsonPayload);
-    const codeField = payload.code;
+    const rawPayload = snippetResponse.jsonPayload ?? snippetResponse.payload ?? "{}";
+    const payload = JSON.parse(rawPayload);
+    let codeField = String(payload.code ?? "");
+
+    if (payload.unicode) {
+        codeField = decodeBase64ToString(payload.unicode);
+    }
 
     try {
         const manifest = JSON.parse(codeField);

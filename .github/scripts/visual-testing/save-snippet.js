@@ -4,6 +4,9 @@
  * Usage:
  *   node .github/scripts/visual-testing/save-snippet.js <code-file> [name] [description] [tags]
  *
+ * The helper infers the snippet language from `<code-file>`:
+ * `.js` defaults to JavaScript, while `.ts` and `.tsx` are saved as TypeScript snippets.
+ *
  * Example:
  *   node .github/scripts/visual-testing/save-snippet.js temp_pg_mytest.js "My Test" "Test description" "particlesystem,gpu"
  *
@@ -15,23 +18,46 @@
 
 const fs = require("fs");
 const https = require("https");
+const path = require("path");
 
-function saveSnippet(code, name, description, tags) {
+function encodeUnicode(source) {
+    const buffer = Buffer.from(source, "utf8");
+    if (buffer.toString("latin1") === source) {
+        return undefined;
+    }
+
+    return buffer.toString("base64");
+}
+
+function getPlaygroundSourceInfo(codeFile) {
+    const extension = path.extname(codeFile).toLowerCase();
+
+    if (extension === ".ts" || extension === ".tsx") {
+        return { language: "TS", entry: `index${extension}` };
+    }
+
+    return { language: "JS", entry: "index.js" };
+}
+
+function saveSnippet(code, codeFile, name, description, tags) {
+    const { language, entry } = getPlaygroundSourceInfo(codeFile);
     const v2Manifest = {
         v: 2,
-        language: "JS",
-        entry: "index.js",
+        language,
+        entry,
         imports: {},
         files: {
-            "index.js": code,
+            [entry]: code,
         },
     };
 
     const codeToSave = JSON.stringify(v2Manifest);
+    const unicode = encodeUnicode(codeToSave);
     const payload = JSON.stringify({
         code: codeToSave,
+        unicode,
         engine: "WebGL2",
-        version: 2,
+        version: v2Manifest.v,
     });
 
     const snippetData = JSON.stringify({
@@ -53,17 +79,22 @@ function saveSnippet(code, name, description, tags) {
         };
 
         const req = https.request(options, (res) => {
+            const url = `https://${options.hostname}${options.path}`;
             let data = "";
             res.on("data", (chunk) => (data += chunk));
             res.on("end", () => {
+                if ((res.statusCode ?? 0) < 200 || (res.statusCode ?? 0) >= 300) {
+                    reject(new Error(`HTTP ${res.statusCode} for ${url}: ${data.substring(0, 200)}`));
+                    return;
+                }
+
                 try {
                     const result = JSON.parse(data);
                     const id = `#${result.id}#${result.version}`;
                     console.log(`Saved: ${id}`);
                     resolve(result);
-                } catch (err) {
-                    console.error("Failed to parse response:", data);
-                    reject(err);
+                } catch {
+                    reject(new Error(`Failed to parse response: ${data.substring(0, 200)}`));
                 }
             });
         });
@@ -91,7 +122,7 @@ async function main() {
     const description = process.argv[4] || "";
     const tags = process.argv[5] || "";
 
-    await saveSnippet(code, name, description, tags);
+    await saveSnippet(code, codeFile, name, description, tags);
 }
 
 main().catch((err) => {
