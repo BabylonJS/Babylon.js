@@ -18,22 +18,24 @@ const SPECIFIER_PATTERNS = [
     /(import\s*\(\s*)(["'])([^"']+)\2(\s*\))/g,
 ];
 
-interface PostCompileTransformOptions {
+interface IPostCompileTransformOptions {
     outDir: string;
     buildType: BuildType;
     basePackage: string;
     appendJS?: boolean | string;
 }
 
-function collectFiles(dir: string, extensions: string[]): string[] {
+function CollectFiles(dir: string, extensions: string[]): string[] {
     const results: string[] = [];
     const entries = fs.readdirSync(dir, { withFileTypes: true });
     for (const entry of entries) {
         const fullPath = path.join(dir, entry.name);
         if (entry.isDirectory()) {
             // Skip node_modules
-            if (entry.name === "node_modules") continue;
-            results.push(...collectFiles(fullPath, extensions));
+            if (entry.name === "node_modules") {
+                continue;
+            }
+            results.push(...CollectFiles(fullPath, extensions));
         } else if (extensions.some((ext) => entry.name.endsWith(ext))) {
             results.push(fullPath);
         }
@@ -43,15 +45,16 @@ function collectFiles(dir: string, extensions: string[]): string[] {
 
 /**
  * Walk all .js and .d.ts files in outDir, rewrite import specifiers using transformPackageLocation.
+ * @param options - configuration for the transform, including buildType and basePackage for correct path resolution.
  */
-function transformFilesInDir(options: PostCompileTransformOptions): void {
+function TransformFilesInDir(options: IPostCompileTransformOptions): void {
     const resolvedDir = path.resolve(options.outDir);
     if (!fs.existsSync(resolvedDir)) {
         console.error(`postCompileTransform: outDir does not exist: ${resolvedDir}`);
         process.exit(1);
     }
 
-    const files = collectFiles(resolvedDir, [".js", ".d.ts", ".d.mts"]);
+    const files = CollectFiles(resolvedDir, [".js", ".d.ts", ".d.mts"]);
     let totalTransformed = 0;
 
     for (const filePath of files) {
@@ -100,7 +103,7 @@ function transformFilesInDir(options: PostCompileTransformOptions): void {
  * CLI entry point for the post-compile path transform command.
  * Reads options from command-line args (--outDir, --buildType, --basePackage, --appendJS).
  */
-export function postCompileTransformCommand(): void {
+export function PostCompileTransformCommand(): void {
     const outDir = checkArgs(["--outDir", "-o"], false, true) as string;
     const buildType = checkArgs(["--buildType", "-bt"], false, true) as string;
     const basePackage = checkArgs(["--basePackage", "-bp"], false, true) as string;
@@ -112,7 +115,7 @@ export function postCompileTransformCommand(): void {
         process.exit(1);
     }
 
-    transformFilesInDir({
+    TransformFilesInDir({
         outDir,
         buildType: buildType as BuildType,
         basePackage,
