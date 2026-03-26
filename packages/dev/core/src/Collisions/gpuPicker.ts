@@ -252,8 +252,8 @@ export class GPUPicker {
                     continue;
                 }
 
-                // Skip thin instance cleanup for GaussianSplattingMesh/GaussianSplattingCompoundMesh (their thin instances are for batching, not picking)
-                if (className !== "GaussianSplattingMesh" && className !== "GaussianSplattingCompoundMesh") {
+                // Skip thin instance cleanup for GaussianSplattingMesh (thin instances are for batching, not picking)
+                if (className !== "GaussianSplattingMesh") {
                     if (mesh.hasInstances) {
                         (mesh as Mesh).removeVerticesData(GPUPicker._AttributeName);
                     }
@@ -350,7 +350,7 @@ export class GPUPicker {
                 newPickableMeshes[i] = item.mesh;
             } else {
                 const className = item.getClassName();
-                if (className === "GaussianSplattingMesh" || className === "GaussianSplattingCompoundMesh" || className === "GaussianSplattingPartProxyMesh") {
+                if (className === "GaussianSplattingMesh" || className === "GaussianSplattingPartProxyMesh") {
                     // GS meshes get special picking materials - handled in the ID assignment loop below
                     newPickableMeshes[i] = item;
                 } else {
@@ -393,7 +393,7 @@ export class GPUPicker {
             }
 
             // Handle non-compound GaussianSplatting meshes
-            if (className === "GaussianSplattingMesh" || className === "GaussianSplattingCompoundMesh") {
+            if (className === "GaussianSplattingMesh") {
                 const globalIndex = index + pickableMeshOffset;
                 const pickId = nextFreeId;
                 this._idMap[pickId] = globalIndex;

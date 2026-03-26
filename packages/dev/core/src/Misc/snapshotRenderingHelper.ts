@@ -124,7 +124,7 @@ export class SnapshotRenderingHelper {
                     mesh.transferToEffect(mesh.computeWorldMatrix(true));
                 }
 
-                if (mesh.getClassName() === "GaussianSplattingMesh" || mesh.getClassName() === "GaussianSplattingCompoundMesh") {
+                if (mesh.getClassName() === "GaussianSplattingMesh") {
                     (mesh as GaussianSplattingMesh)._postToWorker();
                 }
 

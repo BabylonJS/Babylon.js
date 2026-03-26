@@ -3,7 +3,6 @@ import type { Scene } from "core/scene";
 import { Mesh } from "../mesh";
 import { BoundingInfo } from "../../Culling/boundingInfo";
 import type { GaussianSplattingMesh } from "./gaussianSplattingMesh";
-import type { GaussianSplattingCompoundMesh } from "./gaussianSplattingCompoundMesh";
 import type { Ray } from "../../Culling/ray.core";
 import { PickingInfo } from "../../Collisions/pickingInfo";
 import { Vector3 } from "../../Maths/math.vector";
@@ -32,7 +31,7 @@ export class GaussianSplattingPartProxyMesh extends Mesh {
     /**
      * The original Gaussian Splatting mesh that was merged into the compound
      */
-    public readonly compoundSplatMesh: GaussianSplattingCompoundMesh;
+    public readonly compoundSplatMesh: GaussianSplattingMesh;
 
     /**
      * Creates a new Gaussian Splatting part proxy mesh
@@ -42,7 +41,7 @@ export class GaussianSplattingPartProxyMesh extends Mesh {
      * @param proxiedMesh The Gaussian Splatting mesh that this proxy represents a part of
      * @param partIndex The index of the part in the compound mesh
      */
-    constructor(name: string, scene: Nullable<Scene>, compoundSplatMesh: GaussianSplattingCompoundMesh, proxiedMesh: GaussianSplattingMesh, partIndex: number) {
+    constructor(name: string, scene: Nullable<Scene>, compoundSplatMesh: GaussianSplattingMesh, proxiedMesh: GaussianSplattingMesh, partIndex: number) {
         super(name, scene);
         this.proxiedMesh = proxiedMesh;
         this._partIndex = partIndex;

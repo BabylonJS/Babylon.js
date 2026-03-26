@@ -261,7 +261,7 @@ export class DepthRenderer {
 
                 let renderingMaterial = effectiveMesh._internalAbstractMeshDataInfo._materialForRenderPass?.[engine.currentRenderPassId];
                 const gsClassName = effectiveMesh.getClassName();
-                if (gsClassName === "GaussianSplattingMesh" || gsClassName === "GaussianSplattingCompoundMesh") {
+                if (gsClassName === "GaussianSplattingMesh") {
                     const cachedAlphaBlendedDepth = this._alphaBlendedDepthMaterialCache.get(effectiveMesh.uniqueId);
                     const compoundMesh = (effectiveMesh as GaussianSplattingMesh).isCompound;
                     // Recreate material if it doesn't exist or if alphaBlendedDepth changed
