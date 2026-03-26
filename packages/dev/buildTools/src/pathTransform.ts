@@ -90,7 +90,7 @@ type TransformerNode = ts.Bundle | ts.SourceFile;
 /**
  * Options to pass for the transform function
  */
-interface ITransformerOptions {
+export interface ITransformerOptions {
     /**
      * can be lts, esm, umd and es6
      */

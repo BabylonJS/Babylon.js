@@ -11,6 +11,7 @@ import { prepareSnapshot } from "./prepareSnapshot.js";
 import { umdPackageMapping } from "./packageMapping.js";
 import { updateEngineVersion } from "./updateEngineVersion.js";
 import { declarationsEs6 } from "./declarationsEs6.js";
+import { postCompileTransformCommand } from "./postCompileTransform.js";
 // public API
 import transformer from "./pathTransform.js";
 import * as webpackTools from "./webpackTools.js";
@@ -95,6 +96,10 @@ function RunCommand(command: string) {
             case "declarations-es6":
             case "des6":
                 declarationsEs6();
+                break;
+            case "transform-paths":
+            case "tp":
+                postCompileTransformCommand();
                 break;
             case "copy":
             case "cp":
