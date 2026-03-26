@@ -39,7 +39,6 @@ export * from "./thinInstanceMesh";
 export * from "./Node/index";
 export * from "./GaussianSplatting/gaussianSplattingMeshBase";
 export * from "./GaussianSplatting/gaussianSplattingMesh";
-export * from "./GaussianSplatting/gaussianSplattingCompoundMesh";
 
 // LineMesh
 export * from "../Shaders/color.fragment";
