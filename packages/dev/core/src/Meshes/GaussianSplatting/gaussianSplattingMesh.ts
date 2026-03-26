@@ -441,12 +441,18 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
             if (splatCountA > 0) {
                 if (this._partProxies.length > 0) {
                     // Already compound: rebuild each existing part from its source.
-                    // _partProxies is sparse — part 0 belongs to the compound mesh itself
-                    // (no proxy entry), so handle it separately before iterating proxies.
+                    // _partProxies is sparse in two different ways:
+                    //   A) Compound loaded its own data (URL/updateData) BEFORE addPart was called:
+                    //      _partProxies[0] is undefined; the compound's own splat data is "part 0"
+                    //      stored in this._splatsData; proxied parts start at index 1.
+                    //   B) Compound was EMPTY when addPart was first called:
+                    //      _partProxies[0] IS set (the first added mesh becomes part 0 via proxy).
+                    //      this._splatsData is null; ALL parts must be rebuilt from their proxies.
                     let rebuildOffset = 0;
 
-                    // Rebuild part 0 from the compound mesh's own _splatsData.
-                    if (this._splatsData) {
+                    // Rebuild the compound's "own" data (scenario A only).
+                    // Guard: only when _partProxies[0] is absent (i.e. part 0 is not a proxy).
+                    if (!this._partProxies[0] && this._splatsData) {
                         const proxyVertexCount = this._partProxies.reduce((sum, proxy) => sum + (proxy ? proxy.proxiedMesh._vertexCount : 0), 0);
                         const part0Count = splatCountA - proxyVertexCount;
                         if (part0Count > 0) {
@@ -467,10 +473,9 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
                         }
                     }
 
-                    // Rebuild parts 1+ from their respective proxy source meshes.
-                    // Use an index-based loop because _partProxies is sparse (part 0 is
-                    // never assigned a proxy, leaving _partProxies[0] undefined).
-                    for (let partIndex = 1; partIndex < this._partProxies.length; partIndex++) {
+                    // Rebuild all proxied parts. Start from index 0 to handle scenario B
+                    // (where part 0 itself is a proxied part, not the compound's own data).
+                    for (let partIndex = 0; partIndex < this._partProxies.length; partIndex++) {
                         const proxy = this._partProxies[partIndex];
                         if (!proxy || !proxy.proxiedMesh) {
                             continue;
@@ -517,21 +522,30 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
                     }
                 } else {
                     // Already compound: build per-part source lookup then rebuild per-cell.
+                    // Same two-scenario split as the full rebuild path:
+                    //   A) _partProxies[0] absent  → part 0 is the compound's own data in this._splatsData
+                    //   B) _partProxies[0] present → part 0 is a proxied mesh (compound started empty)
                     const proxyTotal = this._partProxies.reduce((s, p) => s + (p ? p.proxiedMesh._vertexCount : 0), 0);
-                    const part0Count = splatCountA - proxyTotal;
-                    const srcUBufs: (Uint8Array | null)[] = [this._splatsData ? new Uint8Array(this._splatsData) : null];
-                    const srcFBufs: (Float32Array | null)[] = [this._splatsData ? new Float32Array(this._splatsData) : null];
-                    const partStarts: number[] = [0];
+                    const part0Count = splatCountA - proxyTotal; // > 0 only in scenario A
+                    const srcUBufs: (Uint8Array | null)[] = new Array(this._partProxies.length).fill(null);
+                    const srcFBufs: (Float32Array | null)[] = new Array(this._partProxies.length).fill(null);
+                    const partStarts: number[] = new Array(this._partProxies.length).fill(0);
+                    // Scenario A: seed entry 0 with the compound's own data.
+                    if (!this._partProxies[0] && this._splatsData && part0Count > 0) {
+                        srcUBufs[0] = new Uint8Array(this._splatsData);
+                        srcFBufs[0] = new Float32Array(this._splatsData);
+                        partStarts[0] = 0;
+                    }
+                    // All proxied parts — start from pi=0 to cover scenario B.
                     let cumOffset = part0Count;
-                    for (let pi = 1; pi < this._partProxies.length; pi++) {
+                    for (let pi = 0; pi < this._partProxies.length; pi++) {
                         const proxy = this._partProxies[pi];
-                        const srcData = proxy?.proxiedMesh._splatsData ?? null;
+                        if (!proxy?.proxiedMesh) continue;
+                        const srcData = proxy.proxiedMesh._splatsData ?? null;
                         srcUBufs[pi] = srcData ? new Uint8Array(srcData) : null;
                         srcFBufs[pi] = srcData ? new Float32Array(srcData) : null;
                         partStarts[pi] = cumOffset;
-                        if (proxy?.proxiedMesh) {
-                            cumOffset += proxy.proxiedMesh._vertexCount;
-                        }
+                        cumOffset += proxy.proxiedMesh._vertexCount;
                     }
                     for (let splatIdx = firstNewTexel; splatIdx < splatCountA; splatIdx++) {
                         const partIdx = this._partIndices ? this._partIndices[splatIdx] : 0;
