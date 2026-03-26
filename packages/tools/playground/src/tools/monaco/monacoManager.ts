@@ -589,7 +589,11 @@ export class MonacoManager {
         }
 
         const toolkitExplicit = localStorage.getItem("babylon-toolkit");
-        if (location.href.indexOf("BabylonToolkit") !== -1 || Utilities.ReadBoolFromStore("babylon-toolkit", false) || (toolkitExplicit !== "false" && Utilities.ReadBoolFromStore("babylon-toolkit-used", false))) {
+        if (
+            location.href.indexOf("BabylonToolkit") !== -1 ||
+            Utilities.ReadBoolFromStore("babylon-toolkit", false) ||
+            (toolkitExplicit !== "false" && Utilities.ReadBoolFromStore("babylon-toolkit-used", false))
+        ) {
             declarations.push("https://cdn.jsdelivr.net/gh/BabylonJS/BabylonToolkit@master/Runtime/babylon.toolkit.d.ts");
             declarations.push("https://cdn.jsdelivr.net/gh/BabylonJS/BabylonToolkit@master/Runtime/default.playground.d.ts");
         }
