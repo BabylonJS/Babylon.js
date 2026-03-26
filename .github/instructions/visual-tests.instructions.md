@@ -19,6 +19,19 @@ Do not create new wrapper Playwright files for normal visualization tests. The e
 
 For a standard visualization test, the committed repo changes should normally be the config entry and the reference image files.
 
+## Mandatory snippet workflow for standard visualization tests
+
+For standard Babylon.js visualization tests, the agent **must** use Playground snippets and `playgroundId` entries in `config.json`.
+
+- **Read existing reference snippets first** with `.github/scripts/visual-testing/read-snippet.js` when using an existing test as inspiration.
+- **Create or update the test as a Playground snippet** and save it with `.github/scripts/visual-testing/save-snippet.js`.
+- **Use the returned snippet ID as the `playgroundId`** in `packages/tools/tests/test/visualization/config.json`.
+- **Do not substitute `scriptToRun`, local fixture scripts, or other non-snippet paths** for a standard visualization test unless the user explicitly asks for that approach.
+- **Do not modify the visualization harness or infrastructure** for a standard visualization test unless the user explicitly asks for harness work.
+- **If snippet read/save fails because of network, authentication, or environment limitations, stop and ask the user for help** instead of inventing a local workaround.
+
+The main exceptions are non-standard test types that already have their own documented flow, such as devhost-based tool tests.
+
 The full automated workflow for adding a playground-based visual test is:
 
 0. Optionally study existing tests or the engine code for context.
@@ -175,6 +188,8 @@ Saved: #ABC123#0
 ```
 
 Use that value as the `playgroundId` in `config.json`.
+
+If saving the snippet fails because the snippet server is unavailable or blocked from the current environment, stop and ask the user for help. Do not switch a standard visualization test to `scriptToRun` or another local-only workaround unless the user explicitly asks for that.
 
 ### Step 4: Verify in the local Playground
 
@@ -354,10 +369,12 @@ Use `readySelector` and `screenshotDelayMs` when the page needs explicit readine
 ## Checklist
 
 - Context gathered from existing snippets or source code
+- Existing reference snippet read with `.github/scripts/visual-testing/read-snippet.js` when applicable
 - Temporary Playground file written
 - CDN server started and ready on `localhost:1337`
 - Playground server started and ready on `localhost:1338` when preview is needed
 - Snippet saved with `.github/scripts/visual-testing/save-snippet.js`
+- `config.json` entry uses `playgroundId` for standard visualization tests
 - Snippet previewed locally before baselines are generated
 - Config entry added or updated in `packages/tools/tests/test/visualization/config.json`
 - WebGL2 baseline generated when applicable
