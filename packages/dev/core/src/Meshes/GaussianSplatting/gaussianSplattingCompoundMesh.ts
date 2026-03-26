@@ -434,7 +434,12 @@ export class GaussianSplattingCompoundMesh extends GaussianSplattingMesh {
 
         // --- Process source data ---
         if (!incremental) {
-            // Full rebuild path: re-derive all existing splats from their source references.
+            // Full rebuild path — only reached when the GPU texture must be reallocated
+            // (either the texture height needs to grow to fit the new total, or this is
+            // the very first addPart onto a mesh with no GPU textures yet). In the common
+            // case where the texture height is unchanged, `incremental` is true and this
+            // entire block is skipped. The `splatCountA > 0` guard avoids redundant work
+            // on the first-ever addPart when the compound mesh starts empty.
             if (splatCountA > 0) {
                 if (this._partProxies.length > 0) {
                     // Already compound: rebuild each existing part from its source.
