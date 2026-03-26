@@ -17,7 +17,7 @@
     "scripts": {
         "build": "npm run clean && npm run compile",
         "clean": "rimraf dist && rimraf *.tsbuildinfo -g && rimraf \"./**/*.!(cmd|md|json|build.json|lts.json|tasks.json|cjs)\" -g",
-        "compile": "tsc -b tsconfig.build.json && tsc -b tsconfig.lts.json",
+        "compile": "tsc -b tsconfig.build.json && build-tools -c tp --outDir . --buildType es6 --basePackage @babylonjs/core --appendJS && tsc -b tsconfig.lts.json && build-tools -c tp --outDir . --buildType es6 --basePackage @babylonjs/core --appendJS",
         "postcompile": "build-tools -c run-tasks",
         "watch": "node ./watcher.cjs"
     },

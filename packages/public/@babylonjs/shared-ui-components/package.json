@@ -16,7 +16,7 @@
     "scripts": {
         "build": "npm run clean && npm run compile",
         "clean": "rimraf dist && rimraf *.tsbuildinfo -g && rimraf \"./**/*.!(md|json|build.json)\" -g",
-        "compile": "tsc -b tsconfig.build.json --verbose",
+        "compile": "tsc -b tsconfig.build.json --verbose && build-tools -c tp --outDir . --buildType es6 --basePackage @babylonjs/shared-ui-components --appendJS",
         "precompile": "build-tools -c process-assets --path-prefix ../../../dev/sharedUiComponents/ --output-dir ./",
         "postcompile": "build-tools -c add-js-to-es6"
     },

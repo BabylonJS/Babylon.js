@@ -14,7 +14,7 @@
     "scripts": {
         "build": "npm run clean && npm run compile",
         "clean": "rimraf dist && rimraf *.tsbuildinfo -g && rimraf \"./**/*.!(md|json|build.json|lts.json)\" -g",
-        "compile": "tsc -b tsconfig.build.json && tsc -b tsconfig.lts.json",
+        "compile": "tsc -b tsconfig.build.json && build-tools -c tp --outDir . --buildType es6 --basePackage @babylonjs/serializers --appendJS && tsc -b tsconfig.lts.json && build-tools -c tp --outDir . --buildType es6 --basePackage @babylonjs/serializers --appendJS",
         "postcompile": "build-tools -c add-js-to-es6"
     },
     "devDependencies": {
