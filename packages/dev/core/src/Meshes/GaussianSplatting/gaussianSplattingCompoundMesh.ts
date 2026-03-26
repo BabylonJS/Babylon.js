@@ -496,6 +496,52 @@ export class GaussianSplattingCompoundMesh extends GaussianSplattingMesh {
             }
         }
 
+        // Incremental path: rebuild the partial first row (indices firstNewTexel to splatCountA-1)
+        // so _updateSubTextures does not upload stale zeros over those already-committed texels.
+        // The base-class _updateData always re-processes from firstNewTexel for the same reason;
+        // the compound path must do the same.
+        if (incremental) {
+            const firstNewTexel = firstNewLine * textureSize.x;
+            if (firstNewTexel < splatCountA) {
+                if (this._partProxies.length === 0) {
+                    // Not yet compound: all partial-row old splats are part 0.
+                    if (this._splatsData) {
+                        const uBufA = new Uint8Array(this._splatsData);
+                        const fBufA = new Float32Array(this._splatsData);
+                        for (let i = firstNewTexel; i < splatCountA; i++) {
+                            this._makeSplat(i, fBufA, uBufA, covA, covB, colorArray, minimum, maximum, false, i);
+                        }
+                    }
+                } else {
+                    // Already compound: build per-part source lookup then rebuild per-cell.
+                    const proxyTotal = this._partProxies.reduce((s, p) => s + (p ? p.proxiedMesh._vertexCount : 0), 0);
+                    const part0Count = splatCountA - proxyTotal;
+                    const srcUBufs: (Uint8Array | null)[] = [this._splatsData ? new Uint8Array(this._splatsData) : null];
+                    const srcFBufs: (Float32Array | null)[] = [this._splatsData ? new Float32Array(this._splatsData) : null];
+                    const partStarts: number[] = [0];
+                    let cumOffset = part0Count;
+                    for (let pi = 1; pi < this._partProxies.length; pi++) {
+                        const proxy = this._partProxies[pi];
+                        const srcData = proxy?.proxiedMesh._splatsData ?? null;
+                        srcUBufs[pi] = srcData ? new Uint8Array(srcData) : null;
+                        srcFBufs[pi] = srcData ? new Float32Array(srcData) : null;
+                        partStarts[pi] = cumOffset;
+                        if (proxy?.proxiedMesh) {
+                            cumOffset += proxy.proxiedMesh._vertexCount;
+                        }
+                    }
+                    for (let splatIdx = firstNewTexel; splatIdx < splatCountA; splatIdx++) {
+                        const partIdx = this._partIndices ? this._partIndices[splatIdx] : 0;
+                        const uBuf = partIdx < srcUBufs.length ? srcUBufs[partIdx] : null;
+                        const fBuf = partIdx < srcFBufs.length ? srcFBufs[partIdx] : null;
+                        if (uBuf && fBuf) {
+                            this._makeSplat(splatIdx, fBuf, uBuf, covA, covB, colorArray, minimum, maximum, false, splatIdx - (partStarts[partIdx] ?? 0));
+                        }
+                    }
+                }
+            }
+        }
+
         // Append each new source
         dstOffset = splatCountA;
         for (const other of others) {
@@ -518,8 +564,11 @@ export class GaussianSplattingCompoundMesh extends GaussianSplattingMesh {
 
         // --- Upload to GPU ---
         if (incremental) {
-            this._ensurePartIndicesTexture(textureSize, this._partIndices);
-            this._updateSubTextures(this._splatPositions, covA, covB, colorArray, firstNewLine, textureSize.y - firstNewLine, sh, this._partIndices);
+            // Update the part-indices texture (handles both create and update-in-place).
+            // _ensurePartIndicesTexture is a no-op when the texture already exists, so on the
+            // second+ addPart the partIndices would be stale without this call.
+            this._onUpdateTextures(textureSize);
+            this._updateSubTextures(this._splatPositions, covA, covB, colorArray, firstNewLine, textureSize.y - firstNewLine, sh);
         } else {
             this._updateTextures(covA, covB, colorArray, sh);
         }
