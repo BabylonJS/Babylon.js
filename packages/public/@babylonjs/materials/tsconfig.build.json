@@ -8,10 +8,10 @@
         "importHelpers": true,
         "paths": {
             "core/*": [
-                "dev/core/dist/*"
+                "../../../dev/core/dist/*"
             ],
             "materials/*": [
-                "dev/materials/src/*"
+                "../../../dev/materials/src/*"
             ]
         }
     },

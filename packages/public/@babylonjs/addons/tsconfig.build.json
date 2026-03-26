@@ -8,10 +8,10 @@
         "importHelpers": true,
         "paths": {
             "core/*": [
-                "dev/core/dist/*"
+                "../../../dev/core/dist/*"
             ],
             "addons/*": [
-                "dev/addons/src/*"
+                "../../../dev/addons/src/*"
             ]
         }
     },

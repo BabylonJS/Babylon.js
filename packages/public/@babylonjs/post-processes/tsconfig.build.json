@@ -8,10 +8,10 @@
         "target": "ES2020",
         "paths": {
             "core/*": [
-                "dev/core/dist/*"
+                "../../../dev/core/dist/*"
             ],
             "post-processes/*": [
-                "dev/postProcesses/src/*"
+                "../../../dev/postProcesses/src/*"
             ]
         }
     },

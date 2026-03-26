@@ -3,14 +3,14 @@
 
     "compilerOptions": {
         "outDir": "./dist",
-        "target": "ES5",
+        "target": "ES2015",
         "rootDir": "../../../",
         "declaration": false,
         "importHelpers": true,
         "paths": {
-            "core/*": ["dev/core/dist/*"],
-            "loaders/*": ["dev/loaders/src/*"],
-            "@lts/loaders/*": ["lts/loaders/src/*"],
+            "core/*": ["../../../dev/core/dist/*"],
+            "loaders/*": ["../../../dev/loaders/src/*"],
+            "@lts/loaders/*": ["../../../lts/loaders/src/*"],
 
         }
     },

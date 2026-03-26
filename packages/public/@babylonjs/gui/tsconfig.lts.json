@@ -8,10 +8,10 @@
         "importHelpers": true,
         "paths": {
             "core/*": [
-                "dev/core/dist/*"
+                "../../../dev/core/dist/*"
             ],
             "gui/*": [
-                "dev/gui/dist/*"
+                "../../../dev/gui/dist/*"
             ]
         }
     },

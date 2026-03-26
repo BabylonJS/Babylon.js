@@ -3,12 +3,12 @@
 
     "compilerOptions": {
         "composite": true,
-        "target": "es5",
+        "target": "ES2015",
         "outDir": "./dist",
         "rootDir": "./src",
         "paths": {
-            "core/*": ["dev/core/dist/*"],
-            "materials/*": ["dev/materials/dist/*"]
+            "core/*": ["../../dev/core/dist/*"],
+            "materials/*": ["../../dev/materials/dist/*"]
         }
     },
 
