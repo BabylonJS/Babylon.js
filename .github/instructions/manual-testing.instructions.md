@@ -1,5 +1,29 @@
 # Manual testing workflows
 
+## Reusing running processes
+
+Many workflows share the same prerequisite commands (e.g. `npm run build:dev`, `npx build-tools -c dw -wd -wa -sc`, `npm run serve -w @tools/babylon-server`). **Before starting any command, check whether it is already running** by looking for an existing shell session running that command, or by checking whether the port it listens on is already in use. If the process is already running and healthy, skip that step and move on to the next command.
+
+Key ports to check:
+| Port | Service |
+|------|---------|
+| 1337 | babylon-server (CDN) |
+| 1340 | Node Material Editor (NME) |
+| 1341 | GUI Editor |
+| 1343 | Node Geometry Editor (NGE) |
+| 1344 | Node Render Graph Editor (NRGE) |
+| 1345 | Node Particle Editor (NPE) |
+| 1346 | Smart Filter Editor (SFE) |
+
+You can check whether a port is already in use with:
+```powershell
+Get-NetTCPConnection -LocalPort <port> -State Listen -ErrorAction SilentlyContinue
+```
+
+If a port is occupied, the server for that service is already running — do not start another instance.
+
+Similarly, `npm run build:dev` only needs to run once. If its output artifacts already exist from a prior run (or you have a shell session that already completed this build), skip it.
+
 ## Smart Filter Editor (SFE)
 
 To test SFE, you need to run multiple commands to build the necessary assets and start the dev server. Here are the commands you need to run in separate terminal windows:
@@ -22,13 +46,13 @@ Use the `.github\instructions\editor-interaction.instructions.md` instructions f
 
 To test NME, you need to build the dev packages, start the CDN server, and then start the Node Editor dev server. Here are the commands you need to run in order:
 
-`npm run build:dev`
+`npm run build:dev` (skip if already completed in a prior workflow)
 Wait for the build to complete successfully, then continue.
-`npx build-tools -c dw -wd -wa -sc`
+`npx build-tools -c dw -wd -wa -sc` (skip if already running)
 Wait for "watching for asset changes..." then continue.
-`npm run serve -w @tools/babylon-server`
+`npm run serve -w @tools/babylon-server` (skip if port 1337 is already listening)
 Wait for "compiled successfully" then continue.
-`npm run serve -w @tools/node-editor`
+`npm run serve -w @tools/node-editor` (skip if port 1340 is already listening)
 Wait for "compiled successfully" then continue.
 
 Launch the tool in the browser by navigating to the following URL using playwright-cli:
@@ -40,13 +64,13 @@ Use the `.github\instructions\editor-interaction.instructions.md` instructions f
 
 To test the GUI Editor, you need to build the dev packages, start the CDN server, and then start the GUI Editor dev server. Here are the commands you need to run in order:
 
-`npm run build:dev`
+`npm run build:dev` (skip if already completed in a prior workflow)
 Wait for the build to complete successfully, then continue.
-`npx build-tools -c dw -wd -wa -sc`
+`npx build-tools -c dw -wd -wa -sc` (skip if already running)
 Wait for "watching for asset changes..." then continue.
-`npm run serve -w @tools/babylon-server`
+`npm run serve -w @tools/babylon-server` (skip if port 1337 is already listening)
 Wait for "compiled successfully" then continue.
-`npm run serve -w @tools/gui-editor`
+`npm run serve -w @tools/gui-editor` (skip if port 1341 is already listening)
 Wait for "compiled successfully" then continue.
 
 Launch the tool in the browser by navigating to the following URL using playwright-cli:
@@ -58,13 +82,13 @@ Use the `.github\instructions\editor-interaction.instructions.md` instructions f
 
 To test NGE, you need to build the dev packages, start the CDN server, and then start the Node Geometry Editor dev server. Here are the commands you need to run in order:
 
-`npm run build:dev`
+`npm run build:dev` (skip if already completed in a prior workflow)
 Wait for the build to complete successfully, then continue.
-`npx build-tools -c dw -wd -wa -sc`
+`npx build-tools -c dw -wd -wa -sc` (skip if already running)
 Wait for "watching for asset changes..." then continue.
-`npm run serve -w @tools/babylon-server`
+`npm run serve -w @tools/babylon-server` (skip if port 1337 is already listening)
 Wait for "compiled successfully" then continue.
-`npm run serve -w @tools/node-geometry-editor`
+`npm run serve -w @tools/node-geometry-editor` (skip if port 1343 is already listening)
 Wait for "compiled successfully" then continue.
 
 Launch the tool in the browser by navigating to the following URL using playwright-cli:
@@ -76,13 +100,13 @@ Use the `.github\instructions\editor-interaction.instructions.md` instructions f
 
 To test NRGE, you need to build the dev packages, start the CDN server, and then start the Node Render Graph Editor dev server. Here are the commands you need to run in order:
 
-`npm run build:dev`
+`npm run build:dev` (skip if already completed in a prior workflow)
 Wait for the build to complete successfully, then continue.
-`npx build-tools -c dw -wd -wa -sc`
+`npx build-tools -c dw -wd -wa -sc` (skip if already running)
 Wait for "watching for asset changes..." then continue.
-`npm run serve -w @tools/babylon-server`
+`npm run serve -w @tools/babylon-server` (skip if port 1337 is already listening)
 Wait for "compiled successfully" then continue.
-`npm run serve -w @tools/node-render-graph-editor`
+`npm run serve -w @tools/node-render-graph-editor` (skip if port 1344 is already listening)
 Wait for "compiled successfully" then continue.
 
 Launch the tool in the browser by navigating to the following URL using playwright-cli:
@@ -94,13 +118,13 @@ Use the `.github\instructions\editor-interaction.instructions.md` instructions f
 
 To test NPE, you need to build the dev packages, start the CDN server, and then start the Node Particle Editor dev server. Here are the commands you need to run in order:
 
-`npm run build:dev`
+`npm run build:dev` (skip if already completed in a prior workflow)
 Wait for the build to complete successfully, then continue.
-`npx build-tools -c dw -wd -wa -sc`
+`npx build-tools -c dw -wd -wa -sc` (skip if already running)
 Wait for "watching for asset changes..." then continue.
-`npm run serve -w @tools/babylon-server`
+`npm run serve -w @tools/babylon-server` (skip if port 1337 is already listening)
 Wait for "compiled successfully" then continue.
-`npm run serve -w @tools/node-particle-editor`
+`npm run serve -w @tools/node-particle-editor` (skip if port 1345 is already listening)
 Wait for "compiled successfully" then continue.
 
 Launch the tool in the browser by navigating to the following URL using playwright-cli:
