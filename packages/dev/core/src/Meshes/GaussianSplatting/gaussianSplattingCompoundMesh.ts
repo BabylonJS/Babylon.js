@@ -668,8 +668,17 @@ export class GaussianSplattingCompoundMesh extends GaussianSplattingMesh {
         }
 
         // --- Reset this mesh to an empty state ---
+        // Terminate the sort worker before zeroing _vertexCount. The worker's onmessage handler
+        // compares depthMix.length against (_vertexCount + 15) & ~0xf; with _vertexCount = 0 that
+        // becomes 16, which causes a forced re-sort loop on stale data and resets _canPostToWorker
+        // to true, defeating the gate below. The worker will be re-instantiated naturally after
+        // the rebuild via the first _postToWorker call.
+        if (this._worker) {
+            this._worker.terminate();
+            this._worker = null;
+        }
         // Dispose and null GPU textures so _updateTextures sees firstTime=true and creates
-        // fresh GPU textures. The sort worker is kept alive (see _instantiateWorker override).
+        // fresh GPU textures.
         this._covariancesATexture?.dispose();
         this._covariancesBTexture?.dispose();
         this._centersTexture?.dispose();
