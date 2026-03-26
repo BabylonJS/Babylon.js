@@ -418,9 +418,10 @@ export class GaussianSplattingCompoundMesh extends GaussianSplattingMesh {
 
         const assignedPartIndices: number[] = [];
         let dstOffset = splatCountA;
+        const maxPartCount = GetGaussianSplattingMaxPartCount(this._scene.getEngine());
         for (const other of others) {
-            if (nextPartIndex >= GetGaussianSplattingMaxPartCount(this._scene.getEngine())) {
-                throw new Error(`Cannot add part, as the maximum part count (${GetGaussianSplattingMaxPartCount(this._scene.getEngine())}) has been reached`);
+            if (nextPartIndex >= maxPartCount) {
+                throw new Error(`Cannot add part, as the maximum part count (${maxPartCount}) has been reached`);
             }
             const newPartIndex = nextPartIndex++;
             assignedPartIndices.push(newPartIndex);
