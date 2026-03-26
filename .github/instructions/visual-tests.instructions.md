@@ -11,8 +11,7 @@ Every major new rendering feature must have visualization coverage when applicab
 Standard Babylon.js visualization tests are driven by config entries rather than custom Playwright wrapper files.
 
 - Config file: `packages/tools/tests/test/visualization/config.json`
-- Reference images: `packages/tools/tests/test/visualization/ReferenceImages/`
-- WebGPU reference images: `packages/tools/tests/test/visualization/ReferenceImages/webgpu/`
+- Reference images for all Playwright visualization projects: `packages/tools/tests/test/visualization/ReferenceImages/`
 - Helper scripts: `.github/scripts/visual-testing/read-snippet.js` and `.github/scripts/visual-testing/save-snippet.js`
 
 Do not create new wrapper Playwright files for normal visualization tests. The existing wrappers such as `visualization.webgl2.test.ts` and `visualization.webgpu.test.ts` already load every entry from the config.
@@ -238,7 +237,8 @@ npx playwright test --config playwright.config.ts --project=webgpu --update-snap
 Reference images are written to:
 
 - `packages/tools/tests/test/visualization/ReferenceImages/YourTestTitle.png`
-- `packages/tools/tests/test/visualization/ReferenceImages/webgpu/YourTestTitle.png`
+
+The current Playwright config uses a shared `snapshotPathTemplate`, so WebGL2 and WebGPU both read and write snapshots from `ReferenceImages/`.
 
 For several related tests, prefer one regex with `-g` so Playwright can run them in parallel:
 
@@ -284,7 +284,7 @@ rm temp_pg_mytest.js
 | `excludedEngines` | No | `[]` | Engines to skip, such as `["webgl1"]` |
 | `replace` | No | - | Comma-separated replacement pairs for patching code |
 | `replaceUrl` | No | - | Comma-separated replacement pairs for patching URLs |
-| `excludeFromAutomaticTesting` | No | `false` | Skip the test in automatic runs |
+| `excludeFromAutomaticTesting` | No | `false` | Exclude the test from the standard visualization harness entirely, including targeted `-g` runs |
 | `useLargeWorldRendering`, `useReverseDepthBuffer`, `useNonCompatibilityMode` | No | - | Per-test engine flags |
 
 ## `renderCount` heuristics
@@ -332,10 +332,9 @@ Never bless a new reference image blindly.
 
 ## Multi-engine testing
 
-Babylon visual tests usually run against both WebGL2 and WebGPU:
+Babylon visual tests usually run against both WebGL2 and WebGPU.
 
-- WebGL2 baselines live in `ReferenceImages/`
-- WebGPU baselines live in `ReferenceImages/webgpu/`
+The current Playwright configuration stores snapshots for both projects in the shared `ReferenceImages/` directory.
 
 Use `excludedEngines` only when the feature genuinely does not apply to one engine.
 
