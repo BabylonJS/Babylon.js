@@ -320,7 +320,7 @@ export class GaussianSplattingMesh extends Mesh {
     /** @internal */
     public _shData: Nullable<Uint8Array[]> = null;
     private _textureSize: Vector2 = new Vector2(0, 0);
-    private readonly _keepInRam: boolean = false;
+    protected readonly _keepInRam: boolean = false;
 
     private _delayedTextureUpdate: Nullable<IDelayedTextureUpdate> = null;
     protected _useRGBACovariants = false;
@@ -1896,13 +1896,17 @@ export class GaussianSplattingMesh extends Mesh {
         const uBuffer = new Uint8Array(data);
         const fBuffer = new Float32Array(uBuffer.buffer);
 
-        // Always store the raw splat buffer as an ArrayBuffer. This is the source reference used
-        // by _addPartsInternal when a full texture rebuild is needed. Callers may pass a TypedArray
-        // (e.g. Uint8Array) even though the signature says ArrayBuffer; normalise here so that
-        // _appendSourceToArrays can safely do new Float32Array(this._splatsData!) without
-        // accidentally value-converting bytes instead of reinterpreting them.
-        this._splatsData = data instanceof ArrayBuffer ? data : ((data as unknown as ArrayBufferView).buffer as ArrayBuffer);
-        this._shData = sh ? sh.map((arr) => new Uint8Array(arr)) : null;
+        // Optionally store the raw splat buffer as an ArrayBuffer. This is the source reference
+        // used by _addPartsInternal when a full texture rebuild is needed. Use uBuffer.buffer as
+        // the canonical backing store — it is always a tightly packed ArrayBuffer containing
+        // exactly the bytes we processed, avoiding issues with ArrayBufferView.byteOffset.
+        if (this._keepInRam) {
+            this._splatsData = uBuffer.buffer;
+            this._shData = sh ? sh.map((arr) => new Uint8Array(arr)) : null;
+        } else {
+            this._splatsData = null;
+            this._shData = null;
+        }
 
         const vertexCount = uBuffer.length / GaussianSplattingMesh._RowOutputLength;
         if (vertexCount != this._vertexCount) {

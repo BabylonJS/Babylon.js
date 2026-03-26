@@ -49,7 +49,10 @@ export class GaussianSplattingCompoundMesh extends GaussianSplattingMesh {
      * @param keepInRam whether to keep the raw splat data in RAM after uploading to GPU
      */
     constructor(name: string, url: Nullable<string> = null, scene: Nullable<Scene> = null, keepInRam: boolean = false) {
-        super(name, url, scene, keepInRam);
+        // Always retain _splatsData regardless of the caller's keepInRam preference.
+        // The compound mesh needs its base-part data available for full-texture rebuilds
+        // (e.g. when texture height must grow during addPart).
+        super(name, url, scene, true);
     }
 
     /**
