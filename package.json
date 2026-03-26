@@ -29,6 +29,7 @@
         "eslint-plugin-tsdoc": "^0.5.0",
         "glob": "^13.0.6",
         "globals": "^16.0.0",
+        "jsdom": "^26.1.0",
         "mini-css-extract-plugin": "~2.6.0",
         "nx": "^22.5.4",
         "prettier": "^3.0.3",
