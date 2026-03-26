@@ -75,6 +75,8 @@ If the user does not point to existing tests, read the relevant Babylon.js engin
 
 Write the visual test scene as a normal Babylon Playground `createScene` function and save it to a temporary file. For AI-authored tests, default to a temporary `.js` file unless the user asks for TypeScript or a nearby reference test is already written in TypeScript. The helper script also supports `.ts` input when you intentionally want a TypeScript snippet. Working in a file avoids painful string escaping and makes iteration easier.
 
+Do not seed `Math.random` manually in standard visualization snippets. The visualization harness already replaces `Math.random` with a deterministic seeded implementation before running the snippet.
+
 ```javascript
 // Save as temp_pg_mytest.js
 const createScene = function () {
