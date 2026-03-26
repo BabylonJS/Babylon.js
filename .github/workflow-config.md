@@ -124,6 +124,11 @@ npm start
 
 If you started the server task you **must** stop it after running the tests to avoid leaving a long-running process.
 
+## Fix bug
+
+See `.github/instructions/fix-bug.instructions.md` for detailed instructions on how to
+look up and fix bugs from GitHub issues.
+
 ## Related skills
 
 These project-specific skills are referenced by the workflow skills. If a skill is not
