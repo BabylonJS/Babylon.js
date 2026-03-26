@@ -5,6 +5,26 @@ import commonjs from "@rollup/plugin-commonjs";
 import alias from "@rollup/plugin-alias";
 import path from "path";
 
+// Aliases to map dev package names to their public @babylonjs/ equivalents.
+// Previously this was handled by ts-patch during TypeScript compilation;
+// now we do it at the rollup level.
+const devToPublicAliases = [
+    { find: "core", replacement: "@babylonjs/core" },
+    { find: "gui", replacement: "@babylonjs/gui" },
+    { find: "loaders", replacement: "@babylonjs/loaders" },
+    { find: "materials", replacement: "@babylonjs/materials" },
+    { find: "addons", replacement: "@babylonjs/addons" },
+    { find: "shared-ui-components", replacement: path.resolve("../../../dev/sharedUiComponents/src") },
+];
+
+// Append .js extension to @babylonjs/ subpath imports for ESM compatibility
+const appendJsToExternalPaths = (id) => {
+    if (/^@babylonjs\/[^/]+\/.+/.test(id) && !id.endsWith(".js")) {
+        return id + ".js";
+    }
+    return id;
+};
+
 const commonConfig = {
     input: "../../../dev/inspector-v2/src/index.ts",
     external: (id) => {
@@ -39,11 +59,10 @@ const jsConfig = {
         sourcemap: true,
         format: "es",
         exports: "named",
+        paths: appendJsToExternalPaths,
     },
     plugins: [
-        alias({
-            entries: [{ find: "shared-ui-components", replacement: path.resolve("../../../dev/sharedUiComponents/src") }],
-        }),
+        alias({ entries: devToPublicAliases }),
         typescript({ tsconfig: "tsconfig.build.lib.json" }),
         nodeResolve({ mainFields: ["browser", "module", "main"] }),
         commonjs(),
@@ -59,8 +78,12 @@ const dtsConfig = {
     output: {
         file: "lib/index.d.ts",
         format: "es",
+        paths: appendJsToExternalPaths,
     },
-    plugins: [dts({ tsconfig: "tsconfig.build.lib.json" })],
+    plugins: [
+        alias({ entries: devToPublicAliases }),
+        dts({ tsconfig: "tsconfig.build.lib.json" }),
+    ],
 };
 
 export default [jsConfig, dtsConfig];
