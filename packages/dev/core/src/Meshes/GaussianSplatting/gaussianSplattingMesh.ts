@@ -351,7 +351,7 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
      * @param disposeOthers - Dispose source meshes after appending
      * @returns Proxy meshes and their assigned part indices
      */
-    private _addPartsInternal(others: GaussianSplattingMesh[], disposeOthers: boolean): { proxyMeshes: GaussianSplattingPartProxyMesh[]; assignedPartIndices: number[] } {
+    protected _addPartsInternal(others: GaussianSplattingMesh[], disposeOthers: boolean): { proxyMeshes: GaussianSplattingPartProxyMesh[]; assignedPartIndices: number[] } {
         if (others.length === 0) {
             return { proxyMeshes: [], assignedPartIndices: [] };
         }
@@ -619,26 +619,11 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
      * @param other - The other mesh to add. Must be fully loaded before calling this method.
      * @param disposeOther - Whether to dispose the other mesh after adding it to the current mesh.
      * @returns a placeholder mesh that can be used to manipulate the part transform
+     * @deprecated Use {@link GaussianSplattingCompoundMesh.addPart} instead.
      */
     public addPart(other: GaussianSplattingMesh, disposeOther: boolean = true): GaussianSplattingPartProxyMesh {
         const { proxyMeshes } = this._addPartsInternal([other], disposeOther);
         return proxyMeshes[0];
-    }
-
-    /**
-     * Add multiple meshes to this mesh as new parts in a single operation.
-     * This makes the current mesh a compound, if not already.
-     * Splat data is written directly into texture arrays without constructing a merged CPU buffer.
-     * @param others - The meshes to add. Each must be fully loaded and must not be a compound.
-     * @param disposeOthers - Whether to dispose the other meshes after adding them to the current mesh.
-     * @returns an array of placeholder meshes that can be used to manipulate the part transforms
-     */
-    public addParts(others: GaussianSplattingMesh[], disposeOthers: boolean = true): GaussianSplattingPartProxyMesh[] {
-        if (others.length === 0) {
-            return [];
-        }
-        const { proxyMeshes } = this._addPartsInternal(others, disposeOthers);
-        return proxyMeshes;
     }
 
     /**
@@ -647,6 +632,7 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
      * no merged CPU splat buffer is read back. The current mesh is reset to a plain (single-part)
      * state and then each remaining source is re-added via addParts.
      * @param index - The index of the part to remove
+     * @deprecated Use {@link GaussianSplattingCompoundMesh.removePart} instead.
      */
     public removePart(index: number): void {
         if (index < 0 || index >= this.partCount) {
