@@ -69,12 +69,16 @@ function transformFilesInDir(options: PostCompileTransformOptions): void {
                 const specifier = args[3];
                 const suffix = args[4] || "";
 
-                const transformed = transformPackageLocation(specifier, {
-                    buildType: options.buildType,
-                    basePackage: options.basePackage,
-                    packageOnly: false,
-                    appendJS: options.appendJS,
-                }, filePath);
+                const transformed = transformPackageLocation(
+                    specifier,
+                    {
+                        buildType: options.buildType,
+                        basePackage: options.basePackage,
+                        packageOnly: false,
+                        appendJS: options.appendJS,
+                    },
+                    filePath
+                );
 
                 if (transformed && transformed !== specifier) {
                     return `${prefix}${quote}${transformed}${quote}${suffix}`;
