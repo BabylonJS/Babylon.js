@@ -57,7 +57,11 @@ export class Utilities {
 
     public static StoreStringToStore(key: string, value: string, useSession = false): void {
         const storage = useSession ? sessionStorage : localStorage;
-        storage.setItem(key, value);
+        try {
+            storage.setItem(key, value);
+        } catch (e) {
+            Logger.Warn(`Could not store ${key} in ${useSession ? "sessionStorage" : "localStorage"}. Error: ${(e as Error)?.message}`);
+        }
     }
 
     public static StoreBoolToStore(key: string, value: boolean): void {
