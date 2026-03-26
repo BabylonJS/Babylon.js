@@ -205,7 +205,15 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                 tooltip: "Loads the Babylon Toolkit into the playground",
                 storeKey: "babylon-toolkit",
                 defaultValue: false,
-                onCheck: () => {},
+                onCheck: (value: boolean) => {
+                    if (!value) {
+                        try {
+                            localStorage.removeItem("babylon-toolkit-used");
+                        } catch {
+                            // Ignore storage errors
+                        }
+                    }
+                },
             },
             {
                 label: "Auto-run",
