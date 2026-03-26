@@ -111,7 +111,7 @@ export class GaussianSplattingBlock extends NodeMaterialBlock {
             return;
         }
 
-        if (mesh.getClassName() == "GaussianSplattingMesh") {
+        if (mesh.getClassName() == "GaussianSplattingMesh" || mesh.getClassName() == "GaussianSplattingCompoundMesh") {
             defines.setValue("SH_DEGREE", (<GaussianSplattingMesh>mesh).shDegree, true);
         }
     }
