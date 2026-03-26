@@ -440,18 +440,24 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
             // on the first-ever addPart when the compound mesh starts empty.
             if (splatCountA > 0) {
                 if (this._partProxies.length > 0) {
-                    // Already compound: rebuild each existing part from its source.
-                    // _partProxies is sparse in two different ways:
-                    //   A) Compound loaded its own data (URL/updateData) BEFORE addPart was called:
-                    //      _partProxies[0] is undefined; the compound's own splat data is "part 0"
-                    //      stored in this._splatsData; proxied parts start at index 1.
-                    //   B) Compound was EMPTY when addPart was first called:
-                    //      _partProxies[0] IS set (the first added mesh becomes part 0 via proxy).
-                    //      this._splatsData is null; ALL parts must be rebuilt from their proxies.
+                    // Already compound: rebuild every existing part from its stored source data.
+                    //
+                    // DESIGN NOTE: The intended use of GaussianSplattingMesh / GaussianSplattingCompoundMesh
+                    // in compound mode is to start EMPTY and compose parts exclusively via addPart/addParts.
+                    // In a future major version this will be the only supported path and the "own data"
+                    // legacy branch below will be removed.
+                    //
+                    // Until then, two layouts are possible:
+                    //   A) LEGACY — compound loaded its own splat data (via URL or updateData) before
+                    //      any addPart call. _partProxies[0] is undefined; the mesh's own splat data
+                    //      is treated as an implicit "part 0" in this._splatsData. Proxied parts occupy
+                    //      indices 1+. This layout will be deprecated in the next major version.
+                    //   B) PREFERRED — compound started empty; first addPart assigned partIndex=0.
+                    //      _partProxies[0] is set; this._splatsData is null; all parts are proxied.
                     let rebuildOffset = 0;
 
-                    // Rebuild the compound's "own" data (scenario A only).
-                    // Guard: only when _partProxies[0] is absent (i.e. part 0 is not a proxy).
+                    // Rebuild the compound's legacy "own" data at part 0 (scenario A only).
+                    // Skipped in the preferred empty-composer path (scenario B).
                     if (!this._partProxies[0] && this._splatsData) {
                         const proxyVertexCount = this._partProxies.reduce((sum, proxy) => sum + (proxy ? proxy.proxiedMesh._vertexCount : 0), 0);
                         const part0Count = splatCountA - proxyVertexCount;
@@ -473,8 +479,8 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
                         }
                     }
 
-                    // Rebuild all proxied parts. Start from index 0 to handle scenario B
-                    // (where part 0 itself is a proxied part, not the compound's own data).
+                    // Rebuild all proxied parts. Loop from index 0 because in the preferred
+                    // scenario B, part 0 is itself a proxied part with no implicit "own" data.
                     for (let partIndex = 0; partIndex < this._partProxies.length; partIndex++) {
                         const proxy = this._partProxies[partIndex];
                         if (!proxy || !proxy.proxiedMesh) {
@@ -484,7 +490,11 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
                         rebuildOffset += proxy.proxiedMesh._vertexCount;
                     }
                 } else {
-                    // Not yet compound: base mesh source is in _splatsData.
+                    // No proxies yet: this is the very first addPart call on a mesh that loaded
+                    // its own splat data (scenario A legacy path). Re-process that own data so
+                    // it occupies the start of the new texture before the incoming part is appended.
+                    // In the preferred scenario B (empty composer) splatCountA is 0 and this
+                    // entire branch is skipped by the outer `if (splatCountA > 0)` guard.
                     if (this._splatsData) {
                         const uBufA = new Uint8Array(this._splatsData);
                         const fBufA = new Float32Array(this._splatsData);
@@ -512,7 +522,9 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
             const firstNewTexel = firstNewLine * textureSize.x;
             if (firstNewTexel < splatCountA) {
                 if (this._partProxies.length === 0) {
-                    // Not yet compound: all partial-row old splats are part 0.
+                    // No proxies: the mesh loaded its own splat data and this is the first
+                    // addPart call (scenario A legacy path). Re-process the partial boundary
+                    // row so it is not clobbered by stale zeros during the sub-texture upload.
                     if (this._splatsData) {
                         const uBufA = new Uint8Array(this._splatsData);
                         const fBufA = new Float32Array(this._splatsData);
@@ -521,22 +533,24 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
                         }
                     }
                 } else {
-                    // Already compound: build per-part source lookup then rebuild per-cell.
-                    // Same two-scenario split as the full rebuild path:
-                    //   A) _partProxies[0] absent  → part 0 is the compound's own data in this._splatsData
-                    //   B) _partProxies[0] present → part 0 is a proxied mesh (compound started empty)
+                    // Already compound: build a per-partIndex source lookup so each splat in the
+                    // partial boundary row can be re-processed from its original source buffer.
+                    //
+                    // Handles both layouts (see full-rebuild comment above):
+                    //   A) LEGACY: _partProxies[0] absent → seed lookup[0] with this._splatsData
+                    //   B) PREFERRED: _partProxies[0] present → all entries filled from proxies
                     const proxyTotal = this._partProxies.reduce((s, p) => s + (p ? p.proxiedMesh._vertexCount : 0), 0);
-                    const part0Count = splatCountA - proxyTotal; // > 0 only in scenario A
+                    const part0Count = splatCountA - proxyTotal; // > 0 only in legacy scenario A
                     const srcUBufs: (Uint8Array | null)[] = new Array(this._partProxies.length).fill(null);
                     const srcFBufs: (Float32Array | null)[] = new Array(this._partProxies.length).fill(null);
                     const partStarts: number[] = new Array(this._partProxies.length).fill(0);
-                    // Scenario A: seed entry 0 with the compound's own data.
+                    // Legacy scenario A: part 0 is the mesh's own loaded data.
                     if (!this._partProxies[0] && this._splatsData && part0Count > 0) {
                         srcUBufs[0] = new Uint8Array(this._splatsData);
                         srcFBufs[0] = new Float32Array(this._splatsData);
                         partStarts[0] = 0;
                     }
-                    // All proxied parts — start from pi=0 to cover scenario B.
+                    // All proxied parts — start from pi=0 to cover preferred scenario B.
                     let cumOffset = part0Count;
                     for (let pi = 0; pi < this._partProxies.length; pi++) {
                         const proxy = this._partProxies[pi];
