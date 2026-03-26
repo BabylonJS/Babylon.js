@@ -3,7 +3,7 @@
 When fixing a bug, the input may be a GitHub issue number (e.g. `#1234` or just `1234`).
 If an issue number is provided:
 
-1. **Look up the issue** on the public GitHub repository (`AmoebaChant/Babylon.js`) using
+1. **Look up the issue** on the public GitHub repository (`BabylonJS/Babylon.js`) using
    the GitHub tools. Read the issue title, body, and comments to understand the bug.
 2. **Extract repro information** — Bug reports follow a template with these sections:
    - **Repro** — a playground link and/or steps to reproduce.
