@@ -1631,6 +1631,15 @@ export class Viewer implements IDisposable {
         };
         delete options?.pluginOptions?.gltf?.extensionOptions?.KHR_materials_variants?.onLoaded;
 
+        // Detect SPZ files and set the appropriate plugin extension and options.
+        if (!options?.pluginExtension) {
+            const sourceName = typeof source === "string" ? source : source instanceof File ? source.name : undefined;
+            if (sourceName?.toLowerCase().endsWith(".spz")) {
+                options = options ?? {};
+                options.pluginExtension = ".spz";
+            }
+        }
+
         const defaultOptions: LoadAssetContainerOptions = {
             // Pass a progress callback to update the loading progress.
             onProgress,
@@ -1647,6 +1656,9 @@ export class Viewer implements IDisposable {
                         },
                     },
                 },
+                // SPZ files are in RUB convention; flipY skips the loader's default coordinate conversion
+                // so the viewer can rely on the data being Y-up as-is.
+                ...(options?.pluginExtension === ".spz" ? { splat: { flipY: true } } : {}),
             },
         };
 

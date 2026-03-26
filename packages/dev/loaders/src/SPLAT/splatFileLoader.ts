@@ -350,10 +350,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
                         babylonMeshesArray.push(gaussianSplatting);
                         gaussianSplatting.updateData(parsedSPZ.data, parsedSPZ.sh, { flipY: false });
                         if (!this._loadingOptions.flipY) {
-                            // SPZ stores data in RUB convention (Right-Up-Back, right-handed).
-                            // Babylon uses a left-handed Y-up system (Z-forward).
-                            // Negate Z to convert from right-handed Z-back to left-handed Z-forward.
-                            gaussianSplatting.scaling.z *= -1.0;
+                            gaussianSplatting.scaling.y *= -1.0;
                             gaussianSplatting.computeWorldMatrix(true);
                         }
                         scene._blockEntityCollection = false;
