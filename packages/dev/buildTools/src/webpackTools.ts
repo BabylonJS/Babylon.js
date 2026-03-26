@@ -6,7 +6,7 @@ import { getPackageMappingByDevName, getPublicPackageName, isValidDevPackageName
 import * as path from "path";
 import { camelize, copyFile } from "./utils.js";
 import type { RuleSetRule, Configuration, Compiler, WebpackPluginInstance } from "webpack";
-import * as ReactRefreshWebpackPlugin from "@pmmmwh/react-refresh-webpack-plugin";
+import ReactRefreshWebpackPlugin from "@pmmmwh/react-refresh-webpack-plugin";
 import ReactRefreshTypeScript from "react-refresh-typescript";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention

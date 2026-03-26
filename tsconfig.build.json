@@ -4,6 +4,8 @@
         "moduleResolution": "bundler",
         "strict": true,
         "noUncheckedSideEffectImports": false,
+        "useUnknownInCatchVariables": false,
+        "strictPropertyInitialization": false,
         "types": ["node"],
         "module": "ES2020",
         "target": "es2021", // esnext has an issue with class generation and our decoders. TODO - avoid using decorators until in standard

@@ -457,7 +457,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
                   .requestAdapter()
                   // eslint-disable-next-line github/no-then
                   .then(
-                      (adapter: GPUAdapter | undefined) => !!adapter,
+                      (adapter: GPUAdapter | null) => !!adapter,
                       () => false
                   )
                   // eslint-disable-next-line github/no-then
@@ -657,7 +657,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
             navigator
                 .gpu!.requestAdapter(this._options)
                 // eslint-disable-next-line github/no-then
-                .then(async (adapter: GPUAdapter | undefined) => {
+                .then(async (adapter: GPUAdapter | null) => {
                     if (!adapter) {
                         // eslint-disable-next-line no-throw-literal
                         throw "Could not retrieve a WebGPU adapter (adapter is null).";
@@ -665,7 +665,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
                         this._adapter = adapter!;
                         this._adapterSupportedExtensions = [];
                         this._adapter.features?.forEach((feature) => {
-                            this._adapterSupportedExtensions.push(feature as WebGPUConstants.FeatureName);
+                            this._adapterSupportedExtensions.push(feature as GPUFeatureName);
                         });
                         this._adapterSupportedLimits = this._adapter.limits;
                         this._adapterInfo = this._adapter.info;
@@ -707,7 +707,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
                     this._device = device;
                     this._deviceEnabledExtensions = [];
                     this._device.features?.forEach((feature) => {
-                        this._deviceEnabledExtensions.push(feature as WebGPUConstants.FeatureName);
+                        this._deviceEnabledExtensions.push(feature as GPUFeatureName);
                     });
                     this._deviceLimits = device.limits;
 
@@ -1978,14 +1978,14 @@ export class WebGPUEngine extends ThinWebGPUEngine {
             vertexStage: {
                 module: this._device.createShaderModule({
                     label: "vertex",
-                    code: vertexShader,
+                    code: vertexShader as string,
                 }),
                 entryPoint: "main",
             },
             fragmentStage: {
                 module: this._device.createShaderModule({
                     label: "fragment",
-                    code: fragmentShader,
+                    code: fragmentShader as string,
                 }),
                 entryPoint: "main",
             },

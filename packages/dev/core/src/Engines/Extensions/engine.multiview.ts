@@ -211,7 +211,7 @@ Scene.prototype.createSceneUniformBuffer = function (name?: string, trackUBOsInF
         const trackUBOsInFrame = typeof trackUBOsInFrameOrOptions === "boolean" ? trackUBOsInFrameOrOptions : trackUBOsInFrameOrOptions?.trackUBOsInFrame;
         return CreateMultiviewUbo(this.getEngine(), name, trackUBOsInFrame);
     }
-    return CurrentCreateSceneUniformBuffer.bind(this)(name, trackUBOsInFrameOrOptions);
+    return CurrentCreateSceneUniformBuffer.call(this, name, trackUBOsInFrameOrOptions as ICreateSceneUboOptions | undefined);
 };
 Scene.prototype._updateMultiviewUbo = function (viewR?: Matrix, projectionR?: Matrix) {
     if (viewR && projectionR) {

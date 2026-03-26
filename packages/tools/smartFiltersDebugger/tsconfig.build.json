@@ -4,7 +4,8 @@
     "compilerOptions": {
         "outDir": "./dist",
         "rootDir": "./src",
-        "resolveJsonModule": true
+        "resolveJsonModule": true,
+        "types": ["node", "chrome"]
     },
 
     "include": ["./src/**/*.ts", "./src/**/*.tsx"],

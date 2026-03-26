@@ -749,7 +749,7 @@ export class GaussianSplattingMesh extends Mesh {
 
         // geometry used for shadows, bind the first found in the camera view infos
         if (!this._geometry && this._cameraViewInfos.size) {
-            this._geometry = this._cameraViewInfos.values().next().value.mesh.geometry;
+            this._geometry = this._cameraViewInfos.values().next().value!.mesh.geometry;
         }
 
         const cameraId = this._scene.activeCamera!.uniqueId;

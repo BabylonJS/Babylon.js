@@ -584,13 +584,13 @@ export abstract class WebGPUCacheRenderPipeline {
             case Constants.GL_ALPHA_FUNCTION_ONE_MINUS_CONSTANT_ALPHA:
                 return WebGPUConstants.BlendFactor.OneMinusConstant;
             case Constants.GL_ALPHA_FUNCTION_SRC1_COLOR:
-                return WebGPUConstants.BlendFactor.Src1;
+                return WebGPUConstants.BlendFactor.Src1 as GPUBlendFactor;
             case Constants.GL_ALPHA_FUNCTION_ONE_MINUS_SRC1_COLOR:
-                return WebGPUConstants.BlendFactor.OneMinusSrc1;
+                return WebGPUConstants.BlendFactor.OneMinusSrc1 as GPUBlendFactor;
             case Constants.GL_ALPHA_FUNCTION_SRC1_ALPHA:
-                return WebGPUConstants.BlendFactor.Src1Alpha;
+                return WebGPUConstants.BlendFactor.Src1Alpha as GPUBlendFactor;
             case Constants.GL_ALPHA_FUNCTION_ONE_MINUS_SRC1_ALPHA:
-                return WebGPUConstants.BlendFactor.OneMinusSrc1Alpha;
+                return WebGPUConstants.BlendFactor.OneMinusSrc1Alpha as GPUBlendFactor;
             default:
                 return WebGPUConstants.BlendFactor.One;
         }
