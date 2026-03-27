@@ -200,6 +200,8 @@ type ShadowState = {
         renderTimer?: Nullable<ReturnType<typeof setTimeout>>;
         shouldRender: boolean;
         readonly resizeObserver: Observer<Engine>;
+        voxelizationInProgress?: boolean;
+        voxelizationDirty?: boolean;
     };
 };
 
@@ -945,6 +947,7 @@ export class Viewer implements IDisposable {
 
     private _shadowQuality: ShadowQuality = this._options?.shadowConfig?.quality ?? DefaultViewerOptions.shadowConfig.quality;
     private readonly _shadowState: ShadowState = {};
+    private _iblShadowsAnimationObserver: Nullable<Observer<Scene>> = null;
 
     public constructor(
         private readonly _engine: AbstractEngine,
@@ -1513,6 +1516,7 @@ export class Viewer implements IDisposable {
             this.onAnimationProgressChanged.notifyObservers();
             this._autoRotationBehavior.resetLastInteractionTime();
             this._markSceneMutated();
+            this._triggerIblShadowsVoxelization();
         }
     }
 
@@ -1631,6 +1635,25 @@ export class Viewer implements IDisposable {
         };
         delete options?.pluginOptions?.gltf?.extensionOptions?.KHR_materials_variants?.onLoaded;
 
+        // Detect SPZ files and set the appropriate plugin extension and options.
+        if (!options?.pluginExtension) {
+            let isSpz = false;
+            if (typeof source === "string") {
+                const extension = GetExtensionFromUrl(source);
+                if (extension && extension.toLowerCase() === ".spz") {
+                    isSpz = true;
+                }
+            } else if (source instanceof File) {
+                if (source.name.toLowerCase().endsWith(".spz")) {
+                    isSpz = true;
+                }
+            }
+            if (isSpz) {
+                options = options ?? {};
+                options.pluginExtension = ".spz";
+            }
+        }
+
         const defaultOptions: LoadAssetContainerOptions = {
             // Pass a progress callback to update the loading progress.
             onProgress,
@@ -1647,6 +1670,10 @@ export class Viewer implements IDisposable {
                         },
                     },
                 },
+                // SPZ files are authored in RUB (Y-up) convention. SPLATFileLoader normally inverts Y
+                // when flipY is falsy, so we set flipY: true here to prevent that default inversion and
+                // keep the content Y-up as authored.
+                ...(options?.pluginExtension === ".spz" ? { splat: { flipY: true } } : {}),
             },
         };
 
@@ -2038,6 +2065,11 @@ export class Viewer implements IDisposable {
         this._shadowState.high = high;
         this._startIblShadowsRenderTime();
 
+        // Start the per-frame update loop if an animation is already playing.
+        if (this.isAnimationPlaying) {
+            this._startIblShadowsAnimationUpdate();
+        }
+
         this._snapshotHelper?.enableSnapshotRendering();
         this._markSceneMutated();
     }
@@ -2204,6 +2236,7 @@ export class Viewer implements IDisposable {
     }
 
     private _disposeShadows() {
+        this._stopIblShadowsAnimationUpdate();
         this._snapshotHelper?.disableSnapshotRendering();
 
         if (!this._shadowState) {
@@ -2498,6 +2531,7 @@ export class Viewer implements IDisposable {
      */
     public playAnimation() {
         this._activeAnimation?.play(true);
+        this._startIblShadowsAnimationUpdate();
     }
 
     /**
@@ -2505,6 +2539,77 @@ export class Viewer implements IDisposable {
      */
     public async pauseAnimation() {
         this._activeAnimation?.pause();
+        this._stopIblShadowsAnimationUpdate();
+        this._triggerIblShadowsVoxelization();
+    }
+
+    /**
+     * Triggers a single IBL shadows voxelization pass.
+     * If a voxelization is already in progress, a dirty flag is set and a new pass
+     * will automatically run once the current one completes, ensuring the final state
+     * is always rendered regardless of how many requests arrive in the meantime.
+     */
+    private _triggerIblShadowsVoxelization() {
+        if (this._shadowState.high) {
+            if (this._shadowState.high.voxelizationInProgress) {
+                this._shadowState.high.voxelizationDirty = true;
+                return;
+            }
+            this._shadowState.high.voxelizationInProgress = true;
+            this._shadowState.high.pipeline.updateSceneBounds();
+            this._shadowState.high.pipeline.updateVoxelization();
+            this._shadowState.high.pipeline.onVoxelizationCompleteObservable.addOnce(() => {
+                if (this._shadowState.high) {
+                    this._shadowState.high.voxelizationInProgress = false;
+                    this._shadowState.high.pipeline.resetAccumulation();
+                    if (this._shadowState.high.voxelizationDirty) {
+                        this._shadowState.high.voxelizationDirty = false;
+                        this._triggerIblShadowsVoxelization();
+                        return;
+                    }
+                }
+                this._startIblShadowsRenderTime();
+            });
+        }
+    }
+
+    /**
+     * Starts the per-frame update loop for IBL shadows while an animation is playing.
+     */
+    private _startIblShadowsAnimationUpdate() {
+        if (this._shadowState.high && !this._iblShadowsAnimationObserver) {
+            let frame = 0;
+            this._iblShadowsAnimationObserver = this._scene.onAfterAnimationsObservable.add(() => {
+                const highState = this._shadowState.high;
+                if (!highState) {
+                    return;
+                }
+                if (frame++ % 2 !== 0) {
+                    return;
+                }
+                if (highState.voxelizationInProgress) {
+                    return;
+                }
+                highState.voxelizationInProgress = true;
+                highState.pipeline.updateVoxelization();
+                highState.pipeline.onVoxelizationCompleteObservable.addOnce(() => {
+                    // Ensure the high shadow state is still valid and matches the one we started with
+                    if (!this._shadowState.high || this._shadowState.high !== highState) {
+                        return;
+                    }
+                    highState.voxelizationInProgress = false;
+                    highState.pipeline.resetAccumulation();
+                    this._startIblShadowsRenderTime();
+                });
+            });
+        }
+    }
+
+    private _stopIblShadowsAnimationUpdate() {
+        if (this._iblShadowsAnimationObserver) {
+            this._scene.onAfterAnimationsObservable.remove(this._iblShadowsAnimationObserver);
+            this._iblShadowsAnimationObserver = null;
+        }
     }
 
     /**

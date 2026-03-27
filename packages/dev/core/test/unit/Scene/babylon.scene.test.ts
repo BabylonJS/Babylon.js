@@ -1,6 +1,7 @@
 import type { Engine } from "core/Engines/engine";
 import { NullEngine } from "core/Engines/nullEngine";
 import { Mesh } from "core/Meshes";
+import { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
 import { Scene } from "core/scene";
 import { Tags } from "core/Misc";
 
@@ -34,5 +35,32 @@ describe("Babylon Scene", () => {
 
         const getByTags3 = scene.getMeshesByTags("tag1", (mesh) => mesh.name === "mesh2");
         expect(getByTags3).toEqual([mesh2]);
-    })
+    });
+
+    describe("isReady with customRenderTargets", () => {
+        it("should return false when a custom RTT is not ready for rendering", () => {
+            const rtt = new RenderTargetTexture("testRTT", 256, scene);
+            vi.spyOn(rtt, "isReadyForRendering").mockReturnValue(false);
+            scene.customRenderTargets.push(rtt);
+
+            expect(scene.isReady(true)).toBe(false);
+        });
+
+        it("should return true when a custom RTT is ready for rendering", () => {
+            const rtt = new RenderTargetTexture("testRTT", 256, scene);
+            vi.spyOn(rtt, "isReadyForRendering").mockReturnValue(true);
+            scene.customRenderTargets.push(rtt);
+
+            expect(scene.isReady(true)).toBe(true);
+        });
+
+        it("should not check custom RTTs when checkRenderTargets is false", () => {
+            const rtt = new RenderTargetTexture("testRTT", 256, scene);
+            const spy = vi.spyOn(rtt, "isReadyForRendering").mockReturnValue(false);
+            scene.customRenderTargets.push(rtt);
+
+            expect(scene.isReady(false)).toBe(true);
+            expect(spy).not.toHaveBeenCalled();
+        });
+    });
 })

@@ -37,6 +37,7 @@ playwright/.cache/
 .playwright-cli
 .nx
 .DS_Store
+.eslintcache
 
 # generated Smart Filter block TS files
 **/*.block.ts
