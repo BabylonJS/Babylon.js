@@ -231,8 +231,12 @@ export default tseslint.config(
 
             // Import rules
             "import/no-unresolved": "off",
-            "import/named": "error",
-            "import/no-cycle": [1, { maxDepth: 1, ignoreExternal: true }],
+            // import/named is redundant — TypeScript already validates named imports
+            "import/named": "off",
+            // import/no-cycle is disabled for performance — it traverses the full
+            // dependency graph and is the single most expensive rule in the config.
+            // Run it explicitly via `npm run lint:cycles` when needed.
+            "import/no-cycle": "off",
             "import/no-internal-modules": [
                 "error",
                 {

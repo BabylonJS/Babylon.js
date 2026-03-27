@@ -1,4 +1,5 @@
 import type { IAssetContainer } from "core/IAssetContainer";
+import { Logger } from "../Misc/logger";
 import { Color3, Color4 } from "../Maths/math.color";
 import { Matrix, Quaternion, Vector2, Vector3, Vector4 } from "../Maths/math.vector";
 import type { Scene } from "../scene";
@@ -92,11 +93,16 @@ export function defaultValueSerializationFunction(key: string, value: any, seria
                 className,
             };
         } else {
-            // only if it is not an object
-            if (typeof value !== "object") {
+            if (typeof value !== "object" || value === null) {
                 serializationObject[key] = value;
             } else {
-                throw new Error(`Could not serialize value ${value}`);
+                // Plain object (e.g. parsed event config) — store it if JSON-safe,
+                // otherwise skip (e.g. objects containing functions like pathConverter).
+                try {
+                    serializationObject[key] = JSON.parse(JSON.stringify(value));
+                } catch {
+                    Logger.Warn(`FlowGraph serialization: value for key "${key}" is not JSON-serializable and was skipped.`);
+                }
             }
         }
     }

@@ -248,6 +248,32 @@ describe("Flow Graph Execution Nodes", () => {
         expect(Logger.Log).toHaveBeenCalledTimes(1);
     });
 
+    it("Pause/Resume should not execute while paused or duplicate observers", () => {
+        const sceneTick = new FlowGraphSceneTickEventBlock();
+        flowGraph.addEventBlock(sceneTick);
+
+        const log = new FlowGraphConsoleLogBlock();
+        log.message.setValue("tick", flowGraphContext);
+        sceneTick.done.connectTo(log.in);
+
+        flowGraph.start();
+        scene.render();
+        expect(Logger.Log).toHaveBeenCalledTimes(1);
+
+        flowGraph.pause();
+        scene.render();
+        expect(Logger.Log).toHaveBeenCalledTimes(1);
+
+        flowGraph.start();
+        scene.render();
+        expect(Logger.Log).toHaveBeenCalledTimes(2);
+
+        flowGraph.pause();
+        flowGraph.start();
+        scene.render();
+        expect(Logger.Log).toHaveBeenCalledTimes(3);
+    });
+
     // this should test the JSON property parser.
     // it("SetPropertyBlock", () => {
     //     const mesh0 = new Mesh("myMesh0", scene);

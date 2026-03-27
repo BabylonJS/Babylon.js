@@ -2463,6 +2463,13 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
                     isReady = false;
                 }
             }
+
+            for (index = 0; index < this.customRenderTargets.length; ++index) {
+                const rtt = this.customRenderTargets[index];
+                if (!rtt.isReadyForRendering()) {
+                    isReady = false;
+                }
+            }
         }
 
         // Geometries

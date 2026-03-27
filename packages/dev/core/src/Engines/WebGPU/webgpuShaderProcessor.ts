@@ -202,7 +202,8 @@ export abstract class WebGPUShaderProcessor implements IShaderProcessor {
         textureIndex: number,
         dimension: Nullable<GPUTextureViewDimension>,
         format: Nullable<GPUTextureFormat>,
-        isVertex: boolean
+        isVertex: boolean,
+        storageTextureAccess: GPUStorageTextureAccess = WebGPUConstants.StorageTextureAccess.WriteOnly
     ): void {
         // eslint-disable-next-line prefer-const
         let { groupIndex, bindingIndex } = textureInfo.textures[textureIndex];
@@ -223,7 +224,7 @@ export abstract class WebGPUShaderProcessor implements IShaderProcessor {
                     binding: bindingIndex,
                     visibility: 0,
                     storageTexture: {
-                        access: WebGPUConstants.StorageTextureAccess.WriteOnly,
+                        access: storageTextureAccess,
                         format,
                         viewDimension: dimension,
                     },

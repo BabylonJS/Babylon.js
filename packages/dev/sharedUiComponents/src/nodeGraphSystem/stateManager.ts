@@ -28,6 +28,12 @@ export class StateManager {
     onSelectionBoxMoved = new Observable<ClientRect | DOMRect>();
     onCandidateLinkMoved = new Observable<Nullable<Vector2>>();
     onCandidatePortSelectedObservable = new Observable<Nullable<NodePort | FrameNodePort>>();
+    /** The source port data for the current drag operation, used for design-time compatibility checks */
+    candidateSourcePortData: Nullable<IPortData> = null;
+    /** When true, ports glow red during drag when hovering over an incompatible target. Default false. */
+    enablePortCompatibilityHighlight: boolean = false;
+    /** When true, nodes can display validation and breakpoint badge overlays. Default false. */
+    enableNodeBadges: boolean = false;
     onNewNodeCreatedObservable = new Observable<GraphNode>();
     onRebuildRequiredObservable = new Observable<void>();
     onNodeMovedObservable = new Observable<GraphNode>();

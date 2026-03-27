@@ -30,4 +30,6 @@ export interface INodeData {
 
     onInputCountChanged?: () => void;
     onInputRemoved?: (index: number) => void;
+    onOutputCountChanged?: () => void;
+    onOutputRemoved?: (index: number) => void;
 }

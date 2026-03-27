@@ -563,6 +563,7 @@ export class ThinEngine extends AbstractEngine {
             textureNorm16: this._gl.getExtension("EXT_texture_norm16") ? true : false,
             blendParametersPerTarget: false,
             dualSourceBlending: false,
+            supportReadWriteStorageTextures: false,
         };
 
         this._caps.supportFloatTexturesResolve = this._caps.colorBufferFloat;
