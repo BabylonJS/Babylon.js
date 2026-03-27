@@ -184,6 +184,11 @@ export class Particle {
      */
     public remapData: Vector4;
 
+    /**
+     * Gets or sets an object used to store user defined information for the particle
+     */
+    public metadata: any = null;
+
     /** @internal */
     public _properties = new ParticleInternalProperties();
 
@@ -369,6 +374,10 @@ export class Particle {
                 other._properties.randomNoiseCoordinates1 = this._properties.randomNoiseCoordinates1.clone();
                 other._properties.randomNoiseCoordinates2 = this._properties.randomNoiseCoordinates2.clone();
             }
+        }
+        if (this.metadata) {
+            other.metadata = this.metadata;
+            this.metadata = null;
         }
     }
 }
