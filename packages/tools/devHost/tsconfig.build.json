@@ -2,7 +2,6 @@
     "extends": "../../../tsconfig.build.json",
 
     "compilerOptions": {
-        "outDir": "./dist",
         "rootDir": "../../",
         "sourceMap": true,
         "declaration": true,
@@ -24,7 +23,7 @@
             "node-particle-editor/*": ["../../tools/nodeParticleEditor/src/*"],
             "gui-editor/*": ["../../tools/guiEditor/src/*"],
             "ktx2decoder/*": ["../../tools/ktx2Decoder/src/*"],
-            "babylonjs-gltf2interface/*": ["public/glTF2Interface/babylon.glTF2Interface.d.ts"]
+            "babylonjs-gltf2interface/*": ["../../public/glTF2Interface/babylon.glTF2Interface.d.ts"]
         }
     },
 

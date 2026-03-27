@@ -2,8 +2,7 @@
     "extends": "../../../tsconfig.build.json",
 
     "compilerOptions": {
-        "outDir": "./dist",
-        "rootDir": "../../",
+        "rootDir": "./src",
         "sourceMap": true,
         "declaration": true,
         "moduleResolution": "bundler",
