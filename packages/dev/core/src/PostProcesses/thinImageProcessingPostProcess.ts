@@ -1,6 +1,5 @@
 import type { Nullable, AbstractEngine, EffectWrapperCreationOptions, Observer, NonNullableFields, Scene, ColorCurves, BaseTexture, Color4 } from "core/index";
 import { EffectWrapper } from "../Materials/effectRenderer";
-import { Engine } from "../Engines/engine";
 import { EngineStore } from "../Engines/engineStore";
 import type { IImageProcessingConfigurationDefines } from "../Materials/imageProcessingConfiguration.defines";
 import { ImageProcessingConfiguration } from "../Materials/imageProcessingConfiguration";
@@ -466,7 +465,7 @@ export class ThinImageProcessingPostProcess extends EffectWrapper {
         super({
             ...options,
             name,
-            engine: engine || Engine.LastCreatedEngine!,
+            engine: engine || EngineStore.LastCreatedEngine!,
             useShaderStore: true,
             useAsPostProcess: true,
             fragmentShader: ThinImageProcessingPostProcess.FragmentUrl,
