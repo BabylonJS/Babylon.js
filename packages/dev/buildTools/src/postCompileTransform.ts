@@ -64,13 +64,15 @@ function TransformFilesInDir(options: IPostCompileTransformOptions): void {
         for (const pattern of SPECIFIER_PATTERNS) {
             // Reset lastIndex since we reuse the regex
             pattern.lastIndex = 0;
-            content = content.replace(pattern, (...args: string[]) => {
-                // For the from/module pattern: args[1]=prefix, args[2]=quote, args[3]=specifier
-                // For require/import(): args[1]=prefix, args[2]=quote, args[3]=specifier, args[4]=suffix
-                const prefix = args[1];
-                const quote = args[2];
-                const specifier = args[3];
-                const suffix = args[4] || "";
+            content = content.replace(pattern, (...args: (string | number)[]) => {
+                // The replace callback receives: (fullMatch, ...captureGroups, offset, fullString)
+                // For the from/module pattern (3 groups): args[4] is the offset (number), not a suffix
+                // For require/import() patterns (4 groups): args[4] is the closing paren capture group
+                const prefix = args[1] as string;
+                const quote = args[2] as string;
+                const specifier = args[3] as string;
+                // args.length === 6 means 3 capture groups (no suffix group); args.length === 7 means 4 capture groups
+                const suffix = args.length === 7 ? (args[4] as string) : "";
 
                 const transformed = transformPackageLocation(
                     specifier,
@@ -86,7 +88,7 @@ function TransformFilesInDir(options: IPostCompileTransformOptions): void {
                 if (transformed && transformed !== specifier) {
                     return `${prefix}${quote}${transformed}${quote}${suffix}`;
                 }
-                return args[0]; // full match unchanged
+                return args[0] as string; // full match unchanged
             });
         }
 
