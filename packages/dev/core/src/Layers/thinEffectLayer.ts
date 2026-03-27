@@ -25,7 +25,6 @@ import { BindBonesParameters, BindMorphTargetParameters, PrepareDefinesAndAttrib
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { ObjectRenderer } from "core/Rendering/objectRenderer";
 import type { Vector2 } from "../Maths/math.vector";
-import { Engine } from "core/Engines/engine";
 
 /**
  * Special Glow Blur post process only blurring the alpha channel
@@ -53,7 +52,7 @@ export class ThinGlowBlurPostProcess extends EffectWrapper {
         super({
             ...options,
             name,
-            engine: engine || Engine.LastCreatedEngine!,
+            engine: engine || EngineStore.LastCreatedEngine!,
             useShaderStore: true,
             useAsPostProcess: true,
             fragmentShader: ThinGlowBlurPostProcess.FragmentUrl,

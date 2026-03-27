@@ -14,7 +14,6 @@ import type { BaseTexture } from "../Materials/Textures/baseTexture";
 import { Observable } from "../Misc/observable";
 import type { CubeTexture } from "../Materials/Textures/cubeTexture";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
-import { Engine } from "../Engines/engine";
 import { _WarnImport } from "../Misc/devTools";
 import type { Nullable } from "../types";
 import { EngineStore } from "../Engines/engineStore";
@@ -170,7 +169,7 @@ export class IblCdfGenerator {
             return;
         }
         const blackPixels = new Uint16Array([0, 0, 0, 255]);
-        this._dummyTexture = new RawTexture(blackPixels, 1, 1, Engine.TEXTUREFORMAT_RGBA, sceneOrEngine, false, false, undefined, Constants.TEXTURETYPE_HALF_FLOAT);
+        this._dummyTexture = new RawTexture(blackPixels, 1, 1, Constants.TEXTUREFORMAT_RGBA, sceneOrEngine, false, false, undefined, Constants.TEXTURETYPE_HALF_FLOAT);
         if (this._scene) {
             IblCdfGenerator._SceneComponentInitialization(this._scene);
         }
