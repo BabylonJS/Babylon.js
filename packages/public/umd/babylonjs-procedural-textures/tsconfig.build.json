@@ -9,9 +9,8 @@
         "importHelpers": true,
         "paths": {
             "core/*": ["dev/core/dist/*"],
-            "procedural-textures/*": ["dev/proceduralTextures/src/*"],
-            "@lts/procedural-textures/*": ["lts/proceduralTextures/src/*"]
+            "procedural-textures/*": ["dev/proceduralTextures/src/*"]
         }
     },
-    "include": ["./src/**/*", "../../../dev/proceduralTextures/src/**/*", "../../../lts/proceduralTextures/src/**/*"]
+    "include": ["./src/**/*", "../../../dev/proceduralTextures/src/**/*"]
 }

@@ -9,9 +9,8 @@
         "importHelpers": true,
         "paths": {
             "core/*": ["dev/core/dist/*"],
-            "serializers/*": ["dev/serializers/src/*"],
-            "@lts/serializers/*": ["lts/serializers/src/*"],
+            "serializers/*": ["dev/serializers/src/*"]
         }
     },
-    "include": ["./src/**/*", "../../../dev/serializers/src/**/*", "../../../lts/serializers/src/**/*"]
+    "include": ["./src/**/*", "../../../dev/serializers/src/**/*"]
 }

@@ -334,8 +334,8 @@ export const commonUMDWebpackConfiguration = (options: {
         resolve: {
             extensions: [".ts", ".js"],
             alias: {
-                // default alias - for its own package to the lts version
-                [options.devPackageName]: path.resolve(options.devPackageAliasPath || `../../../lts/${camelize(options.devPackageName)}/dist`),
+                // default alias - for its own package to the dev version
+                [options.devPackageName]: path.resolve(options.devPackageAliasPath || `../../../dev/${camelize(options.devPackageName)}/dist`),
                 ...options.alias,
             },
         },

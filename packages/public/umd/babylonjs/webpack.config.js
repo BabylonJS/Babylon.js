@@ -12,7 +12,6 @@ module.exports = (env) => {
         minToMax: true,
         alias: {
             core: path.resolve(__dirname, "../../../dev/core/src"),
-            "@lts/core": path.resolve(__dirname, "../../../lts/core/src"),
         },
     });
     return commonConfig;

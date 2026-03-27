@@ -31,8 +31,7 @@ env: {
 */
 
 module.exports = (env) => {
-    const source = env.source || process.env.SOURCE || "dev"; // || "lts";
-    const basePathForSources = path.resolve(__dirname, "../../", source);
+    const basePathForSources = path.resolve(__dirname, "../../", "dev");
     const basePathForTools = path.resolve(__dirname, "../../", "tools");
     const externals = externalsFunction();
     rules.shift();
@@ -86,15 +85,15 @@ module.exports = (env) => {
         entry: {
             sceneTs: "./src/sceneTs.ts",
             sceneJs: "./src/sceneJs.js",
-            babylon: `./src/core/index-${source}.ts`,
-            "gui/babylon.gui.min": `./src/gui/index-${source}.ts`,
+            babylon: `./src/core/index-dev.ts`,
+            "gui/babylon.gui.min": `./src/gui/index-dev.ts`,
             "inspector/babylon.inspector.min": `./src/inspector/index.ts`,
             "inspector/babylon.inspector-v2.bundle": `./src/inspector-v2/index.ts`,
-            "serializers/babylonjs.serializers.min": `./src/serializers/index-${source}.ts`,
-            "loaders/babylonjs.loaders.min": `./src/loaders/index-${source}.ts`,
-            "materialsLibrary/babylonjs.materials.min": `./src/materials/index-${source}.ts`,
-            "postProcessesLibrary/babylonjs.postProcess.min": `./src/postProcesses/index-${source}.ts`,
-            "proceduralTexturesLibrary/babylonjs.proceduralTextures.min": `./src/proceduralTextures/index-${source}.ts`,
+            "serializers/babylonjs.serializers.min": `./src/serializers/index-dev.ts`,
+            "loaders/babylonjs.loaders.min": `./src/loaders/index-dev.ts`,
+            "materialsLibrary/babylonjs.materials.min": `./src/materials/index-dev.ts`,
+            "postProcessesLibrary/babylonjs.postProcess.min": `./src/postProcesses/index-dev.ts`,
+            "proceduralTexturesLibrary/babylonjs.proceduralTextures.min": `./src/proceduralTextures/index-dev.ts`,
             "nodeEditor/babylon.nodeEditor.min": `./src/nodeEditor/index.ts`,
             "nodeGeometryEditor/babylon.nodeGeometryEditor.min": `./src/nodeGeometryEditor/index.ts`,
             "nodeRenderGraphEditor/babylon.nodeRenderGraphEditor.min": `./src/nodeRenderGraphEditor/index.ts`,

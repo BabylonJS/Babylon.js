@@ -21,9 +21,7 @@
         "postcompile": "build-tools -c add-js-to-es6"
     },
     "devDependencies": {
-        "@dev/build-tools": "^1.0.0",
-        "@lts/core": "1.0.0",
-        "@lts/gui": "1.0.0"
+        "@dev/build-tools": "^1.0.0"
     },
     "peerDependencies": {
         "@types/dagre": "^0.7.47",

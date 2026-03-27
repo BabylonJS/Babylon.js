@@ -20,8 +20,7 @@ env: {
  */
 
 module.exports = (env) => {
-    const source = env.source || process.env.SOURCE || "dev"; // || "lts";
-    const basePathForSources = path.resolve(__dirname, "../../", source);
+    const basePathForSources = path.resolve(__dirname, "../../", "dev");
     const commonConfig = {
         entry: {
             sceneTs: "./src/sceneTs.ts",
