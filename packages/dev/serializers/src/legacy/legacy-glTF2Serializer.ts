@@ -9,10 +9,11 @@ import * as GLTF2 from "serializers/glTF/2.0/index";
  * This is the entry point for the UMD module.
  * The entry point for a future ESM package should be index.ts
  */
-const globalObject = typeof global !== "undefined" ? global : typeof window !== "undefined" ? window : undefined;
-if (typeof globalObject !== "undefined") {
-    (<any>globalObject).BABYLON = (<any>globalObject).BABYLON || {};
-    const BABYLON = (<any>globalObject).BABYLON;
+const GlobalObject = typeof global !== "undefined" ? global : typeof window !== "undefined" ? window : undefined;
+if (typeof GlobalObject !== "undefined") {
+    (<any>GlobalObject).BABYLON = (<any>GlobalObject).BABYLON || {};
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    const BABYLON = (<any>GlobalObject).BABYLON;
     BABYLON.GLTF2 = BABYLON.GLTF2 || {};
     BABYLON.GLTF2.Exporter = BABYLON.GLTF2.Exporter || {};
     BABYLON.GLTF2.Exporter.Extensions = BABYLON.GLTF2.Exporter.Extensions || {};

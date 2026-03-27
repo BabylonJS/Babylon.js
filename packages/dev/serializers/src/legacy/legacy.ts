@@ -1,4 +1,3 @@
-/* eslint-disable import/export */
 /* eslint-disable @typescript-eslint/no-restricted-imports */
 import "serializers/index";
 export * from "./legacy-bvhSerializer";

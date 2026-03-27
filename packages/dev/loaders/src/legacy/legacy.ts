@@ -1,4 +1,3 @@
-/* eslint-disable import/export */
 /* eslint-disable @typescript-eslint/no-restricted-imports */
 export * from "loaders/index";
 export * from "./legacy-bvhFileLoader";
