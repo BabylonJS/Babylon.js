@@ -25,7 +25,7 @@
         "bundle": "npm run bundle:lib && npm run bundle:dist:esm",
         "bundle:lib": "rollup -c rollup.config.lib.mjs",
         "bundle:dist:esm": "rollup -c rollup.config.dist.esm.mjs",
-        "analyze": "npm run bundle:dist:esm && open-cli .sonda/viewer-bundle-report.html",
+        "analyze": "npm run bundle:dist:esm && node -e \"const c=process.platform==='win32'?'start':process.platform==='darwin'?'open':'xdg-open';require('child_process').execSync(c+' .sonda/viewer-bundle-report.html')\"",
         "pack": "npm run build && npm pack"
     },
     "dependencies": {
@@ -48,7 +48,6 @@
         "rollup": "^4.59.0",
         "rollup-plugin-dts": "^6.1.1",
         "rollup-plugin-minify-template-literals": "^1.1.7",
-        "open-cli": "^9.0.0",
         "sonda": "^0.11.1",
         "vite": "^6.2.1"
     },
