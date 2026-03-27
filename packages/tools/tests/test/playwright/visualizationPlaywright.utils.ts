@@ -3,6 +3,94 @@ import * as fs from "fs";
 
 import { test, expect, Page } from "@playwright/test";
 import { getGlobalConfig } from "@tools/test-tools";
+import { FetchSnippet, ParseSnippetResponse, CreateTypeScriptTranspiler, type IPlaygroundSnippetResult } from "@tools/snippet-loader";
+import * as ts from "typescript";
+
+// Reusable TypeScript transpiler for TS→JS conversion on the Node side
+const tsTranspile = CreateTypeScriptTranspiler(ts);
+
+/**
+ * Strips ES module syntax (import/export) from code so it can be eval'd
+ * in a browser context where BABYLON is available as a UMD global.
+ */
+function stripModuleSyntax(code: string): string {
+    return (
+        code
+            // import ... from '...' (handles multi-line imports where { } spans multiple lines)
+            .replace(/^\s*import\b[\s\S]*?\bfrom\s+['"][^'"]*['"]\s*;?\s*$/gm, "")
+            // Side-effect imports: import '...'
+            .replace(/^\s*import\s+['"][^'"]*['"]\s*;?\s*$/gm, "")
+            // export default <identifier>;
+            .replace(/^\s*export\s+default\s+\w+\s*;?\s*$/gm, "")
+            // export default before function/class → keep the declaration
+            .replace(/^\s*export\s+default\s+(?=(?:async\s+)?function\b|class\b)/gm, "")
+            // export before declarations → keep the declaration
+            .replace(/^\s*export\s+(?=const\b|let\b|var\b|(?:async\s+)?function\b|class\b)/gm, "")
+            // export { ... } [from '...']
+            .replace(/^\s*export\s*\{[^}]*\}(?:\s*from\s*['"][^'"]*['"])?\s*;?\s*$/gm, "")
+            // export * from '...'
+            .replace(/^\s*export\s*\*\s*(?:from\s*['"][^'"]*['"])?\s*;?\s*$/gm, "")
+    );
+}
+
+/**
+ * Detects the scene entry function call expression from code content.
+ * Mirrors the snippet loader's detection logic for eval-based execution.
+ */
+function detectSceneCall(code: string): string {
+    // Playground class pattern: class Playground { static CreateScene(...) { } }
+    if (/class\s+Playground\b/.test(code) && /\bCreateScene\b/.test(code)) {
+        return "Playground.CreateScene(engine, canvas)";
+    }
+    if (/\bdelayCreateScene\b/.test(code)) return "delayCreateScene(engine)";
+    if (/\bdelayLoadScene\b/.test(code)) return "delayLoadScene(engine)";
+    // Check for CreateScene (capital C) only if there's no lowercase createScene
+    if (/\bCreateScene\b/.test(code) && !/\bcreateScene\b/.test(code)) return "CreateScene(engine)";
+    return "createScene(engine)";
+}
+
+interface PreloadedSnippet {
+    code: string;
+    sceneCall: string;
+}
+
+/**
+ * Pre-fetches and parses a playground snippet on the Node side using the snippet loader.
+ * Returns eval-ready code with module syntax stripped, suitable for direct evaluation
+ * in the browser context where BABYLON is available as a UMD global.
+ *
+ * @param playgroundId - The playground snippet ID (e.g. "#ABC123#1").
+ * @param snippetUrl - The snippet server URL.
+ * @returns The eval-ready code and the scene function call expression.
+ */
+async function preloadSnippetCode(playgroundId: string, snippetUrl: string): Promise<PreloadedSnippet> {
+    // Normalize playground ID format
+    if (playgroundId[0] !== "#" || playgroundId.indexOf("#", 1) === -1) {
+        playgroundId += "#0";
+    }
+
+    const response = await FetchSnippet(playgroundId, snippetUrl);
+    const result = await ParseSnippetResponse(response, playgroundId, {
+        moduleFormat: "esm",
+        // Only transpile TS files; pass JS through unchanged to avoid unnecessary overhead
+        transpile: (source, fileName) => (/\.tsx?$/i.test(fileName) ? tsTranspile(source, fileName) : source),
+    });
+
+    if (result.type !== "playground") {
+        throw new Error(`Snippet ${playgroundId} is not a playground snippet (got type: "${result.type}")`);
+    }
+
+    const pgResult = result as IPlaygroundSnippetResult;
+
+    // Use jsFiles which contains properly transpiled JS (TS→JS done, ESM syntax preserved)
+    const entryName = pgResult.manifest?.entry?.replace(/\.tsx?$/i, ".js") ?? "index.js";
+    let code = pgResult.jsFiles[entryName] ?? pgResult.executedCode;
+
+    // Strip module syntax for eval execution in the browser
+    code = stripModuleSyntax(code);
+
+    return { code, sceneCall: detectSceneCall(code) };
+}
 
 export const evaluatePlaywrightVisTests = async (
     engineType = "webgl2",
@@ -63,7 +151,7 @@ export const evaluatePlaywrightVisTests = async (
     test.beforeAll(async ({ browser }) => {
         page = await browser.newPage();
         await page.setViewportSize({ width: dimensions?.width || 600, height: dimensions?.height || 400 });
-        await page.goto(getGlobalConfig({ root: config.root }).baseUrl + `/empty.html`, {
+        await page.goto(getGlobalConfig({ root: config.root, usesDevHost: false }).baseUrl + `/empty.html`, {
             // waitUntil: "load",
             timeout: 0,
         });
@@ -121,16 +209,32 @@ export const evaluatePlaywrightVisTests = async (
                 useLargeWorldRendering: testCase.useLargeWorldRendering ?? false,
                 useReverseDepthBuffer: testCase.useReverseDepthBuffer ?? "false",
                 useNonCompatibilityMode: testCase.useNonCompatibilityMode ?? "false",
-                baseUrl: getGlobalConfig({ root: config.root }).baseUrl,
+                baseUrl: getGlobalConfig({ root: config.root, usesDevHost: false }).baseUrl,
             });
             log(rendererData.renderer);
 
             if (optionalStateChanges?.beforeScene) {
                 await optionalStateChanges.beforeScene(page);
             }
+
+            // Pre-load snippet code on the Node side using the snippet loader
+            let snippetCode: string | undefined;
+            let snippetSceneCall: string | undefined;
+            if (testCase.playgroundId) {
+                const globalCfg = getGlobalConfig({ root: config.root, usesDevHost: false });
+                try {
+                    const preloaded = await preloadSnippetCode(testCase.playgroundId, globalCfg.snippetUrl);
+                    snippetCode = preloaded.code;
+                    snippetSceneCall = preloaded.sceneCall;
+                } catch (e) {
+                    // If pre-loading fails, the browser-side fallback will handle it
+                    console.warn(`Failed to preload snippet ${testCase.playgroundId}, falling back to browser fetch:`, e);
+                }
+            }
+
             await page.evaluate(evaluatePrepareScene, {
-                sceneMetadata: testCase,
-                globalConfig: getGlobalConfig({ root: config.root }),
+                sceneMetadata: { ...testCase, snippetCode, snippetSceneCall },
+                globalConfig: getGlobalConfig({ root: config.root, usesDevHost: false }),
             });
             if (optionalStateChanges?.beforeRender) {
                 await optionalStateChanges.beforeRender(page);
@@ -286,6 +390,8 @@ export const evaluatePrepareScene = async ({
         functionToCall?: string;
         replace?: string;
         playgroundId?: string;
+        snippetCode?: string;
+        snippetSceneCall?: string;
     };
     globalConfig: { root: string; snippetUrl: any; pgRoot: string };
 }) => {
@@ -309,28 +415,34 @@ export const evaluatePrepareScene = async ({
         let retry = 0;
 
         const runSnippet = async function () {
-            const data = await fetch(globalConfig.snippetUrl + sceneMetadata.playgroundId!.replace(/#/g, "/"));
-            const snippet = await data.json();
-            const payload = JSON.parse(snippet.jsonPayload);
-            let code = "";
-            // If payload.version, definitely v2 manifest
-            // This is intentionally constrained to the existing happy path of running vis tests
-            // Rules for V2 manifests assuming:
-            // - Single entry point
-            // - No relative/npm imports
-            // - JS only
-            if (Object.prototype.hasOwnProperty.call(payload, "version")) {
-                const v2Manifest = JSON.parse(payload.code);
-                code = v2Manifest.files[v2Manifest.entry];
-                // Sanitize two common export types for existing and migrated PGs and newly-created PGs.
-                code = code
-                    .replace(/export default \w+/g, "")
-                    .replace(/export const /g, "const ")
-                    .replace(/export var /g, "var ");
+            let code: string;
+
+            if (sceneMetadata.snippetCode) {
+                // Use pre-parsed code from the snippet loader (parsed on the Node side)
+                code = sceneMetadata.snippetCode;
             } else {
-                code = payload.code.toString();
+                // Fallback: fetch and parse in the browser (when pre-loading was not available)
+                const data = await fetch(globalConfig.snippetUrl + sceneMetadata.playgroundId!.replace(/#/g, "/"));
+                const snippet = await data.json();
+                const payload = JSON.parse(snippet.jsonPayload);
+                if (Object.prototype.hasOwnProperty.call(payload, "version")) {
+                    const v2Manifest = JSON.parse(payload.code);
+                    code = v2Manifest.files[v2Manifest.entry];
+                    // Strip module syntax — imports are not needed (BABYLON is a UMD global)
+                    code = code
+                        .replace(/^\s*import\b[\s\S]*?\bfrom\s+['"][^'"]*['"]\s*;?\s*$/gm, "")
+                        .replace(/^\s*import\s+['"][^'"]*['"]\s*;?\s*$/gm, "")
+                        .replace(/^\s*export\s+default\s+\w+\s*;?\s*$/gm, "")
+                        .replace(/^\s*export\s+default\s+(?=(?:async\s+)?function\b|class\b)/gm, "")
+                        .replace(/^\s*export\s+(?=const\b|let\b|var\b|(?:async\s+)?function\b|class\b)/gm, "")
+                        .replace(/^\s*export\s*\{[^}]*\}(?:\s*from\s*['"][^'"]*['"])?\s*;?\s*$/gm, "")
+                        .replace(/^\s*export\s*\*\s*(?:from\s*['"][^'"]*['"])?\s*;?\s*$/gm, "");
+                } else {
+                    code = payload.code.toString();
+                }
             }
 
+            // Apply playground URL replacements
             code = code
                 .replace(/("|')\/textures\//g, "$1" + globalConfig.pgRoot + "/textures/")
                 .replace(/("|')textures\//g, "$1" + globalConfig.pgRoot + "/textures/")
@@ -348,7 +460,25 @@ export const evaluatePrepareScene = async ({
                 }
             }
 
-            const loadedScene = eval(code + "\ncreateScene(engine)");
+            // Detect which scene function to call.
+            // Pre-loaded snippets provide sceneCall from the snippet loader;
+            // for browser-fetched code, detect from the code content.
+            let sceneCall = sceneMetadata.snippetSceneCall;
+            if (!sceneCall) {
+                if (/class\s+Playground\b/.test(code) && /\bCreateScene\b/.test(code)) {
+                    sceneCall = "Playground.CreateScene(engine, canvas)";
+                } else if (/\bdelayCreateScene\b/.test(code)) {
+                    sceneCall = "delayCreateScene(engine)";
+                } else if (/\bdelayLoadScene\b/.test(code)) {
+                    sceneCall = "delayLoadScene(engine)";
+                } else if (/\bCreateScene\b/.test(code) && !/\bcreateScene\b/.test(code)) {
+                    sceneCall = "CreateScene(engine)";
+                } else {
+                    sceneCall = "createScene(engine)";
+                }
+            }
+
+            const loadedScene = eval(code + "\n" + sceneCall);
 
             if (loadedScene.then) {
                 // Handle if createScene returns a promise

@@ -16,6 +16,7 @@
 .active {
     transform-origin: center;
     background-color: var(--selectionGrey);
+    box-shadow: 0 2px 0 0 white;
 }
 
 .commandButtonIcon {
@@ -30,4 +31,5 @@
 .disabled {
     pointer-events: none;
     color: black;
+    opacity: 0.35;
 }

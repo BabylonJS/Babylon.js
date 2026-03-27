@@ -94,6 +94,19 @@ vec3 rotateAlign(vec3 toCamera, vec3 rotatedCorner) {
 
 void main() {
 
+#ifdef EMITRATECTRL
+  // Skip dead particles (age >= life means particle has expired).
+  // Place vertex outside the clip frustum (z=2 > w=1) so the GPU
+  // discards it during clipping — no fragment shader cost.
+  if (life > 0.0 && age >= life) {
+    gl_Position = vec4(0.0, 0.0, 2.0, 1.0);
+    vColor = vec4(0.0); // safety fallback for any leaked varyings
+    vUV = vec2(0.0);
+    vPositionW = vec3(0.0);
+    return;
+  }
+#endif
+
 	#ifdef ANIMATESHEET
 		float rowOffset = floor(cellIndex / sheetInfos.z);
 		float columnOffset = cellIndex - rowOffset * sheetInfos.z;

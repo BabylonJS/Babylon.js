@@ -47,6 +47,8 @@ struct SimParams {
     randomTextureSize: i32,
     lifeTime : vec2<f32>,
     emitPower : vec2<f32>,
+    emitIndex : f32,
+    emitCount : f32,
 
     #ifndef COLORGRADIENTS
         color1 : vec4<f32>,
@@ -201,8 +203,19 @@ fn main(@builtin(global_invocation_id) GlobalInvocationID : vec3<u32>) {
     let seed : vec4<f32> = particlesIn.particles[index].seed;
     let direction : vec3<f32> = particlesIn.particles[index].direction;
 
-    // If particle is dead and system is not stopped, spawn as new particle
-    if (newAge >= life && params.stopFactor != 0.) {
+    // Check if this particle should emit
+#ifdef EMITRATECTRL
+    var offsetFromEmitIndex : f32 = vertexID - params.emitIndex;
+    if (offsetFromEmitIndex < 0.0) {
+        offsetFromEmitIndex += params.currentCount; // wrap around circular buffer
+    }
+    let shouldEmit : bool = offsetFromEmitIndex < params.emitCount && params.stopFactor != 0.;
+#else
+    // Legacy mode: recycle dead particles immediately
+    let shouldEmit : bool = newAge >= life && params.stopFactor != 0.;
+#endif
+
+    if (shouldEmit) {
         var newPosition : vec3<f32>;
         var newDirection : vec3<f32>;
 
@@ -212,7 +225,11 @@ fn main(@builtin(global_invocation_id) GlobalInvocationID : vec3<u32>) {
         // Age and life
         let outLife : f32 = params.lifeTime.x + (params.lifeTime.y - params.lifeTime.x) * randoms.r;
         particlesOut.particles[index].life = outLife;
+#ifdef EMITRATECTRL
+        particlesOut.particles[index].age = 0.0;
+#else
         particlesOut.particles[index].age = newAge - life;
+#endif
 
         // Seed
         particlesOut.particles[index].seed = seed;

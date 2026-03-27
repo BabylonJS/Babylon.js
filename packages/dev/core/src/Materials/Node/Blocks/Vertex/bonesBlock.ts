@@ -41,7 +41,7 @@ export class BonesBlock extends NodeMaterialBlock {
      */
     public override initialize(state: NodeMaterialBuildState) {
         state._excludeVariableName("boneSampler");
-        state._excludeVariableName("boneTextureWidth");
+        state._excludeVariableName("boneTextureInfo");
         state._excludeVariableName("mBones");
         state._excludeVariableName("BonesPerMesh");
 
@@ -193,7 +193,7 @@ export class BonesBlock extends NodeMaterialBlock {
         state.sharedData.blocksWithDefines.push(this);
 
         // Register internal uniforms and samplers
-        state.uniforms.push("boneTextureWidth");
+        state.uniforms.push("boneTextureInfo");
         state.uniforms.push("mBones");
 
         state.samplers.push("boneSampler");

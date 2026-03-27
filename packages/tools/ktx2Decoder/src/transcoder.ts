@@ -17,12 +17,30 @@ export class Transcoder {
 
     public static WasmBaseUrl = "";
 
+    /**
+     * The CDN version to use when constructing versioned CDN URLs.
+     * Injected at build time by the version update script.
+     * When set, unversioned CDN URLs will be rewritten to include this version prefix.
+     * @internal
+     */
+    public static CdnVersion = "9.0.0";
+
+    private static readonly _DefaultCdnUrl = "https://cdn.babylonjs.com";
+
     public static GetWasmUrl(wasmUrl: string) {
-        if (Transcoder.WasmBaseUrl && wasmUrl.startsWith("https://cdn.babylonjs.com")) {
-            // Normalize the base url
-            const baseUrl =
-                Transcoder.WasmBaseUrl[Transcoder.WasmBaseUrl.length - 1] === "/" ? Transcoder.WasmBaseUrl.substring(0, Transcoder.WasmBaseUrl.length - 1) : Transcoder.WasmBaseUrl;
-            wasmUrl = wasmUrl.replace("https://cdn.babylonjs.com", baseUrl);
+        if (wasmUrl.startsWith(Transcoder._DefaultCdnUrl)) {
+            if (Transcoder.WasmBaseUrl) {
+                // Normalize the base url
+                const baseUrl = Transcoder.WasmBaseUrl.endsWith("/") ? Transcoder.WasmBaseUrl.slice(0, -1) : Transcoder.WasmBaseUrl;
+                wasmUrl = wasmUrl.replace(Transcoder._DefaultCdnUrl, baseUrl);
+            } else if (Transcoder.CdnVersion) {
+                const versionedBase = `${Transcoder._DefaultCdnUrl}/v${Transcoder.CdnVersion}`;
+                // Guard against double-versioning if the URL already contains the version prefix
+                // (e.g. when GetWasmUrl is called multiple times on the same URL)
+                if (!wasmUrl.startsWith(versionedBase)) {
+                    wasmUrl = wasmUrl.replace(Transcoder._DefaultCdnUrl, versionedBase);
+                }
+            }
         }
         return wasmUrl;
     }

@@ -919,7 +919,8 @@ export class WebGPUEngine extends ThinWebGPUEngine {
             disableMorphTargetTexture: false,
             textureNorm16: textureFormatsTier1,
             blendParametersPerTarget: true,
-            dualSourceBlending: true,
+            dualSourceBlending: this._deviceEnabledExtensions.includes(WebGPUConstants.FeatureName.DualSourceBlending),
+            supportReadWriteStorageTextures: typeof navigator !== "undefined" && navigator.gpu?.wgslLanguageFeatures?.has("readonly_and_readwrite_storage_textures") === true,
         };
 
         this._features = {

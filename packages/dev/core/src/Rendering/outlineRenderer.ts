@@ -392,7 +392,7 @@ export class OutlineRenderer implements ISceneComponent {
                 "color",
                 "logarithmicDepthConstant",
                 "morphTargetInfluences",
-                "boneTextureWidth",
+                "boneTextureInfo",
                 "morphTargetCount",
                 "morphTargetTextureInfo",
                 "morphTargetTextureIndices",

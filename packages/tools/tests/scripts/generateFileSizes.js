@@ -1,4 +1,4 @@
-const { statSync, writeFileSync, readFileSync } = require("fs-extra");
+const { statSync, writeFileSync, readFileSync } = require("fs");
 const glob = require("glob");
 const path = require("path");
 

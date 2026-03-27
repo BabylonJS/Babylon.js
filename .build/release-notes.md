@@ -1,10 +1,9 @@
 
 ### Core
 
-- FrameGraph: miscellaneous fixes - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#18037](https://github.com/BabylonJS/Babylon.js/pull/18037))
-- Upgrade Jest - by [RaananW](https://github.com/RaananW) ([#18026](https://github.com/BabylonJS/Babylon.js/pull/18026))
-- Particle System: Set a default position if emitter mesh is not found during parsing - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#18033](https://github.com/BabylonJS/Babylon.js/pull/18033))
+- Simplify delayLoad by removing redundant state assignment - by [github-actions[bot]](https://github.com/apps/github-actions) ([#18160](https://github.com/BabylonJS/Babylon.js/pull/18160))
+- Fixed splat shader materials having culling enabled by default - by [HasKha](https://github.com/HasKha) ([#18158](https://github.com/BabylonJS/Babylon.js/pull/18158))
 
-### Loaders
+### Viewer
 
-- Upgrade Jest - by [RaananW](https://github.com/RaananW) ([#18026](https://github.com/BabylonJS/Babylon.js/pull/18026))
+- Viewer: Visual tests + bug fixes - [_Bug Fix_] by [ryantrem](https://github.com/ryantrem) ([#18164](https://github.com/BabylonJS/Babylon.js/pull/18164))

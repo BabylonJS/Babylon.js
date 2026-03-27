@@ -299,7 +299,7 @@ export class VolumetricLightScatteringPostProcess extends PostProcess {
             const uniforms = [
                 "world",
                 "mBones",
-                "boneTextureWidth",
+                "boneTextureInfo",
                 "viewProjection",
                 "diffuseMatrix",
                 "morphTargetInfluences",

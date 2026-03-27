@@ -142,6 +142,15 @@ export class SelectionOutlineLayer extends EffectLayer {
             ...options,
         };
 
+        // Fall back to a supported mask texture type if the device doesn't support rendering to float framebuffers
+        // or linear filtering of float textures (e.g. OES_texture_float_linear missing on some iOS versions)
+        if (this._options.mainTextureType === Constants.TEXTURETYPE_FLOAT && !(this._engine.getCaps().textureFloatRender && this._engine.getCaps().textureFloatLinearFiltering)) {
+            this._options.mainTextureType = Constants.TEXTURETYPE_HALF_FLOAT;
+        }
+        if (this._options.mainTextureType === Constants.TEXTURETYPE_HALF_FLOAT && !this._engine.getCaps().textureHalfFloatRender && !this._options.storeCameraSpaceZ) {
+            this._options.mainTextureType = Constants.TEXTURETYPE_UNSIGNED_BYTE;
+        }
+
         // Initialize the layer
         this._init(this._options);
 

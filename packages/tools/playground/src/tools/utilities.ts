@@ -1,4 +1,8 @@
 import type { GlobalState } from "../globalState";
+import { Logger } from "@dev/core";
+
+// One-shot session flag for user-initiated engine reloads.
+const ManualEngineSwitchReloadStorageKey = "playground-manual-engine-switch-reload";
 
 export class Utilities {
     /**
@@ -54,11 +58,26 @@ export class Utilities {
 
     public static StoreStringToStore(key: string, value: string, useSession = false): void {
         const storage = useSession ? sessionStorage : localStorage;
-        storage.setItem(key, value);
+        try {
+            storage.setItem(key, value);
+        } catch (e) {
+            Logger.Warn(`Could not store ${key} in ${useSession ? "sessionStorage" : "localStorage"}. Error: ${(e as Error)?.message}`);
+        }
     }
 
     public static StoreBoolToStore(key: string, value: boolean): void {
         localStorage.setItem(key, value ? "true" : "false");
+    }
+
+    public static MarkManualEngineSwitchReload(): void {
+        this.StoreStringToStore(ManualEngineSwitchReloadStorageKey, "true", true);
+    }
+
+    // Read and clear so the suppression only applies once.
+    public static ConsumeManualEngineSwitchReload(): boolean {
+        const shouldSuppressDialog = sessionStorage.getItem(ManualEngineSwitchReloadStorageKey) === "true";
+        sessionStorage.removeItem(ManualEngineSwitchReloadStorageKey);
+        return shouldSuppressDialog;
     }
 
     public static CheckSafeMode(message: string) {

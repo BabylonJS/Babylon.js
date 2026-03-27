@@ -1,0 +1,20 @@
+{
+    "name": "@tools/snippet-loader",
+    "version": "1.0.0",
+    "private": true,
+    "main": "dist/index.js",
+    "module": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "files": [
+        "dist"
+    ],
+    "scripts": {
+        "build": "npm run clean && npm run compile",
+        "clean": "rimraf dist && rimraf *.tsbuildinfo -g",
+        "compile": "tsc -b tsconfig.build.json"
+    },
+    "devDependencies": {
+        "monaco-editor": "^0.55.1"
+    },
+    "sideEffects": false
+}

@@ -1,3 +1,4 @@
+import { test, expect, Page } from "@playwright/test";
 import { evaluateDisposeEngine, evaluateCreateScene, evaluateInitEngine, getGlobalConfig, logPageErrors } from "@tools/test-tools";
 import { readFileSync } from "fs";
 import { join } from "path";
@@ -20,20 +21,30 @@ const debug = process.env.DEBUG === "true";
 /**
  * Describes the test suite for BVH Serializer
  */
-describe("Babylon BVH Serializer", () => {
+let page: Page;
+
+test.describe("Babylon BVH Serializer", () => {
     let datasetBvhContent: string;
 
-    beforeAll(async () => {
+    test.beforeAll(async ({ browser }) => {
+        page = await browser.newPage();
+        await page.goto(getGlobalConfig().baseUrl + `/empty.html`, {
+            waitUntil: "load",
+            timeout: 0,
+        });
+        await page.waitForSelector("#babylon-canvas", { timeout: 20000 });
+        await page.waitForFunction(() => window.BABYLON);
+        page.setDefaultTimeout(0);
         await logPageErrors(page, debug);
-        
+
         // Read the test fixture - using dataset-1_walk_normal_001.bvh from fixtures folder
         const fixturePath = join(__dirname, "..", "fixtures", "dataset-1_walk_normal_001.bvh");
         datasetBvhContent = readFileSync(fixturePath, "utf-8");
     });
 
-    jest.setTimeout(debug ? 1000000 : 30000);
+    test.setTimeout(debug ? 1000000 : 30000);
 
-    beforeEach(async () => {
+    test.beforeEach(async () => {
         await page.goto(getGlobalConfig().baseUrl + `/empty.html`, {
             waitUntil: "load",
             timeout: 0,
@@ -42,16 +53,19 @@ describe("Babylon BVH Serializer", () => {
         await page.evaluate(evaluateCreateScene);
     });
 
-    afterEach(async () => {
-        debug && (await jestPuppeteer.debug());
+    test.afterEach(async () => {
         await page.evaluate(evaluateDisposeEngine);
+    });
+
+    test.afterAll(async () => {
+        await page.close();
     });
 
     /**
      * Tests the complete BVH round-trip: load -> skeleton -> export
      */
-    describe("#BVH Round-trip Serialization", () => {
-        it("should load BVH file and create skeleton with correct structure", async () => {
+    test.describe("#BVH Round-trip Serialization", () => {
+        test("should load BVH file and create skeleton with correct structure", async () => {
             const assertionData = await page.evaluate((bvhContent) => {
                 // Load the BVH file into a skeleton
                 const skeleton = BABYLON.BVH.ReadBvh(bvhContent);
@@ -59,11 +73,11 @@ describe("Babylon BVH Serializer", () => {
                 // Verify skeleton structure matches expected
                 const boneCount = skeleton.bones.length;
                 const animationCount = skeleton.animations.length;
-                
+
                 // Verify root bones exist
-                const rootBones = skeleton.bones.filter(bone => !bone.getParent());
+                const rootBones = skeleton.bones.filter((bone) => !bone.getParent());
                 const rootBoneCount = rootBones.length;
-                
+
                 // Verify animation range exists
                 const animationRange = skeleton.getAnimationRange("default");
                 const hasAnimationRange = animationRange !== null;
@@ -74,7 +88,7 @@ describe("Babylon BVH Serializer", () => {
                     animationCount,
                     rootBoneCount,
                     hasAnimationRange,
-                    frameCount
+                    frameCount,
                 };
             }, datasetBvhContent);
 
@@ -86,50 +100,50 @@ describe("Babylon BVH Serializer", () => {
             expect(assertionData.frameCount).toBeGreaterThan(0); // Will be determined by the actual file
         });
 
-        it("should export BVH with exact hierarchy structure matching fixture", async () => {
+        test("should export BVH with exact hierarchy structure matching fixture", async () => {
             const assertionData = await page.evaluate((bvhContent) => {
                 // Load the BVH file into a skeleton
                 const skeleton = BABYLON.BVH.ReadBvh(bvhContent);
 
                 // Export the skeleton back to BVH
                 const exportedBvh = BABYLON.BVHExporter.Export(skeleton, ["default"], 0.0333333);
-                
+
                 // Parse both original and exported BVH to compare structure
                 const parseHierarchy = (bvhText: string) => {
                     const lines = bvhText.split("\n");
                     const hierarchy: Array<{
-                        type: 'ROOT' | 'JOINT' | 'End Site';
+                        type: "ROOT" | "JOINT" | "End Site";
                         name: string;
                         level: number;
-                        offset?: {x: number, y: number, z: number};
+                        offset?: { x: number; y: number; z: number };
                         channels?: string[];
                     }> = [];
-                    
-                    let currentJoint = '';
-                    
+
+                    let currentJoint = "";
+
                     for (const line of lines) {
                         const trimmed = line.trim();
-                        const indent = line.length - line.replace(/^\s*/, '').length;
+                        const indent = line.length - line.replace(/^\s*/, "").length;
                         const level = Math.floor(indent / 4);
-                        
-                        if (trimmed.startsWith('ROOT')) {
+
+                        if (trimmed.startsWith("ROOT")) {
                             const name = trimmed.split(/\s+/)[1];
-                            hierarchy.push({ type: 'ROOT', name, level });
+                            hierarchy.push({ type: "ROOT", name, level });
                             currentJoint = name;
-                        } else if (trimmed.startsWith('JOINT')) {
+                        } else if (trimmed.startsWith("JOINT")) {
                             const name = trimmed.split(/\s+/)[1];
-                            hierarchy.push({ type: 'JOINT', name, level });
+                            hierarchy.push({ type: "JOINT", name, level });
                             currentJoint = name;
-                        } else if (trimmed.startsWith('End Site')) {
-                            hierarchy.push({ type: 'End Site', name: 'End Site', level });
-                            currentJoint = 'End Site';
-                        } else if (trimmed.startsWith('OFFSET')) {
-                            const values = trimmed.replace('OFFSET', '').trim().split(/\s+/);
+                        } else if (trimmed.startsWith("End Site")) {
+                            hierarchy.push({ type: "End Site", name: "End Site", level });
+                            currentJoint = "End Site";
+                        } else if (trimmed.startsWith("OFFSET")) {
+                            const values = trimmed.replace("OFFSET", "").trim().split(/\s+/);
                             if (values.length === 3) {
                                 const offset = {
                                     x: parseFloat(values[0]),
                                     y: parseFloat(values[1]),
-                                    z: parseFloat(values[2])
+                                    z: parseFloat(values[2]),
                                 };
                                 // Find the last joint and add offset
                                 for (let i = hierarchy.length - 1; i >= 0; i--) {
@@ -139,7 +153,7 @@ describe("Babylon BVH Serializer", () => {
                                     }
                                 }
                             }
-                        } else if (trimmed.startsWith('CHANNELS')) {
+                        } else if (trimmed.startsWith("CHANNELS")) {
                             const parts = trimmed.split(/\s+/);
                             const channelCount = parseInt(parts[1]);
                             const channels = parts.slice(2);
@@ -152,7 +166,7 @@ describe("Babylon BVH Serializer", () => {
                             }
                         }
                     }
-                    
+
                     return hierarchy;
                 };
 
@@ -164,30 +178,30 @@ describe("Babylon BVH Serializer", () => {
                     exportedHierarchy,
                     hierarchyMatch: originalHierarchy.length === exportedHierarchy.length,
                     jointCount: exportedHierarchy.length,
-                    originalJointCount: originalHierarchy.length
+                    originalJointCount: originalHierarchy.length,
                 };
             }, datasetBvhContent);
 
             // Verify hierarchy structure matches exactly
             expect(assertionData.hierarchyMatch).toBe(true);
             expect(assertionData.jointCount).toBe(assertionData.originalJointCount);
-            
+
             // Verify each joint matches in order
             for (let i = 0; i < assertionData.originalHierarchy.length; i++) {
                 const original = assertionData.originalHierarchy[i];
                 const exported = assertionData.exportedHierarchy[i];
-                
+
                 expect(exported.type).toBe(original.type);
                 expect(exported.name).toBe(original.name);
                 expect(exported.level).toBe(original.level);
-                
+
                 // Verify offset values with tolerance
                 if (original.offset && exported.offset) {
                     expect(Math.abs(exported.offset.x - original.offset.x)).toBeLessThan(0.001);
                     expect(Math.abs(exported.offset.y - original.offset.y)).toBeLessThan(0.001);
                     expect(Math.abs(exported.offset.z - original.offset.z)).toBeLessThan(0.001);
                 }
-                
+
                 // Verify channels match
                 if (original.channels && exported.channels) {
                     expect(exported.channels).toEqual(original.channels);
@@ -195,14 +209,14 @@ describe("Babylon BVH Serializer", () => {
             }
         });
 
-        it("should export skeleton to BVH with matching structure", async () => {
+        test("should export skeleton to BVH with matching structure", async () => {
             const assertionData = await page.evaluate((bvhContent) => {
                 // Load the BVH file into a skeleton
                 const skeleton = BABYLON.BVH.ReadBvh(bvhContent);
 
                 // Export the skeleton back to BVH format
                 const exportedBvh = BABYLON.BVHExporter.Export(skeleton, ["default"], 0.041667);
-                
+
                 // Parse the exported BVH to compare structure
                 const exportedData = BABYLON.BVH.ReadBvh(exportedBvh);
 
@@ -210,7 +224,7 @@ describe("Babylon BVH Serializer", () => {
                     exportedBvhLength: exportedBvh.length,
                     exportedBoneCount: exportedData.bones.length,
                     exportedAnimationCount: exportedData.animationNames.length,
-                    hasExportedAnimationRange: exportedData.getAnimationRange("default") !== null
+                    hasExportedAnimationRange: exportedData.getAnimationRange("default") !== null,
                 };
             }, datasetBvhContent);
 
@@ -221,14 +235,14 @@ describe("Babylon BVH Serializer", () => {
             expect(assertionData.hasExportedAnimationRange).toBe(true);
         });
 
-        it("should handle empty animation names by exporting all available animations", async () => {
+        test("should handle empty animation names by exporting all available animations", async () => {
             const assertionData = await page.evaluate((bvhContent) => {
                 // Load the BVH file into a skeleton
                 const skeleton = BABYLON.BVH.ReadBvh(bvhContent);
 
                 // Export the skeleton with empty animation names (should use all animations)
                 const exportedBvh = BABYLON.BVHExporter.Export(skeleton, [], 0.041667);
-                
+
                 // Parse the exported BVH to compare structure
                 const exportedData = BABYLON.BVH.ReadBvh(exportedBvh);
 
@@ -237,7 +251,7 @@ describe("Babylon BVH Serializer", () => {
                     exportedBoneCount: exportedData.bones.length,
                     exportedAnimationCount: exportedData.animationNames.length,
                     hasExportedAnimationRange: exportedData.getAnimationRange("default") !== null,
-                    skeletonAnimationCount: skeleton.animations.length
+                    skeletonAnimationCount: skeleton.animations.length,
                 };
             }, datasetBvhContent);
 
@@ -246,24 +260,24 @@ describe("Babylon BVH Serializer", () => {
             expect(assertionData.exportedBoneCount).toBeGreaterThan(0);
             expect(assertionData.exportedAnimationCount).toBeGreaterThan(0);
             expect(assertionData.hasExportedAnimationRange).toBe(true);
-            
+
             // Verify that the exporter handled empty animation names gracefully
             expect(assertionData.skeletonAnimationCount).toBeGreaterThan(0);
         });
 
-        it("should preserve exact joint hierarchy and names", async () => {
+        test("should preserve exact joint hierarchy and names", async () => {
             const assertionData = await page.evaluate((bvhContent) => {
                 // Load the BVH file into a skeleton
                 const skeleton = BABYLON.BVH.ReadBvh(bvhContent);
 
                 // Export the skeleton back to BVH
                 const exportedBvh = BABYLON.BVHExporter.Export(skeleton, ["default"], 0.0333333);
-                
+
                 // Extract joint names from exported BVH
                 const extractJointNames = (bvhText: string) => {
                     const lines = bvhText.split("\n");
                     const jointNames: string[] = [];
-                    
+
                     for (const line of lines) {
                         const trimmed = line.trim();
                         if (trimmed.startsWith("JOINT") || trimmed.startsWith("ROOT")) {
@@ -273,17 +287,17 @@ describe("Babylon BVH Serializer", () => {
                             jointNames.push("End Site");
                         }
                     }
-                    
+
                     return jointNames;
                 };
 
                 const exportedJointNames = extractJointNames(exportedBvh);
-                
+
                 // Extract joint names from original BVH for comparison
                 const extractOriginalJointNames = (bvhText: string) => {
                     const lines = bvhText.split("\n");
                     const jointNames: string[] = [];
-                    
+
                     for (const line of lines) {
                         const trimmed = line.trim();
                         if (trimmed.startsWith("JOINT") || trimmed.startsWith("ROOT")) {
@@ -293,7 +307,7 @@ describe("Babylon BVH Serializer", () => {
                             jointNames.push("End Site");
                         }
                     }
-                    
+
                     return jointNames;
                 };
 
@@ -304,28 +318,28 @@ describe("Babylon BVH Serializer", () => {
                     originalJointNames,
                     jointCount: exportedJointNames.length,
                     originalCount: originalJointNames.length,
-                    namesMatch: exportedJointNames.length === originalJointNames.length
+                    namesMatch: exportedJointNames.length === originalJointNames.length,
                 };
             }, datasetBvhContent);
 
             // Verify joint names match exactly
             expect(assertionData.jointCount).toBe(assertionData.originalCount);
             expect(assertionData.namesMatch).toBe(true);
-            
+
             // Verify each joint name matches in order
             for (let i = 0; i < assertionData.originalJointNames.length; i++) {
                 expect(assertionData.exportedJointNames[i]).toBe(assertionData.originalJointNames[i]);
             }
         });
 
-        it("should preserve exact channel definitions matching fixture", async () => {
+        test("should preserve exact channel definitions matching fixture", async () => {
             const assertionData = await page.evaluate((bvhContent) => {
                 // Load the BVH file into a skeleton
                 const skeleton = BABYLON.BVH.ReadBvh(bvhContent);
 
                 // Export the skeleton back to BVH
                 const exportedBvh = BABYLON.BVHExporter.Export(skeleton, ["default"], 0.0333333);
-                
+
                 // Parse channel definitions from both files
                 const parseChannelDefinitions = (bvhText: string) => {
                     const lines = bvhText.split("\n");
@@ -335,14 +349,14 @@ describe("Babylon BVH Serializer", () => {
                         channelTypes: string[];
                         fullDefinition: string;
                     }> = [];
-                    let currentJoint = '';
-                    
+                    let currentJoint = "";
+
                     for (const line of lines) {
                         const trimmed = line.trim();
-                        
-                        if (trimmed.startsWith('ROOT') || trimmed.startsWith('JOINT')) {
+
+                        if (trimmed.startsWith("ROOT") || trimmed.startsWith("JOINT")) {
                             currentJoint = trimmed.split(/\s+/)[1];
-                        } else if (trimmed.startsWith('CHANNELS')) {
+                        } else if (trimmed.startsWith("CHANNELS")) {
                             const parts = trimmed.split(/\s+/);
                             const channelCount = parseInt(parts[1]);
                             const channelTypes = parts.slice(2);
@@ -350,11 +364,11 @@ describe("Babylon BVH Serializer", () => {
                                 jointName: currentJoint,
                                 channelCount,
                                 channelTypes,
-                                fullDefinition: trimmed
+                                fullDefinition: trimmed,
                             });
                         }
                     }
-                    
+
                     return channels;
                 };
 
@@ -366,14 +380,14 @@ describe("Babylon BVH Serializer", () => {
                 for (let i = 0; i < Math.min(originalChannels.length, exportedChannels.length); i++) {
                     const original = originalChannels[i];
                     const exported = exportedChannels[i];
-                    
+
                     channelComparisons.push({
                         jointName: original.jointName,
                         original,
                         exported,
                         channelCountMatch: original.channelCount === exported.channelCount,
                         channelTypesMatch: JSON.stringify(original.channelTypes) === JSON.stringify(exported.channelTypes),
-                        fullDefinitionMatch: original.fullDefinition === exported.fullDefinition
+                        fullDefinitionMatch: original.fullDefinition === exported.fullDefinition,
                     });
                 }
 
@@ -382,87 +396,85 @@ describe("Babylon BVH Serializer", () => {
                     exportedChannels,
                     channelComparisons,
                     channelCountMatch: originalChannels.length === exportedChannels.length,
-                    allChannelsMatch: channelComparisons.every(comp => 
-                        comp.channelCountMatch && comp.channelTypesMatch
-                    )
+                    allChannelsMatch: channelComparisons.every((comp) => comp.channelCountMatch && comp.channelTypesMatch),
                 };
             }, datasetBvhContent);
 
             // Verify channel count matches
             expect(assertionData.channelCountMatch).toBe(true);
             expect(assertionData.exportedChannels.length).toBe(assertionData.originalChannels.length);
-            
+
             // Verify all channel definitions match
             expect(assertionData.allChannelsMatch).toBe(true);
-            
+
             // Verify specific channel definitions
-            assertionData.channelComparisons.forEach(comp => {
+            assertionData.channelComparisons.forEach((comp) => {
                 expect(comp.channelCountMatch).toBe(true);
                 expect(comp.channelTypesMatch).toBe(true);
                 expect(comp.exported.channelCount).toBe(comp.original.channelCount);
                 expect(comp.exported.channelTypes).toEqual(comp.original.channelTypes);
             });
-            
+
             // Verify expected channel structure from fixture
-            const rootChannels = assertionData.exportedChannels.find(ch => ch.jointName === 'joint_Root');
+            const rootChannels = assertionData.exportedChannels.find((ch) => ch.jointName === "joint_Root");
             expect(rootChannels).toBeDefined();
             expect(rootChannels!.channelCount).toBe(6);
-            expect(rootChannels!.channelTypes).toEqual(['Xposition', 'Yposition', 'Zposition', 'Zrotation', 'Xrotation', 'Yrotation']);
+            expect(rootChannels!.channelTypes).toEqual(["Xposition", "Yposition", "Zposition", "Zrotation", "Xrotation", "Yrotation"]);
         });
 
-        it("should preserve bone offsets with precise values matching fixture", async () => {
+        test("should preserve bone offsets with precise values matching fixture", async () => {
             const assertionData = await page.evaluate((bvhContent) => {
                 // Load the BVH file into a skeleton
                 const skeleton = BABYLON.BVH.ReadBvh(bvhContent);
 
                 // Export the skeleton back to BVH
                 const exportedBvh = BABYLON.BVHExporter.Export(skeleton, ["default"], 0.0333333);
-                
+
                 // Extract offset values from both files
                 const extractOffsetValues = (bvhText: string) => {
                     const lines = bvhText.split("\n");
-                    const offsets: Array<{jointName: string, x: number, y: number, z: number}> = [];
-                    let currentJoint = '';
-                    
+                    const offsets: Array<{ jointName: string; x: number; y: number; z: number }> = [];
+                    let currentJoint = "";
+
                     for (const line of lines) {
                         const trimmed = line.trim();
-                        
-                        if (trimmed.startsWith('ROOT') || trimmed.startsWith('JOINT')) {
+
+                        if (trimmed.startsWith("ROOT") || trimmed.startsWith("JOINT")) {
                             const parts = trimmed.split(/\s+/);
                             if (parts.length >= 2) {
                                 currentJoint = parts[1];
                             }
-                        } else if (trimmed.startsWith('End Site')) {
-                            currentJoint = 'End Site';
-                        } else if (trimmed.startsWith('OFFSET')) {
-                            const offsetValues = trimmed.replace('OFFSET', '').trim().split(/\s+/);
+                        } else if (trimmed.startsWith("End Site")) {
+                            currentJoint = "End Site";
+                        } else if (trimmed.startsWith("OFFSET")) {
+                            const offsetValues = trimmed.replace("OFFSET", "").trim().split(/\s+/);
                             if (offsetValues.length === 3 && currentJoint) {
                                 offsets.push({
                                     jointName: currentJoint,
                                     x: parseFloat(offsetValues[0]),
                                     y: parseFloat(offsetValues[1]),
-                                    z: parseFloat(offsetValues[2])
+                                    z: parseFloat(offsetValues[2]),
                                 });
                             }
                         }
                     }
-                    
+
                     return offsets;
                 };
 
                 const originalOffsets = extractOffsetValues(bvhContent);
                 const exportedOffsets = extractOffsetValues(exportedBvh);
-                
+
                 // Compare offsets with tolerance
                 const offsetComparisons = [];
                 for (let i = 0; i < Math.min(originalOffsets.length, exportedOffsets.length); i++) {
                     const original = originalOffsets[i];
                     const exported = exportedOffsets[i];
-                    
+
                     const xDiff = Math.abs(exported.x - original.x);
                     const yDiff = Math.abs(exported.y - original.y);
                     const zDiff = Math.abs(exported.z - original.z);
-                    
+
                     offsetComparisons.push({
                         jointName: original.jointName,
                         original: original,
@@ -470,7 +482,7 @@ describe("Babylon BVH Serializer", () => {
                         xDiff,
                         yDiff,
                         zDiff,
-                        withinTolerance: xDiff < 0.001 && yDiff < 0.001 && zDiff < 0.001
+                        withinTolerance: xDiff < 0.001 && yDiff < 0.001 && zDiff < 0.001,
                     });
                 }
 
@@ -479,28 +491,26 @@ describe("Babylon BVH Serializer", () => {
                     exportedOffsets,
                     offsetComparisons,
                     offsetCountMatch: originalOffsets.length === exportedOffsets.length,
-                    allWithinTolerance: offsetComparisons.every(comp => comp.withinTolerance),
-                    maxDifference: Math.max(...offsetComparisons.map(comp => 
-                        Math.max(comp.xDiff, comp.yDiff, comp.zDiff)
-                    ))
+                    allWithinTolerance: offsetComparisons.every((comp) => comp.withinTolerance),
+                    maxDifference: Math.max(...offsetComparisons.map((comp) => Math.max(comp.xDiff, comp.yDiff, comp.zDiff))),
                 };
             }, datasetBvhContent);
 
             // Verify offset count matches
             expect(assertionData.offsetCountMatch).toBe(true);
             expect(assertionData.exportedOffsets.length).toBe(assertionData.originalOffsets.length);
-            
+
             // Verify all offsets are within tolerance
             expect(assertionData.allWithinTolerance).toBe(true);
             expect(assertionData.maxDifference).toBeLessThan(0.001);
-            
+
             // Verify specific known offsets from fixture
-            const rootOffset = assertionData.exportedOffsets.find(offset => offset.jointName === 'joint_Root');
+            const rootOffset = assertionData.exportedOffsets.find((offset) => offset.jointName === "joint_Root");
             expect(rootOffset).toBeDefined();
             expect(rootOffset!.x).toBeCloseTo(0, 3);
             expect(rootOffset!.y).toBeCloseTo(0, 3);
             expect(rootOffset!.z).toBeCloseTo(0, 3);
-            
+
             // Verify first few offsets match exactly
             for (let i = 0; i < Math.min(5, assertionData.offsetComparisons.length); i++) {
                 const comp = assertionData.offsetComparisons[i];
@@ -511,14 +521,14 @@ describe("Babylon BVH Serializer", () => {
             }
         });
 
-        it("should preserve exact motion data structure matching fixture", async () => {
+        test("should preserve exact motion data structure matching fixture", async () => {
             const assertionData = await page.evaluate((bvhContent) => {
                 // Load the BVH file into a skeleton
                 const skeleton = BABYLON.BVH.ReadBvh(bvhContent);
 
                 // Export the skeleton back to BVH with exact same frame rate as fixture
                 const exportedBvh = BABYLON.BVHExporter.Export(skeleton, ["default"], 0.0333333);
-                
+
                 // Parse motion data from both files
                 const parseMotionData = (bvhText: string) => {
                     const lines = bvhText.split("\n");
@@ -526,55 +536,55 @@ describe("Babylon BVH Serializer", () => {
                     let frames = 0;
                     let frameTime = 0;
                     const frameDataLines: string[] = [];
-                    
+
                     for (const line of lines) {
                         const trimmed = line.trim();
-                        
-                        if (trimmed === 'MOTION') {
+
+                        if (trimmed === "MOTION") {
                             inMotion = true;
                             continue;
                         }
-                        
+
                         if (inMotion) {
-                            if (trimmed.startsWith('Frames:')) {
+                            if (trimmed.startsWith("Frames:")) {
                                 frames = parseInt(trimmed.split(/\s+/)[1]);
-                            } else if (trimmed.startsWith('Frame Time:')) {
+                            } else if (trimmed.startsWith("Frame Time:")) {
                                 frameTime = parseFloat(trimmed.split(/\s+/)[2]);
                             } else if (trimmed.match(/^-?\d+\.\d+/)) {
                                 frameDataLines.push(trimmed);
                             }
                         }
                     }
-                    
+
                     return { frames, frameTime, frameDataLines };
                 };
 
                 const originalMotion = parseMotionData(bvhContent);
                 const exportedMotion = parseMotionData(exportedBvh);
-                
+
                 // Parse channel definitions
                 const parseChannelDefinitions = (bvhText: string) => {
                     const lines = bvhText.split("\n");
-                    const channels: Array<{jointName: string, channelCount: number, channelTypes: string[]}> = [];
-                    let currentJoint = '';
-                    
+                    const channels: Array<{ jointName: string; channelCount: number; channelTypes: string[] }> = [];
+                    let currentJoint = "";
+
                     for (const line of lines) {
                         const trimmed = line.trim();
-                        
-                        if (trimmed.startsWith('ROOT') || trimmed.startsWith('JOINT')) {
+
+                        if (trimmed.startsWith("ROOT") || trimmed.startsWith("JOINT")) {
                             currentJoint = trimmed.split(/\s+/)[1];
-                        } else if (trimmed.startsWith('CHANNELS')) {
+                        } else if (trimmed.startsWith("CHANNELS")) {
                             const parts = trimmed.split(/\s+/);
                             const channelCount = parseInt(parts[1]);
                             const channelTypes = parts.slice(2);
                             channels.push({
                                 jointName: currentJoint,
                                 channelCount,
-                                channelTypes
+                                channelTypes,
                             });
                         }
                     }
-                    
+
                     return channels;
                 };
 
@@ -583,12 +593,12 @@ describe("Babylon BVH Serializer", () => {
 
                 // Calculate total expected values per frame
                 const totalChannels = originalChannels.reduce((sum, ch) => sum + ch.channelCount, 0);
-                
+
                 // Verify first frame data structure
                 let firstFrameValues: number[] = [];
                 if (exportedMotion.frameDataLines.length > 0) {
                     const firstFrame = exportedMotion.frameDataLines[0];
-                    firstFrameValues = firstFrame.split(/\s+/).map(v => parseFloat(v));
+                    firstFrameValues = firstFrame.split(/\s+/).map((v) => parseFloat(v));
                 }
 
                 return {
@@ -601,7 +611,7 @@ describe("Babylon BVH Serializer", () => {
                     frameCountMatch: originalMotion.frames === exportedMotion.frames,
                     frameTimeMatch: Math.abs(originalMotion.frameTime - exportedMotion.frameTime) < 0.0001,
                     channelCountMatch: originalChannels.length === exportedChannels.length,
-                    frameDataCountMatch: originalMotion.frameDataLines.length === exportedMotion.frameDataLines.length
+                    frameDataCountMatch: originalMotion.frameDataLines.length === exportedMotion.frameDataLines.length,
                 };
             }, datasetBvhContent);
 
@@ -610,64 +620,62 @@ describe("Babylon BVH Serializer", () => {
             expect(assertionData.frameTimeMatch).toBe(true);
             expect(assertionData.channelCountMatch).toBe(true);
             expect(assertionData.frameDataCountMatch).toBe(true);
-            
+
             // Verify frame count and time are correct
             expect(assertionData.exportedMotion.frames).toBe(195); // From fixture
             expect(assertionData.exportedMotion.frameTime).toBeCloseTo(0.0333333, 6);
-            
+
             // Verify channel definitions match exactly
             for (let i = 0; i < assertionData.originalChannels.length; i++) {
                 const original = assertionData.originalChannels[i];
                 const exported = assertionData.exportedChannels[i];
-                
+
                 expect(exported.jointName).toBe(original.jointName);
                 expect(exported.channelCount).toBe(original.channelCount);
                 expect(exported.channelTypes).toEqual(original.channelTypes);
             }
-            
+
             // Verify first frame has correct number of values
             expect(assertionData.firstFrameValues.length).toBe(assertionData.totalChannels);
-            
+
             // Verify all frame data lines have correct number of values
-            assertionData.exportedMotion.frameDataLines.forEach(frameLine => {
+            assertionData.exportedMotion.frameDataLines.forEach((frameLine) => {
                 const values = frameLine.split(/\s+/);
                 expect(values.length).toBe(assertionData.totalChannels);
             });
         });
 
-        it("should mark first bone as ROOT in exported BVH", async () => {
+        test("should mark first bone as ROOT in exported BVH", async () => {
             const assertionData = await page.evaluate((bvhContent) => {
                 // Load the BVH file into a skeleton
                 const skeleton = BABYLON.BVH.ReadBvh(bvhContent);
 
                 // Export the skeleton back to BVH
                 const exportedBvh = BABYLON.BVHExporter.Export(skeleton, ["default"], 0.0333333);
-                
+
                 // Parse the hierarchy to find the first bone
-                const lines = exportedBvh.split('\n');
-                let firstBoneLine = '';
-                let firstBoneType = '';
-                let firstBoneName = '';
-                
+                const lines = exportedBvh.split("\n");
+                let firstBoneLine = "";
+                let firstBoneType = "";
+                let firstBoneName = "";
+
                 for (const line of lines) {
                     const trimmed = line.trim();
-                    if (trimmed.startsWith('ROOT') || trimmed.startsWith('JOINT')) {
+                    if (trimmed.startsWith("ROOT") || trimmed.startsWith("JOINT")) {
                         firstBoneLine = trimmed;
                         firstBoneType = trimmed.split(/\s+/)[0];
                         firstBoneName = trimmed.split(/\s+/)[1];
                         break;
                     }
                 }
-                
+
                 // Count ROOT vs JOINT occurrences
-                const rootCount = lines.filter(line => line.trim().startsWith('ROOT')).length;
-                const jointCount = lines.filter(line => line.trim().startsWith('JOINT')).length;
-                
+                const rootCount = lines.filter((line) => line.trim().startsWith("ROOT")).length;
+                const jointCount = lines.filter((line) => line.trim().startsWith("JOINT")).length;
+
                 // Verify the structure matches the original
-                const originalLines = bvhContent.split('\n');
-                const originalFirstBoneLine = originalLines.find(line => 
-                    line.trim().startsWith('ROOT') || line.trim().startsWith('JOINT')
-                ) || '';
+                const originalLines = bvhContent.split("\n");
+                const originalFirstBoneLine = originalLines.find((line) => line.trim().startsWith("ROOT") || line.trim().startsWith("JOINT")) || "";
                 const originalFirstBoneType = originalFirstBoneLine.split(/\s+/)[0];
                 const originalFirstBoneName = originalFirstBoneLine.split(/\s+/)[1];
 
@@ -679,78 +687,78 @@ describe("Babylon BVH Serializer", () => {
                     jointCount,
                     originalFirstBoneType,
                     originalFirstBoneName,
-                    isFirstBoneRoot: firstBoneType === 'ROOT',
-                    matchesOriginal: firstBoneType === originalFirstBoneType && firstBoneName === originalFirstBoneName
+                    isFirstBoneRoot: firstBoneType === "ROOT",
+                    matchesOriginal: firstBoneType === originalFirstBoneType && firstBoneName === originalFirstBoneName,
                 };
             }, datasetBvhContent);
 
             // Verify first bone is marked as ROOT
             expect(assertionData.isFirstBoneRoot).toBe(true);
-            expect(assertionData.firstBoneType).toBe('ROOT');
-            expect(assertionData.firstBoneName).toBe('joint_Root'); // From fixture
-            
+            expect(assertionData.firstBoneType).toBe("ROOT");
+            expect(assertionData.firstBoneName).toBe("joint_Root"); // From fixture
+
             // Verify it matches the original structure
             expect(assertionData.matchesOriginal).toBe(true);
-            expect(assertionData.originalFirstBoneType).toBe('ROOT');
-            
+            expect(assertionData.originalFirstBoneType).toBe("ROOT");
+
             // Verify we have exactly one ROOT bone
             expect(assertionData.rootCount).toBe(1);
             expect(assertionData.jointCount).toBeGreaterThan(0);
         });
 
-        it("should preserve end sites with correct structure and placement", async () => {
+        test("should preserve end sites with correct structure and placement", async () => {
             const assertionData = await page.evaluate((bvhContent) => {
                 // Load the BVH file into a skeleton
                 const skeleton = BABYLON.BVH.ReadBvh(bvhContent);
 
                 // Export the skeleton back to BVH
                 const exportedBvh = BABYLON.BVHExporter.Export(skeleton, ["default"], 0.0333333);
-                
+
                 // Parse end sites from both files
                 const parseEndSites = (bvhText: string) => {
                     const lines = bvhText.split("\n");
                     const endSites: Array<{
                         name: string;
                         level: number;
-                        offset?: {x: number, y: number, z: number};
+                        offset?: { x: number; y: number; z: number };
                         parentJoint?: string;
                     }> = [];
-                    
+
                     let currentLevel = 0;
-                    let currentJoint = '';
-                    let parentJoint = '';
-                    
+                    let currentJoint = "";
+                    let parentJoint = "";
+
                     for (let i = 0; i < lines.length; i++) {
                         const line = lines[i];
                         const trimmed = line.trim();
-                        const indent = line.length - line.replace(/^\s*/, '').length;
+                        const indent = line.length - line.replace(/^\s*/, "").length;
                         const level = Math.floor(indent / 4);
-                        
-                        if (trimmed.startsWith('ROOT') || trimmed.startsWith('JOINT')) {
+
+                        if (trimmed.startsWith("ROOT") || trimmed.startsWith("JOINT")) {
                             currentJoint = trimmed.split(/\s+/)[1];
                             parentJoint = currentJoint;
-                        } else if (trimmed.startsWith('End Site')) {
+                        } else if (trimmed.startsWith("End Site")) {
                             endSites.push({
-                                name: 'End Site',
+                                name: "End Site",
                                 level,
-                                parentJoint: currentJoint
+                                parentJoint: currentJoint,
                             });
-                        } else if (trimmed.startsWith('OFFSET') && endSites.length > 0) {
+                        } else if (trimmed.startsWith("OFFSET") && endSites.length > 0) {
                             // Check if this offset belongs to the last end site
                             const lastEndSite = endSites[endSites.length - 1];
                             if (lastEndSite && !lastEndSite.offset) {
-                                const values = trimmed.replace('OFFSET', '').trim().split(/\s+/);
+                                const values = trimmed.replace("OFFSET", "").trim().split(/\s+/);
                                 if (values.length === 3) {
                                     lastEndSite.offset = {
                                         x: parseFloat(values[0]),
                                         y: parseFloat(values[1]),
-                                        z: parseFloat(values[2])
+                                        z: parseFloat(values[2]),
                                     };
                                 }
                             }
                         }
                     }
-                    
+
                     return endSites;
                 };
 
@@ -762,7 +770,7 @@ describe("Babylon BVH Serializer", () => {
                     exportedEndSites,
                     endSiteCountMatch: originalEndSites.length === exportedEndSites.length,
                     endSiteCount: exportedEndSites.length,
-                    originalEndSiteCount: originalEndSites.length
+                    originalEndSiteCount: originalEndSites.length,
                 };
             }, datasetBvhContent);
 
@@ -770,27 +778,27 @@ describe("Babylon BVH Serializer", () => {
             expect(assertionData.endSiteCountMatch).toBe(true);
             expect(assertionData.endSiteCount).toBe(assertionData.originalEndSiteCount);
             expect(assertionData.endSiteCount).toBeGreaterThan(0);
-            
+
             // Verify each end site has correct structure
-            assertionData.exportedEndSites.forEach(endSite => {
-                expect(endSite.name).toBe('End Site');
+            assertionData.exportedEndSites.forEach((endSite) => {
+                expect(endSite.name).toBe("End Site");
                 expect(endSite.level).toBeGreaterThan(0); // End sites should be nested
                 expect(endSite.parentJoint).toBeDefined();
                 expect(endSite.offset).toBeDefined();
-                expect(typeof endSite.offset!.x).toBe('number');
-                expect(typeof endSite.offset!.y).toBe('number');
-                expect(typeof endSite.offset!.z).toBe('number');
+                expect(typeof endSite.offset!.x).toBe("number");
+                expect(typeof endSite.offset!.y).toBe("number");
+                expect(typeof endSite.offset!.z).toBe("number");
             });
         });
 
-        it("should export multiple keyframes with proper animation data", async () => {
+        test("should export multiple keyframes with proper animation data", async () => {
             const assertionData = await page.evaluate((bvhContent) => {
                 // Load the BVH file into a skeleton
                 const skeleton = BABYLON.BVH.ReadBvh(bvhContent);
 
                 // Export the skeleton back to BVH
                 const exportedBvh = BABYLON.BVHExporter.Export(skeleton, ["default"], 0.0333333);
-                
+
                 // Parse motion data from exported BVH
                 const parseMotionData = (bvhText: string) => {
                     const lines = bvhText.split("\n");
@@ -798,60 +806,60 @@ describe("Babylon BVH Serializer", () => {
                     let frames = 0;
                     let frameTime = 0;
                     const frameDataLines: string[] = [];
-                    
+
                     for (const line of lines) {
                         const trimmed = line.trim();
-                        
-                        if (trimmed === 'MOTION') {
+
+                        if (trimmed === "MOTION") {
                             inMotion = true;
                             continue;
                         }
-                        
+
                         if (inMotion) {
-                            if (trimmed.startsWith('Frames:')) {
+                            if (trimmed.startsWith("Frames:")) {
                                 frames = parseInt(trimmed.split(/\s+/)[1]);
-                            } else if (trimmed.startsWith('Frame Time:')) {
+                            } else if (trimmed.startsWith("Frame Time:")) {
                                 frameTime = parseFloat(trimmed.split(/\s+/)[2]);
                             } else if (trimmed.match(/^-?\d+\.\d+/)) {
                                 frameDataLines.push(trimmed);
                             }
                         }
                     }
-                    
+
                     return { frames, frameTime, frameDataLines };
                 };
 
                 const motionData = parseMotionData(exportedBvh);
-                
+
                 // Parse channel definitions to calculate expected values per frame
                 const parseChannels = (bvhText: string) => {
                     const lines = bvhText.split("\n");
                     let totalChannels = 0;
-                    
+
                     for (const line of lines) {
                         const trimmed = line.trim();
-                        if (trimmed.startsWith('CHANNELS')) {
+                        if (trimmed.startsWith("CHANNELS")) {
                             const parts = trimmed.split(/\s+/);
                             const channelCount = parseInt(parts[1]);
                             totalChannels += channelCount;
                         }
                     }
-                    
+
                     return totalChannels;
                 };
 
                 const totalChannels = parseChannels(exportedBvh);
-                
+
                 // Analyze first few frames for data consistency
                 const frameAnalysis = [];
                 for (let i = 0; i < Math.min(5, motionData.frameDataLines.length); i++) {
                     const frameLine = motionData.frameDataLines[i];
-                    const values = frameLine.split(/\s+/).map(v => parseFloat(v));
+                    const values = frameLine.split(/\s+/).map((v) => parseFloat(v));
                     frameAnalysis.push({
                         frameIndex: i,
                         valueCount: values.length,
-                        hasValidNumbers: values.every(v => !isNaN(v)),
-                        sampleValues: values.slice(0, 6) // First 6 values as sample
+                        hasValidNumbers: values.every((v) => !isNaN(v)),
+                        sampleValues: values.slice(0, 6), // First 6 values as sample
                     });
                 }
 
@@ -861,94 +869,94 @@ describe("Babylon BVH Serializer", () => {
                     frameAnalysis,
                     hasMultipleFrames: motionData.frames > 1,
                     frameCountMatches: motionData.frames === motionData.frameDataLines.length,
-                    allFramesValid: frameAnalysis.every(f => f.hasValidNumbers && f.valueCount === totalChannels)
+                    allFramesValid: frameAnalysis.every((f) => f.hasValidNumbers && f.valueCount === totalChannels),
                 };
             }, datasetBvhContent);
 
             // Verify we have multiple frames
             expect(assertionData.hasMultipleFrames).toBe(true);
             expect(assertionData.motionData.frames).toBe(195); // From fixture
-            
+
             // Verify frame count matches data lines
             expect(assertionData.frameCountMatches).toBe(true);
-            
+
             // Verify all frames have correct number of values
             expect(assertionData.allFramesValid).toBe(true);
-            
+
             // Verify frame time is correct
             expect(assertionData.motionData.frameTime).toBeCloseTo(0.0333333, 6);
-            
+
             // Verify we have reasonable number of channels
             expect(assertionData.totalChannels).toBeGreaterThan(0);
-            
+
             // Verify first few frames have valid data
-            assertionData.frameAnalysis.forEach(frame => {
+            assertionData.frameAnalysis.forEach((frame) => {
                 expect(frame.hasValidNumbers).toBe(true);
                 expect(frame.valueCount).toBe(assertionData.totalChannels);
             });
         });
 
-        it("should handle animation keyframe interpolation correctly", async () => {
+        test("should handle animation keyframe interpolation correctly", async () => {
             const assertionData = await page.evaluate((bvhContent) => {
                 // Load the BVH file into a skeleton
                 const skeleton = BABYLON.BVH.ReadBvh(bvhContent);
 
                 // Export the skeleton back to BVH
                 const exportedBvh = BABYLON.BVHExporter.Export(skeleton, ["default"], 0.0333333);
-                
+
                 // Parse frame data and analyze value changes
-                const lines = exportedBvh.split('\n');
-                const motionIndex = lines.findIndex(line => line.trim() === "MOTION");
+                const lines = exportedBvh.split("\n");
+                const motionIndex = lines.findIndex((line) => line.trim() === "MOTION");
                 const frameDataLines = lines.slice(motionIndex + 3); // Skip MOTION, Frames, Frame Time
-                
+
                 // Analyze value changes between frames
                 const valueChanges = [];
                 for (let i = 0; i < Math.min(10, frameDataLines.length - 1); i++) {
-                    const currentFrame = frameDataLines[i].split(/\s+/).map(v => parseFloat(v));
-                    const nextFrame = frameDataLines[i + 1].split(/\s+/).map(v => parseFloat(v));
-                    
+                    const currentFrame = frameDataLines[i].split(/\s+/).map((v) => parseFloat(v));
+                    const nextFrame = frameDataLines[i + 1].split(/\s+/).map((v) => parseFloat(v));
+
                     const changes = currentFrame.map((val, idx) => Math.abs(val - nextFrame[idx]));
                     const maxChange = Math.max(...changes);
                     const avgChange = changes.reduce((sum, change) => sum + change, 0) / changes.length;
-                    
+
                     valueChanges.push({
                         framePair: `${i}-${i + 1}`,
                         maxChange,
                         avgChange,
-                        hasVariation: maxChange > 0.001
+                        hasVariation: maxChange > 0.001,
                     });
                 }
 
                 // Check for smooth transitions (not all values should be identical)
-                const hasVariation = valueChanges.some(change => change.hasVariation);
+                const hasVariation = valueChanges.some((change) => change.hasVariation);
                 const totalVariation = valueChanges.reduce((sum, change) => sum + change.avgChange, 0);
-                
+
                 return {
                     valueChanges,
                     hasVariation,
                     totalVariation,
                     frameCount: frameDataLines.length,
-                    sampleChanges: valueChanges.slice(0, 3)
+                    sampleChanges: valueChanges.slice(0, 3),
                 };
             }, datasetBvhContent);
 
             // Verify we have frame data
             expect(assertionData.frameCount).toBeGreaterThan(0);
-            
+
             // Verify there's variation in the data (not all static)
             expect(assertionData.hasVariation).toBe(true);
-            
+
             // Verify reasonable amount of variation
             expect(assertionData.totalVariation).toBeGreaterThan(0);
-            
+
             // Verify sample changes show proper animation data
-            assertionData.sampleChanges.forEach(change => {
+            assertionData.sampleChanges.forEach((change) => {
                 expect(change.maxChange).toBeGreaterThanOrEqual(0);
                 expect(change.avgChange).toBeGreaterThanOrEqual(0);
             });
         });
 
-        it("should preserve animation timing and frame rate accuracy", async () => {
+        test("should preserve animation timing and frame rate accuracy", async () => {
             const assertionData = await page.evaluate((bvhContent) => {
                 // Load the BVH file into a skeleton
                 const skeleton = BABYLON.BVH.ReadBvh(bvhContent);
@@ -956,21 +964,20 @@ describe("Babylon BVH Serializer", () => {
                 // Export with specific frame rate
                 const testFrameRate = 0.041667; // 24 FPS
                 const exportedBvh = BABYLON.BVHExporter.Export(skeleton, ["default"], testFrameRate);
-                
+
                 // Parse frame rate from exported BVH
-                const lines = exportedBvh.split('\n');
-                const frameTimeLine = lines.find(line => line.trim().startsWith('Frame Time:'));
-                const exportedFrameRate = frameTimeLine ? parseFloat(frameTimeLine.split(':')[1].trim()) : 0;
-                
+                const lines = exportedBvh.split("\n");
+                const frameTimeLine = lines.find((line) => line.trim().startsWith("Frame Time:"));
+                const exportedFrameRate = frameTimeLine ? parseFloat(frameTimeLine.split(":")[1].trim()) : 0;
+
                 // Calculate expected frame count based on animation range
                 const animationRange = skeleton.getAnimationRange("default");
-                const expectedFrameCount = animationRange ? 
-                    Math.floor((animationRange.to - animationRange.from) / testFrameRate) + 1 : 0;
-                
+                const expectedFrameCount = animationRange ? Math.floor((animationRange.to - animationRange.from) / testFrameRate) + 1 : 0;
+
                 // Parse actual frame count
-                const framesLine = lines.find(line => line.trim().startsWith('Frames:'));
-                const actualFrameCount = framesLine ? parseInt(framesLine.split(':')[1].trim()) : 0;
-                
+                const framesLine = lines.find((line) => line.trim().startsWith("Frames:"));
+                const actualFrameCount = framesLine ? parseInt(framesLine.split(":")[1].trim()) : 0;
+
                 return {
                     exportedFrameRate,
                     testFrameRate,
@@ -978,24 +985,26 @@ describe("Babylon BVH Serializer", () => {
                     expectedFrameCount,
                     frameRateMatch: Math.abs(exportedFrameRate - testFrameRate) < 0.0001,
                     hasAnimationRange: !!animationRange,
-                    animationRange: animationRange ? {
-                        from: animationRange.from,
-                        to: animationRange.to,
-                        duration: animationRange.to - animationRange.from
-                    } : null
+                    animationRange: animationRange
+                        ? {
+                              from: animationRange.from,
+                              to: animationRange.to,
+                              duration: animationRange.to - animationRange.from,
+                          }
+                        : null,
                 };
             }, datasetBvhContent);
 
             // Verify frame rate is preserved
             expect(assertionData.frameRateMatch).toBe(true);
             expect(assertionData.exportedFrameRate).toBeCloseTo(assertionData.testFrameRate, 6);
-            
+
             // Verify we have animation range
             expect(assertionData.hasAnimationRange).toBe(true);
-            
+
             // Verify frame count is reasonable
             expect(assertionData.actualFrameCount).toBeGreaterThan(0);
-            
+
             // If we have animation range, verify frame count calculation
             if (assertionData.animationRange) {
                 expect(assertionData.actualFrameCount).toBeGreaterThanOrEqual(assertionData.expectedFrameCount - 1);
@@ -1003,55 +1012,55 @@ describe("Babylon BVH Serializer", () => {
             }
         });
 
-        it("should validate keyframe data structure and animation values", async () => {
+        test("should validate keyframe data structure and animation values", async () => {
             const assertionData = await page.evaluate((bvhContent) => {
                 // Load the BVH file into a skeleton
                 const skeleton = BABYLON.BVH.ReadBvh(bvhContent);
 
                 // Export the skeleton back to BVH
                 const exportedBvh = BABYLON.BVHExporter.Export(skeleton, ["default"], 0.0333333);
-                
+
                 // Parse and validate keyframe data
-                const lines = exportedBvh.split('\n');
-                const motionIndex = lines.findIndex(line => line.trim() === "MOTION");
+                const lines = exportedBvh.split("\n");
+                const motionIndex = lines.findIndex((line) => line.trim() === "MOTION");
                 const frameDataLines = lines.slice(motionIndex + 3); // Skip MOTION, Frames, Frame Time
-                
+
                 // Extract channel information
                 const channelInfo = [];
                 for (let i = 0; i < motionIndex; i++) {
                     const line = lines[i].trim();
-                    if (line.startsWith('CHANNELS')) {
+                    if (line.startsWith("CHANNELS")) {
                         const parts = line.split(/\s+/);
                         const channelCount = parseInt(parts[1]);
                         const channelTypes = parts.slice(2);
                         channelInfo.push({
                             channelCount,
                             channelTypes,
-                            hasPosition: channelTypes.includes('Xposition'),
-                            hasRotation: channelTypes.includes('Zrotation')
+                            hasPosition: channelTypes.includes("Xposition"),
+                            hasRotation: channelTypes.includes("Zrotation"),
                         });
                     }
                 }
-                
+
                 const totalChannels = channelInfo.reduce((sum, ch) => sum + ch.channelCount, 0);
-                
+
                 // Validate frame data structure
                 const frameValidation = [];
                 for (let i = 0; i < Math.min(10, frameDataLines.length); i++) {
                     const frameLine = frameDataLines[i];
-                    const values = frameLine.split(/\s+/).map(v => parseFloat(v));
-                    
+                    const values = frameLine.split(/\s+/).map((v) => parseFloat(v));
+
                     // Check for position values (first 3 values of each bone with position channels)
                     const positionValues = [];
                     const rotationValues = [];
-                    
+
                     let valueIndex = 0;
                     for (const chInfo of channelInfo) {
                         if (chInfo.hasPosition) {
                             positionValues.push({
                                 x: values[valueIndex],
                                 y: values[valueIndex + 1],
-                                z: values[valueIndex + 2]
+                                z: values[valueIndex + 2],
                             });
                             valueIndex += 3;
                         }
@@ -1059,39 +1068,40 @@ describe("Babylon BVH Serializer", () => {
                             rotationValues.push({
                                 z: values[valueIndex],
                                 x: values[valueIndex + 1],
-                                y: values[valueIndex + 2]
+                                y: values[valueIndex + 2],
                             });
                             valueIndex += 3;
                         }
                     }
-                    
+
                     frameValidation.push({
                         frameIndex: i,
                         valueCount: values.length,
                         positionValues,
                         rotationValues,
-                        hasValidNumbers: values.every(v => !isNaN(v) && isFinite(v)),
-                        positionRange: positionValues.length > 0 ? {
-                            minX: Math.min(...positionValues.map(p => p.x)),
-                            maxX: Math.max(...positionValues.map(p => p.x)),
-                            minY: Math.min(...positionValues.map(p => p.y)),
-                            maxY: Math.max(...positionValues.map(p => p.y)),
-                            minZ: Math.min(...positionValues.map(p => p.z)),
-                            maxZ: Math.max(...positionValues.map(p => p.z))
-                        } : null
+                        hasValidNumbers: values.every((v) => !isNaN(v) && isFinite(v)),
+                        positionRange:
+                            positionValues.length > 0
+                                ? {
+                                      minX: Math.min(...positionValues.map((p) => p.x)),
+                                      maxX: Math.max(...positionValues.map((p) => p.x)),
+                                      minY: Math.min(...positionValues.map((p) => p.y)),
+                                      maxY: Math.max(...positionValues.map((p) => p.y)),
+                                      minZ: Math.min(...positionValues.map((p) => p.z)),
+                                      maxZ: Math.max(...positionValues.map((p) => p.z)),
+                                  }
+                                : null,
                     });
                 }
-                
+
                 // Check for reasonable value ranges
-                const allFramesValid = frameValidation.every(f => f.hasValidNumbers && f.valueCount === totalChannels);
-                const hasReasonableRanges = frameValidation.every(f => {
+                const allFramesValid = frameValidation.every((f) => f.hasValidNumbers && f.valueCount === totalChannels);
+                const hasReasonableRanges = frameValidation.every((f) => {
                     if (!f.positionRange) return true;
                     const range = f.positionRange;
-                    return Math.abs(range.maxX - range.minX) < 1000 && 
-                           Math.abs(range.maxY - range.minY) < 1000 && 
-                           Math.abs(range.maxZ - range.minZ) < 1000;
+                    return Math.abs(range.maxX - range.minX) < 1000 && Math.abs(range.maxY - range.minY) < 1000 && Math.abs(range.maxZ - range.minZ) < 1000;
                 });
-                
+
                 return {
                     channelInfo,
                     totalChannels,
@@ -1099,59 +1109,59 @@ describe("Babylon BVH Serializer", () => {
                     allFramesValid,
                     hasReasonableRanges,
                     frameCount: frameDataLines.length,
-                    sampleFrame: frameValidation[0]
+                    sampleFrame: frameValidation[0],
                 };
             }, datasetBvhContent);
 
             // Verify channel information is correct
             expect(assertionData.channelInfo.length).toBeGreaterThan(0);
             expect(assertionData.totalChannels).toBeGreaterThan(0);
-            
+
             // Verify all frames have valid data structure
             expect(assertionData.allFramesValid).toBe(true);
-            
+
             // Verify reasonable value ranges
             expect(assertionData.hasReasonableRanges).toBe(true);
-            
+
             // Verify frame count
             expect(assertionData.frameCount).toBeGreaterThan(0);
-            
+
             // Verify sample frame has expected structure
             expect(assertionData.sampleFrame).toBeDefined();
             expect(assertionData.sampleFrame.hasValidNumbers).toBe(true);
             expect(assertionData.sampleFrame.valueCount).toBe(assertionData.totalChannels);
-            
+
             // Verify we have both position and rotation data
-            const hasPositionChannels = assertionData.channelInfo.some(ch => ch.hasPosition);
-            const hasRotationChannels = assertionData.channelInfo.some(ch => ch.hasRotation);
+            const hasPositionChannels = assertionData.channelInfo.some((ch) => ch.hasPosition);
+            const hasRotationChannels = assertionData.channelInfo.some((ch) => ch.hasRotation);
             expect(hasPositionChannels).toBe(true);
             expect(hasRotationChannels).toBe(true);
         });
 
-        it("should produce BVH file with identical structure to input", async () => {
+        test("should produce BVH file with identical structure to input", async () => {
             const assertionData = await page.evaluate((bvhContent) => {
                 // Load the BVH file into a skeleton
                 const skeleton = BABYLON.BVH.ReadBvh(bvhContent);
 
                 // Export the skeleton back to BVH
                 const exportedBvh = BABYLON.BVHExporter.Export(skeleton, ["default"], 0.0333333);
-                
+
                 // Verify exported BVH has correct sections
                 const hasHierarchy = exportedBvh.includes("HIERARCHY");
                 const hasMotion = exportedBvh.includes("MOTION");
                 const hasRoot = exportedBvh.includes("ROOT");
                 const hasJoint = exportedBvh.includes("JOINT");
                 const hasEndSite = exportedBvh.includes("End Site");
-                
+
                 // Verify file structure
-                const lines = exportedBvh.split('\n');
+                const lines = exportedBvh.split("\n");
                 const lineCount = lines.length;
-                
+
                 // Verify hierarchy section comes before motion section
-                const hierarchyIndex = lines.findIndex(line => line.trim() === "HIERARCHY");
-                const motionIndex = lines.findIndex(line => line.trim() === "MOTION");
+                const hierarchyIndex = lines.findIndex((line) => line.trim() === "HIERARCHY");
+                const motionIndex = lines.findIndex((line) => line.trim() === "MOTION");
                 const hierarchyBeforeMotion = hierarchyIndex !== -1 && motionIndex !== -1 && hierarchyIndex < motionIndex;
-                
+
                 // Verify proper formatting
                 const hasFrames = exportedBvh.includes("Frames:");
                 const hasFrameTime = exportedBvh.includes("Frame Time:");
@@ -1166,7 +1176,7 @@ describe("Babylon BVH Serializer", () => {
                     lineCount,
                     hierarchyBeforeMotion,
                     hasFrames,
-                    hasFrameTime
+                    hasFrameTime,
                 };
             }, datasetBvhContent);
 
@@ -1176,13 +1186,13 @@ describe("Babylon BVH Serializer", () => {
             expect(assertionData.hasRoot).toBe(true);
             expect(assertionData.hasJoint).toBe(true);
             expect(assertionData.hasEndSite).toBe(true);
-            
+
             // Verify file structure matches expected
             expect(assertionData.lineCount).toBeGreaterThan(50); // Should have substantial content
             expect(assertionData.hierarchyBeforeMotion).toBe(true);
             expect(assertionData.hasFrames).toBe(true);
             expect(assertionData.hasFrameTime).toBe(true);
-            
+
             // Verify exported BVH has similar length (allowing for minor formatting differences)
             const lengthRatio = assertionData.exportedBvhLength / datasetBvhContent.length;
             expect(lengthRatio).toBeGreaterThan(0.8);

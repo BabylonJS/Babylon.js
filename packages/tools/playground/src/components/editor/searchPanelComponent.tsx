@@ -3,7 +3,7 @@
 import * as React from "react";
 import { useEffect } from "react";
 import * as monaco from "monaco-editor/esm/vs/editor/editor.api";
-import { debounce } from "ts-debounce";
+import { debounce } from "../../tools/debounce";
 import RegexIcon from "./icons/regex.svg";
 import WholeWordIcon from "./icons/wholeWord.svg";
 import CaseSensitiveIcon from "./icons/caseSensitive.svg";

@@ -1180,7 +1180,7 @@ export class StandardMaterial extends StandardMaterialBase {
                 "logarithmicDepthConstant",
                 "vTangentSpaceParams",
                 "alphaCutOff",
-                "boneTextureWidth",
+                "boneTextureInfo",
                 "morphTargetTextureInfo",
                 "morphTargetTextureIndices",
                 "cameraInfo",

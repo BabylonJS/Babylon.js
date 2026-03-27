@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 const path = require("path");
 const fs = require("fs");
 const exec = require("child_process").exec;
@@ -16,19 +17,35 @@ function runCommand(command) {
     });
 }
 
+// Maps package directory names (under packages/dev/ or packages/tools/) to changelog
+// section headers. Multiple directories can map to the same friendly name and will be
+// grouped into a single section. Directories not listed here are excluded from the changelog.
 const friendlyNames = {
+    // packages/dev (published to npm)
     core: "Core",
     gui: "GUI",
     loaders: "Loaders",
     serializers: "Serializers",
     materials: "Materials",
-    postProcess: "Post-Process",
+    postProcesses: "Post Processes",
     proceduralTextures: "Procedural Textures",
-    inspector: "Inspector",
+    "inspector-v2": "Inspector",
+    addons: "Addons",
+    smartFilters: "Smart Filters",
+    smartFilterBlocks: "Smart Filters",
+    lottiePlayer: "Lottie Player",
+    // packages/tools (published to npm or deployed as public web apps)
     nodeEditor: "Node Editor",
-    guiEditor: "GUI Editor",
+    nodeGeometryEditor: "Node Geometry Editor",
+    nodeParticleEditor: "Node Particle Editor",
+    nodeRenderGraphEditor: "Node Render Graph Editor",
+    guiEditor: "GUI",
     playground: "Playground",
+    sandbox: "Sandbox",
     viewer: "Viewer",
+    "viewer-configurator": "Viewer",
+    smartFiltersEditor: "Smart Filters",
+    smartFiltersEditorControl: "Smart Filters",
 };
 
 const tagNames = {
@@ -174,14 +191,18 @@ async function generateChangelog(nextVersion) {
 function generateVersionMarkdown(versionPackages) {
     let markdown = "";
     const sortedPackages = Object.keys(versionPackages).sort();
-    sortedPackages.forEach((pck) => {
-        const prettyPackage = friendlyNames[pck];
+    sortedPackages.forEach((prettyPackage) => {
+        const visiblePRs = versionPackages[prettyPackage].filter((pr) => {
+            const tags = pr.tags ?? [];
+            return tags.indexOf(skipChangelogTag) === -1;
+        });
+        if (visiblePRs.length === 0) {
+            return;
+        }
         markdown += `\n### ${prettyPackage}\n\n`;
-        versionPackages[pck].forEach((pr) => {
-            if (pr.tags && pr.tags.indexOf(skipChangelogTag) !== -1) {
-                return;
-            }
-            const tag = pr.tags.find((tag) => {
+        visiblePRs.forEach((pr) => {
+            const tags = pr.tags ?? [];
+            const tag = tags.find((tag) => {
                 return tagNames[tag];
             });
             markdown += `- ${pr.title} - ${tag ? `[_${tagNames[tag]}_] ` : ""}by [${pr.author.name}](${pr.author.url}) ([#${
@@ -211,15 +232,18 @@ function generateMarkdown(finalChangelog) {
     versions.forEach((version) => {
         versionChangelog[version] = {};
         finalChangelog[version].forEach((pr) => {
-            // what package was influenced by that change?
+            // Categorize the PR by which packages its changed files belong to.
+            // File paths from the GitHub API look like "packages/{dev|tools}/<package>/...",
+            // so parts[2] extracts the package directory name (e.g. "core", "viewer").
+            // Map to friendly names so that multiple directories sharing the same
+            // friendly name (e.g. smartFilters + smartFilterBlocks → "Smart Filters")
+            // are grouped into a single changelog section.
             const packageInfluenced = pr.files
                 .map((file) => {
                     const parts = file.split("/");
-                    return parts[2];
+                    return friendlyNames[parts[2]];
                 })
-                .filter((pck) => {
-                    return friendlyNames[pck];
-                });
+                .filter(Boolean);
             const packagesSet = new Set(packageInfluenced);
             packagesSet.forEach((pck) => {
                 versionChangelog[version][pck] = versionChangelog[version][pck] || [];

@@ -32,9 +32,16 @@ export class FlowGraphSignalConnection extends FlowGraphConnection<FlowGraphExec
     }
 
     /**
+     * Timestamp of the last activation (set on output signals when they fire).
+     * @internal
+     */
+    public _lastActivationTime: number = -1;
+
+    /**
      * @internal
      */
     public _activateSignal(context: FlowGraphContext): void {
+        this._lastActivationTime = performance.now();
         context.logger?.addLogItem({
             action: FlowGraphAction.ActivateSignal,
             className: this._ownerBlock.getClassName(),
@@ -45,8 +52,14 @@ export class FlowGraphSignalConnection extends FlowGraphConnection<FlowGraphExec
             },
         });
         if (this.connectionType === FlowGraphConnectionType.Input) {
+            // Check breakpoint before executing
+            if (context._shouldBreak(this._ownerBlock, this)) {
+                return; // Execution paused — stored as pending activation
+            }
             context._notifyExecuteNode(this._ownerBlock);
+            const startTime = performance.now();
             this._ownerBlock._execute(context, this);
+            this._ownerBlock._lastExecutionTime = performance.now() - startTime;
             context._increaseExecutionId();
         } else {
             for (const connectedPoint of this._connectedPoint) {

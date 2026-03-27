@@ -991,10 +991,13 @@ export class EdgesRenderer implements IEdgesRenderer {
                     let offset = 0;
 
                     for (let i = 0; i < instanceCount; ++i) {
-                        this.customInstances.data[i].copyToArray(instanceStorage.instancesData, offset);
-                        instanceStorage.instancesData[offset + 12] -= floatingOriginOffset.x;
-                        instanceStorage.instancesData[offset + 13] -= floatingOriginOffset.y;
-                        instanceStorage.instancesData[offset + 14] -= floatingOriginOffset.z;
+                        const instanceMatrix = this.customInstances.data[i];
+                        instanceMatrix.copyToArray(instanceStorage.instancesData, offset);
+                        // Subtract from Float64 source to preserve precision at large coordinates.
+                        const instanceM = instanceMatrix.asArray();
+                        instanceStorage.instancesData[offset + 12] = instanceM[12] - floatingOriginOffset.x;
+                        instanceStorage.instancesData[offset + 13] = instanceM[13] - floatingOriginOffset.y;
+                        instanceStorage.instancesData[offset + 14] = instanceM[14] - floatingOriginOffset.z;
                         offset += 16;
                     }
 

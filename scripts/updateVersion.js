@@ -25,6 +25,30 @@ const updateEngineVersion = async (version) => {
     fs.writeFileSync(abstractEngineFile, newAbstractEngineData);
 };
 
+const updateCdnVersion = (version) => {
+    // Update Tools._CdnVersion in core so CDN URLs are versioned at runtime
+    const toolsFile = path.join(baseDirectory, "packages", "dev", "core", "src", "Misc", "tools.ts");
+    const toolsData = fs.readFileSync(toolsFile, "utf-8");
+    const newToolsData = toolsData.replace(/static _CdnVersion = "(.*)"/, `static _CdnVersion = "${version}"`);
+    if (newToolsData === toolsData) {
+        console.warn("Warning: Could not find Tools._CdnVersion to update");
+    } else {
+        fs.writeFileSync(toolsFile, newToolsData);
+        console.log(`Updated Tools._CdnVersion to "${version}"`);
+    }
+
+    // Update Transcoder.CdnVersion in ktx2Decoder so CDN URLs are versioned at runtime
+    const transcoderFile = path.join(baseDirectory, "packages", "tools", "ktx2Decoder", "src", "transcoder.ts");
+    const transcoderData = fs.readFileSync(transcoderFile, "utf-8");
+    const newTranscoderData = transcoderData.replace(/static CdnVersion = "(.*)"/, `static CdnVersion = "${version}"`);
+    if (newTranscoderData === transcoderData) {
+        console.warn("Warning: Could not find Transcoder.CdnVersion to update");
+    } else {
+        fs.writeFileSync(transcoderFile, newTranscoderData);
+        console.log(`Updated Transcoder.CdnVersion to "${version}"`);
+    }
+};
+
 const updateSinceTag = (version) => {
     // get all typescript files in the dev folder
     const files = glob.globSync(path.join(baseDirectory, "packages", "dev", "**", "*.ts").replace(/\\/g, "/"));
@@ -164,6 +188,8 @@ async function main() {
     updatePackages(version);
     // update engine version
     await updateEngineVersion(version);
+    // update CDN version in Tools and ktx2Decoder
+    updateCdnVersion(version);
     // generate changelog
     const latestVersionMarkdown = await generateChangelog(version);
     // write release notes for the GitHub Release task

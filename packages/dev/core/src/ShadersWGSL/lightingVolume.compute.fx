@@ -49,7 +49,7 @@ fn updateFarPlaneVertices(@builtin(global_invocation_id) global_id : vec3u) {
 
 @compute @workgroup_size(32, 1, 1)
 fn updatePlaneVertices(@builtin(global_invocation_id) global_id : vec3u) {
-    _ = shadowMap;
+    _ = textureDimensions(shadowMap);
 
     let uindex = global_id.x;
     let index = f32(uindex);

@@ -71,6 +71,8 @@ export class WebGL2ParticleSystem implements IGPUParticleSystemPlatform {
                 "height",
                 "coneAngle",
                 "stopFactor",
+                "emitIndex",
+                "emitCount",
                 "angleRange",
                 "radiusRange",
                 "cellInfos",

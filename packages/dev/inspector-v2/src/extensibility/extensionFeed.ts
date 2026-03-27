@@ -20,6 +20,11 @@ export type PersonMetadata = {
      * The Babylon forum username of the person.
      */
     readonly forumUserName?: string;
+
+    /**
+     * A base64 encoded PNG image to use as the person's avatar.
+     */
+    readonly avatar?: string;
 };
 
 export type ExtensionMetadata = {

@@ -566,18 +566,7 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
                     }
                 }
                 // straight ray is still the main ray, but disabling the straight line will force parabolic line.
-                if (this.parabolicRayEnabled && !hitPossible) {
-                    // radius compensation according to pointer rotation around X
-                    const xRotation = controllerData.xrController.pointer.rotationQuaternion!.toEulerAngles().x;
-                    const compensation = 1 + (Math.PI / 2 - Math.abs(xRotation));
-                    // check parabolic ray
-                    const radius = this.parabolicCheckRadius * compensation;
-                    this._tmpRay.origin.addToRef(this._tmpRay.direction.scale(radius * 2), this._tmpVector);
-                    this._tmpVector.y = this._tmpRay.origin.y;
-                    this._tmpRay.origin.addInPlace(this._tmpRay.direction.scale(radius));
-                    this._tmpVector.subtractToRef(this._tmpRay.origin, this._tmpRay.direction);
-                    this._tmpRay.direction.normalize();
-
+                if (this.parabolicRayEnabled && !hitPossible && this._buildParabolicRay(this._tmpRay, this._tmpVector)) {
                     const pick = scene.pickWithRay(this._tmpRay, (o) => {
                         if (this._options.blockerMeshesPredicate && this._options.blockerMeshesPredicate(o)) {
                             return true;
@@ -1041,6 +1030,50 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
                 this._selectionFeature.detach();
             }
         }
+    }
+
+    /**
+     * Computes the parabolic ray origin and direction for teleportation.
+     * The effective radius scales with the horizontal component of the controller direction,
+     * so pointing more vertically results in shorter landing distances.
+     * Note: the actual landing distance also depends on controller height above the floor;
+     * `parabolicCheckRadius` controls the forward offset, not a strict max ground distance.
+     * Modifies the ray in place — the new origin serves as both the raycast start
+     * and the Bezier control point for the visual arc.
+     * @param ray - The controller ray (origin at controller, direction is forward). Modified in place.
+     * @param tmpVector - Pre-allocated temporary vector for computation. Modified in place.
+     * @returns true if the parabolic ray was computed, false if direction is too vertical
+     */
+    private _buildParabolicRay(ray: Ray, tmpVector: Vector3): boolean {
+        const dir = ray.direction;
+        const horizontalLengthSq = dir.x * dir.x + dir.z * dir.z;
+        const horizontalLength = Math.sqrt(horizontalLengthSq);
+
+        // Skip if pointing almost straight up or down — no meaningful horizontal reach
+        if (horizontalLength < 0.01) {
+            return false;
+        }
+
+        // Effective radius scales with horizontal component of direction.
+        // Pointing horizontally (horizontalLength ~ 1) gives full reach.
+        // Pointing up (horizontalLength ~ 0) gives minimal reach.
+        const effectiveRadius = this.parabolicCheckRadius * horizontalLength;
+
+        // Place "air point" at effectiveRadius forward in controller direction, then flatten Y.
+        // This represents the far ground-level target the ray angles toward.
+        dir.scaleToRef(effectiveRadius, tmpVector);
+        tmpVector.addInPlace(ray.origin);
+        tmpVector.y = ray.origin.y;
+
+        // Move ray origin forward by half the effective radius along controller direction.
+        // This elevated midpoint serves as both the raycast start and the Bezier control point.
+        dir.scaleAndAddToRef(effectiveRadius * 0.5, ray.origin);
+
+        // Direction from the new origin toward the air point (angled downward)
+        tmpVector.subtractToRef(ray.origin, ray.direction);
+        ray.direction.normalize();
+
+        return true;
     }
 
     private _disposeBezierCurve() {
