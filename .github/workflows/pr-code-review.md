@@ -1,7 +1,7 @@
 ---
 on:
   pull_request:
-    types: [opened, synchronize]
+    types: [opened, synchronize, ready_for_review]
 if: github.repository == 'BabylonJS/Babylon.js'
 description: "AI-powered code review for every PR using Claude Opus 4.6"
 engine:
