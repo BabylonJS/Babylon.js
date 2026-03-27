@@ -554,7 +554,9 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
                     let cumOffset = part0Count;
                     for (let pi = 0; pi < this._partProxies.length; pi++) {
                         const proxy = this._partProxies[pi];
-                        if (!proxy?.proxiedMesh) continue;
+                        if (!proxy?.proxiedMesh) {
+                            continue;
+                        }
                         const srcData = proxy.proxiedMesh._splatsData ?? null;
                         srcUBufs[pi] = srcData ? new Uint8Array(srcData) : null;
                         srcFBufs[pi] = srcData ? new Float32Array(srcData) : null;
