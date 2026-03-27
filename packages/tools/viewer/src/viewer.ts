@@ -1633,8 +1633,18 @@ export class Viewer implements IDisposable {
 
         // Detect SPZ files and set the appropriate plugin extension and options.
         if (!options?.pluginExtension) {
-            const sourceName = typeof source === "string" ? source : source instanceof File ? source.name : undefined;
-            if (sourceName?.toLowerCase().endsWith(".spz")) {
+            let isSpz = false;
+            if (typeof source === "string") {
+                const extension = GetExtensionFromUrl(source);
+                if (extension && extension.toLowerCase() === ".spz") {
+                    isSpz = true;
+                }
+            } else if (source instanceof File) {
+                if (source.name.toLowerCase().endsWith(".spz")) {
+                    isSpz = true;
+                }
+            }
+            if (isSpz) {
                 options = options ?? {};
                 options.pluginExtension = ".spz";
             }
