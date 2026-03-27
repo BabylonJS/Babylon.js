@@ -1666,8 +1666,9 @@ export class Viewer implements IDisposable {
                         },
                     },
                 },
-                // SPZ files are in RUB convention; flipY skips the loader's default coordinate conversion
-                // so the viewer can rely on the data being Y-up as-is.
+                // SPZ files are authored in RUB (Y-up) convention. SPLATFileLoader normally inverts Y
+                // when flipY is falsy, so we set flipY: true here to prevent that default inversion and
+                // keep the content Y-up as authored.
                 ...(options?.pluginExtension === ".spz" ? { splat: { flipY: true } } : {}),
             },
         };
