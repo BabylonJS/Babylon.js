@@ -23,7 +23,7 @@
 #
 # AI-powered code review for every PR using Claude Opus 4.6
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"8f027e7418ac7b6fcaa92b928076f581707edad16ae5ee76498c541684f0317e"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"3a053a5804bc7ecc2dd6f515072e44273e2f18d21ad81f05a7065d2a171e9b9b"}
 
 name: "Babylon.js PR Code Review"
 "on":
@@ -44,7 +44,8 @@ jobs:
   activation:
     needs: pre_activation
     if: >
-      (needs.pre_activation.outputs.activated == 'true') && ((github.event_name != 'pull_request') || (github.event.pull_request.head.repo.id == github.repository_id))
+      (needs.pre_activation.outputs.activated == 'true') && ((github.repository == 'BabylonJS/Babylon.js') &&
+      ((github.event_name != 'pull_request') || (github.event.pull_request.head.repo.id == github.repository_id)))
     runs-on: ubuntu-slim
     permissions:
       contents: read
@@ -1095,7 +1096,8 @@ jobs:
           if-no-files-found: ignore
 
   pre_activation:
-    if: (github.event_name != 'pull_request') || (github.event.pull_request.head.repo.id == github.repository_id)
+    if: >
+      (github.repository == 'BabylonJS/Babylon.js') && ((github.event_name != 'pull_request') || (github.event.pull_request.head.repo.id == github.repository_id))
     runs-on: ubuntu-slim
     outputs:
       activated: ${{ steps.check_membership.outputs.is_team_member == 'true' }}
