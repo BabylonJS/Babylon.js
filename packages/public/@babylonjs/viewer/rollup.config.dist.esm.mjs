@@ -50,7 +50,7 @@ const minConfig = {
         entryFileNames: "babylon-viewer.esm.min.js",
         chunkFileNames: "chunks/[name]-[hash].esm.min.js",
     },
-    plugins: [...commonConfig.plugins, Sonda({ open: false, filename: "viewer-bundle-report.html" }), terser(), minifyTemplateLiterals()],
+    plugins: [Sonda({ open: false, filename: "viewer-bundle-report.html" }), ...commonConfig.plugins, terser(), minifyTemplateLiterals()],
 };
 
 export default [maxConfig, minConfig];
