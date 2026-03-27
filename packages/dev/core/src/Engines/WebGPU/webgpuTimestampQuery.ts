@@ -111,13 +111,13 @@ export class WebGPUDurationMeasure {
     }
 
     public start(encoder: GPUCommandEncoder): void {
-        (encoder as any).writeTimestamp?.(this._querySet.querySet, 0);
+        encoder.writeTimestamp?.(this._querySet.querySet, 0);
     }
 
     public async stop(encoder: GPUCommandEncoder): Promise<number | null> {
-        (encoder as any).writeTimestamp?.(this._querySet.querySet, 1);
+        encoder.writeTimestamp?.(this._querySet.querySet, 1);
 
-        return (encoder as any).writeTimestamp ? await this._querySet.readTwoValuesAndSubtract(0) : 0;
+        return encoder.writeTimestamp ? await this._querySet.readTwoValuesAndSubtract(0) : 0;
     }
 
     public startPass(descriptor: GPURenderPassDescriptor | GPUComputePassDescriptor, index: number): void {
