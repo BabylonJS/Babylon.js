@@ -34,6 +34,7 @@
         "nx": "^22.5.4",
         "prettier": "^3.0.3",
         "rimraf": "^6.1.3",
+        "rollup-plugin-dts": "^6.4.1",
         "serialize-javascript": "7.0.4",
         "ts-node": "~10.9.0",
         "tslib": "^2.4.0",
@@ -131,6 +132,33 @@
         "typescript-eslint": "^8.56.1",
         "@rollup/plugin-commonjs": {
             "glob": "^13.0.6"
+        },
+        "@typescript-eslint/eslint-plugin": {
+            "typescript": "$typescript"
+        },
+        "@typescript-eslint/parser": {
+            "typescript": "$typescript"
+        },
+        "@typescript-eslint/typescript-estree": {
+            "typescript": "$typescript"
+        },
+        "@typescript-eslint/utils": {
+            "typescript": "$typescript"
+        },
+        "@typescript-eslint/type-utils": {
+            "typescript": "$typescript"
+        },
+        "@typescript-eslint/project-service": {
+            "typescript": "$typescript"
+        },
+        "@typescript-eslint/tsconfig-utils": {
+            "typescript": "$typescript"
+        },
+        "typedoc": {
+            "typescript": "$typescript"
+        },
+        "react-refresh-typescript": {
+            "typescript": "$typescript"
         }
     }
 }

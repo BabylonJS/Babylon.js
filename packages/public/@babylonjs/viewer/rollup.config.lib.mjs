@@ -1,15 +1,27 @@
 import typescript from "@rollup/plugin-typescript";
 import { dts } from "rollup-plugin-dts";
 import { nodeResolve } from "@rollup/plugin-node-resolve";
-import alias from "@rollup/plugin-alias";
 
-// Aliases to map dev package names to their public @babylonjs/ equivalents.
-// Previously this was handled by ts-patch during TypeScript compilation;
-// now we do it at the rollup level.
-const devToPublicAliases = [
-    { find: "core", replacement: "@babylonjs/core" },
-    { find: "loaders", replacement: "@babylonjs/loaders" },
-];
+// Map dev package names to their public @babylonjs/ equivalents.
+const devPackageMap = {
+    core: "@babylonjs/core",
+    loaders: "@babylonjs/loaders",
+};
+
+// Custom plugin to rewrite bare dev package imports to @babylonjs/ scoped packages
+function rewriteDevImports() {
+    return {
+        name: "rewrite-dev-imports",
+        resolveId(source) {
+            for (const [pkg, replacement] of Object.entries(devPackageMap)) {
+                if (source === pkg || source.startsWith(pkg + "/")) {
+                    return { id: replacement + source.slice(pkg.length), external: true };
+                }
+            }
+            return null;
+        },
+    };
+}
 
 // Append .js extension to @babylonjs/ subpath imports for ESM compatibility
 const appendJsToExternalPaths = (id) => {
@@ -33,11 +45,7 @@ const jsConfig = {
         exports: "named",
         paths: appendJsToExternalPaths,
     },
-    plugins: [
-        alias({ entries: devToPublicAliases }),
-        typescript({ tsconfig: "tsconfig.build.lib.json" }),
-        nodeResolve({ mainFields: ["browser", "module", "main"] }),
-    ],
+    plugins: [rewriteDevImports(), typescript({ tsconfig: "tsconfig.build.lib.json" }), nodeResolve({ mainFields: ["browser", "module", "main"] })],
     onwarn(warning, warn) {
         // Treat all warnings as errors.
         throw new Error(warning.message);
@@ -51,10 +59,7 @@ const dtsConfig = {
         format: "es",
         paths: appendJsToExternalPaths,
     },
-    plugins: [
-        alias({ entries: devToPublicAliases }),
-        dts({ tsconfig: "tsconfig.build.lib.json" }),
-    ],
+    plugins: [rewriteDevImports(), dts({ tsconfig: "tsconfig.build.lib.json" })],
 };
 
 export default [jsConfig, dtsConfig];

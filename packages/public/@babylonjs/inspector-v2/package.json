@@ -23,7 +23,7 @@
         "build": "npm run clean && npm run bundle",
         "clean": "rimraf lib && rimraf dist && rimraf *.tsbuildinfo -g",
         "bundle": "npm run bundle:lib",
-        "bundle:lib": "rollup -c rollup.config.lib.mjs",
+        "bundle:lib": "node --max-old-space-size=16384 ../../../../node_modules/.bin/rollup -c rollup.config.lib.mjs",
         "pack": "npm run build && npm pack"
     },
     "peerDependencies": {

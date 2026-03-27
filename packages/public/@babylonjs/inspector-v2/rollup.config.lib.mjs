@@ -5,17 +5,33 @@ import commonjs from "@rollup/plugin-commonjs";
 import alias from "@rollup/plugin-alias";
 import path from "path";
 
-// Aliases to map dev package names to their public @babylonjs/ equivalents.
-// Previously this was handled by ts-patch during TypeScript compilation;
-// now we do it at the rollup level.
-const devToPublicAliases = [
-    { find: "core", replacement: "@babylonjs/core" },
-    { find: "gui", replacement: "@babylonjs/gui" },
-    { find: "loaders", replacement: "@babylonjs/loaders" },
-    { find: "materials", replacement: "@babylonjs/materials" },
-    { find: "addons", replacement: "@babylonjs/addons" },
-    { find: "shared-ui-components", replacement: path.resolve("../../../dev/sharedUiComponents/src") },
-];
+// Map dev package names to their public @babylonjs/ equivalents.
+// Must be ordered longest-first to prevent prefix collisions (e.g. gui vs gui-editor).
+const devPackageMap = {
+    "gui-editor": "@babylonjs/gui-editor",
+    "shared-ui-components": null, // handled by alias plugin below
+    serializers: "@babylonjs/serializers",
+    materials: "@babylonjs/materials",
+    loaders: "@babylonjs/loaders",
+    addons: "@babylonjs/addons",
+    core: "@babylonjs/core",
+    gui: "@babylonjs/gui",
+};
+
+// Custom plugin to rewrite bare dev package imports to @babylonjs/ scoped packages
+function rewriteDevImports() {
+    return {
+        name: "rewrite-dev-imports",
+        resolveId(source) {
+            for (const [pkg, replacement] of Object.entries(devPackageMap)) {
+                if (replacement && (source === pkg || source.startsWith(pkg + "/"))) {
+                    return { id: replacement + source.slice(pkg.length), external: true };
+                }
+            }
+            return null;
+        },
+    };
+}
 
 // Append .js extension to @babylonjs/ subpath imports for ESM compatibility
 const appendJsToExternalPaths = (id) => {
@@ -62,7 +78,8 @@ const jsConfig = {
         paths: appendJsToExternalPaths,
     },
     plugins: [
-        alias({ entries: devToPublicAliases }),
+        rewriteDevImports(),
+        alias({ entries: [{ find: "shared-ui-components", replacement: path.resolve("../../../dev/sharedUiComponents/src") }] }),
         typescript({ tsconfig: "tsconfig.build.lib.json" }),
         nodeResolve({ mainFields: ["browser", "module", "main"] }),
         commonjs(),
@@ -81,7 +98,8 @@ const dtsConfig = {
         paths: appendJsToExternalPaths,
     },
     plugins: [
-        alias({ entries: devToPublicAliases }),
+        rewriteDevImports(),
+        alias({ entries: [{ find: "shared-ui-components", replacement: path.resolve("../../../dev/sharedUiComponents/src") }] }),
         dts({ tsconfig: "tsconfig.build.lib.json" }),
     ],
 };
