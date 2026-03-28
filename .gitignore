@@ -37,6 +37,7 @@ playwright/.cache/
 .playwright-cli
 .nx
 .DS_Store
+.eslintcache
 
 # generated Smart Filter block TS files
 **/*.block.ts
@@ -48,3 +49,6 @@ packages/public/@babylonjs/smart-filters-blocks/src
 # Smart Filters Editor files
 packages/tools/smartFiltersEditor/www/scripts/**
 packages/tools/smartFiltersEditor/www/index.html
+
+# Sonda bundle analysis reports
+.sonda/

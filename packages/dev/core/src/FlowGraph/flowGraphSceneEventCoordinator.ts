@@ -47,6 +47,9 @@ export class FlowGraphSceneEventCoordinator {
     private _sceneOnBeforeRenderObserver: Nullable<Observer<Scene>>;
     private _meshPickedObserver: Nullable<Observer<PointerInfo>>;
     private _meshUnderPointerObserver: Nullable<Observer<{ mesh: Nullable<AbstractMesh>; pointerId: number }>>;
+    private _pointerDownObserver: Nullable<Observer<PointerInfo>>;
+    private _pointerUpObserver: Nullable<Observer<PointerInfo>>;
+    private _pointerMoveObserver: Nullable<Observer<PointerInfo>>;
     private _pointerUnderMeshState: { [pointerId: number]: Nullable<AbstractMesh> } = {};
 
     private _startingTime: number = 0;
@@ -57,7 +60,7 @@ export class FlowGraphSceneEventCoordinator {
     }
 
     private _initialize() {
-        this._sceneReadyObserver = this._scene.onReadyObservable.add(() => {
+        this._sceneReadyObserver = this._scene.onReadyObservable.addOnce(() => {
             if (!this.sceneReadyTriggered) {
                 this.onEventTriggeredObservable.notifyObservers({ type: FlowGraphEventType.SceneReady });
                 this.sceneReadyTriggered = true;
@@ -82,6 +85,18 @@ export class FlowGraphSceneEventCoordinator {
         this._meshPickedObserver = this._scene.onPointerObservable.add((pointerInfo) => {
             this.onEventTriggeredObservable.notifyObservers({ type: FlowGraphEventType.MeshPick, payload: pointerInfo });
         }, PointerEventTypes.POINTERPICK); // should it be pointerdown?
+
+        this._pointerDownObserver = this._scene.onPointerObservable.add((pointerInfo) => {
+            this.onEventTriggeredObservable.notifyObservers({ type: FlowGraphEventType.PointerDown, payload: pointerInfo });
+        }, PointerEventTypes.POINTERDOWN);
+
+        this._pointerUpObserver = this._scene.onPointerObservable.add((pointerInfo) => {
+            this.onEventTriggeredObservable.notifyObservers({ type: FlowGraphEventType.PointerUp, payload: pointerInfo });
+        }, PointerEventTypes.POINTERUP);
+
+        this._pointerMoveObserver = this._scene.onPointerObservable.add((pointerInfo) => {
+            this.onEventTriggeredObservable.notifyObservers({ type: FlowGraphEventType.PointerMove, payload: pointerInfo });
+        }, PointerEventTypes.POINTERMOVE);
 
         this._meshUnderPointerObserver = this._scene.onMeshUnderPointerUpdatedObservable.add((data) => {
             // check if the data has changed. Check the state of the last change and see if it is a mesh or null.
@@ -109,6 +124,9 @@ export class FlowGraphSceneEventCoordinator {
         this._sceneOnBeforeRenderObserver?.remove();
         this._meshPickedObserver?.remove();
         this._meshUnderPointerObserver?.remove();
+        this._pointerDownObserver?.remove();
+        this._pointerUpObserver?.remove();
+        this._pointerMoveObserver?.remove();
         this.onEventTriggeredObservable.clear();
     }
 }

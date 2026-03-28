@@ -242,6 +242,10 @@ export function blockFactory(blockName: FlowGraphBlockNames | string): () => Pro
             return async () => (await import("./Data/Math/flowGraphMathCombineExtractBlocks")).FlowGraphCombineVector4Block;
         case FlowGraphBlockNames.CombineMatrix:
             return async () => (await import("./Data/Math/flowGraphMathCombineExtractBlocks")).FlowGraphCombineMatrixBlock;
+        case FlowGraphBlockNames.CombineMatrix2D:
+            return async () => (await import("./Data/Math/flowGraphMathCombineExtractBlocks")).FlowGraphCombineMatrix2DBlock;
+        case FlowGraphBlockNames.CombineMatrix3D:
+            return async () => (await import("./Data/Math/flowGraphMathCombineExtractBlocks")).FlowGraphCombineMatrix3DBlock;
         case FlowGraphBlockNames.ExtractVector2:
             return async () => (await import("./Data/Math/flowGraphMathCombineExtractBlocks")).FlowGraphExtractVector2Block;
         case FlowGraphBlockNames.ExtractVector3:
@@ -250,6 +254,10 @@ export function blockFactory(blockName: FlowGraphBlockNames | string): () => Pro
             return async () => (await import("./Data/Math/flowGraphMathCombineExtractBlocks")).FlowGraphExtractVector4Block;
         case FlowGraphBlockNames.ExtractMatrix:
             return async () => (await import("./Data/Math/flowGraphMathCombineExtractBlocks")).FlowGraphExtractMatrixBlock;
+        case FlowGraphBlockNames.ExtractMatrix2D:
+            return async () => (await import("./Data/Math/flowGraphMathCombineExtractBlocks")).FlowGraphExtractMatrix2DBlock;
+        case FlowGraphBlockNames.ExtractMatrix3D:
+            return async () => (await import("./Data/Math/flowGraphMathCombineExtractBlocks")).FlowGraphExtractMatrix3DBlock;
         case FlowGraphBlockNames.TransformVector:
             return async () => (await import("./Data/Math/flowGraphVectorMathBlocks")).FlowGraphTransformBlock;
         case FlowGraphBlockNames.TransformCoordinates:
@@ -288,6 +296,12 @@ export function blockFactory(blockName: FlowGraphBlockNames | string): () => Pro
             return async () => (await import("./Event/flowGraphPointerOverEventBlock")).FlowGraphPointerOverEventBlock;
         case FlowGraphBlockNames.PointerOutEvent:
             return async () => (await import("./Event/flowGraphPointerOutEventBlock")).FlowGraphPointerOutEventBlock;
+        case FlowGraphBlockNames.PointerDownEvent:
+            return async () => (await import("./Event/flowGraphPointerDownEventBlock")).FlowGraphPointerDownEventBlock;
+        case FlowGraphBlockNames.PointerUpEvent:
+            return async () => (await import("./Event/flowGraphPointerUpEventBlock")).FlowGraphPointerUpEventBlock;
+        case FlowGraphBlockNames.PointerMoveEvent:
+            return async () => (await import("./Event/flowGraphPointerMoveEventBlock")).FlowGraphPointerMoveEventBlock;
         case FlowGraphBlockNames.Context:
             return async () => (await import("./Data/Utils/flowGraphContextBlock")).FlowGraphContextBlock;
         case FlowGraphBlockNames.ArrayIndex:
@@ -300,6 +314,8 @@ export function blockFactory(blockName: FlowGraphBlockNames | string): () => Pro
             return async () => (await import("./Data/Utils/flowGraphFunctionReferenceBlock")).FlowGraphFunctionReferenceBlock;
         case FlowGraphBlockNames.DataSwitch:
             return async () => (await import("./Data/flowGraphDataSwitchBlock")).FlowGraphDataSwitchBlock;
+        case FlowGraphBlockNames.DebugBlock:
+            return async () => (await import("./Data/flowGraphDebugBlock")).FlowGraphDebugBlock;
         default:
             // check if the block is a custom block
             if (CustomBlocks[blockName]) {

@@ -289,8 +289,9 @@ export const SplitContainer: React.FC<PropsWithChildren<ISplitContainerProps>> =
 
         if (size !== undefined) {
             const sizeString = `${size | 0}px`;
+            const alreadySet = props.direction === SplitDirection.Horizontal ? childArray[current].style.width : childArray[current].style.height;
 
-            if (!childArray[current].style.width) {
+            if (!alreadySet) {
                 if (props.direction === SplitDirection.Horizontal) {
                     childArray[current].style.width = sizeString;
                 } else {

@@ -4,7 +4,7 @@ import { FlowGraphBlock, type IFlowGraphBlockConfiguration } from "core/FlowGrap
 import type { FlowGraphContext } from "core/FlowGraph/flowGraphContext";
 import type { FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnection";
 import type { FlowGraphTypes } from "core/FlowGraph/flowGraphRichTypes";
-import { getRichTypeByAnimationType, getRichTypeByFlowGraphType, RichTypeAny, RichTypeNumber } from "core/FlowGraph/flowGraphRichTypes";
+import { getRichTypeByAnimationType, getRichTypeByFlowGraphType, RichTypeAny, RichTypeNumber, RichTypeString } from "core/FlowGraph/flowGraphRichTypes";
 import { Animation } from "core/Animations/animation";
 import { RegisterClass } from "core/Misc/typeStore";
 import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
@@ -113,7 +113,7 @@ export class FlowGraphInterpolationBlock<T> extends FlowGraphBlock {
         this.endValue = this.keyFrames[numberOfKeyFrames].value;
         this.easingFunction = this.registerDataInput("easingFunction", RichTypeAny);
         this.animation = this.registerDataOutput("animation", RichTypeAny);
-        this.propertyName = this.registerDataInput("propertyName", RichTypeAny, config?.propertyName);
+        this.propertyName = this.registerDataInput("propertyName", RichTypeString, config?.propertyName);
         this.customBuildAnimation = this.registerDataInput("customBuildAnimation", RichTypeAny);
     }
 

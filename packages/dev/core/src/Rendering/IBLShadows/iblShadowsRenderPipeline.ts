@@ -19,7 +19,6 @@ import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { GeometryBufferRenderer } from "core/Rendering/geometryBufferRenderer";
 import { RawTexture } from "core/Materials/Textures/rawTexture";
 import { RawTexture3D } from "core/Materials/Textures/rawTexture3D";
-import { Engine } from "core/Engines/engine";
 import { IBLShadowsPluginMaterial } from "./iblShadowsPluginMaterial";
 import { PBRBaseMaterial } from "core/Materials/PBR/pbrBaseMaterial";
 import { StandardMaterial } from "core/Materials/standardMaterial";
@@ -792,8 +791,8 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
         this._cameras = cameras || [scene.activeCamera!];
         // Create the dummy textures to be used when the pipeline is not ready
         const blackPixels = new Uint8Array([0, 0, 0, 255]);
-        this._dummyTexture2d = new RawTexture(blackPixels, 1, 1, Engine.TEXTUREFORMAT_RGBA, scene, false);
-        this._dummyTexture3d = new RawTexture3D(blackPixels, 1, 1, 1, Engine.TEXTUREFORMAT_RGBA, scene, false);
+        this._dummyTexture2d = new RawTexture(blackPixels, 1, 1, Constants.TEXTUREFORMAT_RGBA, scene, false);
+        this._dummyTexture3d = new RawTexture3D(blackPixels, 1, 1, 1, Constants.TEXTUREFORMAT_RGBA, scene, false);
 
         // Setup the geometry buffer target formats
         const textureTypesAndFormats: { [key: number]: { textureType: number; textureFormat: number } } = {};

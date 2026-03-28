@@ -1,0 +1,257 @@
+.fge-graph-controls {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 8px;
+    background: #2a2a2a;
+    border-bottom: 1px solid #555;
+    flex-shrink: 0;
+    height: 36px;
+    box-sizing: border-box;
+
+    .fge-ctrl-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 28px;
+        height: 26px;
+        background: #464646;
+        color: #ccc;
+        border: 1px solid #666;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+        line-height: 1;
+        transition:
+            background 0.15s,
+            color 0.15s,
+            border-color 0.15s;
+
+        &:hover:not(:disabled) {
+            background: #555;
+            color: white;
+            border-color: #888;
+        }
+
+        &:active:not(:disabled) {
+            background: #666;
+        }
+
+        &:disabled {
+            opacity: 0.35;
+            cursor: not-allowed;
+        }
+    }
+
+    .fge-ctrl-start:not(:disabled) {
+        color: rgb(51, 183, 102);
+        border-color: rgb(51, 183, 102);
+
+        &:hover {
+            background: rgba(51, 183, 102, 0.2);
+        }
+    }
+
+    .fge-ctrl-pause:not(:disabled) {
+        color: rgb(220, 180, 60);
+        border-color: rgb(220, 180, 60);
+
+        &:hover {
+            background: rgba(220, 180, 60, 0.2);
+        }
+    }
+
+    .fge-ctrl-stop:not(:disabled) {
+        color: rgb(220, 80, 60);
+        border-color: rgb(220, 80, 60);
+
+        &:hover {
+            background: rgba(220, 80, 60, 0.2);
+        }
+    }
+
+    .fge-ctrl-reset:not(:disabled) {
+        color: rgb(100, 160, 220);
+        border-color: rgb(100, 160, 220);
+
+        &:hover {
+            background: rgba(100, 160, 220, 0.2);
+        }
+    }
+
+    .fge-ctrl-state {
+        margin-left: 8px;
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.03em;
+        text-transform: uppercase;
+
+        &.state-stopped {
+            color: #888;
+        }
+
+        &.state-running {
+            color: rgb(51, 183, 102);
+        }
+
+        &.state-paused {
+            color: rgb(220, 180, 60);
+        }
+
+        &.state-breakpoint {
+            color: rgb(231, 76, 60);
+            animation: breakpoint-pulse 1s ease-in-out infinite;
+        }
+    }
+
+    .fge-ctrl-continue:not(:disabled) {
+        color: rgb(51, 183, 102);
+        border-color: rgb(51, 183, 102);
+        font-size: 11px;
+
+        &:hover {
+            background: rgba(51, 183, 102, 0.2);
+        }
+    }
+
+    .fge-ctrl-step:not(:disabled) {
+        color: rgb(100, 160, 220);
+        border-color: rgb(100, 160, 220);
+        font-size: 11px;
+
+        &:hover {
+            background: rgba(100, 160, 220, 0.2);
+        }
+    }
+
+    .fge-ctrl-separator {
+        width: 1px;
+        height: 20px;
+        background: #555;
+        margin: 0 4px;
+    }
+
+    .fge-ctrl-debug {
+        color: #666;
+        border-color: #555;
+        opacity: 0.6;
+
+        &.active {
+            color: rgb(180, 130, 255);
+            border-color: rgb(180, 130, 255);
+            background: rgba(180, 130, 255, 0.15);
+            opacity: 1;
+            box-shadow: 0 2px 0 0 rgb(180, 130, 255);
+        }
+
+        &:not(.active):hover {
+            opacity: 0.85;
+            background: rgba(180, 130, 255, 0.1);
+        }
+    }
+
+    .fge-ctrl-validate {
+        color: rgb(100, 200, 120);
+        border-color: rgb(100, 200, 120);
+
+        &:hover:not(:disabled) {
+            background: rgba(100, 200, 120, 0.2);
+        }
+    }
+
+    .fge-ctrl-live-validate {
+        color: #666;
+        border-color: #555;
+        opacity: 0.6;
+
+        &.active {
+            color: rgb(243, 156, 18);
+            border-color: rgb(243, 156, 18);
+            background: rgba(243, 156, 18, 0.15);
+            opacity: 1;
+            box-shadow: 0 2px 0 0 rgb(243, 156, 18);
+        }
+
+        &:not(.active):hover {
+            opacity: 0.85;
+            background: rgba(243, 156, 18, 0.1);
+        }
+    }
+
+    .fge-validation-summary {
+        margin-left: 4px;
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.03em;
+        padding: 2px 6px;
+        border-radius: 3px;
+
+        &.error {
+            color: #e74c3c;
+            background: rgba(231, 76, 60, 0.15);
+        }
+
+        &.warning {
+            color: #f39c12;
+            background: rgba(243, 156, 18, 0.15);
+        }
+    }
+
+    .fge-ctrl-help:not(:disabled) {
+        color: rgb(100, 180, 220);
+        border-color: rgb(100, 180, 220);
+        font-weight: 700;
+
+        &:hover {
+            background: rgba(100, 180, 220, 0.2);
+        }
+    }
+
+    .fge-time-scale {
+        display: flex;
+        align-items: center;
+        gap: 3px;
+    }
+
+    .fge-time-scale-label {
+        font-size: 10px;
+        font-weight: 600;
+        color: #999;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        margin-right: 2px;
+    }
+
+    .fge-time-scale-btn {
+        width: auto !important;
+        padding: 0 5px;
+        font-size: 11px !important;
+        font-weight: 600;
+        color: #666;
+        opacity: 0.6;
+
+        &.active {
+            color: rgb(243, 156, 18);
+            border-color: rgb(243, 156, 18);
+            background: rgba(243, 156, 18, 0.15);
+            opacity: 1;
+            box-shadow: 0 2px 0 0 rgb(243, 156, 18);
+        }
+
+        &:not(.active):hover {
+            opacity: 0.85;
+            background: rgba(243, 156, 18, 0.1);
+        }
+    }
+}
+
+@keyframes breakpoint-pulse {
+    0%,
+    100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}

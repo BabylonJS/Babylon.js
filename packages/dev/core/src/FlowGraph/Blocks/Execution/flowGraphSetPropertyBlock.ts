@@ -2,7 +2,7 @@ import type { AssetType, FlowGraphAssetType } from "core/FlowGraph/flowGraphAsse
 import type { FlowGraphContext } from "core/FlowGraph/flowGraphContext";
 import type { FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnection";
 import { FlowGraphExecutionBlockWithOutSignal } from "core/FlowGraph/flowGraphExecutionBlockWithOutSignal";
-import { RichTypeAny } from "core/FlowGraph/flowGraphRichTypes";
+import { RichTypeAny, RichTypeString } from "core/FlowGraph/flowGraphRichTypes";
 import type { FlowGraphSignalConnection } from "core/FlowGraph/flowGraphSignalConnection";
 import { RegisterClass } from "core/Misc/typeStore";
 import { FlowGraphBlockNames } from "../flowGraphBlockNames";
@@ -60,7 +60,7 @@ export class FlowGraphSetPropertyBlock<P extends any, O extends FlowGraphAssetTy
         super(config);
         this.object = this.registerDataInput("object", RichTypeAny, config.target);
         this.value = this.registerDataInput("value", RichTypeAny);
-        this.propertyName = this.registerDataInput("propertyName", RichTypeAny, config.propertyName);
+        this.propertyName = this.registerDataInput("propertyName", RichTypeString, config.propertyName);
         this.customSetFunction = this.registerDataInput("customSetFunction", RichTypeAny);
     }
     public override _execute(context: FlowGraphContext, _callingSignal: FlowGraphSignalConnection): void {

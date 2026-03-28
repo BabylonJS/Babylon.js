@@ -1,5 +1,5 @@
 import { Constants } from "../../Engines/constants";
-import { Engine } from "../../Engines/engine";
+import type { Engine } from "../../Engines/engine";
 import { ShaderMaterial } from "../../Materials/shaderMaterial";
 import { MultiRenderTarget } from "../../Materials/Textures/multiRenderTarget";
 import { RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture";
@@ -567,7 +567,7 @@ export class _IblShadowsVoxelRenderer {
         });
         this._voxelMaterial.cullBackFaces = false;
         this._voxelMaterial.backFaceCulling = false;
-        this._voxelMaterial.depthFunction = Engine.ALWAYS;
+        this._voxelMaterial.depthFunction = Constants.ALWAYS;
 
         this._voxelSlabDebugMaterial = new ShaderMaterial("voxelSlabDebug", this._scene, "iblVoxelSlabDebug", {
             uniforms: ["world", "viewMatrix", "cameraViewMatrix", "projection", "invWorldScale", "nearPlane", "farPlane", "stepSize"],

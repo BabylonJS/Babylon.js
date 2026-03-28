@@ -178,6 +178,7 @@ export class NullEngine extends Engine {
             textureNorm16: false,
             blendParametersPerTarget: false,
             dualSourceBlending: false,
+            supportReadWriteStorageTextures: false,
         };
 
         this._features = {

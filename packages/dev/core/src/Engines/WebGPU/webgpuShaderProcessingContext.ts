@@ -31,6 +31,7 @@ export interface WebGPUTextureDescription {
     autoBindSampler?: boolean;
     isTextureArray: boolean;
     isStorageTexture: boolean;
+    storageTextureAccess?: GPUStorageTextureAccess; // "write-only", "read-only", or "read-write"
     textures: Array<WebGPUBindingInfo>;
     sampleType?: GPUTextureSampleType; // not used if the texture is a storage texture
 }
