@@ -25,6 +25,7 @@ This directory contains instruction files that define coding practices, review r
 
 - **[tests.instructions.md](tests.instructions.md)** — Test coverage expectations (Vitest unit tests, Playwright integration/interaction tests).
 - **[visual-tests.instructions.md](visual-tests.instructions.md)** — Playwright-based visual regression tests and screenshot comparison workflows.
+- **[devhost-testing.instructions.md](devhost-testing.instructions.md)** — Using Babylon devhost as the development-time validation loop for core engine changes.
 - **[manual-testing.instructions.md](manual-testing.instructions.md)** — Manual testing workflows, reusing running processes, and checking service ports.
 
 ## Workflows
