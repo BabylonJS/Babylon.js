@@ -3,13 +3,13 @@
 /* eslint-disable jsdoc/require-jsdoc */
 import { Constants } from "../constants";
 import * as WebGPUConstants from "./webgpuConstants";
-import type { Effect } from "../../Materials/effect";
-import type { InternalTexture } from "../../Materials/Textures/internalTexture";
+import { type Effect } from "../../Materials/effect";
+import { type InternalTexture } from "../../Materials/Textures/internalTexture";
 import { VertexBuffer } from "../../Buffers/buffer";
-import type { DataBuffer } from "../../Buffers/dataBuffer";
-import type { Nullable } from "../../types";
-import type { WebGPUHardwareTexture } from "./webgpuHardwareTexture";
-import type { WebGPUPipelineContext } from "./webgpuPipelineContext";
+import { type DataBuffer } from "../../Buffers/dataBuffer";
+import { type Nullable } from "../../types";
+import { type WebGPUHardwareTexture } from "./webgpuHardwareTexture";
+import { type WebGPUPipelineContext } from "./webgpuPipelineContext";
 import { WebGPUTextureHelper } from "./webgpuTextureHelper";
 import { renderableTextureFormatToIndex } from "./webgpuTextureManager";
 import { checkNonFloatVertexBuffers } from "core/Buffers/buffer.nonFloatVertexBuffers";

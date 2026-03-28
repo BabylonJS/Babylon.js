@@ -1,11 +1,11 @@
-import type { InternalTexture } from "../../Materials/Textures/internalTexture";
-import type { TextureSize } from "../../Materials/Textures/textureCreationOptions";
-import type { Nullable } from "../../types";
+import { type InternalTexture } from "../../Materials/Textures/internalTexture";
+import { type TextureSize } from "../../Materials/Textures/textureCreationOptions";
+import { type Nullable } from "../../types";
 import { Constants } from "../constants";
-import type { Engine } from "../engine";
+import { type Engine } from "../engine";
 import { RenderTargetWrapper } from "../renderTargetWrapper";
-import type { ThinEngine } from "../thinEngine";
-import type { WebGLHardwareTexture } from "./webGLHardwareTexture";
+import { type ThinEngine } from "../thinEngine";
+import { type WebGLHardwareTexture } from "./webGLHardwareTexture";
 import { HasStencilAspect } from "core/Materials/Textures/textureHelper.functions";
 
 /** @internal */

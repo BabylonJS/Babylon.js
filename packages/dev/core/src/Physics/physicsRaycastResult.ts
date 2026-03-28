@@ -1,6 +1,6 @@
 import { Vector3 } from "../Maths/math.vector";
 import { CastingResult } from "./castingResult";
-import type { PhysicsBody } from "./v2/physicsBody";
+import { type PhysicsBody } from "./v2/physicsBody";
 
 /**
  * Interface for query parameters in the raycast function.

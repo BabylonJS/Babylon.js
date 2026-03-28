@@ -1,11 +1,11 @@
 /* eslint-disable github/no-then */
-import type { Nullable } from "core/types";
-import type { Material } from "core/Materials/material";
-import type { BaseTexture } from "core/Materials/Textures/baseTexture";
-import type { IMaterial, ITextureInfo } from "../glTFLoaderInterfaces";
-import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
+import { type Nullable } from "core/types";
+import { type Material } from "core/Materials/material";
+import { type BaseTexture } from "core/Materials/Textures/baseTexture";
+import { type IMaterial, type ITextureInfo } from "../glTFLoaderInterfaces";
+import { type IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader } from "../glTFLoader";
-import type { IKHRMaterialsDiffuseTransmission } from "babylonjs-gltf2interface";
+import { type IKHRMaterialsDiffuseTransmission } from "babylonjs-gltf2interface";
 import { Color3 } from "core/Maths/math.color";
 import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
 

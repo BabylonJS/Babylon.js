@@ -1,11 +1,10 @@
 /* eslint-disable babylonjs/available */
 /* eslint-disable jsdoc/require-jsdoc */
-import type { FontAsset } from "../fontAsset";
-import type { ISdfTextParagraphMetrics } from "../paragraphOptions";
-import { DefaultParagraphOptions, type ParagraphOptions } from "../paragraphOptions";
-import type { BMFontChar } from "./bmFont";
-import type { SdfGlyph } from "./glyph";
-import type { SdfTextLine } from "./line";
+import { type FontAsset } from "../fontAsset";
+import { type ISdfTextParagraphMetrics, DefaultParagraphOptions, type ParagraphOptions } from "../paragraphOptions";
+import { type BMFontChar } from "./bmFont";
+import { type SdfGlyph } from "./glyph";
+import { type SdfTextLine } from "./line";
 
 /** @internal */
 export class SdfTextParagraph {

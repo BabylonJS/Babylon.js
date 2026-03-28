@@ -1,7 +1,6 @@
-import type { FluentProviderProps } from "@fluentui/react-components";
-import type { FunctionComponent } from "react";
+import { type FluentProviderProps, FluentProvider, makeStyles, mergeClasses, tokens } from "@fluentui/react-components";
+import { type FunctionComponent } from "react";
 
-import { FluentProvider, makeStyles, mergeClasses, tokens } from "@fluentui/react-components";
 import { useTheme } from "../hooks/themeHooks";
 
 // Fluent doesn't apply styling to scrollbars by default, so provide our own reasonable default.

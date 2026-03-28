@@ -1,10 +1,9 @@
-import type { FunctionComponent } from "react";
+import { type FunctionComponent, Fragment, useCallback } from "react";
 
-import type { GradientBlock, InputBlock, NodeMaterial } from "core/index";
+import { type GradientBlock, type InputBlock, type NodeMaterial } from "core/index";
 
 import { makeStyles, Subtitle2, tokens } from "@fluentui/react-components";
 import { EditRegular } from "@fluentui/react-icons";
-import { Fragment, useCallback } from "react";
 
 import { GradientBlockColorStep } from "core/Materials/Node/Blocks/gradientBlock";
 import { NodeMaterialBlockConnectionPointTypes } from "core/Materials/Node/Enums/nodeMaterialBlockConnectionPointTypes";

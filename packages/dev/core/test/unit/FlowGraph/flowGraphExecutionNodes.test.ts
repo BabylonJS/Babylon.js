@@ -1,8 +1,8 @@
 import { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
-import type { Engine } from "core/Engines";
-import { NullEngine } from "core/Engines";
-import type { FlowGraphContext, FlowGraph } from "core/FlowGraph";
+import { type Engine, NullEngine } from "core/Engines";
 import {
+    type FlowGraphContext,
+    type FlowGraph,
     FlowGraphCoordinator,
     FlowGraphDoNBlock,
     FlowGraphFlipFlopBlock,

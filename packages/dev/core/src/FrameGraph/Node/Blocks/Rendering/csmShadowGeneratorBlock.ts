@@ -1,4 +1,4 @@
-import type { Scene, FrameGraph, NodeRenderGraphConnectionPoint, FrameGraphTextureHandle, NodeRenderGraphBuildState } from "core/index";
+import { type Scene, type FrameGraph, type NodeRenderGraphConnectionPoint, type FrameGraphTextureHandle, type NodeRenderGraphBuildState } from "core/index";
 import { NodeRenderGraphBaseShadowGeneratorBlock } from "./baseShadowGeneratorBlock";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";

@@ -39,9 +39,9 @@ vi.mock("../../src/tools/localSession", () => ({
 }));
 
 import { Observable } from "@dev/core";
-import type { IPlaygroundSnippetResult, ISnippetServerResponse, IV2Manifest, IRuntimeFeatures } from "@tools/snippet-loader";
+import { type IPlaygroundSnippetResult, type ISnippetServerResponse, type IV2Manifest, type IRuntimeFeatures } from "@tools/snippet-loader";
 import { ReadLastLocal } from "../../src/tools/localSession";
-import type { Mock } from "vitest";
+import { type Mock } from "vitest";
 
 // ---------------------------------------------------------------------------
 // Minimal GlobalState mock

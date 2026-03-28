@@ -1,5 +1,5 @@
 import * as monaco from "monaco-editor/esm/vs/editor/editor.api";
-import type { TemplateItem } from "./templatesService";
+import { type TemplateItem } from "./templatesService";
 
 /**
  *

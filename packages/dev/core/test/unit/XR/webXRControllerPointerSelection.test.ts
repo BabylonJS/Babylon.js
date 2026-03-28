@@ -4,8 +4,7 @@
 
 import { NullEngine } from "core/Engines";
 import { Scene } from "core/scene";
-import { WebXRControllerPointerSelection, WebXRSessionManager } from "core/XR";
-import type { IWebXRControllerPointerSelectionOptions } from "core/XR";
+import { WebXRControllerPointerSelection, WebXRSessionManager, type IWebXRControllerPointerSelectionOptions } from "core/XR";
 
 // jsdom does not provide PointerEvent; polyfill it for simulatePointerUp
 if (typeof PointerEvent === "undefined") {

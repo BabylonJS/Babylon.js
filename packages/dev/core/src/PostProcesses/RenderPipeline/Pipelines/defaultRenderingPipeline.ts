@@ -1,20 +1,19 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import type { Nullable } from "../../../types";
+import { type Nullable } from "../../../types";
 import { serialize } from "../../../Misc/decorators";
 import { SerializationHelper } from "../../../Misc/decorators.serialization";
-import type { Observer } from "../../../Misc/observable";
-import { Observable } from "../../../Misc/observable";
-import type { IAnimatable } from "../../../Animations/animatable.interface";
+import { type Observer, Observable } from "../../../Misc/observable";
+import { type IAnimatable } from "../../../Animations/animatable.interface";
 import { Logger } from "../../../Misc/logger";
-import type { Camera } from "../../../Cameras/camera";
-import type { ImageProcessingConfiguration } from "../../../Materials/imageProcessingConfiguration";
+import { type Camera } from "../../../Cameras/camera";
+import { type ImageProcessingConfiguration } from "../../../Materials/imageProcessingConfiguration";
 import { Texture } from "../../../Materials/Textures/texture";
-import type { AbstractEngine } from "../../../Engines/abstractEngine";
+import { type AbstractEngine } from "../../../Engines/abstractEngine";
 import { Constants } from "../../../Engines/constants";
-import type { IDisposable, Scene } from "../../../scene";
+import { type IDisposable, type Scene } from "../../../scene";
 import { GlowLayer } from "../../../Layers/glowLayer";
 
-import type { PostProcess } from "../../../PostProcesses/postProcess";
+import { type PostProcess } from "../../../PostProcesses/postProcess";
 import { SharpenPostProcess } from "../../../PostProcesses/sharpenPostProcess";
 import { ImageProcessingPostProcess } from "../../../PostProcesses/imageProcessingPostProcess";
 import { ChromaticAberrationPostProcess } from "../../../PostProcesses/chromaticAberrationPostProcess";
@@ -31,7 +30,7 @@ import { Tools } from "core/Misc/tools";
 import "../../../PostProcesses/RenderPipeline/postProcessRenderPipelineManagerSceneComponent";
 import "../../../Rendering/depthRendererSceneComponent";
 
-import type { Animation } from "../../../Animations/animation";
+import { type Animation } from "../../../Animations/animation";
 
 /**
  * The default rendering pipeline can be added to a scene to apply common post processing effects such as anti-aliasing or depth of field.

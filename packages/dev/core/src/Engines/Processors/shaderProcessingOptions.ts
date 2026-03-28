@@ -1,6 +1,6 @@
 /* eslint-disable jsdoc/require-jsdoc */
-import type { IShaderProcessor } from "./iShaderProcessor";
-import type { Nullable } from "../../types";
+import { type IShaderProcessor } from "./iShaderProcessor";
+import { type Nullable } from "../../types";
 
 /**
  * Function for custom code generation

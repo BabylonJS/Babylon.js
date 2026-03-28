@@ -1,9 +1,9 @@
-import type { AssetType, FlowGraphAssetType } from "core/FlowGraph/flowGraphAssetsContext";
-import type { FlowGraphContext } from "core/FlowGraph/flowGraphContext";
-import type { FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnection";
+import { type AssetType, type FlowGraphAssetType } from "core/FlowGraph/flowGraphAssetsContext";
+import { type FlowGraphContext } from "core/FlowGraph/flowGraphContext";
+import { type FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnection";
 import { FlowGraphExecutionBlockWithOutSignal } from "core/FlowGraph/flowGraphExecutionBlockWithOutSignal";
 import { RichTypeAny, RichTypeString } from "core/FlowGraph/flowGraphRichTypes";
-import type { FlowGraphSignalConnection } from "core/FlowGraph/flowGraphSignalConnection";
+import { type FlowGraphSignalConnection } from "core/FlowGraph/flowGraphSignalConnection";
 import { RegisterClass } from "core/Misc/typeStore";
 import { FlowGraphBlockNames } from "../flowGraphBlockNames";
 

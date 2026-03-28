@@ -1,4 +1,4 @@
-import type { IDisposable } from "core/scene";
+import { type IDisposable } from "core/scene";
 
 /**
  * Class handling undo / redo operations

@@ -1,16 +1,26 @@
 import "core/Engines/Extensions/engine.dynamicTexture";
 
-import type { ThinEngine } from "core/Engines/thinEngine";
-import type { InternalTexture } from "core/Materials/Textures/internalTexture";
-import type { IVector2Like } from "core/Maths/math.like";
+import { type ThinEngine } from "core/Engines/thinEngine";
+import { type InternalTexture } from "core/Materials/Textures/internalTexture";
+import { type IVector2Like } from "core/Maths/math.like";
 import { ThinTexture } from "core/Materials/Textures/thinTexture";
 
-import type { RawBezier, RawElement, RawFillShape, RawFont, RawGradientFillShape, RawPathShape, RawRectangleShape, RawStrokeShape, RawTextData, RawTextDocument } from "./rawTypes";
+import {
+    type RawBezier,
+    type RawElement,
+    type RawFillShape,
+    type RawFont,
+    type RawGradientFillShape,
+    type RawPathShape,
+    type RawRectangleShape,
+    type RawStrokeShape,
+    type RawTextData,
+    type RawTextDocument,
+} from "./rawTypes";
 
-import type { BoundingBox } from "../maths/boundingBox";
-import { GetShapesBoundingBox, GetTextBoundingBox } from "../maths/boundingBox";
+import { type BoundingBox, GetShapesBoundingBox, GetTextBoundingBox } from "../maths/boundingBox";
 
-import type { AnimationConfiguration } from "../animationConfiguration";
+import { type AnimationConfiguration } from "../animationConfiguration";
 
 /**
  * Information about a sprite in the sprite atlas.

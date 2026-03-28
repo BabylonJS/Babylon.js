@@ -1,8 +1,8 @@
-import type { INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
+import { type INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
 import { ConnectionPointType, type AnyInputBlock } from "smart-filters";
 import { InputDisplayManager } from "../graphSystem/display/inputDisplayManager.js";
 import { WebCamInputBlockName } from "./editorBlocks/blockNames.js";
-import type { WebCamInputBlock } from "./editorBlocks/webCamInputBlock/webCamInputBlock.js";
+import { type WebCamInputBlock } from "./editorBlocks/webCamInputBlock/webCamInputBlock.js";
 
 /**
  * Optional override of the InputDisplayManager to provide custom display for particular blocks if desired.

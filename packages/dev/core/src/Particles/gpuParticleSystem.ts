@@ -1,47 +1,45 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import type { Immutable, Nullable, float, DataArray } from "../types";
-import type { Color3Gradient, IValueGradient } from "../Misc/gradients";
-import { FactorGradient, ColorGradient, GradientHelper } from "../Misc/gradients";
+import { type Immutable, type Nullable, type float, type DataArray } from "../types";
+import { type Color3Gradient, type IValueGradient, FactorGradient, ColorGradient, GradientHelper } from "../Misc/gradients";
 import { Observable } from "../Misc/observable";
 import { Vector3, Matrix, TmpVectors } from "../Maths/math.vector";
 import { Color4, TmpColors } from "../Maths/math.color";
 import { Lerp } from "../Maths/math.scalar.functions";
 import { VertexBuffer, Buffer } from "../Buffers/buffer";
 
-import type { IParticleSystem } from "./IParticleSystem";
+import { type IParticleSystem } from "./IParticleSystem";
 import { BaseParticleSystem } from "./baseParticleSystem";
 import { ParticleSystem } from "./particleSystem";
 import { BoxParticleEmitter } from "../Particles/EmitterTypes/boxParticleEmitter";
-import type { IDisposable } from "../scene";
-import type { Effect } from "../Materials/effect";
+import { type IDisposable, Scene } from "../scene";
+import { type Effect } from "../Materials/effect";
 import { ImageProcessingConfiguration } from "../Materials/imageProcessingConfiguration";
 import { RawTexture } from "../Materials/Textures/rawTexture";
 import { Constants } from "../Engines/constants";
 import { EngineStore } from "../Engines/engineStore";
-import type { IAnimatable } from "../Animations/animatable.interface";
+import { type IAnimatable } from "../Animations/animatable.interface";
 import { CustomParticleEmitter } from "./EmitterTypes/customParticleEmitter";
 import { AbstractEngine } from "../Engines/abstractEngine";
-import type { DataBuffer } from "../Buffers/dataBuffer";
+import { type DataBuffer } from "../Buffers/dataBuffer";
 import { DrawWrapper } from "../Materials/drawWrapper";
-import type { UniformBufferEffectCommonAccessor } from "../Materials/uniformBufferEffectCommonAccessor";
-import type { IGPUParticleSystemPlatform } from "./IGPUParticleSystemPlatform";
+import { type UniformBufferEffectCommonAccessor } from "../Materials/uniformBufferEffectCommonAccessor";
+import { type IGPUParticleSystemPlatform } from "./IGPUParticleSystemPlatform";
 import { GetClass } from "../Misc/typeStore";
 import { AddClipPlaneUniforms, BindClipPlane, PrepareStringDefinesForClipPlanes } from "../Materials/clipPlaneMaterialHelper";
 
-import { Scene } from "../scene";
-import type { Engine } from "../Engines/engine";
-import type { AbstractMesh } from "../Meshes/abstractMesh";
+import { type Engine } from "../Engines/engine";
+import { type AbstractMesh } from "../Meshes/abstractMesh";
 
 import "../Engines/Extensions/engine.transformFeedback";
 
 import "../Shaders/gpuRenderParticles.fragment";
 import "../Shaders/gpuRenderParticles.vertex";
 import { BindFogParameters, BindLogDepth } from "../Materials/materialHelper.functions";
-import type { PointParticleEmitter } from "./EmitterTypes/pointParticleEmitter";
-import type { HemisphericParticleEmitter } from "./EmitterTypes/hemisphericParticleEmitter";
-import type { SphereDirectedParticleEmitter, SphereParticleEmitter } from "./EmitterTypes/sphereParticleEmitter";
-import type { CylinderDirectedParticleEmitter, CylinderParticleEmitter } from "./EmitterTypes/cylinderParticleEmitter";
-import type { ConeDirectedParticleEmitter, ConeParticleEmitter } from "./EmitterTypes/coneParticleEmitter";
+import { type PointParticleEmitter } from "./EmitterTypes/pointParticleEmitter";
+import { type HemisphericParticleEmitter } from "./EmitterTypes/hemisphericParticleEmitter";
+import { type SphereDirectedParticleEmitter, type SphereParticleEmitter } from "./EmitterTypes/sphereParticleEmitter";
+import { type CylinderDirectedParticleEmitter, type CylinderParticleEmitter } from "./EmitterTypes/cylinderParticleEmitter";
+import { type ConeDirectedParticleEmitter, type ConeParticleEmitter } from "./EmitterTypes/coneParticleEmitter";
 import {
     CreateConeEmitter,
     CreateCylinderEmitter,
@@ -52,7 +50,7 @@ import {
     CreatePointEmitter,
     CreateSphereEmitter,
 } from "./particleSystem.functions";
-import type { Texture } from "core/Materials/Textures/texture";
+import { type Texture } from "core/Materials/Textures/texture";
 
 /**
  * This represents a GPU particle system in Babylon

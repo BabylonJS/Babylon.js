@@ -1,12 +1,12 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import type { ComputeEffect, IComputeEffectCreationOptions, IComputeShaderPath } from "../../Compute/computeEffect";
-import type { IComputeContext } from "../../Compute/IComputeContext";
-import type { IComputePipelineContext } from "../../Compute/IComputePipelineContext";
+import { type ComputeEffect, type IComputeEffectCreationOptions, type IComputeShaderPath } from "../../Compute/computeEffect";
+import { type IComputeContext } from "../../Compute/IComputeContext";
+import { type IComputePipelineContext } from "../../Compute/IComputePipelineContext";
 import { ThinEngine } from "../../Engines/thinEngine";
-import type { Nullable } from "../../types";
+import { type Nullable } from "../../types";
 import { AbstractEngine } from "../abstractEngine";
-import type { WebGPUPerfCounter } from "../WebGPU/webgpuPerfCounter";
-import type { DataBuffer } from "../../Buffers/dataBuffer";
+import { type WebGPUPerfCounter } from "../WebGPU/webgpuPerfCounter";
+import { type DataBuffer } from "../../Buffers/dataBuffer";
 
 /**
  * Type used to locate a resource in a compute shader.

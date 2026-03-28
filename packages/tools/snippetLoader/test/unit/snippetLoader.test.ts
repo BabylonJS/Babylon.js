@@ -12,7 +12,7 @@ vi.mock(
 );
 
 import { ParseSnippetResponse } from "../../src/snippetLoader";
-import type { ISnippetServerResponse } from "../../src/types";
+import { type ISnippetServerResponse } from "../../src/types";
 
 function makeResponse(payload: unknown): ISnippetServerResponse {
     return {

@@ -1,6 +1,6 @@
 /* eslint-disable babylonjs/available */
-import type { Nullable, PointerInfo } from "core/index";
-import type { TextureEditorToolProvider } from "../../../components/textureEditor/textureEditor";
+import { type Nullable, type PointerInfo } from "core/index";
+import { type TextureEditorToolProvider } from "../../../components/textureEditor/textureEditor";
 
 import { Label, makeStyles, Slider, tokens } from "@fluentui/react-components";
 import { InkStrokeRegular } from "@fluentui/react-icons";

@@ -1,6 +1,6 @@
-import type { FunctionComponent } from "react";
+import { type FunctionComponent } from "react";
 
-import type { DropdownOption } from "shared-ui-components/fluent/primitives/dropdown";
+import { type DropdownOption } from "shared-ui-components/fluent/primitives/dropdown";
 
 import { Constants } from "core/Engines/constants";
 import { Engine } from "core/Engines/engine";

@@ -1,12 +1,11 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import type { Scene } from "../../scene";
-import type { Vector3 } from "../../Maths/math.vector";
-import { Vector2, Vector4 } from "../../Maths/math.vector";
+import { type Scene } from "../../scene";
+import { type Vector3, Vector2, Vector4 } from "../../Maths/math.vector";
 import { Color4 } from "../../Maths/math.color";
 import { Mesh } from "../mesh";
 import { VertexData } from "../mesh.vertexData";
 import { PolygonMeshBuilder } from "../polygonMesh";
-import type { FloatArray, IndicesArray, Nullable } from "../../types";
+import { type FloatArray, type IndicesArray, type Nullable } from "../../types";
 import { VertexBuffer } from "../../Buffers/buffer";
 import { EngineStore } from "../../Engines/engineStore";
 import { useOpenGLOrientationForUV } from "../../Compat/compatibilityOptions";

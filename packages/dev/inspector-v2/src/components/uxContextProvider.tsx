@@ -1,6 +1,4 @@
-import type { ContextType, FunctionComponent, PropsWithChildren } from "react";
-
-import { useMemo } from "react";
+import { type ContextType, type FunctionComponent, type PropsWithChildren, useMemo } from "react";
 
 import { ToolContext } from "shared-ui-components/fluent/hoc/fluentToolWrapper";
 import { useSetting } from "../hooks/settingsHooks";

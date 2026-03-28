@@ -1,4 +1,13 @@
-import type { RawBezier, RawElement, RawFont, RawPathShape, RawRectangleShape, RawStrokeShape, RawTextData, RawTextDocument } from "../parsing/rawTypes";
+import {
+    type RawBezier,
+    type RawElement,
+    type RawFont,
+    type RawPathShape,
+    type RawRectangleShape,
+    type RawStrokeShape,
+    type RawTextData,
+    type RawTextDocument,
+} from "../parsing/rawTypes";
 
 /**
  * Represents a bounding box for a shape in the animation.

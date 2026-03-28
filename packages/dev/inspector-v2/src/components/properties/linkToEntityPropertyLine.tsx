@@ -1,10 +1,9 @@
-import type { FunctionComponent } from "react";
+import { type FunctionComponent } from "react";
 
-import type { Nullable } from "core/types";
+import { type Nullable } from "core/types";
 import { Link } from "shared-ui-components/fluent/primitives/link";
-import type { PropertyLineProps } from "shared-ui-components/fluent/hoc/propertyLines/propertyLine";
-import { PropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/propertyLine";
-import type { ISelectionService } from "../../services/selectionService";
+import { type PropertyLineProps, PropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/propertyLine";
+import { type ISelectionService } from "../../services/selectionService";
 
 /** Props for the LinkToEntity component */
 export type LinkToEntityProps = {

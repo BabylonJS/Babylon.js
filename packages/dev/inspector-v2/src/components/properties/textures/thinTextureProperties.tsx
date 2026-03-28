@@ -1,9 +1,7 @@
-import type { FunctionComponent } from "react";
+import { type FunctionComponent, useCallback } from "react";
 
-import type { ThinTexture } from "core/index";
-import type { DropdownOption } from "shared-ui-components/fluent/primitives/dropdown";
-
-import { useCallback } from "react";
+import { type ThinTexture } from "core/index";
+import { type DropdownOption } from "shared-ui-components/fluent/primitives/dropdown";
 
 import { NumberDropdownPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/dropdownPropertyLine";
 import { StringifiedPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/stringifiedPropertyLine";

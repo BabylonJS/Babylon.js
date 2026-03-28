@@ -1,5 +1,5 @@
 import { FlowGraphConnectionType } from "core/FlowGraph/flowGraphConnection";
-import type { FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnection";
+import { type FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnection";
 import { FlowGraphTypes } from "core/FlowGraph/flowGraphRichTypes";
 
 /**

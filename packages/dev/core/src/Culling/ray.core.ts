@@ -2,16 +2,16 @@ import { Epsilon } from "core/Maths/math.constants";
 import { Matrix, TmpVectors, Vector3 } from "core/Maths/math.vector";
 import { BuildArray } from "core/Misc/arrayTools";
 import { IntersectionInfo } from "../Collisions/intersectionInfo";
-import type { BoundingBox } from "./boundingBox";
-import type { BoundingSphere } from "./boundingSphere";
-import type { DeepImmutable, float, Nullable } from "core/types";
-import type { Plane } from "core/Maths/math.plane";
-import type { AbstractMesh } from "core/Meshes/abstractMesh";
+import { type BoundingBox } from "./boundingBox";
+import { type BoundingSphere } from "./boundingSphere";
+import { type DeepImmutable, type float, type Nullable } from "core/types";
+import { type Plane } from "core/Maths/math.plane";
+import { type AbstractMesh } from "core/Meshes/abstractMesh";
 import { PickingInfo } from "core/Collisions/pickingInfo";
 import { EngineStore } from "core/Engines/engineStore";
-import type { Scene } from "core/scene";
-import type { Camera } from "core/Cameras/camera";
-import type { Mesh } from "core/Meshes/mesh";
+import { type Scene } from "core/scene";
+import { type Camera } from "core/Cameras/camera";
+import { type Mesh } from "core/Meshes/mesh";
 import { _ImportHelper } from "core/import.helper";
 
 /**

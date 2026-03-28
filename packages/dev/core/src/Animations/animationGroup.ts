@@ -1,17 +1,16 @@
-import type { Animatable } from "./animatable.core";
-import { Animation } from "./animation";
-import type { IMakeAnimationAdditiveOptions } from "./animation";
-import type { IAnimationKey } from "./animationKey";
+import { type Animatable } from "./animatable.core";
+import { Animation, type IMakeAnimationAdditiveOptions } from "./animation";
+import { type IAnimationKey } from "./animationKey";
 
-import type { Scene, IDisposable } from "../scene";
+import { type Scene, type IDisposable } from "../scene";
 import { Observable } from "../Misc/observable";
-import type { Nullable } from "../types";
+import { type Nullable } from "../types";
 import { EngineStore } from "../Engines/engineStore";
 
 import { Tags } from "../Misc/tags";
-import type { AnimationGroupMask } from "./animationGroupMask";
+import { type AnimationGroupMask } from "./animationGroupMask";
 import "./animatable";
-import type { IAssetContainer } from "core/IAssetContainer";
+import { type IAssetContainer } from "core/IAssetContainer";
 import { UniqueIdGenerator } from "core/Misc/uniqueIdGenerator";
 
 /**

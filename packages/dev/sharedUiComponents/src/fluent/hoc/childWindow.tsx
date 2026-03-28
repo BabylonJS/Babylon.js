@@ -1,8 +1,5 @@
-import type { GriffelRenderer } from "@fluentui/react-components";
-import type { FunctionComponent, PropsWithChildren, Ref } from "react";
-
-import { createDOMRenderer, FluentProvider, Portal, RendererProvider } from "@fluentui/react-components";
-import { useCallback, useEffect, useImperativeHandle, useState } from "react";
+import { type GriffelRenderer, createDOMRenderer, FluentProvider, Portal, RendererProvider } from "@fluentui/react-components";
+import { type FunctionComponent, type PropsWithChildren, type Ref, useCallback, useEffect, useImperativeHandle, useState } from "react";
 
 import { Logger } from "core/Misc/logger";
 import { ToastProvider } from "../primitives/toast";

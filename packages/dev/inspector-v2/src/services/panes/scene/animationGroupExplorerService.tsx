@@ -1,18 +1,15 @@
-import type { TargetedAnimation } from "core/index";
-import type { ServiceDefinition } from "../../../modularity/serviceDefinition";
-import type { ISceneContext } from "../../sceneContext";
-import type { IWatcherService } from "../../watcherService";
-import type { ISceneExplorerService } from "./sceneExplorerService";
+import { type TargetedAnimation } from "core/index";
+import { type ServiceDefinition } from "../../../modularity/serviceDefinition";
+import { type ISceneContext, SceneContextIdentity } from "../../sceneContext";
+import { type IWatcherService, WatcherServiceIdentity } from "../../watcherService";
+import { type ISceneExplorerService, SceneExplorerServiceIdentity } from "./sceneExplorerService";
 
 import { tokens } from "@fluentui/react-components";
 import { FilmstripRegular, PauseFilled, PlayFilled, StackRegular } from "@fluentui/react-icons";
 
 import { AnimationGroup } from "core/Animations/animationGroup";
 import { Observable } from "core/Misc/observable";
-import { SceneContextIdentity } from "../../sceneContext";
-import { WatcherServiceIdentity } from "../../watcherService";
 import { DefaultCommandsOrder, DefaultSectionsOrder } from "./defaultSectionsMetadata";
-import { SceneExplorerServiceIdentity } from "./sceneExplorerService";
 
 export const AnimationGroupExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplorerService, ISceneContext, IWatcherService]> = {
     friendlyName: "Animation Group Explorer",

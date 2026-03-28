@@ -1,9 +1,9 @@
-import type { Nullable } from "../../types";
+import { type Nullable } from "../../types";
 import { _MainAudioOut } from "../abstractAudio/mainAudioOut";
-import type { IAudioParameterRampOptions } from "../audioParameter";
+import { type IAudioParameterRampOptions } from "../audioParameter";
 import { _WebAudioParameterComponent } from "./components/webAudioParameterComponent";
-import type { _WebAudioEngine } from "./webAudioEngine";
-import type { IWebAudioInNode } from "./webAudioNode";
+import { type _WebAudioEngine } from "./webAudioEngine";
+import { type IWebAudioInNode } from "./webAudioNode";
 
 /** @internal */
 export class _WebAudioMainOut extends _MainAudioOut implements IWebAudioInNode {

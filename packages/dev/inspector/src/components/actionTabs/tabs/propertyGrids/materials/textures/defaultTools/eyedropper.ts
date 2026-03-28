@@ -1,8 +1,7 @@
-import type { IToolParameters, IToolData } from "../textureEditorComponent";
-import type { PointerInfo } from "core/Events/pointerEvents";
-import { PointerEventTypes } from "core/Events/pointerEvents";
-import type { Nullable } from "core/types";
-import type { Observer } from "core/Misc/observable";
+import { type IToolParameters, type IToolData } from "../textureEditorComponent";
+import { type PointerInfo, PointerEventTypes } from "core/Events/pointerEvents";
+import { type Nullable } from "core/types";
+import { type Observer } from "core/Misc/observable";
 import { Color3 } from "core/Maths/math.color";
 
 export const Eyedropper: IToolData = {

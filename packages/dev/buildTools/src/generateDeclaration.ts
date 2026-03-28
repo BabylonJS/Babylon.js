@@ -6,8 +6,7 @@ import * as path from "path";
 import * as chokidar from "chokidar";
 
 import { camelize, checkArgs, checkDirectorySync, debounce, findRootDirectory, getHashOfContent, getHashOfFile, kebabize } from "./utils.js";
-import type { BuildType, DevPackageName } from "./packageMapping.js";
-import { getAllPackageMappingsByDevNames, getPackageMappingByDevName, getPublicPackageName, isValidDevPackageName } from "./packageMapping.js";
+import { type BuildType, type DevPackageName, getAllPackageMappingsByDevNames, getPackageMappingByDevName, getPublicPackageName, isValidDevPackageName } from "./packageMapping.js";
 
 export interface IGenerateDeclarationConfig {
     devPackageName: DevPackageName;

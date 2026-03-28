@@ -5,8 +5,7 @@
 import { NullEngine } from "core/Engines";
 import { Scene } from "core/scene";
 import { WebXRSessionManager } from "core/XR/webXRSessionManager";
-import { WebXRFeaturesManager, WebXRFeatureName } from "core/XR/webXRFeaturesManager";
-import type { IWebXRFeature, WebXRFeatureConstructor } from "core/XR/webXRFeaturesManager";
+import { WebXRFeaturesManager, WebXRFeatureName, type IWebXRFeature, type WebXRFeatureConstructor } from "core/XR/webXRFeaturesManager";
 import { Observable } from "core/Misc/observable";
 import { beforeEach, afterEach, describe, it, expect, vi } from "vitest";
 

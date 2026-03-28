@@ -1,7 +1,6 @@
-import type { ServiceDefinition } from "../../../modularity/serviceDefinition";
-import { ToolsServiceIdentity } from "../toolsService";
-import type { IToolsService } from "../toolsService";
-import type { IDisposable } from "core/scene";
+import { type ServiceDefinition } from "../../../modularity/serviceDefinition";
+import { ToolsServiceIdentity, type IToolsService } from "../toolsService";
+import { type IDisposable } from "core/scene";
 import { ReflectorTools } from "../../../components/tools/reflectorTools";
 
 export const ReflectorServiceDefinition: ServiceDefinition<[], [IToolsService]> = {

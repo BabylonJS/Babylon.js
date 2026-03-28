@@ -1,9 +1,9 @@
-import type { NodeMaterialConnectionPoint } from "./nodeMaterialBlockConnectionPoint";
-import type { NodeMaterialBlock } from "./nodeMaterialBlock";
-import type { InputBlock } from "./Blocks/Input/inputBlock";
-import type { Scene } from "../../scene";
-import type { Immutable, Nullable } from "../../types";
-import type { NodeMaterial, NodeMaterialTextureBlocks } from "./nodeMaterial";
+import { type NodeMaterialConnectionPoint } from "./nodeMaterialBlockConnectionPoint";
+import { type NodeMaterialBlock } from "./nodeMaterialBlock";
+import { type InputBlock } from "./Blocks/Input/inputBlock";
+import { type Scene } from "../../scene";
+import { type Immutable, type Nullable } from "../../types";
+import { type NodeMaterial, type NodeMaterialTextureBlocks } from "./nodeMaterial";
 import { Logger } from "core/Misc/logger";
 
 /**

@@ -1,5 +1,5 @@
-import type { Vector3 } from "core/Maths/math";
-import type { TransformNode } from "core/Meshes/transformNode";
+import { type Vector3 } from "core/Maths/math";
+import { type TransformNode } from "core/Meshes/transformNode";
 import { BaseAction } from "./BaseAction";
 
 /**

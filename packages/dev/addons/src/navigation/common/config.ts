@@ -1,9 +1,9 @@
-import type { SoloNavMeshGeneratorConfig, TileCacheGeneratorConfig, TiledNavMeshGeneratorConfig } from "@recast-navigation/generators";
-import type { CrowdAgentParams } from "@recast-navigation/core";
+import { type SoloNavMeshGeneratorConfig, type TileCacheGeneratorConfig, type TiledNavMeshGeneratorConfig } from "@recast-navigation/generators";
+import { type CrowdAgentParams } from "@recast-navigation/core";
 
 import { Logger } from "core/Misc/logger";
 
-import type { IAgentParametersV2, INavMeshParametersV2 } from "../types";
+import { type IAgentParametersV2, type INavMeshParametersV2 } from "../types";
 import { CreateDefaultTileCacheMeshProcess } from "./tile-cache";
 
 export const DefaultMaxObstacles = 128;
