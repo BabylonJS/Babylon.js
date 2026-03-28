@@ -283,6 +283,7 @@ export class Particle {
         this.age = 0;
         this.id = Particle._Count++;
         this._properties.reset();
+        this.metadata = null;
         this.cellIndex = this.particleSystem.startSpriteCellID;
     }
 
@@ -375,9 +376,6 @@ export class Particle {
                 other._properties.randomNoiseCoordinates2 = this._properties.randomNoiseCoordinates2.clone();
             }
         }
-        if (this.metadata) {
-            other.metadata = this.metadata;
-            this.metadata = null;
-        }
+        other.metadata = this.metadata;
     }
 }
