@@ -50,6 +50,7 @@ Preferred VS Code tasks:
 CLI fallback from the repo root:
 
 ```bash
+npm run build:dev
 npm run serve -w @tools/dev-host
 ```
 

@@ -8,7 +8,7 @@ Key ports to check:
 | Port | Service |
 |------|---------|
 | 1337 | babylon-server (CDN) |
-| 1338 | Dev Host |
+| 1338 | Dev Host / Playground (shared port — depends on which server you started) |
 | 1340 | Node Material Editor (NME) |
 | 1341 | GUI Editor |
 | 1343 | Node Geometry Editor (NGE) |
@@ -17,6 +17,7 @@ Key ports to check:
 | 1346 | Smart Filter Editor (SFE) |
 
 You can check whether a port is already in use with:
+
 ```powershell
 Get-NetTCPConnection -LocalPort <port> -State Listen -ErrorAction SilentlyContinue
 ```

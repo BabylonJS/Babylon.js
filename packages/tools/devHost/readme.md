@@ -1,6 +1,6 @@
 # Dev Host
 
-This devhost provides a fast inner loop for testing Babylon.js code in a small browser app. It is useful for ES6 experiences that contain their own engine, like lottie-player, and for focused validation apps when testing Babylon core changes.
+This devhost provides a fast inner loop for testing Babylon.js code in a small browser app. It is useful for ES6 experiences that contain their own engine, like lottie-player, and for focused validation apps when testing Babylon.js core changes.
 
 ## Running the dev host
 
