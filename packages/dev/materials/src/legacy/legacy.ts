@@ -13,6 +13,7 @@ if (typeof GlobalObject !== "undefined") {
     for (const mat in MatLib) {
         (<any>GlobalObject).BABYLON[mat] = (<any>MatLib)[mat];
     }
+    (<any>GlobalObject).MATERIALS = MatLib;
 }
 
 export * from "materials/index";
