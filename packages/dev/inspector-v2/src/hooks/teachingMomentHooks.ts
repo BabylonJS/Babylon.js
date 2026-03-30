@@ -1,6 +1,6 @@
-import type { Nullable } from "core/index";
+import { type Nullable } from "core/index";
 
-import type { OnOpenChangeData, PositioningImperativeRef } from "@fluentui/react-components";
+import { type OnOpenChangeData, type PositioningImperativeRef } from "@fluentui/react-components";
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useSetting } from "./settingsHooks";

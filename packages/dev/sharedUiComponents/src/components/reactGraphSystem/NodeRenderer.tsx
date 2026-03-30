@@ -1,12 +1,11 @@
-import type { ComponentType, PropsWithChildren } from "react";
-import { useState, useEffect, useMemo } from "react";
+import { type ComponentType, type PropsWithChildren, useState, useEffect, useMemo } from "react";
 import { GraphContainer } from "./GraphContainer";
 import { GraphLine } from "./GraphLine";
 import { SingleGraphNode } from "./GraphNode";
 import { GraphNodesContainer } from "./GraphNodesContainer";
 import { GraphLinesContainer } from "./GraphLinesContainer";
 import { GraphContextManager } from "./GraphContextManager";
-import type { Nullable } from "core/types";
+import { type Nullable } from "core/types";
 
 const FullscreenStyle = { width: "100%", height: "100%" };
 

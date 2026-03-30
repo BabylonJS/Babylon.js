@@ -1,13 +1,12 @@
-import type { PerformanceViewerCollector } from "core/Misc/PerformanceViewer/performanceViewerCollector";
-import type { Observable } from "core/Misc/observable";
-import type { FunctionComponent } from "react";
-import type { PerfLayoutSize, VisibleRangeChangedObservableProps } from "./graphSupportingTypes";
-import type { IPerfMetadata } from "core/Misc/interfaces/iPerfViewer";
-import type { Scene } from "core/scene";
-import type { Vector2 } from "core/Maths/math.vector";
+import { type PerformanceViewerCollector } from "core/Misc/PerformanceViewer/performanceViewerCollector";
+import { type Observable } from "core/Misc/observable";
+import { type FunctionComponent, useEffect, useRef } from "react";
+import { type PerfLayoutSize, type VisibleRangeChangedObservableProps } from "./graphSupportingTypes";
+import { type IPerfMetadata } from "core/Misc/interfaces/iPerfViewer";
+import { type Scene } from "core/scene";
+import { type Vector2 } from "core/Maths/math.vector";
 
 import { makeStyles } from "@fluentui/react-components";
-import { useEffect, useRef } from "react";
 
 import { CanvasGraphService } from "./canvasGraphService";
 import { Logger } from "core/Misc/logger";

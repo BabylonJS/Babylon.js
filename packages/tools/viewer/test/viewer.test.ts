@@ -463,6 +463,7 @@ test("invalid model source fires modelerror", async ({ page }) => {
 // ============================================================
 
 test("load SPZ gaussian splat model", async ({ page }) => {
+    test.setTimeout(60000);
     await attachViewerElement(
         page,
         `

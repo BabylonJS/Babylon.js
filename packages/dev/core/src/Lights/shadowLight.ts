@@ -1,11 +1,11 @@
 import { serialize, serializeAsVector3 } from "../Misc/decorators";
-import type { Camera } from "../Cameras/camera";
-import type { Scene } from "../scene";
+import { type Camera } from "../Cameras/camera";
+import { type Scene } from "../scene";
 import { Matrix, TmpVectors, Vector3 } from "../Maths/math.vector";
-import type { AbstractMesh } from "../Meshes/abstractMesh";
+import { type AbstractMesh } from "../Meshes/abstractMesh";
 import { Light } from "./light";
 import { Axis } from "../Maths/math.axis";
-import type { Nullable } from "core/types";
+import { type Nullable } from "core/types";
 import { Constants } from "core/Engines/constants";
 /**
  * Interface describing all the common properties and methods a shadow light needs to implement.

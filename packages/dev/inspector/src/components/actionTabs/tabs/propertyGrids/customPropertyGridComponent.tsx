@@ -1,10 +1,9 @@
 import * as React from "react";
-import type { Observable } from "core/Misc/observable";
-import type { PropertyChangedEvent } from "../../../propertyChangedEvent";
+import { type Observable } from "core/Misc/observable";
+import { type PropertyChangedEvent } from "../../../propertyChangedEvent";
 import { Color3LineComponent } from "shared-ui-components/lines/color3LineComponent";
-import type { GlobalState } from "../../../globalState";
-import type { IInspectable } from "core/Misc/iInspectable";
-import { InspectableType } from "core/Misc/iInspectable";
+import { type GlobalState } from "../../../globalState";
+import { type IInspectable, InspectableType } from "core/Misc/iInspectable";
 import { CheckBoxLineComponent } from "shared-ui-components/lines/checkBoxLineComponent";
 import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent";
 import { Vector2LineComponent } from "shared-ui-components/lines/vector2LineComponent";
@@ -12,7 +11,7 @@ import { Vector3LineComponent } from "shared-ui-components/lines/vector3LineComp
 import { QuaternionLineComponent } from "../../lines/quaternionLineComponent";
 import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
 import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
-import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
+import { type LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineComponent";
 import { OptionsLine } from "shared-ui-components/lines/optionsLineComponent";
 import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";

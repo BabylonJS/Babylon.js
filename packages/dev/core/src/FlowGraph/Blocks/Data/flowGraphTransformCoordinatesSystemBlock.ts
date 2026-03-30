@@ -1,10 +1,9 @@
-import { FlowGraphBlock } from "../../flowGraphBlock";
-import type { FlowGraphContext } from "../../flowGraphContext";
-import type { FlowGraphDataConnection } from "../../flowGraphDataConnection";
+import { FlowGraphBlock, type IFlowGraphBlockConfiguration } from "../../flowGraphBlock";
+import { type FlowGraphContext } from "../../flowGraphContext";
+import { type FlowGraphDataConnection } from "../../flowGraphDataConnection";
 import { RichTypeAny, RichTypeVector3 } from "../../flowGraphRichTypes";
 import { TmpVectors, Vector3 } from "../../../Maths/math.vector";
-import type { TransformNode } from "../../../Meshes/transformNode";
-import type { IFlowGraphBlockConfiguration } from "../../flowGraphBlock";
+import { type TransformNode } from "../../../Meshes/transformNode";
 import { RegisterClass } from "../../../Misc/typeStore";
 import { FlowGraphBlockNames } from "../flowGraphBlockNames";
 

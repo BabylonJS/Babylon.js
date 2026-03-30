@@ -1,19 +1,19 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import type { Camera } from "../Cameras/camera";
+import { type Camera } from "../Cameras/camera";
 import { Texture } from "../Materials/Textures/texture";
 import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import { FxaaPostProcess } from "../PostProcesses/fxaaPostProcess";
 import { Constants } from "../Engines/constants";
 import { Logger } from "./logger";
 import { Tools } from "./tools";
-import type { IScreenshotSize } from "./interfaces/screenshotSize";
+import { type IScreenshotSize } from "./interfaces/screenshotSize";
 import { DumpData } from "./dumpTools";
-import type { Nullable } from "../types";
+import { type Nullable } from "../types";
 import { ApplyPostProcess } from "./textureTools";
 
-import type { AbstractEngine } from "../Engines/abstractEngine";
+import { type AbstractEngine } from "../Engines/abstractEngine";
 import { _RetryWithInterval } from "./timingTools";
-import type { FrameGraph } from "../FrameGraph/frameGraph";
+import { type FrameGraph } from "../FrameGraph/frameGraph";
 import { backbufferColorTextureHandle } from "../FrameGraph/frameGraphTypes";
 import { FrameGraphFXAATask } from "../FrameGraph/Tasks/PostProcesses/fxaaTask";
 import { FrameGraphPassTask } from "../FrameGraph/Tasks/PostProcesses/passTask";

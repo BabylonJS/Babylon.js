@@ -1,9 +1,9 @@
 import * as React from "react";
 import { GeneralPropertyTabComponent } from "./genericNodePropertyComponent";
-import type { IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
-import type { Observer } from "core/Misc/observable";
-import type { Nullable } from "core/types";
-import type { FlowGraphDebugBlock } from "core/FlowGraph/Blocks/Data/flowGraphDebugBlock";
+import { type IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
+import { type Observer } from "core/Misc/observable";
+import { type Nullable } from "core/types";
+import { type FlowGraphDebugBlock } from "core/FlowGraph/Blocks/Data/flowGraphDebugBlock";
 import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
 import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
 

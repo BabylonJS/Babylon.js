@@ -1,7 +1,7 @@
-import type { Engine } from "core/Engines";
-import { NullEngine } from "core/Engines";
-import type { FlowGraphAssetType, FlowGraphExecutionBlock } from "core/FlowGraph";
+import { type Engine, NullEngine } from "core/Engines";
 import {
+    type FlowGraphAssetType,
+    type FlowGraphExecutionBlock,
     FlowGraphAddBlock,
     FlowGraphConstantBlock,
     FlowGraphCoordinator,

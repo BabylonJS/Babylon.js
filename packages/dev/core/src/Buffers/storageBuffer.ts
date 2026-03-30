@@ -1,6 +1,6 @@
-import type { DataBuffer } from "../Buffers/dataBuffer";
-import type { DataArray } from "../types";
-import type { WebGPUEngine } from "core/Engines/webgpuEngine";
+import { type DataBuffer } from "../Buffers/dataBuffer";
+import { type DataArray } from "../types";
+import { type WebGPUEngine } from "core/Engines/webgpuEngine";
 import { Constants } from "../Engines/constants";
 
 /**

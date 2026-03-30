@@ -1,10 +1,10 @@
-import type { GraphNode } from "shared-ui-components/nodeGraphSystem/graphNode";
-import type { GraphFrame } from "shared-ui-components/nodeGraphSystem/graphFrame";
-import type { FlowGraphBlock } from "core/FlowGraph/flowGraphBlock";
+import { type GraphNode } from "shared-ui-components/nodeGraphSystem/graphNode";
+import { type GraphFrame } from "shared-ui-components/nodeGraphSystem/graphFrame";
+import { type FlowGraphBlock } from "core/FlowGraph/flowGraphBlock";
 import { FlowGraphExecutionBlock } from "core/FlowGraph/flowGraphExecutionBlock";
-import type { NodePort } from "shared-ui-components/nodeGraphSystem/nodePort";
-import type { ConnectionPointPortData } from "./connectionPointPortData";
-import type { IPortData } from "shared-ui-components/nodeGraphSystem/interfaces/portData";
+import { type NodePort } from "shared-ui-components/nodeGraphSystem/nodePort";
+import { type ConnectionPointPortData } from "./connectionPointPortData";
+import { type IPortData } from "shared-ui-components/nodeGraphSystem/interfaces/portData";
 
 /**
  * Gets the connection kind ("data" or "signal") from a port data.

@@ -1,7 +1,7 @@
-import type { FunctionComponent } from "react";
+import { type FunctionComponent } from "react";
 import { LineContainer } from "./propertyLines/propertyLine";
 import { UploadButton } from "../primitives/uploadButton";
-import type { ButtonProps } from "../primitives/button";
+import { type ButtonProps } from "../primitives/button";
 
 type FileUploadLineProps = Omit<ButtonProps, "onClick" | "label"> & {
     onClick: (files: FileList) => void;

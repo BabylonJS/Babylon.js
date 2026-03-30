@@ -1,5 +1,5 @@
 import * as React from "react";
-import type { LockObject } from "../../tabs/propertyGrids/lockObject";
+import { type LockObject } from "../../tabs/propertyGrids/lockObject";
 import * as style from "./HexColor.module.scss";
 
 export interface IHexColorProps {

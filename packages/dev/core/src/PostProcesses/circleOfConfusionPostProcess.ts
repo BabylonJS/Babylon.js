@@ -1,17 +1,15 @@
-import type { Nullable } from "../types";
-import type { PostProcessOptions } from "./postProcess";
-import { PostProcess } from "./postProcess";
-import type { Effect } from "../Materials/effect";
-import type { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
-import type { Camera } from "../Cameras/camera";
+import { type Nullable } from "../types";
+import { type PostProcessOptions, PostProcess } from "./postProcess";
+import { type Effect } from "../Materials/effect";
+import { type RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
+import { type Camera } from "../Cameras/camera";
 import { Logger } from "../Misc/logger";
 import { Constants } from "../Engines/constants";
 
 import { RegisterClass } from "../Misc/typeStore";
 import { serialize } from "../Misc/decorators";
-import type { AbstractEngine } from "core/Engines/abstractEngine";
-import type { ThinCircleOfConfusionPostProcessOptions } from "./thinCircleOfConfusionPostProcess";
-import { ThinCircleOfConfusionPostProcess } from "./thinCircleOfConfusionPostProcess";
+import { type AbstractEngine } from "core/Engines/abstractEngine";
+import { type ThinCircleOfConfusionPostProcessOptions, ThinCircleOfConfusionPostProcess } from "./thinCircleOfConfusionPostProcess";
 
 export type CircleOfConfusionPostProcessOptions = ThinCircleOfConfusionPostProcessOptions & PostProcessOptions;
 

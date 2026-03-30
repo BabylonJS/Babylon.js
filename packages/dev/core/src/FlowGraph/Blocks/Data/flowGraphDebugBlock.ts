@@ -1,11 +1,10 @@
-import type { FlowGraphContext } from "../../flowGraphContext";
-import type { IFlowGraphBlockConfiguration } from "../../flowGraphBlock";
-import { FlowGraphBlock } from "../../flowGraphBlock";
-import type { FlowGraphDataConnection } from "../../flowGraphDataConnection";
+import { type FlowGraphContext } from "../../flowGraphContext";
+import { type IFlowGraphBlockConfiguration, FlowGraphBlock } from "../../flowGraphBlock";
+import { type FlowGraphDataConnection } from "../../flowGraphDataConnection";
 import { RichTypeAny } from "../../flowGraphRichTypes";
 import { RegisterClass } from "../../../Misc/typeStore";
 import { FlowGraphBlockNames } from "../flowGraphBlockNames";
-import type { Nullable } from "../../../types";
+import { type Nullable } from "../../../types";
 
 /**
  * Maximum number of log entries stored by the debug block.

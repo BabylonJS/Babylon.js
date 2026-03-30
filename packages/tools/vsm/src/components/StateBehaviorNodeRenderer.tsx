@@ -1,9 +1,8 @@
 import { useSelectedState } from "./tools/useSelectedState";
-import type { INodeType } from "../../../../dev/sharedUiComponents/src/components/reactGraphSystem/NodeRenderer";
-import { NodeRenderer } from "../../../../dev/sharedUiComponents/src/components/reactGraphSystem/NodeRenderer";
+import { type INodeType, NodeRenderer } from "../../../../dev/sharedUiComponents/src/components/reactGraphSystem/NodeRenderer";
 import { useSelectedAction } from "./tools/useSelectedAction";
-import type { Nullable } from "core/types";
-import type { SetPositionAction } from "../actions/actions/SetPositionAction";
+import { type Nullable } from "core/types";
+import { type SetPositionAction } from "../actions/actions/SetPositionAction";
 import { SetPositionBlock } from "./nodesDisplay/SetPositionBlock";
 
 export interface IStateBehaviorNodeRendererProps {}

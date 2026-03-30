@@ -1,13 +1,12 @@
 import { Tools } from "../Misc/tools";
-import type { Nullable } from "../types";
-import type { Camera } from "../Cameras/camera";
+import { type Nullable } from "../types";
+import { type Camera } from "../Cameras/camera";
 import { Scene } from "../scene";
-import type { ISceneSerializableComponent } from "../sceneComponent";
-import { SceneComponentConstants } from "../sceneComponent";
-import type { AssetContainer } from "../assetContainer";
+import { type ISceneSerializableComponent, SceneComponentConstants } from "../sceneComponent";
+import { type AssetContainer } from "../assetContainer";
 import { LensFlareSystem } from "./lensFlareSystem";
 import { AddParser } from "core/Loading/Plugins/babylonFileParser.function";
-import type { IAssetContainer } from "core/IAssetContainer";
+import { type IAssetContainer } from "core/IAssetContainer";
 
 // Adds the parser to the scene parsers.
 AddParser(SceneComponentConstants.NAME_LENSFLARESYSTEM, (parsedData: any, scene: Scene, container: AssetContainer, rootUrl: string) => {

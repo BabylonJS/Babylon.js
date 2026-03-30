@@ -1,4 +1,4 @@
-import type { Nullable, EffectWrapperCreationOptions, AbstractEngine, InternalTexture, Scene } from "core/index";
+import { type Nullable, type EffectWrapperCreationOptions, type AbstractEngine, type InternalTexture, type Scene } from "core/index";
 import { Observable } from "./observable";
 import { EffectWrapper } from "../Materials/effectRenderer";
 import { EngineStore } from "core/Engines/engineStore";

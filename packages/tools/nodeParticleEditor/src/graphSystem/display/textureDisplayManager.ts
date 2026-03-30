@@ -1,8 +1,8 @@
-import type { IDisplayManager } from "shared-ui-components/nodeGraphSystem/interfaces/displayManager";
-import type { INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
+import { type IDisplayManager } from "shared-ui-components/nodeGraphSystem/interfaces/displayManager";
+import { type INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
 import * as localStyles from "./textureDisplayManager.module.scss";
-import type { NodeGeometryBlock } from "core/Meshes/Node/nodeGeometryBlock";
-import type { ParticleTextureSourceBlock } from "core/Particles/Node/Blocks/particleSourceTextureBlock";
+import { type NodeGeometryBlock } from "core/Meshes/Node/nodeGeometryBlock";
+import { type ParticleTextureSourceBlock } from "core/Particles/Node/Blocks/particleSourceTextureBlock";
 
 export class TextureDisplayManager implements IDisplayManager {
     private _previewImage: HTMLImageElement;

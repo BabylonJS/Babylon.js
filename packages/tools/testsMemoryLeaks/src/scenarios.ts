@@ -1,6 +1,6 @@
-import type { IScenario } from "@memlab/core";
+import { type IScenario } from "@memlab/core";
 
-import type { IGlobalConfig } from "./config";
+import { type IGlobalConfig } from "./config";
 import { CreateBabylonLeakFilter, type ILeakFilterOptions } from "./filters";
 import {
     EvaluateDisposePlaygroundScene,

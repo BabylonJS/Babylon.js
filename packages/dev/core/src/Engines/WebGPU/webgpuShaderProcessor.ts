@@ -1,10 +1,10 @@
 /* eslint-disable babylonjs/available */
 /* eslint-disable jsdoc/require-jsdoc */
 import { ShaderLanguage } from "../../Materials/shaderLanguage";
-import type { Nullable } from "../../types";
-import type { IShaderProcessor } from "../Processors/iShaderProcessor";
+import { type Nullable } from "../../types";
+import { type IShaderProcessor } from "../Processors/iShaderProcessor";
 import * as WebGPUConstants from "./webgpuConstants";
-import type { WebGPUSamplerDescription, WebGPUShaderProcessingContext, WebGPUTextureDescription, WebGPUBufferDescription } from "./webgpuShaderProcessingContext";
+import { type WebGPUSamplerDescription, type WebGPUShaderProcessingContext, type WebGPUTextureDescription, type WebGPUBufferDescription } from "./webgpuShaderProcessingContext";
 
 /** @internal */
 export abstract class WebGPUShaderProcessor implements IShaderProcessor {

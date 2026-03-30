@@ -1,11 +1,11 @@
-import type { Nullable } from "../types";
+import { type Nullable } from "../types";
 import { Vector2, Vector3, TmpVectors, Vector4 } from "../Maths/math.vector";
 import { Color4 } from "../Maths/math.color";
-import type { SubEmitter } from "./subEmitter";
-import type { ColorGradient, FactorGradient } from "../Misc/gradients";
+import { type SubEmitter } from "./subEmitter";
+import { type ColorGradient, type FactorGradient } from "../Misc/gradients";
 
-import type { AbstractMesh } from "../Meshes/abstractMesh";
-import type { ThinParticleSystem } from "./thinParticleSystem";
+import { type AbstractMesh } from "../Meshes/abstractMesh";
+import { type ThinParticleSystem } from "./thinParticleSystem";
 import { Clamp } from "../Maths/math.scalar.functions";
 
 /**

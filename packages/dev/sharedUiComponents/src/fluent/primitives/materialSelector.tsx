@@ -1,12 +1,9 @@
-import type { FunctionComponent } from "react";
-import type { Scene } from "core/scene";
-import type { Nullable } from "core/types";
-import type { Material } from "core/Materials/material";
-import type { PrimitiveProps } from "./primitive";
-import type { EntitySelectorProps } from "./entitySelector";
-
-import { useCallback } from "react";
-import { EntitySelector } from "./entitySelector";
+import { type FunctionComponent, useCallback } from "react";
+import { type Scene } from "core/scene";
+import { type Nullable } from "core/types";
+import { type Material } from "core/Materials/material";
+import { type PrimitiveProps } from "./primitive";
+import { type EntitySelectorProps, EntitySelector } from "./entitySelector";
 
 export type MaterialSelectorProps = PrimitiveProps<Nullable<Material>> & {
     /**

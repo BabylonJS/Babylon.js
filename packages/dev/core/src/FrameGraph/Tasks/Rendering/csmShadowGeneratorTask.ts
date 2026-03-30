@@ -1,4 +1,4 @@
-import type { FrameGraphTextureHandle, FrameGraph } from "core/index";
+import { type FrameGraphTextureHandle, type FrameGraph } from "core/index";
 import { CascadedShadowGenerator } from "../../../Lights/Shadows/cascadedShadowGenerator";
 import { FrameGraphShadowGeneratorTask } from "./shadowGeneratorTask";
 import { DirectionalLight } from "../../../Lights/directionalLight";

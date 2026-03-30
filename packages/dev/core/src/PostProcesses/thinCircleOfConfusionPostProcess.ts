@@ -1,6 +1,6 @@
-import type { Nullable, AbstractEngine, EffectWrapperCreationOptions } from "core/index";
+import { type Nullable, type AbstractEngine, type EffectWrapperCreationOptions } from "core/index";
 import { EffectWrapper } from "../Materials/effectRenderer";
-import type { Camera } from "core/Cameras/camera";
+import { type Camera } from "core/Cameras/camera";
 import { EngineStore } from "../Engines/engineStore";
 
 /**

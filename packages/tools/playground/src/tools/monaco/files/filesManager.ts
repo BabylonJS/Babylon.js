@@ -1,5 +1,5 @@
 import * as monaco from "monaco-editor/esm/vs/editor/editor.api";
-import type { editor } from "monaco-editor/esm/vs/editor/editor.api";
+import { type editor } from "monaco-editor/esm/vs/editor/editor.api";
 import { MonacoLanguageFor } from "../utils/path";
 
 /**

@@ -1,14 +1,14 @@
-import type { Immutable, Nullable } from "../types";
-import type { SmartArray } from "../Misc/smartArray";
-import type { ISpriteManager } from "../Sprites/spriteManager";
-import type { IParticleSystem } from "../Particles/IParticleSystem";
+import { type Immutable, type Nullable } from "../types";
+import { type SmartArray } from "../Misc/smartArray";
+import { type ISpriteManager } from "../Sprites/spriteManager";
+import { type IParticleSystem } from "../Particles/IParticleSystem";
 import { RenderingGroup } from "./renderingGroup";
 
-import type { Scene } from "../scene";
-import type { Camera } from "../Cameras/camera";
-import type { Material } from "../Materials/material";
-import type { SubMesh } from "../Meshes/subMesh";
-import type { AbstractMesh } from "../Meshes/abstractMesh";
+import { type Scene } from "../scene";
+import { type Camera } from "../Cameras/camera";
+import { type Material } from "../Materials/material";
+import { type SubMesh } from "../Meshes/subMesh";
+import { type AbstractMesh } from "../Meshes/abstractMesh";
 
 /**
  * Interface describing the different options available in the rendering manager

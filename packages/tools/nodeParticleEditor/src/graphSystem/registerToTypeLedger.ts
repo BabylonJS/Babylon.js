@@ -1,7 +1,7 @@
 import { TypeLedger } from "shared-ui-components/nodeGraphSystem/typeLedger";
 import { BlockNodeData } from "./blockNodeData";
 import { ConnectionPointPortData } from "./connectionPointPortData";
-import type { NodeParticleConnectionPoint } from "core/Particles/Node/nodeParticleBlockConnectionPoint";
+import { type NodeParticleConnectionPoint } from "core/Particles/Node/nodeParticleBlockConnectionPoint";
 
 export const RegisterTypeLedger = () => {
     TypeLedger.PortDataBuilder = (data, nodeContainer) => {

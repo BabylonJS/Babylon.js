@@ -1,15 +1,14 @@
-import type { Scene } from "core/scene";
-import type { AbstractMesh } from "core/Meshes/abstractMesh";
-import type { Light } from "core/Lights/light";
-import type { Camera } from "core/Cameras/camera";
-import type { Material } from "core/Materials/material";
-import type { TransformNode } from "core/Meshes/transformNode";
-import type { Animation } from "core/Animations/animation";
-import type { AnimationGroup } from "core/Animations/animationGroup";
-import type { Skeleton } from "core/Bones/skeleton";
-import type { IParticleSystem } from "core/Particles/IParticleSystem";
-import { Observable } from "core/Misc/observable";
-import type { Observer } from "core/Misc/observable";
+import { type Scene } from "core/scene";
+import { type AbstractMesh } from "core/Meshes/abstractMesh";
+import { type Light } from "core/Lights/light";
+import { type Camera } from "core/Cameras/camera";
+import { type Material } from "core/Materials/material";
+import { type TransformNode } from "core/Meshes/transformNode";
+import { type Animation } from "core/Animations/animation";
+import { type AnimationGroup } from "core/Animations/animationGroup";
+import { type Skeleton } from "core/Bones/skeleton";
+import { type IParticleSystem } from "core/Particles/IParticleSystem";
+import { Observable, type Observer } from "core/Misc/observable";
 
 /**
  * Represents a single scene object entry that can be referenced by flow graph blocks.

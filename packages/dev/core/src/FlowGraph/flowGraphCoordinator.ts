@@ -1,10 +1,9 @@
-import type { Observer } from "core/Misc/observable";
-import { Observable } from "core/Misc/observable";
-import type { Scene } from "../scene";
+import { type Observer, Observable } from "core/Misc/observable";
+import { type Scene } from "../scene";
 import { FlowGraph } from "./flowGraph";
-import type { IPathToObjectConverter } from "../ObjectModel/objectModelInterfaces";
-import type { IObjectAccessor } from "./typeDefinitions";
-import type { IAssetContainer } from "core/IAssetContainer";
+import { type IPathToObjectConverter } from "../ObjectModel/objectModelInterfaces";
+import { type IObjectAccessor } from "./typeDefinitions";
+import { type IAssetContainer } from "core/IAssetContainer";
 import { Logger } from "core/Misc/logger";
 
 /**

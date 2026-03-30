@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { ErrorCodes, RuntimeError } from "core/Misc/error";
 import { Constants } from "../constants";
-import type { INative } from "./nativeInterfaces";
+import { type INative } from "./nativeInterfaces";
 import { VertexBuffer } from "core/Buffers/buffer";
 
 declare const _native: INative;

@@ -1,17 +1,17 @@
-import type { Nullable } from "core/types";
+import { type Nullable } from "core/types";
 import { Observable } from "core/Misc/observable";
 import { Vector3 } from "core/Maths/math.vector";
 import { PointerEventTypes } from "core/Events/pointerEvents";
-import type { TransformNode } from "core/Meshes/transformNode";
+import { type TransformNode } from "core/Meshes/transformNode";
 import { AbstractMesh } from "core/Meshes/abstractMesh";
-import type { IBehaviorAware, Behavior } from "core/Behaviors/behavior";
-import type { IDisposable, Scene } from "core/scene";
+import { type IBehaviorAware, type Behavior } from "core/Behaviors/behavior";
+import { type IDisposable, type Scene } from "core/scene";
 
-import type { GUI3DManager } from "../gui3DManager";
+import { type GUI3DManager } from "../gui3DManager";
 import { Vector3WithInfo } from "../vector3WithInfo";
-import type { Container3D } from "./container3D";
+import { type Container3D } from "./container3D";
 
-import type { TouchButton3D } from "./touchButton3D";
+import { type TouchButton3D } from "./touchButton3D";
 
 /**
  * Class used as base class for controls

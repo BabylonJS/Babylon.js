@@ -1,18 +1,18 @@
-import type {
-    AbstractEngine,
-    AbstractMesh,
-    EffectLayer,
-    Mesh,
-    Nullable,
-    Observer,
-    Scene,
-    WebGPUDrawContext,
-    WebGPUShaderProcessor,
-    WebGPUPipelineContext,
-    GaussianSplattingMesh,
-    DrawWrapper,
-    Camera,
-    SpriteManager,
+import {
+    type AbstractEngine,
+    type AbstractMesh,
+    type EffectLayer,
+    type Mesh,
+    type Nullable,
+    type Observer,
+    type Scene,
+    type WebGPUDrawContext,
+    type WebGPUShaderProcessor,
+    type WebGPUPipelineContext,
+    type GaussianSplattingMesh,
+    type DrawWrapper,
+    type Camera,
+    type SpriteManager,
 } from "core/index";
 
 import { Constants } from "core/Engines/constants";

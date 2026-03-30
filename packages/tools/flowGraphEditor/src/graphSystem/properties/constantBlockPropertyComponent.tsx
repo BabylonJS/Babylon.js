@@ -1,6 +1,6 @@
 import * as React from "react";
 import { LineContainerComponent } from "../../sharedComponents/lineContainerComponent";
-import type { IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
+import { type IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
 import { OptionsLine } from "shared-ui-components/lines/optionsLineComponent";
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
 import { CheckBoxLineComponent } from "../../sharedComponents/checkBoxLineComponent";
@@ -11,7 +11,7 @@ import { Color3LineComponent } from "shared-ui-components/lines/color3LineCompon
 import { Color4LineComponent } from "shared-ui-components/lines/color4LineComponent";
 import { MatrixLineComponent } from "shared-ui-components/lines/matrixLineComponent";
 import { GeneralPropertyTabComponent } from "./genericNodePropertyComponent";
-import type { FlowGraphConstantBlock } from "core/FlowGraph/Blocks/Data/flowGraphConstantBlock";
+import { type FlowGraphConstantBlock } from "core/FlowGraph/Blocks/Data/flowGraphConstantBlock";
 import { getRichTypeFromValue } from "core/FlowGraph/flowGraphRichTypes";
 import { FlowGraphInteger } from "core/FlowGraph/CustomTypes/flowGraphInteger";
 import { Vector2, Vector3, Vector4, Quaternion, Matrix } from "core/Maths/math.vector";

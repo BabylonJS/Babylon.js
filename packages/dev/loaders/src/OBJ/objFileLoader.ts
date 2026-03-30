@@ -1,18 +1,24 @@
 /* eslint-disable @typescript-eslint/promise-function-async */
-import type { Nullable } from "core/types";
+import { type Nullable } from "core/types";
 import { Vector2 } from "core/Maths/math.vector";
 import { Tools } from "core/Misc/tools";
-import type { AbstractMesh } from "core/Meshes/abstractMesh";
-import type { ISceneLoaderPluginAsync, ISceneLoaderPluginFactory, ISceneLoaderPlugin, ISceneLoaderAsyncResult, SceneLoaderPluginOptions } from "core/Loading/sceneLoader";
-import { RegisterSceneLoaderPlugin } from "core/Loading/sceneLoader";
+import { type AbstractMesh } from "core/Meshes/abstractMesh";
+import {
+    type ISceneLoaderPluginAsync,
+    type ISceneLoaderPluginFactory,
+    type ISceneLoaderPlugin,
+    type ISceneLoaderAsyncResult,
+    type SceneLoaderPluginOptions,
+    RegisterSceneLoaderPlugin,
+} from "core/Loading/sceneLoader";
 import { AssetContainer } from "core/assetContainer";
-import type { Scene } from "core/scene";
-import type { WebRequest } from "core/Misc/webRequest";
+import { type Scene } from "core/scene";
+import { type WebRequest } from "core/Misc/webRequest";
 import { OBJFileLoaderMetadata } from "./objFileLoader.metadata";
 import { MTLFileLoader } from "./mtlFileLoader";
-import type { OBJLoadingOptions } from "./objLoadingOptions";
+import { type OBJLoadingOptions } from "./objLoadingOptions";
 import { SolidParser } from "./solidParser";
-import type { Mesh } from "core/Meshes/mesh";
+import { type Mesh } from "core/Meshes/mesh";
 import { StandardMaterial } from "core/Materials/standardMaterial";
 
 declare module "core/Loading/sceneLoader" {

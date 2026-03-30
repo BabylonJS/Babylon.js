@@ -1,15 +1,15 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { serialize, serializeAsTexture, serializeAsColorCurves, serializeAsColor4 } from "../Misc/decorators";
 import { Observable } from "../Misc/observable";
-import type { Nullable } from "../types";
+import { type Nullable } from "../types";
 import { Color4 } from "../Maths/math.color";
 import { ColorCurves } from "../Materials/colorCurves";
 
-import type { BaseTexture } from "../Materials/Textures/baseTexture";
-import type { Effect } from "../Materials/effect";
+import { type BaseTexture } from "../Materials/Textures/baseTexture";
+import { type Effect } from "../Materials/effect";
 import { Mix } from "../Misc/tools.functions";
 import { SerializationHelper } from "../Misc/decorators.serialization";
-import type { IImageProcessingConfigurationDefines } from "./imageProcessingConfiguration.defines";
+import { type IImageProcessingConfigurationDefines } from "./imageProcessingConfiguration.defines";
 import { PrepareSamplersForImageProcessing, PrepareUniformsForImageProcessing } from "./imageProcessingConfiguration.functions";
 import { RegisterClass } from "../Misc/typeStore";
 

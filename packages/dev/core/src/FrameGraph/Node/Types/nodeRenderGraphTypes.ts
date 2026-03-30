@@ -1,14 +1,14 @@
-import type {
-    Color4,
-    Scene,
-    FrameGraphTextureHandle,
-    Camera,
-    FrameGraphObjectList,
-    IShadowLight,
-    FrameGraphShadowGeneratorTask,
-    FrameGraphObjectRendererTask,
-    FrameGraph,
-    NodeRenderGraphBlock,
+import {
+    type Color4,
+    type Scene,
+    type FrameGraphTextureHandle,
+    type Camera,
+    type FrameGraphObjectList,
+    type IShadowLight,
+    type FrameGraphShadowGeneratorTask,
+    type FrameGraphObjectRendererTask,
+    type FrameGraph,
+    type NodeRenderGraphBlock,
 } from "core/index";
 
 /**

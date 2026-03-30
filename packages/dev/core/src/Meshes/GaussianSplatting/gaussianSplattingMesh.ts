@@ -1,14 +1,16 @@
-import type { Nullable } from "core/types";
-import type { Scene } from "core/scene";
-import type { Matrix, Vector2 } from "core/Maths/math.vector";
-import type { Effect } from "core/Materials/effect";
-import { Quaternion, Vector3 } from "core/Maths/math.vector";
+import { type Nullable } from "core/types";
+import { type Scene } from "core/scene";
+import { type Matrix, type Vector2, Quaternion, Vector3 } from "core/Maths/math.vector";
+import { type Effect } from "core/Materials/effect";
+
 import { GetGaussianSplattingMaxPartCount } from "core/Materials/GaussianSplatting/gaussianSplattingMaterial";
 import { GaussianSplattingMeshBase } from "./gaussianSplattingMeshBase";
+
+import { RawTexture } from "core/Materials/Textures/rawTexture";
+import { Constants } from "core/Engines/constants";
+import "core/Meshes/thinInstanceMesh";
 import { GaussianSplattingPartProxyMesh } from "./gaussianSplattingPartProxyMesh";
-import type { BaseTexture } from "../../Materials/Textures/baseTexture";
-import { Constants } from "../../Engines/constants";
-import { RawTexture } from "../../Materials/Textures/rawTexture";
+import { type BaseTexture } from "../../Materials/Textures/baseTexture";
 
 /**
  * Class used to render a Gaussian Splatting mesh. Supports both single-cloud and compound

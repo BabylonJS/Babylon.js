@@ -1,7 +1,7 @@
-import type { Nullable } from "../../types";
+import { type Nullable } from "../../types";
 import { serialize } from "../../Misc/decorators";
-import type { PointerTouch } from "../../Events/pointerEvents";
-import type { IPointerEvent } from "../../Events/deviceInputEvents";
+import { type PointerTouch } from "../../Events/pointerEvents";
+import { type IPointerEvent } from "../../Events/deviceInputEvents";
 import { BaseCameraPointersInput } from "./BaseCameraPointersInput";
 
 /**

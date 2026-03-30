@@ -1,8 +1,8 @@
-import type { TransformNode } from "../Meshes/transformNode";
-import type { Vector3 } from "../Maths/math";
-import type { Mesh } from "../Meshes/mesh";
-import type { Scene } from "../scene";
-import type { Nullable } from "../types";
+import { type TransformNode } from "../Meshes/transformNode";
+import { type Vector3 } from "../Maths/math";
+import { type Mesh } from "../Meshes/mesh";
+import { type Scene } from "../scene";
+import { type Nullable } from "../types";
 
 /**
  * Navigation plugin interface to add navigation constrained by a navigation mesh

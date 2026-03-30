@@ -1,7 +1,7 @@
 /* eslint-disable no-await-in-loop */
 /* eslint-disable no-console */
 /* eslint-disable @typescript-eslint/naming-convention */
-import type { StacktracedObject } from "./window";
+import { type StacktracedObject } from "./window";
 
 // Minimal Page-like interface to avoid depending on the puppeteer package.
 interface Page {

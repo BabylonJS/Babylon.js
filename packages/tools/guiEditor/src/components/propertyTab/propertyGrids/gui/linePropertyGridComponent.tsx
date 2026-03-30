@@ -1,9 +1,9 @@
 import * as React from "react";
-import type { Observable } from "core/Misc/observable";
-import type { PropertyChangedEvent } from "shared-ui-components/propertyChangedEvent";
+import { type Observable } from "core/Misc/observable";
+import { type PropertyChangedEvent } from "shared-ui-components/propertyChangedEvent";
 import { CommonControlPropertyGridComponent } from "../gui/commonControlPropertyGridComponent";
-import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
-import type { Line } from "gui/2D/controls/line";
+import { type LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
+import { type Line } from "gui/2D/controls/line";
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
 import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
 import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
@@ -15,7 +15,7 @@ import linePoint2Icon from "shared-ui-components/imgs/linePoint2Icon.svg";
 import lineDashIcon from "shared-ui-components/imgs/lineDashIcon.svg";
 import { IconComponent } from "shared-ui-components/lines/iconComponent";
 import { UnitButton } from "shared-ui-components/lines/unitButton";
-import type { GlobalState } from "../../../../globalState";
+import { type GlobalState } from "../../../../globalState";
 
 interface ILinePropertyGridComponentProps {
     lines: Line[];

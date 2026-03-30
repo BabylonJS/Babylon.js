@@ -1,4 +1,4 @@
-import type { IndicesArray } from "core/types";
+import { type IndicesArray } from "core/types";
 import { BitArray } from "core/Misc/bitArray";
 
 /**
