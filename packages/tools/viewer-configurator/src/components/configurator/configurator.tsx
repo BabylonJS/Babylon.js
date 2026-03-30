@@ -53,14 +53,20 @@ const useStyles = makeStyles({
         display: "flex",
         flexDirection: "column",
         height: "100%",
-        overflow: "hidden",
+        overflow: "auto",
     },
     snippetSection: {
-        flexShrink: 0,
         padding: tokens.spacingVerticalS + " " + tokens.spacingHorizontalM,
         display: "flex",
         flexDirection: "column",
         gap: tokens.spacingVerticalS,
+        // Pin the snippet section at the top when there is enough vertical space.
+        "@media (min-height: 600px)": {
+            position: "sticky",
+            top: 0,
+            zIndex: 1,
+            backgroundColor: tokens.colorNeutralBackground1,
+        },
     },
     snippetActions: {
         display: "flex",
@@ -68,10 +74,7 @@ const useStyles = makeStyles({
         alignItems: "center",
         gap: tokens.spacingHorizontalS,
     },
-    accordionContainer: {
-        flex: 1,
-        overflow: "hidden",
-    },
+    accordionContainer: {},
     propertyContent: {
         display: "flex",
         flexDirection: "row",
