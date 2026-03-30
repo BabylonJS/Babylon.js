@@ -1,9 +1,14 @@
-import type { IDisposable } from "core/index";
+import type { IDisposable, Nullable } from "core/index";
 import type { Scene } from "core/scene";
+import type { ServiceDefinition } from "./modularity/serviceDefinition";
+import type { ISceneContext } from "./services/sceneContext";
 
 import { Logger } from "core/Misc/logger";
+import { Observable } from "core/Misc/observable";
 import { ServiceContainer } from "./modularity/serviceContainer";
+import { SceneContextIdentity } from "./services/sceneContext";
 import { MakeInspectableBridgeServiceDefinition } from "./services/cli/inspectableBridgeService";
+import { EntityQueryServiceDefinition } from "./services/cli/entityQueryService";
 
 const DEFAULT_PORT = 4400;
 
@@ -85,12 +90,23 @@ export function StartInspectable(scene: Scene, options?: Partial<InspectableOpti
     });
 
     // Initialize the service container asynchronously.
+    const sceneContextServiceDefinition: ServiceDefinition<[ISceneContext], []> = {
+        friendlyName: "Inspectable Scene Context",
+        produces: [SceneContextIdentity],
+        factory: () => ({
+            currentScene: scene,
+            currentSceneObservable: new Observable<Nullable<Scene>>(),
+        }),
+    };
+
     serviceContainer
-        .addServiceAsync(
+        .addServicesAsync(
+            sceneContextServiceDefinition,
             MakeInspectableBridgeServiceDefinition({
                 port,
                 name,
-            })
+            }),
+            EntityQueryServiceDefinition
         )
         .catch((error: unknown) => {
             Logger.Error(`Failed to initialize InspectableBridgeService: ${error}`);

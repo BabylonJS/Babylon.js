@@ -4,7 +4,7 @@ import { fileURLToPath } from "url";
 import { dirname, join, resolve } from "path";
 import ws from "ws";
 import { loadConfig } from "./config.js";
-import type { CliRequest, CliResponse, CommandsResponse, SessionsResponse } from "./protocol.js";
+import type { CliRequest, CliResponse, CommandsResponse, ExecResponse, SessionsResponse } from "./protocol.js";
 
 type WebSocket = ws;
 
@@ -14,13 +14,16 @@ const HELP_TEXT = `babylon-inspector — Interact with running Babylon.js scenes
 
 USAGE
   babylon-inspector [options]
+  babylon-inspector --exec <session-id> <command-id> [--arg value ...]
 
 OPTIONS
   --help                   Show this help message.
   --sessions               List active browser sessions connected to the bridge.
   --stop                   Stop the bridge process.
   --commands <session-id>  List commands available from a specific session.
-                           Use --<command-id> --help for help on a specific command.
+  --exec <session-id> <command-id> [--arg value ...]
+                           Execute a command on a session. Extra --key value
+                           pairs are forwarded as command arguments.
 
 CONFIGURATION
   Place a .babyloninspector JSON file anywhere in the directory parent chain:
@@ -29,6 +32,7 @@ CONFIGURATION
 EXAMPLES
   babylon-inspector --sessions
   babylon-inspector --commands 1
+  babylon-inspector --exec 1 query-mesh --uniqueId 42
 `;
 
 interface ParsedArgs {
@@ -36,28 +40,77 @@ interface ParsedArgs {
     sessions: boolean;
     stop: boolean;
     commands?: string;
+    exec?: string;
     bridgeScript?: string;
+    rest: string[];
 }
 
 function parseCliArgs(): ParsedArgs {
-    const { values } = parseArgs({
+    const { values, tokens } = parseArgs({
         options: {
             help: { type: "boolean", default: false },
             sessions: { type: "boolean", default: false },
             stop: { type: "boolean", default: false },
             commands: { type: "string" },
+            exec: { type: "string" },
             "bridge-script": { type: "string" },
         },
         strict: false,
         allowPositionals: true,
+        tokens: true,
     });
+
+    // Collect all unknown --key value pairs that appear after --exec's positional command id.
+    // With strict:false, parseArgs treats unknown options as booleans and their values as positionals,
+    // so we re-pair them using the raw token stream.
+    const rest: string[] = [];
+    if (tokens) {
+        let pastExecCommandId = false;
+        let pendingOptionName: string | null = null;
+        for (const token of tokens) {
+            if (token.kind === "positional" && !pastExecCommandId && values.exec !== undefined) {
+                // First positional after --exec is the command id.
+                pastExecCommandId = true;
+                rest.push(token.value);
+                continue;
+            }
+            if (!pastExecCommandId) {
+                continue;
+            }
+            if (token.kind === "option" && token.name !== "bridge-script") {
+                if (pendingOptionName !== null) {
+                    // Previous option had no value — treat as a boolean flag.
+                    rest.push(`--${pendingOptionName}`);
+                }
+                if (token.value !== undefined) {
+                    rest.push(`--${token.name}`, token.value);
+                } else {
+                    pendingOptionName = token.name;
+                }
+                continue;
+            }
+            if (token.kind === "positional" && pendingOptionName !== null) {
+                rest.push(`--${pendingOptionName}`, token.value);
+                pendingOptionName = null;
+                continue;
+            }
+            if (token.kind === "positional") {
+                rest.push(token.value);
+            }
+        }
+        if (pendingOptionName !== null) {
+            rest.push(`--${pendingOptionName}`);
+        }
+    }
 
     return {
         help: !!values.help,
         sessions: !!values.sessions,
         stop: !!values.stop,
         commands: values.commands as string | undefined,
+        exec: values.exec as string | undefined,
         bridgeScript: values["bridge-script"] as string | undefined,
+        rest,
     };
 }
 
@@ -185,6 +238,50 @@ async function main(): Promise<void> {
                         }
                     }
                 }
+            }
+        } finally {
+            socket.close();
+        }
+        return;
+    }
+
+    if (args.exec !== undefined) {
+        const sessionId = parseInt(args.exec, 10);
+        if (isNaN(sessionId)) {
+            console.error("Error: --exec requires a numeric session id as the first argument.");
+            process.exitCode = 1;
+            return;
+        }
+
+        const commandId = args.rest[0];
+        if (!commandId) {
+            console.error("Error: --exec requires a command id as the second argument.");
+            process.exitCode = 1;
+            return;
+        }
+
+        // Parse remaining --key value pairs into a Record.
+        const commandArgs: Record<string, string> = {};
+        for (let i = 1; i < args.rest.length; i++) {
+            const token = args.rest[i];
+            if (token.startsWith("--") && i + 1 < args.rest.length) {
+                commandArgs[token.slice(2)] = args.rest[++i];
+            }
+        }
+
+        const socket = await ensureBridge(config.cliPort, args.bridgeScript);
+        try {
+            const response = await sendAndReceive<ExecResponse>(socket, {
+                type: "exec",
+                sessionId,
+                commandId,
+                args: commandArgs,
+            });
+            if (response.error) {
+                console.error(`Error: ${response.error}`);
+                process.exitCode = 1;
+            } else {
+                console.log(response.result ?? "");
             }
         } finally {
             socket.close();
