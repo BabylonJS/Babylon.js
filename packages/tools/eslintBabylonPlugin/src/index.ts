@@ -572,6 +572,12 @@ const plugin: IPlugin = {
                             return;
                         }
 
+                        // Skip imports where all specifiers are inline type imports (e.g. import { type Foo } from "...")
+                        // These are also erased during compilation and won't cause .js extension issues
+                        if (node.specifiers.length > 0 && node.specifiers.every((s) => s.type === "ImportSpecifier" && (s as any).importKind === "type")) {
+                            return;
+                        }
+
                         const importPath = node.source.value as string;
 
                         // Relative imports
