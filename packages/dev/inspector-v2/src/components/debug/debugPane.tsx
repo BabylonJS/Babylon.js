@@ -1,4 +1,4 @@
-import type { AbstractMesh, Mesh, Scene } from "core/index";
+import { type AbstractMesh, type Mesh, type Scene } from "core/index";
 
 import { FontAsset } from "addons/msdfText/fontAsset";
 import { TextRenderer } from "addons/msdfText/textRenderer";

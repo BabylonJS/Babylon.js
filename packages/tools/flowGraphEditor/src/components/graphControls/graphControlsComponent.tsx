@@ -1,12 +1,11 @@
 import * as React from "react";
-import type { Nullable } from "core/types";
-import type { Observer } from "core/Misc/observable";
+import { type Nullable } from "core/types";
+import { type Observer } from "core/Misc/observable";
 import { FlowGraphState } from "core/FlowGraph/flowGraph";
-import type { IFlowGraphPendingActivation } from "core/FlowGraph/flowGraphContext";
-import type { GlobalState } from "../../globalState";
+import { type IFlowGraphPendingActivation } from "core/FlowGraph/flowGraphContext";
+import { type GlobalState } from "../../globalState";
 import { LogEntry } from "../log/logComponent";
-import type { IFlowGraphValidationResult } from "core/FlowGraph/flowGraphValidator";
-import { FlowGraphValidationSeverity } from "core/FlowGraph/flowGraphValidator";
+import { type IFlowGraphValidationResult, FlowGraphValidationSeverity } from "core/FlowGraph/flowGraphValidator";
 
 import "./graphControls.scss";
 

@@ -1,11 +1,10 @@
-import type { FunctionComponent } from "react";
+import { type FunctionComponent, useCallback, useEffect, useRef, useState } from "react";
 
-import type { BaseTexture, ISize } from "core/index";
-import type { IPixelData } from "./canvasManager";
+import { type BaseTexture, type ISize } from "core/index";
+import { type IPixelData } from "./canvasManager";
 
 import { Input, Label, makeStyles, tokens, Toolbar, ToolbarButton, ToolbarDivider, Tooltip } from "@fluentui/react-components";
 import { ArrowResetRegular, ArrowUploadRegular, ChevronDownRegular, ChevronUpRegular, ResizeRegular, SaveRegular } from "@fluentui/react-icons";
-import { useCallback, useEffect, useRef, useState } from "react";
 
 const useStyles = makeStyles({
     propertiesBar: {

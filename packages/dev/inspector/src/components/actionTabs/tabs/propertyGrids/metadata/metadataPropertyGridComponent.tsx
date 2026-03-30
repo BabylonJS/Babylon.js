@@ -1,5 +1,5 @@
 import * as React from "react";
-import type { GlobalState } from "inspector/components/globalState";
+import { type GlobalState } from "inspector/components/globalState";
 import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
 import { CheckBoxLineComponent } from "shared-ui-components/lines/checkBoxLineComponent";
 import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineComponent";

@@ -1,16 +1,14 @@
-import type { TransformNode } from "../../Meshes/transformNode";
-import type { Nullable } from "../../types";
-import { WebXRFeatureName } from "../../XR/webXRFeaturesManager";
-import type { WebXRFeaturesManager } from "../../XR/webXRFeaturesManager";
-import type { WebXREyeTracking } from "../../XR/features/WebXREyeTracking";
-import type { WebXRHandTracking } from "../../XR/features/WebXRHandTracking";
-import { WebXRHandJoint } from "../../XR/features/WebXRHandTracking";
-import type { WebXRExperienceHelper } from "../../XR/webXRExperienceHelper";
-import type { Behavior } from "../behavior";
-import type { Observer } from "../../Misc/observable";
-import type { Scene } from "../../scene";
+import { type TransformNode } from "../../Meshes/transformNode";
+import { type Nullable } from "../../types";
+import { WebXRFeatureName, type WebXRFeaturesManager } from "../../XR/webXRFeaturesManager";
+import { type WebXREyeTracking } from "../../XR/features/WebXREyeTracking";
+import { type WebXRHandTracking, WebXRHandJoint } from "../../XR/features/WebXRHandTracking";
+import { type WebXRExperienceHelper } from "../../XR/webXRExperienceHelper";
+import { type Behavior } from "../behavior";
+import { type Observer } from "../../Misc/observable";
+import { type Scene } from "../../scene";
 import { Quaternion, TmpVectors, Vector3 } from "../../Maths/math.vector";
-import type { Ray } from "../../Culling/ray";
+import { type Ray } from "../../Culling/ray";
 import { Tools } from "core/Misc/tools";
 
 /**

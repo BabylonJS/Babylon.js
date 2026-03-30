@@ -1,7 +1,6 @@
-import { useState, useEffect } from "react";
-import type { FC } from "react";
+import { useState, useEffect, type FC } from "react";
 import { SetPositionAction } from "../actions/actions/SetPositionAction";
-import type { Nullable } from "core/types";
+import { type Nullable } from "core/types";
 import { useSelectedAction } from "./tools/useSelectedAction";
 
 export interface IEditValueComponentProps {}

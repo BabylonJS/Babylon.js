@@ -1,4 +1,4 @@
-import type { ReactChild } from "react";
+import { type ReactChild } from "react";
 import { ClassNames } from "./classNames";
 import * as styles from "./Label.module.scss";
 

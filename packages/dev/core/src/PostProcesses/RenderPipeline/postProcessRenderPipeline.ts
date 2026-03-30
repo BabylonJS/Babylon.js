@@ -1,13 +1,13 @@
-import type { Nullable } from "../../types";
+import { type Nullable } from "../../types";
 import { Tools } from "../../Misc/tools";
 import { serialize } from "../../Misc/decorators";
 import { UniqueIdGenerator } from "core/Misc/uniqueIdGenerator";
-import type { Camera } from "../../Cameras/camera";
-import type { AbstractEngine } from "../../Engines/abstractEngine";
-import type { PostProcessRenderEffect } from "./postProcessRenderEffect";
-import type { IInspectable } from "../../Misc/iInspectable";
+import { type Camera } from "../../Cameras/camera";
+import { type AbstractEngine } from "../../Engines/abstractEngine";
+import { type PostProcessRenderEffect } from "./postProcessRenderEffect";
+import { type IInspectable } from "../../Misc/iInspectable";
 
-import type { PrePassRenderer } from "../../Rendering/prePassRenderer";
+import { type PrePassRenderer } from "../../Rendering/prePassRenderer";
 
 /**
  * PostProcessRenderPipeline

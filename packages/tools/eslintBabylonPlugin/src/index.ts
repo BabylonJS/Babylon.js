@@ -1,10 +1,9 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import type * as eslint from "eslint";
 import type * as ESTree from "estree";
-import type { ParserContext } from "@microsoft/tsdoc";
-import { TSDocConfiguration, TSDocParser, TextRange } from "@microsoft/tsdoc";
+import { type ParserContext, TSDocConfiguration, TSDocParser, TextRange } from "@microsoft/tsdoc";
 import * as tsdoc from "@microsoft/tsdoc";
-import type { TSDocConfigFile } from "@microsoft/tsdoc-config";
+import { type TSDocConfigFile } from "@microsoft/tsdoc-config";
 import * as ts from "typescript";
 import * as fs from "fs";
 import * as path from "path";
@@ -570,6 +569,12 @@ const plugin: IPlugin = {
                         // Skip type-only imports as they are erased during compilation
                         // The importKind property is added by TypeScript-ESLint parser
                         if ((node as any).importKind === "type") {
+                            return;
+                        }
+
+                        // Skip imports where all specifiers are inline type imports (e.g. import { type Foo } from "...")
+                        // These are also erased during compilation and won't cause .js extension issues
+                        if (node.specifiers.length > 0 && node.specifiers.every((s) => s.type === "ImportSpecifier" && (s as any).importKind === "type")) {
                             return;
                         }
 

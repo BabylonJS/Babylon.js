@@ -1,12 +1,12 @@
-import type { Nullable, FloatArray } from "../types";
+import { type Nullable, type FloatArray } from "../types";
 import { Vector3, Vector2, TmpVectors } from "../Maths/math.vector";
-import type { AbstractMesh } from "../Meshes/abstractMesh";
-import type { TransformNode } from "../Meshes/transformNode";
+import { type AbstractMesh } from "../Meshes/abstractMesh";
+import { type TransformNode } from "../Meshes/transformNode";
 import { VertexBuffer } from "../Buffers/buffer";
-import type { Sprite } from "../Sprites/sprite";
-import type { Mesh } from "../Meshes/mesh";
+import { type Sprite } from "../Sprites/sprite";
+import { type Mesh } from "../Meshes/mesh";
 
-import type { Ray } from "../Culling/ray";
+import { type Ray } from "../Culling/ray";
 
 /**
  * Information about the result of picking within a scene

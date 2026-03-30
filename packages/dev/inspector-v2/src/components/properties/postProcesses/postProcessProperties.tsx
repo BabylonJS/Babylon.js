@@ -1,6 +1,6 @@
-import type { PostProcess } from "core/PostProcesses/postProcess";
+import { type PostProcess } from "core/PostProcesses/postProcess";
 
-import type { FunctionComponent } from "react";
+import { type FunctionComponent } from "react";
 
 import { StringifiedPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/stringifiedPropertyLine";
 import { CheckboxPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/checkboxPropertyLine";

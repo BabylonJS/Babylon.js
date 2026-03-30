@@ -1,14 +1,12 @@
-import type { Nullable } from "../../types";
-import type { AbstractAudioNode } from "../abstractAudio/abstractAudioNode";
-import type { ISoundSourceOptions } from "../abstractAudio/abstractSoundSource";
-import { AbstractSoundSource } from "../abstractAudio/abstractSoundSource";
-import type { AbstractSpatialAudio } from "../abstractAudio/subProperties/abstractSpatialAudio";
-import { _HasSpatialAudioOptions } from "../abstractAudio/subProperties/abstractSpatialAudio";
+import { type Nullable } from "../../types";
+import { type AbstractAudioNode } from "../abstractAudio/abstractAudioNode";
+import { type ISoundSourceOptions, AbstractSoundSource } from "../abstractAudio/abstractSoundSource";
+import { type AbstractSpatialAudio, _HasSpatialAudioOptions } from "../abstractAudio/subProperties/abstractSpatialAudio";
 import { _StereoAudio } from "../abstractAudio/subProperties/stereoAudio";
 import { _WebAudioBusAndSoundSubGraph } from "./subNodes/webAudioBusAndSoundSubGraph";
 import { _SpatialWebAudio } from "./subProperties/spatialWebAudio";
-import type { _WebAudioEngine } from "./webAudioEngine";
-import type { IWebAudioInNode } from "./webAudioNode";
+import { type _WebAudioEngine } from "./webAudioEngine";
+import { type IWebAudioInNode } from "./webAudioNode";
 
 /** @internal */
 export class _WebAudioSoundSource extends AbstractSoundSource {

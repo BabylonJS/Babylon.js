@@ -1,7 +1,7 @@
 import * as react from "react";
-import type { GlobalState } from "../../globalState";
-import type { Nullable } from "core/types";
-import type { Observer } from "core/Misc/observable";
+import { type GlobalState } from "../../globalState";
+import { type Nullable } from "core/types";
+import { type Observer } from "core/Misc/observable";
 import { FillMode, FixedMode, type PreviewSizeMode } from "../../previewSizeManager.js";
 
 interface IPreviewAreaComponentProps {

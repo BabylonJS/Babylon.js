@@ -1,8 +1,7 @@
 import { SoundState } from "../soundState";
-import type { IAbstractSoundOptions, IAbstractSoundPlayOptions, IAbstractSoundStoredOptions } from "./abstractSound";
-import { AbstractSound } from "./abstractSound";
-import type { AudioEngineV2 } from "./audioEngineV2";
-import type { _StreamingSoundInstance } from "./streamingSoundInstance";
+import { type IAbstractSoundOptions, type IAbstractSoundPlayOptions, type IAbstractSoundStoredOptions, AbstractSound } from "./abstractSound";
+import { type AudioEngineV2 } from "./audioEngineV2";
+import { type _StreamingSoundInstance } from "./streamingSoundInstance";
 
 /** @internal */
 export interface IStreamingSoundOptionsBase {

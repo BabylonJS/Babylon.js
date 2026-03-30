@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/promise-function-async */
 /* eslint-disable @typescript-eslint/no-misused-promises */
-import type { Nullable } from "core/types";
-import type { Observer, Observable } from "core/Misc/observable";
-import type { IExplorerExtensibilityGroup } from "core/Debug/debugLayer";
+import { type Nullable } from "core/types";
+import { type Observer, type Observable } from "core/Misc/observable";
+import { type IExplorerExtensibilityGroup } from "core/Debug/debugLayer";
 
-import type { Control } from "gui/2D/controls/control";
-import type { AdvancedDynamicTexture } from "gui/2D/advancedDynamicTexture";
+import { type Control } from "gui/2D/controls/control";
+import { type AdvancedDynamicTexture } from "gui/2D/advancedDynamicTexture";
 
 import { faImage, faCrosshairs, faPen } from "@fortawesome/free-solid-svg-icons";
 import { TreeItemLabelComponent } from "../../treeItemLabelComponent";

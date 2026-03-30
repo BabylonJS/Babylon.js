@@ -1,7 +1,6 @@
-import { makeStyles, tokens } from "@fluentui/react-components";
-import type { GriffelStyle } from "@fluentui/react-components";
+import { makeStyles, tokens, type GriffelStyle } from "@fluentui/react-components";
 
-import type { KeyboardEvent, FocusEvent } from "react";
+import { type KeyboardEvent, type FocusEvent } from "react";
 
 export const TokenMap = {
     px2: tokens.borderRadiusSmall,

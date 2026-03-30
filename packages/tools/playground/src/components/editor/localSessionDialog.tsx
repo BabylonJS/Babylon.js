@@ -1,9 +1,16 @@
 import * as React from "react";
-import type { GlobalState } from "../../globalState";
-import type { FileChange, RevisionContext, SnippetRevision } from "../../tools/localSession";
-import { ListRevisionContexts, LoadFileRevisionsForToken, MaxRevisions, RemoveFileRevisionForToken } from "../../tools/localSession";
+import { type GlobalState } from "../../globalState";
+import {
+    type FileChange,
+    type RevisionContext,
+    type SnippetRevision,
+    ListRevisionContexts,
+    LoadFileRevisionsForToken,
+    MaxRevisions,
+    RemoveFileRevisionForToken,
+} from "../../tools/localSession";
 import { Utilities } from "../../tools/utilities";
-import type { V2Manifest } from "../../tools/snippet";
+import { type V2Manifest } from "../../tools/snippet";
 import "../../scss/dialogs.scss";
 
 interface ILocalSessionDialogProps {

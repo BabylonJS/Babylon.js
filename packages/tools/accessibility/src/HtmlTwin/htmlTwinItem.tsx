@@ -1,12 +1,12 @@
 import { StandardMaterial } from "core/Materials/standardMaterial";
 import { AbstractMesh } from "core/Meshes/abstractMesh";
 import { Node } from "core/node";
-import type { Scene } from "core/scene";
+import { type Scene } from "core/scene";
 import { AdvancedDynamicTexture } from "gui/2D/advancedDynamicTexture";
 import { Button } from "gui/2D/controls/button";
 import { Container } from "gui/2D/controls/container";
 import { Control } from "gui/2D/controls/control";
-import type { IHTMLTwinRendererOptions } from "./htmlTwinRenderer";
+import { type IHTMLTwinRendererOptions } from "./htmlTwinRenderer";
 
 /**
  * The BabylonJS entities that can be accessible. It can be a Node or a Control.

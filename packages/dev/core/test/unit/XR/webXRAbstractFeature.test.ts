@@ -6,7 +6,7 @@ import { NullEngine } from "core/Engines";
 import { Scene } from "core/scene";
 import { WebXRSessionManager } from "core/XR/webXRSessionManager";
 import { WebXRAbstractFeature } from "core/XR/features/WebXRAbstractFeature";
-import type { IWebXRFeature } from "core/XR/webXRFeaturesManager";
+import { type IWebXRFeature } from "core/XR/webXRFeaturesManager";
 import { beforeEach, afterEach, describe, it, expect, vi } from "vitest";
 
 /**

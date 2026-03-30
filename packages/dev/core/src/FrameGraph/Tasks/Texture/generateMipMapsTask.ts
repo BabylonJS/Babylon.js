@@ -1,4 +1,4 @@
-import type { FrameGraph, FrameGraphTextureHandle } from "core/index";
+import { type FrameGraph, type FrameGraphTextureHandle } from "core/index";
 import { FrameGraphTask } from "../../frameGraphTask";
 
 /**

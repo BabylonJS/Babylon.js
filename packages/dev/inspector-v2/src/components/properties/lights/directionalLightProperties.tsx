@@ -1,8 +1,6 @@
-import type { DirectionalLight, Scene } from "core/index";
-import type { FunctionComponent } from "react";
-import type { Observer } from "core/Misc/observable";
-
-import { useState } from "react";
+import { type DirectionalLight, type Scene } from "core/index";
+import { type FunctionComponent, useState } from "react";
+import { type Observer } from "core/Misc/observable";
 
 import { CascadedShadowGenerator } from "core/Lights/Shadows/cascadedShadowGenerator";
 import { DirectionalLightFrustumViewer } from "core/Debug/directionalLightFrustumViewer";

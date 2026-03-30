@@ -1,11 +1,10 @@
-import type { Observer } from "../../../Misc/observable";
-import type { FlowGraphContext } from "../../flowGraphContext";
+import { type Observer } from "../../../Misc/observable";
+import { type FlowGraphContext } from "../../flowGraphContext";
 import { FlowGraphEventBlock } from "../../flowGraphEventBlock";
-import type { Nullable } from "../../../types";
+import { type Nullable } from "../../../types";
 import { Tools } from "../../../Misc/tools";
-import type { RichType } from "../../flowGraphRichTypes";
-import { getRichTypeByFlowGraphType } from "../../flowGraphRichTypes";
-import type { IFlowGraphBlockConfiguration } from "../../flowGraphBlock";
+import { type RichType, getRichTypeByFlowGraphType } from "../../flowGraphRichTypes";
+import { type IFlowGraphBlockConfiguration } from "../../flowGraphBlock";
 import { RegisterClass } from "../../../Misc/typeStore";
 import { FlowGraphBlockNames } from "../flowGraphBlockNames";
 import { FlowGraphCoordinator } from "core/FlowGraph/flowGraphCoordinator";

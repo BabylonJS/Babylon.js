@@ -1,7 +1,7 @@
-import type { Context } from "react";
+import { type Context } from "react";
 
-import type { IDisposable } from "core/index";
-import type { IService } from "../modularity/serviceDefinition";
+import { type IDisposable } from "core/index";
+import { type IService } from "../modularity/serviceDefinition";
 
 /**
  * The unique identity symbol for the react context service.

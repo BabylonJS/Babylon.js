@@ -1,16 +1,16 @@
-import type { Nullable } from "core/types";
+import { type Nullable } from "core/types";
 import { Observable } from "core/Misc/observable";
-import type { Vector2 } from "core/Maths/math.vector";
+import { type Vector2 } from "core/Maths/math.vector";
 
 import { Control } from "./control";
 import { ValueAndUnit } from "../valueAndUnit";
-import type { VirtualKeyboard } from "./virtualKeyboard";
+import { type VirtualKeyboard } from "./virtualKeyboard";
 import { RegisterClass } from "core/Misc/typeStore";
-import type { Measure } from "../measure";
+import { type Measure } from "../measure";
 import { InputText } from "./inputText";
-import type { ICanvasRenderingContext } from "core/Engines/ICanvas";
-import type { PointerInfo, PointerInfoBase } from "core/Events/pointerEvents";
-import type { IKeyboardEvent } from "core/Events/deviceInputEvents";
+import { type ICanvasRenderingContext } from "core/Engines/ICanvas";
+import { type PointerInfo, type PointerInfoBase } from "core/Events/pointerEvents";
+import { type IKeyboardEvent } from "core/Events/deviceInputEvents";
 
 import { serialize } from "core/Misc/decorators";
 

@@ -2,27 +2,27 @@
 import { Logger } from "../../../Misc/logger";
 import { serialize } from "../../../Misc/decorators";
 import { SerializationHelper } from "../../../Misc/decorators.serialization";
-import type { Camera } from "../../../Cameras/camera";
-import type { Effect } from "../../../Materials/effect";
+import { type Camera } from "../../../Cameras/camera";
+import { type Effect } from "../../../Materials/effect";
 import { Texture } from "../../../Materials/Textures/texture";
 import { PostProcess } from "../../../PostProcesses/postProcess";
 import { PostProcessRenderPipeline } from "../../../PostProcesses/RenderPipeline/postProcessRenderPipeline";
 import { PostProcessRenderEffect } from "../../../PostProcesses/RenderPipeline/postProcessRenderEffect";
 import { PassPostProcess } from "../../../PostProcesses/passPostProcess";
-import type { Scene } from "../../../scene";
+import { type Scene } from "../../../scene";
 import { RegisterClass } from "../../../Misc/typeStore";
 import { EngineStore } from "../../../Engines/engineStore";
 import { SSAO2Configuration } from "../../../Rendering/ssao2Configuration";
-import type { PrePassRenderer } from "../../../Rendering/prePassRenderer";
+import { type PrePassRenderer } from "../../../Rendering/prePassRenderer";
 import { GeometryBufferRenderer } from "../../../Rendering/geometryBufferRenderer";
 import { Constants } from "../../../Engines/constants";
-import type { Nullable } from "../../../types";
+import { type Nullable } from "../../../types";
 
 import "../../../PostProcesses/RenderPipeline/postProcessRenderPipelineManagerSceneComponent";
 import "../../../Rendering/geometryBufferRendererSceneComponent";
 import { ThinSSAO2RenderingPipeline } from "./thinSSAO2RenderingPipeline";
 import { ThinSSAO2PostProcess } from "../../thinSSAO2PostProcess";
-import type { ISize } from "../../../Maths/math.size";
+import { type ISize } from "../../../Maths/math.size";
 import { ThinSSAO2BlurPostProcess } from "../../thinSSAO2BlurPostProcess";
 import { ThinSSAO2CombinePostProcess } from "../../thinSSAO2CombinePostProcess";
 

@@ -1,9 +1,9 @@
 import { BlockTools } from "../../blockTools";
-import type { IDisplayManager } from "shared-ui-components/nodeGraphSystem/interfaces/displayManager";
-import type { INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
-import type { TeleportOutBlock } from "core/Meshes/Node/Blocks/Teleport/teleportOutBlock";
-import type { Nullable } from "core/types";
-import type { StateManager } from "shared-ui-components/nodeGraphSystem/stateManager";
+import { type IDisplayManager } from "shared-ui-components/nodeGraphSystem/interfaces/displayManager";
+import { type INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
+import { type TeleportOutBlock } from "core/Meshes/Node/Blocks/Teleport/teleportOutBlock";
+import { type Nullable } from "core/types";
+import { type StateManager } from "shared-ui-components/nodeGraphSystem/stateManager";
 
 export class TeleportOutDisplayManager implements IDisplayManager {
     private _hasHighlights = false;

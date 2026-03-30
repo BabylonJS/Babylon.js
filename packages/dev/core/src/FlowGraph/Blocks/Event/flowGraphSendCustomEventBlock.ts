@@ -1,9 +1,8 @@
-import type { RichType } from "core/FlowGraph/flowGraphRichTypes";
-import { getRichTypeByFlowGraphType } from "core/FlowGraph/flowGraphRichTypes";
+import { type RichType, getRichTypeByFlowGraphType } from "core/FlowGraph/flowGraphRichTypes";
 import { FlowGraphExecutionBlockWithOutSignal } from "../../flowGraphExecutionBlockWithOutSignal";
-import type { FlowGraphContext } from "../../flowGraphContext";
+import { type FlowGraphContext } from "../../flowGraphContext";
 import { RegisterClass } from "../../../Misc/typeStore";
-import type { IFlowGraphBlockConfiguration } from "../../flowGraphBlock";
+import { type IFlowGraphBlockConfiguration } from "../../flowGraphBlock";
 import { FlowGraphBlockNames } from "../flowGraphBlockNames";
 
 /**

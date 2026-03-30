@@ -1,11 +1,11 @@
-import type { Skeleton } from "core/Bones/skeleton";
-import type { Bone } from "core/Bones/bone";
-import type { IAnimationKey } from "core/Animations/animationKey";
+import { type Skeleton } from "core/Bones/skeleton";
+import { type Bone } from "core/Bones/bone";
+import { type IAnimationKey } from "core/Animations/animationKey";
 import { AnimationRange } from "core/Animations/animationRange";
 import { Vector3, Quaternion, Matrix } from "core/Maths/math.vector";
 import { Tools } from "core/Misc/tools";
 import { Epsilon } from "core/Maths/math.constants";
-import type { Nullable } from "core/types";
+import { type Nullable } from "core/types";
 
 interface IBVHBoneData {
     bone: Bone;

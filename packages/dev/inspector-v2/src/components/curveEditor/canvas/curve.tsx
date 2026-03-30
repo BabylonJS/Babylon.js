@@ -1,9 +1,8 @@
-import type { FunctionComponent } from "react";
+import { type FunctionComponent, useCallback } from "react";
 
 import * as React from "react";
-import { useCallback } from "react";
 import { Animation } from "core/Animations/animation";
-import type { CurveData } from "./curveData";
+import { type CurveData } from "./curveData";
 import { useObservableState } from "../../../hooks/observableHooks";
 
 type CurveProps = {

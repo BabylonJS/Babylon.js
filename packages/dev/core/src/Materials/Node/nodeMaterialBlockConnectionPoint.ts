@@ -1,10 +1,9 @@
 import { NodeMaterialBlockConnectionPointTypes } from "./Enums/nodeMaterialBlockConnectionPointTypes";
 import { NodeMaterialBlockTargets } from "./Enums/nodeMaterialBlockTargets";
-import type { Nullable } from "../../types";
-import type { InputBlock } from "./Blocks/Input/inputBlock";
-import { Observable } from "../../Misc/observable";
-import type { Observer } from "../../Misc/observable";
-import type { NodeMaterialBlock } from "./nodeMaterialBlock";
+import { type Nullable } from "../../types";
+import { type InputBlock } from "./Blocks/Input/inputBlock";
+import { Observable, type Observer } from "../../Misc/observable";
+import { type NodeMaterialBlock } from "./nodeMaterialBlock";
 
 /**
  * Enum used to define the compatibility state between two connection points

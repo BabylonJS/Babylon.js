@@ -1,11 +1,11 @@
 import { Observable } from "../../Misc/observable";
-import type { Nullable } from "../../types";
+import { type Nullable } from "../../types";
 import { SoundState } from "../soundState";
 import { AudioNodeType } from "./abstractAudioNode";
-import type { _AbstractSoundInstance } from "./abstractSoundInstance";
+import { type _AbstractSoundInstance } from "./abstractSoundInstance";
 import { AbstractSoundSource, type ISoundSourceOptions } from "./abstractSoundSource";
-import type { AudioEngineV2 } from "./audioEngineV2";
-import type { IVolumeAudioOptions } from "./subNodes/volumeAudioSubNode";
+import { type AudioEngineV2 } from "./audioEngineV2";
+import { type IVolumeAudioOptions } from "./subNodes/volumeAudioSubNode";
 
 /** @internal */
 export interface IAbstractSoundOptionsBase {

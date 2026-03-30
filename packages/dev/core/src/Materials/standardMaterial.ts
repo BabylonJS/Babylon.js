@@ -1,36 +1,35 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { serialize, serializeAsColor3, expandToProperty, serializeAsFresnelParameters, serializeAsTexture } from "../Misc/decorators";
 import { SmartArray } from "../Misc/smartArray";
-import type { IAnimatable } from "../Animations/animatable.interface";
+import { type IAnimatable } from "../Animations/animatable.interface";
 
-import type { Nullable } from "../types";
+import { type Nullable } from "../types";
 import { Scene } from "../scene";
-import type { Matrix } from "../Maths/math.vector";
+import { type Matrix } from "../Maths/math.vector";
 import { Color3 } from "../Maths/math.color";
 import { VertexBuffer } from "../Buffers/buffer";
-import type { SubMesh } from "../Meshes/subMesh";
-import type { AbstractMesh } from "../Meshes/abstractMesh";
-import type { Mesh } from "../Meshes/mesh";
+import { type SubMesh } from "../Meshes/subMesh";
+import { type AbstractMesh } from "../Meshes/abstractMesh";
+import { type Mesh } from "../Meshes/mesh";
 import { PrePassConfiguration } from "./prePassConfiguration";
 
 import { ImageProcessingDefinesMixin } from "./imageProcessingConfiguration.defines";
 import { ImageProcessingConfiguration } from "./imageProcessingConfiguration";
-import type { FresnelParameters } from "./fresnelParameters";
-import type { ICustomShaderNameResolveOptions } from "../Materials/material";
-import { Material } from "../Materials/material";
+import { type FresnelParameters } from "./fresnelParameters";
+import { type ICustomShaderNameResolveOptions, Material } from "../Materials/material";
 import { MaterialPluginEvent } from "./materialPluginEvent";
 import { MaterialDefines } from "../Materials/materialDefines";
 import { PushMaterial } from "./pushMaterial";
 
-import type { BaseTexture } from "../Materials/Textures/baseTexture";
-import type { CubeTexture } from "../Materials/Textures/cubeTexture";
-import type { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
+import { type BaseTexture } from "../Materials/Textures/baseTexture";
+import { type CubeTexture } from "../Materials/Textures/cubeTexture";
+import { type RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import { RegisterClass } from "../Misc/typeStore";
 import { MaterialFlags } from "./materialFlags";
 
 import { Constants } from "../Engines/constants";
 import { EffectFallbacks } from "./effectFallbacks";
-import type { Effect, IEffectCreationOptions } from "./effect";
+import { type Effect, type IEffectCreationOptions } from "./effect";
 import { DetailMapConfiguration } from "./material.detailMapConfiguration";
 import { AddClipPlaneUniforms, BindClipPlane } from "./clipPlaneMaterialHelper";
 import {

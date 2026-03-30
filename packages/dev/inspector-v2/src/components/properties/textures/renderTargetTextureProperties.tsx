@@ -1,6 +1,6 @@
-import type { RenderTargetTexture } from "core/index";
+import { type RenderTargetTexture } from "core/index";
 
-import type { FunctionComponent } from "react";
+import { type FunctionComponent } from "react";
 
 import { BooleanBadgePropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/booleanBadgePropertyLine";
 import { TextPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/textPropertyLine";

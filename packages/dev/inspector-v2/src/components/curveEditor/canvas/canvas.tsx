@@ -1,7 +1,6 @@
-import type { FunctionComponent } from "react";
+import { type FunctionComponent, useEffect, useRef, useState } from "react";
 
 import { makeStyles, tokens } from "@fluentui/react-components";
-import { useEffect, useRef, useState } from "react";
 
 import { useCurveEditor } from "../curveEditorContext";
 import { Graph } from "./graph";

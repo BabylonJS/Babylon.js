@@ -1,6 +1,6 @@
 import * as React from "react";
 import { LineContainerComponent } from "../../sharedComponents/lineContainerComponent";
-import type { IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
+import { type IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
 import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineComponent";
 import {
@@ -9,8 +9,8 @@ import {
     DataConnectionsPropertyTabComponent,
     GenericPropertyTabComponent,
 } from "./genericNodePropertyComponent";
-import type { FlowGraphDataSwitchBlock } from "core/FlowGraph/Blocks/Data/flowGraphDataSwitchBlock";
-import type { FlowGraphBlock } from "core/FlowGraph/flowGraphBlock";
+import { type FlowGraphDataSwitchBlock } from "core/FlowGraph/Blocks/Data/flowGraphDataSwitchBlock";
+import { type FlowGraphBlock } from "core/FlowGraph/flowGraphBlock";
 import { RichTypeAny } from "core/FlowGraph/flowGraphRichTypes";
 import { RemoveDataInput } from "./blockMutationHelper";
 import { getNumericValue } from "core/FlowGraph/utils";

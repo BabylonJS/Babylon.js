@@ -1,10 +1,10 @@
 import * as React from "react";
-import type { Observable } from "core/Misc/observable";
-import type { PropertyChangedEvent } from "../propertyChangedEvent";
+import { type Observable } from "core/Misc/observable";
+import { type PropertyChangedEvent } from "../propertyChangedEvent";
 import { copyCommandToClipboard, getClassNameWithNamespace } from "../copyCommandToClipboard";
 import { Tools } from "core/Misc/tools";
 import { FloatLineComponent } from "./floatLineComponent";
-import type { LockObject } from "../tabs/propertyGrids/lockObject";
+import { type LockObject } from "../tabs/propertyGrids/lockObject";
 import copyIcon from "../imgs/copy.svg";
 import { ToolContext } from "../fluent/hoc/fluentToolWrapper";
 import { SyncedSliderPropertyLine } from "../fluent/hoc/propertyLines/syncedSliderPropertyLine";

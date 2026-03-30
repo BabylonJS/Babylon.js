@@ -1,6 +1,6 @@
-import type { IReadonlyObservable } from "core/index";
+import { type IReadonlyObservable } from "core/index";
 
-import type { ObservableCollection } from "../misc/observableCollection";
+import { type ObservableCollection } from "../misc/observableCollection";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
