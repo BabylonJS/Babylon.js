@@ -10,6 +10,7 @@ import {
     type Camera,
     type CubeTexture,
     type Engine,
+    type GaussianSplattingMesh,
     type HDRCubeTexture,
     type HotSpotQuery,
     type IblCdfGenerator,
@@ -228,8 +229,18 @@ export function IsShadowQuality(value: string): value is ShadowQuality {
  * @param value The value to check.
  * @returns True if the value is a valid SSAO option, otherwise false.
  */
-export function isSSAOOptions(value: string): value is SSAOOptions {
+export function IsSSAOOptions(value: string): value is SSAOOptions {
     return ssaoOptions.includes(value as SSAOOptions);
+}
+
+/**
+ * Checks if the given mesh is a Gaussian Splatting mesh by inspecting its class name.
+ * This avoids importing the GaussianSplattingMesh class directly.
+ * @param mesh The mesh to check.
+ * @returns True if the mesh is a Gaussian Splatting mesh, otherwise false.
+ */
+function IsGaussianSplattingMesh(mesh: AbstractMesh): mesh is GaussianSplattingMesh {
+    return mesh.getClassName() === "GaussianSplattingMesh";
 }
 
 function throwIfAborted(...abortSignals: (Nullable<AbortSignal> | undefined)[]): void {
@@ -1418,8 +1429,14 @@ export class Viewer implements IDisposable {
                     if (this._ssaoOption === "auto") {
                         const hasModels = this._loadedModels.length > 0;
                         const hasMaterials = this._loadedModels.some((model) => model.assetContainer.materials.length > 0);
-                        const ibleShadowsEnabled = this._shadowQuality === "high";
-                        shouldEnable = hasModels && !hasMaterials && !ibleShadowsEnabled;
+                        const iblShadowsEnabled = this._shadowQuality === "high";
+                        const allMeshesAreSplats =
+                            hasModels &&
+                            this._loadedModels.every((model) => {
+                                const meshes = model.assetContainer.meshes;
+                                return meshes.length > 0 && meshes.every(IsGaussianSplattingMesh);
+                            });
+                        shouldEnable = hasModels && !hasMaterials && !iblShadowsEnabled && !allMeshesAreSplats;
                     }
 
                     if (shouldEnable) {
