@@ -4,6 +4,7 @@ import type { IService, ServiceDefinition } from "../modularity/serviceDefinitio
 import type { ISettingsService } from "./panes/settingsService";
 import type { ISettingsStore, SettingDescriptor } from "./settingsStore";
 import type { IShellService } from "./shellService";
+import type { IReactContextService, ReactContextHandle } from "./reactContextService";
 
 import { ArrowClockwiseRegular } from "@fluentui/react-icons";
 
@@ -12,10 +13,12 @@ import { DropdownPropertyLine } from "shared-ui-components/fluent/hoc/propertyLi
 import { SyncedSliderPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/syncedSliderPropertyLine";
 import { Button } from "shared-ui-components/fluent/primitives/button";
 import { Collapse } from "shared-ui-components/fluent/primitives/collapse";
+import { WatcherContext } from "../contexts/watcherContext";
 import { useSetting } from "../hooks/settingsHooks";
 import { InterceptProperty } from "../instrumentation/propertyInstrumentation";
 import { DefaultToolbarItemOrder } from "./defaultToolbarMetadata";
 import { SettingsServiceIdentity } from "./panes/settingsService";
+import { ReactContextServiceIdentity } from "./reactContextService";
 import { SettingsStoreIdentity } from "./settingsStore";
 import { ShellServiceIdentity } from "./shellService";
 
@@ -78,11 +81,11 @@ export interface IWatcherService extends IService<typeof WatcherServiceIdentity>
     refresh(): void;
 }
 
-export const WatcherServiceDefinition: ServiceDefinition<[IWatcherService], [ISettingsStore]> = {
+export const WatcherServiceDefinition: ServiceDefinition<[IWatcherService], [ISettingsStore, IReactContextService]> = {
     friendlyName: "Watcher Service",
     produces: [WatcherServiceIdentity],
-    consumes: [SettingsStoreIdentity],
-    factory: (settingsStore) => {
+    consumes: [SettingsStoreIdentity, ReactContextServiceIdentity],
+    factory: (settingsStore, reactContextService) => {
         let refreshObservable: Nullable<Observable<void>> = null;
         let pollingHandle: Nullable<number> = null;
 
@@ -118,7 +121,7 @@ export const WatcherServiceDefinition: ServiceDefinition<[IWatcherService], [ISe
 
         applySettings();
 
-        return {
+        const watcherService: IWatcherService & Partial<IDisposable> = {
             watchProperty<T extends object>(target: T, propertyKey: keyof T, onChanged: (value: unknown) => void): IDisposable {
                 if (refreshObservable) {
                     let previousValue = target[propertyKey];
@@ -143,6 +146,8 @@ export const WatcherServiceDefinition: ServiceDefinition<[IWatcherService], [ISe
                 refreshObservable?.notifyObservers();
             },
             dispose: () => {
+                contextHandle.dispose();
+
                 if (pollingHandle !== null) {
                     clearInterval(pollingHandle);
                     pollingHandle = null;
@@ -153,6 +158,11 @@ export const WatcherServiceDefinition: ServiceDefinition<[IWatcherService], [ISe
                 settingsStoreObserver.remove();
             },
         };
+
+        // Register the WatcherContext provider so React components can access the watcher service.
+        const contextHandle: ReactContextHandle<IWatcherService> = reactContextService.addContext(WatcherContext.Provider, watcherService);
+
+        return watcherService;
     },
 };
 
