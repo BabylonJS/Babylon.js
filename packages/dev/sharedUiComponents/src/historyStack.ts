@@ -1,4 +1,4 @@
-import type { IDisposable } from "core/scene";
+import { type IDisposable } from "core/scene";
 
 /**
  * Class handling undo / redo operations
@@ -190,6 +190,9 @@ export class HistoryStack implements IDisposable {
         try {
             // _dataProvider can return T or Promise<T>; await handles both.
             const provided = await this._dataProvider();
+            if (provided == null) {
+                return;
+            }
             const data = this._copy(provided);
 
             if (this._activeData) {

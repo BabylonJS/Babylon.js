@@ -1,16 +1,16 @@
-import type { Nullable } from "../types";
+import { type Nullable } from "../types";
 import { Constants } from "../Engines/constants";
-import type { IMatrixLike } from "../Maths/math.like";
-import type { AbstractEngine } from "../Engines/abstractEngine";
-import type { DataBuffer } from "../Buffers/dataBuffer";
+import { type IMatrixLike } from "../Maths/math.like";
+import { type AbstractEngine } from "../Engines/abstractEngine";
+import { type DataBuffer } from "../Buffers/dataBuffer";
 import { Buffer, VertexBuffer } from "../Buffers/buffer";
 import { DrawWrapper } from "../Materials/drawWrapper";
-import type { ThinSprite } from "./thinSprite";
-import type { ISize } from "../Maths/math.size";
+import { type ThinSprite } from "./thinSprite";
+import { type ISize } from "../Maths/math.size";
 
-import type { ThinTexture } from "../Materials/Textures/thinTexture";
-import type { Scene } from "../scene";
-import type { ThinEngine } from "../Engines/thinEngine";
+import { type ThinTexture } from "../Materials/Textures/thinTexture";
+import { type Scene } from "../scene";
+import { type ThinEngine } from "../Engines/thinEngine";
 import { Logger } from "../Misc/logger";
 import { BindLogDepth } from "../Materials/materialHelper.functions.pure";
 import { ShaderLanguage } from "../Materials/shaderLanguage";

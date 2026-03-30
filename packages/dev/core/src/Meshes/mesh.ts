@@ -1,35 +1,28 @@
 /* eslint-disable jsdoc/require-returns-check */
-import type { Observer } from "../Misc/observable";
-import { Observable } from "../Misc/observable";
+import { type Observer, Observable } from "../Misc/observable";
 import { Tools, AsyncLoop } from "../Misc/tools";
-import type { IAnimatable } from "../Animations/animatable.interface";
+import { type IAnimatable } from "../Animations/animatable.interface";
 import { DeepCopier } from "../Misc/deepCopier";
 import { Tags } from "../Misc/tags";
-import type { Coroutine } from "../Misc/coroutine";
-import { runCoroutineSync, runCoroutineAsync, createYieldingScheduler } from "../Misc/coroutine";
-import type { Nullable, FloatArray, IndicesArray, DeepImmutable } from "../types";
+import { type Coroutine, runCoroutineSync, runCoroutineAsync, createYieldingScheduler } from "../Misc/coroutine";
+import { type Nullable, type FloatArray, type IndicesArray, type DeepImmutable } from "../types";
 import { Camera } from "../Cameras/camera";
-import type { Scene } from "../scene";
-import { ScenePerformancePriority } from "../scene";
-import type { Vector4 } from "../Maths/math.vector";
-import { Quaternion, Matrix, Vector3, Vector2 } from "../Maths/math.vector";
-import type { Color4 } from "../Maths/math.color";
-import { Color3 } from "../Maths/math.color";
+import { type Scene, ScenePerformancePriority } from "../scene";
+import { type Vector4, Quaternion, Matrix, Vector3, Vector2 } from "../Maths/math.vector";
+import { type Color4, Color3 } from "../Maths/math.color";
 import { Node } from "../node";
 import { VertexBuffer, Buffer } from "../Buffers/buffer";
-import type { IGetSetVerticesData } from "./mesh.vertexData";
-import { VertexData } from "./mesh.vertexData";
+import { type IGetSetVerticesData, VertexData } from "./mesh.vertexData";
 
 import { Geometry } from "./geometry";
-import type { IMeshDataOptions } from "./abstractMesh";
-import { AbstractMesh } from "./abstractMesh";
+import { type IMeshDataOptions, AbstractMesh } from "./abstractMesh";
 import { SubMesh } from "./subMesh";
-import type { BoundingSphere } from "../Culling/boundingSphere";
-import type { Effect } from "../Materials/effect";
+import { type BoundingSphere } from "../Culling/boundingSphere";
+import { type Effect } from "../Materials/effect";
 import { Material } from "../Materials/material";
 import { MultiMaterial } from "../Materials/multiMaterial";
 import { SceneLoaderFlags } from "../Loading/sceneLoaderFlags";
-import type { Skeleton } from "../Bones/skeleton";
+import { type Skeleton } from "../Bones/skeleton";
 import { Constants } from "../Engines/constants";
 import { SerializationHelper } from "../Misc/decorators.serialization";
 import { Logger } from "../Misc/logger";
@@ -37,20 +30,20 @@ import { GetClass, RegisterClass } from "../Misc/typeStore";
 import { _WarnImport } from "../Misc/devTools";
 import { SceneComponentConstants } from "../sceneComponent";
 import { MeshLODLevel } from "./meshLODLevel";
-import type { Path3D } from "../Maths/math.path";
-import type { Plane } from "../Maths/math.plane";
-import type { TransformNode } from "./transformNode";
-import type { DrawWrapper } from "../Materials/drawWrapper";
-import type { PhysicsEngine as PhysicsEngineV1 } from "../Physics/v1/physicsEngine";
+import { type Path3D } from "../Maths/math.path";
+import { type Plane } from "../Maths/math.plane";
+import { type TransformNode } from "./transformNode";
+import { type DrawWrapper } from "../Materials/drawWrapper";
+import { type PhysicsEngine as PhysicsEngineV1 } from "../Physics/v1/physicsEngine";
 
-import type { GoldbergMesh } from "./goldbergMesh";
-import type { InstancedMesh } from "./instancedMesh";
-import type { IPhysicsEnabledObject, PhysicsImpostor } from "../Physics/v1/physicsImpostor";
-import type { ICreateCapsuleOptions } from "./Builders/capsuleBuilder";
-import type { LinesMesh } from "./linesMesh";
-import type { GroundMesh } from "./groundMesh";
-import type { DataBuffer } from "core/Buffers/dataBuffer";
-import type { AbstractEngine } from "core/Engines/abstractEngine";
+import { type GoldbergMesh } from "./goldbergMesh";
+import { type InstancedMesh } from "./instancedMesh";
+import { type IPhysicsEnabledObject, type PhysicsImpostor } from "../Physics/v1/physicsImpostor";
+import { type ICreateCapsuleOptions } from "./Builders/capsuleBuilder";
+import { type LinesMesh } from "./linesMesh";
+import { type GroundMesh } from "./groundMesh";
+import { type DataBuffer } from "core/Buffers/dataBuffer";
+import { type AbstractEngine } from "core/Engines/abstractEngine";
 
 /**
  * @internal
@@ -3502,8 +3495,8 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             Vector2.FromArrayToRef(uvs, (index / 3) * 2, uv);
 
             // Compute height
-            const u = (Math.abs(uv.x * uvScale.x + (uvOffset.x % 1)) * (heightMapWidth - 1)) % heightMapWidth | 0;
-            const v = (Math.abs(uv.y * uvScale.y + (uvOffset.y % 1)) * (heightMapHeight - 1)) % heightMapHeight | 0;
+            const u = ((Math.abs(uv.x * uvScale.x + (uvOffset.x % 1)) * (heightMapWidth - 1)) % heightMapWidth) | 0;
+            const v = ((Math.abs(uv.y * uvScale.y + (uvOffset.y % 1)) * (heightMapHeight - 1)) % heightMapHeight) | 0;
 
             const pos = (u + v * heightMapWidth) * 4;
             const r = buffer[pos] / 255.0;

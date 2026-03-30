@@ -1,24 +1,20 @@
 import { Logger } from "../Misc/logger";
-import type { EventState, Observer } from "../Misc/observable";
-import { Observable } from "../Misc/observable";
-import type { Nullable } from "../types";
-import { Vector3 } from "../Maths/math.vector";
-import type { Quaternion } from "../Maths/math.vector";
+import { type EventState, type Observer, Observable } from "../Misc/observable";
+import { type Nullable } from "../types";
+import { Vector3, type Quaternion } from "../Maths/math.vector";
 import { Color3 } from "../Maths/math.color";
-import type { AbstractMesh } from "../Meshes/abstractMesh";
+import { type AbstractMesh } from "../Meshes/abstractMesh";
 import { CreatePolyhedron } from "../Meshes/Builders/polyhedronBuilder";
-import type { GizmoAnchorPoint, GizmoAxisCache, IGizmo } from "./gizmo";
-import { GizmoCoordinatesMode, Gizmo } from "./gizmo";
-import type { IAxisScaleGizmo } from "./axisScaleGizmo";
-import { AxisScaleGizmo } from "./axisScaleGizmo";
+import { type GizmoAnchorPoint, type GizmoAxisCache, type IGizmo, GizmoCoordinatesMode, Gizmo } from "./gizmo";
+import { type IAxisScaleGizmo, AxisScaleGizmo } from "./axisScaleGizmo";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
-import type { Mesh } from "../Meshes/mesh";
-import type { Node } from "../node";
-import type { PointerInfo } from "../Events/pointerEvents";
+import { type Mesh } from "../Meshes/mesh";
+import { type Node } from "../node";
+import { type PointerInfo } from "../Events/pointerEvents";
 import { StandardMaterial } from "../Materials/standardMaterial";
-import type { GizmoManager } from "./gizmoManager";
-import type { TransformNode } from "../Meshes/transformNode";
-import type { DragEvent, DragStartEndEvent } from "core/Behaviors/Meshes/pointerDragEvents";
+import { type GizmoManager } from "./gizmoManager";
+import { type TransformNode } from "../Meshes/transformNode";
+import { type DragEvent, type DragStartEndEvent } from "core/Behaviors/Meshes/pointerDragEvents";
 
 /**
  * Interface for scale gizmo

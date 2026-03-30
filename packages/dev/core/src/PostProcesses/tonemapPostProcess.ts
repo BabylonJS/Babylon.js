@@ -1,17 +1,15 @@
 import { Camera } from "../Cameras/camera";
-import type { PostProcessOptions } from "./postProcess";
-import { PostProcess } from "./postProcess";
+import { type PostProcessOptions, PostProcess } from "./postProcess";
 import { Constants } from "../Engines/constants";
 
 import { RegisterClass } from "../Misc/typeStore";
 import { serialize } from "../Misc/decorators";
 import { SerializationHelper } from "../Misc/decorators.serialization";
-import type { Nullable } from "../types";
+import { type Nullable } from "../types";
 
-import type { AbstractEngine } from "core/Engines/abstractEngine";
-import type { ThinTonemapPostProcessOptions, TonemappingOperator } from "./thinTonemapPostProcess";
-import { ThinTonemapPostProcess } from "./thinTonemapPostProcess";
-import type { Scene } from "../scene";
+import { type AbstractEngine } from "core/Engines/abstractEngine";
+import { type ThinTonemapPostProcessOptions, type TonemappingOperator, ThinTonemapPostProcess } from "./thinTonemapPostProcess";
+import { type Scene } from "../scene";
 
 export type ToneMapPostProcessOptions = ThinTonemapPostProcessOptions & PostProcessOptions;
 

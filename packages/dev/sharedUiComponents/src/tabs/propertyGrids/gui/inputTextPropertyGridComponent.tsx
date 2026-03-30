@@ -1,14 +1,14 @@
 import * as React from "react";
-import type { Observable } from "core/Misc/observable";
-import type { PropertyChangedEvent } from "../../../propertyChangedEvent";
+import { type Observable } from "core/Misc/observable";
+import { type PropertyChangedEvent } from "../../../propertyChangedEvent";
 import { CommonControlPropertyGridComponent } from "../../../tabs/propertyGrids/gui/commonControlPropertyGridComponent";
-import type { InputText } from "gui/2D/controls/inputText";
+import { type InputText } from "gui/2D/controls/inputText";
 import { LineContainerComponent } from "../../../lines/lineContainerComponent";
 import { TextInputLineComponent } from "../../../lines/textInputLineComponent";
 import { SliderLineComponent } from "../../../lines/sliderLineComponent";
 import { CheckBoxLineComponent } from "../../../lines/checkBoxLineComponent";
 import { FloatLineComponent } from "../../../lines/floatLineComponent";
-import type { LockObject } from "../../../tabs/propertyGrids/lockObject";
+import { type LockObject } from "../../../tabs/propertyGrids/lockObject";
 
 interface IInputTextPropertyGridComponentProps {
     inputText: InputText;

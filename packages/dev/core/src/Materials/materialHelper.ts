@@ -1,16 +1,16 @@
-import type { Nullable } from "../types";
-import type { Scene } from "../scene";
-import type { AbstractEngine } from "../Engines/abstractEngine";
-import type { AbstractMesh } from "../Meshes/abstractMesh";
-import type { Light } from "../Lights/light";
-import type { PrePassConfiguration } from "../Materials/prePassConfiguration";
+import { type Nullable } from "../types";
+import { type Scene } from "../scene";
+import { type AbstractEngine } from "../Engines/abstractEngine";
+import { type AbstractMesh } from "../Meshes/abstractMesh";
+import { type Light } from "../Lights/light";
+import { type PrePassConfiguration } from "../Materials/prePassConfiguration";
 
-import type { UniformBuffer } from "./uniformBuffer";
-import type { Effect, IEffectCreationOptions } from "./effect";
-import type { BaseTexture } from "../Materials/Textures/baseTexture";
-import type { MaterialDefines } from "./materialDefines";
-import type { EffectFallbacks } from "./effectFallbacks";
-import type { Material } from "./material";
+import { type UniformBuffer } from "./uniformBuffer";
+import { type Effect, type IEffectCreationOptions } from "./effect";
+import { type BaseTexture } from "../Materials/Textures/baseTexture";
+import { type MaterialDefines } from "./materialDefines";
+import { type EffectFallbacks } from "./effectFallbacks";
+import { type Material } from "./material";
 import {
     BindBonesParameters,
     BindFogParameters,

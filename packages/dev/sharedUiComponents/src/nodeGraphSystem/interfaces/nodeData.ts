@@ -1,5 +1,5 @@
-import type { Nullable } from "core/types";
-import type { IPortData } from "./portData";
+import { type Nullable } from "core/types";
+import { type IPortData } from "./portData";
 
 export interface INodeData {
     data: any;
@@ -30,4 +30,6 @@ export interface INodeData {
 
     onInputCountChanged?: () => void;
     onInputRemoved?: (index: number) => void;
+    onOutputCountChanged?: () => void;
+    onOutputRemoved?: (index: number) => void;
 }

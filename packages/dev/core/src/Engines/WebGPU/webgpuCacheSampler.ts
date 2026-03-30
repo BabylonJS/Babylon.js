@@ -3,8 +3,8 @@
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import * as WebGPUConstants from "./webgpuConstants";
 import { Constants } from "../constants";
-import type { TextureSampler } from "../../Materials/Textures/textureSampler";
-import type { Nullable } from "../../types";
+import { type TextureSampler } from "../../Materials/Textures/textureSampler";
+import { type Nullable } from "../../types";
 
 /**
  * Note: we don't make a difference between mipmaps enabled or not when computing these bits (so, TEXTURE_NEAREST_NEAREST and TEXTURE_NEAREST_NEAREST_MIPNEAREST have the same bits, for example).

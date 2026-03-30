@@ -1,5 +1,5 @@
-import type { InternalTexture } from "../internalTexture";
-import type { IInternalTextureLoader } from "./internalTextureLoader";
+import { type InternalTexture } from "../internalTexture";
+import { type IInternalTextureLoader } from "./internalTextureLoader";
 import { Constants } from "../../../Engines/constants";
 import { LoadIESData } from "core/Lights/IES/iesLoader";
 

@@ -231,8 +231,12 @@ export default tseslint.config(
 
             // Import rules
             "import/no-unresolved": "off",
-            "import/named": "error",
-            "import/no-cycle": [1, { maxDepth: 1, ignoreExternal: true }],
+            // import/named is redundant — TypeScript already validates named imports
+            "import/named": "off",
+            // import/no-cycle is disabled for performance — it traverses the full
+            // dependency graph and is the single most expensive rule in the config.
+            // Run it explicitly via `npm run lint:cycles` when needed.
+            "import/no-cycle": "off",
             "import/no-internal-modules": [
                 "error",
                 {
@@ -272,6 +276,8 @@ export default tseslint.config(
             "jsdoc/require-returns-check": "error",
 
             // Warnings
+            "import/no-duplicates": ["error", { "prefer-inline": true }],
+            "import/consistent-type-specifier-style": ["error", "prefer-inline"],
             "import/export": "warn",
             "no-useless-escape": "warn",
             "no-case-declarations": "warn",
@@ -384,7 +390,7 @@ export default tseslint.config(
 
             // Other TypeScript rules
             "@typescript-eslint/no-unused-vars": ["warn", { argsIgnorePattern: "^_" }],
-            "@typescript-eslint/consistent-type-imports": ["error", { disallowTypeAnnotations: false, fixStyle: "separate-type-imports" }],
+            "@typescript-eslint/consistent-type-imports": ["error", { disallowTypeAnnotations: false, fixStyle: "inline-type-imports" }],
             "@typescript-eslint/no-this-alias": "error",
 
             // Restricted syntax

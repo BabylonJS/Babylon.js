@@ -32,7 +32,8 @@
             "es2017",
             "es2022.error",
             "es2022.array",
-            "es2021.string"
+            "es2021.string",
+            "es2022.string"
         ],
         "paths": {
             "core/*": ["dev/core/dist/*"],

@@ -1,7 +1,6 @@
 import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
-import { useState, useCallback } from "react";
-import type { FunctionComponent } from "react";
-import type { Scene } from "core/scene";
+import { useState, useCallback, type FunctionComponent } from "react";
+import { type Scene } from "core/scene";
 import { SyncedSliderPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/syncedSliderPropertyLine";
 import { CameraRegular } from "@fluentui/react-icons";
 import { FrameGraphUtils } from "core/FrameGraph/frameGraphUtils";

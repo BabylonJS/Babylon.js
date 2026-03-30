@@ -1,4 +1,4 @@
-import type { FrameGraph, EffectWrapperCreationOptions, Observable, Effect } from "core/index";
+import { type FrameGraph, type EffectWrapperCreationOptions, type Observable, type Effect } from "core/index";
 import { FrameGraphPostProcessTask } from "./postProcessTask";
 import { ThinCustomPostProcess } from "../../../PostProcesses/thinCustomPostProcess";
 

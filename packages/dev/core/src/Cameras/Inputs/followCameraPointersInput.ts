@@ -1,9 +1,9 @@
-import type { Nullable } from "../../types";
+import { type Nullable } from "../../types";
 import { serialize } from "../../Misc/decorators";
-import type { FollowCamera } from "../../Cameras/followCamera";
+import { type FollowCamera } from "../../Cameras/followCamera";
 import { CameraInputTypes } from "../../Cameras/cameraInputsManager";
 import { BaseCameraPointersInput } from "../../Cameras/Inputs/BaseCameraPointersInput";
-import type { PointerTouch } from "../../Events/pointerEvents";
+import { type PointerTouch } from "../../Events/pointerEvents";
 import { Logger } from "core/Misc/logger";
 
 /**

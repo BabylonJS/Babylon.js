@@ -1,15 +1,15 @@
 import { RegisterClass } from "core/Misc/typeStore";
 import { NodeParticleBlock } from "../../nodeParticleBlock";
 import { NodeParticleBlockConnectionPointTypes } from "../../Enums/nodeParticleBlockConnectionPointTypes";
-import type { NodeParticleConnectionPoint } from "../../nodeParticleBlockConnectionPoint";
-import type { NodeParticleBuildState } from "../../nodeParticleBuildState";
-import type { ThinParticleSystem } from "core/Particles/thinParticleSystem";
-import type { Particle } from "core/Particles/particle";
+import { type NodeParticleConnectionPoint } from "../../nodeParticleBlockConnectionPoint";
+import { type NodeParticleBuildState } from "../../nodeParticleBuildState";
+import { type ThinParticleSystem } from "core/Particles/thinParticleSystem";
+import { type Particle } from "core/Particles/particle";
 import { _ConnectAtTheEnd } from "core/Particles/Queue/executionQueue";
-import type { SystemBlock } from "../systemBlock";
+import { type SystemBlock } from "../systemBlock";
 import { editableInPropertyPage, PropertyTypeForEdition } from "core/Decorators/nodeDecorator";
 import { _TriggerSubEmitter } from "./triggerTools";
-import type { Nullable } from "core/types";
+import { type Nullable } from "core/types";
 
 /**
  * Block used to trigger a particle system based on a condition.

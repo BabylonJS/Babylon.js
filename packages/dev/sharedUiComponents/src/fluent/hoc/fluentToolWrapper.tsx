@@ -1,7 +1,5 @@
-import type { PropsWithChildren, FunctionComponent } from "react";
-import { createContext } from "react";
-import type { Theme } from "@fluentui/react-components";
-import { FluentProvider, webDarkTheme } from "@fluentui/react-components";
+import { type PropsWithChildren, type FunctionComponent, createContext } from "react";
+import { type Theme, FluentProvider, webDarkTheme } from "@fluentui/react-components";
 
 export type UiSize = "small" | "medium";
 export type ToolHostProps = {

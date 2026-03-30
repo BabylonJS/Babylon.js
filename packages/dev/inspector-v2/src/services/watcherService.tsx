@@ -1,9 +1,9 @@
-import type { IDisposable, Nullable } from "core/index";
-import type { DropdownOption } from "shared-ui-components/fluent/primitives/dropdown";
-import type { IService, ServiceDefinition } from "../modularity/serviceDefinition";
-import type { ISettingsService } from "./panes/settingsService";
-import type { ISettingsStore, SettingDescriptor } from "./settingsStore";
-import type { IShellService } from "./shellService";
+import { type IDisposable, type Nullable } from "core/index";
+import { type DropdownOption } from "shared-ui-components/fluent/primitives/dropdown";
+import { type IService, type ServiceDefinition } from "../modularity/serviceDefinition";
+import { type ISettingsService, SettingsServiceIdentity } from "./panes/settingsService";
+import { type ISettingsStore, type SettingDescriptor, SettingsStoreIdentity } from "./settingsStore";
+import { type IShellService, ShellServiceIdentity } from "./shellService";
 
 import { ArrowClockwiseRegular } from "@fluentui/react-icons";
 
@@ -15,9 +15,6 @@ import { Collapse } from "shared-ui-components/fluent/primitives/collapse";
 import { useSetting } from "../hooks/settingsHooks";
 import { InterceptProperty } from "../instrumentation/propertyInstrumentation";
 import { DefaultToolbarItemOrder } from "./defaultToolbarMetadata";
-import { SettingsServiceIdentity } from "./panes/settingsService";
-import { SettingsStoreIdentity } from "./settingsStore";
-import { ShellServiceIdentity } from "./shellService";
 
 type InterceptSettings = {
     mode: "intercept";

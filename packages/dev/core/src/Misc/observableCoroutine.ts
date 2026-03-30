@@ -1,6 +1,5 @@
 import { Observable } from "./observable";
-import type { AsyncCoroutine, CoroutineStep, CoroutineScheduler } from "./coroutine";
-import { runCoroutineAsync, inlineScheduler } from "./coroutine";
+import { type AsyncCoroutine, type CoroutineStep, type CoroutineScheduler, runCoroutineAsync, inlineScheduler } from "./coroutine";
 
 function CreateObservableScheduler<T>(observable: Observable<any>): { scheduler: CoroutineScheduler<T>; dispose: () => void } {
     const coroutines = new Array<AsyncCoroutine<T>>();

@@ -1,5 +1,5 @@
 import { Observable } from "core/Misc/observable";
-import type { BaseAction } from "../actions/actions/BaseAction";
+import { type BaseAction } from "../actions/actions/BaseAction";
 
 export enum StatePhases {
     ENTER = "entered",

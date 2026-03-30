@@ -1,10 +1,10 @@
-import type { Scene } from "../scene";
+import { type Scene } from "../scene";
 import { ReflectionProbe } from "../Probes/reflectionProbe";
-import type { AbstractMesh } from "../Meshes/abstractMesh";
+import { type AbstractMesh } from "../Meshes/abstractMesh";
 import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import { CustomProceduralTexture } from "../Materials/Textures/Procedurals/customProceduralTexture";
 import { DumpData } from "./dumpTools";
-import type { Vector3 } from "../Maths/math.vector";
+import { type Vector3 } from "../Maths/math.vector";
 import "../Shaders/equirectangularPanorama.fragment";
 
 /**

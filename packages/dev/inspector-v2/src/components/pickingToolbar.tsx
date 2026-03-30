@@ -1,12 +1,10 @@
-import type { MenuButtonProps } from "@fluentui/react-components";
-import type { FunctionComponent } from "react";
+import { type MenuButtonProps, Menu, MenuItemCheckbox, MenuList, MenuPopover, MenuTrigger, SplitButton, tokens, Tooltip } from "@fluentui/react-components";
+import { type FunctionComponent, useCallback, useEffect, useMemo, useState } from "react";
 
-import type { AbstractMesh, IMeshDataCache, Nullable, Scene } from "core/index";
-import type { IGizmoService } from "../services/gizmoService";
+import { type AbstractMesh, type IMeshDataCache, type Nullable, type Scene } from "core/index";
+import { type IGizmoService } from "../services/gizmoService";
 
-import { Menu, MenuItemCheckbox, MenuList, MenuPopover, MenuTrigger, SplitButton, tokens, Tooltip } from "@fluentui/react-components";
 import { TargetRegular } from "@fluentui/react-icons";
-import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { PointerEventTypes } from "core/Events/pointerEvents";
 import { TmpVectors, Vector3 } from "core/Maths/math.vector";

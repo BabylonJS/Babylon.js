@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import type { SmartFilter, ISerializedBlockV1, BaseBlock, SmartFilterDeserializer } from "smart-filters";
-import type { IBlockRegistration } from "smart-filters-blocks";
-import type { Nullable } from "core/types";
-import type { ThinEngine } from "core/Engines/thinEngine";
-import type { CustomBlockManager } from "../customBlockManager";
+import { type SmartFilter, type ISerializedBlockV1, type BaseBlock, type SmartFilterDeserializer } from "smart-filters";
+import { type IBlockRegistration } from "smart-filters-blocks";
+import { type Nullable } from "core/types";
+import { type ThinEngine } from "core/Engines/thinEngine";
+import { type CustomBlockManager } from "../customBlockManager";
 
 /**
  * Creates instances of blocks upon request

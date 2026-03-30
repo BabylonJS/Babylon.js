@@ -1,8 +1,8 @@
 import { RegisterClass } from "../../../../Misc/typeStore";
-import type { ParticleTeleportOutBlock } from "./particleTeleportOutBlock";
+import { type ParticleTeleportOutBlock } from "./particleTeleportOutBlock";
 import { NodeParticleBlock } from "../../nodeParticleBlock";
 import { NodeParticleBlockConnectionPointTypes } from "../../Enums/nodeParticleBlockConnectionPointTypes";
-import type { NodeParticleConnectionPoint } from "../../nodeParticleBlockConnectionPoint";
+import { type NodeParticleConnectionPoint } from "../../nodeParticleBlockConnectionPoint";
 
 /**
  * Defines a block used to teleport a value to an endpoint

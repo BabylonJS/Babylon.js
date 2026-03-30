@@ -1,10 +1,10 @@
-import type { Vector3, Matrix } from "../../Maths/math.vector";
-import type { Particle } from "../../Particles/particle";
-import type { Nullable } from "../../types";
-import type { UniformBufferEffectCommonAccessor } from "../../Materials/uniformBufferEffectCommonAccessor";
-import type { UniformBuffer } from "../../Materials/uniformBuffer";
+import { type Vector3, type Matrix } from "../../Maths/math.vector";
+import { type Particle } from "../../Particles/particle";
+import { type Nullable } from "../../types";
+import { type UniformBufferEffectCommonAccessor } from "../../Materials/uniformBufferEffectCommonAccessor";
+import { type UniformBuffer } from "../../Materials/uniformBuffer";
 
-import type { Scene } from "../../scene";
+import { type Scene } from "../../scene";
 
 /**
  * Particle emitter represents a volume emitting particles.

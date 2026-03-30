@@ -13,7 +13,7 @@ vi.mock(
 
 import { SaveSnippet } from "../../src/saveSnippet";
 import { ParseSnippetResponse } from "../../src/snippetLoader";
-import type { IV2Manifest, ISnippetServerResponse } from "../../src/types";
+import { type IV2Manifest, type ISnippetServerResponse } from "../../src/types";
 
 // ---------------------------------------------------------------------------
 // Mock fetch

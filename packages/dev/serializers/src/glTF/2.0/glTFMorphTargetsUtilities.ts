@@ -1,10 +1,9 @@
-import type { IBufferView, IAccessor } from "babylonjs-gltf2interface";
-import { AccessorComponentType, AccessorType } from "babylonjs-gltf2interface";
-import type { MorphTarget } from "core/Morph/morphTarget";
-import type { BufferManager } from "./bufferManager";
+import { type IBufferView, type IAccessor, AccessorComponentType, AccessorType } from "babylonjs-gltf2interface";
+import { type MorphTarget } from "core/Morph/morphTarget";
+import { type BufferManager } from "./bufferManager";
 
 import { NormalizeTangent } from "./glTFUtilities";
-import type { AbstractMesh } from "core/Meshes/abstractMesh";
+import { type AbstractMesh } from "core/Meshes/abstractMesh";
 import { VertexBuffer } from "core/Buffers/buffer";
 import { Vector3, Vector4 } from "core/Maths/math.vector";
 import { Tools } from "core/Misc/tools";

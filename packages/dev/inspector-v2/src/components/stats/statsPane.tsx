@@ -1,4 +1,4 @@
-import type { Scene } from "core/index";
+import { type Scene } from "core/index";
 
 import { makeStyles, tokens } from "@fluentui/react-components";
 

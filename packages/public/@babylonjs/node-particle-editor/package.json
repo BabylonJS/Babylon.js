@@ -1,6 +1,6 @@
 {
     "name": "@babylonjs/node-particle-editor",
-    "version": "8.56.2",
+    "version": "9.0.0",
     "main": "dist/babylon.nodeParticleEditor.js",
     "module": "dist/babylon.nodeParticleEditor.js",
     "esnext": "dist/babylon.nodeParticleEditor.js",
@@ -18,7 +18,7 @@
         "clean": "rimraf dist"
     },
     "peerDependencies": {
-        "@babylonjs/core": "^8.0.0"
+        "@babylonjs/core": "^9.0.0"
     },
     "devDependencies": {
         "@dev/shared-ui-components": "1.0.0",

@@ -1,14 +1,14 @@
 import { Vector3 } from "core/Maths/math.vector";
 import { Node } from "core/node";
 import { Light } from "core/Lights/light";
-import type { Effect } from "core/Materials/effect";
+import { type Effect } from "core/Materials/effect";
 import { RegisterClass } from "core/Misc/typeStore";
 import { serialize } from "core/Misc/decorators";
-import type { Scene } from "core/scene";
+import { type Scene } from "core/scene";
 import { AreaLight } from "core/Lights/areaLight";
-import type { Nullable } from "core/types";
-import type { BaseTexture } from "core/Materials/Textures/baseTexture";
-import type { Texture } from "core/Materials/Textures/texture";
+import { type Nullable } from "core/types";
+import { type BaseTexture } from "core/Materials/Textures/baseTexture";
+import { type Texture } from "core/Materials/Textures/texture";
 import { Constants } from "core/Engines/constants";
 
 Node.AddNodeConstructor("Light_Type_4", (name, scene) => {

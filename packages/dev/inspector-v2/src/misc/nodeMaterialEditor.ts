@@ -1,4 +1,4 @@
-import type { NodeMaterial } from "core/index";
+import { type NodeMaterial } from "core/index";
 
 export async function EditNodeMaterial(material: NodeMaterial) {
     // TODO: Figure out how to get all the various build steps to work with this.

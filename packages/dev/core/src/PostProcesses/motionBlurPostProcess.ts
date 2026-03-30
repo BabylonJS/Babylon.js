@@ -1,14 +1,13 @@
-import type { Nullable } from "../types";
+import { type Nullable } from "../types";
 import { Logger } from "../Misc/logger";
-import type { Camera } from "../Cameras/camera";
-import type { Effect } from "../Materials/effect";
-import type { PostProcessOptions } from "./postProcess";
-import { PostProcess } from "./postProcess";
+import { type Camera } from "../Cameras/camera";
+import { type Effect } from "../Materials/effect";
+import { type PostProcessOptions, PostProcess } from "./postProcess";
 import { Constants } from "../Engines/constants";
 import { GeometryBufferRenderer } from "../Rendering/geometryBufferRenderer";
-import type { AbstractMesh } from "../Meshes/abstractMesh";
+import { type AbstractMesh } from "../Meshes/abstractMesh";
 import { MotionBlurConfiguration } from "../Rendering/motionBlurConfiguration";
-import type { PrePassRenderer } from "../Rendering/prePassRenderer";
+import { type PrePassRenderer } from "../Rendering/prePassRenderer";
 
 import "../Animations/animatable";
 import "../Rendering/geometryBufferRendererSceneComponent";
@@ -16,8 +15,8 @@ import { serialize } from "../Misc/decorators";
 import { SerializationHelper } from "../Misc/decorators.serialization";
 import { RegisterClass } from "../Misc/typeStore";
 
-import type { AbstractEngine } from "../Engines/abstractEngine";
-import type { Scene } from "../scene";
+import { type AbstractEngine } from "../Engines/abstractEngine";
+import { type Scene } from "../scene";
 import { ThinMotionBlurPostProcess } from "./thinMotionBlurPostProcess";
 
 /**

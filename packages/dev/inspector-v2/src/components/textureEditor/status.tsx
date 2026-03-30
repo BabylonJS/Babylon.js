@@ -1,6 +1,6 @@
-import type { FunctionComponent } from "react";
+import { type FunctionComponent } from "react";
 
-import type { BaseTexture } from "core/index";
+import { type BaseTexture } from "core/index";
 
 import { makeStyles, tokens } from "@fluentui/react-components";
 

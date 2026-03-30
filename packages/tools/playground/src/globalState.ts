@@ -1,11 +1,10 @@
 /* eslint-disable jsdoc/require-jsdoc */
 
 import { Utilities } from "./tools/utilities";
-import type { CompilationError } from "./components/errorDisplayComponent";
-import { Observable } from "@dev/core";
-import type { Nullable } from "@dev/core";
-import type { V2Runner } from "./tools/monaco/run/runner";
-import type { V2Manifest } from "./tools/snippet";
+import { type CompilationError } from "./components/errorDisplayComponent";
+import { Observable, type Nullable } from "@dev/core";
+import { type V2Runner } from "./tools/monaco/run/runner";
+import { type V2Manifest } from "./tools/snippet";
 
 export enum EditionMode {
     Desktop,

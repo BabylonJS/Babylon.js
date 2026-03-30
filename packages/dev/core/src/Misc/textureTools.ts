@@ -1,15 +1,15 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import type { BaseTexture } from "core/Materials/Textures/baseTexture";
-import type { InternalTexture } from "../Materials/Textures/internalTexture";
+import { type BaseTexture } from "core/Materials/Textures/baseTexture";
+import { type InternalTexture } from "../Materials/Textures/internalTexture";
 import { Texture } from "../Materials/Textures/texture";
 import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import { PassPostProcess } from "../PostProcesses/passPostProcess";
 import { Constants } from "../Engines/constants";
-import type { Scene } from "../scene";
+import { type Scene } from "../scene";
 import { PostProcess } from "../PostProcesses/postProcess";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
-import type { Observable } from "./observable";
-import type { Nullable } from "../types";
+import { type Observable } from "./observable";
+import { type Nullable } from "../types";
 import { Clamp } from "../Maths/math.scalar.functions";
 
 /**

@@ -1,11 +1,11 @@
 import { MaterialDefines } from "core/Materials/materialDefines";
 import { MaterialPluginBase } from "core/Materials/materialPluginBase";
-import type { InternalTexture } from "core/Materials/Textures/internalTexture";
-import type { Material } from "core/Materials/material";
+import { type InternalTexture } from "core/Materials/Textures/internalTexture";
+import { type Material } from "core/Materials/material";
 import { Constants } from "core/Engines/constants";
-import type { StandardMaterial } from "core/Materials/standardMaterial";
+import { type StandardMaterial } from "core/Materials/standardMaterial";
 import { PBRBaseMaterial } from "core/Materials/PBR/pbrBaseMaterial";
-import type { UniformBuffer } from "core/Materials/uniformBuffer";
+import { type UniformBuffer } from "core/Materials/uniformBuffer";
 import { expandToProperty, serialize } from "core/Misc/decorators";
 import { RegisterClass } from "core/Misc/typeStore";
 

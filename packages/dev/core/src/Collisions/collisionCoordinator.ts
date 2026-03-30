@@ -1,8 +1,8 @@
-import type { Nullable } from "../types";
+import { type Nullable } from "../types";
 import { Scene } from "../scene";
 import { Vector3 } from "../Maths/math.vector";
 import { Collider } from "./collider";
-import type { AbstractMesh } from "../Meshes/abstractMesh";
+import { type AbstractMesh } from "../Meshes/abstractMesh";
 import { AbstractEngine } from "core/Engines/abstractEngine";
 
 /** @internal */

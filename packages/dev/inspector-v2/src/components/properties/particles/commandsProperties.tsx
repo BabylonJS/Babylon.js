@@ -1,7 +1,6 @@
-import type { FunctionComponent } from "react";
-import type { ISelectionService } from "../../../services/selectionService";
+import { type FunctionComponent, useCallback, useEffect, useState } from "react";
+import { type ISelectionService } from "../../../services/selectionService";
 import { ArrowDownloadRegular, CloudArrowDownRegular, CloudArrowUpRegular, PlayRegular, StopRegular } from "@fluentui/react-icons";
-import { useCallback, useEffect, useState } from "react";
 
 import { Tools } from "core/Misc/tools";
 import { GPUParticleSystem } from "core/Particles/gpuParticleSystem";

@@ -1,13 +1,12 @@
-import type { FlowGraphContext } from "../../../flowGraphContext";
-import type { FlowGraphDataConnection } from "../../../flowGraphDataConnection";
+import { type FlowGraphContext } from "../../../flowGraphContext";
+import { type FlowGraphDataConnection } from "../../../flowGraphDataConnection";
 import { FlowGraphExecutionBlock } from "../../../flowGraphExecutionBlock";
 import { RichTypeAny } from "../../../flowGraphRichTypes";
-import type { FlowGraphSignalConnection } from "../../../flowGraphSignalConnection";
-import type { IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
+import { type FlowGraphSignalConnection } from "../../../flowGraphSignalConnection";
+import { type IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
-import type { FlowGraphNumber } from "core/FlowGraph/utils";
-import { getNumericValue, isNumeric } from "core/FlowGraph/utils";
+import { type FlowGraphNumber, getNumericValue, isNumeric } from "core/FlowGraph/utils";
 /**
  * Configuration for a switch block.
  */

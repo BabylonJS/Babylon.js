@@ -1,6 +1,6 @@
 {
     "name": "@babylonjs/node-editor",
-    "version": "8.56.2",
+    "version": "9.0.0",
     "main": "dist/babylon.nodeEditor.js",
     "module": "dist/babylon.nodeEditor.js",
     "esnext": "dist/babylon.nodeEditor.js",
@@ -18,12 +18,12 @@
         "clean": "rimraf dist"
     },
     "peerDependencies": {
-        "@babylonjs/core": "^8.0.0",
+        "@babylonjs/core": "^9.0.0",
         "@types/react": ">=16.7.3",
         "@types/react-dom": ">=16.0.9"
     },
     "devDependencies": {
-        "@babylonjs/core": "8.56.2",
+        "@babylonjs/core": "9.0.0",
         "@tools/node-editor": "1.0.0",
         "react": "^18.2.0",
         "react-dom": "^18.2.0"

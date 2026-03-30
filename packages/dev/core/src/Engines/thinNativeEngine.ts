@@ -1,48 +1,51 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import type { Nullable, IndicesArray, DataArray, FloatArray, DeepImmutable, int } from "../types";
+import { type Nullable, type IndicesArray, type DataArray, type FloatArray, type DeepImmutable, type int } from "../types";
 
-import type { VertexBuffer } from "../Buffers/buffer";
+import { type VertexBuffer } from "../Buffers/buffer";
 import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
-import type { BaseTexture } from "../Materials/Textures/baseTexture";
-import type { VideoTexture } from "../Materials/Textures/videoTexture";
-import type { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
-import type { Effect } from "../Materials/effect";
+import { type BaseTexture } from "../Materials/Textures/baseTexture";
+import { type VideoTexture } from "../Materials/Textures/videoTexture";
+import { type RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
+import { type Effect } from "../Materials/effect";
 import { DataBuffer } from "../Buffers/dataBuffer";
-import type { Observer } from "../Misc/observable";
-import { Observable } from "../Misc/observable";
-import type { RenderTargetCreationOptions, TextureSize, DepthTextureCreationOptions, InternalTextureCreationOptions } from "../Materials/Textures/textureCreationOptions";
-import type { IPipelineContext } from "./IPipelineContext";
-import type { IColor3Like, IColor4Like, IViewportLike } from "../Maths/math.like";
+import { type Observer, Observable } from "../Misc/observable";
+import {
+    type RenderTargetCreationOptions,
+    type TextureSize,
+    type DepthTextureCreationOptions,
+    type InternalTextureCreationOptions,
+} from "../Materials/Textures/textureCreationOptions";
+import { type IPipelineContext } from "./IPipelineContext";
+import { type IColor3Like, type IColor4Like, type IViewportLike } from "../Maths/math.like";
 import { Logger } from "../Misc/logger";
 import { Constants } from "./constants";
 import { AbstractEngine, type ISceneLike } from "./abstractEngine";
 import { ThinEngine } from "./thinEngine";
-import type { IWebRequest } from "../Misc/interfaces/iWebRequest";
+import { type IWebRequest } from "../Misc/interfaces/iWebRequest";
 import { EngineStore } from "./engineStore";
 import { ShaderCodeInliner } from "./Processors/shaderCodeInliner";
 import { NativeShaderProcessor } from "./Native/nativeShaderProcessors";
-import type { IMaterialContext } from "./IMaterialContext";
-import type { IDrawContext } from "./IDrawContext";
-import type { ICanvas, IImage, IPath2D } from "./ICanvas";
-import type { IStencilState } from "../States/IStencilState";
-import type { RenderTargetWrapper } from "./renderTargetWrapper";
-import type { NativeData } from "./Native/nativeDataStream";
-import { NativeDataStream } from "./Native/nativeDataStream";
-import type {
-    INative,
-    INativeCamera,
-    INativeEngine,
-    NativeFramebuffer,
-    NativeFrameStats,
-    NativeProgram,
-    NativeTexture,
-    NativeUniform,
-    NativeVertexArrayObject,
+import { type IMaterialContext } from "./IMaterialContext";
+import { type IDrawContext } from "./IDrawContext";
+import { type ICanvas, type IImage, type IPath2D } from "./ICanvas";
+import { type IStencilState } from "../States/IStencilState";
+import { type RenderTargetWrapper } from "./renderTargetWrapper";
+import { type NativeData, NativeDataStream } from "./Native/nativeDataStream";
+import {
+    type INative,
+    type INativeCamera,
+    type INativeEngine,
+    type NativeFramebuffer,
+    type NativeFrameStats,
+    type NativeProgram,
+    type NativeTexture,
+    type NativeUniform,
+    type NativeVertexArrayObject,
 } from "./Native/nativeInterfaces";
 import { NativePipelineContext } from "./Native/nativePipelineContext";
 import { NativeRenderTargetWrapper } from "./Native/nativeRenderTargetWrapper";
 import { NativeHardwareTexture } from "./Native/nativeHardwareTexture";
-import type { IHardwareTextureWrapper } from "../Materials/Textures/hardwareTextureWrapper";
+import { type IHardwareTextureWrapper } from "../Materials/Textures/hardwareTextureWrapper";
 import {
     getNativeAlphaMode,
     getNativeAttribType,
@@ -55,10 +58,10 @@ import {
     getNativeAddressMode,
 } from "./Native/nativeHelpers";
 import { checkNonFloatVertexBuffers } from "../Buffers/buffer.nonFloatVertexBuffers";
-import type { _IShaderProcessingContext } from "./Processors/shaderProcessingOptions";
+import { type _IShaderProcessingContext } from "./Processors/shaderProcessingOptions";
 import { NativeShaderProcessingContext } from "./Native/nativeShaderProcessingContext";
-import type { ShaderLanguage } from "../Materials/shaderLanguage";
-import type { WebGLHardwareTexture } from "./WebGL/webGLHardwareTexture";
+import { type ShaderLanguage } from "../Materials/shaderLanguage";
+import { type WebGLHardwareTexture } from "./WebGL/webGLHardwareTexture";
 
 import "../Buffers/buffer.align";
 import { _TimeToken } from "../Instrumentation/timeToken";
@@ -355,6 +358,7 @@ export class ThinNativeEngine extends ThinEngine {
             textureNorm16: false,
             blendParametersPerTarget: false,
             dualSourceBlending: false,
+            supportReadWriteStorageTextures: false,
         };
 
         this._features = {

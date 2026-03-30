@@ -4,14 +4,13 @@
  * Workers are not yet supported.
  * For more info visit: https://forum.babylonjs.com/t/replacing-recastjs-with-recast-navigation-js/56003/46
  */
-import type { NavMesh, NavMeshQuery, TileCache } from "@recast-navigation/core";
-import { init as initRecast } from "@recast-navigation/core";
+import { type NavMesh, type NavMeshQuery, type TileCache, init as initRecast } from "@recast-navigation/core";
 
 import { Logger } from "core/Misc/logger";
-import type { Mesh } from "core/Meshes/mesh";
+import { type Mesh } from "core/Meshes/mesh";
 
 import { RecastNavigationJSPluginV2 } from "../plugin/RecastNavigationJSPlugin";
-import type { INavMeshParametersV2 } from "../types";
+import { type INavMeshParametersV2 } from "../types";
 import { GenerateNavMeshWithWorker } from "../generator/generator.worker";
 import { CreateNavigationPluginAsync } from "./factory.single-thread";
 import { GenerateNavMeshWorker } from "../worker/navmesh-worker";

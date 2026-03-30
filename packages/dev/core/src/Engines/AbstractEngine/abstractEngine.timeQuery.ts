@@ -1,6 +1,6 @@
 import { AbstractEngine } from "../abstractEngine";
 import { PerfCounter } from "../../Misc/perfCounter";
-import type { Nullable } from "../../types";
+import { type Nullable } from "../../types";
 
 declare module "../../Engines/abstractEngine" {
     // eslint-disable-next-line @typescript-eslint/naming-convention

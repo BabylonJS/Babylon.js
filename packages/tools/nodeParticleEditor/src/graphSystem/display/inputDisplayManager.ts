@@ -1,8 +1,8 @@
-import type { Color4 } from "core/Maths/math.color";
-import type { Vector2, Vector3 } from "core/Maths/math.vector";
-import type { ParticleInputBlock } from "core/Particles/Node/Blocks/particleInputBlock";
-import type { IDisplayManager } from "shared-ui-components/nodeGraphSystem/interfaces/displayManager";
-import type { INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
+import { type Color4 } from "core/Maths/math.color";
+import { type Vector2, type Vector3 } from "core/Maths/math.vector";
+import { type ParticleInputBlock } from "core/Particles/Node/Blocks/particleInputBlock";
+import { type IDisplayManager } from "shared-ui-components/nodeGraphSystem/interfaces/displayManager";
+import { type INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
 
 import { BlockTools } from "../../blockTools";
 import * as styles from "./inputDisplayManager.module.scss";

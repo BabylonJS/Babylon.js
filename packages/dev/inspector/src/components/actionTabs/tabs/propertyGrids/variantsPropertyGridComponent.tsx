@@ -1,16 +1,16 @@
 import * as React from "react";
 
-import type { Observable } from "core/Misc/observable";
-import type { Nullable } from "core/types";
+import { type Observable } from "core/Misc/observable";
+import { type Nullable } from "core/types";
 
-import type { PropertyChangedEvent } from "../../../propertyChangedEvent";
+import { type PropertyChangedEvent } from "../../../propertyChangedEvent";
 import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
-import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
-import type { GlobalState } from "../../../globalState";
+import { type LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
+import { type GlobalState } from "../../../globalState";
 import { OptionsLine } from "shared-ui-components/lines/optionsLineComponent";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
-import type { KHR_materials_variants } from "loaders/glTF/2.0/Extensions/KHR_materials_variants";
+import { type KHR_materials_variants } from "loaders/glTF/2.0/Extensions/KHR_materials_variants";
 
 interface IVariantsPropertyGridComponentProps {
     globalState: GlobalState;

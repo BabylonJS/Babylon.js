@@ -1,8 +1,6 @@
-import type { FunctionComponent } from "react";
+import { type FunctionComponent, useCallback } from "react";
 
-import type { AdvancedDynamicTexture } from "gui/2D/advancedDynamicTexture";
-
-import { useCallback } from "react";
+import { type AdvancedDynamicTexture } from "gui/2D/advancedDynamicTexture";
 
 import { EditRegular } from "@fluentui/react-icons";
 import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";

@@ -1,7 +1,8 @@
 import { Logger } from "@dev/core";
-import type { GlobalState } from "../globalState";
+import { type GlobalState } from "../globalState";
 import { Utilities } from "./utilities";
-import { PackSnippetData } from "./snippet";
+import { GenerateV2Manifest, PackSnippetData } from "./snippet";
+import { SaveSnippet, type IV2Manifest } from "@tools/snippet-loader";
 
 /**
  * Handles saving playground code and multi-file manifests.
@@ -79,57 +80,65 @@ export class SaveManager {
     }
 
     private _saveSnippet() {
-        const xmlHttp = new XMLHttpRequest();
-        xmlHttp.onreadystatechange = () => {
-            if (xmlHttp.readyState === 4) {
-                if (xmlHttp.status === 200) {
-                    const snippet = JSON.parse(xmlHttp.responseText);
-                    if (location.pathname && location.pathname.indexOf("pg/") !== -1) {
-                        let newHref: string;
-                        if (location.pathname.indexOf("revision") !== -1) {
-                            newHref = location.href.replace(/revision\/(\d+)/, "revision/" + snippet.version);
-                        } else {
-                            newHref = location.href + "/revision/" + snippet.version;
-                        }
-                        this._replaceUrlSilently(newHref);
-                    } else if (location.search && location.search.indexOf("pg=") !== -1) {
-                        const currentQuery = Utilities.ParseQuery();
-                        let newHref: string;
-                        if (currentQuery.revision) {
-                            newHref = location.href.replace(/revision=(\d+)/, "revision=" + snippet.version);
-                        } else {
-                            newHref = location.href + "&revision=" + snippet.version;
-                        }
-                        this._replaceUrlSilently(newHref);
-                    } else {
-                        const baseUrl = location.href.replace(location.hash, "");
-                        let toolkit = "";
+        // eslint-disable-next-line github/no-then
+        void this._saveSnippetAsync().catch((error) => {
+            Logger.Error("Failed to save snippet:", error);
+            this.globalState.onErrorObservable.notifyObservers({ message: "Unable to save your code. It may be too long." });
+        });
+    }
 
-                        if (Utilities.ReadBoolFromStore("babylon-toolkit", false) && location.href.indexOf("BabylonToolkit") === -1) {
-                            toolkit = "?BabylonToolkit";
-                        }
+    private async _saveSnippetAsync() {
+        const manifest = GenerateV2Manifest(this.globalState) as IV2Manifest;
+        const activeEngineVersion = Utilities.ReadStringFromStore("engineVersion", "WebGL2", true);
 
-                        let newUrl = baseUrl + toolkit + "#" + snippet.id;
-                        newUrl = newUrl.replace("##", "#");
-                        this.globalState.currentSnippetToken = snippet.id;
-                        if (snippet.version && snippet.version !== "0") {
-                            newUrl += "#" + snippet.version;
-                        }
-                        this.globalState.currentSnippetRevision = `#${snippet.version}`;
-                        this._replaceUrlSilently(newUrl);
-                    }
-
-                    this.globalState.onSavedObservable.notifyObservers();
-                } else {
-                    this.globalState.onErrorObservable.notifyObservers({ message: "Unable to save your code. It may be too long." });
-                }
+        const result = await SaveSnippet(
+            { type: "playground", manifest, engine: activeEngineVersion },
+            {
+                snippetUrl: this.globalState.SnippetServerUrl,
+                snippetId: this.globalState.currentSnippetToken || undefined,
+                metadata: {
+                    name: this.globalState.currentSnippetTitle,
+                    description: this.globalState.currentSnippetDescription,
+                    tags: this.globalState.currentSnippetTags,
+                },
             }
-        };
+        );
 
-        xmlHttp.open("POST", this.globalState.SnippetServerUrl + (this.globalState.currentSnippetToken ? "/" + this.globalState.currentSnippetToken : ""), true);
-        xmlHttp.withCredentials = false;
-        xmlHttp.setRequestHeader("Content-Type", "application/json");
+        if (location.pathname && location.pathname.indexOf("pg/") !== -1) {
+            let newHref: string;
+            if (location.pathname.indexOf("revision") !== -1) {
+                newHref = location.href.replace(/revision\/([\d]+)/, "revision/" + result.version);
+            } else {
+                newHref = location.href + "/revision/" + result.version;
+            }
+            this._replaceUrlSilently(newHref);
+        } else if (location.search && location.search.indexOf("pg=") !== -1) {
+            const currentQuery = Utilities.ParseQuery();
+            let newHref: string;
+            if (currentQuery.revision) {
+                newHref = location.href.replace(/revision=([\d]+)/, "revision=" + result.version);
+            } else {
+                newHref = location.href + "&revision=" + result.version;
+            }
+            this._replaceUrlSilently(newHref);
+        } else {
+            const baseUrl = location.href.replace(location.hash, "");
+            let toolkit = "";
 
-        xmlHttp.send(PackSnippetData(this.globalState));
+            if (Utilities.ReadBoolFromStore("babylon-toolkit", false) && location.href.indexOf("BabylonToolkit") === -1) {
+                toolkit = "?BabylonToolkit";
+            }
+
+            let newUrl = baseUrl + toolkit + "#" + result.id;
+            newUrl = newUrl.replace("##", "#");
+            this.globalState.currentSnippetToken = result.id;
+            if (result.version && result.version !== "0") {
+                newUrl += "#" + result.version;
+            }
+            this.globalState.currentSnippetRevision = result.version;
+            this._replaceUrlSilently(newUrl);
+        }
+
+        this.globalState.onSavedObservable.notifyObservers();
     }
 }

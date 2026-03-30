@@ -1,12 +1,6 @@
-import type { SelectTabData, SelectTabEvent } from "@fluentui/react-components";
-import type { TriggerProps } from "@fluentui/react-utilities";
-import type { FunctionComponent } from "react";
-import type { PersonMetadata } from "../extensibility/extensionFeed";
-import type { IExtension } from "../extensibility/extensionManager";
-import type { ServiceDefinition } from "../modularity/serviceDefinition";
-import type { IShellService } from "./shellService";
-
 import {
+    type SelectTabData,
+    type SelectTabEvent,
     Accordion,
     AccordionHeader,
     AccordionItem,
@@ -39,6 +33,13 @@ import {
     tokens,
     Tooltip,
 } from "@fluentui/react-components";
+import { type TriggerProps } from "@fluentui/react-utilities";
+import { type FunctionComponent, memo, useCallback, useEffect, useMemo, useState } from "react";
+import { type PersonMetadata } from "../extensibility/extensionFeed";
+import { type IExtension } from "../extensibility/extensionManager";
+import { type ServiceDefinition } from "../modularity/serviceDefinition";
+import { type IShellService, ShellServiceIdentity } from "./shellService";
+
 import {
     AppsAddInRegular,
     ArrowDownloadRegular,
@@ -51,13 +52,11 @@ import {
     PeopleCommunityRegular,
 } from "@fluentui/react-icons";
 import { Fade } from "@fluentui/react-motion-components-preview";
-import { memo, useCallback, useEffect, useMemo, useState } from "react";
 
 import { Logger } from "core/Misc/logger";
 
 import { Link } from "shared-ui-components/fluent/primitives/link";
 import { useExtensionManager } from "../contexts/extensionManagerContext";
-import { ShellServiceIdentity } from "./shellService";
 
 const useStyles = makeStyles({
     extensionButton: {},

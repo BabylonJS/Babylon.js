@@ -1,9 +1,9 @@
-import type { SoloNavMeshGeneratorConfig, TileCacheGeneratorConfig, TiledNavMeshGeneratorConfig } from "@recast-navigation/generators";
+import { type SoloNavMeshGeneratorConfig, type TileCacheGeneratorConfig, type TiledNavMeshGeneratorConfig } from "@recast-navigation/generators";
 
 import { Logger } from "core/Misc/logger";
-import type { Mesh } from "core/Meshes/mesh";
+import { type Mesh } from "core/Meshes/mesh";
 
-import type { INavMeshParametersV2 } from "../types";
+import { type INavMeshParametersV2 } from "../types";
 import { GetPositionsAndIndices } from "../common/getters";
 import { CreateSoloNavMeshConfig, CreateTileCacheNavMeshConfig, CreateTiledNavMeshConfig } from "../common/config";
 import { GetRecast } from "../factory/common";

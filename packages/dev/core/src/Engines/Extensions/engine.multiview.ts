@@ -1,17 +1,16 @@
 import { Camera } from "../../Cameras/camera";
 import { Engine } from "../../Engines/engine";
-import type { ICreateSceneUboOptions } from "../../scene";
-import { Scene } from "../../scene";
+import { type ICreateSceneUboOptions, Scene } from "../../scene";
 import { InternalTexture, InternalTextureSource } from "../../Materials/Textures/internalTexture";
-import type { Nullable } from "../../types";
-import type { RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture";
+import { type Nullable } from "../../types";
+import { type RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture";
 import { Matrix, TmpVectors } from "../../Maths/math.vector";
 import { UniformBuffer } from "../../Materials/uniformBuffer";
 import { MultiviewRenderTarget } from "../../Materials/Textures/MultiviewRenderTarget";
 import { Frustum } from "../../Maths/math.frustum";
-import type { WebGLRenderTargetWrapper } from "../WebGL/webGLRenderTargetWrapper";
-import type { RenderTargetWrapper } from "../renderTargetWrapper";
-import type { AbstractEngine } from "../abstractEngine";
+import { type WebGLRenderTargetWrapper } from "../WebGL/webGLRenderTargetWrapper";
+import { type RenderTargetWrapper } from "../renderTargetWrapper";
+import { type AbstractEngine } from "../abstractEngine";
 
 declare module "../../Engines/engine" {
     // eslint-disable-next-line @typescript-eslint/naming-convention
