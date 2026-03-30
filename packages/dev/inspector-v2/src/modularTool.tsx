@@ -1,4 +1,16 @@
-import { type ComponentType, type Context, type FunctionComponent, type ReactNode, createElement, Suspense, useCallback, useEffect, useReducer, useState } from "react";
+import {
+    type ComponentType,
+    type Context,
+    type FunctionComponent,
+    type PropsWithChildren,
+    type ReactNode,
+    createElement,
+    Suspense,
+    useCallback,
+    useEffect,
+    useReducer,
+    useState,
+} from "react";
 
 import { type IDisposable } from "core/index";
 import { type IExtensionFeed } from "./extensibility/extensionFeed";
@@ -62,8 +74,6 @@ const useStyles = makeStyles({
     },
 });
 
-// --- ReactContextService implementation ---
-
 type ReactContextEntry = {
     provider: Context<unknown>["Provider"];
     value: unknown;
@@ -75,11 +85,9 @@ type ReactContextAction =
     | { type: "remove"; provider: Context<unknown>["Provider"] }
     | { type: "update"; provider: Context<unknown>["Provider"]; value: unknown };
 
-const ReactContextsWrapper = ({ contexts, children }: { contexts: ReactContextEntry[]; children: ReactNode }) => {
+const ReactContextsWrapper: FunctionComponent<PropsWithChildren<{ contexts: readonly Readonly<ReactContextEntry>[] }>> = ({ contexts, children }) => {
     return <>{contexts.reduceRight<ReactNode>((acc, entry) => createElement(entry.provider, { value: entry.value }, acc), children)}</>;
 };
-
-// --- ModularTool options and entry point ---
 
 export type ModularToolOptions = {
     /**
