@@ -363,7 +363,7 @@ export class GLTFLoader implements IGLTFLoader {
         this._extensions.length = 0;
 
         for (const adapter of this._materialAdapters) {
-            adapter.dispose?.();
+            adapter.finalize?.();
         }
         this._materialAdapters.clear();
 

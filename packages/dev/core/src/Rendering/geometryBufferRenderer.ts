@@ -1260,7 +1260,7 @@ export class GeometryBufferRenderer {
                 if (!this._useUbo) {
                     effect.setMatrix("viewProjection", scene.getTransformMatrix());
                     effect.setMatrix("view", scene.getViewMatrix());
-                    this._scene.bindEyePosition(effect, "vEyePosition", true);
+                    this._scene.bindEyePosition(effect, "vEyePosition");
                 } else {
                     BindSceneUniformBuffer(effect, this._scene.getSceneUniformBuffer());
                     this._scene.finalizeSceneUbo();

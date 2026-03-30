@@ -1203,7 +1203,7 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
         }
     }
 
-    public dispose(): void {
+    public finalize(): void {
         // Do final configuration for the material to handle any interactions/dependencies between properties that we had to defer until all properties were loaded.
 
         // If the material is volumetric, we may need to create a coat layer to handle the surface tint.

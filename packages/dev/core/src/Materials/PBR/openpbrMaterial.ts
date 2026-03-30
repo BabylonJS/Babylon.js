@@ -64,12 +64,11 @@ import { ImageProcessingMixin } from "../imageProcessing";
 import { PushMaterial } from "../pushMaterial";
 import { SmartArray } from "../../Misc/smartArray";
 import type { RenderTargetTexture } from "../Textures/renderTargetTexture";
-import { ThinTexture } from "../Textures/thinTexture";
+import type { ThinTexture } from "../Textures/thinTexture";
 import type { IAnimatable } from "../../Animations/animatable.interface";
 import { Tools } from "../../Misc/tools";
 import type { UniformBuffer } from "../../Materials/uniformBuffer";
 import { GeometryBufferRenderer } from "core/Rendering/geometryBufferRenderer";
-import type { FrameGraphGeometryRendererTask } from "core/FrameGraph/Tasks/Rendering/geometryRendererTask";
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
@@ -303,6 +302,9 @@ export class OpenPBRMaterialDefines extends ImageProcessingDefinesMixin(OpenPBRM
      */
     public SCATTERING = false;
 
+    /**
+     * Enables the use of screen-space irradiance texture for scattering
+     */
     public USE_IRRADIANCE_TEXTURE_FOR_SCATTERING = false;
 
     /**
@@ -1178,6 +1180,18 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
     @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "ambientOcclusionTexture")
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _ambientOcclusionTexture: Sampler = new Sampler("ambient_occlusion", "ambientOcclusion", "AMBIENT_OCCLUSION");
+
+    /**
+     * Defines the irradiance texture used for subsurface scattering.
+     * If it's not provided, the irradiance will be looked for in the scene.geometryBufferRenderer.
+     */
+    public sssIrradianceTexture: Nullable<BaseTexture> = null;
+
+    /**
+     * Defines the depth texture used for subsurface scattering. This is the depth defined
+     * in screen space. If it's not provided, the depth will be looked for in the scene.geometryBufferRenderer.
+     */
+    public sssDepthTexture: Nullable<BaseTexture> = null;
 
     private _propertyList: { [name: string]: Property<any> };
     private _uniformsList: { [name: string]: Uniform } = {};
@@ -2490,37 +2504,11 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
                 }
 
                 if (defines.USE_IRRADIANCE_TEXTURE_FOR_SCATTERING) {
-                    let sceneIrradianceTexture: Nullable<ThinTexture> = null;
-                    let sceneDepthTexture: Nullable<ThinTexture> = null;
-                    let renderTargetWidth = 0;
-                    let renderTargetHeight = 0;
-
-                    if (scene.geometryBufferRenderer) {
-                        const irradianceTextureIndex = scene.geometryBufferRenderer.getTextureIndex(GeometryBufferRenderer.IRRADIANCE_TEXTURE_TYPE);
-                        sceneIrradianceTexture = scene.geometryBufferRenderer.getGBuffer().textures[irradianceTextureIndex];
-                        renderTargetWidth = sceneIrradianceTexture.getSize().width;
-                        renderTargetHeight = sceneIrradianceTexture.getSize().height;
-                        const depthIndex = scene.geometryBufferRenderer.getTextureIndex(GeometryBufferRenderer.SCREENSPACE_DEPTH_TEXTURE_TYPE);
-                        sceneDepthTexture = scene.geometryBufferRenderer.getGBuffer().textures[depthIndex];
-                    } else if (scene.frameGraph) {
-                        const geometryRendererTask = scene.frameGraph.getTasksByClassName<FrameGraphGeometryRendererTask>("FrameGraphGeometryRendererTask")[0];
-
-                        if (geometryRendererTask) {
-                            const frameGraphIrradianceTexture = scene.frameGraph.textureManager.getTextureFromHandle(geometryRendererTask.geometryIrradianceTexture);
-                            const frameGraphDepthTexture = scene.frameGraph.textureManager.getTextureFromHandle(geometryRendererTask.geometryScreenDepthTexture);
-
-                            if (frameGraphIrradianceTexture && frameGraphDepthTexture) {
-                                sceneIrradianceTexture = new ThinTexture(frameGraphIrradianceTexture);
-                                sceneDepthTexture = new ThinTexture(frameGraphDepthTexture);
-                                renderTargetWidth = frameGraphIrradianceTexture.width;
-                                renderTargetHeight = frameGraphIrradianceTexture.height;
-                            }
-                        }
-                    }
-
-                    if (sceneIrradianceTexture && sceneDepthTexture) {
-                        ubo.setTexture("sceneIrradianceSampler", sceneIrradianceTexture);
-                        ubo.setTexture("sceneDepthSampler", sceneDepthTexture);
+                    if (this.sssIrradianceTexture && this.sssDepthTexture) {
+                        const renderTargetWidth = this.sssIrradianceTexture.getSize().width;
+                        const renderTargetHeight = this.sssIrradianceTexture.getSize().height;
+                        ubo.setTexture("sceneIrradianceSampler", this.sssIrradianceTexture);
+                        ubo.setTexture("sceneDepthSampler", this.sssDepthTexture);
                         ubo.updateFloat2("renderTargetSize", renderTargetWidth, renderTargetHeight);
                     }
                 }
@@ -2617,6 +2605,13 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
 
         if (this._radianceTexture) {
             activeTextures.push(this._radianceTexture);
+        }
+
+        if (this.sssIrradianceTexture) {
+            activeTextures.push(this.sssIrradianceTexture);
+        }
+        if (this.sssDepthTexture) {
+            activeTextures.push(this.sssDepthTexture);
         }
 
         return activeTextures;
@@ -3156,18 +3151,17 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
         // Determine whether we should use the prepass irradiance texture for scattering.
         // If this IS a prepass, we don't want to use the irradiance texture as it won't be available yet.
         if (!defines.PREPASS && (defines.SUBSURFACE_SLAB || defines.TRANSMISSION_SLAB_VOLUME)) {
-            if (scene.geometryBufferRenderer && scene.geometryBufferRenderer.enableIrradiance) {
-                defines.USE_IRRADIANCE_TEXTURE_FOR_SCATTERING = true;
-            } else if (scene.frameGraph) {
-                const geometryRendererTask = scene.frameGraph.getTasksByClassName<FrameGraphGeometryRendererTask>("FrameGraphGeometryRendererTask")[0];
-                if (geometryRendererTask) {
-                    const frameGraphIrradianceTexture = scene.frameGraph.textureManager.getTextureFromHandle(geometryRendererTask.geometryIrradianceTexture);
-                    const frameGraphDepthTexture = scene.frameGraph.textureManager.getTextureFromHandle(geometryRendererTask.geometryScreenDepthTexture);
+            if (!this.sssIrradianceTexture && scene.geometryBufferRenderer) {
+                const irradianceTextureIndex = scene.geometryBufferRenderer.getTextureIndex(GeometryBufferRenderer.IRRADIANCE_TEXTURE_TYPE);
+                this.sssIrradianceTexture = scene.geometryBufferRenderer.getGBuffer().textures[irradianceTextureIndex];
+            }
 
-                    if (frameGraphIrradianceTexture && frameGraphDepthTexture) {
-                        defines.USE_IRRADIANCE_TEXTURE_FOR_SCATTERING = true;
-                    }
-                }
+            if (!this.sssDepthTexture && scene.geometryBufferRenderer) {
+                const depthIndex = scene.geometryBufferRenderer.getTextureIndex(GeometryBufferRenderer.SCREENSPACE_DEPTH_TEXTURE_TYPE);
+                this.sssDepthTexture = scene.geometryBufferRenderer.getGBuffer().textures[depthIndex];
+            }
+            if (this.sssIrradianceTexture && this.sssDepthTexture) {
+                defines.USE_IRRADIANCE_TEXTURE_FOR_SCATTERING = true;
             }
         }
         defines.FUZZ = this.fuzzWeight > 0 && MaterialFlags.ReflectionTextureEnabled;

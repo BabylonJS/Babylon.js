@@ -14,9 +14,9 @@ export interface IMaterialLoadingAdapter {
     readonly material: Material;
 
     /**
-     * Disposes internal adapter resources if any
+     * Finalizes material properties after loading is complete.
      */
-    dispose?(): void;
+    finalize?(): void;
 
     /**
      * Whether the material should be treated as unlit
