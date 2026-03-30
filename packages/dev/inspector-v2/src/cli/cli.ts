@@ -4,6 +4,7 @@ import { fileURLToPath } from "url";
 import { dirname, join, resolve } from "path";
 import ws from "ws";
 import { loadConfig } from "./config.js";
+import type { CliRequest, CliResponse, CommandsResponse, SessionsResponse } from "./protocol.js";
 
 type WebSocket = ws;
 
@@ -68,7 +69,7 @@ function connectToBridge(port: number): Promise<WebSocket> {
     });
 }
 
-function sendAndReceive(socket: WebSocket, message: object): Promise<Record<string, unknown>> {
+function sendAndReceive<T extends CliResponse>(socket: WebSocket, message: CliRequest): Promise<T> {
     return new Promise((resolve, reject) => {
         const timeout = setTimeout(() => {
             reject(new Error("Timeout waiting for bridge response."));
@@ -77,7 +78,7 @@ function sendAndReceive(socket: WebSocket, message: object): Promise<Record<stri
         socket.once("message", (data) => {
             clearTimeout(timeout);
             try {
-                resolve(JSON.parse(data.toString()));
+                resolve(JSON.parse(data.toString()) as T);
             } catch {
                 reject(new Error("Failed to parse bridge response."));
             }
@@ -129,13 +130,12 @@ async function main(): Promise<void> {
     if (args.sessions) {
         const socket = await ensureBridge(config.cliPort, args.bridgeScript);
         try {
-            const response = await sendAndReceive(socket, { type: "sessions" });
-            const sessions = response.sessions as Array<{ id: number; name: string; connectedAt: string }>;
-            if (!sessions || sessions.length === 0) {
+            const response = await sendAndReceive<SessionsResponse>(socket, { type: "sessions" });
+            if (response.sessions.length === 0) {
                 console.log("No active sessions.");
             } else {
                 console.log("Active sessions:");
-                for (const session of sessions) {
+                for (const session of response.sessions) {
                     console.log(`  [${session.id}] ${session.name} (connected: ${session.connectedAt})`);
                 }
             }
@@ -167,18 +167,17 @@ async function main(): Promise<void> {
 
         const socket = await ensureBridge(config.cliPort, args.bridgeScript);
         try {
-            const response = await sendAndReceive(socket, { type: "commands", sessionId });
+            const response = await sendAndReceive<CommandsResponse>(socket, { type: "commands", sessionId });
             if (response.error) {
                 console.error(`Error: ${response.error}`);
                 process.exitCode = 1;
                 return;
             }
-            const commands = response.commands as Array<{ id: string; description: string; args?: Array<{ name: string; description: string; required?: boolean }> }>;
-            if (!commands || commands.length === 0) {
+            if (!response.commands || response.commands.length === 0) {
                 console.log("No commands available for this session.");
             } else {
                 console.log(`Commands for session ${sessionId}:`);
-                for (const cmd of commands) {
+                for (const cmd of response.commands) {
                     console.log(`  --${cmd.id}    ${cmd.description}`);
                     if (cmd.args && cmd.args.length > 0) {
                         for (const arg of cmd.args) {

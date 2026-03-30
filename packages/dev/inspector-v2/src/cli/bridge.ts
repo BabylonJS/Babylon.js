@@ -1,13 +1,17 @@
 import ws from "ws";
 import { loadConfig } from "./config.js";
+import type {
+    BrowserRequest,
+    BrowserResponse,
+    CliRequest,
+    CliResponse,
+    SessionInfo,
+} from "./protocol.js";
 
 type WebSocket = ws;
 type WebSocketServerType = ws.Server;
 
-interface Session {
-    id: number;
-    name: string;
-    connectedAt: string;
+interface Session extends SessionInfo {
     ws: WebSocket;
 }
 
@@ -37,7 +41,7 @@ function startBridge(): void {
         let session: Session | null = null;
 
         socket.on("message", (data) => {
-            let message: { type: string; name?: string; requestId?: string; commands?: unknown; result?: string; error?: string };
+            let message: BrowserRequest;
             try {
                 message = JSON.parse(data.toString());
             } catch {
@@ -49,7 +53,7 @@ function startBridge(): void {
                     const id = nextSessionId++;
                     session = {
                         id,
-                        name: message.name ?? "Unknown",
+                        name: message.name,
                         connectedAt: new Date().toISOString(),
                         ws: socket,
                     };
@@ -60,13 +64,10 @@ function startBridge(): void {
                 case "commandListResponse":
                 case "commandResponse": {
                     // Forward response back to the CLI that requested it.
-                    const requestId = message.requestId;
-                    if (requestId) {
-                        const resolve = pendingBrowserRequests.get(requestId);
-                        if (resolve) {
-                            pendingBrowserRequests.delete(requestId);
-                            resolve(JSON.stringify(message));
-                        }
+                    const resolve = pendingBrowserRequests.get(message.requestId);
+                    if (resolve) {
+                        pendingBrowserRequests.delete(message.requestId);
+                        resolve(JSON.stringify(message));
                     }
                     break;
                 }
@@ -83,60 +84,66 @@ function startBridge(): void {
 
     cliWss.on("connection", (socket) => {
         socket.on("message", (data) => {
-            let message: { type: string; sessionId?: number; commandId?: string; args?: Record<string, string> };
+            let message: CliRequest;
             try {
                 message = JSON.parse(data.toString());
             } catch {
                 return;
             }
 
+            function sendCliResponse(response: CliResponse) {
+                socket.send(JSON.stringify(response));
+            }
+
+            function sendBrowserRequest(target: Session, request: BrowserResponse) {
+                target.ws.send(JSON.stringify(request));
+            }
+
             switch (message.type) {
                 case "sessions": {
-                    const sessionList = Array.from(sessions.values()).map((s) => ({
+                    const sessionList: SessionInfo[] = Array.from(sessions.values()).map((s) => ({
                         id: s.id,
                         name: s.name,
                         connectedAt: s.connectedAt,
                     }));
-                    socket.send(JSON.stringify({ type: "sessionsResponse", sessions: sessionList }));
+                    sendCliResponse({ type: "sessionsResponse", sessions: sessionList });
                     break;
                 }
                 case "commands": {
-                    const session = sessions.get(message.sessionId ?? -1);
+                    const session = sessions.get(message.sessionId);
                     if (!session) {
-                        socket.send(JSON.stringify({ type: "commandsResponse", error: `No session with id ${message.sessionId}` }));
+                        sendCliResponse({ type: "commandsResponse", error: `No session with id ${message.sessionId}` });
                         break;
                     }
                     const requestId = generateRequestId();
-                    session.ws.send(JSON.stringify({ type: "listCommands", requestId }));
+                    sendBrowserRequest(session, { type: "listCommands", requestId });
                     waitForBrowserResponse(requestId).then(
                         (response) => socket.send(response),
-                        () => socket.send(JSON.stringify({ type: "commandsResponse", error: "Timeout waiting for browser response" }))
+                        () => sendCliResponse({ type: "commandsResponse", error: "Timeout waiting for browser response" })
                     );
                     break;
                 }
                 case "exec": {
-                    const session = sessions.get(message.sessionId ?? -1);
+                    const session = sessions.get(message.sessionId);
                     if (!session) {
-                        socket.send(JSON.stringify({ type: "execResponse", error: `No session with id ${message.sessionId}` }));
+                        sendCliResponse({ type: "execResponse", error: `No session with id ${message.sessionId}` });
                         break;
                     }
                     const requestId = generateRequestId();
-                    session.ws.send(
-                        JSON.stringify({
-                            type: "execCommand",
-                            requestId,
-                            commandId: message.commandId,
-                            args: message.args,
-                        })
-                    );
+                    sendBrowserRequest(session, {
+                        type: "execCommand",
+                        requestId,
+                        commandId: message.commandId,
+                        args: message.args,
+                    });
                     waitForBrowserResponse(requestId).then(
                         (response) => socket.send(response),
-                        () => socket.send(JSON.stringify({ type: "execResponse", error: "Timeout waiting for browser response" }))
+                        () => sendCliResponse({ type: "execResponse", error: "Timeout waiting for browser response" })
                     );
                     break;
                 }
                 case "stop": {
-                    socket.send(JSON.stringify({ type: "stopResponse", success: true }));
+                    sendCliResponse({ type: "stopResponse", success: true });
                     shutdown(browserWss, cliWss);
                     break;
                 }

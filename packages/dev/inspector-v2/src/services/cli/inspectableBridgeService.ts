@@ -2,6 +2,7 @@ import type { IDisposable } from "core/index";
 import type { ServiceDefinition } from "../../modularity/serviceDefinition";
 
 import type { IInspectableCommandRegistry, InspectableCommandDescriptor } from "./inspectableCommandRegistry";
+import type { BrowserRequest, BrowserResponse, CommandInfo } from "../../cli/protocol";
 
 import { Logger } from "core/Misc/logger";
 import { InspectableCommandRegistryIdentity } from "./inspectableCommandRegistry";
@@ -36,6 +37,10 @@ export function MakeInspectableBridgeServiceDefinition(options: InspectableBridg
             let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
             let disposed = false;
 
+            function sendToBridge(message: BrowserRequest) {
+                ws?.send(JSON.stringify(message));
+            }
+
             function connect() {
                 if (disposed) {
                     return;
@@ -49,7 +54,7 @@ export function MakeInspectableBridgeServiceDefinition(options: InspectableBridg
                 }
 
                 ws.onopen = () => {
-                    ws?.send(JSON.stringify({ type: "register", name: options.name }));
+                    sendToBridge({ type: "register", name: options.name });
                 };
 
                 ws.onmessage = (event) => {
@@ -81,54 +86,46 @@ export function MakeInspectableBridgeServiceDefinition(options: InspectableBridg
                 }, 3000);
             }
 
-            function handleMessage(message: { type: string; requestId?: string; commandId?: string; args?: Record<string, string> }) {
+            function handleMessage(message: BrowserResponse) {
                 switch (message.type) {
                     case "listCommands": {
-                        const commandList = Array.from(commands.values()).map((cmd) => ({
+                        const commandList: CommandInfo[] = Array.from(commands.values()).map((cmd) => ({
                             id: cmd.id,
                             description: cmd.description,
                             args: cmd.args,
                         }));
-                        ws?.send(
-                            JSON.stringify({
-                                type: "commandListResponse",
-                                requestId: message.requestId,
-                                commands: commandList,
-                            })
-                        );
+                        sendToBridge({
+                            type: "commandListResponse",
+                            requestId: message.requestId,
+                            commands: commandList,
+                        });
                         break;
                     }
                     case "execCommand": {
-                        const command = commands.get(message.commandId ?? "");
+                        const command = commands.get(message.commandId);
                         if (!command) {
-                            ws?.send(
-                                JSON.stringify({
-                                    type: "commandResponse",
-                                    requestId: message.requestId,
-                                    error: `Unknown command: ${message.commandId}`,
-                                })
-                            );
+                            sendToBridge({
+                                type: "commandResponse",
+                                requestId: message.requestId,
+                                error: `Unknown command: ${message.commandId}`,
+                            });
                             break;
                         }
                         command
-                            .execute(message.args ?? {})
+                            .execute(message.args)
                             .then((result) => {
-                                ws?.send(
-                                    JSON.stringify({
-                                        type: "commandResponse",
-                                        requestId: message.requestId,
-                                        result,
-                                    })
-                                );
+                                sendToBridge({
+                                    type: "commandResponse",
+                                    requestId: message.requestId,
+                                    result,
+                                });
                             })
                             .catch((error: unknown) => {
-                                ws?.send(
-                                    JSON.stringify({
-                                        type: "commandResponse",
-                                        requestId: message.requestId,
-                                        error: String(error),
-                                    })
-                                );
+                                sendToBridge({
+                                    type: "commandResponse",
+                                    requestId: message.requestId,
+                                    error: String(error),
+                                });
                             });
                         break;
                     }
