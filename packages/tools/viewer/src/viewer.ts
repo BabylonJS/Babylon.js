@@ -237,10 +237,11 @@ export function IsSSAOOptions(value: string): value is SSAOOptions {
  * Checks if the given mesh is a Gaussian Splatting mesh by inspecting its class name.
  * This avoids importing the GaussianSplattingMesh class directly.
  * @param mesh The mesh to check.
- * @returns True if the mesh is a Gaussian Splatting mesh, otherwise false.
+ * @returns True if the mesh is a Gaussian Splatting mesh (including compound splat part proxies), otherwise false.
  */
-function IsGaussianSplattingMesh(mesh: AbstractMesh): mesh is GaussianSplattingMesh {
-    return mesh.getClassName() === "GaussianSplattingMesh";
+function IsGaussianSplattingMesh(mesh: AbstractMesh): boolean {
+    const className = mesh.getClassName();
+    return className === "GaussianSplattingMesh" || className === "GaussianSplattingPartProxyMesh";
 }
 
 function throwIfAborted(...abortSignals: (Nullable<AbortSignal> | undefined)[]): void {
