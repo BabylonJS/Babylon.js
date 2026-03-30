@@ -14,16 +14,16 @@ const HELP_TEXT = `babylon-inspector — Interact with running Babylon.js scenes
 
 USAGE
   babylon-inspector [options]
-  babylon-inspector --exec [session-id] <command-id> [--arg value ...]
+  babylon-inspector --command [session-id] <command-id> [--arg value ...]
 
 OPTIONS
   --help                   Show this help message.
   --sessions               List active browser sessions connected to the bridge.
   --stop                   Stop the bridge process.
-  --commands [session-id]  List commands available from a session.
-  --exec [session-id] <command-id> [--arg value ...]
-                           Execute a command on a session. Extra --key value
-                           pairs are forwarded as command arguments.
+  --commands [session-id]  List available commands.
+  --command [session-id] <command-id> [--arg value ...]
+                           Execute a command. Use --command <id> --help to
+                           see its arguments.
 
   Session id is optional when only one session is active.
 
@@ -34,17 +34,19 @@ CONFIGURATION
 EXAMPLES
   babylon-inspector --sessions
   babylon-inspector --commands
-  babylon-inspector --commands 1
-  babylon-inspector --exec query-mesh --uniqueId 42
-  babylon-inspector --exec 1 query-mesh --uniqueId 42
+  babylon-inspector --command query-mesh --help
+  babylon-inspector --command query-mesh --uniqueId 42
+  babylon-inspector --command 1 query-mesh --uniqueId 42
 `;
+
+const KNOWN_OPTIONS = new Set(["help", "sessions", "stop", "commands", "command", "bridge-script"]);
 
 interface ParsedArgs {
     help: boolean;
     sessions: boolean;
     stop: boolean;
     commands: boolean;
-    exec: boolean;
+    command: boolean;
     bridgeScript?: string;
     rest: string[];
 }
@@ -56,7 +58,7 @@ function parseCliArgs(): ParsedArgs {
             sessions: { type: "boolean", default: false },
             stop: { type: "boolean", default: false },
             commands: { type: "boolean", default: false },
-            exec: { type: "boolean", default: false },
+            command: { type: "boolean", default: false },
             "bridge-script": { type: "string" },
         },
         strict: false,
@@ -69,7 +71,7 @@ function parseCliArgs(): ParsedArgs {
     if (tokens) {
         let pendingOptionName: string | null = null;
         for (const token of tokens) {
-            if (token.kind === "option" && token.name !== "bridge-script" && token.name !== "help" && token.name !== "sessions" && token.name !== "stop" && token.name !== "commands" && token.name !== "exec") {
+            if (token.kind === "option" && !KNOWN_OPTIONS.has(token.name)) {
                 if (pendingOptionName !== null) {
                     rest.push(`--${pendingOptionName}`);
                 }
@@ -99,7 +101,7 @@ function parseCliArgs(): ParsedArgs {
         sessions: !!values.sessions,
         stop: !!values.stop,
         commands: !!values.commands,
-        exec: !!values.exec,
+        command: !!values.command,
         bridgeScript: values["bridge-script"] as string | undefined,
         rest,
     };
@@ -191,7 +193,7 @@ async function resolveSessionId(socket: WebSocket, explicitId?: string): Promise
 async function main(): Promise<void> {
     const args = parseCliArgs();
 
-    if (args.help) {
+    if (args.help && !args.command) {
         console.log(HELP_TEXT);
         return;
     }
@@ -229,7 +231,6 @@ async function main(): Promise<void> {
     if (args.commands) {
         const socket = await ensureBridge(config.cliPort, args.bridgeScript);
         try {
-            // Optional positional: session id.
             const sessionId = await resolveSessionId(socket, args.rest[0]);
             const response = await sendAndReceive<CommandsResponse>(socket, { type: "commands", sessionId });
             if (response.error) {
@@ -238,17 +239,14 @@ async function main(): Promise<void> {
                 return;
             }
             if (!response.commands || response.commands.length === 0) {
-                console.log("No commands available for this session.");
+                console.log("No commands available.");
             } else {
-                console.log(`Commands for session ${sessionId}:`);
+                console.log("Available commands:");
                 for (const cmd of response.commands) {
-                    console.log(`  --${cmd.id}    ${cmd.description}`);
-                    if (cmd.args && cmd.args.length > 0) {
-                        for (const arg of cmd.args) {
-                            console.log(`      --${arg.name}${arg.required ? " (required)" : ""}    ${arg.description}`);
-                        }
-                    }
+                    console.log(`  ${cmd.id}    ${cmd.description}`);
                 }
+                console.log("\nRun --command <id> --help to see arguments for a command.");
+                console.log("Run --command <id> [--arg value ...] to execute a command.");
             }
         } finally {
             socket.close();
@@ -256,12 +254,10 @@ async function main(): Promise<void> {
         return;
     }
 
-    if (args.exec) {
+    if (args.command) {
         const socket = await ensureBridge(config.cliPort, args.bridgeScript);
         try {
             // Positionals in rest: [sessionId?] <commandId>
-            // If the first positional is a number, treat it as session id and the next as command id.
-            // Otherwise, auto-resolve session and treat the first positional as command id.
             let commandId: string | undefined;
             let argsStartIndex: number;
             let explicitSessionId: string | undefined;
@@ -276,7 +272,7 @@ async function main(): Promise<void> {
             }
 
             if (!commandId) {
-                console.error("Error: --exec requires a command id.");
+                console.error("Error: --command requires a command id.");
                 process.exitCode = 1;
                 return;
             }
@@ -285,11 +281,44 @@ async function main(): Promise<void> {
 
             // Parse remaining --key value pairs into a Record.
             const commandArgs: Record<string, string> = {};
+            let wantsHelp = args.help;
             for (let i = argsStartIndex; i < args.rest.length; i++) {
                 const token = args.rest[i];
-                if (token.startsWith("--") && i + 1 < args.rest.length) {
+                if (token === "--help") {
+                    wantsHelp = true;
+                } else if (token.startsWith("--") && i + 1 < args.rest.length) {
                     commandArgs[token.slice(2)] = args.rest[++i];
                 }
+            }
+
+            // Fetch the command descriptor to check for --help or missing required args.
+            const commandsResponse = await sendAndReceive<CommandsResponse>(socket, { type: "commands", sessionId });
+            const descriptor = commandsResponse.commands?.find((c) => c.id === commandId);
+
+            if (!descriptor) {
+                console.error(`Error: Unknown command "${commandId}".`);
+                process.exitCode = 1;
+                return;
+            }
+
+            // Check for --help or missing required arguments.
+            const missingRequired = (descriptor.args ?? []).filter((a) => a.required && !(a.name in commandArgs));
+
+            if (wantsHelp || missingRequired.length > 0) {
+                if (missingRequired.length > 0 && !wantsHelp) {
+                    console.error(`Missing required argument(s): ${missingRequired.map((a) => `--${a.name}`).join(", ")}\n`);
+                }
+                console.log(`${commandId}: ${descriptor.description}\n`);
+                if (descriptor.args && descriptor.args.length > 0) {
+                    console.log("Arguments:");
+                    for (const arg of descriptor.args) {
+                        console.log(`  --${arg.name}${arg.required ? " (required)" : ""}    ${arg.description}`);
+                    }
+                }
+                if (missingRequired.length > 0 && !wantsHelp) {
+                    process.exitCode = 1;
+                }
+                return;
             }
 
             const response = await sendAndReceive<ExecResponse>(socket, {
