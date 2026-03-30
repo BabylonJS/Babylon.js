@@ -112,7 +112,7 @@ export function MakeInspectableBridgeServiceDefinition(options: InspectableBridg
                             break;
                         }
                         command
-                            .execute(message.args)
+                            .executeAsync(message.args)
                             .then((result) => {
                                 sendToBridge({
                                     type: "commandResponse",

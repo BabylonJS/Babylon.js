@@ -45,7 +45,7 @@ export type InspectableCommandDescriptor = {
      * @param args A map of argument names to their values.
      * @returns A promise that resolves to the result string.
      */
-    execute: (args: Record<string, string>) => Promise<string>;
+    executeAsync: (args: Record<string, string>) => Promise<string>;
 };
 
 /**
