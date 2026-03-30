@@ -1,15 +1,12 @@
-import type { ComponentType, FunctionComponent } from "react";
+import { type ComponentType, type FunctionComponent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import type { BaseTexture, ISize, PointerInfo, Scene, Vector2 } from "core/index";
-import type { IPixelData } from "./canvasManager";
-import type { Channel } from "./channels";
+import { type BaseTexture, type ISize, type PointerInfo, type Scene, type Vector2 } from "core/index";
+import { type IPixelData, TextureCanvasManager } from "./canvasManager";
+import { type Channel, ChannelsBar } from "./channels";
 
 import { makeStyles, tokens } from "@fluentui/react-components";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { Constants } from "core/Engines/constants";
-import { TextureCanvasManager } from "./canvasManager";
-import { ChannelsBar } from "./channels";
 import { PropertiesBar } from "./properties";
 import { StatusBar } from "./status";
 import { ToolBar } from "./tools";

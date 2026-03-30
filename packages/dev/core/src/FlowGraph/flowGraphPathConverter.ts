@@ -1,6 +1,6 @@
-import type { FlowGraphContext } from "./flowGraphContext";
-import type { IPathToObjectConverter, IObjectInfo } from "../ObjectModel/objectModelInterfaces";
-import type { IObjectAccessor } from "./typeDefinitions";
+import { type FlowGraphContext } from "./flowGraphContext";
+import { type IPathToObjectConverter, type IObjectInfo } from "../ObjectModel/objectModelInterfaces";
+import { type IObjectAccessor } from "./typeDefinitions";
 
 /**
  * @deprecated Avoid using this on the flow-graph (glTF only)

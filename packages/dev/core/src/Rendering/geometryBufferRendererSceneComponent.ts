@@ -1,9 +1,8 @@
-import type { Nullable } from "../types";
+import { type Nullable } from "../types";
 import { Scene } from "../scene";
-import type { ISceneComponent } from "../sceneComponent";
-import { SceneComponentConstants } from "../sceneComponent";
-import type { SmartArrayNoDuplicate } from "../Misc/smartArray";
-import type { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
+import { type ISceneComponent, SceneComponentConstants } from "../sceneComponent";
+import { type SmartArrayNoDuplicate } from "../Misc/smartArray";
+import { type RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import { GeometryBufferRenderer } from "./geometryBufferRenderer";
 import { Constants } from "../Engines/constants";
 

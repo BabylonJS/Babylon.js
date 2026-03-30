@@ -1,11 +1,9 @@
-import type { ComponentType, PropsWithChildren, Ref } from "react";
+import { type ComponentType, type PropsWithChildren, type Ref, Children, isValidElement, useImperativeHandle, useLayoutEffect, useMemo, useRef, useState } from "react";
 
-import type { AccordionProps, AccordionSectionProps } from "shared-ui-components/fluent/primitives/accordion";
+import { type AccordionProps, type AccordionSectionProps, Accordion, AccordionSection } from "shared-ui-components/fluent/primitives/accordion";
 
 import { makeStyles } from "@fluentui/react-components";
-import { Children, isValidElement, useImperativeHandle, useLayoutEffect, useMemo, useRef, useState } from "react";
 
-import { Accordion, AccordionSection } from "shared-ui-components/fluent/primitives/accordion";
 import { UXContextProvider } from "../components/uxContextProvider";
 
 function AsReadonlyArray<T>(array: T[]): readonly T[] {

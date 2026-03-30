@@ -1,11 +1,10 @@
-import type { Nullable } from "../types";
-import type { Camera } from "../Cameras/camera";
-import type { Effect } from "../Materials/effect";
+import { type Nullable } from "../types";
+import { type Camera } from "../Cameras/camera";
+import { type Effect } from "../Materials/effect";
 import { Texture } from "../Materials/Textures/texture";
-import type { PostProcessOptions } from "./postProcess";
-import { PostProcess } from "./postProcess";
-import type { AbstractEngine } from "../Engines/abstractEngine";
-import type { Scene } from "../scene";
+import { type PostProcessOptions, PostProcess } from "./postProcess";
+import { type AbstractEngine } from "../Engines/abstractEngine";
+import { type Scene } from "../scene";
 import { Constants } from "../Engines/constants";
 import { Logger } from "../Misc/logger";
 

@@ -1,10 +1,10 @@
 import { WebXRFeatureName, WebXRFeaturesManager } from "../webXRFeaturesManager";
-import type { WebXRSessionManager } from "../webXRSessionManager";
+import { type WebXRSessionManager } from "../webXRSessionManager";
 import { Observable } from "../../Misc/observable";
 import { Matrix, Vector3, Quaternion } from "../../Maths/math.vector";
-import type { TransformNode } from "../../Meshes/transformNode";
+import { type TransformNode } from "../../Meshes/transformNode";
 import { WebXRAbstractFeature } from "./WebXRAbstractFeature";
-import type { IWebXRHitResult } from "./WebXRHitTest";
+import { type IWebXRHitResult } from "./WebXRHitTest";
 
 /**
  * Configuration options of the anchor system

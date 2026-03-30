@@ -1,7 +1,7 @@
-import type { Nullable } from "core/types";
+import { type Nullable } from "core/types";
 import { Constants } from "../constants";
-import type { WebGPUEngine } from "../webgpuEngine";
-import type { WebGPUBundleList } from "./webgpuBundleList";
+import { type WebGPUEngine } from "../webgpuEngine";
+import { type WebGPUBundleList } from "./webgpuBundleList";
 import { Logger } from "core/Misc/logger";
 
 /** @internal */

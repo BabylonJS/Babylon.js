@@ -1,6 +1,6 @@
 import { RegisterClass } from "../../../Misc/typeStore";
 import { NodeGeometryBlock } from "../nodeGeometryBlock";
-import type { NodeGeometryConnectionPoint } from "../nodeGeometryBlockConnectionPoint";
+import { type NodeGeometryConnectionPoint } from "../nodeGeometryBlockConnectionPoint";
 import { NodeGeometryBlockConnectionPointTypes } from "../Enums/nodeGeometryConnectionPointTypes";
 import { Vector2, Vector3, Vector4 } from "core/Maths/math.vector";
 /**

@@ -1,9 +1,8 @@
-import type { Matrix } from "../../Maths/math.vector";
-import { Vector3 } from "../../Maths/math.vector";
-import type { Particle } from "../../Particles/particle";
-import type { IParticleEmitterType } from "./IParticleEmitterType";
-import type { UniformBufferEffectCommonAccessor } from "../../Materials/uniformBufferEffectCommonAccessor";
-import type { UniformBuffer } from "../../Materials/uniformBuffer";
+import { type Matrix, Vector3 } from "../../Maths/math.vector";
+import { type Particle } from "../../Particles/particle";
+import { type IParticleEmitterType } from "./IParticleEmitterType";
+import { type UniformBufferEffectCommonAccessor } from "../../Materials/uniformBufferEffectCommonAccessor";
+import { type UniformBuffer } from "../../Materials/uniformBuffer";
 import { RandomRange } from "../../Maths/math.scalar.functions";
 import { DeepCopier } from "../../Misc/deepCopier";
 /**

@@ -1,5 +1,5 @@
-import type { IExplorerExtensibilityGroup } from "core/Debug/debugLayer";
-import type { Texture } from "core/Materials/Textures/texture";
+import { type IExplorerExtensibilityGroup } from "core/Debug/debugLayer";
+import { type Texture } from "core/Materials/Textures/texture";
 
 import { faImage } from "@fortawesome/free-solid-svg-icons";
 import { TreeItemLabelComponent } from "../treeItemLabelComponent";

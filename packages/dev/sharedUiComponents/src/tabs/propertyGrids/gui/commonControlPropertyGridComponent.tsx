@@ -1,14 +1,14 @@
 import * as React from "react";
-import type { Observable } from "core/Misc/observable";
-import type { PropertyChangedEvent } from "../../../propertyChangedEvent";
+import { type Observable } from "core/Misc/observable";
+import { type PropertyChangedEvent } from "../../../propertyChangedEvent";
 import { LineContainerComponent } from "../../../lines/lineContainerComponent";
 import { TextLineComponent } from "../../../lines/textLineComponent";
 import { Control } from "gui/2D/controls/control";
-import type { Grid } from "gui/2D/controls/grid";
+import { type Grid } from "gui/2D/controls/grid";
 import { SliderLineComponent } from "../../../lines/sliderLineComponent";
 import { FloatLineComponent } from "../../../lines/floatLineComponent";
 import { TextInputLineComponent } from "../../../lines/textInputLineComponent";
-import type { LockObject } from "../../../tabs/propertyGrids/lockObject";
+import { type LockObject } from "../../../tabs/propertyGrids/lockObject";
 import { OptionsLine } from "../../../lines/optionsLineComponent";
 import { makeTargetsProxy } from "../../../lines/targetsProxy";
 

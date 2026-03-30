@@ -1,8 +1,7 @@
 // 3MF
 import { ThreeMfDocumentBuilder, ThreeMfModelBuilder } from "./3mf.builder";
 import { ContentTypeFileName, ModelFileName, Object3dDirName, RelationshipDirName, RelationshipFileName, type I3mfDocument } from "./3mf.opc.interfaces";
-import type { I3mfModel } from "./3mf.interfaces";
-import { ST_Unit } from "./3mf.interfaces";
+import { type I3mfModel, ST_Unit } from "./3mf.interfaces";
 
 // XML
 import { XmlBuilder } from "../xml/xml.builder";

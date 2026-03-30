@@ -1,7 +1,7 @@
-import type { Material } from "core/Materials/material";
-import type { BaseTexture } from "core/Materials/Textures/baseTexture";
-import type { Nullable } from "core/types";
-import type { Color3 } from "core/Maths/math.color";
+import { type Material } from "core/Materials/material";
+import { type BaseTexture } from "core/Materials/Textures/baseTexture";
+import { type Nullable } from "core/types";
+import { type Color3 } from "core/Maths/math.color";
 
 /**
  * Interface for material loading adapters that provides a unified OpenPBR-like interface

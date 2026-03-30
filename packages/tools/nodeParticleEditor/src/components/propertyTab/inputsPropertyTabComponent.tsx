@@ -1,14 +1,14 @@
 import * as React from "react";
-import type { GlobalState } from "../../globalState";
+import { type GlobalState } from "../../globalState";
 import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
 
 import "./propertyTab.scss";
 import { Vector2LineComponent } from "shared-ui-components/lines/vector2LineComponent";
 import { Vector3LineComponent } from "shared-ui-components/lines/vector3LineComponent";
-import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
+import { type LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
 import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent";
-import type { ParticleInputBlock } from "core/Particles/Node/Blocks/particleInputBlock";
+import { type ParticleInputBlock } from "core/Particles/Node/Blocks/particleInputBlock";
 import { NodeParticleBlockConnectionPointTypes } from "core/Particles/Node/Enums/nodeParticleBlockConnectionPointTypes";
 import { Color4PropertyTabComponent } from "./properties/color4PropertyTabComponent";
 

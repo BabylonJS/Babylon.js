@@ -3,10 +3,9 @@ import { GIFCaptureTool } from "../../../components/tools/capture/gifCaptureTool
 import { SceneReplayTool } from "../../../components/tools/capture/sceneReplayTool";
 import { ScreenshotTool } from "../../../components/tools/capture/screenshotTool";
 import { VideoCaptureTool } from "../../../components/tools/capture/videoCaptureTool";
-import type { ServiceDefinition } from "../../../modularity/serviceDefinition";
-import { ToolsServiceIdentity } from "../toolsService";
-import type { IToolsService } from "../toolsService";
-import type { IDisposable } from "core/scene";
+import { type ServiceDefinition } from "../../../modularity/serviceDefinition";
+import { ToolsServiceIdentity, type IToolsService } from "../toolsService";
+import { type IDisposable } from "core/scene";
 
 export const CaptureToolsDefinition: ServiceDefinition<[], [IToolsService]> = {
     friendlyName: "Capture Tools",

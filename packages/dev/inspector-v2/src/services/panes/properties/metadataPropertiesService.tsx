@@ -1,9 +1,6 @@
-import type { IMetadataContainer } from "../../../components/properties/metadataProperties";
-import type { ServiceDefinition } from "../../../modularity/serviceDefinition";
-import type { IPropertiesService } from "./propertiesService";
-
-import { MetadataProperties } from "../../../components/properties/metadataProperties";
-import { PropertiesServiceIdentity } from "./propertiesService";
+import { type IMetadataContainer, MetadataProperties } from "../../../components/properties/metadataProperties";
+import { type ServiceDefinition } from "../../../modularity/serviceDefinition";
+import { type IPropertiesService, PropertiesServiceIdentity } from "./propertiesService";
 
 function IsMetadataContainer(entity: unknown): entity is IMetadataContainer {
     return (entity as IMetadataContainer).metadata !== undefined;

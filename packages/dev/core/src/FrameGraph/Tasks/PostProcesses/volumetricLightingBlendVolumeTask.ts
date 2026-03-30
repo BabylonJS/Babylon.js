@@ -1,4 +1,12 @@
-import type { AbstractEngine, Camera, EffectWrapperCreationOptions, FrameGraph, FrameGraphRenderPass, FrameGraphTextureHandle, Nullable } from "core/index";
+import {
+    type AbstractEngine,
+    type Camera,
+    type EffectWrapperCreationOptions,
+    type FrameGraph,
+    type FrameGraphRenderPass,
+    type FrameGraphTextureHandle,
+    type Nullable,
+} from "core/index";
 import { Vector3, Matrix } from "core/Maths/math.vector";
 import { Constants } from "core/Engines/constants";
 import { ThinPassPostProcess } from "core/PostProcesses/thinPassPostProcess";

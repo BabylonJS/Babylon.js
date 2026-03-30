@@ -1,10 +1,10 @@
-import type { Nullable } from "../types";
-import type { AbstractEngine } from "../Engines/abstractEngine";
-import type { WebXRRenderTarget } from "./webXRTypes";
-import type { WebXRSessionManager } from "./webXRSessionManager";
+import { type Nullable } from "../types";
+import { type AbstractEngine } from "../Engines/abstractEngine";
+import { type WebXRRenderTarget } from "./webXRTypes";
+import { type WebXRSessionManager } from "./webXRSessionManager";
 import { Observable } from "../Misc/observable";
 import { Tools } from "../Misc/tools";
-import type { WebXRLayerWrapper } from "./webXRLayerWrapper";
+import { type WebXRLayerWrapper } from "./webXRLayerWrapper";
 import { WebXRWebGLLayerWrapper } from "./webXRWebGLLayer";
 
 /**

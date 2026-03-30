@@ -1,14 +1,13 @@
 import { NodeParticleBlockConnectionPointTypes } from "../../Enums/nodeParticleBlockConnectionPointTypes";
 import { NodeParticleBlock } from "../../nodeParticleBlock";
-import type { NodeParticleConnectionPoint } from "../../nodeParticleBlockConnectionPoint";
+import { type NodeParticleConnectionPoint } from "../../nodeParticleBlockConnectionPoint";
 import { ParticleSystem } from "core/Particles/particleSystem";
-import type { NodeParticleBuildState } from "../../nodeParticleBuildState";
+import { type NodeParticleBuildState } from "../../nodeParticleBuildState";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import type { _IExecutionQueueItem } from "core/Particles/Queue/executionQueue";
+import { type _IExecutionQueueItem, _RemoveFromQueue } from "core/Particles/Queue/executionQueue";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { _RemoveFromQueue } from "core/Particles/Queue/executionQueue";
-import type { Particle } from "core/Particles/particle";
-import type { ThinParticleSystem } from "core/Particles/thinParticleSystem";
+import { type Particle } from "core/Particles/particle";
+import { type ThinParticleSystem } from "core/Particles/thinParticleSystem";
 import { Color4 } from "core/Maths/math.color";
 import { Vector2 } from "core/Maths/math.vector";
 import { RegisterClass } from "core/Misc/typeStore";

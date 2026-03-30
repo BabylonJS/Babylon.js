@@ -1,8 +1,6 @@
-import { PropertyLine } from "./propertyLine";
-import type { PropertyLineProps } from "./propertyLine";
-import type { FunctionComponent } from "react";
-import { SpinButton } from "../../primitives/spinButton";
-import type { SpinButtonProps } from "../../primitives/spinButton";
+import { PropertyLine, type PropertyLineProps } from "./propertyLine";
+import { type FunctionComponent } from "react";
+import { SpinButton, type SpinButtonProps } from "../../primitives/spinButton";
 import { makeStyles, mergeClasses } from "@fluentui/react-components";
 import { UniformWidthStyling } from "../../primitives/utils";
 

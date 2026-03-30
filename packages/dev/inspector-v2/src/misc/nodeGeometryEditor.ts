@@ -1,4 +1,4 @@
-import type { Mesh, NodeGeometry, Nullable, Scene } from "core/index";
+import { type Mesh, type NodeGeometry, type Nullable, type Scene } from "core/index";
 
 export function GetNodeGeometry(mesh: Mesh): Nullable<NodeGeometry> {
     return (mesh._internalMetadata?.nodeGeometry as NodeGeometry | undefined) ?? null;

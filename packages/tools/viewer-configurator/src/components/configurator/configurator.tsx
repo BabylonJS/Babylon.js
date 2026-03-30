@@ -1,10 +1,9 @@
 /* eslint-disable @typescript-eslint/no-floating-promises */
 import "./configurator.scss";
-import type { IDisposable, IInspectableOptions, Nullable, Observable } from "core/index";
-import type { HotSpot, ShadowQuality, ToneMapping, Viewer, ViewerDetails, ViewerElement, ViewerOptions } from "viewer/index";
-import type { DragEndEvent } from "@dnd-kit/core";
+import { type IDisposable, type IInspectableOptions, type Nullable, type Observable } from "core/index";
+import { type HotSpot, type ShadowQuality, type ToneMapping, type Viewer, type ViewerDetails, type ViewerElement, type ViewerOptions } from "viewer/index";
+import { type DragEndEvent, closestCenter, DndContext, KeyboardSensor, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
 
-import { closestCenter, DndContext, KeyboardSensor, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { faQuestionCircle } from "@fortawesome/free-regular-svg-icons";

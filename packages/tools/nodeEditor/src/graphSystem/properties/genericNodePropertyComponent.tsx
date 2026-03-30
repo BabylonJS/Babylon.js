@@ -1,12 +1,11 @@
 import * as React from "react";
 import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
 import { CheckBoxLineComponent } from "../../sharedComponents/checkBoxLineComponent";
-import type { InputBlock } from "core/Materials/Node/Blocks/Input/inputBlock";
-import type { IPropertyDescriptionForEdition, IEditablePropertyListOption } from "core/Decorators/nodeDecorator";
-import { PropertyTypeForEdition } from "core/Decorators/nodeDecorator";
+import { type InputBlock } from "core/Materials/Node/Blocks/Input/inputBlock";
+import { type IPropertyDescriptionForEdition, type IEditablePropertyListOption, PropertyTypeForEdition } from "core/Decorators/nodeDecorator";
 import { NodeMaterialBlockTargets } from "core/Materials/Node/Enums/nodeMaterialBlockTargets";
-import type { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
-import type { IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
+import { type NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
+import { type IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
 import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
 import { Vector2LineComponent } from "shared-ui-components/lines/vector2LineComponent";
 import { OptionsLine } from "shared-ui-components/lines/optionsLineComponent";
@@ -15,8 +14,8 @@ import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponen
 import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent";
 import { ForceRebuild } from "shared-ui-components/nodeGraphSystem/automaticProperties";
 import { PropertyTabComponentBase } from "shared-ui-components/components/propertyTabComponentBase";
-import type { StateManager } from "shared-ui-components/nodeGraphSystem/stateManager";
-import type { INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
+import { type StateManager } from "shared-ui-components/nodeGraphSystem/stateManager";
+import { type INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
 
 export class DefaultPropertyTabComponent extends React.Component<IPropertyComponentProps> {
     constructor(props: IPropertyComponentProps) {

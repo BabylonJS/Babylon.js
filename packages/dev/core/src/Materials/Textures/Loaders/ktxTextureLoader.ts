@@ -1,8 +1,8 @@
 import { KhronosTextureContainer } from "../../../Misc/khronosTextureContainer";
 import { KhronosTextureContainer2 } from "../../../Misc/khronosTextureContainer2";
-import type { Nullable } from "../../../types";
-import type { InternalTexture } from "../../../Materials/Textures/internalTexture";
-import type { IInternalTextureLoader } from "./internalTextureLoader";
+import { type Nullable } from "../../../types";
+import { type InternalTexture } from "../../../Materials/Textures/internalTexture";
+import { type IInternalTextureLoader } from "./internalTextureLoader";
 import { Logger } from "../../../Misc/logger";
 import { Constants } from "../../../Engines/constants";
 

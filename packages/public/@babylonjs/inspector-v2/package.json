@@ -1,6 +1,6 @@
 {
     "name": "@babylonjs/inspector",
-    "version": "8.56.2",
+    "version": "9.0.0",
     "main": "lib/index.js",
     "module": "lib/index.js",
     "esnext": "lib/index.js",
@@ -27,13 +27,13 @@
         "pack": "npm run build && npm pack"
     },
     "peerDependencies": {
-        "@babylonjs/addons": "^8.0.0",
-        "@babylonjs/core": "^8.0.0",
-        "@babylonjs/gui": "^8.0.0",
-        "@babylonjs/gui-editor": "^8.0.0",
-        "@babylonjs/loaders": "^8.0.0",
-        "@babylonjs/materials": "^8.0.0",
-        "@babylonjs/serializers": "^8.0.0",
+        "@babylonjs/addons": "^9.0.0",
+        "@babylonjs/core": "^9.0.0",
+        "@babylonjs/gui": "^9.0.0",
+        "@babylonjs/gui-editor": "^9.0.0",
+        "@babylonjs/loaders": "^9.0.0",
+        "@babylonjs/materials": "^9.0.0",
+        "@babylonjs/serializers": "^9.0.0",
         "@fluentui-contrib/react-virtualizer": "^1.0.0",
         "@fluentui/react-components": "^9.70.0",
         "@fluentui/react-icons": "^2.0.310",

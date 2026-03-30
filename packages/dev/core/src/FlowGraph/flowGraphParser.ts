@@ -1,20 +1,19 @@
-import type { IAssetContainer } from "core/IAssetContainer";
+import { type IAssetContainer } from "core/IAssetContainer";
 import { blockFactory } from "./Blocks/flowGraphBlockFactory";
-import type { FlowGraphBlockNames } from "./Blocks/flowGraphBlockNames";
-import type { FlowGraph, IFlowGraphParseOptions } from "./flowGraph";
-import type { FlowGraphBlock, IFlowGraphBlockParseOptions } from "./flowGraphBlock";
-import type { FlowGraphContext, IFlowGraphContextParseOptions } from "./flowGraphContext";
-import type { IFlowGraphCoordinatorParseOptions } from "./flowGraphCoordinator";
-import { FlowGraphCoordinator } from "./flowGraphCoordinator";
-import type { FlowGraphDataConnection } from "./flowGraphDataConnection";
+import { type FlowGraphBlockNames } from "./Blocks/flowGraphBlockNames";
+import { type FlowGraph, type IFlowGraphParseOptions } from "./flowGraph";
+import { type FlowGraphBlock, type IFlowGraphBlockParseOptions } from "./flowGraphBlock";
+import { type FlowGraphContext, type IFlowGraphContextParseOptions } from "./flowGraphContext";
+import { type IFlowGraphCoordinatorParseOptions, FlowGraphCoordinator } from "./flowGraphCoordinator";
+import { type FlowGraphDataConnection } from "./flowGraphDataConnection";
 import { FlowGraphEventBlock } from "./flowGraphEventBlock";
 import { FlowGraphExecutionBlock } from "./flowGraphExecutionBlock";
-import type { FlowGraphSignalConnection } from "./flowGraphSignalConnection";
+import { type FlowGraphSignalConnection } from "./flowGraphSignalConnection";
 import { defaultValueParseFunction, needsPathConverter } from "./serialization";
-import type { ISerializedFlowGraph, ISerializedFlowGraphBlock, ISerializedFlowGraphContext } from "./typeDefinitions";
-import type { Node } from "core/node";
+import { type ISerializedFlowGraph, type ISerializedFlowGraphBlock, type ISerializedFlowGraphContext } from "./typeDefinitions";
+import { type Node } from "core/node";
 import { getRichTypeByFlowGraphType, RichType } from "./flowGraphRichTypes";
-import type { FlowGraphConnection } from "./flowGraphConnection";
+import { type FlowGraphConnection } from "./flowGraphConnection";
 
 /**
  * Given a list of blocks, find an output data connection that has a specific unique id
@@ -123,6 +122,7 @@ export function ParseFlowGraph(serializationObject: ISerializedFlowGraph, option
             resolvedClasses[i]
         );
         blocks.push(block);
+        graph.addBlock(block);
         if (block instanceof FlowGraphEventBlock) {
             graph.addEventBlock(block);
         }

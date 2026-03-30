@@ -1,6 +1,6 @@
-import type { ThinEngine } from "core/Engines/thinEngine.js";
+import { type ThinEngine } from "core/Engines/thinEngine.js";
 import { InputBlock, type SmartFilter, type SmartFilterDeserializer, type ISerializedBlockV1, ConnectionPointType, CustomShaderBlock } from "smart-filters";
-import type { IBlockRegistration, IBlockRegistrationFactoryOptions } from "./IBlockRegistration.js";
+import { type IBlockRegistration, type IBlockRegistrationFactoryOptions } from "./IBlockRegistration.js";
 import { babylonDemoEffectsNamespace, babylonDemoTransitionsNamespace, babylonDemoUtilitiesNamespace, inputsNamespace } from "../blocks/blockNamespaces.js";
 import {
     blackAndWhiteBlockType,

@@ -1,4 +1,4 @@
-import type { SerializedShaderBlockDefinitionV1 } from "./v1/shaderBlockSerialization.types.js";
+import { type SerializedShaderBlockDefinitionV1 } from "./v1/shaderBlockSerialization.types.js";
 
 /**
  * Type union of all versions of serialized SmartFilter block definitions

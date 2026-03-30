@@ -1,6 +1,6 @@
 import { test, expect, Page } from "@playwright/test";
 import { evaluateDisposeEngine, evaluateCreateScene, evaluateInitEngine, getGlobalConfig, logPageErrors } from "@tools/test-tools";
-import type { IAnimationKey } from "core/Animations/animationKey";
+import { type IAnimationKey } from "core/Animations/animationKey";
 import { Constants } from "core/Engines";
 import { GetMimeType } from "core/Misc/fileTools";
 

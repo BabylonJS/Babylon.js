@@ -1,4 +1,13 @@
-import type { FrameGraphTextureHandle, Scene, FrameGraph, AbstractMesh, ObjectRendererOptions, FrameGraphRenderContext, FrameGraphRenderPass, ObjectRenderer } from "core/index";
+import {
+    type FrameGraphTextureHandle,
+    type Scene,
+    type FrameGraph,
+    type AbstractMesh,
+    type ObjectRendererOptions,
+    type FrameGraphRenderContext,
+    type FrameGraphRenderPass,
+    type ObjectRenderer,
+} from "core/index";
 import { Color4 } from "core/Maths/math.color";
 import { MaterialHelperGeometryRendering, GeometryRenderingTextureClearType } from "core/Materials/materialHelper.geometryrendering";
 import { Constants } from "core/Engines/constants";

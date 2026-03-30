@@ -1,12 +1,11 @@
-import type { Vector3 } from "core/Maths/math.vector";
+import { type Vector3 } from "core/Maths/math.vector";
 import { RawTexture } from "core/Materials/Textures/rawTexture";
 import { Texture } from "core/Materials/Textures/texture";
 import { Constants } from "core/Engines/constants";
 import { Light } from "core/Lights/light";
-import type { Effect } from "core/Materials/effect";
-import type { ILTCTextures } from "core/Lights/LTC/ltcTextureTool";
-import { DecodeLTCTextureDataAsync } from "core/Lights/LTC/ltcTextureTool";
-import type { Scene } from "core/scene";
+import { type Effect } from "core/Materials/effect";
+import { type ILTCTextures, DecodeLTCTextureDataAsync } from "core/Lights/LTC/ltcTextureTool";
+import { type Scene } from "core/scene";
 import { Logger } from "core/Misc/logger";
 
 declare module "../scene" {

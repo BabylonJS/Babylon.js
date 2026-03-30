@@ -1,9 +1,9 @@
 import { BlockTools } from "../../blockTools";
-import type { IDisplayManager, VisualContentDescription } from "shared-ui-components/nodeGraphSystem/interfaces/displayManager";
-import type { INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
+import { type IDisplayManager, type VisualContentDescription } from "shared-ui-components/nodeGraphSystem/interfaces/displayManager";
+import { type INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
 import * as styles from "./debugDisplayManager.module.scss";
-import type { NodeParticleBlock } from "core/Particles/Node/nodeParticleBlock";
-import type { ParticleDebugBlock } from "core/Particles/Node/Blocks/particleDebugBlock";
+import { type NodeParticleBlock } from "core/Particles/Node/nodeParticleBlock";
+import { type ParticleDebugBlock } from "core/Particles/Node/Blocks/particleDebugBlock";
 
 export class DebugDisplayManager implements IDisplayManager {
     public getHeaderClass() {

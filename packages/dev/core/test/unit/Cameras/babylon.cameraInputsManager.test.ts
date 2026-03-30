@@ -1,8 +1,6 @@
-import type { ICameraInput } from "core/Cameras/cameraInputsManager";
-import { CameraInputsManager } from "core/Cameras/cameraInputsManager";
+import { type ICameraInput, CameraInputsManager } from "core/Cameras/cameraInputsManager";
 import { FreeCamera } from "core/Cameras/freeCamera";
-import type { Engine } from "core/Engines";
-import { NullEngine } from "core/Engines";
+import { type Engine, NullEngine } from "core/Engines";
 import { Vector3 } from "core/Maths";
 import { Scene } from "core/scene";
 

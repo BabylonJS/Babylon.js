@@ -1,13 +1,13 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import type { Nullable } from "core/types";
-import type { Material } from "core/Materials/material";
+import { type Nullable } from "core/types";
+import { type Material } from "core/Materials/material";
 import { Color3 } from "core/Maths/math.color";
 import { Vector3 } from "core/Maths/math.vector";
-import type { BaseTexture } from "core/Materials/Textures/baseTexture";
-import type { IMaterial, ITextureInfo } from "../glTFLoaderInterfaces";
-import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
+import { type BaseTexture } from "core/Materials/Textures/baseTexture";
+import { type IMaterial, type ITextureInfo } from "../glTFLoaderInterfaces";
+import { type IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader } from "../glTFLoader";
-import type { IKHRMaterialsVolumeScatter } from "babylonjs-gltf2interface";
+import { type IKHRMaterialsVolumeScatter } from "babylonjs-gltf2interface";
 import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
 
 const NAME = "KHR_materials_volume_scatter";

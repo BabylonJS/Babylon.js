@@ -1,5 +1,5 @@
 import * as React from "react";
-import type { GlobalState } from "../../globalState";
+import { type GlobalState } from "../../globalState";
 import { Utilities } from "../../tools/utilities";
 import "../../scss/dialogs.scss";
 

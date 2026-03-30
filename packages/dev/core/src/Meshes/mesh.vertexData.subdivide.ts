@@ -1,7 +1,7 @@
 import { Vector3 } from "core/Maths/math.vector";
 import { VertexData } from "./mesh.vertexData";
 import { Scalar } from "core/Maths/math.scalar";
-import type { FloatArray } from "core/types";
+import { type FloatArray } from "core/types";
 
 /**
  * Inspired by https://github.com/stevinz/three-subdivide

@@ -1,6 +1,5 @@
-import type { ServiceDefinition } from "../../../../modularity/serviceDefinition";
-import { ToolsServiceIdentity } from "../../toolsService";
-import type { IToolsService } from "../../toolsService";
+import { type ServiceDefinition } from "../../../../modularity/serviceDefinition";
+import { ToolsServiceIdentity, type IToolsService } from "../../toolsService";
 import { GLTFAnimationImportTool } from "../../../../components/tools/import/gltfAnimationImportTool";
 
 export const GLTFAnimationImportServiceDefinition: ServiceDefinition<[], [IToolsService]> = {

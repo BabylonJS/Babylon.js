@@ -1,18 +1,18 @@
 import * as React from "react";
 import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
 import { GeneralPropertyTabComponent } from "./genericNodePropertyComponent";
-import type { IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
+import { type IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
 import { FileButtonLine } from "shared-ui-components/lines/fileButtonLineComponent";
 import { LoadSceneAsync } from "core/Loading/sceneLoader";
 import { EngineStore } from "core/Engines/engineStore";
 import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
-import type { Scene } from "core/scene";
-import type { Nullable } from "core/types";
+import { type Scene } from "core/scene";
+import { type Nullable } from "core/types";
 import { OptionsLine } from "shared-ui-components/lines/optionsLineComponent";
-import type { AbstractMesh } from "core/Meshes/abstractMesh";
-import type { Mesh } from "core/Meshes/mesh";
+import { type AbstractMesh } from "core/Meshes/abstractMesh";
+import { type Mesh } from "core/Meshes/mesh";
 import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineComponent";
-import type { MeshShapeBlock } from "core/Particles";
+import { type MeshShapeBlock } from "core/Particles";
 
 export class MeshShapePropertyTabComponent extends React.Component<IPropertyComponentProps, { isLoading: boolean }> {
     constructor(props: IPropertyComponentProps) {

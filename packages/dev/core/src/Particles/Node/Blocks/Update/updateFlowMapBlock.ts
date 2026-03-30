@@ -1,9 +1,9 @@
-import type { Nullable } from "core/types";
-import type { ThinParticleSystem } from "core/Particles/thinParticleSystem";
-import type { NodeParticleConnectionPoint } from "../../nodeParticleBlockConnectionPoint";
-import type { NodeParticleBuildState } from "../../nodeParticleBuildState";
-import type { Particle } from "core/Particles/particle";
-import type { INodeParticleTextureData, ParticleTextureSourceBlock } from "../particleSourceTextureBlock";
+import { type Nullable } from "core/types";
+import { type ThinParticleSystem } from "core/Particles/thinParticleSystem";
+import { type NodeParticleConnectionPoint } from "../../nodeParticleBlockConnectionPoint";
+import { type NodeParticleBuildState } from "../../nodeParticleBuildState";
+import { type Particle } from "core/Particles/particle";
+import { type INodeParticleTextureData, type ParticleTextureSourceBlock } from "../particleSourceTextureBlock";
 
 import { RegisterClass } from "../../../../Misc/typeStore";
 import { NodeParticleBlockConnectionPointTypes } from "../../Enums/nodeParticleBlockConnectionPointTypes";

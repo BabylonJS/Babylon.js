@@ -1,12 +1,11 @@
-import type { Nullable } from "../types";
+import { type Nullable } from "../types";
 import { Scene } from "../scene";
-import type { SmartArrayNoDuplicate } from "../Misc/smartArray";
+import { type SmartArrayNoDuplicate } from "../Misc/smartArray";
 import { DepthRenderer } from "./depthRenderer";
-import type { Camera } from "../Cameras/camera";
+import { type Camera } from "../Cameras/camera";
 import { Constants } from "../Engines/constants";
-import type { ISceneComponent } from "../sceneComponent";
-import { SceneComponentConstants } from "../sceneComponent";
-import type { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
+import { type ISceneComponent, SceneComponentConstants } from "../sceneComponent";
+import { type RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 
 declare module "../scene" {
     // eslint-disable-next-line @typescript-eslint/naming-convention

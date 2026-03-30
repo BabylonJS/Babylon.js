@@ -1,23 +1,22 @@
 import { VertexBuffer } from "../Buffers/buffer";
 import { Camera } from "../Cameras/camera";
 import { Constants } from "../Engines/constants";
-import type { ThinEngine } from "../Engines/thinEngine";
+import { type ThinEngine } from "../Engines/thinEngine";
 import { AddClipPlaneUniforms, BindClipPlane, PrepareStringDefinesForClipPlanes } from "../Materials/clipPlaneMaterialHelper";
-import type { Effect, IEffectCreationOptions } from "../Materials/effect";
+import { type Effect, type IEffectCreationOptions } from "../Materials/effect";
 import { EffectFallbacks } from "../Materials/effectFallbacks";
 import { Material } from "../Materials/material";
 import { BindBonesParameters, BindMorphTargetParameters, PrepareDefinesAndAttributesForMorphTargets, PushAttributesForInstances } from "../Materials/materialHelper.functions";
 import { ShaderLanguage } from "../Materials/shaderLanguage";
-import type { BaseTexture } from "../Materials/Textures/baseTexture";
+import { type BaseTexture } from "../Materials/Textures/baseTexture";
 import { Color3, Color4 } from "../Maths/math.color";
-import type { AbstractMesh } from "../Meshes/abstractMesh";
-import type { InstancedMesh } from "../Meshes/instancedMesh";
-import type { Mesh } from "../Meshes/mesh";
-import type { SubMesh } from "../Meshes/subMesh";
-import type { Scene } from "../scene";
-import type { Nullable } from "../types";
-import type { IThinEffectLayerOptions } from "./thinEffectLayer";
-import { ThinEffectLayer } from "./thinEffectLayer";
+import { type AbstractMesh } from "../Meshes/abstractMesh";
+import { type InstancedMesh } from "../Meshes/instancedMesh";
+import { type Mesh } from "../Meshes/mesh";
+import { type SubMesh } from "../Meshes/subMesh";
+import { type Scene } from "../scene";
+import { type Nullable } from "../types";
+import { type IThinEffectLayerOptions, ThinEffectLayer } from "./thinEffectLayer";
 
 /**
  * Selection outline layer options. This helps customizing the behaviour
@@ -289,7 +288,7 @@ export class ThinSelectionOutlineLayer extends ThinEffectLayer {
                 "view",
                 "morphTargetInfluences",
                 "morphTargetCount",
-                "boneTextureWidth",
+                "boneTextureInfo",
                 "diffuseMatrix",
                 "morphTargetTextureInfo",
                 "morphTargetTextureIndices",

@@ -1,12 +1,12 @@
 import { Mesh } from "../Meshes/mesh";
-import type { IParticleSystem } from "./IParticleSystem";
+import { type IParticleSystem } from "./IParticleSystem";
 import { GPUParticleSystem } from "./gpuParticleSystem";
-import type { Effect } from "../Materials/effect";
+import { type Effect } from "../Materials/effect";
 import { ParticleSystem } from "./particleSystem";
-import type { Scene } from "../scene";
+import { type Scene } from "../scene";
 import { SceneComponentConstants } from "../sceneComponent";
-import type { AssetContainer } from "../assetContainer";
-import type { EffectFallbacks } from "../Materials/effectFallbacks";
+import { type AssetContainer } from "../assetContainer";
+import { type EffectFallbacks } from "../Materials/effectFallbacks";
 import { AbstractEngine } from "../Engines/abstractEngine";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { AddParser, AddIndividualParser, GetIndividualParser } from "core/Loading/Plugins/babylonFileParser.function";

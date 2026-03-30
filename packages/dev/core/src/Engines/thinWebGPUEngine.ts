@@ -1,19 +1,18 @@
-import type { InternalTexture } from "core/Materials/Textures/internalTexture";
-import { InternalTextureSource } from "core/Materials/Textures/internalTexture";
+import { type InternalTexture, InternalTextureSource } from "core/Materials/Textures/internalTexture";
 import { AbstractEngine } from "./abstractEngine";
-import type { WebGPUCacheRenderPipeline } from "./WebGPU/webgpuCacheRenderPipeline";
-import type { WebGPUTextureManager } from "./WebGPU/webgpuTextureManager";
-import type { WebGPUHardwareTexture } from "./WebGPU/webgpuHardwareTexture";
-import type { Nullable } from "core/types";
+import { type WebGPUCacheRenderPipeline } from "./WebGPU/webgpuCacheRenderPipeline";
+import { type WebGPUTextureManager } from "./WebGPU/webgpuTextureManager";
+import { type WebGPUHardwareTexture } from "./WebGPU/webgpuHardwareTexture";
+import { type Nullable } from "core/types";
 import { Logger } from "core/Misc/logger";
 import { WebGPUTextureHelper } from "./WebGPU/webgpuTextureHelper";
-import type { WebGPURenderTargetWrapper } from "./WebGPU/webgpuRenderTargetWrapper";
+import { type WebGPURenderTargetWrapper } from "./WebGPU/webgpuRenderTargetWrapper";
 import { WebGPUPerfCounter } from "./WebGPU/webgpuPerfCounter";
-import type { WebGPUSnapshotRendering } from "./WebGPU/webgpuSnapshotRendering";
+import { type WebGPUSnapshotRendering } from "./WebGPU/webgpuSnapshotRendering";
 import { Constants } from "./constants";
-import type { WebGPUBundleList } from "./WebGPU/webgpuBundleList";
-import type { WebGPUTimestampQuery } from "./WebGPU/webgpuTimestampQuery";
-import type { WebGPUOcclusionQuery } from "./WebGPU/webgpuOcclusionQuery";
+import { type WebGPUBundleList } from "./WebGPU/webgpuBundleList";
+import { type WebGPUTimestampQuery } from "./WebGPU/webgpuTimestampQuery";
+import { type WebGPUOcclusionQuery } from "./WebGPU/webgpuOcclusionQuery";
 
 /**
  * The base engine class for WebGPU

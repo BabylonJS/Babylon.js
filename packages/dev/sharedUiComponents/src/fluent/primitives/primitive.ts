@@ -1,4 +1,4 @@
-import type { InfoLabelParentProps } from "./infoLabel";
+import { type InfoLabelParentProps } from "./infoLabel";
 
 export type BasePrimitiveProps = {
     /**

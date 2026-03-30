@@ -1,7 +1,7 @@
-import type { NodeMaterial } from "core/Materials/Node/nodeMaterial";
+import { type NodeMaterial } from "core/Materials/Node/nodeMaterial";
 import { Observable } from "core/Misc/observable";
 import { LogEntry } from "./components/log/logComponent";
-import type { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
+import { type NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
 import { PreviewType } from "./components/preview/previewType";
 import { DataStorage } from "core/Misc/dataStorage";
 import { Color4 } from "core/Maths/math.color";
@@ -9,18 +9,18 @@ import { NodeMaterialModes } from "core/Materials/Node/Enums/nodeMaterialModes";
 import { ParticleSystem } from "core/Particles/particleSystem";
 import { RegisterElbowSupport } from "./graphSystem/registerElbowSupport";
 import { RegisterNodePortDesign } from "./graphSystem/registerNodePortDesign";
-import type { GraphNode } from "shared-ui-components/nodeGraphSystem/graphNode";
-import type { GraphFrame } from "shared-ui-components/nodeGraphSystem/graphFrame";
-import type { Nullable } from "core/types";
+import { type GraphNode } from "shared-ui-components/nodeGraphSystem/graphNode";
+import { type GraphFrame } from "shared-ui-components/nodeGraphSystem/graphFrame";
+import { type Nullable } from "core/types";
 import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 import { StateManager } from "shared-ui-components/nodeGraphSystem/stateManager";
 import { RegisterDefaultInput } from "./graphSystem/registerDefaultInput";
 import { RegisterExportData } from "./graphSystem/registerExportData";
-import type { FilesInput } from "core/Misc/filesInput";
+import { type FilesInput } from "core/Misc/filesInput";
 import { RegisterDebugSupport } from "./graphSystem/registerDebugSupport";
 import { SerializationTools } from "./serializationTools";
-import type { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
-import type { NodeMaterialDebugBlock } from "core/Materials/Node/Blocks/debugBlock";
+import { type RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
+import { type NodeMaterialDebugBlock } from "core/Materials/Node/Blocks/debugBlock";
 
 export class GlobalState {
     hostElement: HTMLElement;

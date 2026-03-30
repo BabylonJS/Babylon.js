@@ -1,6 +1,6 @@
-import type { FunctionComponent } from "react";
+import { type FunctionComponent } from "react";
 
-import type { OpenPBRMaterial } from "core/Materials/PBR/openpbrMaterial";
+import { type OpenPBRMaterial } from "core/Materials/PBR/openpbrMaterial";
 import { BoundProperty } from "../boundProperty";
 import { Color3PropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/colorPropertyLine";
 import { SyncedSliderPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/syncedSliderPropertyLine";

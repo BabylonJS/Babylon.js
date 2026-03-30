@@ -1,5 +1,5 @@
-import type { FunctionComponent } from "react";
-import type { MakePopoverTeachingMoment } from "../hooks/teachingMomentHooks";
+import { type FunctionComponent } from "react";
+import { type MakePopoverTeachingMoment } from "../hooks/teachingMomentHooks";
 
 import { makeStyles, TeachingPopover, TeachingPopoverBody, TeachingPopoverHeader, TeachingPopoverSurface } from "@fluentui/react-components";
 

@@ -1,9 +1,9 @@
-import type { FlowGraphContext } from "../../../flowGraphContext";
-import type { FlowGraphSignalConnection } from "../../../flowGraphSignalConnection";
+import { type FlowGraphContext } from "../../../flowGraphContext";
+import { type FlowGraphSignalConnection } from "../../../flowGraphSignalConnection";
 import { FlowGraphExecutionBlockWithOutSignal } from "../../../flowGraphExecutionBlockWithOutSignal";
-import type { IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
+import { type IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
 import { RegisterClass } from "../../../../Misc/typeStore";
-import type { FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnection";
+import { type FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnection";
 import { RichTypeFlowGraphInteger } from "core/FlowGraph/flowGraphRichTypes";
 import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
 import { FlowGraphInteger } from "core/FlowGraph/CustomTypes/flowGraphInteger";

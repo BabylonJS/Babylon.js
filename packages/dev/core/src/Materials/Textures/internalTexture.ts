@@ -1,12 +1,12 @@
 import { Observable } from "../../Misc/observable";
-import type { ImageSource, Nullable, int } from "../../types";
-import type { ICanvas, ICanvasRenderingContext } from "../../Engines/ICanvas";
-import type { IHardwareTextureWrapper } from "./hardwareTextureWrapper";
+import { type ImageSource, type Nullable, type int } from "../../types";
+import { type ICanvas, type ICanvasRenderingContext } from "../../Engines/ICanvas";
+import { type IHardwareTextureWrapper } from "./hardwareTextureWrapper";
 import { TextureSampler } from "./textureSampler";
 
-import type { AbstractEngine } from "../../Engines/abstractEngine";
-import type { BaseTexture } from "../../Materials/Textures/baseTexture";
-import type { SphericalPolynomial } from "../../Maths/sphericalPolynomial";
+import { type AbstractEngine } from "../../Engines/abstractEngine";
+import { type BaseTexture } from "../../Materials/Textures/baseTexture";
+import { type SphericalPolynomial } from "../../Maths/sphericalPolynomial";
 
 /**
  * Defines the source of the internal texture

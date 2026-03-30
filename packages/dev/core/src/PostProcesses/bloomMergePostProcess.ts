@@ -1,9 +1,8 @@
-import type { PostProcessOptions } from "./postProcess";
-import { PostProcess } from "./postProcess";
-import type { Nullable } from "../types";
-import type { AbstractEngine } from "../Engines/abstractEngine";
-import type { Effect } from "../Materials/effect";
-import type { Camera } from "../Cameras/camera";
+import { type PostProcessOptions, PostProcess } from "./postProcess";
+import { type Nullable } from "../types";
+import { type AbstractEngine } from "../Engines/abstractEngine";
+import { type Effect } from "../Materials/effect";
+import { type Camera } from "../Cameras/camera";
 import { Constants } from "../Engines/constants";
 
 import { RegisterClass } from "../Misc/typeStore";
