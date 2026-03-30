@@ -9,6 +9,7 @@ import { ServiceContainer } from "./modularity/serviceContainer";
 import { SceneContextIdentity } from "./services/sceneContext";
 import { MakeInspectableBridgeServiceDefinition } from "./services/cli/inspectableBridgeService";
 import { EntityQueryServiceDefinition } from "./services/cli/entityQueryService";
+import { ScreenshotCommandServiceDefinition } from "./services/cli/screenshotCommandService";
 
 const DefaultPort = 4400;
 
@@ -107,7 +108,8 @@ export function StartInspectable(scene: Scene, options?: Partial<InspectableOpti
                     port,
                     name,
                 }),
-                EntityQueryServiceDefinition
+                EntityQueryServiceDefinition,
+                ScreenshotCommandServiceDefinition
             );
         } catch (error: unknown) {
             Logger.Error(`Failed to initialize Inspectable: ${error}`);
