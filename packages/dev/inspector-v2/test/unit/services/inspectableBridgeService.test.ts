@@ -23,7 +23,7 @@ describe("InspectableBridgeService", () => {
             const disposal = registry.addCommand({
                 id: "test-cmd",
                 description: "A test command",
-                execute: async () => "ok",
+                executeAsync: async () => "ok",
             });
 
             expect(disposal).toBeDefined();
@@ -40,14 +40,14 @@ describe("InspectableBridgeService", () => {
             registry.addCommand({
                 id: "dup-cmd",
                 description: "First",
-                execute: async () => "first",
+                executeAsync: async () => "first",
             });
 
             expect(() => {
                 registry.addCommand({
                     id: "dup-cmd",
                     description: "Second",
-                    execute: async () => "second",
+                    executeAsync: async () => "second",
                 });
             }).toThrow("Command 'dup-cmd' is already registered.");
 
@@ -61,7 +61,7 @@ describe("InspectableBridgeService", () => {
             const token = registry.addCommand({
                 id: "reuse-cmd",
                 description: "Reusable",
-                execute: async () => "ok",
+                executeAsync: async () => "ok",
             });
 
             token.dispose();
@@ -69,7 +69,7 @@ describe("InspectableBridgeService", () => {
             const token2 = registry.addCommand({
                 id: "reuse-cmd",
                 description: "Reusable again",
-                execute: async () => "ok again",
+                executeAsync: async () => "ok again",
             });
 
             expect(token2).toBeDefined();

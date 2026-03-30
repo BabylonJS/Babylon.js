@@ -1,4 +1,5 @@
 import type { IDisposable } from "core/index";
+import type { Scene } from "core/scene";
 import type { ServiceDefinition } from "../../modularity/serviceDefinition";
 import type { IInspectableCommandRegistry, InspectableCommandDescriptor } from "./inspectableCommandRegistry";
 import type { ISceneContext } from "../sceneContext";
@@ -8,233 +9,223 @@ import { SceneContextIdentity } from "../sceneContext";
 
 const UniqueIdArg = {
     name: "uniqueId",
-    description: "The uniqueId of the entity to query.",
-    required: true,
+    description: "The uniqueId of the entity to query. Omit to list all entities of this type.",
+    required: false,
 } as const;
 
-function ParseUniqueId(args: Record<string, string>): number {
-    const id = parseInt(args.uniqueId, 10);
-    if (isNaN(id)) {
-        throw new Error("uniqueId must be a number.");
-    }
-    return id;
+interface IEntitySummary {
+    /** The unique id. */
+    uniqueId: number;
+    /** The entity name, if available. */
+    name?: string;
+    /** The class name from getClassName(), if available. */
+    className?: string;
+    /** The parent's uniqueId, if the entity is hierarchical. */
+    parentId?: number;
+}
+
+interface IEntityCollection<T> {
+    /** The command id. */
+    id: string;
+    /** The command description. */
+    description: string;
+    /** Accessor for the entity array from the scene. */
+    getEntities: (scene: Scene) => T[] | undefined;
+    /** Gets the uniqueId from an entity. */
+    getUniqueId: (entity: T) => number;
+    /** Builds a summary for listing. */
+    getSummary: (entity: T) => IEntitySummary;
+    /** Serializes a single entity to a plain object. */
+    serialize: (entity: T) => unknown;
+}
+
+function NodeSummary(entity: { uniqueId: number; name: string; getClassName(): string; parent?: { uniqueId: number } | null }): IEntitySummary {
+    return {
+        uniqueId: entity.uniqueId,
+        name: entity.name,
+        className: entity.getClassName(),
+        parentId: entity.parent?.uniqueId,
+    };
+}
+
+function NamedSummary(entity: { uniqueId: number; name: string; getClassName(): string }): IEntitySummary {
+    return {
+        uniqueId: entity.uniqueId,
+        name: entity.name,
+        className: entity.getClassName(),
+    };
+}
+
+function MinimalSummary(entity: { uniqueId: number; name?: string }): IEntitySummary {
+    return {
+        uniqueId: entity.uniqueId,
+        name: entity.name,
+    };
+}
+
+function MakeQueryCommand<T>(collection: IEntityCollection<T>, sceneContext: ISceneContext): InspectableCommandDescriptor {
+    return {
+        id: collection.id,
+        description: collection.description,
+        args: [UniqueIdArg],
+        executeAsync: async (args) => {
+            const scene = sceneContext.currentScene;
+            if (!scene) {
+                throw new Error("No active scene.");
+            }
+
+            const entities = collection.getEntities(scene);
+            if (!entities) {
+                return JSON.stringify([], null, 2);
+            }
+
+            if (!args.uniqueId) {
+                return JSON.stringify(
+                    entities.map((e) => collection.getSummary(e)),
+                    null,
+                    2
+                );
+            }
+
+            const id = parseInt(args.uniqueId, 10);
+            if (isNaN(id)) {
+                throw new Error("uniqueId must be a number.");
+            }
+
+            const entity = entities.find((e) => collection.getUniqueId(e) === id);
+            if (!entity) {
+                throw new Error(`No ${collection.id.replace("query-", "")} found with uniqueId ${id}.`);
+            }
+
+            return JSON.stringify(collection.serialize(entity), null, 2);
+        },
+    };
 }
 
 /**
  * Service that registers CLI commands for querying scene entities by uniqueId.
+ * When uniqueId is omitted, returns a summary list of all entities of that type.
  */
 export const EntityQueryServiceDefinition: ServiceDefinition<[], [IInspectableCommandRegistry, ISceneContext]> = {
     friendlyName: "Entity Query Service",
     consumes: [InspectableCommandRegistryIdentity, SceneContextIdentity],
     factory: (commandRegistry, sceneContext) => {
-        function getScene() {
-            const scene = sceneContext.currentScene;
-            if (!scene) {
-                throw new Error("No active scene.");
-            }
-            return scene;
-        }
-
-        const commands: InspectableCommandDescriptor[] = [
+        const collections: IEntityCollection<any>[] = [
             {
                 id: "query-mesh",
-                description: "Query a mesh by uniqueId and return its serialized data.",
-                args: [UniqueIdArg],
-                executeAsync: async (args) => {
-                    const scene = getScene();
-                    const id = ParseUniqueId(args);
-                    const entity = scene.meshes.find((e) => e.uniqueId === id);
-                    if (!entity) {
-                        throw new Error(`No mesh found with uniqueId ${id}.`);
-                    }
-                    return JSON.stringify(entity.serialize(), null, 2);
-                },
+                description: "List meshes, or query a specific mesh by uniqueId.",
+                getEntities: (scene) => scene.meshes,
+                getUniqueId: (e) => e.uniqueId,
+                getSummary: NodeSummary,
+                serialize: (e) => e.serialize(),
             },
             {
                 id: "query-light",
-                description: "Query a light by uniqueId and return its serialized data.",
-                args: [UniqueIdArg],
-                executeAsync: async (args) => {
-                    const scene = getScene();
-                    const id = ParseUniqueId(args);
-                    const entity = scene.lights.find((e) => e.uniqueId === id);
-                    if (!entity) {
-                        throw new Error(`No light found with uniqueId ${id}.`);
-                    }
-                    return JSON.stringify(entity.serialize(), null, 2);
-                },
+                description: "List lights, or query a specific light by uniqueId.",
+                getEntities: (scene) => scene.lights,
+                getUniqueId: (e) => e.uniqueId,
+                getSummary: NodeSummary,
+                serialize: (e) => e.serialize(),
             },
             {
                 id: "query-camera",
-                description: "Query a camera by uniqueId and return its serialized data.",
-                args: [UniqueIdArg],
-                executeAsync: async (args) => {
-                    const scene = getScene();
-                    const id = ParseUniqueId(args);
-                    const entity = scene.cameras.find((e) => e.uniqueId === id);
-                    if (!entity) {
-                        throw new Error(`No camera found with uniqueId ${id}.`);
-                    }
-                    return JSON.stringify(entity.serialize(), null, 2);
-                },
-            },
-            {
-                id: "query-material",
-                description: "Query a material by uniqueId and return its serialized data.",
-                args: [UniqueIdArg],
-                executeAsync: async (args) => {
-                    const scene = getScene();
-                    const id = ParseUniqueId(args);
-                    const entity = scene.materials.find((e) => e.uniqueId === id);
-                    if (!entity) {
-                        throw new Error(`No material found with uniqueId ${id}.`);
-                    }
-                    return JSON.stringify(entity.serialize(), null, 2);
-                },
-            },
-            {
-                id: "query-texture",
-                description: "Query a texture by uniqueId and return its serialized data.",
-                args: [UniqueIdArg],
-                executeAsync: async (args) => {
-                    const scene = getScene();
-                    const id = ParseUniqueId(args);
-                    const entity = scene.textures.find((e) => e.uniqueId === id);
-                    if (!entity) {
-                        throw new Error(`No texture found with uniqueId ${id}.`);
-                    }
-                    return JSON.stringify(entity.serialize(), null, 2);
-                },
+                description: "List cameras, or query a specific camera by uniqueId.",
+                getEntities: (scene) => scene.cameras,
+                getUniqueId: (e) => e.uniqueId,
+                getSummary: NodeSummary,
+                serialize: (e) => e.serialize(),
             },
             {
                 id: "query-transformNode",
-                description: "Query a transform node by uniqueId and return its serialized data.",
-                args: [UniqueIdArg],
-                executeAsync: async (args) => {
-                    const scene = getScene();
-                    const id = ParseUniqueId(args);
-                    const entity = scene.transformNodes.find((e) => e.uniqueId === id);
-                    if (!entity) {
-                        throw new Error(`No transform node found with uniqueId ${id}.`);
-                    }
-                    return JSON.stringify(entity.serialize(), null, 2);
-                },
+                description: "List transform nodes, or query a specific transform node by uniqueId.",
+                getEntities: (scene) => scene.transformNodes,
+                getUniqueId: (e) => e.uniqueId,
+                getSummary: NodeSummary,
+                serialize: (e) => e.serialize(),
             },
             {
-                id: "query-geometry",
-                description: "Query a geometry by uniqueId and return its serialized data.",
-                args: [UniqueIdArg],
-                executeAsync: async (args) => {
-                    const scene = getScene();
-                    const id = ParseUniqueId(args);
-                    const entity = scene.geometries?.find((e) => e.uniqueId === id);
-                    if (!entity) {
-                        throw new Error(`No geometry found with uniqueId ${id}.`);
-                    }
-                    return JSON.stringify(entity.serialize(), null, 2);
-                },
+                id: "query-material",
+                description: "List materials, or query a specific material by uniqueId.",
+                getEntities: (scene) => scene.materials,
+                getUniqueId: (e) => e.uniqueId,
+                getSummary: NamedSummary,
+                serialize: (e) => e.serialize(),
+            },
+            {
+                id: "query-texture",
+                description: "List textures, or query a specific texture by uniqueId.",
+                getEntities: (scene) => scene.textures,
+                getUniqueId: (e) => e.uniqueId,
+                getSummary: NamedSummary,
+                serialize: (e) => e.serialize(),
             },
             {
                 id: "query-skeleton",
-                description: "Query a skeleton by uniqueId and return its serialized data.",
-                args: [UniqueIdArg],
-                executeAsync: async (args) => {
-                    const scene = getScene();
-                    const id = ParseUniqueId(args);
-                    const entity = scene.skeletons.find((e) => e.uniqueId === id);
-                    if (!entity) {
-                        throw new Error(`No skeleton found with uniqueId ${id}.`);
-                    }
-                    return JSON.stringify(entity.serialize(), null, 2);
-                },
+                description: "List skeletons, or query a specific skeleton by uniqueId.",
+                getEntities: (scene) => scene.skeletons,
+                getUniqueId: (e) => e.uniqueId,
+                getSummary: NamedSummary,
+                serialize: (e) => e.serialize(),
+            },
+            {
+                id: "query-geometry",
+                description: "List geometries, or query a specific geometry by uniqueId.",
+                getEntities: (scene) => scene.geometries,
+                getUniqueId: (e) => e.uniqueId,
+                getSummary: MinimalSummary,
+                serialize: (e) => e.serialize(),
             },
             {
                 id: "query-animation",
-                description: "Query an animation by uniqueId and return its serialized data.",
-                args: [UniqueIdArg],
-                executeAsync: async (args) => {
-                    const scene = getScene();
-                    const id = ParseUniqueId(args);
-                    const entity = scene.animations.find((e) => e.uniqueId === id);
-                    if (!entity) {
-                        throw new Error(`No animation found with uniqueId ${id}.`);
-                    }
-                    return JSON.stringify(entity.serialize(), null, 2);
-                },
+                description: "List animations, or query a specific animation by uniqueId.",
+                getEntities: (scene) => scene.animations,
+                getUniqueId: (e) => e.uniqueId,
+                getSummary: MinimalSummary,
+                serialize: (e) => e.serialize(),
             },
             {
                 id: "query-animationGroup",
-                description: "Query an animation group by uniqueId and return its serialized data.",
-                args: [UniqueIdArg],
-                executeAsync: async (args) => {
-                    const scene = getScene();
-                    const id = ParseUniqueId(args);
-                    const entity = scene.animationGroups.find((e) => e.uniqueId === id);
-                    if (!entity) {
-                        throw new Error(`No animation group found with uniqueId ${id}.`);
-                    }
-                    return JSON.stringify(entity.serialize(), null, 2);
-                },
+                description: "List animation groups, or query a specific animation group by uniqueId.",
+                getEntities: (scene) => scene.animationGroups,
+                getUniqueId: (e) => e.uniqueId,
+                getSummary: NamedSummary,
+                serialize: (e) => e.serialize(),
             },
             {
                 id: "query-particleSystem",
-                description: "Query a particle system by uniqueId and return its serialized data.",
-                args: [UniqueIdArg],
-                executeAsync: async (args) => {
-                    const scene = getScene();
-                    const id = ParseUniqueId(args);
-                    const entity = scene.particleSystems.find((e) => e.uniqueId === id);
-                    if (!entity) {
-                        throw new Error(`No particle system found with uniqueId ${id}.`);
-                    }
-                    return JSON.stringify(entity.serialize(false), null, 2);
-                },
+                description: "List particle systems, or query a specific particle system by uniqueId.",
+                getEntities: (scene) => scene.particleSystems,
+                getUniqueId: (e) => e.uniqueId,
+                getSummary: NamedSummary,
+                serialize: (e) => e.serialize(false),
             },
             {
                 id: "query-morphTargetManager",
-                description: "Query a morph target manager by uniqueId and return its serialized data.",
-                args: [UniqueIdArg],
-                executeAsync: async (args) => {
-                    const scene = getScene();
-                    const id = ParseUniqueId(args);
-                    const entity = scene.morphTargetManagers.find((e) => e.uniqueId === id);
-                    if (!entity) {
-                        throw new Error(`No morph target manager found with uniqueId ${id}.`);
-                    }
-                    return JSON.stringify(entity.serialize(), null, 2);
-                },
+                description: "List morph target managers, or query a specific morph target manager by uniqueId.",
+                getEntities: (scene) => scene.morphTargetManagers,
+                getUniqueId: (e) => e.uniqueId,
+                getSummary: MinimalSummary,
+                serialize: (e) => e.serialize(),
             },
             {
                 id: "query-multiMaterial",
-                description: "Query a multi-material by uniqueId and return its serialized data.",
-                args: [UniqueIdArg],
-                executeAsync: async (args) => {
-                    const scene = getScene();
-                    const id = ParseUniqueId(args);
-                    const entity = scene.multiMaterials.find((e) => e.uniqueId === id);
-                    if (!entity) {
-                        throw new Error(`No multi-material found with uniqueId ${id}.`);
-                    }
-                    return JSON.stringify(entity.serialize(), null, 2);
-                },
+                description: "List multi-materials, or query a specific multi-material by uniqueId.",
+                getEntities: (scene) => scene.multiMaterials,
+                getUniqueId: (e) => e.uniqueId,
+                getSummary: NamedSummary,
+                serialize: (e) => e.serialize(),
             },
             {
                 id: "query-postProcess",
-                description: "Query a post-process by uniqueId and return its serialized data.",
-                args: [UniqueIdArg],
-                executeAsync: async (args) => {
-                    const scene = getScene();
-                    const id = ParseUniqueId(args);
-                    const entity = scene.postProcesses.find((e) => e.uniqueId === id);
-                    if (!entity) {
-                        throw new Error(`No post-process found with uniqueId ${id}.`);
-                    }
-                    return JSON.stringify(entity.serialize(), null, 2);
-                },
+                description: "List post-processes, or query a specific post-process by uniqueId.",
+                getEntities: (scene) => scene.postProcesses,
+                getUniqueId: (e) => e.uniqueId,
+                getSummary: NamedSummary,
+                serialize: (e) => e.serialize(),
             },
         ];
 
-        const registrations: IDisposable[] = commands.map((cmd) => commandRegistry.addCommand(cmd));
+        const registrations: IDisposable[] = collections.map((col) => commandRegistry.addCommand(MakeQueryCommand(col, sceneContext)));
 
         return {
             dispose: () => {
