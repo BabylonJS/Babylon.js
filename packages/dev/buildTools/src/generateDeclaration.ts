@@ -54,6 +54,8 @@ function GetModuleDeclaration(
     let processedLines = lines
         .map((line: string) => {
             line = line.replace("import type ", "import ");
+            // Strip inline type qualifiers from import specifiers (e.g. "import { type Foo }" -> "import { Foo }")
+            line = line.replace(/\{\s*type /g, "{ ").replace(/,\s*type /g, ", ");
             // Replace Type Imports
             const regexTypeImport = /(.*)type ([A-Za-z0-9]*) = import\("(.*)"\)\.(.*);/g;
             let match = regexTypeImport.exec(line);
@@ -226,8 +228,10 @@ function GetClassesMap(source: string, originalDevPackageName: string, originalS
             if (parts.length === 2) {
                 console.log(`${parts[0]} as ${parts[1]}`);
             }
-            const realClassName = parts[0].trim();
-            const alias = parts[1] ? parts[1].trim() : realClassName;
+            // Strip inline "type" qualifier from import specifiers (e.g. "type Foo" -> "Foo")
+            // to prevent "type" from leaking into namespace references like "BABYLON.type Foo".
+            const realClassName = parts[0].trim().replace(/^type /, "");
+            const alias = parts[1] ? parts[1].trim().replace(/^type /, "") : realClassName;
             const firstSplit = matches[2].split("/")[0];
             const devPackageName = firstSplit[0] === "." ? originalDevPackageName : firstSplit;
             // if (alias !== realClassName) {
@@ -288,8 +292,10 @@ function GetClassesMap(source: string, originalDevPackageName: string, originalS
                 const parts = className.split(" as ");
                 if (parts.length === 2) {
                     console.log(`aliasing ${parts[0]} as ${parts[1]}`);
-                    const realClassName = parts[1].trim();
-                    const alias = parts[0] ? parts[0].trim() : realClassName;
+                    // Strip inline "type" qualifier from re-export specifiers (e.g. "type Foo" -> "Foo")
+                    // to prevent "type" from leaking into namespace references like "BABYLON.type Foo".
+                    const realClassName = parts[1].trim().replace(/^type /, "");
+                    const alias = parts[0] ? parts[0].trim().replace(/^type /, "") : realClassName;
                     const devPackageName = originalDevPackageName;
                     if (isValidDevPackageName(devPackageName)) {
                         mappingArray.push({
