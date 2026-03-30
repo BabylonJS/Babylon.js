@@ -70,7 +70,7 @@ import { ShellServiceIdentity } from "./services/shellService";
 import { ShellSettingsServiceDefinition } from "./services/shellSettingsService";
 import { TextureEditorServiceDefinition } from "./services/textureEditor/textureEditorService";
 import { UserFeedbackServiceDefinition } from "./services/userFeedbackService";
-import { WatcherRefreshToolbarServiceDefinition, WatcherSettingsServiceDefinition } from "./services/watcherService";
+import { WatcherRefreshToolbarServiceDefinition, WatcherServiceDefinition, WatcherSettingsServiceDefinition } from "./services/watcherService";
 
 type LayoutMode = "inline" | "overlay";
 
@@ -307,6 +307,9 @@ export function ShowInspector(scene: Scene, options: Partial<InspectorOptions> =
         }
 
         serviceDefinitions.push(
+            // Watcher service for observing property changes.
+            WatcherServiceDefinition,
+
             // Helps with managing gizmos and a shared utility layer.
             GizmoServiceDefinition,
 
