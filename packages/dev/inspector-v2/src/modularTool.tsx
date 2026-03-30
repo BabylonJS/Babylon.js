@@ -174,7 +174,7 @@ export function MakeModularTool(options: ModularToolOptions): IDisposable {
                     friendlyName: "React Context Service",
                     produces: [ReactContextServiceIdentity],
                     factory: (): IReactContextService => ({
-                        addContext<T>(provider: React.Context<T>["Provider"], initialValue: T, options?: { order?: number }): ReactContextHandle<T> {
+                        addContext<T>(provider: Context<T>["Provider"], initialValue: T, options?: { order?: number }): ReactContextHandle<T> {
                             const typedProvider = provider as Context<unknown>["Provider"];
                             updateContexts({ type: "add", entry: { provider: typedProvider, value: initialValue, order: options?.order ?? 0 } });
                             return {
