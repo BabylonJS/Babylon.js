@@ -20,6 +20,7 @@
     "devDependencies": {
         "@babylonjs/core": "9.0.0",
         "@dev/build-tools": "^1.0.0",
+        "@dev/serializers": "^1.0.0",
         "babylonjs-gltf2interface": "9.0.0"
     },
     "peerDependencies": {

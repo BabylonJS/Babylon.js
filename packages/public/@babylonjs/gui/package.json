@@ -19,7 +19,8 @@
     },
     "devDependencies": {
         "@babylonjs/core": "9.0.0",
-        "@dev/build-tools": "^1.0.0"
+        "@dev/build-tools": "^1.0.0",
+        "@dev/gui": "^1.0.0"
     },
     "peerDependencies": {
         "@babylonjs/core": "^9.0.0"
