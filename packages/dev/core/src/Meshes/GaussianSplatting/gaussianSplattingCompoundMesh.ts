@@ -1,7 +1,7 @@
-import type { Nullable } from "core/types";
-import type { Scene } from "core/scene";
+import { type Nullable } from "core/types";
+import { type Scene } from "core/scene";
 import { GaussianSplattingMesh } from "./gaussianSplattingMesh";
-import type { GaussianSplattingPartProxyMesh } from "./gaussianSplattingPartProxyMesh";
+import { type GaussianSplattingPartProxyMesh } from "./gaussianSplattingPartProxyMesh";
 
 /**
  * Class used to compose multiple Gaussian Splatting meshes into a single draw call,
