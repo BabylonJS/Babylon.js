@@ -14,16 +14,18 @@ const HELP_TEXT = `babylon-inspector — Interact with running Babylon.js scenes
 
 USAGE
   babylon-inspector [options]
-  babylon-inspector --exec <session-id> <command-id> [--arg value ...]
+  babylon-inspector --exec [session-id] <command-id> [--arg value ...]
 
 OPTIONS
   --help                   Show this help message.
   --sessions               List active browser sessions connected to the bridge.
   --stop                   Stop the bridge process.
-  --commands <session-id>  List commands available from a specific session.
-  --exec <session-id> <command-id> [--arg value ...]
+  --commands [session-id]  List commands available from a session.
+  --exec [session-id] <command-id> [--arg value ...]
                            Execute a command on a session. Extra --key value
                            pairs are forwarded as command arguments.
+
+  Session id is optional when only one session is active.
 
 CONFIGURATION
   Place a .babyloninspector JSON file anywhere in the directory parent chain:
@@ -31,7 +33,9 @@ CONFIGURATION
 
 EXAMPLES
   babylon-inspector --sessions
+  babylon-inspector --commands
   babylon-inspector --commands 1
+  babylon-inspector --exec query-mesh --uniqueId 42
   babylon-inspector --exec 1 query-mesh --uniqueId 42
 `;
 
@@ -39,8 +43,8 @@ interface ParsedArgs {
     help: boolean;
     sessions: boolean;
     stop: boolean;
-    commands?: string;
-    exec?: string;
+    commands: boolean;
+    exec: boolean;
     bridgeScript?: string;
     rest: string[];
 }
@@ -51,8 +55,8 @@ function parseCliArgs(): ParsedArgs {
             help: { type: "boolean", default: false },
             sessions: { type: "boolean", default: false },
             stop: { type: "boolean", default: false },
-            commands: { type: "string" },
-            exec: { type: "string" },
+            commands: { type: "boolean", default: false },
+            exec: { type: "boolean", default: false },
             "bridge-script": { type: "string" },
         },
         strict: false,
@@ -60,26 +64,13 @@ function parseCliArgs(): ParsedArgs {
         tokens: true,
     });
 
-    // Collect all unknown --key value pairs that appear after --exec's positional command id.
-    // With strict:false, parseArgs treats unknown options as booleans and their values as positionals,
-    // so we re-pair them using the raw token stream.
+    // Collect positionals and unknown --key value pairs from the token stream.
     const rest: string[] = [];
     if (tokens) {
-        let pastExecCommandId = false;
         let pendingOptionName: string | null = null;
         for (const token of tokens) {
-            if (token.kind === "positional" && !pastExecCommandId && values.exec !== undefined) {
-                // First positional after --exec is the command id.
-                pastExecCommandId = true;
-                rest.push(token.value);
-                continue;
-            }
-            if (!pastExecCommandId) {
-                continue;
-            }
-            if (token.kind === "option" && token.name !== "bridge-script") {
+            if (token.kind === "option" && token.name !== "bridge-script" && token.name !== "help" && token.name !== "sessions" && token.name !== "stop" && token.name !== "commands" && token.name !== "exec") {
                 if (pendingOptionName !== null) {
-                    // Previous option had no value — treat as a boolean flag.
                     rest.push(`--${pendingOptionName}`);
                 }
                 if (token.value !== undefined) {
@@ -107,8 +98,8 @@ function parseCliArgs(): ParsedArgs {
         help: !!values.help,
         sessions: !!values.sessions,
         stop: !!values.stop,
-        commands: values.commands as string | undefined,
-        exec: values.exec as string | undefined,
+        commands: !!values.commands,
+        exec: !!values.exec,
         bridgeScript: values["bridge-script"] as string | undefined,
         rest,
     };
@@ -172,6 +163,31 @@ async function ensureBridge(port: number, bridgeScript?: string, maxRetries = 10
     throw new Error(`Unable to connect to the Inspector bridge on port ${port} after spawning it.`);
 }
 
+/**
+ * Resolves the session id to use. If an explicit id is provided, returns it.
+ * If not, queries the bridge: returns the sole session's id when exactly one
+ * is active, or errors if zero or multiple sessions are active.
+ */
+async function resolveSessionId(socket: WebSocket, explicitId?: string): Promise<number> {
+    if (explicitId !== undefined) {
+        const parsed = parseInt(explicitId, 10);
+        if (isNaN(parsed)) {
+            throw new Error("Session id must be a number.");
+        }
+        return parsed;
+    }
+
+    const response = await sendAndReceive<SessionsResponse>(socket, { type: "sessions" });
+    if (response.sessions.length === 0) {
+        throw new Error("No active sessions. Make sure a browser is running with StartInspectable enabled.");
+    }
+    if (response.sessions.length > 1) {
+        const list = response.sessions.map((s) => `  [${s.id}] ${s.name}`).join("\n");
+        throw new Error(`Multiple active sessions. Specify a session id:\n${list}`);
+    }
+    return response.sessions[0].id;
+}
+
 async function main(): Promise<void> {
     const args = parseCliArgs();
 
@@ -210,16 +226,11 @@ async function main(): Promise<void> {
         return;
     }
 
-    if (args.commands !== undefined) {
-        const sessionId = parseInt(args.commands, 10);
-        if (isNaN(sessionId)) {
-            console.error("Error: --commands requires a numeric session id.");
-            process.exitCode = 1;
-            return;
-        }
-
+    if (args.commands) {
         const socket = await ensureBridge(config.cliPort, args.bridgeScript);
         try {
+            // Optional positional: session id.
+            const sessionId = await resolveSessionId(socket, args.rest[0]);
             const response = await sendAndReceive<CommandsResponse>(socket, { type: "commands", sessionId });
             if (response.error) {
                 console.error(`Error: ${response.error}`);
@@ -245,32 +256,42 @@ async function main(): Promise<void> {
         return;
     }
 
-    if (args.exec !== undefined) {
-        const sessionId = parseInt(args.exec, 10);
-        if (isNaN(sessionId)) {
-            console.error("Error: --exec requires a numeric session id as the first argument.");
-            process.exitCode = 1;
-            return;
-        }
-
-        const commandId = args.rest[0];
-        if (!commandId) {
-            console.error("Error: --exec requires a command id as the second argument.");
-            process.exitCode = 1;
-            return;
-        }
-
-        // Parse remaining --key value pairs into a Record.
-        const commandArgs: Record<string, string> = {};
-        for (let i = 1; i < args.rest.length; i++) {
-            const token = args.rest[i];
-            if (token.startsWith("--") && i + 1 < args.rest.length) {
-                commandArgs[token.slice(2)] = args.rest[++i];
-            }
-        }
-
+    if (args.exec) {
         const socket = await ensureBridge(config.cliPort, args.bridgeScript);
         try {
+            // Positionals in rest: [sessionId?] <commandId>
+            // If the first positional is a number, treat it as session id and the next as command id.
+            // Otherwise, auto-resolve session and treat the first positional as command id.
+            let commandId: string | undefined;
+            let argsStartIndex: number;
+            let explicitSessionId: string | undefined;
+
+            if (args.rest.length > 0 && !isNaN(parseInt(args.rest[0], 10)) && args.rest.length > 1) {
+                explicitSessionId = args.rest[0];
+                commandId = args.rest[1];
+                argsStartIndex = 2;
+            } else {
+                commandId = args.rest[0];
+                argsStartIndex = 1;
+            }
+
+            if (!commandId) {
+                console.error("Error: --exec requires a command id.");
+                process.exitCode = 1;
+                return;
+            }
+
+            const sessionId = await resolveSessionId(socket, explicitSessionId);
+
+            // Parse remaining --key value pairs into a Record.
+            const commandArgs: Record<string, string> = {};
+            for (let i = argsStartIndex; i < args.rest.length; i++) {
+                const token = args.rest[i];
+                if (token.startsWith("--") && i + 1 < args.rest.length) {
+                    commandArgs[token.slice(2)] = args.rest[++i];
+                }
+            }
+
             const response = await sendAndReceive<ExecResponse>(socket, {
                 type: "exec",
                 sessionId,
