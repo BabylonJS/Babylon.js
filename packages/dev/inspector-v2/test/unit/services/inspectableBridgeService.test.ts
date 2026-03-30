@@ -16,10 +16,9 @@ describe("InspectableBridgeService", () => {
     });
 
     describe("command registry", () => {
-        it("can register and unregister a command", () => {
+        it("can register and unregister a command", async () => {
             const definition = MakeInspectableBridgeServiceDefinition({ port: 0, name: "test" });
-            // Call factory to get the registry (it will try to connect but that's fine — it won't crash on failure).
-            const registry = definition.factory() as ReturnType<typeof definition.factory> & { dispose: () => void };
+            const registry = await definition.factory();
 
             const disposal = registry.addCommand({
                 id: "test-cmd",
@@ -30,16 +29,13 @@ describe("InspectableBridgeService", () => {
             expect(disposal).toBeDefined();
             expect(disposal.dispose).toBeInstanceOf(Function);
 
-            // Should not throw.
             disposal.dispose();
-
-            // Clean up.
-            registry.dispose();
+            registry.dispose?.();
         });
 
-        it("throws when registering a duplicate command id", () => {
+        it("throws when registering a duplicate command id", async () => {
             const definition = MakeInspectableBridgeServiceDefinition({ port: 0, name: "test" });
-            const registry = definition.factory() as ReturnType<typeof definition.factory> & { dispose: () => void };
+            const registry = await definition.factory();
 
             registry.addCommand({
                 id: "dup-cmd",
@@ -55,12 +51,12 @@ describe("InspectableBridgeService", () => {
                 });
             }).toThrow("Command 'dup-cmd' is already registered.");
 
-            registry.dispose();
+            registry.dispose?.();
         });
 
-        it("allows re-registration after disposal", () => {
+        it("allows re-registration after disposal", async () => {
             const definition = MakeInspectableBridgeServiceDefinition({ port: 0, name: "test" });
-            const registry = definition.factory() as ReturnType<typeof definition.factory> & { dispose: () => void };
+            const registry = await definition.factory();
 
             const token = registry.addCommand({
                 id: "reuse-cmd",
@@ -70,7 +66,6 @@ describe("InspectableBridgeService", () => {
 
             token.dispose();
 
-            // Should not throw since we disposed the first registration.
             const token2 = registry.addCommand({
                 id: "reuse-cmd",
                 description: "Reusable again",
@@ -79,7 +74,7 @@ describe("InspectableBridgeService", () => {
 
             expect(token2).toBeDefined();
             token2.dispose();
-            registry.dispose();
+            registry.dispose?.();
         });
     });
 });
