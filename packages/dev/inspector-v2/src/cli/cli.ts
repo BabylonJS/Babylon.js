@@ -1,14 +1,15 @@
+/* eslint-disable no-console */
 import { spawn } from "child_process";
 import { parseArgs } from "util";
 import { fileURLToPath } from "url";
 import { dirname, join, resolve } from "path";
 import ws from "ws";
-import { loadConfig } from "./config.js";
+import { LoadConfig } from "./config.js";
 import type { CliRequest, CliResponse, CommandsResponse, ExecResponse, SessionsResponse } from "./protocol.js";
 
 type WebSocket = ws;
 
-const config = loadConfig();
+const Config = LoadConfig();
 
 const HELP_TEXT = `babylon-inspector — Interact with running Babylon.js scenes from the terminal.
 
@@ -39,19 +40,26 @@ EXAMPLES
   babylon-inspector --command 1 query-mesh --uniqueId 42
 `;
 
-const KNOWN_OPTIONS = new Set(["help", "sessions", "stop", "commands", "command", "bridge-script"]);
+const KnownOptions = new Set(["help", "sessions", "stop", "commands", "command", "bridge-script"]);
 
-interface ParsedArgs {
+interface IParsedArgs {
+    /** Whether the user requested help. */
     help: boolean;
+    /** Whether the user requested the sessions list. */
     sessions: boolean;
+    /** Whether the user requested the bridge to stop. */
     stop: boolean;
+    /** Whether the user requested the commands list. */
     commands: boolean;
+    /** Whether the user is executing a command. */
     command: boolean;
+    /** Optional path to the bridge script. */
     bridgeScript?: string;
+    /** Remaining positional and unknown arguments. */
     rest: string[];
 }
 
-function parseCliArgs(): ParsedArgs {
+function ParseCliArgs(): IParsedArgs {
     const { values, tokens } = parseArgs({
         options: {
             help: { type: "boolean", default: false },
@@ -59,6 +67,7 @@ function parseCliArgs(): ParsedArgs {
             stop: { type: "boolean", default: false },
             commands: { type: "boolean", default: false },
             command: { type: "boolean", default: false },
+            // eslint-disable-next-line @typescript-eslint/naming-convention
             "bridge-script": { type: "string" },
         },
         strict: false,
@@ -71,7 +80,7 @@ function parseCliArgs(): ParsedArgs {
     if (tokens) {
         let pendingOptionName: string | null = null;
         for (const token of tokens) {
-            if (token.kind === "option" && !KNOWN_OPTIONS.has(token.name)) {
+            if (token.kind === "option" && !KnownOptions.has(token.name)) {
                 if (pendingOptionName !== null) {
                     rest.push(`--${pendingOptionName}`);
                 }
@@ -107,16 +116,16 @@ function parseCliArgs(): ParsedArgs {
     };
 }
 
-function connectToBridge(port: number): Promise<WebSocket> {
-    return new Promise((resolve, reject) => {
+async function ConnectToBridge(port: number): Promise<WebSocket> {
+    return await new Promise((resolve, reject) => {
         const socket = new ws(`ws://127.0.0.1:${port}`);
         socket.on("open", () => resolve(socket));
         socket.on("error", (err) => reject(err));
     });
 }
 
-function sendAndReceive<T extends CliResponse>(socket: WebSocket, message: CliRequest): Promise<T> {
-    return new Promise((resolve, reject) => {
+async function SendAndReceive<T extends CliResponse>(socket: WebSocket, message: CliRequest): Promise<T> {
+    return await new Promise((resolve, reject) => {
         const timeout = setTimeout(() => {
             reject(new Error("Timeout waiting for bridge response."));
         }, 15000);
@@ -134,10 +143,8 @@ function sendAndReceive<T extends CliResponse>(socket: WebSocket, message: CliRe
     });
 }
 
-function spawnBridge(bridgeScript?: string): void {
-    const bridgePath = bridgeScript
-        ? resolve(bridgeScript)
-        : join(dirname(fileURLToPath(import.meta.url)), "inspector-bridge.mjs");
+function SpawnBridge(bridgeScript?: string): void {
+    const bridgePath = bridgeScript ? resolve(bridgeScript) : join(dirname(fileURLToPath(import.meta.url)), "inspector-bridge.mjs");
     const child = spawn(process.execPath, [bridgePath], {
         detached: true,
         stdio: "ignore",
@@ -145,18 +152,20 @@ function spawnBridge(bridgeScript?: string): void {
     child.unref();
 }
 
-async function ensureBridge(port: number, bridgeScript?: string, maxRetries = 10, retryDelayMs = 500): Promise<WebSocket> {
+async function EnsureBridge(port: number, bridgeScript?: string, maxRetries = 10, retryDelayMs = 500): Promise<WebSocket> {
     try {
-        return await connectToBridge(port);
+        return await ConnectToBridge(port);
     } catch {
         // Bridge not running — spawn it.
-        spawnBridge(bridgeScript);
+        SpawnBridge(bridgeScript);
     }
 
     for (let i = 0; i < maxRetries; i++) {
+        // eslint-disable-next-line no-await-in-loop
         await new Promise((resolve) => setTimeout(resolve, retryDelayMs));
         try {
-            return await connectToBridge(port);
+            // eslint-disable-next-line no-await-in-loop
+            return await ConnectToBridge(port);
         } catch {
             // Keep retrying.
         }
@@ -169,8 +178,11 @@ async function ensureBridge(port: number, bridgeScript?: string, maxRetries = 10
  * Resolves the session id to use. If an explicit id is provided, returns it.
  * If not, queries the bridge: returns the sole session's id when exactly one
  * is active, or errors if zero or multiple sessions are active.
+ * @param socket The WebSocket connection to the bridge.
+ * @param explicitId An optional explicit session id string.
+ * @returns The resolved numeric session id.
  */
-async function resolveSessionId(socket: WebSocket, explicitId?: string): Promise<number> {
+async function ResolveSessionId(socket: WebSocket, explicitId?: string): Promise<number> {
     if (explicitId !== undefined) {
         const parsed = parseInt(explicitId, 10);
         if (isNaN(parsed)) {
@@ -179,7 +191,7 @@ async function resolveSessionId(socket: WebSocket, explicitId?: string): Promise
         return parsed;
     }
 
-    const response = await sendAndReceive<SessionsResponse>(socket, { type: "sessions" });
+    const response = await SendAndReceive<SessionsResponse>(socket, { type: "sessions" });
     if (response.sessions.length === 0) {
         throw new Error("No active sessions. Make sure a browser is running with StartInspectable enabled.");
     }
@@ -190,8 +202,8 @@ async function resolveSessionId(socket: WebSocket, explicitId?: string): Promise
     return response.sessions[0].id;
 }
 
-async function main(): Promise<void> {
-    const args = parseCliArgs();
+async function Main(): Promise<void> {
+    const args = ParseCliArgs();
 
     if (args.help && !args.command) {
         console.log(HELP_TEXT);
@@ -199,9 +211,9 @@ async function main(): Promise<void> {
     }
 
     if (args.sessions) {
-        const socket = await ensureBridge(config.cliPort, args.bridgeScript);
+        const socket = await EnsureBridge(Config.cliPort, args.bridgeScript);
         try {
-            const response = await sendAndReceive<SessionsResponse>(socket, { type: "sessions" });
+            const response = await SendAndReceive<SessionsResponse>(socket, { type: "sessions" });
             if (response.sessions.length === 0) {
                 console.log("No active sessions.");
             } else {
@@ -218,8 +230,8 @@ async function main(): Promise<void> {
 
     if (args.stop) {
         try {
-            const socket = await connectToBridge(config.cliPort);
-            await sendAndReceive(socket, { type: "stop" });
+            const socket = await ConnectToBridge(Config.cliPort);
+            await SendAndReceive(socket, { type: "stop" });
             socket.close();
             console.log("Bridge stopped.");
         } catch {
@@ -229,10 +241,10 @@ async function main(): Promise<void> {
     }
 
     if (args.commands) {
-        const socket = await ensureBridge(config.cliPort, args.bridgeScript);
+        const socket = await EnsureBridge(Config.cliPort, args.bridgeScript);
         try {
-            const sessionId = await resolveSessionId(socket, args.rest[0]);
-            const response = await sendAndReceive<CommandsResponse>(socket, { type: "commands", sessionId });
+            const sessionId = await ResolveSessionId(socket, args.rest[0]);
+            const response = await SendAndReceive<CommandsResponse>(socket, { type: "commands", sessionId });
             if (response.error) {
                 console.error(`Error: ${response.error}`);
                 process.exitCode = 1;
@@ -255,7 +267,7 @@ async function main(): Promise<void> {
     }
 
     if (args.command) {
-        const socket = await ensureBridge(config.cliPort, args.bridgeScript);
+        const socket = await EnsureBridge(Config.cliPort, args.bridgeScript);
         try {
             // Positionals in rest: [sessionId?] <commandId>
             let commandId: string | undefined;
@@ -277,7 +289,7 @@ async function main(): Promise<void> {
                 return;
             }
 
-            const sessionId = await resolveSessionId(socket, explicitSessionId);
+            const sessionId = await ResolveSessionId(socket, explicitSessionId);
 
             // Parse remaining --key value pairs into a Record.
             const commandArgs: Record<string, string> = {};
@@ -292,7 +304,7 @@ async function main(): Promise<void> {
             }
 
             // Fetch the command descriptor to check for --help or missing required args.
-            const commandsResponse = await sendAndReceive<CommandsResponse>(socket, { type: "commands", sessionId });
+            const commandsResponse = await SendAndReceive<CommandsResponse>(socket, { type: "commands", sessionId });
             const descriptor = commandsResponse.commands?.find((c) => c.id === commandId);
 
             if (!descriptor) {
@@ -321,7 +333,7 @@ async function main(): Promise<void> {
                 return;
             }
 
-            const response = await sendAndReceive<ExecResponse>(socket, {
+            const response = await SendAndReceive<ExecResponse>(socket, {
                 type: "exec",
                 sessionId,
                 commandId,
@@ -343,7 +355,11 @@ async function main(): Promise<void> {
     console.log(HELP_TEXT);
 }
 
-main().catch((error: unknown) => {
-    console.error(`Error: ${error}`);
-    process.exitCode = 1;
-});
+void (async () => {
+    try {
+        await Main();
+    } catch (error: unknown) {
+        console.error(`Error: ${error}`);
+        process.exitCode = 1;
+    }
+})();

@@ -10,7 +10,7 @@ import { SceneContextIdentity } from "./services/sceneContext";
 import { MakeInspectableBridgeServiceDefinition } from "./services/cli/inspectableBridgeService";
 import { EntityQueryServiceDefinition } from "./services/cli/entityQueryService";
 
-const DEFAULT_PORT = 4400;
+const DefaultPort = 4400;
 
 /**
  * Options for making a scene inspectable via the Inspector CLI.
@@ -60,7 +60,7 @@ export function StartInspectable(scene: Scene, options?: Partial<InspectableOpti
         return existing;
     }
 
-    const port = options?.port ?? DEFAULT_PORT;
+    const port = options?.port ?? DefaultPort;
     const name = options?.name ?? (typeof document !== "undefined" ? document.title : "Babylon.js Scene");
 
     const serviceContainer = new ServiceContainer("InspectableContainer");
@@ -99,19 +99,21 @@ export function StartInspectable(scene: Scene, options?: Partial<InspectableOpti
         }),
     };
 
-    serviceContainer
-        .addServicesAsync(
-            sceneContextServiceDefinition,
-            MakeInspectableBridgeServiceDefinition({
-                port,
-                name,
-            }),
-            EntityQueryServiceDefinition
-        )
-        .catch((error: unknown) => {
-            Logger.Error(`Failed to initialize InspectableBridgeService: ${error}`);
+    void (async () => {
+        try {
+            await serviceContainer.addServicesAsync(
+                sceneContextServiceDefinition,
+                MakeInspectableBridgeServiceDefinition({
+                    port,
+                    name,
+                }),
+                EntityQueryServiceDefinition
+            );
+        } catch (error: unknown) {
+            Logger.Error(`Failed to initialize Inspectable: ${error}`);
             token.dispose();
-        });
+        }
+    })();
 
     return token;
 }

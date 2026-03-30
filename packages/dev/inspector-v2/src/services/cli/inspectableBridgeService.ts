@@ -10,7 +10,7 @@ import { InspectableCommandRegistryIdentity } from "./inspectableCommandRegistry
 /**
  * Options for the inspectable bridge service.
  */
-export interface InspectableBridgeServiceOptions {
+export interface IInspectableBridgeServiceOptions {
     /**
      * The WebSocket port for the bridge's browser port.
      */
@@ -27,7 +27,7 @@ export interface InspectableBridgeServiceOptions {
  * @param options The options for connecting to the bridge.
  * @returns A service definition that produces an IInspectableCommandRegistry.
  */
-export function MakeInspectableBridgeServiceDefinition(options: InspectableBridgeServiceOptions): ServiceDefinition<[IInspectableCommandRegistry], []> {
+export function MakeInspectableBridgeServiceDefinition(options: IInspectableBridgeServiceOptions): ServiceDefinition<[IInspectableCommandRegistry], []> {
     return {
         friendlyName: "Inspectable Bridge Service",
         produces: [InspectableCommandRegistryIdentity],
@@ -60,7 +60,7 @@ export function MakeInspectableBridgeServiceDefinition(options: InspectableBridg
                 ws.onmessage = (event) => {
                     try {
                         const message = JSON.parse(event.data as string);
-                        handleMessage(message);
+                        void handleMessage(message);
                     } catch {
                         Logger.Warn("InspectableBridgeService: Failed to parse message from bridge.");
                     }
@@ -86,7 +86,7 @@ export function MakeInspectableBridgeServiceDefinition(options: InspectableBridg
                 }, 3000);
             }
 
-            function handleMessage(message: BrowserResponse) {
+            async function handleMessage(message: BrowserResponse) {
                 switch (message.type) {
                     case "listCommands": {
                         const commandList: CommandInfo[] = Array.from(commands.values()).map((cmd) => ({
@@ -111,22 +111,20 @@ export function MakeInspectableBridgeServiceDefinition(options: InspectableBridg
                             });
                             break;
                         }
-                        command
-                            .executeAsync(message.args)
-                            .then((result) => {
-                                sendToBridge({
-                                    type: "commandResponse",
-                                    requestId: message.requestId,
-                                    result,
-                                });
-                            })
-                            .catch((error: unknown) => {
-                                sendToBridge({
-                                    type: "commandResponse",
-                                    requestId: message.requestId,
-                                    error: String(error),
-                                });
+                        try {
+                            const result = await command.executeAsync(message.args);
+                            sendToBridge({
+                                type: "commandResponse",
+                                requestId: message.requestId,
+                                result,
                             });
+                        } catch (error: unknown) {
+                            sendToBridge({
+                                type: "commandResponse",
+                                requestId: message.requestId,
+                                error: String(error),
+                            });
+                        }
                         break;
                     }
                 }

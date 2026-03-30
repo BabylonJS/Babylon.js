@@ -3,13 +3,13 @@ import { dirname, join } from "path";
 
 const CONFIG_FILENAME = ".babyloninspector";
 
-const DEFAULT_BROWSER_PORT = 4400;
-const DEFAULT_CLI_PORT = 4401;
+const DefaultBrowserPort = 4400;
+const DefaultCliPort = 4401;
 
 /**
  * Configuration for the Inspector CLI bridge.
  */
-export interface InspectorBridgeConfig {
+export interface IInspectorBridgeConfig {
     /**
      * WebSocket port for browser sessions to connect to the bridge.
      */
@@ -28,7 +28,7 @@ export interface InspectorBridgeConfig {
  * @param startDir The directory to start searching from.
  * @returns The absolute path to the config file, or undefined.
  */
-function findConfigFile(startDir: string): string | undefined {
+function FindConfigFile(startDir: string): string | undefined {
     let current = startDir;
     for (;;) {
         const candidate = join(current, CONFIG_FILENAME);
@@ -51,20 +51,20 @@ function findConfigFile(startDir: string): string | undefined {
  * @param cwd The working directory to start the search from. Defaults to `process.cwd()`.
  * @returns The resolved configuration.
  */
-export function loadConfig(cwd?: string): InspectorBridgeConfig {
-    const defaults: InspectorBridgeConfig = {
-        browserPort: DEFAULT_BROWSER_PORT,
-        cliPort: DEFAULT_CLI_PORT,
+export function LoadConfig(cwd?: string): IInspectorBridgeConfig {
+    const defaults: IInspectorBridgeConfig = {
+        browserPort: DefaultBrowserPort,
+        cliPort: DefaultCliPort,
     };
 
-    const configPath = findConfigFile(cwd ?? process.cwd());
+    const configPath = FindConfigFile(cwd ?? process.cwd());
     if (!configPath) {
         return defaults;
     }
 
     try {
         const raw = readFileSync(configPath, "utf-8");
-        const parsed = JSON.parse(raw) as Partial<InspectorBridgeConfig>;
+        const parsed = JSON.parse(raw) as Partial<IInspectorBridgeConfig>;
         return {
             browserPort: typeof parsed.browserPort === "number" ? parsed.browserPort : defaults.browserPort,
             cliPort: typeof parsed.cliPort === "number" ? parsed.cliPort : defaults.cliPort,
