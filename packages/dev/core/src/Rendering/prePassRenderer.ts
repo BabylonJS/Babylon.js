@@ -124,10 +124,10 @@ export class PrePassRenderer {
      */
     public static TextureFormats = [
         {
-            purpose: Constants.PREPASS_IRRADIANCE_TEXTURE_TYPE,
+            purpose: Constants.PREPASS_IRRADIANCE_LEGACY_TEXTURE_TYPE,
             type: Constants.TEXTURETYPE_HALF_FLOAT,
             format: Constants.TEXTUREFORMAT_RGBA,
-            name: "prePass_Irradiance",
+            name: "prePass_IrradianceLegacy",
         },
         {
             purpose: Constants.PREPASS_POSITION_TEXTURE_TYPE,
@@ -194,6 +194,12 @@ export class PrePassRenderer {
             type: Constants.TEXTURETYPE_HALF_FLOAT,
             format: Constants.TEXTUREFORMAT_RGBA,
             name: "prePass_VelocityLinear",
+        },
+        {
+            purpose: Constants.PREPASS_IRRADIANCE_TEXTURE_TYPE,
+            type: Constants.TEXTURETYPE_HALF_FLOAT,
+            format: Constants.TEXTUREFORMAT_RGBA,
+            name: "prePass_Irradiance",
         },
     ];
 

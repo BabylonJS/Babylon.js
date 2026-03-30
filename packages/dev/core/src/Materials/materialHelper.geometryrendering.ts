@@ -82,11 +82,11 @@ export class MaterialHelperGeometryRendering {
      */
     public static readonly GeometryTextureDescriptions = [
         {
-            type: Constants.PREPASS_IRRADIANCE_TEXTURE_TYPE,
-            name: "Irradiance",
+            type: Constants.PREPASS_IRRADIANCE_LEGACY_TEXTURE_TYPE,
+            name: "IrradianceLegacy",
             clearType: GeometryRenderingTextureClearType.Zero,
-            define: "PREPASS_IRRADIANCE",
-            defineIndex: "PREPASS_IRRADIANCE_INDEX",
+            define: "PREPASS_IRRADIANCE_LEGACY",
+            defineIndex: "PREPASS_IRRADIANCE_LEGACY_INDEX",
         },
         {
             type: Constants.PREPASS_POSITION_TEXTURE_TYPE,
@@ -178,6 +178,13 @@ export class MaterialHelperGeometryRendering {
             clearType: GeometryRenderingTextureClearType.NoClear,
             define: "PREPASS_COLOR",
             defineIndex: "PREPASS_COLOR_INDEX",
+        },
+        {
+            type: Constants.PREPASS_IRRADIANCE_TEXTURE_TYPE,
+            name: "Irradiance",
+            clearType: GeometryRenderingTextureClearType.Zero,
+            define: "PREPASS_IRRADIANCE",
+            defineIndex: "PREPASS_IRRADIANCE_INDEX",
         },
     ];
 
