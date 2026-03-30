@@ -1,6 +1,6 @@
 /* eslint-disable github/no-then */
 import * as React from "react";
-import type { GlobalState } from "../globalState";
+import { type GlobalState } from "../globalState";
 import { CommandButtonComponent } from "./commandButtonComponent";
 import { CommandDropdownComponent } from "./commandDropdownComponent";
 import { Utilities } from "../tools/utilities";

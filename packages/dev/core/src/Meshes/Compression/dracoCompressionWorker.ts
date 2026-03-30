@@ -1,9 +1,20 @@
-import type { Nullable, TypedArray, TypedArrayConstructor } from "core/types";
-import type { EncoderMessage, IDracoAttributeData, IDracoEncodedMeshData, IDracoEncoderOptions } from "./dracoEncoder.types";
-import type { DecoderMessage } from "./dracoDecoder.types";
-import type { DecoderBuffer, Decoder, Mesh, PointCloud, Status, DecoderModule, EncoderModule, MeshBuilder, Encoder, DracoInt8Array } from "draco3dgltf";
-import { DracoDecoderModule } from "draco3dgltf";
-import type { VertexDataTypedArray } from "core/Buffers/bufferUtils";
+import { type Nullable, type TypedArray, type TypedArrayConstructor } from "core/types";
+import { type EncoderMessage, type IDracoAttributeData, type IDracoEncodedMeshData, type IDracoEncoderOptions } from "./dracoEncoder.types";
+import { type DecoderMessage } from "./dracoDecoder.types";
+import {
+    type DecoderBuffer,
+    type Decoder,
+    type Mesh,
+    type PointCloud,
+    type Status,
+    type DecoderModule,
+    type EncoderModule,
+    type MeshBuilder,
+    type Encoder,
+    type DracoInt8Array,
+    DracoDecoderModule,
+} from "draco3dgltf";
+import { type VertexDataTypedArray } from "core/Buffers/bufferUtils";
 
 declare let DracoDecoderModule: DracoDecoderModule;
 declare let DracoEncoderModule: (props: { wasmBinary?: ArrayBuffer }) => Promise<EncoderModule>;

@@ -1,6 +1,6 @@
-import type { FlowGraphContext } from "../../flowGraphContext";
-import type { RichType } from "../../flowGraphRichTypes";
-import type { IFlowGraphBlockConfiguration } from "../../flowGraphBlock";
+import { type FlowGraphContext } from "../../flowGraphContext";
+import { type RichType } from "../../flowGraphRichTypes";
+import { type IFlowGraphBlockConfiguration } from "../../flowGraphBlock";
 import { FlowGraphCachedOperationBlock } from "./flowGraphCachedOperationBlock";
 /**
  * Block that outputs a value of type ResultT, resulting of an operation with no inputs.

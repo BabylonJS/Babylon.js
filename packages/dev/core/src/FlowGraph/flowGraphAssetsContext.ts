@@ -1,11 +1,11 @@
-import type { AnimationGroup } from "core/Animations/animationGroup";
-import type { Animation } from "core/Animations/animation";
-import type { Nullable } from "core/types";
-import type { Mesh } from "core/Meshes/mesh";
-import type { Material } from "core/Materials/material";
-import type { Camera } from "core/Cameras/camera";
-import type { Light } from "core/Lights/light";
-import type { IAssetContainer } from "core/IAssetContainer";
+import { type AnimationGroup } from "core/Animations/animationGroup";
+import { type Animation } from "core/Animations/animation";
+import { type Nullable } from "core/types";
+import { type Mesh } from "core/Meshes/mesh";
+import { type Material } from "core/Materials/material";
+import { type Camera } from "core/Cameras/camera";
+import { type Light } from "core/Lights/light";
+import { type IAssetContainer } from "core/IAssetContainer";
 
 /**
  * The type of the assets that flow graph supports

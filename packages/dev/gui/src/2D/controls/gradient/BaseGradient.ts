@@ -2,7 +2,7 @@
  * Base Gradient class. Should not be used directly.
  */
 
-import type { ICanvasGradient, ICanvasRenderingContext } from "core/Engines/ICanvas";
+import { type ICanvasGradient, type ICanvasRenderingContext } from "core/Engines/ICanvas";
 
 /**
  * Type that represents a single stop on the gradient.

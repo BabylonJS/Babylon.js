@@ -1,9 +1,9 @@
-import type { Effect } from "core/Materials/effect.js";
-import type { Nullable } from "core/types.js";
+import { type Effect } from "core/Materials/effect.js";
+import { type Nullable } from "core/types.js";
 
-import type { SmartFilter } from "../smartFilter.js";
-import type { ShaderProgram } from "../utils/shaderCodeUtils.js";
-import type { RuntimeData } from "../connection/connectionPoint.js";
+import { type SmartFilter } from "../smartFilter.js";
+import { type ShaderProgram } from "../utils/shaderCodeUtils.js";
+import { type RuntimeData } from "../connection/connectionPoint.js";
 import { ShaderBlock } from "../blockFoundation/shaderBlock.js";
 import { ShaderBinding } from "../runtime/shaderRuntime.js";
 import { ConnectionPointType } from "../connection/connectionPointType.js";

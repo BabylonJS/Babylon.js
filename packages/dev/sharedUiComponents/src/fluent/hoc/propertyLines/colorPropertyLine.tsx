@@ -1,14 +1,10 @@
-import type { FunctionComponent } from "react";
-import { forwardRef, useEffect, useState } from "react";
+import { type FunctionComponent, forwardRef, useEffect, useState } from "react";
 
-import type { PropertyLineProps } from "./propertyLine";
-import { PropertyLine } from "./propertyLine";
+import { type PropertyLineProps, PropertyLine } from "./propertyLine";
 import { SyncedSliderPropertyLine } from "./syncedSliderPropertyLine";
 
-import type { Color3 } from "core/Maths/math.color";
-import { Color4 } from "core/Maths/math.color";
-import { ColorPickerPopup } from "../../primitives/colorPicker";
-import type { ColorPickerProps } from "../../primitives/colorPicker";
+import { type Color3, Color4 } from "core/Maths/math.color";
+import { ColorPickerPopup, type ColorPickerProps } from "../../primitives/colorPicker";
 
 export type ColorPropertyLineProps = ColorPickerProps<Color3 | Color4> & PropertyLineProps<Color3 | Color4>;
 

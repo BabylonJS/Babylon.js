@@ -1,8 +1,6 @@
-import type { Scene } from "core/index";
+import { type Scene } from "core/index";
 
-import type { FunctionComponent } from "react";
-
-import { useCallback } from "react";
+import { type FunctionComponent, useCallback } from "react";
 
 import { EngineInstrumentation } from "core/Instrumentation/engineInstrumentation";
 import { SceneInstrumentation } from "core/Instrumentation/sceneInstrumentation";

@@ -1,32 +1,32 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import type {
-    AbstractEngine,
-    AbstractMesh,
-    AnimationGroup,
-    ArcRotateCameraKeyboardMoveInput,
-    AssetContainer,
-    AutoRotationBehavior,
-    BaseTexture,
-    Camera,
-    CubeTexture,
-    Engine,
-    HDRCubeTexture,
-    HotSpotQuery,
-    IblCdfGenerator,
-    IblShadowsRenderPipeline,
-    IDisposable,
-    IMeshDataCache,
-    ISceneLoaderProgressEvent,
-    LoadAssetContainerOptions,
-    Nullable,
-    Observer,
-    PickingInfo,
-    ShaderMaterial,
-    ShadowGenerator,
-    SSAO2RenderingPipeline,
+import {
+    type AbstractEngine,
+    type AbstractMesh,
+    type AnimationGroup,
+    type ArcRotateCameraKeyboardMoveInput,
+    type AssetContainer,
+    type AutoRotationBehavior,
+    type BaseTexture,
+    type Camera,
+    type CubeTexture,
+    type Engine,
+    type HDRCubeTexture,
+    type HotSpotQuery,
+    type IblCdfGenerator,
+    type IblShadowsRenderPipeline,
+    type IDisposable,
+    type IMeshDataCache,
+    type ISceneLoaderProgressEvent,
+    type LoadAssetContainerOptions,
+    type Nullable,
+    type Observer,
+    type PickingInfo,
+    type ShaderMaterial,
+    type ShadowGenerator,
+    type SSAO2RenderingPipeline,
 } from "core/index";
 
-import type { MaterialVariantsController } from "loaders/glTF/2.0/Extensions/KHR_materials_variants";
+import { type MaterialVariantsController } from "loaders/glTF/2.0/Extensions/KHR_materials_variants";
 
 import { ArcRotateCamera, ComputeAlpha, ComputeBeta } from "core/Cameras/arcRotateCamera";
 import { Constants } from "core/Engines/constants";

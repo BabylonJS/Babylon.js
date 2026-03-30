@@ -1,6 +1,6 @@
-import type { FunctionComponent } from "react";
+import { type FunctionComponent } from "react";
 
-import type { Nullable, Quaternion, Vector3 } from "core/index";
+import { type Nullable, type Quaternion, type Vector3 } from "core/index";
 
 import { QuaternionPropertyLine, RotationVectorPropertyLine, Vector3PropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/vectorPropertyLine";
 import { useQuaternionProperty } from "../../hooks/compoundPropertyHooks";

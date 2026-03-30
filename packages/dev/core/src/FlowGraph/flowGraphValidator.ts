@@ -1,10 +1,10 @@
-import type { FlowGraph } from "./flowGraph";
-import type { FlowGraphBlock } from "./flowGraphBlock";
+import { type FlowGraph } from "./flowGraph";
+import { type FlowGraphBlock } from "./flowGraphBlock";
 import { FlowGraphExecutionBlock } from "./flowGraphExecutionBlock";
-import type { FlowGraphDataConnection } from "./flowGraphDataConnection";
+import { type FlowGraphDataConnection } from "./flowGraphDataConnection";
 import { FlowGraphTypes } from "./flowGraphRichTypes";
 import { FlowGraphEventBlock } from "./flowGraphEventBlock";
-import type { FlowGraphEventType } from "./flowGraphEventType";
+import { type FlowGraphEventType } from "./flowGraphEventType";
 
 /**
  * Severity level for a validation issue.

@@ -1,4 +1,4 @@
-import type { Nullable, CubeTexture, Scene, Camera } from "core/index";
+import { type Nullable, type CubeTexture, type Scene, type Camera } from "core/index";
 import { Vector2 } from "core/Maths/math.vector";
 import { ThinSSRPostProcess } from "core/PostProcesses/thinSSRPostProcess";
 import { ThinSSRBlurPostProcess } from "core/PostProcesses/thinSSRBlurPostProcess";

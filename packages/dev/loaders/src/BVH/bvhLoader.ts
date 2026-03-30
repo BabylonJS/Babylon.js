@@ -1,13 +1,13 @@
-import type { IAnimationKey } from "core/Animations";
+import { type IAnimationKey } from "core/Animations";
 import { Animation } from "core/Animations/animation";
 import { Bone } from "core/Bones/bone";
 import { Skeleton } from "core/Bones/skeleton";
 import { Matrix, Quaternion, Vector3 } from "core/Maths/math.vector";
-import type { Scene } from "core/scene";
-import type { Nullable } from "core/types";
-import type { BVHLoadingOptions } from "./bvhLoadingOptions";
+import { type Scene } from "core/scene";
+import { type Nullable } from "core/types";
+import { type BVHLoadingOptions } from "./bvhLoadingOptions";
 import { Tools } from "core/Misc/tools";
-import type { AssetContainer } from "core/assetContainer";
+import { type AssetContainer } from "core/assetContainer";
 
 const _XPosition = "Xposition";
 const _YPosition = "Yposition";

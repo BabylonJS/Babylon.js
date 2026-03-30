@@ -1,11 +1,10 @@
 import * as React from "react";
-import type { GlobalState } from "../../globalState";
-import type { Nullable } from "core/types";
-import type { Observer } from "core/Misc/observable";
+import { type GlobalState } from "../../globalState";
+import { type Nullable } from "core/types";
+import { type Observer } from "core/Misc/observable";
 import { SceneContext } from "../../sceneContext";
 import { LogEntry } from "../log/logComponent";
-import { LoadSnippet } from "@tools/snippet-loader";
-import type { IPlaygroundSnippetResult } from "@tools/snippet-loader";
+import { LoadSnippet, type IPlaygroundSnippetResult } from "@tools/snippet-loader";
 
 import "./scenePreview.scss";
 

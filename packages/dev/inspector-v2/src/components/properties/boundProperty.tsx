@@ -1,6 +1,4 @@
-import type { ComponentProps, ComponentType } from "react";
-
-import { forwardRef, useMemo } from "react";
+import { type ComponentProps, type ComponentType, forwardRef, useMemo } from "react";
 
 import { ErrorBoundary } from "../errorBoundary";
 import { usePropertyChangedNotifier } from "../../contexts/propertyContext";

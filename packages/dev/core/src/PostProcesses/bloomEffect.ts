@@ -1,12 +1,12 @@
 import { PostProcessRenderEffect } from "../PostProcesses/RenderPipeline/postProcessRenderEffect";
-import type { PostProcess } from "./postProcess";
+import { type PostProcess } from "./postProcess";
 import { ExtractHighlightsPostProcess } from "./extractHighlightsPostProcess";
 import { BlurPostProcess } from "./blurPostProcess";
 import { BloomMergePostProcess } from "./bloomMergePostProcess";
-import type { Camera } from "../Cameras/camera";
+import { type Camera } from "../Cameras/camera";
 import { Texture } from "../Materials/Textures/texture";
-import type { Scene } from "../scene";
-import type { AbstractEngine } from "../Engines/abstractEngine";
+import { type Scene } from "../scene";
+import { type AbstractEngine } from "../Engines/abstractEngine";
 import { ThinBloomEffect } from "./thinBloomEffect";
 
 /**

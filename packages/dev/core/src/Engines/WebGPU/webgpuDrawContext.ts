@@ -1,10 +1,10 @@
-import type { VertexBuffer } from "../../Buffers/buffer";
-import type { DataBuffer } from "../../Buffers/dataBuffer";
-import type { WebGPUDataBuffer } from "../../Meshes/WebGPU/webgpuDataBuffer";
-import type { Nullable } from "../../types";
-import type { IDrawContext } from "../IDrawContext";
-import type { WebGPUBufferManager } from "./webgpuBufferManager";
-import type { WebGPUPipelineContext } from "./webgpuPipelineContext";
+import { type VertexBuffer } from "../../Buffers/buffer";
+import { type DataBuffer } from "../../Buffers/dataBuffer";
+import { type WebGPUDataBuffer } from "../../Meshes/WebGPU/webgpuDataBuffer";
+import { type Nullable } from "../../types";
+import { type IDrawContext } from "../IDrawContext";
+import { type WebGPUBufferManager } from "./webgpuBufferManager";
+import { type WebGPUPipelineContext } from "./webgpuPipelineContext";
 import * as WebGPUConstants from "./webgpuConstants";
 
 /**

@@ -1,10 +1,9 @@
 import { type ComponentType } from "react";
 
-import type { IDisposable } from "core/index";
-import type { TextureEditorProps, TextureEditorToolProvider } from "../../components/textureEditor/textureEditor";
-import type { IService, ServiceDefinition } from "../../modularity/serviceDefinition";
+import { type IDisposable } from "core/index";
+import { type TextureEditorProps, type TextureEditorToolProvider, TextureEditor } from "../../components/textureEditor/textureEditor";
+import { type IService, type ServiceDefinition } from "../../modularity/serviceDefinition";
 
-import { TextureEditor } from "../../components/textureEditor/textureEditor";
 import { useOrderedObservableCollection } from "../../hooks/observableHooks";
 import { ObservableCollection } from "../../misc/observableCollection";
 import { Contrast } from "./tools/contrast";

@@ -1,19 +1,19 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { serialize } from "../../../Misc/decorators";
 import { SerializationHelper } from "../../../Misc/decorators.serialization";
-import type { Camera } from "../../../Cameras/camera";
-import type { Effect } from "../../../Materials/effect";
+import { type Camera } from "../../../Cameras/camera";
+import { type Effect } from "../../../Materials/effect";
 import { PostProcess } from "../../postProcess";
 import { PostProcessRenderPipeline } from "../postProcessRenderPipeline";
 import { PostProcessRenderEffect } from "../postProcessRenderEffect";
-import type { Scene } from "../../../scene";
+import { type Scene } from "../../../scene";
 import { RegisterClass } from "../../../Misc/typeStore";
 import { Constants } from "../../../Engines/constants";
-import type { Nullable } from "../../../types";
+import { type Nullable } from "../../../types";
 import { PassPostProcess } from "core/PostProcesses/passPostProcess";
-import type { RenderTargetWrapper } from "core/Engines/renderTargetWrapper";
+import { type RenderTargetWrapper } from "core/Engines/renderTargetWrapper";
 import { ThinTAAPostProcess } from "core/PostProcesses/thinTAAPostProcess";
-import type { PrePassEffectConfiguration } from "core/Rendering/prePassEffectConfiguration";
+import { type PrePassEffectConfiguration } from "core/Rendering/prePassEffectConfiguration";
 import { Logger } from "core/Misc/logger";
 
 import "../postProcessRenderPipelineManagerSceneComponent";

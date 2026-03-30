@@ -1,16 +1,16 @@
-import type { Vector2 } from "core/Maths/math.vector";
+import { type Vector2 } from "core/Maths/math.vector";
 import { Observable } from "core/Misc/observable";
-import type { Nullable } from "core/types";
-import type { FrameNodePort } from "./frameNodePort";
-import type { GraphFrame } from "./graphFrame";
-import type { GraphNode } from "./graphNode";
-import type { INodeContainer } from "./interfaces/nodeContainer";
-import type { INodeData } from "./interfaces/nodeData";
-import type { IPortData } from "./interfaces/portData";
-import type { ISelectionChangedOptions } from "./interfaces/selectionChangedOptions";
-import type { NodePort } from "./nodePort";
-import type { HistoryStack } from "../historyStack";
-import type { Scene } from "core/scene";
+import { type Nullable } from "core/types";
+import { type FrameNodePort } from "./frameNodePort";
+import { type GraphFrame } from "./graphFrame";
+import { type GraphNode } from "./graphNode";
+import { type INodeContainer } from "./interfaces/nodeContainer";
+import { type INodeData } from "./interfaces/nodeData";
+import { type IPortData } from "./interfaces/portData";
+import { type ISelectionChangedOptions } from "./interfaces/selectionChangedOptions";
+import { type NodePort } from "./nodePort";
+import { type HistoryStack } from "../historyStack";
+import { type Scene } from "core/scene";
 
 export class StateManager {
     data: any;

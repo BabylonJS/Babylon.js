@@ -1,17 +1,17 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import type { IKHRInteractivity } from "babylonjs-gltf2interface";
-import type { GLTFLoader } from "../glTFLoader";
-import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
+import { type IKHRInteractivity } from "babylonjs-gltf2interface";
+import { type GLTFLoader } from "../glTFLoader";
+import { type IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { FlowGraphCoordinator } from "core/FlowGraph/flowGraphCoordinator";
 import { ParseFlowGraphAsync } from "core/FlowGraph/flowGraphParser";
 import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
-import type { GLTFPathToObjectConverter } from "./gltfPathToObjectConverter";
+import { type GLTFPathToObjectConverter } from "./gltfPathToObjectConverter";
 import { AddObjectAccessorToKey, GetPathToObjectConverter } from "./objectModelMapping";
 import { InteractivityGraphToFlowGraphParser } from "./KHR_interactivity/interactivityGraphParser";
 import { addToBlockFactory } from "core/FlowGraph/Blocks/flowGraphBlockFactory";
 import { Quaternion, Vector3 } from "core/Maths/math.vector";
-import type { Scene } from "core/scene";
-import type { IAnimation } from "../glTFLoaderInterfaces";
+import { type Scene } from "core/scene";
+import { type IAnimation } from "../glTFLoaderInterfaces";
 
 const NAME = "KHR_interactivity";
 

@@ -1,13 +1,13 @@
 import * as React from "react";
-import type { Observable } from "core/Misc/observable";
-import type { RectAreaLight } from "core/Lights/rectAreaLight";
-import type { PropertyChangedEvent } from "../../../../propertyChangedEvent";
+import { type Observable } from "core/Misc/observable";
+import { type RectAreaLight } from "core/Lights/rectAreaLight";
+import { type PropertyChangedEvent } from "../../../../propertyChangedEvent";
 import { CommonLightPropertyGridComponent } from "./commonLightPropertyGridComponent";
 import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
 import { Color3LineComponent } from "shared-ui-components/lines/color3LineComponent";
 import { Vector3LineComponent } from "shared-ui-components/lines/vector3LineComponent";
-import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
-import type { GlobalState } from "../../../../globalState";
+import { type LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
+import { type GlobalState } from "../../../../globalState";
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
 
 interface IRectAreaLightPropertyGridComponentProps {

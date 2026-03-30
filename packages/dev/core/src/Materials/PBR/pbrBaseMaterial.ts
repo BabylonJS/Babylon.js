@@ -3,33 +3,31 @@ import { expandToProperty } from "../../Misc/decorators";
 import { Logger } from "../../Misc/logger";
 import { SmartArray } from "../../Misc/smartArray";
 import { GetEnvironmentBRDFTexture } from "../../Misc/brdfTextureTools";
-import type { Nullable } from "../../types";
+import { type Nullable } from "../../types";
 import { Scene } from "../../scene";
-import type { Matrix } from "../../Maths/math.vector";
-import { Vector4 } from "../../Maths/math.vector";
+import { type Matrix, Vector4 } from "../../Maths/math.vector";
 import { VertexBuffer } from "../../Buffers/buffer";
-import type { SubMesh } from "../../Meshes/subMesh";
-import type { AbstractMesh } from "../../Meshes/abstractMesh";
-import type { Mesh } from "../../Meshes/mesh";
+import { type SubMesh } from "../../Meshes/subMesh";
+import { type AbstractMesh } from "../../Meshes/abstractMesh";
+import { type Mesh } from "../../Meshes/mesh";
 import { PBRBRDFConfiguration } from "./pbrBRDFConfiguration";
 import { PrePassConfiguration } from "../prePassConfiguration";
 import { Color3, TmpColors } from "../../Maths/math.color";
 
 import { ImageProcessingDefinesMixin } from "../../Materials/imageProcessingConfiguration.defines";
 import { ImageProcessingConfiguration } from "../../Materials/imageProcessingConfiguration";
-import type { Effect, IEffectCreationOptions } from "../../Materials/effect";
-import type { IMaterialCompilationOptions, ICustomShaderNameResolveOptions } from "../../Materials/material";
-import { Material } from "../../Materials/material";
+import { type Effect, type IEffectCreationOptions } from "../../Materials/effect";
+import { type IMaterialCompilationOptions, type ICustomShaderNameResolveOptions, Material } from "../../Materials/material";
 import { MaterialPluginEvent } from "../materialPluginEvent";
 import { MaterialDefines } from "../../Materials/materialDefines";
 import { PushMaterial } from "../../Materials/pushMaterial";
 
-import type { BaseTexture } from "../../Materials/Textures/baseTexture";
-import type { RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture";
+import { type BaseTexture } from "../../Materials/Textures/baseTexture";
+import { type RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture";
 
 import { MaterialFlags } from "../materialFlags";
 import { Constants } from "../../Engines/constants";
-import type { IAnimatable } from "../../Animations/animatable.interface";
+import { type IAnimatable } from "../../Animations/animatable.interface";
 
 import "../../Materials/Textures/baseTexture.polynomial";
 

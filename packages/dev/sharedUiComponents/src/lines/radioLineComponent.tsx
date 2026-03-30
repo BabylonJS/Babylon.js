@@ -1,6 +1,6 @@
 import * as React from "react";
-import type { Nullable } from "core/types";
-import type { Observer, Observable } from "core/Misc/observable";
+import { type Nullable } from "core/types";
+import { type Observer, type Observable } from "core/Misc/observable";
 
 interface IRadioButtonLineComponentProps {
     onSelectionChangedObservable: Observable<RadioButtonLineComponent>;

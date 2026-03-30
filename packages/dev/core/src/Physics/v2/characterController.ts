@@ -1,10 +1,10 @@
 import { Vector3, Quaternion, Matrix, TmpVectors } from "../../Maths/math.vector";
-import type { Scene } from "../../scene";
-import type { DeepImmutableObject } from "../../types";
+import { type Scene } from "../../scene";
+import { type DeepImmutableObject } from "../../types";
 import { PhysicsBody } from "./physicsBody";
 import { PhysicsShapeCapsule, type PhysicsShape } from "./physicsShape";
 import { PhysicsMotionType } from "./IPhysicsEnginePlugin";
-import type { HavokPlugin } from "./Plugins/havokPlugin";
+import { type HavokPlugin } from "./Plugins/havokPlugin";
 import { BuildArray } from "../../Misc/arrayTools";
 import { TransformNode } from "../../Meshes/transformNode";
 import { Observable } from "../../Misc/observable";

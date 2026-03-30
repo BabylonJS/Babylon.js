@@ -1,14 +1,14 @@
-import type { INodeContainer } from "shared-ui-components/nodeGraphSystem/interfaces/nodeContainer";
-import type { INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
-import type { IPortData } from "shared-ui-components/nodeGraphSystem/interfaces/portData";
+import { type INodeContainer } from "shared-ui-components/nodeGraphSystem/interfaces/nodeContainer";
+import { type INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
+import { type IPortData } from "shared-ui-components/nodeGraphSystem/interfaces/portData";
 import { ConnectionPointPortData } from "./connectionPointPortData";
 import * as styles from "./blockNodeData.module.scss";
-import type { Nullable } from "core/types";
-import type { Observer } from "core/Misc/observable";
-import type { NodeParticleBlock } from "core/Particles/Node/nodeParticleBlock";
-import type { ParticleTeleportOutBlock } from "core/Particles/Node/Blocks/Teleport/particleTeleportOutBlock";
-import type { ParticleTeleportInBlock } from "core/Particles/Node/Blocks/Teleport/particleTeleportInBlock";
-import type { NodeParticleConnectionPoint } from "core/Particles";
+import { type Nullable } from "core/types";
+import { type Observer } from "core/Misc/observable";
+import { type NodeParticleBlock } from "core/Particles/Node/nodeParticleBlock";
+import { type ParticleTeleportOutBlock } from "core/Particles/Node/Blocks/Teleport/particleTeleportOutBlock";
+import { type ParticleTeleportInBlock } from "core/Particles/Node/Blocks/Teleport/particleTeleportInBlock";
+import { type NodeParticleConnectionPoint } from "core/Particles";
 
 export class BlockNodeData implements INodeData {
     private _inputs: IPortData[] = [];

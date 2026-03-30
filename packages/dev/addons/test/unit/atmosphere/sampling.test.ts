@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 import { Sample2DRgbaToRef } from "../../../src/atmosphere/sampling";
-import type { IColor4Like } from "core/Maths/math.like";
+import { type IColor4Like } from "core/Maths/math.like";
 
 const Black = { r: 0, g: 0, b: 0, a: 1.0 };
 const DarkGrey = { r: 0.25, g: 0.25, b: 0.25, a: 1.0 };

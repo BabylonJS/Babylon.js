@@ -1,4 +1,16 @@
-import type { MorphTargetManager, Immutable, Bone, Nullable, MorphTarget, AnimationGroup, Animation, Node, Skeleton, TargetedAnimation, DeepImmutableObject } from "core/index";
+import {
+    type MorphTargetManager,
+    type Immutable,
+    type Bone,
+    type Nullable,
+    type MorphTarget,
+    type AnimationGroup,
+    type Animation,
+    type Node,
+    type Skeleton,
+    type TargetedAnimation,
+    type DeepImmutableObject,
+} from "core/index";
 import { Vector3, Quaternion, TmpVectors, Matrix } from "core/Maths/math.vector";
 import { Logger } from "../Misc/logger";
 import { TransformNode } from "../Meshes/transformNode";

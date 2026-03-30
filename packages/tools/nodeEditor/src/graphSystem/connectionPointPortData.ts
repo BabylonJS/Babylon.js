@@ -1,15 +1,17 @@
 import { NodeMaterialBlockConnectionPointTypes } from "core/Materials";
-import type { FragmentOutputBlock } from "core/Materials/Node/Blocks/Fragment/fragmentOutputBlock";
-import type { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
-import type { NodeMaterialConnectionPoint } from "core/Materials/Node/nodeMaterialBlockConnectionPoint";
-import { NodeMaterialConnectionPointCompatibilityStates, NodeMaterialConnectionPointDirection } from "core/Materials/Node/nodeMaterialBlockConnectionPoint";
-import type { Nullable } from "core/types";
-import type { GlobalState } from "node-editor/globalState";
-import type { GraphCanvasComponent } from "shared-ui-components/nodeGraphSystem/graphCanvas";
-import type { GraphNode } from "shared-ui-components/nodeGraphSystem/graphNode";
-import type { INodeContainer } from "shared-ui-components/nodeGraphSystem/interfaces/nodeContainer";
-import type { IPortData } from "shared-ui-components/nodeGraphSystem/interfaces/portData";
-import { PortDataDirection } from "shared-ui-components/nodeGraphSystem/interfaces/portData";
+import { type FragmentOutputBlock } from "core/Materials/Node/Blocks/Fragment/fragmentOutputBlock";
+import { type NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
+import {
+    type NodeMaterialConnectionPoint,
+    NodeMaterialConnectionPointCompatibilityStates,
+    NodeMaterialConnectionPointDirection,
+} from "core/Materials/Node/nodeMaterialBlockConnectionPoint";
+import { type Nullable } from "core/types";
+import { type GlobalState } from "node-editor/globalState";
+import { type GraphCanvasComponent } from "shared-ui-components/nodeGraphSystem/graphCanvas";
+import { type GraphNode } from "shared-ui-components/nodeGraphSystem/graphNode";
+import { type INodeContainer } from "shared-ui-components/nodeGraphSystem/interfaces/nodeContainer";
+import { type IPortData, PortDataDirection } from "shared-ui-components/nodeGraphSystem/interfaces/portData";
 import { GetConnectionErrorMessage } from "shared-ui-components/nodeGraphSystem/tools";
 import { TypeLedger } from "shared-ui-components/nodeGraphSystem/typeLedger";
 

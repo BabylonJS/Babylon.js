@@ -1,9 +1,9 @@
 import { serialize } from "core/Misc/decorators";
 import { ParticleSystemSet } from "../particleSystemSet";
 import { SystemBlock } from "./Blocks/systemBlock";
-import type { Scene } from "core/scene";
+import { type Scene } from "core/scene";
 import { NodeParticleBuildState } from "./nodeParticleBuildState";
-import type { NodeParticleBlock } from "./nodeParticleBlock";
+import { type NodeParticleBlock } from "./nodeParticleBlock";
 import { SerializationHelper } from "core/Misc/decorators.serialization";
 import { Observable } from "core/Misc/observable";
 import { GetClass } from "core/Misc/typeStore";
@@ -16,12 +16,12 @@ import { ParticleTextureSourceBlock } from "./Blocks/particleSourceTextureBlock"
 import { NodeParticleContextualSources } from "./Enums/nodeParticleContextualSources";
 import { UpdatePositionBlock } from "./Blocks/Update/updatePositionBlock";
 import { ParticleMathBlock, ParticleMathBlockOperations } from "./Blocks/particleMathBlock";
-import type { ParticleTeleportOutBlock } from "./Blocks/Teleport/particleTeleportOutBlock";
-import type { ParticleTeleportInBlock } from "./Blocks/Teleport/particleTeleportInBlock";
+import { type ParticleTeleportOutBlock } from "./Blocks/Teleport/particleTeleportOutBlock";
+import { type ParticleTeleportInBlock } from "./Blocks/Teleport/particleTeleportInBlock";
 import { BoxShapeBlock } from "./Blocks/Emitters/boxShapeBlock";
 import { CreateParticleBlock } from "./Blocks/Emitters/createParticleBlock";
-import type { Color4 } from "core/Maths/math.color";
-import type { Nullable } from "../../types";
+import { type Color4 } from "core/Maths/math.color";
+import { type Nullable } from "../../types";
 
 // declare NODEPARTICLEEDITOR namespace for compilation issue
 declare let NODEPARTICLEEDITOR: any;

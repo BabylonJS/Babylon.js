@@ -1,6 +1,6 @@
-import type { FunctionComponent } from "react";
+import { type FunctionComponent } from "react";
 
-import type { CubeTexture } from "core/index";
+import { type CubeTexture } from "core/index";
 
 import { SyncedSliderPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/syncedSliderPropertyLine";
 import { useAngleConverters } from "../../../hooks/settingsHooks";

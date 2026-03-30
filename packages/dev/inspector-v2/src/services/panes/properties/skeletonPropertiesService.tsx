@@ -1,13 +1,11 @@
-import type { ServiceDefinition } from "../../../modularity/serviceDefinition";
-import type { ISelectionService } from "../../selectionService";
-import type { IPropertiesService } from "./propertiesService";
+import { type ServiceDefinition } from "../../../modularity/serviceDefinition";
+import { type ISelectionService, SelectionServiceIdentity } from "../../selectionService";
+import { type IPropertiesService, PropertiesServiceIdentity } from "./propertiesService";
 
 import { Bone } from "core/Bones/bone";
 import { Skeleton } from "core/Bones/skeleton";
 import { BoneGeneralProperties } from "../../../components/properties/skeleton/boneProperties";
 import { SkeletonGeneralProperties, SkeletonViewerProperties } from "../../../components/properties/skeleton/skeletonProperties";
-import { SelectionServiceIdentity } from "../../selectionService";
-import { PropertiesServiceIdentity } from "./propertiesService";
 
 export const SkeletonPropertiesServiceDefinition: ServiceDefinition<[], [IPropertiesService, ISelectionService]> = {
     friendlyName: "Skeleton Properties",

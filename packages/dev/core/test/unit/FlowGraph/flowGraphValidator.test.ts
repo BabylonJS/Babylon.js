@@ -1,7 +1,6 @@
-import type { Engine } from "core/Engines";
-import { NullEngine } from "core/Engines";
-import type { FlowGraph } from "core/FlowGraph";
+import { type Engine, NullEngine } from "core/Engines";
 import {
+    type FlowGraph,
     FlowGraphCoordinator,
     FlowGraphConsoleLogBlock,
     FlowGraphSceneReadyEventBlock,

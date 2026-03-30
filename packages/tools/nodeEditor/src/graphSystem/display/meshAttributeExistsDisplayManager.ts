@@ -1,8 +1,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import type { IDisplayManager } from "shared-ui-components/nodeGraphSystem/interfaces/displayManager";
-import type { INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
-import type { MeshAttributeExistsBlock } from "core/Materials/Node/Blocks/meshAttributeExistsBlock";
-import { MeshAttributeExistsBlockTypes } from "core/Materials/Node/Blocks/meshAttributeExistsBlock";
+import { type IDisplayManager } from "shared-ui-components/nodeGraphSystem/interfaces/displayManager";
+import { type INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
+import { type MeshAttributeExistsBlock, MeshAttributeExistsBlockTypes } from "core/Materials/Node/Blocks/meshAttributeExistsBlock";
 
 export class MeshAttributeExistsDisplayManager implements IDisplayManager {
     public getHeaderClass(nodeData: INodeData) {

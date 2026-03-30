@@ -1,13 +1,13 @@
 import { NodeMaterialBlock } from "../nodeMaterialBlock";
 import { NodeMaterialBlockConnectionPointTypes } from "../Enums/nodeMaterialBlockConnectionPointTypes";
-import type { NodeMaterialBuildState } from "../nodeMaterialBuildState";
-import type { NodeMaterialConnectionPoint } from "../nodeMaterialBlockConnectionPoint";
+import { type NodeMaterialBuildState } from "../nodeMaterialBuildState";
+import { type NodeMaterialConnectionPoint } from "../nodeMaterialBlockConnectionPoint";
 import { NodeMaterialBlockTargets } from "../Enums/nodeMaterialBlockTargets";
 import { RegisterClass } from "../../../Misc/typeStore";
 import { InputBlock } from "./Input/inputBlock";
 import { MorphTargetsBlock } from "./Vertex/morphTargetsBlock";
 import { PropertyTypeForEdition, editableInPropertyPage } from "../../../Decorators/nodeDecorator";
-import type { Scene } from "core/scene";
+import { type Scene } from "core/scene";
 
 export const enum MeshAttributeExistsBlockTypes {
     None,

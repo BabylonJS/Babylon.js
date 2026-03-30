@@ -1,7 +1,6 @@
 import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
-import type { FunctionComponent } from "react";
-import { useState, useCallback } from "react";
-import type { Scene } from "core/scene";
+import { type FunctionComponent, useState, useCallback } from "react";
+import { type Scene } from "core/scene";
 import { RecordRegular, RecordStopRegular } from "@fluentui/react-icons";
 import { VideoRecorder } from "core/Misc/videoRecorder";
 import { useResource } from "../../../hooks/resourceHooks";

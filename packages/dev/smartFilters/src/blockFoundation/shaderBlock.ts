@@ -1,19 +1,17 @@
-import type { ThinRenderTargetTexture } from "core/Materials/Textures/thinRenderTargetTexture.js";
+import { type ThinRenderTargetTexture } from "core/Materials/Textures/thinRenderTargetTexture.js";
 import "core/Engines/Extensions/engine.renderTarget.js";
 
-import type { InitializationData, SmartFilter } from "../smartFilter.js";
-import type { ShaderProgram } from "../utils/shaderCodeUtils.js";
-import type { ShaderBinding } from "../runtime/shaderRuntime.js";
-import type { ConnectionPoint } from "../connection/connectionPoint.js";
-import { ShaderRuntime } from "../runtime/shaderRuntime.js";
+import { type InitializationData, type SmartFilter } from "../smartFilter.js";
+import { type ShaderProgram, UndecorateSymbol } from "../utils/shaderCodeUtils.js";
+import { type ShaderBinding, ShaderRuntime } from "../runtime/shaderRuntime.js";
+import { type ConnectionPoint } from "../connection/connectionPoint.js";
 import { ConnectionPointType } from "../connection/connectionPointType.js";
 import { CreateCommand } from "../command/command.js";
-import { UndecorateSymbol } from "../utils/shaderCodeUtils.js";
 import { RegisterFinalRenderCommand } from "../utils/renderTargetUtils.js";
 import { BaseBlock } from "./baseBlock.js";
 import { TextureFormat, TextureType, type OutputTextureOptions } from "./textureOptions.js";
 import { EditableInPropertyPage, PropertyTypeForEdition } from "../editorUtils/editableInPropertyPage.js";
-import type { Nullable } from "core/types.js";
+import { type Nullable } from "core/types.js";
 
 const OutputTexturePropertiesGroupName = "OUTPUT TEXTURE PROPERTIES";
 

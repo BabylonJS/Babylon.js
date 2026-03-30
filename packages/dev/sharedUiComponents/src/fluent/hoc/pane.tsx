@@ -1,6 +1,6 @@
 import { Body1Strong, makeStyles, tokens } from "@fluentui/react-components";
-import type { FluentIcon } from "@fluentui/react-icons";
-import type { FunctionComponent, PropsWithChildren } from "react";
+import { type FluentIcon } from "@fluentui/react-icons";
+import { type FunctionComponent, type PropsWithChildren } from "react";
 
 const useStyles = makeStyles({
     rootDiv: {

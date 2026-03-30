@@ -1,8 +1,8 @@
 import { PanoramaToCubeMapTools } from "../../Misc/HighDynamicRange/panoramaToCubemap";
 import { BaseTexture } from "./baseTexture";
 import { Texture } from "./texture";
-import type { Scene } from "../../scene";
-import type { Nullable } from "../../types";
+import { type Scene } from "../../scene";
+import { type Nullable } from "../../types";
 import { Tools } from "../../Misc/tools";
 import { Constants } from "../../Engines/constants";
 import { LoadImage } from "../../Misc/fileTools";

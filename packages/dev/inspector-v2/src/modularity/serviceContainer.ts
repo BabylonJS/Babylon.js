@@ -1,6 +1,6 @@
-import type { IDisposable } from "core/index";
+import { type IDisposable } from "core/index";
 
-import type { IService, ServiceDefinition } from "./serviceDefinition";
+import { type IService, type ServiceDefinition } from "./serviceDefinition";
 
 import { SortGraph } from "../misc/graphUtils";
 

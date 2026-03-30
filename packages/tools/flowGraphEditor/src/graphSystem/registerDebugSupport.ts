@@ -1,5 +1,5 @@
-import type { StateManager } from "shared-ui-components/nodeGraphSystem/stateManager";
-import type { ConnectionPointPortData } from "./connectionPointPortData";
+import { type StateManager } from "shared-ui-components/nodeGraphSystem/stateManager";
+import { type ConnectionPointPortData } from "./connectionPointPortData";
 
 export const RegisterDebugSupport = (stateManager: StateManager) => {
     stateManager.isDebugConnectionAllowed = (a, b) => {

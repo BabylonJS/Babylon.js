@@ -1,12 +1,11 @@
-import type { Camera } from "../Cameras/camera";
-import type { Scene } from "../scene";
-import type { AbstractEngine } from "../Engines/abstractEngine";
-import type { ISceneComponent } from "../sceneComponent";
-import { SceneComponentConstants } from "../sceneComponent";
-import type { Layer } from "./layer";
-import type { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
+import { type Camera } from "../Cameras/camera";
+import { type Scene } from "../scene";
+import { type AbstractEngine } from "../Engines/abstractEngine";
+import { type ISceneComponent, SceneComponentConstants } from "../sceneComponent";
+import { type Layer } from "./layer";
+import { type RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import { EngineStore } from "../Engines/engineStore";
-import type { IAssetContainer } from "core/IAssetContainer";
+import { type IAssetContainer } from "core/IAssetContainer";
 
 /**
  * Defines the layer scene component responsible to manage any layers

@@ -1,10 +1,9 @@
-import type { Nullable } from "../../types";
-import type { IAbstractAudioBusOptions } from "./abstractAudioBus";
-import { AbstractAudioBus } from "./abstractAudioBus";
-import type { AudioEngineV2 } from "./audioEngineV2";
-import type { MainAudioBus } from "./mainAudioBus";
-import type { AbstractSpatialAudio, ISpatialAudioOptions } from "./subProperties/abstractSpatialAudio";
-import type { AbstractStereoAudio, IStereoAudioOptions } from "./subProperties/abstractStereoAudio";
+import { type Nullable } from "../../types";
+import { type IAbstractAudioBusOptions, AbstractAudioBus } from "./abstractAudioBus";
+import { type AudioEngineV2 } from "./audioEngineV2";
+import { type MainAudioBus } from "./mainAudioBus";
+import { type AbstractSpatialAudio, type ISpatialAudioOptions } from "./subProperties/abstractSpatialAudio";
+import { type AbstractStereoAudio, type IStereoAudioOptions } from "./subProperties/abstractStereoAudio";
 
 // NB: Secondary audio buses will be added later.
 export type PrimaryAudioBus = MainAudioBus | AudioBus;

@@ -1,8 +1,7 @@
-import type { PropsWithChildren } from "react";
+import { type PropsWithChildren, forwardRef } from "react";
 
-import type { ImmutablePrimitiveProps } from "./primitive";
+import { type ImmutablePrimitiveProps } from "./primitive";
 
-import { forwardRef } from "react";
 import { Body1, Caption1, Link as FluentLink } from "@fluentui/react-components";
 
 export type LinkProps = ImmutablePrimitiveProps<string> & {

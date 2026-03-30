@@ -1,6 +1,6 @@
-import type { IDisposable, Nullable } from "core/index";
-import type { ServiceContainer } from "../modularity/serviceContainer";
-import type { IExtensionFeed, ExtensionMetadata, ExtensionModule } from "./extensionFeed";
+import { type IDisposable, type Nullable } from "core/index";
+import { type ServiceContainer } from "../modularity/serviceContainer";
+import { type IExtensionFeed, type ExtensionMetadata, type ExtensionModule } from "./extensionFeed";
 
 import { Logger } from "core/Misc/logger";
 

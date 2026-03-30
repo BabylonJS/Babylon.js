@@ -1,16 +1,15 @@
-import type { Nullable } from "../types";
-import type { Scene } from "../scene";
+import { type Nullable } from "../types";
+import { type Scene } from "../scene";
 import { Color3, Color4 } from "../Maths/math.color";
-import type { Node } from "../node";
+import { type Node } from "../node";
 import { VertexBuffer } from "../Buffers/buffer";
-import type { SubMesh } from "../Meshes/subMesh";
+import { type SubMesh } from "../Meshes/subMesh";
 import { Mesh } from "../Meshes/mesh";
 import { InstancedMesh } from "../Meshes/instancedMesh";
 import { Material } from "../Materials/material";
-import type { IShaderMaterialOptions } from "../Materials/shaderMaterial";
-import { ShaderMaterial } from "../Materials/shaderMaterial";
-import type { Effect } from "../Materials/effect";
-import type { MeshCreationOptions } from "./mesh";
+import { type IShaderMaterialOptions, ShaderMaterial } from "../Materials/shaderMaterial";
+import { type Effect } from "../Materials/effect";
+import { type MeshCreationOptions } from "./mesh";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
 Mesh._LinesMeshParser = (parsedMesh: any, scene: Scene): Mesh => {
