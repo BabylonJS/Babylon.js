@@ -49,6 +49,9 @@ export * from "./services/settingsStore";
 export type { IShellService, ToolbarItemDefinition, SidePaneDefinition, CentralContentDefinition } from "./services/shellService";
 export { ShellServiceIdentity } from "./services/shellService";
 export * from "./inspector";
+export * from "./inspectable";
+export type { IInspectableCommandRegistry, InspectableCommandDescriptor, InspectableCommandArg } from "./services/inspectableCommandRegistry";
+export { InspectableCommandRegistryIdentity } from "./services/inspectableCommandRegistry";
 export { ConvertOptions, Inspector } from "./legacy/inspector";
 export { AttachDebugLayer, DetachDebugLayer } from "./legacy/debugLayer";
 
