@@ -1,5 +1,6 @@
 // Version
-var cdnPort = window.__CDN_PORT__ || 1337;
+var cdnPort = 1337;
+window.__CDN_PORT__ = cdnPort;
 var Versions = {
     Latest: [
         { url: "https://cdn.babylonjs.com/timestamp.js?t=" + Date.now(), instantResolve: false },

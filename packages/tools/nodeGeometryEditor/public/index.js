@@ -1,5 +1,5 @@
 /* global BABYLON */
-var cdnPort = window.__CDN_PORT__ || 1337;
+var cdnPort = 1337;
 let snippetUrl = "https://snippet.babylonjs.com";
 let currentSnippetToken;
 let previousHash = "";

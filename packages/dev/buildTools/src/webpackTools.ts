@@ -4,6 +4,7 @@ import transformer from "./pathTransform.js";
 import type { BuildType, DevPackageName, UMDPackageName } from "./packageMapping.js";
 import { getPackageMappingByDevName, getPublicPackageName, isValidDevPackageName, umdPackageMapping } from "./packageMapping.js";
 import * as path from "path";
+import * as fs from "fs";
 import { camelize, copyFile } from "./utils.js";
 import type { RuleSetRule, Configuration, Compiler, WebpackPluginInstance } from "webpack";
 import * as ReactRefreshWebpackPlugin from "@pmmmwh/react-refresh-webpack-plugin";
@@ -189,7 +190,6 @@ export const commonDevWebpackConfiguration = (
         port: number;
         static?: string[];
         showBuildProgress?: boolean;
-        cdnPort?: number | string;
     },
     additionalPlugins?: WebpackPluginInstance[]
 ) => {
@@ -203,13 +203,16 @@ export const commonDevWebpackConfiguration = (
         plugins.push(new ReactRefreshWebpackPlugin({ overlay: enableOverlay }));
     }
 
+    // Resolve static dirs once so both devServer.static and the middleware use the same absolute paths
+    const resolvedStaticDirs = devServerConfig?.static ? devServerConfig.static.map((dir) => path.resolve(dir)) : undefined;
+
     return {
         mode: production ? "production" : "development",
         devtool: production ? "source-map" : "inline-cheap-module-source-map",
         devServer: devServerConfig
             ? {
                   port: devServerConfig.port,
-                  static: devServerConfig.static ? devServerConfig.static.map((dir) => path.resolve(dir)) : undefined,
+                  static: resolvedStaticDirs,
                   webSocketServer: production ? false : "ws",
                   compress: production,
                   server: env.enableHttps !== undefined || process.env.ENABLE_HTTPS === "true" ? "https" : "http",
@@ -230,12 +233,30 @@ export const commonDevWebpackConfiguration = (
                       progress: devServerConfig.showBuildProgress,
                   },
                   allowedHosts: process.env.ALLOWED_HOSTS ? process.env.ALLOWED_HOSTS.split(",") : undefined,
-                  setupMiddlewares: (middlewares: any[], devServer: any) => {
-                      const cdnPort = devServerConfig.cdnPort || process.env.CDN_PORT || 1337;
-                      devServer.app.get("/cdn-config.js", (_req: any, res: any) => {
-                          res.type("application/javascript");
-                          res.send(`window.__CDN_PORT__ = ${Number(cdnPort)};`);
-                      });
+                  setupMiddlewares: (middlewares: any[], _devServer: any) => {
+                      const cdnPort = Number(process.env.CDN_PORT || 1337);
+                      if (cdnPort !== 1337 && resolvedStaticDirs) {
+                          middlewares.unshift((req: any, res: any, next: any) => {
+                              if (req.path !== "/index.js") {
+                                  return next();
+                              }
+                              for (const dir of resolvedStaticDirs) {
+                                  const filePath = path.join(dir, "index.js");
+                                  try {
+                                      let content = fs.readFileSync(filePath, "utf-8");
+                                      if (content.includes("var cdnPort = 1337;")) {
+                                          content = content.replace("var cdnPort = 1337;", `var cdnPort = ${cdnPort};`);
+                                          res.type("application/javascript");
+                                          res.send(content);
+                                          return;
+                                      }
+                                  } catch {
+                                      // File not found in this static dir, try next
+                                  }
+                              }
+                              next();
+                          });
+                      }
                       return middlewares;
                   },
               }

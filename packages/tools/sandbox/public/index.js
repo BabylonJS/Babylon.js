@@ -1,7 +1,7 @@
 /* global BABYLON */
 
 var hostElement = document.getElementById("host-element");
-var cdnPort = window.__CDN_PORT__ || 1337;
+var cdnPort = 1337;
 
 const fallbackUrl = "https://snapshots-cvgtc2eugrd3cgfd.z01.azurefd.net/refs/heads/master";
 
