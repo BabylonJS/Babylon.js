@@ -10,7 +10,6 @@ import {
     type Camera,
     type CubeTexture,
     type Engine,
-    type GaussianSplattingMesh,
     type HDRCubeTexture,
     type HotSpotQuery,
     type IblCdfGenerator,
