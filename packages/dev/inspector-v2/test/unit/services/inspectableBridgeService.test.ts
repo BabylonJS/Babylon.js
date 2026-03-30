@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { InspectableCommandRegistryIdentity } from "../../../src/services/inspectableCommandRegistry";
-import { MakeInspectableBridgeServiceDefinition } from "../../../src/services/inspectableBridgeService";
+import { InspectableCommandRegistryIdentity } from "../../../src/services/cli/inspectableCommandRegistry";
+import { MakeInspectableBridgeServiceDefinition } from "../../../src/services/cli/inspectableBridgeService";
 
 describe("InspectableBridgeService", () => {
     describe("service definition", () => {

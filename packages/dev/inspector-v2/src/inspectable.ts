@@ -3,7 +3,7 @@ import type { Scene } from "core/scene";
 
 import { Logger } from "core/Misc/logger";
 import { ServiceContainer } from "./modularity/serviceContainer";
-import { MakeInspectableBridgeServiceDefinition } from "./services/inspectableBridgeService";
+import { MakeInspectableBridgeServiceDefinition } from "./services/cli/inspectableBridgeService";
 
 const DEFAULT_PORT = 4400;
 

@@ -1,5 +1,5 @@
 import type { IDisposable } from "core/index";
-import type { ServiceDefinition } from "../modularity/serviceDefinition";
+import type { ServiceDefinition } from "../../modularity/serviceDefinition";
 
 import type { IInspectableCommandRegistry, InspectableCommandDescriptor } from "./inspectableCommandRegistry";
 
