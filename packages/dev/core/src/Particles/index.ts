@@ -5,13 +5,13 @@ export * from "./EmitterTypes/index";
 export * from "./webgl2ParticleSystem";
 export * from "./computeShaderParticleSystem";
 export * from "./gpuParticleSystem";
-export * from "./IParticleSystem";
+export type * from "./IParticleSystem";
 export * from "./particle";
 export * from "./particleHelper";
 export * from "./particleSystem";
 import "./particleSystemComponent";
 // eslint-disable-next-line no-duplicate-imports
-export * from "./particleSystemComponent";
+export type * from "./particleSystemComponent";
 export * from "./particleSystemSet";
 export * from "./solidParticle";
 export * from "./solidParticleSystem";

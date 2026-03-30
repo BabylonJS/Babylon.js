@@ -1,1 +1,1 @@
-export * from "./nativeEngine.cubeTexture";
+export type * from "./nativeEngine.cubeTexture";

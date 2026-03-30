@@ -5,7 +5,7 @@ export * from "./container";
 export * from "./control";
 export * from "./ellipse";
 export * from "./focusableButton";
-export * from "./focusableControl";
+export type * from "./focusableControl";
 export * from "./grid";
 export * from "./image";
 export * from "./inputText";

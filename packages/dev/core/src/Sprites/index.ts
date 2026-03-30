@@ -1,5 +1,5 @@
 export * from "./sprite";
-export * from "./ISprites";
+export type * from "./ISprites";
 export * from "./spriteManager";
 export * from "./spriteMap";
 export * from "./spritePackedManager";

@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-restricted-imports */
 export * from "./Background/index";
 export * from "./colorCurves";
-export * from "./iEffectFallbacks";
+export type * from "./iEffectFallbacks";
 export * from "./effectFallbacks";
 export * from "./effect";
 export * from "./fresnelParameters";

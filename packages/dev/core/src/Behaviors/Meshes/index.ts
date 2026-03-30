@@ -2,7 +2,7 @@ export * from "./attachToBoxBehavior";
 export * from "./fadeInOutBehavior";
 export * from "./multiPointerScaleBehavior";
 export * from "./pointerDragBehavior";
-export * from "./pointerDragEvents";
+export type * from "./pointerDragEvents";
 export * from "./sixDofDragBehavior";
 export * from "./surfaceMagnetismBehavior";
 export * from "./baseSixDofDragBehavior";

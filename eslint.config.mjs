@@ -391,6 +391,7 @@ export default tseslint.config(
             // Other TypeScript rules
             "@typescript-eslint/no-unused-vars": ["warn", { argsIgnorePattern: "^_" }],
             "@typescript-eslint/consistent-type-imports": ["error", { disallowTypeAnnotations: false, fixStyle: "inline-type-imports" }],
+            "@typescript-eslint/consistent-type-exports": ["error", { fixMixedExportsWithInlineTypeSpecifier: true }],
             "@typescript-eslint/no-this-alias": "error",
 
             // Restricted syntax

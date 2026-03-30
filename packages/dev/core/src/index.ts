@@ -34,7 +34,7 @@ export * from "./Misc/index";
 export * from "./Morph/index";
 export * from "./Navigation/index";
 export * from "./node";
-export * from "./ObjectModel/index";
+export type * from "./ObjectModel/index";
 export * from "./Offline/index";
 export * from "./Particles/index";
 export * from "./Physics/index";
@@ -45,7 +45,7 @@ export * from "./scene";
 export * from "./sceneComponent";
 export * from "./Sprites/index";
 export * from "./States/index";
-export * from "./types";
+export type * from "./types";
 export * from "./XR/index";
 
 import "./Shaders/ShadersInclude/sceneFragmentDeclaration";

@@ -1,1 +1,1 @@
-export * from "./objectModelInterfaces";
+export type * from "./objectModelInterfaces";

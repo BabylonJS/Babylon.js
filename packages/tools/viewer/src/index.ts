@@ -1,20 +1,21 @@
-export type {
-    CameraAutoOrbit,
-    EnvironmentOptions,
-    HotSpot,
-    LoadModelOptions,
-    Model,
-    PostProcessing,
-    ShadowQuality,
-    ToneMapping,
-    ViewerDetails,
-    ViewerHotSpotQuery,
-    ViewerOptions,
+export {
+    type CameraAutoOrbit,
+    type EnvironmentOptions,
+    type HotSpot,
+    type LoadModelOptions,
+    type Model,
+    type PostProcessing,
+    type ShadowQuality,
+    type ToneMapping,
+    type ViewerDetails,
+    type ViewerHotSpotQuery,
+    type ViewerOptions,
+    CreateHotSpotFromCamera,
+    DefaultViewerOptions,
+    Viewer,
+    ViewerHotSpotResult,
 } from "./viewer";
-export type { CanvasViewerOptions } from "./viewerFactory";
-export type { ViewerElementEventMap } from "./viewerElement";
+export { type CanvasViewerOptions, CreateViewerForCanvas } from "./viewerFactory";
+export { type ViewerElementEventMap, ConfigureCustomViewerElement, HTML3DElement, ViewerElement } from "./viewerElement";
 
-export { CreateHotSpotFromCamera, DefaultViewerOptions, Viewer, ViewerHotSpotResult } from "./viewer";
-export { ConfigureCustomViewerElement, HTML3DElement, ViewerElement } from "./viewerElement";
-export { CreateViewerForCanvas } from "./viewerFactory";
 export { HTML3DAnnotationElement } from "./viewerAnnotationElement";

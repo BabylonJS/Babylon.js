@@ -2,7 +2,7 @@ export * from "./nodeGeometry";
 export * from "./nodeGeometryBlock";
 export * from "./nodeGeometryBlockConnectionPoint";
 export * from "./nodeGeometryBuildState";
-export * from "./Interfaces/nodeGeometryExecutionContext";
+export type * from "./Interfaces/nodeGeometryExecutionContext";
 export * from "./Enums/nodeGeometryConnectionPointTypes";
 export * from "./Enums/nodeGeometryContextualSources";
 export * from "./Blocks/geometryOptimizeBlock";

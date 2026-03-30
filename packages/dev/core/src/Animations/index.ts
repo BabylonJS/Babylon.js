@@ -7,7 +7,7 @@ export * from "./animationEvent";
 export * from "./animationGroup";
 export * from "./animationKey";
 export * from "./animationRange";
-export * from "./animatable.interface";
+export type * from "./animatable.interface";
 export * from "./pathCursor";
 export * from "./animationGroupMask";
 export * from "./animation.optimizations";

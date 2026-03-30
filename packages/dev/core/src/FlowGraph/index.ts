@@ -6,7 +6,7 @@ export * from "./flowGraphEventBlock";
 export * from "./flowGraphRichTypes";
 export * from "./flowGraphContext";
 export * from "./flowGraphCoordinator";
-export * from "./typeDefinitions";
+export type * from "./typeDefinitions";
 export * from "./flowGraphConnection";
 export * from "./flowGraphDataConnection";
 export * from "./flowGraphAssetsContext";

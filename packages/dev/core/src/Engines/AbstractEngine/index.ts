@@ -1,14 +1,14 @@
 /* eslint-disable import/export */
-export * from "./abstractEngine.cubeTexture";
-export * from "./abstractEngine.loadingScreen";
-export * from "./abstractEngine.dom";
-export * from "./abstractEngine.states";
-export * from "./abstractEngine.stencil";
-export * from "./abstractEngine.timeQuery";
+export type * from "./abstractEngine.cubeTexture";
+export type * from "./abstractEngine.loadingScreen";
+export type * from "./abstractEngine.dom";
+export type * from "./abstractEngine.states";
+export type * from "./abstractEngine.stencil";
+export type * from "./abstractEngine.timeQuery";
 export * from "./abstractEngine.query";
-export * from "./abstractEngine.renderPass";
-export * from "./abstractEngine.texture";
-export * from "./abstractEngine.alpha";
+export type * from "./abstractEngine.renderPass";
+export type * from "./abstractEngine.texture";
+export type * from "./abstractEngine.alpha";
 export * from "./abstractEngine.views";
-export * from "./abstractEngine.loadFile";
-export * from "./abstractEngine.textureLoaders";
+export type * from "./abstractEngine.loadFile";
+export type * from "./abstractEngine.textureLoaders";

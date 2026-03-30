@@ -1,2 +1,2 @@
 export * from "./database";
-export * from "./IOfflineProvider";
+export type * from "./IOfflineProvider";

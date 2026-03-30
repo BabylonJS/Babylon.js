@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-restricted-imports */
-export * from "./internalTextureLoader";
+export type * from "./internalTextureLoader";
 export * from "./ddsTextureLoader";
 export * from "./envTextureLoader";
 export * from "./ktxTextureLoader";

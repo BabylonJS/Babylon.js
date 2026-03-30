@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/no-restricted-imports */
 export * from "./v1/index";
 export * from "./v2/index";
-export * from "./physicsEngineComponent";
-export * from "./v1/physicsEngineComponent";
+export type * from "./physicsEngineComponent";
+export type * from "./v1/physicsEngineComponent";
 export * from "./physicsHelper";
 export * from "./physicsRaycastResult";
 export * from "./proximityCastResult";
-export * from "./physicsPointProximityQuery";
-export * from "./physicsShapeProximityCastQuery";
+export type * from "./physicsPointProximityQuery";
+export type * from "./physicsShapeProximityCastQuery";
 export * from "./shapeCastResult";

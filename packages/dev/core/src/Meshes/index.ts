@@ -20,7 +20,7 @@ export * from "./meshUtils";
 export * from "./polygonMesh";
 export * from "./geodesicMesh";
 export * from "./subMesh";
-export * from "./subMesh.project";
+export type * from "./subMesh.project";
 export * from "./lattice";
 export * from "./lattice.material";
 export * from "./meshLODLevel";
@@ -35,7 +35,7 @@ export * from "./csg2";
 export * from "./mesh.vertexData.functions";
 export * from "./mesh.vertexData.subdivide";
 import "./thinInstanceMesh";
-export * from "./thinInstanceMesh";
+export type * from "./thinInstanceMesh";
 export * from "./Node/index";
 export * from "./GaussianSplatting/gaussianSplattingMesh";
 

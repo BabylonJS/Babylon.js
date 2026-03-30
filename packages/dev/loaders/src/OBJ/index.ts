@@ -1,4 +1,4 @@
 export * from "./mtlFileLoader";
-export * from "./objLoadingOptions";
+export type * from "./objLoadingOptions";
 export * from "./solidParser";
 export * from "./objFileLoader";

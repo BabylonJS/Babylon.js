@@ -2,8 +2,8 @@
 // Licensed under the MIT License.
 
 export * from "./atmosphere";
-export * from "./atmosphereOptions";
+export type * from "./atmosphereOptions";
 export * from "./atmospherePhysicalProperties";
-export * from "./atmospherePhysicalPropertiesOptions";
+export type * from "./atmospherePhysicalPropertiesOptions";
 export * from "./diffuseSkyIrradianceLut";
 export * from "./transmittanceLut";
