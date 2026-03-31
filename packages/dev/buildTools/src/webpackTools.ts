@@ -241,28 +241,34 @@ export const commonDevWebpackConfiguration = (
                   },
                   allowedHosts: process.env.ALLOWED_HOSTS ? process.env.ALLOWED_HOSTS.split(",") : undefined,
                   setupMiddlewares: (middlewares: any[], _devServer: any) => {
-                      const cdnPort = Number(process.env.CDN_PORT || 1337);
+                      const parsedPort = parseInt(process.env.CDN_PORT || "1337", 10);
+                      const cdnPort = Number.isFinite(parsedPort) && parsedPort >= 1 && parsedPort <= 65535 ? parsedPort : 1337;
                       if (cdnPort !== 1337 && resolvedStaticDirs) {
-                          middlewares.unshift((req: any, res: any, next: any) => {
-                              if (req.path !== "/index.js") {
-                                  return next();
-                              }
-                              for (const dir of resolvedStaticDirs) {
-                                  const filePath = path.join(dir, "index.js");
-                                  try {
-                                      let content = fs.readFileSync(filePath, "utf-8");
-                                      if (content.includes("var cdnPort = 1337;")) {
-                                          content = content.replace("var cdnPort = 1337;", `var cdnPort = ${cdnPort};`);
-                                          res.type("application/javascript");
-                                          res.send(content);
-                                          return;
-                                      }
-                                  } catch {
-                                      // File not found in this static dir, try next
+                          // Precompute the patched index.js content once at startup rather than
+                          // re-reading from disk on every request.
+                          let patchedContent: string | undefined;
+                          for (const dir of resolvedStaticDirs) {
+                              const filePath = path.join(dir, "index.js");
+                              try {
+                                  const content = fs.readFileSync(filePath, "utf-8");
+                                  if (content.includes("var cdnPort = 1337;")) {
+                                      patchedContent = content.replace("var cdnPort = 1337;", `var cdnPort = ${cdnPort};`);
+                                      break;
                                   }
+                              } catch {
+                                  // File not found in this static dir, try next
                               }
-                              next();
-                          });
+                          }
+                          if (patchedContent !== undefined) {
+                              const cached = patchedContent;
+                              middlewares.unshift((req: any, res: any, next: any) => {
+                                  if (req.path !== "/index.js") {
+                                      return next();
+                                  }
+                                  res.type("application/javascript");
+                                  res.send(cached);
+                              });
+                          }
                       }
                       return middlewares;
                   },
