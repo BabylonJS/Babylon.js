@@ -254,8 +254,9 @@ async function Main(): Promise<void> {
                 console.log("No commands available.");
             } else {
                 console.log("Available commands:");
+                const maxLen = Math.max(...response.commands.map((c) => c.id.length));
                 for (const cmd of response.commands) {
-                    console.log(`  ${cmd.id}    ${cmd.description}`);
+                    console.log(`  ${cmd.id.padEnd(maxLen)}  ${cmd.description}`);
                 }
                 console.log("\nRun --command <id> --help to see arguments for a command.");
                 console.log("Run --command <id> [--arg value ...] to execute a command.");
@@ -323,8 +324,10 @@ async function Main(): Promise<void> {
                 console.log(`${commandId}: ${descriptor.description}\n`);
                 if (descriptor.args && descriptor.args.length > 0) {
                     console.log("Arguments:");
+                    const maxLen = Math.max(...descriptor.args.map((a) => `--${a.name}${a.required ? " (required)" : ""}`.length));
                     for (const arg of descriptor.args) {
-                        console.log(`  --${arg.name}${arg.required ? " (required)" : ""}    ${arg.description}`);
+                        const label = `--${arg.name}${arg.required ? " (required)" : ""}`;
+                        console.log(`  ${label.padEnd(maxLen)}  ${arg.description}`);
                     }
                 }
                 if (missingRequired.length > 0 && !wantsHelp) {
