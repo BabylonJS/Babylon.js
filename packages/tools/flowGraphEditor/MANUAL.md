@@ -35,9 +35,9 @@ The toolbar at the top provides execution controls:
 
 | Button | Label     | Description                                                                                                                                                     |
 | ------ | --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| ▶     | **Start** | Starts executing the flow graph. Enabled when the graph is stopped or paused.                                                                                   |
-| ⏸     | **Pause** | Pauses execution. The graph can be resumed with Start.                                                                                                          |
-| ⏹     | **Stop**  | Stops execution and resets execution state.                                                                                                                     |
+| ▶      | **Start** | Starts executing the flow graph. Enabled when the graph is stopped or paused.                                                                                   |
+| ⏸      | **Pause** | Pauses execution. The graph can be resumed with Start.                                                                                                          |
+| ⏹      | **Stop**  | Stops execution and resets execution state.                                                                                                                     |
 | ↺      | **Reset** | Stops execution and reloads the scene from its snippet (if one was loaded). If the reload fails, an error is logged and the graph returns to the Stopped state. |
 
 The **state indicator** next to the controls shows the current graph state: `Stopped`, `Running`, `Paused`, or `Breakpoint`.
@@ -111,8 +111,8 @@ When execution reaches a block with a breakpoint, the graph pauses immediately *
 
 | Button | Label        | Description                                                                                             |
 | ------ | ------------ | ------------------------------------------------------------------------------------------------------- |
-| ▶▶   | **Continue** | Resumes normal execution from the breakpoint. The graph runs until the next breakpoint (or completion). |
-| ▶\|   | **Step**     | Executes only the current block, then pauses again at the next execution block.                         |
+| ▶▶     | **Continue** | Resumes normal execution from the breakpoint. The graph runs until the next breakpoint (or completion). |
+| ▶\|    | **Step**     | Executes only the current block, then pauses again at the next execution block.                         |
 
 ### Removing Breakpoints
 
@@ -190,7 +190,7 @@ If you release the mouse on an incompatible port, an error dialog explains the t
 | ------------------------------------- | ----------------------------- |
 | Any                                   | All types (wildcard)          |
 | Same type                             | Always compatible             |
-| Number ↔ Integer                     | Interchangeable               |
+| Number ↔ Integer                      | Interchangeable               |
 | Vector3, Vector4, Matrix → Quaternion | Accepted via type transformer |
 
 Signal ports (execution flow) have no type restrictions — any signal output can connect to any signal input.
@@ -326,25 +326,25 @@ The editor includes blocks for controlling audio playback using the Babylon.js A
 
 ### Audio Actions (Execution Blocks)
 
-| Block                                  | Description                                                                                                                                                   |
-| -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **PlaySound**                          | Plays the sound with configurable volume, start offset, and loop options.                                                                                     |
-| **StopSound**                          | Stops the sound immediately.                                                                                                                                  |
-| **PauseSound**                         | Pauses the sound if playing, or resumes it if paused.                                                                                                         |
-| **SetSoundVolume**                     | Sets the volume (0–1) of the sound.                                                                                                                           |
+| Block              | Description                                                               |
+| ------------------ | ------------------------------------------------------------------------- |
+| **PlaySound**      | Plays the sound with configurable volume, start offset, and loop options. |
+| **StopSound**      | Stops the sound immediately.                                              |
+| **PauseSound**     | Pauses the sound if playing, or resumes it if paused.                     |
+| **SetSoundVolume** | Sets the volume (0–1) of the sound.                                       |
 
 ### Audio Events
 
-| Block                                  | Description                                                                                                                                                   |
-| -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **SoundEndedEvent**                    | Fires when the sound finishes playing (does not fire if loop is enabled).                                                                                     |
+| Block               | Description                                                               |
+| ------------------- | ------------------------------------------------------------------------- |
+| **SoundEndedEvent** | Fires when the sound finishes playing (does not fire if loop is enabled). |
 
 ### Audio Data (Read-Only Blocks)
 
-| Block                                  | Description                                                                                                                                                   |
-| -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **GetSoundVolume**                     | Reads the current volume of a sound.                                                                                                                          |
-| **IsSoundPlaying**                     | Returns true if the sound is currently playing or starting.                                                                                                   |
+| Block              | Description                                                 |
+| ------------------ | ----------------------------------------------------------- |
+| **GetSoundVolume** | Reads the current volume of a sound.                        |
+| **IsSoundPlaying** | Returns true if the sound is currently playing or starting. |
 
 > **Note:** Audio blocks require sounds created via the Audio V2 API (`CreateSoundAsync`, `CreateStreamingSoundAsync`). The legacy `Sound` class (V1) is not supported by these blocks.
 
