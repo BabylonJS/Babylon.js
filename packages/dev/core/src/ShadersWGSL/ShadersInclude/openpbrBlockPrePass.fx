@@ -47,7 +47,7 @@ var fragData: array<vec4<f32>, SCENE_MRT_COUNT>;
         let scatter_mask: f32 = 0.0;
     #endif
 
-    fragData[PREPASS_IRRADIANCE_INDEX] = vec4f(clamp(irradiance, vec3f(0.), vec3f(1.)), writeGeometryInfo * scatter_mask);
+    fragData[PREPASS_IRRADIANCE_INDEX] = vec4f(irradiance, writeGeometryInfo * scatter_mask);
 #elif defined(PREPASS_COLOR)
     fragData[PREPASS_COLOR_INDEX] = vec4f(finalColor.rgb, finalColor.a);
 #endif

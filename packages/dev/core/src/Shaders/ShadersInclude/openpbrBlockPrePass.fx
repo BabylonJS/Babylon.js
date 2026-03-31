@@ -46,7 +46,7 @@ float writeGeometryInfo = finalColor.a > ALPHATESTVALUE ? 1.0 : 0.0;
         float scatter_mask = 0.0;
     #endif
 
-    gl_FragData[PREPASS_IRRADIANCE_INDEX] = vec4(clamp(irradiance, vec3(0.), vec3(1.)), writeGeometryInfo * scatter_mask);
+    gl_FragData[PREPASS_IRRADIANCE_INDEX] = vec4(irradiance, writeGeometryInfo * scatter_mask);
 #endif
 #if defined(PREPASS_COLOR)
     gl_FragData[PREPASS_COLOR_INDEX] = vec4(finalColor.rgb, finalColor.a);
