@@ -672,11 +672,11 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
         }
 
         // Collect surviving proxy objects (sorted by current part index so part 0 is added first)
-        const survivors: Array<{ proxyMesh: GaussianSplattingPartProxyMesh; oldIndex: number; worldMatrix: Matrix }> = [];
+        const survivors: Array<{ proxyMesh: GaussianSplattingPartProxyMesh; oldIndex: number; worldMatrix: Matrix; visibility: number }> = [];
         for (let proxyIndex = 0; proxyIndex < this._partProxies.length; proxyIndex++) {
             const proxy = this._partProxies[proxyIndex];
             if (proxy && proxyIndex !== index) {
-                survivors.push({ proxyMesh: proxy, oldIndex: proxyIndex, worldMatrix: proxy.getWorldMatrix().clone() });
+                survivors.push({ proxyMesh: proxy, oldIndex: proxyIndex, worldMatrix: proxy.getWorldMatrix().clone(), visibility: this._partVisibility[proxyIndex] ?? 1.0 });
             }
         }
         survivors.sort((a, b) => a.oldIndex - b.oldIndex);
@@ -753,8 +753,9 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
             const newProxy = newProxies[i];
             const newPartIndex = newProxy.partIndex;
 
-            // Restore the world matrix the user had set on the old proxy
+            // Restore the world matrix and visibility the user had set on the old proxy
             this.setWorldMatrixForPart(newPartIndex, survivors[i].worldMatrix);
+            this.setPartVisibility(newPartIndex, survivors[i].visibility);
             const quaternion = new Quaternion();
             survivors[i].worldMatrix.decompose(newProxy.scaling, quaternion, newProxy.position);
             newProxy.rotationQuaternion = quaternion;
