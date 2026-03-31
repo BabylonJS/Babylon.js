@@ -1,10 +1,10 @@
-import { type IDisposable, type IReadonlyObservable, type Nullable, type Scene } from "core/index";
+import { type IDisposable, type IReadonlyObservable, type Scene } from "core/index";
 import { type WeaklyTypedServiceDefinition } from "./modularity/serviceContainer";
 import { type ServiceDefinition } from "./modularity/serviceDefinition";
 import { type ModularToolOptions, MakeModularTool } from "./modularTool";
-import { type ISceneContext, SceneContextIdentity } from "./services/sceneContext";
 import { type IShellService, ShellServiceIdentity } from "./services/shellService";
 
+import { _StartInspectable } from "./inspectable";
 import { AsyncLock } from "core/Misc/asyncLock";
 import { Logger } from "core/Misc/logger";
 import { Observable } from "core/Misc/observable";
@@ -228,6 +228,12 @@ export function ShowInspector(scene: Scene, options: Partial<InspectorOptions> =
         // This array will contain all the default Inspector service definitions.
         const serviceDefinitions: WeaklyTypedServiceDefinition[] = [];
 
+        // Ensure the inspectable bridge is running for this scene. The inspector's
+        // ServiceContainer will use the inspectable container as a parent, inheriting
+        // services like ISceneContext and IInspectableCommandRegistry.
+        const inspectableToken = _StartInspectable(scene);
+        disposeActions.push(() => inspectableToken.dispose());
+
         // Create a container element for the inspector UI.
         // This element will become the root React node, so it must be a new empty node
         // since React will completely take over its contents.
@@ -284,19 +290,6 @@ export function ShowInspector(scene: Scene, options: Partial<InspectorOptions> =
         disposeActions.push(() => {
             parentElement.removeChild(containerElement);
         });
-
-        // This service exposes the scene that was passed into Inspector through ISceneContext, which is used by other services that may be used in other contexts outside of Inspector.
-        const sceneContextServiceDefinition: ServiceDefinition<[ISceneContext], []> = {
-            friendlyName: "Inspector Scene Context",
-            produces: [SceneContextIdentity],
-            factory: () => {
-                return {
-                    currentScene: scene,
-                    currentSceneObservable: new Observable<Nullable<Scene>>(),
-                };
-            },
-        };
-        serviceDefinitions.push(sceneContextServiceDefinition);
 
         if (options.autoResizeEngine) {
             const observer = scene.onBeforeRenderObservable.add(() => scene.getEngine().resize());
@@ -399,6 +392,7 @@ export function ShowInspector(scene: Scene, options: Partial<InspectorOptions> =
         const modularTool = MakeModularTool({
             namespace: "Inspector",
             containerElement,
+            parentContainer: inspectableToken.serviceContainer,
             serviceDefinitions: [
                 // Default Inspector services.
                 ...serviceDefinitions,
