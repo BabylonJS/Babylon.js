@@ -62,7 +62,19 @@ export class ArcRotateCameraMovement extends CameraMovement {
             },
         };
 
-        this.inputMap = [
+        this.resetInputMap();
+    }
+
+    /**
+     * Restores the inputMap to the default ArcRotateCamera configuration:
+     * left-click rotate, right-click pan, wheel zoom, ctrl+keyboard pan, alt+keyboard zoom, keyboard rotate.
+     */
+    public override resetInputMap(): void {
+        this.inputMap = this._createDefaultInputMap();
+    }
+
+    private _createDefaultInputMap(): InputMapEntry<ArcRotateInteraction>[] {
+        return [
             { source: "pointer", button: 0, interaction: "rotate" },
             { source: "pointer", button: 2, interaction: "pan" },
             { source: "wheel", interaction: "zoom" },

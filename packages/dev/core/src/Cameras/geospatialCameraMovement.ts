@@ -127,7 +127,19 @@ export class GeospatialCameraMovement extends CameraMovement {
             },
         };
 
-        this.inputMap = [
+        this.resetInputMap();
+    }
+
+    /**
+     * Restores the inputMap to the default GeospatialCamera configuration:
+     * left-click pan, middle/right-click rotate, wheel zoom, ctrl/alt+keyboard rotate, keyboard pan.
+     */
+    public override resetInputMap(): void {
+        this.inputMap = this._createDefaultInputMap();
+    }
+
+    private _createDefaultInputMap(): InputMapEntry<GeospatialInteraction>[] {
+        return [
             { source: "pointer", button: 0, interaction: "pan" },
             { source: "pointer", button: 1, interaction: "rotate" },
             { source: "pointer", button: 2, interaction: "rotate" },

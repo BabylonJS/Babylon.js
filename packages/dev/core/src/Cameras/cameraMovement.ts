@@ -78,6 +78,15 @@ export class CameraMovement {
         return "none";
     }
 
+    /**
+     * Restores the inputMap to the default configuration for this camera type.
+     * The base class resets to an empty array. Subclasses override this to restore
+     * their camera-specific default mappings.
+     */
+    public resetInputMap(): void {
+        this.inputMap = [];
+    }
+
     private _matchModifiers(entryModifiers?: InputModifiers, conditionModifiers?: InputModifiers): boolean {
         if (!entryModifiers) {
             return true;
