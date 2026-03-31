@@ -1,5 +1,5 @@
-import type { ServiceDefinition } from "inspector/modularity/serviceDefinition";
-import type { IShellService } from "inspector/services/shellService";
+import { type ServiceDefinition } from "inspector/modularity/serviceDefinition";
+import { type IShellService } from "inspector/services/shellService";
 
 import { ShellServiceIdentity } from "inspector/services/shellService";
 import { QuestionCircleRegular, SettingsRegular } from "@fluentui/react-icons";
@@ -7,7 +7,7 @@ import { useObservableState } from "inspector/hooks/observableHooks";
 import { Button } from "shared-ui-components/fluent/primitives/button";
 import { useCallback } from "react";
 
-import type { IViewerService } from "./viewerService";
+import { type IViewerService } from "./viewerService";
 import { ViewerServiceIdentity } from "./viewerService";
 import { Configurator } from "./components/configurator/configurator";
 import { BabylonLogo } from "./components/icons";

@@ -1,8 +1,8 @@
-import type { IDisposable, IReadonlyObservable } from "core/index";
-import type { ViewerElement, ViewerOptions } from "viewer/index";
+import { type IDisposable, type IReadonlyObservable } from "core/index";
+import { type ViewerElement, type ViewerOptions } from "viewer/index";
 
-import type { IService, ServiceDefinition } from "inspector/modularity/serviceDefinition";
-import type { IShellService } from "inspector/services/shellService";
+import { type IService, type ServiceDefinition } from "inspector/modularity/serviceDefinition";
+import { type IShellService } from "inspector/services/shellService";
 
 import { ShellServiceIdentity } from "inspector/services/shellService";
 import { Observable } from "core/Misc/observable";
