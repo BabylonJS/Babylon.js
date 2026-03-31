@@ -14,10 +14,42 @@ interface ISession extends SessionInfo {
 let NextSessionId = 1;
 const Sessions = new Map<number, ISession>();
 const PendingBrowserRequests = new Map<string, (response: string) => void>();
+const SessionAddedListeners: (() => void)[] = [];
 let RequestCounter = 0;
 
 function GenerateRequestId(): string {
     return `bridge-req-${++RequestCounter}`;
+}
+
+/**
+ * Waits for at least one session to be registered, or returns immediately if sessions already exist.
+ * Times out after the specified duration.
+ * @param timeoutMs The maximum time to wait in milliseconds. Defaults to 5000.
+ * @returns A promise that resolves when a session is available or the timeout expires.
+ */
+async function WaitForSession(timeoutMs = 5000): Promise<void> {
+    if (Sessions.size > 0) {
+        return;
+    }
+    return await new Promise<void>((resolve) => {
+        const timer = setTimeout(() => {
+            const index = SessionAddedListeners.indexOf(listener);
+            if (index !== -1) {
+                SessionAddedListeners.splice(index, 1);
+            }
+            resolve();
+        }, timeoutMs);
+
+        const listener = () => {
+            clearTimeout(timer);
+            const index = SessionAddedListeners.indexOf(listener);
+            if (index !== -1) {
+                SessionAddedListeners.splice(index, 1);
+            }
+            resolve();
+        };
+        SessionAddedListeners.push(listener);
+    });
 }
 
 function StartBridge(): void {
@@ -55,6 +87,9 @@ function StartBridge(): void {
                     };
                     Sessions.set(id, session);
                     console.log(`Session ${id} registered: "${session.name}"`);
+                    for (const listener of SessionAddedListeners.splice(0)) {
+                        listener();
+                    }
                     break;
                 }
                 case "commandListResponse":
@@ -97,6 +132,8 @@ function StartBridge(): void {
 
             switch (message.type) {
                 case "sessions": {
+                    // Wait for at least one session to connect before responding.
+                    await WaitForSession();
                     const sessionList: SessionInfo[] = Array.from(Sessions.values()).map((s) => ({
                         id: s.id,
                         name: s.name,
