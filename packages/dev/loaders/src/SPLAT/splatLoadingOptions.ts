@@ -33,4 +33,10 @@ export type SPLATLoadingOptions = {
      * Mesh that will be used to load data instead of creating a new one
      */
     gaussianSplattingMesh?: GaussianSplattingMesh;
+
+    /**
+     * Generate rotation and scale matrix textures required for voxel-based IBL shadows.
+     * Required for IBL shadows to work if keepInRam is false.
+     */
+    needsRotationScaleTextures?: boolean;
 };
