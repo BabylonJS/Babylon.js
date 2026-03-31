@@ -679,7 +679,7 @@ export class Constants {
     public static readonly SCENELOADER_DETAILED_LOGGING = 3;
 
     /**
-     * Constant used to retrieve the irradiance texture index in the textures array in the prepass
+     * Constant used to retrieve the legacy irradiance texture index in the textures array in the prepass
      * using getIndex(Constants.PREPASS_IRRADIANCE_LEGACY_TEXTURE_TYPE)
      */
     public static readonly PREPASS_IRRADIANCE_LEGACY_TEXTURE_TYPE = 0;
