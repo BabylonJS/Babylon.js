@@ -616,9 +616,52 @@ export class ArcRotateCamera extends TargetCamera {
         if (value && !this.movement) {
             this.movement = new ArcRotateCameraMovement(this.getScene(), this._position);
             this._useMovementSystem = true;
+            this._syncLegacyFlagsToInputMap();
         } else if (!value) {
             this.movement = undefined;
             this._useMovementSystem = false;
+        }
+    }
+
+    /**
+     * Applies legacy flag values (_useCtrlForPanning, _panningMouseButton, useAltToZoom)
+     * to the movement system's inputMap. Called when the movement system is enabled or
+     * when attachControl is called with legacy flag arguments.
+     */
+    private _syncLegacyFlagsToInputMap(): void {
+        if (!this.movement) {
+            return;
+        }
+
+        this.movement.resetInputMap();
+
+        // Handle _useCtrlForPanning: remove ctrl+keyboard→pan entry when false
+        if (!this._useCtrlForPanning) {
+            const idx = this.movement.inputMap.findIndex(
+                (e) => e.source === "keyboard" && "modifiers" in e && e.modifiers?.ctrl === true && e.interaction === "pan"
+            );
+            if (idx !== -1) {
+                this.movement.inputMap.splice(idx, 1);
+            }
+        }
+
+        // Handle _panningMouseButton: update pointer→pan entry's button when not default (2)
+        if (this._panningMouseButton !== 2) {
+            const entry = this.movement.inputMap.find((e) => e.source === "pointer" && e.interaction === "pan");
+            if (entry && entry.source === "pointer") {
+                (entry as { button?: number }).button = this._panningMouseButton;
+            }
+        }
+
+        // Handle useAltToZoom: remove alt+keyboard→zoom entry when false
+        const keyboardInput = this.inputs.attached["keyboard"] as ArcRotateCameraKeyboardMoveInput | undefined;
+        if (keyboardInput && !keyboardInput.useAltToZoom) {
+            const idx = this.movement.inputMap.findIndex(
+                (e) => e.source === "keyboard" && "modifiers" in e && e.modifiers?.alt === true && e.interaction === "zoom"
+            );
+            if (idx !== -1) {
+                this.movement.inputMap.splice(idx, 1);
+            }
         }
     }
 
@@ -1033,6 +1076,10 @@ export class ArcRotateCamera extends TargetCamera {
             if (args.length > 2) {
                 this._panningMouseButton = args[2];
             }
+        }
+
+        if (this.movement) {
+            this._syncLegacyFlagsToInputMap();
         }
 
         this.inputs.attachElement(noPreventDefault);
