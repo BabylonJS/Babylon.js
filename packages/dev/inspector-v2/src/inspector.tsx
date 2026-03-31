@@ -4,13 +4,14 @@ import { type ServiceDefinition } from "./modularity/serviceDefinition";
 import { type ModularToolOptions, MakeModularTool } from "./modularTool";
 import { type IShellService, ShellServiceIdentity } from "./services/shellService";
 
-import { _StartInspectable } from "./inspectable";
 import { AsyncLock } from "core/Misc/asyncLock";
 import { Logger } from "core/Misc/logger";
 import { Observable } from "core/Misc/observable";
 import { useEffect, useRef } from "react";
 import { DefaultInspectorExtensionFeed } from "./extensibility/defaultInspectorExtensionFeed";
+import { _StartInspectable } from "./inspectable";
 import { LegacyInspectableObjectPropertiesServiceDefinition } from "./legacy/inspectableCustomPropertiesService";
+import { CliConnectionStatusServiceDefinition } from "./services/cliConnectionStatusService";
 import { GizmoServiceDefinition } from "./services/gizmoService";
 import { GizmoToolbarServiceDefinition } from "./services/gizmoToolbarService";
 import { HighlightServiceDefinition } from "./services/highlightService";
@@ -381,6 +382,9 @@ export function ShowInspector(scene: Scene, options: Partial<InspectorOptions> =
 
             // Adds entry points for user feedback on Inspector v2 (probably eventually will be removed).
             UserFeedbackServiceDefinition,
+
+            // Shows CLI bridge connection status in the toolbar.
+            CliConnectionStatusServiceDefinition,
 
             // Adds always present "mini stats" (like fps) to the toolbar, etc.
             MiniStatsServiceDefinition,

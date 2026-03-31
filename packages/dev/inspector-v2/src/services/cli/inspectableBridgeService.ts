@@ -1,6 +1,8 @@
 import { type IDisposable } from "core/index";
+import { Observable } from "core/Misc/observable";
 import { type BrowserRequest, type BrowserResponse, type CommandInfo } from "../../cli/protocol";
 import { type ServiceDefinition } from "../../modularity/serviceDefinition";
+import { type ICliConnectionStatus, CliConnectionStatusIdentity } from "./cliConnectionStatus";
 import { type IInspectableCommandRegistry, type InspectableCommandDescriptor, InspectableCommandRegistryIdentity } from "./inspectableCommandRegistry";
 
 import { Logger } from "core/Misc/logger";
@@ -25,15 +27,24 @@ export interface IInspectableBridgeServiceOptions {
  * @param options The options for connecting to the bridge.
  * @returns A service definition that produces an IInspectableCommandRegistry.
  */
-export function MakeInspectableBridgeServiceDefinition(options: IInspectableBridgeServiceOptions): ServiceDefinition<[IInspectableCommandRegistry], []> {
+export function MakeInspectableBridgeServiceDefinition(options: IInspectableBridgeServiceOptions): ServiceDefinition<[IInspectableCommandRegistry, ICliConnectionStatus], []> {
     return {
         friendlyName: "Inspectable Bridge Service",
-        produces: [InspectableCommandRegistryIdentity],
+        produces: [InspectableCommandRegistryIdentity, CliConnectionStatusIdentity],
         factory: () => {
             const commands = new Map<string, InspectableCommandDescriptor>();
             let ws: WebSocket | null = null;
             let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
             let disposed = false;
+            let connected = false;
+            const onConnectionStatusChanged = new Observable<boolean>();
+
+            function setConnected(value: boolean) {
+                if (connected !== value) {
+                    connected = value;
+                    onConnectionStatusChanged.notifyObservers(value);
+                }
+            }
 
             function sendToBridge(message: BrowserRequest) {
                 ws?.send(JSON.stringify(message));
@@ -52,6 +63,7 @@ export function MakeInspectableBridgeServiceDefinition(options: IInspectableBrid
                 }
 
                 ws.onopen = () => {
+                    setConnected(true);
                     sendToBridge({ type: "register", name: options.name });
                 };
 
@@ -66,6 +78,7 @@ export function MakeInspectableBridgeServiceDefinition(options: IInspectableBrid
 
                 ws.onclose = () => {
                     ws = null;
+                    setConnected(false);
                     scheduleReconnect();
                 };
 
@@ -131,7 +144,7 @@ export function MakeInspectableBridgeServiceDefinition(options: IInspectableBrid
             // Initiate connection.
             connect();
 
-            const registry: IInspectableCommandRegistry & IDisposable = {
+            const registry: IInspectableCommandRegistry & ICliConnectionStatus & IDisposable = {
                 addCommand(descriptor: InspectableCommandDescriptor): IDisposable {
                     if (commands.has(descriptor.id)) {
                         throw new Error(`Command '${descriptor.id}' is already registered.`);
@@ -143,6 +156,10 @@ export function MakeInspectableBridgeServiceDefinition(options: IInspectableBrid
                         },
                     };
                 },
+                get isConnected() {
+                    return connected;
+                },
+                onConnectionStatusChanged,
                 dispose: () => {
                     disposed = true;
                     if (reconnectTimer !== null) {
@@ -150,6 +167,8 @@ export function MakeInspectableBridgeServiceDefinition(options: IInspectableBrid
                         reconnectTimer = null;
                     }
                     commands.clear();
+                    setConnected(false);
+                    onConnectionStatusChanged.clear();
                     if (ws) {
                         ws.onclose = null;
                         ws.close();
