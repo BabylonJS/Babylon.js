@@ -37,6 +37,11 @@ struct Splat {
 #if IS_COMPOUND
     uint partIndex;
 #endif
+#if IS_FOR_VOXELIZATION
+    vec4 rotationA;
+    vec4 rotationB;
+    vec4 rotationScale;
+#endif
 };
 
 float getSplatIndex(int localIndex)
@@ -89,6 +94,11 @@ Splat readSplat(float splatIndex)
 #endif
 #if IS_COMPOUND
     splat.partIndex = uint(texture2D(partIndicesTexture, splatUV).r * 255.0 + 0.5);
+#endif
+#if IS_FOR_VOXELIZATION
+    splat.rotationA = texture2D(rotationsATexture, splatUV);
+    splat.rotationB = texture2D(rotationsBTexture, splatUV);
+    splat.rotationScale = texture2D(rotationScaleTexture, splatUV);
 #endif
     return splat;
 }

@@ -737,14 +737,11 @@ export class _IblShadowsVoxelRenderer {
     /**
      * Splits rendering for every voxel/slab RT configured in _addRTsForRender (WebGPU grid RT, tri-planar MRTs, slab debug): non–Gaussian splatting meshes use subMesh.render
      * (material override from setMaterialForRendering); GaussianSplattingMesh is filtered from render lists in _addRTsForRender—this branch remains if a splat submesh appears in buckets anyway.
+     * @param rtt - the render target texture to install the custom render function on
      */
     private _installVoxelMixedCustomRender(rtt: RenderTargetTexture): void {
         const scene = this._scene;
         const engine = scene.getEngine();
-
-        const renderDefaultVoxelSubMesh = (subMesh: SubMesh, enableAlphaMode: boolean): void => {
-            subMesh.render(enableAlphaMode);
-        };
 
         const processBucket = (subMeshes: SmartArray<SubMesh>, enableAlphaMode: boolean): void => {
             for (let i = 0; i < subMeshes.length; i++) {
@@ -753,7 +750,7 @@ export class _IblShadowsVoxelRenderer {
                 if (effective.getClassName() === "GaussianSplattingMesh") {
                     this._warnGaussianSplattingVoxelNotSupportedOnce();
                 } else {
-                    renderDefaultVoxelSubMesh(sm, enableAlphaMode);
+                    sm.render(enableAlphaMode);
                 }
             }
         };

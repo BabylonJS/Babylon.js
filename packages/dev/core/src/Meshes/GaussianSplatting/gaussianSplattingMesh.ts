@@ -31,6 +31,9 @@ const Native = IsNative ? _native : null;
 interface IDelayedTextureUpdate {
     covA: Uint16Array;
     covB: Uint16Array;
+    rotMatA: Uint16Array;
+    rotMatB: Uint16Array;
+    rotMatC: Uint16Array;
     colors: Uint8Array;
     centers: Float32Array;
     sh?: Uint8Array[];
@@ -308,6 +311,9 @@ export class GaussianSplattingMesh extends Mesh {
     private _readyToDisplay = false;
     private _covariancesATexture: Nullable<BaseTexture> = null;
     private _covariancesBTexture: Nullable<BaseTexture> = null;
+    private _rotationsATexture: Nullable<BaseTexture> = null;
+    private _rotationsBTexture: Nullable<BaseTexture> = null;
+    private _rotationScaleTexture: Nullable<BaseTexture> = null;
     private _centersTexture: Nullable<BaseTexture> = null;
     private _colorsTexture: Nullable<BaseTexture> = null;
     private _splatPositions: Nullable<Float32Array> = null;
@@ -325,6 +331,7 @@ export class GaussianSplattingMesh extends Mesh {
 
     private _delayedTextureUpdate: Nullable<IDelayedTextureUpdate> = null;
     private _useRGBACovariants = false;
+    private _needsRotationScaleTextures = false;
     private _material: Nullable<Material> = null;
 
     private _tmpCovariances = [0, 0, 0, 0, 0, 0];
@@ -453,6 +460,53 @@ export class GaussianSplattingMesh extends Mesh {
     }
 
     /**
+     * Enables or disables generation of rotation and scale matrix textures, required for voxel-based IBL shadows.
+     * When set to true, _rotationMatrixATexture, _rotationMatrixBTexture, and _rotationScaleTexture are allocated and populated.
+     */
+    public get needsRotationScaleTextures() {
+        return this._needsRotationScaleTextures;
+    }
+
+    public set needsRotationScaleTextures(value: boolean) {
+        if (this._needsRotationScaleTextures === value) {
+            return;
+        }
+        this._needsRotationScaleTextures = value;
+        // If the mesh is already loaded, re-process to generate the textures
+        if (value && this._covariancesATexture) {
+            if (this._splatsData) {
+                this.updateData(this._splatsData, this._shData ?? undefined, { flipY: false });
+            } else {
+                Logger.Error(
+                    "GaussianSplattingMesh: needsRotationScaleTextures was enabled after the mesh was already loaded, but the splat data is not kept in RAM (keepInRam=false). " +
+                        "The rotation and scale matrix textures cannot be initialized. Please reload the mesh data via updateData() or construct with keepInRam=true."
+                );
+            }
+        }
+    }
+
+    /**
+     * Gets the rotation matrix A texture (rotation elements m[0],m[1],m[2],m[4])
+     */
+    public get rotationsATexture() {
+        return this._rotationsATexture;
+    }
+
+    /**
+     * Gets the rotation matrix B texture (rotation elements m[5],m[6],m[8],m[9])
+     */
+    public get rotationsBTexture() {
+        return this._rotationsBTexture;
+    }
+
+    /**
+     * Gets the rotation scale matrix texture (rotation element m[10] followed by scale diagonal sx,sy,sz)
+     */
+    public get rotationScaleTexture() {
+        return this._rotationScaleTexture;
+    }
+
+    /**
      * Gets the centers texture
      */
     public get centersTexture() {
@@ -538,8 +592,9 @@ export class GaussianSplattingMesh extends Mesh {
      * @param url defines the url to load from (optional)
      * @param scene defines the hosting scene (optional)
      * @param keepInRam keep datas in ram for editing purpose
+     * @param needsRotationScaleTextures generate rotation and scale matrix textures required for voxel-based IBL shadows
      */
-    constructor(name: string, url: Nullable<string> = null, scene: Nullable<Scene> = null, keepInRam: boolean = false) {
+    constructor(name: string, url: Nullable<string> = null, scene: Nullable<Scene> = null, keepInRam: boolean = false, needsRotationScaleTextures: boolean = false) {
         super(name, scene);
 
         this.subMeshes = [];
@@ -550,6 +605,7 @@ export class GaussianSplattingMesh extends Mesh {
         this._useRGBACovariants = !this.getEngine().isWebGPU && this.getEngine().version === 1.0;
 
         this._keepInRam = keepInRam;
+        this._needsRotationScaleTextures = needsRotationScaleTextures;
         if (url) {
             this._loadingPromise = this.loadFileAsync(url);
         }
@@ -1493,6 +1549,9 @@ export class GaussianSplattingMesh extends Mesh {
     public override dispose(doNotRecurse?: boolean): void {
         this._covariancesATexture?.dispose();
         this._covariancesBTexture?.dispose();
+        this._rotationsATexture?.dispose();
+        this._rotationsBTexture?.dispose();
+        this._rotationScaleTexture?.dispose();
         this._centersTexture?.dispose();
         this._colorsTexture?.dispose();
         if (this._shTextures) {
@@ -1506,6 +1565,9 @@ export class GaussianSplattingMesh extends Mesh {
 
         this._covariancesATexture = null;
         this._covariancesBTexture = null;
+        this._rotationsATexture = null;
+        this._rotationsBTexture = null;
+        this._rotationScaleTexture = null;
         this._centersTexture = null;
         this._colorsTexture = null;
         this._shTextures = null;
@@ -1532,6 +1594,9 @@ export class GaussianSplattingMesh extends Mesh {
     private _copyTextures(source: GaussianSplattingMesh): void {
         this._covariancesATexture = source.covariancesATexture?.clone()!;
         this._covariancesBTexture = source.covariancesBTexture?.clone()!;
+        this._rotationsATexture = source.rotationsATexture?.clone()!;
+        this._rotationsBTexture = source.rotationsBTexture?.clone()!;
+        this._rotationScaleTexture = source.rotationScaleTexture?.clone()!;
         this._centersTexture = source.centersTexture?.clone()!;
         this._colorsTexture = source.colorsTexture?.clone()!;
         this._partIndicesTexture = source._partIndicesTexture?.clone()!;
@@ -1655,7 +1720,7 @@ export class GaussianSplattingMesh extends Mesh {
         };
     };
 
-    private _makeEmptySplat(index: number, covA: Uint16Array, covB: Uint16Array, colorArray: Uint8Array): void {
+    private _makeEmptySplat(index: number, covA: Uint16Array, covB: Uint16Array, rotMatA: Uint16Array, rotMatB: Uint16Array, rotMatC: Uint16Array, colorArray: Uint8Array): void {
         const covBSItemSize = this._useRGBACovariants ? 4 : 2;
         this._splatPositions![4 * index + 0] = 0;
         this._splatPositions![4 * index + 1] = 0;
@@ -1667,6 +1732,20 @@ export class GaussianSplattingMesh extends Mesh {
         covA[index * 4 + 3] = ToHalfFloat(0);
         covB[index * covBSItemSize + 0] = ToHalfFloat(0);
         covB[index * covBSItemSize + 1] = ToHalfFloat(0);
+        if (this._needsRotationScaleTextures) {
+            rotMatA[index * 4 + 0] = ToHalfFloat(0);
+            rotMatA[index * 4 + 1] = ToHalfFloat(0);
+            rotMatA[index * 4 + 2] = ToHalfFloat(0);
+            rotMatA[index * 4 + 3] = ToHalfFloat(0);
+            rotMatB[index * 4 + 0] = ToHalfFloat(0);
+            rotMatB[index * 4 + 1] = ToHalfFloat(0);
+            rotMatB[index * 4 + 2] = ToHalfFloat(0);
+            rotMatB[index * 4 + 3] = ToHalfFloat(0);
+            rotMatC[index * 4 + 0] = ToHalfFloat(0);
+            rotMatC[index * 4 + 1] = ToHalfFloat(0);
+            rotMatC[index * 4 + 2] = ToHalfFloat(0);
+            rotMatC[index * 4 + 3] = ToHalfFloat(0);
+        }
         colorArray[index * 4 + 3] = 0;
     }
 
@@ -1676,6 +1755,9 @@ export class GaussianSplattingMesh extends Mesh {
         uBuffer: Uint8Array,
         covA: Uint16Array,
         covB: Uint16Array,
+        rotMatA: Uint16Array,
+        rotMatB: Uint16Array,
+        rotMatC: Uint16Array,
         colorArray: Uint8Array,
         minimum: Vector3,
         maximum: Vector3,
@@ -1707,6 +1789,24 @@ export class GaussianSplattingMesh extends Mesh {
         quaternion.toRotationMatrix(matrixRotation);
 
         Matrix.ScalingToRef(fBuffer[8 * index + 3 + 0] * 2, fBuffer[8 * index + 3 + 1] * 2, fBuffer[8 * index + 3 + 2] * 2, matrixScale);
+
+        // Store rotation matrix (3x3 part) and scale diagonal before matrixRotation is overwritten
+        if (this._needsRotationScaleTextures) {
+            const rm = matrixRotation.m;
+            rotMatA[index * 4 + 0] = ToHalfFloat(rm[0]);
+            rotMatA[index * 4 + 1] = ToHalfFloat(rm[1]);
+            rotMatA[index * 4 + 2] = ToHalfFloat(rm[2]);
+            rotMatA[index * 4 + 3] = ToHalfFloat(rm[4]);
+            rotMatB[index * 4 + 0] = ToHalfFloat(rm[5]);
+            rotMatB[index * 4 + 1] = ToHalfFloat(rm[6]);
+            rotMatB[index * 4 + 2] = ToHalfFloat(rm[8]);
+            rotMatB[index * 4 + 3] = ToHalfFloat(rm[9]);
+            const sm = matrixScale.m;
+            rotMatC[index * 4 + 0] = ToHalfFloat(rm[10]);
+            rotMatC[index * 4 + 1] = ToHalfFloat(sm[0]);
+            rotMatC[index * 4 + 2] = ToHalfFloat(sm[5]);
+            rotMatC[index * 4 + 3] = ToHalfFloat(sm[10]);
+        }
 
         const m = matrixRotation.multiplyToRef(matrixScale, TmpVectors.Matrix[0]).m;
 
@@ -1742,7 +1842,16 @@ export class GaussianSplattingMesh extends Mesh {
     }
 
     // NB: partIndices is assumed to be padded to a round texture size
-    private _updateTextures(covA: Uint16Array, covB: Uint16Array, colorArray: Uint8Array, sh?: Uint8Array[], partIndices?: Uint8Array): void {
+    private _updateTextures(
+        covA: Uint16Array,
+        covB: Uint16Array,
+        rotMatA: Uint16Array,
+        rotMatB: Uint16Array,
+        rotMatC: Uint16Array,
+        colorArray: Uint8Array,
+        sh?: Uint8Array[],
+        partIndices?: Uint8Array
+    ): void {
         const textureSize = this._getTextureSize(this._vertexCount);
         // Update the textures
         const createTextureFromData = (data: Float32Array, width: number, height: number, format: number) => {
@@ -1765,11 +1874,18 @@ export class GaussianSplattingMesh extends Mesh {
         const textureSizeChanged = this._textureSize.y != textureSize.y;
 
         if (!firstTime && !textureSizeChanged) {
-            this._delayedTextureUpdate = { covA, covB, colors: colorArray, centers: this._splatPositions!, sh, partIndices };
+            this._delayedTextureUpdate = { covA, covB, rotMatA, rotMatB, rotMatC, colors: colorArray, centers: this._splatPositions!, sh, partIndices };
             const positions = Float32Array.from(this._splatPositions!);
             const vertexCount = this._vertexCount;
             if (this._worker) {
                 this._worker.postMessage({ positions, vertexCount }, [positions.buffer]);
+            }
+
+            // Handle rotation/scale textures in update path - create if they don't exist yet
+            if (this._needsRotationScaleTextures && !this._rotationsATexture) {
+                this._rotationsATexture = createTextureFromDataF16(rotMatA, textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA);
+                this._rotationsBTexture = createTextureFromDataF16(rotMatB, textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA);
+                this._rotationScaleTexture = createTextureFromDataF16(rotMatC, textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA);
             }
 
             // Handle SH textures in update path - create if they don't exist
@@ -1805,6 +1921,11 @@ export class GaussianSplattingMesh extends Mesh {
                 textureSize.y,
                 this._useRGBACovariants ? Constants.TEXTUREFORMAT_RGBA : Constants.TEXTUREFORMAT_RG
             );
+            if (this._needsRotationScaleTextures) {
+                this._rotationsATexture = createTextureFromDataF16(rotMatA, textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA);
+                this._rotationsBTexture = createTextureFromDataF16(rotMatB, textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA);
+                this._rotationScaleTexture = createTextureFromDataF16(rotMatC, textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA);
+            }
             this._centersTexture = createTextureFromData(this._splatPositions!, textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA);
             this._colorsTexture = createTextureFromDataU8(colorArray, textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA);
 
@@ -1871,6 +1992,9 @@ export class GaussianSplattingMesh extends Mesh {
         this._splatPositions = new Float32Array(4 * textureLength);
         const covA = new Uint16Array(textureLength * 4);
         const covB = new Uint16Array((this._useRGBACovariants ? 4 : 2) * textureLength);
+        const rotMatA = new Uint16Array(this._needsRotationScaleTextures ? textureLength * 4 : 0);
+        const rotMatB = new Uint16Array(this._needsRotationScaleTextures ? textureLength * 4 : 0);
+        const rotMatC = new Uint16Array(this._needsRotationScaleTextures ? textureLength * 4 : 0);
         const colorArray = new Uint8Array(textureLength * 4);
 
         // Ensure that partMatrices.length is at least the maximum part index + 1
@@ -1891,7 +2015,7 @@ export class GaussianSplattingMesh extends Mesh {
 
         if (GaussianSplattingMesh.ProgressiveUpdateAmount) {
             // create textures with not filled-yet array, then update directly portions of it
-            this._updateTextures(covA, covB, colorArray, sh, this._partIndices ? this._partIndices : undefined);
+            this._updateTextures(covA, covB, rotMatA, rotMatB, rotMatC, colorArray, sh, this._partIndices ? this._partIndices : undefined);
             this.setEnabled(true);
 
             const partCount = Math.ceil(textureSize.y / lineCountUpdate);
@@ -1899,9 +2023,9 @@ export class GaussianSplattingMesh extends Mesh {
                 const updateLine = partIndex * lineCountUpdate;
                 const splatIndexBase = updateLine * textureSize.x;
                 for (let i = 0; i < textureLengthPerUpdate; i++) {
-                    this._makeSplat(splatIndexBase + i, fBuffer, uBuffer, covA, covB, colorArray, minimum, maximum, options);
+                    this._makeSplat(splatIndexBase + i, fBuffer, uBuffer, covA, covB, rotMatA, rotMatB, rotMatC, colorArray, minimum, maximum, options);
                 }
-                this._updateSubTextures(this._splatPositions, covA, covB, colorArray, updateLine, Math.min(lineCountUpdate, textureSize.y - updateLine));
+                this._updateSubTextures(this._splatPositions, covA, covB, rotMatA, rotMatB, rotMatC, colorArray, updateLine, Math.min(lineCountUpdate, textureSize.y - updateLine));
                 // Update the binfo
                 this.getBoundingInfo().reConstruct(minimum, maximum, this.getWorldMatrix());
                 if (isAsync) {
@@ -1920,17 +2044,17 @@ export class GaussianSplattingMesh extends Mesh {
         } else {
             const paddedVertexCount = (vertexCount + 15) & ~0xf;
             for (let i = 0; i < vertexCount; i++) {
-                this._makeSplat(i, fBuffer, uBuffer, covA, covB, colorArray, minimum, maximum, options);
+                this._makeSplat(i, fBuffer, uBuffer, covA, covB, rotMatA, rotMatB, rotMatC, colorArray, minimum, maximum, options);
                 if (isAsync && i % GaussianSplattingMesh._SplatBatchSize === 0) {
                     yield;
                 }
             }
             // pad the rest
             for (let i = vertexCount; i < paddedVertexCount; i++) {
-                this._makeEmptySplat(i, covA, covB, colorArray);
+                this._makeEmptySplat(i, covA, covB, rotMatA, rotMatB, rotMatC, colorArray);
             }
             // textures
-            this._updateTextures(covA, covB, colorArray, sh, this._partIndices ? this._partIndices : undefined);
+            this._updateTextures(covA, covB, rotMatA, rotMatB, rotMatC, colorArray, sh, this._partIndices ? this._partIndices : undefined);
             // Update the binfo
             this.getBoundingInfo().reConstruct(minimum, maximum, this.getWorldMatrix());
             this.setEnabled(true);
@@ -1998,6 +2122,9 @@ export class GaussianSplattingMesh extends Mesh {
         centers: Float32Array,
         covA: Uint16Array,
         covB: Uint16Array,
+        rotMatA: Uint16Array,
+        rotMatB: Uint16Array,
+        rotMatC: Uint16Array,
         colors: Uint8Array,
         lineStart: number,
         lineCount: number,
@@ -2018,6 +2145,14 @@ export class GaussianSplattingMesh extends Mesh {
         const centersView = new Float32Array(centers.buffer, texelStart * 4 * Float32Array.BYTES_PER_ELEMENT, texelCount * 4);
         updateTextureFromData(this._covariancesATexture!, covAView, textureSize.x, lineStart, lineCount);
         updateTextureFromData(this._covariancesBTexture!, covBView, textureSize.x, lineStart, lineCount);
+        if (this._rotationsATexture && this._rotationsBTexture && this._rotationScaleTexture) {
+            const rotMatAView = new Uint16Array(rotMatA.buffer, texelStart * 4 * Uint16Array.BYTES_PER_ELEMENT, texelCount * 4);
+            const rotMatBView = new Uint16Array(rotMatB.buffer, texelStart * 4 * Uint16Array.BYTES_PER_ELEMENT, texelCount * 4);
+            const rotMatCView = new Uint16Array(rotMatC.buffer, texelStart * 4 * Uint16Array.BYTES_PER_ELEMENT, texelCount * 4);
+            updateTextureFromData(this._rotationsATexture, rotMatAView, textureSize.x, lineStart, lineCount);
+            updateTextureFromData(this._rotationsBTexture, rotMatBView, textureSize.x, lineStart, lineCount);
+            updateTextureFromData(this._rotationScaleTexture, rotMatCView, textureSize.x, lineStart, lineCount);
+        }
         updateTextureFromData(this._centersTexture!, centersView, textureSize.x, lineStart, lineCount);
         updateTextureFromData(this._colorsTexture!, colorsView, textureSize.x, lineStart, lineCount);
         if (sh) {
@@ -2091,6 +2226,9 @@ export class GaussianSplattingMesh extends Mesh {
                     this._delayedTextureUpdate.centers,
                     this._delayedTextureUpdate.covA,
                     this._delayedTextureUpdate.covB,
+                    this._delayedTextureUpdate.rotMatA,
+                    this._delayedTextureUpdate.rotMatB,
+                    this._delayedTextureUpdate.rotMatC,
                     this._delayedTextureUpdate.colors,
                     0,
                     textureSize.y,
