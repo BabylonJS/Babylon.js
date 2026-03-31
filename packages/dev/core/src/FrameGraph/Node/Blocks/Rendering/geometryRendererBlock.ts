@@ -422,7 +422,6 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBaseObj
             Constants.PREPASS_REFLECTIVITY_TEXTURE_TYPE,
             Constants.PREPASS_VELOCITY_TEXTURE_TYPE,
             Constants.PREPASS_VELOCITY_LINEAR_TEXTURE_TYPE,
-            Constants.PREPASS_IRRADIANCE_TEXTURE_TYPE,
         ];
 
         for (let i = 0; i < textureActivation.length; i++) {
