@@ -4,6 +4,7 @@ import type { ServiceDefinition } from "../../modularity/serviceDefinition";
 import type { IInspectableCommandRegistry, InspectableCommandDescriptor } from "./inspectableCommandRegistry";
 import type { ISceneContext } from "../sceneContext";
 
+import { UniqueIdGenerator } from "core/Misc/uniqueIdGenerator";
 import { InspectableCommandRegistryIdentity } from "./inspectableCommandRegistry";
 import { SceneContextIdentity } from "../sceneContext";
 
@@ -12,6 +13,20 @@ const UniqueIdArg = {
     description: "The uniqueId of the entity to query. Omit to list all entities of this type.",
     required: false,
 } as const;
+
+const SyntheticUniqueIds = new WeakMap<object, number>();
+
+function GetEntityId(entity: object): number {
+    if ("uniqueId" in entity && typeof entity.uniqueId === "number") {
+        return entity.uniqueId;
+    }
+
+    let id = SyntheticUniqueIds.get(entity);
+    if (!id) {
+        SyntheticUniqueIds.set(entity, (id = UniqueIdGenerator.UniqueId));
+    }
+    return id;
+}
 
 interface IEntitySummary {
     /** The unique id. */
@@ -31,12 +46,12 @@ interface IEntityCollection<T> {
     description: string;
     /** Accessor for the entity array from the scene. */
     getEntities: (scene: Scene) => T[] | undefined;
-    /** Gets the uniqueId from an entity. */
+    /** Gets the uniqueId from an entity (uses synthetic ids for entities without a native uniqueId). */
     getUniqueId: (entity: T) => number;
     /** Builds a summary for listing. */
     getSummary: (entity: T) => IEntitySummary;
-    /** Serializes a single entity to a plain object. */
-    serialize: (entity: T) => unknown;
+    /** Serializes a single entity to a plain object. If absent, querying by id returns the summary. */
+    serialize?: (entity: T) => unknown;
 }
 
 function NodeSummary(entity: { uniqueId: number; name: string; getClassName(): string; parent?: { uniqueId: number } | null }): IEntitySummary {
@@ -97,7 +112,7 @@ function MakeQueryCommand<T>(collection: IEntityCollection<T>, sceneContext: ISc
                 throw new Error(`No ${collection.id.replace("query-", "")} found with uniqueId ${id}.`);
             }
 
-            return JSON.stringify(collection.serialize(entity), null, 2);
+            return JSON.stringify(collection.serialize ? collection.serialize(entity) : collection.getSummary(entity), null, 2);
         },
     };
 }
@@ -222,6 +237,44 @@ export const EntityQueryServiceDefinition: ServiceDefinition<[], [IInspectableCo
                 getUniqueId: (e) => e.uniqueId,
                 getSummary: NamedSummary,
                 serialize: (e) => e.serialize(),
+            },
+            {
+                id: "query-frameGraph",
+                description: "List frame graphs, or query a specific frame graph by uniqueId.",
+                getEntities: (scene) => scene.frameGraphs,
+                getUniqueId: (e) => e.uniqueId,
+                getSummary: NamedSummary,
+            },
+            {
+                id: "query-effectLayer",
+                description: "List effect layers, or query a specific effect layer by uniqueId.",
+                getEntities: (scene) => scene.effectLayers,
+                getUniqueId: (e) => e.uniqueId,
+                getSummary: NamedSummary,
+                serialize: (e) => e.serialize?.(),
+            },
+            {
+                id: "query-spriteManager",
+                description: "List sprite managers, or query a specific sprite manager by uniqueId.",
+                getEntities: (scene) => scene.spriteManagers,
+                getUniqueId: (e) => e.uniqueId,
+                getSummary: NamedSummary,
+                serialize: (e) => e.serialize(false),
+            },
+            {
+                id: "query-sound",
+                description: "List sounds in the main sound track, or query a specific sound by uniqueId.",
+                getEntities: (scene) => scene.mainSoundTrack?.soundCollection ?? [],
+                getUniqueId: (e) => GetEntityId(e),
+                getSummary: (e) => ({ uniqueId: GetEntityId(e), name: e.name, className: e.getClassName() }),
+                serialize: (e) => e.serialize(),
+            },
+            {
+                id: "query-renderingPipeline",
+                description: "List rendering pipelines, or query a specific rendering pipeline by uniqueId.",
+                getEntities: (scene) => scene.postProcessRenderPipelineManager?.supportedPipelines ?? [],
+                getUniqueId: (e) => e.uniqueId,
+                getSummary: NamedSummary,
             },
         ];
 
