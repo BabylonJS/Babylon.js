@@ -15,47 +15,46 @@ const HELP_TEXT = `babylon-inspector — Interact with running Babylon.js scenes
 
 USAGE
   babylon-inspector [options]
-  babylon-inspector --command [session-id] <command-id> [--arg value ...]
+  babylon-inspector --command <command-id> [--arg value ...]
 
 OPTIONS
   --help                   Show this help message.
-  --sessions               List active browser sessions connected to the bridge.
+  --session [session-id]   List active sessions, or specifies the target session.
+                           A session id is only needed when multiple sessions
+                           are active.
+  --command [command-id]   List available commands, or execute one.
+                           Use --command <id> --help to see its arguments.
   --stop                   Stop the bridge process.
-  --commands [session-id]  List available commands.
-  --command [session-id] <command-id> [--arg value ...]
-                           Execute a command. Use --command <id> --help to
-                           see its arguments.
-
-  Session id is optional when only one session is active.
 
 CONFIGURATION
   Place a .babyloninspector JSON file anywhere in the directory parent chain:
     { "browserPort": 4400, "cliPort": 4401 }
 
 EXAMPLES
-  babylon-inspector --sessions
-  babylon-inspector --commands
+  babylon-inspector --session
+  babylon-inspector --command
+  babylon-inspector --session 2 --command
   babylon-inspector --command query-mesh --help
   babylon-inspector --command query-mesh --uniqueId 42
-  babylon-inspector --command 1 query-mesh --uniqueId 42
+  babylon-inspector --session 2 --command query-mesh --uniqueId 42
 `;
 
-const KnownOptions = new Set(["help", "sessions", "stop", "commands", "command", "bridge-script"]);
+const KnownOptions = new Set(["help", "stop", "session", "command", "bridge-script"]);
 
 interface IParsedArgs {
     /** Whether the user requested help. */
     help: boolean;
-    /** Whether the user requested the sessions list. */
-    sessions: boolean;
+    /** Whether --session was specified. */
+    session: boolean;
+    /** The session id value, if provided. */
+    sessionId?: string;
     /** Whether the user requested the bridge to stop. */
     stop: boolean;
-    /** Whether the user requested the commands list. */
-    commands: boolean;
-    /** Whether the user is executing a command. */
+    /** Whether --command was specified. */
     command: boolean;
     /** Optional path to the bridge script. */
     bridgeScript?: string;
-    /** Remaining positional and unknown arguments. */
+    /** Remaining positional and unknown arguments (command id + command args). */
     rest: string[];
 }
 
@@ -63,9 +62,8 @@ function ParseCliArgs(): IParsedArgs {
     const { values, tokens } = parseArgs({
         options: {
             help: { type: "boolean", default: false },
-            sessions: { type: "boolean", default: false },
+            session: { type: "boolean", default: false },
             stop: { type: "boolean", default: false },
-            commands: { type: "boolean", default: false },
             command: { type: "boolean", default: false },
             // eslint-disable-next-line @typescript-eslint/naming-convention
             "bridge-script": { type: "string" },
@@ -75,11 +73,29 @@ function ParseCliArgs(): IParsedArgs {
         tokens: true,
     });
 
-    // Collect positionals and unknown --key value pairs from the token stream.
+    // Walk the token stream to extract:
+    // - The first positional after --session as sessionId (if it's a number)
+    // - Remaining positionals and unknown --key value pairs into rest
+    let sessionId: string | undefined;
     const rest: string[] = [];
+
     if (tokens) {
+        let expectingSessionId = false;
         let pendingOptionName: string | null = null;
         for (const token of tokens) {
+            // After seeing --session, the next positional (if numeric) is the session id.
+            if (token.kind === "option" && token.name === "session") {
+                expectingSessionId = true;
+                continue;
+            }
+
+            if (expectingSessionId && token.kind === "positional" && !isNaN(parseInt(token.value, 10))) {
+                sessionId = token.value;
+                expectingSessionId = false;
+                continue;
+            }
+            expectingSessionId = false;
+
             if (token.kind === "option" && !KnownOptions.has(token.name)) {
                 if (pendingOptionName !== null) {
                     rest.push(`--${pendingOptionName}`);
@@ -107,9 +123,9 @@ function ParseCliArgs(): IParsedArgs {
 
     return {
         help: !!values.help,
-        sessions: !!values.sessions,
+        session: !!values.session,
+        sessionId,
         stop: !!values.stop,
-        commands: !!values.commands,
         command: !!values.command,
         bridgeScript: values["bridge-script"] as string | undefined,
         rest,
@@ -197,7 +213,7 @@ async function ResolveSessionId(socket: WebSocket, explicitId?: string): Promise
     }
     if (response.sessions.length > 1) {
         const list = response.sessions.map((s) => `  [${s.id}] ${s.name}`).join("\n");
-        throw new Error(`Multiple active sessions. Specify a session id:\n${list}`);
+        throw new Error(`Multiple active sessions.:\n${list}\nSpecify a session id with --session <session-id>`);
     }
     return response.sessions[0].id;
 }
@@ -210,7 +226,20 @@ async function Main(): Promise<void> {
         return;
     }
 
-    if (args.sessions) {
+    if (args.stop) {
+        try {
+            const socket = await ConnectToBridge(Config.cliPort);
+            await SendAndReceive(socket, { type: "stop" });
+            socket.close();
+            console.log("Bridge stopped.");
+        } catch {
+            console.log("Bridge is not running.");
+        }
+        return;
+    }
+
+    if (args.session && !args.command) {
+        // --session without --command: list sessions.
         const socket = await EnsureBridge(Config.cliPort, args.bridgeScript);
         try {
             const response = await SendAndReceive<SessionsResponse>(socket, { type: "sessions" });
@@ -228,41 +257,14 @@ async function Main(): Promise<void> {
         return;
     }
 
-    if (args.stop) {
-        try {
-            const socket = await ConnectToBridge(Config.cliPort);
-            await SendAndReceive(socket, { type: "stop" });
-            socket.close();
-            console.log("Bridge stopped.");
-        } catch {
-            console.log("Bridge is not running.");
-        }
-        return;
-    }
-
-    if (args.commands || args.command) {
+    if (args.command) {
         const socket = await EnsureBridge(Config.cliPort, args.bridgeScript);
         try {
-            // If --command was given with a command id, execute it.
-            // Otherwise (--commands, or --command with no id), list available commands.
-            let commandId: string | undefined;
-            let argsStartIndex = 0;
-            let explicitSessionId: string | undefined;
-
-            if (args.command && args.rest.length > 0) {
-                if (!isNaN(parseInt(args.rest[0], 10)) && args.rest.length > 1) {
-                    explicitSessionId = args.rest[0];
-                    commandId = args.rest[1];
-                    argsStartIndex = 2;
-                } else {
-                    commandId = args.rest[0];
-                    argsStartIndex = 1;
-                }
-            }
+            const commandId = args.rest.length > 0 ? args.rest[0] : undefined;
 
             if (!commandId) {
-                // List available commands.
-                const sessionId = await ResolveSessionId(socket, args.rest[0]);
+                // --command with no id: list available commands.
+                const sessionId = await ResolveSessionId(socket, args.sessionId);
                 const response = await SendAndReceive<CommandsResponse>(socket, { type: "commands", sessionId });
                 if (response.error) {
                     console.error(`Error: ${response.error}`);
@@ -283,12 +285,12 @@ async function Main(): Promise<void> {
                 return;
             }
 
-            const sessionId = await ResolveSessionId(socket, explicitSessionId);
+            const sessionId = await ResolveSessionId(socket, args.sessionId);
 
             // Parse remaining --key value pairs into a Record.
             const commandArgs: Record<string, string> = {};
             let wantsHelp = args.help;
-            for (let i = argsStartIndex; i < args.rest.length; i++) {
+            for (let i = 1; i < args.rest.length; i++) {
                 const token = args.rest[i];
                 if (token === "--help") {
                     wantsHelp = true;
