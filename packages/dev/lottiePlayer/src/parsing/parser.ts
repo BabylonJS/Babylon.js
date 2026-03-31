@@ -1,31 +1,31 @@
-import type { IVector2Like } from "core/Maths/math.like";
+import { type IVector2Like } from "core/Maths/math.like";
 import { ThinSprite } from "core/Sprites/thinSprite";
 
-import type {
-    RawElement,
-    RawFont,
-    RawLottieAnimation,
-    RawLottieLayer,
-    RawScalarProperty,
-    RawShapeLayer,
-    RawTextLayer,
-    RawTransform,
-    RawTransformShape,
-    RawVectorKeyframe,
-    RawVectorProperty,
+import {
+    type RawElement,
+    type RawFont,
+    type RawLottieAnimation,
+    type RawLottieLayer,
+    type RawScalarProperty,
+    type RawShapeLayer,
+    type RawTextLayer,
+    type RawTransform,
+    type RawTransformShape,
+    type RawVectorKeyframe,
+    type RawVectorProperty,
 } from "./rawTypes";
-import type { AnimationInfo, ScalarKeyframe, ScalarProperty, Transform, Vector2Keyframe, Vector2Property } from "./parsedTypes";
+import { type AnimationInfo, type ScalarKeyframe, type ScalarProperty, type Transform, type Vector2Keyframe, type Vector2Property } from "./parsedTypes";
 
-import type { SpritePacker } from "./spritePacker";
+import { type SpritePacker } from "./spritePacker";
 import { SpriteNode } from "../nodes/spriteNode";
 
 import { BezierCurve } from "../maths/bezier";
 
-import type { RenderingManager } from "../rendering/renderingManager";
+import { type RenderingManager } from "../rendering/renderingManager";
 import { Node } from "../nodes/node";
 import { ControlNode } from "../nodes/controlNode";
 
-import type { AnimationConfiguration } from "../animationConfiguration";
+import { type AnimationConfiguration } from "../animationConfiguration";
 
 /**
  * Type of the vector properties in the Lottie animation. It determines how the vector values are interpreted in Babylon.js.

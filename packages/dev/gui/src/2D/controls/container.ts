@@ -1,18 +1,18 @@
-import type { Nullable } from "core/types";
+import { type Nullable } from "core/types";
 import { Logger } from "core/Misc/logger";
 
 import { Control } from "./control";
 import { Measure } from "../measure";
-import type { AdvancedDynamicTexture } from "../advancedDynamicTexture";
+import { type AdvancedDynamicTexture } from "../advancedDynamicTexture";
 import { RegisterClass } from "core/Misc/typeStore";
-import type { PointerInfoBase } from "core/Events/pointerEvents";
+import { type PointerInfoBase } from "core/Events/pointerEvents";
 import { serialize } from "core/Misc/decorators";
-import type { ICanvasRenderingContext } from "core/Engines/ICanvas";
+import { type ICanvasRenderingContext } from "core/Engines/ICanvas";
 import { DynamicTexture } from "core/Materials/Textures/dynamicTexture";
 import { Texture } from "core/Materials/Textures/texture";
 import { Constants } from "core/Engines/constants";
 import { Observable } from "core/Misc/observable";
-import type { BaseGradient } from "./gradient/BaseGradient";
+import { type BaseGradient } from "./gradient/BaseGradient";
 import { Tools } from "core/Misc/tools";
 import { Matrix2D } from "../math2D";
 

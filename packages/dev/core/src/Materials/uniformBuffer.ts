@@ -1,12 +1,12 @@
 import { Logger } from "../Misc/logger";
-import type { Nullable, FloatArray } from "../types";
-import type { IMatrixLike, IVector3Like, IVector4Like, IColor3Like, IColor4Like } from "../Maths/math.like";
-import type { Effect } from "./effect";
-import type { ThinTexture } from "../Materials/Textures/thinTexture";
-import type { DataBuffer } from "../Buffers/dataBuffer";
-import type { InternalTexture } from "./Textures/internalTexture";
+import { type Nullable, type FloatArray } from "../types";
+import { type IMatrixLike, type IVector3Like, type IVector4Like, type IColor3Like, type IColor4Like } from "../Maths/math.like";
+import { type Effect } from "./effect";
+import { type ThinTexture } from "../Materials/Textures/thinTexture";
+import { type DataBuffer } from "../Buffers/dataBuffer";
+import { type InternalTexture } from "./Textures/internalTexture";
 import { Tools } from "../Misc/tools";
-import type { AbstractEngine } from "core/Engines/abstractEngine";
+import { type AbstractEngine } from "core/Engines/abstractEngine";
 
 /**
  * Uniform buffer objects.

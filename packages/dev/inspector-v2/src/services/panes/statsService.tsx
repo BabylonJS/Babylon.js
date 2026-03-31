@@ -1,9 +1,9 @@
-import type { IDisposable, Scene } from "core/index";
+import { type IDisposable, type Scene } from "core/index";
 
-import type { DynamicAccordionSection, DynamicAccordionSectionContent } from "../../components/extensibleAccordion";
-import type { IService, ServiceDefinition } from "../../modularity/serviceDefinition";
-import type { ISceneContext } from "../sceneContext";
-import type { IShellService } from "../shellService";
+import { type DynamicAccordionSection, type DynamicAccordionSectionContent } from "../../components/extensibleAccordion";
+import { type IService, type ServiceDefinition } from "../../modularity/serviceDefinition";
+import { type ISceneContext, SceneContextIdentity } from "../sceneContext";
+import { type IShellService, ShellServiceIdentity } from "../shellService";
 
 import { DataBarHorizontalRegular } from "@fluentui/react-icons";
 
@@ -14,8 +14,6 @@ import { StatsPane } from "../../components/stats/statsPane";
 import { SystemStats } from "../../components/stats/systemStats";
 import { useObservableCollection, useObservableState, useOrderedObservableCollection } from "../../hooks/observableHooks";
 import { ObservableCollection } from "../../misc/observableCollection";
-import { SceneContextIdentity } from "../sceneContext";
-import { ShellServiceIdentity } from "../shellService";
 
 /**
  * The unique identity symbol for the stats service.

@@ -1,4 +1,4 @@
-import type { Nullable, FrameGraphContext, IFrameGraphPass, FrameGraphTask } from "core/index";
+import { type Nullable, type FrameGraphContext, type IFrameGraphPass, type FrameGraphTask } from "core/index";
 
 /**
  * Base class for a frame graph pass.

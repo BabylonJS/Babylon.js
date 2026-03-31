@@ -1,6 +1,6 @@
 import * as React from "react";
-import type { GlobalState } from "../../../globalState";
-import type { InputBlock } from "core/Materials/Node/Blocks/Input/inputBlock";
+import { type GlobalState } from "../../../globalState";
+import { type InputBlock } from "core/Materials/Node/Blocks/Input/inputBlock";
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
 
 interface IFloatPropertyTabComponentProps {

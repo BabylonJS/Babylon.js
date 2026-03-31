@@ -1,6 +1,6 @@
 import { test, expect, Page } from "@playwright/test";
 import { evaluateDisposeEngine, evaluateCreateScene, evaluateInitEngine, getGlobalConfig, logPageErrors } from "@tools/test-tools";
-import type { GLTFFileLoader } from "loaders/glTF";
+import { type GLTFFileLoader } from "loaders/glTF";
 import {
     glbBase64,
     gltfBase64,

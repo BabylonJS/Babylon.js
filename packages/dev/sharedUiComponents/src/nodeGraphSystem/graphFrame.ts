@@ -1,20 +1,19 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import type { GraphNode } from "./graphNode";
-import type { GraphCanvasComponent } from "./graphCanvas";
-import type { Nullable } from "core/types";
-import type { Observer } from "core/Misc/observable";
-import { Observable } from "core/Misc/observable";
+import { type GraphNode } from "./graphNode";
+import { type GraphCanvasComponent } from "./graphCanvas";
+import { type Nullable } from "core/types";
+import { type Observer, Observable } from "core/Misc/observable";
 import { Color3 } from "core/Maths/math.color";
-import type { NodePort } from "./nodePort";
+import { type NodePort } from "./nodePort";
 import { FrameNodePort } from "./frameNodePort";
-import type { NodeLink } from "./nodeLink";
-import type { IFrameData } from "./interfaces/nodeLocationInfo";
+import { type NodeLink } from "./nodeLink";
+import { type IFrameData } from "./interfaces/nodeLocationInfo";
 import { StringTools } from "../stringTools";
 import * as styles from "./graphFrame.module.scss";
 import * as commonStyles from "./common.module.scss";
 import { ClassNames } from "../components/classNames";
 
-import type { ISelectionChangedOptions } from "./interfaces/selectionChangedOptions";
+import { type ISelectionChangedOptions } from "./interfaces/selectionChangedOptions";
 
 enum ResizingDirection {
     Right,

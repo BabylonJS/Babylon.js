@@ -1,14 +1,14 @@
-import type { Nullable } from "../types";
-import type { Vector2 } from "../Maths/math.vector";
-import type { Camera } from "../Cameras/camera";
-import type { Effect } from "../Materials/effect";
+import { type Nullable } from "../types";
+import { type Vector2 } from "../Maths/math.vector";
+import { type Camera } from "../Cameras/camera";
+import { type Effect } from "../Materials/effect";
 import { Texture } from "../Materials/Textures/texture";
-import type { PostProcess, PostProcessOptions } from "./postProcess";
+import { type PostProcess, type PostProcessOptions } from "./postProcess";
 import { BlurPostProcess } from "./blurPostProcess";
-import type { Scene } from "../scene";
+import { type Scene } from "../scene";
 import { Constants } from "../Engines/constants";
 import { RegisterClass } from "../Misc/typeStore";
-import type { AbstractEngine } from "core/Engines/abstractEngine";
+import { type AbstractEngine } from "core/Engines/abstractEngine";
 import { ThinDepthOfFieldBlurPostProcess } from "./thinDepthOfFieldBlurPostProcess";
 
 /**

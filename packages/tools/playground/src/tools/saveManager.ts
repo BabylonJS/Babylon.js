@@ -1,9 +1,8 @@
 import { Logger } from "@dev/core";
-import type { GlobalState } from "../globalState";
+import { type GlobalState } from "../globalState";
 import { Utilities } from "./utilities";
 import { GenerateV2Manifest, PackSnippetData } from "./snippet";
-import { SaveSnippet } from "@tools/snippet-loader";
-import type { IV2Manifest } from "@tools/snippet-loader";
+import { SaveSnippet, type IV2Manifest } from "@tools/snippet-loader";
 
 /**
  * Handles saving playground code and multi-file manifests.

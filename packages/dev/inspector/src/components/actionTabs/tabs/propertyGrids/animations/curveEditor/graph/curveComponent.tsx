@@ -1,9 +1,9 @@
-import type { Observer } from "core/Misc/observable";
-import type { Nullable } from "core/types";
+import { type Observer } from "core/Misc/observable";
+import { type Nullable } from "core/types";
 import * as React from "react";
-import type { Context, IActiveAnimationChangedOptions } from "../context";
-import type { Curve } from "./curve";
-import type { AnimationKeyInterpolation } from "core/Animations/animationKey";
+import { type Context, type IActiveAnimationChangedOptions } from "../context";
+import { type Curve } from "./curve";
+import { type AnimationKeyInterpolation } from "core/Animations/animationKey";
 import { Animation } from "core/Animations/animation";
 
 interface ICurveComponentProps {

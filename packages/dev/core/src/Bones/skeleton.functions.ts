@@ -1,7 +1,7 @@
 import { Bone } from "./bone";
 import { Matrix } from "../Maths/math.vector";
-import type { Scene } from "../scene";
-import type { TransformNode } from "core/Meshes/transformNode";
+import { type Scene } from "../scene";
+import { type TransformNode } from "core/Meshes/transformNode";
 import { Mesh } from "core/Meshes/mesh";
 import { MeshBuilder } from "core/Meshes/meshBuilder";
 import { VertexBuffer } from "core/Buffers/buffer";

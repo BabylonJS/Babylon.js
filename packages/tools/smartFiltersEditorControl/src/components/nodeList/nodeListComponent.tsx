@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import * as react from "react";
-import type { Nullable } from "core/types";
-import type { Observer } from "core/Misc/observable";
+import { type Nullable } from "core/types";
+import { type Observer } from "core/Misc/observable";
 import { Tools } from "core/Misc/tools.js";
-import type { ContextMenuItem } from "shared-ui-components/fluent/primitives/contextMenu";
+import { type ContextMenuItem } from "shared-ui-components/fluent/primitives/contextMenu";
 
-import type { GlobalState } from "../../globalState";
+import { type GlobalState } from "../../globalState";
 import { LineContainerComponent } from "../../sharedComponents/lineContainerComponent.js";
 import { NodeLedger } from "shared-ui-components/nodeGraphSystem/nodeLedger.js";
 import "../../assets/styles/components/nodeList.scss";
@@ -15,7 +15,7 @@ import addButton from "../../assets/imgs/add.svg";
 import { LineWithFileButtonComponent } from "../../sharedComponents/lineWithFileButtonComponent.js";
 import { GetBlockKey } from "../../helpers/blockKeyConverters.js";
 import { CustomBlocksNamespace } from "../../configuration/constants.js";
-import type { IBlockRegistration } from "smart-filters-blocks";
+import { type IBlockRegistration } from "smart-filters-blocks";
 import { OnlyShowCustomBlocksDefaultValue } from "../../constants.js";
 
 interface INodeListComponentProps {

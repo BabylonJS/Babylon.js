@@ -1,12 +1,12 @@
 import { RegisterClass } from "../../../../Misc/typeStore";
-import type { Effect } from "../../../effect";
+import { type Effect } from "../../../effect";
 
 import "../../../../Rendering/depthRendererSceneComponent";
 
 import { ImageSourceBlock } from "./imageSourceBlock";
-import type { Nullable } from "../../../../types";
-import type { Texture } from "../../../Textures/texture";
-import type { NodeMaterial } from "../../nodeMaterial";
+import { type Nullable } from "../../../../types";
+import { type Texture } from "../../../Textures/texture";
+import { type NodeMaterial } from "../../nodeMaterial";
 /**
  * Block used to provide an depth texture for a TextureBlock
  */

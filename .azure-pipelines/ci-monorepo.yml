@@ -860,12 +860,13 @@ jobs:
             retryCountOnTaskFailure: 3
 
     # ============================================================================
-    # PERFORMANCE TESTS (EXPERIMENTAL)
+    # PERFORMANCE TESTS
     # Depends on: Build
-    # NOTE: The test step is DISABLED in the classic pipeline.
+    # Uses statistical comparison (Welch's t-test + ratio check) with
+    # confirmation passes to reduce flakiness.
     # ============================================================================
     - job: PerformanceTests
-      displayName: "Performance tests (experimental)"
+      displayName: "Performance tests"
       dependsOn: Build
       steps:
           - checkout: self
@@ -886,17 +887,25 @@ jobs:
                 PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: "true"
                 PUPPETEER_SKIP_DOWNLOAD: "true"
 
-          # DISABLED in classic pipeline:
-          # - script: npm run test:performance
-          #   displayName: 'Run tests'
-          #   continueOnError: true
-          #   env:
-          #     CDN_BASE_URL: '$(SNAPSHOT_CDN_URL)/$(BuildName)'
-          #     CI: 'true'
-          #     BROWSER: 'BrowserStack'
-          #     TIMEOUT: '100000'
-          #     BROWSERSTACK_USERNAME: $(BROWSERSTACK_USERNAME)
-          #     BROWSERSTACK_ACCESS_KEY: $(BROWSERSTACK_ACCESS_KEY)
+          - script: npx playwright install --with-deps
+            displayName: "Install Playwright browsers"
+            retryCountOnTaskFailure: 1
+
+          - script: npm run test:performance
+            displayName: "Run performance tests"
+            continueOnError: true
+            env:
+                CDN_BASE_URL: "$(SNAPSHOT_CDN_URL)/$(BuildName)"
+                CI: "true"
+                TIMEOUT: "200000"
+
+          - task: PublishTestResults@2
+            displayName: "Publish performance test results"
+            condition: always()
+            inputs:
+                testResultsFormat: "JUnit"
+                testResultsFiles: "junit.xml"
+                testRunTitle: "Performance Tests"
 
     # ============================================================================
     # VIEWER TESTS

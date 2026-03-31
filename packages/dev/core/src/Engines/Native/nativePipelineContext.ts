@@ -1,11 +1,11 @@
-import type { Nullable } from "../../types";
-import type { Effect } from "../../Materials/effect";
-import type { IMatrixLike, IVector2Like, IVector3Like, IVector4Like, IColor3Like, IColor4Like, IQuaternionLike } from "../../Maths/math.like";
-import type { IPipelineContext } from "../IPipelineContext";
-import type { NativeProgram } from "./nativeInterfaces";
-import type { AbstractEngine } from "../abstractEngine";
-import type { NativeShaderProcessingContext } from "./nativeShaderProcessingContext";
-import type { ThinNativeEngine } from "../thinNativeEngine";
+import { type Nullable } from "../../types";
+import { type Effect } from "../../Materials/effect";
+import { type IMatrixLike, type IVector2Like, type IVector3Like, type IVector4Like, type IColor3Like, type IColor4Like, type IQuaternionLike } from "../../Maths/math.like";
+import { type IPipelineContext } from "../IPipelineContext";
+import { type NativeProgram } from "./nativeInterfaces";
+import { type AbstractEngine } from "../abstractEngine";
+import { type NativeShaderProcessingContext } from "./nativeShaderProcessingContext";
+import { type ThinNativeEngine } from "../thinNativeEngine";
 
 export class NativePipelineContext implements IPipelineContext {
     public isCompiled: boolean = false;

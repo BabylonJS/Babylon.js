@@ -1,6 +1,6 @@
 /* eslint-disable jsdoc/require-jsdoc */
 import * as React from "react";
-import type { GlobalState } from "../../globalState";
+import { type GlobalState } from "../../globalState";
 
 type Node = { name: string; path?: string; kind: "file" | "dir"; children?: Map<string, Node> };
 function BuildTree(paths: string[]): Node {

@@ -1,9 +1,8 @@
-import type { FunctionComponent } from "react";
+import { type FunctionComponent, useCallback, useEffect, useRef, useState } from "react";
 
-import type { PerformanceViewerCollector, Scene } from "core/index";
+import { type PerformanceViewerCollector, type Scene } from "core/index";
 
 import { ArrowDownloadRegular, RecordRegular, StopRegular } from "@fluentui/react-icons";
-import { useCallback, useEffect, useRef, useState } from "react";
 
 import { Vector2 } from "core/Maths/math.vector";
 import { Observable } from "core/Misc/observable";
@@ -14,7 +13,7 @@ import { Tools } from "core/Misc/tools";
 import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
 import { ChildWindow } from "shared-ui-components/fluent/hoc/childWindow";
 import { FileUploadLine } from "shared-ui-components/fluent/hoc/fileUploadLine";
-import type { PerfLayoutSize } from "../performanceViewer/graphSupportingTypes";
+import { type PerfLayoutSize } from "../performanceViewer/graphSupportingTypes";
 import { PerformanceViewer } from "../performanceViewer/performanceViewer";
 
 function AddStrategies(perfCollector: PerformanceViewerCollector) {

@@ -1,4 +1,4 @@
-import type { ExtensionMetadata } from "./extensionFeed";
+import { type ExtensionMetadata } from "./extensionFeed";
 
 import { BuiltInsExtensionFeed } from "./builtInsExtensionFeed";
 

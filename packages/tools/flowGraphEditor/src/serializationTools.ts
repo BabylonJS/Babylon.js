@@ -1,8 +1,8 @@
-import type { GlobalState } from "./globalState";
-import type { Nullable } from "core/types";
-import type { GraphFrame } from "shared-ui-components/nodeGraphSystem/graphFrame";
-import type { FlowGraph } from "core/FlowGraph/flowGraph";
-import type { FlowGraphBlock } from "core/FlowGraph/flowGraphBlock";
+import { type GlobalState } from "./globalState";
+import { type Nullable } from "core/types";
+import { type GraphFrame } from "shared-ui-components/nodeGraphSystem/graphFrame";
+import { type FlowGraph } from "core/FlowGraph/flowGraph";
+import { type FlowGraphBlock } from "core/FlowGraph/flowGraphBlock";
 import { FlowGraphCoordinator } from "core/FlowGraph/flowGraphCoordinator";
 import { ParseFlowGraphAsync } from "core/FlowGraph/flowGraphParser";
 

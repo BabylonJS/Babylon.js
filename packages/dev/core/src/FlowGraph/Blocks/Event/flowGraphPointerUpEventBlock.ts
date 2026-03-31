@@ -1,16 +1,16 @@
-import type { AbstractMesh } from "core/Meshes/abstractMesh";
+import { type AbstractMesh } from "core/Meshes/abstractMesh";
 import { FlowGraphEventBlock } from "core/FlowGraph/flowGraphEventBlock";
-import type { PointerInfo } from "core/Events/pointerEvents";
-import type { FlowGraphContext } from "core/FlowGraph/flowGraphContext";
-import type { IFlowGraphBlockConfiguration } from "core/FlowGraph/flowGraphBlock";
+import { type PointerInfo } from "core/Events/pointerEvents";
+import { type FlowGraphContext } from "core/FlowGraph/flowGraphContext";
+import { type IFlowGraphBlockConfiguration } from "core/FlowGraph/flowGraphBlock";
 import { RegisterClass } from "core/Misc/typeStore";
 import { _IsDescendantOf } from "core/FlowGraph/utils";
 import { FlowGraphBlockNames } from "../flowGraphBlockNames";
-import type { FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnection";
+import { type FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnection";
 import { RichTypeAny, RichTypeNumber } from "core/FlowGraph/flowGraphRichTypes";
-import type { Vector3 } from "core/Maths/math.vector";
+import { type Vector3 } from "core/Maths/math.vector";
 import { FlowGraphEventType } from "core/FlowGraph/flowGraphEventType";
-import type { Nullable } from "core/types";
+import { type Nullable } from "core/types";
 
 /**
  * Configuration for the pointer up event block.

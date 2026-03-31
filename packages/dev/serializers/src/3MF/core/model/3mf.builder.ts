@@ -1,6 +1,6 @@
 // 3MF
-import type { Matrix3d } from "./3mf";
 import {
+    type Matrix3d,
     ThreeMfBase,
     ThreeMfBaseMaterials,
     ThreeMfBuild,
@@ -17,25 +17,25 @@ import {
     ThreeMfVertex,
     ThreeMfVertices,
 } from "./3mf";
-import type {
-    I3mfBaseMaterials,
-    I3mfComponents,
-    I3mfMesh,
-    I3mfMetadata,
-    I3mfModel,
-    I3mfObject,
-    I3mfTriangle,
-    I3mfTriangles,
-    I3mfVertex,
-    I3mfVertices,
-    ST_ResourceID,
-    ST_ResourceIndex,
-    ST_Unit,
-} from "./3mf.interfaces";
-import { ST_ObjectType } from "./3mf.interfaces";
-import { ThreeMfContentType, ThreeMfContentTypes, ThreeMfDocument, ThreeMfRelationship, ThreeMfRelationships } from "./3mf.opc";
-import type { I3mfDocument } from "./3mf.opc.interfaces";
 import {
+    type I3mfBaseMaterials,
+    type I3mfComponents,
+    type I3mfMesh,
+    type I3mfMetadata,
+    type I3mfModel,
+    type I3mfObject,
+    type I3mfTriangle,
+    type I3mfTriangles,
+    type I3mfVertex,
+    type I3mfVertices,
+    type ST_ResourceID,
+    type ST_ResourceIndex,
+    type ST_Unit,
+    ST_ObjectType,
+} from "./3mf.interfaces";
+import { ThreeMfContentType, ThreeMfContentTypes, ThreeMfDocument, ThreeMfRelationship, ThreeMfRelationships } from "./3mf.opc";
+import {
+    type I3mfDocument,
     Known3mfRelationshipTypes,
     KnownI3mfContentType,
     ModelFileName,
@@ -45,7 +45,7 @@ import {
     type I3mfRelationship,
     type I3mfRelationships,
 } from "./3mf.opc.interfaces";
-import type { I3mfRGBAColor, I3mfVertexData, ThreeMfFloatArray, ThreeMfIndicesArray } from "./3mf.types";
+import { type I3mfRGBAColor, type I3mfVertexData, type ThreeMfFloatArray, type ThreeMfIndicesArray } from "./3mf.types";
 
 export type VertexHandler = (vertex: I3mfVertex) => I3mfVertex;
 export type TriangleHandler = (triangle: I3mfTriangle) => I3mfTriangle;

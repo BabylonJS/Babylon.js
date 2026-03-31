@@ -1,11 +1,18 @@
 /* eslint-disable no-console */
 import type ts from "typescript";
 import transformer from "./pathTransform.js";
-import type { BuildType, DevPackageName, UMDPackageName } from "./packageMapping.js";
-import { getPackageMappingByDevName, getPublicPackageName, isValidDevPackageName, umdPackageMapping } from "./packageMapping.js";
+import {
+    type BuildType,
+    type DevPackageName,
+    type UMDPackageName,
+    getPackageMappingByDevName,
+    getPublicPackageName,
+    isValidDevPackageName,
+    umdPackageMapping,
+} from "./packageMapping.js";
 import * as path from "path";
 import { camelize, copyFile } from "./utils.js";
-import type { RuleSetRule, Configuration, Compiler, WebpackPluginInstance } from "webpack";
+import { type RuleSetRule, type Configuration, type Compiler, type WebpackPluginInstance } from "webpack";
 import * as ReactRefreshWebpackPlugin from "@pmmmwh/react-refresh-webpack-plugin";
 import ReactRefreshTypeScript from "react-refresh-typescript";
 

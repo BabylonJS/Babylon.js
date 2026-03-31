@@ -1,6 +1,6 @@
 import * as React from "react";
 import * as styles from "./graphMinimap.module.scss";
-import type { GraphCanvasComponent } from "./graphCanvas";
+import { type GraphCanvasComponent } from "./graphCanvas";
 
 /**
  * Props for the GraphMinimapComponent.

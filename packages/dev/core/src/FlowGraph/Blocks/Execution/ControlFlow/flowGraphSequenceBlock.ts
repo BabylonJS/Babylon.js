@@ -1,9 +1,9 @@
 import { RegisterClass } from "../../../../Misc/typeStore";
 import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
-import type { IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
-import type { FlowGraphContext } from "../../../flowGraphContext";
+import { type IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
+import { type FlowGraphContext } from "../../../flowGraphContext";
 import { FlowGraphExecutionBlock } from "../../../flowGraphExecutionBlock";
-import type { FlowGraphSignalConnection } from "../../../flowGraphSignalConnection";
+import { type FlowGraphSignalConnection } from "../../../flowGraphSignalConnection";
 
 /**
  * Configuration for the sequence block.

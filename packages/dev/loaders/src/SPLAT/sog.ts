@@ -1,8 +1,7 @@
-import type { Scene } from "core/scene";
-import type { IParsedSplat } from "./splatDefs";
-import { Mode } from "./splatDefs";
+import { type Scene } from "core/scene";
+import { type IParsedSplat, Mode } from "./splatDefs";
 import { Scalar } from "core/Maths/math.scalar";
-import type { AbstractEngine } from "core/Engines";
+import { type AbstractEngine } from "core/Engines";
 
 /**
  * Definition of a SOG data file

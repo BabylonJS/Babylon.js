@@ -1,8 +1,8 @@
 import * as React from "react";
-import type { Observable } from "core/Misc/observable";
-import type { PropertyChangedEvent } from "./../propertyChangedEvent";
+import { type Observable } from "core/Misc/observable";
+import { type PropertyChangedEvent } from "./../propertyChangedEvent";
 import { copyCommandToClipboard, getClassNameWithNamespace } from "../copyCommandToClipboard";
-import type { IconDefinition } from "@fortawesome/fontawesome-common-types";
+import { type IconDefinition } from "@fortawesome/fontawesome-common-types";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { conflictingValuesPlaceholder } from "./targetsProxy";
 import copyIcon from "../imgs/copy.svg";

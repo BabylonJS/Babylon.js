@@ -1,9 +1,9 @@
-import type { Behavior } from "../behavior";
-import type { AbstractMesh } from "../../Meshes/abstractMesh";
-import type { Mesh } from "../../Meshes/mesh";
-import type { Nullable } from "../../types";
-import type { Observer } from "core/Misc/observable";
-import type { Scene } from "core/scene";
+import { type Behavior } from "../behavior";
+import { type AbstractMesh } from "../../Meshes/abstractMesh";
+import { type Mesh } from "../../Meshes/mesh";
+import { type Nullable } from "../../types";
+import { type Observer } from "core/Misc/observable";
+import { type Scene } from "core/scene";
 
 /**
  * A behavior that when attached to a mesh will allow the mesh to fade in and out

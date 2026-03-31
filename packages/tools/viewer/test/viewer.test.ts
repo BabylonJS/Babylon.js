@@ -459,6 +459,26 @@ test("invalid model source fires modelerror", async ({ page }) => {
 });
 
 // ============================================================
+// Gaussian Splatting
+// ============================================================
+
+test("load SPZ gaussian splat model", async ({ page }) => {
+    test.setTimeout(60000);
+    await attachViewerElement(
+        page,
+        `
+        <babylon-viewer
+            source="https://assets.babylonjs.com/splats/hornedlizard.spz"
+        >
+        </babylon-viewer>
+        `
+    );
+
+    await waitForModelLoaded(page);
+    await expectScreenshotMatch(page, "viewer-load-spz-splat.png");
+});
+
+// ============================================================
 // Environment
 // ============================================================
 

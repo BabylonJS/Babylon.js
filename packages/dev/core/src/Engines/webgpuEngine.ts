@@ -1,68 +1,64 @@
 /* eslint-disable babylonjs/available */
 import { Logger } from "../Misc/logger";
 import { ThinWebGPUEngine } from "./thinWebGPUEngine";
-import type { Nullable, DataArray, IndicesArray, Immutable, FloatArray } from "../types";
+import { type Nullable, type DataArray, type IndicesArray, type Immutable, type FloatArray } from "../types";
 import { Color4 } from "../Maths/math";
 import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
-import type { IEffectCreationOptions, IShaderPath } from "../Materials/effect";
-import { Effect } from "../Materials/effect";
-import type { EffectFallbacks } from "../Materials/effectFallbacks";
+import { type IEffectCreationOptions, type IShaderPath, Effect } from "../Materials/effect";
+import { type EffectFallbacks } from "../Materials/effectFallbacks";
 import { Constants } from "./constants";
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import * as WebGPUConstants from "./WebGPU/webgpuConstants";
 import { VertexBuffer } from "../Buffers/buffer";
-import type { IWebGPURenderPipelineStageDescriptor } from "./WebGPU/webgpuPipelineContext";
-import { WebGPUPipelineContext } from "./WebGPU/webgpuPipelineContext";
-import type { IPipelineContext } from "./IPipelineContext";
-import type { DataBuffer } from "../Buffers/dataBuffer";
-import type { BaseTexture } from "../Materials/Textures/baseTexture";
-import type { IShaderProcessor } from "./Processors/iShaderProcessor";
+import { type IWebGPURenderPipelineStageDescriptor, WebGPUPipelineContext } from "./WebGPU/webgpuPipelineContext";
+import { type IPipelineContext } from "./IPipelineContext";
+import { type DataBuffer } from "../Buffers/dataBuffer";
+import { type BaseTexture } from "../Materials/Textures/baseTexture";
+import { type IShaderProcessor } from "./Processors/iShaderProcessor";
 import { WebGPUShaderProcessorGLSL } from "./WebGPU/webgpuShaderProcessorsGLSL";
 import { WebGPUShaderProcessorWGSL } from "./WebGPU/webgpuShaderProcessorsWGSL";
-import type { _IShaderProcessingContext } from "./Processors/shaderProcessingOptions";
+import { type _IShaderProcessingContext } from "./Processors/shaderProcessingOptions";
 import { WebGPUShaderProcessingContext } from "./WebGPU/webgpuShaderProcessingContext";
 import { Tools } from "../Misc/tools";
 import { WebGPUTextureHelper } from "./WebGPU/webgpuTextureHelper";
 import { WebGPUTextureManager } from "./WebGPU/webgpuTextureManager";
-import { AbstractEngine } from "./abstractEngine";
-import type { ISceneLike, AbstractEngineOptions } from "./abstractEngine";
+import { AbstractEngine, type ISceneLike, type AbstractEngineOptions } from "./abstractEngine";
 import { WebGPUBufferManager } from "./WebGPU/webgpuBufferManager";
-import type { IHardwareTextureWrapper } from "../Materials/Textures/hardwareTextureWrapper";
+import { type IHardwareTextureWrapper } from "../Materials/Textures/hardwareTextureWrapper";
 import { WebGPUHardwareTexture } from "./WebGPU/webgpuHardwareTexture";
-import type { IColor4Like } from "../Maths/math.like";
-import type { UniformBuffer } from "../Materials/uniformBuffer";
+import { type IColor4Like } from "../Maths/math.like";
+import { type UniformBuffer } from "../Materials/uniformBuffer";
 import { WebGPUCacheSampler } from "./WebGPU/webgpuCacheSampler";
 import { WebGPUCacheRenderPipelineTree } from "./WebGPU/webgpuCacheRenderPipelineTree";
 import { WebGPUStencilStateComposer } from "./WebGPU/webgpuStencilStateComposer";
 import { WebGPUDepthCullingState } from "./WebGPU/webgpuDepthCullingState";
-import type { DrawWrapper } from "../Materials/drawWrapper";
+import { type DrawWrapper } from "../Materials/drawWrapper";
 import { WebGPUMaterialContext } from "./WebGPU/webgpuMaterialContext";
 import { WebGPUDrawContext } from "./WebGPU/webgpuDrawContext";
 import { WebGPUCacheBindGroups } from "./WebGPU/webgpuCacheBindGroups";
 import { WebGPUClearQuad } from "./WebGPU/webgpuClearQuad";
-import type { IStencilState } from "../States/IStencilState";
+import { type IStencilState } from "../States/IStencilState";
 import { WebGPURenderItemBlendColor, WebGPURenderItemScissor, WebGPURenderItemStencilRef, WebGPURenderItemViewport, WebGPUBundleList } from "./WebGPU/webgpuBundleList";
 import { WebGPUTimestampQuery } from "./WebGPU/webgpuTimestampQuery";
-import type { ComputeEffect } from "../Compute/computeEffect";
+import { type ComputeEffect } from "../Compute/computeEffect";
 import { WebGPUOcclusionQuery } from "./WebGPU/webgpuOcclusionQuery";
 import { ShaderCodeInliner } from "./Processors/shaderCodeInliner";
-import type { TwgslOptions } from "./WebGPU/webgpuTintWASM";
-import { WebGPUTintWASM } from "./WebGPU/webgpuTintWASM";
-import type { ExternalTexture } from "../Materials/Textures/externalTexture";
+import { type TwgslOptions, WebGPUTintWASM } from "./WebGPU/webgpuTintWASM";
+import { type ExternalTexture } from "../Materials/Textures/externalTexture";
 import { WebGPUShaderProcessor } from "./WebGPU/webgpuShaderProcessor";
 import { ShaderLanguage } from "../Materials/shaderLanguage";
-import type { InternalTextureCreationOptions, TextureSize } from "../Materials/Textures/textureCreationOptions";
+import { type InternalTextureCreationOptions, type TextureSize } from "../Materials/Textures/textureCreationOptions";
 import { WebGPUSnapshotRendering } from "./WebGPU/webgpuSnapshotRendering";
-import type { WebGPUDataBuffer } from "../Meshes/WebGPU/webgpuDataBuffer";
-import type { WebGPURenderTargetWrapper } from "./WebGPU/webgpuRenderTargetWrapper";
+import { type WebGPUDataBuffer } from "../Meshes/WebGPU/webgpuDataBuffer";
+import { type WebGPURenderTargetWrapper } from "./WebGPU/webgpuRenderTargetWrapper";
 import { AlphaState } from "../States/alphaCullingState";
 
 import "../Buffers/buffer.align";
 
-import type { VideoTexture } from "../Materials/Textures/videoTexture";
-import type { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
-import type { RenderTargetWrapper } from "./renderTargetWrapper";
-import type { Scene } from "../scene";
+import { type VideoTexture } from "../Materials/Textures/videoTexture";
+import { type RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
+import { type RenderTargetWrapper } from "./renderTargetWrapper";
+import { type Scene } from "../scene";
 
 import { SphericalPolynomial } from "../Maths/sphericalPolynomial";
 import { PerformanceMonitor } from "../Misc/performanceMonitor";
@@ -90,8 +86,8 @@ import "../Audio/audioEngine";
 import { resetCachedPipeline } from "../Materials/effect.functions";
 
 import { WebGPUExternalTexture } from "./WebGPU/webgpuExternalTexture";
-import type { TextureSampler } from "../Materials/Textures/textureSampler";
-import type { StorageBuffer } from "../Buffers/storageBuffer";
+import { type TextureSampler } from "../Materials/Textures/textureSampler";
+import { type StorageBuffer } from "../Buffers/storageBuffer";
 import "./WebGPU/Extensions/engine.alpha";
 import "./WebGPU/Extensions/engine.rawTexture";
 import "./WebGPU/Extensions/engine.readTexture";
@@ -920,6 +916,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
             textureNorm16: textureFormatsTier1,
             blendParametersPerTarget: true,
             dualSourceBlending: this._deviceEnabledExtensions.includes(WebGPUConstants.FeatureName.DualSourceBlending),
+            supportReadWriteStorageTextures: typeof navigator !== "undefined" && navigator.gpu?.wgslLanguageFeatures?.has("readonly_and_readwrite_storage_textures") === true,
         };
 
         this._features = {

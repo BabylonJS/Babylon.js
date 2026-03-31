@@ -1,4 +1,4 @@
-import type { Nullable } from "../../types";
+import { type Nullable } from "../../types";
 import { Engine } from "../engine";
 
 declare module "../../Engines/engine" {

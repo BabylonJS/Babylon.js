@@ -1,12 +1,11 @@
-import type { ServiceDefinition } from "../modularity/serviceDefinition";
-import type { IShellService } from "./shellService";
+import { type ServiceDefinition } from "../modularity/serviceDefinition";
+import { type IShellService, ShellServiceIdentity } from "./shellService";
 
 import { PersonFeedbackRegular } from "@fluentui/react-icons";
 
 import { Button } from "shared-ui-components/fluent/primitives/button";
 import { Tooltip } from "shared-ui-components/fluent/primitives/tooltip";
 import { DefaultToolbarItemOrder } from "./defaultToolbarMetadata";
-import { ShellServiceIdentity } from "./shellService";
 
 export const UserFeedbackServiceDefinition: ServiceDefinition<[], [IShellService]> = {
     friendlyName: "User Feedback",

@@ -1,7 +1,7 @@
-import type { Observer } from "core/Misc/observable";
+import { type Observer } from "core/Misc/observable";
 import { NodeMaterialBlockTargets } from "../Enums/nodeMaterialBlockTargets";
 import { NodeMaterialBlock } from "../nodeMaterialBlock";
-import type { NodeMaterialConnectionPoint } from "../nodeMaterialBlockConnectionPoint";
+import { type NodeMaterialConnectionPoint } from "../nodeMaterialBlockConnectionPoint";
 import { NodeMaterialBlockConnectionPointTypes } from "../Enums/nodeMaterialBlockConnectionPointTypes";
 
 /**

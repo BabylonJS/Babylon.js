@@ -1,6 +1,6 @@
 import * as styles from "./graphStickyNote.module.scss";
-import type { GraphCanvasComponent } from "./graphCanvas";
-import type { IStickyNoteData } from "./interfaces/nodeLocationInfo";
+import { type GraphCanvasComponent } from "./graphCanvas";
+import { type IStickyNoteData } from "./interfaces/nodeLocationInfo";
 
 /**
  * Auto-incrementing counter for unique sticky note IDs.

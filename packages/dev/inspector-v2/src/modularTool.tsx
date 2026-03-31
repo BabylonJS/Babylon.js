@@ -1,13 +1,13 @@
-import type { ComponentType, FunctionComponent } from "react";
+import { type ComponentType, type FunctionComponent, createElement, Suspense, useCallback, useEffect, useState } from "react";
 
-import type { IDisposable } from "core/index";
-import type { IExtensionFeed } from "./extensibility/extensionFeed";
-import type { IExtension, InstallFailedInfo } from "./extensibility/extensionManager";
-import type { WeaklyTypedServiceDefinition } from "./modularity/serviceContainer";
-import type { ISettingsStore } from "./services/settingsStore";
-import type { IRootComponentService, ShellServiceOptions } from "./services/shellService";
-import type { ThemeMode } from "./services/themeService";
-import type { IWatcherService } from "./services/watcherService";
+import { type IDisposable } from "core/index";
+import { type IExtensionFeed } from "./extensibility/extensionFeed";
+import { type IExtension, type InstallFailedInfo, ExtensionManager } from "./extensibility/extensionManager";
+import { type WeaklyTypedServiceDefinition, ServiceContainer } from "./modularity/serviceContainer";
+import { type ISettingsStore, SettingsStore, SettingsStoreIdentity } from "./services/settingsStore";
+import { type IRootComponentService, type ShellServiceOptions, MakeShellServiceDefinition, RootComponentServiceIdentity } from "./services/shellService";
+import { type ThemeMode, ThemeModeSettingDescriptor, ThemeServiceDefinition } from "./services/themeService";
+import { type IWatcherService, WatcherServiceDefinition, WatcherServiceIdentity } from "./services/watcherService";
 
 import {
     Body1,
@@ -25,7 +25,6 @@ import {
     tokens,
 } from "@fluentui/react-components";
 import { ErrorCircleRegular } from "@fluentui/react-icons";
-import { createElement, Suspense, useCallback, useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 
 import { Deferred } from "core/Misc/deferred";
@@ -35,13 +34,7 @@ import { Theme } from "./components/theme";
 import { ExtensionManagerContext } from "./contexts/extensionManagerContext";
 import { SettingsStoreContext } from "./contexts/settingsContext";
 import { WatcherContext } from "./contexts/watcherContext";
-import { ExtensionManager } from "./extensibility/extensionManager";
-import { ServiceContainer } from "./modularity/serviceContainer";
-import { SettingsStore, SettingsStoreIdentity } from "./services/settingsStore";
-import { MakeShellServiceDefinition, RootComponentServiceIdentity } from "./services/shellService";
 import { ThemeSelectorServiceDefinition } from "./services/themeSelectorService";
-import { ThemeModeSettingDescriptor, ThemeServiceDefinition } from "./services/themeService";
-import { WatcherServiceDefinition, WatcherServiceIdentity } from "./services/watcherService";
 
 const useStyles = makeStyles({
     app: {

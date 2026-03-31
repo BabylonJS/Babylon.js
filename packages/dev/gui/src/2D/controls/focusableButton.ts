@@ -1,10 +1,10 @@
-import type { Vector2 } from "core/Maths/math.vector";
+import { type Vector2 } from "core/Maths/math.vector";
 
 import { Button } from "./button";
-import type { Control } from "./control";
+import { type Control } from "./control";
 import { RegisterClass } from "core/Misc/typeStore";
-import type { PointerInfoBase } from "core/Events/pointerEvents";
-import type { IFocusableControl } from "./focusableControl";
+import { type PointerInfoBase } from "core/Events/pointerEvents";
+import { type IFocusableControl } from "./focusableControl";
 
 /**
  * Class used to create a focusable button that can easily handle keyboard events

@@ -1,4 +1,4 @@
-import type { AdvancedDynamicTexture } from "gui/2D/advancedDynamicTexture";
+import { type AdvancedDynamicTexture } from "gui/2D/advancedDynamicTexture";
 import { Engine } from "core/Engines/engine";
 import { Tools } from "core/Misc/tools";
 import { GUIEditor } from "gui-editor/guiEditor";

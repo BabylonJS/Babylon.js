@@ -1,9 +1,6 @@
-import type { FunctionComponent } from "react";
-import type { PropertyLineProps } from "./propertyLine";
-import type { ComboBoxProps } from "../../primitives/comboBox";
-
-import { PropertyLine } from "./propertyLine";
-import { ComboBox } from "../../primitives/comboBox";
+import { type FunctionComponent } from "react";
+import { type PropertyLineProps, PropertyLine } from "./propertyLine";
+import { type ComboBoxProps, ComboBox } from "../../primitives/comboBox";
 
 type ComboBoxPropertyLineProps = ComboBoxProps & PropertyLineProps<string>;
 

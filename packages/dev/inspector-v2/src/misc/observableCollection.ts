@@ -1,4 +1,4 @@
-import type { IDisposable, IReadonlyObservable } from "core/index";
+import { type IDisposable, type IReadonlyObservable } from "core/index";
 
 import { Observable } from "core/Misc/observable";
 

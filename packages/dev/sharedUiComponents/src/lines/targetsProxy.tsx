@@ -1,5 +1,5 @@
-import type { PropertyChangedEvent } from "../propertyChangedEvent";
-import type { Observable } from "core/Misc/observable";
+import { type PropertyChangedEvent } from "../propertyChangedEvent";
+import { type Observable } from "core/Misc/observable";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export const conflictingValuesPlaceholder = "—";

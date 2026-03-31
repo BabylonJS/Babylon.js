@@ -1,13 +1,13 @@
 import { NodeRenderGraphBlock } from "core/FrameGraph/Node/nodeRenderGraphBlock";
 import { AdvancedDynamicTexture } from "../advancedDynamicTexture";
-import type { Scene } from "core/scene";
+import { type Scene } from "core/scene";
 import { NodeRenderGraphBlockConnectionPointTypes } from "core/FrameGraph/Node/Types/nodeRenderGraphTypes";
-import type { NodeRenderGraphConnectionPoint } from "core/FrameGraph/Node/nodeRenderGraphBlockConnectionPoint";
-import type { NodeRenderGraphBuildState } from "core/FrameGraph/Node/nodeRenderGraphBuildState";
+import { type NodeRenderGraphConnectionPoint } from "core/FrameGraph/Node/nodeRenderGraphBlockConnectionPoint";
+import { type NodeRenderGraphBuildState } from "core/FrameGraph/Node/nodeRenderGraphBuildState";
 import { RegisterClass } from "core/Misc/typeStore";
-import type { FrameGraphTextureHandle } from "core/FrameGraph/frameGraphTypes";
+import { type FrameGraphTextureHandle } from "core/FrameGraph/frameGraphTypes";
 import { FrameGraphGUITask } from "./guiTask";
-import type { FrameGraph } from "core/FrameGraph/frameGraph";
+import { type FrameGraph } from "core/FrameGraph/frameGraph";
 
 /**
  * Block that implements a fullscreen GUI for render graph

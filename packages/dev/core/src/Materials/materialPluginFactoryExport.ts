@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import type { Nullable } from "../types";
+import { type Nullable } from "../types";
 import { DetailMapConfiguration } from "./material.detailMapConfiguration";
-import type { MaterialPluginBase } from "./materialPluginBase";
+import { type MaterialPluginBase } from "./materialPluginBase";
 import { PBRAnisotropicConfiguration } from "./PBR/pbrAnisotropicConfiguration";
 import { PBRBaseMaterial } from "./PBR/pbrBaseMaterial";
 import { PBRBRDFConfiguration } from "./PBR/pbrBRDFConfiguration";
@@ -11,7 +11,7 @@ import { PBRSheenConfiguration } from "./PBR/pbrSheenConfiguration";
 import { PBRSubSurfaceConfiguration } from "./PBR/pbrSubSurfaceConfiguration";
 import { StandardMaterial } from "./standardMaterial";
 
-import type { Material } from "./material";
+import { type Material } from "./material";
 
 /**
  * Creates an instance of the anisotropic plugin

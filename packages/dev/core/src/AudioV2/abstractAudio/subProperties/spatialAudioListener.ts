@@ -1,9 +1,8 @@
-import type { Node } from "../../../node";
-import type { Nullable } from "../../../types";
+import { type Node } from "../../../node";
+import { type Nullable } from "../../../types";
 import { SpatialAudioAttachmentType } from "../../spatialAudioAttachmentType";
 import { _SpatialAudioAttacherComponent } from "../components/spatialAudioAttacherComponent";
-import type { ISpatialAudioListenerOptions } from "./abstractSpatialAudioListener";
-import { _SpatialAudioListenerDefaults, AbstractSpatialAudioListener } from "./abstractSpatialAudioListener";
+import { type ISpatialAudioListenerOptions, _SpatialAudioListenerDefaults, AbstractSpatialAudioListener } from "./abstractSpatialAudioListener";
 
 /** @internal */
 export abstract class _SpatialAudioListener extends AbstractSpatialAudioListener {
