@@ -1,6 +1,6 @@
-import type { Nullable } from "core/types";
-import type { NodeParticleConnectionPoint } from "core/Particles/Node/nodeParticleBlockConnectionPoint";
-import type { NodeParticleBuildState } from "core/Particles/Node/nodeParticleBuildState";
+import { type Nullable } from "core/types";
+import { type NodeParticleConnectionPoint } from "core/Particles/Node/nodeParticleBlockConnectionPoint";
+import { type NodeParticleBuildState } from "core/Particles/Node/nodeParticleBuildState";
 
 import { PropertyTypeForEdition, editableInPropertyPage } from "core/Decorators/nodeDecorator";
 import { RegisterClass } from "core/Misc/typeStore";

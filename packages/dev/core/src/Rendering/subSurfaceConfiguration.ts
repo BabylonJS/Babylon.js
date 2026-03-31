@@ -1,9 +1,9 @@
 import { Logger } from "../Misc/logger";
-import type { Scene } from "../scene";
+import { type Scene } from "../scene";
 import { Color3, Color4 } from "../Maths/math.color";
 import { SubSurfaceScatteringPostProcess } from "../PostProcesses/subSurfaceScatteringPostProcess";
 import { SceneComponentConstants } from "../sceneComponent";
-import type { PrePassEffectConfiguration } from "./prePassEffectConfiguration";
+import { type PrePassEffectConfiguration } from "./prePassEffectConfiguration";
 import { _WarnImport } from "../Misc/devTools";
 import { Constants } from "../Engines/constants";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";

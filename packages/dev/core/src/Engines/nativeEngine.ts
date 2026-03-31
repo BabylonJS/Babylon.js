@@ -1,9 +1,8 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 
-import type { InternalTexture } from "../Materials/Textures/internalTexture";
+import { type InternalTexture } from "../Materials/Textures/internalTexture";
 import { Engine } from "./engine";
-import type { ThinNativeEngineOptions } from "./thinNativeEngine";
-import { ThinNativeEngine } from "./thinNativeEngine";
+import { type ThinNativeEngineOptions, ThinNativeEngine } from "./thinNativeEngine";
 
 import "./AbstractEngine/abstractEngine.loadFile";
 import "./AbstractEngine/abstractEngine.textureLoaders";

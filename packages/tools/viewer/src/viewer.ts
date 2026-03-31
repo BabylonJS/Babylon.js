@@ -1,32 +1,32 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import type {
-    AbstractEngine,
-    AbstractMesh,
-    AnimationGroup,
-    ArcRotateCameraKeyboardMoveInput,
-    AssetContainer,
-    AutoRotationBehavior,
-    BaseTexture,
-    Camera,
-    CubeTexture,
-    Engine,
-    HDRCubeTexture,
-    HotSpotQuery,
-    IblCdfGenerator,
-    IblShadowsRenderPipeline,
-    IDisposable,
-    IMeshDataCache,
-    ISceneLoaderProgressEvent,
-    LoadAssetContainerOptions,
-    Nullable,
-    Observer,
-    PickingInfo,
-    ShaderMaterial,
-    ShadowGenerator,
-    SSAO2RenderingPipeline,
+import {
+    type AbstractEngine,
+    type AbstractMesh,
+    type AnimationGroup,
+    type ArcRotateCameraKeyboardMoveInput,
+    type AssetContainer,
+    type AutoRotationBehavior,
+    type BaseTexture,
+    type Camera,
+    type CubeTexture,
+    type Engine,
+    type HDRCubeTexture,
+    type HotSpotQuery,
+    type IblCdfGenerator,
+    type IblShadowsRenderPipeline,
+    type IDisposable,
+    type IMeshDataCache,
+    type ISceneLoaderProgressEvent,
+    type LoadAssetContainerOptions,
+    type Nullable,
+    type Observer,
+    type PickingInfo,
+    type ShaderMaterial,
+    type ShadowGenerator,
+    type SSAO2RenderingPipeline,
 } from "core/index";
 
-import type { MaterialVariantsController } from "loaders/glTF/2.0/Extensions/KHR_materials_variants";
+import { type MaterialVariantsController } from "loaders/glTF/2.0/Extensions/KHR_materials_variants";
 
 import { ArcRotateCamera, ComputeAlpha, ComputeBeta } from "core/Cameras/arcRotateCamera";
 import { Constants } from "core/Engines/constants";
@@ -228,8 +228,19 @@ export function IsShadowQuality(value: string): value is ShadowQuality {
  * @param value The value to check.
  * @returns True if the value is a valid SSAO option, otherwise false.
  */
-export function isSSAOOptions(value: string): value is SSAOOptions {
+export function IsSSAOOptions(value: string): value is SSAOOptions {
     return ssaoOptions.includes(value as SSAOOptions);
+}
+
+/**
+ * Checks if the given mesh is a Gaussian Splatting mesh by inspecting its class name.
+ * This avoids importing the GaussianSplattingMesh class directly.
+ * @param mesh The mesh to check.
+ * @returns True if the mesh is a Gaussian Splatting mesh (including compound splat part proxies), otherwise false.
+ */
+function IsGaussianSplattingMesh(mesh: AbstractMesh): boolean {
+    const className = mesh.getClassName();
+    return className === "GaussianSplattingMesh" || className === "GaussianSplattingPartProxyMesh";
 }
 
 function throwIfAborted(...abortSignals: (Nullable<AbortSignal> | undefined)[]): void {
@@ -1418,8 +1429,14 @@ export class Viewer implements IDisposable {
                     if (this._ssaoOption === "auto") {
                         const hasModels = this._loadedModels.length > 0;
                         const hasMaterials = this._loadedModels.some((model) => model.assetContainer.materials.length > 0);
-                        const ibleShadowsEnabled = this._shadowQuality === "high";
-                        shouldEnable = hasModels && !hasMaterials && !ibleShadowsEnabled;
+                        const iblShadowsEnabled = this._shadowQuality === "high";
+                        const allMeshesAreSplats =
+                            hasModels &&
+                            this._loadedModels.every((model) => {
+                                const meshes = model.assetContainer.meshes;
+                                return meshes.length > 0 && meshes.every(IsGaussianSplattingMesh);
+                            });
+                        shouldEnable = hasModels && !hasMaterials && !iblShadowsEnabled && !allMeshesAreSplats;
                     }
 
                     if (shouldEnable) {

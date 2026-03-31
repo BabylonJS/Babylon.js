@@ -2,16 +2,15 @@ import "core/Engines/Extensions/engine.alpha";
 import "core/Shaders/sprites.vertex";
 import "core/Shaders/sprites.fragment";
 
-import type { RawLottieAnimation } from "../parsing/rawTypes";
-import type { AnimationInfo } from "../parsing/parsedTypes";
-import type { Node } from "../nodes/node";
-import type { AnimationConfiguration } from "../animationConfiguration";
+import { type RawLottieAnimation } from "../parsing/rawTypes";
+import { type AnimationInfo } from "../parsing/parsedTypes";
+import { type Node } from "../nodes/node";
+import { type AnimationConfiguration, UpdateConfiguration } from "../animationConfiguration";
 
 import { ThinEngine } from "core/Engines/thinEngine";
 import { Viewport } from "core/Maths/math.viewport";
 import { RenderingManager } from "./renderingManager";
 import { ThinMatrix } from "../maths/matrix";
-import { UpdateConfiguration } from "../animationConfiguration";
 import { Parser } from "../parsing/parser";
 import { SpritePacker } from "../parsing/spritePacker";
 

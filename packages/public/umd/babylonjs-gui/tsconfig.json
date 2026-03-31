@@ -3,8 +3,7 @@
 
     "compilerOptions": {
         "paths": {
-            "gui/*": ["dev/gui/src/*"],
-            "@lts/gui/*": ["lts/gui/src/*"],
+            "gui/*": ["dev/gui/src/*"]
         }
-    },
+    }
 }

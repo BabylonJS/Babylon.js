@@ -1,5 +1,5 @@
 import * as React from "react";
-import type { IToolData, IToolParameters, IToolType, IToolGUIProps } from "../textureEditorComponent";
+import { type IToolData, type IToolParameters, type IToolType, type IToolGUIProps } from "../textureEditorComponent";
 
 class ContrastTool implements IToolType {
     getParameters: () => IToolParameters;

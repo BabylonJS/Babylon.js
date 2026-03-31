@@ -1,6 +1,6 @@
-import type { FlowGraphExecutionBlock } from "./flowGraphExecutionBlock";
+import { type FlowGraphExecutionBlock } from "./flowGraphExecutionBlock";
 import { FlowGraphConnection, FlowGraphConnectionType } from "./flowGraphConnection";
-import type { FlowGraphContext } from "./flowGraphContext";
+import { type FlowGraphContext } from "./flowGraphContext";
 import { RegisterClass } from "../Misc/typeStore";
 import { FlowGraphAction } from "./flowGraphLogger";
 

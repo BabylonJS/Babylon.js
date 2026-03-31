@@ -1,6 +1,6 @@
-import type { FunctionComponent } from "react";
+import { type FunctionComponent } from "react";
 
-import type { GaussianSplattingMesh } from "core/index";
+import { type GaussianSplattingMesh } from "core/index";
 
 import { StringifiedPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/stringifiedPropertyLine";
 import { BooleanBadgePropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/booleanBadgePropertyLine";

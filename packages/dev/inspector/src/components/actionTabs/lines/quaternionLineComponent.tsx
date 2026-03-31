@@ -1,13 +1,13 @@
 import * as React from "react";
-import type { Observable } from "core/Misc/observable";
-import type { Quaternion, Vector3 } from "core/Maths/math.vector";
+import { type Observable } from "core/Misc/observable";
+import { type Quaternion, type Vector3 } from "core/Maths/math.vector";
 import { NumericInput } from "shared-ui-components/lines/numericInputComponent";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMinus, faPlus } from "@fortawesome/free-solid-svg-icons";
-import type { PropertyChangedEvent } from "../../propertyChangedEvent";
+import { type PropertyChangedEvent } from "../../propertyChangedEvent";
 import { Tools } from "core/Misc/tools";
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
-import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
+import { type LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 import { copyCommandToClipboard, getClassNameWithNamespace } from "shared-ui-components/copyCommandToClipboard";
 import copyIcon from "shared-ui-components/imgs/copy.svg";
 

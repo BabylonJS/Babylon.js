@@ -1,5 +1,4 @@
-import type { SmartFilter, AnyInputBlock } from "smart-filters";
-import { ConnectionPointType } from "smart-filters";
+import { type SmartFilter, type AnyInputBlock, ConnectionPointType } from "smart-filters";
 
 export class BlockTools {
     /**

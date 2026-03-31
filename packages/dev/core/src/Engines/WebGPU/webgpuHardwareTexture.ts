@@ -1,11 +1,11 @@
 /* eslint-disable jsdoc/require-jsdoc */
 /* eslint-disable babylonjs/available */
-import type { IHardwareTextureWrapper } from "../../Materials/Textures/hardwareTextureWrapper";
+import { type IHardwareTextureWrapper } from "../../Materials/Textures/hardwareTextureWrapper";
 import { ILog2 } from "../../Maths/math.scalar.functions";
-import type { Nullable } from "../../types";
+import { type Nullable } from "../../types";
 import * as WebGPUConstants from "./webgpuConstants";
 import { WebGPUTextureHelper } from "./webgpuTextureHelper";
-import type { WebGPUEngine } from "../webgpuEngine";
+import { type WebGPUEngine } from "../webgpuEngine";
 
 /** @internal */
 export class WebGPUHardwareTexture implements IHardwareTextureWrapper {

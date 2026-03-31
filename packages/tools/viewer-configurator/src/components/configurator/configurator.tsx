@@ -1,10 +1,9 @@
 /* eslint-disable @typescript-eslint/no-floating-promises */
-import type { IDisposable, Nullable, Observable } from "core/index";
-import type { HotSpot, ShadowQuality, ToneMapping, Viewer, ViewerDetails, ViewerElement, ViewerOptions } from "viewer/index";
-import type { DragEndEvent } from "@dnd-kit/core";
-import type { DropdownOption } from "shared-ui-components/fluent/primitives/dropdown";
+import { type IDisposable, type Nullable, type Observable } from "core/index";
+import { type HotSpot, type ShadowQuality, type ToneMapping, type Viewer, type ViewerDetails, type ViewerElement, type ViewerOptions } from "viewer/index";
+import { type DragEndEvent, closestCenter, DndContext, KeyboardSensor, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
+import { type DropdownOption } from "shared-ui-components/fluent/primitives/dropdown";
 
-import { closestCenter, DndContext, KeyboardSensor, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { makeStyles, tokens, Textarea } from "@fluentui/react-components";

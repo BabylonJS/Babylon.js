@@ -1,17 +1,14 @@
-import type { Atmosphere } from "addons/atmosphere/atmosphere";
-import type { ServiceDefinition } from "../../../modularity/serviceDefinition";
-import type { ISceneContext } from "../../sceneContext";
-import type { IWatcherService } from "../../watcherService";
-import type { ISceneExplorerService } from "./sceneExplorerService";
+import { type Atmosphere } from "addons/atmosphere/atmosphere";
+import { type ServiceDefinition } from "../../../modularity/serviceDefinition";
+import { type ISceneContext, SceneContextIdentity } from "../../sceneContext";
+import { type IWatcherService, WatcherServiceIdentity } from "../../watcherService";
+import { type ISceneExplorerService, SceneExplorerServiceIdentity } from "./sceneExplorerService";
 
 import { tokens } from "@fluentui/react-components";
 import { WeatherSunnyLowFilled } from "@fluentui/react-icons";
 
 import { Observable } from "core/Misc/observable";
-import { SceneContextIdentity } from "../../sceneContext";
-import { WatcherServiceIdentity } from "../../watcherService";
 import { DefaultSectionsOrder } from "./defaultSectionsMetadata";
-import { SceneExplorerServiceIdentity } from "./sceneExplorerService";
 
 export const AtmosphereExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplorerService, ISceneContext, IWatcherService]> = {
     friendlyName: "Atmosphere Explorer",

@@ -1,11 +1,10 @@
 /* eslint-disable jsdoc/require-jsdoc */
 import { Logger } from "@dev/core";
-import type { GlobalState } from "../globalState";
+import { type GlobalState } from "../globalState";
 import { Utilities } from "./utilities";
 import { ReadLastLocal } from "./localSession";
 import { ManifestVersion } from "./snippet";
-import { FetchSnippet, ParseSnippetResponse } from "@tools/snippet-loader";
-import type { ISnippetServerResponse, IPlaygroundSnippetResult } from "@tools/snippet-loader";
+import { FetchSnippet, ParseSnippetResponse, type ISnippetServerResponse, type IPlaygroundSnippetResult } from "@tools/snippet-loader";
 
 const HydrationObserverTimeoutMs = 10000;
 export class LoadManager {

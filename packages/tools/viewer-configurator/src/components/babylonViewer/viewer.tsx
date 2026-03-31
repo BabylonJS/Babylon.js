@@ -1,4 +1,4 @@
-import type { ViewerElement, ViewerOptions } from "viewer/index";
+import { type ViewerElement, type ViewerOptions } from "viewer/index";
 
 import { makeStyles } from "@fluentui/react-components";
 import { Logger } from "core/Misc/logger";

@@ -1,30 +1,26 @@
-import type { FlowGraph } from "core/FlowGraph/flowGraph";
-import { FlowGraphState } from "core/FlowGraph/flowGraph";
-import type { FlowGraphContext } from "core/FlowGraph/flowGraphContext";
-import type { IFlowGraphPendingActivation } from "core/FlowGraph/flowGraphContext";
-import { Observable } from "core/Misc/observable";
-import type { Observer } from "core/Misc/observable";
-import type { IAssetContainer } from "core/IAssetContainer";
-import type { LogEntry } from "./components/log/logComponent";
+import { type FlowGraph, FlowGraphState } from "core/FlowGraph/flowGraph";
+import { type FlowGraphContext, type IFlowGraphPendingActivation } from "core/FlowGraph/flowGraphContext";
+import { Observable, type Observer } from "core/Misc/observable";
+import { type IAssetContainer } from "core/IAssetContainer";
+import { type LogEntry } from "./components/log/logComponent";
 import { RegisterElbowSupport } from "./graphSystem/registerElbowSupport";
 import { RegisterNodePortDesign } from "./graphSystem/registerNodePortDesign";
-import type { GraphNode } from "shared-ui-components/nodeGraphSystem/graphNode";
-import type { GraphFrame } from "shared-ui-components/nodeGraphSystem/graphFrame";
-import type { Nullable } from "core/types";
+import { type GraphNode } from "shared-ui-components/nodeGraphSystem/graphNode";
+import { type GraphFrame } from "shared-ui-components/nodeGraphSystem/graphFrame";
+import { type Nullable } from "core/types";
 import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 import { StateManager } from "shared-ui-components/nodeGraphSystem/stateManager";
 import { RegisterDefaultInput } from "./graphSystem/registerDefaultInput";
 import { RegisterExportData } from "./graphSystem/registerExportData";
-import type { FlowGraphBlock } from "core/FlowGraph/flowGraphBlock";
+import { type FlowGraphBlock } from "core/FlowGraph/flowGraphBlock";
 import { FlowGraphExecutionBlock } from "core/FlowGraph/flowGraphExecutionBlock";
-import type { FlowGraphSignalConnection } from "core/FlowGraph/flowGraphSignalConnection";
+import { type FlowGraphSignalConnection } from "core/FlowGraph/flowGraphSignalConnection";
 import { RegisterDebugSupport } from "./graphSystem/registerDebugSupport";
-import type { Scene } from "core/scene";
-import type { SceneContext } from "./sceneContext";
+import { type Scene } from "core/scene";
+import { type SceneContext } from "./sceneContext";
 import { FlowGraphInteger } from "core/FlowGraph/CustomTypes/flowGraphInteger";
-import type { IFlowGraphValidationResult } from "core/FlowGraph/flowGraphValidator";
-import { ValidateFlowGraphWithBlockList } from "core/FlowGraph/flowGraphValidator";
-import type { HelpTopicId } from "./components/help/helpContent";
+import { type IFlowGraphValidationResult, ValidateFlowGraphWithBlockList } from "core/FlowGraph/flowGraphValidator";
+import { type HelpTopicId } from "./components/help/helpContent";
 
 /**
  * Class used to hold the global state of the flow graph editor

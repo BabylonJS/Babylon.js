@@ -1,18 +1,14 @@
-import type { IDisposable, IReadonlyObservable, Nullable } from "core/index";
-import type { IService, ServiceDefinition } from "../modularity/serviceDefinition";
-import type { ISettingsService } from "./panes/settingsService";
-import type { ISceneContext } from "./sceneContext";
-import type { ISettingsStore, SettingDescriptor } from "./settingsStore";
-import type { IShellService } from "./shellService";
+import { type IDisposable, type IReadonlyObservable, type Nullable } from "core/index";
+import { type IService, type ServiceDefinition } from "../modularity/serviceDefinition";
+import { type ISettingsService, SettingsServiceIdentity } from "./panes/settingsService";
+import { type ISceneContext, SceneContextIdentity } from "./sceneContext";
+import { type ISettingsStore, type SettingDescriptor, SettingsStoreIdentity } from "./settingsStore";
+import { type IShellService, ShellServiceIdentity } from "./shellService";
 
 import { Observable } from "core/Misc/observable";
 import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
 import { useSetting } from "../hooks/settingsHooks";
 import { InterceptFunction } from "../instrumentation/functionInstrumentation";
-import { SettingsServiceIdentity } from "./panes/settingsService";
-import { SceneContextIdentity } from "./sceneContext";
-import { SettingsStoreIdentity } from "./settingsStore";
-import { ShellServiceIdentity } from "./shellService";
 
 /**
  * The unique identity symbol for the selection service.

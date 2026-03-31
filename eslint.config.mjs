@@ -137,9 +137,8 @@ export default tseslint.config(
             "**/*.fragment.ts",
             "**/*.vertex.ts",
 
-            // Public/LTS packages (generated)
+            // Public packages (generated)
             "packages/public/**",
-            "packages/lts/**",
 
             // Non-JS files
             "**/*.md",
@@ -276,6 +275,8 @@ export default tseslint.config(
             "jsdoc/require-returns-check": "error",
 
             // Warnings
+            "import/no-duplicates": ["error", { "prefer-inline": true }],
+            "import/consistent-type-specifier-style": ["error", "prefer-inline"],
             "import/export": "warn",
             "no-useless-escape": "warn",
             "no-case-declarations": "warn",
@@ -388,7 +389,7 @@ export default tseslint.config(
 
             // Other TypeScript rules
             "@typescript-eslint/no-unused-vars": ["warn", { argsIgnorePattern: "^_" }],
-            "@typescript-eslint/consistent-type-imports": ["error", { disallowTypeAnnotations: false, fixStyle: "separate-type-imports" }],
+            "@typescript-eslint/consistent-type-imports": ["error", { disallowTypeAnnotations: false, fixStyle: "inline-type-imports" }],
             "@typescript-eslint/no-this-alias": "error",
 
             // Restricted syntax

@@ -1,8 +1,8 @@
 import * as React from "react";
-import type { GlobalState } from "../../../globalState";
-import type { InputBlock } from "core/Materials/Node/Blocks/Input/inputBlock";
+import { type GlobalState } from "../../../globalState";
+import { type InputBlock } from "core/Materials/Node/Blocks/Input/inputBlock";
 import { Color3LineComponent } from "shared-ui-components/lines/color3LineComponent";
-import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
+import { type LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 
 interface IColor3PropertyTabComponentProps {
     globalState: GlobalState;

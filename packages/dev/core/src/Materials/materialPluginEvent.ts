@@ -1,14 +1,14 @@
-import type { ShaderCustomProcessingFunction } from "../Engines/Processors/shaderProcessingOptions";
-import type { SmartArray } from "../Misc/smartArray";
+import { type ShaderCustomProcessingFunction } from "../Engines/Processors/shaderProcessingOptions";
+import { type SmartArray } from "../Misc/smartArray";
 
-import type { BaseTexture } from "./Textures/baseTexture";
-import type { EffectFallbacks } from "./effectFallbacks";
-import type { MaterialDefines } from "./materialDefines";
-import type { UniformBuffer } from "./uniformBuffer";
-import type { SubMesh } from "../Meshes/subMesh";
-import type { AbstractMesh } from "../Meshes/abstractMesh";
-import type { IAnimatable } from "../Animations/animatable.interface";
-import type { RenderTargetTexture } from "./Textures/renderTargetTexture";
+import { type BaseTexture } from "./Textures/baseTexture";
+import { type EffectFallbacks } from "./effectFallbacks";
+import { type MaterialDefines } from "./materialDefines";
+import { type UniformBuffer } from "./uniformBuffer";
+import { type SubMesh } from "../Meshes/subMesh";
+import { type AbstractMesh } from "../Meshes/abstractMesh";
+import { type IAnimatable } from "../Animations/animatable.interface";
+import { type RenderTargetTexture } from "./Textures/renderTargetTexture";
 
 /** @internal */
 export type MaterialPluginCreated = object;

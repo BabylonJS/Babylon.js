@@ -1,14 +1,13 @@
-import type { Nullable } from "../types";
+import { type Nullable } from "../types";
 import { Constants } from "../Engines/constants";
-import type { Camera } from "../Cameras/camera";
-import type { PostProcessOptions } from "./postProcess";
-import { PostProcess } from "./postProcess";
+import { type Camera } from "../Cameras/camera";
+import { type PostProcessOptions, PostProcess } from "./postProcess";
 import { AbstractEngine } from "../Engines/abstractEngine";
 
 import { RegisterClass } from "../Misc/typeStore";
 import { SerializationHelper } from "../Misc/decorators.serialization";
 
-import type { Scene } from "../scene";
+import { type Scene } from "../scene";
 import { ThinPassCubePostProcess, ThinPassPostProcess } from "./thinPassPostProcess";
 import { serialize } from "core/Misc/decorators";
 

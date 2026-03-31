@@ -1,6 +1,6 @@
 import * as React from "react";
 import { LineContainerComponent } from "../../sharedComponents/lineContainerComponent";
-import type { IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
+import { type IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
 import { OptionsLine } from "shared-ui-components/lines/optionsLineComponent";
 import {
     GeneralPropertyTabComponent,
@@ -8,10 +8,10 @@ import {
     DataConnectionsPropertyTabComponent,
     GenericPropertyTabComponent,
 } from "./genericNodePropertyComponent";
-import type { FlowGraphBlock } from "core/FlowGraph/flowGraphBlock";
-import type { GlobalState } from "../../globalState";
-import type { SceneContext } from "../../sceneContext";
-import type { Observer } from "core/Misc/observable";
+import { type FlowGraphBlock } from "core/FlowGraph/flowGraphBlock";
+import { type GlobalState } from "../../globalState";
+import { type SceneContext } from "../../sceneContext";
+import { type Observer } from "core/Misc/observable";
 
 interface IPointerEventPropertyState {
     sceneContext: SceneContext | null;

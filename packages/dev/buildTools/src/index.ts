@@ -2,7 +2,6 @@
 /* eslint-disable no-console */
 import { addJsExtensionsToCompiledFilesCommand } from "./addJSToCompiledFiles.js";
 import { generateDeclaration } from "./generateDeclaration.js";
-import { transformLtsCommand } from "./ltsTransformer.js";
 import { prepareES6Build } from "./prepareEs6Build.js";
 import { checkArgs, copyFolder, externalArgs, populateEnvironment } from "./utils.js";
 import { devWatch } from "./devWatcher.js";
@@ -62,10 +61,6 @@ function RunCommand(command: string) {
             case "build-shaders":
             case "bs":
                 processAssets({ extensions: ["fx"] });
-                break;
-            case "transform-lts":
-            case "tlts":
-                transformLtsCommand();
                 break;
             case "prepare-es6-build":
             case "peb":

@@ -1,21 +1,20 @@
-import type { IEasingFunction, EasingFunction } from "./easing";
+import { type IEasingFunction, type EasingFunction } from "./easing";
 import { Vector3, Quaternion, Vector2, Matrix, TmpVectors } from "../Maths/math.vector";
 import { Color3, Color4 } from "../Maths/math.color";
 import { Hermite, Lerp } from "../Maths/math.scalar.functions";
-import type { DeepImmutable, Nullable } from "../types";
-import type { Scene } from "../scene";
+import { type DeepImmutable, type Nullable } from "../types";
+import { type Scene } from "../scene";
 import { RegisterClass } from "../Misc/typeStore";
-import type { IAnimationKey } from "./animationKey";
-import { AnimationKeyInterpolation } from "./animationKey";
+import { type IAnimationKey, AnimationKeyInterpolation } from "./animationKey";
 import { AnimationRange } from "./animationRange";
-import type { AnimationEvent } from "./animationEvent";
+import { type AnimationEvent } from "./animationEvent";
 import { Node } from "../node";
-import type { IAnimatable } from "./animatable.interface";
+import { type IAnimatable } from "./animatable.interface";
 import { Size } from "../Maths/math.size";
 import { WebRequest } from "../Misc/webRequest";
 import { Constants } from "../Engines/constants";
-import type { Animatable } from "./animatable";
-import type { RuntimeAnimation } from "./runtimeAnimation";
+import { type Animatable } from "./animatable";
+import { type RuntimeAnimation } from "./runtimeAnimation";
 import { SerializationHelper } from "../Misc/decorators.serialization";
 
 // Static values to help the garbage collector

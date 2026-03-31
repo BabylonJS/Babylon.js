@@ -1,4 +1,4 @@
-import type { Nullable, AbstractEngine, EffectWrapperCreationOptions, Effect } from "core/index";
+import { type Nullable, type AbstractEngine, type EffectWrapperCreationOptions, type Effect } from "core/index";
 import { EffectWrapper } from "../Materials/effectRenderer";
 import { EngineStore } from "../Engines/engineStore";
 import { Observable } from "../Misc/observable";

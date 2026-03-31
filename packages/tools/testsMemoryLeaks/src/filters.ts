@@ -1,4 +1,4 @@
-import type { IHeapNode, IHeapSnapshot, IScenario } from "@memlab/core";
+import { type IHeapNode, type IHeapSnapshot, type IScenario } from "@memlab/core";
 
 /**
  * Tuning options for the Babylon-specific memlab leak filter.

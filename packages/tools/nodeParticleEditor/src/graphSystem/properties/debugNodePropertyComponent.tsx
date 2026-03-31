@@ -1,11 +1,11 @@
 import * as React from "react";
 import { GeneralPropertyTabComponent, GenericPropertyTabComponent } from "./genericNodePropertyComponent";
-import type { IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
-import type { Observer } from "core/Misc/observable";
-import type { Nullable } from "core/types";
+import { type IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
+import { type Observer } from "core/Misc/observable";
+import { type Nullable } from "core/types";
 import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
 import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
-import type { ParticleDebugBlock } from "core/Particles/Node/Blocks/particleDebugBlock";
+import { type ParticleDebugBlock } from "core/Particles/Node/Blocks/particleDebugBlock";
 
 export class DebugPropertyTabComponent extends React.Component<IPropertyComponentProps> {
     private _onUpdateRequiredObserver: Nullable<Observer<any>>;

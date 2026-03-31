@@ -1,8 +1,8 @@
-import type { AbstractEngine } from "./abstractEngine";
+import { type AbstractEngine } from "./abstractEngine";
 import { Engine } from "./engine";
 import { NullEngine, type NullEngineOptions } from "./nullEngine";
 import { WebGPUEngine, type WebGPUEngineOptions } from "./webgpuEngine";
-import type { EngineOptions } from "./thinEngine";
+import { type EngineOptions } from "./thinEngine";
 
 /**
  * Helper class to create the best engine depending on the current hardware

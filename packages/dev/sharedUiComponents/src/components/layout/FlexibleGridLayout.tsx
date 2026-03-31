@@ -1,12 +1,11 @@
-import type { FC } from "react";
-import { useRef, useEffect, useState } from "react";
-import type { Nullable } from "core/types";
+import { type FC, useRef, useEffect, useState } from "react";
+import { type Nullable } from "core/types";
 import { DndProvider } from "react-dnd";
 import { TouchBackend } from "react-dnd-touch-backend";
 import { FlexibleDragHandler } from "./FlexibleDragHandler";
 import { LayoutContext } from "./LayoutContext";
 import { FlexibleGridContainer } from "./FlexibleGridContainer";
-import type { Layout } from "./types";
+import { type Layout } from "./types";
 
 /**
  * Arguments for the Layout component.

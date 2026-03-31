@@ -1,17 +1,17 @@
 import { ThinParticleSystem } from "./thinParticleSystem";
-import type { IParticleEmitterType } from "./EmitterTypes/IParticleEmitterType";
+import { type IParticleEmitterType } from "./EmitterTypes/IParticleEmitterType";
 import { SubEmitter, SubEmitterType } from "./subEmitter";
 import { Color3, Color4 } from "../Maths/math.color";
 import { Vector3 } from "../Maths/math.vector";
-import type { IParticleSystem } from "./IParticleSystem";
-import type { AbstractMesh } from "../Meshes/abstractMesh";
-import type { Nullable } from "../types";
-import type { Scene } from "../scene";
+import { type IParticleSystem } from "./IParticleSystem";
+import { type AbstractMesh } from "../Meshes/abstractMesh";
+import { type Nullable } from "../types";
+import { type Scene } from "../scene";
 import { AbstractEngine } from "../Engines/abstractEngine";
 import { GetClass } from "../Misc/typeStore";
-import type { BaseTexture } from "../Materials/Textures/baseTexture";
-import type { Effect } from "../Materials/effect";
-import type { Particle } from "./particle";
+import { type BaseTexture } from "../Materials/Textures/baseTexture";
+import { type Effect } from "../Materials/effect";
+import { type Particle } from "./particle";
 import { Constants } from "../Engines/constants";
 import { SerializationHelper } from "../Misc/decorators.serialization";
 import { MeshParticleEmitter } from "./EmitterTypes/meshParticleEmitter";
@@ -33,10 +33,9 @@ import {
     CreateSphereEmitter,
 } from "./particleSystem.functions";
 import { Attractor } from "./attractor";
-import type { _IExecutionQueueItem } from "./Queue/executionQueue";
-import { _ConnectAfter, _RemoveFromQueue } from "./Queue/executionQueue";
-import type { FlowMap } from "./flowMap";
-import type { NodeParticleSystemSet } from "./Node/nodeParticleSystemSet";
+import { type _IExecutionQueueItem, _ConnectAfter, _RemoveFromQueue } from "./Queue/executionQueue";
+import { type FlowMap } from "./flowMap";
+import { type NodeParticleSystemSet } from "./Node/nodeParticleSystemSet";
 
 /**
  * This represents a particle system in Babylon.

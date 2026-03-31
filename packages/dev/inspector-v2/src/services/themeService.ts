@@ -1,12 +1,11 @@
-import type { Theme } from "@fluentui/react-components";
+import { type Theme } from "@fluentui/react-components";
 
-import type { IDisposable, IObserver, IReadonlyObservable } from "core/index";
-import type { IService, ServiceDefinition } from "../modularity/serviceDefinition";
-import type { ISettingsStore, SettingDescriptor } from "./settingsStore";
+import { type IDisposable, type IObserver, type IReadonlyObservable } from "core/index";
+import { type IService, type ServiceDefinition } from "../modularity/serviceDefinition";
+import { type ISettingsStore, type SettingDescriptor, SettingsStoreIdentity } from "./settingsStore";
 
 import { Observable } from "core/Misc/observable";
 import { DarkTheme, LightTheme } from "../themes/babylonTheme";
-import { SettingsStoreIdentity } from "./settingsStore";
 
 /**
  * Represents the theme mode preference.

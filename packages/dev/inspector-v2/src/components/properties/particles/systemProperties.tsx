@@ -1,6 +1,6 @@
-import type { GPUParticleSystem } from "core/Particles/gpuParticleSystem";
-import type { FunctionComponent } from "react";
-import type { ISelectionService } from "../../../services/selectionService";
+import { type GPUParticleSystem } from "core/Particles/gpuParticleSystem";
+import { type FunctionComponent } from "react";
+import { type ISelectionService } from "../../../services/selectionService";
 
 import { EditRegular, EyeRegular } from "@fluentui/react-icons";
 

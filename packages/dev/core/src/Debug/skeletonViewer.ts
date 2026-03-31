@@ -1,12 +1,12 @@
 import { Vector3, Matrix, TmpVectors } from "../Maths/math.vector";
 import { Color3, Color4 } from "../Maths/math.color";
-import type { Scene } from "../scene";
-import type { Nullable } from "../types";
-import type { Bone } from "../Bones/bone";
-import type { Skeleton } from "../Bones/skeleton";
-import type { AbstractMesh } from "../Meshes/abstractMesh";
+import { type Scene } from "../scene";
+import { type Nullable } from "../types";
+import { type Bone } from "../Bones/bone";
+import { type Skeleton } from "../Bones/skeleton";
+import { type AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
-import type { LinesMesh } from "../Meshes/linesMesh";
+import { type LinesMesh } from "../Meshes/linesMesh";
 import { CreateLineSystem } from "../Meshes/Builders/linesBuilder";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
 import { Material } from "../Materials/material";
@@ -15,8 +15,14 @@ import { DynamicTexture } from "../Materials/Textures/dynamicTexture";
 import { VertexBuffer } from "../Buffers/buffer";
 import { Effect } from "../Materials/effect";
 
-import type { ISkeletonViewerOptions, IBoneWeightShaderOptions, ISkeletonMapShaderOptions, ISkeletonMapShaderColorMapKnot, ISkeletonViewerDisplayOptions } from "./ISkeletonViewer";
-import type { Observer } from "../Misc/observable";
+import {
+    type ISkeletonViewerOptions,
+    type IBoneWeightShaderOptions,
+    type ISkeletonMapShaderOptions,
+    type ISkeletonMapShaderColorMapKnot,
+    type ISkeletonViewerDisplayOptions,
+} from "./ISkeletonViewer";
+import { type Observer } from "../Misc/observable";
 
 import { CreateSphere } from "../Meshes/Builders/sphereBuilder";
 import { ExtrudeShapeCustom } from "../Meshes/Builders/shapeBuilder";

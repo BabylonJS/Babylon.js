@@ -1,7 +1,7 @@
-import type { GeospatialCamera } from "../../Cameras/geospatialCamera";
-import type { IPointerEvent } from "../../Events/deviceInputEvents";
-import type { PointerTouch } from "../../Events/pointerEvents";
-import type { Nullable } from "../../types";
+import { type GeospatialCamera } from "../../Cameras/geospatialCamera";
+import { type IPointerEvent } from "../../Events/deviceInputEvents";
+import { type PointerTouch } from "../../Events/pointerEvents";
+import { type Nullable } from "../../types";
 import { OrbitCameraPointersInput } from "./orbitCameraPointersInput";
 
 /**

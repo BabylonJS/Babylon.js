@@ -4,8 +4,9 @@ import { ViewerElement } from "viewer/viewerElement";
 
 // if running in the CI we need to use the babylon snapshot when loading the tools
 const snapshot = process.env.SNAPSHOT ? "?snapshot=" + process.env.SNAPSHOT : "";
+const cdnPort = ":" + (process.env.CDN_PORT || 1337);
 const viewerUrl =
-    (process.env.VIEWER_BASE_URL || getGlobalConfig().baseUrl.replace(":1337", process.env.VIEWER_PORT || ":1342")) + "/packages/tools/viewer/test/apps/web/test.html" + snapshot;
+    (process.env.VIEWER_BASE_URL || getGlobalConfig().baseUrl.replace(cdnPort, process.env.VIEWER_PORT || ":1342")) + "/packages/tools/viewer/test/apps/web/test.html" + snapshot;
 
 let pageErrors: Error[];
 let consoleErrors: string[];

@@ -1,7 +1,7 @@
-import type { FlowGraphDataConnection } from "../../flowGraphDataConnection";
-import type { RichType } from "../../flowGraphRichTypes";
-import type { FlowGraphContext } from "../../flowGraphContext";
-import type { IFlowGraphBlockConfiguration } from "../../flowGraphBlock";
+import { type FlowGraphDataConnection } from "../../flowGraphDataConnection";
+import { type RichType } from "../../flowGraphRichTypes";
+import { type FlowGraphContext } from "../../flowGraphContext";
+import { type IFlowGraphBlockConfiguration } from "../../flowGraphBlock";
 import { FlowGraphCachedOperationBlock } from "./flowGraphCachedOperationBlock";
 /**
  * The base block for all binary operation blocks. Receives an input of type

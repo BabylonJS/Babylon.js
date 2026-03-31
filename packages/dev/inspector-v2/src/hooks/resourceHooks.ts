@@ -1,7 +1,5 @@
-import type { DependencyList } from "react";
-import type { IDisposable } from "core/index";
-
-import { useRef, useEffect, useState } from "react";
+import { type DependencyList, useRef, useEffect, useState } from "react";
+import { type IDisposable } from "core/index";
 
 /**
  * Custom hook to manage a resource with automatic disposal. The resource is created once initially, and recreated

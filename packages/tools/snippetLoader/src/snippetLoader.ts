@@ -1,20 +1,21 @@
-import type {
-    ISnippetServerResponse,
-    SnippetContentType,
-    SnippetResult,
-    IPlaygroundSnippetResult,
-    IDataSnippetResult,
-    IUnknownSnippetResult,
-    IPlaygroundPayload,
-    IV2Manifest,
-    TranspileFn,
-    ModuleFormat,
-    ICreateEngineOptions,
-    CreateEngineSource,
-    IRuntimeFeatures,
-    IInitializeRuntimeOptions,
+import {
+    type ISnippetServerResponse,
+    type SnippetContentType,
+    type SnippetResult,
+    type IPlaygroundSnippetResult,
+    type IDataSnippetResult,
+    type IUnknownSnippetResult,
+    type IPlaygroundPayload,
+    type IV2Manifest,
+    type TranspileFn,
+    type ModuleFormat,
+    type ICreateEngineOptions,
+    type CreateEngineSource,
+    type IRuntimeFeatures,
+    type IInitializeRuntimeOptions,
+    DefaultRuntimeBaseUrl,
+    RuntimeScriptPaths,
 } from "./types";
-import { DefaultRuntimeBaseUrl, RuntimeScriptPaths } from "./types";
 import { FetchSnippet, DEFAULT_SNIPPET_URL } from "./fetchSnippet";
 
 // -----------------------------------------------------------------------

@@ -1,5 +1,5 @@
 import { AbstractMesh } from "core/Meshes/abstractMesh";
-import type { Nullable } from "../../types";
+import { type Nullable } from "../../types";
 import { AbstractEngine } from "../abstractEngine";
 
 /** @internal */

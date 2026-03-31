@@ -1,9 +1,8 @@
 /* eslint-disable @typescript-eslint/promise-function-async */
 import { Scalar } from "core/Maths/math.scalar";
-import type { Scene } from "core/scene";
-import type { SPLATLoadingOptions } from "./splatLoadingOptions";
-import { Mode } from "./splatDefs";
-import type { IParsedSplat } from "./splatDefs";
+import { type Scene } from "core/scene";
+import { type SPLATLoadingOptions } from "./splatLoadingOptions";
+import { Mode, type IParsedSplat } from "./splatDefs";
 
 /**
  * Parses SPZ data and returns a promise resolving to an IParsedPLY object.

@@ -1,4 +1,4 @@
-import type { Scene, FrameGraph } from "core/index";
+import { type Scene, type FrameGraph } from "core/index";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import { FrameGraphFXAATask } from "core/FrameGraph/Tasks/PostProcesses/fxaaTask";
 import { ThinFXAAPostProcess } from "core/PostProcesses/thinFXAAPostProcess";

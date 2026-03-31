@@ -46,15 +46,7 @@ export { WatcherServiceIdentity } from "./services/watcherService";
 export * from "./services/sceneContext";
 export * from "./services/selectionService";
 export * from "./services/settingsStore";
-export type {
-    IShellService,
-    ToolbarItemDefinition,
-    SidePaneDefinition,
-    CentralContentDefinition,
-    HorizontalLocation,
-    VerticalLocation,
-    ShellServiceOptions,
-} from "./services/shellService";
+export type { IShellService, ToolbarItemDefinition, SidePaneDefinition, CentralContentDefinition, HorizontalLocation, VerticalLocation, ShellServiceOptions } from "./services/shellService";
 export { ShellServiceIdentity } from "./services/shellService";
 export type { ModularToolOptions } from "./modularTool";
 export { MakeModularTool } from "./modularTool";

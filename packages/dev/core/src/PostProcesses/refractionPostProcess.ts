@@ -1,18 +1,17 @@
-import type { Color3 } from "../Maths/math.color";
-import type { Camera } from "../Cameras/camera";
-import type { Effect } from "../Materials/effect";
+import { type Color3 } from "../Maths/math.color";
+import { type Camera } from "../Cameras/camera";
+import { type Effect } from "../Materials/effect";
 import { Texture } from "../Materials/Textures/texture";
-import type { PostProcessOptions } from "./postProcess";
-import { PostProcess } from "./postProcess";
-import type { AbstractEngine } from "../Engines/abstractEngine";
+import { type PostProcessOptions, PostProcess } from "./postProcess";
+import { type AbstractEngine } from "../Engines/abstractEngine";
 
 import "../Shaders/refraction.fragment";
 import { RegisterClass } from "../Misc/typeStore";
 import { serialize } from "../Misc/decorators";
 import { SerializationHelper } from "../Misc/decorators.serialization";
-import type { Nullable } from "../types";
+import { type Nullable } from "../types";
 
-import type { Scene } from "../scene";
+import { type Scene } from "../scene";
 
 /**
  * Post process which applies a refraction texture

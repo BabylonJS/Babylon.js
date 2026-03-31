@@ -1,9 +1,9 @@
-import type { IMaterial, IKHRMaterialsVolumeScatter } from "babylonjs-gltf2interface";
-import type { IGLTFExporterExtensionV2 } from "../glTFExporterExtension";
+import { type IMaterial, type IKHRMaterialsVolumeScatter } from "babylonjs-gltf2interface";
+import { type IGLTFExporterExtensionV2 } from "../glTFExporterExtension";
 import { GLTFExporter } from "../glTFExporter";
-import type { Material } from "core/Materials/material";
+import { type Material } from "core/Materials/material";
 import { OpenPBRMaterial } from "core/Materials/PBR/openpbrMaterial";
-import type { BaseTexture } from "core/Materials/Textures/baseTexture";
+import { type BaseTexture } from "core/Materials/Textures/baseTexture";
 import { Color3 } from "core/Maths/math.color";
 import { Vector3 } from "core/Maths/math.vector";
 

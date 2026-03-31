@@ -1,6 +1,6 @@
-import type { DeepImmutable } from "../types";
+import { type DeepImmutable } from "../types";
 import { Vector3, Matrix } from "./math.vector";
-import type { IPlaneLike } from "./math.like";
+import { type IPlaneLike } from "./math.like";
 
 /**
  * Represents a plane by the equation ax + by + cz + d = 0

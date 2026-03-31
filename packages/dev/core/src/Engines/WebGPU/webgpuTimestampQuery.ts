@@ -1,11 +1,11 @@
 /* eslint-disable babylonjs/available */
 /* eslint-disable @typescript-eslint/naming-convention */
-import type { WebGPUBufferManager } from "./webgpuBufferManager";
+import { type WebGPUBufferManager } from "./webgpuBufferManager";
 import * as WebGPUConstants from "./webgpuConstants";
 import { PerfCounter } from "../../Misc/perfCounter";
 import { WebGPUQuerySet } from "./webgpuQuerySet";
-import type { WebGPUEngine } from "../webgpuEngine";
-import type { WebGPUPerfCounter } from "./webgpuPerfCounter";
+import { type WebGPUEngine } from "../webgpuEngine";
+import { type WebGPUPerfCounter } from "./webgpuPerfCounter";
 import { Logger } from "core/Misc/logger";
 
 /** @internal */

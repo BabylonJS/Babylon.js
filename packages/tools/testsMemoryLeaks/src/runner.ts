@@ -1,6 +1,5 @@
-import type { ISerializedInfo } from "@memlab/core";
-import type { RunOptions } from "memlab";
-import { run } from "memlab";
+import { type ISerializedInfo } from "@memlab/core";
+import { type RunOptions, run } from "memlab";
 
 import { GetGlobalConfig, type IGlobalConfig } from "./config";
 import { CreateMemlabScenario, ResolveScenarioDefinitions, type MemoryLeakScenarioDefinition, type ScenarioSuite } from "./scenarios";

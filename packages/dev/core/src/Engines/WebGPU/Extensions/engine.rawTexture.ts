@@ -1,11 +1,11 @@
 import { InternalTexture, InternalTextureSource } from "../../../Materials/Textures/internalTexture";
-import type { IWebRequest } from "../../../Misc/interfaces/iWebRequest";
-import type { Nullable } from "../../../types";
+import { type IWebRequest } from "../../../Misc/interfaces/iWebRequest";
+import { type Nullable } from "../../../types";
 import { Constants } from "../../constants";
-import type { WebGPUHardwareTexture } from "../webgpuHardwareTexture";
+import { type WebGPUHardwareTexture } from "../webgpuHardwareTexture";
 import { Logger } from "../../../Misc/logger";
 
-import type { Scene } from "../../../scene";
+import { type Scene } from "../../../scene";
 import { ThinWebGPUEngine } from "core/Engines/thinWebGPUEngine";
 
 declare module "../../abstractEngine" {

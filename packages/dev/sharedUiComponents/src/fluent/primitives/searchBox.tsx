@@ -1,7 +1,6 @@
 import { makeStyles, tokens } from "@fluentui/react-components";
 import { SearchBar } from "./searchBar";
-import type { FunctionComponent } from "react";
-import { useState, useEffect } from "react";
+import { type FunctionComponent, useState, useEffect } from "react";
 
 type SearchBoxProps = {
     items: string[];

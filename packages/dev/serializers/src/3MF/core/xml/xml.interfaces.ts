@@ -1,4 +1,4 @@
-import type { IXmlSerializerFormatOptions } from "./xml.serializer.format";
+import { type IXmlSerializerFormatOptions } from "./xml.serializer.format";
 
 /** */
 export interface IQualifiedName {

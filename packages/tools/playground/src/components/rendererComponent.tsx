@@ -2,14 +2,12 @@
 /* eslint-disable github/no-then */
 /* eslint-disable @typescript-eslint/no-floating-promises */
 import * as React from "react";
-import type { GlobalState } from "../globalState";
-import { RuntimeMode } from "../globalState";
+import { type GlobalState, RuntimeMode } from "../globalState";
 import { Utilities } from "../tools/utilities";
 import { DownloadManager } from "../tools/downloadManager";
 import { AddFileRevision } from "../tools/localSession";
 
-import { Engine, EngineStore, WebGPUEngine, LastCreatedAudioEngine, Logger } from "@dev/core";
-import type { IDisposable, Nullable, Scene, ThinEngine } from "@dev/core";
+import { Engine, EngineStore, WebGPUEngine, LastCreatedAudioEngine, Logger, type IDisposable, type Nullable, type Scene, type ThinEngine } from "@dev/core";
 
 import "../scss/rendering.scss";
 

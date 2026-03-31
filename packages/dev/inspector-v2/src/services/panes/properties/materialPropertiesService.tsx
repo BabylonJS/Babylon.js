@@ -1,6 +1,6 @@
-import type { ServiceDefinition } from "../../../modularity/serviceDefinition";
-import type { ISelectionService } from "../../selectionService";
-import type { IPropertiesService } from "./propertiesService";
+import { type ServiceDefinition } from "../../../modularity/serviceDefinition";
+import { type ISelectionService, SelectionServiceIdentity } from "../../selectionService";
+import { type IPropertiesService, PropertiesServiceIdentity } from "./propertiesService";
 
 import { Material } from "core/Materials/material";
 import { MultiMaterial } from "core/Materials/multiMaterial";
@@ -47,8 +47,6 @@ import {
     StandardMaterialTexturesProperties,
     StandardMaterialTransparencyProperties,
 } from "../../../components/properties/materials/standardMaterialProperties";
-import { SelectionServiceIdentity } from "../../selectionService";
-import { PropertiesServiceIdentity } from "./propertiesService";
 
 export const MaterialPropertiesServiceDefinition: ServiceDefinition<[], [IPropertiesService, ISelectionService]> = {
     friendlyName: "Material Properties",

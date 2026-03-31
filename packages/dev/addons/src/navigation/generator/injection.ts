@@ -1,7 +1,7 @@
-import type { Mesh } from "core/Meshes/mesh";
+import { type Mesh } from "core/Meshes/mesh";
 
-import type { RecastNavigationJSPluginV2 } from "../plugin/RecastNavigationJSPlugin";
-import type { INavMeshParametersV2 } from "../types";
+import { type RecastNavigationJSPluginV2 } from "../plugin/RecastNavigationJSPlugin";
+import { type INavMeshParametersV2 } from "../types";
 import { GenerateNavMesh } from "./generator.single-thread";
 
 /**

@@ -1,4 +1,4 @@
-import type { FlowGraphBlock } from "../flowGraphBlock";
+import { type FlowGraphBlock } from "../flowGraphBlock";
 import { FlowGraphBlockNames } from "./flowGraphBlockNames";
 
 /**

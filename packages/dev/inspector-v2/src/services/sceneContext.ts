@@ -1,6 +1,6 @@
-import type { IReadonlyObservable, Nullable, Scene } from "core/index";
+import { type IReadonlyObservable, type Nullable, type Scene } from "core/index";
 
-import type { IService } from "../modularity/serviceDefinition";
+import { type IService } from "../modularity/serviceDefinition";
 
 /**
  * The unique identity symbol for the scene context service.

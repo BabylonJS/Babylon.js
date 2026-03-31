@@ -1,18 +1,15 @@
-import type { IDisposable, Sound, SoundTrack } from "core/index";
-import type { ServiceDefinition } from "../../../modularity/serviceDefinition";
-import type { ISceneContext } from "../../sceneContext";
-import type { ISceneExplorerService } from "./sceneExplorerService";
-import type { IWatcherService } from "../../watcherService";
+import { type IDisposable, type Sound, type SoundTrack } from "core/index";
+import { type ServiceDefinition } from "../../../modularity/serviceDefinition";
+import { type ISceneContext, SceneContextIdentity } from "../../sceneContext";
+import { type ISceneExplorerService, SceneExplorerServiceIdentity } from "./sceneExplorerService";
+import { type IWatcherService, WatcherServiceIdentity } from "../../watcherService";
 
 import { tokens } from "@fluentui/react-components";
 import { SoundWaveCircleRegular } from "@fluentui/react-icons";
 
 import { Observable } from "core/Misc/observable";
 import { InterceptFunction } from "../../../instrumentation/functionInstrumentation";
-import { SceneContextIdentity } from "../../sceneContext";
 import { DefaultSectionsOrder } from "./defaultSectionsMetadata";
-import { SceneExplorerServiceIdentity } from "./sceneExplorerService";
-import { WatcherServiceIdentity } from "../../watcherService";
 
 export const SoundExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplorerService, ISceneContext, IWatcherService]> = {
     friendlyName: "Sound Explorer",

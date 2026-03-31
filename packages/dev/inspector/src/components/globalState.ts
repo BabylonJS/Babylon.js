@@ -1,21 +1,19 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 // eslint-disable-next-line @typescript-eslint/no-restricted-imports
-import { GLTFLoaderAnimationStartMode, GLTFLoaderCoordinateSystemMode } from "loaders/glTF/index";
-import type { IGLTFValidationResults } from "babylonjs-gltf2interface";
+import { GLTFLoaderAnimationStartMode, GLTFLoaderCoordinateSystemMode, type IGLTFLoaderExtension, type GLTFFileLoader } from "loaders/glTF/index";
+import { type IGLTFValidationResults } from "babylonjs-gltf2interface";
 
-import type { Nullable } from "core/types";
-import type { Observer } from "core/Misc/observable";
-import { Observable } from "core/Misc/observable";
-import type { ISceneLoaderPlugin, ISceneLoaderPluginAsync } from "core/Loading/sceneLoader";
-import type { Scene } from "core/scene";
-import type { Light } from "core/Lights/light";
-import type { Camera } from "core/Cameras/camera";
+import { type Nullable } from "core/types";
+import { type Observer, Observable } from "core/Misc/observable";
+import { type ISceneLoaderPlugin, type ISceneLoaderPluginAsync } from "core/Loading/sceneLoader";
+import { type Scene } from "core/scene";
+import { type Light } from "core/Lights/light";
+import { type Camera } from "core/Cameras/camera";
 import { LightGizmo } from "core/Gizmos/lightGizmo";
 import { CameraGizmo } from "core/Gizmos/cameraGizmo";
-import type { PropertyChangedEvent } from "./propertyChangedEvent";
+import { type PropertyChangedEvent } from "./propertyChangedEvent";
 import { ReplayRecorder } from "./replayRecorder";
 import { DataStorage } from "core/Misc/dataStorage";
-import type { IGLTFLoaderExtension, GLTFFileLoader } from "loaders/glTF/index";
 import { UtilityLayerRenderer } from "core/Rendering/utilityLayerRenderer";
 import { FrameGraphUtils } from "core/FrameGraph/frameGraphUtils";
 

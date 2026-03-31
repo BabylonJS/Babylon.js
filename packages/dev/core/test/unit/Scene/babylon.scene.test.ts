@@ -1,4 +1,4 @@
-import type { Engine } from "core/Engines/engine";
+import { type Engine } from "core/Engines/engine";
 import { NullEngine } from "core/Engines/nullEngine";
 import { Mesh } from "core/Meshes";
 import { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
