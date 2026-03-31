@@ -358,7 +358,7 @@ export class GLTFLoader implements IGLTFLoader {
         this._extensions.forEach((extension) => extension.dispose && extension.dispose());
         this._extensions.length = 0;
 
-        for (const adapter of this._materialAdapters) {
+        for (const adapter of Array.from(this._materialAdapters)) {
             adapter.finalize?.();
         }
         this._materialAdapters.clear();
