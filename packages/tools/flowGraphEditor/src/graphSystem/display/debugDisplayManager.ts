@@ -1,7 +1,7 @@
-import type { IDisplayManager, VisualContentDescription } from "shared-ui-components/nodeGraphSystem/interfaces/displayManager";
-import type { INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
+import { type IDisplayManager, type VisualContentDescription } from "shared-ui-components/nodeGraphSystem/interfaces/displayManager";
+import { type INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
 import * as styles from "./debugDisplayManager.module.scss";
-import type { FlowGraphDebugBlock } from "core/FlowGraph/Blocks/Data/flowGraphDebugBlock";
+import { type FlowGraphDebugBlock } from "core/FlowGraph/Blocks/Data/flowGraphDebugBlock";
 
 export class DebugDisplayManager implements IDisplayManager {
     public getHeaderClass() {

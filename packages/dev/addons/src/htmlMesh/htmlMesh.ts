@@ -3,10 +3,9 @@ import { CreatePlaneVertexData } from "core/Meshes/Builders/planeBuilder";
 import { StandardMaterial } from "core/Materials/standardMaterial";
 import { Matrix } from "core/Maths/math";
 import { PointerEventsCaptureBehavior } from "./pointerEventsCaptureBehavior";
-import type { Scene } from "core/scene";
+import { type Scene } from "core/scene";
 import { Logger } from "core/Misc/logger";
-import type { FitStrategyType } from "./fitStrategy";
-import { FitStrategy } from "./fitStrategy";
+import { type FitStrategyType, FitStrategy } from "./fitStrategy";
 
 /**
  * This class represents HTML content that we want to render as though it is part of the scene.  The HTML content is actually

@@ -1,4 +1,6 @@
 // Version
+var cdnPort = 1337;
+window.__CDN_PORT__ = cdnPort;
 var Versions = {
     Latest: [
         { url: "https://cdn.babylonjs.com/timestamp.js?t=" + Date.now(), instantResolve: false },
@@ -26,21 +28,21 @@ var Versions = {
         { url: "https://rawcdn.githack.com/BabylonJS/Extensions/785013ec55b210d12263c91f3f0a2ae70cf0bc8a/CompoundShader/src/babylonx.CompoundShader.js", instantResolve: true },
     ],
     local: [
-        { url: `//${window.location.hostname}:1337/babylon.js`, instantResolve: false },
-        { url: `//${window.location.hostname}:1337/gui/babylon.gui.min.js`, instantResolve: false },
-        { url: `//${window.location.hostname}:1337/addons/babylonjs.addons.js`, instantResolve: false },
-        { url: `//${window.location.hostname}:1337/nodeEditor/babylon.nodeEditor.js`, instantResolve: false },
-        { url: `//${window.location.hostname}:1337/nodeGeometryEditor/babylon.nodeGeometryEditor.js`, instantResolve: false },
-        { url: `//${window.location.hostname}:1337/nodeRenderGraphEditor/babylon.nodeRenderGraphEditor.js`, instantResolve: false },
-        { url: `//${window.location.hostname}:1337/guiEditor/babylon.guiEditor.js`, instantResolve: false },
-        { url: `//${window.location.hostname}:1337/materialsLibrary/babylonjs.materials.min.js`, instantResolve: false },
-        { url: `//${window.location.hostname}:1337/proceduralTexturesLibrary/babylonjs.proceduralTextures.min.js`, instantResolve: false },
-        { url: `//${window.location.hostname}:1337/postProcessesLibrary/babylonjs.postProcess.min.js`, instantResolve: false },
-        { url: `//${window.location.hostname}:1337/loaders/babylonjs.loaders.min.js`, instantResolve: false },
-        { url: `//${window.location.hostname}:1337/serializers/babylonjs.serializers.min.js`, instantResolve: false },
-        { url: `//${window.location.hostname}:1337/accessibility/babylon.accessibility.js`, instantResolve: false },
-        // { url: `//${window.location.hostname}:1337/inspector/babylon.inspector.bundle.js`, instantResolve: false },
-        { url: `//${window.location.hostname}:1337/inspector/babylon.inspector-v2.bundle.js`, instantResolve: false },
+        { url: `//${window.location.hostname}:${cdnPort}/babylon.js`, instantResolve: false },
+        { url: `//${window.location.hostname}:${cdnPort}/gui/babylon.gui.min.js`, instantResolve: false },
+        { url: `//${window.location.hostname}:${cdnPort}/addons/babylonjs.addons.js`, instantResolve: false },
+        { url: `//${window.location.hostname}:${cdnPort}/nodeEditor/babylon.nodeEditor.js`, instantResolve: false },
+        { url: `//${window.location.hostname}:${cdnPort}/nodeGeometryEditor/babylon.nodeGeometryEditor.js`, instantResolve: false },
+        { url: `//${window.location.hostname}:${cdnPort}/nodeRenderGraphEditor/babylon.nodeRenderGraphEditor.js`, instantResolve: false },
+        { url: `//${window.location.hostname}:${cdnPort}/guiEditor/babylon.guiEditor.js`, instantResolve: false },
+        { url: `//${window.location.hostname}:${cdnPort}/materialsLibrary/babylonjs.materials.min.js`, instantResolve: false },
+        { url: `//${window.location.hostname}:${cdnPort}/proceduralTexturesLibrary/babylonjs.proceduralTextures.min.js`, instantResolve: false },
+        { url: `//${window.location.hostname}:${cdnPort}/postProcessesLibrary/babylonjs.postProcess.min.js`, instantResolve: false },
+        { url: `//${window.location.hostname}:${cdnPort}/loaders/babylonjs.loaders.min.js`, instantResolve: false },
+        { url: `//${window.location.hostname}:${cdnPort}/serializers/babylonjs.serializers.min.js`, instantResolve: false },
+        { url: `//${window.location.hostname}:${cdnPort}/accessibility/babylon.accessibility.js`, instantResolve: false },
+        // { url: `//${window.location.hostname}:${cdnPort}/inspector/babylon.inspector.bundle.js`, instantResolve: false },
+        { url: `//${window.location.hostname}:${cdnPort}/inspector/babylon.inspector-v2.bundle.js`, instantResolve: false },
         { url: "https://rawcdn.githack.com/BabylonJS/Extensions/f43ab677b4bca0a6ab77132d3f785be300382760/ClonerSystem/src/babylonx.cloner.js", instantResolve: false },
         { url: "https://rawcdn.githack.com/BabylonJS/Extensions/785013ec55b210d12263c91f3f0a2ae70cf0bc8a/CompoundShader/src/babylonx.CompoundShader.js", instantResolve: false },
     ],
@@ -247,7 +249,7 @@ let checkBabylonVersionAsync = async function () {
             return { version, bundles };
         } else if (activeVersion === "local") {
             // eslint-disable-next-line no-undef
-            globalThis.BABYLON.Tools.ScriptBaseUrl = window.location.protocol + `//${window.location.hostname}:1337/`;
+            globalThis.BABYLON.Tools.ScriptBaseUrl = window.location.protocol + `//${window.location.hostname}:${cdnPort}/`;
             return { version: "", bundles };
         }
 

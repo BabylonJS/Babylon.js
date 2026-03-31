@@ -1,14 +1,24 @@
-import type { MenuButtonProps, MenuCheckedValueChangeData, MenuCheckedValueChangeEvent } from "@fluentui/react-components";
-import type { ServiceDefinition } from "../modularity/serviceDefinition";
-import type { IShellService } from "../services/shellService";
-import type { ThemeMode } from "../services/themeService";
+import {
+    type MenuButtonProps,
+    type MenuCheckedValueChangeData,
+    type MenuCheckedValueChangeEvent,
+    makeStyles,
+    Menu,
+    MenuItemRadio,
+    MenuList,
+    MenuPopover,
+    MenuTrigger,
+    SplitButton,
+    Tooltip,
+} from "@fluentui/react-components";
+import { type ServiceDefinition } from "../modularity/serviceDefinition";
+import { type IShellService, ShellServiceIdentity } from "../services/shellService";
+import { type ThemeMode } from "../services/themeService";
 
-import { makeStyles, Menu, MenuItemRadio, MenuList, MenuPopover, MenuTrigger, SplitButton, Tooltip } from "@fluentui/react-components";
 import { WeatherMoonRegular, WeatherSunnyRegular } from "@fluentui/react-icons";
 import { useCallback } from "react";
 
 import { useThemeMode } from "../hooks/themeHooks";
-import { ShellServiceIdentity } from "../services/shellService";
 
 const useStyles = makeStyles({
     themeButton: {

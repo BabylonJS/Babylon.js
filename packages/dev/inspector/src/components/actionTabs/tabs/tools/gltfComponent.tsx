@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-restricted-imports */
 import * as React from "react";
-import type { Scene } from "core/scene";
+import { type Scene } from "core/scene";
 import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
 import { CheckBoxLineComponent } from "shared-ui-components/lines/checkBoxLineComponent";
-import type { GlobalState } from "../../../globalState";
+import { type GlobalState } from "../../../globalState";
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
 import { OptionsLine } from "shared-ui-components/lines/optionsLineComponent";
 import { MessageLineComponent } from "shared-ui-components/lines/messageLineComponent";
@@ -11,10 +11,10 @@ import { faCheck, faTimesCircle } from "@fortawesome/free-solid-svg-icons";
 import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
 // TODO - does it still work if loading the modules from the correct files?
 import { GLTFLoaderCoordinateSystemMode, GLTFLoaderAnimationStartMode } from "loaders/glTF/index";
-import type { Nullable } from "core/types";
-import type { Observer } from "core/Misc/observable";
-import type { IGLTFValidationResults } from "babylonjs-gltf2interface";
-import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
+import { type Nullable } from "core/types";
+import { type Observer } from "core/Misc/observable";
+import { type IGLTFValidationResults } from "babylonjs-gltf2interface";
+import { type LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 
 interface IGLTFComponentProps {
     scene: Scene;

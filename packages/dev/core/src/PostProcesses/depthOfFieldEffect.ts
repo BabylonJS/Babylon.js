@@ -1,17 +1,16 @@
-import type { Nullable } from "../types";
-import type { Camera } from "../Cameras/camera";
+import { type Nullable } from "../types";
+import { type Camera } from "../Cameras/camera";
 import { Texture } from "../Materials/Textures/texture";
-import type { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
-import type { PostProcess } from "./postProcess";
+import { type RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
+import { type PostProcess } from "./postProcess";
 import { PostProcessRenderEffect } from "../PostProcesses/RenderPipeline/postProcessRenderEffect";
 import { CircleOfConfusionPostProcess } from "./circleOfConfusionPostProcess";
 import { DepthOfFieldBlurPostProcess } from "./depthOfFieldBlurPostProcess";
 import { DepthOfFieldMergePostProcess } from "./depthOfFieldMergePostProcess";
-import type { Scene } from "../scene";
+import { type Scene } from "../scene";
 import { Constants } from "../Engines/constants";
-import type { AbstractEngine } from "core/Engines/abstractEngine";
-import type { ThinDepthOfFieldEffectBlurLevel } from "./thinDepthOfFieldEffect";
-import { ThinDepthOfFieldEffect } from "./thinDepthOfFieldEffect";
+import { type AbstractEngine } from "core/Engines/abstractEngine";
+import { type ThinDepthOfFieldEffectBlurLevel, ThinDepthOfFieldEffect } from "./thinDepthOfFieldEffect";
 
 /**
  * Specifies the level of max blur that should be applied when using the depth of field effect

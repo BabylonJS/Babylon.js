@@ -1,15 +1,13 @@
-import type { Nullable } from "core/types";
-import type { IDisposable, Scene } from "core/scene";
-import type { IService, ServiceDefinition } from "../../modularity/serviceDefinition";
-import type { IShellService } from "../shellService";
-import type { DynamicAccordionSection, DynamicAccordionSectionContent } from "../../components/extensibleAccordion";
+import { type Nullable } from "core/types";
+import { type IDisposable, type Scene } from "core/scene";
+import { type IService, type ServiceDefinition } from "../../modularity/serviceDefinition";
+import { type IShellService, ShellServiceIdentity } from "../shellService";
+import { type DynamicAccordionSection, type DynamicAccordionSectionContent } from "../../components/extensibleAccordion";
 import { WrenchRegular } from "@fluentui/react-icons";
 import { useObservableCollection, useObservableState, useOrderedObservableCollection } from "../../hooks/observableHooks";
 import { ObservableCollection } from "../../misc/observableCollection";
-import { ShellServiceIdentity } from "../shellService";
 import { ToolsPane } from "../../components/tools/toolsPane";
-import { SceneContextIdentity } from "../sceneContext";
-import type { ISceneContext } from "../sceneContext";
+import { SceneContextIdentity, type ISceneContext } from "../sceneContext";
 
 /**
  * The unique identity symbol for the tools service.

@@ -1,6 +1,6 @@
-import type { Nullable } from "core/types.js";
-import type { ConnectionPoint, RuntimeData } from "../connection/connectionPoint.js";
-import type { ConnectionPointType } from "../connection/connectionPointType.js";
+import { type Nullable } from "core/types.js";
+import { type ConnectionPoint, type RuntimeData } from "../connection/connectionPoint.js";
+import { type ConnectionPointType } from "../connection/connectionPointType.js";
 
 import { BaseBlock } from "./baseBlock.js";
 

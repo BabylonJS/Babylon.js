@@ -1,13 +1,12 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import type { Nullable } from "core/types";
+import { type Nullable } from "core/types";
 import { Tools } from "core/Misc/tools";
 import { VertexBuffer } from "core/Buffers/buffer";
-import type { AbstractMesh } from "core/Meshes/abstractMesh";
+import { type AbstractMesh } from "core/Meshes/abstractMesh";
 import { Mesh } from "core/Meshes/mesh";
-import type { ISceneLoaderPlugin } from "core/Loading/sceneLoader";
-import { RegisterSceneLoaderPlugin } from "core/Loading/sceneLoader";
+import { type ISceneLoaderPlugin, RegisterSceneLoaderPlugin } from "core/Loading/sceneLoader";
 import { AssetContainer } from "core/assetContainer";
-import type { Scene } from "core/scene";
+import { type Scene } from "core/scene";
 import { STLFileLoaderMetadata } from "./stlFileLoader.metadata";
 import "core/Materials/standardMaterial";
 

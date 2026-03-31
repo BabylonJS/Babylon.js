@@ -43,17 +43,11 @@ export const Decode = (buffer: Uint8Array | Uint16Array): string => {
     return result;
 };
 
-/**
- * Encode a buffer to a base64 string
- * @param buffer defines the buffer to encode
- * @returns the encoded string
- */
-export const EncodeArrayBufferToBase64 = (buffer: ArrayBuffer | ArrayBufferView): string => {
+function JsEncodeArrayBufferToBase64(bytes: Uint8Array): string {
     const keyStr = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
     let output = "";
     let chr1, chr2, chr3, enc1, enc2, enc3, enc4;
     let i = 0;
-    const bytes = ArrayBuffer.isView(buffer) ? new Uint8Array(buffer.buffer, buffer.byteOffset, buffer.byteLength) : new Uint8Array(buffer);
 
     while (i < bytes.length) {
         chr1 = bytes[i++];
@@ -74,6 +68,29 @@ export const EncodeArrayBufferToBase64 = (buffer: ArrayBuffer | ArrayBufferView)
     }
 
     return output;
+}
+
+function JsDecodeBase64ToBinary(base64Data: string): ArrayBuffer {
+    const decodedString = DecodeBase64ToString(base64Data);
+    const bufferLength = decodedString.length;
+    const bufferView = new Uint8Array(new ArrayBuffer(bufferLength));
+
+    for (let i = 0; i < bufferLength; i++) {
+        bufferView[i] = decodedString.charCodeAt(i);
+    }
+
+    return bufferView.buffer;
+}
+
+/**
+ * Encode a buffer to a base64 string
+ * @param buffer defines the buffer to encode
+ * @returns the encoded string
+ */
+export const EncodeArrayBufferToBase64 = (buffer: ArrayBuffer | ArrayBufferView): string => {
+    const bytes = ArrayBuffer.isView(buffer) ? new Uint8Array(buffer.buffer, buffer.byteOffset, buffer.byteLength) : new Uint8Array(buffer);
+
+    return bytes.toBase64 ? bytes.toBase64() : JsEncodeArrayBufferToBase64(bytes);
 };
 
 /**
@@ -91,15 +108,7 @@ export const DecodeBase64ToString = (base64Data: string): string => {
  * @returns ArrayBuffer of byte data
  */
 export const DecodeBase64ToBinary = (base64Data: string): ArrayBuffer => {
-    const decodedString = DecodeBase64ToString(base64Data);
-    const bufferLength = decodedString.length;
-    const bufferView = new Uint8Array(new ArrayBuffer(bufferLength));
-
-    for (let i = 0; i < bufferLength; i++) {
-        bufferView[i] = decodedString.charCodeAt(i);
-    }
-
-    return bufferView.buffer;
+    return Uint8Array.fromBase64 ? Uint8Array.fromBase64(base64Data).buffer : JsDecodeBase64ToBinary(base64Data);
 };
 
 /**

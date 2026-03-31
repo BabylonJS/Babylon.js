@@ -1,14 +1,14 @@
-import type { DeepImmutable, Nullable } from "../types";
+import { type DeepImmutable, type Nullable } from "../types";
 import { serialize, serializeAsVector3, serializeAsQuaternion } from "../Misc/decorators";
 import { SerializationHelper } from "../Misc/decorators.serialization";
 import { Observable } from "../Misc/observable";
 
-import type { Camera } from "../Cameras/camera";
-import type { Scene } from "../scene";
+import { type Camera } from "../Cameras/camera";
+import { type Scene } from "../scene";
 import { Quaternion, Matrix, Vector3, TmpVectors } from "../Maths/math.vector";
 import { Node } from "../node";
-import type { Bone } from "../Bones/bone";
-import type { AbstractMesh } from "../Meshes/abstractMesh";
+import { type Bone } from "../Bones/bone";
+import { type AbstractMesh } from "../Meshes/abstractMesh";
 import { Space } from "../Maths/math.axis";
 import { GetClass } from "../Misc/typeStore";
 

@@ -1,7 +1,6 @@
 import { TypeLedger } from "shared-ui-components/nodeGraphSystem/typeLedger";
 import { BlockNodeData } from "./blockNodeData";
-import { ConnectionPointPortData } from "./connectionPointPortData";
-import type { FlowGraphConnectionPoint } from "./connectionPointPortData";
+import { ConnectionPointPortData, type FlowGraphConnectionPoint } from "./connectionPointPortData";
 
 export const RegisterTypeLedger = () => {
     TypeLedger.PortDataBuilder = (data, nodeContainer) => {

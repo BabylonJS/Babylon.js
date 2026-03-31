@@ -1,57 +1,55 @@
 import { serialize } from "../Misc/decorators";
 import { Tools } from "../Misc/tools";
-import type { IAnimatable } from "../Animations/animatable.interface";
-import type { SmartArray } from "../Misc/smartArray";
-import type { Observer } from "../Misc/observable";
-import { Observable } from "../Misc/observable";
-import type { Immutable, Nullable } from "../types";
-import type { Matrix } from "../Maths/math.vector";
+import { type IAnimatable } from "../Animations/animatable.interface";
+import { type SmartArray } from "../Misc/smartArray";
+import { type Observer, Observable } from "../Misc/observable";
+import { type Immutable, type Nullable } from "../types";
+import { type Matrix } from "../Maths/math.vector";
 import { EngineStore } from "../Engines/engineStore";
 import { SubMesh } from "../Meshes/subMesh";
-import type { AbstractMesh } from "../Meshes/abstractMesh";
+import { type AbstractMesh } from "../Meshes/abstractMesh";
 import { UniformBuffer } from "./uniformBuffer";
-import type { Effect } from "./effect";
-import type { BaseTexture } from "../Materials/Textures/baseTexture";
-import type { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
-import type { MaterialDefines } from "./materialDefines";
+import { type Effect } from "./effect";
+import { type BaseTexture } from "../Materials/Textures/baseTexture";
+import { type RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
+import { type MaterialDefines } from "./materialDefines";
 import { Constants } from "../Engines/constants";
 import { Logger } from "../Misc/logger";
-import type { IInspectable } from "../Misc/iInspectable";
+import { type IInspectable } from "../Misc/iInspectable";
 import { Plane } from "../Maths/math.plane";
-import type { ShadowDepthWrapper } from "./shadowDepthWrapper";
-import type { IMaterialContext } from "../Engines/IMaterialContext";
+import { type ShadowDepthWrapper } from "./shadowDepthWrapper";
+import { type IMaterialContext } from "../Engines/IMaterialContext";
 import { DrawWrapper } from "./drawWrapper";
 import { MaterialStencilState } from "./materialStencilState";
-import { ScenePerformancePriority } from "../scene";
-import type { Scene } from "../scene";
-import type {
-    MaterialPluginDisposed,
-    MaterialPluginIsReadyForSubMesh,
-    MaterialPluginGetDefineNames,
-    MaterialPluginBindForSubMesh,
-    MaterialPluginGetActiveTextures,
-    MaterialPluginHasTexture,
-    MaterialPluginGetAnimatables,
-    MaterialPluginPrepareDefines,
-    MaterialPluginPrepareEffect,
-    MaterialPluginPrepareUniformBuffer,
-    MaterialPluginCreated,
-    MaterialPluginFillRenderTargetTextures,
-    MaterialPluginHasRenderTargetTextures,
-    MaterialPluginHardBindForSubMesh,
+import { ScenePerformancePriority, type Scene } from "../scene";
+import {
+    type MaterialPluginDisposed,
+    type MaterialPluginIsReadyForSubMesh,
+    type MaterialPluginGetDefineNames,
+    type MaterialPluginBindForSubMesh,
+    type MaterialPluginGetActiveTextures,
+    type MaterialPluginHasTexture,
+    type MaterialPluginGetAnimatables,
+    type MaterialPluginPrepareDefines,
+    type MaterialPluginPrepareEffect,
+    type MaterialPluginPrepareUniformBuffer,
+    type MaterialPluginCreated,
+    type MaterialPluginFillRenderTargetTextures,
+    type MaterialPluginHasRenderTargetTextures,
+    type MaterialPluginHardBindForSubMesh,
+    MaterialPluginEvent,
 } from "./materialPluginEvent";
-import { MaterialPluginEvent } from "./materialPluginEvent";
-import type { ShaderCustomProcessingFunction } from "../Engines/Processors/shaderProcessingOptions";
-import type { IClipPlanesHolder } from "../Misc/interfaces/iClipPlanesHolder";
+import { type ShaderCustomProcessingFunction } from "../Engines/Processors/shaderProcessingOptions";
+import { type IClipPlanesHolder } from "../Misc/interfaces/iClipPlanesHolder";
 
-import type { PrePassRenderer } from "../Rendering/prePassRenderer";
-import type { Mesh } from "../Meshes/mesh";
-import type { Animation } from "../Animations/animation";
-import type { InstancedMesh } from "../Meshes/instancedMesh";
+import { type PrePassRenderer } from "../Rendering/prePassRenderer";
+import { type Mesh } from "../Meshes/mesh";
+import { type Animation } from "../Animations/animation";
+import { type InstancedMesh } from "../Meshes/instancedMesh";
 import { BindSceneUniformBuffer } from "./materialHelper.functions";
 import { SerializationHelper } from "../Misc/decorators.serialization";
 import { ShaderLanguage } from "./shaderLanguage";
-import type { IAssetContainer } from "core/IAssetContainer";
+import { type IAssetContainer } from "core/IAssetContainer";
 import { IsWrapper } from "./drawWrapper.functions";
 
 declare let BABYLON: any;

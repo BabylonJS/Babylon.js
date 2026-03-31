@@ -1,4 +1,4 @@
-import type { GlobalState } from "../globalState";
+import { type GlobalState } from "../globalState";
 import { Logger } from "@dev/core";
 
 // One-shot session flag for user-initiated engine reloads.

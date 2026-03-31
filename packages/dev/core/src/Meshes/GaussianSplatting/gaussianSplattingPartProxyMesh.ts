@@ -1,9 +1,9 @@
-import type { Nullable } from "core/types";
-import type { Scene } from "core/scene";
+import { type Nullable } from "core/types";
+import { type Scene } from "core/scene";
 import { Mesh } from "../mesh";
 import { BoundingInfo } from "../../Culling/boundingInfo";
-import type { GaussianSplattingMesh } from "./gaussianSplattingMesh";
-import type { Ray } from "../../Culling/ray.core";
+import { type GaussianSplattingMesh } from "./gaussianSplattingMesh";
+import { type Ray } from "../../Culling/ray.core";
 import { PickingInfo } from "../../Collisions/pickingInfo";
 import { Vector3 } from "../../Maths/math.vector";
 

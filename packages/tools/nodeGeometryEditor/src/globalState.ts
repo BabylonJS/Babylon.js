@@ -1,18 +1,18 @@
-import type { NodeGeometry } from "core/Meshes/Node/nodeGeometry";
+import { type NodeGeometry } from "core/Meshes/Node/nodeGeometry";
 import { Observable } from "core/Misc/observable";
-import type { LogEntry } from "./components/log/logComponent";
+import { type LogEntry } from "./components/log/logComponent";
 import { DataStorage } from "core/Misc/dataStorage";
 import { Color4 } from "core/Maths/math.color";
 import { RegisterElbowSupport } from "./graphSystem/registerElbowSupport";
 import { RegisterNodePortDesign } from "./graphSystem/registerNodePortDesign";
-import type { GraphNode } from "shared-ui-components/nodeGraphSystem/graphNode";
-import type { GraphFrame } from "shared-ui-components/nodeGraphSystem/graphFrame";
-import type { Nullable } from "core/types";
+import { type GraphNode } from "shared-ui-components/nodeGraphSystem/graphNode";
+import { type GraphFrame } from "shared-ui-components/nodeGraphSystem/graphFrame";
+import { type Nullable } from "core/types";
 import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 import { StateManager } from "shared-ui-components/nodeGraphSystem/stateManager";
 import { RegisterDefaultInput } from "./graphSystem/registerDefaultInput";
 import { RegisterExportData } from "./graphSystem/registerExportData";
-import type { NodeGeometryBlock } from "core/Meshes/Node/nodeGeometryBlock";
+import { type NodeGeometryBlock } from "core/Meshes/Node/nodeGeometryBlock";
 import { PreviewMode } from "./components/preview/previewMode";
 import { RegisterDebugSupport } from "./graphSystem/registerDebugSupport";
 

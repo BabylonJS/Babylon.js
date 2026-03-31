@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-import type { Camera } from "core/Cameras/camera";
-import type { IMatrixLike, IVector3Like, IVector4Like } from "core/Maths/math.like";
+import { type Camera } from "core/Cameras/camera";
+import { type IMatrixLike, type IVector3Like, type IVector4Like } from "core/Maths/math.like";
 import { Matrix, Vector3, Vector4 } from "core/Maths/math.vector";
 import { Ray } from "core/Culling/ray.core";
 import { Vector3Dot } from "core/Maths/math.vector.functions";

@@ -1,7 +1,6 @@
 import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
-import { useCallback } from "react";
-import type { FunctionComponent } from "react";
-import type { Scene } from "core/scene";
+import { useCallback, type FunctionComponent } from "react";
+import { type Scene } from "core/scene";
 import { captureEquirectangularFromScene } from "core/Misc/equirectangularCapture";
 import { CameraRegular } from "@fluentui/react-icons";
 import { FrameGraphUtils } from "core/FrameGraph/frameGraphUtils";

@@ -1,4 +1,4 @@
-import type { SettingDescriptor } from "./settingsStore";
+import { type SettingDescriptor } from "./settingsStore";
 
 // These are all "global" settings that aren't produced/owned by a specific service,
 // so we just add them by default directly in the SettingsService.

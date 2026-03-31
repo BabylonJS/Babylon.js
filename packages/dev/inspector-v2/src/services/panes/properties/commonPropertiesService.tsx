@@ -1,11 +1,10 @@
-import type { IDisposable } from "core/index";
-import type { ServiceDefinition } from "../../../modularity/serviceDefinition";
-import type { IPropertiesService } from "./propertiesService";
+import { type IDisposable } from "core/index";
+import { type ServiceDefinition } from "../../../modularity/serviceDefinition";
+import { type IPropertiesService, PropertiesServiceIdentity } from "./propertiesService";
 
 import { Scene } from "core/scene";
 
 import { CommonGeneralProperties, DisposableGeneralProperties, IsCommonEntity } from "../../../components/properties/commonGeneralProperties";
-import { PropertiesServiceIdentity } from "./propertiesService";
 
 type CommonEntity = {
     id?: number;

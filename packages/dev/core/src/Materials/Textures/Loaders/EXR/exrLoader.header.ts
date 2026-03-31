@@ -1,8 +1,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { Logger } from "core/Misc/logger";
-import type { DataCursor } from "./exrLoader.core";
-import { ParseNullTerminatedString, ParseUint32, ParseValue } from "./exrLoader.core";
-import type { IEXRHeader } from "./exrLoader.interfaces";
+import { type DataCursor, ParseNullTerminatedString, ParseUint32, ParseValue } from "./exrLoader.core";
+import { type IEXRHeader } from "./exrLoader.interfaces";
 
 /**
  * Inspired by https://github.com/sciecode/three.js/blob/dev/examples/jsm/loaders/EXRLoader.js

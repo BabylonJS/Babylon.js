@@ -1,5 +1,5 @@
 {
-    "declarationLibs": ["@dev/loaders", "@lts/loaders"],
+    "declarationLibs": ["@dev/loaders"],
     "devPackageName": "loaders",
     "filename": "babylonjs.loaders.module.d.ts",
     "outputDirectory": "./",

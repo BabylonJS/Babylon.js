@@ -1,12 +1,11 @@
 import * as React from "react";
 import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
 import { CheckBoxLineComponent } from "../../sharedComponents/checkBoxLineComponent";
-import type { StateManager } from "shared-ui-components/nodeGraphSystem/stateManager";
+import { type StateManager } from "shared-ui-components/nodeGraphSystem/stateManager";
 import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
-import type { NodePort } from "shared-ui-components/nodeGraphSystem/nodePort";
+import { type NodePort } from "shared-ui-components/nodeGraphSystem/nodePort";
 import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
-import type { NodeMaterialConnectionPoint } from "core/Materials";
-import { NodeMaterialBlockConnectionPointTypes } from "core/Materials";
+import { type NodeMaterialConnectionPoint, NodeMaterialBlockConnectionPointTypes } from "core/Materials";
 import { GetListOfAcceptedTypes } from "shared-ui-components/nodeGraphSystem/tools";
 import { PropertyTabComponentBase } from "shared-ui-components/components/propertyTabComponentBase";
 

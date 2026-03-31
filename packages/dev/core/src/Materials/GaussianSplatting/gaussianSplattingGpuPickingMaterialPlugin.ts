@@ -1,14 +1,13 @@
-import type { Nullable } from "../../types";
-import type { Scene } from "../../scene";
-import type { AbstractEngine } from "../../Engines/abstractEngine";
-import type { SubMesh } from "../../Meshes/subMesh";
-import type { UniformBuffer } from "../uniformBuffer";
-import type { MaterialDefines } from "../materialDefines";
+import { type Nullable } from "../../types";
+import { type Scene } from "../../scene";
+import { type AbstractEngine } from "../../Engines/abstractEngine";
+import { type SubMesh } from "../../Meshes/subMesh";
+import { type UniformBuffer } from "../uniformBuffer";
+import { type MaterialDefines } from "../materialDefines";
 import { MaterialPluginBase } from "../materialPluginBase";
 import { ShaderLanguage } from "../shaderLanguage";
 import { RegisterClass } from "../../Misc/typeStore";
-import { GetGaussianSplattingMaxPartCount } from "./gaussianSplattingMaterial";
-import type { GaussianSplattingMaterial } from "./gaussianSplattingMaterial";
+import { GetGaussianSplattingMaxPartCount, type GaussianSplattingMaterial } from "./gaussianSplattingMaterial";
 
 /**
  * Plugin for GaussianSplattingMaterial that replaces per-splat color output with

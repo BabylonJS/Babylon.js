@@ -1,6 +1,6 @@
-import type { Quaternion, Vector3 } from "../Maths/math.vector";
-import type { PhysicsShape } from "./v2/physicsShape";
-import type { PhysicsBody } from "./v2/physicsBody";
+import { type Quaternion, type Vector3 } from "../Maths/math.vector";
+import { type PhysicsShape } from "./v2/physicsShape";
+import { type PhysicsBody } from "./v2/physicsBody";
 
 /**
  * Shape cast query

@@ -1,6 +1,6 @@
-import type { FunctionComponent } from "react";
+import { type FunctionComponent } from "react";
 
-import type { DefaultRenderingPipeline } from "core/PostProcesses/RenderPipeline/Pipelines/defaultRenderingPipeline";
+import { type DefaultRenderingPipeline } from "core/PostProcesses/RenderPipeline/Pipelines/defaultRenderingPipeline";
 import { DepthOfFieldEffectBlurLevel } from "core/PostProcesses/depthOfFieldEffect";
 import { ImageProcessingConfiguration } from "core/Materials/imageProcessingConfiguration";
 

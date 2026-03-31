@@ -1,6 +1,6 @@
-import type { Nullable } from "core/types";
-import type { AnimationConfiguration } from "./animationConfiguration";
-import type { RawLottieAnimation } from "./parsing/rawTypes";
+import { type Nullable } from "core/types";
+import { type AnimationConfiguration } from "./animationConfiguration";
+import { type RawLottieAnimation } from "./parsing/rawTypes";
 
 /**
  * Generic type representing a message sent between the main thread and the worker.

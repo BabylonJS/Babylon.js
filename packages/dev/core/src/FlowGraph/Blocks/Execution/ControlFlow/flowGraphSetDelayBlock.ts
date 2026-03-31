@@ -1,9 +1,9 @@
 import { FlowGraphAsyncExecutionBlock } from "../../../flowGraphAsyncExecutionBlock";
-import type { IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
-import type { FlowGraphContext } from "../../../flowGraphContext";
-import type { FlowGraphDataConnection } from "../../../flowGraphDataConnection";
+import { type IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
+import { type FlowGraphContext } from "../../../flowGraphContext";
+import { type FlowGraphDataConnection } from "../../../flowGraphDataConnection";
 import { RichTypeFlowGraphInteger, RichTypeNumber } from "../../../flowGraphRichTypes";
-import type { FlowGraphSignalConnection } from "../../../flowGraphSignalConnection";
+import { type FlowGraphSignalConnection } from "../../../flowGraphSignalConnection";
 import { AdvancedTimer } from "../../../../Misc/timer";
 import { Logger } from "../../../../Misc/logger";
 import { FlowGraphBlockNames } from "../../flowGraphBlockNames";

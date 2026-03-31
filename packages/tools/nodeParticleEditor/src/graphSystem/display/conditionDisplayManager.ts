@@ -1,5 +1,5 @@
-import type { IDisplayManager } from "shared-ui-components/nodeGraphSystem/interfaces/displayManager";
-import type { INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
+import { type IDisplayManager } from "shared-ui-components/nodeGraphSystem/interfaces/displayManager";
+import { type INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
 import * as styles from "./conditionDisplayManager.module.scss";
 
 export class ConditionDisplayManager implements IDisplayManager {

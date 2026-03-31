@@ -1,24 +1,22 @@
 /* eslint-disable @typescript-eslint/promise-function-async */
 /* eslint-disable no-restricted-syntax */
 /* eslint-disable github/no-then */
-import type { IndicesArray, Nullable, TypedArray, TypedArrayConstructor } from "core/types";
+import { type IndicesArray, type Nullable, type TypedArray, type TypedArrayConstructor } from "core/types";
 import { Deferred } from "core/Misc/deferred";
 import { Quaternion, Vector3, Matrix, TmpVectors } from "core/Maths/math.vector";
 import { Color3 } from "core/Maths/math.color";
 import { Tools } from "core/Misc/tools";
 import { Camera } from "core/Cameras/camera";
 import { FreeCamera } from "core/Cameras/freeCamera";
-import type { Animation } from "core/Animations/animation";
-import type { IAnimatable } from "core/Animations/animatable.interface";
-import type { IAnimationKey } from "core/Animations/animationKey";
-import { AnimationKeyInterpolation } from "core/Animations/animationKey";
-import type { AnimationGroup } from "core/Animations/animationGroup";
+import { type Animation } from "core/Animations/animation";
+import { type IAnimatable } from "core/Animations/animatable.interface";
+import { type IAnimationKey, AnimationKeyInterpolation } from "core/Animations/animationKey";
+import { type AnimationGroup } from "core/Animations/animationGroup";
 import { Bone } from "core/Bones/bone";
 import { Skeleton } from "core/Bones/skeleton";
 import { Material } from "core/Materials/material";
-import type { BaseTexture } from "core/Materials/Textures/baseTexture";
-import type { ITextureCreationOptions } from "core/Materials/Textures/texture";
-import { Texture } from "core/Materials/Textures/texture";
+import { type BaseTexture } from "core/Materials/Textures/baseTexture";
+import { type ITextureCreationOptions, Texture } from "core/Materials/Textures/texture";
 import { TransformNode } from "core/Meshes/transformNode";
 import { Buffer, VertexBuffer } from "core/Buffers/buffer";
 import { Geometry } from "core/Meshes/geometry";
@@ -26,10 +24,10 @@ import { AbstractMesh } from "core/Meshes/abstractMesh";
 import { Mesh } from "core/Meshes/mesh";
 import { MorphTarget } from "core/Morph/morphTarget";
 import { MorphTargetManager } from "core/Morph/morphTargetManager";
-import type { ISceneLoaderAsyncResult, ISceneLoaderProgressEvent } from "core/Loading/sceneLoader";
-import type { Scene } from "core/scene";
-import type { IProperty } from "babylonjs-gltf2interface";
+import { type ISceneLoaderAsyncResult, type ISceneLoaderProgressEvent } from "core/Loading/sceneLoader";
+import { type Scene } from "core/scene";
 import {
+    type IProperty,
     AnimationChannelTargetPath,
     AnimationSamplerInterpolation,
     AccessorType,
@@ -41,49 +39,47 @@ import {
     TextureMagFilter,
     MeshPrimitiveMode,
 } from "babylonjs-gltf2interface";
-import type {
-    IGLTF,
-    ISampler,
-    INode,
-    IScene,
-    IMesh,
-    IAccessor,
-    ISkin,
-    ICamera,
-    IAnimation,
-    IBuffer,
-    IBufferView,
-    IMaterialPbrMetallicRoughness,
-    IMaterial,
-    ITextureInfo,
-    ITexture,
-    IImage,
-    IMeshPrimitive,
-    IArrayItem,
-    _ISamplerData,
-    IAnimationChannel,
-    IAnimationSampler,
-    _IAnimationSamplerData,
+import {
+    type IGLTF,
+    type ISampler,
+    type INode,
+    type IScene,
+    type IMesh,
+    type IAccessor,
+    type ISkin,
+    type ICamera,
+    type IAnimation,
+    type IBuffer,
+    type IBufferView,
+    type IMaterialPbrMetallicRoughness,
+    type IMaterial,
+    type ITextureInfo,
+    type ITexture,
+    type IImage,
+    type IMeshPrimitive,
+    type IArrayItem,
+    type _ISamplerData,
+    type IAnimationChannel,
+    type IAnimationSampler,
+    type _IAnimationSamplerData,
 } from "./glTFLoaderInterfaces";
-import type { IGLTFLoaderExtension } from "./glTFLoaderExtension";
-import type { IGLTFLoader, IGLTFLoaderData } from "../glTFFileLoader";
-import { GLTFFileLoader, GLTFLoaderState, GLTFLoaderCoordinateSystemMode, GLTFLoaderAnimationStartMode } from "../glTFFileLoader";
-import type { IDataBuffer } from "core/Misc/dataReader";
+import { type IGLTFLoaderExtension } from "./glTFLoaderExtension";
+import { type IGLTFLoader, type IGLTFLoaderData, GLTFFileLoader, GLTFLoaderState, GLTFLoaderCoordinateSystemMode, GLTFLoaderAnimationStartMode } from "../glTFFileLoader";
+import { type IDataBuffer } from "core/Misc/dataReader";
 import { DecodeBase64UrlToBinary, GetMimeType, IsBase64DataUrl, LoadFileError } from "core/Misc/fileTools";
 import { Logger } from "core/Misc/logger";
-import type { Light } from "core/Lights/light";
+import { type Light } from "core/Lights/light";
 import { BoundingInfo } from "core/Culling/boundingInfo";
-import type { AssetContainer } from "core/assetContainer";
-import type { AnimationPropertyInfo } from "./glTFLoaderAnimation";
-import type { IObjectInfo } from "core/ObjectModel/objectModelInterfaces";
-import { registeredGLTFExtensions, registerGLTFExtension, unregisterGLTFExtension } from "./glTFLoaderExtensionRegistry";
-import type { GLTFExtensionFactory } from "./glTFLoaderExtensionRegistry";
-import type { IInterpolationPropertyInfo } from "core/FlowGraph/typeDefinitions";
+import { type AssetContainer } from "core/assetContainer";
+import { type AnimationPropertyInfo } from "./glTFLoaderAnimation";
+import { type IObjectInfo } from "core/ObjectModel/objectModelInterfaces";
+import { registeredGLTFExtensions, registerGLTFExtension, unregisterGLTFExtension, type GLTFExtensionFactory } from "./glTFLoaderExtensionRegistry";
+import { type IInterpolationPropertyInfo } from "core/FlowGraph/typeDefinitions";
 import { GetMappingForKey } from "./Extensions/objectModelMapping";
 import { deepMerge } from "core/Misc/deepMerger";
 import { GetTypedArrayConstructor } from "core/Buffers/bufferUtils";
 import { Lazy } from "core/Misc/lazy";
-import type { IMaterialLoadingAdapter } from "./materialLoadingAdapter";
+import { type IMaterialLoadingAdapter } from "./materialLoadingAdapter";
 
 // Caching these dynamic imports gives a surprising perf boost (compared to importing them directly each time).
 const LazyAnimationGroupModulePromise = new Lazy(() => import("core/Animations/animationGroup"));

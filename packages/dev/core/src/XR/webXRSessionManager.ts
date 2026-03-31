@@ -1,18 +1,17 @@
 import { Logger } from "../Misc/logger";
-import type { Observer } from "../Misc/observable";
-import { Observable } from "../Misc/observable";
-import type { Nullable } from "../types";
-import type { IDisposable, Scene } from "../scene";
-import type { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
-import type { WebXRRenderTarget } from "./webXRTypes";
+import { type Observer, Observable } from "../Misc/observable";
+import { type Nullable } from "../types";
+import { type IDisposable, type Scene } from "../scene";
+import { type RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
+import { type WebXRRenderTarget } from "./webXRTypes";
 import { WebXRManagedOutputCanvas, WebXRManagedOutputCanvasOptions } from "./webXRManagedOutputCanvas";
-import type { Engine } from "../Engines/engine";
-import type { IWebXRRenderTargetTextureProvider, WebXRLayerRenderTargetTextureProvider } from "./webXRRenderTargetTextureProvider";
-import type { Viewport } from "../Maths/math.viewport";
-import type { WebXRLayerWrapper } from "./webXRLayerWrapper";
+import { type Engine } from "../Engines/engine";
+import { type IWebXRRenderTargetTextureProvider, type WebXRLayerRenderTargetTextureProvider } from "./webXRRenderTargetTextureProvider";
+import { type Viewport } from "../Maths/math.viewport";
+import { type WebXRLayerWrapper } from "./webXRLayerWrapper";
 import { NativeXRLayerWrapper, NativeXRRenderTarget } from "./native/nativeXRRenderTarget";
 import { WebXRWebGLLayerWrapper } from "./webXRWebGLLayer";
-import type { AbstractEngine } from "../Engines/abstractEngine";
+import { type AbstractEngine } from "../Engines/abstractEngine";
 
 /**
  * Manages an XRSession to work with Babylon's engine

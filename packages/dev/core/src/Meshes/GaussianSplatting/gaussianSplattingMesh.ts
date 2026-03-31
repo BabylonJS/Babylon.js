@@ -1,26 +1,25 @@
-import type { Scene } from "core/scene";
-import type { DeepImmutable, Nullable } from "core/types";
-import type { BaseTexture } from "core/Materials/Textures/baseTexture";
+import { type Scene } from "core/scene";
+import { type DeepImmutable, type Nullable } from "core/types";
+import { type BaseTexture } from "core/Materials/Textures/baseTexture";
 import { SubMesh } from "../subMesh";
-import type { AbstractMesh } from "../abstractMesh";
+import { type AbstractMesh } from "../abstractMesh";
 import { Mesh } from "../mesh";
 import { VertexData } from "../mesh.vertexData";
-import { Matrix, TmpVectors, Vector2, Vector3 } from "core/Maths/math.vector";
-import { Quaternion } from "core/Maths/math.vector";
+import { Matrix, TmpVectors, Vector2, Vector3, Quaternion } from "core/Maths/math.vector";
 import { Logger } from "core/Misc/logger";
 import { GaussianSplattingMaterial, GetGaussianSplattingMaxPartCount } from "core/Materials/GaussianSplatting/gaussianSplattingMaterial";
 import { RawTexture } from "core/Materials/Textures/rawTexture";
 import { Constants } from "core/Engines/constants";
 import "core/Meshes/thinInstanceMesh";
-import type { ThinEngine } from "core/Engines/thinEngine";
+import { type ThinEngine } from "core/Engines/thinEngine";
 import { ToHalfFloat } from "core/Misc/textureTools";
-import type { Material } from "core/Materials/material";
+import { type Material } from "core/Materials/material";
 import { Scalar } from "core/Maths/math.scalar";
 import { runCoroutineSync, runCoroutineAsync, createYieldingScheduler, type Coroutine } from "core/Misc/coroutine";
 import { EngineStore } from "core/Engines/engineStore";
-import type { Camera } from "core/Cameras/camera";
+import { type Camera } from "core/Cameras/camera";
 import { ImportMeshAsync } from "core/Loading/sceneLoader";
-import type { INative } from "core/Engines/Native/nativeInterfaces";
+import { type INative } from "core/Engines/Native/nativeInterfaces";
 import { GaussianSplattingPartProxyMesh } from "./gaussianSplattingPartProxyMesh";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -378,9 +377,27 @@ export class GaussianSplattingMesh extends Mesh {
 
     /**
      * SH degree. 0 = no sh (default). 1 = 3 parameters. 2 = 8 parameters. 3 = 15 parameters.
+     * Value is clamped between 0 and the maximum degree available from loaded data.
      */
     public get shDegree() {
         return this._shDegree;
+    }
+
+    public set shDegree(value: number) {
+        const maxDegree = this._shTextures?.length ?? 0;
+        const clamped = Math.max(0, Math.min(Math.round(value), maxDegree));
+        if (this._shDegree === clamped) {
+            return;
+        }
+        this._shDegree = clamped;
+        this.material?.resetDrawCache();
+    }
+
+    /**
+     * Maximum SH degree available from the loaded data.
+     */
+    public get maxShDegree() {
+        return this._shTextures?.length ?? 0;
     }
 
     /**
@@ -749,7 +766,7 @@ export class GaussianSplattingMesh extends Mesh {
 
         // geometry used for shadows, bind the first found in the camera view infos
         if (!this._geometry && this._cameraViewInfos.size) {
-            this._geometry = this._cameraViewInfos.values().next().value.mesh.geometry;
+            this._geometry = this._cameraViewInfos.values().next().value!.mesh.geometry;
         }
 
         const cameraId = this._scene.activeCamera!.uniqueId;

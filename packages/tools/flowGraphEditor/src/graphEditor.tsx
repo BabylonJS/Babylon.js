@@ -1,22 +1,22 @@
 import * as React from "react";
-import type { GlobalState } from "./globalState";
+import { type GlobalState } from "./globalState";
 import { NodeListComponent } from "./components/nodeList/nodeListComponent";
 import { PropertyTabComponent } from "./components/propertyTab/propertyTabComponent";
 import { Portal } from "./portal";
 import { LogComponent, LogEntry } from "./components/log/logComponent";
-import type { Nullable } from "core/types";
+import { type Nullable } from "core/types";
 import { MessageDialog } from "shared-ui-components/components/MessageDialog";
 import { SerializationTools } from "./serializationTools";
 import { blockFactory } from "core/FlowGraph/Blocks/flowGraphBlockFactory";
 
 import "./main.scss";
 import { GraphCanvasComponent } from "shared-ui-components/nodeGraphSystem/graphCanvas";
-import type { GraphNode } from "shared-ui-components/nodeGraphSystem/graphNode";
+import { type GraphNode } from "shared-ui-components/nodeGraphSystem/graphNode";
 import { GraphFrame } from "shared-ui-components/nodeGraphSystem/graphFrame";
 import { TypeLedger } from "shared-ui-components/nodeGraphSystem/typeLedger";
-import type { IEditorData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeLocationInfo";
-import type { INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
-import type { FlowGraphBlock } from "core/FlowGraph/flowGraphBlock";
+import { type IEditorData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeLocationInfo";
+import { type INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
+import { type FlowGraphBlock } from "core/FlowGraph/flowGraphBlock";
 import { FlowGraphExecutionBlock } from "core/FlowGraph/flowGraphExecutionBlock";
 import { ParseFlowGraph } from "core/FlowGraph/flowGraphParser";
 import { FlowGraphCoordinator } from "core/FlowGraph/flowGraphCoordinator";
@@ -26,12 +26,11 @@ import { ControlledSize, SplitDirection } from "shared-ui-components/split/split
 import { ScenePreviewComponent } from "./components/preview/scenePreviewComponent";
 import { GraphControlsComponent } from "./components/graphControls/graphControlsComponent";
 import { HistoryStack } from "shared-ui-components/historyStack";
-import type { FlowGraphEventBlock } from "core/FlowGraph/flowGraphEventBlock";
-import type { IFlowGraphValidationResult } from "core/FlowGraph/flowGraphValidator";
-import { FlowGraphValidationSeverity } from "core/FlowGraph/flowGraphValidator";
+import { type FlowGraphEventBlock } from "core/FlowGraph/flowGraphEventBlock";
+import { type IFlowGraphValidationResult, FlowGraphValidationSeverity } from "core/FlowGraph/flowGraphValidator";
 import { AnalyzeSmartGroup, ApplySmartGroupExposure } from "./graphSystem/smartGroup";
 import { HelpDialogComponent } from "./components/help/helpDialogComponent";
-import type { HelpTopicId } from "./components/help/helpContent";
+import { type HelpTopicId } from "./components/help/helpContent";
 
 /**
  * Pre-populate string (and other primitive) config fields for blocks whose constructors
@@ -97,6 +96,22 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         if ((evt.ctrlKey || evt.metaKey) && (evt.key === "f" || evt.key === "F")) {
             evt.preventDefault();
             this._graphCanvas.showSearch();
+            return;
+        }
+
+        // Ctrl+A — Select all nodes and frames
+        if ((evt.ctrlKey || evt.metaKey) && (evt.key === "a" || evt.key === "A")) {
+            evt.preventDefault();
+            // Clear current selection first
+            this.props.globalState.stateManager.onSelectionChangedObservable.notifyObservers(null);
+            // Select all nodes
+            for (const node of this._graphCanvas.nodes) {
+                this.props.globalState.stateManager.onSelectionChangedObservable.notifyObservers({ selection: node, forceKeepSelection: true });
+            }
+            // Select all frames
+            for (const frame of this._graphCanvas.frames) {
+                this.props.globalState.stateManager.onSelectionChangedObservable.notifyObservers({ selection: frame, forceKeepSelection: true });
+            }
             return;
         }
 

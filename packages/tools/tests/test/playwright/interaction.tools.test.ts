@@ -3,11 +3,12 @@ import { test, expect } from "@playwright/test";
 
 // if running in the CI we need to use the babylon snapshot when loading the tools
 const snapshot = process.env.SNAPSHOT ? "?snapshot=" + process.env.SNAPSHOT : "";
-const nmeUrl = (process.env.NME_BASE_URL || getGlobalConfig().baseUrl.replace(":1337", process.env.NME_PORT || ":1340")) + snapshot;
-const ngeUrl = (process.env.NGE_BASE_URL || getGlobalConfig().baseUrl.replace(":1337", process.env.NGE_PORT || ":1343")) + snapshot;
-const guiUrl = (process.env.GUIEDITOR_BASE_URL || getGlobalConfig().baseUrl.replace(":1337", process.env.GUIEDITOR_PORT || ":1341")) + snapshot;
-const nrgeUrl = (process.env.NRGE_BASE_URL || getGlobalConfig().baseUrl.replace(":1337", process.env.NRGE_PORT || ":1344")) + snapshot;
-const _fgeUrl = (process.env.FGE_BASE_URL || getGlobalConfig().baseUrl.replace(":1337", process.env.FGE_PORT || ":1345")) + snapshot;
+const cdnPort = ":" + (process.env.CDN_PORT || 1337);
+const nmeUrl = (process.env.NME_BASE_URL || getGlobalConfig().baseUrl.replace(cdnPort, process.env.NME_PORT || ":1340")) + snapshot;
+const ngeUrl = (process.env.NGE_BASE_URL || getGlobalConfig().baseUrl.replace(cdnPort, process.env.NGE_PORT || ":1343")) + snapshot;
+const guiUrl = (process.env.GUIEDITOR_BASE_URL || getGlobalConfig().baseUrl.replace(cdnPort, process.env.GUIEDITOR_PORT || ":1341")) + snapshot;
+const nrgeUrl = (process.env.NRGE_BASE_URL || getGlobalConfig().baseUrl.replace(cdnPort, process.env.NRGE_PORT || ":1344")) + snapshot;
+const _fgeUrl = (process.env.FGE_BASE_URL || getGlobalConfig().baseUrl.replace(cdnPort, process.env.FGE_PORT || ":1345")) + snapshot;
 
 test.beforeAll(async () => {
     // Set timeout for this hook.

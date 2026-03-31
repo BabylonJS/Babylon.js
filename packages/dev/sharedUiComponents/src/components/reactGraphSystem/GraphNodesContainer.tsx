@@ -1,7 +1,6 @@
 import { Vector2 } from "core/Maths/math";
-import type { Nullable } from "core/types";
-import type { FC, PropsWithChildren } from "react";
-import { useEffect, useRef } from "react";
+import { type Nullable } from "core/types";
+import { type FC, type PropsWithChildren, useEffect, useRef } from "react";
 import { useDragLayer } from "react-dnd";
 export interface IGraphContainerProps {
     onNodeMoved: (id: string, x: number, y: number) => void;

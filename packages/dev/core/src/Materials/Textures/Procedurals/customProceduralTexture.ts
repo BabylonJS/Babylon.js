@@ -1,12 +1,11 @@
 import { Logger } from "../../../Misc/logger";
-import type { Scene } from "../../../scene";
+import { type Scene } from "../../../scene";
 import { Vector3, Vector2 } from "../../../Maths/math.vector";
 import { Color4, Color3 } from "../../../Maths/math.color";
 import { Texture } from "../../../Materials/Textures/texture";
-import type { IProceduralTextureCreationOptions } from "./proceduralTexture";
-import { ProceduralTexture } from "./proceduralTexture";
+import { type IProceduralTextureCreationOptions, ProceduralTexture } from "./proceduralTexture";
 import { WebRequest } from "../../../Misc/webRequest";
-import type { TextureSize } from "../../../Materials/Textures/textureCreationOptions";
+import { type TextureSize } from "../../../Materials/Textures/textureCreationOptions";
 
 /**
  * Options to create a Custom Procedural Texture.

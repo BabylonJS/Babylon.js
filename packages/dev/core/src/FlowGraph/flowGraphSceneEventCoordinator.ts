@@ -1,10 +1,8 @@
-import type { PointerInfo } from "core/Events/pointerEvents";
-import { PointerEventTypes } from "core/Events/pointerEvents";
-import type { AbstractMesh } from "core/Meshes/abstractMesh";
-import type { Observer } from "core/Misc/observable";
-import { Observable } from "core/Misc/observable";
-import type { Scene } from "core/scene";
-import type { Nullable } from "core/types";
+import { type PointerInfo, PointerEventTypes } from "core/Events/pointerEvents";
+import { type AbstractMesh } from "core/Meshes/abstractMesh";
+import { type Observer, Observable } from "core/Misc/observable";
+import { type Scene } from "core/scene";
+import { type Nullable } from "core/types";
 import { FlowGraphEventType } from "./flowGraphEventType";
 
 /**

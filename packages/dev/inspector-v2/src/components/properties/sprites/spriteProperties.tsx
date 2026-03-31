@@ -1,10 +1,9 @@
-import type { FunctionComponent } from "react";
+import { type FunctionComponent, useCallback } from "react";
 
-import type { Sprite } from "core/index";
-import type { ISelectionService } from "../../../services/selectionService";
+import { type Sprite } from "core/index";
+import { type ISelectionService } from "../../../services/selectionService";
 
 import { PlayFilled, StopFilled } from "@fluentui/react-icons";
-import { useCallback } from "react";
 
 import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
 import { Color4PropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/colorPropertyLine";

@@ -1,11 +1,9 @@
-import type { FunctionComponent } from "react";
-import type { Animation } from "core/Animations/animation";
-import type { TargetedAnimation } from "core/Animations/animationGroup";
+import { type FunctionComponent, useCallback, useState } from "react";
+import { type Animation, Animation as AnimationEnum } from "core/Animations/animation";
+import { type TargetedAnimation } from "core/Animations/animationGroup";
 
 import { makeStyles, tokens } from "@fluentui/react-components";
-import { useCallback, useState } from "react";
 import { ChevronDownRegular, ChevronRightRegular, SettingsRegular, DeleteRegular, CircleSmallFilled } from "@fluentui/react-icons";
-import { Animation as AnimationEnum } from "core/Animations/animation";
 
 import { Button } from "shared-ui-components/fluent/primitives/button";
 import { Popover } from "shared-ui-components/fluent/primitives/popover";

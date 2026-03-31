@@ -25,6 +25,7 @@
         "bundle": "npm run bundle:lib && npm run bundle:dist:esm",
         "bundle:lib": "rollup -c rollup.config.lib.mjs",
         "bundle:dist:esm": "rollup -c rollup.config.dist.esm.mjs",
+        "analyze": "npm run bundle:dist:esm && node ../../../../scripts/open.mjs .sonda/viewer-bundle-report.html",
         "pack": "npm run build && npm pack"
     },
     "dependencies": {
@@ -47,6 +48,7 @@
         "rollup": "^4.59.0",
         "rollup-plugin-dts": "^6.1.1",
         "rollup-plugin-minify-template-literals": "^1.1.7",
+        "sonda": "^0.11.1",
         "vite": "^6.2.1"
     },
     "keywords": [

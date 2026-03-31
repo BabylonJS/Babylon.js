@@ -1,23 +1,18 @@
-import type { Nullable } from "core/index";
-import type { ServiceDefinition } from "../modularity/serviceDefinition";
-import type { IGizmoService } from "./gizmoService";
-import type { ISettingsService } from "./panes/settingsService";
-import type { ISceneContext } from "./sceneContext";
-import type { ISelectionService } from "./selectionService";
-import type { SettingDescriptor } from "./settingsStore";
-import type { IShellService } from "./shellService";
+import { type Nullable } from "core/index";
+import { type ServiceDefinition } from "../modularity/serviceDefinition";
+import { type IGizmoService, GizmoServiceIdentity } from "./gizmoService";
+import { type ISettingsService, SettingsServiceIdentity } from "./panes/settingsService";
+import { type ISceneContext, SceneContextIdentity } from "./sceneContext";
+import { type ISelectionService, SelectionServiceIdentity } from "./selectionService";
+import { type SettingDescriptor } from "./settingsStore";
+import { type IShellService, ShellServiceIdentity } from "./shellService";
 
 import { useCallback } from "react";
 import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
 import { PickingToolbar } from "../components/pickingToolbar";
 import { useObservableState } from "../hooks/observableHooks";
 import { useSetting } from "../hooks/settingsHooks";
-import { GizmoServiceIdentity } from "./gizmoService";
 import { HighlightSelectedEntitySettingDescriptor } from "./highlightService";
-import { SettingsServiceIdentity } from "./panes/settingsService";
-import { SceneContextIdentity } from "./sceneContext";
-import { SelectionServiceIdentity } from "./selectionService";
-import { ShellServiceIdentity } from "./shellService";
 
 const IgnoreBackfacesForPickingSettingDescriptor: SettingDescriptor<boolean> = {
     key: "IgnoreBackfacesForPicking",
