@@ -1,6 +1,6 @@
+import { Button, tokens } from "@fluentui/react-components";
 import { PlugConnectedRegular, PlugDisconnectedRegular } from "@fluentui/react-icons";
 
-import { Button } from "shared-ui-components/fluent/primitives/button";
 import { Tooltip } from "shared-ui-components/fluent/primitives/tooltip";
 import { useObservableState } from "../hooks/observableHooks";
 import { type ServiceDefinition } from "../modularity/serviceDefinition";
@@ -20,11 +20,18 @@ export const CliConnectionStatusServiceDefinition: ServiceDefinition<[], [IShell
             component: () => {
                 const isConnected = useObservableState(() => cliConnectionStatus.isConnected, cliConnectionStatus.onConnectionStatusChanged);
 
+                // Using raw Fluent Button to pass color directly to the icon.
                 return (
                     <Tooltip content={isConnected ? "Connected to Inspector CLI Bridge" : "Disconnected from Inspector CLI Bridge"}>
                         <Button
                             appearance="subtle"
-                            icon={isConnected ? PlugConnectedRegular : PlugDisconnectedRegular}
+                            icon={
+                                isConnected ? (
+                                    <PlugConnectedRegular color={tokens.colorPaletteGreenForeground2} />
+                                ) : (
+                                    <PlugDisconnectedRegular color={tokens.colorPaletteRedForeground2} />
+                                )
+                            }
                             onClick={() => window.open("https://www.npmjs.com/package/@babylonjs/inspector", "_blank")}
                         />
                     </Tooltip>
