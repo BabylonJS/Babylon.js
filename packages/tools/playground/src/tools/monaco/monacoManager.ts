@@ -581,8 +581,9 @@ export class MonacoManager {
         }
 
         if (location.hostname === "localhost" && location.search.indexOf("dist") === -1) {
+            const cdnPort = (window as any).__CDN_PORT__ || 1337;
             for (let i = 0; i < declarations.length; i++) {
-                declarations[i] = declarations[i].replace("https://preview.babylonjs.com/", "//localhost:1337/");
+                declarations[i] = declarations[i].replace("https://preview.babylonjs.com/", `//localhost:${cdnPort}/`);
             }
         }
 

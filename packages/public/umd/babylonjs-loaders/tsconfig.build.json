@@ -9,10 +9,8 @@
         "importHelpers": true,
         "paths": {
             "core/*": ["dev/core/dist/*"],
-            "loaders/*": ["dev/loaders/src/*"],
-            "@lts/loaders/*": ["lts/loaders/src/*"],
-
+            "loaders/*": ["dev/loaders/src/*"]
         }
     },
-    "include": ["./src/**/*", "../../../dev/loaders/src/**/*", "../../../lts/loaders/src/**/*"]
+    "include": ["./src/**/*", "../../../dev/loaders/src/**/*"]
 }

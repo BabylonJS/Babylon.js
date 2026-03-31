@@ -32,6 +32,7 @@ import { EffectFallbacks } from "./effectFallbacks";
 import { type Effect, type IEffectCreationOptions } from "./effect";
 import { DetailMapConfiguration } from "./material.detailMapConfiguration";
 import { AddClipPlaneUniforms, BindClipPlane } from "./clipPlaneMaterialHelper";
+import { PrepareVertexPullingUniforms, BindVertexPullingUniforms, type IVertexPullingMetadata } from "./vertexPullingHelper.functions";
 import {
     BindBonesParameters,
     BindFogParameters,
@@ -209,6 +210,8 @@ export class StandardMaterialDefines extends ImageProcessingDefinesMixin(Standar
     public CAMERA_PERSPECTIVE = false;
     public AREALIGHTSUPPORTED = true;
     public USE_VERTEX_PULLING = false;
+    public VERTEX_PULLING_USE_INDEX_BUFFER = false;
+    public VERTEX_PULLING_INDEX_BUFFER_32BITS = false;
     public RIGHT_HANDED = false;
 
     public CLUSTLIGHT_SLICES = 0;
@@ -591,6 +594,7 @@ export class StandardMaterial extends StandardMaterialBase {
     public applyDecalMapAfterDetailMap: boolean;
 
     private _shadersLoaded = false;
+    private _vertexPullingMetadata: Map<string, IVertexPullingMetadata> | null = null;
 
     /**
      * Defines additional PrePass parameters for the material.
@@ -1242,6 +1246,22 @@ export class StandardMaterial extends StandardMaterialBase {
 
             AddClipPlaneUniforms(uniforms);
 
+            // Vertex pulling metadata uniforms
+            if (this._useVertexPulling) {
+                const renderingMesh = subMesh.getRenderingMesh();
+                const geometry = renderingMesh?.geometry;
+                if (geometry) {
+                    this._vertexPullingMetadata = PrepareVertexPullingUniforms(geometry);
+                    if (this._vertexPullingMetadata) {
+                        this._vertexPullingMetadata.forEach((_, attribute) => {
+                            uniforms.push(`vp_${attribute}_info`);
+                        });
+                    }
+                }
+            } else {
+                this._vertexPullingMetadata = null;
+            }
+
             const csnrOptions: ICustomShaderNameResolveOptions = {};
 
             if (this.customShaderNameResolve) {
@@ -1422,6 +1442,12 @@ export class StandardMaterial extends StandardMaterialBase {
 
         // Bones
         BindBonesParameters(mesh, effect);
+
+        // Vertex pulling
+        if (this._vertexPullingMetadata) {
+            BindVertexPullingUniforms(effect, this._vertexPullingMetadata);
+        }
+
         const ubo = this._uniformBuffer;
         if (mustRebind) {
             this.bindViewProjection(effect);

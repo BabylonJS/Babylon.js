@@ -9,9 +9,8 @@
         "importHelpers": true,
         "paths": {
             "core/*": ["dev/core/dist/*"],
-            "post-processes/*": ["dev/postProcesses/src/*"],
-            "@lts/post-processes/*": ["lts/postProcesses/src/*"]
+            "post-processes/*": ["dev/postProcesses/src/*"]
         }
     },
-    "include": ["./src/**/*", "../../../dev/postProcesses/src/**/*", "../../../lts/postProcesses/src/**/*"]
+    "include": ["./src/**/*", "../../../dev/postProcesses/src/**/*"]
 }

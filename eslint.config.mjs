@@ -137,9 +137,8 @@ export default tseslint.config(
             "**/*.fragment.ts",
             "**/*.vertex.ts",
 
-            // Public/LTS packages (generated)
+            // Public packages (generated)
             "packages/public/**",
-            "packages/lts/**",
 
             // Non-JS files
             "**/*.md",
