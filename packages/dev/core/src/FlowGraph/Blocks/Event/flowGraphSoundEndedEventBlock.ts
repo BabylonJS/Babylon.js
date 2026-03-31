@@ -11,12 +11,15 @@ import { type Nullable } from "../../../types";
 
 /**
  * @experimental
- * An event block that fires when an Audio V2 sound finishes playing.
- * Subscribes to the sound's onEndedObservable and triggers execution when it fires.
+ * An event block that fires when an Audio V2 sound stops or ends.
+ * Subscribes to the sound's onEndedObservable, which fires when playback
+ * stops for any reason (natural completion or a manual call to stop()).
+ * Does not fire when a looping sound naturally restarts, but will still
+ * fire if a looping sound is explicitly stopped.
  */
 export class FlowGraphSoundEndedEventBlock extends FlowGraphEventBlock {
     /**
-     * Input connection: The sound to monitor for playback completion.
+     * Input connection: The sound to monitor for when playback stops or ends.
      */
     public readonly sound: FlowGraphDataConnection<AbstractSound>;
 

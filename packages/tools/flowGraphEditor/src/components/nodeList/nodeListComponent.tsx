@@ -69,7 +69,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         FlowGraphSetSoundVolumeBlock: "Sets the volume of an Audio V2 sound",
 
         // Audio Events
-        FlowGraphSoundEndedEventBlock: "Fires when an Audio V2 sound finishes playing",
+        FlowGraphSoundEndedEventBlock: "Fires when an Audio V2 sound stops or ends (including manual stop)",
 
         // Audio Data
         FlowGraphGetSoundVolumeBlock: "Gets the current volume of an Audio V2 sound",

@@ -40,7 +40,7 @@ export class FlowGraphPauseSoundBlock extends FlowGraphExecutionBlockWithOutSign
         }
         if (soundValue.state === SoundState.Paused) {
             soundValue.resume();
-        } else {
+        } else if (soundValue.state === SoundState.Starting || soundValue.state === SoundState.Started) {
             soundValue.pause();
         }
         this.out._activateSignal(context);
