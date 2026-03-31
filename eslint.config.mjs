@@ -394,6 +394,9 @@ export default tseslint.config(
             "@typescript-eslint/consistent-type-exports": ["error", { fixMixedExportsWithInlineTypeSpecifier: true }],
             "@typescript-eslint/no-this-alias": "error",
 
+            // Inline type export specifiers
+            "babylonjs/no-top-level-type-exports": "error",
+
             // Restricted syntax
             "no-restricted-syntax": [
                 "error",

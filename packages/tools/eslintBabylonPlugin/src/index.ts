@@ -849,6 +849,45 @@ const plugin: IPlugin = {
                 };
             },
         },
+        "no-top-level-type-exports": {
+            meta: {
+                type: "suggestion",
+                docs: {
+                    description: "Enforce inline type specifiers in export statements instead of top-level export type",
+                },
+                fixable: "code",
+                messages: {
+                    preferInline: "Use 'export { type X }' instead of 'export type { X }'",
+                },
+            },
+            create(context) {
+                return {
+                    ExportNamedDeclaration(node) {
+                        if ((node as any).exportKind !== "type" || node.specifiers.length === 0) {
+                            return;
+                        }
+                        context.report({
+                            node,
+                            messageId: "preferInline",
+                            *fix(fixer) {
+                                const sourceCode = context.sourceCode;
+                                const text = sourceCode.getText(node as unknown as ESTree.Node);
+                                // Replace "export type {" with "export {" and add "type " before each specifier
+                                const newSpecifiers = node.specifiers.map((spec) => {
+                                    const specText = sourceCode.getText(spec as unknown as ESTree.Node);
+                                    return `type ${specText}`;
+                                });
+                                // Reconstruct: keep the source clause if present
+                                const source = node.source ? ` from ${sourceCode.getText(node.source as unknown as ESTree.Node)}` : "";
+                                const semi = text.endsWith(";") ? ";" : "";
+                                const replacement = `export { ${newSpecifiers.join(", ")} }${source}${semi}`;
+                                yield fixer.replaceText(node as unknown as ESTree.Node, replacement);
+                            },
+                        });
+                    },
+                };
+            },
+        },
     },
 };
 

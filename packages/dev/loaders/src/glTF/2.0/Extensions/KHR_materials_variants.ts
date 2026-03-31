@@ -14,7 +14,7 @@ import { type MaterialVariantsController } from "../../glTFFileLoader";
 
 const NAME = "KHR_materials_variants";
 
-export type { MaterialVariantsController };
+export { type MaterialVariantsController };
 
 declare module "../../glTFFileLoader" {
     // Define options related types here so they can be referenced in the options,
