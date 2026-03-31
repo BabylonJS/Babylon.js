@@ -410,7 +410,7 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBaseObj
             this.linearVelocityType,
         ];
         const bufferTypes = [
-            Constants.PREPASS_IRRADIANCE_LEGACY_TEXTURE_TYPE,
+            Constants.PREPASS_IRRADIANCE_TEXTURE_TYPE,
             Constants.PREPASS_DEPTH_TEXTURE_TYPE,
             Constants.PREPASS_NORMALIZED_VIEW_DEPTH_TEXTURE_TYPE,
             Constants.PREPASS_SCREENSPACE_DEPTH_TEXTURE_TYPE,
