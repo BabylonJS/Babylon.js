@@ -5,9 +5,7 @@ import { fileURLToPath } from "url";
 import { parseArgs } from "util";
 import ws from "ws";
 import { LoadConfig } from "./config.js";
-import { type CliRequest, type CliResponse, type CommandsResponse, type ExecResponse, type SessionsResponse } from "./protocol.js";
-
-type WebSocket = ws;
+import { type CliRequest, type CliResponse, type CommandArgInfo, type CommandInfo, type CommandsResponse, type ExecResponse, type SessionsResponse } from "./protocol.js";
 
 const Config = LoadConfig();
 
@@ -132,7 +130,7 @@ function ParseCliArgs(): IParsedArgs {
     };
 }
 
-async function ConnectToBridge(port: number): Promise<WebSocket> {
+async function ConnectToBridge(port: number): Promise<ws> {
     return await new Promise((resolve, reject) => {
         const socket = new ws(`ws://127.0.0.1:${port}`);
         socket.on("open", () => resolve(socket));
@@ -140,7 +138,7 @@ async function ConnectToBridge(port: number): Promise<WebSocket> {
     });
 }
 
-async function SendAndReceive<T extends CliResponse>(socket: WebSocket, message: CliRequest): Promise<T> {
+async function SendAndReceive<T extends CliResponse>(socket: ws, message: CliRequest): Promise<T> {
     return await new Promise((resolve, reject) => {
         const timeout = setTimeout(() => {
             reject(new Error("Timeout waiting for bridge response."));
@@ -168,7 +166,7 @@ function SpawnBridge(bridgeScript?: string): void {
     child.unref();
 }
 
-async function EnsureBridge(port: number, bridgeScript?: string, maxRetries = 10, retryDelayMs = 500): Promise<WebSocket> {
+async function EnsureBridge(port: number, bridgeScript?: string, maxRetries = 10, retryDelayMs = 500): Promise<ws> {
     try {
         return await ConnectToBridge(port);
     } catch {
@@ -191,6 +189,20 @@ async function EnsureBridge(port: number, bridgeScript?: string, maxRetries = 10
 }
 
 /**
+ * Connects to the bridge, runs the provided callback, and closes the socket.
+ * @param bridgeScript Optional path to the bridge script.
+ * @param fn The callback to run with the connected socket.
+ */
+async function WithBridge(bridgeScript: string | undefined, fn: (socket: ws) => Promise<void>): Promise<void> {
+    const socket = await EnsureBridge(Config.cliPort, bridgeScript);
+    try {
+        await fn(socket);
+    } finally {
+        socket.close();
+    }
+}
+
+/**
  * Resolves the session id to use. If an explicit id is provided, returns it.
  * If not, queries the bridge: returns the sole session's id when exactly one
  * is active, or errors if zero or multiple sessions are active.
@@ -198,7 +210,7 @@ async function EnsureBridge(port: number, bridgeScript?: string, maxRetries = 10
  * @param explicitId An optional explicit session id string.
  * @returns The resolved numeric session id.
  */
-async function ResolveSessionId(socket: WebSocket, explicitId?: string): Promise<number> {
+async function ResolveSessionId(socket: ws, explicitId?: string): Promise<number> {
     if (explicitId !== undefined) {
         const parsed = parseInt(explicitId, 10);
         if (isNaN(parsed)) {
@@ -216,6 +228,134 @@ async function ResolveSessionId(socket: WebSocket, explicitId?: string): Promise
         throw new Error(`Multiple active sessions.:\n${list}\nSpecify a session id with --session <session-id>`);
     }
     return response.sessions[0].id;
+}
+
+/**
+ * Parses command arguments from the rest array (everything after the command id).
+ * @param rest The remaining CLI tokens after the command id.
+ * @param globalHelp Whether --help was specified at the top level.
+ * @returns The parsed command arguments and whether help was requested.
+ */
+function ParseCommandArgs(rest: string[], globalHelp: boolean): { args: Record<string, string>; wantsHelp: boolean } {
+    const args: Record<string, string> = {};
+    let wantsHelp = globalHelp;
+    for (let i = 1; i < rest.length; i++) {
+        const token = rest[i];
+        if (token === "--help") {
+            wantsHelp = true;
+        } else if (token.startsWith("--") && i + 1 < rest.length) {
+            args[token.slice(2)] = rest[++i];
+        }
+    }
+    return { args, wantsHelp };
+}
+
+/**
+ * Prints help text for a command, including its description and argument list.
+ * If there are missing required arguments and help was not explicitly requested,
+ * prints an error and sets a non-zero exit code.
+ * @param commandId The command identifier.
+ * @param descriptor The command descriptor.
+ * @param missingRequired The list of missing required arguments.
+ * @param wantsHelp Whether help was explicitly requested.
+ */
+function PrintCommandHelp(commandId: string, descriptor: CommandInfo, missingRequired: CommandArgInfo[], wantsHelp: boolean): void {
+    if (missingRequired.length > 0 && !wantsHelp) {
+        console.error(`Missing required argument(s): ${missingRequired.map((a) => `--${a.name}`).join(", ")}\n`);
+    }
+    console.log(`${commandId}: ${descriptor.description}\n`);
+    if (descriptor.args && descriptor.args.length > 0) {
+        console.log("Arguments:");
+        const maxLen = Math.max(...descriptor.args.map((a) => `--${a.name}${a.required ? " (required)" : ""}`.length));
+        for (const arg of descriptor.args) {
+            const label = `--${arg.name}${arg.required ? " (required)" : ""}`;
+            console.log(`  ${label.padEnd(maxLen)}  ${arg.description}`);
+        }
+    }
+    if (missingRequired.length > 0 && !wantsHelp) {
+        process.exitCode = 1;
+    }
+}
+
+/**
+ * Handles `--session` without `--command`: lists active sessions.
+ * @param socket The WebSocket connection to the bridge.
+ */
+async function HandleSessions(socket: ws): Promise<void> {
+    const response = await SendAndReceive<SessionsResponse>(socket, { type: "sessions" });
+    if (response.sessions.length === 0) {
+        console.log("No active sessions.");
+    } else {
+        console.log("Active sessions:");
+        for (const session of response.sessions) {
+            console.log(`  [${session.id}] ${session.name} (connected: ${session.connectedAt})`);
+        }
+    }
+}
+
+/**
+ * Handles `--command`: lists commands or executes one.
+ * @param socket The WebSocket connection to the bridge.
+ * @param args The parsed CLI arguments.
+ */
+async function HandleCommand(socket: ws, args: IParsedArgs): Promise<void> {
+    const commandId = args.rest.length > 0 ? args.rest[0] : undefined;
+
+    if (!commandId) {
+        // --command with no id: list available commands.
+        const sessionId = await ResolveSessionId(socket, args.sessionId);
+        const response = await SendAndReceive<CommandsResponse>(socket, { type: "commands", sessionId });
+        if (response.error) {
+            console.error(`Error: ${response.error}`);
+            process.exitCode = 1;
+            return;
+        }
+        if (!response.commands || response.commands.length === 0) {
+            console.log("No commands available.");
+        } else {
+            console.log("Available commands:");
+            const maxLen = Math.max(...response.commands.map((c) => c.id.length));
+            for (const cmd of response.commands) {
+                console.log(`  ${cmd.id.padEnd(maxLen)}  ${cmd.description}`);
+            }
+            console.log("\nRun --command <id> --help to see arguments for a command.");
+            console.log("Run --command <id> [--arg value ...] to execute a command.");
+        }
+        return;
+    }
+
+    const sessionId = await ResolveSessionId(socket, args.sessionId);
+    const { args: commandArgs, wantsHelp } = ParseCommandArgs(args.rest, args.help);
+
+    // Fetch the command descriptor to check for --help or missing required args.
+    const commandsResponse = await SendAndReceive<CommandsResponse>(socket, { type: "commands", sessionId });
+    const descriptor = commandsResponse.commands?.find((c) => c.id === commandId);
+
+    if (!descriptor) {
+        console.error(`Error: Unknown command "${commandId}".`);
+        process.exitCode = 1;
+        return;
+    }
+
+    // Check for --help or missing required arguments.
+    const missingRequired = (descriptor.args ?? []).filter((a) => a.required && !(a.name in commandArgs));
+    if (wantsHelp || missingRequired.length > 0) {
+        PrintCommandHelp(commandId, descriptor, missingRequired, wantsHelp);
+        return;
+    }
+
+    const response = await SendAndReceive<ExecResponse>(socket, {
+        type: "exec",
+        sessionId,
+        commandId,
+        args: commandArgs,
+    });
+    if (response.error) {
+        console.error(`Error: ${response.error}`);
+        process.exitCode = 1;
+    } else {
+        console.log(response.result ?? "");
+    }
 }
 
 async function Main(): Promise<void> {
@@ -239,113 +379,12 @@ async function Main(): Promise<void> {
     }
 
     if (args.session && !args.command) {
-        // --session without --command: list sessions.
-        const socket = await EnsureBridge(Config.cliPort, args.bridgeScript);
-        try {
-            const response = await SendAndReceive<SessionsResponse>(socket, { type: "sessions" });
-            if (response.sessions.length === 0) {
-                console.log("No active sessions.");
-            } else {
-                console.log("Active sessions:");
-                for (const session of response.sessions) {
-                    console.log(`  [${session.id}] ${session.name} (connected: ${session.connectedAt})`);
-                }
-            }
-        } finally {
-            socket.close();
-        }
+        await WithBridge(args.bridgeScript, async (socket) => await HandleSessions(socket));
         return;
     }
 
     if (args.command) {
-        const socket = await EnsureBridge(Config.cliPort, args.bridgeScript);
-        try {
-            const commandId = args.rest.length > 0 ? args.rest[0] : undefined;
-
-            if (!commandId) {
-                // --command with no id: list available commands.
-                const sessionId = await ResolveSessionId(socket, args.sessionId);
-                const response = await SendAndReceive<CommandsResponse>(socket, { type: "commands", sessionId });
-                if (response.error) {
-                    console.error(`Error: ${response.error}`);
-                    process.exitCode = 1;
-                    return;
-                }
-                if (!response.commands || response.commands.length === 0) {
-                    console.log("No commands available.");
-                } else {
-                    console.log("Available commands:");
-                    const maxLen = Math.max(...response.commands.map((c) => c.id.length));
-                    for (const cmd of response.commands) {
-                        console.log(`  ${cmd.id.padEnd(maxLen)}  ${cmd.description}`);
-                    }
-                    console.log("\nRun --command <id> --help to see arguments for a command.");
-                    console.log("Run --command <id> [--arg value ...] to execute a command.");
-                }
-                return;
-            }
-
-            const sessionId = await ResolveSessionId(socket, args.sessionId);
-
-            // Parse remaining --key value pairs into a Record.
-            const commandArgs: Record<string, string> = {};
-            let wantsHelp = args.help;
-            for (let i = 1; i < args.rest.length; i++) {
-                const token = args.rest[i];
-                if (token === "--help") {
-                    wantsHelp = true;
-                } else if (token.startsWith("--") && i + 1 < args.rest.length) {
-                    commandArgs[token.slice(2)] = args.rest[++i];
-                }
-            }
-
-            // Fetch the command descriptor to check for --help or missing required args.
-            const commandsResponse = await SendAndReceive<CommandsResponse>(socket, { type: "commands", sessionId });
-            const descriptor = commandsResponse.commands?.find((c) => c.id === commandId);
-
-            if (!descriptor) {
-                console.error(`Error: Unknown command "${commandId}".`);
-                process.exitCode = 1;
-                return;
-            }
-
-            // Check for --help or missing required arguments.
-            const missingRequired = (descriptor.args ?? []).filter((a) => a.required && !(a.name in commandArgs));
-
-            if (wantsHelp || missingRequired.length > 0) {
-                if (missingRequired.length > 0 && !wantsHelp) {
-                    console.error(`Missing required argument(s): ${missingRequired.map((a) => `--${a.name}`).join(", ")}\n`);
-                }
-                console.log(`${commandId}: ${descriptor.description}\n`);
-                if (descriptor.args && descriptor.args.length > 0) {
-                    console.log("Arguments:");
-                    const maxLen = Math.max(...descriptor.args.map((a) => `--${a.name}${a.required ? " (required)" : ""}`.length));
-                    for (const arg of descriptor.args) {
-                        const label = `--${arg.name}${arg.required ? " (required)" : ""}`;
-                        console.log(`  ${label.padEnd(maxLen)}  ${arg.description}`);
-                    }
-                }
-                if (missingRequired.length > 0 && !wantsHelp) {
-                    process.exitCode = 1;
-                }
-                return;
-            }
-
-            const response = await SendAndReceive<ExecResponse>(socket, {
-                type: "exec",
-                sessionId,
-                commandId,
-                args: commandArgs,
-            });
-            if (response.error) {
-                console.error(`Error: ${response.error}`);
-                process.exitCode = 1;
-            } else {
-                console.log(response.result ?? "");
-            }
-        } finally {
-            socket.close();
-        }
+        await WithBridge(args.bridgeScript, async (socket) => await HandleCommand(socket, args));
         return;
     }
 
