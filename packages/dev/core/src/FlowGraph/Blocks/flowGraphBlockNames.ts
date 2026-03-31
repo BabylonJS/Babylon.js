@@ -149,4 +149,12 @@ export const enum FlowGraphBlockNames {
     BezierCurveEasing = "FlowGraphBezierCurveEasing",
     DataSwitch = "FlowGraphDataSwitchBlock",
     DebugBlock = "FlowGraphDebugBlock",
+    // Audio
+    AudioPlaySound = "FlowGraphPlaySoundBlock",
+    AudioStopSound = "FlowGraphStopSoundBlock",
+    AudioPauseSound = "FlowGraphPauseSoundBlock",
+    AudioSetVolume = "FlowGraphSetSoundVolumeBlock",
+    AudioSoundEndedEvent = "FlowGraphSoundEndedEventBlock",
+    AudioGetVolume = "FlowGraphGetSoundVolumeBlock",
+    AudioIsSoundPlaying = "FlowGraphIsSoundPlayingBlock",
 }

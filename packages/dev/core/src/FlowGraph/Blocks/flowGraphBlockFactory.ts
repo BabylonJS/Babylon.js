@@ -316,6 +316,21 @@ export function blockFactory(blockName: FlowGraphBlockNames | string): () => Pro
             return async () => (await import("./Data/flowGraphDataSwitchBlock")).FlowGraphDataSwitchBlock;
         case FlowGraphBlockNames.DebugBlock:
             return async () => (await import("./Data/flowGraphDebugBlock")).FlowGraphDebugBlock;
+        // Audio
+        case FlowGraphBlockNames.AudioPlaySound:
+            return async () => (await import("./Execution/Audio/flowGraphPlaySoundBlock")).FlowGraphPlaySoundBlock;
+        case FlowGraphBlockNames.AudioStopSound:
+            return async () => (await import("./Execution/Audio/flowGraphStopSoundBlock")).FlowGraphStopSoundBlock;
+        case FlowGraphBlockNames.AudioPauseSound:
+            return async () => (await import("./Execution/Audio/flowGraphPauseSoundBlock")).FlowGraphPauseSoundBlock;
+        case FlowGraphBlockNames.AudioSetVolume:
+            return async () => (await import("./Execution/Audio/flowGraphSetSoundVolumeBlock")).FlowGraphSetSoundVolumeBlock;
+        case FlowGraphBlockNames.AudioSoundEndedEvent:
+            return async () => (await import("./Event/flowGraphSoundEndedEventBlock")).FlowGraphSoundEndedEventBlock;
+        case FlowGraphBlockNames.AudioGetVolume:
+            return async () => (await import("./Data/Audio/flowGraphGetSoundVolumeBlock")).FlowGraphGetSoundVolumeBlock;
+        case FlowGraphBlockNames.AudioIsSoundPlaying:
+            return async () => (await import("./Data/Audio/flowGraphIsSoundPlayingBlock")).FlowGraphIsSoundPlayingBlock;
         default:
             // check if the block is a custom block
             if (CustomBlocks[blockName]) {

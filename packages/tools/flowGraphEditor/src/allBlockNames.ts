@@ -33,6 +33,9 @@ export const AllFlowGraphBlocks: { [category: string]: string[] } = {
         "FlowGraphThrottleBlock",
     ],
     Animation: ["FlowGraphPlayAnimationBlock", "FlowGraphStopAnimationBlock", "FlowGraphPauseAnimationBlock", "FlowGraphInterpolationBlock"],
+    Audio__Actions: ["FlowGraphPlaySoundBlock", "FlowGraphStopSoundBlock", "FlowGraphPauseSoundBlock", "FlowGraphSetSoundVolumeBlock"],
+    Audio__Events: ["FlowGraphSoundEndedEventBlock"],
+    Audio__Data: ["FlowGraphGetSoundVolumeBlock", "FlowGraphIsSoundPlayingBlock"],
     Math__Constants: ["FlowGraphEBlock", "FlowGraphPIBlock", "FlowGraphInfBlock", "FlowGraphNaNBlock", "FlowGraphRandomBlock"],
     Math__Arithmetic: [
         "FlowGraphAddBlock",

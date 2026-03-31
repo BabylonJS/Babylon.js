@@ -5,3 +5,4 @@ export * from "./flowGraphSendCustomEventBlock";
 export * from "./flowGraphSceneTickEventBlock";
 export * from "./flowGraphPointerOutEventBlock";
 export * from "./flowGraphPointerOverEventBlock";
+export * from "./flowGraphSoundEndedEventBlock";

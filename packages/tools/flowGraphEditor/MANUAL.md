@@ -320,6 +320,36 @@ Press **Escape** or click the **X** button to close the search bar. All highligh
 
 ---
 
+## Audio Blocks
+
+The editor includes blocks for controlling audio playback using the Babylon.js Audio V2 system. These blocks operate on `AbstractSound` references (either `StaticSound` or `StreamingSound` instances created via `CreateSoundAsync` / `CreateStreamingSoundAsync`).
+
+### Audio Actions (Execution Blocks)
+
+| Block                                  | Description                                                                                                                                                   |
+| -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **PlaySound**                          | Plays the sound with configurable volume, start offset, and loop options.                                                                                     |
+| **StopSound**                          | Stops the sound immediately.                                                                                                                                  |
+| **PauseSound**                         | Pauses the sound if playing, or resumes it if paused.                                                                                                         |
+| **SetSoundVolume**                     | Sets the volume (0–1) of the sound.                                                                                                                           |
+
+### Audio Events
+
+| Block                                  | Description                                                                                                                                                   |
+| -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **SoundEndedEvent**                    | Fires when the sound finishes playing (does not fire if loop is enabled).                                                                                     |
+
+### Audio Data (Read-Only Blocks)
+
+| Block                                  | Description                                                                                                                                                   |
+| -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **GetSoundVolume**                     | Reads the current volume of a sound.                                                                                                                          |
+| **IsSoundPlaying**                     | Returns true if the sound is currently playing or starting.                                                                                                   |
+
+> **Note:** Audio blocks require sounds created via the Audio V2 API (`CreateSoundAsync`, `CreateStreamingSoundAsync`). The legacy `Sound` class (V1) is not supported by these blocks.
+
+---
+
 ## Tips
 
 - **Use debug blocks liberally** — they're zero-cost when the graph isn't running and give you visibility into data flow.
