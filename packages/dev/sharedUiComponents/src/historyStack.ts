@@ -223,17 +223,19 @@ export class HistoryStack implements IDisposable {
     }
 
     /**
-     * Whether an undo operation is available
+     * Whether an undo operation is available.
+     * Returns false when the history stack is disabled via isEnabled.
      */
     public get canUndo(): boolean {
-        return this._historyStack.length > 0;
+        return this.isEnabled && this._historyStack.length > 0;
     }
 
     /**
-     * Whether a redo operation is available
+     * Whether a redo operation is available.
+     * Returns false when the history stack is disabled via isEnabled.
      */
     public get canRedo(): boolean {
-        return this._redoStack.length > 0;
+        return this.isEnabled && this._redoStack.length > 0;
     }
 
     /**

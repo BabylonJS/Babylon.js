@@ -33,6 +33,7 @@ export class GraphControlsComponent extends React.Component<IGraphControlsProps,
     private _validationResultObserver: Nullable<Observer<Nullable<IFlowGraphValidationResult>>> = null;
     private _breakpointHitObserver: Nullable<Observer<IFlowGraphPendingActivation>> = null;
     private _timeScaleObserver: Nullable<Observer<number>> = null;
+    private _rebuildObserver: Nullable<Observer<void>> = null;
 
     constructor(props: IGraphControlsProps) {
         super(props);
@@ -77,6 +78,12 @@ export class GraphControlsComponent extends React.Component<IGraphControlsProps,
         this._timeScaleObserver = this.props.globalState.onTimeScaleChanged.add((timeScale) => {
             this.setState({ timeScale });
         });
+
+        // Re-render when graph is rebuilt (e.g. after edits) so undo/redo button
+        // disabled state stays in sync with the history stack.
+        this._rebuildObserver = this.props.globalState.stateManager.onRebuildRequiredObservable.add(() => {
+            this.forceUpdate();
+        });
     }
 
     override componentWillUnmount() {
@@ -94,6 +101,8 @@ export class GraphControlsComponent extends React.Component<IGraphControlsProps,
         this._breakpointHitObserver = null;
         this._timeScaleObserver?.remove();
         this._timeScaleObserver = null;
+        this._rebuildObserver?.remove();
+        this._rebuildObserver = null;
     }
 
     /**
@@ -270,6 +279,7 @@ export class GraphControlsComponent extends React.Component<IGraphControlsProps,
                 <button
                     className="fge-ctrl-btn fge-ctrl-undo"
                     title="Undo (Ctrl+Z)"
+                    aria-label="Undo"
                     onClick={() => {
                         this.props.globalState.stateManager.historyStack?.undo();
                         this.forceUpdate();
@@ -281,6 +291,7 @@ export class GraphControlsComponent extends React.Component<IGraphControlsProps,
                 <button
                     className="fge-ctrl-btn fge-ctrl-redo"
                     title="Redo (Ctrl+Shift+Z)"
+                    aria-label="Redo"
                     onClick={() => {
                         this.props.globalState.stateManager.historyStack?.redo();
                         this.forceUpdate();

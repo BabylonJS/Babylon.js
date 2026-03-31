@@ -71,8 +71,12 @@ export const HelpTopics: IHelpTopic[] = [
         title: "Graph Controls",
         sections: [
             {
-                html: `<p>The toolbar at the top provides execution controls:</p>
-<table>
+                heading: "Undo / Redo",
+                html: `<p>The <b>Undo</b> (↩) and <b>Redo</b> (↪) buttons are at the left side of the toolbar. They are disabled when there is nothing to undo or redo. You can also use <b>Ctrl+Z</b> / <b>Cmd+Z</b> to undo and <b>Ctrl+Shift+Z</b> / <b>Cmd+Shift+Z</b> to redo.</p>`,
+            },
+            {
+                heading: "Execution Controls",
+                html: `<table>
 <tr><th>Button</th><th>Label</th><th>Description</th></tr>
 <tr><td>▶</td><td><b>Start</b></td><td>Starts executing the flow graph. Enabled when the graph is stopped or paused.</td></tr>
 <tr><td>⏸</td><td><b>Pause</b></td><td>Pauses execution. The graph can be resumed with Start.</td></tr>
@@ -308,6 +312,7 @@ export const HelpTopics: IHelpTopic[] = [
                 heading: "Graph Editing",
                 html: `<table>
 <tr><th>Key</th><th>Action</th></tr>
+<tr><td><b>Ctrl+A</b> / <b>Cmd+A</b></td><td>Select all nodes</td></tr>
 <tr><td><b>Ctrl+G</b> / <b>Cmd+G</b></td><td>Create a smart group from selected blocks</td></tr>
 <tr><td><b>F9</b></td><td>Toggle breakpoint on selected execution block</td></tr>
 <tr><td><b>Enter</b> (in scene preview input)</td><td>Load the Playground snippet</td></tr>
