@@ -8,6 +8,7 @@ import { EntityQueryServiceDefinition } from "./services/cli/entityQueryService"
 import { MakeInspectableBridgeServiceDefinition } from "./services/cli/inspectableBridgeService";
 import { PerfTraceCommandServiceDefinition } from "./services/cli/perfTraceCommandService";
 import { ScreenshotCommandServiceDefinition } from "./services/cli/screenshotCommandService";
+import { ShaderCommandServiceDefinition } from "./services/cli/shaderCommandService";
 import { StatsCommandServiceDefinition } from "./services/cli/statsCommandService";
 import { type ISceneContext, SceneContextIdentity } from "./services/sceneContext";
 
@@ -118,6 +119,7 @@ export function _StartInspectable(scene: Scene, options?: Partial<InspectableOpt
                     }),
                     EntityQueryServiceDefinition,
                     ScreenshotCommandServiceDefinition,
+                    ShaderCommandServiceDefinition,
                     StatsCommandServiceDefinition,
                     PerfTraceCommandServiceDefinition
                 );
