@@ -39,8 +39,15 @@ export type InspectableToken = IDisposable & {
     readonly isDisposed: boolean;
 };
 
-// Track one token per scene so we can return the existing one or clean up on re-entry.
-const InspectableTokens = new Map<Scene, InspectableToken>();
+// Track shared state per scene: the service container, ref count, and teardown logic.
+type InspectableState = {
+    refCount: number;
+    serviceContainer: ServiceContainer;
+    sceneDisposeObserver: { remove: () => void };
+    fullyDispose: () => void;
+};
+
+const InspectableStates = new Map<Scene, InspectableState>();
 
 /**
  * Makes a scene inspectable by connecting it to the Inspector CLI bridge.
@@ -48,26 +55,81 @@ const InspectableTokens = new Map<Scene, InspectableToken>();
  * {@link InspectableBridgeService} which opens a WebSocket to the bridge and
  * exposes a command registry for CLI-invocable commands.
  *
- * If the scene is already inspectable, the existing token is returned.
+ * Multiple callers may call this for the same scene. Each returned token is
+ * ref-counted — the underlying connection is only torn down when all tokens
+ * have been disposed.
  *
  * @param scene The scene to make inspectable.
  * @param options Optional configuration.
  * @returns An {@link InspectableToken} that can be disposed to disconnect.
  */
 export function StartInspectable(scene: Scene, options?: Partial<InspectableOptions>): InspectableToken {
-    // If there is already an active token for this scene, return it.
-    const existing = InspectableTokens.get(scene);
-    if (existing && !existing.isDisposed) {
-        return existing;
+    let state = InspectableStates.get(scene);
+
+    if (!state) {
+        const port = options?.port ?? DefaultPort;
+        const name = options?.name ?? (typeof document !== "undefined" ? document.title : "Babylon.js Scene");
+
+        const serviceContainer = new ServiceContainer("InspectableContainer");
+
+        const fullyDispose = () => {
+            InspectableStates.delete(scene);
+            serviceContainer.dispose();
+            sceneDisposeObserver.remove();
+        };
+
+        state = {
+            refCount: 0,
+            serviceContainer,
+            sceneDisposeObserver: { remove: () => {} },
+            fullyDispose,
+        };
+
+        InspectableStates.set(scene, state);
+
+        // Auto-dispose when the scene is disposed.
+        const capturedState = state;
+        const sceneDisposeObserver = scene.onDisposeObservable.addOnce(() => {
+            capturedState.refCount = 0;
+            capturedState.fullyDispose();
+        });
+        state.sceneDisposeObserver = sceneDisposeObserver;
+
+        // Initialize the service container asynchronously.
+        const sceneContextServiceDefinition: ServiceDefinition<[ISceneContext], []> = {
+            friendlyName: "Inspectable Scene Context",
+            produces: [SceneContextIdentity],
+            factory: () => ({
+                currentScene: scene,
+                currentSceneObservable: new Observable<Nullable<Scene>>(),
+            }),
+        };
+
+        void (async () => {
+            try {
+                await serviceContainer.addServicesAsync(
+                    sceneContextServiceDefinition,
+                    MakeInspectableBridgeServiceDefinition({
+                        port,
+                        name,
+                    }),
+                    EntityQueryServiceDefinition,
+                    ScreenshotCommandServiceDefinition,
+                    StatsCommandServiceDefinition,
+                    PerfTraceCommandServiceDefinition
+                );
+            } catch (error: unknown) {
+                Logger.Error(`Failed to initialize Inspectable: ${error}`);
+                capturedState.refCount = 0;
+                capturedState.fullyDispose();
+            }
+        })();
     }
 
-    const port = options?.port ?? DefaultPort;
-    const name = options?.name ?? (typeof document !== "undefined" ? document.title : "Babylon.js Scene");
-
-    const serviceContainer = new ServiceContainer("InspectableContainer");
+    state.refCount++;
+    const owningState = state;
 
     let disposed = false;
-
     const token: InspectableToken = {
         get isDisposed() {
             return disposed;
@@ -77,47 +139,12 @@ export function StartInspectable(scene: Scene, options?: Partial<InspectableOpti
                 return;
             }
             disposed = true;
-            serviceContainer.dispose();
-            InspectableTokens.delete(scene);
-            sceneDisposeObserver.remove();
+            owningState.refCount--;
+            if (owningState.refCount <= 0) {
+                owningState.fullyDispose();
+            }
         },
     };
-
-    InspectableTokens.set(scene, token);
-
-    // Auto-dispose when the scene is disposed.
-    const sceneDisposeObserver = scene.onDisposeObservable.addOnce(() => {
-        token.dispose();
-    });
-
-    // Initialize the service container asynchronously.
-    const sceneContextServiceDefinition: ServiceDefinition<[ISceneContext], []> = {
-        friendlyName: "Inspectable Scene Context",
-        produces: [SceneContextIdentity],
-        factory: () => ({
-            currentScene: scene,
-            currentSceneObservable: new Observable<Nullable<Scene>>(),
-        }),
-    };
-
-    void (async () => {
-        try {
-            await serviceContainer.addServicesAsync(
-                sceneContextServiceDefinition,
-                MakeInspectableBridgeServiceDefinition({
-                    port,
-                    name,
-                }),
-                EntityQueryServiceDefinition,
-                ScreenshotCommandServiceDefinition,
-                StatsCommandServiceDefinition,
-                PerfTraceCommandServiceDefinition
-            );
-        } catch (error: unknown) {
-            Logger.Error(`Failed to initialize Inspectable: ${error}`);
-            token.dispose();
-        }
-    })();
 
     return token;
 }
