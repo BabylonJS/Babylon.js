@@ -1,7 +1,7 @@
 import * as React from "react";
-import type { GlobalState } from "../../../globalState";
+import { type GlobalState } from "../../../globalState";
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
-import type { ParticleInputBlock } from "core/Particles/Node/Blocks/particleInputBlock";
+import { type ParticleInputBlock } from "core/Particles/Node/Blocks/particleInputBlock";
 import { NodeParticleBlockConnectionPointTypes } from "core/Particles/Node/Enums/nodeParticleBlockConnectionPointTypes";
 
 interface IFloatPropertyTabComponentProps {

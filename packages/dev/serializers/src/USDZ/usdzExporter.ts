@@ -1,20 +1,20 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { VertexBuffer } from "core/Buffers/buffer";
-import type { Camera } from "core/Cameras/camera";
+import { type Camera } from "core/Cameras/camera";
 import { Constants } from "core/Engines/constants";
 import { Material } from "core/Materials/material";
 import { PBRBaseMaterial } from "core/Materials/PBR/pbrBaseMaterial";
 import { StandardMaterial } from "core/Materials/standardMaterial";
-import type { BaseTexture } from "core/Materials/Textures/baseTexture";
-import type { Texture } from "core/Materials/Textures/texture";
+import { type BaseTexture } from "core/Materials/Textures/baseTexture";
+import { type Texture } from "core/Materials/Textures/texture";
 import { Color3 } from "core/Maths/math.color";
 import { Matrix, Vector2 } from "core/Maths/math.vector";
-import type { Geometry } from "core/Meshes/geometry";
-import type { Mesh } from "core/Meshes/mesh";
+import { type Geometry } from "core/Meshes/geometry";
+import { type Mesh } from "core/Meshes/mesh";
 import { DumpTools } from "core/Misc/dumpTools";
 import { Tools } from "core/Misc/tools";
-import type { Scene } from "core/scene";
-import type { FloatArray, Nullable } from "core/types";
+import { type Scene } from "core/scene";
+import { type FloatArray, type Nullable } from "core/types";
 import { IsNoopNode } from "../exportUtils";
 import { GetTextureDataAsync } from "core/Misc/textureTools";
 

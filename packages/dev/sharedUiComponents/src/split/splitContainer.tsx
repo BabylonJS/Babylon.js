@@ -1,5 +1,4 @@
-import type { PropsWithChildren } from "react";
-import { useContext, useEffect, useRef } from "react";
+import { type PropsWithChildren, useContext, useEffect, useRef } from "react";
 import * as styles from "./splitContainer.module.scss";
 import { ControlledSize, SplitDirection, SplitContext } from "./splitContext";
 import { ToolContext } from "shared-ui-components/fluent/hoc/fluentToolWrapper";

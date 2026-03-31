@@ -1,4 +1,4 @@
-import type { ISettingsStore } from "../services/settingsStore";
+import { type ISettingsStore } from "../services/settingsStore";
 
 import { createContext, useContext } from "react";
 

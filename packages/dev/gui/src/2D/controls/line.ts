@@ -1,15 +1,15 @@
-import type { Nullable } from "core/types";
-import type { Observer } from "core/Misc/observable";
+import { type Nullable } from "core/types";
+import { type Observer } from "core/Misc/observable";
 import { Vector3, Matrix } from "core/Maths/math.vector";
 import { Tools } from "core/Misc/tools";
-import type { Scene } from "core/scene";
+import { type Scene } from "core/scene";
 
 import { Control } from "./control";
 import { ValueAndUnit } from "../valueAndUnit";
-import type { Measure } from "../measure";
+import { type Measure } from "../measure";
 import { RegisterClass } from "core/Misc/typeStore";
 import { serialize } from "core/Misc/decorators";
-import type { ICanvasRenderingContext } from "core/Engines/ICanvas";
+import { type ICanvasRenderingContext } from "core/Engines/ICanvas";
 
 /** Class used to render 2D lines */
 export class Line extends Control {

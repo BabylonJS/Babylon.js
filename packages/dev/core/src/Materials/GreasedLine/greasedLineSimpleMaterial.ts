@@ -1,14 +1,13 @@
-import type { Scene } from "../../scene";
+import { type Scene } from "../../scene";
 import { RawTexture } from "../Textures/rawTexture";
 import { ShaderMaterial } from "../shaderMaterial";
-import type { Nullable } from "../../types";
+import { type Nullable } from "../../types";
 import { Color3 } from "../../Maths/math.color";
 import { Vector2 } from "../../Maths/math.vector";
 import { ShaderLanguage } from "../shaderLanguage";
 import { TextureSampler } from "../Textures/textureSampler";
 
-import type { GreasedLineMaterialOptions, IGreasedLineMaterial } from "./greasedLineMaterialInterfaces";
-import { GreasedLineMeshColorDistributionType, GreasedLineMeshColorMode } from "./greasedLineMaterialInterfaces";
+import { type GreasedLineMaterialOptions, type IGreasedLineMaterial, GreasedLineMeshColorDistributionType, GreasedLineMeshColorMode } from "./greasedLineMaterialInterfaces";
 import { GreasedLineTools } from "../../Misc/greasedLineTools";
 import { GreasedLineMaterialDefaults } from "./greasedLineMaterialDefaults";
 

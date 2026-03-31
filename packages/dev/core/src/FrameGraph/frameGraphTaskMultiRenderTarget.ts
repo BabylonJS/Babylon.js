@@ -1,4 +1,4 @@
-import type { FrameGraphRenderPass, LayerAndFaceIndex } from "core/index";
+import { type FrameGraphRenderPass, type LayerAndFaceIndex } from "core/index";
 import { FrameGraphTask } from "./frameGraphTask";
 
 /**

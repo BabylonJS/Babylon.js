@@ -1,6 +1,6 @@
 import { Vector3 } from "../Maths/math.vector";
-import type { PhysicsShape } from "./v2/physicsShape";
-import type { PhysicsBody } from "./v2/physicsBody";
+import { type PhysicsShape } from "./v2/physicsShape";
+import { type PhysicsBody } from "./v2/physicsBody";
 
 /**
  * Base class for results of casts.

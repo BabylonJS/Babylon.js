@@ -1,10 +1,10 @@
 import { Container } from "./container";
-import type { Measure } from "../measure";
+import { type Measure } from "../measure";
 import { Control } from "./control";
 import { RegisterClass } from "core/Misc/typeStore";
 import { serialize } from "core/Misc/decorators";
-import type { AdvancedDynamicTexture } from "../advancedDynamicTexture";
-import type { ICanvasRenderingContext } from "core/Engines/ICanvas";
+import { type AdvancedDynamicTexture } from "../advancedDynamicTexture";
+import { type ICanvasRenderingContext } from "core/Engines/ICanvas";
 import { Logger } from "core/Misc/logger";
 
 /**

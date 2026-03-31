@@ -1,6 +1,5 @@
 import * as React from "react";
-import type { HelpTopicId } from "./helpContent";
-import { HelpTopics } from "./helpContent";
+import { type HelpTopicId, HelpTopics } from "./helpContent";
 
 import "./helpDialog.scss";
 

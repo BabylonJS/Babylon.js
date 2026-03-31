@@ -1,5 +1,5 @@
-import type { Scene } from "core/scene";
-import type { Nullable } from "core/types";
+import { type Scene } from "core/scene";
+import { type Nullable } from "core/types";
 import { UtilityLayerRenderer } from "core/Rendering/utilityLayerRenderer";
 import { GizmoManager } from "core/Gizmos/gizmoManager";
 import { FrameGraphUtils } from "core/FrameGraph/frameGraphUtils";

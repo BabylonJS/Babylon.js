@@ -6,8 +6,7 @@ import * as path from "path";
 import * as chokidar from "chokidar";
 
 import { camelize, checkArgs, checkDirectorySync, debounce, findRootDirectory, getHashOfContent, getHashOfFile, kebabize } from "./utils.js";
-import type { BuildType, DevPackageName } from "./packageMapping.js";
-import { getAllPackageMappingsByDevNames, getPackageMappingByDevName, getPublicPackageName, isValidDevPackageName } from "./packageMapping.js";
+import { type BuildType, type DevPackageName, getAllPackageMappingsByDevNames, getPackageMappingByDevName, getPublicPackageName, isValidDevPackageName } from "./packageMapping.js";
 
 export interface IGenerateDeclarationConfig {
     devPackageName: DevPackageName;
@@ -55,6 +54,8 @@ function GetModuleDeclaration(
     let processedLines = lines
         .map((line: string) => {
             line = line.replace("import type ", "import ");
+            // Strip inline type qualifiers from import specifiers (e.g. "import { type Foo }" -> "import { Foo }")
+            line = line.replace(/\{\s*type /g, "{ ").replace(/,\s*type /g, ", ");
             // Replace Type Imports
             const regexTypeImport = /(.*)type ([A-Za-z0-9]*) = import\("(.*)"\)\.(.*);/g;
             let match = regexTypeImport.exec(line);
@@ -180,9 +181,16 @@ function GetModuleDeclaration(
         if (!devPackageName) {
             if (externalName) {
                 if (externalName === "@fortawesome" || externalName === "@fluentui" || externalName === "@recast-navigation") {
-                    // replace with any
-                    const matchRegex = new RegExp(`([ <])(${alias}[^,;\n>) ]*)([^\\w])`, "g");
-                    processedLines = processedLines.replace(matchRegex, `$1any$3`);
+                    // Replace type references with "any", but skip declaration sites (e.g. "export type ThemeMode")
+                    // to avoid producing invalid syntax like "export type any = ...".
+                    const matchRegex = new RegExp(`([ <])(${alias})([^\\w])`, "g");
+                    processedLines = processedLines.replace(matchRegex, (match, p1: string, _alias: string, p3: string, offset: number) => {
+                        const precedingText = processedLines.slice(0, offset + p1.length);
+                        if (/\b(?:type|class|var|const|let|function|interface|enum|namespace)\s+$/.test(precedingText)) {
+                            return match;
+                        }
+                        return `${p1}any${p3}`;
+                    });
                     return;
                 }
             }
@@ -227,8 +235,10 @@ function GetClassesMap(source: string, originalDevPackageName: string, originalS
             if (parts.length === 2) {
                 console.log(`${parts[0]} as ${parts[1]}`);
             }
-            const realClassName = parts[0].trim();
-            const alias = parts[1] ? parts[1].trim() : realClassName;
+            // Strip inline "type" qualifier from import specifiers (e.g. "type Foo" -> "Foo")
+            // to prevent "type" from leaking into namespace references like "BABYLON.type Foo".
+            const realClassName = parts[0].trim().replace(/^type /, "");
+            const alias = parts[1] ? parts[1].trim().replace(/^type /, "") : realClassName;
             const firstSplit = matches[2].split("/")[0];
             const devPackageName = firstSplit[0] === "." ? originalDevPackageName : firstSplit;
             // if (alias !== realClassName) {
@@ -289,8 +299,10 @@ function GetClassesMap(source: string, originalDevPackageName: string, originalS
                 const parts = className.split(" as ");
                 if (parts.length === 2) {
                     console.log(`aliasing ${parts[0]} as ${parts[1]}`);
-                    const realClassName = parts[1].trim();
-                    const alias = parts[0] ? parts[0].trim() : realClassName;
+                    // Strip inline "type" qualifier from re-export specifiers (e.g. "type Foo" -> "Foo")
+                    // to prevent "type" from leaking into namespace references like "BABYLON.type Foo".
+                    const realClassName = parts[1].trim().replace(/^type /, "");
+                    const alias = parts[0] ? parts[0].trim().replace(/^type /, "") : realClassName;
                     const devPackageName = originalDevPackageName;
                     if (isValidDevPackageName(devPackageName)) {
                         mappingArray.push({
@@ -417,9 +429,16 @@ function GetPackageDeclaration(
             if (!localDevPackageMap) {
                 if (externalName) {
                     if (externalName === "@fortawesome" || externalName === "@fluentui" || externalName === "@recast-navigation") {
-                        // replace with any
-                        const matchRegex = new RegExp(`([ <])(${alias}[^,;\n>) ]*)([^\\w])`, "g");
-                        processedSource = processedSource.replace(matchRegex, `$1any$3`);
+                        // Replace type references with "any", but skip declaration sites (e.g. "export type ThemeMode")
+                        // to avoid producing invalid syntax like "export type any = ...".
+                        const matchRegex = new RegExp(`([ <])(${alias})([^\\w])`, "g");
+                        processedSource = processedSource.replace(matchRegex, (match, p1: string, _alias: string, p3: string, offset: number) => {
+                            const precedingText = processedSource.slice(0, offset + p1.length);
+                            if (/\b(?:type|class|var|const|let|function|interface|enum|namespace)\s+$/.test(precedingText)) {
+                                return match;
+                            }
+                            return `${p1}any${p3}`;
+                        });
                         return;
                     } else if (externalName === "react") {
                         const matchRegex = new RegExp(`([ <])(${alias})([^\\w])`, "g");

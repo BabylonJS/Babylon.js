@@ -1,6 +1,5 @@
-import type { FunctionComponent } from "react";
+import { type FunctionComponent, useCallback } from "react";
 
-import { useCallback } from "react";
 import { makeStyles, tokens, ToggleButton, Tooltip, Body1, mergeClasses } from "@fluentui/react-components";
 import { EyeOffRegular, EyeRegular, LockClosedRegular, LockOpenRegular } from "@fluentui/react-icons";
 

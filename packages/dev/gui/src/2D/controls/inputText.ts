@@ -1,20 +1,17 @@
-import type { Nullable } from "core/types";
-import type { Observer } from "core/Misc/observable";
-import { Observable } from "core/Misc/observable";
-import type { Vector2 } from "core/Maths/math.vector";
-import type { ClipboardInfo } from "core/Events/clipboardEvents";
-import { ClipboardEventTypes } from "core/Events/clipboardEvents";
-import type { PointerInfo, PointerInfoBase } from "core/Events/pointerEvents";
-import { PointerEventTypes } from "core/Events/pointerEvents";
+import { type Nullable } from "core/types";
+import { type Observer, Observable } from "core/Misc/observable";
+import { type Vector2 } from "core/Maths/math.vector";
+import { type ClipboardInfo, ClipboardEventTypes } from "core/Events/clipboardEvents";
+import { type PointerInfo, type PointerInfoBase, PointerEventTypes } from "core/Events/pointerEvents";
 
 import { Control } from "./control";
 import { ValueAndUnit } from "../valueAndUnit";
-import type { VirtualKeyboard } from "./virtualKeyboard";
+import { type VirtualKeyboard } from "./virtualKeyboard";
 import { RegisterClass } from "core/Misc/typeStore";
 import { TextWrapper } from "./textWrapper";
 import { serialize } from "core/Misc/decorators";
-import type { IKeyboardEvent, IPointerEvent } from "core/Events/deviceInputEvents";
-import type { ICanvasRenderingContext } from "core/Engines/ICanvas";
+import { type IKeyboardEvent, type IPointerEvent } from "core/Events/deviceInputEvents";
+import { type ICanvasRenderingContext } from "core/Engines/ICanvas";
 
 /**
  * Class used to create input text control

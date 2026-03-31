@@ -1,12 +1,9 @@
-import type { IDisposable } from "core/index";
-import type { Scene } from "core/scene";
-import type { ServiceDefinition } from "../../modularity/serviceDefinition";
-import type { IInspectableCommandRegistry, InspectableCommandDescriptor } from "./inspectableCommandRegistry";
-import type { ISceneContext } from "../sceneContext";
-
+import { type IDisposable } from "core/index";
 import { UniqueIdGenerator } from "core/Misc/uniqueIdGenerator";
-import { InspectableCommandRegistryIdentity } from "./inspectableCommandRegistry";
-import { SceneContextIdentity } from "../sceneContext";
+import { type Scene } from "core/scene";
+import { type ServiceDefinition } from "../../modularity/serviceDefinition";
+import { type ISceneContext, SceneContextIdentity } from "../sceneContext";
+import { type IInspectableCommandRegistry, type InspectableCommandDescriptor, InspectableCommandRegistryIdentity } from "./inspectableCommandRegistry";
 
 const UniqueIdArg = {
     name: "uniqueId",

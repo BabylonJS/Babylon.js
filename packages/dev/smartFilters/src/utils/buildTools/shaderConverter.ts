@@ -1,7 +1,7 @@
-import type { ShaderCode, ShaderFunction } from "./shaderCode.types.js";
+import { type ShaderCode, type ShaderFunction } from "./shaderCode.types.js";
 import { ConnectionPointType } from "../../connection/connectionPointType.js";
 import { BlockDisableStrategy } from "../../blockFoundation/blockDisableStrategy.js";
-import type { ConstPropertyMetadata } from "../../serialization/v1/shaderBlockSerialization.types.js";
+import { type ConstPropertyMetadata } from "../../serialization/v1/shaderBlockSerialization.types.js";
 import { DecorateSymbol } from "../shaderCodeUtils.js";
 import { log, error } from "./buildToolsLogger.js";
 

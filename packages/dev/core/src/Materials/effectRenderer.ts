@@ -1,15 +1,13 @@
-import type { NonNullableFields, Nullable } from "../types";
-import type { AbstractEngine } from "../Engines/abstractEngine";
+import { type NonNullableFields, type Nullable } from "../types";
+import { type AbstractEngine } from "../Engines/abstractEngine";
 import { VertexBuffer } from "../Buffers/buffer";
 import { Viewport } from "../Maths/math.viewport";
 import { Constants } from "../Engines/constants";
-import type { Observer } from "../Misc/observable";
-import { Observable } from "../Misc/observable";
-import type { IShaderPath } from "./effect";
-import { Effect } from "./effect";
-import type { DataBuffer } from "../Buffers/dataBuffer";
+import { type Observer, Observable } from "../Misc/observable";
+import { type IShaderPath, Effect } from "./effect";
+import { type DataBuffer } from "../Buffers/dataBuffer";
 import { DrawWrapper } from "./drawWrapper";
-import type { IRenderTargetTexture, RenderTargetWrapper } from "../Engines/renderTargetWrapper";
+import { type IRenderTargetTexture, type RenderTargetWrapper } from "../Engines/renderTargetWrapper";
 import { ShaderLanguage } from "./shaderLanguage";
 
 // Prevents ES6 issue if not imported.

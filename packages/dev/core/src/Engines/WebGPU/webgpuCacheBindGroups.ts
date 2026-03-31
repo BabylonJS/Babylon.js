@@ -1,14 +1,14 @@
 /* eslint-disable babylonjs/available */
 /* eslint-disable jsdoc/require-jsdoc */
 import { Logger } from "../../Misc/logger";
-import type { WebGPUCacheSampler } from "./webgpuCacheSampler";
-import type { WebGPUMaterialContext } from "./webgpuMaterialContext";
-import type { WebGPUPipelineContext } from "./webgpuPipelineContext";
-import type { WebGPUEngine } from "../webgpuEngine";
-import type { WebGPUHardwareTexture } from "./webgpuHardwareTexture";
-import type { InternalTexture } from "../../Materials/Textures/internalTexture";
-import type { ExternalTexture } from "../../Materials/Textures/externalTexture";
-import type { WebGPUDrawContext } from "./webgpuDrawContext";
+import { type WebGPUCacheSampler } from "./webgpuCacheSampler";
+import { type WebGPUMaterialContext } from "./webgpuMaterialContext";
+import { type WebGPUPipelineContext } from "./webgpuPipelineContext";
+import { type WebGPUEngine } from "../webgpuEngine";
+import { type WebGPUHardwareTexture } from "./webgpuHardwareTexture";
+import { type InternalTexture } from "../../Materials/Textures/internalTexture";
+import { type ExternalTexture } from "../../Materials/Textures/externalTexture";
+import { type WebGPUDrawContext } from "./webgpuDrawContext";
 
 /**
  * Sampler hash codes are 19 bits long, so using a start value of 2^20 for buffer ids will ensure we can't have any collision with the sampler hash codes

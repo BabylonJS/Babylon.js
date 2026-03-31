@@ -5,7 +5,7 @@
  * Parses `[PERF]` log lines emitted by performance tests in stdout
  * and computes average/median/min/max differences across all tests.
  */
-import type { Reporter, TestCase, TestResult, FullResult } from "@playwright/test/reporter";
+import { type Reporter, type TestCase, type TestResult, type FullResult } from "@playwright/test/reporter";
 
 interface PerfEntry {
     testName: string;

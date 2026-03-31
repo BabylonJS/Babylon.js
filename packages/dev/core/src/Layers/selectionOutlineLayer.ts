@@ -1,19 +1,18 @@
 import { serialize, serializeAsColor3 } from "../Misc/decorators";
-import type { Nullable } from "../types";
+import { type Nullable } from "../types";
 import { Scene } from "../scene";
-import type { SubMesh } from "../Meshes/subMesh";
-import type { AbstractMesh } from "../Meshes/abstractMesh";
-import type { Mesh } from "../Meshes/mesh";
-import type { Effect } from "../Materials/effect";
-import type { Material } from "../Materials/material";
+import { type SubMesh } from "../Meshes/subMesh";
+import { type AbstractMesh } from "../Meshes/abstractMesh";
+import { type Mesh } from "../Meshes/mesh";
+import { type Effect } from "../Materials/effect";
+import { type Material } from "../Materials/material";
 import { EffectLayer } from "./effectLayer";
 import { Constants } from "../Engines/constants";
 import { RegisterClass } from "../Misc/typeStore";
 
 import { SerializationHelper } from "../Misc/decorators.serialization";
-import type { IThinSelectionOutlineLayerOptions } from "./thinSelectionOutlineLayer";
-import { ThinSelectionOutlineLayer } from "./thinSelectionOutlineLayer";
-import type { Color3 } from "../Maths/math.color";
+import { type IThinSelectionOutlineLayerOptions, ThinSelectionOutlineLayer } from "./thinSelectionOutlineLayer";
+import { type Color3 } from "../Maths/math.color";
 
 import "../Rendering/depthRendererSceneComponent";
 

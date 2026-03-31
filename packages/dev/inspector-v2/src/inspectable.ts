@@ -1,15 +1,13 @@
-import type { IDisposable, Nullable } from "core/index";
-import type { Scene } from "core/scene";
-import type { ServiceDefinition } from "./modularity/serviceDefinition";
-import type { ISceneContext } from "./services/sceneContext";
-
+import { type IDisposable, type Nullable } from "core/index";
 import { Logger } from "core/Misc/logger";
 import { Observable } from "core/Misc/observable";
+import { type Scene } from "core/scene";
 import { ServiceContainer } from "./modularity/serviceContainer";
-import { SceneContextIdentity } from "./services/sceneContext";
-import { MakeInspectableBridgeServiceDefinition } from "./services/cli/inspectableBridgeService";
+import { type ServiceDefinition } from "./modularity/serviceDefinition";
 import { EntityQueryServiceDefinition } from "./services/cli/entityQueryService";
+import { MakeInspectableBridgeServiceDefinition } from "./services/cli/inspectableBridgeService";
 import { ScreenshotCommandServiceDefinition } from "./services/cli/screenshotCommandService";
+import { type ISceneContext, SceneContextIdentity } from "./services/sceneContext";
 
 const DefaultPort = 4400;
 

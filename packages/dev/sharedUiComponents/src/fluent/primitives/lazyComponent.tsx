@@ -1,8 +1,5 @@
-import type { SpinnerProps } from "@fluentui/react-components";
-import type { ComponentProps, ComponentType, ElementRef, Ref } from "react";
-
-import { Spinner } from "@fluentui/react-components";
-import { forwardRef, lazy, Suspense } from "react";
+import { type SpinnerProps, Spinner } from "@fluentui/react-components";
+import { type ComponentProps, type ComponentType, type ElementRef, type Ref, forwardRef, lazy, Suspense } from "react";
 
 type LazyComponentProps = {
     spinnerSize?: SpinnerProps["size"];

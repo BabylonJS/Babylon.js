@@ -1,10 +1,10 @@
-import type { AbstractMesh } from "../../../Meshes/abstractMesh";
+import { type AbstractMesh } from "../../../Meshes/abstractMesh";
 import { VertexBuffer } from "../../../Buffers/buffer";
-import type { Scene } from "../../../scene";
-import type { Material } from "../../material";
+import { type Scene } from "../../../scene";
+import { type Material } from "../../material";
 import { Texture } from "../texture";
 import { DynamicTexture } from "../dynamicTexture";
-import type { Nullable } from "../../../types";
+import { type Nullable } from "../../../types";
 import { Vector2 } from "../../../Maths/math.vector";
 import { Color3, Color4 } from "../../../Maths/math.color";
 import { TexturePackerFrame } from "./frame";

@@ -1,5 +1,5 @@
-import type { Nullable } from "core/types";
-import type { GraphNode } from "../graphNode";
+import { type Nullable } from "core/types";
+import { type GraphNode } from "../graphNode";
 
 export enum PortDataDirection {
     /** Input */

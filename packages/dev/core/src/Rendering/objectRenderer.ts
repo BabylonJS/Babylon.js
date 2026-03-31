@@ -1,17 +1,17 @@
-import type {
-    Nullable,
-    Immutable,
-    Camera,
-    Scene,
-    AbstractMesh,
-    SubMesh,
-    Material,
-    IParticleSystem,
-    InstancedMesh,
-    BoundingBox,
-    BoundingBoxRenderer,
-    AbstractEngine,
-    ClusteredLightContainer,
+import {
+    type Nullable,
+    type Immutable,
+    type Camera,
+    type Scene,
+    type AbstractMesh,
+    type SubMesh,
+    type Material,
+    type IParticleSystem,
+    type InstancedMesh,
+    type BoundingBox,
+    type BoundingBoxRenderer,
+    type AbstractEngine,
+    type ClusteredLightContainer,
 } from "core/index";
 import { UniformBuffer } from "../Materials/uniformBuffer";
 import { Observable } from "../Misc/observable";

@@ -1,6 +1,6 @@
 import { ShaderBlock } from "../../blockFoundation/shaderBlock.js";
-import type { BaseBlock } from "../../blockFoundation/baseBlock.js";
-import type { ISerializedBlockV1, SerializeBlockV1 } from "./smartFilterSerialization.types.js";
+import { type BaseBlock } from "../../blockFoundation/baseBlock.js";
+import { type ISerializedBlockV1, type SerializeBlockV1 } from "./smartFilterSerialization.types.js";
 
 /**
  * The default V1 block serializer which can be used for any block that relies only on ConnectionPoints

@@ -1,9 +1,7 @@
-import type { FunctionComponent } from "react";
+import { type FunctionComponent, useCallback } from "react";
 
-import type { Light } from "core/index";
-import type { ISelectionService } from "../../../services/selectionService";
-
-import { useCallback } from "react";
+import { type Light } from "core/index";
+import { type ISelectionService } from "../../../services/selectionService";
 
 import { ClusteredLightContainer } from "core/Lights/Clustered/clusteredLightContainer";
 import { ClusteredLightContainerSelectorPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/entitySelectorPropertyLine";

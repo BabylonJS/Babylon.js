@@ -1,11 +1,11 @@
-import type { Observable } from "core/Misc/observable";
+import { type Observable } from "core/Misc/observable";
 import { PhysicsMotionType, PhysicsShapeType } from "core/Physics/v2/IPhysicsEnginePlugin";
-import type { PhysicsBody } from "core/Physics/v2/physicsBody";
-import type { GlobalState } from "inspector/components/globalState";
+import { type PhysicsBody } from "core/Physics/v2/physicsBody";
+import { type GlobalState } from "inspector/components/globalState";
 import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
 import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
-import type { PropertyChangedEvent } from "shared-ui-components/propertyChangedEvent";
-import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
+import { type PropertyChangedEvent } from "shared-ui-components/propertyChangedEvent";
+import { type LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 import { PhysicsMassPropertiesGridComponent } from "./physicsMassPropertiesGridComponent";
 import { PhysicsMaterialGridComponent } from "./physicsMaterialGridComponent";
 import { useState } from "react";

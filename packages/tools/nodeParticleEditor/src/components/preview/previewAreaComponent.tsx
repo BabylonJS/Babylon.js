@@ -1,7 +1,7 @@
 import * as React from "react";
-import type { GlobalState } from "../../globalState";
-import type { Observer } from "core/Misc/observable";
-import type { Nullable } from "core/types";
+import { type GlobalState } from "../../globalState";
+import { type Observer } from "core/Misc/observable";
+import { type Nullable } from "core/types";
 
 interface IPreviewAreaComponentProps {
     globalState: GlobalState;

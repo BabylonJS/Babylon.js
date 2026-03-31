@@ -1,16 +1,15 @@
 import * as React from "react";
 import { LineContainerComponent } from "../../sharedComponents/lineContainerComponent";
-import type { IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
+import { type IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
 import { OptionsLine } from "shared-ui-components/lines/optionsLineComponent";
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
 import { CheckBoxLineComponent } from "../../sharedComponents/checkBoxLineComponent";
 import { GeneralPropertyTabComponent } from "./genericNodePropertyComponent";
-import type { FlowGraphGetAssetBlock } from "core/FlowGraph/Blocks/Data/flowGraphGetAssetBlock";
-import type { IFlowGraphGetAssetBlockConfiguration } from "core/FlowGraph/Blocks/Data/flowGraphGetAssetBlock";
+import { type FlowGraphGetAssetBlock, type IFlowGraphGetAssetBlockConfiguration } from "core/FlowGraph/Blocks/Data/flowGraphGetAssetBlock";
 import { FlowGraphInteger } from "core/FlowGraph/CustomTypes/flowGraphInteger";
-import type { GlobalState } from "../../globalState";
-import type { SceneContext } from "../../sceneContext";
-import type { Observer } from "core/Misc/observable";
+import { type GlobalState } from "../../globalState";
+import { type SceneContext } from "../../sceneContext";
+import { type Observer } from "core/Misc/observable";
 
 // FlowGraphAssetType is a const enum — mirror string values here so webpack doesn't inline stale values.
 const AssetTypeOptions = [

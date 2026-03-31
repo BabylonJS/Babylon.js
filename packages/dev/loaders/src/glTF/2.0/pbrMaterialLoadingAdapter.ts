@@ -1,11 +1,11 @@
-import type { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
-import type { Material } from "core/Materials/material";
-import type { BaseTexture } from "core/Materials/Textures/baseTexture";
-import type { Nullable } from "core/types";
+import { type PBRMaterial } from "core/Materials/PBR/pbrMaterial";
+import { type Material } from "core/Materials/material";
+import { type BaseTexture } from "core/Materials/Textures/baseTexture";
+import { type Nullable } from "core/types";
 import { Color3 } from "core/Maths/math.color";
 import { Vector3 } from "core/Maths/math.vector";
 import { Constants } from "core/Engines/constants";
-import type { IMaterialLoadingAdapter } from "./materialLoadingAdapter";
+import { type IMaterialLoadingAdapter } from "./materialLoadingAdapter";
 
 /**
  * Material Loading Adapter for PBR materials that provides a unified OpenPBR-like interface.

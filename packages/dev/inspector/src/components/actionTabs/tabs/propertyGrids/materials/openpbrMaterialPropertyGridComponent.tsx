@@ -3,7 +3,7 @@ import * as React from "react";
 import { Observable } from "core/Misc/observable";
 import { Constants } from "core/Engines/constants";
 
-import type { PropertyChangedEvent } from "../../../../propertyChangedEvent";
+import { type PropertyChangedEvent } from "../../../../propertyChangedEvent";
 import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
 import { Color3LineComponent } from "shared-ui-components/lines/color3LineComponent";
 import { CheckBoxLineComponent } from "shared-ui-components/lines/checkBoxLineComponent";
@@ -11,13 +11,13 @@ import { SliderLineComponent } from "shared-ui-components/lines/sliderLineCompon
 import { OptionsLine } from "shared-ui-components/lines/optionsLineComponent";
 import { CommonMaterialPropertyGridComponent } from "./commonMaterialPropertyGridComponent";
 import { TextureLinkLineComponent } from "../../../lines/textureLinkLineComponent";
-import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
-import type { GlobalState } from "../../../../globalState";
+import { type LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
+import { type GlobalState } from "../../../../globalState";
 
 import "core/Materials/material.decalMap";
 import "core/Rendering/prePassRendererSceneComponent";
 import "core/Rendering/subSurfaceSceneComponent";
-import type { OpenPBRMaterial } from "core/Materials/PBR/openpbrMaterial";
+import { type OpenPBRMaterial } from "core/Materials/PBR/openpbrMaterial";
 
 interface IOpenPBRMaterialPropertyGridComponentProps {
     globalState: GlobalState;

@@ -1,27 +1,24 @@
-import type { Observer } from "../Misc/observable";
-import { Observable } from "../Misc/observable";
+import { type Observer, Observable } from "../Misc/observable";
 import { Logger } from "../Misc/logger";
-import type { Nullable } from "../types";
-import type { PointerInfo } from "../Events/pointerEvents";
-import type { Scene } from "../scene";
+import { type Nullable } from "../types";
+import { type PointerInfo } from "../Events/pointerEvents";
+import { type Scene } from "../scene";
 import { Quaternion, Matrix, Vector3, TmpVectors } from "../Maths/math.vector";
-import type { AbstractMesh } from "../Meshes/abstractMesh";
+import { type AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
 import { CreateBox } from "../Meshes/Builders/boxBuilder";
 import { CreateLineSystem } from "../Meshes/Builders/linesBuilder";
 import { PointerDragBehavior } from "../Behaviors/Meshes/pointerDragBehavior";
-import type { IGizmo } from "./gizmo";
-import { Gizmo } from "./gizmo";
+import { type IGizmo, Gizmo } from "./gizmo";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
 import { StandardMaterial } from "../Materials/standardMaterial";
 import { PivotTools } from "../Misc/pivotTools";
 import { Color3 } from "../Maths/math.color";
-import type { LinesMesh } from "../Meshes/linesMesh";
+import { type LinesMesh } from "../Meshes/linesMesh";
 import { Epsilon } from "../Maths/math.constants";
-import type { IPointerEvent } from "../Events/deviceInputEvents";
+import { type IPointerEvent } from "../Events/deviceInputEvents";
 import { TransformNode } from "../Meshes/transformNode";
-import { KeyboardEventTypes } from "../Events/keyboardEvents";
-import type { KeyboardInfo } from "../Events/keyboardEvents";
+import { KeyboardEventTypes, type KeyboardInfo } from "../Events/keyboardEvents";
 
 /**
  * Interface for bounding box gizmo

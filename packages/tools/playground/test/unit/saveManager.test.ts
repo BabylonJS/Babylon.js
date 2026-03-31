@@ -22,8 +22,8 @@ vi.mock("@tools/snippet-loader", () => ({
 }));
 
 import { Observable } from "@dev/core";
-import type { ISaveSnippetResult } from "@tools/snippet-loader";
-import type { Mock } from "vitest";
+import { type ISaveSnippetResult } from "@tools/snippet-loader";
+import { type Mock } from "vitest";
 
 // ---------------------------------------------------------------------------
 // Minimal GlobalState mock

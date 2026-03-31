@@ -2,19 +2,17 @@ import { Body1, makeStyles, tokens } from "@fluentui/react-components";
 import { ArrowMoveFilled, EyeFilled, EyeOffFilled } from "@fluentui/react-icons";
 import { FontAsset } from "addons/msdfText/fontAsset";
 import { TextRenderer } from "addons/msdfText/textRenderer";
-import type { StandardMaterial } from "core/Materials/standardMaterial";
-import type { Color3 } from "core/Maths/math.color";
-import { Color4 } from "core/Maths/math.color";
+import { type StandardMaterial } from "core/Materials/standardMaterial";
+import { type Color3, Color4 } from "core/Maths/math.color";
 import { Matrix } from "core/Maths/math.vector";
-import type { AbstractMesh } from "core/Meshes/abstractMesh";
+import { type AbstractMesh } from "core/Meshes/abstractMesh";
 import { CreateSphere } from "core/Meshes/Builders/sphereBuilder";
-import type { Scene } from "core/scene";
-import { useCallback, useEffect, useState } from "react";
-import type { FunctionComponent } from "react";
+import { type Scene } from "core/scene";
+import { useCallback, useEffect, useState, type FunctionComponent } from "react";
 import { SyncedSliderInput } from "shared-ui-components/fluent/primitives/syncedSlider";
 import { ToggleButton } from "shared-ui-components/fluent/primitives/toggleButton";
 import { useAsyncResource, useResource } from "../../../hooks/resourceHooks";
-import type { IAttractorData } from "./attractorAdapter";
+import { type IAttractorData } from "./attractorAdapter";
 
 type AttractorProps = {
     attractorData: IAttractorData;

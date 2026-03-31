@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 import ws from "ws";
 import { LoadConfig } from "./config.js";
-import type { BrowserRequest, BrowserResponse, CliRequest, CliResponse, SessionInfo } from "./protocol.js";
+import { type BrowserRequest, type BrowserResponse, type CliRequest, type CliResponse, type SessionInfo } from "./protocol.js";
 
 type WebSocket = ws;
 type WebSocketServerType = ws.Server;

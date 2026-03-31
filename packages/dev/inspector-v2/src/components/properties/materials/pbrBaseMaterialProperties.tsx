@@ -1,4 +1,4 @@
-import type { FunctionComponent } from "react";
+import { type FunctionComponent } from "react";
 
 import { BoundProperty } from "../boundProperty";
 import { useProperty } from "../../../hooks/compoundPropertyHooks";
@@ -12,10 +12,10 @@ import { Vector2PropertyLine } from "shared-ui-components/fluent/hoc/propertyLin
 
 import { Collapse } from "shared-ui-components/fluent/primitives/collapse";
 import { NumberDropdownPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/dropdownPropertyLine";
-import type { DropdownOption } from "shared-ui-components/fluent/primitives/dropdown";
+import { type DropdownOption } from "shared-ui-components/fluent/primitives/dropdown";
 import { Constants } from "core/Engines/constants";
 import { TextureSelectorPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/entitySelectorPropertyLine";
-import type { ISelectionService } from "../../../services/selectionService";
+import { type ISelectionService } from "../../../services/selectionService";
 import { Color3 } from "core/Maths/math.color";
 
 declare module "core/Materials/PBR/pbrSheenConfiguration" {

@@ -1,9 +1,9 @@
 /* eslint-disable jsdoc/require-jsdoc */
 /* eslint-disable no-await-in-loop */
 
-import type { GlobalState } from "../globalState";
+import { type GlobalState } from "../globalState";
 import { Logger } from "@dev/core";
-import type { V2Manifest } from "./snippet";
+import { type V2Manifest } from "./snippet";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 declare let JSZip: any;

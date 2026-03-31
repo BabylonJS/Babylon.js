@@ -1,11 +1,11 @@
 /* eslint-disable no-console */
 import { spawn } from "child_process";
-import { parseArgs } from "util";
-import { fileURLToPath } from "url";
 import { dirname, join, resolve } from "path";
+import { fileURLToPath } from "url";
+import { parseArgs } from "util";
 import ws from "ws";
 import { LoadConfig } from "./config.js";
-import type { CliRequest, CliResponse, CommandsResponse, ExecResponse, SessionsResponse } from "./protocol.js";
+import { type CliRequest, type CliResponse, type CommandsResponse, type ExecResponse, type SessionsResponse } from "./protocol.js";
 
 type WebSocket = ws;
 

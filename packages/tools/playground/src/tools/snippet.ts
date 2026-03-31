@@ -1,8 +1,8 @@
 /* eslint-disable jsdoc/require-jsdoc */
 import { EncodeArrayBufferToBase64 } from "@dev/core";
 import { Utilities } from "./utilities";
-import type { GlobalState } from "../globalState";
-import type { IPosition } from "monaco-editor";
+import { type GlobalState } from "../globalState";
+import { type IPosition } from "monaco-editor";
 
 export const ManifestVersion = 2;
 

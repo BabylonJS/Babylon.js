@@ -1,4 +1,4 @@
-import type { FrameGraph, FrameGraphTextureHandle, Camera, FrameGraphTextureCreationOptions } from "core/index";
+import { type FrameGraph, type FrameGraphTextureHandle, type Camera, type FrameGraphTextureCreationOptions } from "core/index";
 import { Constants } from "core/Engines/constants";
 import { FrameGraphTask } from "../../frameGraphTask";
 import { ThinSSAO2RenderingPipeline } from "core/PostProcesses/RenderPipeline/Pipelines/thinSSAO2RenderingPipeline";

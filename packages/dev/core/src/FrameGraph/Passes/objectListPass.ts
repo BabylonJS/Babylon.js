@@ -1,4 +1,4 @@
-import type { Nullable, AbstractEngine, IFrameGraphPass, FrameGraphContext, FrameGraphObjectList, FrameGraphTask } from "core/index";
+import { type Nullable, type AbstractEngine, type IFrameGraphPass, type FrameGraphContext, type FrameGraphObjectList, type FrameGraphTask } from "core/index";
 import { FrameGraphPass } from "./pass";
 
 /**

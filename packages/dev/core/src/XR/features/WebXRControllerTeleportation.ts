@@ -1,17 +1,14 @@
-import type { IWebXRFeature } from "../webXRFeaturesManager";
-import { WebXRFeaturesManager, WebXRFeatureName } from "../webXRFeaturesManager";
-import type { Observer } from "../../Misc/observable";
-import { Observable } from "../../Misc/observable";
-import type { WebXRSessionManager } from "../webXRSessionManager";
-import type { Nullable } from "../../types";
-import type { WebXRInput } from "../webXRInput";
-import type { WebXRInputSource } from "../webXRInputSource";
-import type { IWebXRMotionControllerAxesValue } from "../motionController/webXRControllerComponent";
-import { WebXRControllerComponent } from "../motionController/webXRControllerComponent";
-import type { AbstractMesh } from "../../Meshes/abstractMesh";
+import { type IWebXRFeature, WebXRFeaturesManager, WebXRFeatureName } from "../webXRFeaturesManager";
+import { type Observer, Observable } from "../../Misc/observable";
+import { type WebXRSessionManager } from "../webXRSessionManager";
+import { type Nullable } from "../../types";
+import { type WebXRInput } from "../webXRInput";
+import { type WebXRInputSource } from "../webXRInputSource";
+import { type IWebXRMotionControllerAxesValue, WebXRControllerComponent } from "../motionController/webXRControllerComponent";
+import { type AbstractMesh } from "../../Meshes/abstractMesh";
 import { Vector3, Quaternion } from "../../Maths/math.vector";
 import { Ray } from "../../Culling/ray";
-import type { Material } from "../../Materials/material";
+import { type Material } from "../../Materials/material";
 import { DynamicTexture } from "../../Materials/Textures/dynamicTexture";
 import { CreateCylinder } from "../../Meshes/Builders/cylinderBuilder";
 import { SineEase, EasingFunction } from "../../Animations/easing";
@@ -20,16 +17,16 @@ import { Axis } from "../../Maths/math.axis";
 import { StandardMaterial } from "../../Materials/standardMaterial";
 import { CreateGround } from "../../Meshes/Builders/groundBuilder";
 import { CreateTorus } from "../../Meshes/Builders/torusBuilder";
-import type { PickingInfo } from "../../Collisions/pickingInfo";
+import { type PickingInfo } from "../../Collisions/pickingInfo";
 import { Curve3 } from "../../Maths/math.path";
 import { CreateLines } from "../../Meshes/Builders/linesBuilder";
 import { WebXRAbstractFeature } from "./WebXRAbstractFeature";
 import { Color3, Color4 } from "../../Maths/math.color";
-import type { Scene } from "../../scene";
+import { type Scene } from "../../scene";
 import { UtilityLayerRenderer } from "../../Rendering/utilityLayerRenderer";
 import { PointerEventTypes } from "../../Events/pointerEvents";
 import { setAndStartTimer } from "../../Misc/timer";
-import type { LinesMesh } from "../../Meshes/linesMesh";
+import { type LinesMesh } from "../../Meshes/linesMesh";
 
 /**
  * The options container for the teleportation module

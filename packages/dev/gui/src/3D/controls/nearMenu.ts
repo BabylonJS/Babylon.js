@@ -1,13 +1,13 @@
-import type { Scene } from "core/scene";
-import type { TransformNode } from "core/Meshes/transformNode";
-import type { Nullable } from "core/types";
-import type { Mesh } from "core/Meshes/mesh";
+import { type Scene } from "core/scene";
+import { type TransformNode } from "core/Meshes/transformNode";
+import { type Nullable } from "core/types";
+import { type Mesh } from "core/Meshes/mesh";
 import { TouchHolographicButton } from "./touchHolographicButton";
 import { DefaultBehavior } from "../behaviors/defaultBehavior";
 import { TouchHolographicMenu } from "./touchHolographicMenu";
-import type { Observer } from "core/Misc/observable";
-import type { Vector3 } from "core/Maths/math.vector";
-import type { PickingInfo } from "core/Collisions/pickingInfo";
+import { type Observer } from "core/Misc/observable";
+import { type Vector3 } from "core/Maths/math.vector";
+import { type PickingInfo } from "core/Collisions/pickingInfo";
 import { Tools } from "core/Misc/tools";
 
 /**

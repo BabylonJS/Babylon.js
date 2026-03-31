@@ -1,11 +1,8 @@
-import type { ServiceDefinition } from "../../modularity/serviceDefinition";
-import type { IInspectableCommandRegistry } from "./inspectableCommandRegistry";
-import type { ISceneContext } from "../sceneContext";
-
-import { CreateScreenshotUsingRenderTargetAsync } from "core/Misc/screenshotTools";
 import { FrameGraphUtils } from "core/FrameGraph/frameGraphUtils";
-import { InspectableCommandRegistryIdentity } from "./inspectableCommandRegistry";
-import { SceneContextIdentity } from "../sceneContext";
+import { CreateScreenshotUsingRenderTargetAsync } from "core/Misc/screenshotTools";
+import { type ServiceDefinition } from "../../modularity/serviceDefinition";
+import { type ISceneContext, SceneContextIdentity } from "../sceneContext";
+import { type IInspectableCommandRegistry, InspectableCommandRegistryIdentity } from "./inspectableCommandRegistry";
 
 /**
  * Service that registers a CLI command for capturing a screenshot of the scene.

@@ -1,11 +1,9 @@
-import type { IDisposable } from "core/index";
-import type { ServiceDefinition } from "../../modularity/serviceDefinition";
-
-import type { IInspectableCommandRegistry, InspectableCommandDescriptor } from "./inspectableCommandRegistry";
-import type { BrowserRequest, BrowserResponse, CommandInfo } from "../../cli/protocol";
+import { type IDisposable } from "core/index";
+import { type BrowserRequest, type BrowserResponse, type CommandInfo } from "../../cli/protocol";
+import { type ServiceDefinition } from "../../modularity/serviceDefinition";
+import { type IInspectableCommandRegistry, type InspectableCommandDescriptor, InspectableCommandRegistryIdentity } from "./inspectableCommandRegistry";
 
 import { Logger } from "core/Misc/logger";
-import { InspectableCommandRegistryIdentity } from "./inspectableCommandRegistry";
 
 /**
  * Options for the inspectable bridge service.

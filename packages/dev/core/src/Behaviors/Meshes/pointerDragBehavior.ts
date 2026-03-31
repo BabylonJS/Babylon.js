@@ -1,22 +1,20 @@
-import type { Behavior } from "../../Behaviors/behavior";
+import { type Behavior } from "../../Behaviors/behavior";
 import { Mesh } from "../../Meshes/mesh";
-import type { AbstractMesh } from "../../Meshes/abstractMesh";
-import type { TransformNode } from "../../Meshes/transformNode";
+import { type AbstractMesh } from "../../Meshes/abstractMesh";
+import { type TransformNode } from "../../Meshes/transformNode";
 import { Scene } from "../../scene";
-import type { Nullable } from "../../types";
-import type { Observer } from "../../Misc/observable";
-import { Observable } from "../../Misc/observable";
+import { type Nullable } from "../../types";
+import { type Observer, Observable } from "../../Misc/observable";
 import { TmpVectors, Vector3 } from "../../Maths/math.vector";
-import type { PointerInfo } from "../../Events/pointerEvents";
-import { PointerEventTypes } from "../../Events/pointerEvents";
+import { type PointerInfo, PointerEventTypes } from "../../Events/pointerEvents";
 import { Ray } from "../../Culling/ray";
 import { PivotTools } from "../../Misc/pivotTools";
-import type { ArcRotateCamera } from "../../Cameras/arcRotateCamera";
+import { type ArcRotateCamera } from "../../Cameras/arcRotateCamera";
 import { CreatePlane } from "../../Meshes/Builders/planeBuilder";
 
-import type { IPointerEvent } from "../../Events/deviceInputEvents";
+import { type IPointerEvent } from "../../Events/deviceInputEvents";
 import { Epsilon } from "../../Maths/math.constants";
-import type { DragEvent, DragStartEndEvent } from "./pointerDragEvents";
+import { type DragEvent, type DragStartEndEvent } from "./pointerDragEvents";
 
 /**
  * A behavior that when attached to a mesh will allow the mesh to be dragged around the screen based on pointer events

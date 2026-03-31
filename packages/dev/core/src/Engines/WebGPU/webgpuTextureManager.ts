@@ -22,21 +22,20 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 import * as WebGPUConstants from "./webgpuConstants";
-import type { WebGPUBufferManager } from "./webgpuBufferManager";
+import { type WebGPUBufferManager } from "./webgpuBufferManager";
 import { Constants } from "../constants";
-import type { Nullable } from "../../types";
-import type { InternalTexture } from "../../Materials/Textures/internalTexture";
-import { InternalTextureSource } from "../../Materials/Textures/internalTexture";
-import type { IHardwareTextureWrapper } from "../../Materials/Textures/hardwareTextureWrapper";
-import type { BaseTexture } from "../../Materials/Textures/baseTexture";
+import { type Nullable } from "../../types";
+import { type InternalTexture, InternalTextureSource } from "../../Materials/Textures/internalTexture";
+import { type IHardwareTextureWrapper } from "../../Materials/Textures/hardwareTextureWrapper";
+import { type BaseTexture } from "../../Materials/Textures/baseTexture";
 import { WebGPUHardwareTexture } from "./webgpuHardwareTexture";
-import type { ExternalTexture } from "../../Materials/Textures/externalTexture";
-import type { WebGPUEngine } from "../webgpuEngine";
+import { type ExternalTexture } from "../../Materials/Textures/externalTexture";
+import { type WebGPUEngine } from "../webgpuEngine";
 import { WebGPUTextureHelper } from "./webgpuTextureHelper";
-import type { _IProcessingOptions } from "../Processors/shaderProcessingOptions";
+import { type _IProcessingOptions } from "../Processors/shaderProcessingOptions";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { Finalize, Initialize, Process } from "../Processors/shaderProcessor";
-import type { WebGPUShaderProcessorWGSL } from "./webgpuShaderProcessorsWGSL";
+import { type WebGPUShaderProcessorWGSL } from "./webgpuShaderProcessorsWGSL";
 
 // TODO WEBGPU improve mipmap generation by using compute shaders
 
