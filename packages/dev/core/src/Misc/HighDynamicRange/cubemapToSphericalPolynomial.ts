@@ -72,10 +72,10 @@ export class CubeMapToSphericalPolynomialTools {
         const size = texture.getSize().width;
         const rawTargetSize = texture._sphericalPolynomialTargetSize;
         const targetSize = rawTargetSize > 0 ? this._NearestPow2Floor(rawTargetSize) : 0;
-        const hasMipmaps = !texture.noMipmap && texture._texture?.generateMipMaps !== false;
+        const hasMipmaps = !texture.noMipmap && texture._texture?.generateMipMaps === true;
         const useMip = targetSize > 0 && targetSize < size && hasMipmaps;
         const mipLevel = useMip ? Math.max(0, Math.round(Math.log2(size / targetSize))) : 0;
-        const mipSize = useMip ? Math.max(1, size >> mipLevel) : size;
+        const mipSize = useMip ? Math.max(1, Math.floor(size / Math.pow(2, mipLevel))) : size;
 
         const rightPromise = texture.readPixels(0, mipLevel, undefined, false);
         const leftPromise = texture.readPixels(1, mipLevel, undefined, false);
