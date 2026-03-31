@@ -1,22 +1,19 @@
 import { Constants } from "../Engines/constants";
-import type { AbstractEngine } from "../Engines/abstractEngine";
+import { type AbstractEngine } from "../Engines/abstractEngine";
 
-import type { Scene } from "../scene";
+import { type Scene } from "../scene";
 import { Texture } from "../Materials/Textures/texture";
-import type { TextureSize } from "../Materials/Textures/textureCreationOptions";
-import { ProceduralTexture } from "../Materials/Textures/Procedurals/proceduralTexture";
-import type { IProceduralTextureCreationOptions } from "../Materials/Textures/Procedurals/proceduralTexture";
-import { PostProcess } from "../PostProcesses/postProcess";
-import type { PostProcessOptions } from "../PostProcesses/postProcess";
+import { type TextureSize } from "../Materials/Textures/textureCreationOptions";
+import { ProceduralTexture, type IProceduralTextureCreationOptions } from "../Materials/Textures/Procedurals/proceduralTexture";
+import { PostProcess, type PostProcessOptions } from "../PostProcesses/postProcess";
 import { Vector3, Vector4 } from "../Maths/math.vector";
 import { RawTexture } from "../Materials/Textures/rawTexture";
-import type { BaseTexture } from "../Materials/Textures/baseTexture";
+import { type BaseTexture } from "../Materials/Textures/baseTexture";
 import { Observable } from "../Misc/observable";
-import type { CubeTexture } from "../Materials/Textures/cubeTexture";
+import { type CubeTexture } from "../Materials/Textures/cubeTexture";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
-import { Engine } from "../Engines/engine";
 import { _WarnImport } from "../Misc/devTools";
-import type { Nullable } from "../types";
+import { type Nullable } from "../types";
 import { EngineStore } from "../Engines/engineStore";
 import { Logger } from "../Misc/logger";
 import { _RetryWithInterval } from "../Misc/timingTools";
@@ -170,7 +167,7 @@ export class IblCdfGenerator {
             return;
         }
         const blackPixels = new Uint16Array([0, 0, 0, 255]);
-        this._dummyTexture = new RawTexture(blackPixels, 1, 1, Engine.TEXTUREFORMAT_RGBA, sceneOrEngine, false, false, undefined, Constants.TEXTURETYPE_HALF_FLOAT);
+        this._dummyTexture = new RawTexture(blackPixels, 1, 1, Constants.TEXTUREFORMAT_RGBA, sceneOrEngine, false, false, undefined, Constants.TEXTURETYPE_HALF_FLOAT);
         if (this._scene) {
             IblCdfGenerator._SceneComponentInitialization(this._scene);
         }

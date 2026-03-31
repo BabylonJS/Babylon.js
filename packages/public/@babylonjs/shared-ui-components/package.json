@@ -1,6 +1,6 @@
 {
     "name": "@babylonjs/shared-ui-components",
-    "version": "8.56.1",
+    "version": "9.0.0",
     "main": "index.js",
     "module": "index.js",
     "types": "index.d.ts",
@@ -22,8 +22,7 @@
     },
     "devDependencies": {
         "@dev/build-tools": "^1.0.0",
-        "@lts/core": "1.0.0",
-        "@lts/gui": "1.0.0"
+        "@dev/shared-ui-components": "^1.0.0"
     },
     "peerDependencies": {
         "@types/dagre": "^0.7.47",

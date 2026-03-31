@@ -1,9 +1,9 @@
 import * as React from "react";
-import type { GlobalState } from "../../globalState";
+import { type GlobalState } from "../../globalState";
 import { Color3, Color4 } from "core/Maths/math.color";
 import { DataStorage } from "core/Misc/dataStorage";
-import type { Observer } from "core/Misc/observable";
-import type { Nullable } from "core/types";
+import { type Observer } from "core/Misc/observable";
+import { type Nullable } from "core/types";
 
 import popUpIcon from "./svgs/popOut.svg";
 import colorPicker from "./svgs/colorPicker.svg";

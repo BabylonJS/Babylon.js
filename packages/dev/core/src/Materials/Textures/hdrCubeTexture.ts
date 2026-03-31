@@ -1,11 +1,11 @@
-import type { Nullable } from "../../types";
-import type { Scene } from "../../scene";
+import { type Nullable } from "../../types";
+import { type Scene } from "../../scene";
 import { EnvCubeTexture } from "./envCubeTexture";
 import { GetCubeMapTextureData } from "../../Misc/HighDynamicRange/hdr";
 import { RegisterClass } from "../../Misc/typeStore";
-import type { AbstractEngine } from "../../Engines/abstractEngine";
+import { type AbstractEngine } from "../../Engines/abstractEngine";
 import "../../Materials/Textures/baseTexture.polynomial";
-import type { CubeMapInfo } from "../../Misc/HighDynamicRange/panoramaToCubemap";
+import { type CubeMapInfo } from "../../Misc/HighDynamicRange/panoramaToCubemap";
 
 /**
  * This represents a texture coming from an HDR input.

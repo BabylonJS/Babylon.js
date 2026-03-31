@@ -1,8 +1,8 @@
 import { PanoramaToCubeMapTools } from "../../Misc/HighDynamicRange/panoramaToCubemap";
 import { BaseTexture } from "./baseTexture";
 import { Texture } from "./texture";
-import type { Scene } from "../../scene";
-import type { Nullable } from "../../types";
+import { type Scene } from "../../scene";
+import { type Nullable } from "../../types";
 import { Tools } from "../../Misc/tools";
 import { Constants } from "../../Engines/constants";
 import { LoadImage } from "../../Misc/fileTools";
@@ -262,14 +262,12 @@ export class EquiRectangularCubeTexture extends BaseTexture {
         }
 
         this._texture = this._getFromCache(this.url, this._noMipmap, undefined, undefined, undefined, this.isCube);
+        this.delayLoadState = Constants.DELAYLOADSTATE_LOADED;
 
         if (!this._texture) {
-            this.delayLoadState = Constants.DELAYLOADSTATE_LOADED;
             this._loadImage(() => {
                 this._loadTexture();
             }, this._onError);
-        } else {
-            this.delayLoadState = Constants.DELAYLOADSTATE_LOADED;
         }
     }
 }

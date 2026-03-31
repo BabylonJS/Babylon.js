@@ -1,6 +1,6 @@
-import type { IVector2Like } from "core/Maths/math.like";
+import { type IVector2Like } from "core/Maths/math.like";
 
-import type { ScalarProperty, Vector2Property } from "../parsing/parsedTypes";
+import { type ScalarProperty, type Vector2Property } from "../parsing/parsedTypes";
 
 import { ThinMatrix } from "../maths/matrix";
 

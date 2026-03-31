@@ -1,7 +1,6 @@
 import { IsDocumentAvailable } from "../Misc/domManagement";
-import type { Nullable } from "../types";
-import { AbstractEngine } from "./abstractEngine";
-import type { AbstractEngineOptions } from "./abstractEngine";
+import { type Nullable } from "../types";
+import { AbstractEngine, type AbstractEngineOptions } from "./abstractEngine";
 import { EngineStore } from "./engineStore";
 
 /** @internal */

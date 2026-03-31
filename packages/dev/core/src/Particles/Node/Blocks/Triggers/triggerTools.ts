@@ -1,8 +1,8 @@
-import type { Scene } from "core/scene";
-import type { Vector3 } from "core/Maths/math.vector";
-import type { SystemBlock } from "../systemBlock";
+import { type Scene } from "core/scene";
+import { type Vector3 } from "core/Maths/math.vector";
+import { type SystemBlock } from "../systemBlock";
 import { NodeParticleBuildState } from "../../nodeParticleBuildState";
-import type { ParticleSystem } from "core/Particles/particleSystem";
+import { type ParticleSystem } from "core/Particles/particleSystem";
 
 /**
  * @internal

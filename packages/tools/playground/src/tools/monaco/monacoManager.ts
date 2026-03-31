@@ -1,7 +1,7 @@
 /* eslint-disable no-await-in-loop */
 /* eslint-disable @typescript-eslint/no-floating-promises */
 import * as monaco from "monaco-editor/esm/vs/editor/editor.api";
-import type { GlobalState } from "../../globalState";
+import { type GlobalState } from "../../globalState";
 import { Utilities } from "../utilities";
 import { Logger, Observable } from "@dev/core";
 import { debounce } from "../debounce";
@@ -17,14 +17,12 @@ import { TemplatesService } from "./completion/templatesService";
 import { CompletionService } from "./completion/completionService";
 import { CodeAnalysisService } from "./analysis/codeAnalysisService";
 import { DefinitionService } from "./navigation/definitionService";
-import type { V2RunnerOptions } from "./run/runner";
-import type { SnippetData } from "../snippet";
-import { ManifestVersion, type V2Manifest } from "../snippet";
-import { CreateV2Runner } from "./run/runner";
+import { type V2RunnerOptions, CreateV2Runner } from "./run/runner";
+import { type SnippetData, ManifestVersion, type V2Manifest } from "../snippet";
 import { CompilationError } from "../../components/errorDisplayComponent";
 import { ParseSpec } from "./typings/utils";
 import { CodeLensService } from "./codeLens/codeLensProvider";
-import type { RequestLocalResolve } from "./typings/types";
+import { type RequestLocalResolve } from "./typings/types";
 import { WriteLastLocal, ReadLastLocal } from "../localSession";
 
 interface IRunConfig {
@@ -583,12 +581,18 @@ export class MonacoManager {
         }
 
         if (location.hostname === "localhost" && location.search.indexOf("dist") === -1) {
+            const cdnPort = (window as any).__CDN_PORT__ || 1337;
             for (let i = 0; i < declarations.length; i++) {
-                declarations[i] = declarations[i].replace("https://preview.babylonjs.com/", "//localhost:1337/");
+                declarations[i] = declarations[i].replace("https://preview.babylonjs.com/", `//localhost:${cdnPort}/`);
             }
         }
 
-        if (location.href.indexOf("BabylonToolkit") !== -1 || Utilities.ReadBoolFromStore("babylon-toolkit", false) || Utilities.ReadBoolFromStore("babylon-toolkit-used", false)) {
+        const toolkitExplicit = localStorage.getItem("babylon-toolkit");
+        if (
+            location.href.indexOf("BabylonToolkit") !== -1 ||
+            Utilities.ReadBoolFromStore("babylon-toolkit", false) ||
+            (toolkitExplicit !== "false" && Utilities.ReadBoolFromStore("babylon-toolkit-used", false))
+        ) {
             declarations.push("https://cdn.jsdelivr.net/gh/BabylonJS/BabylonToolkit@master/Runtime/babylon.toolkit.d.ts");
             declarations.push("https://cdn.jsdelivr.net/gh/BabylonJS/BabylonToolkit@master/Runtime/default.playground.d.ts");
         }

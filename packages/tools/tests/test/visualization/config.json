@@ -1865,20 +1865,20 @@
         },
         {
             "title": "Scissor test",
-            "playgroundId": "#W7E7CF#34",
+            "playgroundId": "#W7E7CF#38",
             "excludedEngines": ["webgl1"],
             "referenceImage": "scissor-test.png"
         },
         {
             "title": "Scissor test with 0.9 hardware scaling",
-            "playgroundId": "#W7E7CF#34",
+            "playgroundId": "#W7E7CF#38",
             "replace": "//options//, hardwareScalingLevel = 0.9;",
             "excludedEngines": ["webgl1"],
             "referenceImage": "scissor-test-2.png"
         },
         {
             "title": "Scissor test with 1.5 hardware scaling",
-            "playgroundId": "#W7E7CF#34",
+            "playgroundId": "#W7E7CF#38",
             "replace": "//options//, hardwareScalingLevel = 1.5;",
             "excludedEngines": ["webgl1"],
             "referenceImage": "scissor-test-3.png"
@@ -2604,6 +2604,18 @@
             "replace": "//options//, modelIndex = 5;",
             "referenceImage": "computeMaxExtents-MorphStressTest.png",
             "renderCount": 2
+        },
+        {
+            "title": "Read-write storage texture compute",
+            "playgroundId": "#Z7YGTU#0",
+            "referenceImage": "readwrite-storage-texture-compute.png",
+            "excludedEngines": ["webgl1", "webgl2"]
+        },
+        {
+            "title": "Read-only storage texture fragment shader",
+            "playgroundId": "#1VFBXO#0",
+            "referenceImage": "readonly-storage-texture-fragment.png",
+            "excludedEngines": ["webgl1", "webgl2"]
         },
         {
             "title": "glTF Loader Capabilities",
@@ -3807,6 +3819,36 @@
         {
             "title": "Selection outline layer with instances",
             "playgroundId": "#ADUC74#28"
+        },
+        {
+            "title": "Vertex Pulling - Normals UVs Colors Tangents",
+            "playgroundId": "#664OF3#6",
+            "referenceImage": "vertexPullingNormalsUVsColors.png",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "Vertex Pulling - Index Buffer Variants",
+            "playgroundId": "#0C4ULD#2",
+            "referenceImage": "vertexPullingIndexBufferVariants.png",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "Vertex Pulling - Morph Targets and Bones",
+            "playgroundId": "#CT4C3C#2",
+            "referenceImage": "vertexPullingMorphBones.png",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "Vertex Pulling - isUnIndexed with index buffer",
+            "playgroundId": "#AWPYHM#4",
+            "referenceImage": "vertexPullingIsUnIndexed.png",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "Vertex Pulling - UV Channels 1-6",
+            "playgroundId": "#0SA2NH#4",
+            "referenceImage": "vertexPullingUVChannels.png",
+            "excludedEngines": ["webgl1"]
         }
     ]
 }

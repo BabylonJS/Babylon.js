@@ -1,6 +1,6 @@
 {
     "name": "@babylonjs/lottie-player",
-    "version": "8.56.1",
+    "version": "9.0.0",
     "main": "index.js",
     "module": "index.js",
     "types": "index.d.ts",
@@ -34,7 +34,7 @@
     ],
     "scripts": {
         "build": "npm run clean && npm run compile",
-        "clean": "rimraf dist && rimraf *.tsbuildinfo -g && rimraf \"./**/*.!(cmd|md|json|build.json|lts.json|tasks.json|cjs)\" -g",
+        "clean": "rimraf dist && rimraf *.tsbuildinfo -g && rimraf \"./**/*.!(cmd|md|json|build.json|tasks.json|cjs)\" -g",
         "compile": "tsc -b tsconfig.build.json",
         "postcompile": "build-tools -c add-js-to-es6"
     },
@@ -43,6 +43,6 @@
         "@dev/core": "^1.0.0"
     },
     "peerDependencies": {
-        "@babylonjs/core": "^7.47.3 || ^8.0.1"
+        "@babylonjs/core": "^7.47.3 || ^8.0.1 || ^9.0.0"
     }
 }

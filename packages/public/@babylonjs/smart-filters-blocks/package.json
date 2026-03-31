@@ -1,6 +1,6 @@
 {
     "name": "@babylonjs/smart-filters-blocks",
-    "version": "8.56.1",
+    "version": "9.0.0",
     "description": "Babylon.js Smart Filter Block Library",
     "keywords": [
         "video",
@@ -34,7 +34,7 @@
     ],
     "scripts": {
         "build": "npm run clean && npm run copySrc && npm run compile",
-        "clean": "rimraf dist && rimraf src && rimraf *.tsbuildinfo -g && rimraf \"./**/*.!(cmd|md|json|build.json|lts.json|tasks.json|cjs)\" -g",
+        "clean": "rimraf dist && rimraf src && rimraf *.tsbuildinfo -g && rimraf \"./**/*.!(cmd|md|json|build.json|tasks.json|cjs)\" -g",
         "copySrc": "node -e \"require('fs').cpSync('../../../dev/smartFilterBlocks/src', './src', { recursive: true })\"",
         "compile": "tsc -b tsconfig.build.json",
         "postcompile": "build-tools -c add-js-to-es6"
@@ -45,9 +45,9 @@
         "@dev/smart-filters": "1.0.0"
     },
     "peerDependencies": {
-        "@babylonjs/core": "^7.47.3 || ^8.0.1"
+        "@babylonjs/core": "^7.47.3 || ^8.0.1 || ^9.0.0"
     },
     "dependencies": {
-        "@babylonjs/smart-filters": "8.56.1"
+        "@babylonjs/smart-filters": "9.0.0"
     }
 }

@@ -1,5 +1,5 @@
 import { RegisterClass } from "../../../../Misc/typeStore";
-import type { IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
+import { type IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
 import { FlowGraphTypes, getRichTypeByFlowGraphType, RichTypeAny, RichTypeBoolean, RichTypeFlowGraphInteger, RichTypeNumber } from "../../../flowGraphRichTypes";
 import { FlowGraphBinaryOperationBlock } from "../flowGraphBinaryOperationBlock";
 import { FlowGraphConstantOperationBlock } from "../flowGraphConstantOperationBlock";
@@ -8,11 +8,19 @@ import { FlowGraphUnaryOperationBlock } from "../flowGraphUnaryOperationBlock";
 import { FlowGraphTernaryOperationBlock } from "../flowGraphTernaryOperationBlock";
 import { FlowGraphInteger } from "../../../CustomTypes/flowGraphInteger";
 import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
-import type { FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnection";
-import type { FlowGraphContext } from "core/FlowGraph/flowGraphContext";
+import { type FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnection";
+import { type FlowGraphContext } from "core/FlowGraph/flowGraphContext";
 import { FlowGraphMatrix2D, FlowGraphMatrix3D } from "core/FlowGraph/CustomTypes/flowGraphMatrix";
-import type { FlowGraphMathOperationType, FlowGraphNumber } from "core/FlowGraph/utils";
-import { _AreSameIntegerClass, _AreSameMatrixClass, _AreSameVectorOrQuaternionClass, _GetClassNameOf, getNumericValue, isNumeric } from "core/FlowGraph/utils";
+import {
+    type FlowGraphMathOperationType,
+    type FlowGraphNumber,
+    _AreSameIntegerClass,
+    _AreSameMatrixClass,
+    _AreSameVectorOrQuaternionClass,
+    _GetClassNameOf,
+    getNumericValue,
+    isNumeric,
+} from "core/FlowGraph/utils";
 
 /**
  * A configuration interface for math blocks

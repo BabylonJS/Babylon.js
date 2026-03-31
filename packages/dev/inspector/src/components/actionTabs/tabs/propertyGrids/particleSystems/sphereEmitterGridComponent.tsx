@@ -1,10 +1,10 @@
 import * as React from "react";
 
-import type { Observable } from "core/Misc/observable";
-import type { GlobalState } from "../../../../globalState";
-import type { PropertyChangedEvent } from "../../../../propertyChangedEvent";
-import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
-import type { SphereParticleEmitter } from "core/Particles/EmitterTypes/sphereParticleEmitter";
+import { type Observable } from "core/Misc/observable";
+import { type GlobalState } from "../../../../globalState";
+import { type PropertyChangedEvent } from "../../../../propertyChangedEvent";
+import { type LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
+import { type SphereParticleEmitter } from "core/Particles/EmitterTypes/sphereParticleEmitter";
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
 import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent";
 

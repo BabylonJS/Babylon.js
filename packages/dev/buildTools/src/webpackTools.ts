@@ -1,11 +1,19 @@
 /* eslint-disable no-console */
 import type ts from "typescript";
 import transformer from "./pathTransform.js";
-import type { BuildType, DevPackageName, UMDPackageName } from "./packageMapping.js";
-import { getPackageMappingByDevName, getPublicPackageName, isValidDevPackageName, umdPackageMapping } from "./packageMapping.js";
+import {
+    type BuildType,
+    type DevPackageName,
+    type UMDPackageName,
+    getPackageMappingByDevName,
+    getPublicPackageName,
+    isValidDevPackageName,
+    umdPackageMapping,
+} from "./packageMapping.js";
 import * as path from "path";
+import * as fs from "fs";
 import { camelize, copyFile } from "./utils.js";
-import type { RuleSetRule, Configuration, Compiler, WebpackPluginInstance } from "webpack";
+import { type RuleSetRule, type Configuration, type Compiler, type WebpackPluginInstance } from "webpack";
 import * as ReactRefreshWebpackPlugin from "@pmmmwh/react-refresh-webpack-plugin";
 import ReactRefreshTypeScript from "react-refresh-typescript";
 
@@ -202,13 +210,16 @@ export const commonDevWebpackConfiguration = (
         plugins.push(new ReactRefreshWebpackPlugin({ overlay: enableOverlay }));
     }
 
+    // Resolve static dirs once so both devServer.static and the middleware use the same absolute paths
+    const resolvedStaticDirs = devServerConfig?.static ? devServerConfig.static.map((dir) => path.resolve(dir)) : undefined;
+
     return {
         mode: production ? "production" : "development",
         devtool: production ? "source-map" : "inline-cheap-module-source-map",
         devServer: devServerConfig
             ? {
                   port: devServerConfig.port,
-                  static: devServerConfig.static ? devServerConfig.static.map((dir) => path.resolve(dir)) : undefined,
+                  static: resolvedStaticDirs,
                   webSocketServer: production ? false : "ws",
                   compress: production,
                   server: env.enableHttps !== undefined || process.env.ENABLE_HTTPS === "true" ? "https" : "http",
@@ -229,6 +240,38 @@ export const commonDevWebpackConfiguration = (
                       progress: devServerConfig.showBuildProgress,
                   },
                   allowedHosts: process.env.ALLOWED_HOSTS ? process.env.ALLOWED_HOSTS.split(",") : undefined,
+                  setupMiddlewares: (middlewares: any[], _devServer: any) => {
+                      const parsedPort = parseInt(process.env.CDN_PORT || "1337", 10);
+                      const cdnPort = Number.isFinite(parsedPort) && parsedPort >= 1 && parsedPort <= 65535 ? parsedPort : 1337;
+                      if (cdnPort !== 1337 && resolvedStaticDirs) {
+                          // Precompute the patched index.js content once at startup rather than
+                          // re-reading from disk on every request.
+                          let patchedContent: string | undefined;
+                          for (const dir of resolvedStaticDirs) {
+                              const filePath = path.join(dir, "index.js");
+                              try {
+                                  const content = fs.readFileSync(filePath, "utf-8");
+                                  if (content.includes("var cdnPort = 1337;")) {
+                                      patchedContent = content.replace("var cdnPort = 1337;", `var cdnPort = ${cdnPort};`);
+                                      break;
+                                  }
+                              } catch {
+                                  // File not found in this static dir, try next
+                              }
+                          }
+                          if (patchedContent !== undefined) {
+                              const cached = patchedContent;
+                              middlewares.unshift((req: any, res: any, next: any) => {
+                                  if (req.path !== "/index.js") {
+                                      return next();
+                                  }
+                                  res.type("application/javascript");
+                                  res.send(cached);
+                              });
+                          }
+                      }
+                      return middlewares;
+                  },
               }
             : undefined,
         output: env.outputFilename
@@ -334,8 +377,8 @@ export const commonUMDWebpackConfiguration = (options: {
         resolve: {
             extensions: [".ts", ".js"],
             alias: {
-                // default alias - for its own package to the lts version
-                [options.devPackageName]: path.resolve(options.devPackageAliasPath || `../../../lts/${camelize(options.devPackageName)}/dist`),
+                // default alias - for its own package to the dev version
+                [options.devPackageName]: path.resolve(options.devPackageAliasPath || `../../../dev/${camelize(options.devPackageName)}/dist`),
                 ...options.alias,
             },
         },

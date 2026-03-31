@@ -3,33 +3,31 @@ import { expandToProperty } from "../../Misc/decorators";
 import { Logger } from "../../Misc/logger";
 import { SmartArray } from "../../Misc/smartArray";
 import { GetEnvironmentBRDFTexture } from "../../Misc/brdfTextureTools";
-import type { Nullable } from "../../types";
+import { type Nullable } from "../../types";
 import { Scene } from "../../scene";
-import type { Matrix } from "../../Maths/math.vector";
-import { Vector4 } from "../../Maths/math.vector";
+import { type Matrix, Vector4 } from "../../Maths/math.vector";
 import { VertexBuffer } from "../../Buffers/buffer";
-import type { SubMesh } from "../../Meshes/subMesh";
-import type { AbstractMesh } from "../../Meshes/abstractMesh";
-import type { Mesh } from "../../Meshes/mesh";
+import { type SubMesh } from "../../Meshes/subMesh";
+import { type AbstractMesh } from "../../Meshes/abstractMesh";
+import { type Mesh } from "../../Meshes/mesh";
 import { PBRBRDFConfiguration } from "./pbrBRDFConfiguration";
 import { PrePassConfiguration } from "../prePassConfiguration";
 import { Color3, TmpColors } from "../../Maths/math.color";
 
 import { ImageProcessingDefinesMixin } from "../../Materials/imageProcessingConfiguration.defines";
 import { ImageProcessingConfiguration } from "../../Materials/imageProcessingConfiguration";
-import type { Effect, IEffectCreationOptions } from "../../Materials/effect";
-import type { IMaterialCompilationOptions, ICustomShaderNameResolveOptions } from "../../Materials/material";
-import { Material } from "../../Materials/material";
+import { type Effect, type IEffectCreationOptions } from "../../Materials/effect";
+import { type IMaterialCompilationOptions, type ICustomShaderNameResolveOptions, Material } from "../../Materials/material";
 import { MaterialPluginEvent } from "../materialPluginEvent";
 import { MaterialDefines } from "../../Materials/materialDefines";
 import { PushMaterial } from "../../Materials/pushMaterial";
 
-import type { BaseTexture } from "../../Materials/Textures/baseTexture";
-import type { RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture";
+import { type BaseTexture } from "../../Materials/Textures/baseTexture";
+import { type RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture";
 
 import { MaterialFlags } from "../materialFlags";
 import { Constants } from "../../Engines/constants";
-import type { IAnimatable } from "../../Animations/animatable.interface";
+import { type IAnimatable } from "../../Animations/animatable.interface";
 
 import "../../Materials/Textures/baseTexture.polynomial";
 
@@ -41,6 +39,7 @@ import { PBRSheenConfiguration } from "./pbrSheenConfiguration";
 import { PBRSubSurfaceConfiguration } from "./pbrSubSurfaceConfiguration";
 import { DetailMapConfiguration } from "../material.detailMapConfiguration";
 import { AddClipPlaneUniforms, BindClipPlane } from "../clipPlaneMaterialHelper";
+import { PrepareVertexPullingUniforms, BindVertexPullingUniforms, type IVertexPullingMetadata } from "../vertexPullingHelper.functions";
 import {
     BindBonesParameters,
     BindFogParameters,
@@ -282,6 +281,8 @@ export class PBRMaterialDefines extends ImageProcessingDefinesMixin(PBRMaterialD
 
     public DEBUGMODE = 0;
     public USE_VERTEX_PULLING = false;
+    public VERTEX_PULLING_USE_INDEX_BUFFER = false;
+    public VERTEX_PULLING_INDEX_BUFFER_32BITS = false;
     public RIGHT_HANDED = false;
 
     public CLUSTLIGHT_SLICES = 0;
@@ -852,6 +853,7 @@ export abstract class PBRBaseMaterial extends PBRBaseMaterialBase {
 
     private _shadersLoaded = false;
     private _breakShaderLoadedCheck = false;
+    private _vertexPullingMetadata: Map<string, IVertexPullingMetadata> | null = null;
 
     /**
      * @internal
@@ -1451,7 +1453,7 @@ export abstract class PBRBaseMaterial extends PBRBaseMaterialBase {
             "vLightingIntensity",
             "logarithmicDepthConstant",
             "vTangentSpaceParams",
-            "boneTextureWidth",
+            "boneTextureInfo",
             "vDebugMode",
             "morphTargetTextureInfo",
             "morphTargetTextureIndices",
@@ -1503,6 +1505,21 @@ export abstract class PBRBaseMaterial extends PBRBaseMaterialBase {
         PrePassConfiguration.AddUniforms(uniforms);
         PrePassConfiguration.AddSamplers(samplers);
         AddClipPlaneUniforms(uniforms);
+
+        // Vertex pulling metadata uniforms
+        if (this._useVertexPulling) {
+            const geometry = (renderingMesh as Mesh)?.geometry;
+            if (geometry) {
+                this._vertexPullingMetadata = PrepareVertexPullingUniforms(geometry);
+                if (this._vertexPullingMetadata) {
+                    this._vertexPullingMetadata.forEach((_, attribute) => {
+                        uniforms.push(`vp_${attribute}_info`);
+                    });
+                }
+            }
+        } else {
+            this._vertexPullingMetadata = null;
+        }
 
         if (ImageProcessingConfiguration) {
             ImageProcessingConfiguration.PrepareUniforms(uniforms, defines);
@@ -1983,6 +2000,11 @@ export abstract class PBRBaseMaterial extends PBRBaseMaterialBase {
 
         // Bones
         BindBonesParameters(mesh, this._activeEffect, this.prePassConfiguration);
+
+        // Vertex pulling
+        if (this._vertexPullingMetadata) {
+            BindVertexPullingUniforms(this._activeEffect, this._vertexPullingMetadata);
+        }
 
         let reflectionTexture: Nullable<BaseTexture> = null;
         const ubo = this._uniformBuffer;

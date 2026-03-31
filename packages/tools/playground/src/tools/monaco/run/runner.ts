@@ -1,15 +1,13 @@
 /* eslint-disable no-await-in-loop */
 /* eslint-disable jsdoc/require-jsdoc */
 
-import { Logger } from "@dev/core";
-import type { ThinEngine, Scene } from "@dev/core";
+import { Logger, type ThinEngine, type Scene } from "@dev/core";
 import { typescript } from "monaco-editor";
 import type * as monacoNs from "monaco-editor/esm/vs/editor/editor.api";
 import * as lexer from "es-module-lexer";
-import type { TsPipeline } from "../ts/tsPipeline";
-import type { DirHandle } from "./localPackage";
-import { BuildLocalPackageImportMap } from "./localPackage";
-import type { V2Manifest } from "../../snippet";
+import { type TsPipeline } from "../ts/tsPipeline";
+import { type DirHandle, BuildLocalPackageImportMap } from "./localPackage";
+import { type V2Manifest } from "../../snippet";
 
 lexer.initSync();
 
@@ -397,7 +395,11 @@ export async function CreateV2Runner(manifest: V2Manifest, opts: V2RunnerOptions
                     location.href.includes("BabylonToolkit") ||
                     ((): boolean => {
                         try {
-                            return localStorage.getItem("babylon-toolkit") === "true" || localStorage.getItem("babylon-toolkit-used") === "true";
+                            const explicit = localStorage.getItem("babylon-toolkit");
+                            if (explicit === "false") {
+                                return false;
+                            }
+                            return explicit === "true" || localStorage.getItem("babylon-toolkit-used") === "true";
                         } catch {
                             return false;
                         }

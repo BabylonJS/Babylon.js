@@ -1,9 +1,9 @@
-import type { Nullable } from "core/types";
+import { type Nullable } from "core/types";
 import { Matrix } from "core/Maths/math.vector";
 import { Tools } from "core/Misc/tools";
-import type { StandardMaterial } from "core/Materials/standardMaterial";
-import type { Geometry } from "core/Meshes/geometry";
-import type { Mesh } from "core/Meshes/mesh";
+import { type StandardMaterial } from "core/Materials/standardMaterial";
+import { type Geometry } from "core/Meshes/geometry";
+import { type Mesh } from "core/Meshes/mesh";
 import { Material } from "core/Materials/material";
 
 /**

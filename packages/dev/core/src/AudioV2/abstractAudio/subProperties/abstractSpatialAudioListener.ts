@@ -1,7 +1,7 @@
 import { Quaternion, Vector3 } from "../../../Maths/math.vector";
-import type { Node } from "../../../node";
-import type { Nullable } from "../../../types";
-import type { SpatialAudioAttachmentType } from "../../spatialAudioAttachmentType";
+import { type Node } from "../../../node";
+import { type Nullable } from "../../../types";
+import { type SpatialAudioAttachmentType } from "../../spatialAudioAttachmentType";
 
 export const _SpatialAudioListenerDefaults = {
     position: Vector3.Zero(),

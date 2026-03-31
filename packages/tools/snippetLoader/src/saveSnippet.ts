@@ -1,4 +1,11 @@
-import type { ISaveSnippetOptions, ISaveSnippetResult, ISavePlaygroundCodeInput, ISavePlaygroundManifestInput, SaveDataSnippetInput, SaveSnippetInput } from "./types";
+import {
+    type ISaveSnippetOptions,
+    type ISaveSnippetResult,
+    type ISavePlaygroundCodeInput,
+    type ISavePlaygroundManifestInput,
+    type SaveDataSnippetInput,
+    type SaveSnippetInput,
+} from "./types";
 import { DEFAULT_SNIPPET_URL } from "./fetchSnippet";
 
 // -----------------------------------------------------------------------

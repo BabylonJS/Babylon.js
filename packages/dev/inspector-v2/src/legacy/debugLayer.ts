@@ -1,4 +1,4 @@
-import type { IInspectorOptions } from "core/index";
+import { type IInspectorOptions } from "core/index";
 
 import { DebugLayer } from "core/Debug/debugLayer";
 import { Lazy } from "core/Misc/lazy";

@@ -1,9 +1,8 @@
-import type { IFlowGraphBlockConfiguration } from "core/FlowGraph/flowGraphBlock";
-import { FlowGraphBlock } from "core/FlowGraph/flowGraphBlock";
-import type { IGLTF } from "../../glTFLoaderInterfaces";
-import type { FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnection";
-import type { AnimationGroup } from "core/Animations/animationGroup";
-import type { TransformNode } from "core/Meshes/transformNode";
+import { type IFlowGraphBlockConfiguration, FlowGraphBlock } from "core/FlowGraph/flowGraphBlock";
+import { type IGLTF } from "../../glTFLoaderInterfaces";
+import { type FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnection";
+import { type AnimationGroup } from "core/Animations/animationGroup";
+import { type TransformNode } from "core/Meshes/transformNode";
 import { RichTypeAny } from "core/FlowGraph/flowGraphRichTypes";
 
 /**

@@ -1,20 +1,15 @@
-import type { Nullable, Observer, Scene } from "core/index";
-import type { ServiceDefinition } from "../modularity/serviceDefinition";
-import type { IGizmoService } from "./gizmoService";
-import type { ISceneContext } from "./sceneContext";
-import type { ISelectionService } from "./selectionService";
-import type { ISettingsStore, SettingDescriptor } from "./settingsStore";
-import type { IThemeService } from "./themeService";
+import { type Nullable, type Observer, type Scene } from "core/index";
+import { type ServiceDefinition } from "../modularity/serviceDefinition";
+import { type IGizmoService, GizmoServiceIdentity } from "./gizmoService";
+import { type ISceneContext, SceneContextIdentity } from "./sceneContext";
+import { type ISelectionService, SelectionServiceIdentity } from "./selectionService";
+import { type ISettingsStore, type SettingDescriptor, SettingsStoreIdentity } from "./settingsStore";
+import { type IThemeService, ThemeServiceIdentity } from "./themeService";
 
 import { SelectionOutlineLayer } from "core/Layers/selectionOutlineLayer";
 import { Color3 } from "core/Maths/math.color";
 import { AbstractMesh } from "core/Meshes/abstractMesh";
 import { GaussianSplattingMesh } from "core/Meshes/GaussianSplatting/gaussianSplattingMesh";
-import { GizmoServiceIdentity } from "./gizmoService";
-import { SceneContextIdentity } from "./sceneContext";
-import { SelectionServiceIdentity } from "./selectionService";
-import { SettingsStoreIdentity } from "./settingsStore";
-import { ThemeServiceIdentity } from "./themeService";
 
 export const HighlightSelectedEntitySettingDescriptor: SettingDescriptor<boolean> = {
     key: "HighlightSelectedEntity",

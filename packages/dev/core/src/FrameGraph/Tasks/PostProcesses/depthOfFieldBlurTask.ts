@@ -1,4 +1,4 @@
-import type { FrameGraph, FrameGraphTextureHandle, FrameGraphRenderPass } from "core/index";
+import { type FrameGraph, type FrameGraphTextureHandle, type FrameGraphRenderPass } from "core/index";
 import { Constants } from "core/Engines/constants";
 import { FrameGraphBlurTask } from "./blurTask";
 import { ThinDepthOfFieldBlurPostProcess } from "core/PostProcesses/thinDepthOfFieldBlurPostProcess";

@@ -1,11 +1,11 @@
-import type { Nullable } from "../types";
+import { type Nullable } from "../types";
 import { Vector2, Vector3, TmpVectors, Vector4 } from "../Maths/math.vector";
 import { Color4 } from "../Maths/math.color";
-import type { SubEmitter } from "./subEmitter";
-import type { ColorGradient, FactorGradient } from "../Misc/gradients";
+import { type SubEmitter } from "./subEmitter";
+import { type ColorGradient, type FactorGradient } from "../Misc/gradients";
 
-import type { AbstractMesh } from "../Meshes/abstractMesh";
-import type { ThinParticleSystem } from "./thinParticleSystem";
+import { type AbstractMesh } from "../Meshes/abstractMesh";
+import { type ThinParticleSystem } from "./thinParticleSystem";
 import { Clamp } from "../Maths/math.scalar.functions";
 
 /**
@@ -184,6 +184,11 @@ export class Particle {
      */
     public remapData: Vector4;
 
+    /**
+     * Gets or sets an object used to store user defined information for the particle
+     */
+    public metadata: any = null;
+
     /** @internal */
     public _properties = new ParticleInternalProperties();
 
@@ -278,6 +283,7 @@ export class Particle {
         this.age = 0;
         this.id = Particle._Count++;
         this._properties.reset();
+        this.metadata = null;
         this.cellIndex = this.particleSystem.startSpriteCellID;
     }
 
@@ -370,5 +376,6 @@ export class Particle {
                 other._properties.randomNoiseCoordinates2 = this._properties.randomNoiseCoordinates2.clone();
             }
         }
+        other.metadata = this.metadata;
     }
 }

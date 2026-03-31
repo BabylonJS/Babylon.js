@@ -1,5 +1,5 @@
 import { AbstractEngine } from "../../Engines/abstractEngine";
-import type { IOfflineProvider } from "../../Offline/IOfflineProvider";
+import { type IOfflineProvider } from "../../Offline/IOfflineProvider";
 
 declare module "../abstractEngine" {
     // eslint-disable-next-line @typescript-eslint/naming-convention

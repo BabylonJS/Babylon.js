@@ -1,6 +1,6 @@
-import type { ThinSprite } from "core/Sprites/thinSprite";
+import { type ThinSprite } from "core/Sprites/thinSprite";
 
-import type { ScalarProperty, Vector2Property } from "../parsing/parsedTypes";
+import { type ScalarProperty, type Vector2Property } from "../parsing/parsedTypes";
 
 import { Node } from "./node";
 

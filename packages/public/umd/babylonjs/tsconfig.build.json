@@ -8,10 +8,9 @@
         "declaration": false,
         "importHelpers": true,
         "paths": {
-            "core/*": ["dev/core/src/*"],
-            "@lts/core/*": ["lts/core/src/*"]
+            "core/*": ["dev/core/src/*"]
         }
     },
 
-    "include": ["./src/**/*", "../../../dev/core/src/**/*", "../../../lts/core/src/**/*"]
+    "include": ["./src/**/*", "../../../dev/core/src/**/*"]
 }

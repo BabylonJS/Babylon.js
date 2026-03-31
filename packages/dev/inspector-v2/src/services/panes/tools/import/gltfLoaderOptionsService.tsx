@@ -1,15 +1,12 @@
-import type { ISceneLoaderPlugin, ISceneLoaderPluginAsync } from "core/Loading/sceneLoader";
-import type { GLTFFileLoader, IGLTFLoaderExtension } from "loaders/glTF/glTFFileLoader";
-import type { ServiceDefinition } from "../../../../modularity/serviceDefinition";
-import type { IToolsService } from "../../toolsService";
+import { type ISceneLoaderPlugin, type ISceneLoaderPluginAsync, SceneLoader } from "core/Loading/sceneLoader";
+import { type GLTFFileLoader, type IGLTFLoaderExtension } from "loaders/glTF/glTFFileLoader";
+import { type ServiceDefinition } from "../../../../modularity/serviceDefinition";
+import { type IToolsService, ToolsServiceIdentity } from "../../toolsService";
 
-import { SceneLoader } from "core/Loading/sceneLoader";
 import { registeredGLTFExtensions } from "loaders/glTF/2.0/glTFLoaderExtensionRegistry";
 import { MessageBar } from "shared-ui-components/fluent/primitives/messageBar";
 import { GLTFExtensionOptionsTool, GLTFLoaderOptionsTool } from "../../../../components/tools/import/gltfLoaderOptionsTool";
-import { ToolsServiceIdentity } from "../../toolsService";
-import { ExtensionOptionDefaults, LoaderOptionDefaults } from "./gltfLoaderOptionsDefaults";
-import type { GLTFExtensionOptionsType, GLTFLoaderOptionsType } from "./gltfLoaderOptionsDefaults";
+import { ExtensionOptionDefaults, LoaderOptionDefaults, type GLTFExtensionOptionsType, type GLTFLoaderOptionsType } from "./gltfLoaderOptionsDefaults";
 
 export const GLTFLoaderServiceIdentity = Symbol("GLTFLoaderService");
 

@@ -1,8 +1,6 @@
-import type { FunctionComponent } from "react";
+import { type FunctionComponent, useRef } from "react";
 
-import type { IGLTFValidationResults } from "babylonjs-gltf2interface";
-
-import { useRef } from "react";
+import { type IGLTFValidationResults } from "babylonjs-gltf2interface";
 
 import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
 import { ChildWindow } from "shared-ui-components/fluent/hoc/childWindow";

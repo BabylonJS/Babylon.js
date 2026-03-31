@@ -1,5 +1,5 @@
-import type { ServiceDefinition } from "../../../modularity/serviceDefinition";
-import type { IPropertiesService } from "./propertiesService";
+import { type ServiceDefinition } from "../../../modularity/serviceDefinition";
+import { type IPropertiesService, PropertiesServiceIdentity } from "./propertiesService";
 
 // import { Scene } from "core/scene";
 import { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
@@ -24,7 +24,6 @@ import { CameraGeneralProperties } from "../../../components/properties/cameras/
 import { FollowCameraLimitsProperties, FollowCameraTransformProperties } from "../../../components/properties/cameras/followCameraProperties";
 import { FreeCameraCollisionProperties, FreeCameraControlProperties, FreeCameraTransformProperties } from "../../../components/properties/cameras/freeCameraProperties";
 import { TargetCameraControlProperties, TargetCameraTransformProperties } from "../../../components/properties/cameras/targetCameraProperties";
-import { PropertiesServiceIdentity } from "./propertiesService";
 
 export const ControlPropertiesSectionIdentity = Symbol("Control");
 export const CollisionPropertiesSectionIdentity = Symbol("Collision");

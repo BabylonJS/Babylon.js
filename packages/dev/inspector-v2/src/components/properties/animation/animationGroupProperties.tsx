@@ -1,8 +1,6 @@
-import type { FunctionComponent } from "react";
+import { type FunctionComponent, useCallback } from "react";
 
-import { useCallback } from "react";
-
-import type { AnimationGroup } from "core/Animations/animationGroup";
+import { type AnimationGroup } from "core/Animations/animationGroup";
 import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
 import { NumberInputPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/inputPropertyLine";
 import { StringifiedPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/stringifiedPropertyLine";

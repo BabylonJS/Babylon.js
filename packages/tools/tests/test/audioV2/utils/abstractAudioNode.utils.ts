@@ -1,4 +1,4 @@
-import type { AudioNodeType } from "./audioV2.utils";
+import { type AudioNodeType } from "./audioV2.utils";
 
 import { Page } from "@playwright/test";
 

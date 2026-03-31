@@ -1,27 +1,27 @@
 import { Logger } from "../Misc/logger";
-import type { Scene } from "../scene";
-import type { Effect, IEffectCreationOptions } from "./effect";
-import type { AbstractMesh } from "../Meshes/abstractMesh";
+import { type Scene } from "../scene";
+import { type Effect, type IEffectCreationOptions } from "./effect";
+import { type AbstractMesh } from "../Meshes/abstractMesh";
 import { Constants } from "../Engines/constants";
 import { EngineStore } from "../Engines/engineStore";
-import type { Mesh } from "../Meshes/mesh";
-import type { UniformBuffer } from "./uniformBuffer";
-import type { BaseTexture } from "./Textures/baseTexture";
-import type { PrePassConfiguration } from "./prePassConfiguration";
-import type { Light } from "../Lights/light";
-import type { MaterialDefines } from "./materialDefines";
-import type { EffectFallbacks } from "./effectFallbacks";
+import { type Mesh } from "../Meshes/mesh";
+import { type UniformBuffer } from "./uniformBuffer";
+import { type BaseTexture } from "./Textures/baseTexture";
+import { type PrePassConfiguration } from "./prePassConfiguration";
+import { type Light } from "../Lights/light";
+import { type MaterialDefines } from "./materialDefines";
+import { type EffectFallbacks } from "./effectFallbacks";
 import { LightConstants } from "../Lights/lightConstants";
-import type { AbstractEngine } from "../Engines/abstractEngine";
-import type { Material } from "./material";
-import type { Nullable } from "../types";
+import { type AbstractEngine } from "../Engines/abstractEngine";
+import { type Material } from "./material";
+import { type Nullable } from "../types";
 import { PrepareDefinesForClipPlanes } from "./clipPlaneMaterialHelper";
-import type { MorphTargetManager } from "../Morph/morphTargetManager";
-import type { IColor3Like } from "core/Maths/math.like";
+import { type MorphTargetManager } from "../Morph/morphTargetManager";
+import { type IColor3Like } from "core/Maths/math.like";
 import { MaterialFlags } from "./materialFlags";
 import { Texture } from "./Textures/texture";
-import type { CubeTexture } from "./Textures/cubeTexture";
-import type { Color3 } from "core/Maths/math.color";
+import { type CubeTexture } from "./Textures/cubeTexture";
+import { type Color3 } from "core/Maths/math.color";
 
 // For backwards compatibility, we export everything from the pure version of this file.
 export * from "./materialHelper.functions.pure";
@@ -443,10 +443,10 @@ export function BindBonesParameters(mesh?: AbstractMesh, effect?: Effect, prePas
     if (mesh.useBones && mesh.computeBonesUsingShaders && mesh.skeleton) {
         const skeleton = mesh.skeleton;
 
-        if (skeleton.isUsingTextureForMatrices && effect.getUniformIndex("boneTextureWidth") > -1) {
+        if (skeleton.isUsingTextureForMatrices && effect.getUniformIndex("boneTextureInfo") > -1) {
             const boneTexture = skeleton.getTransformMatrixTexture(mesh);
             effect.setTexture("boneSampler", boneTexture);
-            effect.setFloat("boneTextureWidth", 4.0 * (skeleton.bones.length + 1));
+            effect.setFloat2("boneTextureInfo", skeleton._textureWidth, skeleton._textureHeight);
         } else {
             const matrices = skeleton.getTransformMatrices(mesh);
 
@@ -636,9 +636,10 @@ export function PrepareDefinesForMisc(
         defines["RIGHT_HANDED"] = scene.useRightHandedSystem;
 
         const indexBuffer = renderingMesh?.geometry?.getIndexBuffer();
+        const isUnIndexed = renderingMesh ? (renderingMesh as any).isUnIndexed : false;
 
-        defines["VERTEX_PULLING_USE_INDEX_BUFFER"] = !!indexBuffer;
-        defines["VERTEX_PULLING_INDEX_BUFFER_32BITS"] = indexBuffer ? indexBuffer.is32Bits : false;
+        defines["VERTEX_PULLING_USE_INDEX_BUFFER"] = !!indexBuffer && !isUnIndexed;
+        defines["VERTEX_PULLING_INDEX_BUFFER_32BITS"] = indexBuffer && !isUnIndexed ? indexBuffer.is32Bits : false;
 
         defines["VERTEXOUTPUT_INVARIANT"] = !!setVertexOutputInvariant;
     }

@@ -3,8 +3,7 @@
 
     "compilerOptions": {
         "paths": {
-            "post-processes/*": ["dev/postProcesses/src/*"],
-            "@lts/post-processes/*": ["lts/postProcesses/src/*"],
+            "post-processes/*": ["dev/postProcesses/src/*"]
         }
-    },
+    }
 }

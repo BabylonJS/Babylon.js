@@ -1,6 +1,6 @@
 {
     "name": "babylonjs",
-    "version": "8.56.1",
+    "version": "9.0.0",
     "main": "babylon.js",
     "types": "babylon.module.d.ts",
     "files": [
@@ -18,6 +18,7 @@
     },
     "devDependencies": {
         "@dev/build-tools": "1.0.0",
+        "@dev/core": "1.0.0",
         "source-map-loader": "^4.0.0",
         "ts-loader": "^9.2.6",
         "webpack": "^5.103.0",

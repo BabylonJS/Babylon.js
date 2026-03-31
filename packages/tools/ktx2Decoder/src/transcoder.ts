@@ -2,8 +2,8 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import type * as KTX2 from "core/Materials/Textures/ktx2decoderTypes";
 
-import type { WASMMemoryManager } from "./wasmMemoryManager";
-import type { KTX2FileReader, IKTX2_ImageDesc } from "./ktx2FileReader";
+import { type WASMMemoryManager } from "./wasmMemoryManager";
+import { type KTX2FileReader, type IKTX2_ImageDesc } from "./ktx2FileReader";
 
 /**
  * @internal
@@ -23,7 +23,7 @@ export class Transcoder {
      * When set, unversioned CDN URLs will be rewritten to include this version prefix.
      * @internal
      */
-    public static CdnVersion = "8.56.1";
+    public static CdnVersion = "9.0.0";
 
     private static readonly _DefaultCdnUrl = "https://cdn.babylonjs.com";
 

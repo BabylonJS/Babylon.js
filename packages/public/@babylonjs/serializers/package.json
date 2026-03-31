@@ -1,6 +1,6 @@
 {
     "name": "@babylonjs/serializers",
-    "version": "8.56.1",
+    "version": "9.0.0",
     "main": "index.js",
     "module": "index.js",
     "types": "index.d.ts",
@@ -13,19 +13,19 @@
     ],
     "scripts": {
         "build": "npm run clean && npm run compile",
-        "clean": "rimraf dist && rimraf *.tsbuildinfo -g && rimraf \"./**/*.!(md|json|build.json|lts.json)\" -g",
-        "compile": "tsc -b tsconfig.build.json && tsc -b tsconfig.lts.json",
+        "clean": "rimraf dist && rimraf *.tsbuildinfo -g && rimraf \"./**/*.!(md|json|build.json)\" -g",
+        "compile": "tsc -b tsconfig.build.json",
         "postcompile": "build-tools -c add-js-to-es6"
     },
     "devDependencies": {
-        "@babylonjs/core": "8.56.1",
+        "@babylonjs/core": "9.0.0",
         "@dev/build-tools": "^1.0.0",
-        "@lts/serializers": "^1.0.0",
-        "babylonjs-gltf2interface": "8.56.1"
+        "@dev/serializers": "^1.0.0",
+        "babylonjs-gltf2interface": "9.0.0"
     },
     "peerDependencies": {
-        "@babylonjs/core": "^8.0.0",
-        "babylonjs-gltf2interface": "^8.0.0"
+        "@babylonjs/core": "^9.0.0",
+        "babylonjs-gltf2interface": "^9.0.0"
     },
     "keywords": [
         "3D",

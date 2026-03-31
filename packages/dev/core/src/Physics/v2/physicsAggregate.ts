@@ -1,17 +1,17 @@
 import { PhysicsBody } from "./physicsBody";
-import type { PhysicsMaterial } from "./physicsMaterial";
+import { type PhysicsMaterial } from "./physicsMaterial";
 import { PhysicsShape } from "./physicsShape";
 import { Logger } from "../../Misc/logger";
-import type { Scene } from "../../scene";
-import type { TransformNode } from "../../Meshes/transformNode";
+import { type Scene } from "../../scene";
+import { type TransformNode } from "../../Meshes/transformNode";
 import { Quaternion, TmpVectors, Vector3 } from "../../Maths/math.vector";
 import { WithinEpsilon } from "../../Maths/math.scalar.functions";
 import { PhysicsMotionType, PhysicsShapeType } from "./IPhysicsEnginePlugin";
-import type { Mesh } from "../../Meshes/mesh";
-import type { Observer } from "../../Misc/observable";
-import type { Nullable } from "../../types";
-import type { Node } from "../../node";
-import type { AbstractMesh } from "../../Meshes/abstractMesh";
+import { type Mesh } from "../../Meshes/mesh";
+import { type Observer } from "../../Misc/observable";
+import { type Nullable } from "../../types";
+import { type Node } from "../../node";
+import { type AbstractMesh } from "../../Meshes/abstractMesh";
 import { BoundingBox } from "../../Culling/boundingBox";
 
 /**
