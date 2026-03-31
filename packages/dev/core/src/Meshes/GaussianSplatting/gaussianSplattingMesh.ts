@@ -377,9 +377,27 @@ export class GaussianSplattingMesh extends Mesh {
 
     /**
      * SH degree. 0 = no sh (default). 1 = 3 parameters. 2 = 8 parameters. 3 = 15 parameters.
+     * Value is clamped between 0 and the maximum degree available from loaded data.
      */
     public get shDegree() {
         return this._shDegree;
+    }
+
+    public set shDegree(value: number) {
+        const maxDegree = this._shTextures?.length ?? 0;
+        const clamped = Math.max(0, Math.min(Math.round(value), maxDegree));
+        if (this._shDegree === clamped) {
+            return;
+        }
+        this._shDegree = clamped;
+        this.material?.resetDrawCache();
+    }
+
+    /**
+     * Maximum SH degree available from the loaded data.
+     */
+    public get maxShDegree() {
+        return this._shTextures?.length ?? 0;
     }
 
     /**
