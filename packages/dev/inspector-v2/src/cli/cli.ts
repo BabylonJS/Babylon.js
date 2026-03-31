@@ -240,53 +240,46 @@ async function Main(): Promise<void> {
         return;
     }
 
-    if (args.commands) {
+    if (args.commands || args.command) {
         const socket = await EnsureBridge(Config.cliPort, args.bridgeScript);
         try {
-            const sessionId = await ResolveSessionId(socket, args.rest[0]);
-            const response = await SendAndReceive<CommandsResponse>(socket, { type: "commands", sessionId });
-            if (response.error) {
-                console.error(`Error: ${response.error}`);
-                process.exitCode = 1;
-                return;
-            }
-            if (!response.commands || response.commands.length === 0) {
-                console.log("No commands available.");
-            } else {
-                console.log("Available commands:");
-                const maxLen = Math.max(...response.commands.map((c) => c.id.length));
-                for (const cmd of response.commands) {
-                    console.log(`  ${cmd.id.padEnd(maxLen)}  ${cmd.description}`);
-                }
-                console.log("\nRun --command <id> --help to see arguments for a command.");
-                console.log("Run --command <id> [--arg value ...] to execute a command.");
-            }
-        } finally {
-            socket.close();
-        }
-        return;
-    }
-
-    if (args.command) {
-        const socket = await EnsureBridge(Config.cliPort, args.bridgeScript);
-        try {
-            // Positionals in rest: [sessionId?] <commandId>
+            // If --command was given with a command id, execute it.
+            // Otherwise (--commands, or --command with no id), list available commands.
             let commandId: string | undefined;
-            let argsStartIndex: number;
+            let argsStartIndex = 0;
             let explicitSessionId: string | undefined;
 
-            if (args.rest.length > 0 && !isNaN(parseInt(args.rest[0], 10)) && args.rest.length > 1) {
-                explicitSessionId = args.rest[0];
-                commandId = args.rest[1];
-                argsStartIndex = 2;
-            } else {
-                commandId = args.rest[0];
-                argsStartIndex = 1;
+            if (args.command && args.rest.length > 0) {
+                if (!isNaN(parseInt(args.rest[0], 10)) && args.rest.length > 1) {
+                    explicitSessionId = args.rest[0];
+                    commandId = args.rest[1];
+                    argsStartIndex = 2;
+                } else {
+                    commandId = args.rest[0];
+                    argsStartIndex = 1;
+                }
             }
 
             if (!commandId) {
-                console.error("Error: --command requires a command id.");
-                process.exitCode = 1;
+                // List available commands.
+                const sessionId = await ResolveSessionId(socket, args.rest[0]);
+                const response = await SendAndReceive<CommandsResponse>(socket, { type: "commands", sessionId });
+                if (response.error) {
+                    console.error(`Error: ${response.error}`);
+                    process.exitCode = 1;
+                    return;
+                }
+                if (!response.commands || response.commands.length === 0) {
+                    console.log("No commands available.");
+                } else {
+                    console.log("Available commands:");
+                    const maxLen = Math.max(...response.commands.map((c) => c.id.length));
+                    for (const cmd of response.commands) {
+                        console.log(`  ${cmd.id.padEnd(maxLen)}  ${cmd.description}`);
+                    }
+                    console.log("\nRun --command <id> --help to see arguments for a command.");
+                    console.log("Run --command <id> [--arg value ...] to execute a command.");
+                }
                 return;
             }
 
