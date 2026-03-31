@@ -1,4 +1,4 @@
-import type { IDisposable } from "core/index";
+import { type IDisposable } from "core/index";
 
 /**
  * A helper to create a service factory function from a class constructor.

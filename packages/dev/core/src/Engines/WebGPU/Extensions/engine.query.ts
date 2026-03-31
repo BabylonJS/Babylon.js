@@ -1,9 +1,11 @@
 import { ThinWebGPUEngine } from "core/Engines/thinWebGPUEngine";
 import { WebGPURenderItemBeginOcclusionQuery, WebGPURenderItemEndOcclusionQuery } from "../webgpuBundleList";
 
-import type { PerfCounter } from "../../../Misc/perfCounter";
-import type { OcclusionQuery } from "../../../Engines/AbstractEngine/abstractEngine.query";
+import { type PerfCounter } from "../../../Misc/perfCounter";
+// eslint-disable-next-line import/no-duplicates
+import { type OcclusionQuery } from "../../../Engines/AbstractEngine/abstractEngine.query";
 
+// eslint-disable-next-line import/no-duplicates
 import "../../../Engines/AbstractEngine/abstractEngine.query";
 
 ThinWebGPUEngine.prototype.getGPUFrameTimeCounter = function (): PerfCounter {

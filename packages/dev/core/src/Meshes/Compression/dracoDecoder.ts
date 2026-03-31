@@ -4,11 +4,11 @@ import { Tools } from "../../Misc/tools";
 import { Geometry } from "../geometry";
 import { VertexBuffer } from "../buffer";
 import { Logger } from "../../Misc/logger";
-import type { BoundingInfo } from "../../Culling/boundingInfo";
-import type { Scene } from "../../scene";
-import type { Nullable } from "../../types";
+import { type BoundingInfo } from "../../Culling/boundingInfo";
+import { type Scene } from "../../scene";
+import { type Nullable } from "../../types";
 import { DecodeMesh, DecoderWorkerFunction } from "./dracoCompressionWorker";
-import type { IAttributeData, MeshData, DecoderMessage } from "./dracoDecoder.types";
+import { type IAttributeData, type MeshData, type DecoderMessage } from "./dracoDecoder.types";
 
 declare let DracoDecoderModule: DracoDecoderModule;
 

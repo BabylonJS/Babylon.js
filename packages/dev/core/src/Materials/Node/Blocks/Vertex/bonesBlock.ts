@@ -1,17 +1,17 @@
 import { NodeMaterialBlock } from "../../nodeMaterialBlock";
 import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
-import type { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
+import { type NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import { NodeMaterialSystemValues } from "../../Enums/nodeMaterialSystemValues";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
-import type { AbstractMesh } from "../../../../Meshes/abstractMesh";
-import type { Mesh } from "../../../../Meshes/mesh";
-import type { Effect } from "../../../effect";
-import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
-import type { NodeMaterial, NodeMaterialDefines } from "../../nodeMaterial";
+import { type AbstractMesh } from "../../../../Meshes/abstractMesh";
+import { type Mesh } from "../../../../Meshes/mesh";
+import { type Effect } from "../../../effect";
+import { type NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
+import { type NodeMaterial, type NodeMaterialDefines } from "../../nodeMaterial";
 import { InputBlock } from "../Input/inputBlock";
 import { RegisterClass } from "../../../../Misc/typeStore";
 
-import type { EffectFallbacks } from "../../../effectFallbacks";
+import { type EffectFallbacks } from "../../../effectFallbacks";
 import { BindBonesParameters, PrepareDefinesForBones } from "../../../materialHelper.functions";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
@@ -41,7 +41,7 @@ export class BonesBlock extends NodeMaterialBlock {
      */
     public override initialize(state: NodeMaterialBuildState) {
         state._excludeVariableName("boneSampler");
-        state._excludeVariableName("boneTextureWidth");
+        state._excludeVariableName("boneTextureInfo");
         state._excludeVariableName("mBones");
         state._excludeVariableName("BonesPerMesh");
 
@@ -193,7 +193,7 @@ export class BonesBlock extends NodeMaterialBlock {
         state.sharedData.blocksWithDefines.push(this);
 
         // Register internal uniforms and samplers
-        state.uniforms.push("boneTextureWidth");
+        state.uniforms.push("boneTextureInfo");
         state.uniforms.push("mBones");
 
         state.samplers.push("boneSampler");

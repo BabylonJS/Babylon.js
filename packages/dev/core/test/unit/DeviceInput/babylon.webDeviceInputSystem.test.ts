@@ -1,33 +1,33 @@
 /**
- * @jest-environment jsdom
+ * @vitest-environment jsdom
  */
 
-jest.mock("core/Misc/logger");
+vi.mock("core/Misc/logger");
 
 import { WebDeviceInputSystem } from "core/DeviceInput/webDeviceInputSystem";
 import { NullEngine, NullEngineOptions } from "core/Engines/nullEngine";
 import { Logger } from "core/Misc/logger";
 
-const mockTraceWarn = Logger.Warn as jest.Mock<any, any>;
+const mockTraceWarn = Logger.Warn as Mock;
 
 describe("WebDeviceInputSystem", () => {
     let engine: NullEngine;
     let wdis: WebDeviceInputSystem;
-    let mockOnInputChanged: jest.Mock<any, any>;
-    let mockOnDeviceConnected: jest.Mock<any, any>;
-    let mockOnDeviceDisconnected: jest.Mock<any, any>;
+    let mockOnInputChanged: Mock;
+    let mockOnDeviceConnected: Mock;
+    let mockOnDeviceDisconnected: Mock;
     let renderElement: HTMLCanvasElement;
-    let addEventListenerSpy: jest.SpyInstance;
+    let addEventListenerSpy: ReturnType<typeof vi.spyOn>;
     let raiseOnPointerDown: (evt: any) => {};
     let raiseOnPointerMove: (evt: any) => {};
     let raiseOnPointerUp: (evt: any) => {};
 
     beforeEach(() => {
         // So that GetPointerPrefix knows we are going to simulate pointer events
-        window.PointerEvent = jest.fn() as any;
+        window.PointerEvent = vi.fn() as any;
 
         renderElement = document.createElement("canvas");
-        addEventListenerSpy = jest.spyOn(renderElement, "addEventListener");
+        addEventListenerSpy = vi.spyOn(renderElement, "addEventListener");
         addEventListenerSpy.mockImplementation((type, listener) => {
             switch (type) {
                 case "pointerdown":
@@ -42,9 +42,9 @@ describe("WebDeviceInputSystem", () => {
             }
         });
 
-        mockOnInputChanged = jest.fn();
-        mockOnDeviceConnected = jest.fn();
-        mockOnDeviceDisconnected = jest.fn();
+        mockOnInputChanged = vi.fn();
+        mockOnDeviceConnected = vi.fn();
+        mockOnDeviceDisconnected = vi.fn();
 
         const nullEngineOptions = new NullEngineOptions();
         nullEngineOptions.renderingCanvas = renderElement;

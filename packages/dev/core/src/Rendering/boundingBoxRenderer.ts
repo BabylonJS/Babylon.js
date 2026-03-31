@@ -1,17 +1,16 @@
 import { Scene } from "../scene";
 import { Buffer, VertexBuffer } from "../Buffers/buffer";
-import type { SubMesh } from "../Meshes/subMesh";
+import { type SubMesh } from "../Meshes/subMesh";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Matrix, Vector3 } from "../Maths/math.vector";
 import { SmartArray } from "../Misc/smartArray";
-import type { Nullable, FloatArray, IndicesArray } from "../types";
-import type { ISceneComponent } from "../sceneComponent";
-import { SceneComponentConstants } from "../sceneComponent";
+import { type Nullable, type FloatArray, type IndicesArray } from "../types";
+import { type ISceneComponent, SceneComponentConstants } from "../sceneComponent";
 import { BoundingBox } from "../Culling/boundingBox";
-import type { Effect } from "../Materials/effect";
+import { type Effect } from "../Materials/effect";
 import { Material } from "../Materials/material";
 import { ShaderMaterial } from "../Materials/shaderMaterial";
-import type { DataBuffer } from "../Buffers/dataBuffer";
+import { type DataBuffer } from "../Buffers/dataBuffer";
 import { Color3 } from "../Maths/math.color";
 import { Observable } from "../Misc/observable";
 import { DrawWrapper } from "../Materials/drawWrapper";
@@ -96,6 +95,7 @@ Object.defineProperty(AbstractMesh.prototype, "showBoundingBox", {
 });
 
 const TempMatrix = Matrix.Identity();
+const TempMatrix2 = new Matrix();
 const TempVec1 = new Vector3();
 const TempVec2 = new Vector3();
 // `Matrix.asArray` returns its internal array, so it can be directly updated
@@ -656,11 +656,14 @@ export class BoundingBoxRenderer implements ISceneComponent {
             m[11] = median._z; // Translate Z
 
             const offset = instancesCount * 16;
-            TempMatrix.multiplyToArray(boundingBox.getWorldMatrix(), matrices, offset);
-
-            matrices[offset + 12] -= floatingOriginOffset.x;
-            matrices[offset + 13] -= floatingOriginOffset.y;
-            matrices[offset + 14] -= floatingOriginOffset.z;
+            // Multiply into Float64 temp matrix, subtract offset in Float64, then copy to Float32 buffer
+            // to preserve precision at large coordinates.
+            const resultM = TempMatrix2.asArray();
+            TempMatrix.multiplyToArray(boundingBox.getWorldMatrix(), resultM, 0);
+            resultM[12] -= floatingOriginOffset.x;
+            resultM[13] -= floatingOriginOffset.y;
+            resultM[14] -= floatingOriginOffset.z;
+            TempMatrix2.copyToArray(matrices, offset);
             instancesCount++;
         }
 

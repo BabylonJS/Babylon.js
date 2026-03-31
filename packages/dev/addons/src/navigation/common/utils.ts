@@ -1,4 +1,4 @@
-import type { IVector3Like } from "core/Maths/math.like";
+import { type IVector3Like } from "core/Maths/math.like";
 import { Vector3 } from "core/Maths/math.vector";
 
 /**

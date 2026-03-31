@@ -1,12 +1,11 @@
 import * as React from "react";
-import type { Vector3, Vector4 } from "core/Maths/math.vector";
-import { Matrix, Quaternion } from "core/Maths/math.vector";
-import type { Observable } from "core/Misc/observable";
+import { type Vector3, type Vector4, Matrix, Quaternion } from "core/Maths/math.vector";
+import { type Observable } from "core/Misc/observable";
 import { Vector4LineComponent } from "./vector4LineComponent";
-import type { PropertyChangedEvent } from "../propertyChangedEvent";
+import { type PropertyChangedEvent } from "../propertyChangedEvent";
 import { OptionsLine } from "./optionsLineComponent";
 import { SliderLineComponent } from "./sliderLineComponent";
-import type { LockObject } from "../tabs/propertyGrids/lockObject";
+import { type LockObject } from "../tabs/propertyGrids/lockObject";
 
 interface IMatrixLineComponentProps {
     label: string;

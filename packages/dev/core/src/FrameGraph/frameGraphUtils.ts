@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import type { Camera, FrameGraph, Nullable, FrameGraphObjectRendererTask } from "core/index";
+import { type Camera, type FrameGraph, type Nullable, type FrameGraphObjectRendererTask } from "core/index";
 import { UtilityLayerRenderer } from "core/Rendering/utilityLayerRenderer";
 
 /**

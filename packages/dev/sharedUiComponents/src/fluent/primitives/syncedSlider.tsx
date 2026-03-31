@@ -1,9 +1,8 @@
-import type { FunctionComponent } from "react";
+import { type FunctionComponent, useEffect, useState, useRef } from "react";
 import { makeStyles, mergeClasses } from "@fluentui/react-components";
 import { SpinButton } from "./spinButton";
 import { Slider } from "./slider";
-import { useEffect, useState, useRef } from "react";
-import type { PrimitiveProps } from "./primitive";
+import { type PrimitiveProps } from "./primitive";
 import { InfoLabel } from "./infoLabel";
 
 const useSyncedSliderStyles = makeStyles({

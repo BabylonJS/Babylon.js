@@ -1,26 +1,26 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import type { IEffectCreationOptions, IShaderPath } from "../Materials/effect";
-import type { _IShaderProcessingContext } from "./Processors/shaderProcessingOptions";
-import type { Nullable, DataArray, IndicesArray, FloatArray, DeepImmutable } from "../types";
-import type { IColor4Like } from "../Maths/math.like";
-import type { DataBuffer } from "../Buffers/dataBuffer";
-import type { IPipelineContext } from "./IPipelineContext";
-import type { WebGLPipelineContext } from "./WebGL/webGLPipelineContext";
-import type { VertexBuffer } from "../Buffers/buffer";
-import type { InstancingAttributeInfo } from "./instancingAttributeInfo";
-import type { ThinTexture } from "../Materials/Textures/thinTexture";
-import type { IEffectFallbacks } from "../Materials/iEffectFallbacks";
-import type { IHardwareTextureWrapper } from "../Materials/Textures/hardwareTextureWrapper";
-import type { DrawWrapper } from "../Materials/drawWrapper";
-import type { IMaterialContext } from "./IMaterialContext";
-import type { IDrawContext } from "./IDrawContext";
-import type { ICanvas, ICanvasRenderingContext } from "./ICanvas";
-import type { IStencilState } from "../States/IStencilState";
-import type { InternalTextureCreationOptions, TextureSize } from "../Materials/Textures/textureCreationOptions";
-import type { RenderTargetWrapper } from "./renderTargetWrapper";
-import type { WebGLRenderTargetWrapper } from "./WebGL/webGLRenderTargetWrapper";
-import type { VideoTexture } from "../Materials/Textures/videoTexture";
-import type { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
+import { type IEffectCreationOptions, type IShaderPath, Effect } from "../Materials/effect";
+import { type _IShaderProcessingContext } from "./Processors/shaderProcessingOptions";
+import { type Nullable, type DataArray, type IndicesArray, type FloatArray, type DeepImmutable } from "../types";
+import { type IColor4Like } from "../Maths/math.like";
+import { type DataBuffer } from "../Buffers/dataBuffer";
+import { type IPipelineContext } from "./IPipelineContext";
+import { type WebGLPipelineContext } from "./WebGL/webGLPipelineContext";
+import { type VertexBuffer } from "../Buffers/buffer";
+import { type InstancingAttributeInfo } from "./instancingAttributeInfo";
+import { type ThinTexture } from "../Materials/Textures/thinTexture";
+import { type IEffectFallbacks } from "../Materials/iEffectFallbacks";
+import { type IHardwareTextureWrapper } from "../Materials/Textures/hardwareTextureWrapper";
+import { type DrawWrapper } from "../Materials/drawWrapper";
+import { type IMaterialContext } from "./IMaterialContext";
+import { type IDrawContext } from "./IDrawContext";
+import { type ICanvas, type ICanvasRenderingContext } from "./ICanvas";
+import { type IStencilState } from "../States/IStencilState";
+import { type InternalTextureCreationOptions, type TextureSize } from "../Materials/Textures/textureCreationOptions";
+import { type RenderTargetWrapper } from "./renderTargetWrapper";
+import { type WebGLRenderTargetWrapper } from "./WebGL/webGLRenderTargetWrapper";
+import { type VideoTexture } from "../Materials/Textures/videoTexture";
+import { type RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import {
     createPipelineContext,
     createRawShaderProgram,
@@ -35,8 +35,8 @@ import {
     _isRenderingStateCompiled,
 } from "./thinEngine.functions";
 
-import type { AbstractEngineOptions, ISceneLike, PrepareTextureFunction, PrepareTextureProcessFunction } from "./abstractEngine";
-import type { PerformanceMonitor } from "../Misc/performanceMonitor";
+import { type AbstractEngineOptions, type ISceneLike, type PrepareTextureFunction, type PrepareTextureProcessFunction, AbstractEngine } from "./abstractEngine";
+import { type PerformanceMonitor } from "../Misc/performanceMonitor";
 import { IsWrapper } from "../Materials/drawWrapper.functions";
 import { Logger } from "../Misc/logger";
 import { IsWindowObjectExist } from "../Misc/domManagement";
@@ -44,12 +44,10 @@ import { WebGLShaderProcessor } from "./WebGL/webGLShaderProcessors";
 import { WebGL2ShaderProcessor } from "./WebGL/webGL2ShaderProcessors";
 import { WebGLDataBuffer } from "../Meshes/WebGL/webGLDataBuffer";
 import { GetExponentOfTwo } from "../Misc/tools.functions";
-import { AbstractEngine } from "./abstractEngine";
 import { Constants } from "./constants";
 import { WebGLHardwareTexture } from "./WebGL/webGLHardwareTexture";
 import { ShaderLanguage } from "../Materials/shaderLanguage";
 import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
-import { Effect } from "../Materials/effect";
 import { _ConcatenateShader, _GetGlobalDefines } from "./abstractEngine.functions";
 import { resetCachedPipeline } from "core/Materials/effect.functions";
 import { HasStencilAspect, IsDepthTexture } from "core/Materials/Textures/textureHelper.functions";
@@ -563,6 +561,7 @@ export class ThinEngine extends AbstractEngine {
             textureNorm16: this._gl.getExtension("EXT_texture_norm16") ? true : false,
             blendParametersPerTarget: false,
             dualSourceBlending: false,
+            supportReadWriteStorageTextures: false,
         };
 
         this._caps.supportFloatTexturesResolve = this._caps.colorBufferFloat;
@@ -2636,7 +2635,7 @@ export class ThinEngine extends AbstractEngine {
             return false;
         }
 
-        this._gl.uniformMatrix4fv(uniform, false, matrices);
+        this._gl.uniformMatrix4fv(uniform, false, matrices as Float32List);
         return true;
     }
 

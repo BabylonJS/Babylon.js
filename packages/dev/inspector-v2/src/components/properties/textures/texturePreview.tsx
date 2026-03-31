@@ -1,9 +1,8 @@
-import type { CSSProperties, FunctionComponent, Ref } from "react";
+import { type CSSProperties, type FunctionComponent, type Ref, useCallback, useContext, useEffect, useImperativeHandle, useRef, useState } from "react";
 
-import type { BaseTexture } from "core/index";
+import { type BaseTexture } from "core/index";
 
 import { Button, Toolbar, ToolbarButton, makeStyles, tokens } from "@fluentui/react-components";
-import { useCallback, useContext, useEffect, useImperativeHandle, useRef, useState } from "react";
 
 import { Clamp } from "core/Maths/math.scalar.functions";
 import { WhenTextureReadyAsync } from "core/Misc/textureTools";

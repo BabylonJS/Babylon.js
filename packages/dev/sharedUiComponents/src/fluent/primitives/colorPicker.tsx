@@ -1,11 +1,20 @@
 /* eslint-disable jsdoc/require-returns */
 /* eslint-disable @typescript-eslint/naming-convention */
-import { forwardRef, useState, useEffect, useCallback, useContext, useMemo } from "react";
-import type { FunctionComponent } from "react";
-import { ColorPicker as FluentColorPicker, ColorSlider, ColorArea, AlphaSlider, makeStyles, tokens, Body1Strong, ColorSwatch, Body1 } from "@fluentui/react-components";
-import type { ColorPickerProps as FluentColorPickerProps } from "@fluentui/react-components";
+import { forwardRef, useState, useEffect, useCallback, useContext, useMemo, type FunctionComponent } from "react";
+import {
+    ColorPicker as FluentColorPicker,
+    ColorSlider,
+    ColorArea,
+    AlphaSlider,
+    makeStyles,
+    tokens,
+    Body1Strong,
+    ColorSwatch,
+    Body1,
+    type ColorPickerProps as FluentColorPickerProps,
+} from "@fluentui/react-components";
 import { Color3, Color4 } from "core/Maths/math.color";
-import type { PrimitiveProps } from "./primitive";
+import { type PrimitiveProps } from "./primitive";
 import { SpinButton } from "./spinButton";
 import { TextInput } from "./textInput";
 import { NumberDropdown } from "./dropdown";

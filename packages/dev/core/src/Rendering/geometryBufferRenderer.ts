@@ -1,19 +1,19 @@
 import { Matrix } from "../Maths/math.vector";
 import { VertexBuffer } from "../Buffers/buffer";
-import type { SubMesh } from "../Meshes/subMesh";
+import { type SubMesh } from "../Meshes/subMesh";
 import { Constants } from "../Engines/constants";
-import type { SmartArray } from "../Misc/smartArray";
+import { type SmartArray } from "../Misc/smartArray";
 import { Texture } from "../Materials/Textures/texture";
-import type { InternalTexture } from "../Materials/Textures/internalTexture";
+import { type InternalTexture } from "../Materials/Textures/internalTexture";
 import { MultiRenderTarget } from "../Materials/Textures/multiRenderTarget";
-import type { PrePassRenderer } from "../Rendering/prePassRenderer";
-import type { Scene } from "../scene";
-import type { AbstractMesh } from "../Meshes/abstractMesh";
+import { type PrePassRenderer } from "../Rendering/prePassRenderer";
+import { type Scene } from "../scene";
+import { type AbstractMesh } from "../Meshes/abstractMesh";
 import { Color4 } from "../Maths/math.color";
 import { _WarnImport } from "../Misc/devTools";
-import type { Observer } from "../Misc/observable";
-import type { AbstractEngine } from "../Engines/abstractEngine";
-import type { Nullable } from "../types";
+import { type Observer } from "../Misc/observable";
+import { type AbstractEngine } from "../Engines/abstractEngine";
+import { type Nullable } from "../types";
 import { Material } from "../Materials/material";
 
 import "../Shaders/geometry.fragment";
@@ -24,7 +24,7 @@ import { BindMorphTargetParameters, BindSceneUniformBuffer, PrepareDefinesAndAtt
 
 import "../Engines/Extensions/engine.multiRender";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
-import type { OpenPBRMaterial } from "../Materials/PBR/openpbrMaterial";
+import { type OpenPBRMaterial } from "../Materials/PBR/openpbrMaterial";
 
 /** @internal */
 interface ISavedTransformationMatrix {
@@ -55,7 +55,7 @@ const Uniforms = [
     "morphTargetCount",
     "morphTargetTextureInfo",
     "morphTargetTextureIndices",
-    "boneTextureWidth",
+    "boneTextureInfo",
 ];
 AddClipPlaneUniforms(Uniforms);
 
@@ -1274,10 +1274,10 @@ export class GeometryBufferRenderer {
                 if (renderingMesh.useBones && renderingMesh.computeBonesUsingShaders && renderingMesh.skeleton) {
                     const skeleton = renderingMesh.skeleton;
 
-                    if (skeleton.isUsingTextureForMatrices && effect.getUniformIndex("boneTextureWidth") > -1) {
+                    if (skeleton.isUsingTextureForMatrices && effect.getUniformIndex("boneTextureInfo") > -1) {
                         const boneTexture = skeleton.getTransformMatrixTexture(renderingMesh);
                         effect.setTexture("boneSampler", boneTexture);
-                        effect.setFloat("boneTextureWidth", 4.0 * (skeleton.bones.length + 1));
+                        effect.setFloat2("boneTextureInfo", skeleton._textureWidth, skeleton._textureHeight);
                     } else {
                         effect.setMatrices("mBones", renderingMesh.skeleton.getTransformMatrices(renderingMesh));
                     }

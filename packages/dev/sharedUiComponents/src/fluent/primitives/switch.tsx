@@ -1,9 +1,7 @@
-import type { SwitchOnChangeData } from "@fluentui/react-components";
-import type { ChangeEvent, FunctionComponent } from "react";
-import type { PrimitiveProps } from "./primitive";
+import { type SwitchOnChangeData, makeStyles, Switch as FluentSwitch, mergeClasses } from "@fluentui/react-components";
+import { type ChangeEvent, type FunctionComponent, useContext, useEffect, useState } from "react";
+import { type PrimitiveProps } from "./primitive";
 
-import { makeStyles, Switch as FluentSwitch, mergeClasses } from "@fluentui/react-components";
-import { useContext, useEffect, useState } from "react";
 import { ToolContext } from "../hoc/fluentToolWrapper";
 
 const useSwitchStyles = makeStyles({

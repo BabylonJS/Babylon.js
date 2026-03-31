@@ -1,5 +1,5 @@
-import type { IViewportLike } from "../../Maths/math.like";
-import type { Nullable } from "../../types";
+import { type IViewportLike } from "../../Maths/math.like";
+import { type Nullable } from "../../types";
 import { AbstractEngine } from "../abstractEngine";
 
 /**

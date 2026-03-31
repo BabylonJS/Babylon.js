@@ -1,11 +1,12 @@
-import type { IAssetContainer } from "core/IAssetContainer";
+import { type IAssetContainer } from "core/IAssetContainer";
+import { Logger } from "../Misc/logger";
 import { Color3, Color4 } from "../Maths/math.color";
 import { Matrix, Quaternion, Vector2, Vector3, Vector4 } from "../Maths/math.vector";
-import type { Scene } from "../scene";
+import { type Scene } from "../scene";
 import { FlowGraphBlockNames } from "./Blocks/flowGraphBlockNames";
 import { FlowGraphInteger } from "./CustomTypes/flowGraphInteger";
 import { FlowGraphTypes, getRichTypeByFlowGraphType } from "./flowGraphRichTypes";
-import type { TransformNode } from "core/Meshes/transformNode";
+import { type TransformNode } from "core/Meshes/transformNode";
 import { FlowGraphMatrix2D, FlowGraphMatrix3D } from "./CustomTypes/flowGraphMatrix";
 
 function IsMeshClassName(className: string) {
@@ -92,11 +93,16 @@ export function defaultValueSerializationFunction(key: string, value: any, seria
                 className,
             };
         } else {
-            // only if it is not an object
-            if (typeof value !== "object") {
+            if (typeof value !== "object" || value === null) {
                 serializationObject[key] = value;
             } else {
-                throw new Error(`Could not serialize value ${value}`);
+                // Plain object (e.g. parsed event config) — store it if JSON-safe,
+                // otherwise skip (e.g. objects containing functions like pathConverter).
+                try {
+                    serializationObject[key] = JSON.parse(JSON.stringify(value));
+                } catch {
+                    Logger.Warn(`FlowGraph serialization: value for key "${key}" is not JSON-serializable and was skipped.`);
+                }
             }
         }
     }
@@ -172,6 +178,5 @@ export function defaultValueParseFunction(key: string, serializationObject: any,
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export function needsPathConverter(className: string) {
     // I am not using the ClassName property here because it was causing a circular dependency
-    // that jest didn't like!
     return className === FlowGraphBlockNames.JsonPointerParser;
 }

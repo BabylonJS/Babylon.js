@@ -1,4 +1,4 @@
-import type { Scene } from "core/scene";
+import { type Scene } from "core/scene";
 import { Engine } from "core/Engines/engine"; // can also be @lts/core
 
 import { createScene as createSceneTs } from "./createScene";

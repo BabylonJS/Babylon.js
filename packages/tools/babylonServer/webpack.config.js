@@ -99,6 +99,7 @@ module.exports = (env) => {
             "nodeGeometryEditor/babylon.nodeGeometryEditor.min": `./src/nodeGeometryEditor/index.ts`,
             "nodeRenderGraphEditor/babylon.nodeRenderGraphEditor.min": `./src/nodeRenderGraphEditor/index.ts`,
             "nodeParticleEditor/babylon.nodeParticleEditor.min": `./src/nodeParticleEditor/index.ts`,
+            "flowGraphEditor/babylon.flowGraphEditor.min": `./src/flowGraphEditor/index.ts`,
             "guiEditor/babylon.guiEditor.min": `./src/guiEditor/index.ts`,
             "addons/babylonjs.addons.min": `./src/addons/index.ts`,
             "accessibility/babylon.accessibility.min": `./src/accessibility/index.ts`,
@@ -120,6 +121,7 @@ module.exports = (env) => {
                 "node-geometry-editor": path.resolve(basePathForTools, "nodeGeometryEditor", outputDirectoryForAliases),
                 "node-render-graph-editor": path.resolve(basePathForTools, "nodeRenderGraphEditor", outputDirectoryForAliases),
                 "node-particle-editor": path.resolve(basePathForTools, "nodeParticleEditor", outputDirectoryForAliases),
+                "flow-graph-editor": path.resolve(basePathForTools, "flowGraphEditor", outputDirectoryForAliases),
                 "gui-editor": path.resolve(basePathForTools, "guiEditor", outputDirectoryForAliases),
                 accessibility: path.resolve(basePathForTools, "accessibility", outputDirectoryForAliases),
                 addons: path.resolve(basePathForSources, "addons", outputDirectoryForAliases),
@@ -236,6 +238,14 @@ module.exports = (env) => {
         {
             from: "/nodeParticleEditor/babylon.nodeParticleEditor.d.ts",
             to: "/node-particle-editor.d.ts",
+        },
+        {
+            from: "/flowGraphEditor/babylon.flowGraphEditor.js",
+            to: "/flowGraphEditor/babylon.flowGraphEditor.min.js",
+        },
+        {
+            from: "/flowGraphEditor/babylon.flowGraphEditor.d.ts",
+            to: "/flow-graph-editor.d.ts",
         },
         {
             from: "/guiEditor/babylon.guiEditor.js",

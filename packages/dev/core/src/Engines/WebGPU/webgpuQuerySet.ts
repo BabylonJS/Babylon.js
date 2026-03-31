@@ -1,9 +1,9 @@
 /* eslint-disable babylonjs/available */
 /* eslint-disable @typescript-eslint/naming-convention */
-import type { WebGPUEngine } from "../webgpuEngine";
-import type { WebGPUBufferManager } from "./webgpuBufferManager";
+import { type WebGPUEngine } from "../webgpuEngine";
+import { type WebGPUBufferManager } from "./webgpuBufferManager";
 import * as WebGPUConstants from "./webgpuConstants";
-import type { QueryType } from "./webgpuConstants";
+import { type QueryType } from "./webgpuConstants";
 
 /** @internal */
 export class WebGPUQuerySet {

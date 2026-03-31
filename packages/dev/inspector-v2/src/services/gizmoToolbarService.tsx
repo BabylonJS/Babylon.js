@@ -1,12 +1,9 @@
-import type { ServiceDefinition } from "../modularity/serviceDefinition";
-import type { IShellService } from "./shellService";
-import type { IGizmoService } from "./gizmoService";
-import type { ISceneContext } from "./sceneContext";
+import { type ServiceDefinition } from "../modularity/serviceDefinition";
+import { type IShellService, ShellServiceIdentity } from "./shellService";
+import { type IGizmoService, GizmoServiceIdentity } from "./gizmoService";
+import { type ISceneContext, SceneContextIdentity } from "./sceneContext";
 
-import { ShellServiceIdentity } from "./shellService";
 import { GizmoToolbar } from "../components/gizmoToolbar";
-import { GizmoServiceIdentity } from "./gizmoService";
-import { SceneContextIdentity } from "./sceneContext";
 
 export const GizmoToolbarServiceDefinition: ServiceDefinition<[], [IShellService, IGizmoService, ISceneContext]> = {
     friendlyName: "Gizmo Toolbar",

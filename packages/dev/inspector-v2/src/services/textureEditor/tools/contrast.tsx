@@ -1,4 +1,4 @@
-import type { TextureEditorToolProvider } from "../../../components/textureEditor/textureEditor";
+import { type TextureEditorToolProvider } from "../../../components/textureEditor/textureEditor";
 
 import { Label, makeStyles, Slider, tokens } from "@fluentui/react-components";
 import { CircleHalfFillRegular } from "@fluentui/react-icons";

@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import type { Nullable } from "../types";
+import { type Nullable } from "../types";
 import { Observable } from "./observable";
 import { GetDOMTextContent, IsNavigatorAvailable, IsWindowObjectExist } from "./domManagement";
 import { Logger } from "./logger";
@@ -7,10 +7,10 @@ import { DeepCopier } from "./deepCopier";
 import { PrecisionDate } from "./precisionDate";
 import { _WarnImport } from "./devTools";
 import { WebRequest } from "./webRequest";
-import type { IFileRequest } from "./fileRequest";
+import { type IFileRequest } from "./fileRequest";
 import { EngineStore } from "../Engines/engineStore";
-import type { ReadFileError } from "./fileTools";
 import {
+    type ReadFileError,
     FileToolsOptions,
     DecodeBase64UrlToBinary,
     IsBase64DataUrl,
@@ -19,18 +19,17 @@ import {
     ReadFile as FileToolsReadFile,
     SetCorsBehavior,
 } from "./fileTools";
-import type { IOfflineProvider } from "../Offline/IOfflineProvider";
+import { type IOfflineProvider } from "../Offline/IOfflineProvider";
 import { TimingTools } from "./timingTools";
 import { InstantiationTools } from "./instantiationTools";
 import { RandomGUID } from "./guid";
-import type { IScreenshotSize } from "./interfaces/screenshotSize";
-import type { Camera } from "../Cameras/camera";
-import type { IColor4Like } from "../Maths/math.like";
+import { type IScreenshotSize } from "./interfaces/screenshotSize";
+import { type Camera } from "../Cameras/camera";
+import { type IColor4Like } from "../Maths/math.like";
 import { IsExponentOfTwo, Mix } from "./tools.functions";
-import type { AbstractEngine } from "../Engines/abstractEngine";
-import type { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
-import type { INative } from "../Engines/Native/nativeInterfaces";
-import { NativeTraceLevel } from "../Engines/Native/nativeInterfaces";
+import { type AbstractEngine } from "../Engines/abstractEngine";
+import { type RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
+import { type INative, NativeTraceLevel } from "../Engines/Native/nativeInterfaces";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 declare const _native: INative;
@@ -233,8 +232,8 @@ export class Tools {
      * @param color defines the output color
      */
     public static FetchToRef(u: number, v: number, width: number, height: number, pixels: Uint8Array, color: IColor4Like): void {
-        const wrappedU = (Math.abs(u) * width) % width | 0;
-        const wrappedV = (Math.abs(v) * height) % height | 0;
+        const wrappedU = ((Math.abs(u) * width) % width) | 0;
+        const wrappedV = ((Math.abs(v) * height) % height) | 0;
 
         const position = (wrappedU + wrappedV * width) * 4;
         color.r = pixels[position] / 255;
@@ -503,7 +502,7 @@ export class Tools {
      * When set, unversioned CDN URLs will be rewritten to include this version prefix.
      * @internal
      */
-    public static _CdnVersion = "8.56.1";
+    public static _CdnVersion = "9.0.0";
 
     /**
      * @internal

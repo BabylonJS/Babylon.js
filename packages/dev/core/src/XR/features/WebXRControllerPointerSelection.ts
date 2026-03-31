@@ -1,12 +1,12 @@
 import { WebXRFeaturesManager, WebXRFeatureName } from "../webXRFeaturesManager";
-import type { WebXRSessionManager } from "../webXRSessionManager";
-import type { AbstractMesh } from "../../Meshes/abstractMesh";
-import type { Observer } from "../../Misc/observable";
-import type { WebXRInput } from "../webXRInput";
-import type { WebXRInputSource } from "../webXRInputSource";
-import type { Scene } from "../../scene";
-import type { WebXRControllerComponent } from "../motionController/webXRControllerComponent";
-import type { Nullable } from "../../types";
+import { type WebXRSessionManager } from "../webXRSessionManager";
+import { type AbstractMesh } from "../../Meshes/abstractMesh";
+import { type Observer } from "../../Misc/observable";
+import { type WebXRInput } from "../webXRInput";
+import { type WebXRInputSource } from "../webXRInputSource";
+import { type Scene } from "../../scene";
+import { type WebXRControllerComponent } from "../motionController/webXRControllerComponent";
+import { type Nullable } from "../../types";
 import { Matrix, Vector3 } from "../../Maths/math.vector";
 import { Color3 } from "../../Maths/math.color";
 import { Axis } from "../../Maths/math.axis";
@@ -17,11 +17,11 @@ import { Ray } from "../../Culling/ray";
 import { PickingInfo } from "../../Collisions/pickingInfo";
 import { WebXRAbstractFeature } from "./WebXRAbstractFeature";
 import { UtilityLayerRenderer } from "../../Rendering/utilityLayerRenderer";
-import type { WebXRAbstractMotionController } from "../motionController/webXRAbstractMotionController";
-import type { WebXRCamera } from "../webXRCamera";
-import type { Node } from "../../node";
+import { type WebXRAbstractMotionController } from "../motionController/webXRAbstractMotionController";
+import { type WebXRCamera } from "../webXRCamera";
+import { type Node } from "../../node";
 import { Viewport } from "../../Maths/math.viewport";
-import type { Mesh } from "../../Meshes/mesh";
+import { type Mesh } from "../../Meshes/mesh";
 import { Tools } from "../../Misc/tools";
 
 /**
@@ -362,6 +362,88 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
         } else {
             return null;
         }
+    }
+
+    /**
+     * Get the unique id of the currently attached (active) controller for pointer selection.
+     * When `enablePointerSelectionOnAllControllers` is true, this value is not meaningful
+     * because all controllers are active simultaneously.
+     * @returns the unique id of the attached controller, or an empty string if none is attached
+     */
+    public get attachedControllerId(): string {
+        return this._attachedController || "";
+    }
+
+    /**
+     * Set the active controller for pointer selection during an XR session.
+     * Accepts either an `XRHandedness` value (`"left"`, `"right"`, `"none"`) to select
+     * the first matching controller, or a controller unique id string for precise control.
+     *
+     * When a matching controller is found, any in-progress pointer-down state on the
+     * previously active controller is properly resolved (pointer-up is simulated).
+     *
+     * This also updates the `preferredHandedness` option so that if controllers are
+     * re-initialized (e.g. on disconnect/reconnect), the new preference persists.
+     *
+     * This method is a no-op when `enablePointerSelectionOnAllControllers` is true,
+     * since all controllers are active simultaneously in that mode.
+     *
+     * @param controllerId the XRHandedness (`"left"`, `"right"`, `"none"`) or the unique id of the controller to attach
+     * @returns true if the active controller was changed, false otherwise
+     */
+    public setAttachedController(controllerId: XRHandedness | string): boolean {
+        if (this._options.enablePointerSelectionOnAllControllers) {
+            return false;
+        }
+
+        let targetUniqueId: string | undefined;
+
+        // Check if controllerId matches a known handedness value
+        if (controllerId === "left" || controllerId === "right" || controllerId === "none") {
+            // Find the first controller that matches the given handedness
+            for (const id in this._controllers) {
+                const data = this._controllers[id];
+                if (data.xrController && data.xrController.inputSource.handedness === controllerId) {
+                    targetUniqueId = id;
+                    break;
+                }
+            }
+        } else {
+            // Treat as a controller unique id
+            if (this._controllers[controllerId]) {
+                targetUniqueId = controllerId;
+            }
+        }
+
+        if (!targetUniqueId || targetUniqueId === this._attachedController) {
+            return false;
+        }
+
+        // Update preferredHandedness only after confirming the switch will happen
+        if (controllerId === "left" || controllerId === "right" || controllerId === "none") {
+            (this._options as IWebXRControllerPointerSelectionOptions).preferredHandedness = controllerId;
+        } else {
+            const targetData = this._controllers[targetUniqueId];
+            if (targetData.xrController) {
+                (this._options as IWebXRControllerPointerSelectionOptions).preferredHandedness = targetData.xrController.inputSource.handedness;
+            }
+        }
+
+        // Properly finalize pointer state on the previous controller
+        const prevControllerData = this._controllers[this._attachedController];
+        if (prevControllerData && prevControllerData.pointerDownTriggered && !prevControllerData.finalPointerUpTriggered && this._scene.isPointerCaptured(prevControllerData.id)) {
+            const pointerEventInit: PointerEventInit = {
+                pointerId: prevControllerData.id,
+                pointerType: "xr",
+            };
+            this._augmentPointerInit(pointerEventInit, prevControllerData.id, prevControllerData.screenCoordinates);
+            this._scene.simulatePointerUp(prevControllerData.pick || new PickingInfo(), pointerEventInit);
+            prevControllerData.pointerDownTriggered = false;
+            prevControllerData.finalPointerUpTriggered = true;
+        }
+
+        this._attachedController = targetUniqueId;
+        return true;
     }
 
     /**

@@ -1,4 +1,4 @@
-import type { FrameGraph, FrameGraphObjectList, FrameGraphShadowGeneratorTask } from "core/index";
+import { type FrameGraph, type FrameGraphObjectList, type FrameGraphShadowGeneratorTask } from "core/index";
 import { LightingVolume } from "core/Lights/lightingVolume";
 import { DirectionalLight } from "core/Lights/directionalLight";
 import { FrameGraphTask } from "../../frameGraphTask";

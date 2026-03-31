@@ -3,9 +3,9 @@ import { HeaderComponent } from "../headerComponent";
 import { Resizable } from "re-resizable";
 import { SceneExplorerComponent } from "../sceneExplorer/sceneExplorerComponent";
 import { ActionTabsComponent } from "../actionTabs/actionTabsComponent";
-import type { Scene } from "core/scene";
-import type { GlobalState } from "../../components/globalState";
-import type { IExplorerExtensibilityGroup, DebugLayerTab, IExplorerAdditionalNode } from "core/Debug/debugLayer";
+import { type Scene } from "core/scene";
+import { type GlobalState } from "../../components/globalState";
+import { type IExplorerExtensibilityGroup, type DebugLayerTab, type IExplorerAdditionalNode } from "core/Debug/debugLayer";
 
 import Split from "split.js";
 

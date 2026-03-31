@@ -1,15 +1,14 @@
 import { Camera } from "../Cameras/camera";
-import type { Scene } from "../scene";
-import type { AbstractEngine } from "../Engines/abstractEngine";
-import type { AbstractMesh } from "../Meshes/abstractMesh";
-import type { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
-import type { ISceneSerializableComponent } from "../sceneComponent";
-import { SceneComponentConstants } from "../sceneComponent";
+import { type Scene } from "../scene";
+import { type AbstractEngine } from "../Engines/abstractEngine";
+import { type AbstractMesh } from "../Meshes/abstractMesh";
+import { type RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
+import { type ISceneSerializableComponent, SceneComponentConstants } from "../sceneComponent";
 import { EffectLayer } from "./effectLayer";
-import type { AssetContainer } from "../assetContainer";
+import { type AssetContainer } from "../assetContainer";
 import { EngineStore } from "../Engines/engineStore";
 import { AddParser } from "core/Loading/Plugins/babylonFileParser.function";
-import type { IAssetContainer } from "core/IAssetContainer";
+import { type IAssetContainer } from "core/IAssetContainer";
 
 // Adds the parser to the scene parsers.
 AddParser(SceneComponentConstants.NAME_EFFECTLAYER, (parsedData: any, scene: Scene, container: AssetContainer, rootUrl: string) => {

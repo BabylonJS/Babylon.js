@@ -1,14 +1,14 @@
 import { _IsConfigurationAvailable, DracoCodec, type IDracoCodecConfiguration } from "./dracoCodec";
-import type { EncoderMessage, IDracoAttributeData, IDracoEncodedMeshData, IDracoEncoderOptions, DracoAttributeName } from "./dracoEncoder.types";
+import { type EncoderMessage, type IDracoAttributeData, type IDracoEncodedMeshData, type IDracoEncoderOptions, type DracoAttributeName } from "./dracoEncoder.types";
 import { EncodeMesh, EncoderWorkerFunction } from "./dracoCompressionWorker";
 import { Tools } from "../../Misc/tools";
 import { VertexBuffer } from "../buffer";
-import type { Nullable } from "../../types";
+import { type Nullable } from "../../types";
 import { Mesh } from "../mesh";
-import type { Geometry } from "../geometry";
+import { type Geometry } from "../geometry";
 import { Logger } from "../../Misc/logger";
 import { deepMerge } from "../../Misc/deepMerger";
-import type { EncoderModule } from "draco3d";
+import { type EncoderModule } from "draco3d";
 import { AreIndices32Bits, GetTypedArrayData } from "core/Buffers/bufferUtils";
 
 // Missing type from types/draco3d. Do not use in public scope; UMD tests will fail because of EncoderModule.

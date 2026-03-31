@@ -1,5 +1,5 @@
-import type { IReadonlyObservable } from "core/index";
-import type { IService } from "../modularity/serviceDefinition";
+import { type IReadonlyObservable } from "core/index";
+import { type IService } from "../modularity/serviceDefinition";
 
 import { DataStorage } from "core/Misc/dataStorage";
 import { Observable } from "core/Misc/observable";

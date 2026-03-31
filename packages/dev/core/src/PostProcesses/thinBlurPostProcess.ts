@@ -1,7 +1,7 @@
-import type { Nullable, AbstractEngine, EffectWrapperCreationOptions, Vector2, Effect } from "core/index";
+import { type Nullable, type AbstractEngine, type EffectWrapperCreationOptions, type Vector2, type Effect } from "core/index";
 import { EffectWrapper } from "../Materials/effectRenderer";
 import { ShaderLanguage } from "../Materials/shaderLanguage";
-import { Engine } from "../Engines/engine";
+import { EngineStore } from "../Engines/engineStore";
 
 /**
  * Post process used to apply a blur effect
@@ -54,7 +54,7 @@ export class ThinBlurPostProcess extends EffectWrapper {
         super({
             ...options,
             name,
-            engine: engine || Engine.LastCreatedEngine!,
+            engine: engine || EngineStore.LastCreatedEngine!,
             useShaderStore: true,
             useAsPostProcess: true,
             fragmentShader: ThinBlurPostProcess.FragmentUrl,

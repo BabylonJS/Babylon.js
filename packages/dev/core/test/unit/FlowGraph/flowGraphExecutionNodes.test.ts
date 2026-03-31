@@ -1,8 +1,8 @@
-import { ArcRotateCamera } from "core/Cameras";
-import type { Engine } from "core/Engines";
-import { NullEngine } from "core/Engines";
-import type { FlowGraphContext, FlowGraph } from "core/FlowGraph";
+import { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
+import { type Engine, NullEngine } from "core/Engines";
 import {
+    type FlowGraphContext,
+    type FlowGraph,
     FlowGraphCoordinator,
     FlowGraphDoNBlock,
     FlowGraphFlipFlopBlock,
@@ -37,7 +37,7 @@ describe("Flow Graph Execution Nodes", () => {
             lockstepMaxSteps: 1,
         });
 
-        Logger.Log = jest.fn();
+        Logger.Log = vi.fn();
         scene = new Scene(engine);
         flowGraphCoordinator = new FlowGraphCoordinator({ scene });
         flowGraph = flowGraphCoordinator.createGraph();
@@ -246,6 +246,32 @@ describe("Flow Graph Execution Nodes", () => {
         // Check if the execution is throttled
         scene.render();
         expect(Logger.Log).toHaveBeenCalledTimes(1);
+    });
+
+    it("Pause/Resume should not execute while paused or duplicate observers", () => {
+        const sceneTick = new FlowGraphSceneTickEventBlock();
+        flowGraph.addEventBlock(sceneTick);
+
+        const log = new FlowGraphConsoleLogBlock();
+        log.message.setValue("tick", flowGraphContext);
+        sceneTick.done.connectTo(log.in);
+
+        flowGraph.start();
+        scene.render();
+        expect(Logger.Log).toHaveBeenCalledTimes(1);
+
+        flowGraph.pause();
+        scene.render();
+        expect(Logger.Log).toHaveBeenCalledTimes(1);
+
+        flowGraph.start();
+        scene.render();
+        expect(Logger.Log).toHaveBeenCalledTimes(2);
+
+        flowGraph.pause();
+        flowGraph.start();
+        scene.render();
+        expect(Logger.Log).toHaveBeenCalledTimes(3);
     });
 
     // this should test the JSON property parser.

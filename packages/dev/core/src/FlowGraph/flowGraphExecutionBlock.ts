@@ -1,7 +1,6 @@
-import type { IFlowGraphBlockConfiguration } from "./flowGraphBlock";
-import { FlowGraphBlock } from "./flowGraphBlock";
+import { type IFlowGraphBlockConfiguration, FlowGraphBlock } from "./flowGraphBlock";
 import { FlowGraphConnectionType } from "./flowGraphConnection";
-import type { FlowGraphContext } from "./flowGraphContext";
+import { type FlowGraphContext } from "./flowGraphContext";
 import { FlowGraphSignalConnection } from "./flowGraphSignalConnection";
 
 /**
@@ -32,6 +31,14 @@ export abstract class FlowGraphExecutionBlock extends FlowGraphBlock {
      * Note that priority cannot be change AFTER the block was added as sorting happens when the block is added to the execution queue.
      */
     public readonly priority: number = 0;
+
+    /**
+     * The last measured execution time in milliseconds.
+     * Updated by the signal connection when the block is executed.
+     * A value of -1 means no measurement has been taken yet.
+     * @internal
+     */
+    public _lastExecutionTime: number = -1;
 
     protected constructor(config?: IFlowGraphBlockConfiguration) {
         super(config);

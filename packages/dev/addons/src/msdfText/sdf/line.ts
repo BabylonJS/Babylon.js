@@ -1,5 +1,5 @@
 /* eslint-disable jsdoc/require-jsdoc */
-import type { SdfGlyph } from "./glyph";
+import { type SdfGlyph } from "./glyph";
 
 /** @internal */
 export type SdfTextLine = {

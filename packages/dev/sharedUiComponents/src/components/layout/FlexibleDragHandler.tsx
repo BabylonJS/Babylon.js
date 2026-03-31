@@ -1,13 +1,11 @@
-import type { FC, PropsWithChildren } from "react";
-import { useContext, useRef } from "react";
+import { type FC, type PropsWithChildren, useContext, useRef } from "react";
 import { Vector2 } from "core/Maths/math";
-import type { Nullable } from "core/types";
+import { type Nullable } from "core/types";
 import { useDrop } from "react-dnd";
-import { ElementTypes } from "./types";
-import type { LayoutTabsRow, LayoutColumn } from "./types";
+import { ElementTypes, type LayoutTabsRow, type LayoutColumn } from "./types";
 import { addPercentageStringToNumber, getPosInLayout } from "./utils";
 import { LayoutContext } from "./LayoutContext";
-import type { ResizeItem } from "./FlexibleResizeBar";
+import { type ResizeItem } from "./FlexibleResizeBar";
 
 /**
  * Arguments for the DragHandler component.

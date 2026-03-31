@@ -1,6 +1,5 @@
 import * as React from "react";
-import type { GlobalState } from "../globalState";
-import { EditionMode, RuntimeMode } from "../globalState";
+import { type GlobalState, EditionMode, RuntimeMode } from "../globalState";
 import DocumentationIcon from "../imgs/documentation.svg";
 import ForumIcon from "../imgs/forum.svg";
 import SearchIcon from "../imgs/search.svg";

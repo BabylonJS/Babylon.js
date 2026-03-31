@@ -1,10 +1,10 @@
-import type { NodeRenderGraphConnectionPoint, Scene, NodeRenderGraphBuildState, FrameGraph } from "core/index";
+import { type NodeRenderGraphConnectionPoint, type Scene, type NodeRenderGraphBuildState, type FrameGraph } from "core/index";
 import { NodeRenderGraphBlock } from "../nodeRenderGraphBlock";
 import { RegisterClass } from "../../../Misc/typeStore";
 import { NodeRenderGraphBlockConnectionPointTypes } from "../Types/nodeRenderGraphTypes";
 import { FrameGraphCullObjectsTask } from "../../Tasks/Misc/cullObjectsTask";
-import type { Camera } from "../../../Cameras/camera";
-import type { FrameGraphObjectList } from "core/FrameGraph/frameGraphObjectList";
+import { type Camera } from "../../../Cameras/camera";
+import { type FrameGraphObjectList } from "core/FrameGraph/frameGraphObjectList";
 
 /**
  * Block that culls a list of objects

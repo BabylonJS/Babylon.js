@@ -1,6 +1,6 @@
-import type { IInspectable as InspectableProperty } from "core/index";
-import type { ServiceDefinition } from "../modularity/serviceDefinition";
-import type { IPropertiesService } from "../services/panes/properties/propertiesService";
+import { type IInspectable as InspectableProperty } from "core/index";
+import { type ServiceDefinition } from "../modularity/serviceDefinition";
+import { type IPropertiesService, PropertiesServiceIdentity } from "../services/panes/properties/propertiesService";
 
 import { InspectableType } from "core/Misc/iInspectable";
 import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
@@ -13,7 +13,6 @@ import { SyncedSliderPropertyLine } from "shared-ui-components/fluent/hoc/proper
 import { TextPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/textPropertyLine";
 import { QuaternionPropertyLine, Vector2PropertyLine, Vector3PropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/vectorPropertyLine";
 import { BoundProperty } from "../components/properties/boundProperty";
-import { PropertiesServiceIdentity } from "../services/panes/properties/propertiesService";
 
 type InspectableObject = {
     inspectableCustomProperties: InspectableProperty[];

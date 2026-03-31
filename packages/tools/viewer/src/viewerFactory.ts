@@ -1,9 +1,8 @@
-import type { AbstractEngine, AbstractEngineOptions, EngineOptions, IDisposable, Nullable, WebGPUEngineOptions } from "core/index";
-import type { ViewerDetails, ViewerOptions } from "./viewer";
+import { type AbstractEngine, type AbstractEngineOptions, type EngineOptions, type IDisposable, type Nullable, type WebGPUEngineOptions } from "core/index";
+import { type ViewerDetails, type ViewerOptions, Viewer } from "./viewer";
 
 import { Deferred } from "core/Misc/deferred";
 import { Logger } from "core/Misc/logger";
-import { Viewer } from "./viewer";
 
 /**
  * Options for creating a Viewer instance that is bound to an HTML canvas.
