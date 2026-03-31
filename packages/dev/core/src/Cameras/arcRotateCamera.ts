@@ -601,6 +601,27 @@ export class ArcRotateCamera extends TargetCamera {
     /** Movement controller that turns input pixel deltas into framerate-independent deltas. When undefined, legacy inertial system is used. */
     public movement?: ArcRotateCameraMovement;
 
+    private _useMovementSystem: boolean = false;
+
+    /**
+     * When set to true, creates an ArcRotateCameraMovement instance and enables the declarative
+     * input mapping system (inputMap + resolveInteraction + handlers). When false (default),
+     * the camera uses the legacy inertial offset system.
+     */
+    public get useMovementSystem(): boolean {
+        return this._useMovementSystem;
+    }
+
+    public set useMovementSystem(value: boolean) {
+        if (value && !this.movement) {
+            this.movement = new ArcRotateCameraMovement(this.getScene(), this._position);
+            this._useMovementSystem = true;
+        } else if (!value) {
+            this.movement = undefined;
+            this._useMovementSystem = false;
+        }
+    }
+
     /** @internal */
     public override _reset: () => void;
 
@@ -1046,83 +1067,146 @@ export class ArcRotateCamera extends TargetCamera {
         this.inputs.checkInputs();
         let hasUserInteractions = false;
 
-        // Inertia
-        if (this.inertialAlphaOffset !== 0 || this.inertialBetaOffset !== 0 || this.inertialRadiusOffset !== 0) {
-            hasUserInteractions = true;
+        if (this.movement) {
+            // Movement system path: framerate-independent deltas
+            this.movement.computeCurrentFrameDeltas();
 
-            const directionModifier = this.invertRotation ? -1 : 1;
-            const handednessMultiplier = this._calculateHandednessMultiplier();
-            let inertialAlphaOffset = this.inertialAlphaOffset * handednessMultiplier;
+            const rotDelta = this.movement.rotationDeltaCurrentFrame;
+            const zoomDelta = this.movement.zoomDeltaCurrentFrame;
+            const panDelta = this.movement.panDeltaCurrentFrame;
 
-            if (this.beta < 0) {
-                inertialAlphaOffset *= -1;
-            }
+            if (rotDelta.x !== 0 || rotDelta.y !== 0 || zoomDelta !== 0 || panDelta.x !== 0 || panDelta.y !== 0) {
+                hasUserInteractions = true;
 
-            this.alpha += inertialAlphaOffset * directionModifier;
-            this.beta += this.inertialBetaOffset * directionModifier;
+                // Apply rotation
+                const directionModifier = this.invertRotation ? -1 : 1;
+                const handednessMultiplier = this._calculateHandednessMultiplier();
+                let alphaOffset = rotDelta.x * handednessMultiplier;
 
-            this.radius -= this.inertialRadiusOffset;
-            this.inertialAlphaOffset *= this.inertia;
-            this.inertialBetaOffset *= this.inertia;
-            this.inertialRadiusOffset *= this.inertia;
-            if (Math.abs(this.inertialAlphaOffset) < this._rotationEpsilon) {
-                this.inertialAlphaOffset = 0;
-            }
-            if (Math.abs(this.inertialBetaOffset) < this._rotationEpsilon) {
-                this.inertialBetaOffset = 0;
-            }
-            if (Math.abs(this.inertialRadiusOffset) < this.speed * this._rotationEpsilon) {
-                this.inertialRadiusOffset = 0;
-            }
-        }
+                if (this.beta < 0) {
+                    alphaOffset *= -1;
+                }
 
-        // Panning inertia
-        if (this.inertialPanningX !== 0 || this.inertialPanningY !== 0) {
-            hasUserInteractions = true;
+                this.alpha += alphaOffset * directionModifier;
+                this.beta += rotDelta.y * directionModifier;
 
-            const localDirection = new Vector3(this.inertialPanningX, this.inertialPanningY, this.inertialPanningY);
+                // Apply zoom
+                this.radius -= zoomDelta;
 
-            this._viewMatrix.invertToRef(this._cameraTransformMatrix);
-            localDirection.multiplyInPlace(this.panningAxis);
-            Vector3.TransformNormalToRef(localDirection, this._cameraTransformMatrix, this._transformedDirection);
+                // Apply panning
+                if (panDelta.x !== 0 || panDelta.y !== 0) {
+                    const localDirection = TmpVectors.Vector3[0].copyFromFloats(panDelta.x, panDelta.y, panDelta.y);
 
-            // If mapPanning is enabled, we need to take the upVector into account and
-            // make sure we're not panning in the y direction
-            if (this.mapPanning) {
-                const up = this.upVector;
-                const right = Vector3.CrossToRef(this._transformedDirection, up, this._transformedDirection);
-                Vector3.CrossToRef(up, right, this._transformedDirection);
-            } else if (!this.panningAxis.y) {
-                this._transformedDirection.y = 0;
-            }
+                    this._viewMatrix.invertToRef(this._cameraTransformMatrix);
+                    localDirection.multiplyInPlace(this.panningAxis);
+                    Vector3.TransformNormalToRef(localDirection, this._cameraTransformMatrix, this._transformedDirection);
 
-            if (!this._targetHost) {
-                if (this.panningDistanceLimit) {
-                    this._transformedDirection.addInPlace(this._target);
-                    const distanceSquared = Vector3.DistanceSquared(this._transformedDirection, this.panningOriginTarget);
-                    if (distanceSquared <= this.panningDistanceLimit * this.panningDistanceLimit) {
-                        this._target.copyFrom(this._transformedDirection);
+                    if (this.mapPanning) {
+                        const up = this.upVector;
+                        const right = Vector3.CrossToRef(this._transformedDirection, up, this._transformedDirection);
+                        Vector3.CrossToRef(up, right, this._transformedDirection);
+                    } else if (!this.panningAxis.y) {
+                        this._transformedDirection.y = 0;
                     }
-                } else {
-                    if (this.parent) {
-                        const m = TmpVectors.Matrix[0];
-                        this.parent.getWorldMatrix().getRotationMatrixToRef(m);
-                        m.transposeToRef(m);
-                        Vector3.TransformCoordinatesToRef(this._transformedDirection, m, this._transformedDirection);
+
+                    if (!this._targetHost) {
+                        if (this.panningDistanceLimit) {
+                            this._transformedDirection.addInPlace(this._target);
+                            const distanceSquared = Vector3.DistanceSquared(this._transformedDirection, this.panningOriginTarget);
+                            if (distanceSquared <= this.panningDistanceLimit * this.panningDistanceLimit) {
+                                this._target.copyFrom(this._transformedDirection);
+                            }
+                        } else {
+                            if (this.parent) {
+                                const m = TmpVectors.Matrix[0];
+                                this.parent.getWorldMatrix().getRotationMatrixToRef(m);
+                                m.transposeToRef(m);
+                                Vector3.TransformCoordinatesToRef(this._transformedDirection, m, this._transformedDirection);
+                            }
+                            this._target.addInPlace(this._transformedDirection);
+                        }
                     }
-                    this._target.addInPlace(this._transformedDirection);
+                }
+            }
+        } else {
+            // Legacy inertia path
+            if (this.inertialAlphaOffset !== 0 || this.inertialBetaOffset !== 0 || this.inertialRadiusOffset !== 0) {
+                hasUserInteractions = true;
+
+                const directionModifier = this.invertRotation ? -1 : 1;
+                const handednessMultiplier = this._calculateHandednessMultiplier();
+                let inertialAlphaOffset = this.inertialAlphaOffset * handednessMultiplier;
+
+                if (this.beta < 0) {
+                    inertialAlphaOffset *= -1;
+                }
+
+                this.alpha += inertialAlphaOffset * directionModifier;
+                this.beta += this.inertialBetaOffset * directionModifier;
+
+                this.radius -= this.inertialRadiusOffset;
+                this.inertialAlphaOffset *= this.inertia;
+                this.inertialBetaOffset *= this.inertia;
+                this.inertialRadiusOffset *= this.inertia;
+                if (Math.abs(this.inertialAlphaOffset) < this._rotationEpsilon) {
+                    this.inertialAlphaOffset = 0;
+                }
+                if (Math.abs(this.inertialBetaOffset) < this._rotationEpsilon) {
+                    this.inertialBetaOffset = 0;
+                }
+                if (Math.abs(this.inertialRadiusOffset) < this.speed * this._rotationEpsilon) {
+                    this.inertialRadiusOffset = 0;
                 }
             }
 
-            this.inertialPanningX *= this.panningInertia;
-            this.inertialPanningY *= this.panningInertia;
+            // Panning inertia
+            if (this.inertialPanningX !== 0 || this.inertialPanningY !== 0) {
+                hasUserInteractions = true;
 
-            const inertialPanningLimit = this.speed * this._panningEpsilon;
-            if (Math.abs(this.inertialPanningX) < inertialPanningLimit) {
-                this.inertialPanningX = 0;
-            }
-            if (Math.abs(this.inertialPanningY) < inertialPanningLimit) {
-                this.inertialPanningY = 0;
+                const localDirection = new Vector3(this.inertialPanningX, this.inertialPanningY, this.inertialPanningY);
+
+                this._viewMatrix.invertToRef(this._cameraTransformMatrix);
+                localDirection.multiplyInPlace(this.panningAxis);
+                Vector3.TransformNormalToRef(localDirection, this._cameraTransformMatrix, this._transformedDirection);
+
+                // If mapPanning is enabled, we need to take the upVector into account and
+                // make sure we're not panning in the y direction
+                if (this.mapPanning) {
+                    const up = this.upVector;
+                    const right = Vector3.CrossToRef(this._transformedDirection, up, this._transformedDirection);
+                    Vector3.CrossToRef(up, right, this._transformedDirection);
+                } else if (!this.panningAxis.y) {
+                    this._transformedDirection.y = 0;
+                }
+
+                if (!this._targetHost) {
+                    if (this.panningDistanceLimit) {
+                        this._transformedDirection.addInPlace(this._target);
+                        const distanceSquared = Vector3.DistanceSquared(this._transformedDirection, this.panningOriginTarget);
+                        if (distanceSquared <= this.panningDistanceLimit * this.panningDistanceLimit) {
+                            this._target.copyFrom(this._transformedDirection);
+                        }
+                    } else {
+                        if (this.parent) {
+                            const m = TmpVectors.Matrix[0];
+                            this.parent.getWorldMatrix().getRotationMatrixToRef(m);
+                            m.transposeToRef(m);
+                            Vector3.TransformCoordinatesToRef(this._transformedDirection, m, this._transformedDirection);
+                        }
+                        this._target.addInPlace(this._transformedDirection);
+                    }
+                }
+
+                this.inertialPanningX *= this.panningInertia;
+                this.inertialPanningY *= this.panningInertia;
+
+                const inertialPanningLimit = this.speed * this._panningEpsilon;
+                if (Math.abs(this.inertialPanningX) < inertialPanningLimit) {
+                    this.inertialPanningX = 0;
+                }
+                if (Math.abs(this.inertialPanningY) < inertialPanningLimit) {
+                    this.inertialPanningY = 0;
+                }
             }
         }
 
