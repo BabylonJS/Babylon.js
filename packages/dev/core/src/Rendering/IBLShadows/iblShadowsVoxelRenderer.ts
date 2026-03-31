@@ -198,6 +198,14 @@ export class _IblShadowsVoxelRenderer {
     private _debugSizeParams: Vector4 = new Vector4(0.0, 0.0, 0.0, 0.0);
     private _includedMeshes: Mesh[] = [];
 
+    private _restoreSingleAttachmentForCurrentFramebuffer(): void {
+        if (this._engine._currentFrameBufferIsDefaultFrameBuffer()) {
+            this._engine.restoreSingleAttachment();
+        } else {
+            this._engine.restoreSingleAttachmentForRenderTarget();
+        }
+    }
+
     /**
      * Camera used by the slab debug material.
      * Falls back to scene.activeCamera when not set.
@@ -303,7 +311,7 @@ export class _IblShadowsVoxelRenderer {
             this._voxelDebugPass = new PostProcess(this.debugPassName, "iblVoxelGrid3dDebug", debugOptions);
             this._voxelDebugPass.externalTextureSamplerBinding = true;
             this._voxelDebugPass.onActivateObservable.add(() => {
-                this._engine.restoreSingleAttachmentForRenderTarget();
+                this._restoreSingleAttachmentForCurrentFramebuffer();
                 if (!this._engine.isWebGPU) {
                     this._engine.unbindAllTextures();
                 }
@@ -444,7 +452,7 @@ export class _IblShadowsVoxelRenderer {
                 // Render to each layer of the voxel grid.
                 for (let layer = 0; layer < layersToCopy; layer++) {
                     this._engine.bindFramebuffer(rt, 0, bindSize, bindSize, true, lodLevel, layer);
-                    this._engine.restoreSingleAttachmentForRenderTarget();
+                    this._restoreSingleAttachmentForCurrentFramebuffer();
                     this._copyMipSourceTexture = mipTarget;
                     this._copyMipLayer = layer;
                     this._copyMipEffectRenderer.applyEffectWrapper(this._copyMipEffectWrapper);
@@ -829,7 +837,7 @@ export class _IblShadowsVoxelRenderer {
                     if (!this._engine.isWebGPU) {
                         const wrapper = rt.renderTarget;
                         if (wrapper && !wrapper.isMulti) {
-                            this._engine.restoreSingleAttachmentForRenderTarget();
+                            this._restoreSingleAttachmentForCurrentFramebuffer();
                         }
                     }
                     rt.render();
@@ -837,7 +845,7 @@ export class _IblShadowsVoxelRenderer {
                 this._stopVoxelization();
 
                 if (!this._engine.isWebGPU) {
-                    this._engine.restoreSingleAttachmentForRenderTarget();
+                    this._restoreSingleAttachmentForCurrentFramebuffer();
                 }
 
                 if (this._triPlanarVoxelization && !this._engine.isWebGPU) {
@@ -912,12 +920,14 @@ export class _IblShadowsVoxelRenderer {
             mrt.onBeforeRenderObservable.add(() => {
                 if (!this._engine.isWebGPU) {
                     const wrapper = mrt.renderTarget;
-                    if (wrapper?.isMulti && this._maxDrawBuffers > 1) {
-                        if (wrapper._attachments && wrapper._attachments.length > 0) {
-                            this._engine.bindAttachments(wrapper._attachments);
+                    if (wrapper && this._engine._currentRenderTarget === wrapper) {
+                        if (wrapper.isMulti && this._maxDrawBuffers > 1) {
+                            if (wrapper._attachments && wrapper._attachments.length > 0) {
+                                this._engine.bindAttachments(wrapper._attachments);
+                            }
+                        } else {
+                            this._restoreSingleAttachmentForCurrentFramebuffer();
                         }
-                    } else {
-                        this._engine.restoreSingleAttachmentForRenderTarget();
                     }
                 }
 
