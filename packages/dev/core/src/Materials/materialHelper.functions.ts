@@ -636,9 +636,10 @@ export function PrepareDefinesForMisc(
         defines["RIGHT_HANDED"] = scene.useRightHandedSystem;
 
         const indexBuffer = renderingMesh?.geometry?.getIndexBuffer();
+        const isUnIndexed = renderingMesh ? (renderingMesh as any).isUnIndexed : false;
 
-        defines["VERTEX_PULLING_USE_INDEX_BUFFER"] = !!indexBuffer;
-        defines["VERTEX_PULLING_INDEX_BUFFER_32BITS"] = indexBuffer ? indexBuffer.is32Bits : false;
+        defines["VERTEX_PULLING_USE_INDEX_BUFFER"] = !!indexBuffer && !isUnIndexed;
+        defines["VERTEX_PULLING_INDEX_BUFFER_32BITS"] = indexBuffer && !isUnIndexed ? indexBuffer.is32Bits : false;
 
         defines["VERTEXOUTPUT_INVARIANT"] = !!setVertexOutputInvariant;
     }

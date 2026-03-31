@@ -3819,6 +3819,36 @@
         {
             "title": "Selection outline layer with instances",
             "playgroundId": "#ADUC74#28"
+        },
+        {
+            "title": "Vertex Pulling - Normals UVs Colors Tangents",
+            "playgroundId": "#664OF3#6",
+            "referenceImage": "vertexPullingNormalsUVsColors.png",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "Vertex Pulling - Index Buffer Variants",
+            "playgroundId": "#0C4ULD#2",
+            "referenceImage": "vertexPullingIndexBufferVariants.png",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "Vertex Pulling - Morph Targets and Bones",
+            "playgroundId": "#CT4C3C#2",
+            "referenceImage": "vertexPullingMorphBones.png",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "Vertex Pulling - isUnIndexed with index buffer",
+            "playgroundId": "#AWPYHM#4",
+            "referenceImage": "vertexPullingIsUnIndexed.png",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "Vertex Pulling - UV Channels 1-6",
+            "playgroundId": "#0SA2NH#4",
+            "referenceImage": "vertexPullingUVChannels.png",
+            "excludedEngines": ["webgl1"]
         }
     ]
 }

@@ -1096,7 +1096,7 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
     ]);
 
     // TODO: Ideally we can handle keyboard events from the text input components.
-    const onEnvironmentLightingUrlKeyDown = useCallback(
+    const _onEnvironmentLightingUrlKeyDown = useCallback(
         (event: React.KeyboardEvent<HTMLInputElement>) => {
             if (event.key === "Enter") {
                 setNeedsEnvironmentUpdate(true);
@@ -1111,7 +1111,7 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
     }, [setNeedsEnvironmentUpdate, lightingUrlConfig.update]);
 
     // TODO: Ideally we can handle keyboard events from the text input components.
-    const onEnvironmentSkyboxUrlKeyDown = useCallback(
+    const _onEnvironmentSkyboxUrlKeyDown = useCallback(
         (event: React.KeyboardEvent<HTMLInputElement>) => {
             if (event.key === "Enter") {
                 setNeedsEnvironmentUpdate(true);

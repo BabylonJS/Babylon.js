@@ -23,7 +23,7 @@
         "build": "npm run clean && npm run bundle",
         "clean": "rimraf lib && rimraf dist && rimraf *.tsbuildinfo -g",
         "bundle": "npm run bundle:lib",
-        "bundle:lib": "rollup -c rollup.config.lib.mjs",
+        "bundle:lib": "rollup -c rollup.config.lib.mjs && tsc -p tsconfig.build.dts.json && build-tools -c tp --outDir ./lib --buildType es6 --basePackage @babylonjs/inspector --appendJS",
         "pack": "npm run build && npm pack"
     },
     "peerDependencies": {

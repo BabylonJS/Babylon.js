@@ -1067,7 +1067,7 @@ export class Curve3 {
         } else {
             const totalPoints: Vector3[] = [];
             totalPoints.push(points[0].clone());
-            Array.prototype.push.apply(totalPoints, points);
+            totalPoints.push(...points);
             totalPoints.push(points[points.length - 1].clone());
             let i = 0;
             for (; i < totalPoints.length - 3; i++) {

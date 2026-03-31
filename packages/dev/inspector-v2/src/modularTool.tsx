@@ -1,4 +1,16 @@
-import { type ComponentType, type FunctionComponent, createElement, Suspense, useCallback, useEffect, useState } from "react";
+import {
+    type ComponentType,
+    type Context,
+    type FunctionComponent,
+    type PropsWithChildren,
+    type ReactNode,
+    createElement,
+    Suspense,
+    useCallback,
+    useEffect,
+    useReducer,
+    useState,
+} from "react";
 
 import { type IDisposable } from "core/index";
 import { type IExtensionFeed } from "./extensibility/extensionFeed";
@@ -7,7 +19,6 @@ import { type WeaklyTypedServiceDefinition, ServiceContainer } from "./modularit
 import { type ISettingsStore, SettingsStore, SettingsStoreIdentity } from "./services/settingsStore";
 import { type IRootComponentService, type ShellServiceOptions, MakeShellServiceDefinition, RootComponentServiceIdentity } from "./services/shellService";
 import { type ThemeMode, ThemeModeSettingDescriptor, ThemeServiceDefinition } from "./services/themeService";
-import { type IWatcherService, WatcherServiceDefinition, WatcherServiceIdentity } from "./services/watcherService";
 
 import {
     Body1,
@@ -33,7 +44,7 @@ import { ToastProvider } from "shared-ui-components/fluent/primitives/toast";
 import { Theme } from "./components/theme";
 import { ExtensionManagerContext } from "./contexts/extensionManagerContext";
 import { SettingsStoreContext } from "./contexts/settingsContext";
-import { WatcherContext } from "./contexts/watcherContext";
+import { type IReactContextService, type ReactContextHandle, ReactContextServiceIdentity } from "./services/reactContextService";
 import { ThemeSelectorServiceDefinition } from "./services/themeSelectorService";
 
 const useStyles = makeStyles({
@@ -62,6 +73,21 @@ const useStyles = makeStyles({
         color: tokens.colorPaletteRedForeground1,
     },
 });
+
+type ReactContextEntry = {
+    provider: Context<unknown>["Provider"];
+    value: unknown;
+    order: number;
+};
+
+type ReactContextAction =
+    | { type: "add"; entry: ReactContextEntry }
+    | { type: "remove"; provider: Context<unknown>["Provider"] }
+    | { type: "update"; provider: Context<unknown>["Provider"]; value: unknown };
+
+const ReactContextsWrapper: FunctionComponent<PropsWithChildren<{ contexts: readonly Readonly<ReactContextEntry>[] }>> = ({ contexts, children }) => {
+    return <>{contexts.reduceRight<ReactNode>((acc, entry) => createElement(entry.provider, { value: entry.value }, acc), children)}</>;
+};
 
 export type ModularToolOptions = {
     /**
@@ -118,7 +144,18 @@ export function MakeModularTool(options: ModularToolOptions): IDisposable {
         const [requiredExtensionsDeferred, setRequiredExtensionsDeferred] = useState<Deferred<boolean>>();
         const [extensionInstallError, setExtensionInstallError] = useState<InstallFailedInfo>();
 
-        const [bootstrapServices, setBootstrapServices] = useState<{ rootComponentService: IRootComponentService; watcherService: IWatcherService }>();
+        const [rootComponentService, setRootComponentService] = useState<IRootComponentService>();
+
+        const [contexts, updateContexts] = useReducer((state: ReactContextEntry[], action: ReactContextAction): ReactContextEntry[] => {
+            switch (action.type) {
+                case "add":
+                    return [...state, action.entry].sort((a, b) => a.order - b.order);
+                case "remove":
+                    return state.filter((e) => e.provider !== action.provider);
+                case "update":
+                    return state.map((e) => (e.provider === action.provider ? { ...e, value: action.value } : e));
+            }
+        }, []);
 
         // This is the main async initialization.
         useEffect(() => {
@@ -132,24 +169,38 @@ export function MakeModularTool(options: ModularToolOptions): IDisposable {
                     factory: () => settingsStore,
                 });
 
-                // Register watcher service early since many other services will rely on it.
-                // TODO: Really this should be in the Inspector layer, but we would need a way
-                //       to setup the WatcherContext.Provider before the root component is rendered
-                //       for that to work, since components will use the WatcherContext.
-                await serviceContainer.addServiceAsync(WatcherServiceDefinition);
+                // Expose the react context service so other services can add React context providers.
+                await serviceContainer.addServiceAsync<[IReactContextService], []>({
+                    friendlyName: "React Context Service",
+                    produces: [ReactContextServiceIdentity],
+                    factory: (): IReactContextService => ({
+                        addContext<T>(provider: Context<T>["Provider"], initialValue: T, options?: { order?: number }): ReactContextHandle<T> {
+                            const typedProvider = provider as Context<unknown>["Provider"];
+                            updateContexts({ type: "add", entry: { provider: typedProvider, value: initialValue, order: options?.order ?? 0 } });
+                            return {
+                                updateValue: (newValue: T) => {
+                                    updateContexts({ type: "update", provider: typedProvider, value: newValue });
+                                },
+                                dispose: () => {
+                                    updateContexts({ type: "remove", provider: typedProvider });
+                                },
+                            };
+                        },
+                    }),
+                });
 
                 // Register the shell service (top level toolbar/side pane UI layout).
                 await serviceContainer.addServiceAsync(MakeShellServiceDefinition(options));
 
                 // Register a service that simply consumes the services we need before first render.
-                await serviceContainer.addServiceAsync<[], [IRootComponentService, IWatcherService]>({
+                await serviceContainer.addServiceAsync<[], [IRootComponentService]>({
                     friendlyName: "Service Bootstrapper",
-                    consumes: [RootComponentServiceIdentity, WatcherServiceIdentity],
-                    factory: (rootComponentService, watcherService) => {
+                    consumes: [RootComponentServiceIdentity],
+                    factory: (rootComponent) => {
                         // Use function syntax for the state setter since the root component may be a function component.
-                        setBootstrapServices({ rootComponentService, watcherService });
+                        setRootComponentService(() => rootComponent);
                         return {
-                            dispose: () => setBootstrapServices(undefined),
+                            dispose: () => setRootComponentService(undefined),
                         };
                     },
                 });
@@ -243,23 +294,25 @@ export function MakeModularTool(options: ModularToolOptions): IDisposable {
         }, [setExtensionInstallError]);
 
         // Show a spinner until a main view has been set.
-        if (!bootstrapServices) {
+        if (!rootComponentService) {
             return (
-                <SettingsStoreContext.Provider value={settingsStore}>
-                    <Theme className={classes.app}>
-                        <Spinner className={classes.spinner} />
-                    </Theme>
-                </SettingsStoreContext.Provider>
+                <ReactContextsWrapper contexts={contexts}>
+                    <SettingsStoreContext.Provider value={settingsStore}>
+                        <Theme className={classes.app}>
+                            <Spinner className={classes.spinner} />
+                        </Theme>
+                    </SettingsStoreContext.Provider>
+                </ReactContextsWrapper>
             );
         } else {
             // eslint-disable-next-line @typescript-eslint/naming-convention
-            const Content: ComponentType = bootstrapServices.rootComponentService.rootComponent;
+            const Content: ComponentType = rootComponentService.rootComponent;
 
             return (
-                // Expose the settings store as a React context so that UI components can read/write
-                // settings without the ISettingsService needing to be explicitly passed around.
-                <SettingsStoreContext.Provider value={settingsStore}>
-                    <WatcherContext.Provider value={bootstrapServices.watcherService}>
+                <ReactContextsWrapper contexts={contexts}>
+                    {/* Expose the settings store as a React context so that UI components can read/write
+                        settings without the ISettingsService needing to be explicitly passed around. */}
+                    <SettingsStoreContext.Provider value={settingsStore}>
                         <ExtensionManagerContext.Provider value={extensionManagerContext}>
                             <Theme className={classes.app}>
                                 <ToastProvider>
@@ -319,8 +372,8 @@ export function MakeModularTool(options: ModularToolOptions): IDisposable {
                                 </ToastProvider>
                             </Theme>
                         </ExtensionManagerContext.Provider>
-                    </WatcherContext.Provider>
-                </SettingsStoreContext.Provider>
+                    </SettingsStoreContext.Provider>
+                </ReactContextsWrapper>
             );
         }
     };

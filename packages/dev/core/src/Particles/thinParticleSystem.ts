@@ -1775,6 +1775,7 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
         if (lastParticle !== particle) {
             lastParticle.copyTo(particle);
         }
+        lastParticle.metadata = null;
         this._stockParticles.push(lastParticle);
     };
 

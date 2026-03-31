@@ -39,6 +39,7 @@ import { PBRSheenConfiguration } from "./pbrSheenConfiguration";
 import { PBRSubSurfaceConfiguration } from "./pbrSubSurfaceConfiguration";
 import { DetailMapConfiguration } from "../material.detailMapConfiguration";
 import { AddClipPlaneUniforms, BindClipPlane } from "../clipPlaneMaterialHelper";
+import { PrepareVertexPullingUniforms, BindVertexPullingUniforms, type IVertexPullingMetadata } from "../vertexPullingHelper.functions";
 import {
     BindBonesParameters,
     BindFogParameters,
@@ -280,6 +281,8 @@ export class PBRMaterialDefines extends ImageProcessingDefinesMixin(PBRMaterialD
 
     public DEBUGMODE = 0;
     public USE_VERTEX_PULLING = false;
+    public VERTEX_PULLING_USE_INDEX_BUFFER = false;
+    public VERTEX_PULLING_INDEX_BUFFER_32BITS = false;
     public RIGHT_HANDED = false;
 
     public CLUSTLIGHT_SLICES = 0;
@@ -850,6 +853,7 @@ export abstract class PBRBaseMaterial extends PBRBaseMaterialBase {
 
     private _shadersLoaded = false;
     private _breakShaderLoadedCheck = false;
+    private _vertexPullingMetadata: Map<string, IVertexPullingMetadata> | null = null;
 
     /**
      * @internal
@@ -1502,6 +1506,21 @@ export abstract class PBRBaseMaterial extends PBRBaseMaterialBase {
         PrePassConfiguration.AddSamplers(samplers);
         AddClipPlaneUniforms(uniforms);
 
+        // Vertex pulling metadata uniforms
+        if (this._useVertexPulling) {
+            const geometry = (renderingMesh as Mesh)?.geometry;
+            if (geometry) {
+                this._vertexPullingMetadata = PrepareVertexPullingUniforms(geometry);
+                if (this._vertexPullingMetadata) {
+                    this._vertexPullingMetadata.forEach((_, attribute) => {
+                        uniforms.push(`vp_${attribute}_info`);
+                    });
+                }
+            }
+        } else {
+            this._vertexPullingMetadata = null;
+        }
+
         if (ImageProcessingConfiguration) {
             ImageProcessingConfiguration.PrepareUniforms(uniforms, defines);
             ImageProcessingConfiguration.PrepareSamplers(samplers, defines);
@@ -1981,6 +2000,11 @@ export abstract class PBRBaseMaterial extends PBRBaseMaterialBase {
 
         // Bones
         BindBonesParameters(mesh, this._activeEffect, this.prePassConfiguration);
+
+        // Vertex pulling
+        if (this._vertexPullingMetadata) {
+            BindVertexPullingUniforms(this._activeEffect, this._vertexPullingMetadata);
+        }
 
         let reflectionTexture: Nullable<BaseTexture> = null;
         const ubo = this._uniformBuffer;

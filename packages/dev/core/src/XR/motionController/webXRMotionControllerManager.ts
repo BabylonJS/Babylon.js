@@ -149,8 +149,8 @@ export class WebXRMotionControllerManager {
             const secondFunction = this.PrioritizeOnlineRepository ? this._LoadProfilesFromAvailableControllersAsync : this._LoadProfileFromRepositoryAsync;
 
             // eslint-disable-next-line github/no-then
-            return firstFunction.call(this, profileArray, xrInput, scene).catch(() => {
-                return secondFunction.call(this, profileArray, xrInput, scene);
+            return await firstFunction.call(this, profileArray, xrInput, scene).catch(async () => {
+                return await secondFunction.call(this, profileArray, xrInput, scene);
             });
         } else {
             // use only available functions

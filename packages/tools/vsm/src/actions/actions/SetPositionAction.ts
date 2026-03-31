@@ -21,7 +21,7 @@ export class SetPositionAction extends BaseAction {
         this._targetNode = value;
     }
 
-    public execute(): void {
+    public override execute(): void {
         if (this._targetNode) {
             this._targetNode.position = this._targetPosition;
         }

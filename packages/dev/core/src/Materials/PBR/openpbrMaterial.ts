@@ -17,6 +17,7 @@ import { MaterialDefines } from "../materialDefines";
 import { ImageProcessingDefinesMixin } from "../imageProcessingConfiguration.defines";
 import { EffectFallbacks } from "../effectFallbacks";
 import { AddClipPlaneUniforms, BindClipPlane } from "../clipPlaneMaterialHelper";
+import { PrepareVertexPullingUniforms, BindVertexPullingUniforms, type IVertexPullingMetadata } from "../vertexPullingHelper.functions";
 import {
     BindBonesParameters,
     BindFogParameters,
@@ -421,6 +422,10 @@ export class OpenPBRMaterialDefines extends ImageProcessingDefinesMixin(OpenPBRM
     public DECAL_AFTER_DETAIL = false;
 
     public DEBUGMODE = 0;
+    public USE_VERTEX_PULLING = false;
+    public VERTEX_PULLING_USE_INDEX_BUFFER = false;
+    public VERTEX_PULLING_INDEX_BUFFER_32BITS = false;
+    public RIGHT_HANDED = false;
 
     public CLUSTLIGHT_SLICES = 0;
     public CLUSTLIGHT_BATCH = 0;
@@ -1658,6 +1663,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
 
     private _shadersLoaded = false;
     private _breakShaderLoadedCheck = false;
+    private _vertexPullingMetadata: Map<string, IVertexPullingMetadata> | null = null;
 
     /**
      * @internal
@@ -2287,6 +2293,11 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
         // Bones
         BindBonesParameters(mesh, this._activeEffect, this.prePassConfiguration);
 
+        // Vertex pulling
+        if (this._vertexPullingMetadata) {
+            BindVertexPullingUniforms(this._activeEffect, this._vertexPullingMetadata);
+        }
+
         const ubo = this._uniformBuffer;
         if (mustRebind) {
             this.bindViewProjection(effect);
@@ -2746,6 +2757,21 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
         PrePassConfiguration.AddUniforms(uniforms);
         PrePassConfiguration.AddSamplers(samplers);
         AddClipPlaneUniforms(uniforms);
+
+        // Vertex pulling metadata uniforms
+        if (this._useVertexPulling) {
+            const geometry = (renderingMesh as Mesh)?.geometry;
+            if (geometry) {
+                this._vertexPullingMetadata = PrepareVertexPullingUniforms(geometry);
+                if (this._vertexPullingMetadata) {
+                    this._vertexPullingMetadata.forEach((_, attribute) => {
+                        uniforms.push(`vp_${attribute}_info`);
+                    });
+                }
+            }
+        } else {
+            this._vertexPullingMetadata = null;
+        }
 
         if (ImageProcessingConfiguration) {
             ImageProcessingConfiguration.PrepareUniforms(uniforms, defines);
