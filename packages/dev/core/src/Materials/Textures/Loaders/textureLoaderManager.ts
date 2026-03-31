@@ -3,24 +3,7 @@ import { type IInternalTextureLoader } from "./internalTextureLoader";
 import { type Nullable } from "../../../types";
 import { Logger } from "core/Misc/logger";
 
-// Initialize the the default / well-known texture loaders.
-const RegisteredTextureLoaders = new Map<string, (mimeType?: string) => IInternalTextureLoader | Promise<IInternalTextureLoader>>([
-    /* eslint-disable @typescript-eslint/naming-convention */
-    [".ies", async () => await import("./iesTextureLoader").then(({ _IESTextureLoader }) => new _IESTextureLoader())],
-    [".dds", async () => await import("./ddsTextureLoader").then(({ _DDSTextureLoader }) => new _DDSTextureLoader())],
-    [".basis", async () => await import("./basisTextureLoader").then(({ _BasisTextureLoader }) => new _BasisTextureLoader())],
-    [".env", async () => await import("./envTextureLoader").then(({ _ENVTextureLoader }) => new _ENVTextureLoader())],
-    [".hdr", async () => await import("./hdrTextureLoader").then(({ _HDRTextureLoader }) => new _HDRTextureLoader())],
-    [".ktx", async () => await import("./ktxTextureLoader").then(({ _KTXTextureLoader }) => new _KTXTextureLoader())],
-    [".ktx2", async () => await import("./ktxTextureLoader").then(({ _KTXTextureLoader }) => new _KTXTextureLoader())],
-    [".tga", async () => await import("./tgaTextureLoader").then(({ _TGATextureLoader }) => new _TGATextureLoader())],
-    [".exr", async () => await import("./exrTextureLoader").then(({ _ExrTextureLoader }) => new _ExrTextureLoader())],
-    /* eslint-enable @typescript-eslint/naming-convention */
-]);
-
-export function GetRegisteredTextureLoaders(): readonly string[] {
-    return Array.from(RegisteredTextureLoaders.keys());
-}
+const RegisteredTextureLoaders = new Map<string, (mimeType?: string) => IInternalTextureLoader | Promise<IInternalTextureLoader>>();
 
 /**
  * Registers a texture loader.
@@ -55,6 +38,34 @@ export function unregisterTextureLoader(extension: string): boolean {
 export function _GetCompatibleTextureLoader(extension: string, mimeType?: string): Nullable<Promise<IInternalTextureLoader>> {
     if (mimeType === "image/ktx" || mimeType === "image/ktx2") {
         extension = ".ktx";
+    }
+    if (!RegisteredTextureLoaders.has(extension)) {
+        if (extension.endsWith(".ies")) {
+            registerTextureLoader(".ies", async () => await import("./iesTextureLoader").then((module) => new module._IESTextureLoader()));
+        }
+        if (extension.endsWith(".dds")) {
+            registerTextureLoader(".dds", async () => await import("./ddsTextureLoader").then((module) => new module._DDSTextureLoader()));
+        }
+        if (extension.endsWith(".basis")) {
+            registerTextureLoader(".basis", async () => await import("./basisTextureLoader").then((module) => new module._BasisTextureLoader()));
+        }
+        if (extension.endsWith(".env")) {
+            registerTextureLoader(".env", async () => await import("./envTextureLoader").then((module) => new module._ENVTextureLoader()));
+        }
+        if (extension.endsWith(".hdr")) {
+            registerTextureLoader(".hdr", async () => await import("./hdrTextureLoader").then((module) => new module._HDRTextureLoader()));
+        }
+        // The ".ktx2" file extension is still up for debate: https://github.com/KhronosGroup/KTX-Specification/issues/18
+        if (extension.endsWith(".ktx") || extension.endsWith(".ktx2")) {
+            registerTextureLoader(".ktx", async () => await import("./ktxTextureLoader").then((module) => new module._KTXTextureLoader()));
+            registerTextureLoader(".ktx2", async () => await import("./ktxTextureLoader").then((module) => new module._KTXTextureLoader()));
+        }
+        if (extension.endsWith(".tga")) {
+            registerTextureLoader(".tga", async () => await import("./tgaTextureLoader").then((module) => new module._TGATextureLoader()));
+        }
+        if (extension.endsWith(".exr")) {
+            registerTextureLoader(".exr", async () => await import("./exrTextureLoader").then((module) => new module._ExrTextureLoader()));
+        }
     }
     const registered = RegisteredTextureLoaders.get(extension);
     return registered ? Promise.resolve(registered(mimeType)) : null;

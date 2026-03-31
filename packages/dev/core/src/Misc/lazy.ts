@@ -13,15 +13,11 @@ export class Lazy<T> {
         this._factory = factory;
     }
 
-    public get hasValue() {
-        // If the factory function is still defined, it means we haven't called it yet.
-        return this._factory === undefined;
-    }
-
     /**
      * Gets the lazily initialized value.
      */
     public get value(): T {
+        // If the factory function is still defined, it means we haven't called it yet.
         if (this._factory) {
             this._value = this._factory();
             // Set the factory function to undefined to allow it to be garbage collected.
