@@ -2,6 +2,7 @@
 on:
   pull_request:
     types: [opened, synchronize, ready_for_review]
+    forks: ["*"]
 description: "AI-powered code review for every PR using Claude Opus 4.6"
 engine:
   id: copilot
