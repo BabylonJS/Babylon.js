@@ -2,7 +2,7 @@ import { type IDisposable, type Nullable } from "core/index";
 import { Logger } from "core/Misc/logger";
 import { Observable } from "core/Misc/observable";
 import { type Scene } from "core/scene";
-import { ServiceContainer } from "./modularity/serviceContainer";
+import { type WeaklyTypedServiceDefinition, ServiceContainer } from "./modularity/serviceContainer";
 import { type ServiceDefinition } from "./modularity/serviceDefinition";
 import { EntityQueryServiceDefinition } from "./services/cli/entityQueryService";
 import { MakeInspectableBridgeServiceDefinition } from "./services/cli/inspectableBridgeService";
@@ -27,6 +27,17 @@ export type InspectableOptions = {
      * Session display name reported to the bridge. Defaults to `document.title`.
      */
     name?: string;
+
+    /**
+     * Additional service definitions to register with the inspectable container.
+     */
+    serviceDefinitions?: readonly WeaklyTypedServiceDefinition[];
+
+    /**
+     * An optional parent ServiceContainer. Dependencies not found in the inspectable
+     * container will be resolved from this parent.
+     */
+    parentContainer?: ServiceContainer;
 };
 
 /**
@@ -74,7 +85,7 @@ export function _StartInspectable(scene: Scene, options?: Partial<InspectableOpt
         const port = options?.port ?? DefaultPort;
         const name = options?.name ?? (typeof document !== "undefined" ? document.title : "Babylon.js Scene");
 
-        const serviceContainer = new ServiceContainer("InspectableContainer");
+        const serviceContainer = new ServiceContainer("InspectableContainer", options?.parentContainer);
 
         const fullyDispose = () => {
             InspectableStates.delete(scene);
@@ -121,7 +132,8 @@ export function _StartInspectable(scene: Scene, options?: Partial<InspectableOpt
                     ScreenshotCommandServiceDefinition,
                     ShaderCommandServiceDefinition,
                     StatsCommandServiceDefinition,
-                    PerfTraceCommandServiceDefinition
+                    PerfTraceCommandServiceDefinition,
+                    ...(options?.serviceDefinitions ?? [])
                 );
             } catch (error: unknown) {
                 Logger.Error(`Failed to initialize Inspectable: ${error}`);
