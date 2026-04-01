@@ -2,10 +2,11 @@ import { type Camera, type FrameGraph, type FrameGraphObjectList, type FrameGrap
 import { Matrix, Quaternion, Vector3 } from "core/Maths/math.vector";
 import { Observable } from "core/Misc/observable";
 import { _IblShadowsVoxelRenderer } from "core/Rendering/IBLShadows/iblShadowsVoxelRenderer";
-import { FrameGraphTask } from "../../frameGraphTask";
+import { FrameGraphTask } from "../../../frameGraphTask";
 
 /**
  * Task used to voxelize shadow casting objects for IBL shadows.
+ * @internal
  */
 export class FrameGraphIblShadowsVoxelizationTask extends FrameGraphTask {
     /**

@@ -4,20 +4,16 @@ import { type Material } from "core/Materials/material";
 import { PBRBaseMaterial } from "core/Materials/PBR/pbrBaseMaterial";
 import { OpenPBRMaterial } from "core/Materials/PBR/openpbrMaterial";
 import { StandardMaterial } from "core/Materials/standardMaterial";
-import { GeometryBufferRenderer, type IGeometryBufferTextureTypeAndFormat } from "core/Rendering/geometryBufferRenderer";
 import { IBLShadowsPluginMaterial } from "core/Rendering/IBLShadows/iblShadowsPluginMaterial";
-import { FrameGraphIblShadowsAccumulationTask } from "./iblShadowsAccumulationTask";
-import { FrameGraphIblShadowsSpatialBlurTask } from "./iblShadowsSpatialBlurTask";
-import { FrameGraphIblShadowsTracingTask } from "./iblShadowsTracingTask";
-import { FrameGraphIblShadowsVoxelizationTask } from "./iblShadowsVoxelizationTask";
-import { type FrameGraphGeometryRendererTask } from "./geometryRendererTask";
+import { FrameGraphIblShadowsAccumulationTask } from "./iblShadows/iblShadowsAccumulationTask";
+import { FrameGraphIblShadowsSpatialBlurTask } from "./iblShadows/iblShadowsSpatialBlurTask";
+import { FrameGraphIblShadowsTracingTask } from "./iblShadows/iblShadowsTracingTask";
+import { FrameGraphIblShadowsVoxelizationTask } from "./iblShadows/iblShadowsVoxelizationTask";
 import { type IFrameGraphIblShadowsAccumulationOptions, type IFrameGraphIblShadowsTracingOptions, type IFrameGraphIblShadowsVoxelizationOptions } from "./iblShadowsTaskTypes";
 import { Texture } from "core/Materials/Textures/texture";
 import { Tools } from "core/Misc/tools";
 import { Observable } from "core/Misc/observable";
-import { Logger } from "core/Misc/logger";
 import { FrameGraphTask } from "../../frameGraphTask";
-import "../../../Rendering/geometryBufferRendererSceneComponent";
 import "../../../Rendering/iblCdfGeneratorSceneComponent";
 
 interface IFrameGraphIblShadowsGBufferHandles {
@@ -44,26 +40,14 @@ export interface IFrameGraphIblShadowsRendererTaskCreationOptions {
      * List of objects considered by voxelization.
      */
     objectList: FrameGraphObjectList;
-    /**
-     * Optional geometry renderer task providing g-buffer textures.
-     */
-    geometryRendererTask?: FrameGraphGeometryRendererTask;
-    /**
-     * Optional depth texture handle used when no geometry renderer task is provided.
-     */
-    gbufferDepthTexture?: FrameGraphTextureHandle;
-    /**
-     * Optional normal texture handle used when no geometry renderer task is provided.
-     */
-    gbufferNormalTexture?: FrameGraphTextureHandle;
-    /**
-     * Optional position texture handle used when no geometry renderer task is provided.
-     */
-    gbufferPositionTexture?: FrameGraphTextureHandle;
-    /**
-     * Optional velocity texture handle used when no geometry renderer task is provided.
-     */
-    gbufferVelocityTexture?: FrameGraphTextureHandle;
+    /** Depth texture handle used by tracing and blur. */
+    gbufferDepthTexture: FrameGraphTextureHandle;
+    /** Normal texture handle used by tracing and blur. */
+    gbufferNormalTexture: FrameGraphTextureHandle;
+    /** Position texture handle used by accumulation. */
+    gbufferPositionTexture: FrameGraphTextureHandle;
+    /** Velocity texture handle used by accumulation. */
+    gbufferVelocityTexture: FrameGraphTextureHandle;
     /**
      * Options used to configure the internal IBL shadows tasks.
      */
@@ -654,7 +638,7 @@ function CreateIblShadowsRendererTask(
     input: IFrameGraphIblShadowsRendererTaskCreationOptions
 ): IFrameGraphIblShadowsRendererTaskBuildResult {
     const options = input.options;
-    const gBufferHandles = ResolveGBufferTextureHandles(frameGraph, name, input);
+    const gBufferHandles = ResolveGBufferTextureHandles(input);
 
     const voxelizationTask = new FrameGraphIblShadowsVoxelizationTask(`${name} Voxelization`, frameGraph);
     voxelizationTask.sceneDebugCamera = input.camera;
@@ -788,119 +772,20 @@ function CreateIblShadowsRendererTask(
     };
 }
 
-function ResolveGBufferTextureHandles(frameGraph: FrameGraph, name: string, input: IFrameGraphIblShadowsRendererTaskCreationOptions): IFrameGraphIblShadowsGBufferHandles {
-    if (input.geometryRendererTask) {
-        return ResolveFromGeometryRendererTask(input.geometryRendererTask);
-    }
-
+function ResolveGBufferTextureHandles(input: IFrameGraphIblShadowsRendererTaskCreationOptions): IFrameGraphIblShadowsGBufferHandles {
     if (
-        input.gbufferDepthTexture !== undefined &&
-        input.gbufferNormalTexture !== undefined &&
-        input.gbufferPositionTexture !== undefined &&
-        input.gbufferVelocityTexture !== undefined
+        input.gbufferDepthTexture === undefined ||
+        input.gbufferNormalTexture === undefined ||
+        input.gbufferPositionTexture === undefined ||
+        input.gbufferVelocityTexture === undefined
     ) {
-        return {
-            depthTexture: input.gbufferDepthTexture,
-            normalTexture: input.gbufferNormalTexture,
-            positionTexture: input.gbufferPositionTexture,
-            velocityTexture: input.gbufferVelocityTexture,
-        };
-    }
-
-    const gbufferTasks = frameGraph.getTasksByClassName("FrameGraphGeometryRendererTask");
-    if (gbufferTasks.length > 0) {
-        return ResolveFromGeometryRendererTask(gbufferTasks[0] as FrameGraphGeometryRendererTask);
-    }
-
-    Logger.Warn(
-        `FrameGraphIblShadowsRendererTask ${name}: falling back to GeometryBufferRenderer because no FrameGraphGeometryRendererTask was provided or discovered. ` +
-            `Using a frame graph geometryRendererTask is preferred.`
-    );
-
-    return ResolveFromGeometryBufferRenderer(frameGraph, name);
-}
-
-function ResolveFromGeometryRendererTask(gbufferTask: FrameGraphGeometryRendererTask): IFrameGraphIblShadowsGBufferHandles {
-    const hasScreenspaceDepth = gbufferTask.textureDescriptions.some((description) => description.type === Constants.PREPASS_SCREENSPACE_DEPTH_TEXTURE_TYPE);
-    const hasWorldNormal = gbufferTask.textureDescriptions.some((description) => description.type === Constants.PREPASS_WORLD_NORMAL_TEXTURE_TYPE);
-    const hasWorldPosition = gbufferTask.textureDescriptions.some((description) => description.type === Constants.PREPASS_POSITION_TEXTURE_TYPE);
-    const hasLinearVelocity = gbufferTask.textureDescriptions.some((description) => description.type === Constants.PREPASS_VELOCITY_LINEAR_TEXTURE_TYPE);
-
-    if (!hasScreenspaceDepth || !hasWorldNormal || !hasWorldPosition || !hasLinearVelocity) {
-        throw new Error(`FrameGraphIblShadowsRendererTask: geometryRendererTask must output screen depth, world normal, world position and linear velocity textures`);
-    }
-
-    const screenspaceDepthDescription = gbufferTask.textureDescriptions.find((description) => description.type === Constants.PREPASS_SCREENSPACE_DEPTH_TEXTURE_TYPE);
-    if (screenspaceDepthDescription!.textureType !== Constants.TEXTURETYPE_FLOAT) {
-        throw new Error(`FrameGraphIblShadowsRendererTask: the screen space depth texture in geometryRendererTask must be 32-bit floating point (TEXTURETYPE_FLOAT)`);
+        throw new Error("FrameGraphIblShadowsRendererTask: gbufferDepthTexture, gbufferNormalTexture, gbufferPositionTexture and gbufferVelocityTexture are required");
     }
 
     return {
-        depthTexture: gbufferTask.geometryScreenDepthTexture,
-        normalTexture: gbufferTask.geometryWorldNormalTexture,
-        positionTexture: gbufferTask.geometryWorldPositionTexture,
-        velocityTexture: gbufferTask.geometryLinearVelocityTexture,
-    };
-}
-
-function ResolveFromGeometryBufferRenderer(frameGraph: FrameGraph, name: string): IFrameGraphIblShadowsGBufferHandles {
-    const scene = frameGraph.scene;
-    const textureTypesAndFormats: { [key: number]: IGeometryBufferTextureTypeAndFormat } = {};
-
-    textureTypesAndFormats[GeometryBufferRenderer.SCREENSPACE_DEPTH_TEXTURE_TYPE] = {
-        textureFormat: Constants.TEXTUREFORMAT_R,
-        textureType: Constants.TEXTURETYPE_FLOAT,
-        samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
-    };
-    textureTypesAndFormats[GeometryBufferRenderer.VELOCITY_LINEAR_TEXTURE_TYPE] = {
-        textureFormat: Constants.TEXTUREFORMAT_RG,
-        textureType: Constants.TEXTURETYPE_HALF_FLOAT,
-        samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
-    };
-    textureTypesAndFormats[GeometryBufferRenderer.POSITION_TEXTURE_TYPE] = {
-        textureFormat: Constants.TEXTUREFORMAT_RGBA,
-        textureType: Constants.TEXTURETYPE_HALF_FLOAT,
-        samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
-    };
-    textureTypesAndFormats[GeometryBufferRenderer.NORMAL_TEXTURE_TYPE] = {
-        textureFormat: Constants.TEXTUREFORMAT_RGBA,
-        textureType: Constants.TEXTURETYPE_HALF_FLOAT,
-        samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
-    };
-
-    const geometryBufferRenderer = scene.geometryBufferRenderer ?? scene.enableGeometryBufferRenderer(undefined, Constants.TEXTUREFORMAT_DEPTH32_FLOAT, textureTypesAndFormats);
-
-    if (!geometryBufferRenderer) {
-        throw new Error(`FrameGraphIblShadowsRendererTask ${name}: unable to create a GeometryBufferRenderer`);
-    }
-
-    geometryBufferRenderer.enableScreenspaceDepth = true;
-    geometryBufferRenderer.enableVelocityLinear = true;
-    geometryBufferRenderer.enablePosition = true;
-    geometryBufferRenderer.enableNormal = true;
-    geometryBufferRenderer.generateNormalsInWorldSpace = true;
-
-    const gBuffer = geometryBufferRenderer.getGBuffer();
-
-    const getTextureHandle = (textureType: number, label: string): FrameGraphTextureHandle => {
-        const textureIndex = geometryBufferRenderer.getTextureIndex(textureType);
-        if (textureIndex === -1) {
-            throw new Error(`FrameGraphIblShadowsRendererTask ${name}: ${label} texture is unavailable in GeometryBufferRenderer`);
-        }
-
-        const texture = gBuffer.textures[textureIndex];
-        const internalTexture = texture?.getInternalTexture();
-        if (!internalTexture) {
-            throw new Error(`FrameGraphIblShadowsRendererTask ${name}: ${label} internal texture is unavailable in GeometryBufferRenderer`);
-        }
-
-        return frameGraph.textureManager.importTexture(`${name} ${label}`, internalTexture);
-    };
-
-    return {
-        depthTexture: getTextureHandle(GeometryBufferRenderer.SCREENSPACE_DEPTH_TEXTURE_TYPE, "GBuffer Depth"),
-        normalTexture: getTextureHandle(GeometryBufferRenderer.NORMAL_TEXTURE_TYPE, "GBuffer Normal"),
-        positionTexture: getTextureHandle(GeometryBufferRenderer.POSITION_TEXTURE_TYPE, "GBuffer Position"),
-        velocityTexture: getTextureHandle(GeometryBufferRenderer.VELOCITY_LINEAR_TEXTURE_TYPE, "GBuffer Velocity"),
+        depthTexture: input.gbufferDepthTexture,
+        normalTexture: input.gbufferNormalTexture,
+        positionTexture: input.gbufferPositionTexture,
+        velocityTexture: input.gbufferVelocityTexture,
     };
 }

@@ -1,15 +1,16 @@
-import type { DrawWrapper, FrameGraph, FrameGraphTextureCreationOptions, FrameGraphTextureHandle } from "core/index";
+import { type DrawWrapper, type FrameGraph, type FrameGraphTextureCreationOptions, type FrameGraphTextureHandle } from "core/index";
 import { Constants } from "core/Engines/constants";
-import type { FrameGraphIblShadowsVoxelizationTask } from "./iblShadowsVoxelizationTask";
+import { type FrameGraphIblShadowsVoxelizationTask } from "./iblShadowsVoxelizationTask";
 import { Vector4 } from "core/Maths/math.vector";
 import { ThinCustomPostProcess } from "core/PostProcesses/thinCustomPostProcess";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
-import { FrameGraphTask } from "../../frameGraphTask";
-import "../../../Shaders/iblShadowAccumulation.fragment";
-import "../../../ShadersWGSL/iblShadowAccumulation.fragment";
+import { FrameGraphTask } from "../../../frameGraphTask";
+import "../../../../Shaders/iblShadowAccumulation.fragment";
+import "../../../../ShadersWGSL/iblShadowAccumulation.fragment";
 
 /**
  * Task used to temporally accumulate IBL shadows.
+ * @internal
  */
 export class FrameGraphIblShadowsAccumulationTask extends FrameGraphTask {
     public sourceTexture?: FrameGraphTextureHandle;
