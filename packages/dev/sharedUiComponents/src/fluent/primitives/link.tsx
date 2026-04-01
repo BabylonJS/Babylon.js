@@ -1,9 +1,8 @@
-import type { PropsWithChildren } from "react";
+import { type PropsWithChildren, forwardRef } from "react";
 
-import type { ImmutablePrimitiveProps } from "./primitive";
+import { type ImmutablePrimitiveProps } from "./primitive";
 
-import { forwardRef } from "react";
-import { Body1, Caption1, Link as FluentLink, makeStyles } from "@fluentui/react-components";
+import { Body1, Caption1, Link as FluentLink } from "@fluentui/react-components";
 
 export type LinkProps = ImmutablePrimitiveProps<string> & {
     /**
@@ -23,24 +22,15 @@ export type LinkProps = ImmutablePrimitiveProps<string> & {
     size?: "small" | "medium";
 };
 
-const useLinkStyles = makeStyles({
-    truncate: {
-        overflow: "hidden",
-        textOverflow: "ellipsis",
-        whiteSpace: "nowrap",
-    },
-});
-
 export const Link = forwardRef<HTMLAnchorElement, PropsWithChildren<LinkProps>>((props, ref) => {
     const { target, url, onLink, size, ...rest } = props;
-    const classes = useLinkStyles();
     // eslint-disable-next-line @typescript-eslint/naming-convention
     const TextComponent = size === "small" ? Caption1 : Body1;
 
     return (
         <FluentLink ref={ref} inline target={target === "current" ? "_self" : "_blank"} rel="noopener noreferrer" href={url} onClick={onLink ?? undefined} {...rest}>
             {props.children}
-            <TextComponent className={classes.truncate}>{props.value}</TextComponent>
+            <TextComponent>{props.value}</TextComponent>
         </FluentLink>
     );
 });
