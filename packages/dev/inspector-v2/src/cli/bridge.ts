@@ -1,4 +1,5 @@
 /* eslint-disable no-console */
+import { fileURLToPath } from "url";
 import { type WebSocket, WebSocketServer } from "./webSocket.js";
 import { LoadConfig } from "./config.js";
 import { type BrowserRequest, type BrowserResponse, type CliRequest, type CliResponse, type SessionInfo } from "./protocol.js";
@@ -8,49 +9,86 @@ interface ISession extends SessionInfo {
     ws: WebSocket;
 }
 
-let NextSessionId = 1;
-const Sessions = new Map<number, ISession>();
-const PendingBrowserRequests = new Map<string, (response: string) => void>();
-const SessionAddedListeners: (() => void)[] = [];
-let RequestCounter = 0;
-
-function GenerateRequestId(): string {
-    return `bridge-req-${++RequestCounter}`;
+/**
+ * Configuration for starting the bridge.
+ */
+export interface IBridgeConfig {
+    /** WebSocket port for browser sessions. Use 0 for OS-assigned port. */
+    browserPort: number;
+    /** WebSocket port for CLI connections. Use 0 for OS-assigned port. */
+    cliPort: number;
+    /** Timeout in ms for waiting for an initial session on a sessions request. Defaults to 5000. */
+    sessionWaitTimeoutMs?: number;
 }
 
 /**
- * Waits for at least one session to be registered, or returns immediately if sessions already exist.
- * Times out after the specified duration.
- * @param timeoutMs The maximum time to wait in milliseconds. Defaults to 5000.
- * @returns A promise that resolves when a session is available or the timeout expires.
+ * Handle returned by {@link startBridge} to control and inspect the running bridge.
  */
-async function WaitForSession(timeoutMs = 5000): Promise<void> {
-    if (Sessions.size > 0) {
-        return;
-    }
-    return await new Promise<void>((resolve) => {
-        const timer = setTimeout(() => {
-            const index = SessionAddedListeners.indexOf(listener);
-            if (index !== -1) {
-                SessionAddedListeners.splice(index, 1);
-            }
-            resolve();
-        }, timeoutMs);
-
-        const listener = () => {
-            clearTimeout(timer);
-            const index = SessionAddedListeners.indexOf(listener);
-            if (index !== -1) {
-                SessionAddedListeners.splice(index, 1);
-            }
-            resolve();
-        };
-        SessionAddedListeners.push(listener);
-    });
+export interface IBridgeHandle {
+    /** The actual port the browser WebSocket server is listening on. */
+    browserPort: number;
+    /** The actual port the CLI WebSocket server is listening on. */
+    cliPort: number;
+    /** Shuts down the bridge, closing all connections and servers. */
+    shutdown: () => void;
 }
 
-function StartBridge(): void {
-    const config = LoadConfig();
+/**
+ * Starts the Inspector bridge with the given configuration.
+ * @param config The ports to listen on. Use port 0 for OS-assigned ports.
+ * @returns A promise that resolves with a handle to control the running bridge.
+ */
+export async function StartBridge(config: IBridgeConfig): Promise<IBridgeHandle> {
+    let nextSessionId = 1;
+    const sessions = new Map<number, ISession>();
+    const pendingBrowserRequests = new Map<string, (response: string) => void>();
+    const sessionAddedListeners: (() => void)[] = [];
+    let requestCounter = 0;
+
+    function generateRequestId(): string {
+        return `bridge-req-${++requestCounter}`;
+    }
+
+    const sessionWaitTimeout = config.sessionWaitTimeoutMs ?? 5000;
+
+    async function waitForSession(): Promise<void> {
+        if (sessions.size > 0) {
+            return;
+        }
+        return await new Promise<void>((resolve) => {
+            const timer = setTimeout(() => {
+                const index = sessionAddedListeners.indexOf(listener);
+                if (index !== -1) {
+                    sessionAddedListeners.splice(index, 1);
+                }
+                resolve();
+            }, sessionWaitTimeout);
+
+            const listener = () => {
+                clearTimeout(timer);
+                const index = sessionAddedListeners.indexOf(listener);
+                if (index !== -1) {
+                    sessionAddedListeners.splice(index, 1);
+                }
+                resolve();
+            };
+            sessionAddedListeners.push(listener);
+        });
+    }
+
+    async function waitForBrowserResponse(requestId: string, timeoutMs = 30000): Promise<string> {
+        return await new Promise((resolve, reject) => {
+            const timer = setTimeout(() => {
+                pendingBrowserRequests.delete(requestId);
+                reject(new Error("Timeout"));
+            }, timeoutMs);
+
+            pendingBrowserRequests.set(requestId, (response) => {
+                clearTimeout(timer);
+                resolve(response);
+            });
+        });
+    }
 
     // Browser-facing WebSocket server.
     const browserWss = new WebSocketServer({ host: "127.0.0.1", port: config.browserPort });
@@ -75,16 +113,16 @@ function StartBridge(): void {
 
             switch (message.type) {
                 case "register": {
-                    const id = NextSessionId++;
+                    const id = nextSessionId++;
                     session = {
                         id,
                         name: message.name,
                         connectedAt: new Date().toISOString(),
                         ws: socket,
                     };
-                    Sessions.set(id, session);
+                    sessions.set(id, session);
                     console.log(`Session ${id} registered: "${session.name}"`);
-                    for (const listener of SessionAddedListeners.splice(0)) {
+                    for (const listener of sessionAddedListeners.splice(0)) {
                         listener();
                     }
                     break;
@@ -92,9 +130,9 @@ function StartBridge(): void {
                 case "commandListResponse":
                 case "commandResponse": {
                     // Forward response back to the CLI that requested it.
-                    const resolve = PendingBrowserRequests.get(message.requestId);
+                    const resolve = pendingBrowserRequests.get(message.requestId);
                     if (resolve) {
-                        PendingBrowserRequests.delete(message.requestId);
+                        pendingBrowserRequests.delete(message.requestId);
                         resolve(JSON.stringify(message));
                     }
                     break;
@@ -105,7 +143,7 @@ function StartBridge(): void {
         socket.on("close", () => {
             if (session) {
                 console.log(`Session ${session.id} disconnected: "${session.name}"`);
-                Sessions.delete(session.id);
+                sessions.delete(session.id);
             }
         });
     });
@@ -130,8 +168,8 @@ function StartBridge(): void {
             switch (message.type) {
                 case "sessions": {
                     // Wait for at least one session to connect before responding.
-                    await WaitForSession();
-                    const sessionList: SessionInfo[] = Array.from(Sessions.values()).map((s) => ({
+                    await waitForSession();
+                    const sessionList: SessionInfo[] = Array.from(sessions.values()).map((s) => ({
                         id: s.id,
                         name: s.name,
                         connectedAt: s.connectedAt,
@@ -140,15 +178,15 @@ function StartBridge(): void {
                     break;
                 }
                 case "commands": {
-                    const session = Sessions.get(message.sessionId);
+                    const session = sessions.get(message.sessionId);
                     if (!session) {
                         sendCliResponse({ type: "commandsResponse", error: `No session with id ${message.sessionId}` });
                         break;
                     }
-                    const requestId = GenerateRequestId();
+                    const requestId = generateRequestId();
                     sendBrowserRequest(session, { type: "listCommands", requestId });
                     try {
-                        const response = await WaitForBrowserResponse(requestId);
+                        const response = await waitForBrowserResponse(requestId);
                         socket.send(response);
                     } catch {
                         sendCliResponse({ type: "commandsResponse", error: "Timeout waiting for browser response" });
@@ -156,12 +194,12 @@ function StartBridge(): void {
                     break;
                 }
                 case "exec": {
-                    const session = Sessions.get(message.sessionId);
+                    const session = sessions.get(message.sessionId);
                     if (!session) {
                         sendCliResponse({ type: "execResponse", error: `No session with id ${message.sessionId}` });
                         break;
                     }
-                    const requestId = GenerateRequestId();
+                    const requestId = generateRequestId();
                     sendBrowserRequest(session, {
                         type: "execCommand",
                         requestId,
@@ -169,7 +207,7 @@ function StartBridge(): void {
                         args: message.args,
                     });
                     try {
-                        const response = await WaitForBrowserResponse(requestId);
+                        const response = await waitForBrowserResponse(requestId);
                         socket.send(response);
                     } catch {
                         sendCliResponse({ type: "execResponse", error: "Timeout waiting for browser response" });
@@ -178,43 +216,43 @@ function StartBridge(): void {
                 }
                 case "stop": {
                     sendCliResponse({ type: "stopResponse", success: true });
-                    Shutdown(browserWss, cliWss);
+                    shutdown();
                     break;
                 }
             }
         });
     });
 
-    process.on("SIGTERM", () => Shutdown(browserWss, cliWss));
-    process.on("SIGINT", () => Shutdown(browserWss, cliWss));
-}
+    function shutdown(): void {
+        console.log("Inspector bridge shutting down.");
 
-async function WaitForBrowserResponse(requestId: string, timeoutMs = 30000): Promise<string> {
-    return await new Promise((resolve, reject) => {
-        const timer = setTimeout(() => {
-            PendingBrowserRequests.delete(requestId);
-            reject(new Error("Timeout"));
-        }, timeoutMs);
+        for (const session of sessions.values()) {
+            session.ws.close();
+        }
+        sessions.clear();
 
-        PendingBrowserRequests.set(requestId, (response) => {
-            clearTimeout(timer);
-            resolve(response);
-        });
-    });
-}
-
-function Shutdown(browserWss: WebSocketServer, cliWss: WebSocketServer): void {
-    console.log("Inspector bridge shutting down.");
-
-    for (const session of Sessions.values()) {
-        session.ws.close();
+        browserWss.close();
+        cliWss.close();
     }
-    Sessions.clear();
 
-    browserWss.close();
-    cliWss.close();
+    // Wait for both servers to be listening before returning.
+    await Promise.all([new Promise<void>((resolve) => browserWss.on("listening", resolve)), new Promise<void>((resolve) => cliWss.on("listening", resolve))]);
 
-    process.exit(0);
+    const actualBrowserPort = (browserWss.address() as import("net").AddressInfo).port;
+    const actualCliPort = (cliWss.address() as import("net").AddressInfo).port;
+
+    return {
+        browserPort: actualBrowserPort,
+        cliPort: actualCliPort,
+        shutdown,
+    };
 }
 
-StartBridge();
+// Auto-start when run directly (not when imported for testing).
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
+    void (async () => {
+        const handle = await StartBridge(LoadConfig());
+        process.on("SIGTERM", () => handle.shutdown());
+        process.on("SIGINT", () => handle.shutdown());
+    })();
+}

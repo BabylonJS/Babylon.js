@@ -39,7 +39,10 @@ EXAMPLES
 
 const KnownOptions = new Set(["help", "stop", "session", "command", "bridge-script"]);
 
-interface IParsedArgs {
+/**
+ * Parsed CLI arguments for the Inspector CLI.
+ */
+export interface IParsedArgs {
     /** Whether the user requested help. */
     help: boolean;
     /** Whether --session was specified. */
@@ -56,7 +59,12 @@ interface IParsedArgs {
     rest: string[];
 }
 
-function ParseCliArgs(): IParsedArgs {
+/**
+ * Parses the CLI arguments into a structured object.
+ * @param argv Optional array of arguments to parse. Defaults to process.argv.
+ * @returns The parsed arguments.
+ */
+export function ParseCliArgs(argv?: string[]): IParsedArgs {
     const { values, tokens } = parseArgs({
         options: {
             help: { type: "boolean", default: false },
@@ -69,6 +77,7 @@ function ParseCliArgs(): IParsedArgs {
         strict: false,
         allowPositionals: true,
         tokens: true,
+        ...(argv !== undefined ? { args: argv } : {}),
     });
 
     // Walk the token stream to extract:
@@ -138,7 +147,13 @@ async function ConnectToBridge(port: number): Promise<WebSocket> {
     });
 }
 
-async function SendAndReceive<T extends CliResponse>(socket: WebSocket, message: CliRequest): Promise<T> {
+/**
+ * Sends a JSON message to the bridge over WebSocket and waits for a response.
+ * @param socket The WebSocket connection to the bridge.
+ * @param message The CLI request to send.
+ * @returns The parsed bridge response.
+ */
+export async function SendAndReceive<T extends CliResponse>(socket: WebSocket, message: CliRequest): Promise<T> {
     return await new Promise((resolve, reject) => {
         const timeout = setTimeout(() => {
             reject(new Error("Timeout waiting for bridge response."));
@@ -210,7 +225,7 @@ async function WithBridge(bridgeScript: string | undefined, fn: (socket: WebSock
  * @param explicitId An optional explicit session id string.
  * @returns The resolved numeric session id.
  */
-async function ResolveSessionId(socket: WebSocket, explicitId?: string): Promise<number> {
+export async function ResolveSessionId(socket: WebSocket, explicitId?: string): Promise<number> {
     if (explicitId !== undefined) {
         const parsed = parseInt(explicitId, 10);
         if (isNaN(parsed)) {
@@ -236,7 +251,7 @@ async function ResolveSessionId(socket: WebSocket, explicitId?: string): Promise
  * @param globalHelp Whether --help was specified at the top level.
  * @returns The parsed command arguments and whether help was requested.
  */
-function ParseCommandArgs(rest: string[], globalHelp: boolean): { args: Record<string, string>; wantsHelp: boolean } {
+export function ParseCommandArgs(rest: string[], globalHelp: boolean): { args: Record<string, string>; wantsHelp: boolean } {
     const args: Record<string, string> = {};
     let wantsHelp = globalHelp;
     for (let i = 1; i < rest.length; i++) {
@@ -259,7 +274,7 @@ function ParseCommandArgs(rest: string[], globalHelp: boolean): { args: Record<s
  * @param missingRequired The list of missing required arguments.
  * @param wantsHelp Whether help was explicitly requested.
  */
-function PrintCommandHelp(commandId: string, descriptor: CommandInfo, missingRequired: CommandArgInfo[], wantsHelp: boolean): void {
+export function PrintCommandHelp(commandId: string, descriptor: CommandInfo, missingRequired: CommandArgInfo[], wantsHelp: boolean): void {
     if (missingRequired.length > 0 && !wantsHelp) {
         console.error(`Missing required argument(s): ${missingRequired.map((a) => `--${a.name}`).join(", ")}\n`);
     }
