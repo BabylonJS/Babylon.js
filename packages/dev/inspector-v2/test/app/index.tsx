@@ -32,7 +32,6 @@ import { PointLight } from "core/Lights/pointLight";
 import { SpotLight } from "core/Lights/spotLight";
 import { ClusteredLightContainer } from "core/Lights/Clustered/clusteredLightContainer";
 import { ShowInspector } from "../../src/inspector";
-import { StartInspectable } from "../../src";
 // import "../../src/legacy/legacy";
 
 // TODO: Get this working automatically without requiring an explicit import. Inspector v2 should dynamically import these when needed.
@@ -277,4 +276,3 @@ async function createClusteredLight() {
 })();
 
 ShowInspector(scene);
-StartInspectable(scene);

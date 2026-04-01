@@ -16,7 +16,8 @@ export const CliConnectionStatusServiceDefinition: ServiceDefinition<[], [IShell
             key: "CLI Connection Status",
             verticalLocation: "bottom",
             horizontalLocation: "right",
-            order: DefaultToolbarItemOrder.Feedback - 10,
+            teachingMoment: false,
+            order: DefaultToolbarItemOrder.CliStatus,
             component: () => {
                 const isConnected = useObservableState(() => cliConnectionStatus.isConnected, cliConnectionStatus.onConnectionStatusChanged);
 
