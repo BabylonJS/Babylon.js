@@ -7,6 +7,7 @@ import type { Matrix } from "../../Maths/math.vector";
 import type { GaussianSplattingMesh } from "../../Meshes/GaussianSplatting/gaussianSplattingMesh";
 import type { AbstractEngine } from "../../Engines/abstractEngine";
 import { SerializationHelper } from "../../Misc/decorators.serialization";
+import { Logger } from "../../Misc/logger";
 import { VertexBuffer } from "../../Buffers/buffer";
 import { MaterialDefines } from "../../Materials/materialDefines";
 import { PushMaterial } from "../../Materials/pushMaterial";
@@ -593,21 +594,36 @@ export class GaussianSplattingMaterial extends PushMaterial {
     }
 
     protected static _BindVoxelEffectUniforms(gsMesh: GaussianSplattingMesh, gsMaterial: GaussianSplattingMaterial, shaderMaterial: ShaderMaterial): void {
-        const effect = shaderMaterial.getEffect()!;
+        if (!gsMesh.rotationsATexture) {
+            // Attempt to enable rotation/scale texture generation (no-op if already enabled).
+            // If the mesh is already loaded and splat data is in RAM this triggers updateData() synchronously.
+            // If the mesh was loaded without keepInRam=true the setter will log an error.
+            gsMesh.needsRotationScaleTextures = true;
 
+            if (!gsMesh.rotationsATexture) {
+                // Mesh data was already processed but rotation textures couldn't be generated.
+                if (gsMesh.centersTexture && !gsMesh.splatsData) {
+                    Logger.Error(
+                        "IBL voxelization: GaussianSplattingMesh rotation/scale textures are not available. " +
+                            "Create the mesh either with keepInRam=true or needsRotationScaleTextures=true to enable IBL shadow voxelization."
+                    );
+                }
+                // Either the mesh is not yet loaded (silent wait) or the error above was already fired; skip binding.
+                return;
+            }
+        }
+
+        const effect = shaderMaterial.getEffect()!;
         gsMesh.getMeshUniformBuffer().bindToEffect(effect, "Mesh");
 
+        const textureSize = gsMesh.rotationsATexture.getSize();
         effect.setFloat("alpha", gsMaterial.alpha);
-
-        if (gsMesh.rotationsATexture) {
-            const textureSize = gsMesh.rotationsATexture.getSize();
-            effect.setFloat2("dataTextureSize", textureSize.width, textureSize.height);
-            effect.setTexture("rotationsATexture", gsMesh.rotationsATexture);
-            effect.setTexture("rotationsBTexture", gsMesh.rotationsBTexture);
-            effect.setTexture("rotationScaleTexture", gsMesh.rotationScaleTexture);
-            effect.setTexture("centersTexture", gsMesh.centersTexture);
-            effect.setTexture("colorsTexture", gsMesh.colorsTexture);
-        }
+        effect.setFloat2("dataTextureSize", textureSize.width, textureSize.height);
+        effect.setTexture("rotationsATexture", gsMesh.rotationsATexture);
+        effect.setTexture("rotationsBTexture", gsMesh.rotationsBTexture);
+        effect.setTexture("rotationScaleTexture", gsMesh.rotationScaleTexture);
+        effect.setTexture("centersTexture", gsMesh.centersTexture);
+        effect.setTexture("colorsTexture", gsMesh.colorsTexture);
 
         if (gsMesh.partIndicesTexture) {
             effect.setTexture("partIndicesTexture", gsMesh.partIndicesTexture);
@@ -636,10 +652,10 @@ export class GaussianSplattingMaterial extends PushMaterial {
      * @returns voxel rendering shader material
      */
     public makeVoxelRenderingMaterial(scene: Scene, shaderLanguage: ShaderLanguage, maxDrawBuffers: number, compoundMesh: boolean = false): ShaderMaterial {
-        const defines = ["#define IS_FOR_VOXELIZATION", `#define MAX_DRAW_BUFFERS ${maxDrawBuffers}`];
+        const defines = ["#define IS_FOR_VOXELIZATION 1", `#define MAX_DRAW_BUFFERS ${maxDrawBuffers}`];
 
         if (compoundMesh) {
-            defines.push("#define IS_COMPOUND");
+            defines.push("#define IS_COMPOUND 1");
             defines.push(`#define MAX_PART_COUNT ${GetGaussianSplattingMaxPartCount(scene.getEngine())}`);
         }
 
@@ -687,7 +703,7 @@ export class GaussianSplattingMaterial extends PushMaterial {
         }
 
         if (compoundMesh) {
-            defines.push("#define IS_COMPOUND");
+            defines.push("#define IS_COMPOUND 1");
             defines.push(`#define MAX_PART_COUNT ${GetGaussianSplattingMaxPartCount(scene.getEngine())}`);
         }
 

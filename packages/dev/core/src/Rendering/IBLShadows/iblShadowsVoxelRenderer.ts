@@ -22,6 +22,8 @@ import { EffectRenderer, EffectWrapper } from "../../Materials/effectRenderer";
 import type { IblShadowsRenderPipeline } from "./iblShadowsRenderPipeline";
 import type { RenderTargetWrapper } from "core/Engines";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import type { GaussianSplattingMesh } from "../../Meshes/GaussianSplatting/gaussianSplattingMesh";
+import type { GaussianSplattingMaterial } from "../../Materials/GaussianSplatting/gaussianSplattingMaterial";
 
 /**
  * Voxel-based shadow rendering for IBL's.
@@ -84,10 +86,8 @@ export class _IblShadowsVoxelRenderer {
     private _maxDrawBuffers: number;
     private _renderTargets: RenderTargetTexture[] = [];
 
-    /**
-     * Log once per voxelization when Gaussian splat casters are skipped (placeholder GS voxel path).
-     */
-    private _gaussianSplatVoxelPlaceholderWarned = false;
+    /** Per-mesh voxel ShaderMaterials for GaussianSplattingMesh, keyed by mesh uniqueId. */
+    private _gsVoxelMaterialCache: Map<number, ShaderMaterial> = new Map();
 
     private _triPlanarVoxelization: boolean = true;
 
@@ -659,7 +659,6 @@ export class _IblShadowsVoxelRenderer {
         this._stopVoxelization();
         this._includedMeshes = includedMeshes;
         this._voxelizationInProgress = true;
-        this._gaussianSplatVoxelPlaceholderWarned = false;
 
         if (this._engine.isWebGPU) {
             this._voxelGridRT.renderList = includedMeshes;
@@ -724,31 +723,50 @@ export class _IblShadowsVoxelRenderer {
         }
     }
 
-    /** One-time log when splat casters are excluded from voxel/slab RT setup or custom render buckets. */
-    private _warnGaussianSplattingVoxelNotSupportedOnce(): void {
-        if (!this._gaussianSplatVoxelPlaceholderWarned) {
-            this._gaussianSplatVoxelPlaceholderWarned = true;
-            Logger.Warn(
-                "IBL voxelization and voxel slab debug: GaussianSplattingMesh shadow casters are not supported yet; splat draws are skipped. Implement a splat-specific path for iblVoxelGrid and iblVoxelSlabDebug (see DepthRenderer / makeDepthRenderingMaterial)."
-            );
-        }
-    }
-
     /**
      * Splits rendering for every voxel/slab RT configured in _addRTsForRender (WebGPU grid RT, tri-planar MRTs, slab debug): non–Gaussian splatting meshes use subMesh.render
-     * (material override from setMaterialForRendering); GaussianSplattingMesh is filtered from render lists in _addRTsForRender—this branch remains if a splat submesh appears in buckets anyway.
+     * (material override from setMaterialForRendering); GaussianSplattingMesh uses a custom draw path with its cached voxel ShaderMaterial.
      * @param rtt - the render target texture to install the custom render function on
      */
     private _installVoxelMixedCustomRender(rtt: RenderTargetTexture): void {
         const scene = this._scene;
         const engine = scene.getEngine();
 
+        const renderGsSplat = (sm: SubMesh): void => {
+            const renderingMesh = sm.getRenderingMesh();
+            const effectiveMesh = sm.getEffectiveMesh();
+            const gsVoxelMaterial = this._gsVoxelMaterialCache.get(effectiveMesh.uniqueId);
+            if (!gsVoxelMaterial || !gsVoxelMaterial.isReady()) {
+                return;
+            }
+
+            const drawWrapper = gsVoxelMaterial._getDrawWrapper();
+            if (!drawWrapper?.effect) {
+                return;
+            }
+            const effect = drawWrapper.effect;
+
+            const batch = renderingMesh._getInstancesRenderList(sm._id, !!sm.getReplacementMesh());
+            if (batch.mustReturn) {
+                return;
+            }
+
+            const hardwareInstancedRendering =
+                engine.getCaps().instancedArrays && ((batch.visibleInstances[sm._id] !== null && batch.visibleInstances[sm._id] !== undefined) || renderingMesh.hasThinInstances);
+
+            const fillMode = sm.getMaterial()?.fillMode ?? Constants.MATERIAL_TriangleFillMode;
+            engine.enableEffect(drawWrapper);
+            renderingMesh._bind(sm, effect, fillMode);
+            gsVoxelMaterial.bindForSubMesh(effectiveMesh.getWorldMatrix(), effectiveMesh as Mesh, sm);
+            renderingMesh._processRendering(effectiveMesh, sm, effect, fillMode, batch, hardwareInstancedRendering, (_isInstance, world) => effect.setMatrix("world", world));
+        };
+
         const processBucket = (subMeshes: SmartArray<SubMesh>, enableAlphaMode: boolean): void => {
             for (let i = 0; i < subMeshes.length; i++) {
                 const sm = subMeshes.data[i];
                 const effective = sm.getEffectiveMesh();
                 if (effective.getClassName() === "GaussianSplattingMesh") {
-                    this._warnGaussianSplattingVoxelNotSupportedOnce();
+                    renderGsSplat(sm);
                 } else {
                     sm.render(enableAlphaMode);
                 }
@@ -770,6 +788,21 @@ export class _IblShadowsVoxelRenderer {
             processBucket(alphaTestSubMeshes, false);
             processBucket(transparentSubMeshes, true);
         };
+    }
+
+    private _addGsMeshToVoxelRT(mrt: RenderTargetTexture, mesh: GaussianSplattingMesh): void {
+        let gsVoxelMaterial = this._gsVoxelMaterialCache.get(mesh.uniqueId);
+        if (!gsVoxelMaterial) {
+            const gsMaterial = mesh.material as GaussianSplattingMaterial;
+            if (!gsMaterial) {
+                return;
+            }
+            const shaderLanguage = this._engine.isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL;
+            gsVoxelMaterial = gsMaterial.makeVoxelRenderingMaterial(this._scene, shaderLanguage, this._maxDrawBuffers, mesh.isCompound);
+            this._gsVoxelMaterialCache.set(mesh.uniqueId, gsVoxelMaterial);
+        }
+        mrt.renderList?.push(mesh as Mesh);
+        mrt.setMaterialForRendering(mesh as Mesh, gsVoxelMaterial);
     }
 
     private _addRTsForRender(mrts: RenderTargetTexture[], includedMeshes: Mesh[], axis: number, shaderType: number = 0, continuousRender: boolean = false) {
@@ -802,7 +835,8 @@ export class _IblShadowsVoxelRenderer {
             }
             mrt.onBeforeRenderObservable.clear();
             mrt.onBeforeRenderObservable.add(() => {
-                voxelMaterial.setMatrix("viewMatrix", Matrix.LookAtLH(cameraPosition, targetPosition, upDirection));
+                const viewMatrix = Matrix.LookAtLH(cameraPosition, targetPosition, upDirection);
+                voxelMaterial.setMatrix("viewMatrix", viewMatrix);
                 voxelMaterial.setMatrix("invWorldScale", this._invWorldScaleMatrix);
                 voxelMaterial.setFloat("nearPlane", nearPlane);
                 voxelMaterial.setFloat("farPlane", farPlane);
@@ -810,6 +844,19 @@ export class _IblShadowsVoxelRenderer {
                 if (this._engine.isWebGPU) {
                     this._voxelMaterial.useVertexPulling = true;
                     this._voxelMaterial.setTexture("voxel_storage", this.getVoxelGrid());
+                }
+                // Push per-slab uniforms to each GS voxel material in this MRT's render list.
+                for (const m of mrt.renderList ?? []) {
+                    if (m.getClassName() === "GaussianSplattingMesh") {
+                        const gsVoxelMat = this._gsVoxelMaterialCache.get(m.uniqueId);
+                        if (gsVoxelMat) {
+                            gsVoxelMat.setMatrix("viewMatrix", viewMatrix);
+                            gsVoxelMat.setMatrix("invWorldScale", this._invWorldScaleMatrix);
+                            gsVoxelMat.setFloat("nearPlane", nearPlane);
+                            gsVoxelMat.setFloat("farPlane", farPlane);
+                            gsVoxelMat.setFloat("stepSize", stepSize);
+                        }
+                    }
                 }
             });
 
@@ -822,7 +869,7 @@ export class _IblShadowsVoxelRenderer {
                     continue;
                 }
                 if (mesh.getClassName() === "GaussianSplattingMesh") {
-                    this._warnGaussianSplattingVoxelNotSupportedOnce();
+                    this._addGsMeshToVoxelRT(mrt, mesh as GaussianSplattingMesh);
                 } else if (mesh.subMeshes && mesh.subMeshes.length > 0) {
                     mrt.renderList?.push(mesh);
                     mrt.setMaterialForRendering(mesh, voxelMaterial);
@@ -830,10 +877,8 @@ export class _IblShadowsVoxelRenderer {
                 const meshes = mesh.getChildMeshes();
                 for (const childMesh of meshes) {
                     if (childMesh.getClassName() === "GaussianSplattingMesh") {
-                        this._warnGaussianSplattingVoxelNotSupportedOnce();
-                        continue;
-                    }
-                    if (childMesh.subMeshes && childMesh.subMeshes.length > 0) {
+                        this._addGsMeshToVoxelRT(mrt, childMesh as GaussianSplattingMesh);
+                    } else if (childMesh.subMeshes && childMesh.subMeshes.length > 0) {
                         mrt.renderList?.push(childMesh);
                         mrt.setMaterialForRendering(childMesh, voxelMaterial);
                     }
@@ -875,5 +920,9 @@ export class _IblShadowsVoxelRenderer {
             this._voxelDebugPass.dispose();
         }
         // TODO - dispose all created voxel materials.
+        for (const mat of Array.from(this._gsVoxelMaterialCache.values())) {
+            mat.dispose();
+        }
+        this._gsVoxelMaterialCache.clear();
     }
 }

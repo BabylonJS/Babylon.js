@@ -78,8 +78,10 @@ Splat readSplat(float splatIndex)
     vec2 splatUV = getDataUV(splatIndex, dataTextureSize);
     splat.center = texture2D(centersTexture, splatUV);
     splat.color = texture2D(colorsTexture, splatUV);
+#if !IS_FOR_VOXELIZATION
     splat.covA = texture2D(covariancesATexture, splatUV) * splat.center.w;
     splat.covB = texture2D(covariancesBTexture, splatUV) * splat.center.w;
+#endif
 #if SH_DEGREE > 0 || IS_COMPOUND
     ivec2 splatUVint = getDataUVint(splatIndex, dataTextureSize);
 #endif
