@@ -6,9 +6,9 @@
         "outDir": "./dist",
         "rootDir": "./src",
         "paths": {
-            "core/*": ["dev/core/dist/*"],
-            "gui/*": ["dev/gui/dist/*"],
-            "shared-ui-components/*": ["dev/sharedUiComponents/src/*"]
+            "core/*": ["../../dev/core/dist/*"],
+            "gui/*": ["../../dev/gui/dist/*"],
+            "shared-ui-components/*": ["../../dev/sharedUiComponents/src/*"]
         }
     },
 

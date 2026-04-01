@@ -27,7 +27,7 @@
         "build": "npm run clean && npm run bundle",
         "clean": "rimraf lib && rimraf bin && rimraf dist && rimraf *.tsbuildinfo -g",
         "bundle": "npm run bundle:lib && npm run bundle:cli",
-        "bundle:lib": "rollup -c rollup.config.lib.mjs",
+        "bundle:lib": "rollup -c rollup.config.lib.mjs && tsc -p tsconfig.build.dts.json && build-tools -c tp --outDir ./lib --buildType es6 --basePackage @babylonjs/inspector --appendJS",
         "bundle:cli": "rollup -c rollup.config.cli.mjs",
         "pack": "npm run build && npm pack"
     },

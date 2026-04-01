@@ -3,7 +3,7 @@ import { spawn } from "child_process";
 import { dirname, join, resolve } from "path";
 import { fileURLToPath } from "url";
 import { parseArgs } from "util";
-import ws from "ws";
+import { type WebSocket, default as WebSocketConstructor } from "ws";
 import { LoadConfig } from "./config.js";
 import { type CliRequest, type CliResponse, type CommandArgInfo, type CommandInfo, type CommandsResponse, type ExecResponse, type SessionsResponse } from "./protocol.js";
 
@@ -130,15 +130,15 @@ function ParseCliArgs(): IParsedArgs {
     };
 }
 
-async function ConnectToBridge(port: number): Promise<ws> {
+async function ConnectToBridge(port: number): Promise<WebSocket> {
     return await new Promise((resolve, reject) => {
-        const socket = new ws(`ws://127.0.0.1:${port}`);
+        const socket = new WebSocketConstructor(`ws://127.0.0.1:${port}`);
         socket.on("open", () => resolve(socket));
         socket.on("error", (err) => reject(err));
     });
 }
 
-async function SendAndReceive<T extends CliResponse>(socket: ws, message: CliRequest): Promise<T> {
+async function SendAndReceive<T extends CliResponse>(socket: WebSocket, message: CliRequest): Promise<T> {
     return await new Promise((resolve, reject) => {
         const timeout = setTimeout(() => {
             reject(new Error("Timeout waiting for bridge response."));
@@ -166,7 +166,7 @@ function SpawnBridge(bridgeScript?: string): void {
     child.unref();
 }
 
-async function EnsureBridge(port: number, bridgeScript?: string, maxRetries = 10, retryDelayMs = 500): Promise<ws> {
+async function EnsureBridge(port: number, bridgeScript?: string, maxRetries = 10, retryDelayMs = 500): Promise<WebSocket> {
     try {
         return await ConnectToBridge(port);
     } catch {
@@ -193,7 +193,7 @@ async function EnsureBridge(port: number, bridgeScript?: string, maxRetries = 10
  * @param bridgeScript Optional path to the bridge script.
  * @param fn The callback to run with the connected socket.
  */
-async function WithBridge(bridgeScript: string | undefined, fn: (socket: ws) => Promise<void>): Promise<void> {
+async function WithBridge(bridgeScript: string | undefined, fn: (socket: WebSocket) => Promise<void>): Promise<void> {
     const socket = await EnsureBridge(Config.cliPort, bridgeScript);
     try {
         await fn(socket);
@@ -210,7 +210,7 @@ async function WithBridge(bridgeScript: string | undefined, fn: (socket: ws) => 
  * @param explicitId An optional explicit session id string.
  * @returns The resolved numeric session id.
  */
-async function ResolveSessionId(socket: ws, explicitId?: string): Promise<number> {
+async function ResolveSessionId(socket: WebSocket, explicitId?: string): Promise<number> {
     if (explicitId !== undefined) {
         const parsed = parseInt(explicitId, 10);
         if (isNaN(parsed)) {
@@ -281,7 +281,7 @@ function PrintCommandHelp(commandId: string, descriptor: CommandInfo, missingReq
  * Handles `--session` without `--command`: lists active sessions.
  * @param socket The WebSocket connection to the bridge.
  */
-async function HandleSessions(socket: ws): Promise<void> {
+async function HandleSessions(socket: WebSocket): Promise<void> {
     const response = await SendAndReceive<SessionsResponse>(socket, { type: "sessions" });
     if (response.sessions.length === 0) {
         console.log("No active sessions.");
@@ -298,7 +298,7 @@ async function HandleSessions(socket: ws): Promise<void> {
  * @param socket The WebSocket connection to the bridge.
  * @param args The parsed CLI arguments.
  */
-async function HandleCommand(socket: ws, args: IParsedArgs): Promise<void> {
+async function HandleCommand(socket: WebSocket, args: IParsedArgs): Promise<void> {
     const commandId = args.rest.length > 0 ? args.rest[0] : undefined;
 
     if (!commandId) {

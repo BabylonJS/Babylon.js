@@ -99,6 +99,22 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
             return;
         }
 
+        // Ctrl+A — Select all nodes and frames
+        if ((evt.ctrlKey || evt.metaKey) && (evt.key === "a" || evt.key === "A")) {
+            evt.preventDefault();
+            // Clear current selection first
+            this.props.globalState.stateManager.onSelectionChangedObservable.notifyObservers(null);
+            // Select all nodes
+            for (const node of this._graphCanvas.nodes) {
+                this.props.globalState.stateManager.onSelectionChangedObservable.notifyObservers({ selection: node, forceKeepSelection: true });
+            }
+            // Select all frames
+            for (const frame of this._graphCanvas.frames) {
+                this.props.globalState.stateManager.onSelectionChangedObservable.notifyObservers({ selection: frame, forceKeepSelection: true });
+            }
+            return;
+        }
+
         void this._graphCanvas.handleKeyDownAsync(
             evt,
             (nodeData) => {

@@ -1685,12 +1685,8 @@ export abstract class AbstractMesh extends TransformNode implements IDisposable,
 
     // This function is only here so we can apply the nativeOverride decorator.
     @nativeOverride.filter(
-        (...[data, matricesIndicesData, matricesWeightsData, matricesIndicesExtraData, matricesWeightsExtraData]: Parameters<typeof AbstractMesh._ApplySkeleton>) =>
-            !Array.isArray(data) &&
-            !Array.isArray(matricesIndicesData) &&
-            !Array.isArray(matricesWeightsData) &&
-            !Array.isArray(matricesIndicesExtraData) &&
-            !Array.isArray(matricesWeightsExtraData)
+        (...args: Parameters<typeof AbstractMesh._ApplySkeleton>) =>
+            !Array.isArray(args[0]) && !Array.isArray(args[3]) && !Array.isArray(args[4]) && !Array.isArray(args[5]) && !Array.isArray(args[6])
     )
     private static _ApplySkeleton(
         data: FloatArray,

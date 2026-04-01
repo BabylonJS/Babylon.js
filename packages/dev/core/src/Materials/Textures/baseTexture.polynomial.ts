@@ -18,8 +18,13 @@ declare module "./baseTexture" {
          * Can be useful if you generate a cubemap multiple times (from a probe for eg) and you need the proper polynomials each time
          */
         forceSphericalPolynomialsRecompute(): void;
+
+        /** @internal */
+        _sphericalPolynomialTargetSize: number;
     }
 }
+
+BaseTexture.prototype._sphericalPolynomialTargetSize = 0;
 
 BaseTexture.prototype.forceSphericalPolynomialsRecompute = function (): void {
     if (this._texture) {

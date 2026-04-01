@@ -1,10 +1,7 @@
 /* eslint-disable no-console */
-import ws from "ws";
+import { type WebSocket, WebSocketServer } from "ws";
 import { LoadConfig } from "./config.js";
 import { type BrowserRequest, type BrowserResponse, type CliRequest, type CliResponse, type SessionInfo } from "./protocol.js";
-
-type WebSocket = ws;
-type WebSocketServerType = ws.Server;
 
 interface ISession extends SessionInfo {
     /** The WebSocket connection for this session. */
@@ -56,10 +53,10 @@ function StartBridge(): void {
     const config = LoadConfig();
 
     // Browser-facing WebSocket server.
-    const browserWss = new ws.Server({ host: "127.0.0.1", port: config.browserPort });
+    const browserWss = new WebSocketServer({ host: "127.0.0.1", port: config.browserPort });
 
     // CLI-facing WebSocket server.
-    const cliWss = new ws.Server({ host: "127.0.0.1", port: config.cliPort });
+    const cliWss = new WebSocketServer({ host: "127.0.0.1", port: config.cliPort });
 
     console.log(`Inspector bridge started.`);
     console.log(`  Browser port: ${config.browserPort}`);
@@ -206,7 +203,7 @@ async function WaitForBrowserResponse(requestId: string, timeoutMs = 30000): Pro
     });
 }
 
-function Shutdown(browserWss: WebSocketServerType, cliWss: WebSocketServerType): void {
+function Shutdown(browserWss: WebSocketServer, cliWss: WebSocketServer): void {
     console.log("Inspector bridge shutting down.");
 
     for (const session of Sessions.values()) {

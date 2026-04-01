@@ -54,7 +54,7 @@ module.exports = (env) => {
                 ],
                 enableFastRefresh: !production,
                 tsOptions: {
-                    configFile: "tsconfig.build.json",
+                    configFile: "tsconfig.webpack.json",
                     transpileOnly: true,
                 },
             }),

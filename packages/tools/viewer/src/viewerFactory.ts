@@ -96,7 +96,7 @@ export async function CreateViewerForCanvas(
     switch (options.engine ?? GetDefaultEngine()) {
         case "WebGPU": {
             const { WebGPUEngine } = await import("core/Engines/webgpuEngine");
-            const webGPUEngine = new WebGPUEngine(canvas, options);
+            const webGPUEngine = new WebGPUEngine(canvas, options as WebGPUEngineOptions);
             try {
                 await webGPUEngine.initAsync();
                 engine = webGPUEngine;
