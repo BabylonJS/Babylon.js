@@ -1,13 +1,13 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-import type { Atmosphere } from "./atmosphere";
-import type { BaseTexture } from "core/Materials/Textures/baseTexture";
-import type { Material } from "core/Materials/material";
+import { type Atmosphere } from "./atmosphere";
+import { type BaseTexture } from "core/Materials/Textures/baseTexture";
+import { type Material } from "core/Materials/material";
 import { MaterialDefines } from "core/Materials/materialDefines";
 import { MaterialPluginBase } from "core/Materials/materialPluginBase";
-import type { Nullable } from "core/types";
-import type { UniformBuffer } from "core/Materials/uniformBuffer";
+import { type Nullable } from "core/types";
+import { type UniformBuffer } from "core/Materials/uniformBuffer";
 import { Vector3FromFloatsToRef, Vector3ScaleToRef } from "core/Maths/math.vector.functions";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import "./ShadersWGSL/ShadersInclude/atmosphereFunctions";
@@ -269,7 +269,7 @@ export class AtmospherePBRMaterialPlugin extends MaterialPluginBase {
 
                 // Add a contribution here to estimate indirect lighting.
                 const float r = 0.2;
-                float indirect = getLuminance(environmentIrradiance) / max(0.00001, 1. - r);
+                float indirect = getLuminanceUnclamped(environmentIrradiance) / max(0.00001, 1. - r);
                 environmentIrradiance *= irradianceScale;
                 environmentIrradiance += indirect;
 
@@ -341,7 +341,7 @@ export class AtmospherePBRMaterialPlugin extends MaterialPluginBase {
 
                 // Add a contribution here to estimate indirect lighting.
                 const r = 0.2;
-                var indirect = getLuminance(environmentIrradiance) / max(0.00001, 1.0 - r);
+                var indirect = getLuminanceUnclamped(environmentIrradiance) / max(0.00001, 1.0 - r);
                 environmentIrradiance *= irradianceScale;
                 environmentIrradiance += indirect;
 

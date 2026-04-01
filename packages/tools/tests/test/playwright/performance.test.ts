@@ -28,11 +28,11 @@ export const checkPerformanceOfScene = async (page: Page, baseUrl: string, numbe
         });
     }
     time.sort();
-    // remove edge cases - 2 of each end
+    // remove edge cases - 1 of each end
     time.pop();
     time.shift();
     // return the average rendering time
-    return time.reduce((partialSum, a) => partialSum + a, 0) / (numberOfPasses - 2);
+    return time.reduce((partialSum, a) => partialSum + a, 0) / time.length;
 };
 
 export const evaluateRenderScene = async ({ renderCount }: { renderCount: number }): Promise<number> => {

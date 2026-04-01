@@ -1,6 +1,6 @@
 /* eslint-disable jsdoc/require-jsdoc */
 /* eslint-disable babylonjs/available */
-import type { IGLTFExporterExtensionV2 } from "../glTFExporterExtension";
+import { type IGLTFExporterExtensionV2 } from "../glTFExporterExtension";
 import { GLTFExporter } from "../glTFExporter";
 import { GetMimeType } from "core/Misc/fileTools";
 import { ImageMimeType } from "babylonjs-gltf2interface";

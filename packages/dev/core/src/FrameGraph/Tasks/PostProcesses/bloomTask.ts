@@ -1,4 +1,4 @@
-import type { FrameGraph, FrameGraphTextureCreationOptions, FrameGraphTextureHandle } from "core/index";
+import { type FrameGraph, type FrameGraphTextureCreationOptions, type FrameGraphTextureHandle } from "core/index";
 import { Constants } from "core/Engines/constants";
 import { FrameGraphBloomMergeTask } from "./bloomMergeTask";
 import { FrameGraphTask } from "../../frameGraphTask";

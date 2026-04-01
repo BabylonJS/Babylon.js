@@ -1,4 +1,4 @@
-import type { ThinEngine } from "core/Engines/thinEngine";
+import { type ThinEngine } from "core/Engines/thinEngine";
 import * as react from "react";
 import * as reactDOM from "react-dom";
 import { GlobalState, type TexturePreset } from "./globalState.js";
@@ -6,14 +6,14 @@ import { GraphEditor } from "./graphEditor.js";
 import { RegisterToDisplayManagers } from "./graphSystem/registerToDisplayLedger.js";
 import { RegisterToPropertyTabManagers } from "./graphSystem/registerToPropertyLedger.js";
 import { RegisterTypeLedger } from "./graphSystem/registerToTypeLedger.js";
-import type { OptimizerDebugMode, SmartFilter } from "smart-filters";
-import type { Nullable } from "core/types.js";
-import type { Observable } from "core/Misc/observable.js";
+import { type OptimizerDebugMode, type SmartFilter } from "smart-filters";
+import { type Nullable } from "core/types.js";
+import { type Observable } from "core/Misc/observable.js";
 import { CreatePopup } from "shared-ui-components/popupHelper.js";
-import type { IBlockRegistration } from "smart-filters-blocks";
-import type { LogEntry } from "./components/log/logComponent.js";
-import type { BlockEditorRegistration } from "./configuration/blockEditorRegistration.js";
-import type { ObservableProperty } from "./helpers/observableProperty.js";
+import { type IBlockRegistration } from "smart-filters-blocks";
+import { type LogEntry } from "./components/log/logComponent.js";
+import { type BlockEditorRegistration } from "./configuration/blockEditorRegistration.js";
+import { type ObservableProperty } from "./helpers/observableProperty.js";
 
 /**
  * Options to configure the Smart Filter Editor

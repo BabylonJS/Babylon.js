@@ -1,5 +1,5 @@
-import type { Scene } from "core/scene";
-import { Engine } from "core/Engines/engine"; // can also be @lts/core
+import { type Scene } from "core/scene";
+import { Engine } from "core/Engines/engine";
 
 import { createScene as createSceneTs } from "./createScene";
 import { createScene as createSceneJs } from "./createSceneJS.js";

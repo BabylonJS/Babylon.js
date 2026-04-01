@@ -1,31 +1,29 @@
-import type { SmartArray } from "../Misc/smartArray";
+import { type SmartArray } from "../Misc/smartArray";
 import { Observable } from "../Misc/observable";
-import type { Nullable } from "../types";
-import type { Camera } from "../Cameras/camera";
-import type { Scene } from "../scene";
+import { type Nullable } from "../types";
+import { type Camera } from "../Cameras/camera";
+import { type Scene } from "../scene";
 import { Color4 } from "../Maths/math.color";
-import type { AbstractEngine } from "../Engines/abstractEngine";
+import { type AbstractEngine } from "../Engines/abstractEngine";
 import { EngineStore } from "../Engines/engineStore";
 import { VertexBuffer } from "../Buffers/buffer";
-import type { SubMesh } from "../Meshes/subMesh";
-import type { AbstractMesh } from "../Meshes/abstractMesh";
-import type { Mesh } from "../Meshes/mesh";
-import type { EffectWrapperCreationOptions } from "core/Materials/effectRenderer";
-import { EffectWrapper } from "core/Materials/effectRenderer";
-import type { BaseTexture } from "../Materials/Textures/baseTexture";
-import type { Effect } from "../Materials/effect";
+import { type SubMesh } from "../Meshes/subMesh";
+import { type AbstractMesh } from "../Meshes/abstractMesh";
+import { type Mesh } from "../Meshes/mesh";
+import { type EffectWrapperCreationOptions, EffectWrapper } from "core/Materials/effectRenderer";
+import { type BaseTexture } from "../Materials/Textures/baseTexture";
+import { type Effect } from "../Materials/effect";
 import { Material } from "../Materials/material";
 import { Constants } from "../Engines/constants";
 
-import type { DataBuffer } from "../Buffers/dataBuffer";
+import { type DataBuffer } from "../Buffers/dataBuffer";
 import { EffectFallbacks } from "../Materials/effectFallbacks";
 import { DrawWrapper } from "../Materials/drawWrapper";
 import { AddClipPlaneUniforms, BindClipPlane, PrepareStringDefinesForClipPlanes } from "../Materials/clipPlaneMaterialHelper";
 import { BindBonesParameters, BindMorphTargetParameters, PrepareDefinesAndAttributesForMorphTargets, PushAttributesForInstances } from "../Materials/materialHelper.functions";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { ObjectRenderer } from "core/Rendering/objectRenderer";
-import type { Vector2 } from "../Maths/math.vector";
-import { Engine } from "core/Engines/engine";
+import { type Vector2 } from "../Maths/math.vector";
 
 /**
  * Special Glow Blur post process only blurring the alpha channel
@@ -53,7 +51,7 @@ export class ThinGlowBlurPostProcess extends EffectWrapper {
         super({
             ...options,
             name,
-            engine: engine || Engine.LastCreatedEngine!,
+            engine: engine || EngineStore.LastCreatedEngine!,
             useShaderStore: true,
             useAsPostProcess: true,
             fragmentShader: ThinGlowBlurPostProcess.FragmentUrl,
@@ -699,7 +697,7 @@ export class ThinEffectLayer {
                 "glowColor",
                 "morphTargetInfluences",
                 "morphTargetCount",
-                "boneTextureWidth",
+                "boneTextureInfo",
                 "diffuseMatrix",
                 "emissiveMatrix",
                 "opacityMatrix",

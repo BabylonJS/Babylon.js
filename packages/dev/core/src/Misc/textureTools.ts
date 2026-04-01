@@ -1,15 +1,15 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import type { BaseTexture } from "core/Materials/Textures/baseTexture";
-import type { InternalTexture } from "../Materials/Textures/internalTexture";
+import { type BaseTexture } from "core/Materials/Textures/baseTexture";
+import { type InternalTexture } from "../Materials/Textures/internalTexture";
 import { Texture } from "../Materials/Textures/texture";
 import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import { PassPostProcess } from "../PostProcesses/passPostProcess";
 import { Constants } from "../Engines/constants";
-import type { Scene } from "../scene";
+import { type Scene } from "../scene";
 import { PostProcess } from "../PostProcesses/postProcess";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
-import type { Observable } from "./observable";
-import type { Nullable } from "../types";
+import { type Observable } from "./observable";
+import { type Nullable } from "../types";
 import { Clamp } from "../Maths/math.scalar.functions";
 
 /**
@@ -417,6 +417,9 @@ export async function GetTextureDataAsync(
     // If we're resizing the texture, we need to use a render target texture.
     // forceRTT can be used to ensure correct orientation and gamma for cube maps.
     if (forceRTT || IsCompressedTextureFormat(texture.textureFormat) || targetWidth !== textureWidth || targetHeight !== textureHeight) {
+        if (texture.is2DArray || texture.is3D) {
+            throw new Error(`Reading pixels from 2D array or 3D textures with ${forceRTT ? "RTT" : "compression"} is not supported.`);
+        }
         return await ReadPixelsUsingRTT(texture, targetWidth, targetHeight, face, lod);
     }
 

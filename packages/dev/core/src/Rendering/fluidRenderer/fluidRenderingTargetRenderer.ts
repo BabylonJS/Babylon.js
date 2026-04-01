@@ -1,19 +1,19 @@
-import type { Camera } from "core/Cameras/camera";
+import { type Camera } from "core/Cameras/camera";
 import { Constants } from "core/Engines/constants";
-import type { AbstractEngine } from "core/Engines/abstractEngine";
-import type { BaseTexture } from "core/Materials/Textures/baseTexture";
-import type { InternalTexture } from "core/Materials/Textures/internalTexture";
-import type { ThinTexture } from "core/Materials/Textures/thinTexture";
+import { type AbstractEngine } from "core/Engines/abstractEngine";
+import { type BaseTexture } from "core/Materials/Textures/baseTexture";
+import { type InternalTexture } from "core/Materials/Textures/internalTexture";
+import { type ThinTexture } from "core/Materials/Textures/thinTexture";
 import { Color3, Color4 } from "core/Maths/math.color";
 import { Matrix, Vector2, Vector3 } from "core/Maths/math.vector";
 import { Observable } from "core/Misc/observable";
 import { PostProcess } from "core/PostProcesses/postProcess";
-import type { Scene } from "core/scene";
-import type { Nullable } from "core/types";
+import { type Scene } from "core/scene";
+import { type Nullable } from "core/types";
 
-import type { FluidRenderingObject } from "./fluidRenderingObject";
+import { type FluidRenderingObject } from "./fluidRenderingObject";
 import { FluidRenderingTextures } from "./fluidRenderingTextures";
-import type { WebGPUEngine } from "core/Engines/webgpuEngine";
+import { type WebGPUEngine } from "core/Engines/webgpuEngine";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
 /**

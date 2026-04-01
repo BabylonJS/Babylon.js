@@ -1,15 +1,15 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-import type { Atmosphere } from "./atmosphere";
-import type { AtmospherePhysicalProperties } from "./atmospherePhysicalProperties";
+import { type Atmosphere } from "./atmosphere";
+import { type AtmospherePhysicalProperties } from "./atmospherePhysicalProperties";
 import { Clamp, SmoothStep } from "core/Maths/math.scalar.functions";
 import { Constants } from "core/Engines/constants";
-import type { DirectionalLight } from "core/Lights/directionalLight";
+import { type DirectionalLight } from "core/Lights/directionalLight";
 import { EffectRenderer, EffectWrapper } from "core/Materials/effectRenderer";
 import { FromHalfFloat } from "core/Misc/textureTools";
-import type { IColor3Like, IColor4Like, IVector2Like, IVector3Like } from "core/Maths/math.like";
-import type { Nullable } from "core/types";
+import { type IColor3Like, type IColor4Like, type IVector2Like, type IVector3Like } from "core/Maths/math.like";
+import { type Nullable } from "core/types";
 import { Observable } from "core/Misc/observable";
 import { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
 import { Sample2DRgbaToRef } from "./sampling";
@@ -89,6 +89,7 @@ export class TransmittanceLut {
     private _effectRenderer: Nullable<EffectRenderer>;
     private _isDirty = true;
     private _isDisposed = false;
+    private _needsReadPixels = false;
 
     /**
      * True if the LUT has been rendered.
@@ -242,17 +243,31 @@ export class TransmittanceLut {
         engine.restoreDefaultFramebuffer();
 
         this._isDirty = false;
+        this._needsReadPixels = true;
 
-        // eslint-disable-next-line github/no-then
-        void this.renderTarget.readPixels(0, 0, undefined, undefined, UseHalfFloat /* noDataConversion */)?.then((value: ArrayBufferView) => {
-            if (this._isDisposed) {
-                return;
-            }
-            this._lutData = value as Uint8Array | Uint16Array;
-            this.onUpdatedObservable.notifyObservers();
+        // Defer readPixels to the end of the frame.
+        this._atmosphere.scene.onAfterRenderObservable.addOnce(async () => {
+            await this.readPixelsAsync();
         });
 
         return true;
+    }
+
+    /**
+     * Reads back the LUT data from the GPU if a readback is pending.
+     * @internal
+     */
+    public async readPixelsAsync(): Promise<void> {
+        if (!this._needsReadPixels || this._isDisposed) {
+            return;
+        }
+        this._needsReadPixels = false;
+
+        const value = await this.renderTarget.readPixels(0, 0, undefined, undefined, UseHalfFloat /* noDataConversion */);
+        if (value && !this._isDisposed) {
+            this._lutData = value as Uint8Array | Uint16Array;
+            this.onUpdatedObservable.notifyObservers();
+        }
     }
 
     /**

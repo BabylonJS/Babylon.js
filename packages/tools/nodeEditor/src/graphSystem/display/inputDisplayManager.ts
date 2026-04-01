@@ -1,13 +1,13 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import type { InputBlock } from "core/Materials/Node/Blocks/Input/inputBlock";
+import { type InputBlock } from "core/Materials/Node/Blocks/Input/inputBlock";
 import { NodeMaterialSystemValues } from "core/Materials/Node/Enums/nodeMaterialSystemValues";
 import { NodeMaterialBlockConnectionPointTypes } from "core/Materials/Node/Enums/nodeMaterialBlockConnectionPointTypes";
 import { AnimatedInputBlockTypes } from "core/Materials/Node/Blocks/Input/animatedInputBlockTypes";
-import type { Vector2, Vector3, Vector4 } from "core/Maths/math.vector";
-import type { Color3 } from "core/Maths/math.color";
+import { type Vector2, type Vector3, type Vector4 } from "core/Maths/math.vector";
+import { type Color3 } from "core/Maths/math.color";
 import { BlockTools } from "../../blockTools";
-import type { IDisplayManager } from "shared-ui-components/nodeGraphSystem/interfaces/displayManager";
-import type { INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
+import { type IDisplayManager } from "shared-ui-components/nodeGraphSystem/interfaces/displayManager";
+import { type INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
 import * as styles from "./inputDisplayManager.module.scss";
 
 const inputNameToAttributeValue: { [name: string]: string } = {

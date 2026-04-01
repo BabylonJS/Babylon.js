@@ -1,10 +1,9 @@
-import type { Observer } from "core/Misc/observable";
-import { Observable } from "core/Misc/observable";
-import type { Scene } from "../scene";
+import { type Observer, Observable } from "core/Misc/observable";
+import { type Scene } from "../scene";
 import { FlowGraph } from "./flowGraph";
-import type { IPathToObjectConverter } from "../ObjectModel/objectModelInterfaces";
-import type { IObjectAccessor } from "./typeDefinitions";
-import type { IAssetContainer } from "core/IAssetContainer";
+import { type IPathToObjectConverter } from "../ObjectModel/objectModelInterfaces";
+import { type IObjectAccessor } from "./typeDefinitions";
+import { type IAssetContainer } from "core/IAssetContainer";
 import { Logger } from "core/Misc/logger";
 
 /**
@@ -109,7 +108,11 @@ export class FlowGraphCoordinator {
         });
 
         // Add itself to the SceneCoordinators list for the Inspector.
-        const coordinators = FlowGraphCoordinator.SceneCoordinators.get(this.config.scene) ?? [];
+        let coordinators = FlowGraphCoordinator.SceneCoordinators.get(this.config.scene);
+        if (!coordinators) {
+            coordinators = [];
+            FlowGraphCoordinator.SceneCoordinators.set(this.config.scene, coordinators);
+        }
         coordinators.push(this);
     }
 

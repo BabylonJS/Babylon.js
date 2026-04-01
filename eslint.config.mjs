@@ -4,7 +4,7 @@ import globals from "globals";
 import tseslint from "typescript-eslint";
 import eslintPluginPrettier from "eslint-plugin-prettier";
 import eslintConfigPrettier from "eslint-config-prettier";
-import eslintPluginJest from "eslint-plugin-jest";
+import eslintPluginVitest from "@vitest/eslint-plugin";
 import eslintPluginJsdoc from "eslint-plugin-jsdoc";
 import eslintPluginGithub from "eslint-plugin-github";
 import eslintPluginImport from "eslint-plugin-import";
@@ -137,9 +137,8 @@ export default tseslint.config(
             "**/*.fragment.ts",
             "**/*.vertex.ts",
 
-            // Public/LTS packages (generated)
+            // Public packages (generated)
             "packages/public/**",
-            "packages/lts/**",
 
             // Non-JS files
             "**/*.md",
@@ -172,7 +171,6 @@ export default tseslint.config(
             globals: {
                 ...globals.browser,
                 ...globals.node,
-                ...globals.jest,
             },
             parser: tseslint.parser,
             parserOptions: {
@@ -202,7 +200,7 @@ export default tseslint.config(
             jsdoc: eslintPluginJsdoc,
             github: eslintPluginGithub,
             import: eslintPluginImport,
-            jest: eslintPluginJest,
+            vitest: eslintPluginVitest,
         },
         settings: {
             react: {
@@ -217,9 +215,9 @@ export default tseslint.config(
     },
 
     // ===========================================
-    // Jest plugin config
+    // Vitest plugin config
     // ===========================================
-    eslintPluginJest.configs["flat/recommended"],
+    eslintPluginVitest.configs.recommended,
 
     // ===========================================
     // Global rules (apply to all matched files)
@@ -232,8 +230,12 @@ export default tseslint.config(
 
             // Import rules
             "import/no-unresolved": "off",
-            "import/named": "error",
-            "import/no-cycle": [1, { maxDepth: 1, ignoreExternal: true }],
+            // import/named is redundant — TypeScript already validates named imports
+            "import/named": "off",
+            // import/no-cycle is disabled for performance — it traverses the full
+            // dependency graph and is the single most expensive rule in the config.
+            // Run it explicitly via `npm run lint:cycles` when needed.
+            "import/no-cycle": "off",
             "import/no-internal-modules": [
                 "error",
                 {
@@ -248,9 +250,9 @@ export default tseslint.config(
             "template-curly-spacing": "error",
             "template-tag-spacing": "error",
 
-            // Jest rules
-            "jest/no-standalone-expect": ["error", { additionalTestBlockFunctions: ["afterEach"] }],
-            "jest/valid-expect": "off",
+            // Vitest rules
+            "vitest/no-standalone-expect": ["error", { additionalTestBlockFunctions: ["afterEach"] }],
+            "vitest/valid-expect": "off",
 
             // Babylon.js custom rules
             "babylonjs/syntax": "warn",
@@ -273,6 +275,8 @@ export default tseslint.config(
             "jsdoc/require-returns-check": "error",
 
             // Warnings
+            "import/no-duplicates": ["error", { "prefer-inline": true }],
+            "import/consistent-type-specifier-style": ["error", "prefer-inline"],
             "import/export": "warn",
             "no-useless-escape": "warn",
             "no-case-declarations": "warn",
@@ -385,7 +389,7 @@ export default tseslint.config(
 
             // Other TypeScript rules
             "@typescript-eslint/no-unused-vars": ["warn", { argsIgnorePattern: "^_" }],
-            "@typescript-eslint/consistent-type-imports": ["error", { disallowTypeAnnotations: false, fixStyle: "separate-type-imports" }],
+            "@typescript-eslint/consistent-type-imports": ["error", { disallowTypeAnnotations: false, fixStyle: "inline-type-imports" }],
             "@typescript-eslint/no-this-alias": "error",
 
             // Restricted syntax

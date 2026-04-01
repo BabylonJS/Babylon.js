@@ -1,5 +1,5 @@
-import type { TypedArray } from "core/types";
-import type { AccessorComponentType, AccessorType, IAccessor, IBufferView } from "babylonjs-gltf2interface";
+import { type TypedArray } from "core/types";
+import { type AccessorComponentType, type AccessorType, type IAccessor, type IBufferView } from "babylonjs-gltf2interface";
 import { DataWriter } from "./dataWriter";
 
 type TypedArrayForglTF = Exclude<TypedArray, Float64Array | BigInt64Array | BigUint64Array>;

@@ -1,10 +1,9 @@
-import type { FactorGradient } from "core/index";
-import type { ParticleSystem } from "core/Particles/particleSystem";
-import type { GPUParticleSystem } from "core/Particles/gpuParticleSystem";
-import type { FunctionComponent } from "react";
+import { type FactorGradient } from "core/index";
+import { type ParticleSystem } from "core/Particles/particleSystem";
+import { type GPUParticleSystem } from "core/Particles/gpuParticleSystem";
+import { type FunctionComponent, useCallback } from "react";
 
 import { makeStyles, Subtitle2, tokens } from "@fluentui/react-components";
-import { useCallback } from "react";
 
 import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
 import { FactorGradientList } from "shared-ui-components/fluent/hoc/gradientList";

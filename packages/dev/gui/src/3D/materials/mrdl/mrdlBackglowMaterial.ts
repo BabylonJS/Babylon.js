@@ -1,12 +1,12 @@
-import type { AbstractMesh } from "core/Meshes/abstractMesh";
-import type { BaseTexture } from "core/Materials/Textures/baseTexture";
-import type { IAnimatable } from "core/Animations/animatable.interface";
-import type { IEffectCreationOptions } from "core/Materials/effect";
-import type { Matrix } from "core/Maths/math.vector";
-import type { Mesh } from "core/Meshes/mesh";
-import type { Nullable } from "core/types";
-import type { Scene } from "core/scene";
-import type { SubMesh } from "core/Meshes/subMesh";
+import { type AbstractMesh } from "core/Meshes/abstractMesh";
+import { type BaseTexture } from "core/Materials/Textures/baseTexture";
+import { type IAnimatable } from "core/Animations/animatable.interface";
+import { type IEffectCreationOptions } from "core/Materials/effect";
+import { type Matrix } from "core/Maths/math.vector";
+import { type Mesh } from "core/Meshes/mesh";
+import { type Nullable } from "core/types";
+import { type Scene } from "core/scene";
+import { type SubMesh } from "core/Meshes/subMesh";
 
 import { Color4 } from "core/Maths/math.color";
 import { Constants } from "core/Engines/constants";

@@ -1,16 +1,16 @@
-import type {
-    BaseTexture,
-    DataBuffer,
-    ExternalTexture,
-    FrameGraph,
-    FrameGraphContext,
-    FrameGraphPass,
-    IComputeShaderOptions,
-    IComputeShaderPath,
-    InternalTexture,
-    StorageBuffer,
-    TextureSampler,
-    VideoTexture,
+import {
+    type BaseTexture,
+    type DataBuffer,
+    type ExternalTexture,
+    type FrameGraph,
+    type FrameGraphContext,
+    type FrameGraphPass,
+    type IComputeShaderOptions,
+    type IComputeShaderPath,
+    type InternalTexture,
+    type StorageBuffer,
+    type TextureSampler,
+    type VideoTexture,
 } from "core/index";
 import { FrameGraphTask } from "../../frameGraphTask";
 import { ComputeShader } from "core/Compute/computeShader";

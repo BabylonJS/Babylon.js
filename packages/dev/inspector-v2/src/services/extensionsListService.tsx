@@ -1,12 +1,6 @@
-import type { SelectTabData, SelectTabEvent } from "@fluentui/react-components";
-import type { TriggerProps } from "@fluentui/react-utilities";
-import type { FunctionComponent } from "react";
-import type { PersonMetadata } from "../extensibility/extensionFeed";
-import type { IExtension } from "../extensibility/extensionManager";
-import type { ServiceDefinition } from "../modularity/serviceDefinition";
-import type { IShellService } from "./shellService";
-
 import {
+    type SelectTabData,
+    type SelectTabEvent,
     Accordion,
     AccordionHeader,
     AccordionItem,
@@ -39,6 +33,13 @@ import {
     tokens,
     Tooltip,
 } from "@fluentui/react-components";
+import { type TriggerProps } from "@fluentui/react-utilities";
+import { type FunctionComponent, memo, useCallback, useEffect, useMemo, useState } from "react";
+import { type PersonMetadata } from "../extensibility/extensionFeed";
+import { type IExtension } from "../extensibility/extensionManager";
+import { type ServiceDefinition } from "../modularity/serviceDefinition";
+import { type IShellService, ShellServiceIdentity } from "./shellService";
+
 import {
     AppsAddInRegular,
     ArrowDownloadRegular,
@@ -51,13 +52,11 @@ import {
     PeopleCommunityRegular,
 } from "@fluentui/react-icons";
 import { Fade } from "@fluentui/react-motion-components-preview";
-import { memo, useCallback, useEffect, useMemo, useState } from "react";
 
 import { Logger } from "core/Misc/logger";
 
 import { Link } from "shared-ui-components/fluent/primitives/link";
 import { useExtensionManager } from "../contexts/extensionManagerContext";
-import { ShellServiceIdentity } from "./shellService";
 
 const useStyles = makeStyles({
     extensionButton: {},
@@ -148,36 +147,13 @@ function AsPersonMetadata(person: string | PersonMetadata): PersonMetadata {
     return person;
 }
 
-function usePeopleMetadata(people?: readonly (string | PersonMetadata | undefined)[]) {
+function GetAvatarImage(person: PersonMetadata): { src: string } | undefined {
+    return person.avatar ? { src: `data:image/png;base64,${person.avatar}` } : undefined;
+}
+
+function usePeopleMetadata(people?: readonly (string | PersonMetadata | undefined)[]): PersonMetadata[] {
     const definedPeople = useMemo(() => (people ? people.filter((person): person is string | PersonMetadata => !!person) : []), [people]);
-
-    //const [peopleMetadataEx, setPeopleMetadataEx] = useState<(PersonMetadata & { avatarUrl?: string })[]>(definedPeople.map(AsPersonMetadata));
-    const [peopleMetadataEx] = useState(definedPeople.map(AsPersonMetadata));
-
-    // TODO: Would be nice if we could pull author/contributor profile pictures from the forum, but need to see if this is ok and whether we want to adjust CORS to allow it.
-    // useEffect(() => {
-    //     definedPeople.forEach(async (person, index) => {
-    //         const personMetadata = AsPersonMetadata(person);
-    //         if (personMetadata.forumUserName) {
-    //             try {
-    //                 const json = await (await fetch(`https://forum.babylonjs.com/u/${personMetadata.forumUserName}.json`)).json();
-    //                 const avatarRelativeUrl = json.user?.avatar_template?.replace("{size}", "96");
-    //                 if (avatarRelativeUrl) {
-    //                     const avatarUrl = `https://forum.babylonjs.com${avatarRelativeUrl}`;
-    //                     setPeopleMetadataEx((prev) => {
-    //                         const newMetadata = [...prev];
-    //                         newMetadata[index] = { ...personMetadata, avatarUrl };
-    //                         return newMetadata;
-    //                     });
-    //                 }
-    //             } catch {
-    //                 // Ignore, non-fatal
-    //             }
-    //         }
-    //     });
-    // }, [definedPeople]);
-
-    return peopleMetadataEx.filter(Boolean);
+    return useMemo(() => definedPeople.map(AsPersonMetadata), [definedPeople]);
 }
 
 const WebResource: FunctionComponent<{ url: string; urlDisplay?: string; icon: JSX.Element; label: string }> = (props) => {
@@ -209,7 +185,7 @@ const PersonDetailsPopover: FunctionComponent<TriggerProps & { person: PersonMet
             <PopoverTrigger disableButtonEnhancement>{children}</PopoverTrigger>
             <PopoverSurface>
                 <div className={classes.personPopoverSurfaceDiv}>
-                    <Persona name={person.name} secondaryText={title} />
+                    <Persona name={person.name} secondaryText={title} avatar={{ image: GetAvatarImage(person) }} />
                     {person.email && <WebResource url={`mailto:${person.email}`} urlDisplay={person.email} icon={<MailRegular />} label="Email" />}
                     {person.url && <WebResource url={person.url} urlDisplay={person.url} icon={<LinkRegular />} label="Website" />}
                     {person.forumUserName && (
@@ -300,7 +276,12 @@ const ExtensionDetails: FunctionComponent<{ extension: IExtension }> = memo((pro
                                 <div className={classes.peopleDetailsDiv} style={{ display: "flex" }}>
                                     {author && (
                                         <PersonDetailsPopover person={author} title="Author" disabled={!hasAuthorDetails}>
-                                            <Persona name={author.name} secondaryText="Author" style={{ cursor: hasAuthorDetails ? "pointer" : "default" }} />
+                                            <Persona
+                                                name={author.name}
+                                                secondaryText="Author"
+                                                avatar={{ image: GetAvatarImage(author) }}
+                                                style={{ cursor: hasAuthorDetails ? "pointer" : "default" }}
+                                            />
                                         </PersonDetailsPopover>
                                     )}
                                     {contributors.length > 0 && (
@@ -308,7 +289,7 @@ const ExtensionDetails: FunctionComponent<{ extension: IExtension }> = memo((pro
                                             {contributors.map((contributor) => {
                                                 return (
                                                     <PersonDetailsPopover key={contributor.name} person={contributor} title="Contributor">
-                                                        <AvatarGroupItem name={contributor.name} className={classes.avatarGroupItem} />
+                                                        <AvatarGroupItem name={contributor.name} className={classes.avatarGroupItem} image={GetAvatarImage(contributor)} />
                                                     </PersonDetailsPopover>
                                                 );
                                             })}

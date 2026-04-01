@@ -1,23 +1,23 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { serialize, expandToProperty, addAccessorsForMaterialProperty } from "../../Misc/decorators";
 import { GetEnvironmentBRDFTexture, GetEnvironmentFuzzBRDFTexture } from "../../Misc/brdfTextureTools";
-import type { Nullable } from "../../types";
-import type { Scene } from "../../scene";
-import type { Color4 } from "../../Maths/math.color";
-import { Color3 } from "../../Maths/math.color";
+import { type Nullable } from "../../types";
+import { type Scene } from "../../scene";
+import { type Color4, Color3 } from "../../Maths/math.color";
 import { ImageProcessingConfiguration } from "../imageProcessingConfiguration";
-import type { BaseTexture } from "../../Materials/Textures/baseTexture";
+import { type BaseTexture } from "../../Materials/Textures/baseTexture";
 import { Texture } from "../Textures/texture";
 import { RegisterClass } from "../../Misc/typeStore";
 import { Material } from "../material";
 import { SerializationHelper } from "../../Misc/decorators.serialization";
-import type { Engine } from "../../Engines/engine";
-import type { AbstractMesh } from "../../Meshes/abstractMesh";
-import type { Effect, IEffectCreationOptions } from "../../Materials/effect";
+import { type Engine } from "../../Engines/engine";
+import { type AbstractMesh } from "../../Meshes/abstractMesh";
+import { type Effect, type IEffectCreationOptions } from "../../Materials/effect";
 import { MaterialDefines } from "../materialDefines";
 import { ImageProcessingDefinesMixin } from "../imageProcessingConfiguration.defines";
 import { EffectFallbacks } from "../effectFallbacks";
 import { AddClipPlaneUniforms, BindClipPlane } from "../clipPlaneMaterialHelper";
+import { PrepareVertexPullingUniforms, BindVertexPullingUniforms, type IVertexPullingMetadata } from "../vertexPullingHelper.functions";
 import {
     BindBonesParameters,
     BindFogParameters,
@@ -50,22 +50,21 @@ import { VertexBuffer } from "../../Buffers/buffer";
 import { MaterialPluginEvent } from "../materialPluginEvent";
 import { MaterialHelperGeometryRendering } from "../materialHelper.geometryrendering";
 import { PrePassConfiguration } from "../prePassConfiguration";
-import type { IMaterialCompilationOptions, ICustomShaderNameResolveOptions } from "../../Materials/material";
+import { type IMaterialCompilationOptions, type ICustomShaderNameResolveOptions } from "../../Materials/material";
 import { ShaderLanguage } from "../shaderLanguage";
 import { MaterialFlags } from "../materialFlags";
-import type { SubMesh } from "../../Meshes/subMesh";
+import { type SubMesh } from "../../Meshes/subMesh";
 import { Logger } from "core/Misc/logger";
 import { UVDefinesMixin } from "../uv.defines";
-import { Vector2, Vector4, TmpVectors } from "core/Maths/math.vector";
-import type { Vector3, Matrix } from "core/Maths/math.vector";
-import type { Mesh } from "../../Meshes/mesh";
+import { Vector2, Vector4, TmpVectors, type Vector3, type Matrix } from "core/Maths/math.vector";
+import { type Mesh } from "../../Meshes/mesh";
 import { ImageProcessingMixin } from "../imageProcessing";
 import { PushMaterial } from "../pushMaterial";
 import { SmartArray } from "../../Misc/smartArray";
-import type { RenderTargetTexture } from "../Textures/renderTargetTexture";
-import type { IAnimatable } from "../../Animations/animatable.interface";
+import { type RenderTargetTexture } from "../Textures/renderTargetTexture";
+import { type IAnimatable } from "../../Animations/animatable.interface";
 import { Tools } from "../../Misc/tools";
-import type { UniformBuffer } from "../../Materials/uniformBuffer";
+import { type UniformBuffer } from "../../Materials/uniformBuffer";
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
@@ -423,6 +422,10 @@ export class OpenPBRMaterialDefines extends ImageProcessingDefinesMixin(OpenPBRM
     public DECAL_AFTER_DETAIL = false;
 
     public DEBUGMODE = 0;
+    public USE_VERTEX_PULLING = false;
+    public VERTEX_PULLING_USE_INDEX_BUFFER = false;
+    public VERTEX_PULLING_INDEX_BUFFER_32BITS = false;
+    public RIGHT_HANDED = false;
 
     public CLUSTLIGHT_SLICES = 0;
     public CLUSTLIGHT_BATCH = 0;
@@ -1660,6 +1663,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
 
     private _shadersLoaded = false;
     private _breakShaderLoadedCheck = false;
+    private _vertexPullingMetadata: Map<string, IVertexPullingMetadata> | null = null;
 
     /**
      * @internal
@@ -2289,6 +2293,11 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
         // Bones
         BindBonesParameters(mesh, this._activeEffect, this.prePassConfiguration);
 
+        // Vertex pulling
+        if (this._vertexPullingMetadata) {
+            BindVertexPullingUniforms(this._activeEffect, this._vertexPullingMetadata);
+        }
+
         const ubo = this._uniformBuffer;
         if (mustRebind) {
             this.bindViewProjection(effect);
@@ -2689,7 +2698,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
             "vLightingIntensity",
             "logarithmicDepthConstant",
             "vTangentSpaceParams",
-            "boneTextureWidth",
+            "boneTextureInfo",
             "vDebugMode",
             "morphTargetTextureInfo",
             "morphTargetTextureIndices",
@@ -2748,6 +2757,21 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
         PrePassConfiguration.AddUniforms(uniforms);
         PrePassConfiguration.AddSamplers(samplers);
         AddClipPlaneUniforms(uniforms);
+
+        // Vertex pulling metadata uniforms
+        if (this._useVertexPulling) {
+            const geometry = (renderingMesh as Mesh)?.geometry;
+            if (geometry) {
+                this._vertexPullingMetadata = PrepareVertexPullingUniforms(geometry);
+                if (this._vertexPullingMetadata) {
+                    this._vertexPullingMetadata.forEach((_, attribute) => {
+                        uniforms.push(`vp_${attribute}_info`);
+                    });
+                }
+            }
+        } else {
+            this._vertexPullingMetadata = null;
+        }
 
         if (ImageProcessingConfiguration) {
             ImageProcessingConfiguration.PrepareUniforms(uniforms, defines);

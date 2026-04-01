@@ -1,9 +1,9 @@
-import type { Nullable } from "core/types";
+import { type Nullable } from "core/types";
 import * as React from "react";
-import type { GlobalState } from "../../../../../../globalState";
-import type { Context, IActiveAnimationChangedOptions } from "../context";
-import type { Animation } from "core/Animations/animation";
-import type { Observer } from "core/Misc/observable";
+import { type GlobalState } from "../../../../../../globalState";
+import { type Context, type IActiveAnimationChangedOptions } from "../context";
+import { type Animation } from "core/Animations/animation";
+import { type Observer } from "core/Misc/observable";
 
 const TickDistance = 25; // x distance between consecutive ticks
 

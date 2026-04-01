@@ -1,4 +1,4 @@
-import type { Nullable, AbstractEngine } from "core/index";
+import { type Nullable, type AbstractEngine } from "core/index";
 import { ThinBloomMergePostProcess } from "./thinBloomMergePostProcess";
 import { Vector2 } from "core/Maths/math.vector";
 import { ThinBlurPostProcess } from "./thinBlurPostProcess";

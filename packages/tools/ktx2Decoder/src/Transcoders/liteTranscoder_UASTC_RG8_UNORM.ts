@@ -2,7 +2,7 @@
 import * as KTX2 from "core/Materials/Textures/ktx2decoderTypes";
 
 import { LiteTranscoder } from "./liteTranscoder";
-import type { KTX2FileReader, IKTX2_ImageDesc } from "../ktx2FileReader";
+import { type KTX2FileReader, type IKTX2_ImageDesc } from "../ktx2FileReader";
 
 /**
  * @internal

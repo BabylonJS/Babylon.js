@@ -1,0 +1,56 @@
+# =============================================================================
+# Template: Deploy a tool's dist + public directories to the deployment server
+#
+# Zips the dist/ and public/ directories of a tool package, uploads both
+# to the deployment server, and optionally purges a CDN endpoint.
+# =============================================================================
+
+parameters:
+    - name: toolPackageDir
+      type: string # relative path from repo root, e.g. 'packages/tools/playground'
+    - name: deployPath
+      type: string # server path, e.g. 'PLAYGROUND/$(BuildName)' or 'sandbox'
+    - name: storageAccount
+      type: string
+      default: "$(SNAPSHOTS_STORAGE_ACCOUNT)"
+    - name: displayName
+      type: string
+      default: "Deploy tool"
+    - name: purgeEndpoint
+      type: string
+      default: ""
+    - name: purgeProfile
+      type: string
+      default: ""
+
+steps:
+    - script: |
+          cd ${{ parameters.toolPackageDir }}/dist
+          zip -r $(Build.SourcesDirectory)/_deploy_dist.zip *
+          cd $(Build.SourcesDirectory)
+
+          cd ${{ parameters.toolPackageDir }}/public
+          zip -r $(Build.SourcesDirectory)/_deploy_public.zip *
+          cd $(Build.SourcesDirectory)
+
+          curl $(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_UPLOAD) -i -X POST \
+            -H "Content-Type: multipart/form-data" \
+            -H "Authorization: $(BASIC_AUTH)" \
+            -F "path=${{ parameters.deployPath }}" \
+            -F "storageAccount=${{ parameters.storageAccount }}" \
+            -F "zip=@_deploy_dist.zip"
+
+          curl $(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_UPLOAD) -i -X POST \
+            -H "Content-Type: multipart/form-data" \
+            -H "Authorization: $(BASIC_AUTH)" \
+            -F "path=${{ parameters.deployPath }}" \
+            -F "storageAccount=${{ parameters.storageAccount }}" \
+            -F "zip=@_deploy_public.zip"
+
+          rm -f _deploy_dist.zip _deploy_public.zip
+      displayName: "${{ parameters.displayName }}"
+
+    - ${{ if ne(parameters.purgeEndpoint, '') }}:
+          - script: |
+                curl "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_PURGE)?endpoint=${{ parameters.purgeEndpoint }}&profileName=${{ parameters.purgeProfile }}&wait=true" -i -H "Authorization: $(BASIC_AUTH)"
+            displayName: "Purge CDN (${{ parameters.purgeEndpoint }})"

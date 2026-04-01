@@ -1,6 +1,4 @@
-import type { ComponentProps, ComponentType } from "react";
-
-import { forwardRef, useMemo } from "react";
+import { type ComponentProps, type ComponentType, forwardRef, useMemo } from "react";
 
 import { ErrorBoundary } from "../errorBoundary";
 import { usePropertyChangedNotifier } from "../../contexts/propertyContext";
@@ -40,14 +38,14 @@ export type BoundPropertyProps<TargetT extends object, PropertyKeyT extends keyo
 > &
     (IsNullable<TargetT[PropertyKeyT]> extends true
         ? // Pass null explicitly to skip nullable handling entirely - value passes through as-is
-          | {
+              | {
                     defaultValue: null;
                     nullable?: never;
                     ignoreNullable?: never;
                 }
               | (ComponentProps<ComponentT> extends { nullable?: boolean }
                     ? // Component supports nullable UI and thus requires a defaultValue to be sent with nullable = {true}
-                      | {
+                          | {
                                 nullable: true;
                                 defaultValue: NonNullable<TargetT[PropertyKeyT]>;
                                 ignoreNullable?: never;

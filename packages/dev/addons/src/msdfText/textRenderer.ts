@@ -1,15 +1,14 @@
-import type { VertexBuffer } from "core/Buffers/buffer";
-import { Buffer } from "core/Buffers/buffer";
-import type { AbstractEngine } from "core/Engines/abstractEngine";
+import { type VertexBuffer, Buffer } from "core/Buffers/buffer";
+import { type AbstractEngine } from "core/Engines/abstractEngine";
 import { Constants } from "core/Engines/constants";
-import type { ThinEngine } from "core/Engines/thinEngine";
+import { type ThinEngine } from "core/Engines/thinEngine";
 import { DrawWrapper } from "core/Materials/drawWrapper";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
-import type { IDisposable } from "core/scene";
-import type { Nullable } from "core/types";
+import { type IDisposable } from "core/scene";
+import { type Nullable } from "core/types";
 import { SdfTextParagraph } from "./sdf/paragraph";
-import type { FontAsset } from "./fontAsset";
-import type { ParagraphOptions } from "./paragraphOptions";
+import { type FontAsset } from "./fontAsset";
+import { type ParagraphOptions } from "./paragraphOptions";
 import { ThinMatrix } from "core/Maths/ThinMaths/thinMath.matrix";
 import {
     CopyMatrixToArray,
@@ -19,7 +18,7 @@ import {
     ScalingMatrixToRef,
     TranslationMatrixToRef,
 } from "core/Maths/ThinMaths/thinMath.matrix.functions";
-import type { IColor4Like, IMatrixLike } from "core/Maths/math.like";
+import { type IColor4Like, type IMatrixLike } from "core/Maths/math.like";
 
 /**
  * Abstract Node class from Babylon.js

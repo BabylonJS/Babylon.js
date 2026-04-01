@@ -21,7 +21,6 @@ module.exports = (env) => {
         },
         alias: {
             "procedural-textures": path.resolve(__dirname, "../../../dev/proceduralTextures/src"),
-            "@lts/procedural-textures": path.resolve(__dirname, "../../../lts/proceduralTextures/src"),
         },
         overrideFilename: (pathData) => {
             return pathData.chunk.name === "proceduralTextures"

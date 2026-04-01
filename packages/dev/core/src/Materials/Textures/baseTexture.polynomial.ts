@@ -1,6 +1,6 @@
-import type { Nullable } from "../../types";
+import { type Nullable } from "../../types";
 import { CubeMapToSphericalPolynomialTools } from "../../Misc/HighDynamicRange/cubemapToSphericalPolynomial";
-import type { SphericalPolynomial } from "../../Maths/sphericalPolynomial";
+import { type SphericalPolynomial } from "../../Maths/sphericalPolynomial";
 import { BaseTexture } from "./baseTexture";
 
 declare module "./baseTexture" {
@@ -18,8 +18,13 @@ declare module "./baseTexture" {
          * Can be useful if you generate a cubemap multiple times (from a probe for eg) and you need the proper polynomials each time
          */
         forceSphericalPolynomialsRecompute(): void;
+
+        /** @internal */
+        _sphericalPolynomialTargetSize: number;
     }
 }
+
+BaseTexture.prototype._sphericalPolynomialTargetSize = 0;
 
 BaseTexture.prototype.forceSphericalPolynomialsRecompute = function (): void {
     if (this._texture) {

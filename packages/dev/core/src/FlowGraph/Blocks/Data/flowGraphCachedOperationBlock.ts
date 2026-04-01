@@ -1,10 +1,8 @@
-import type { Nullable } from "../../../types";
-import type { IFlowGraphBlockConfiguration } from "../../flowGraphBlock";
-import { FlowGraphBlock } from "../../flowGraphBlock";
-import type { FlowGraphContext } from "../../flowGraphContext";
-import type { FlowGraphDataConnection } from "../../flowGraphDataConnection";
-import type { RichType } from "../../flowGraphRichTypes";
-import { RichTypeBoolean } from "../../flowGraphRichTypes";
+import { type Nullable } from "../../../types";
+import { type IFlowGraphBlockConfiguration, FlowGraphBlock } from "../../flowGraphBlock";
+import { type FlowGraphContext } from "../../flowGraphContext";
+import { type FlowGraphDataConnection } from "../../flowGraphDataConnection";
+import { type RichType, RichTypeBoolean } from "../../flowGraphRichTypes";
 
 const CacheName = "cachedOperationValue";
 const CacheExecIdName = "cachedExecutionId";

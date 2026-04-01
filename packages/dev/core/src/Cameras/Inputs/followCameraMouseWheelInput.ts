@@ -1,12 +1,10 @@
-import type { Nullable } from "../../types";
+import { type Nullable } from "../../types";
 import { serialize } from "../../Misc/decorators";
-import type { EventState, Observer } from "../../Misc/observable";
-import type { FollowCamera } from "../../Cameras/followCamera";
-import type { ICameraInput } from "../../Cameras/cameraInputsManager";
-import { CameraInputTypes } from "../../Cameras/cameraInputsManager";
-import type { PointerInfo } from "../../Events/pointerEvents";
-import { PointerEventTypes } from "../../Events/pointerEvents";
-import type { IWheelEvent } from "../../Events/deviceInputEvents";
+import { type EventState, type Observer } from "../../Misc/observable";
+import { type FollowCamera } from "../../Cameras/followCamera";
+import { type ICameraInput, CameraInputTypes } from "../../Cameras/cameraInputsManager";
+import { type PointerInfo, PointerEventTypes } from "../../Events/pointerEvents";
+import { type IWheelEvent } from "../../Events/deviceInputEvents";
 import { Tools } from "../../Misc/tools";
 import { Logger } from "core/Misc/logger";
 

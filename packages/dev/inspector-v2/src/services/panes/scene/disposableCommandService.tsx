@@ -1,13 +1,11 @@
-import type { IDisposable } from "core/index";
-import type { ServiceDefinition } from "../../../modularity/serviceDefinition";
-import type { ISceneContext } from "../../sceneContext";
-import type { ISceneExplorerService } from "./sceneExplorerService";
+import { type IDisposable } from "core/index";
+import { type ServiceDefinition } from "../../../modularity/serviceDefinition";
+import { type ISceneContext, SceneContextIdentity } from "../../sceneContext";
+import { type ISceneExplorerService, SceneExplorerServiceIdentity } from "./sceneExplorerService";
 
 import { DeleteRegular } from "@fluentui/react-icons";
 
-import { SceneContextIdentity } from "../../sceneContext";
 import { DefaultCommandsOrder } from "./defaultSectionsMetadata";
-import { SceneExplorerServiceIdentity } from "./sceneExplorerService";
 
 export const DisposableCommandServiceDefinition: ServiceDefinition<[], [ISceneExplorerService, ISceneContext]> = {
     friendlyName: "Disposable Command Service",

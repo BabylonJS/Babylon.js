@@ -1,8 +1,8 @@
 import { GetExponentOfTwo } from "core/Misc/tools.functions";
 import { ThinEngine } from "../../Engines/thinEngine";
 import { InternalTexture, InternalTextureSource } from "../../Materials/Textures/internalTexture";
-import type { ImageSource, Nullable } from "../../types";
-import type { ICanvas } from "../ICanvas";
+import { type ImageSource, type Nullable } from "../../types";
+import { type ICanvas } from "../ICanvas";
 
 declare module "../../Engines/abstractEngine" {
     // eslint-disable-next-line @typescript-eslint/naming-convention

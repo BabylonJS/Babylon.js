@@ -1,10 +1,10 @@
 import * as React from "react";
-import type { Observable } from "core/Misc/observable";
-import type { PropertyChangedEvent } from "shared-ui-components/propertyChangedEvent";
+import { type Observable } from "core/Misc/observable";
+import { type PropertyChangedEvent } from "shared-ui-components/propertyChangedEvent";
 import { CommonControlPropertyGridComponent } from "../gui/commonControlPropertyGridComponent";
-import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
+import { type LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
-import type { DisplayGrid } from "gui/2D/controls/displayGrid";
+import { type DisplayGrid } from "gui/2D/controls/displayGrid";
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
 import { ColorLine } from "shared-ui-components/lines/colorLineComponent";
 import { makeTargetsProxy } from "shared-ui-components/lines/targetsProxy";
@@ -18,7 +18,7 @@ import displayGridLine2Icon from "shared-ui-components/imgs/displayGridLine2Icon
 import { IconComponent } from "shared-ui-components/lines/iconComponent";
 import { UnitButton } from "shared-ui-components/lines/unitButton";
 import { CheckBoxLineComponent } from "shared-ui-components/lines/checkBoxLineComponent";
-import type { GlobalState } from "../../../../globalState";
+import { type GlobalState } from "../../../../globalState";
 
 interface IDisplayGridPropertyGridComponentProps {
     displayGrids: DisplayGrid[];

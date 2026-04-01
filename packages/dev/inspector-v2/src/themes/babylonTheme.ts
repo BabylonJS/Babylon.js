@@ -1,6 +1,4 @@
-import type { BrandVariants, Theme } from "@fluentui/react-components";
-
-import { createDarkTheme, createLightTheme } from "@fluentui/react-components";
+import { type BrandVariants, type Theme, createDarkTheme, createLightTheme } from "@fluentui/react-components";
 
 // Generated from https://react.fluentui.dev/?path=/docs/theme-theme-designer--docs
 // Key color: #3A94FC

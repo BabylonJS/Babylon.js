@@ -3,7 +3,7 @@ import type * as KTX2 from "core/Materials/Textures/ktx2decoderTypes";
 
 import { Transcoder } from "../transcoder";
 import { WASMMemoryManager } from "../wasmMemoryManager";
-import type { KTX2FileReader, IKTX2_ImageDesc } from "../ktx2FileReader";
+import { type KTX2FileReader, type IKTX2_ImageDesc } from "../ktx2FileReader";
 
 /**
  * @internal

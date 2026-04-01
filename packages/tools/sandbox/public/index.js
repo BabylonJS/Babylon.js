@@ -1,6 +1,7 @@
 /* global BABYLON */
 
 var hostElement = document.getElementById("host-element");
+var cdnPort = 1337;
 
 const fallbackUrl = "https://snapshots-cvgtc2eugrd3cgfd.z01.azurefd.net/refs/heads/master";
 
@@ -57,14 +58,14 @@ const Versions = {
               ]),
     ],
     local: [
-        { url: `//${window.location.hostname}:1337/babylon.js`, instantResolve: false },
-        { url: `//${window.location.hostname}:1337/addons/babylonjs.addons.js`, instantResolve: false },
-        { url: `//${window.location.hostname}:1337/loaders/babylonjs.loaders.min.js`, instantResolve: false },
-        { url: `//${window.location.hostname}:1337/serializers/babylonjs.serializers.min.js`, instantResolve: false },
-        { url: `//${window.location.hostname}:1337/materialsLibrary/babylonjs.materials.min.js`, instantResolve: false },
-        { url: `//${window.location.hostname}:1337/gui/babylon.gui.min.js`, instantResolve: false },
-        // { url: `//${window.location.hostname}:1337/inspector/babylon.inspector.bundle.js`, instantResolve: false },
-        { url: `//${window.location.hostname}:1337/inspector/babylon.inspector-v2.bundle.js`, instantResolve: false },
+        { url: `//${window.location.hostname}:${cdnPort}/babylon.js`, instantResolve: false },
+        { url: `//${window.location.hostname}:${cdnPort}/addons/babylonjs.addons.js`, instantResolve: false },
+        { url: `//${window.location.hostname}:${cdnPort}/loaders/babylonjs.loaders.min.js`, instantResolve: false },
+        { url: `//${window.location.hostname}:${cdnPort}/serializers/babylonjs.serializers.min.js`, instantResolve: false },
+        { url: `//${window.location.hostname}:${cdnPort}/materialsLibrary/babylonjs.materials.min.js`, instantResolve: false },
+        { url: `//${window.location.hostname}:${cdnPort}/gui/babylon.gui.min.js`, instantResolve: false },
+        // { url: `//${window.location.hostname}:${cdnPort}/inspector/babylon.inspector.bundle.js`, instantResolve: false },
+        { url: `//${window.location.hostname}:${cdnPort}/inspector/babylon.inspector-v2.bundle.js`, instantResolve: false },
     ],
 };
 
@@ -154,7 +155,7 @@ let checkBabylonVersionAsync = function () {
         } else if (version) {
             globalThis.BABYLON.Tools.ScriptBaseUrl = "https://cdn.babylonjs.com/v" + version;
         } else if (activeVersion === "local") {
-            globalThis.BABYLON.Tools.ScriptBaseUrl = window.location.protocol + `//${window.location.hostname}:1337/`;
+            globalThis.BABYLON.Tools.ScriptBaseUrl = window.location.protocol + `//${window.location.hostname}:${cdnPort}/`;
         }
 
         return { version, bundles: versions.map((v) => v.url) };

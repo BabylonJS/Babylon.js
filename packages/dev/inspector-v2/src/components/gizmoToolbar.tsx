@@ -1,19 +1,29 @@
-import type { MenuButtonProps, MenuCheckedValueChangeData, MenuCheckedValueChangeEvent } from "@fluentui/react-components";
-import type { FunctionComponent } from "react";
+import {
+    type MenuButtonProps,
+    type MenuCheckedValueChangeData,
+    type MenuCheckedValueChangeEvent,
+    makeStyles,
+    Menu,
+    MenuItemRadio,
+    MenuList,
+    MenuPopover,
+    MenuTrigger,
+    SplitButton,
+    tokens,
+    Tooltip,
+} from "@fluentui/react-components";
+import { type FunctionComponent, useCallback } from "react";
 
-import type { IGizmoService } from "../services/gizmoService";
-import type { GizmoMode } from "../services/gizmoService";
+import { type IGizmoService, type GizmoMode } from "../services/gizmoService";
 
-import { makeStyles, Menu, MenuItemRadio, MenuList, MenuPopover, MenuTrigger, SplitButton, tokens, Tooltip } from "@fluentui/react-components";
 import { ArrowExpandRegular, ArrowRotateClockwiseRegular, CameraRegular, CubeRegular, GlobeRegular, SelectObjectRegular } from "@fluentui/react-icons";
-import { useCallback } from "react";
 
 import { GizmoCoordinatesMode } from "core/Gizmos/gizmo";
 import { TranslateIcon } from "shared-ui-components/fluent/icons";
 import { Collapse } from "shared-ui-components/fluent/primitives/collapse";
 import { ToggleButton } from "shared-ui-components/fluent/primitives/toggleButton";
 import { useObservableState } from "../hooks/observableHooks";
-import type { ISceneContext } from "../services/sceneContext";
+import { type ISceneContext } from "../services/sceneContext";
 
 const useStyles = makeStyles({
     coordinatesModeButton: {

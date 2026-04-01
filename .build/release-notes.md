@@ -1,10 +1,9 @@
 
 ### Core
 
-- WebGPU: Fix dual source blending detection - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#18082](https://github.com/BabylonJS/Babylon.js/pull/18082))
-- WebGPU: Fix wrong selected meshes in the selection outline layer - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#18080](https://github.com/BabylonJS/Babylon.js/pull/18080))
-- Clustered lights: Limit batch size for mobile devices - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#18081](https://github.com/BabylonJS/Babylon.js/pull/18081))
+- Simplify delayLoad by removing redundant state assignment - by [github-actions[bot]](https://github.com/apps/github-actions) ([#18160](https://github.com/BabylonJS/Babylon.js/pull/18160))
+- Fixed splat shader materials having culling enabled by default - by [HasKha](https://github.com/HasKha) ([#18158](https://github.com/BabylonJS/Babylon.js/pull/18158))
 
-### Node Particle Editor
+### Viewer
 
-- Removing auto movement of camera because of framing - by [VicenteCartas](https://github.com/VicenteCartas) ([#18077](https://github.com/BabylonJS/Babylon.js/pull/18077))
+- Viewer: Visual tests + bug fixes - [_Bug Fix_] by [ryantrem](https://github.com/ryantrem) ([#18164](https://github.com/BabylonJS/Babylon.js/pull/18164))

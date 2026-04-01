@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { serializeAsImageProcessingConfiguration } from "../Misc/decorators";
-import type { Nullable } from "../types";
-import type { ImageProcessingConfiguration } from "./imageProcessingConfiguration";
-import type { Observer } from "../Misc/observable";
-import type { BaseTexture } from "../Materials/Textures/baseTexture";
-import type { ColorCurves } from "../Materials/colorCurves";
+import { type Nullable } from "../types";
+import { type ImageProcessingConfiguration } from "./imageProcessingConfiguration";
+import { type Observer } from "../Misc/observable";
+import { type BaseTexture } from "../Materials/Textures/baseTexture";
+import { type ColorCurves } from "../Materials/colorCurves";
 
 type ImageProcessingMixinConstructor<T = {}> = new (...args: any[]) => T;
 
@@ -22,7 +22,7 @@ export function ImageProcessingMixin<Tbase extends ImageProcessingMixinConstruct
             super(...args);
             // Decorators don't work on this annonymous class
             // so I'm setting this up manually.
-            serializeAsImageProcessingConfiguration.call(this, this, "_imageProcessingConfiguration");
+            serializeAsImageProcessingConfiguration()(this, "_imageProcessingConfiguration");
         }
         /**
          * Default configuration related to image processing available in the standard Material.

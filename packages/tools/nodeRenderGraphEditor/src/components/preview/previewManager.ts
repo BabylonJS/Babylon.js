@@ -1,9 +1,9 @@
 /* eslint-disable github/no-then */
 /* eslint-disable @typescript-eslint/no-floating-promises */
-import type { GlobalState } from "../../globalState";
-import type { Nullable } from "core/types";
-import type { Observer } from "core/Misc/observable";
-import type { IShadowLight } from "core/Lights/shadowLight";
+import { type GlobalState } from "../../globalState";
+import { type Nullable } from "core/types";
+import { type Observer } from "core/Misc/observable";
+import { type IShadowLight } from "core/Lights/shadowLight";
 import { Engine } from "core/Engines/engine";
 import { Scene } from "core/scene";
 import { Matrix, Vector3 } from "core/Maths/math.vector";
@@ -12,11 +12,11 @@ import { DirectionalLight } from "core/Lights/directionalLight";
 import { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
 import { SceneLoader } from "core/Loading/sceneLoader";
 import { TransformNode } from "core/Meshes/transformNode";
-import type { FramingBehavior } from "core/Behaviors/Cameras/framingBehavior";
+import { type FramingBehavior } from "core/Behaviors/Cameras/framingBehavior";
 import { NodeRenderGraph } from "core/FrameGraph/Node/nodeRenderGraph";
-import type { NodeRenderGraphBlock } from "core/FrameGraph/Node/nodeRenderGraphBlock";
+import { type NodeRenderGraphBlock } from "core/FrameGraph/Node/nodeRenderGraphBlock";
 import { LogEntry } from "../log/logComponent";
-import type { NodeRenderGraphGUIBlock } from "gui/2D/FrameGraph/renderGraphGUIBlock";
+import { type NodeRenderGraphGUIBlock } from "gui/2D/FrameGraph/renderGraphGUIBlock";
 import { Button } from "gui/2D/controls/button";
 import { Control } from "gui/2D/controls/control";
 import { PreviewType } from "./previewType";
@@ -25,14 +25,14 @@ import { FilesInput } from "core/Misc/filesInput";
 import { Color3 } from "core/Maths/math.color";
 import { WebGPUEngine } from "core/Engines/webgpuEngine";
 import { NodeRenderGraphBlockConnectionPointTypes } from "core/FrameGraph/Node/Types/nodeRenderGraphTypes";
-import type { NodeRenderGraphHighlightLayerBlock } from "core/FrameGraph/Node/Blocks/Layers/highlightLayerBlock";
+import { type NodeRenderGraphHighlightLayerBlock } from "core/FrameGraph/Node/Blocks/Layers/highlightLayerBlock";
 import { BoundingBox } from "core/Culling/boundingBox";
-import type { NodeRenderGraphExecuteBlock } from "core/FrameGraph/Node/Blocks/executeBlock";
-import type { Mesh } from "core/Meshes";
-import type { NodeRenderGraphUtilityLayerRendererBlock } from "core/FrameGraph/Node/Blocks/Rendering/utilityLayerRendererBlock";
+import { type NodeRenderGraphExecuteBlock } from "core/FrameGraph/Node/Blocks/executeBlock";
+import { type Mesh } from "core/Meshes";
+import { type NodeRenderGraphUtilityLayerRendererBlock } from "core/FrameGraph/Node/Blocks/Rendering/utilityLayerRendererBlock";
 import { GizmoManager } from "core/Gizmos/gizmoManager";
 import { Texture } from "core/Materials/Textures/texture";
-import type { NodeRenderGraphSelectionOutlineLayerBlock } from "core/FrameGraph/Node/Blocks/Layers/selectionOutlineLayerBlock";
+import { type NodeRenderGraphSelectionOutlineLayerBlock } from "core/FrameGraph/Node/Blocks/Layers/selectionOutlineLayerBlock";
 
 const DebugTextures = false;
 const LogErrorTrace = true;

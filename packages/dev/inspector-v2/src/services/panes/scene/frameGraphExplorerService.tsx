@@ -1,7 +1,7 @@
-import type { ServiceDefinition } from "../../../modularity/serviceDefinition";
-import type { ISceneContext } from "../../sceneContext";
-import type { IWatcherService } from "../../watcherService";
-import type { ISceneExplorerService } from "./sceneExplorerService";
+import { type ServiceDefinition } from "../../../modularity/serviceDefinition";
+import { type ISceneContext, SceneContextIdentity } from "../../sceneContext";
+import { type IWatcherService, WatcherServiceIdentity } from "../../watcherService";
+import { type ISceneExplorerService, SceneExplorerServiceIdentity } from "./sceneExplorerService";
 
 import { tokens } from "@fluentui/react-components";
 import { EditRegular, FrameRegular, PlayFilled, PlayRegular } from "@fluentui/react-icons";
@@ -9,10 +9,7 @@ import { EditRegular, FrameRegular, PlayFilled, PlayRegular } from "@fluentui/re
 import { FrameGraph } from "core/FrameGraph/frameGraph";
 import { Observable } from "core/Misc/observable";
 import { EditNodeRenderGraph } from "../../../misc/nodeRenderGraphEditor";
-import { SceneContextIdentity } from "../../sceneContext";
-import { WatcherServiceIdentity } from "../../watcherService";
 import { DefaultCommandsOrder, DefaultSectionsOrder } from "./defaultSectionsMetadata";
-import { SceneExplorerServiceIdentity } from "./sceneExplorerService";
 
 export const FrameGraphExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplorerService, ISceneContext, IWatcherService]> = {
     friendlyName: "Frame Graph Explorer",

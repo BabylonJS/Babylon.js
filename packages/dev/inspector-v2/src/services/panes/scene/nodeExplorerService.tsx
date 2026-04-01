@@ -1,14 +1,15 @@
-import type { FrameGraphTask, IDisposable, Nullable } from "core/index";
-import type { ServiceDefinition } from "../../../modularity/serviceDefinition";
-import type { IGizmoService } from "../../gizmoService";
-import type { ISceneContext } from "../../sceneContext";
-import type { IWatcherService } from "../../watcherService";
-import type { ISceneExplorerService } from "./sceneExplorerService";
+import { type FrameGraphTask, type IDisposable, type Nullable } from "core/index";
+import { type ServiceDefinition } from "../../../modularity/serviceDefinition";
+import { type IGizmoService, GizmoServiceIdentity } from "../../gizmoService";
+import { type ISceneContext, SceneContextIdentity } from "../../sceneContext";
+import { type IWatcherService, WatcherServiceIdentity } from "../../watcherService";
+import { type ISceneExplorerService, SceneExplorerServiceIdentity } from "./sceneExplorerService";
 
 import { tokens } from "@fluentui/react-components";
 import {
     BorderNoneRegular,
     BorderOutsideRegular,
+    BubbleMultipleRegular,
     CameraRegular,
     EditRegular,
     EyeOffRegular,
@@ -32,11 +33,7 @@ import { Observable } from "core/Misc/observable";
 import { Node } from "core/node";
 import { MeshIcon } from "shared-ui-components/fluent/icons";
 import { EditNodeGeometry, GetNodeGeometry } from "../../../misc/nodeGeometryEditor";
-import { GizmoServiceIdentity } from "../../gizmoService";
-import { SceneContextIdentity } from "../../sceneContext";
-import { WatcherServiceIdentity } from "../../watcherService";
 import { DefaultCommandsOrder, DefaultSectionsOrder } from "./defaultSectionsMetadata";
-import { SceneExplorerServiceIdentity } from "./sceneExplorerService";
 
 import "core/Rendering/boundingBoxRenderer";
 
@@ -117,6 +114,8 @@ export const NodeExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplore
                     <MyLocationRegular color={tokens.colorPaletteBlueForeground2} />
                 ) : node instanceof Camera ? (
                     <CameraRegular color={tokens.colorPaletteGreenForeground2} />
+                ) : node instanceof ClusteredLightContainer ? (
+                    <BubbleMultipleRegular color={tokens.colorPaletteYellowForeground2} />
                 ) : node instanceof Light ? (
                     <LightbulbRegular color={tokens.colorPaletteYellowForeground2} />
                 ) : (

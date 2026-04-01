@@ -1,17 +1,18 @@
-import type { Nullable } from "../../types";
+import { type Nullable } from "../../types";
 import { serialize } from "../../Misc/decorators";
-import type { Observer } from "../../Misc/observable";
-import type { Scene } from "../../scene";
-import type { GeospatialCamera } from "../geospatialCamera";
-import type { ICameraInput } from "../cameraInputsManager";
-import { CameraInputTypes } from "../cameraInputsManager";
-import type { KeyboardInfo } from "../../Events/keyboardEvents";
-import { KeyboardEventTypes } from "../../Events/keyboardEvents";
+import { type Observer } from "../../Misc/observable";
+import { type Scene } from "../../scene";
+import { type GeospatialCamera } from "../geospatialCamera";
+import { type ICameraInput, CameraInputTypes } from "../cameraInputsManager";
+import { type KeyboardInfo, KeyboardEventTypes } from "../../Events/keyboardEvents";
 import { Tools } from "../../Misc/tools";
-import type { AbstractEngine } from "../../Engines/abstractEngine";
+import { type AbstractEngine } from "../../Engines/abstractEngine";
 
 /**
  * Manage the keyboard inputs to control the movement of a geospatial camera.
+ * Arrow keys + Modifier key (ctrl/alt/option on mac): rotate
+ * Arrow keys alone: pan
+ * + / - keys: zoom in/out
  * @see https://doc.babylonjs.com/features/featuresDeepDive/cameras/customizingCameraInputs
  */
 export class GeospatialCameraKeyboardInput implements ICameraInput<GeospatialCamera> {
@@ -78,7 +79,7 @@ export class GeospatialCameraKeyboardInput implements ICameraInput<GeospatialCam
     public zoomSensitivity: number = 1.0;
 
     private _keys = new Array<number>();
-    private _ctrlPressed: boolean;
+    private _modifierPressed: boolean;
     private _onCanvasBlurObserver: Nullable<Observer<AbstractEngine>>;
     private _onKeyboardObserver: Nullable<Observer<KeyboardInfo>>;
     private _engine: AbstractEngine;
@@ -107,7 +108,7 @@ export class GeospatialCameraKeyboardInput implements ICameraInput<GeospatialCam
             const evt = info.event;
             if (!evt.metaKey) {
                 if (info.type === KeyboardEventTypes.KEYDOWN) {
-                    this._ctrlPressed = evt.ctrlKey;
+                    this._modifierPressed = evt.ctrlKey || evt.altKey;
 
                     if (
                         this.keysUp.indexOf(evt.keyCode) !== -1 ||
@@ -179,7 +180,7 @@ export class GeospatialCameraKeyboardInput implements ICameraInput<GeospatialCam
 
             for (let index = 0; index < this._keys.length; index++) {
                 const keyCode = this._keys[index];
-                if (this._ctrlPressed) {
+                if (this._modifierPressed) {
                     // Rotation
                     if (this.keysLeft.indexOf(keyCode) !== -1) {
                         camera.movement.rotationAccumulatedPixels.y -= this.rotationSensitivity;

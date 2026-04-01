@@ -1,27 +1,27 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-import type { AbstractEngine } from "core/Engines/abstractEngine";
+import { type AbstractEngine } from "core/Engines/abstractEngine";
 import { AtmospherePBRMaterialPlugin } from "./atmospherePBRMaterialPlugin";
 import { AtmospherePerCameraVariables } from "./atmospherePerCameraVariables";
 import { AtmospherePhysicalProperties } from "./atmospherePhysicalProperties";
-import type { BaseTexture } from "core/Materials/Textures/baseTexture";
-import type { Camera } from "core/Cameras/camera";
+import { type BaseTexture } from "core/Materials/Textures/baseTexture";
+import { type Camera } from "core/Cameras/camera";
 import { Color3 } from "core/Maths/math.color";
 import { Constants } from "core/Engines/constants";
-import type { DeepImmutable, Nullable } from "core/types";
+import { type DeepImmutable, type Nullable } from "core/types";
 import { DiffuseSkyIrradianceLut } from "./diffuseSkyIrradianceLut";
-import type { DirectionalLight } from "core/Lights/directionalLight";
-import type { Effect } from "core/Materials/effect";
+import { type DirectionalLight } from "core/Lights/directionalLight";
+import { type Effect } from "core/Materials/effect";
 import { EffectRenderer, EffectWrapper } from "core/Materials/effectRenderer";
-import type { IAtmosphereOptions } from "./atmosphereOptions";
-import type { IColor3Like, IVector3Like } from "core/Maths/math.like";
-import type { IDisposable, Scene } from "core/scene";
+import { type IAtmosphereOptions } from "./atmosphereOptions";
+import { type IColor3Like, type IVector3Like } from "core/Maths/math.like";
+import { type IDisposable, type Scene } from "core/scene";
 import { Observable, type Observer } from "core/Misc/observable";
 import { RegisterMaterialPlugin, UnregisterMaterialPlugin } from "core/Materials/materialPluginManager";
-import type { RenderingGroupInfo } from "core/Rendering/renderingManager";
+import { type RenderingGroupInfo } from "core/Rendering/renderingManager";
 import { RenderTargetTexture, type RenderTargetTextureOptions } from "core/Materials/Textures/renderTargetTexture";
-import type { RenderTargetWrapper } from "core/Engines/renderTargetWrapper";
+import { type RenderTargetWrapper } from "core/Engines/renderTargetWrapper";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { TransmittanceLut } from "./transmittanceLut";
 import { UniformBuffer } from "core/Materials/uniformBuffer";
@@ -30,6 +30,13 @@ import { Vector3 } from "core/Maths/math.vector";
 const MaterialPlugin = "atmo-pbr";
 
 const AerialPerspectiveLutLayers = 32;
+
+const TransmittanceSampleCount = 128;
+const SkyViewLutSampleCount = 30;
+const MultiScatteringLutSampleCount = 64;
+const MultiScatteringAzimuthSampleCount = 16;
+const MultiScatteringInclinationSampleCount = 8;
+const DiffuseSkyIrradianceLutSampleCount = 32;
 
 let UniqueId = 0;
 
@@ -627,6 +634,14 @@ export class Atmosphere implements IDisposable {
             atmosphereUbo.addUniform("cameraNearPlane", 1);
             atmosphereUbo.addUniform("originHeight", 1);
             atmosphereUbo.addUniform("sinCameraAtmosphereHorizonAngleFromNadir", 1);
+            atmosphereUbo.addUniform("transmittanceSampleCount", 1);
+            // 16-byte boundary
+            atmosphereUbo.addUniform("skyViewLutSampleCount", 1);
+            atmosphereUbo.addUniform("multiScatteringLutSampleCount", 1);
+            atmosphereUbo.addUniform("multiScatteringAzimuthSampleCount", 1);
+            atmosphereUbo.addUniform("multiScatteringInclinationSampleCount", 1);
+            // 16-byte boundary
+            atmosphereUbo.addUniform("diffuseSkyIrradianceLutSampleCount", 1);
             atmosphereUbo.create();
         }
         return this._atmosphereUbo;
@@ -919,6 +934,10 @@ export class Atmosphere implements IDisposable {
                 this._aerialPerspectiveRadianceBias
             );
         }
+
+        // Read back LUT data from the GPU if a readback is pending (deferred from a previous render call).
+        void this._transmittanceLut?.readPixelsAsync();
+        void this._diffuseSkyIrradianceLut?.readPixelsAsync();
 
         this.renderGlobalLuts(); // Start rendering of global LUTs during readiness polling.
 
@@ -1408,6 +1427,12 @@ export class Atmosphere implements IDisposable {
         ubo.updateFloat("cameraNearPlane", cameraAtmosphereVariables.cameraNearPlane);
         ubo.updateFloat("originHeight", this._originHeight);
         ubo.updateFloat("sinCameraAtmosphereHorizonAngleFromNadir", cameraAtmosphereVariables.sinCameraAtmosphereHorizonAngleFromNadir);
+        ubo.updateFloat("transmittanceSampleCount", TransmittanceSampleCount);
+        ubo.updateFloat("skyViewLutSampleCount", SkyViewLutSampleCount);
+        ubo.updateFloat("multiScatteringLutSampleCount", MultiScatteringLutSampleCount);
+        ubo.updateFloat("multiScatteringAzimuthSampleCount", MultiScatteringAzimuthSampleCount);
+        ubo.updateFloat("multiScatteringInclinationSampleCount", MultiScatteringInclinationSampleCount);
+        ubo.updateFloat("diffuseSkyIrradianceLutSampleCount", DiffuseSkyIrradianceLutSampleCount);
         ubo.updateFloat("atmosphereExposure", this._exposure);
     }
 

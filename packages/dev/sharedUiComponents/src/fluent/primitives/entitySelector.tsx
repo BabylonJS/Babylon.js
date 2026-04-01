@@ -1,5 +1,5 @@
-import type { Nullable } from "core/types";
-import type { ImmutablePrimitiveProps, PrimitiveProps } from "./primitive";
+import { type Nullable } from "core/types";
+import { type ImmutablePrimitiveProps, type PrimitiveProps } from "./primitive";
 
 import { makeStyles, tokens, Tooltip } from "@fluentui/react-components";
 import { LinkDismissRegular, LinkEditRegular } from "@fluentui/react-icons";
@@ -35,7 +35,7 @@ export type EntitySelectorProps<T extends Entity> = (PrimitiveProps<Nullable<T>>
     /**
      * Optional default value that enables clearing the current linked entity
      */
-    defaultValue?: T;
+    defaultValue?: Nullable<T>;
 };
 
 const useStyles = makeStyles({

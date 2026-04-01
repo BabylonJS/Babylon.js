@@ -1,6 +1,6 @@
 import { Logger } from "core/Misc/logger";
 import { CameraInputsManager } from "./cameraInputsManager";
-import type { FollowCamera } from "./followCamera";
+import { type FollowCamera } from "./followCamera";
 import { FollowCameraKeyboardMoveInput } from "./Inputs/followCameraKeyboardMoveInput";
 import { FollowCameraMouseWheelInput } from "./Inputs/followCameraMouseWheelInput";
 import { FollowCameraPointersInput } from "./Inputs/followCameraPointersInput";

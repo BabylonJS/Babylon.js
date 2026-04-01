@@ -1,26 +1,24 @@
-import type { Observer } from "../Misc/observable";
-import { Observable } from "../Misc/observable";
-import type { Nullable } from "../types";
-import type { PointerInfo } from "../Events/pointerEvents";
+import { type Observer, Observable } from "../Misc/observable";
+import { type Nullable } from "../types";
+import { type PointerInfo } from "../Events/pointerEvents";
 import { Quaternion, Matrix, Vector3, TmpVectors } from "../Maths/math.vector";
 import { Color3 } from "../Maths/math.color";
 import "../Meshes/Builders/linesBuilder";
-import type { AbstractMesh } from "../Meshes/abstractMesh";
+import { type AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
-import type { Node } from "../node";
+import { type Node } from "../node";
 import { PointerDragBehavior } from "../Behaviors/Meshes/pointerDragBehavior";
-import type { GizmoAxisCache, IGizmo } from "./gizmo";
-import { Gizmo } from "./gizmo";
+import { type GizmoAxisCache, type IGizmo, Gizmo } from "./gizmo";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
 import { StandardMaterial } from "../Materials/standardMaterial";
-import type { RotationGizmo } from "./rotationGizmo";
+import { type RotationGizmo } from "./rotationGizmo";
 import { ShaderMaterial } from "../Materials/shaderMaterial";
 import { Effect } from "../Materials/effect";
 import { CreatePlane } from "../Meshes/Builders/planeBuilder";
 import { CreateTorus } from "../Meshes/Builders/torusBuilder";
 import { Epsilon } from "../Maths/math.constants";
 import { Logger } from "../Misc/logger";
-import type { TransformNode } from "../Meshes/transformNode";
+import { type TransformNode } from "../Meshes/transformNode";
 
 /**
  * Interface for plane rotation gizmo
@@ -381,13 +379,6 @@ export class PlaneRotationGizmo extends Gizmo implements IPlaneRotationGizmo {
                     planeNormalTowardsCamera.z * quaternionCoefficient,
                     Math.cos(angle / 2)
                 );
-
-                // If the meshes local scale is inverted (eg. loaded gltf file parent with z scale of -1) the rotation needs to be inverted on the y axis
-                if (this.attachedNode.getWorldMatrix().determinant() > 0) {
-                    const tmpVector = new Vector3();
-                    amountToRotate.toEulerAnglesToRef(tmpVector);
-                    Quaternion.RotationYawPitchRollToRef(tmpVector.y, -tmpVector.x, -tmpVector.z, amountToRotate);
-                }
 
                 if (this.updateGizmoRotationToMatchAttachedMesh) {
                     // Rotate selected mesh quaternion over fixed axis
