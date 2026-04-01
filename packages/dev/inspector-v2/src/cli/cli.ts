@@ -3,10 +3,12 @@ import { spawn } from "child_process";
 import { dirname, join, resolve } from "path";
 import { fileURLToPath } from "url";
 import { parseArgs } from "util";
-import ws, { type WebSocket as WsType } from "ws";
+import ws from "ws";
 import { LoadConfig } from "./config.js";
 
-type WebSocket = WsType;
+// ws is CJS — named exports aren't available at runtime when Node auto-detects ESM.
+const WebSocket = ws;
+type WebSocket = import("ws").WebSocket;
 import { type CliRequest, type CliResponse, type CommandArgInfo, type CommandInfo, type CommandsResponse, type ExecResponse, type SessionsResponse } from "./protocol.js";
 
 const Config = LoadConfig();
@@ -134,7 +136,7 @@ function ParseCliArgs(): IParsedArgs {
 
 async function ConnectToBridge(port: number): Promise<WebSocket> {
     return await new Promise((resolve, reject) => {
-        const socket = new ws(`ws://127.0.0.1:${port}`);
+        const socket = new WebSocket(`ws://127.0.0.1:${port}`);
         socket.on("open", () => resolve(socket));
         socket.on("error", (err) => reject(err));
     });
