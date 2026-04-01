@@ -83,6 +83,13 @@
             "referenceImage": "gsplat-sogs-sh.png"
         },
         {
+            "title": "Gaussian Splatting Part Test",
+            "playgroundId": "#BTS11N#0",
+            "renderCount": 15,
+            "errorRatio": 5,
+            "referenceImage": "gsplat-part-test.png"
+        },
+        {
             "title": "RH billboard",
             "playgroundId": "#PDO1L6#1",
             "referenceImage": "rh-billboard.png"
