@@ -53,7 +53,7 @@ export * from "./Tasks/Texture/generateMipMapsTask";
 export * from "./Tasks/Rendering/csmShadowGeneratorTask";
 export * from "./Tasks/Rendering/geometryRendererTask";
 export * from "./Tasks/Rendering/iblShadowsAccumulationTask";
-export * from "./Tasks/Rendering/iblShadowsPipelineBuilder";
+export * from "./Tasks/Rendering/iblShadowsRendererTask";
 export * from "./Tasks/Rendering/iblShadowsSpatialBlurTask";
 export * from "./Tasks/Rendering/iblShadowsTaskTypes";
 export * from "./Tasks/Rendering/iblShadowsTracingTask";

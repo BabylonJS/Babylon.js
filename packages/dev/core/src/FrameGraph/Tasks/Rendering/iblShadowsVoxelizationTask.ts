@@ -1,4 +1,4 @@
-import type { Camera, FrameGraph, FrameGraphObjectList, FrameGraphTextureHandle, Mesh, Observer } from "core/index";
+import { type Camera, type FrameGraph, type FrameGraphObjectList, type FrameGraphTextureHandle, type Mesh, type Observer } from "core/index";
 import { Matrix, Quaternion, Vector3 } from "core/Maths/math.vector";
 import { Observable } from "core/Misc/observable";
 import { _IblShadowsVoxelRenderer } from "core/Rendering/IBLShadows/iblShadowsVoxelRenderer";
@@ -65,11 +65,12 @@ export class FrameGraphIblShadowsVoxelizationTask extends FrameGraphTask {
 
     /**
      * Controls how often voxelization is refreshed.
-     * - 0: manual only (requires setting `dirty = true`)
-     * - 1: every frame
-     * - 2+: every N frames
+     * - -1: manual only (requires setting `dirty = true`)
+     * - 0: every frame
+     * - 1: skip 1 frame between updates
+     * - N: skip N frames between updates
      */
-    public refreshRate = 0;
+    public refreshRate = -1;
 
     /**
      * Enables generation of the voxel slab debug texture.
@@ -153,8 +154,8 @@ export class FrameGraphIblShadowsVoxelizationTask extends FrameGraphTask {
             throw new Error(`FrameGraphIblShadowsVoxelizationTask ${this.name}: voxelGridSize must be > 0`);
         }
 
-        if (!Number.isFinite(this.refreshRate) || this.refreshRate < 0 || !Number.isInteger(this.refreshRate)) {
-            throw new Error(`FrameGraphIblShadowsVoxelizationTask ${this.name}: refreshRate must be an integer >= 0`);
+        if (!Number.isFinite(this.refreshRate) || this.refreshRate < -1 || !Number.isInteger(this.refreshRate)) {
+            throw new Error(`FrameGraphIblShadowsVoxelizationTask ${this.name}: refreshRate must be an integer >= -1`);
         }
 
         this._ensureVoxelRenderer();
@@ -181,7 +182,7 @@ export class FrameGraphIblShadowsVoxelizationTask extends FrameGraphTask {
             context.restoreDefaultFramebuffer();
 
             this._frameCounter++;
-            const shouldRefreshFromRate = this.refreshRate > 0 && (this._frameCounter - 1) % this.refreshRate === 0;
+            const shouldRefreshFromRate = this.refreshRate >= 0 && (this._frameCounter - 1) % (this.refreshRate + 1) === 0;
 
             if (this._voxelRenderer!.isVoxelizationInProgress()) {
                 this._voxelRenderer!.processVoxelization();
