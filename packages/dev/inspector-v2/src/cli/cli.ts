@@ -3,8 +3,10 @@ import { spawn } from "child_process";
 import { dirname, join, resolve } from "path";
 import { fileURLToPath } from "url";
 import { parseArgs } from "util";
-import { type WebSocket, default as WebSocketConstructor } from "ws";
+import ws, { type WebSocket as WsType } from "ws";
 import { LoadConfig } from "./config.js";
+
+type WebSocket = WsType;
 import { type CliRequest, type CliResponse, type CommandArgInfo, type CommandInfo, type CommandsResponse, type ExecResponse, type SessionsResponse } from "./protocol.js";
 
 const Config = LoadConfig();
@@ -132,7 +134,7 @@ function ParseCliArgs(): IParsedArgs {
 
 async function ConnectToBridge(port: number): Promise<WebSocket> {
     return await new Promise((resolve, reject) => {
-        const socket = new WebSocketConstructor(`ws://127.0.0.1:${port}`);
+        const socket = new ws(`ws://127.0.0.1:${port}`);
         socket.on("open", () => resolve(socket));
         socket.on("error", (err) => reject(err));
     });

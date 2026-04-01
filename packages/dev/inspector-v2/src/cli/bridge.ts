@@ -1,7 +1,14 @@
 /* eslint-disable no-console */
-import { type WebSocket, WebSocketServer } from "ws";
+import ws, { type WebSocket as WsType, type WebSocketServer as WsServerType } from "ws";
 import { LoadConfig } from "./config.js";
 import { type BrowserRequest, type BrowserResponse, type CliRequest, type CliResponse, type SessionInfo } from "./protocol.js";
+
+type WebSocket = WsType;
+
+// ws is a CJS module — named exports like WebSocketServer aren't available at runtime
+// when Node auto-detects ESM. Access it via the default export's Server property instead.
+// eslint-disable-next-line @typescript-eslint/naming-convention
+const WebSocketServer = (ws as unknown as { Server: new (...args: ConstructorParameters<typeof WsServerType>) => WsServerType }).Server;
 
 interface ISession extends SessionInfo {
     /** The WebSocket connection for this session. */
@@ -203,7 +210,7 @@ async function WaitForBrowserResponse(requestId: string, timeoutMs = 30000): Pro
     });
 }
 
-function Shutdown(browserWss: WebSocketServer, cliWss: WebSocketServer): void {
+function Shutdown(browserWss: WsServerType, cliWss: WsServerType): void {
     console.log("Inspector bridge shutting down.");
 
     for (const session of Sessions.values()) {
