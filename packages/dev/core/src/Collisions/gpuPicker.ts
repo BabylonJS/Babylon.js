@@ -251,7 +251,7 @@ export class GPUPicker {
                     continue;
                 }
 
-                // Skip thin instance cleanup for GaussianSplattingMesh (their thin instances are for batching, not picking)
+                // Skip thin instance cleanup for GaussianSplattingMesh (thin instances are for batching, not picking)
                 if (className !== "GaussianSplattingMesh") {
                     if (mesh.hasInstances) {
                         (mesh as Mesh).removeVerticesData(GPUPicker._AttributeName);
