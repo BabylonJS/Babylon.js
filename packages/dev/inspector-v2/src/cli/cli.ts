@@ -3,12 +3,8 @@ import { spawn } from "child_process";
 import { dirname, join, resolve } from "path";
 import { fileURLToPath } from "url";
 import { parseArgs } from "util";
-import ws from "ws";
+import { WebSocket } from "./webSocket.js";
 import { LoadConfig } from "./config.js";
-
-// ws is CJS — named exports aren't available at runtime when Node auto-detects ESM.
-const WebSocket = ws;
-type WebSocket = import("ws").WebSocket;
 import { type CliRequest, type CliResponse, type CommandArgInfo, type CommandInfo, type CommandsResponse, type ExecResponse, type SessionsResponse } from "./protocol.js";
 
 const Config = LoadConfig();

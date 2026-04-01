@@ -1,16 +1,7 @@
 /* eslint-disable no-console */
-import ws from "ws";
+import { type WebSocket, WebSocketServer } from "./webSocket.js";
 import { LoadConfig } from "./config.js";
 import { type BrowserRequest, type BrowserResponse, type CliRequest, type CliResponse, type SessionInfo } from "./protocol.js";
-
-// ws is CJS — named exports aren't available at runtime when Node auto-detects ESM.
-// Re-export the default import as merged type+value pairs for clean usage.
-const WebSocket = ws;
-type WebSocket = import("ws").WebSocket;
-
-// eslint-disable-next-line @typescript-eslint/naming-convention
-const WebSocketServer = (ws as unknown as { Server: new (options?: import("ws").ServerOptions) => import("ws").WebSocketServer }).Server;
-type WebSocketServer = import("ws").WebSocketServer;
 
 interface ISession extends SessionInfo {
     /** The WebSocket connection for this session. */
