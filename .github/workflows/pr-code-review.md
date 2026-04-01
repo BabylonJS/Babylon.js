@@ -1,8 +1,8 @@
 ---
 on:
-  pull_request:
-    types: [opened, synchronize, ready_for_review]
-    forks: ["*"]
+  pull_request_target:
+    types: [opened, synchronize]
+  slash_command: review
 description: "AI-powered code review for every PR using Claude Opus 4.6"
 engine:
   id: copilot
