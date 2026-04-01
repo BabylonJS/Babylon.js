@@ -11,4 +11,5 @@ export * from "./maskBlock.block.js";
 export * from "./pixelateBlock.block.js";
 export * from "./posterizeBlock.block.js";
 export * from "./spritesheetBlock.js";
+export * from "./sepiaBlock.block.js";
 export * from "./tintBlock.js";

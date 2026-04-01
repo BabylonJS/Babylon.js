@@ -17,6 +17,7 @@ import {
     tintBlockType,
     premultiplyAlphaBlockType,
     wipeBlockType,
+    sepiaBlockType,
 } from "../blocks/blockTypes.js";
 
 /**
@@ -40,6 +41,7 @@ export const blocksUsingDefaultSerialization: string[] = [
     tintBlockType,
     premultiplyAlphaBlockType,
     wipeBlockType,
+    sepiaBlockType,
 ];
 
 /**

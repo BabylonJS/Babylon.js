@@ -20,4 +20,5 @@ export const particleBlockType = "ParticleBlock";
 export const spritesheetBlockType = "SpritesheetBlock";
 export const tintBlockType = "TintBlock";
 export const premultiplyAlphaBlockType = "PremultiplyAlphaBlock";
+export const sepiaBlockType = "SepiaBlock";
 /* eslint-enable @typescript-eslint/naming-convention */

@@ -18,6 +18,7 @@ import {
     blurBlockType,
     compositionBlockType,
     tintBlockType,
+    sepiaBlockType,
 } from "../blocks/blockTypes.js";
 
 /**
@@ -202,6 +203,27 @@ export const BuiltInBlockRegistrations: IBlockRegistration[] = [
         },
         namespace: babylonDemoEffectsNamespace,
         tooltip: "Alters the exposure of the input texture",
+    },
+    {
+        blockType: sepiaBlockType,
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        factory: async (
+            smartFilter: SmartFilter,
+            _engine: ThinEngine,
+            _smartFilterDeserializer: SmartFilterDeserializer,
+            serializedBlock: ISerializedBlockV1 | undefined,
+            options?: IBlockRegistrationFactoryOptions
+        ) => {
+            const module = await import(/* webpackChunkName: "sepiaBlock" */ "../blocks/babylon/demo/effects/sepiaBlock.block.js");
+            const block = new module.SepiaBlock(smartFilter, serializedBlock?.name || options?.name || "Sepia");
+            if (!serializedBlock && !options?.suppressAutomaticInputBlocks) {
+                const input = new InputBlock(smartFilter, "Intensity", ConnectionPointType.Float, 0.8);
+                input.output.connectTo(block.intensity);
+            }
+            return block;
+        },
+        namespace: babylonDemoEffectsNamespace,
+        tooltip: "Applies a warm sepia tone effect to the input texture",
     },
     {
         blockType: maskBlockType,
