@@ -14,7 +14,7 @@ const cliConfig = {
         file: "bin/inspector-cli.mjs",
         format: "es",
         sourcemap: false,
-        banner: "#!/usr/bin/env node",
+        banner: "#!/usr/bin/env node\n",
     },
     plugins: commonPlugins,
     onwarn(warning, warn) {
