@@ -353,20 +353,10 @@ async function ReadPixelsUsingRTT(texture: BaseTexture, width: number, height: n
         });
     }
 
-    await new Promise<void>((resolve, reject) => {
-        const timeout = setTimeout(() => {
-            reject(new Error(`Timed out while compiling preview shader for texture ${texture.name}.`));
-        }, 5000);
-
-        lodPostProcess.onEffectCreatedObservable.addOnce((effect) => {
-            effect.onErrorObservable.addOnce((erroredEffect) => {
-                clearTimeout(timeout);
-                reject(new Error(`Failed to compile preview shader for texture ${texture.name}: ${erroredEffect.getCompilationError()}`));
-            });
-
-            effect.executeWhenCompiled(() => {
-                clearTimeout(timeout);
-                resolve();
+    await new Promise((resolve) => {
+        lodPostProcess.onEffectCreatedObservable.addOnce((e) => {
+            e.executeWhenCompiled(() => {
+                resolve(0);
             });
         });
     });
