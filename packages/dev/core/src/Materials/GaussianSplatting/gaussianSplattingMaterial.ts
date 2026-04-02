@@ -652,7 +652,7 @@ export class GaussianSplattingMaterial extends PushMaterial {
      * @returns voxel rendering shader material
      */
     public makeVoxelRenderingMaterial(scene: Scene, shaderLanguage: ShaderLanguage, maxDrawBuffers: number, compoundMesh: boolean = false): ShaderMaterial {
-        const defines = ["#define IS_FOR_VOXELIZATION 1", `#define MAX_DRAW_BUFFERS ${maxDrawBuffers}`];
+        const defines = ["#define IS_FOR_VOXELIZATION", `#define MAX_DRAW_BUFFERS ${maxDrawBuffers}`];
 
         if (compoundMesh) {
             defines.push("#define IS_COMPOUND 1");

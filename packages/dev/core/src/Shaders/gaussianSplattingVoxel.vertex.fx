@@ -1,4 +1,4 @@
-#include <__decl__gaussianSplattingVertex>
+#include<__decl__gaussianSplattingVertex>
 
 uniform vec2 dataTextureSize;
 uniform float alpha;
@@ -22,7 +22,7 @@ varying vec3 vNormalizedCenterPosition;
 varying float vAlpha;
 varying vec2 vPatchPosition;
 
-#include <gaussianSplatting>
+#include<gaussianSplatting>
 
 void main(void) {
     float splatIndex = getSplatIndex(int(position.z + 0.5));

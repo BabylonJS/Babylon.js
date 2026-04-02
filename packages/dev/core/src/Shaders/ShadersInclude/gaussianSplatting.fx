@@ -37,7 +37,7 @@ struct Splat {
 #if IS_COMPOUND
     uint partIndex;
 #endif
-#if IS_FOR_VOXELIZATION
+#if defined(IS_FOR_VOXELIZATION)
     vec4 rotationA;
     vec4 rotationB;
     vec4 rotationScale;
@@ -78,7 +78,7 @@ Splat readSplat(float splatIndex)
     vec2 splatUV = getDataUV(splatIndex, dataTextureSize);
     splat.center = texture2D(centersTexture, splatUV);
     splat.color = texture2D(colorsTexture, splatUV);
-#if !IS_FOR_VOXELIZATION
+#if !defined(IS_FOR_VOXELIZATION)
     splat.covA = texture2D(covariancesATexture, splatUV) * splat.center.w;
     splat.covB = texture2D(covariancesBTexture, splatUV) * splat.center.w;
 #endif
@@ -97,7 +97,7 @@ Splat readSplat(float splatIndex)
 #if IS_COMPOUND
     splat.partIndex = uint(texture2D(partIndicesTexture, splatUV).r * 255.0 + 0.5);
 #endif
-#if IS_FOR_VOXELIZATION
+#if defined(IS_FOR_VOXELIZATION)
     splat.rotationA = texture2D(rotationsATexture, splatUV);
     splat.rotationB = texture2D(rotationsBTexture, splatUV);
     splat.rotationScale = texture2D(rotationScaleTexture, splatUV);
@@ -224,6 +224,7 @@ vec3 computeSH(Splat splat, vec3 dir)
 }
 #endif
 
+#if !defined(IS_FOR_VOXELIZATION)
 vec4 gaussianSplatting(vec2 meshPos, vec3 worldPos, vec2 scale, vec3 covA, vec3 covB, mat4 worldMatrix, mat4 viewMatrix, mat4 projectionMatrix)
 {
     mat4 modelView = viewMatrix * worldMatrix;
@@ -307,6 +308,7 @@ vec4 gaussianSplatting(vec2 meshPos, vec3 worldPos, vec2 scale, vec3 covA, vec3 
         + ((meshPos.x * majorAxis
         + meshPos.y * minorAxis) * invViewport * scaleFactor) * scale, pos2d.zw);
 }
+#endif
 
 #if IS_COMPOUND
 mat4 getPartWorld(uint partIndex) {
