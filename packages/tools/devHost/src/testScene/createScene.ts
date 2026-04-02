@@ -1,44 +1,73 @@
 import { type Engine } from "core/Engines/engine";
 import { Scene } from "core/scene";
-import { FreeCamera } from "core/Cameras/freeCamera";
+import { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
 import { HemisphericLight } from "core/Lights/hemisphericLight";
-import { StandardMaterial } from "core/Materials/standardMaterial";
-import { MeshBuilder } from "core/Meshes/meshBuilder";
 import { Vector3 } from "core/Maths/math.vector";
+import { SmartAssetManager } from "core/SmartAssets/smartAssetManager";
+import { registerBuiltInLoaders } from "loaders/dynamic";
+
+// Register file loaders (glTF, OBJ, etc.)
+registerBuiltInLoaders();
 
 // eslint-disable-next-line @typescript-eslint/naming-convention, no-restricted-syntax
 export const createScene = async function (engine: Engine, canvas: HTMLCanvasElement): Promise<Scene> {
-    // This creates a basic Babylon Scene object (non-mesh)
     const scene = new Scene(engine);
 
-    // This creates and positions a free camera (non-mesh)
-    const camera = new FreeCamera("camera1", new Vector3(0, 5, -10), scene);
-
-    // This targets the camera to scene origin
-    camera.setTarget(Vector3.Zero());
-
-    // This attaches the camera to the canvas
+    const camera = new ArcRotateCamera("camera", -Math.PI / 2, Math.PI / 2.5, 3, new Vector3(0, 1, 0), scene);
     camera.attachControl(canvas, true);
 
-    // This creates a light, aiming 0,1,0 - to the sky (non-mesh)
-    const light = new HemisphericLight("light1", new Vector3(0, 1, 0), scene);
+    new HemisphericLight("light", new Vector3(0, 1, 0), scene);
 
-    // Default intensity is 1. Let's dim the light a small amount
-    light.intensity = 0.7;
+    // ── SmartAssetManager Demo ──
+    const sam = new SmartAssetManager(scene);
 
-    // Default material for all meshes
-    const material = new StandardMaterial("sceneMaterial", scene);
+    // Register two assets by key — known-good Babylon CDN models
+    sam.registerAsset("shark", "https://models.babylonjs.com/shark.glb", { extension: ".glb" });
+    sam.registerAsset("alien", "https://models.babylonjs.com/alien.glb", { extension: ".glb" });
 
-    // Our built-in 'sphere' shape. Params: name, options, scene
-    const sphere = MeshBuilder.CreateSphere("sphere", {diameter: 2, segments: 32}, scene);
-    sphere.material = material;
+    // Listen to events
+    sam.onAssetLoadedObservable.add((event) => {
+        console.log(`Loaded "${event.key}" — ${event.container.meshes.length} meshes`);
+    });
 
-    // Move the sphere upward 1/2 its height
-    sphere.position.y = 1;
+    sam.onAssetErrorObservable.add((event) => {
+        console.log(`Failed to load "${event.key}" from "${event.url}":`, event.error);
+    });
 
-    // Our built-in 'ground' shape. Params: name, options, scene
-    const ground = MeshBuilder.CreateGround("ground", {width: 6, height: 6}, scene);
-    ground.material = material;
+    // Verify discovery works
+    const found = SmartAssetManager.GetFromScene(scene);
+    console.log("SmartAssetManager discovered from scene:", found === sam);
+
+    // Load the first asset
+    console.log("Loading shark...");
+    const sharkContainer = await sam.loadAsync("shark");
+
+    // Auto-frame the camera to fit loaded meshes
+    if (sharkContainer.meshes.length > 0) {
+        const worldExtends = scene.getWorldExtends();
+        const worldSize = worldExtends.max.subtract(worldExtends.min);
+        const worldCenter = worldExtends.min.add(worldSize.scale(0.5));
+        camera.setTarget(worldCenter);
+        camera.radius = worldSize.length() * 1.5;
+    }
+
+    // Check provenance
+    const prov = sam.getProvenance("shark");
+    if (prov) {
+        console.log(`Shark provenance: ${prov.meshNames.length} meshes, ${prov.materialNames.length} materials`);
+    }
+
+    // Demonstrate unload + load another asset after 5 seconds
+    setTimeout(async () => {
+        console.log("Swapping shark for alien...");
+        await sam.unloadAsync("shark");
+        await sam.loadAsync("alien");
+
+        const alienProv = sam.getProvenance("alien");
+        if (alienProv) {
+            console.log(`Alien provenance: ${alienProv.meshNames.length} meshes`);
+        }
+    }, 5000);
 
     return scene;
 };

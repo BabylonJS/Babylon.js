@@ -108,6 +108,7 @@ export class GlobalState {
     public onFilesOrderChangedObservable = new Observable<void>();
     public onV2HydrateRequiredObservable = new Observable<V2Manifest>();
     public onEngineSwitchDialogRequiredObservable = new Observable<IEngineSwitchDialogRequest>();
+    public onAssetPromptRequiredObservable = new Observable<import("./components/assetPromptDialog").IAssetPromptRequest>();
 
     public loadingCodeInProgress = false;
     public onCodeLoaded = new Observable<string>();

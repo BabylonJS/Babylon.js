@@ -11,6 +11,8 @@ import { WaitRingComponent } from "./components/waitRingComponent";
 import { MetadataComponent } from "./components/metadataComponent";
 import { HamburgerMenuComponent } from "./components/hamburgerMenu";
 import { EngineSwitchDialog } from "./components/engineSwitchDialog";
+import { AssetPromptDialog, type IAssetPromptRequest } from "./components/assetPromptDialog";
+import { FluentToolWrapper } from "shared-ui-components/fluent/hoc/fluentToolWrapper";
 import { Utilities } from "./tools/utilities";
 import { ShortcutManager } from "./tools/shortcutManager";
 import { ErrorDisplayComponent } from "./components/errorDisplayComponent";
@@ -46,6 +48,7 @@ export class Playground extends React.Component<
          *
          */
         engineSwitchDialog: IEngineSwitchDialogRequest | null;
+        assetPromptDialog: IAssetPromptRequest | null;
     }
 > {
     private _monacoRef: React.RefObject<HTMLDivElement>;
@@ -87,6 +90,7 @@ export class Playground extends React.Component<
             errorMessage: "",
             mode: window.innerWidth < this._globalState.MobileSizeTrigger ? this._globalState.mobileDefaultMode : defaultDesktop,
             engineSwitchDialog: null,
+            assetPromptDialog: null,
         };
 
         window.addEventListener("resize", () => {
@@ -105,6 +109,9 @@ export class Playground extends React.Component<
         this._globalState.doNotRun = location.search.indexOf("norun") !== -1 || !Utilities.ReadBoolFromStore("auto-run", true);
         this._globalState.onEngineSwitchDialogRequiredObservable.add((request) => {
             this.setState({ engineSwitchDialog: request });
+        });
+        this._globalState.onAssetPromptRequiredObservable.add((request) => {
+            this.setState({ assetPromptDialog: request });
         });
 
         // Managers
@@ -173,6 +180,23 @@ export class Playground extends React.Component<
         this._resolveEngineSwitchDialog(true);
     };
 
+    private _resolveAssetPromptDialog = (result: string | File | null) => {
+        const request = this.state.assetPromptDialog;
+        if (!request) {
+            return;
+        }
+        request.resolve(result);
+        this.setState({ assetPromptDialog: null });
+    };
+
+    private _cancelAssetPromptDialog = () => {
+        this._resolveAssetPromptDialog(null);
+    };
+
+    private _submitAssetPromptDialog = (result: string | File) => {
+        this._resolveAssetPromptDialog(result);
+    };
+
     public override render() {
         if (this._globalState.runtimeMode === RuntimeMode.Full) {
             return (
@@ -189,6 +213,14 @@ export class Playground extends React.Component<
                         onCancel={this._cancelEngineSwitchDialog}
                         onConfirm={this._confirmEngineSwitchDialog}
                     />
+                    <FluentToolWrapper toolName="Playground" useFluent={true}>
+                        <AssetPromptDialog
+                            globalState={this._globalState}
+                            request={this.state.assetPromptDialog}
+                            onCancel={this._cancelAssetPromptDialog}
+                            onSubmit={this._submitAssetPromptDialog}
+                        />
+                    </FluentToolWrapper>
                 </>
             );
         }
@@ -209,6 +241,14 @@ export class Playground extends React.Component<
                         onCancel={this._cancelEngineSwitchDialog}
                         onConfirm={this._confirmEngineSwitchDialog}
                     />
+                    <FluentToolWrapper toolName="Playground" useFluent={true}>
+                        <AssetPromptDialog
+                            globalState={this._globalState}
+                            request={this.state.assetPromptDialog}
+                            onCancel={this._cancelAssetPromptDialog}
+                            onSubmit={this._submitAssetPromptDialog}
+                        />
+                    </FluentToolWrapper>
                 </>
             );
         }
@@ -236,6 +276,14 @@ export class Playground extends React.Component<
                     onCancel={this._cancelEngineSwitchDialog}
                     onConfirm={this._confirmEngineSwitchDialog}
                 />
+                <FluentToolWrapper toolName="Playground" useFluent={true}>
+                    <AssetPromptDialog
+                        globalState={this._globalState}
+                        request={this.state.assetPromptDialog}
+                        onCancel={this._cancelAssetPromptDialog}
+                        onSubmit={this._submitAssetPromptDialog}
+                    />
+                </FluentToolWrapper>
             </div>
         );
     }
