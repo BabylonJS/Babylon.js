@@ -5,7 +5,16 @@ import { fileURLToPath } from "url";
 import { parseArgs } from "util";
 import { WebSocket } from "./webSocket.js";
 import { LoadConfig } from "./config.js";
-import { type CliRequest, type CliResponse, type CommandArgInfo, type CommandInfo, type CommandsResponse, type ExecResponse, type SessionsResponse } from "./protocol.js";
+import {
+    type CliRequest,
+    type CliResponse,
+    type CommandArgInfo,
+    type CommandInfo,
+    type CommandsResponse,
+    type ExecResponse,
+    type SessionInfo,
+    type SessionsResponse,
+} from "./protocol.js";
 
 const Config = LoadConfig();
 
@@ -225,16 +234,43 @@ async function WithBridge(bridgeScript: string | undefined, fn: (socket: WebSock
  * @param explicitId An optional explicit session id string.
  * @returns The resolved numeric session id.
  */
-export async function ResolveSessionId(socket: WebSocket, explicitId?: string): Promise<number> {
-    if (explicitId !== undefined) {
-        const parsed = parseInt(explicitId, 10);
-        if (isNaN(parsed)) {
-            throw new Error("Session id must be a number.");
+/**
+ * Parses and validates an explicit session id string against the list of active sessions.
+ * @param explicitId The session id string to validate.
+ * @param sessions The list of active sessions from the bridge.
+ * @returns The matching session info.
+ */
+export function ValidateSessionId(explicitId: string, sessions: SessionInfo[]): SessionInfo {
+    const parsed = parseInt(explicitId, 10);
+    if (isNaN(parsed)) {
+        throw new Error("Session id must be a number.");
+    }
+    const match = sessions.find((s) => s.id === parsed);
+    if (!match) {
+        if (sessions.length === 0) {
+            throw new Error(`Session ${parsed} does not exist. No active sessions.`);
         }
-        return parsed;
+        const list = sessions.map((s) => `  [${s.id}] ${s.name}`).join("\n");
+        throw new Error(`Session ${parsed} does not exist. Active sessions:\n${list}`);
+    }
+    return match;
+}
+
+/**
+ * Resolves the session id to use. If an explicit id is provided, validates it
+ * against the active sessions. If not, queries the bridge: returns the sole
+ * session's id when exactly one is active, or errors if zero or multiple.
+ * @param socket The WebSocket connection to the bridge.
+ * @param explicitId An optional explicit session id string.
+ * @returns The resolved numeric session id.
+ */
+export async function ResolveSessionId(socket: WebSocket, explicitId?: string): Promise<number> {
+    const response = await SendAndReceive<SessionsResponse>(socket, { type: "sessions" });
+
+    if (explicitId !== undefined) {
+        return ValidateSessionId(explicitId, response.sessions).id;
     }
 
-    const response = await SendAndReceive<SessionsResponse>(socket, { type: "sessions" });
     if (response.sessions.length === 0) {
         throw new Error("No active sessions. Make sure a browser is running with StartInspectable enabled.");
     }
@@ -293,11 +329,20 @@ export function PrintCommandHelp(commandId: string, descriptor: CommandInfo, mis
 }
 
 /**
- * Handles `--session` without `--command`: lists active sessions.
+ * Handles `--session` without `--command`: lists active sessions, or shows
+ * details for a specific session when an explicit id is provided.
  * @param socket The WebSocket connection to the bridge.
+ * @param explicitId An optional explicit session id string.
  */
-async function HandleSessions(socket: WebSocket): Promise<void> {
+async function HandleSessions(socket: WebSocket, explicitId?: string): Promise<void> {
     const response = await SendAndReceive<SessionsResponse>(socket, { type: "sessions" });
+
+    if (explicitId !== undefined) {
+        const match = ValidateSessionId(explicitId, response.sessions);
+        console.log(`  [${match.id}] ${match.name} (connected: ${match.connectedAt})`);
+        return;
+    }
+
     if (response.sessions.length === 0) {
         console.log("No active sessions.");
     } else {
@@ -394,7 +439,7 @@ async function Main(): Promise<void> {
     }
 
     if (args.session && !args.command) {
-        await WithBridge(args.bridgeScript, async (socket) => await HandleSessions(socket));
+        await WithBridge(args.bridgeScript, async (socket) => await HandleSessions(socket, args.sessionId));
         return;
     }
 

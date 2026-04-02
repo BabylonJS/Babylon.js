@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { ParseCliArgs, ParseCommandArgs, PrintCommandHelp, ResolveSessionId, SendAndReceive } from "../../../src/cli/cli";
-import { type CommandArgInfo, type CommandInfo, type SessionsResponse } from "../../../src/cli/protocol";
+import { ParseCliArgs, ParseCommandArgs, PrintCommandHelp, ResolveSessionId, SendAndReceive, ValidateSessionId } from "../../../src/cli/cli";
+import { type CommandArgInfo, type CommandInfo, type SessionInfo, type SessionsResponse } from "../../../src/cli/protocol";
 import { EventEmitter } from "events";
 
 // ---------------------------------------------------------------------------
@@ -200,6 +200,35 @@ describe("PrintCommandHelp", () => {
 });
 
 // ---------------------------------------------------------------------------
+// ValidateSessionId
+// ---------------------------------------------------------------------------
+
+describe("ValidateSessionId", () => {
+    const sessions: SessionInfo[] = [
+        { id: 1, name: "Scene A", connectedAt: new Date().toISOString() },
+        { id: 3, name: "Scene B", connectedAt: new Date().toISOString() },
+    ];
+
+    it("returns the matching session when id exists", () => {
+        const match = ValidateSessionId("1", sessions);
+        expect(match.id).toBe(1);
+        expect(match.name).toBe("Scene A");
+    });
+
+    it("throws for a non-numeric id", () => {
+        expect(() => ValidateSessionId("abc", sessions)).toThrow("Session id must be a number.");
+    });
+
+    it("throws when id does not exist and lists active sessions", () => {
+        expect(() => ValidateSessionId("2", sessions)).toThrow(/Session 2 does not exist.*Scene A.*Scene B/s);
+    });
+
+    it("throws when id does not exist and no sessions are active", () => {
+        expect(() => ValidateSessionId("2", [])).toThrow(/Session 2 does not exist.*No active sessions/);
+    });
+});
+
+// ---------------------------------------------------------------------------
 // ResolveSessionId
 // ---------------------------------------------------------------------------
 
@@ -216,16 +245,38 @@ describe("ResolveSessionId", () => {
         return mock;
     }
 
-    it("returns the parsed id when an explicit numeric id is provided", async () => {
-        const socket = makeMockSocket({});
+    it("returns the parsed id when an explicit numeric id matches an active session", async () => {
+        const response: SessionsResponse = {
+            type: "sessionsResponse",
+            sessions: [{ id: 5, name: "My Scene", connectedAt: new Date().toISOString() }],
+        };
+        const socket = makeMockSocket(response);
         const id = await ResolveSessionId(socket as never, "5");
         expect(id).toBe(5);
-        expect(socket.send).not.toHaveBeenCalled();
     });
 
     it("throws for a non-numeric explicit id", async () => {
-        const socket = makeMockSocket({});
+        const response: SessionsResponse = { type: "sessionsResponse", sessions: [] };
+        const socket = makeMockSocket(response);
         await expect(ResolveSessionId(socket as never, "abc")).rejects.toThrow("Session id must be a number.");
+    });
+
+    it("throws when explicit session id does not exist and lists active sessions", async () => {
+        const response: SessionsResponse = {
+            type: "sessionsResponse",
+            sessions: [
+                { id: 1, name: "Scene A", connectedAt: new Date().toISOString() },
+                { id: 3, name: "Scene B", connectedAt: new Date().toISOString() },
+            ],
+        };
+        const socket = makeMockSocket(response);
+        await expect(ResolveSessionId(socket as never, "2")).rejects.toThrow(/Session 2 does not exist.*Scene A.*Scene B/s);
+    });
+
+    it("throws when explicit session id does not exist and no sessions are active", async () => {
+        const response: SessionsResponse = { type: "sessionsResponse", sessions: [] };
+        const socket = makeMockSocket(response);
+        await expect(ResolveSessionId(socket as never, "2")).rejects.toThrow(/Session 2 does not exist.*No active sessions/);
     });
 
     it("auto-resolves when exactly one session is active", async () => {

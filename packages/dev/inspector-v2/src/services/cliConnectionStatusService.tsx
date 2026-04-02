@@ -1,6 +1,8 @@
 import { Button, tokens } from "@fluentui/react-components";
 import { PlugConnectedRegular, PlugDisconnectedRegular } from "@fluentui/react-icons";
+import { useEffect, useRef } from "react";
 
+import { useToast } from "shared-ui-components/fluent/primitives/toast";
 import { Tooltip } from "shared-ui-components/fluent/primitives/tooltip";
 import { useObservableState } from "../hooks/observableHooks";
 import { type ServiceDefinition } from "../modularity/serviceDefinition";
@@ -20,6 +22,20 @@ export const CliConnectionStatusServiceDefinition: ServiceDefinition<[], [IShell
             order: DefaultToolbarItemOrder.CliStatus,
             component: () => {
                 const isConnected = useObservableState(() => cliConnectionStatus.isConnected, cliConnectionStatus.onConnectionStatusChanged);
+                const { showToast } = useToast();
+                const isFirstRender = useRef(true);
+
+                useEffect(() => {
+                    if (isFirstRender.current) {
+                        isFirstRender.current = false;
+                        return;
+                    }
+                    if (isConnected) {
+                        showToast("Inspector bridge connected.", { intent: "success" });
+                    } else {
+                        showToast("Inspector bridge disconnected.", { intent: "warning" });
+                    }
+                }, [isConnected, showToast]);
 
                 // Using raw Fluent Button to pass color directly to the icon.
                 return (
