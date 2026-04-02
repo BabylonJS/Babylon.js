@@ -82,6 +82,7 @@ export class FrameGraphIblShadowsVoxelizationTask extends FrameGraphTask {
     private _voxelRendererResolutionExp?: number;
     private _voxelRendererTriPlanar?: boolean;
     private _voxelizationCompleteObserver: Observer<void> | null = null;
+    private _voxelRTTextureHandle?: FrameGraphTextureHandle;
     private _voxelGridTextureHandle?: FrameGraphTextureHandle;
     private _frameCounter = 0;
 
@@ -152,10 +153,10 @@ export class FrameGraphIblShadowsVoxelizationTask extends FrameGraphTask {
         if (!voxelRTInternalTexture) {
             throw new Error(`FrameGraphIblShadowsVoxelizationTask ${this.name}: voxel renderer RT texture is unavailable`);
         }
-        const voxelRTTextureHandle = this._frameGraph.textureManager.importTexture(`${this.name} Voxel RT`, voxelRTInternalTexture);
+        this._voxelRTTextureHandle = this._frameGraph.textureManager.importTexture(`${this.name} Voxel RT`, voxelRTInternalTexture, this._voxelRTTextureHandle);
 
         const pass = this._frameGraph.addRenderPass(this.name);
-        pass.setRenderTarget(voxelRTTextureHandle);
+        pass.setRenderTarget(this._voxelRTTextureHandle);
         pass.addDependencies(this.outputVoxelGridTexture);
         pass.setExecuteFunc((context) => {
             context.restoreDefaultFramebuffer();

@@ -426,7 +426,7 @@ export class FrameGraphIblShadowsRendererTask extends FrameGraphTask {
 
         const passDisabled = this._frameGraph.addRenderPass(this.name + "_disabled", true);
         passDisabled.setRenderTarget(this.outputTexture);
-        passDisabled.setExecuteFunc((context) => {
+        passDisabled.setExecuteFunc((_context) => {
             // context.clearColorAttachments()
         });
     }
@@ -623,17 +623,17 @@ export class FrameGraphIblShadowsRendererTask extends FrameGraphTask {
         const blueNoiseChanged = this._lastImportedBlueNoiseTexture !== blueNoiseInternalTexture;
 
         if (icdfChanged) {
-            this.tracingTask.icdfTexture = this._frameGraph.textureManager.importTexture(`ICDF Texture`, icdfTexture);
+            this.tracingTask.icdfTexture = this._frameGraph.textureManager.importTexture(`ICDF Texture`, icdfTexture, this.tracingTask.icdfTexture);
             this._lastImportedIcdfTexture = icdfTexture;
         }
 
         if (environmentChanged) {
-            this.tracingTask.environmentTexture = this._frameGraph.textureManager.importTexture(`Environment Texture`, environmentTexture);
+            this.tracingTask.environmentTexture = this._frameGraph.textureManager.importTexture(`Environment Texture`, environmentTexture, this.tracingTask.environmentTexture);
             this._lastImportedEnvironmentTexture = environmentTexture;
         }
 
         if (blueNoiseChanged) {
-            this.tracingTask.blueNoiseTexture = this._frameGraph.textureManager.importTexture(`Blue Noise Texture`, blueNoiseInternalTexture);
+            this.tracingTask.blueNoiseTexture = this._frameGraph.textureManager.importTexture(`Blue Noise Texture`, blueNoiseInternalTexture, this.tracingTask.blueNoiseTexture);
             this._lastImportedBlueNoiseTexture = blueNoiseInternalTexture;
         }
 
@@ -755,7 +755,7 @@ export class FrameGraphIblShadowsRendererTask extends FrameGraphTask {
         tracingTask.voxelGridTexture = this.voxelizationTask.outputVoxelGridTexture;
         tracingTask.depthTexture = gBufferHandles.depthTexture;
         tracingTask.normalTexture = gBufferHandles.normalTexture;
-        tracingTask.icdfTexture = frameGraph.textureManager.importTexture(`ICDF Texture`, cdfGenerator.getIcdfTexture().getInternalTexture()!);
+        tracingTask.icdfTexture = frameGraph.textureManager.importTexture(`ICDF Texture`, cdfGenerator.getIcdfTexture().getInternalTexture()!, tracingTask.icdfTexture);
         tracingTask.sampleDirections = options?.sampleDirections ?? tracingTask.sampleDirections;
         tracingTask.worldScaleMatrix = this.voxelizationTask.worldScaleMatrix;
         tracingTask.voxelShadowOpacity = options?.voxelShadowOpacity ?? tracingTask.voxelShadowOpacity;
