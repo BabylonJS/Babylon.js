@@ -1,6 +1,6 @@
 {
     "name": "@babylonjs/serializers",
-    "version": "9.0.0",
+    "version": "9.1.0",
     "main": "index.js",
     "module": "index.js",
     "types": "index.d.ts",
@@ -18,10 +18,10 @@
         "postcompile": "build-tools -c add-js-to-es6"
     },
     "devDependencies": {
-        "@babylonjs/core": "9.0.0",
+        "@babylonjs/core": "9.1.0",
         "@dev/build-tools": "^1.0.0",
         "@dev/serializers": "^1.0.0",
-        "babylonjs-gltf2interface": "9.0.0"
+        "babylonjs-gltf2interface": "9.1.0"
     },
     "peerDependencies": {
         "@babylonjs/core": "^9.0.0",

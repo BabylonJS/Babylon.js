@@ -194,23 +194,15 @@ export abstract class WebGPUCacheRenderPipeline {
     public readonly mrtTextureArray: InternalTexture[];
     public readonly mrtTextureCount: number = 0;
 
-    public getRenderPipeline(fillMode: number, effect: Effect, sampleCount: number, textureState = 0): GPURenderPipeline {
-        sampleCount = WebGPUTextureHelper.GetSample(sampleCount);
-
-        if (this.disabled) {
-            const topology = WebGPUCacheRenderPipeline._GetTopology(fillMode);
-
-            this._setVertexState(effect); // to fill this.vertexBuffers with correct data
-            this._setTextureState(textureState);
-
-            this._parameter.pipeline = this._createRenderPipeline(effect, topology, sampleCount);
-
-            WebGPUCacheRenderPipeline.NumCacheMiss++;
-            WebGPUCacheRenderPipeline._NumPipelineCreationCurrentFrame++;
-
-            return this._parameter.pipeline;
-        }
-
+    /**
+     * Performs the cache state setup and lookup for a render pipeline.
+     * @param fillMode defines the fill mode used to configure the rasterization state
+     * @param effect defines the effect containing the shader and vertex input layout
+     * @param sampleCount defines the number of samples to use for MSAA
+     * @param textureState defines the encoded texture state used for the pipeline cache key
+     * @returns the cached pipeline on hit, or null on miss (with cache state ready for creation)
+     */
+    private _lookupRenderPipeline(fillMode: number, effect: Effect, sampleCount: number, textureState: number): Nullable<GPURenderPipeline> {
         this._setShaderStage(effect.uniqueId);
         this._setRasterizationState(fillMode, sampleCount);
         this._setColorStates();
@@ -234,6 +226,31 @@ export abstract class WebGPUCacheRenderPipeline {
         if (this._parameter.pipeline) {
             WebGPUCacheRenderPipeline.NumCacheHitWithHash++;
             return this._parameter.pipeline;
+        }
+
+        return null;
+    }
+
+    public getRenderPipeline(fillMode: number, effect: Effect, sampleCount: number, textureState = 0): GPURenderPipeline {
+        sampleCount = WebGPUTextureHelper.GetSample(sampleCount);
+
+        if (this.disabled) {
+            const topology = WebGPUCacheRenderPipeline._GetTopology(fillMode);
+
+            this._setVertexState(effect); // to fill this.vertexBuffers with correct data
+            this._setTextureState(textureState);
+
+            this._parameter.pipeline = this._createRenderPipeline(effect, topology, sampleCount);
+
+            WebGPUCacheRenderPipeline.NumCacheMiss++;
+            WebGPUCacheRenderPipeline._NumPipelineCreationCurrentFrame++;
+
+            return this._parameter.pipeline;
+        }
+
+        const cached = this._lookupRenderPipeline(fillMode, effect, sampleCount, textureState);
+        if (cached) {
+            return cached;
         }
 
         const topology = WebGPUCacheRenderPipeline._GetTopology(fillMode);
@@ -1044,7 +1061,7 @@ export abstract class WebGPUCacheRenderPipeline {
         return descriptors;
     }
 
-    private _createRenderPipeline(effect: Effect, topology: GPUPrimitiveTopology, sampleCount: number): GPURenderPipeline {
+    private _buildRenderPipelineDescriptor(effect: Effect, topology: GPUPrimitiveTopology, sampleCount: number): GPURenderPipelineDescriptor {
         const webgpuPipelineContext = effect._pipelineContext as WebGPUPipelineContext;
         const inputStateDescriptor = this._getVertexInputDescriptor(effect);
         const pipelineLayout = this._createPipelineLayout(webgpuPipelineContext);
@@ -1131,7 +1148,7 @@ export abstract class WebGPUCacheRenderPipeline {
             primitiveState.stripIndexFormat = stripIndexFormat;
         }
 
-        return this._device.createRenderPipeline({
+        return {
             label: `RenderPipeline_${colorStates[0]?.format ?? "nooutput"}_${this._webgpuDepthStencilFormat ?? "nodepth"}_samples${sampleCount}_textureState${this._textureState}`,
             layout: pipelineLayout,
             vertex: {
@@ -1168,6 +1185,45 @@ export abstract class WebGPUCacheRenderPipeline {
                           depthBiasClamp: topologyIsTriangle ? this._depthBiasClamp : 0,
                           depthBiasSlopeScale: topologyIsTriangle ? this._depthBiasSlopeScale : 0,
                       },
+        };
+    }
+
+    private _createRenderPipeline(effect: Effect, topology: GPUPrimitiveTopology, sampleCount: number): GPURenderPipeline {
+        return this._device.createRenderPipeline(this._buildRenderPipelineDescriptor(effect, topology, sampleCount));
+    }
+
+    /**
+     * Pre-warms a render pipeline asynchronously. Sets up the cache state,
+     * checks for a cache hit, and on miss starts an async pipeline compilation.
+     * @param fillMode - the fill mode (triangle list, wireframe, etc.)
+     * @param effect - the effect to create the pipeline for
+     * @param sampleCount - the MSAA sample count
+     * @param textureState - the texture state bitmask
+     * @returns a Promise that resolves when the pipeline is compiled and cached, or null if already cached
+     */
+    public preWarmPipeline(fillMode: number, effect: Effect, sampleCount: number, textureState: number = 0): Nullable<Promise<GPURenderPipeline>> {
+        sampleCount = WebGPUTextureHelper.GetSample(sampleCount);
+
+        const cached = this._lookupRenderPipeline(fillMode, effect, sampleCount, textureState);
+        if (cached) {
+            return null;
+        }
+
+        const topology = WebGPUCacheRenderPipeline._GetTopology(fillMode);
+
+        // Capture the cache token before any subsequent cache operations overwrite it
+        const capturedParam = { token: this._parameter.token, pipeline: null as Nullable<GPURenderPipeline> };
+
+        const promise = this._device.createRenderPipelineAsync(this._buildRenderPipelineDescriptor(effect, topology, sampleCount));
+
+        // eslint-disable-next-line github/no-then
+        return promise.then((pipeline) => {
+            capturedParam.pipeline = pipeline;
+            this._setRenderPipeline(capturedParam);
+
+            WebGPUCacheRenderPipeline.NumCacheMiss++;
+
+            return pipeline;
         });
     }
 }

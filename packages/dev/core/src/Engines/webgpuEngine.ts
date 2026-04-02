@@ -59,6 +59,7 @@ import { type VideoTexture } from "../Materials/Textures/videoTexture";
 import { type RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import { type RenderTargetWrapper } from "./renderTargetWrapper";
 import { type Scene } from "../scene";
+import { type AbstractMesh } from "../Meshes/abstractMesh";
 
 import { SphericalPolynomial } from "../Maths/sphericalPolynomial";
 import { PerformanceMonitor } from "../Misc/performanceMonitor";
@@ -202,6 +203,74 @@ export interface WebGPUEngineOptions extends AbstractEngineOptions, GPURequestAd
      * Options to load the associated Twgsl library
      */
     twgslOptions?: TwgslOptions;
+}
+
+/**
+ * Options for pre-warming a render pipeline asynchronously.
+ * All render state properties are optional and default to the most common opaque rendering state.
+ */
+export interface IWebGPURenderPipelineAsyncCreationOptions {
+    /**
+     * The compiled effect (shader stages) for the pipeline.
+     */
+    effect: Effect;
+    /**
+     * The mesh whose vertex buffer layout to use.
+     */
+    mesh: AbstractMesh;
+    /**
+     * The fill mode / primitive topology. Defaults to Constants.MATERIAL_TriangleFillMode.
+     */
+    fillMode?: number;
+    /**
+     * The MSAA sample count. Defaults to the engine's current sample count.
+     */
+    sampleCount?: number;
+    /**
+     * The color render target format. Defaults to the engine's current canvas color format.
+     */
+    colorFormat?: GPUTextureFormat;
+    /**
+     * The depth-stencil render target format. Defaults to the engine's current depth format.
+     */
+    depthStencilFormat?: GPUTextureFormat;
+    /**
+     * The alpha blending mode (e.g. Constants.ALPHA_DISABLE, Constants.ALPHA_COMBINE).
+     * Defaults to Constants.ALPHA_DISABLE.
+     */
+    alphaMode?: number;
+    /**
+     * Whether depth writing is enabled. Defaults to true.
+     */
+    depthWrite?: boolean;
+    /**
+     * Whether depth testing is enabled. Defaults to true.
+     */
+    depthTest?: boolean;
+    /**
+     * The depth comparison function (e.g. Constants.LEQUAL). Defaults to Constants.LEQUAL.
+     */
+    depthCompare?: number;
+    /**
+     * Whether back-face culling is enabled. Defaults to true.
+     */
+    cullEnabled?: boolean;
+    /**
+     * Which face to cull (1 = back, 2 = front). Defaults to 1 (back).
+     */
+    cullFace?: number;
+    /**
+     * Front face winding order (1 = CCW, 2 = CW). Defaults to 2 (CW).
+     */
+    frontFace?: number;
+    /**
+     * Color channel write mask (bitmask of RGBA channels). Defaults to 0xF (all channels).
+     */
+    writeMask?: number;
+    /**
+     * Whether stencil testing is enabled. Defaults to false.
+     */
+    stencilEnabled?: boolean;
 }
 
 /**
@@ -453,7 +522,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
                   .requestAdapter()
                   // eslint-disable-next-line github/no-then
                   .then(
-                      (adapter: GPUAdapter | null) => !!adapter,
+                      (adapter: GPUAdapter | null | undefined) => !!adapter,
                       () => false
                   )
                   // eslint-disable-next-line github/no-then
@@ -653,10 +722,10 @@ export class WebGPUEngine extends ThinWebGPUEngine {
             navigator
                 .gpu!.requestAdapter(this._options)
                 // eslint-disable-next-line github/no-then
-                .then(async (adapter: GPUAdapter | null) => {
+                .then(async (adapter: GPUAdapter | null | undefined) => {
                     if (!adapter) {
                         // eslint-disable-next-line no-throw-literal
-                        throw "Could not retrieve a WebGPU adapter (adapter is null).";
+                        throw "Could not retrieve a WebGPU adapter (adapter is null or undefined).";
                     } else {
                         this._adapter = adapter!;
                         this._adapterSupportedExtensions = [];
@@ -3742,6 +3811,109 @@ export class WebGPUEngine extends ThinWebGPUEngine {
     public drawArraysType(fillMode: number, verticesStart: number, verticesCount: number, instancesCount: number = 1): void {
         this._currentIndexBuffer = null;
         this._draw(1, fillMode, verticesStart, verticesCount, instancesCount);
+    }
+
+    //------------------------------------------------------------------------------
+    //                        Async Pipeline Pre-Warming
+    //------------------------------------------------------------------------------
+
+    /**
+     * Asynchronously pre-creates one or more render pipelines so they are cached and ready
+     * to use without any compilation hitch when first rendered.
+     *
+     * Call this for effects and meshes that are not yet rendering but will be soon
+     * (e.g. streaming content, predicted material changes, pre-loading the next level).
+     *
+     * When passing an array, cache state is set once per entry and restored only at the end,
+     * making batch pre-warming efficient.
+     *
+     * @param options - a single options object, an array of options objects,
+     *                  or a raw GPURenderPipelineDescriptor for complete control
+     * @returns an array of Promises for the pipelines that had cache misses (empty if all were cached).
+     *          When a raw GPURenderPipelineDescriptor is provided, always returns a single-element array.
+     */
+    // eslint-disable-next-line no-restricted-syntax
+    public createRenderPipelineAsync(
+        options: IWebGPURenderPipelineAsyncCreationOptions | IWebGPURenderPipelineAsyncCreationOptions[] | GPURenderPipelineDescriptor
+    ): Promise<GPURenderPipeline>[] {
+        // Raw GPURenderPipelineDescriptor: bypass the cache and create directly
+        if ("vertex" in options) {
+            return [this._device.createRenderPipelineAsync(options as GPURenderPipelineDescriptor)];
+        }
+
+        const entries = Array.isArray(options) ? options : [options];
+        const promises: Promise<GPURenderPipeline>[] = [];
+        const cache = this._cacheRenderPipeline;
+
+        for (const entry of entries) {
+            // Render target formats
+            cache.setColorFormat(entry.colorFormat ?? this._colorFormat);
+            cache.setDepthStencilFormat(entry.depthStencilFormat ?? this._depthTextureFormat);
+
+            // Vertex / index buffers from mesh
+            const geometry = entry.mesh.geometry;
+            if (!geometry) {
+                throw new Error("WebGPUEngine.createRenderPipelineAsync: mesh has no geometry to derive vertex/index buffers from.");
+            }
+            cache.setBuffers(geometry.getVertexBuffers(), geometry.getIndexBuffer(), null);
+
+            // Alpha / blend state
+            const alphaMode = entry.alphaMode ?? Constants.ALPHA_DISABLE;
+            if (alphaMode === Constants.ALPHA_DISABLE) {
+                cache.setAlphaBlendEnabled([false], 0);
+            } else {
+                const prevAlphaMode = this._alphaMode[0];
+                this.setAlphaMode(alphaMode);
+                cache.setAlphaBlendEnabled(this._alphaState._alphaBlend, this._alphaState._numTargetEnabled);
+                cache.setAlphaBlendFactors(this._alphaState._blendFunctionParameters, this._alphaState._blendEquationParameters);
+                this.setAlphaMode(prevAlphaMode);
+            }
+
+            // Depth / stencil state
+            cache.setDepthWriteEnabled(entry.depthWrite ?? true);
+            cache.setDepthTestEnabled(entry.depthTest ?? true);
+            cache.setDepthCompare(entry.depthCompare ?? Constants.LEQUAL);
+
+            // Rasterization state
+            cache.setCullEnabled(entry.cullEnabled ?? true);
+            cache.setCullFace(entry.cullFace ?? 1);
+            cache.setFrontFace(entry.frontFace ?? 2);
+
+            // Write mask
+            cache.setWriteMask(entry.writeMask ?? 0xf);
+
+            // Stencil
+            cache.setStencilEnabled(entry.stencilEnabled ?? false);
+
+            const fillMode = entry.fillMode ?? Constants.MATERIAL_TriangleFillMode;
+            const sampleCount = entry.sampleCount ?? this.currentSampleCount;
+
+            const promise = cache.preWarmPipeline(fillMode, entry.effect, sampleCount, 0);
+            if (promise) {
+                promises.push(promise);
+            }
+        }
+
+        // Restore the cache state to the engine's current tracked state once after the entire batch
+        cache.setColorFormat(this._colorFormat);
+        cache.setDepthStencilFormat(this._depthTextureFormat);
+        cache.setBuffers(this._currentVertexBuffers ?? null, this._currentIndexBuffer, this._currentOverrideVertexBuffers ?? null);
+        cache.setDepthCullingState(
+            this._depthCullingState.cull ?? false,
+            this._depthCullingState.frontFace ?? 2,
+            this._depthCullingState.cullFace ?? 1,
+            this._depthCullingState.zOffset,
+            this._depthCullingState.zOffsetUnits,
+            this._depthCullingState.depthTest ?? true,
+            this._depthCullingState.depthMask ?? true,
+            this._depthCullingState.depthFunc
+        );
+        cache.setAlphaBlendEnabled(this._alphaState._alphaBlend, this._alphaState._numTargetEnabled);
+        cache.setAlphaBlendFactors(this._alphaState._blendFunctionParameters, this._alphaState._blendEquationParameters);
+        cache.setStencilEnabled(this._stencilStateComposer.enabled ?? false);
+        cache.setWriteMask(this._colorWrite ? 0xf : 0);
+
+        return promises;
     }
 
     //------------------------------------------------------------------------------

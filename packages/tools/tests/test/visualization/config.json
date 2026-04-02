@@ -3856,6 +3856,12 @@
             "playgroundId": "#0SA2NH#4",
             "referenceImage": "vertexPullingUVChannels.png",
             "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "WebGPU async pipeline pre-warming",
+            "playgroundId": "#823Q62#0",
+            "referenceImage": "webgpuAsyncPipelinePreWarm.png",
+            "excludedEngines": ["webgl1", "webgl2"]
         }
     ]
 }

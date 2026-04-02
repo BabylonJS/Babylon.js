@@ -399,6 +399,10 @@ export class GPUPicker {
                 this._meshUniqueIdToPickerId[mesh.uniqueId] = pickId;
                 nextFreeId++;
 
+                if (!mesh.isPickable || !mesh.isVisible) {
+                    continue;
+                }
+
                 // Create a GaussianSplattingMaterial with picking plugin for GPU picking
                 const gsPickingMaterial = this._createGaussianSplattingPickingMaterial(scene, mesh);
                 const plugin = gsPickingMaterial.pluginManager!.getPlugin<GaussianSplattingGpuPickingMaterialPlugin>("GaussianSplatGpuPicking")!;
@@ -496,6 +500,11 @@ export class GPUPicker {
             const plugin = gsPickingMaterial.pluginManager!.getPlugin<GaussianSplattingGpuPickingMaterialPlugin>("GaussianSplatGpuPicking")!;
             plugin.isCompound = true;
             plugin.partMeshIds = partMeshIds;
+            // Only active (included, visible, and pickable) parts should contribute to the depth buffer.
+            const activeParts = group.partEntries
+                .filter((e) => (e.proxy as AbstractMesh).isPickable && (e.proxy as AbstractMesh).isVisible)
+                .map((e) => (e.proxy as any).partIndex as number);
+            plugin.setPartActive(activeParts);
 
             gsPickingMaterial.onBindObservable.add(() => {
                 this._meshRenderingCount++;
