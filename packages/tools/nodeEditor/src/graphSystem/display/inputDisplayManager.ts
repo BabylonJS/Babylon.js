@@ -4,7 +4,7 @@ import { NodeMaterialSystemValues } from "core/Materials/Node/Enums/nodeMaterial
 import { NodeMaterialBlockConnectionPointTypes } from "core/Materials/Node/Enums/nodeMaterialBlockConnectionPointTypes";
 import { AnimatedInputBlockTypes } from "core/Materials/Node/Blocks/Input/animatedInputBlockTypes";
 import { type Vector2, type Vector3, type Vector4 } from "core/Maths/math.vector";
-import { type Color3 } from "core/Maths/math.color";
+import { Color3 } from "core/Maths/math.color";
 import { BlockTools } from "../../blockTools";
 import { type IDisplayManager } from "shared-ui-components/nodeGraphSystem/interfaces/displayManager";
 import { type INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
@@ -70,7 +70,7 @@ export class InputDisplayManager implements IDisplayManager {
             case NodeMaterialBlockConnectionPointTypes.Color3:
             case NodeMaterialBlockConnectionPointTypes.Color4: {
                 if (inputBlock.value) {
-                    color = (inputBlock.value as Color3).toHexString();
+                    color = new Color3(inputBlock.value.r, inputBlock.value.g, inputBlock.value.b).toHexString();
                     break;
                 }
             }
