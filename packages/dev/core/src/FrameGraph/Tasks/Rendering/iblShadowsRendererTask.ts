@@ -39,24 +39,29 @@ export interface IFrameGraphIblShadowsRendererTaskCreationOptions {
      * Depth texture handle.
      * This should be the screen-space depth of all objects in the scene
      * that will receive shadows.
+     * It is important that this texture stores 32-bit depth values to avoid artifacts.
      */
     depthTexture: FrameGraphTextureHandle;
     /**
      * World-space normal texture.
      * This should store the world-space normals of all objects in the scene
      * that will receive shadows. Each component should be normalized to [0, 1] rather than [-1, 1].
+     * Recommended to be 16-bit floating point though 8-bit unsigned byte can be used with minimal
+     * loss in quality.
      */
     normalTexture: FrameGraphTextureHandle;
     /**
      * Position texture handle.
      * This should store the world-space position of all objects in the scene
      * that will receive shadows.
+     * Should be stored as 16-bit floating point.
      */
     positionTexture: FrameGraphTextureHandle;
     /**
      * Velocity texture handle.
      * This should store the linear velocity per pixel of all objects in the scene
      * that will receive shadows.
+     * Should be stored as 16-bit floating point.
      */
     velocityTexture: FrameGraphTextureHandle;
     /**
