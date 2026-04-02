@@ -83,6 +83,13 @@
             "referenceImage": "gsplat-sogs-sh.png"
         },
         {
+            "title": "Gaussian Splatting Part Test",
+            "playgroundId": "#BTS11N#0",
+            "renderCount": 15,
+            "errorRatio": 5,
+            "referenceImage": "gsplat-part-test.png"
+        },
+        {
             "title": "RH billboard",
             "playgroundId": "#PDO1L6#1",
             "referenceImage": "rh-billboard.png"
@@ -3821,6 +3828,10 @@
             "playgroundId": "#ADUC74#28"
         },
         {
+            "title": "Selection outline layer with instances and LOD",
+            "playgroundId": "#8I487I#0"
+        },
+        {
             "title": "Vertex Pulling - Normals UVs Colors Tangents",
             "playgroundId": "#664OF3#6",
             "referenceImage": "vertexPullingNormalsUVsColors.png",
@@ -3849,6 +3860,12 @@
             "playgroundId": "#0SA2NH#4",
             "referenceImage": "vertexPullingUVChannels.png",
             "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "WebGPU async pipeline pre-warming",
+            "playgroundId": "#823Q62#0",
+            "referenceImage": "webgpuAsyncPipelinePreWarm.png",
+            "excludedEngines": ["webgl1", "webgl2"]
         }
     ]
 }

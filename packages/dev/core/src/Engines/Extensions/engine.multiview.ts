@@ -210,7 +210,13 @@ Scene.prototype.createSceneUniformBuffer = function (name?: string, trackUBOsInF
         const trackUBOsInFrame = typeof trackUBOsInFrameOrOptions === "boolean" ? trackUBOsInFrameOrOptions : trackUBOsInFrameOrOptions?.trackUBOsInFrame;
         return CreateMultiviewUbo(this.getEngine(), name, trackUBOsInFrame);
     }
-    return CurrentCreateSceneUniformBuffer.bind(this)(name, trackUBOsInFrameOrOptions);
+    // Cast to implementation signature: .call() on overloaded functions resolves to the last overload in TypeScript,
+    // but the original implementation correctly handles boolean | ICreateSceneUboOptions | undefined.
+    return (CurrentCreateSceneUniformBuffer as (this: Scene, name?: string, trackUBOsInFrameOrOptions?: boolean | ICreateSceneUboOptions) => UniformBuffer).call(
+        this,
+        name,
+        trackUBOsInFrameOrOptions
+    );
 };
 Scene.prototype._updateMultiviewUbo = function (viewR?: Matrix, projectionR?: Matrix) {
     if (viewR && projectionR) {

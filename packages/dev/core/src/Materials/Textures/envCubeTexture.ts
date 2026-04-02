@@ -116,6 +116,7 @@ export abstract class EnvCubeTexture extends BaseTexture {
      * @param supersample Defines if texture must be supersampled (default: false)
      * @param prefilterIrradianceOnLoad Prefilters texture to allow use of this texture for irradiance lighting.
      * @param prefilterUsingCdf Defines if the prefiltering should be done using a CDF instead of the default approach.
+     * @param sphericalPolynomialTargetSize Target face size for spherical polynomial computation. 0 = full resolution (default).
      */
     constructor(
         url: string,
@@ -129,7 +130,8 @@ export abstract class EnvCubeTexture extends BaseTexture {
         onError: Nullable<(message?: string, exception?: any) => void> = null,
         supersample = false,
         prefilterIrradianceOnLoad = false,
-        prefilterUsingCdf = false
+        prefilterUsingCdf = false,
+        sphericalPolynomialTargetSize = 0
     ) {
         super(sceneOrEngine);
 
@@ -163,6 +165,7 @@ export abstract class EnvCubeTexture extends BaseTexture {
         // mitigates this.
         this._supersample = supersample || prefilterUsingCdf;
         this._generateHarmonics = generateHarmonics;
+        this._sphericalPolynomialTargetSize = sphericalPolynomialTargetSize;
 
         this._texture = this._getFromCache(url, this._noMipmap, undefined, undefined, undefined, this.isCube);
 
@@ -222,7 +225,7 @@ export abstract class EnvCubeTexture extends BaseTexture {
 
             // Generate harmonics if needed.
             if (this._generateHarmonics) {
-                const sphericalPolynomial = CubeMapToSphericalPolynomialTools.ConvertCubeMapToSphericalPolynomial(data);
+                const sphericalPolynomial = CubeMapToSphericalPolynomialTools.ConvertCubeMapToSphericalPolynomial(data, this._sphericalPolynomialTargetSize);
                 this.sphericalPolynomial = sphericalPolynomial;
             }
 

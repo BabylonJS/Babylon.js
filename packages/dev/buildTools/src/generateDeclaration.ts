@@ -496,7 +496,7 @@ function GetPackageDeclaration(
                 `}
 ` +
                 processedSource.substring(globalIndex + 9, nextIndex) +
-                `declare module ${thisFileModuleName} {
+                `declare namespace ${thisFileModuleName} {
     ` +
                 processedSource.substring(nextIndex + 2);
         }
@@ -505,10 +505,10 @@ function GetPackageDeclaration(
     if (defaultModuleName !== thisFileModuleName) {
         return `
 }
-declare module ${thisFileModuleName} {
+declare namespace ${thisFileModuleName} {
     ${processedSource}
 }
-declare module ${defaultModuleName} {
+declare namespace ${defaultModuleName} {
 ${linesToDefaultNamespace.join("\n")}
 `;
     }
@@ -570,7 +570,7 @@ export function generateCombinedDeclaration(declarationFiles: string[], config: 
     const namespaceDeclaration =
         buildType === "umd"
             ? `
-declare module ${defaultModuleName} {
+declare namespace ${defaultModuleName} {
 ${declarations}
 }
 `

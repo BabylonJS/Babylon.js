@@ -970,7 +970,6 @@ export { Playground };`;
         const files: Array<{ path: string; content: string; lastModified: number }> = [];
         const skipDir = /^(node_modules|\.git|\.hg|\.svn|\.idea|\.vscode)$/i;
         const walkAsync = async (dir: FileSystemDirectoryHandle, prefix = "") => {
-            // @ts-expect-error: .values() is not in TS lib yet
             for await (const entry of dir.values()) {
                 if (entry.kind === "directory") {
                     if (skipDir.test(entry.name)) {

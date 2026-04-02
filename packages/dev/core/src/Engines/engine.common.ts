@@ -220,7 +220,7 @@ export function RequestFullscreen(element: HTMLElement): void {
     if (!requestFunction) {
         return;
     }
-    requestFunction.call(element);
+    void requestFunction.call(element);
 }
 
 /**

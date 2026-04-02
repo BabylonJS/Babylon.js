@@ -9,7 +9,7 @@ import { PostProcess, type PostProcessOptions } from "../PostProcesses/postProce
 import { Vector3, Vector4 } from "../Maths/math.vector";
 import { RawTexture } from "../Materials/Textures/rawTexture";
 import { type BaseTexture } from "../Materials/Textures/baseTexture";
-import { Observable } from "../Misc/observable";
+import { Observable, type Observer } from "../Misc/observable";
 import { type CubeTexture } from "../Materials/Textures/cubeTexture";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { _WarnImport } from "../Misc/devTools";
@@ -17,7 +17,6 @@ import { type Nullable } from "../types";
 import { EngineStore } from "../Engines/engineStore";
 import { Logger } from "../Misc/logger";
 import { _RetryWithInterval } from "../Misc/timingTools";
-import type { Observer } from "../Misc/observable";
 
 /**
  * Build cdf maps to be used for IBL importance sampling.

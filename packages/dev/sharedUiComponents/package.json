@@ -41,6 +41,8 @@
         "@fortawesome/react-fontawesome": "^0.2.0",
         "@fluentui/react-components": "^9.70.0",
         "@fluentui/react-icons": "^2.0.310",
+        "react-dnd": "15.0.1",
+        "react-dnd-touch-backend": "15.0.1",
         "sass": "^1.62.1"
     },
     "sideEffects": false,

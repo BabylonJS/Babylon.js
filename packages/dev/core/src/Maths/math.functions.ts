@@ -4,7 +4,7 @@ import { nativeOverride } from "../Misc/decorators";
 
 // This helper class is only here so we can apply the nativeOverride decorator to functions.
 class MathHelpers {
-    @nativeOverride.filter((...[positions, indices]: Parameters<typeof MathHelpers.extractMinAndMaxIndexed>) => !Array.isArray(positions) && !Array.isArray(indices))
+    @nativeOverride.filter((...args: Parameters<typeof MathHelpers.extractMinAndMaxIndexed>) => !Array.isArray(args[0]) && !Array.isArray(args[1]))
     // eslint-disable-next-line @typescript-eslint/naming-convention
     public static extractMinAndMaxIndexed(positions: FloatArray, indices: IndicesArray, indexStart: number, indexCount: number, minimum: Vector3, maximum: Vector3): void {
         for (let index = indexStart; index < indexStart + indexCount; index++) {
@@ -17,7 +17,7 @@ class MathHelpers {
         }
     }
 
-    @nativeOverride.filter((...[positions]: Parameters<typeof MathHelpers.extractMinAndMax>) => !Array.isArray(positions))
+    @nativeOverride.filter((...args: Parameters<typeof MathHelpers.extractMinAndMax>) => !Array.isArray(args[0]))
     // eslint-disable-next-line @typescript-eslint/naming-convention
     public static extractMinAndMax(positions: FloatArray, start: number, count: number, stride: number, minimum: Vector3, maximum: Vector3): void {
         for (let index = start, offset = start * stride; index < start + count; index++, offset += stride) {

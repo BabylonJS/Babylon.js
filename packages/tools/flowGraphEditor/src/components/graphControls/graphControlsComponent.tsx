@@ -267,6 +267,29 @@ export class GraphControlsComponent extends React.Component<IGraphControlsProps,
 
         return (
             <div className="fge-graph-controls">
+                <button
+                    className="fge-ctrl-btn fge-ctrl-undo"
+                    title="Undo (Ctrl+Z)"
+                    onClick={() => {
+                        this.props.globalState.stateManager.historyStack?.undo();
+                        this.forceUpdate();
+                    }}
+                    disabled={!this.props.globalState.stateManager.historyStack?.canUndo}
+                >
+                    ↩
+                </button>
+                <button
+                    className="fge-ctrl-btn fge-ctrl-redo"
+                    title="Redo (Ctrl+Shift+Z)"
+                    onClick={() => {
+                        this.props.globalState.stateManager.historyStack?.redo();
+                        this.forceUpdate();
+                    }}
+                    disabled={!this.props.globalState.stateManager.historyStack?.canRedo}
+                >
+                    ↪
+                </button>
+                <span className="fge-ctrl-separator" />
                 <button className="fge-ctrl-btn fge-ctrl-start" title="Start" onClick={() => this._onStart()} disabled={!canStart}>
                     ▶
                 </button>

@@ -2,6 +2,8 @@ import * as React from "react";
 import { type GlobalState } from "../../globalState";
 import { type Nullable } from "core/types";
 import { type Observer } from "core/Misc/observable";
+import { type Scene } from "core/scene";
+import { type Engine } from "core/Engines/engine";
 import { SceneContext } from "../../sceneContext";
 import { LogEntry } from "../log/logComponent";
 import { LoadSnippet, type IPlaygroundSnippetResult } from "@tools/snippet-loader";
@@ -73,6 +75,11 @@ export class ScenePreviewComponent extends React.Component<IScenePreviewComponen
                 void this.loadSnippetAsync();
             }
         });
+
+        // Create a default scene so the editor is usable without a snippet
+        if (!this.props.globalState.sceneContext && !this.props.globalState.snippetId) {
+            void this._createDefaultSceneAsync();
+        }
     }
 
     /** @internal */
@@ -96,6 +103,263 @@ export class ScenePreviewComponent extends React.Component<IScenePreviewComponen
             this._onContextRefreshedObserver = null;
         }
     }
+
+    /**
+     * Dispose the previous preview engine/scene/context so a new one can be created.
+     * Also clears the sceneContext reference on globalState to avoid stale pointers.
+     */
+    private _disposeCurrentScene() {
+        const oldCtx = this.props.globalState.sceneContext;
+        if (oldCtx) {
+            oldCtx.engine.stopRenderLoop();
+            oldCtx.scene.dispose();
+            oldCtx.engine.dispose();
+            oldCtx.dispose();
+            this.props.globalState.sceneContext = null;
+        }
+    }
+
+    /**
+     * Start the render loop on the given engine and wire up resize handling.
+     * @param scene - the Babylon.js scene to render
+     * @param engine - the engine to run the render loop on
+     */
+    private _setupEngineRenderLoop(scene: Scene, engine: { runRenderLoop: Engine["runRenderLoop"]; resize: Engine["resize"] }) {
+        engine.runRenderLoop(() => {
+            if (scene.activeCamera || (scene.activeCameras && scene.activeCameras.length > 0)) {
+                scene.render();
+            }
+        });
+
+        engine.resize();
+
+        const canvas = this._canvasRef.current;
+        const resizeHandler = () => engine.resize();
+        window.addEventListener("resize", resizeHandler);
+
+        let resizeObserver: ResizeObserver | null = null;
+        if (canvas?.parentElement) {
+            resizeObserver = new ResizeObserver(resizeHandler);
+            resizeObserver.observe(canvas.parentElement);
+        }
+
+        scene.onDisposeObservable.addOnce(() => {
+            window.removeEventListener("resize", resizeHandler);
+            resizeObserver?.disconnect();
+        });
+    }
+
+    /**
+     * Build a SceneContext and publish it to the editor.
+     * @param scene - the scene to wrap in a SceneContext
+     * @returns the newly created SceneContext
+     */
+    private _publishSceneContext(scene: Scene) {
+        const sceneContext = new SceneContext(scene);
+        this.props.globalState.sceneContext = sceneContext;
+        this.props.globalState.onSceneContextChanged.notifyObservers(sceneContext);
+        this.setState({ sceneObjectCount: sceneContext.entries.length });
+        return sceneContext;
+    }
+
+    /**
+     * Create a minimal default scene so users can start building flow graphs immediately.
+     */
+    private async _createDefaultSceneAsync() {
+        const canvas = this._canvasRef.current;
+        if (!canvas) {
+            return;
+        }
+
+        try {
+            // Dynamic imports — these resolve to the BABYLON global via webpack externals
+            const { Engine } = await import("core/Engines/engine");
+            const { Scene } = await import("core/scene");
+            const { ArcRotateCamera } = await import("core/Cameras/arcRotateCamera");
+            const { HemisphericLight } = await import("core/Lights/hemisphericLight");
+            const { Vector3 } = await import("core/Maths/math.vector");
+            const { Color3 } = await import("core/Maths/math.color");
+            const { CreateBox } = await import("core/Meshes/Builders/boxBuilder");
+            const { CreateSphere } = await import("core/Meshes/Builders/sphereBuilder");
+            const { CreateGround } = await import("core/Meshes/Builders/groundBuilder");
+            const { CreateCylinder } = await import("core/Meshes/Builders/cylinderBuilder");
+            const { StandardMaterial } = await import("core/Materials/standardMaterial");
+
+            this._disposeCurrentScene();
+
+            const engine = new Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true });
+            const scene = new Scene(engine);
+
+            // Camera
+            const camera = new ArcRotateCamera("camera", -Math.PI / 4, Math.PI / 3, 10, Vector3.Zero(), scene);
+            camera.attachControl(canvas, true);
+            camera.lowerRadiusLimit = 2;
+
+            // Light
+            const light = new HemisphericLight("light", new Vector3(0, 1, 0), scene);
+            light.intensity = 0.8;
+
+            // Ground
+            const ground = CreateGround("ground", { width: 8, height: 8 }, scene);
+            const groundMat = new StandardMaterial("groundMat", scene);
+            groundMat.diffuseColor = new Color3(0.3, 0.3, 0.3);
+            groundMat.specularColor = new Color3(0, 0, 0);
+            ground.material = groundMat;
+            ground.receiveShadows = true;
+
+            // Box
+            const box = CreateBox("box", { size: 1 }, scene);
+            box.position = new Vector3(-1.5, 0.5, 0);
+            const boxMat = new StandardMaterial("boxMat", scene);
+            boxMat.diffuseColor = new Color3(0.2, 0.5, 0.8);
+            box.material = boxMat;
+
+            // Sphere
+            const sphere = CreateSphere("sphere", { diameter: 1, segments: 16 }, scene);
+            sphere.position = new Vector3(0, 0.5, 0);
+            const sphereMat = new StandardMaterial("sphereMat", scene);
+            sphereMat.diffuseColor = new Color3(0.8, 0.3, 0.2);
+            sphere.material = sphereMat;
+
+            // Cylinder
+            const cylinder = CreateCylinder("cylinder", { diameter: 0.8, height: 1 }, scene);
+            cylinder.position = new Vector3(1.5, 0.5, 0);
+            const cylMat = new StandardMaterial("cylinderMat", scene);
+            cylMat.diffuseColor = new Color3(0.3, 0.7, 0.3);
+            cylinder.material = cylMat;
+
+            this._setupEngineRenderLoop(scene, engine);
+
+            const sceneContext = this._publishSceneContext(scene);
+            this.props.globalState.onLogRequiredObservable.notifyObservers(
+                new LogEntry(
+                    `Default scene created with ${sceneContext.entries.length} objects. Drop a .glb/.gltf/.babylon file or load a Playground snippet to replace it.`,
+                    false
+                )
+            );
+        } catch (err: any) {
+            this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry(`Failed to create default scene: ${err.message}`, true));
+        }
+    }
+
+    /**
+     * Load a scene from a dropped file (glb, gltf, or babylon).
+     * @param file - the main scene file
+     * @param companionFiles - additional files dropped alongside (bin, textures)
+     */
+    private async _loadFileAsync(file: File, companionFiles?: File[]) {
+        if (this.state.isLoading) {
+            return; // Prevent concurrent loads
+        }
+        this.setState({ isLoading: true, error: "" });
+
+        const registeredFiles: string[] = [];
+        try {
+            const { Engine } = await import("core/Engines/engine");
+            const { SceneLoader } = await import("core/Loading/sceneLoader");
+            const { FilesInputStore } = await import("core/Misc/filesInputStore");
+
+            const canvas = this._canvasRef.current;
+            if (!canvas) {
+                throw new Error("Preview canvas not available");
+            }
+
+            this._disposeCurrentScene();
+
+            const engine = new Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true });
+
+            // Register the main file and any companion files in Babylon's virtual file system
+            const mainKey = file.name.toLowerCase();
+            FilesInputStore.FilesToLoad[mainKey] = file;
+            registeredFiles.push(mainKey);
+            if (companionFiles) {
+                for (const companion of companionFiles) {
+                    const key = companion.name.toLowerCase();
+                    FilesInputStore.FilesToLoad[key] = companion;
+                    registeredFiles.push(key);
+                }
+            }
+
+            const scene = await SceneLoader.LoadAsync("file:", file.name, engine);
+
+            if (!scene || !scene.render) {
+                throw new Error("Failed to load scene from file");
+            }
+
+            // If the loaded scene has no camera, create a default one
+            if (!scene.activeCamera && scene.cameras.length === 0) {
+                const { ArcRotateCamera } = await import("core/Cameras/arcRotateCamera");
+                const { Vector3 } = await import("core/Maths/math.vector");
+                const camera = new ArcRotateCamera("camera", -Math.PI / 4, Math.PI / 3, 10, Vector3.Zero(), scene);
+                camera.attachControl(canvas, true);
+            }
+
+            this._setupEngineRenderLoop(scene, engine);
+
+            await scene.whenReadyAsync(true);
+
+            const sceneContext = this._publishSceneContext(scene);
+            this.props.globalState.snippetId = "";
+
+            this.setState({ isLoading: false, snippetId: "" });
+            this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry(`Loaded "${file.name}" with ${sceneContext.entries.length} scene objects`, false));
+        } catch (err: any) {
+            // Clean up registered files on failure
+            try {
+                const { FilesInputStore } = await import("core/Misc/filesInputStore");
+                for (const key of registeredFiles) {
+                    delete FilesInputStore.FilesToLoad[key];
+                }
+            } catch {
+                // FilesInputStore import may itself fail — nothing to clean up
+            }
+            this.setState({
+                isLoading: false,
+                error: err.message || "Failed to load file",
+            });
+            this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry(`Failed to load file: ${err.message}`, true));
+            this.props.globalState.onSceneContextChanged.notifyObservers(null);
+        }
+    }
+
+    private _handleDragOver = (e: React.DragEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+    };
+
+    private _handleDrop = (e: React.DragEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        if (this.state.isLoading) {
+            return; // Don't start a new load while one is in progress
+        }
+
+        const files = e.dataTransfer?.files;
+        if (!files || files.length === 0) {
+            return;
+        }
+
+        // Find the first supported 3D file
+        const supportedExtensions = [".glb", ".gltf", ".babylon"];
+        for (let i = 0; i < files.length; i++) {
+            const file = files[i];
+            const name = file.name.toLowerCase();
+            if (supportedExtensions.some((ext) => name.endsWith(ext))) {
+                // Collect companion files (bin, textures) to register in the virtual FS
+                const companions: File[] = [];
+                for (let j = 0; j < files.length; j++) {
+                    if (j !== i) {
+                        companions.push(files[j]);
+                    }
+                }
+                void this._loadFileAsync(file, companions);
+                return;
+            }
+        }
+
+        this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry("Unsupported file format. Drop a .glb, .gltf, or .babylon file.", true));
+    };
 
     /**
      * Extract a snippet ID from user input that may be a full playground URL.
@@ -145,13 +409,7 @@ export class ScenePreviewComponent extends React.Component<IScenePreviewComponen
             const pgResult = result as IPlaygroundSnippetResult;
 
             // Dispose old preview context if any
-            const oldCtx = this.props.globalState.sceneContext;
-            if (oldCtx) {
-                oldCtx.engine.stopRenderLoop();
-                oldCtx.scene.dispose();
-                oldCtx.engine.dispose();
-                oldCtx.dispose();
-            }
+            this._disposeCurrentScene();
 
             const canvas = this._canvasRef.current;
             if (!canvas) {
@@ -183,30 +441,11 @@ export class ScenePreviewComponent extends React.Component<IScenePreviewComponen
             };
             window.addEventListener("unhandledrejection", rejectionHandler);
 
-            // Start the render loop (guard for snippets that set up the
-            // camera asynchronously, e.g. delayCreateScene / delayLoadScene).
-            engine.runRenderLoop(() => {
-                if (scene.activeCamera || (scene.activeCameras && scene.activeCameras.length > 0)) {
-                    scene.render();
-                }
-            });
-
-            engine.resize();
-
-            // Handle window resize and canvas container resize
-            const resizeHandler = () => engine.resize();
-            window.addEventListener("resize", resizeHandler);
-
-            let resizeObserver: ResizeObserver | null = null;
-            if (canvas.parentElement) {
-                resizeObserver = new ResizeObserver(resizeHandler);
-                resizeObserver.observe(canvas.parentElement);
-            }
+            // Start the render loop with resize handling
+            this._setupEngineRenderLoop(scene, engine);
 
             scene.onDisposeObservable.addOnce(() => {
                 window.removeEventListener("unhandledrejection", rejectionHandler);
-                window.removeEventListener("resize", resizeHandler);
-                resizeObserver?.disconnect();
             });
 
             // Wait for the scene to finish loading all pending data (e.g.
@@ -216,15 +455,10 @@ export class ScenePreviewComponent extends React.Component<IScenePreviewComponen
             await scene.whenReadyAsync(true);
 
             // Build the scene context
-            const sceneContext = new SceneContext(scene);
-            this.props.globalState.sceneContext = sceneContext;
+            const sceneContext = this._publishSceneContext(scene);
             this.props.globalState.snippetId = this.state.snippetId;
-            this.props.globalState.onSceneContextChanged.notifyObservers(sceneContext);
 
-            this.setState({
-                isLoading: false,
-                sceneObjectCount: sceneContext.entries.length,
-            });
+            this.setState({ isLoading: false });
 
             const langTag = pgResult.language === "TS" ? " [TypeScript]" : "";
             this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry(`Loaded snippet${langTag} with ${sceneContext.entries.length} scene objects`, false));
@@ -280,9 +514,8 @@ export class ScenePreviewComponent extends React.Component<IScenePreviewComponen
                         </div>
                     )}
                 </div>
-                <div className="preview-canvas-container">
+                <div className="preview-canvas-container" onDragOver={this._handleDragOver} onDrop={this._handleDrop}>
                     <canvas ref={this._canvasRef} className="preview-canvas" />
-                    {!ctx && <div className="preview-placeholder">Load a Playground snippet to preview the scene</div>}
                 </div>
                 {ctx && <div className="context-summary">{this._renderCategorySummary(ctx)}</div>}
             </div>

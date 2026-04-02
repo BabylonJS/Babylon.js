@@ -411,8 +411,8 @@ export class ThinNativeEngine extends ThinEngine {
         if (!Array.prototype.flat) {
             Object.defineProperty(Array.prototype, "flat", {
                 configurable: true,
-                value: function flat() {
-                    const depth = isNaN(arguments[0]) ? 1 : Number(arguments[0]);
+                value: function flat(this: any[], depth?: number) {
+                    depth = isNaN(depth as any) ? 1 : Number(depth);
 
                     return depth
                         ? Array.prototype.reduce.call(

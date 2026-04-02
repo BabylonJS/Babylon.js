@@ -6,8 +6,8 @@
         "outDir": "./dist",
         "rootDir": "./src",
         "paths": {
-            "core/*": ["dev/core/dist/*"],
-            "loaders/*": ["dev/loaders/src/*"]
+            "core/*": ["../../dev/core/dist/*"],
+            "loaders/*": ["../../dev/loaders/src/*"]
         }
     },
 
