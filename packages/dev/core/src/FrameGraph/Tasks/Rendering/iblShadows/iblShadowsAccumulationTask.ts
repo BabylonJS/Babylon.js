@@ -165,14 +165,6 @@ export class FrameGraphIblShadowsAccumulationTask extends FrameGraphTask {
             this.isMoving = false;
         });
 
-        const copyAccumulationToOutputPass = this._frameGraph.addRenderPass(`${this.name} CopyAccumulationToOutput`);
-
-        copyAccumulationToOutputPass.addDependencies(this._accumulationHistoryTexture);
-        copyAccumulationToOutputPass.setRenderTarget(this.outputTexture);
-        copyAccumulationToOutputPass.setExecuteFunc((context) => {
-            context.copyTexture(this._accumulationHistoryTexture!);
-        });
-
         const copyPositionToHistoryPass = this._frameGraph.addRenderPass(`${this.name} CopyPositionToHistory`);
 
         copyPositionToHistoryPass.addDependencies(this.positionTexture);
@@ -181,20 +173,12 @@ export class FrameGraphIblShadowsAccumulationTask extends FrameGraphTask {
             context.copyTexture(this.positionTexture!);
         });
 
-        const passDisabled = this._frameGraph.addRenderPass(this.name + "_disabled", true);
+        const copyAccumulationToOutputPass = this._frameGraph.addRenderPass(`${this.name} CopyAccumulationToOutput`);
 
-        passDisabled.addDependencies(this.sourceTexture);
-        passDisabled.setRenderTarget(this.outputTexture);
-        passDisabled.setExecuteFunc((context) => {
-            context.copyTexture(this.sourceTexture!);
-        });
-
-        const copyPositionToHistoryPassDisabled = this._frameGraph.addRenderPass(`${this.name} CopyPositionToHistory_disabled`, true);
-
-        copyPositionToHistoryPassDisabled.addDependencies(this.positionTexture);
-        copyPositionToHistoryPassDisabled.setRenderTarget(this._positionHistoryTexture);
-        copyPositionToHistoryPassDisabled.setExecuteFunc((context) => {
-            context.copyTexture(this.positionTexture!);
+        copyAccumulationToOutputPass.addDependencies(this._accumulationHistoryTexture);
+        copyAccumulationToOutputPass.setRenderTarget(this.outputTexture);
+        copyAccumulationToOutputPass.setExecuteFunc((context) => {
+            context.copyTexture(this._accumulationHistoryTexture!);
         });
     }
 

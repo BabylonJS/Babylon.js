@@ -5,7 +5,6 @@ import { Matrix, Vector4 } from "core/Maths/math.vector";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { ThinCustomPostProcess } from "core/PostProcesses/thinCustomPostProcess";
 import { FrameGraphTask } from "../../../frameGraphTask";
-import { Color4 } from "core/Maths/math.color";
 import { type CubeTexture } from "core/Materials/Textures/cubeTexture";
 import "../../../../Shaders/iblShadowVoxelTracing.fragment";
 import "../../../../ShadersWGSL/iblShadowVoxelTracing.fragment";
@@ -228,15 +227,6 @@ export class FrameGraphIblShadowsTracingTask extends FrameGraphTask {
                 false,
                 true
             );
-        });
-
-        const passDisabled = this._frameGraph.addRenderPass(this.name + "_disabled", true);
-
-        passDisabled.addDependencies(this.depthTexture);
-        passDisabled.setRenderTarget(this.outputTexture);
-        const disabledColor = new Color4(1, 1, 1, 1);
-        passDisabled.setExecuteFunc((context) => {
-            context.clear(disabledColor, true, false, false);
         });
     }
 

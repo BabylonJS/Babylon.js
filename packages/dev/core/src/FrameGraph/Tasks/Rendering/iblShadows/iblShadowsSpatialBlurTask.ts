@@ -108,14 +108,6 @@ export class FrameGraphIblShadowsSpatialBlurTask extends FrameGraphTask {
                 true
             );
         });
-
-        const passDisabled = this._frameGraph.addRenderPass(this.name + "_disabled", true);
-
-        passDisabled.addDependencies(this.sourceTexture);
-        passDisabled.setRenderTarget(this.outputTexture);
-        passDisabled.setExecuteFunc((context) => {
-            context.copyTexture(this.sourceTexture!);
-        });
     }
 
     public override dispose(): void {

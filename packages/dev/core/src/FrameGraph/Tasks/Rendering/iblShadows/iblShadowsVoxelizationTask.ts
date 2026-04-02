@@ -180,11 +180,6 @@ export class FrameGraphIblShadowsVoxelizationTask extends FrameGraphTask {
                 this._voxelRenderer!.processVoxelization();
             }
         });
-
-        const passDisabled = this._frameGraph.addRenderPass(this.name + "_disabled", true);
-        passDisabled.setRenderTarget(voxelRTTextureHandle);
-        passDisabled.addDependencies(this.outputVoxelGridTexture);
-        passDisabled.setExecuteFunc((_context) => {});
     }
 
     /**

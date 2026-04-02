@@ -115,7 +115,7 @@ export class FrameGraphIblShadowsRendererTask extends FrameGraphTask {
      * Whether the task is disabled.
      */
     public override get disabled(): boolean {
-        return !this._enabled;
+        return this._disabled;
     }
 
     /**
@@ -133,6 +133,7 @@ export class FrameGraphIblShadowsRendererTask extends FrameGraphTask {
     /** Enables or disables IBL shadows. */
     public set enabled(value: boolean) {
         this._enabled = value;
+        this._syncDisabledState();
         this._applyEnabledState();
         this._applyMaterialPluginParameters();
     }
@@ -409,25 +410,36 @@ export class FrameGraphIblShadowsRendererTask extends FrameGraphTask {
         return this._outputTextureReadyObservable;
     }
 
+    public override isReady(): boolean {
+        return this.voxelizationTask.isReady() && this.tracingTask.isReady() && this.spatialBlurTask.isReady() && this.accumulationTask.isReady();
+    }
+
     /**
      * Records the parent task.
      * Child tasks record the actual passes.
      */
-    public override record(): void {}
+    public override record(): void {
+        this.voxelizationTask.record();
+        this.tracingTask.record();
+        this.spatialBlurTask.record();
+        this.accumulationTask.record();
+
+        const passDisabled = this._frameGraph.addRenderPass(this.name + "_disabled", true);
+        passDisabled.setRenderTarget(this.outputTexture);
+        passDisabled.setExecuteFunc((context) => {
+            // context.clearColorAttachments()
+        });
+    }
 
     /**
      * Disposes the task and owned resources.
      */
     public override dispose(): void {
         this._disposeObservers();
-
-        const childrenAreRegisteredInFrameGraph = this._frameGraph.tasks.includes(this.voxelizationTask);
-        if (!childrenAreRegisteredInFrameGraph) {
-            this.voxelizationTask.dispose();
-            this.tracingTask.dispose();
-            this.spatialBlurTask.dispose();
-            this.accumulationTask.dispose();
-        }
+        this.voxelizationTask.dispose();
+        this.tracingTask.dispose();
+        this.spatialBlurTask.dispose();
+        this.accumulationTask.dispose();
 
         super.dispose();
     }
@@ -462,11 +474,6 @@ export class FrameGraphIblShadowsRendererTask extends FrameGraphTask {
         );
 
         this._initialize(options);
-
-        this._frameGraph.addTask(this.voxelizationTask);
-        this._frameGraph.addTask(this.tracingTask);
-        this._frameGraph.addTask(this.spatialBlurTask);
-        this._frameGraph.addTask(this.accumulationTask);
     }
 
     private _disposeDependencyObservers(): void {
@@ -485,7 +492,7 @@ export class FrameGraphIblShadowsRendererTask extends FrameGraphTask {
         this._beforeRenderDependencyObserver && this._frameGraph.scene.onBeforeRenderObservable.remove(this._beforeRenderDependencyObserver);
         this._beforeRenderOutputReadyObserver && this._frameGraph.scene.onBeforeRenderObservable.remove(this._beforeRenderOutputReadyObserver);
         this._blueNoiseLoadObserver && this._blueNoiseTexture.onLoadObservable.remove(this._blueNoiseLoadObserver);
-        this._texturesAllocatedObserver && this.accumulationTask.onTexturesAllocatedObservable.remove(this._texturesAllocatedObserver);
+        this._texturesAllocatedObserver && this.onTexturesAllocatedObservable.remove(this._texturesAllocatedObserver);
         this._voxelizationCompleteObserver && this.voxelizationTask.onVoxelizationCompleteObservable.remove(this._voxelizationCompleteObserver);
 
         this._cameraViewChangedObserver = null;
@@ -572,6 +579,10 @@ export class FrameGraphIblShadowsRendererTask extends FrameGraphTask {
         }
     }
 
+    private _syncDisabledState(): void {
+        this._disabled = !this._enabled || !this._dependenciesResolved;
+    }
+
     private _addShadowReceivingMaterialInternal(material: Material): void {
         const isSupportedMaterial = material instanceof PBRBaseMaterial || material instanceof StandardMaterial || material instanceof OpenPBRMaterial;
         if (!isSupportedMaterial || this._materialsWithRenderPlugin.indexOf(material) !== -1) {
@@ -602,6 +613,7 @@ export class FrameGraphIblShadowsRendererTask extends FrameGraphTask {
                 this.spatialBlurTask.disabled = true;
                 this.accumulationTask.disabled = true;
                 this._dependenciesResolved = false;
+                this._syncDisabledState();
             }
             return;
         }
@@ -633,6 +645,7 @@ export class FrameGraphIblShadowsRendererTask extends FrameGraphTask {
                 this.accumulationTask.reset = true;
             }
             this._dependenciesResolved = true;
+            this._syncDisabledState();
             this._disposeDependencyObservers();
         } else if (icdfChanged || environmentChanged || blueNoiseChanged) {
             this.accumulationTask.reset = true;
@@ -647,6 +660,7 @@ export class FrameGraphIblShadowsRendererTask extends FrameGraphTask {
         this.tracingTask.disabled = true;
         this.spatialBlurTask.disabled = true;
         this.accumulationTask.disabled = true;
+        this._syncDisabledState();
 
         this._cameraViewChangedObserver = input.camera.onViewMatrixChangedObservable.add(() => {
             this.accumulationTask.isMoving = true;
@@ -672,6 +686,7 @@ export class FrameGraphIblShadowsRendererTask extends FrameGraphTask {
         this._environmentTextureChangedObserver = scene.onEnvironmentTextureChangedObservable.add(() => {
             this._lastImportedEnvironmentTexture = null;
             this._dependenciesResolved = false;
+            this._syncDisabledState();
             this.tracingTask.disabled = true;
             this.spatialBlurTask.disabled = true;
             this.accumulationTask.disabled = true;
@@ -699,7 +714,7 @@ export class FrameGraphIblShadowsRendererTask extends FrameGraphTask {
 
         this._tryEnableShadowsTasks();
 
-        this._texturesAllocatedObserver = this.accumulationTask.onTexturesAllocatedObservable.add(() => {
+        this._texturesAllocatedObserver = this.onTexturesAllocatedObservable.add(() => {
             this._applyMaterialPluginParameters();
             this._notifyIfOutputTextureReady();
         });
