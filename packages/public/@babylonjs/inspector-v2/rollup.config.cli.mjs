@@ -13,7 +13,7 @@ const cliConfig = {
     output: {
         file: "bin/inspector-cli.mjs",
         format: "es",
-        sourcemap: true,
+        sourcemap: false,
         banner: "#!/usr/bin/env node",
     },
     plugins: commonPlugins,
@@ -28,7 +28,7 @@ const bridgeConfig = {
     output: {
         file: "bin/inspector-bridge.mjs",
         format: "es",
-        sourcemap: true,
+        sourcemap: false,
     },
     plugins: commonPlugins,
     onwarn(warning, warn) {
