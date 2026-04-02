@@ -35,7 +35,6 @@ export class FrameGraphIblShadowsTracingTask extends FrameGraphTask {
     /** Voxelization task providing dynamic voxelGridSize and resolutionExp for SSS parameter derivation. */
     public voxelizationTask?: FrameGraphIblShadowsVoxelizationTask;
     public envRotation = 0;
-    public coloredShadows = false;
     public voxelNormalBias = 1.4;
     public voxelDirectionBias = 1.75;
     public worldScaleMatrix = Matrix.Identity();
@@ -52,6 +51,7 @@ export class FrameGraphIblShadowsTracingTask extends FrameGraphTask {
     protected readonly _cameraInvProj = Matrix.Identity();
     protected readonly _cameraInvViewProjection = Matrix.Identity();
     protected _frameId = 0;
+    protected _coloredShadows = false;
     protected _currentDefines = "";
 
     constructor(name: string, frameGraph: FrameGraph) {
@@ -81,6 +81,19 @@ export class FrameGraphIblShadowsTracingTask extends FrameGraphTask {
 
     public override getClassName(): string {
         return "FrameGraphIblShadowsTracingTask";
+    }
+
+    public get coloredShadows(): boolean {
+        return this._coloredShadows;
+    }
+
+    public set coloredShadows(value: boolean) {
+        if (this._coloredShadows === value) {
+            return;
+        }
+
+        this._coloredShadows = value;
+        this._updateDefines();
     }
 
     public override isReady(): boolean {
@@ -135,14 +148,18 @@ export class FrameGraphIblShadowsTracingTask extends FrameGraphTask {
 
         textureManager.resolveDanglingHandle(this.outputTexture, undefined, `${this.name} Output`, creationOptions);
 
+        this._updateDefines();
+
         const pass = this._frameGraph.addRenderPass(this.name);
 
-        pass.addDependencies(this.voxelGridTexture);
-        pass.addDependencies(this.depthTexture);
-        pass.addDependencies(this.normalTexture);
-        pass.addDependencies(this.icdfTexture);
-        pass.addDependencies(this.environmentTexture);
-        pass.addDependencies(this.blueNoiseTexture);
+        const dependencies: FrameGraphTextureHandle[] = [this.voxelGridTexture, this.depthTexture, this.normalTexture, this.icdfTexture];
+        if (this.environmentTexture !== undefined) {
+            dependencies.push(this.environmentTexture);
+        }
+        if (this.blueNoiseTexture !== undefined) {
+            dependencies.push(this.blueNoiseTexture);
+        }
+        pass.addDependencies(dependencies);
         pass.setRenderTarget(this.outputTexture);
         pass.setExecuteFunc((context) => {
             context.setTextureSamplingMode(this.depthTexture!, Constants.TEXTURE_NEAREST_SAMPLINGMODE);
@@ -151,8 +168,6 @@ export class FrameGraphIblShadowsTracingTask extends FrameGraphTask {
             if (this.blueNoiseTexture !== undefined) {
                 context.setTextureSamplingMode(this.blueNoiseTexture, Constants.TEXTURE_NEAREST_SAMPLINGMODE);
             }
-
-            this._updateDefines();
 
             const view = this.camera!.getViewMatrix();
             const projection = this.camera!.getProjectionMatrix();

@@ -24,12 +24,10 @@ export class FrameGraphIblShadowsAccumulationTask extends FrameGraphTask {
     /** Voxelization task providing the runtime voxelGridSize used by the accumulation shader. */
     public voxelizationTask?: FrameGraphIblShadowsVoxelizationTask;
 
-    public accumulationHistoryTexture?: FrameGraphTextureHandle;
-    public positionHistoryTexture?: FrameGraphTextureHandle;
+    protected _accumulationHistoryTexture?: FrameGraphTextureHandle;
+    protected _positionHistoryTexture?: FrameGraphTextureHandle;
 
     public readonly outputTexture: FrameGraphTextureHandle;
-    public readonly outputAccumulationHistoryTexture: FrameGraphTextureHandle;
-    public readonly outputPositionHistoryTexture: FrameGraphTextureHandle;
 
     public readonly postProcess: ThinCustomPostProcess;
     protected readonly _postProcessDrawWrapper: DrawWrapper;
@@ -47,8 +45,6 @@ export class FrameGraphIblShadowsAccumulationTask extends FrameGraphTask {
         this._postProcessDrawWrapper = this.postProcess.drawWrapper;
 
         this.outputTexture = this._frameGraph.textureManager.createDanglingHandle();
-        this.outputAccumulationHistoryTexture = this._frameGraph.textureManager.createDanglingHandle();
-        this.outputPositionHistoryTexture = this._frameGraph.textureManager.createDanglingHandle();
     }
 
     public override getClassName(): string {
@@ -107,7 +103,7 @@ export class FrameGraphIblShadowsAccumulationTask extends FrameGraphTask {
         const positionHistoryCreationOptions: FrameGraphTextureCreationOptions = {
             size: positionSize,
             sizeIsPercentage: false,
-            isHistoryTexture: false,
+            isHistoryTexture: true,
             options: {
                 createMipMaps: false,
                 samples: 1,
@@ -119,33 +115,28 @@ export class FrameGraphIblShadowsAccumulationTask extends FrameGraphTask {
             },
         };
 
-        this.accumulationHistoryTexture = textureManager.createRenderTargetTexture(
+        this._accumulationHistoryTexture = textureManager.createRenderTargetTexture(
             `${this.name} Accumulation History`,
             accumulationHistoryCreationOptions,
-            this.accumulationHistoryTexture
+            this._accumulationHistoryTexture
         );
-        this.positionHistoryTexture = textureManager.createRenderTargetTexture(`${this.name} Position History`, positionHistoryCreationOptions, this.positionHistoryTexture);
-
-        textureManager.resolveDanglingHandle(this.outputAccumulationHistoryTexture, this.accumulationHistoryTexture);
-        textureManager.resolveDanglingHandle(this.outputPositionHistoryTexture, this.positionHistoryTexture);
+        this._positionHistoryTexture = textureManager.createRenderTargetTexture(`${this.name} Position History`, positionHistoryCreationOptions, this._positionHistoryTexture);
 
         const pass = this._frameGraph.addRenderPass(this.name);
 
         pass.addDependencies(this.sourceTexture);
         pass.addDependencies(this.velocityTexture);
         pass.addDependencies(this.positionTexture);
-        pass.addDependencies(this.accumulationHistoryTexture);
-        pass.addDependencies(this.positionHistoryTexture);
+        pass.addDependencies(this._accumulationHistoryTexture);
+        pass.addDependencies(this._positionHistoryTexture);
         // Accumulation writes directly to the history handle (current frame write side)
         // so oldAccumulationSampler reads previous-frame data automatically.
         // A dedicated copy pass then exposes a stable current-frame outputTexture.
-        pass.setRenderTarget(this.accumulationHistoryTexture);
+        pass.setRenderTarget(this._accumulationHistoryTexture);
         pass.setExecuteFunc((context) => {
             context.setTextureSamplingMode(this.sourceTexture!, Constants.TEXTURE_NEAREST_SAMPLINGMODE);
             context.setTextureSamplingMode(this.velocityTexture!, Constants.TEXTURE_NEAREST_SAMPLINGMODE);
             context.setTextureSamplingMode(this.positionTexture!, Constants.TEXTURE_NEAREST_SAMPLINGMODE);
-            context.setTextureSamplingMode(this.accumulationHistoryTexture!, Constants.TEXTURE_BILINEAR_SAMPLINGMODE);
-            context.setTextureSamplingMode(this.positionHistoryTexture!, Constants.TEXTURE_BILINEAR_SAMPLINGMODE);
 
             const remanence = this.isMoving ? this.remanence : 0.99;
             this._accumulationParams.set(remanence, this.reset ? 1.0 : 0.0, this.voxelizationTask?.voxelGridSize ?? this.voxelGridSize, 0.0);
@@ -156,8 +147,8 @@ export class FrameGraphIblShadowsAccumulationTask extends FrameGraphTask {
                     const effect = this._postProcessDrawWrapper.effect!;
 
                     context.bindTextureHandle(effect, "spatialBlurSampler", this.sourceTexture!);
-                    context.bindTextureHandle(effect, "oldAccumulationSampler", this.accumulationHistoryTexture!);
-                    context.bindTextureHandle(effect, "prevPositionSampler", this.positionHistoryTexture!);
+                    context.bindTextureHandle(effect, "oldAccumulationSampler", this._accumulationHistoryTexture!);
+                    context.bindTextureHandle(effect, "prevPositionSampler", this._positionHistoryTexture!);
                     context.bindTextureHandle(effect, "motionSampler", this.velocityTexture!);
                     context.bindTextureHandle(effect, "positionSampler", this.positionTexture!);
 
@@ -176,16 +167,16 @@ export class FrameGraphIblShadowsAccumulationTask extends FrameGraphTask {
 
         const copyAccumulationToOutputPass = this._frameGraph.addRenderPass(`${this.name} CopyAccumulationToOutput`);
 
-        copyAccumulationToOutputPass.addDependencies(this.accumulationHistoryTexture);
+        copyAccumulationToOutputPass.addDependencies(this._accumulationHistoryTexture);
         copyAccumulationToOutputPass.setRenderTarget(this.outputTexture);
         copyAccumulationToOutputPass.setExecuteFunc((context) => {
-            context.copyTexture(this.accumulationHistoryTexture!);
+            context.copyTexture(this._accumulationHistoryTexture!);
         });
 
         const copyPositionToHistoryPass = this._frameGraph.addRenderPass(`${this.name} CopyPositionToHistory`);
 
         copyPositionToHistoryPass.addDependencies(this.positionTexture);
-        copyPositionToHistoryPass.setRenderTarget(this.positionHistoryTexture);
+        copyPositionToHistoryPass.setRenderTarget(this._positionHistoryTexture);
         copyPositionToHistoryPass.setExecuteFunc((context) => {
             context.copyTexture(this.positionTexture!);
         });
@@ -201,7 +192,7 @@ export class FrameGraphIblShadowsAccumulationTask extends FrameGraphTask {
         const copyPositionToHistoryPassDisabled = this._frameGraph.addRenderPass(`${this.name} CopyPositionToHistory_disabled`, true);
 
         copyPositionToHistoryPassDisabled.addDependencies(this.positionTexture);
-        copyPositionToHistoryPassDisabled.setRenderTarget(this.positionHistoryTexture);
+        copyPositionToHistoryPassDisabled.setRenderTarget(this._positionHistoryTexture);
         copyPositionToHistoryPassDisabled.setExecuteFunc((context) => {
             context.copyTexture(this.positionTexture!);
         });

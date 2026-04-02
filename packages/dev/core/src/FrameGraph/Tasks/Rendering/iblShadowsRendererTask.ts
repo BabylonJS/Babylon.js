@@ -641,7 +641,6 @@ function CreateIblShadowsRendererTask(
     const gBufferHandles = ResolveGBufferTextureHandles(input);
 
     const voxelizationTask = new FrameGraphIblShadowsVoxelizationTask(`${name} Voxelization`, frameGraph);
-    voxelizationTask.sceneDebugCamera = input.camera;
     voxelizationTask.objectList = input.objectList;
     voxelizationTask.resolutionExp = options?.resolutionExp ?? voxelizationTask.resolutionExp;
     voxelizationTask.triPlanarVoxelization = options?.triPlanarVoxelization ?? voxelizationTask.triPlanarVoxelization;
