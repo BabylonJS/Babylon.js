@@ -96,10 +96,6 @@ export async function StartBridge(config: IBridgeConfig): Promise<IBridgeHandle>
     // CLI-facing WebSocket server.
     const cliWss = new WebSocketServer({ host: "127.0.0.1", port: config.cliPort });
 
-    console.log(`Inspector bridge started.`);
-    console.log(`  Browser port: ${config.browserPort}`);
-    console.log(`  CLI port:     ${config.cliPort}`);
-
     browserWss.on("connection", (socket) => {
         let session: ISession | null = null;
 
@@ -240,6 +236,10 @@ export async function StartBridge(config: IBridgeConfig): Promise<IBridgeHandle>
 
     const actualBrowserPort = (browserWss.address() as import("net").AddressInfo).port;
     const actualCliPort = (cliWss.address() as import("net").AddressInfo).port;
+
+    console.log(`Inspector bridge started.`);
+    console.log(`  Browser port: ${actualBrowserPort}`);
+    console.log(`  CLI port:     ${actualCliPort}`);
 
     return {
         browserPort: actualBrowserPort,
