@@ -110,7 +110,7 @@ export class FrameGraphIblShadowsVoxelizationTask extends FrameGraphTask {
      * @returns True when ready.
      */
     public override isReady(): boolean {
-        return this.objectList !== undefined;
+        return true;
     }
 
     /**

@@ -45,7 +45,7 @@ export class FrameGraphIblShadowsSpatialBlurTask extends FrameGraphTask {
     }
 
     public override isReady(): boolean {
-        return this.sourceTexture !== undefined && this.depthTexture !== undefined && this.normalTexture !== undefined;
+        return this.postProcess.isReady();
     }
 
     public override record() {

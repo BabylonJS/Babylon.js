@@ -52,7 +52,7 @@ export class FrameGraphIblShadowsAccumulationTask extends FrameGraphTask {
     }
 
     public override isReady(): boolean {
-        return this.sourceTexture !== undefined && this.velocityTexture !== undefined && this.positionTexture !== undefined && this.postProcess.isReady();
+        return this.postProcess.isReady();
     }
 
     public override record() {

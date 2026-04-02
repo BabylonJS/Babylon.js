@@ -97,13 +97,7 @@ export class FrameGraphIblShadowsTracingTask extends FrameGraphTask {
     }
 
     public override isReady(): boolean {
-        return (
-            this.camera !== undefined &&
-            this.voxelGridTexture !== undefined &&
-            this.depthTexture !== undefined &&
-            this.normalTexture !== undefined &&
-            this.icdfTexture !== undefined
-        );
+        return this.postProcess.isReady();
     }
 
     public override record() {
