@@ -2,7 +2,6 @@
  * Common options shared by IBL shadows frame graph tasks.
  */
 export interface IFrameGraphIblShadowsCommonOptions {
-    enabled?: boolean;
     shadowRenderSizeFactor?: number;
     coloredShadows?: boolean;
 }

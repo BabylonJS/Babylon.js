@@ -5,6 +5,7 @@ import { Matrix, Vector4 } from "core/Maths/math.vector";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { ThinCustomPostProcess } from "core/PostProcesses/thinCustomPostProcess";
 import { FrameGraphTask } from "../../../frameGraphTask";
+import { Color4 } from "core/Maths/math.color";
 import { type CubeTexture } from "core/Materials/Textures/cubeTexture";
 import "../../../../Shaders/iblShadowVoxelTracing.fragment";
 import "../../../../ShadersWGSL/iblShadowVoxelTracing.fragment";
@@ -161,12 +162,15 @@ export class FrameGraphIblShadowsTracingTask extends FrameGraphTask {
         pass.addDependencies(dependencies);
         pass.setRenderTarget(this.outputTexture);
         pass.setExecuteFunc((context) => {
+            if (this.icdfTexture === undefined || this.blueNoiseTexture === undefined || (this.coloredShadows && this.environmentTexture === undefined)) {
+                context.clear(new Color4(1, 1, 1, 1), true, false, false);
+                return;
+            }
+
             context.setTextureSamplingMode(this.depthTexture!, Constants.TEXTURE_NEAREST_SAMPLINGMODE);
             context.setTextureSamplingMode(this.normalTexture!, Constants.TEXTURE_NEAREST_SAMPLINGMODE);
             context.setTextureSamplingMode(this.icdfTexture!, Constants.TEXTURE_NEAREST_SAMPLINGMODE);
-            if (this.blueNoiseTexture !== undefined) {
-                context.setTextureSamplingMode(this.blueNoiseTexture, Constants.TEXTURE_NEAREST_SAMPLINGMODE);
-            }
+            context.setTextureSamplingMode(this.blueNoiseTexture, Constants.TEXTURE_NEAREST_SAMPLINGMODE);
 
             const view = this.camera!.getViewMatrix();
             const projection = this.camera!.getProjectionMatrix();
@@ -202,9 +206,7 @@ export class FrameGraphIblShadowsTracingTask extends FrameGraphTask {
                     context.bindTextureHandle(effect, "depthSampler", this.depthTexture!);
                     context.bindTextureHandle(effect, "worldNormalSampler", this.normalTexture!);
                     context.bindTextureHandle(effect, "icdfSampler", this.icdfTexture!);
-                    if (this.blueNoiseTexture !== undefined) {
-                        context.bindTextureHandle(effect, "blueNoiseSampler", this.blueNoiseTexture);
-                    }
+                    context.bindTextureHandle(effect, "blueNoiseSampler", this.blueNoiseTexture!);
                     if (this.coloredShadows && this.environmentTexture !== undefined) {
                         context.bindTextureHandle(effect, "iblSampler", this.environmentTexture);
                     }

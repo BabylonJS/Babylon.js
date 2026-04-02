@@ -170,10 +170,15 @@ export class FrameGraphIblShadowsVoxelizationTask extends FrameGraphTask {
             }
 
             if (this.dirty || shouldRefreshFromRate) {
+                const meshes = this.objectList!.meshes as Mesh[];
+                if (meshes.length === 0) {
+                    return;
+                }
+
                 this._ensureVoxelRenderer();
                 this._updateWorldScaleMatrix();
                 this._voxelRenderer!.setWorldScaleMatrix(this.worldScaleMatrix);
-                this._voxelRenderer!.updateVoxelGrid(this.objectList!.meshes as Mesh[], false);
+                this._voxelRenderer!.updateVoxelGrid(meshes, false);
                 this.dirty = false;
             }
 

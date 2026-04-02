@@ -62,7 +62,6 @@ export class FrameGraphIblShadowsRendererTask extends FrameGraphTask {
     private readonly _tracingTask: FrameGraphIblShadowsTracingTask;
     private readonly _spatialBlurTask: FrameGraphIblShadowsSpatialBlurTask;
     private readonly _accumulationTask: FrameGraphIblShadowsAccumulationTask;
-    private _enabled = true;
     private _dependenciesResolved = false;
     private _shadowOpacity = 1.0;
     private readonly _materialsWithRenderPlugin: Material[] = [];
@@ -94,27 +93,11 @@ export class FrameGraphIblShadowsRendererTask extends FrameGraphTask {
     /**
      * Whether the task is disabled.
      */
-    public override get disabled(): boolean {
-        return this._disabled;
-    }
-
-    /**
-     * Whether the task is disabled.
-     */
     public override set disabled(value: boolean) {
-        this.enabled = !value;
-    }
-
-    /** Enables or disables IBL shadows. */
-    public get enabled(): boolean {
-        return this._enabled;
-    }
-
-    /** Enables or disables IBL shadows. */
-    public set enabled(value: boolean) {
-        this._enabled = value;
-        this._syncDisabledState();
-        this._applyEnabledState();
+        this._disabled = value;
+        if (!this._disabled && this._dependenciesResolved) {
+            this._accumulationTask.reset = true;
+        }
         this._applyMaterialPluginParameters();
     }
 
@@ -407,7 +390,7 @@ export class FrameGraphIblShadowsRendererTask extends FrameGraphTask {
         const passDisabled = this._frameGraph.addRenderPass(this.name + "_disabled", true);
         passDisabled.setRenderTarget(this.outputTexture);
         passDisabled.setExecuteFunc((_context) => {
-            // context.clearColorAttachments()
+            // No-op while dependencies are unavailable or the task is disabled.
         });
     }
 
@@ -536,25 +519,8 @@ export class FrameGraphIblShadowsRendererTask extends FrameGraphTask {
 
             plugin.shadowOpacity = this._shadowOpacity;
             plugin.isColored = this._tracingTask.coloredShadows;
-            plugin.isEnabled = this._enabled && this._dependenciesResolved && !!accumulationTexture;
+            plugin.isEnabled = !this._disabled && this._dependenciesResolved && !!accumulationTexture;
         }
-    }
-
-    private _applyEnabledState(): void {
-        if (!this._dependenciesResolved) {
-            return;
-        }
-
-        this._tracingTask.disabled = !this._enabled;
-        this._spatialBlurTask.disabled = !this._enabled;
-        this._accumulationTask.disabled = !this._enabled;
-        if (this._enabled) {
-            this._accumulationTask.reset = true;
-        }
-    }
-
-    private _syncDisabledState(): void {
-        this._disabled = !this._enabled || !this._dependenciesResolved;
     }
 
     private _addShadowReceivingMaterialInternal(material: Material): void {
@@ -583,11 +549,8 @@ export class FrameGraphIblShadowsRendererTask extends FrameGraphTask {
 
         if (!icdfTexture?.isReady || icdfTexture.width === 1 || !environmentTexture?.isReady || !blueNoiseInternalTexture?.isReady) {
             if (this._dependenciesResolved) {
-                this._tracingTask.disabled = true;
-                this._spatialBlurTask.disabled = true;
-                this._accumulationTask.disabled = true;
                 this._dependenciesResolved = false;
-                this._syncDisabledState();
+                this._applyMaterialPluginParameters();
             }
             return;
         }
@@ -612,14 +575,10 @@ export class FrameGraphIblShadowsRendererTask extends FrameGraphTask {
         }
 
         if (!this._dependenciesResolved) {
-            this._tracingTask.disabled = !this._enabled;
-            this._spatialBlurTask.disabled = !this._enabled;
-            this._accumulationTask.disabled = !this._enabled;
-            if (this._enabled) {
+            this._dependenciesResolved = true;
+            if (!this._disabled) {
                 this._accumulationTask.reset = true;
             }
-            this._dependenciesResolved = true;
-            this._syncDisabledState();
             this._disposeDependencyObservers();
         } else if (icdfChanged || environmentChanged || blueNoiseChanged) {
             this._accumulationTask.reset = true;
@@ -630,11 +589,7 @@ export class FrameGraphIblShadowsRendererTask extends FrameGraphTask {
     private _initialize(input: IFrameGraphIblShadowsRendererTaskCreationOptions): void {
         const scene = this._frameGraph.scene;
 
-        this._enabled = input.options?.enabled ?? true;
-        this._tracingTask.disabled = true;
-        this._spatialBlurTask.disabled = true;
-        this._accumulationTask.disabled = true;
-        this._syncDisabledState();
+        this._disabled = false;
 
         this._cameraViewChangedObserver = input.camera.onViewMatrixChangedObservable.add(() => {
             this._accumulationTask.isMoving = true;
@@ -660,11 +615,8 @@ export class FrameGraphIblShadowsRendererTask extends FrameGraphTask {
         this._environmentTextureChangedObserver = scene.onEnvironmentTextureChangedObservable.add(() => {
             this._lastImportedEnvironmentTexture = null;
             this._dependenciesResolved = false;
-            this._syncDisabledState();
-            this._tracingTask.disabled = true;
-            this._spatialBlurTask.disabled = true;
-            this._accumulationTask.disabled = true;
             this._observeEnvironmentTexture();
+            this._applyMaterialPluginParameters();
             this._tryEnableShadowsTasks();
         });
 
