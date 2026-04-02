@@ -1,4 +1,4 @@
-import { type Camera, type FrameGraph, type FrameGraphObjectList, type FrameGraphTextureHandle, type InternalTexture, type Mesh, type Nullable } from "core/index";
+import { type Camera, type FrameGraph, type FrameGraphObjectList, type FrameGraphTextureHandle, type InternalTexture, type Mesh, type Nullable, type Observer } from "core/index";
 import { Constants } from "core/Engines/constants";
 import { type Material } from "core/Materials/material";
 import { PBRBaseMaterial } from "core/Materials/PBR/pbrBaseMaterial";
@@ -21,11 +21,6 @@ interface IFrameGraphIblShadowsGBufferHandles {
     normalTexture: FrameGraphTextureHandle;
     positionTexture: FrameGraphTextureHandle;
     velocityTexture: FrameGraphTextureHandle;
-}
-
-interface IFrameGraphIblShadowsRendererTaskBuildResult extends IFrameGraphIblShadowsRendererSubTasks {
-    initialize(): void;
-    outputTexture: FrameGraphTextureHandle;
 }
 
 /**
@@ -87,26 +82,26 @@ export class FrameGraphIblShadowsRendererTask extends FrameGraphTask {
     /** Final frame-graph texture handle produced by the task. */
     public readonly outputTexture: FrameGraphTextureHandle;
 
-    /** @internal */
-    _enabled = true;
-    /** @internal */
-    _dependenciesResolved = false;
-    /** @internal */
-    _shadowOpacity = 1.0;
-    /** @internal */
-    readonly _materialsWithRenderPlugin: Material[] = [];
-    /** @internal */
-    readonly _outputTextureReadyObservable = new Observable<InternalTexture>();
-    /** @internal */
-    _lastNotifiedOutputTexture: Nullable<InternalTexture> = null;
-    /** @internal */
-    _observedEnvironmentTexture: Nullable<any> = null;
-    /** @internal */
-    _lastImportedIcdfTexture: Nullable<InternalTexture> = null;
-    /** @internal */
-    _lastImportedEnvironmentTexture: Nullable<InternalTexture> = null;
-    /** @internal */
-    _lastImportedBlueNoiseTexture: Nullable<InternalTexture> = null;
+    private _enabled = true;
+    private _dependenciesResolved = false;
+    private _shadowOpacity = 1.0;
+    private readonly _materialsWithRenderPlugin: Material[] = [];
+    private readonly _outputTextureReadyObservable = new Observable<InternalTexture>();
+    private _lastNotifiedOutputTexture: Nullable<InternalTexture> = null;
+    private _observedEnvironmentTexture: Nullable<any> = null;
+    private _lastImportedIcdfTexture: Nullable<InternalTexture> = null;
+    private _lastImportedEnvironmentTexture: Nullable<InternalTexture> = null;
+    private _lastImportedBlueNoiseTexture: Nullable<InternalTexture> = null;
+    private readonly _blueNoiseTexture: Texture;
+    private _cameraViewChangedObserver: Nullable<Observer<any>> = null;
+    private _cdfTextureChangedObserver: Nullable<Observer<any>> = null;
+    private _cdfGeneratedObserver: Nullable<Observer<any>> = null;
+    private _environmentTextureChangedObserver: Nullable<Observer<any>> = null;
+    private _beforeRenderDependencyObserver: Nullable<Observer<any>> = null;
+    private _beforeRenderOutputReadyObserver: Nullable<Observer<any>> = null;
+    private _blueNoiseLoadObserver: Nullable<Observer<any>> = null;
+    private _texturesAllocatedObserver: Nullable<Observer<any>> = null;
+    private _voxelizationCompleteObserver: Nullable<Observer<any>> = null;
 
     /**
      * Gets the class name.
@@ -424,7 +419,7 @@ export class FrameGraphIblShadowsRendererTask extends FrameGraphTask {
      * Disposes the task and owned resources.
      */
     public override dispose(): void {
-        this._disposeDependencyObservers();
+        this._disposeObservers();
 
         const childrenAreRegisteredInFrameGraph = this._frameGraph.tasks.includes(this.voxelizationTask);
         if (!childrenAreRegisteredInFrameGraph) {
@@ -446,21 +441,27 @@ export class FrameGraphIblShadowsRendererTask extends FrameGraphTask {
     constructor(name: string, frameGraph: FrameGraph, options: IFrameGraphIblShadowsRendererTaskCreationOptions) {
         super(name, frameGraph);
 
-        const buildResult = CreateIblShadowsRendererTask(this, name, frameGraph, options);
-
+        const gBufferHandles = ResolveGBufferTextureHandles(options);
+        this.voxelizationTask = this._createVoxelizationTask(name, frameGraph, options);
+        this.tracingTask = this._createTracingTask(name, frameGraph, options, gBufferHandles);
+        this.spatialBlurTask = this._createSpatialBlurTask(name, frameGraph, gBufferHandles);
+        this.accumulationTask = this._createAccumulationTask(name, frameGraph, options, gBufferHandles);
         this.subTasks = {
-            voxelizationTask: buildResult.voxelizationTask,
-            tracingTask: buildResult.tracingTask,
-            spatialBlurTask: buildResult.spatialBlurTask,
-            accumulationTask: buildResult.accumulationTask,
+            voxelizationTask: this.voxelizationTask,
+            tracingTask: this.tracingTask,
+            spatialBlurTask: this.spatialBlurTask,
+            accumulationTask: this.accumulationTask,
         };
-        this.voxelizationTask = buildResult.voxelizationTask;
-        this.tracingTask = buildResult.tracingTask;
-        this.spatialBlurTask = buildResult.spatialBlurTask;
-        this.accumulationTask = buildResult.accumulationTask;
-        this.outputTexture = buildResult.outputTexture;
+        this.outputTexture = this.accumulationTask.outputTexture;
+        this._blueNoiseTexture = new Texture(
+            Tools.GetAssetUrl("https://assets.babylonjs.com/core/blue_noise/blue_noise_rgb.png"),
+            frameGraph.scene,
+            false,
+            true,
+            Constants.TEXTURE_NEAREST_SAMPLINGMODE
+        );
 
-        buildResult.initialize();
+        this._initialize(options);
 
         this._frameGraph.addTask(this.voxelizationTask);
         this._frameGraph.addTask(this.tracingTask);
@@ -468,16 +469,38 @@ export class FrameGraphIblShadowsRendererTask extends FrameGraphTask {
         this._frameGraph.addTask(this.accumulationTask);
     }
 
-    /** @internal */
-    _disposeDependencyObservers(): void {
+    private _disposeDependencyObservers(): void {
         if (this._observedEnvironmentTexture) {
             this._observedEnvironmentTexture.onLoadObservable.removeCallback(this._onEnvironmentTextureLoaded);
             this._observedEnvironmentTexture = null;
         }
     }
 
-    /** @internal */
-    _observeEnvironmentTexture(): void {
+    private _disposeObservers(): void {
+        this._disposeDependencyObservers();
+        this._cameraViewChangedObserver && this.tracingTask.camera?.onViewMatrixChangedObservable.remove(this._cameraViewChangedObserver);
+        this._cdfTextureChangedObserver && this._frameGraph.scene.iblCdfGenerator?.onTextureChangedObservable.remove(this._cdfTextureChangedObserver);
+        this._cdfGeneratedObserver && this._frameGraph.scene.iblCdfGenerator?.onGeneratedObservable.remove(this._cdfGeneratedObserver);
+        this._environmentTextureChangedObserver && this._frameGraph.scene.onEnvironmentTextureChangedObservable.remove(this._environmentTextureChangedObserver);
+        this._beforeRenderDependencyObserver && this._frameGraph.scene.onBeforeRenderObservable.remove(this._beforeRenderDependencyObserver);
+        this._beforeRenderOutputReadyObserver && this._frameGraph.scene.onBeforeRenderObservable.remove(this._beforeRenderOutputReadyObserver);
+        this._blueNoiseLoadObserver && this._blueNoiseTexture.onLoadObservable.remove(this._blueNoiseLoadObserver);
+        this._texturesAllocatedObserver && this.accumulationTask.onTexturesAllocatedObservable.remove(this._texturesAllocatedObserver);
+        this._voxelizationCompleteObserver && this.voxelizationTask.onVoxelizationCompleteObservable.remove(this._voxelizationCompleteObserver);
+
+        this._cameraViewChangedObserver = null;
+        this._cdfTextureChangedObserver = null;
+        this._cdfGeneratedObserver = null;
+        this._environmentTextureChangedObserver = null;
+        this._beforeRenderDependencyObserver = null;
+        this._beforeRenderOutputReadyObserver = null;
+        this._blueNoiseLoadObserver = null;
+        this._texturesAllocatedObserver = null;
+        this._voxelizationCompleteObserver = null;
+        this._blueNoiseTexture.dispose();
+    }
+
+    private _observeEnvironmentTexture(): void {
         const currentEnvironmentTexture = this._frameGraph.scene.environmentTexture as any;
 
         if (currentEnvironmentTexture === this._observedEnvironmentTexture) {
@@ -489,8 +512,7 @@ export class FrameGraphIblShadowsRendererTask extends FrameGraphTask {
         this._observedEnvironmentTexture?.onLoadObservable.add(this._onEnvironmentTextureLoaded);
     }
 
-    /** @internal */
-    _getEnvironmentTextureInternal(): Nullable<InternalTexture> {
+    private _getEnvironmentTextureInternal(): Nullable<InternalTexture> {
         const currentEnvironmentTexture = this._frameGraph.scene.environmentTexture;
 
         if (!currentEnvironmentTexture || !currentEnvironmentTexture.isReadyOrNotBlocking()) {
@@ -501,8 +523,7 @@ export class FrameGraphIblShadowsRendererTask extends FrameGraphTask {
         return internalTexture?.isReady ? internalTexture : null;
     }
 
-    /** @internal */
-    _getAccumulationOutputTexture(): Nullable<InternalTexture> {
+    private _getAccumulationOutputTexture(): Nullable<InternalTexture> {
         try {
             return this._frameGraph.textureManager.getTextureFromHandle(this.accumulationTask.outputTexture);
         } catch {
@@ -510,8 +531,7 @@ export class FrameGraphIblShadowsRendererTask extends FrameGraphTask {
         }
     }
 
-    /** @internal */
-    _notifyIfOutputTextureReady(): void {
+    private _notifyIfOutputTextureReady(): void {
         const outputTexture = this._getAccumulationOutputTexture();
         if (!outputTexture?.isReady || this._lastNotifiedOutputTexture === outputTexture) {
             return;
@@ -521,8 +541,7 @@ export class FrameGraphIblShadowsRendererTask extends FrameGraphTask {
         this._outputTextureReadyObservable.notifyObservers(outputTexture);
     }
 
-    /** @internal */
-    _applyMaterialPluginParameters(): void {
+    private _applyMaterialPluginParameters(): void {
         const accumulationTexture = this._getAccumulationOutputTexture();
         for (const material of this._materialsWithRenderPlugin) {
             const plugin = material.pluginManager?.getPlugin<IBLShadowsPluginMaterial>(IBLShadowsPluginMaterial.Name);
@@ -540,8 +559,7 @@ export class FrameGraphIblShadowsRendererTask extends FrameGraphTask {
         }
     }
 
-    /** @internal */
-    _applyEnabledState(): void {
+    private _applyEnabledState(): void {
         if (!this._dependenciesResolved) {
             return;
         }
@@ -554,8 +572,7 @@ export class FrameGraphIblShadowsRendererTask extends FrameGraphTask {
         }
     }
 
-    /** @internal */
-    _addShadowReceivingMaterialInternal(material: Material): void {
+    private _addShadowReceivingMaterialInternal(material: Material): void {
         const isSupportedMaterial = material instanceof PBRBaseMaterial || material instanceof StandardMaterial || material instanceof OpenPBRMaterial;
         if (!isSupportedMaterial || this._materialsWithRenderPlugin.indexOf(material) !== -1) {
             return;
@@ -569,21 +586,15 @@ export class FrameGraphIblShadowsRendererTask extends FrameGraphTask {
         this._materialsWithRenderPlugin.push(material);
     }
 
-    /** @internal */
-    readonly _onEnvironmentTextureLoaded = () => {
+    private readonly _onEnvironmentTextureLoaded = () => {
         this._tryEnableShadowsTasks();
     };
 
-    /** @internal */
-    _tryEnableShadowsTasks(blueNoiseTexture?: Texture): void {
-        if (!blueNoiseTexture) {
-            return;
-        }
-
+    private _tryEnableShadowsTasks(): void {
         const scene = this._frameGraph.scene;
         const icdfTexture = scene.iblCdfGenerator?.getIcdfTexture().getInternalTexture();
         const environmentTexture = this._getEnvironmentTextureInternal();
-        const blueNoiseInternalTexture = blueNoiseTexture.getInternalTexture();
+        const blueNoiseInternalTexture = this._blueNoiseTexture.getInternalTexture();
 
         if (!icdfTexture?.isReady || icdfTexture.width === 1 || !environmentTexture?.isReady || !blueNoiseInternalTexture?.isReady) {
             if (this._dependenciesResolved) {
@@ -629,146 +640,147 @@ export class FrameGraphIblShadowsRendererTask extends FrameGraphTask {
 
         this._applyMaterialPluginParameters();
     }
-}
+    private _initialize(input: IFrameGraphIblShadowsRendererTaskCreationOptions): void {
+        const scene = this._frameGraph.scene;
 
-function CreateIblShadowsRendererTask(
-    task: FrameGraphIblShadowsRendererTask,
-    name: string,
-    frameGraph: FrameGraph,
-    input: IFrameGraphIblShadowsRendererTaskCreationOptions
-): IFrameGraphIblShadowsRendererTaskBuildResult {
-    const options = input.options;
-    const gBufferHandles = ResolveGBufferTextureHandles(input);
+        this._enabled = input.options?.enabled ?? true;
+        this.tracingTask.disabled = true;
+        this.spatialBlurTask.disabled = true;
+        this.accumulationTask.disabled = true;
 
-    const voxelizationTask = new FrameGraphIblShadowsVoxelizationTask(`${name} Voxelization`, frameGraph);
-    voxelizationTask.objectList = input.objectList;
-    voxelizationTask.resolutionExp = options?.resolutionExp ?? voxelizationTask.resolutionExp;
-    voxelizationTask.triPlanarVoxelization = options?.triPlanarVoxelization ?? voxelizationTask.triPlanarVoxelization;
-    voxelizationTask.refreshRate = options?.refreshRate ?? voxelizationTask.refreshRate;
+        this._cameraViewChangedObserver = input.camera.onViewMatrixChangedObservable.add(() => {
+            this.accumulationTask.isMoving = true;
+        });
 
-    const tracingTask = new FrameGraphIblShadowsTracingTask(`${name} Tracing`, frameGraph);
-    tracingTask.camera = input.camera;
-    tracingTask.voxelGridTexture = voxelizationTask.outputVoxelGridTexture;
-    tracingTask.depthTexture = gBufferHandles.depthTexture;
-    tracingTask.normalTexture = gBufferHandles.normalTexture;
+        this._voxelizationCompleteObserver = this.voxelizationTask.onVoxelizationCompleteObservable.add(() => {
+            this.tracingTask.voxelGridTexture = this.voxelizationTask.outputVoxelGridTexture;
+            this.accumulationTask.reset = true;
+        });
 
-    const scene = frameGraph.scene;
-    let cdfGenerator = scene.iblCdfGenerator;
-    if (!cdfGenerator) {
-        cdfGenerator = scene.enableIblCdfGenerator();
+        this._cdfTextureChangedObserver =
+            scene.iblCdfGenerator?.onTextureChangedObservable.add(() => {
+                this._lastImportedIcdfTexture = null;
+                this.accumulationTask.reset = true;
+            }) ?? null;
+
+        this._cdfGeneratedObserver =
+            scene.iblCdfGenerator?.onGeneratedObservable.add(() => {
+                this._lastImportedIcdfTexture = null;
+                this._tryEnableShadowsTasks();
+            }) ?? null;
+
+        this._environmentTextureChangedObserver = scene.onEnvironmentTextureChangedObservable.add(() => {
+            this._lastImportedEnvironmentTexture = null;
+            this._dependenciesResolved = false;
+            this.tracingTask.disabled = true;
+            this.spatialBlurTask.disabled = true;
+            this.accumulationTask.disabled = true;
+            this._observeEnvironmentTexture();
+            this._tryEnableShadowsTasks();
+        });
+
+        this._observeEnvironmentTexture();
+
+        if (scene.environmentTexture?.isReadyOrNotBlocking()) {
+            this._tryEnableShadowsTasks();
+        }
+
+        this._blueNoiseLoadObserver = this._blueNoiseTexture.onLoadObservable.add(() => {
+            this._tryEnableShadowsTasks();
+        });
+
+        this._beforeRenderDependencyObserver = scene.onBeforeRenderObservable.add(() => {
+            this._tryEnableShadowsTasks();
+        });
+
+        this._beforeRenderOutputReadyObserver = scene.onBeforeRenderObservable.add(() => {
+            this._notifyIfOutputTextureReady();
+        });
+
+        this._tryEnableShadowsTasks();
+
+        this._texturesAllocatedObserver = this.accumulationTask.onTexturesAllocatedObservable.add(() => {
+            this._applyMaterialPluginParameters();
+            this._notifyIfOutputTextureReady();
+        });
     }
-    if (!cdfGenerator) {
-        throw new Error(`FrameGraphIblShadowsRendererTask ${name}: unable to enable IBL CDF Generator in the scene`);
+
+    private _createVoxelizationTask(name: string, frameGraph: FrameGraph, input: IFrameGraphIblShadowsRendererTaskCreationOptions): FrameGraphIblShadowsVoxelizationTask {
+        const options = input.options;
+        const voxelizationTask = new FrameGraphIblShadowsVoxelizationTask(`${name} Voxelization`, frameGraph);
+        voxelizationTask.objectList = input.objectList;
+        voxelizationTask.resolutionExp = options?.resolutionExp ?? voxelizationTask.resolutionExp;
+        voxelizationTask.triPlanarVoxelization = options?.triPlanarVoxelization ?? voxelizationTask.triPlanarVoxelization;
+        voxelizationTask.refreshRate = options?.refreshRate ?? voxelizationTask.refreshRate;
+        return voxelizationTask;
     }
 
-    if (!scene.environmentTexture) {
-        throw new Error(`FrameGraphIblShadowsRendererTask ${name}: unable to get environment texture from the scene`);
+    private _createTracingTask(
+        name: string,
+        frameGraph: FrameGraph,
+        input: IFrameGraphIblShadowsRendererTaskCreationOptions,
+        gBufferHandles: IFrameGraphIblShadowsGBufferHandles
+    ): FrameGraphIblShadowsTracingTask {
+        const options = input.options;
+        const scene = frameGraph.scene;
+        let cdfGenerator = scene.iblCdfGenerator;
+        if (!cdfGenerator) {
+            cdfGenerator = scene.enableIblCdfGenerator();
+        }
+        if (!cdfGenerator) {
+            throw new Error(`FrameGraphIblShadowsRendererTask ${name}: unable to enable IBL CDF Generator in the scene`);
+        }
+
+        if (!scene.environmentTexture) {
+            throw new Error(`FrameGraphIblShadowsRendererTask ${name}: unable to get environment texture from the scene`);
+        }
+
+        const tracingTask = new FrameGraphIblShadowsTracingTask(`${name} Tracing`, frameGraph);
+        tracingTask.camera = input.camera;
+        tracingTask.voxelGridTexture = this.voxelizationTask.outputVoxelGridTexture;
+        tracingTask.depthTexture = gBufferHandles.depthTexture;
+        tracingTask.normalTexture = gBufferHandles.normalTexture;
+        tracingTask.icdfTexture = frameGraph.textureManager.importTexture(`ICDF Texture`, cdfGenerator.getIcdfTexture().getInternalTexture()!);
+        tracingTask.sampleDirections = options?.sampleDirections ?? tracingTask.sampleDirections;
+        tracingTask.worldScaleMatrix = this.voxelizationTask.worldScaleMatrix;
+        tracingTask.voxelShadowOpacity = options?.voxelShadowOpacity ?? tracingTask.voxelShadowOpacity;
+        tracingTask.voxelNormalBias = options?.voxelNormalBias ?? tracingTask.voxelNormalBias;
+        tracingTask.voxelDirectionBias = options?.voxelDirectionBias ?? tracingTask.voxelDirectionBias;
+        tracingTask.ssShadowOpacity = options?.ssShadowOpacity ?? tracingTask.ssShadowOpacity;
+        tracingTask.ssShadowSampleCount = options?.ssShadowSampleCount ?? tracingTask.ssShadowSampleCount;
+        tracingTask.ssShadowStride = options?.ssShadowStride ?? tracingTask.ssShadowStride;
+        tracingTask.ssShadowDistanceScale = options?.ssShadowDistanceScale ?? tracingTask.ssShadowDistanceScale;
+        tracingTask.ssShadowThicknessScale = options?.ssShadowThicknessScale ?? tracingTask.ssShadowThicknessScale;
+        tracingTask.voxelizationTask = this.voxelizationTask;
+        tracingTask.envRotation = options?.envRotation ?? tracingTask.envRotation;
+        tracingTask.coloredShadows = options?.coloredShadows ?? tracingTask.coloredShadows;
+        return tracingTask;
     }
 
-    tracingTask.icdfTexture = frameGraph.textureManager.importTexture(`ICDF Texture`, cdfGenerator.getIcdfTexture().getInternalTexture()!);
+    private _createSpatialBlurTask(name: string, frameGraph: FrameGraph, gBufferHandles: IFrameGraphIblShadowsGBufferHandles): FrameGraphIblShadowsSpatialBlurTask {
+        const spatialBlurTask = new FrameGraphIblShadowsSpatialBlurTask(`${name} Blur`, frameGraph);
+        spatialBlurTask.sourceTexture = this.tracingTask.outputTexture;
+        spatialBlurTask.depthTexture = gBufferHandles.depthTexture;
+        spatialBlurTask.normalTexture = gBufferHandles.normalTexture;
+        spatialBlurTask.voxelizationTask = this.voxelizationTask;
+        return spatialBlurTask;
+    }
 
-    const blueNoiseTexture = new Texture(
-        Tools.GetAssetUrl("https://assets.babylonjs.com/core/blue_noise/blue_noise_rgb.png"),
-        scene,
-        false,
-        true,
-        Constants.TEXTURE_NEAREST_SAMPLINGMODE
-    );
-    tracingTask.sampleDirections = options?.sampleDirections ?? tracingTask.sampleDirections;
-    tracingTask.worldScaleMatrix = voxelizationTask.worldScaleMatrix;
-    tracingTask.voxelShadowOpacity = options?.voxelShadowOpacity ?? tracingTask.voxelShadowOpacity;
-    tracingTask.voxelNormalBias = options?.voxelNormalBias ?? tracingTask.voxelNormalBias;
-    tracingTask.voxelDirectionBias = options?.voxelDirectionBias ?? tracingTask.voxelDirectionBias;
-    tracingTask.ssShadowOpacity = options?.ssShadowOpacity ?? tracingTask.ssShadowOpacity;
-    tracingTask.ssShadowSampleCount = options?.ssShadowSampleCount ?? tracingTask.ssShadowSampleCount;
-    tracingTask.ssShadowStride = options?.ssShadowStride ?? tracingTask.ssShadowStride;
-    tracingTask.ssShadowDistanceScale = options?.ssShadowDistanceScale ?? tracingTask.ssShadowDistanceScale;
-    tracingTask.ssShadowThicknessScale = options?.ssShadowThicknessScale ?? tracingTask.ssShadowThicknessScale;
-    tracingTask.voxelizationTask = voxelizationTask;
-    tracingTask.envRotation = options?.envRotation ?? tracingTask.envRotation;
-    tracingTask.coloredShadows = options?.coloredShadows ?? tracingTask.coloredShadows;
-
-    const spatialBlurTask = new FrameGraphIblShadowsSpatialBlurTask(`${name} Blur`, frameGraph);
-    spatialBlurTask.sourceTexture = tracingTask.outputTexture;
-    spatialBlurTask.depthTexture = gBufferHandles.depthTexture;
-    spatialBlurTask.normalTexture = gBufferHandles.normalTexture;
-    spatialBlurTask.voxelizationTask = voxelizationTask;
-
-    const accumulationTask = new FrameGraphIblShadowsAccumulationTask(`${name} Accumulation`, frameGraph);
-    accumulationTask.sourceTexture = spatialBlurTask.outputTexture;
-    accumulationTask.velocityTexture = gBufferHandles.velocityTexture;
-    accumulationTask.positionTexture = gBufferHandles.positionTexture;
-    accumulationTask.remanence = options?.remanence ?? accumulationTask.remanence;
-    accumulationTask.voxelizationTask = voxelizationTask;
-
-    input.camera.onViewMatrixChangedObservable.add(() => {
-        accumulationTask.isMoving = true;
-    });
-
-    voxelizationTask.onVoxelizationCompleteObservable.add(() => {
-        tracingTask.voxelGridTexture = voxelizationTask.outputVoxelGridTexture;
-        accumulationTask.reset = true;
-    });
-
-    task._enabled = options?.enabled ?? true;
-
-    tracingTask.disabled = true;
-    spatialBlurTask.disabled = true;
-    accumulationTask.disabled = true;
-
-    scene.iblCdfGenerator?.onTextureChangedObservable.add(() => {
-        task._lastImportedIcdfTexture = null;
-        accumulationTask.reset = true;
-    });
-
-    scene.iblCdfGenerator?.onGeneratedObservable.add(() => {
-        task._lastImportedIcdfTexture = null;
-        task._tryEnableShadowsTasks(blueNoiseTexture);
-    });
-
-    scene.onEnvironmentTextureChangedObservable.add(() => {
-        task._lastImportedEnvironmentTexture = null;
-        task._dependenciesResolved = false;
-        tracingTask.disabled = true;
-        spatialBlurTask.disabled = true;
-        accumulationTask.disabled = true;
-        task._observeEnvironmentTexture();
-        task._tryEnableShadowsTasks(blueNoiseTexture);
-    });
-
-    return {
-        voxelizationTask,
-        tracingTask,
-        spatialBlurTask,
-        accumulationTask,
-        initialize: () => {
-            task._observeEnvironmentTexture();
-
-            if (scene.environmentTexture?.isReadyOrNotBlocking()) {
-                task._tryEnableShadowsTasks(blueNoiseTexture);
-            }
-
-            blueNoiseTexture.onLoadObservable.add(() => {
-                task._tryEnableShadowsTasks(blueNoiseTexture);
-            });
-
-            scene.onBeforeRenderObservable.add(() => {
-                task._tryEnableShadowsTasks(blueNoiseTexture);
-            });
-
-            scene.onBeforeRenderObservable.add(() => {
-                task._notifyIfOutputTextureReady();
-            });
-
-            task._tryEnableShadowsTasks(blueNoiseTexture);
-
-            accumulationTask.onTexturesAllocatedObservable.add(() => {
-                task._applyMaterialPluginParameters();
-                task._notifyIfOutputTextureReady();
-            });
-        },
-        outputTexture: accumulationTask.outputTexture,
-    };
+    private _createAccumulationTask(
+        name: string,
+        frameGraph: FrameGraph,
+        input: IFrameGraphIblShadowsRendererTaskCreationOptions,
+        gBufferHandles: IFrameGraphIblShadowsGBufferHandles
+    ): FrameGraphIblShadowsAccumulationTask {
+        const options = input.options;
+        const accumulationTask = new FrameGraphIblShadowsAccumulationTask(`${name} Accumulation`, frameGraph);
+        accumulationTask.sourceTexture = this.spatialBlurTask.outputTexture;
+        accumulationTask.velocityTexture = gBufferHandles.velocityTexture;
+        accumulationTask.positionTexture = gBufferHandles.positionTexture;
+        accumulationTask.remanence = options?.remanence ?? accumulationTask.remanence;
+        accumulationTask.voxelizationTask = this.voxelizationTask;
+        return accumulationTask;
+    }
 }
 
 function ResolveGBufferTextureHandles(input: IFrameGraphIblShadowsRendererTaskCreationOptions): IFrameGraphIblShadowsGBufferHandles {
