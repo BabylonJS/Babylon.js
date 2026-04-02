@@ -35,14 +35,30 @@ export interface IFrameGraphIblShadowsRendererTaskCreationOptions {
      * List of objects considered by voxelization.
      */
     objectList: FrameGraphObjectList;
-    /** Depth texture handle used by tracing and blur. */
-    gbufferDepthTexture: FrameGraphTextureHandle;
-    /** Normal texture handle used by tracing and blur. */
-    gbufferNormalTexture: FrameGraphTextureHandle;
-    /** Position texture handle used by accumulation. */
-    gbufferPositionTexture: FrameGraphTextureHandle;
-    /** Velocity texture handle used by accumulation. */
-    gbufferVelocityTexture: FrameGraphTextureHandle;
+    /**
+     * Depth texture handle.
+     * This should be the screen-space depth of all objects in the scene
+     * that will receive shadows.
+     */
+    depthTexture: FrameGraphTextureHandle;
+    /**
+     * World-space normal texture.
+     * This should store the world-space normals of all objects in the scene
+     * that will receive shadows. Each component should be normalized to [0, 1] rather than [-1, 1].
+     */
+    normalTexture: FrameGraphTextureHandle;
+    /**
+     * Position texture handle.
+     * This should store the world-space position of all objects in the scene
+     * that will receive shadows.
+     */
+    positionTexture: FrameGraphTextureHandle;
+    /**
+     * Velocity texture handle.
+     * This should store the linear velocity per pixel of all objects in the scene
+     * that will receive shadows.
+     */
+    velocityTexture: FrameGraphTextureHandle;
     /**
      * Options used to configure the internal IBL shadows tasks.
      */
@@ -801,19 +817,14 @@ export class FrameGraphIblShadowsRendererTask extends FrameGraphTask {
 }
 
 function ResolveGBufferTextureHandles(input: IFrameGraphIblShadowsRendererTaskCreationOptions): IFrameGraphIblShadowsGBufferHandles {
-    if (
-        input.gbufferDepthTexture === undefined ||
-        input.gbufferNormalTexture === undefined ||
-        input.gbufferPositionTexture === undefined ||
-        input.gbufferVelocityTexture === undefined
-    ) {
-        throw new Error("FrameGraphIblShadowsRendererTask: gbufferDepthTexture, gbufferNormalTexture, gbufferPositionTexture and gbufferVelocityTexture are required");
+    if (input.depthTexture === undefined || input.normalTexture === undefined || input.positionTexture === undefined || input.velocityTexture === undefined) {
+        throw new Error("FrameGraphIblShadowsRendererTask: depthTexture, normalTexture, positionTexture and velocityTexture are required");
     }
 
     return {
-        depthTexture: input.gbufferDepthTexture,
-        normalTexture: input.gbufferNormalTexture,
-        positionTexture: input.gbufferPositionTexture,
-        velocityTexture: input.gbufferVelocityTexture,
+        depthTexture: input.depthTexture,
+        normalTexture: input.normalTexture,
+        positionTexture: input.positionTexture,
+        velocityTexture: input.velocityTexture,
     };
 }
