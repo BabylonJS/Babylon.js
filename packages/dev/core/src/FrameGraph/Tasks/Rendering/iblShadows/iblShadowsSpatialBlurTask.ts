@@ -5,8 +5,6 @@ import { Vector4 } from "core/Maths/math.vector";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { ThinCustomPostProcess } from "core/PostProcesses/thinCustomPostProcess";
 import { FrameGraphTask } from "../../../frameGraphTask";
-import "../../../../Shaders/iblShadowSpatialBlur.fragment";
-import "../../../../ShadersWGSL/iblShadowSpatialBlur.fragment";
 
 /**
  * Task used to spatially blur IBL shadows.
@@ -42,6 +40,15 @@ export class FrameGraphIblShadowsSpatialBlurTask extends FrameGraphTask {
 
     public override getClassName(): string {
         return "FrameGraphIblShadowsSpatialBlurTask";
+    }
+
+    // eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
+    public override initAsync(): Promise<unknown> {
+        if (this._frameGraph.engine.isWebGPU) {
+            return import("../../../../ShadersWGSL/iblShadowSpatialBlur.fragment");
+        }
+
+        return import("../../../../Shaders/iblShadowSpatialBlur.fragment");
     }
 
     public override isReady(): boolean {

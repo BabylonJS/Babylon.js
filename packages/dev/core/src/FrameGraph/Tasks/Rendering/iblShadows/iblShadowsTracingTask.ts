@@ -7,8 +7,6 @@ import { ThinCustomPostProcess } from "core/PostProcesses/thinCustomPostProcess"
 import { FrameGraphTask } from "../../../frameGraphTask";
 import { Color4 } from "core/Maths/math.color";
 import { type CubeTexture } from "core/Materials/Textures/cubeTexture";
-import "../../../../Shaders/iblShadowVoxelTracing.fragment";
-import "../../../../ShadersWGSL/iblShadowVoxelTracing.fragment";
 
 /**
  * Task used to trace IBL shadows from a voxel grid.
@@ -81,6 +79,15 @@ export class FrameGraphIblShadowsTracingTask extends FrameGraphTask {
 
     public override getClassName(): string {
         return "FrameGraphIblShadowsTracingTask";
+    }
+
+    // eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
+    public override initAsync(): Promise<unknown> {
+        if (this._frameGraph.engine.isWebGPU) {
+            return import("../../../../ShadersWGSL/iblShadowVoxelTracing.fragment");
+        }
+
+        return import("../../../../Shaders/iblShadowVoxelTracing.fragment");
     }
 
     public get coloredShadows(): boolean {

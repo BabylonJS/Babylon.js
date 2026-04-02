@@ -5,8 +5,6 @@ import { Vector4 } from "core/Maths/math.vector";
 import { ThinCustomPostProcess } from "core/PostProcesses/thinCustomPostProcess";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { FrameGraphTask } from "../../../frameGraphTask";
-import "../../../../Shaders/iblShadowAccumulation.fragment";
-import "../../../../ShadersWGSL/iblShadowAccumulation.fragment";
 
 /**
  * Task used to temporally accumulate IBL shadows.
@@ -49,6 +47,15 @@ export class FrameGraphIblShadowsAccumulationTask extends FrameGraphTask {
 
     public override getClassName(): string {
         return "FrameGraphIblShadowsAccumulationTask";
+    }
+
+    // eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
+    public override initAsync(): Promise<unknown> {
+        if (this._frameGraph.engine.isWebGPU) {
+            return import("../../../../ShadersWGSL/iblShadowAccumulation.fragment");
+        }
+
+        return import("../../../../Shaders/iblShadowAccumulation.fragment");
     }
 
     public override isReady(): boolean {
