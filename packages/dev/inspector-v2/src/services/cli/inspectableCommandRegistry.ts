@@ -55,6 +55,7 @@ export const InspectableCommandRegistryIdentity = Symbol("InspectableCommandRegi
 
 /**
  * A registry for commands that can be invoked from the Inspector CLI.
+ * @experimental
  */
 export interface IInspectableCommandRegistry extends IService<typeof InspectableCommandRegistryIdentity> {
     /**

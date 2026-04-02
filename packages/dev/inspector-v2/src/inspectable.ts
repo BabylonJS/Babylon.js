@@ -183,6 +183,7 @@ export function _StartInspectable(scene: Scene, options?: Partial<InspectableOpt
  * @param scene The scene to make inspectable.
  * @param options Optional configuration.
  * @returns An {@link InspectableToken} that can be disposed to disconnect.
+ * @experimental
  */
 export function StartInspectable(scene: Scene, options?: Partial<InspectableOptions>): InspectableToken {
     return _StartInspectable(scene, options);
