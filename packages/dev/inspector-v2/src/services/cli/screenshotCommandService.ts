@@ -6,7 +6,7 @@ import { type IInspectableCommandRegistry, InspectableCommandRegistryIdentity } 
 
 /**
  * Service that registers a CLI command for capturing a screenshot of the scene.
- * Returns the image as a base64 data URL, suitable for consumption by AI agents.
+ * Returns the image as a base64 data string, suitable for consumption by AI agents.
  */
 export const ScreenshotCommandServiceDefinition: ServiceDefinition<[], [IInspectableCommandRegistry, ISceneContext]> = {
     friendlyName: "Screenshot Command Service",

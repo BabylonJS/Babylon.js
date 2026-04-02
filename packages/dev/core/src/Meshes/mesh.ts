@@ -4234,7 +4234,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             // Physics
             //TODO implement correct serialization for physics impostors.
             if (this.getScene()._getComponent(SceneComponentConstants.NAME_PHYSICSENGINE)) {
-                const impostor = instance.getPhysicsImpostor();
+                const impostor = instance.getPhysicsImpostor?.();
                 if (impostor) {
                     serializationInstance.physicsMass = impostor.getParam("mass");
                     serializationInstance.physicsFriction = impostor.getParam("friction");

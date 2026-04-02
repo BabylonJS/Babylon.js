@@ -1,6 +1,27 @@
-import { type IDisposable } from "core/index";
+import {
+    type AbstractMesh,
+    type Animation,
+    type AnimationGroup,
+    type BaseTexture,
+    type Camera,
+    type EffectLayer,
+    type FrameGraph,
+    type Geometry,
+    type IDisposable,
+    type IParticleSystem,
+    type ISpriteManager,
+    type Light,
+    type Material,
+    type MorphTargetManager,
+    type MultiMaterial,
+    type PostProcess,
+    type PostProcessRenderPipeline,
+    type Scene,
+    type Skeleton,
+    type Sound,
+    type TransformNode,
+} from "core/index";
 import { UniqueIdGenerator } from "core/Misc/uniqueIdGenerator";
-import { type Scene } from "core/scene";
 import { type ServiceDefinition } from "../../modularity/serviceDefinition";
 import { type ISceneContext, SceneContextIdentity } from "../sceneContext";
 import { type IInspectableCommandRegistry, type InspectableCommandDescriptor, InspectableCommandRegistryIdentity } from "./inspectableCommandRegistry";
@@ -122,7 +143,7 @@ export const EntityQueryServiceDefinition: ServiceDefinition<[], [IInspectableCo
     friendlyName: "Entity Query Service",
     consumes: [InspectableCommandRegistryIdentity, SceneContextIdentity],
     factory: (commandRegistry, sceneContext) => {
-        const collections: IEntityCollection<any>[] = [
+        const collections = [
             {
                 id: "query-mesh",
                 description: "List meshes, or query a specific mesh by uniqueId.",
@@ -130,7 +151,7 @@ export const EntityQueryServiceDefinition: ServiceDefinition<[], [IInspectableCo
                 getUniqueId: (e) => e.uniqueId,
                 getSummary: NodeSummary,
                 serialize: (e) => e.serialize(),
-            },
+            } satisfies IEntityCollection<AbstractMesh>,
             {
                 id: "query-light",
                 description: "List lights, or query a specific light by uniqueId.",
@@ -138,7 +159,7 @@ export const EntityQueryServiceDefinition: ServiceDefinition<[], [IInspectableCo
                 getUniqueId: (e) => e.uniqueId,
                 getSummary: NodeSummary,
                 serialize: (e) => e.serialize(),
-            },
+            } satisfies IEntityCollection<Light>,
             {
                 id: "query-camera",
                 description: "List cameras, or query a specific camera by uniqueId.",
@@ -146,7 +167,7 @@ export const EntityQueryServiceDefinition: ServiceDefinition<[], [IInspectableCo
                 getUniqueId: (e) => e.uniqueId,
                 getSummary: NodeSummary,
                 serialize: (e) => e.serialize(),
-            },
+            } satisfies IEntityCollection<Camera>,
             {
                 id: "query-transformNode",
                 description: "List transform nodes, or query a specific transform node by uniqueId.",
@@ -154,7 +175,7 @@ export const EntityQueryServiceDefinition: ServiceDefinition<[], [IInspectableCo
                 getUniqueId: (e) => e.uniqueId,
                 getSummary: NodeSummary,
                 serialize: (e) => e.serialize(),
-            },
+            } satisfies IEntityCollection<TransformNode>,
             {
                 id: "query-material",
                 description: "List materials, or query a specific material by uniqueId.",
@@ -162,7 +183,7 @@ export const EntityQueryServiceDefinition: ServiceDefinition<[], [IInspectableCo
                 getUniqueId: (e) => e.uniqueId,
                 getSummary: NamedSummary,
                 serialize: (e) => e.serialize(),
-            },
+            } satisfies IEntityCollection<Material>,
             {
                 id: "query-texture",
                 description: "List textures, or query a specific texture by uniqueId.",
@@ -170,7 +191,7 @@ export const EntityQueryServiceDefinition: ServiceDefinition<[], [IInspectableCo
                 getUniqueId: (e) => e.uniqueId,
                 getSummary: NamedSummary,
                 serialize: (e) => e.serialize(),
-            },
+            } satisfies IEntityCollection<BaseTexture>,
             {
                 id: "query-skeleton",
                 description: "List skeletons, or query a specific skeleton by uniqueId.",
@@ -178,7 +199,7 @@ export const EntityQueryServiceDefinition: ServiceDefinition<[], [IInspectableCo
                 getUniqueId: (e) => e.uniqueId,
                 getSummary: NamedSummary,
                 serialize: (e) => e.serialize(),
-            },
+            } satisfies IEntityCollection<Skeleton>,
             {
                 id: "query-geometry",
                 description: "List geometries, or query a specific geometry by uniqueId.",
@@ -186,7 +207,7 @@ export const EntityQueryServiceDefinition: ServiceDefinition<[], [IInspectableCo
                 getUniqueId: (e) => e.uniqueId,
                 getSummary: MinimalSummary,
                 serialize: (e) => e.serialize(),
-            },
+            } satisfies IEntityCollection<Geometry>,
             {
                 id: "query-animation",
                 description: "List animations, or query a specific animation by uniqueId.",
@@ -194,7 +215,7 @@ export const EntityQueryServiceDefinition: ServiceDefinition<[], [IInspectableCo
                 getUniqueId: (e) => e.uniqueId,
                 getSummary: MinimalSummary,
                 serialize: (e) => e.serialize(),
-            },
+            } satisfies IEntityCollection<Animation>,
             {
                 id: "query-animationGroup",
                 description: "List animation groups, or query a specific animation group by uniqueId.",
@@ -202,7 +223,7 @@ export const EntityQueryServiceDefinition: ServiceDefinition<[], [IInspectableCo
                 getUniqueId: (e) => e.uniqueId,
                 getSummary: NamedSummary,
                 serialize: (e) => e.serialize(),
-            },
+            } satisfies IEntityCollection<AnimationGroup>,
             {
                 id: "query-particleSystem",
                 description: "List particle systems, or query a specific particle system by uniqueId.",
@@ -210,7 +231,7 @@ export const EntityQueryServiceDefinition: ServiceDefinition<[], [IInspectableCo
                 getUniqueId: (e) => e.uniqueId,
                 getSummary: NamedSummary,
                 serialize: (e) => e.serialize(false),
-            },
+            } satisfies IEntityCollection<IParticleSystem>,
             {
                 id: "query-morphTargetManager",
                 description: "List morph target managers, or query a specific morph target manager by uniqueId.",
@@ -218,7 +239,7 @@ export const EntityQueryServiceDefinition: ServiceDefinition<[], [IInspectableCo
                 getUniqueId: (e) => e.uniqueId,
                 getSummary: MinimalSummary,
                 serialize: (e) => e.serialize(),
-            },
+            } satisfies IEntityCollection<MorphTargetManager>,
             {
                 id: "query-multiMaterial",
                 description: "List multi-materials, or query a specific multi-material by uniqueId.",
@@ -226,7 +247,7 @@ export const EntityQueryServiceDefinition: ServiceDefinition<[], [IInspectableCo
                 getUniqueId: (e) => e.uniqueId,
                 getSummary: NamedSummary,
                 serialize: (e) => e.serialize(),
-            },
+            } satisfies IEntityCollection<MultiMaterial>,
             {
                 id: "query-postProcess",
                 description: "List post-processes, or query a specific post-process by uniqueId.",
@@ -234,14 +255,14 @@ export const EntityQueryServiceDefinition: ServiceDefinition<[], [IInspectableCo
                 getUniqueId: (e) => e.uniqueId,
                 getSummary: NamedSummary,
                 serialize: (e) => e.serialize(),
-            },
+            } satisfies IEntityCollection<PostProcess>,
             {
                 id: "query-frameGraph",
                 description: "List frame graphs, or query a specific frame graph by uniqueId.",
                 getEntities: (scene) => scene.frameGraphs,
                 getUniqueId: (e) => e.uniqueId,
                 getSummary: NamedSummary,
-            },
+            } satisfies IEntityCollection<FrameGraph>,
             {
                 id: "query-effectLayer",
                 description: "List effect layers, or query a specific effect layer by uniqueId.",
@@ -249,15 +270,15 @@ export const EntityQueryServiceDefinition: ServiceDefinition<[], [IInspectableCo
                 getUniqueId: (e) => e.uniqueId,
                 getSummary: NamedSummary,
                 serialize: (e) => e.serialize?.(),
-            },
+            } satisfies IEntityCollection<EffectLayer>,
             {
                 id: "query-spriteManager",
                 description: "List sprite managers, or query a specific sprite manager by uniqueId.",
                 getEntities: (scene) => scene.spriteManagers,
                 getUniqueId: (e) => e.uniqueId,
-                getSummary: NamedSummary,
+                getSummary: MinimalSummary,
                 serialize: (e) => e.serialize(false),
-            },
+            } satisfies IEntityCollection<ISpriteManager>,
             {
                 id: "query-sound",
                 description: "List sounds in the main sound track, or query a specific sound by uniqueId.",
@@ -265,17 +286,17 @@ export const EntityQueryServiceDefinition: ServiceDefinition<[], [IInspectableCo
                 getUniqueId: (e) => GetEntityId(e),
                 getSummary: (e) => ({ uniqueId: GetEntityId(e), name: e.name, className: e.getClassName() }),
                 serialize: (e) => e.serialize(),
-            },
+            } satisfies IEntityCollection<Sound>,
             {
                 id: "query-renderingPipeline",
                 description: "List rendering pipelines, or query a specific rendering pipeline by uniqueId.",
                 getEntities: (scene) => scene.postProcessRenderPipelineManager?.supportedPipelines ?? [],
                 getUniqueId: (e) => e.uniqueId,
                 getSummary: NamedSummary,
-            },
+            } satisfies IEntityCollection<PostProcessRenderPipeline>,
         ];
 
-        const registrations: IDisposable[] = collections.map((col) => commandRegistry.addCommand(MakeQueryCommand(col, sceneContext)));
+        const registrations: IDisposable[] = collections.map((col) => commandRegistry.addCommand(MakeQueryCommand(col as IEntityCollection<unknown>, sceneContext)));
 
         return {
             dispose: () => {

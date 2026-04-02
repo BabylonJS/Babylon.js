@@ -56,7 +56,7 @@ export function MakeInspectableBridgeServiceDefinition(options: IInspectableBrid
                 }
 
                 try {
-                    ws = new WebSocket(`ws://localhost:${options.port}`);
+                    ws = new WebSocket(`ws://127.0.0.1:${options.port}`);
                 } catch {
                     scheduleReconnect();
                     return;

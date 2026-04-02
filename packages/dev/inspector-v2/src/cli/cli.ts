@@ -276,7 +276,7 @@ export async function ResolveSessionId(socket: WebSocket, explicitId?: string): 
     }
     if (response.sessions.length > 1) {
         const list = response.sessions.map((s) => `  [${s.id}] ${s.name}`).join("\n");
-        throw new Error(`Multiple active sessions.:\n${list}\nSpecify a session id with --session <session-id>`);
+        throw new Error(`Multiple active sessions:\n${list}\nSpecify a session id with --session <session-id>`);
     }
     return response.sessions[0].id;
 }
