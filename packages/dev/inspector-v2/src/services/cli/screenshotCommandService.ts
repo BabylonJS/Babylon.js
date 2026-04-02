@@ -64,10 +64,26 @@ export const ScreenshotCommandServiceDefinition: ServiceDefinition<[], [IInspect
                     throw new Error("No camera available for screenshot.");
                 }
 
-                const precision = args.precision ? parseFloat(args.precision) : 1;
-                const width = args.width ? parseInt(args.width, 10) : undefined;
-                const height = args.height ? parseInt(args.height, 10) : undefined;
+                const precision = args.precision !== undefined ? Number(args.precision) : 1;
+                if (!Number.isFinite(precision) || precision <= 0) {
+                    throw new Error("precision must be a finite number greater than 0.");
+                }
 
+                let width: number | undefined;
+                if (args.width !== undefined) {
+                    width = Number(args.width);
+                    if (!Number.isFinite(width) || width <= 0 || !Number.isInteger(width)) {
+                        throw new Error("width must be a finite positive integer.");
+                    }
+                }
+
+                let height: number | undefined;
+                if (args.height !== undefined) {
+                    height = Number(args.height);
+                    if (!Number.isFinite(height) || height <= 0 || !Number.isInteger(height)) {
+                        throw new Error("height must be a finite positive integer.");
+                    }
+                }
                 const screenshotSize = width !== undefined && height !== undefined ? { width, height, precision } : { precision };
 
                 // Omit fileName to get data URL back without triggering a download.
