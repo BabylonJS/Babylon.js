@@ -6,6 +6,7 @@ import { type Scene } from "../../scene";
 import { type Color4, Color3 } from "../../Maths/math.color";
 import { ImageProcessingConfiguration } from "../imageProcessingConfiguration";
 import { type BaseTexture } from "../../Materials/Textures/baseTexture";
+import { type ThinTexture } from "../../Materials/Textures/thinTexture";
 import { Texture } from "../Textures/texture";
 import { RegisterClass } from "../../Misc/typeStore";
 import { Material } from "../material";
@@ -1152,17 +1153,43 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _ambientOcclusionTexture: Sampler = new Sampler("ambient_occlusion", "ambientOcclusion", "AMBIENT_OCCLUSION");
 
+    private _sssIrradianceTexture: Nullable<ThinTexture> = null;
     /**
      * Defines the irradiance texture used for subsurface scattering.
      * If it's not provided, the irradiance will be looked for in the scene.geometryBufferRenderer.
+     * Accepts a {@link ThinTexture} so that an {@link InternalTexture} obtained from a frame graph
+     * handle can be wrapped with `new ThinTexture(internalTexture)` and assigned directly.
+     * Setting this property marks all sub-meshes as textures-dirty so the shader recompiles.
      */
-    public sssIrradianceTexture: Nullable<BaseTexture> = null;
+    public get sssIrradianceTexture(): Nullable<ThinTexture> {
+        return this._sssIrradianceTexture;
+    }
+    public set sssIrradianceTexture(value: Nullable<ThinTexture>) {
+        if (this._sssIrradianceTexture === value) {
+            return;
+        }
+        this._sssIrradianceTexture = value;
+        this._markAllSubMeshesAsTexturesDirty();
+    }
 
+    private _sssDepthTexture: Nullable<ThinTexture> = null;
     /**
      * Defines the depth texture used for subsurface scattering. This is the depth defined
      * in screen space. If it's not provided, the depth will be looked for in the scene.geometryBufferRenderer.
+     * Accepts a {@link ThinTexture} so that an {@link InternalTexture} obtained from a frame graph
+     * handle can be wrapped with `new ThinTexture(internalTexture)` and assigned directly.
+     * Setting this property marks all sub-meshes as textures-dirty so the shader recompiles.
      */
-    public sssDepthTexture: Nullable<BaseTexture> = null;
+    public get sssDepthTexture(): Nullable<ThinTexture> {
+        return this._sssDepthTexture;
+    }
+    public set sssDepthTexture(value: Nullable<ThinTexture>) {
+        if (this._sssDepthTexture === value) {
+            return;
+        }
+        this._sssDepthTexture = value;
+        this._markAllSubMeshesAsTexturesDirty();
+    }
 
     private _propertyList: { [name: string]: Property<any> };
     private _uniformsList: { [name: string]: Uniform } = {};
@@ -2582,13 +2609,6 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
 
         if (this._radianceTexture) {
             activeTextures.push(this._radianceTexture);
-        }
-
-        if (this.sssIrradianceTexture) {
-            activeTextures.push(this.sssIrradianceTexture);
-        }
-        if (this.sssDepthTexture) {
-            activeTextures.push(this.sssDepthTexture);
         }
 
         return activeTextures;
