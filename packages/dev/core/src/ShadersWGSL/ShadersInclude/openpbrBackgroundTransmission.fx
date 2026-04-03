@@ -17,7 +17,7 @@ var slab_translucent_background: vec4f = vec4f(0., 0., 0., 1.);
         refractionCoords.y = 1.0f - refractionCoords.y;
         // Apply a noise offset to reduce artifacts at higher LODs
         if (refractionLOD > 0.0f) {
-            refractionNoiseOffset = noise.xy / vec2f(pow(2.0f, uniforms.vBackgroundRefractionInfos.x - refractionLOD));
+            refractionNoiseOffset = (noise.xy + refractedViewVector.xy) / vec2f(pow(2.0f, uniforms.vBackgroundRefractionInfos.x - refractionLOD));
         }
         refractionCoords += refractionNoiseOffset;
     #ifdef DISPERSION
