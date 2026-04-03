@@ -690,6 +690,9 @@ export class _IblShadowsVoxelRenderer {
                 const rttReady = this._renderTargets[i].isReadyForRendering();
                 allReady &&= rttReady;
             }
+            for (const gsVoxelMat of Array.from(this._gsVoxelMaterialCache.values())) {
+                allReady &&= gsVoxelMat.isReady();
+            }
             if (allReady) {
                 if (this._engine.isWebGPU) {
                     // Clear the voxel grid storage texture.
