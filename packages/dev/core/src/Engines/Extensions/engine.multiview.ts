@@ -192,6 +192,7 @@ function CreateMultiviewUbo(engine: AbstractEngine, name?: string, trackUBOsInFr
     ubo.addUniform("view", 16);
     ubo.addUniform("projection", 16);
     ubo.addUniform("vEyePosition", 4);
+    ubo.addUniform("inverseProjection", 16);
     return ubo;
 }
 
@@ -223,6 +224,11 @@ Scene.prototype._updateMultiviewUbo = function (viewR?: Matrix, projectionR?: Ma
         viewR.multiplyToRef(projectionR, this._transformMatrixR);
     }
 
+    if (!this._inverseProjectionMatrix) {
+        this._inverseProjectionMatrix = new Matrix();
+    }
+    this._projectionMatrix.invertToRef(this._inverseProjectionMatrix);
+
     if (viewR && projectionR) {
         viewR.multiplyToRef(projectionR, TmpVectors.Matrix[0]);
         Frustum.GetRightPlaneToRef(TmpVectors.Matrix[0], this._frustumPlanes[3]); // Replace right plane by second camera right plane
@@ -233,6 +239,7 @@ Scene.prototype._updateMultiviewUbo = function (viewR?: Matrix, projectionR?: Ma
         this._multiviewSceneUbo.updateMatrix("viewProjectionR", this._transformMatrixR);
         this._multiviewSceneUbo.updateMatrix("view", this._viewMatrix);
         this._multiviewSceneUbo.updateMatrix("projection", this._projectionMatrix);
+        this._multiviewSceneUbo.updateMatrix("inverseProjection", this._inverseProjectionMatrix);
     }
 };
 Scene.prototype._renderMultiviewToSingleView = function (camera: Camera) {

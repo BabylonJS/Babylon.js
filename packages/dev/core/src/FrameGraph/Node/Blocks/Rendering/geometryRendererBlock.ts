@@ -32,6 +32,7 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBaseObj
 
         this.getInputByName("target")!.isOptional = true;
 
+        this.registerOutput("geomIrradiance", NodeRenderGraphBlockConnectionPointTypes.TextureIrradiance);
         this.registerOutput("geomViewDepth", NodeRenderGraphBlockConnectionPointTypes.TextureViewDepth);
         this.registerOutput("geomNormViewDepth", NodeRenderGraphBlockConnectionPointTypes.TextureNormalizedViewDepth);
         this.registerOutput("geomScreenDepth", NodeRenderGraphBlockConnectionPointTypes.TextureScreenDepth);
@@ -171,6 +172,13 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBaseObj
         this._frameGraphTask.disableDepthPrePass = value;
     }
 
+    // Irradiance
+    @editableInPropertyPage("Format", PropertyTypeForEdition.TextureFormat, "OUTPUT - IRRADIANCE")
+    public irradianceFormat = Constants.TEXTUREFORMAT_RGBA;
+
+    @editableInPropertyPage("Type", PropertyTypeForEdition.TextureType, "OUTPUT - IRRADIANCE")
+    public irradianceType = Constants.TEXTURETYPE_HALF_FLOAT;
+
     // View depth
     @editableInPropertyPage("Format", PropertyTypeForEdition.TextureFormat, "OUTPUT - VIEW DEPTH")
     public viewDepthFormat = Constants.TEXTUREFORMAT_RED;
@@ -257,86 +265,94 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBaseObj
     }
 
     /**
+     * Gets the geometry irradiance component
+     */
+    public get geomIrradiance(): NodeRenderGraphConnectionPoint {
+        return this._outputs[3];
+    }
+
+    /**
      * Gets the geometry view depth component
      */
     public get geomViewDepth(): NodeRenderGraphConnectionPoint {
-        return this._outputs[3];
+        return this._outputs[4];
     }
 
     /**
      * Gets the geometry normalized view depth component
      */
     public get geomNormViewDepth(): NodeRenderGraphConnectionPoint {
-        return this._outputs[4];
+        return this._outputs[5];
     }
 
     /**
      * Gets the geometry screen depth component
      */
     public get geomScreenDepth(): NodeRenderGraphConnectionPoint {
-        return this._outputs[5];
+        return this._outputs[6];
     }
 
     /**
      * Gets the geometry view normal component
      */
     public get geomViewNormal(): NodeRenderGraphConnectionPoint {
-        return this._outputs[6];
+        return this._outputs[7];
     }
 
     /**
      * Gets the world geometry normal component
      */
     public get geomWorldNormal(): NodeRenderGraphConnectionPoint {
-        return this._outputs[7];
+        return this._outputs[8];
     }
 
     /**
      * Gets the geometry local position component
      */
     public get geomLocalPosition(): NodeRenderGraphConnectionPoint {
-        return this._outputs[8];
+        return this._outputs[9];
     }
 
     /**
      * Gets the geometry world position component
      */
     public get geomWorldPosition(): NodeRenderGraphConnectionPoint {
-        return this._outputs[9];
+        return this._outputs[10];
     }
 
     /**
      * Gets the geometry albedo component
      */
     public get geomAlbedo(): NodeRenderGraphConnectionPoint {
-        return this._outputs[10];
+        return this._outputs[11];
     }
 
     /**
      * Gets the geometry reflectivity component
      */
     public get geomReflectivity(): NodeRenderGraphConnectionPoint {
-        return this._outputs[11];
+        return this._outputs[12];
     }
 
     /**
      * Gets the geometry velocity component
      */
     public get geomVelocity(): NodeRenderGraphConnectionPoint {
-        return this._outputs[12];
+        return this._outputs[13];
     }
 
     /**
      * Gets the geometry linear velocity component
      */
     public get geomLinearVelocity(): NodeRenderGraphConnectionPoint {
-        return this._outputs[13];
+        return this._outputs[14];
     }
 
     protected override _buildBlock(state: NodeRenderGraphBuildState) {
         super._buildBlock(state);
 
         const textureActivation = [
+            this.geomIrradiance.isConnected,
             this.geomViewDepth.isConnected,
             this.geomNormViewDepth.isConnected,
             this.geomScreenDepth.isConnected,
@@ -350,6 +366,7 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBaseObj
             this.geomLinearVelocity.isConnected,
         ];
 
+        this.geomIrradiance.value = this._frameGraphTask.geometryIrradianceTexture;
         this.geomViewDepth.value = this._frameGraphTask.geometryViewDepthTexture;
         this.geomNormViewDepth.value = this._frameGraphTask.geometryNormViewDepthTexture;
         this.geomScreenDepth.value = this._frameGraphTask.geometryScreenDepthTexture;
@@ -365,6 +382,7 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBaseObj
         this._frameGraphTask.textureDescriptions = [];
 
         const textureFormats = [
+            this.irradianceFormat,
             this.viewDepthFormat,
             this.normalizedViewDepthFormat,
             this.screenDepthFormat,
@@ -378,6 +396,7 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBaseObj
             this.linearVelocityFormat,
         ];
         const textureTypes = [
+            this.irradianceType,
             this.viewDepthType,
             this.normalizedViewDepthType,
             this.screenDepthType,
@@ -391,6 +410,7 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBaseObj
             this.linearVelocityType,
         ];
         const bufferTypes = [
+            Constants.PREPASS_IRRADIANCE_TEXTURE_TYPE,
             Constants.PREPASS_DEPTH_TEXTURE_TYPE,
             Constants.PREPASS_NORMALIZED_VIEW_DEPTH_TEXTURE_TYPE,
             Constants.PREPASS_SCREENSPACE_DEPTH_TEXTURE_TYPE,
@@ -423,6 +443,8 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBaseObj
         codes.push(`${this._codeVariableName}.reverseCulling = ${this.reverseCulling};`);
         codes.push(`${this._codeVariableName}.dontRenderWhenMaterialDepthWriteIsDisabled = ${this.dontRenderWhenMaterialDepthWriteIsDisabled};`);
         codes.push(`${this._codeVariableName}.disableDepthPrePass = ${this.disableDepthPrePass};`);
+        codes.push(`${this._codeVariableName}.irradianceFormat = ${this.irradianceFormat};`);
+        codes.push(`${this._codeVariableName}.irradianceType = ${this.irradianceType};`);
         codes.push(`${this._codeVariableName}.viewDepthFormat = ${this.viewDepthFormat};`);
         codes.push(`${this._codeVariableName}.viewDepthType = ${this.viewDepthType};`);
         codes.push(`${this._codeVariableName}.normalizedViewDepthFormat = ${this.normalizedViewDepthFormat};`);
@@ -457,6 +479,8 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBaseObj
         serializationObject.reverseCulling = this.reverseCulling;
         serializationObject.dontRenderWhenMaterialDepthWriteIsDisabled = this.dontRenderWhenMaterialDepthWriteIsDisabled;
         serializationObject.disableDepthPrePass = this.disableDepthPrePass;
+        serializationObject.irradianceFormat = this.irradianceFormat;
+        serializationObject.irradianceType = this.irradianceType;
         serializationObject.viewDepthFormat = this.viewDepthFormat;
         serializationObject.viewDepthType = this.viewDepthType;
         serializationObject.normalizedViewDepthFormat = this.normalizedViewDepthFormat;
@@ -491,6 +515,8 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBaseObj
         this.reverseCulling = serializationObject.reverseCulling;
         this.dontRenderWhenMaterialDepthWriteIsDisabled = serializationObject.dontRenderWhenMaterialDepthWriteIsDisabled;
         this.disableDepthPrePass = serializationObject.disableDepthPrePass ?? true;
+        this.irradianceFormat = serializationObject.irradianceFormat ?? Constants.TEXTUREFORMAT_RGBA;
+        this.irradianceType = serializationObject.irradianceType ?? Constants.TEXTURETYPE_HALF_FLOAT;
         this.viewDepthFormat = serializationObject.viewDepthFormat;
         this.viewDepthType = serializationObject.viewDepthType;
         this.normalizedViewDepthFormat = serializationObject.normalizedViewDepthFormat ?? Constants.TEXTUREFORMAT_RED;

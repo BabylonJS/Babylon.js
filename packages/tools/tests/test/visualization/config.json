@@ -3402,33 +3402,150 @@
         },
         {
             "title": "OpenPBR Transmission Forward Scatter and Absorption - IBL",
-            "playgroundId": "#GRQHVV#149",
+            "playgroundId": "#GRQHVV#263",
             "excludedEngines": ["webgl1"]
         },
         {
             "title": "OpenPBR Transmission Scatter Anisotropy Reflect - IBL",
-            "playgroundId": "#GRQHVV#216",
+            "playgroundId": "#GRQHVV#264",
             "excludedEngines": ["webgl1"]
         },
         {
             "title": "OpenPBR Transmission Scatter Anisotropy Refract - IBL",
-            "playgroundId": "#GRQHVV#220",
-            "excludedEngines": ["webgl1"]
+            "playgroundId": "#GRQHVV#265",
+            "excludedEngines": ["webgl1"],
+            "renderCount": 5
         },
         {
             "title": "OpenPBR Transmission Scatter Anisotropy Refract - Analytic Lights",
-            "playgroundId": "#GRQHVV#217",
+            "playgroundId": "#GRQHVV#266",
             "excludedEngines": ["webgl1"]
         },
         {
             "title": "OpenPBR Transmission Scatter Anisotropy Reflect - Analytic Lights",
-            "playgroundId": "#GRQHVV#219",
+            "playgroundId": "#GRQHVV#268",
             "excludedEngines": ["webgl1"]
         },
         {
             "title": "OpenPBR Transmission Scatter Roughness - Analytic Lights",
-            "playgroundId": "#GRQHVV#218",
+            "playgroundId": "#GRQHVV#269",
             "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR Subsurface Radius vs Roughness - IBL",
+            "playgroundId": "#GRQHVV#270",
+            "excludedEngines": ["webgl1"],
+            "renderCount": 5
+        },
+        {
+            "title": "OpenPBR Subsurface Radius vs Anisotropy - IBL",
+            "playgroundId": "#GRQHVV#271",
+            "excludedEngines": ["webgl1"],
+            "renderCount": 2
+        },
+        {
+            "title": "OpenPBR Subsurface Radius vs Anisotropy - Analytic Lights",
+            "playgroundId": "#GRQHVV#272",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR Subsurface Radius vs Radius Scale - IBL",
+            "playgroundId": "#GRQHVV#273",
+            "excludedEngines": ["webgl1"],
+            "renderCount": 5
+        },
+        {
+            "title": "OpenPBR Subsurface Transmission Blending - IBL",
+            "playgroundId": "#GRQHVV#296",
+            "excludedEngines": ["webgl1"],
+            "renderCount": 5
+        },
+        {
+            "title": "OpenPBR Subsurface Transmission Blending - Analytic Lights",
+            "playgroundId": "#GRQHVV#299",
+            "excludedEngines": ["webgl1"],
+            "renderCount": 2
+        },
+        {
+            "title": "OpenPBR Subsurface Transmission Blending Zero Depth - IBL",
+            "playgroundId": "#GRQHVV#235",
+            "excludedEngines": ["webgl1"],
+            "renderCount": 5
+        },
+        {
+            "title": "OpenPBR Transmission Dense Scattering - IBL",
+            "playgroundId": "#GRQHVV#294",
+            "excludedEngines": ["webgl1"],
+            "renderCount": 10
+        },
+        {
+            "title": "OpenPBR Transmission Dense Scattering - SH",
+            "playgroundId": "#GRQHVV#293",
+            "excludedEngines": ["webgl1"],
+            "renderCount": 10
+        },
+        {
+            "title": "OpenPBR Subsurface Dense Scattering - IBL",
+            "playgroundId": "#GRQHVV#295",
+            "excludedEngines": ["webgl1"],
+            "renderCount": 10
+        },
+        {
+            "title": "OpenPBR Subsurface Dense Scattering - Analytic Lights",
+            "playgroundId": "#GRQHVV#300",
+            "excludedEngines": ["webgl1"],
+            "renderCount": 10
+        },
+        {
+            "title": "OpenPBR Subsurface Dense Scattering - Realtime IBL",
+            "playgroundId": "#GRQHVV#301",
+            "excludedEngines": ["webgl1"],
+            "renderCount": 5
+        },
+        {
+            "title": "OpenPBR Subsurface Color Scaling - IBL",
+            "playgroundId": "#GRQHVV#302",
+            "excludedEngines": ["webgl1"],
+            "renderCount": 5
+        },
+        {
+            "title": "OpenPBR Thin Walled Transmission IOR vs Roughness - IBL",
+            "playgroundId": "#GRQHVV#240",
+            "excludedEngines": ["webgl1"],
+            "renderCount": 5
+        },
+        {
+            "title": "OpenPBR Thin Walled Transmission IOR vs Roughness - Analytic Lights",
+            "playgroundId": "#GRQHVV#243",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR Thin Walled Anisotropic Transmission - IBL",
+            "playgroundId": "#GRQHVV#247",
+            "excludedEngines": ["webgl1"],
+            "renderCount": 5
+        },
+        {
+            "title": "OpenPBR Thin Walled Anisotropic Transmission - Analytic Lights",
+            "playgroundId": "#GRQHVV#244",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR Thin Walled Subsurface Anisotropy - IBL",
+            "playgroundId": "#GRQHVV#241",
+            "excludedEngines": ["webgl1"],
+            "renderCount": 5
+        },
+        {
+            "title": "OpenPBR Thin Walled Subsurface Anisotropy - Analytic Lights",
+            "playgroundId": "#GRQHVV#248",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR Thin Walled Subsurface Transmission Blending - IBL",
+            "playgroundId": "#GRQHVV#242",
+            "excludedEngines": ["webgl1"],
+            "renderCount": 5
         },
         {
             "title": "Background material blur",

@@ -64,7 +64,10 @@ export class SubSurfaceScatteringPostProcess extends PostProcess {
             const texelSize = this.texelSize;
             effect.setFloat("metersPerUnit", scene.subSurfaceConfiguration.metersPerUnit);
             effect.setFloat2("texelSize", texelSize.x, texelSize.y);
-            effect.setTexture("irradianceSampler", scene.prePassRenderer.getRenderTarget().textures[scene.prePassRenderer.getIndex(Constants.PREPASS_IRRADIANCE_TEXTURE_TYPE)]);
+            effect.setTexture(
+                "irradianceSampler",
+                scene.prePassRenderer.getRenderTarget().textures[scene.prePassRenderer.getIndex(Constants.PREPASS_IRRADIANCE_LEGACY_TEXTURE_TYPE)]
+            );
             effect.setTexture("depthSampler", scene.prePassRenderer.getRenderTarget().textures[scene.prePassRenderer.getIndex(Constants.PREPASS_DEPTH_TEXTURE_TYPE)]);
             effect.setTexture("albedoSampler", scene.prePassRenderer.getRenderTarget().textures[scene.prePassRenderer.getIndex(Constants.PREPASS_ALBEDO_SQRT_TEXTURE_TYPE)]);
             effect.setFloat2(

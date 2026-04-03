@@ -56,6 +56,8 @@ import { MaterialFlags } from "../materialFlags";
 import { type SubMesh } from "../../Meshes/subMesh";
 import { Logger } from "core/Misc/logger";
 import { UVDefinesMixin } from "../uv.defines";
+import { PrepassDefinesMixin } from "../prepass.defines";
+import { EnvironmentLightingDefinesMixin } from "../environmentLighting.defines";
 import { Vector2, Vector4, TmpVectors, type Vector3, type Matrix } from "core/Maths/math.vector";
 import { type Mesh } from "../../Meshes/mesh";
 import { ImageProcessingMixin } from "../imageProcessing";
@@ -65,6 +67,7 @@ import { type RenderTargetTexture } from "../Textures/renderTargetTexture";
 import { type IAnimatable } from "../../Animations/animatable.interface";
 import { Tools } from "../../Misc/tools";
 import { type UniformBuffer } from "../../Materials/uniformBuffer";
+import { GeometryBufferRenderer } from "core/Rendering/geometryBufferRenderer";
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
@@ -195,16 +198,19 @@ class Sampler {
     }
 }
 
-class OpenPBRMaterialDefinesBase extends UVDefinesMixin(MaterialDefines) {}
+class OpenPBRMaterialDefinesBase extends PrepassDefinesMixin(UVDefinesMixin(MaterialDefines)) {}
+
+class OpenPBRMaterialDefinesWithEnvLighting extends EnvironmentLightingDefinesMixin(OpenPBRMaterialDefinesBase) {}
+
 /**
  * Manages the defines for the PBR Material.
  * @internal
  */
-export class OpenPBRMaterialDefines extends ImageProcessingDefinesMixin(OpenPBRMaterialDefinesBase) {
+export class OpenPBRMaterialDefines extends ImageProcessingDefinesMixin(OpenPBRMaterialDefinesWithEnvLighting) {
     public NUM_SAMPLES = "0";
     public REALTIME_FILTERING = false;
     public IBL_CDF_FILTERING = false;
-
+    public LIGHTCOUNT = 0;
     public VERTEXCOLOR = false;
 
     public BAKED_VERTEX_ANIMATION_TEXTURE = false;
@@ -296,6 +302,31 @@ export class OpenPBRMaterialDefines extends ImageProcessingDefinesMixin(OpenPBRM
     public SCATTERING = false;
 
     /**
+     * Enables the use of screen-space irradiance texture for scattering
+     */
+    public USE_IRRADIANCE_TEXTURE_FOR_SCATTERING = false;
+
+    /**
+     * Enables transmission slab
+     */
+    public TRANSMISSION_SLAB = false;
+
+    /**
+     * Enables transmission slab with volume
+     */
+    public TRANSMISSION_SLAB_VOLUME = false;
+
+    /**
+     * Enables subsurface slab
+     */
+    public SUBSURFACE_SLAB = false;
+
+    /**
+     * Enables thin-walled geometry
+     */
+    public GEOMETRY_THIN_WALLED = false;
+
+    /**
      * Refraction of the 2D background texture. Might include the rest of the scene or just the background.
      */
     public REFRACTED_BACKGROUND = false;
@@ -312,65 +343,12 @@ export class OpenPBRMaterialDefines extends ImageProcessingDefinesMixin(OpenPBRM
     public REFRACTED_ENVIRONMENT_OPPOSITEZ = false;
     public REFRACTED_ENVIRONMENT_LOCAL_CUBE = false;
 
-    public REFLECTION = false;
-    public REFLECTIONMAP_3D = false;
-    public REFLECTIONMAP_SPHERICAL = false;
-    public REFLECTIONMAP_PLANAR = false;
-    public REFLECTIONMAP_CUBIC = false;
-    public USE_LOCAL_REFLECTIONMAP_CUBIC = false;
-    public REFLECTIONMAP_PROJECTION = false;
-    public REFLECTIONMAP_SKYBOX = false;
-    public REFLECTIONMAP_EXPLICIT = false;
-    public REFLECTIONMAP_EQUIRECTANGULAR = false;
-    public REFLECTIONMAP_EQUIRECTANGULAR_FIXED = false;
-    public REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED = false;
-    public INVERTCUBICMAP = false;
-    public USESPHERICALFROMREFLECTIONMAP = false;
-    public USEIRRADIANCEMAP = false;
-    public USE_IRRADIANCE_DOMINANT_DIRECTION = false;
-    public USESPHERICALINVERTEX = false;
-    public REFLECTIONMAP_OPPOSITEZ = false;
-    public LODINREFLECTIONALPHA = false;
-    public GAMMAREFLECTION = false;
-    public RGBDREFLECTION = false;
     public RADIANCEOCCLUSION = false;
     public HORIZONOCCLUSION = false;
 
     public INSTANCES = false;
     public THIN_INSTANCES = false;
     public INSTANCESCOLOR = false;
-
-    public PREPASS = false;
-    public PREPASS_COLOR = false;
-    public PREPASS_COLOR_INDEX = -1;
-    public PREPASS_IRRADIANCE = false;
-    public PREPASS_IRRADIANCE_INDEX = -1;
-    public PREPASS_ALBEDO = false;
-    public PREPASS_ALBEDO_INDEX = -1;
-    public PREPASS_ALBEDO_SQRT = false;
-    public PREPASS_ALBEDO_SQRT_INDEX = -1;
-    public PREPASS_DEPTH = false;
-    public PREPASS_DEPTH_INDEX = -1;
-    public PREPASS_SCREENSPACE_DEPTH = false;
-    public PREPASS_SCREENSPACE_DEPTH_INDEX = -1;
-    public PREPASS_NORMALIZED_VIEW_DEPTH = false;
-    public PREPASS_NORMALIZED_VIEW_DEPTH_INDEX = -1;
-    public PREPASS_NORMAL = false;
-    public PREPASS_NORMAL_INDEX = -1;
-    public PREPASS_NORMAL_WORLDSPACE = false;
-    public PREPASS_WORLD_NORMAL = false;
-    public PREPASS_WORLD_NORMAL_INDEX = -1;
-    public PREPASS_POSITION = false;
-    public PREPASS_POSITION_INDEX = -1;
-    public PREPASS_LOCAL_POSITION = false;
-    public PREPASS_LOCAL_POSITION_INDEX = -1;
-    public PREPASS_VELOCITY = false;
-    public PREPASS_VELOCITY_INDEX = -1;
-    public PREPASS_VELOCITY_LINEAR = false;
-    public PREPASS_VELOCITY_LINEAR_INDEX = -1;
-    public PREPASS_REFLECTIVITY = false;
-    public PREPASS_REFLECTIVITY_INDEX = -1;
-    public SCENE_MRT_COUNT = 0;
 
     public NUM_BONE_INFLUENCERS = 0;
     public BonesPerMesh = 0;
@@ -730,6 +708,78 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
     private _transmissionDispersionAbbeNumber: Property<number> = new Property<number>("transmission_dispersion_abbe_number", 20.0, "vTransmissionDispersionAbbeNumber", 1, 0);
 
     /**
+     * Defines the amount of subsurface scattering on the surface.
+     * See OpenPBR's specs for subsurface_weight
+     */
+    public subsurfaceWeight: number;
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "subsurfaceWeight")
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    private _subsurfaceWeight: Property<number> = new Property<number>("subsurface_weight", 0.0, "vSubsurfaceWeight", 1, 0);
+
+    /**
+     * Subsurface weight texture.
+     * See OpenPBR's specs for subsurface_weight
+     */
+    public subsurfaceWeightTexture: Nullable<BaseTexture>;
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "subsurfaceWeightTexture")
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    private _subsurfaceWeightTexture: Sampler = new Sampler("subsurface_weight", "subsurfaceWeight", "SUBSURFACE_WEIGHT");
+
+    /**
+     * Defines the color of the subsurface scattering in the volume.
+     * See OpenPBR's specs for subsurface_color
+     */
+    public subsurfaceColor: Color3;
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "subsurfaceColor")
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    private _subsurfaceColor: Property<Color3> = new Property<Color3>("subsurface_color", new Color3(0.8, 0.8, 0.8), "vSubsurfaceColor", 3, 0);
+
+    /**
+     * Subsurface color texture.
+     * See OpenPBR's specs for subsurface_color
+     */
+    public subsurfaceColorTexture: Nullable<BaseTexture>;
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "subsurfaceColorTexture")
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    private _subsurfaceColorTexture: Sampler = new Sampler("subsurface_color", "subsurfaceColor", "SUBSURFACE_COLOR");
+
+    /**
+     * Defines the radius of the subsurface scattering in the volume.
+     * See OpenPBR's specs for subsurface_radius
+     */
+    public subsurfaceRadius: number;
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "subsurfaceRadius")
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    private _subsurfaceRadius: Property<number> = new Property<number>("subsurface_radius", 1.0, "vSubsurfaceRadius", 1, 0);
+
+    /**
+     * Defines the scale factor applied to the subsurface radius.
+     * See OpenPBR's specs for subsurface_radius_scale
+     */
+    public subsurfaceRadiusScale: Color3;
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "subsurfaceRadiusScale")
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    private _subsurfaceRadiusScale: Property<Color3> = new Property<Color3>("subsurface_radius_scale", new Color3(1, 0.5, 0.25), "vSubsurfaceRadiusScale", 3, 0);
+
+    /**
+     * Subsurface radius scale texture.
+     * See OpenPBR's specs for subsurface_radius_scale
+     */
+    public subsurfaceRadiusScaleTexture: Nullable<BaseTexture>;
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "subsurfaceRadiusScaleTexture")
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    private _subsurfaceRadiusScaleTexture: Sampler = new Sampler("subsurface_radius_scale", "subsurfaceRadiusScale", "SUBSURFACE_RADIUS_SCALE");
+
+    /**
+     * Defines the anisotropy of the subsurface scattering in the volume.
+     * See OpenPBR's specs for subsurface_scatter_anisotropy
+     */
+    public subsurfaceScatterAnisotropy: number;
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "subsurfaceScatterAnisotropy")
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    private _subsurfaceScatterAnisotropy: Property<number> = new Property<number>("subsurface_scatter_anisotropy", 0.0, "vSubsurfaceScatterAnisotropy", 1, 0);
+
+    /**
      * Defines the amount of clear coat on the surface.
      * See OpenPBR's specs for coat_weight
      */
@@ -891,6 +941,15 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
     @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "fuzzRoughnessTexture")
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _fuzzRoughnessTexture: Sampler = new Sampler("fuzz_roughness", "fuzzRoughness", "FUZZ_ROUGHNESS");
+
+    /**
+     * Defines whether the geometry is thin-walled (like a sheet of paper) or not.
+     * See OpenPBR's specs for geometry_thin_walled
+     */
+    public geometryThinWalled: number;
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "geometryThinWalled")
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    private _geometryThinWalled: Property<number> = new Property<number>("geometry_thin_walled", 0, "vGeometryThinWalled", 1, 0);
 
     /**
      * Defines the normal of the material's geometry.
@@ -1093,6 +1152,18 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _ambientOcclusionTexture: Sampler = new Sampler("ambient_occlusion", "ambientOcclusion", "AMBIENT_OCCLUSION");
 
+    /**
+     * Defines the irradiance texture used for subsurface scattering.
+     * If it's not provided, the irradiance will be looked for in the scene.geometryBufferRenderer.
+     */
+    public sssIrradianceTexture: Nullable<BaseTexture> = null;
+
+    /**
+     * Defines the depth texture used for subsurface scattering. This is the depth defined
+     * in screen space. If it's not provided, the depth will be looked for in the scene.geometryBufferRenderer.
+     */
+    public sssDepthTexture: Nullable<BaseTexture> = null;
+
     private _propertyList: { [name: string]: Property<any> };
     private _uniformsList: { [name: string]: Uniform } = {};
     private _samplersList: { [name: string]: Sampler } = {};
@@ -1150,6 +1221,18 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public useAmbientInGrayScale = false;
+
+    /**
+     * Specifies if we can see through the surface of the material due to subsurface scattering or transmission.
+     */
+    public get hasTransparency(): boolean {
+        return this.subsurfaceWeight > 0 || this.transmissionWeight > 0;
+    }
+
+    /** Specifies if the material has scattering properties such as subsurface scattering or transmission scattering. */
+    public get hasScattering(): boolean {
+        return (this.transmissionWeight > 0 && this.transmissionDepth > 0 && !this.transmissionScatter.equals(Color3.BlackReadOnly)) || this.subsurfaceWeight > 0;
+    }
 
     /**
      * BJS is using an hardcoded light falloff based on a manually sets up range.
@@ -1822,6 +1905,14 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
         this._transmissionDispersionScale;
         this._transmissionDispersionScaleTexture;
         this._transmissionDispersionAbbeNumber;
+        this._subsurfaceWeight;
+        this._subsurfaceWeightTexture;
+        this._subsurfaceColor;
+        this._subsurfaceColorTexture;
+        this._subsurfaceRadius;
+        this._subsurfaceRadiusScale;
+        this._subsurfaceRadiusScaleTexture;
+        this._subsurfaceScatterAnisotropy;
         this._coatWeight;
         this._coatWeightTexture;
         this._coatColor;
@@ -1839,6 +1930,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
         this._fuzzColorTexture;
         this._fuzzRoughness;
         this._fuzzRoughnessTexture;
+        this._geometryThinWalled;
         this._geometryNormalTexture;
         this._geometryTangent;
         this._geometryTangentTexture;
@@ -2200,7 +2292,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
         ubo.addUniform("pointSize", 1);
 
         ubo.addUniform("vDebugMode", 2);
-
+        ubo.addUniform("renderTargetSize", 2);
         ubo.addUniform("cameraInfo", 4);
         ubo.addUniform("backgroundRefractionMatrix", 16);
         ubo.addUniform("vBackgroundRefractionInfos", 3);
@@ -2280,7 +2372,6 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
 
         this._eventInfo.subMesh = subMesh;
         this._callbackPluginEventHardBindForSubMesh(this._eventInfo);
-        this.bindPropertiesForSubMesh(this._uniformBuffer, scene, scene.getEngine() as Engine, subMesh);
 
         // Normal Matrix
         if (defines.OBJECTSPACE_NORMALMAP) {
@@ -2385,8 +2476,18 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
                     ubo.updateVector3("vBackgroundRefractionInfos", TmpVectors.Vector3[1]);
                 }
 
-                if (defines.ANISOTROPIC || defines.FUZZ || defines.REFRACTED_BACKGROUND) {
+                if (defines.ANISOTROPIC || defines.FUZZ || defines.REFRACTED_BACKGROUND || defines.USE_IRRADIANCE_TEXTURE_FOR_SCATTERING) {
                     ubo.setTexture("blueNoiseSampler", OpenPBRMaterial._noiseTextures[this.getScene().uniqueId]);
+                }
+
+                if (defines.USE_IRRADIANCE_TEXTURE_FOR_SCATTERING) {
+                    if (this.sssIrradianceTexture && this.sssDepthTexture) {
+                        const renderTargetWidth = this.sssIrradianceTexture.getSize().width;
+                        const renderTargetHeight = this.sssIrradianceTexture.getSize().height;
+                        ubo.setTexture("sceneIrradianceSampler", this.sssIrradianceTexture);
+                        ubo.setTexture("sceneDepthSampler", this.sssDepthTexture);
+                        ubo.updateFloat2("renderTargetSize", renderTargetWidth, renderTargetHeight);
+                    }
                 }
             }
 
@@ -2406,6 +2507,8 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
             this._needToBindSceneUbo = true;
         }
 
+        this.bindPropertiesForSubMesh(this._uniformBuffer, scene, scene.getEngine() as Engine, subMesh);
+
         if (mustRebind || !this.isFrozen) {
             // Lights
             if (scene.lightsEnabled && !this._disableLighting) {
@@ -2413,9 +2516,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
             }
 
             // View
-            // if ((scene.fogEnabled && mesh.applyFog && scene.fogMode !== Scene.FOGMODE_NONE) || radianceTexture || mesh.receiveShadows || defines.PREPASS) {
             this.bindView(effect);
-            // }
 
             // Fog
             BindFogParameters(scene, mesh, this._activeEffect, true);
@@ -2481,6 +2582,13 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
 
         if (this._radianceTexture) {
             activeTextures.push(this._radianceTexture);
+        }
+
+        if (this.sssIrradianceTexture) {
+            activeTextures.push(this.sssIrradianceTexture);
+        }
+        if (this.sssDepthTexture) {
+            activeTextures.push(this.sssDepthTexture);
         }
 
         return activeTextures;
@@ -2687,7 +2795,10 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
             "world",
             "view",
             "viewProjection",
+            "projection",
             "vEyePosition",
+            "inverseProjection",
+            "renderTargetSize",
             "vLightsType",
             "visibility",
             "vFogInfos",
@@ -2721,8 +2832,13 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
             samplers.push("backgroundRefractionSampler");
         }
 
-        if (defines.ANISOTROPIC || defines.FUZZ || defines.REFRACTED_BACKGROUND) {
+        if (defines.ANISOTROPIC || defines.FUZZ || defines.REFRACTED_BACKGROUND || defines.USE_IRRADIANCE_TEXTURE_FOR_SCATTERING) {
             samplers.push("blueNoiseSampler");
+        }
+
+        if (defines.USE_IRRADIANCE_TEXTURE_FOR_SCATTERING) {
+            samplers.push("sceneIrradianceSampler");
+            samplers.push("sceneDepthSampler");
         }
 
         for (const key in this._samplersList) {
@@ -2929,7 +3045,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
                     defines.FUZZENVIRONMENTBRDF = false;
                 }
 
-                if (this.transmissionWeight > 0) {
+                if (this.hasTransparency) {
                     defines.REFRACTED_BACKGROUND = !!this._backgroundRefractionTexture && MaterialFlags.RefractionTextureEnabled;
                     defines.REFRACTED_LIGHTS = true;
                     const radianceTexture = this._getRadianceTexture();
@@ -3020,9 +3136,29 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
         defines.THIN_FILM = this.thinFilmWeight > 0.0;
         defines.IRIDESCENCE = this.thinFilmWeight > 0.0;
         defines.DISPERSION = this.transmissionDispersionScale > 0.0;
-        defines.SCATTERING = !this.transmissionScatter.equals(Color3.BlackReadOnly);
+        defines.SCATTERING = this.hasScattering;
+        defines.TRANSMISSION_SLAB = this.transmissionWeight > 0;
+        defines.TRANSMISSION_SLAB_VOLUME = this.transmissionWeight > 0 && this.transmissionDepth > 0;
+        defines.SUBSURFACE_SLAB = this.subsurfaceWeight > 0;
+        // Determine whether we should use the prepass irradiance texture for scattering.
+        // If this IS a prepass, we don't want to use the irradiance texture as it won't be available yet.
+        if (!defines.PREPASS && (defines.SUBSURFACE_SLAB || defines.TRANSMISSION_SLAB_VOLUME)) {
+            if (!this.sssIrradianceTexture && scene.geometryBufferRenderer) {
+                const irradianceTextureIndex = scene.geometryBufferRenderer.getTextureIndex(GeometryBufferRenderer.IRRADIANCE_TEXTURE_TYPE);
+                this.sssIrradianceTexture = scene.geometryBufferRenderer.getGBuffer().textures[irradianceTextureIndex];
+            }
 
+            if (!this.sssDepthTexture && scene.geometryBufferRenderer) {
+                const depthIndex = scene.geometryBufferRenderer.getTextureIndex(GeometryBufferRenderer.SCREENSPACE_DEPTH_TEXTURE_TYPE);
+                this.sssDepthTexture = scene.geometryBufferRenderer.getGBuffer().textures[depthIndex];
+            }
+            if (this.sssIrradianceTexture && this.sssDepthTexture) {
+                defines.USE_IRRADIANCE_TEXTURE_FOR_SCATTERING = true;
+            }
+        }
         defines.FUZZ = this.fuzzWeight > 0 && MaterialFlags.ReflectionTextureEnabled;
+        defines.GEOMETRY_THIN_WALLED = this.geometryThinWalled != 0;
+
         if (defines.FUZZ) {
             if (!mesh.isVerticesDataPresent(VertexBuffer.TangentKind)) {
                 defines._needUVs = true;

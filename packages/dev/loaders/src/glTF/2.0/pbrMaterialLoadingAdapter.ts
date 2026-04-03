@@ -3,16 +3,15 @@ import { type Material } from "core/Materials/material";
 import { type BaseTexture } from "core/Materials/Textures/baseTexture";
 import { type Nullable } from "core/types";
 import { Color3 } from "core/Maths/math.color";
-import { Vector3 } from "core/Maths/math.vector";
 import { Constants } from "core/Engines/constants";
 import { type IMaterialLoadingAdapter } from "./materialLoadingAdapter";
+import { Vector3 } from "core/Maths/math.vector";
 
 /**
  * Material Loading Adapter for PBR materials that provides a unified OpenPBR-like interface.
  */
 export class PBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
     private _material: PBRMaterial;
-    private _extinctionCoefficient: Vector3 = Vector3.Zero();
 
     /**
      * Creates a new instance of the PBRMaterialLoadingAdapter.
@@ -762,6 +761,8 @@ export class PBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
         return this._material.subSurface.diffusionDistance;
     }
 
+    public set transmissionScatterTexture(value: Nullable<BaseTexture>) {}
+
     /**
      * Sets the transmission scattering anisotropy.
      * @param value The anisotropy intensity value (-1 to 1)
@@ -825,6 +826,20 @@ export class PBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
     // VOLUME PROPERTIES
     // ========================================
 
+    public configureVolume(): void {}
+
+    /**
+     * Sets whether the material is thin-walled (i.e. non-volumetric) or not.
+     */
+    public set geometryThinWalled(value: boolean) {}
+
+    /**
+     * Gets whether the material is thin-walled (i.e. non-volumetric) or not.
+     */
+    public get geometryThinWalled(): boolean {
+        return true;
+    }
+
     /**
      * Sets the thickness texture (mapped to PBR subSurface.thicknessTexture).
      * Automatically enables refraction.
@@ -870,21 +885,6 @@ export class PBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
     }
 
     /**
-     * Sets the extinction coefficient of the volume.
-     * @param value The extinction coefficient as a Vector3
-     */
-    public set extinctionCoefficient(value: Vector3) {
-        this._extinctionCoefficient = value;
-    }
-
-    /**
-     * Gets the extinction coefficient of the volume.
-     */
-    public get extinctionCoefficient(): Vector3 {
-        return this._extinctionCoefficient;
-    }
-
-    /**
      * Sets the subsurface weight
      */
     public set subsurfaceWeight(value: number) {
@@ -916,8 +916,9 @@ export class PBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
         // We could set the base color to this value, wherever subsurfaceWeight > 0
         // When scatterAnisotropy is 1, I believe we can approximate the subsurface effect quite well with
         // Translucency and a diffusion distance
-
-        const absorptionCoeff = this.extinctionCoefficient;
+        const extinctionCoefficient = new Vector3(-Math.log(this.transmissionColor.r), -Math.log(this.transmissionColor.g), -Math.log(this.transmissionColor.b));
+        extinctionCoefficient.scaleInPlace(1 / Math.max(this.transmissionDepth, 0.001));
+        const absorptionCoeff = extinctionCoefficient;
         const maxChannel = Math.max(absorptionCoeff.x, Math.max(absorptionCoeff.y, absorptionCoeff.z));
         const attenuationDistance = maxChannel > 0 ? 1.0 / maxChannel : 1;
         this._material.subSurface.diffusionDistance = new Color3(
@@ -938,7 +939,7 @@ export class PBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
     /**
      * Sets the surface tint of the material (when using subsurface scattering)
      */
-    public set subsurfaceConstantTint(value: Color3) {
+    public set diffuseTransmissionTint(value: Color3) {
         this._material.subSurface.tintColor = value;
     }
 
@@ -946,7 +947,7 @@ export class PBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
      * Gets the subsurface constant tint (when using subsurface scattering)
      * @returns The subsurface constant tint as a Color3
      */
-    public get subsurfaceConstantTint(): Color3 {
+    public get diffuseTransmissionTint(): Color3 {
         return this._material.subSurface.tintColor;
     }
 
@@ -954,7 +955,7 @@ export class PBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
      * Sets the subsurface constant tint texture (when using subsurface scattering)
      * @param value The subsurface constant tint texture or null
      */
-    public set subsurfaceConstantTintTexture(value: Nullable<BaseTexture>) {
+    public set diffuseTransmissionTintTexture(value: Nullable<BaseTexture>) {
         this._material.subSurface.translucencyColorTexture = value;
     }
 
@@ -1001,6 +1002,14 @@ export class PBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
      */
     public set subsurfaceScatterAnisotropy(value: number) {
         // No equivalent in PBRMaterial
+    }
+
+    /**
+     * Does this material have a translucent surface (i.e. either transmission or subsurface)?
+     * @returns True if the material is translucent, false otherwise
+     */
+    public isTranslucent(): boolean {
+        return this.transmissionWeight > 0 || this.subsurfaceWeight > 0;
     }
 
     // ========================================

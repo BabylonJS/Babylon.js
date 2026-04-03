@@ -500,6 +500,7 @@ export class ObjectRenderer {
         ubo.addUniform("view", 16);
         ubo.addUniform("projection", 16);
         ubo.addUniform("vEyePosition", 4);
+        ubo.addUniform("inverseProjection", 16);
         return ubo;
     }
 

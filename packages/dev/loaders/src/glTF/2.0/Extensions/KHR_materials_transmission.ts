@@ -171,10 +171,13 @@ class TransmissionHelper {
         Tools.SetImmediate(() => {
             if (mesh.material) {
                 if (!this._loader.isMatchingMaterialType(mesh.material)) {
-                    return;
+                    // We can still treat unsupported materials as opaque. e.g. BackgroundMaterial for a skybox.
+                    if (this._opaqueMeshesCache.indexOf(mesh) === -1) {
+                        this._opaqueMeshesCache.push(mesh);
+                    }
                 }
                 const adapter = this._loader._getOrCreateMaterialAdapter(mesh.material);
-                if (adapter.transmissionWeight > 0) {
+                if (adapter.isTranslucent()) {
                     adapter.refractionBackgroundTexture = this._opaqueRenderTarget;
                     if (this._transparentMeshesCache.indexOf(mesh) === -1) {
                         this._transparentMeshesCache.push(mesh);
@@ -219,7 +222,7 @@ class TransmissionHelper {
         }
         // If the material is transparent, make sure that it's added to the transparent list and removed from the opaque list
         const adapter = mesh.material ? this._loader._getOrCreateMaterialAdapter(mesh.material) : null;
-        const useTransmission = adapter ? adapter.transmissionWeight > 0 : false;
+        const useTransmission = adapter ? adapter.isTranslucent() : false;
 
         if (useTransmission) {
             if (adapter) {
@@ -298,7 +301,7 @@ class TransmissionHelper {
                     return;
                 }
                 const adapter = this._loader._getOrCreateMaterialAdapter(mesh.material);
-                if (adapter.transmissionWeight > 0) {
+                if (adapter.isTranslucent()) {
                     adapter.refractionBackgroundTexture = this._opaqueRenderTarget;
                 }
             }

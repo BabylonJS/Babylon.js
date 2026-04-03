@@ -1,6 +1,5 @@
-#define PI 3.1415927
 varying vUV: vec2f;
-
+#include<helperFunctions>
 #define DISABLE_UNIFORMITY_ANALYSIS
 
 var depthSampler: texture_2d<f32>;
@@ -47,7 +46,6 @@ uniform invViewMtx: mat4x4f;
 uniform wsNormalizationMtx: mat4x4f;
 uniform invVPMtx: mat4x4f;
 
-#define PI 3.1415927
 #define GOLD 0.618034
 
 struct AABB3f {
@@ -101,14 +99,6 @@ fn hash(i: u32) -> u32 {
   return temp;
 }
 
-fn uintBitsToFloat(x: u32) -> f32 {
-    return bitcast<f32>(x);
-}
-
-fn uint2float(i: u32) -> f32 {
-  return uintBitsToFloat(0x3F800000u | (i >> 9u)) - 1.0;
-}
-
 fn uv_to_normal(uv: vec2f) -> vec3f {
   var N: vec3f;
 
@@ -120,11 +110,6 @@ fn uv_to_normal(uv: vec2f) -> vec3f {
   N.z = sin(theta) * sin(phi);
   N.y = cos(phi);
   return N;
-}
-
-fn plasticSequence(rstate: u32) -> vec2f {
-  return vec2f(uint2float(rstate * 3242174889u),
-              uint2float(rstate * 2447445414u));
 }
 
 fn goldenSequence(rstate: u32) -> f32 {
