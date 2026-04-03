@@ -757,13 +757,9 @@ export class _IblShadowsVoxelRenderer {
             const fillMode = sm.getMaterial()?.fillMode ?? Constants.MATERIAL_TriangleFillMode;
             engine.enableEffect(drawWrapper);
             renderingMesh._bind(sm, effect, fillMode);
-            // Reset the scene's cached material so mustRebind=true, ensuring per-slab uniforms
-            // (viewMatrix, invWorldScale, nearPlane, farPlane, stepSize) are uploaded each call.
-            // Pass the voxel effect explicitly so uniforms go to the correct GL program instead
-            // of the proxy subMesh's regular GS shader effect.
-            scene.resetCachedMaterial();
-            gsVoxelMaterial.bind(effectiveMesh.getWorldMatrix(), effectiveMesh as Mesh, effect);
+            gsVoxelMaterial.bind(effectiveMesh.getWorldMatrix(), effectiveMesh, effect);
             renderingMesh._processRendering(effectiveMesh, sm, effect, fillMode, batch, hardwareInstancedRendering, (_isInstance, world) => effect.setMatrix("world", world));
+            gsVoxelMaterial.unbind();
         };
 
         const processBucket = (subMeshes: SmartArray<SubMesh>, enableAlphaMode: boolean): void => {
