@@ -1,14 +1,10 @@
-import type { FunctionComponent } from "react";
-import type { Animation } from "core/Animations/animation";
-import type { IAnimationKey } from "core/Animations/animationKey";
+import { type FunctionComponent, useCallback, useEffect, useMemo, useReducer, useRef, useState } from "react";
+import { type Animation, Animation as AnimationEnum } from "core/Animations/animation";
+import { type IAnimationKey } from "core/Animations/animationKey";
 
 import { makeStyles, tokens } from "@fluentui/react-components";
-import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from "react";
-import { Animation as AnimationEnum } from "core/Animations/animation";
 import { Scalar } from "core/Maths/math.scalar";
-import { Vector2 } from "core/Maths/math.vector";
-import { Vector3 } from "core/Maths/math.vector";
-import { Quaternion } from "core/Maths/math.vector";
+import { Vector2, Vector3, Quaternion } from "core/Maths/math.vector";
 import { Color3, Color4 } from "core/Maths/math.color";
 
 import { useCurveEditor } from "../curveEditorContext";

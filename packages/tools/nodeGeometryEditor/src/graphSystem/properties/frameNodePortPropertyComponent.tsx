@@ -1,15 +1,14 @@
 import * as React from "react";
 import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
-import type { GlobalState } from "../../globalState";
-import type { Nullable } from "core/types";
-import type { Observer } from "core/Misc/observable";
-import type { StateManager } from "shared-ui-components/nodeGraphSystem/stateManager";
-import type { ISelectionChangedOptions } from "shared-ui-components/nodeGraphSystem/interfaces/selectionChangedOptions";
+import { type GlobalState } from "../../globalState";
+import { type Nullable } from "core/types";
+import { type Observer } from "core/Misc/observable";
+import { type StateManager } from "shared-ui-components/nodeGraphSystem/stateManager";
+import { type ISelectionChangedOptions } from "shared-ui-components/nodeGraphSystem/interfaces/selectionChangedOptions";
 import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
-import type { GraphFrame } from "shared-ui-components/nodeGraphSystem/graphFrame";
-import { FramePortPosition } from "shared-ui-components/nodeGraphSystem/graphFrame";
+import { type GraphFrame, FramePortPosition } from "shared-ui-components/nodeGraphSystem/graphFrame";
 import { IsFramePortData } from "shared-ui-components/nodeGraphSystem/tools";
-import type { FrameNodePort } from "shared-ui-components/nodeGraphSystem/frameNodePort";
+import { type FrameNodePort } from "shared-ui-components/nodeGraphSystem/frameNodePort";
 import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineComponent";
 
 export interface IFrameNodePortPropertyTabComponentProps {

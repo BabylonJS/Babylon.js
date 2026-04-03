@@ -1,8 +1,8 @@
 import { serialize } from "core/Misc/decorators";
 import { UniqueIdGenerator } from "core/Misc/uniqueIdGenerator";
 import { NodeParticleConnectionPoint, NodeParticleConnectionPointDirection } from "./nodeParticleBlockConnectionPoint";
-import type { NodeParticleBlockConnectionPointTypes } from "./Enums/nodeParticleBlockConnectionPointTypes";
-import type { NodeParticleBuildState } from "./nodeParticleBuildState";
+import { type NodeParticleBlockConnectionPointTypes } from "./Enums/nodeParticleBlockConnectionPointTypes";
+import { type NodeParticleBuildState } from "./nodeParticleBuildState";
 import { Logger } from "core/Misc/logger";
 import { Observable } from "core/Misc/observable";
 import { GetClass } from "core/Misc/typeStore";

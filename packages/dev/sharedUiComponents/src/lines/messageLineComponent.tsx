@@ -1,5 +1,5 @@
 import * as React from "react";
-import type { IconProp } from "@fortawesome/fontawesome-svg-core";
+import { type IconProp } from "@fortawesome/fontawesome-svg-core";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { ToolContext } from "../fluent/hoc/fluentToolWrapper";
 import { MessageBar } from "../fluent/primitives/messageBar";

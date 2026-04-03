@@ -1,12 +1,12 @@
 import * as React from "react";
 import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
 import { GeneralPropertyTabComponent } from "./genericNodePropertyComponent";
-import type { IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
-import type { GeometryOutputBlock } from "core/Meshes/Node/Blocks/geometryOutputBlock";
+import { type IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
+import { type GeometryOutputBlock } from "core/Meshes/Node/Blocks/geometryOutputBlock";
 import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
-import type { Observer } from "core/Misc/observable";
-import type { Nullable } from "core/types";
-import type { GlobalState } from "node-geometry-editor/globalState";
+import { type Observer } from "core/Misc/observable";
+import { type Nullable } from "core/types";
+import { type GlobalState } from "node-geometry-editor/globalState";
 
 export class OutputPropertyTabComponent extends React.Component<IPropertyComponentProps> {
     private _onUpdateRequiredObserver: Nullable<Observer<any>>;

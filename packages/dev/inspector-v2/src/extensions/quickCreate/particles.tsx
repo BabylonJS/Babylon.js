@@ -2,13 +2,12 @@ import { ParticleSystem } from "core/Particles/particleSystem";
 import { GPUParticleSystem } from "core/Particles/gpuParticleSystem";
 import { NodeParticleSystemSet } from "core/Particles/Node/nodeParticleSystemSet";
 import { Texture } from "core/Materials/Textures/texture";
-import type { Scene } from "core/scene";
-import { useState } from "react";
-import type { FunctionComponent } from "react";
+import { type Scene } from "core/scene";
+import { useState, type FunctionComponent } from "react";
 import { TextInputPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/inputPropertyLine";
 import { SpinButtonPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/spinButtonPropertyLine";
 import { QuickCreateSection, QuickCreateItem } from "./quickCreateLayout";
-import type { ISelectionService } from "../../services/selectionService";
+import { type ISelectionService } from "../../services/selectionService";
 
 // Side-effect import needed for GPUParticleSystem
 import "core/Particles/webgl2ParticleSystem";

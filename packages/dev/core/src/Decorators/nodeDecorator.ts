@@ -1,5 +1,5 @@
-import type { Nullable } from "../types";
-import type { Scene } from "../scene";
+import { type Nullable } from "../types";
+import { type Scene } from "../scene";
 
 /**
  * Enum defining the type of properties that can be edited in the property pages in the node editor

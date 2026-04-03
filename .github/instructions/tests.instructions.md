@@ -24,6 +24,21 @@ npm run test:performance
 npm run test:interactions
 ```
 
+# Dev Host Testing
+
+Core changes that need validation in a small browser app may use Babylon devhost. For engine work, use the `testScene` experience and edit `packages/tools/devHost/src/testScene/createScene.ts` to exercise the behavior under test.
+
+Run devhost with:
+
+```
+npm run build:dev
+npm run serve -w @tools/dev-host
+```
+
+Then open `http://localhost:1338/?exp=testScene`.
+
+Detailed Babylon.js-specific guidance for when to use devhost, how to build a focused `testScene` app, how to validate the behavior locally, and how to clean up temporary changes lives in `.github/instructions/devhost-testing.instructions.md`.
+
 # Visualization (Playwright) Tests
 
 Tests that validate a visual result in the browser use Playwright.

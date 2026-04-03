@@ -1,7 +1,14 @@
 import { XmlAttr, XmlName } from "../xml/xml.interfaces";
-import type { I3mfModel } from "./3mf.interfaces";
-import { OpenXmlContentTypesNamespace, OpenXmlRelationshipsNamespace } from "./3mf.opc.interfaces";
-import type { I3mfContentTypes, I3mfContentType, I3mfRelationships, I3mfRelationship, I3mfDocument } from "./3mf.opc.interfaces";
+import { type I3mfModel } from "./3mf.interfaces";
+import {
+    OpenXmlContentTypesNamespace,
+    OpenXmlRelationshipsNamespace,
+    type I3mfContentTypes,
+    type I3mfContentType,
+    type I3mfRelationships,
+    type I3mfRelationship,
+    type I3mfDocument,
+} from "./3mf.opc.interfaces";
 
 /**
  *

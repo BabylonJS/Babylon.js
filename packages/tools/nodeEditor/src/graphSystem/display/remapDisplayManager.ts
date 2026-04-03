@@ -1,9 +1,9 @@
-import type { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
-import type { InputBlock } from "core/Materials/Node/Blocks/Input/inputBlock";
-import type { RemapBlock } from "core/Materials/Node/Blocks/remapBlock";
-import type { NodeMaterialConnectionPoint } from "core/Materials/Node/nodeMaterialBlockConnectionPoint";
-import type { IDisplayManager } from "shared-ui-components/nodeGraphSystem/interfaces/displayManager";
-import type { INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
+import { type NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
+import { type InputBlock } from "core/Materials/Node/Blocks/Input/inputBlock";
+import { type RemapBlock } from "core/Materials/Node/Blocks/remapBlock";
+import { type NodeMaterialConnectionPoint } from "core/Materials/Node/nodeMaterialBlockConnectionPoint";
+import { type IDisplayManager } from "shared-ui-components/nodeGraphSystem/interfaces/displayManager";
+import { type INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
 import * as styles from "./remapDisplayManager.module.scss";
 
 export class RemapDisplayManager implements IDisplayManager {

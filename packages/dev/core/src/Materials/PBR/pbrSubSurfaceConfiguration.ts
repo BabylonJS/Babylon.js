@@ -1,24 +1,24 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import type { Nullable } from "../../types";
-import type { IAnimatable } from "../../Animations/animatable.interface";
+import { type Nullable } from "../../types";
+import { type IAnimatable } from "../../Animations/animatable.interface";
 import { serialize, serializeAsTexture, expandToProperty, serializeAsColor3 } from "../../Misc/decorators";
 import { Color3 } from "../../Maths/math.color";
-import type { SmartArray } from "../../Misc/smartArray";
-import type { BaseTexture } from "../../Materials/Textures/baseTexture";
-import type { RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture";
+import { type SmartArray } from "../../Misc/smartArray";
+import { type BaseTexture } from "../../Materials/Textures/baseTexture";
+import { type RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture";
 import { MaterialFlags } from "../materialFlags";
-import type { UniformBuffer } from "../../Materials/uniformBuffer";
-import type { EffectFallbacks } from "../effectFallbacks";
-import type { CubeTexture } from "../Textures/cubeTexture";
+import { type UniformBuffer } from "../../Materials/uniformBuffer";
+import { type EffectFallbacks } from "../effectFallbacks";
+import { type CubeTexture } from "../Textures/cubeTexture";
 import { TmpVectors } from "../../Maths/math.vector";
-import type { SubMesh } from "../../Meshes/subMesh";
+import { type SubMesh } from "../../Meshes/subMesh";
 import { MaterialPluginBase } from "../materialPluginBase";
 import { Constants } from "../../Engines/constants";
 import { MaterialDefines } from "../materialDefines";
 
-import type { Engine } from "../../Engines/engine";
-import type { Scene } from "../../scene";
-import type { PBRBaseMaterial } from "./pbrBaseMaterial";
+import { type Engine } from "../../Engines/engine";
+import { type Scene } from "../../scene";
+import { type PBRBaseMaterial } from "./pbrBaseMaterial";
 import { BindTextureMatrix, PrepareDefinesForMergedUV } from "../materialHelper.functions";
 
 /**

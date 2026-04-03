@@ -1,6 +1,6 @@
-import type { Nullable, AbstractEngine, EffectWrapperCreationOptions, Effect } from "core/index";
+import { type Nullable, type AbstractEngine, type EffectWrapperCreationOptions, type Effect } from "core/index";
 import { EffectWrapper } from "../Materials/effectRenderer";
-import { Engine } from "../Engines/engine";
+import { EngineStore } from "../Engines/engineStore";
 import { Observable } from "../Misc/observable";
 
 /**
@@ -21,7 +21,7 @@ export class ThinCustomPostProcess extends EffectWrapper {
     constructor(name: string, engine: Nullable<AbstractEngine> = null, options?: EffectWrapperCreationOptions) {
         super({
             name,
-            engine: engine || Engine.LastCreatedEngine!,
+            engine: engine || EngineStore.LastCreatedEngine!,
             useShaderStore: true,
             useAsPostProcess: true,
             ...options,

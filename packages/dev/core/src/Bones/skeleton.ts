@@ -1,22 +1,22 @@
 import { Bone } from "./bone";
 import { Observable } from "../Misc/observable";
 import { Vector3, Matrix, TmpVectors } from "../Maths/math.vector";
-import type { Scene } from "../scene";
-import type { Nullable } from "../types";
-import type { AbstractMesh } from "../Meshes/abstractMesh";
+import { type Scene } from "../scene";
+import { type Nullable } from "../types";
+import { type AbstractMesh } from "../Meshes/abstractMesh";
 import { RawTexture } from "../Materials/Textures/rawTexture";
-import type { Animatable } from "../Animations/animatable.core";
-import type { AnimationPropertiesOverride } from "../Animations/animationPropertiesOverride";
+import { type Animatable } from "../Animations/animatable.core";
+import { type AnimationPropertiesOverride } from "../Animations/animationPropertiesOverride";
 import { Animation } from "../Animations/animation";
 import { AnimationRange } from "../Animations/animationRange";
 import { EngineStore } from "../Engines/engineStore";
 import { Constants } from "../Engines/constants";
 import { Logger } from "../Misc/logger";
 import { DeepCopier } from "../Misc/deepCopier";
-import type { IInspectable } from "../Misc/iInspectable";
-import type { IAnimatable } from "../Animations/animatable.interface";
-import type { IAssetContainer } from "core/IAssetContainer";
-import type { TransformNode } from "core/Meshes/transformNode";
+import { type IInspectable } from "../Misc/iInspectable";
+import { type IAnimatable } from "../Animations/animatable.interface";
+import { type IAssetContainer } from "core/IAssetContainer";
+import { type TransformNode } from "core/Meshes/transformNode";
 
 /**
  * Class used to handle skinning animations

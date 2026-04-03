@@ -1,14 +1,12 @@
-import type { BaseTexture } from "core/Materials/Textures/baseTexture";
-import type { Scene } from "core/scene";
-import type { Nullable } from "core/types";
-import type { FunctionComponent } from "react";
-import type { PrimitiveProps } from "./primitive";
-import type { EntitySelectorProps } from "./entitySelector";
+import { type BaseTexture } from "core/Materials/Textures/baseTexture";
+import { type Scene } from "core/scene";
+import { type Nullable } from "core/types";
+import { type FunctionComponent, useCallback } from "react";
+import { type PrimitiveProps } from "./primitive";
+import { type EntitySelectorProps, EntitySelector } from "./entitySelector";
 
 import { makeStyles, tokens } from "@fluentui/react-components";
-import { useCallback } from "react";
 import { TextureUpload } from "../hoc/textureUpload";
-import { EntitySelector } from "./entitySelector";
 
 const useStyles = makeStyles({
     container: {

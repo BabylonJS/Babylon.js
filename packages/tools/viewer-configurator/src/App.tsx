@@ -1,9 +1,8 @@
-import type { FunctionComponent } from "react";
-import type { ViewerOptions } from "viewer/viewer";
-import type { ViewerElement } from "viewer/viewerElement";
+import { type FunctionComponent, useMemo, useState } from "react";
+import { type ViewerOptions } from "viewer/viewer";
+import { type ViewerElement } from "viewer/viewerElement";
 
 import "./App.scss";
-import { useMemo, useState } from "react";
 import { SplitContainer } from "shared-ui-components/split/splitContainer";
 import { ControlledSize, SplitDirection } from "shared-ui-components/split/splitContext";
 import { Splitter } from "shared-ui-components/split/splitter";

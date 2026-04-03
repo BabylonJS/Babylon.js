@@ -1,4 +1,4 @@
-import type { ExtensionManager } from "../extensibility/extensionManager";
+import { type ExtensionManager } from "../extensibility/extensionManager";
 
 import { createContext, useContext } from "react";
 

@@ -1,12 +1,12 @@
-import type { Scene } from "core/scene";
+import { type Scene } from "core/scene";
 import { useCallback, useContext, useEffect, useRef, useState } from "react";
-import type { Observer } from "core/Misc/observable";
-import type { Nullable } from "core/types";
+import { type Observer } from "core/Misc/observable";
+import { type Nullable } from "core/types";
 import { SceneContext } from "./htmlTwinSceneContext";
 import { HTMLTwinItemAdapter } from "./htmlTwinItemAdapter";
-import type { BaseTexture } from "core/Materials/Textures/baseTexture";
+import { type BaseTexture } from "core/Materials/Textures/baseTexture";
 import { AdvancedDynamicTexture } from "gui/2D/advancedDynamicTexture";
-import type { IHTMLTwinRendererOptions } from "./htmlTwinRenderer";
+import { type IHTMLTwinRendererOptions } from "./htmlTwinRenderer";
 
 function GetSceneIds(scene: Scene) {
     const newSet = new Set<number>();

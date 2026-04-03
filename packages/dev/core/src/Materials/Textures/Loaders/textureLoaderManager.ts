@@ -1,6 +1,6 @@
 /* eslint-disable github/no-then */
-import type { IInternalTextureLoader } from "./internalTextureLoader";
-import type { Nullable } from "../../../types";
+import { type IInternalTextureLoader } from "./internalTextureLoader";
+import { type Nullable } from "../../../types";
 import { Logger } from "core/Misc/logger";
 
 const RegisteredTextureLoaders = new Map<string, (mimeType?: string) => IInternalTextureLoader | Promise<IInternalTextureLoader>>();

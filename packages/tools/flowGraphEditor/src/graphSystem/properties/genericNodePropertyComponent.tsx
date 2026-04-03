@@ -1,7 +1,7 @@
 import * as React from "react";
 import { LineContainerComponent } from "../../sharedComponents/lineContainerComponent";
 import { CheckBoxLineComponent } from "../../sharedComponents/checkBoxLineComponent";
-import type { IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
+import { type IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
 import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
 import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
@@ -13,21 +13,16 @@ import { Color3LineComponent } from "shared-ui-components/lines/color3LineCompon
 import { Color4LineComponent } from "shared-ui-components/lines/color4LineComponent";
 import { MatrixLineComponent } from "shared-ui-components/lines/matrixLineComponent";
 import { Vector4LineComponent } from "shared-ui-components/lines/vector4LineComponent";
-import type { FlowGraphBlock } from "core/FlowGraph/flowGraphBlock";
-import type { FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnection";
+import { type FlowGraphBlock } from "core/FlowGraph/flowGraphBlock";
+import { type FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnection";
 import { FlowGraphInteger } from "core/FlowGraph/CustomTypes/flowGraphInteger";
-import type { IEditablePropertyListOption, IPropertyDescriptionForEdition } from "core/Decorators/nodeDecorator";
-import { PropertyTypeForEdition } from "core/Decorators/nodeDecorator";
+import { type IEditablePropertyListOption, type IPropertyDescriptionForEdition, PropertyTypeForEdition } from "core/Decorators/nodeDecorator";
 import { ForceRebuild } from "shared-ui-components/nodeGraphSystem/automaticProperties";
 import { EDITABLE_INPUTS } from "./editableInputsRegistry";
 import { CONSTRUCTOR_CONFIG, FLOW_GRAPH_TYPE_OPTIONS } from "./constructorConfigRegistry";
 import { getRichTypeByFlowGraphType } from "core/FlowGraph/flowGraphRichTypes";
-import { Vector2 } from "core/Maths/math.vector";
-import { Vector3 } from "core/Maths/math.vector";
-import { Vector4 } from "core/Maths/math.vector";
-import { Matrix } from "core/Maths/math.vector";
-import { Color3 } from "core/Maths/math.color";
-import { Color4 } from "core/Maths/math.color";
+import { Vector2, Vector3, Vector4, Matrix } from "core/Maths/math.vector";
+import { Color3, Color4 } from "core/Maths/math.color";
 import { FlowGraphBlockDisplayName } from "../blockDisplayUtils";
 
 /**

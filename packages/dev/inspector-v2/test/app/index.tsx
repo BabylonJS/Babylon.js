@@ -5,7 +5,7 @@
 // Animation groups: http://localhost:1338/?inspectorv2#FMAYKS
 // Inspector v1 extensibility API: https://localhost:1338/#10HGIN#7
 
-import type { Nullable } from "core/types";
+import { type Nullable } from "core/types";
 
 import { Engine } from "core/Engines/engine";
 import { ImportMeshAsync, LoadAssetContainerAsync } from "core/Loading/sceneLoader";

@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 import { Clamp } from "core/Maths/math.scalar.functions";
-import type { IColor4Like } from "core/Maths/math.like";
+import { type IColor4Like } from "core/Maths/math.like";
 
 const MakeTempColor4Like = (): IColor4Like => {
     return {

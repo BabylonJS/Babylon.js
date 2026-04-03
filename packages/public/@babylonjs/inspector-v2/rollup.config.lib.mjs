@@ -1,9 +1,22 @@
 import typescript from "@rollup/plugin-typescript";
-import { dts } from "rollup-plugin-dts";
 import { nodeResolve } from "@rollup/plugin-node-resolve";
 import commonjs from "@rollup/plugin-commonjs";
 import alias from "@rollup/plugin-alias";
 import path from "path";
+import { rewriteDevImports, appendJsToExternalPaths } from "../../rollupUtils.mjs";
+
+// Map dev package names to their public @babylonjs/ equivalents.
+// Must be ordered longest-first to prevent prefix collisions (e.g. gui vs gui-editor).
+const devPackageMap = {
+    "gui-editor": "@babylonjs/gui-editor",
+    "shared-ui-components": null, // handled by alias plugin below
+    serializers: "@babylonjs/serializers",
+    materials: "@babylonjs/materials",
+    loaders: "@babylonjs/loaders",
+    addons: "@babylonjs/addons",
+    core: "@babylonjs/core",
+    gui: "@babylonjs/gui",
+};
 
 const commonConfig = {
     input: "../../../dev/inspector-v2/src/index.ts",
@@ -39,11 +52,11 @@ const jsConfig = {
         sourcemap: true,
         format: "es",
         exports: "named",
+        paths: appendJsToExternalPaths,
     },
     plugins: [
-        alias({
-            entries: [{ find: "shared-ui-components", replacement: path.resolve("../../../dev/sharedUiComponents/src") }],
-        }),
+        rewriteDevImports(devPackageMap),
+        alias({ entries: [{ find: "shared-ui-components", replacement: path.resolve("../../../dev/sharedUiComponents/src") }] }),
         typescript({ tsconfig: "tsconfig.build.lib.json" }),
         nodeResolve({ mainFields: ["browser", "module", "main"] }),
         commonjs(),
@@ -54,13 +67,4 @@ const jsConfig = {
     },
 };
 
-const dtsConfig = {
-    ...commonConfig,
-    output: {
-        file: "lib/index.d.ts",
-        format: "es",
-    },
-    plugins: [dts({ tsconfig: "tsconfig.build.lib.json" })],
-};
-
-export default [jsConfig, dtsConfig];
+export default [jsConfig];

@@ -1,6 +1,6 @@
 import * as React from "react";
-import type { GlobalState } from "../../globalState";
-import type { FlowGraphBlock } from "core/FlowGraph/flowGraphBlock";
+import { type GlobalState } from "../../globalState";
+import { type FlowGraphBlock } from "core/FlowGraph/flowGraphBlock";
 
 import "./log.scss";
 

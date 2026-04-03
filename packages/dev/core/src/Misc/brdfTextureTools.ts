@@ -1,6 +1,6 @@
-import type { BaseTexture } from "../Materials/Textures/baseTexture";
+import { type BaseTexture } from "../Materials/Textures/baseTexture";
 import { Texture } from "../Materials/Textures/texture";
-import type { Scene } from "../scene";
+import { type Scene } from "../scene";
 import { RGBDTextureTools } from "./rgbdTextureTools";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention

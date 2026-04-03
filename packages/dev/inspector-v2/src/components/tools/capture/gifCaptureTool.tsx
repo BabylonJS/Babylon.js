@@ -1,6 +1,6 @@
 import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
 import { useState, useCallback, useEffect } from "react";
-import type { Scene } from "core/scene";
+import { type Scene } from "core/scene";
 import { SyncedSliderPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/syncedSliderPropertyLine";
 import { Collapse } from "shared-ui-components/fluent/primitives/collapse";
 import { RecordRegular, RecordStopRegular } from "@fluentui/react-icons";
@@ -8,7 +8,7 @@ import { Tools } from "core/Misc/tools";
 import { Label } from "@fluentui/react-components";
 import { MakeLazyComponent } from "shared-ui-components/fluent/primitives/lazyComponent";
 import type gif from "gif.js.optimized";
-import type { Observer } from "core/Misc/observable";
+import { type Observer } from "core/Misc/observable";
 
 type RecordingSession =
     | {

@@ -1,5 +1,5 @@
-import type { FlowGraphBlock } from "core/FlowGraph/flowGraphBlock";
-import type { FlowGraphSignalConnection } from "core/FlowGraph/flowGraphSignalConnection";
+import { type FlowGraphBlock } from "core/FlowGraph/flowGraphBlock";
+import { type FlowGraphSignalConnection } from "core/FlowGraph/flowGraphSignalConnection";
 
 /**
  * Removes a data input port from a block by name, disconnecting any existing connections.

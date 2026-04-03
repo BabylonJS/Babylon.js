@@ -1,12 +1,11 @@
-import type { Nullable } from "../../types";
-import type { InternalTexture } from "../../Materials/Textures/internalTexture";
+import { type Nullable } from "../../types";
+import { type InternalTexture } from "../../Materials/Textures/internalTexture";
 import { Constants } from "../../Engines/constants";
 
-import type { ISize } from "../../Maths/math.size";
-import { Size } from "../../Maths/math.size";
+import { type ISize, Size } from "../../Maths/math.size";
 
-import type { AbstractEngine } from "../../Engines/abstractEngine";
-import type { RenderTargetWrapper } from "core/Engines/renderTargetWrapper";
+import { type AbstractEngine } from "../../Engines/abstractEngine";
+import { type RenderTargetWrapper } from "core/Engines/renderTargetWrapper";
 
 /**
  * Base class of all the textures in babylon.

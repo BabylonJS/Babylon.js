@@ -1,12 +1,11 @@
 import * as React from "react";
-import type { Nullable } from "core/types";
-import type { Observer } from "core/Misc/observable";
+import { type Nullable } from "core/types";
+import { type Observer } from "core/Misc/observable";
 import { FlowGraphState } from "core/FlowGraph/flowGraph";
-import type { IFlowGraphPendingActivation } from "core/FlowGraph/flowGraphContext";
-import type { GlobalState } from "../../globalState";
+import { type IFlowGraphPendingActivation } from "core/FlowGraph/flowGraphContext";
+import { type GlobalState } from "../../globalState";
 import { LogEntry } from "../log/logComponent";
-import type { IFlowGraphValidationResult } from "core/FlowGraph/flowGraphValidator";
-import { FlowGraphValidationSeverity } from "core/FlowGraph/flowGraphValidator";
+import { type IFlowGraphValidationResult, FlowGraphValidationSeverity } from "core/FlowGraph/flowGraphValidator";
 
 import "./graphControls.scss";
 
@@ -268,6 +267,29 @@ export class GraphControlsComponent extends React.Component<IGraphControlsProps,
 
         return (
             <div className="fge-graph-controls">
+                <button
+                    className="fge-ctrl-btn fge-ctrl-undo"
+                    title="Undo (Ctrl+Z)"
+                    onClick={() => {
+                        this.props.globalState.stateManager.historyStack?.undo();
+                        this.forceUpdate();
+                    }}
+                    disabled={!this.props.globalState.stateManager.historyStack?.canUndo}
+                >
+                    ↩
+                </button>
+                <button
+                    className="fge-ctrl-btn fge-ctrl-redo"
+                    title="Redo (Ctrl+Shift+Z)"
+                    onClick={() => {
+                        this.props.globalState.stateManager.historyStack?.redo();
+                        this.forceUpdate();
+                    }}
+                    disabled={!this.props.globalState.stateManager.historyStack?.canRedo}
+                >
+                    ↪
+                </button>
+                <span className="fge-ctrl-separator" />
                 <button className="fge-ctrl-btn fge-ctrl-start" title="Start" onClick={() => this._onStart()} disabled={!canStart}>
                     ▶
                 </button>

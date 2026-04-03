@@ -1,4 +1,4 @@
-import type { IDisposable } from "core/scene";
+import { type IDisposable } from "core/scene";
 
 /**
  * Class handling undo / redo operations
@@ -220,6 +220,20 @@ export class HistoryStack implements IDisposable {
      */
     public get hasData(): boolean {
         return this._historyStack.length > 0;
+    }
+
+    /**
+     * Whether an undo operation is available
+     */
+    public get canUndo(): boolean {
+        return this._historyStack.length > 0;
+    }
+
+    /**
+     * Whether a redo operation is available
+     */
+    public get canRedo(): boolean {
+        return this._redoStack.length > 0;
     }
 
     /**

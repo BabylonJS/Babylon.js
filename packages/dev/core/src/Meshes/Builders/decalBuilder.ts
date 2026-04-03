@@ -1,11 +1,11 @@
-import type { Nullable, IndicesArray, FloatArray } from "../../types";
+import { type Nullable, type IndicesArray, type FloatArray } from "../../types";
 import { Vector3, Matrix, Vector2, TmpVectors } from "../../Maths/math.vector";
 import { Lerp } from "../../Maths/math.scalar.functions";
 import { Mesh } from "../mesh";
 import { VertexBuffer } from "../../Buffers/buffer";
 import { VertexData } from "../mesh.vertexData";
-import type { AbstractMesh } from "../abstractMesh";
-import type { Camera } from "../../Cameras/camera";
+import { type AbstractMesh } from "../abstractMesh";
+import { type Camera } from "../../Cameras/camera";
 import { useOpenGLOrientationForUV } from "../../Compat/compatibilityOptions";
 
 const XpAxis = new Vector3(1, 0, 0);

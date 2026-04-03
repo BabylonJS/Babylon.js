@@ -11,7 +11,7 @@ export class LogAction extends BaseAction {
         this._message = message;
     }
 
-    public execute(): void {
+    public override execute(): void {
         // eslint-disable-next-line no-console
         console.log(this._message);
     }

@@ -6,11 +6,11 @@
         "rootDir": "./src",
         "composite": true,
         "paths": {
-            "core/*": ["dev/core/dist/*"],
-            "gui/*": ["dev/gui/dist/*"],
-            "serializers/*": ["dev/serializers/dist/*"],
-            "shared-ui-components/*": ["dev/sharedUiComponents/dist/*"],
-            "node-render-graph-editor/*": ["tools/nodeRenderGraphEditor/src/*"]
+            "core/*": ["../../dev/core/dist/*"],
+            "gui/*": ["../../dev/gui/dist/*"],
+            "serializers/*": ["../../dev/serializers/dist/*"],
+            "shared-ui-components/*": ["../../dev/sharedUiComponents/dist/*"],
+            "node-render-graph-editor/*": ["../../tools/nodeRenderGraphEditor/src/*"]
         }
     },
 

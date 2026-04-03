@@ -1,13 +1,13 @@
-import type { IDisposable } from "../scene";
+import { type IDisposable } from "../scene";
 import { DeviceType } from "./InputDevices/deviceEnums";
-import type { Observable } from "../Misc/observable";
-import type { IDeviceInputSystem } from "./inputInterfaces";
+import { type Observable } from "../Misc/observable";
+import { type IDeviceInputSystem } from "./inputInterfaces";
 import { NativeDeviceInputSystem } from "./nativeDeviceInputSystem";
 import { WebDeviceInputSystem } from "./webDeviceInputSystem";
 import { DeviceSource } from "./InputDevices/deviceSource";
-import type { INative } from "../Engines/Native/nativeInterfaces";
-import type { IUIEvent } from "../Events/deviceInputEvents";
-import type { AbstractEngine } from "../Engines/abstractEngine";
+import { type INative } from "../Engines/Native/nativeInterfaces";
+import { type IUIEvent } from "../Events/deviceInputEvents";
+import { type AbstractEngine } from "../Engines/abstractEngine";
 
 type Distribute<T> = T extends DeviceType ? DeviceSource<T> : never;
 

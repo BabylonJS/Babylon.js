@@ -1,6 +1,6 @@
-import type { IAnimatable } from "core/Animations/animatable.interface";
-import type { Animation } from "core/Animations/animation";
-import type { FlowGraphConnectionType } from "./flowGraphConnection";
+import { type IAnimatable } from "core/Animations/animatable.interface";
+import { type Animation } from "core/Animations/animation";
+import { type FlowGraphConnectionType } from "./flowGraphConnection";
 
 /**
  * Interpolation generator

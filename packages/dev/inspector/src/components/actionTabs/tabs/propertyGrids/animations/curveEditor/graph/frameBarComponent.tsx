@@ -1,8 +1,8 @@
-import type { Nullable } from "core/types";
+import { type Nullable } from "core/types";
 import * as React from "react";
-import type { GlobalState } from "../../../../../../globalState";
-import type { Context, IActiveAnimationChangedOptions } from "../context";
-import type { Observer } from "core/Misc/observable";
+import { type GlobalState } from "../../../../../../globalState";
+import { type Context, type IActiveAnimationChangedOptions } from "../context";
+import { type Observer } from "core/Misc/observable";
 
 // x distance between consecutive ticks on the frame
 const BaseTickDistance = 25;

@@ -1,9 +1,9 @@
-import type { IDisposable, IReadonlyObservable } from "core/index";
-import type { DynamicAccordionSection, DynamicAccordionSectionContent, SectionsImperativeRef } from "../../../components/extensibleAccordion";
-import type { PropertyChangeInfo } from "../../../contexts/propertyContext";
-import type { IService, ServiceDefinition } from "../../../modularity/serviceDefinition";
-import type { ISelectionService } from "../../selectionService";
-import type { IShellService } from "../../shellService";
+import { type IDisposable, type IReadonlyObservable } from "core/index";
+import { type DynamicAccordionSection, type DynamicAccordionSectionContent, type SectionsImperativeRef } from "../../../components/extensibleAccordion";
+import { type PropertyChangeInfo, PropertyContext } from "../../../contexts/propertyContext";
+import { type IService, type ServiceDefinition } from "../../../modularity/serviceDefinition";
+import { type ISelectionService, SelectionServiceIdentity } from "../../selectionService";
+import { type IShellService, ShellServiceIdentity } from "../../shellService";
 
 import { DocumentTextRegular } from "@fluentui/react-icons";
 import { useEffect, useMemo, useRef } from "react";
@@ -11,11 +11,8 @@ import { useEffect, useMemo, useRef } from "react";
 import { Observable } from "core/Misc/observable";
 import { useImpulse } from "shared-ui-components/fluent/hooks/transientStateHooks";
 import { PropertiesPane } from "../../../components/properties/propertiesPane";
-import { PropertyContext } from "../../../contexts/propertyContext";
 import { useObservableCollection, useObservableState, useOrderedObservableCollection } from "../../../hooks/observableHooks";
 import { ObservableCollection } from "../../../misc/observableCollection";
-import { SelectionServiceIdentity } from "../../selectionService";
-import { ShellServiceIdentity } from "../../shellService";
 
 /**
  * The unique identity symbol for the properties service.

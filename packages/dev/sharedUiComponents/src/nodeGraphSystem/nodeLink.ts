@@ -1,11 +1,10 @@
-import type { Nullable } from "core/types";
-import type { Observer } from "core/Misc/observable";
-import { Observable } from "core/Misc/observable";
-import type { FrameNodePort } from "./frameNodePort";
-import type { NodePort } from "./nodePort";
-import type { GraphNode } from "./graphNode";
-import type { GraphCanvasComponent } from "./graphCanvas";
-import type { ISelectionChangedOptions } from "./interfaces/selectionChangedOptions";
+import { type Nullable } from "core/types";
+import { type Observer, Observable } from "core/Misc/observable";
+import { type FrameNodePort } from "./frameNodePort";
+import { type NodePort } from "./nodePort";
+import { type GraphNode } from "./graphNode";
+import { type GraphCanvasComponent } from "./graphCanvas";
+import { type ISelectionChangedOptions } from "./interfaces/selectionChangedOptions";
 import { RefreshNode } from "./tools";
 import * as commonStyles from "./common.module.scss";
 import * as styles from "./nodeLink.module.scss";

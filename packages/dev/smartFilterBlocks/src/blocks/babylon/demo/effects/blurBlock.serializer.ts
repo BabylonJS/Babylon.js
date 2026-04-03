@@ -1,5 +1,5 @@
-import type { BaseBlock, IBlockSerializerV1 } from "smart-filters";
-import type { BlurBlock } from "./blurBlock.js";
+import { type BaseBlock, type IBlockSerializerV1 } from "smart-filters";
+import { type BlurBlock } from "./blurBlock.js";
 import { blurBlockType } from "../../../blockTypes.js";
 import { babylonDemoEffectsNamespace } from "../../../blockNamespaces.js";
 

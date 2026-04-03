@@ -1,6 +1,6 @@
 import { serialize } from "../Misc/decorators";
 import { Color4 } from "../Maths/math.color";
-import type { Effect } from "../Materials/effect";
+import { type Effect } from "../Materials/effect";
 import { SerializationHelper } from "../Misc/decorators.serialization";
 import { PrepareUniformsForColorCurves } from "./colorCurves.functions";
 
