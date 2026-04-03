@@ -8,7 +8,7 @@ import { rewriteDevImports, appendJsToExternalPaths } from "../../rollupUtils.mj
 // Map dev package names to their public @babylonjs/ equivalents.
 // Must be ordered longest-first to prevent prefix collisions (e.g. gui vs gui-editor).
 const devPackageMap = {
-    "gui-editor": "@babylonjs/gui-editor",
+    "gui-editor/guiEditor": "@babylonjs/gui-editor",
     "shared-ui-components": null, // handled by alias plugin below
     serializers: "@babylonjs/serializers",
     materials: "@babylonjs/materials",
