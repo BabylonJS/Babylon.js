@@ -555,6 +555,7 @@ export class GaussianSplattingMeshBase extends Mesh {
         const gaussianSplattingMaterial = new GaussianSplattingMaterial(this.name + "_material", this._scene);
         // Cast is safe: GaussianSplattingMeshBase is @internal; all concrete instances are GaussianSplattingMesh.
         gaussianSplattingMaterial.setSourceMesh(this as any);
+        gaussianSplattingMaterial.doNotSerialize = true;
         this._material = gaussianSplattingMaterial;
 
         // delete meshes created for cameras on camera removal
@@ -659,6 +660,7 @@ export class GaussianSplattingMeshBase extends Mesh {
             } else {
                 // mesh doesn't exist yet for this camera
                 const cameraMesh = new Mesh(this.name + "_cameraMesh_" + cameraId, this._scene);
+                cameraMesh.doNotSerialize = true;
                 // not visible with inspector or the scene graph
                 cameraMesh.reservedDataStore = { hidden: true };
                 cameraMesh.setEnabled(false);
