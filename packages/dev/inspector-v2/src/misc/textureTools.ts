@@ -50,7 +50,7 @@ export async function ApplyChannelsToTextureDataAsync(
     const textureFormat = internalTexture?.format ?? texture.textureFormat;
 
     // For cube maps, force RTT path to ensure correct face orientation and gamma correction
-    // For 2D array textures, face is reinterpreted as the layer index for direct pixel readback    
+    // For 2D array textures, face is reinterpreted as the layer index for direct pixel readback
     const data = await GetTextureDataAsync(texture, width, height, faceOrLayer, lod, texture.isCube || is3DTexture, slice);
 
     const forceOpaqueAlpha = is3DTexture || _TextureFormatHasNoAlpha(textureFormat);
