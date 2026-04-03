@@ -1,6 +1,6 @@
 {
     "name": "@babylonjs/core",
-    "version": "9.0.0",
+    "version": "9.1.0",
     "main": "index.js",
     "module": "index.js",
     "types": "index.d.ts",
@@ -17,7 +17,7 @@
     "scripts": {
         "build": "npm run clean && npm run compile",
         "clean": "rimraf dist && rimraf *.tsbuildinfo -g && rimraf \"./**/*.!(cmd|md|json|build.json|tasks.json|cjs)\" -g",
-        "compile": "tsc -b tsconfig.build.json",
+        "compile": "tsc -b tsconfig.build.json && build-tools -c tp --outDir . --buildType es6 --basePackage @babylonjs/core --appendJS",
         "postcompile": "build-tools -c run-tasks",
         "watch": "node ./watcher.cjs"
     },

@@ -62,6 +62,21 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         FlowGraphPauseAnimationBlock: "Pauses an animation",
         FlowGraphInterpolationBlock: "Interpolates a value over time",
 
+        // Physics Events
+        FlowGraphPhysicsCollisionEventBlock: "Fires when a physics collision occurs on a body",
+
+        // Physics Actions
+        FlowGraphApplyForceBlock: "Applies a force to a physics body at a location",
+        FlowGraphApplyImpulseBlock: "Applies an instantaneous impulse to a physics body",
+        FlowGraphSetLinearVelocityBlock: "Sets the linear velocity of a physics body",
+        FlowGraphSetAngularVelocityBlock: "Sets the angular velocity of a physics body",
+        FlowGraphSetPhysicsMotionTypeBlock: "Sets the motion type (static/animated/dynamic)",
+
+        // Physics Data
+        FlowGraphGetLinearVelocityBlock: "Gets the linear velocity of a physics body",
+        FlowGraphGetAngularVelocityBlock: "Gets the angular velocity of a physics body",
+        FlowGraphGetPhysicsMassPropertiesBlock: "Gets mass, center of mass, and inertia",
+
         // Audio Actions
         FlowGraphPlaySoundBlock: "Plays an Audio V2 sound with volume, offset, and loop options",
         FlowGraphStopSoundBlock: "Stops an Audio V2 sound",

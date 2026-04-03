@@ -7,7 +7,7 @@ declare module "babylonjs-gltf2interface" {
 /**
  * Module for glTF 2.0 Interface
  */
-declare module BABYLON.GLTF2 {
+declare namespace BABYLON.GLTF2 {
     /**
      * The datatype of the components in the attribute
      */

@@ -5,12 +5,14 @@
         "outDir": "./dist",
         "rootDir": "../../../",
         "target": "ES5",
+        "ignoreDeprecations": "6.0",
         "declaration": false,
         "importHelpers": true,
         "paths": {
-            "core/*": ["dev/core/dist/*"],
-            "gui/*": ["dev/gui/src/*"]
+            "core/*": ["../../../dev/core/dist/*"],
+            "gui/*": ["../../../dev/gui/src/*"],
+            "@lts/gui/*": ["../../../lts/gui/src/*"]
         }
     },
-    "include": ["./src/**/*", "../../../dev/gui/src/**/*"]
+    "include": ["./src/**/*", "../../../dev/gui/src/**/*", "../../../lts/gui/src/**/*"]
 }

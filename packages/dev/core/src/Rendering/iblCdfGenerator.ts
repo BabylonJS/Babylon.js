@@ -70,13 +70,13 @@ export class IblCdfGenerator {
             if (source.isReadyOrNotBlocking()) {
                 this._recreateAssetsFromNewIbl();
             } else {
-                (source as CubeTexture).onLoadObservable.addOnce(this._recreateAssetsFromNewIbl.bind(this, source));
+                (source as CubeTexture).onLoadObservable.addOnce(() => this._recreateAssetsFromNewIbl());
             }
         } else {
             if (source.isReadyOrNotBlocking()) {
                 this._recreateAssetsFromNewIbl();
             } else {
-                (source as Texture).onLoadObservable.addOnce(this._recreateAssetsFromNewIbl.bind(this, source));
+                (source as Texture).onLoadObservable.addOnce(() => this._recreateAssetsFromNewIbl());
             }
         }
     }

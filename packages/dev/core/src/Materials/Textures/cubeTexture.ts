@@ -58,6 +58,9 @@ export interface ICubeTextureCreationOptions {
 
     /** useSRGBBuffer Defines if the texture must be loaded in a sRGB GPU buffer (if supported by the GPU) (default: false) */
     useSRGBBuffer?: boolean;
+
+    /** Target face size for spherical polynomial computation. 0 = full resolution (default). */
+    sphericalPolynomialTargetSize?: number;
 }
 
 // The default scale applied to environment texture. This manages the range of LOD level used for IBL according to the roughness
@@ -272,6 +275,7 @@ export class CubeTexture extends BaseTexture {
             this._lodOffset = extensionsOrOptions.lodOffset ?? 0;
             this._loaderOptions = extensionsOrOptions.loaderOptions;
             this._useSRGBBuffer = extensionsOrOptions.useSRGBBuffer;
+            this._sphericalPolynomialTargetSize = extensionsOrOptions.sphericalPolynomialTargetSize ?? 0;
             onLoad = extensionsOrOptions.onLoad ?? null;
             onError = extensionsOrOptions.onError ?? null;
         } else {

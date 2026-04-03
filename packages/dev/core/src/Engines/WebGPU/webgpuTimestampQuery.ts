@@ -1,5 +1,11 @@
 /* eslint-disable babylonjs/available */
 /* eslint-disable @typescript-eslint/naming-convention */
+
+// writeTimestamp is an experimental Chrome extension not yet part of the WebGPU spec typings
+interface GPUCommandEncoderWithTimestamp extends GPUCommandEncoder {
+    writeTimestamp?(querySet: GPUQuerySet, queryIndex: number): void;
+}
+
 import { type WebGPUBufferManager } from "./webgpuBufferManager";
 import * as WebGPUConstants from "./webgpuConstants";
 import { PerfCounter } from "../../Misc/perfCounter";
@@ -111,13 +117,13 @@ export class WebGPUDurationMeasure {
     }
 
     public start(encoder: GPUCommandEncoder): void {
-        encoder.writeTimestamp?.(this._querySet.querySet, 0);
+        (encoder as GPUCommandEncoderWithTimestamp).writeTimestamp?.(this._querySet.querySet, 0);
     }
 
     public async stop(encoder: GPUCommandEncoder): Promise<number | null> {
-        encoder.writeTimestamp?.(this._querySet.querySet, 1);
+        (encoder as GPUCommandEncoderWithTimestamp).writeTimestamp?.(this._querySet.querySet, 1);
 
-        return encoder.writeTimestamp ? await this._querySet.readTwoValuesAndSubtract(0) : 0;
+        return (encoder as GPUCommandEncoderWithTimestamp).writeTimestamp ? await this._querySet.readTwoValuesAndSubtract(0) : 0;
     }
 
     public startPass(descriptor: GPURenderPassDescriptor | GPUComputePassDescriptor, index: number): void {

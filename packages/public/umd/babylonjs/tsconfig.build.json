@@ -4,13 +4,15 @@
     "compilerOptions": {
         "outDir": "./dist",
         "target": "ES5",
+        "ignoreDeprecations": "6.0",
         "rootDir": "../../../",
         "declaration": false,
         "importHelpers": true,
         "paths": {
-            "core/*": ["dev/core/src/*"]
+            "core/*": ["../../../dev/core/src/*"],
+            "@lts/core/*": ["../../../lts/core/src/*"]
         }
     },
 
-    "include": ["./src/**/*", "../../../dev/core/src/**/*"]
+    "include": ["./src/**/*", "../../../dev/core/src/**/*", "../../../lts/core/src/**/*"]
 }

@@ -201,7 +201,9 @@ export class FrameGraphObjectRendererTask extends FrameGraphTaskMultiRenderTarge
             return;
         }
         this._useOITForTransparentMeshes = value;
-        this._renderer.customRenderTransparentSubMeshes = this._useOITForTransparentMeshes ? this._renderTransparentMeshesWithOIT.bind(this) : undefined;
+        this._renderer.customRenderTransparentSubMeshes = this._useOITForTransparentMeshes
+            ? (transparentSubMeshes: SmartArray<SubMesh>, renderingGroup?: RenderingGroup) => this._renderTransparentMeshesWithOIT(transparentSubMeshes, renderingGroup!)
+            : undefined;
         this._oitRenderer.blendOutput = value && this._rtForOrderIndependentTransparency ? this._rtForOrderIndependentTransparency.renderTargetWrapper! : null;
     }
 

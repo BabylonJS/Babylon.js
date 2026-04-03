@@ -1,6 +1,6 @@
 {
     "name": "@babylonjs/materials",
-    "version": "9.0.0",
+    "version": "9.1.0",
     "main": "index.js",
     "module": "index.js",
     "types": "index.d.ts",
@@ -14,11 +14,11 @@
     "scripts": {
         "build": "npm run clean && npm run compile",
         "clean": "rimraf dist && rimraf *.tsbuildinfo -g && rimraf \"./**/*.!(md|json|build.json)\" -g",
-        "compile": "tsc -b tsconfig.build.json",
+        "compile": "tsc -b tsconfig.build.json && build-tools -c tp --outDir . --buildType es6 --basePackage @babylonjs/materials --appendJS",
         "postcompile": "build-tools -c add-js-to-es6"
     },
     "devDependencies": {
-        "@babylonjs/core": "9.0.0",
+        "@babylonjs/core": "9.1.0",
         "@dev/build-tools": "^1.0.0",
         "@dev/materials": "^1.0.0"
     },

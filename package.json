@@ -34,12 +34,13 @@
         "nx": "^22.5.4",
         "prettier": "^3.0.3",
         "rimraf": "^6.1.3",
+        "rollup-plugin-dts": "^6.4.1",
         "serialize-javascript": "7.0.4",
         "ts-node": "~10.9.0",
-        "ts-patch": "3.3.0",
         "tslib": "^2.4.0",
         "typedoc": "^0.28.16",
-        "typescript": "~5.9.3",
+        "typescript": "~6.0.2",
+        "typescript-eslint": "^8.56.1",
         "vitest": "^4.1.0",
         "webpack": "^5.103.0",
         "webpack-cli": "6.0.1"
@@ -92,7 +93,7 @@
         "test:graphTools": "playwright test -c ./playwright.config.ts --project=graphTools",
         "test:escheck": "nx run-many --outputStyle=static --target=test:escheck --parallel --maxParallel=6 --exclude=@babylonjs/root",
         "test:docs": "node ./scripts/typedoc-generator.mjs",
-        "prepare": "ts-patch install -s && npm run build:tools && npm i @dev/build-tools -D && npm run build:assets && npm run build:test-tools",
+        "prepare": "npm run build:tools && npm i @dev/build-tools -D && npm run build:assets && npm run build:test-tools",
         "clean": "npx nx run-many --outputStyle=static --target=clean --all --exclude=@babylonjs/root && npm run build:tools",
         "format": "npm run format:check && npm run format:fix",
         "format:check": "prettier --check \"packages/**/src/**/*.{ts,tsx,js,json,scss,css}\"",
@@ -125,9 +126,35 @@
         "eslint-plugin-import": {
             "eslint": "^10.0.0"
         },
-        "typescript-eslint": "^8.56.1",
         "@rollup/plugin-commonjs": {
             "glob": "^13.0.6"
+        },
+        "@typescript-eslint/eslint-plugin": {
+            "typescript": "$typescript"
+        },
+        "@typescript-eslint/parser": {
+            "typescript": "$typescript"
+        },
+        "@typescript-eslint/typescript-estree": {
+            "typescript": "$typescript"
+        },
+        "@typescript-eslint/utils": {
+            "typescript": "$typescript"
+        },
+        "@typescript-eslint/type-utils": {
+            "typescript": "$typescript"
+        },
+        "@typescript-eslint/project-service": {
+            "typescript": "$typescript"
+        },
+        "@typescript-eslint/tsconfig-utils": {
+            "typescript": "$typescript"
+        },
+        "typedoc": {
+            "typescript": "$typescript"
+        },
+        "react-refresh-typescript": {
+            "typescript": "$typescript"
         }
     }
 }

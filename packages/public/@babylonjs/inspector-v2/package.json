@@ -1,6 +1,6 @@
 {
     "name": "@babylonjs/inspector",
-    "version": "9.0.0",
+    "version": "9.1.0",
     "main": "lib/index.js",
     "module": "lib/index.js",
     "esnext": "lib/index.js",
@@ -23,7 +23,7 @@
         "build": "npm run clean && npm run bundle",
         "clean": "rimraf lib && rimraf dist && rimraf *.tsbuildinfo -g",
         "bundle": "npm run bundle:lib",
-        "bundle:lib": "rollup -c rollup.config.lib.mjs",
+        "bundle:lib": "rollup -c rollup.config.lib.mjs && tsc -p tsconfig.build.dts.json && build-tools -c tp --outDir ./lib --buildType es6 --basePackage @babylonjs/inspector --appendJS",
         "pack": "npm run build && npm pack"
     },
     "peerDependencies": {

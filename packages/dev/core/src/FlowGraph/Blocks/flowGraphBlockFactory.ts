@@ -316,6 +316,25 @@ export function blockFactory(blockName: FlowGraphBlockNames | string): () => Pro
             return async () => (await import("./Data/flowGraphDataSwitchBlock")).FlowGraphDataSwitchBlock;
         case FlowGraphBlockNames.DebugBlock:
             return async () => (await import("./Data/flowGraphDebugBlock")).FlowGraphDebugBlock;
+        // Physics
+        case FlowGraphBlockNames.PhysicsCollisionEvent:
+            return async () => (await import("./Event/flowGraphPhysicsCollisionEventBlock")).FlowGraphPhysicsCollisionEventBlock;
+        case FlowGraphBlockNames.PhysicsApplyForce:
+            return async () => (await import("./Execution/Physics/flowGraphApplyForceBlock")).FlowGraphApplyForceBlock;
+        case FlowGraphBlockNames.PhysicsApplyImpulse:
+            return async () => (await import("./Execution/Physics/flowGraphApplyImpulseBlock")).FlowGraphApplyImpulseBlock;
+        case FlowGraphBlockNames.PhysicsSetLinearVelocity:
+            return async () => (await import("./Execution/Physics/flowGraphSetLinearVelocityBlock")).FlowGraphSetLinearVelocityBlock;
+        case FlowGraphBlockNames.PhysicsSetAngularVelocity:
+            return async () => (await import("./Execution/Physics/flowGraphSetAngularVelocityBlock")).FlowGraphSetAngularVelocityBlock;
+        case FlowGraphBlockNames.PhysicsSetMotionType:
+            return async () => (await import("./Execution/Physics/flowGraphSetPhysicsMotionTypeBlock")).FlowGraphSetPhysicsMotionTypeBlock;
+        case FlowGraphBlockNames.PhysicsGetLinearVelocity:
+            return async () => (await import("./Data/Physics/flowGraphGetLinearVelocityBlock")).FlowGraphGetLinearVelocityBlock;
+        case FlowGraphBlockNames.PhysicsGetAngularVelocity:
+            return async () => (await import("./Data/Physics/flowGraphGetAngularVelocityBlock")).FlowGraphGetAngularVelocityBlock;
+        case FlowGraphBlockNames.PhysicsGetMassProperties:
+            return async () => (await import("./Data/Physics/flowGraphGetPhysicsMassPropertiesBlock")).FlowGraphGetPhysicsMassPropertiesBlock;
         // Audio
         case FlowGraphBlockNames.AudioPlaySound:
             return async () => (await import("./Execution/Audio/flowGraphPlaySoundBlock")).FlowGraphPlaySoundBlock;

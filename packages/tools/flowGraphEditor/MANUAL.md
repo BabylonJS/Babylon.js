@@ -48,7 +48,13 @@ The loaded scene's objects (meshes, lights, cameras, etc.) become available as r
 
 ## Graph Controls
 
-The toolbar at the top provides execution controls:
+The toolbar at the top provides editing and execution controls:
+
+### Undo / Redo
+
+The **Undo** (↩) and **Redo** (↪) buttons are at the left side of the toolbar. They are disabled when there is nothing to undo or redo. You can also use **Ctrl+Z** / **Cmd+Z** to undo and **Ctrl+Shift+Z** / **Cmd+Shift+Z** to redo.
+
+### Execution Controls
 
 | Button | Label     | Description                                                                                                                                                     |
 | ------ | --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -220,6 +226,9 @@ Signal ports (execution flow) have no type restrictions — any signal output ca
 | ---------------------------------- | --------------------------------------------- |
 | **Delete** / **Backspace**         | Delete selected blocks (removes from graph)   |
 | **Alt+Delete** / **Alt+Backspace** | Delete and auto-reconnect surrounding nodes   |
+| **Ctrl+Z** / **Cmd+Z**             | Undo                                          |
+| **Ctrl+Shift+Z** / **Cmd+Shift+Z** | Redo                                         |
+| **Ctrl+A** / **Cmd+A**             | Select all nodes and frames                   |
 | **Ctrl+C** / **Cmd+C**             | Copy selected blocks (or frames)              |
 | **Ctrl+V** / **Cmd+V**             | Paste copied blocks at cursor position        |
 | **Ctrl+G** / **Cmd+G**             | Create a smart group from selected blocks     |
@@ -334,6 +343,38 @@ All matching items are outlined in yellow. The current match is highlighted in b
 ### Closing
 
 Press **Escape** or click the **X** button to close the search bar. All highlights are removed.
+
+---
+
+## Physics Blocks
+
+The editor includes a set of blocks for interacting with the Babylon.js Physics V2 system. These blocks operate on `PhysicsBody` references, which can be obtained from mesh objects that have physics enabled (e.g., via `PhysicsAggregate`).
+
+### Physics Events
+
+| Block                     | Description                                                                                                                                        |
+| ------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **PhysicsCollisionEvent** | Fires whenever a collision occurs on the specified physics body. Outputs the other body, contact point, normal, impulse, and penetration distance. |
+
+### Physics Actions (Execution Blocks)
+
+| Block                    | Description                                                                                                   |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------- |
+| **ApplyForce**           | Applies a continuous force to a body at a world-space location. Use in a per-frame loop for sustained forces. |
+| **ApplyImpulse**         | Applies an instantaneous impulse (velocity change) to a body at a world-space location.                       |
+| **SetLinearVelocity**    | Directly sets the linear velocity vector of a body.                                                           |
+| **SetAngularVelocity**   | Directly sets the angular velocity vector of a body.                                                          |
+| **SetPhysicsMotionType** | Changes the body's motion type: 0 = STATIC, 1 = ANIMATED, 2 = DYNAMIC.                                        |
+
+### Physics Data (Read-Only Blocks)
+
+| Block                        | Description                                                    |
+| ---------------------------- | -------------------------------------------------------------- |
+| **GetLinearVelocity**        | Reads the current linear velocity of a physics body.           |
+| **GetAngularVelocity**       | Reads the current angular velocity of a physics body.          |
+| **GetPhysicsMassProperties** | Reads the mass, center of mass, and inertia of a physics body. |
+
+> **Note:** Physics blocks require a scene with Physics V2 enabled and bodies attached to meshes. Without a physics engine loaded, the blocks will report errors at runtime.
 
 ---
 

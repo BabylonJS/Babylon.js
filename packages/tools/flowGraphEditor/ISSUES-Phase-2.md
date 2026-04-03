@@ -30,7 +30,8 @@ When done with an issue, update the MANUAL.md to reflect the new feature or fix,
     - **Link:** Delete connection, Insert block on connection
     - **Frame:** Delete frame, Collapse/Expand, Export subgraph (future)
 
-- [ ] **5 blocks missing from the editor palette** — These blocks exist in `FlowGraphBlockNames`, have tooltip descriptions written in `nodeListComponent.tsx`, but are absent from `allBlockNames.ts` so they never appear in the palette. All 5 are matrix-related data conversion blocks:
+- [x] **5 blocks missing from the editor palette** — These blocks exist in `FlowGraphBlockNames`, have tooltip descriptions written in `nodeListComponent.tsx`, but are absent from `allBlockNames.ts` so they never appear in the palette. All 5 are matrix-related data conversion blocks:
+
     - `TransformCoordinatesSystem` — transforms coordinates between local/world/view/projection spaces
     - `CombineMatrix2D` — constructs a 2D matrix from components
     - `CombineMatrix3D` — constructs a 3D matrix from components
@@ -57,13 +58,13 @@ When done with an issue, update the MANUAL.md to reflect the new feature or fix,
 
 - [ ] **No port-level tooltips or descriptions** — Block-level tooltips in the palette are comprehensive (every block has a description). However, individual ports on nodes have no documentation. A user seeing ports named `a`, `b`, `val`, `res` gets no hint about what each expects or produces. **Expected:** Hover over a port to see a tooltip with the port name, data type, and a brief description (e.g., "a (Number): The left operand"). Port descriptions could come from the block's `_registerInput`/`_registerOutput` metadata.
 
-- [ ] **No undo/redo buttons in the toolbar** — Undo/redo works via Ctrl+Z / Ctrl+Shift+Z, but there are no visible toolbar buttons. New users may not discover the feature exists. **Expected:** Undo and Redo icon buttons in the toolbar with disabled state when at the beginning/end of the history stack.
+- [x] **No undo/redo buttons in the toolbar** — Undo/redo works via Ctrl+Z / Ctrl+Shift+Z, but there are no visible toolbar buttons. New users may not discover the feature exists. **Expected:** Undo and Redo icon buttons in the toolbar with disabled state when at the beginning/end of the history stack.
 
 - [ ] **No toast/notification system for editor operations** — Errors and validation results only appear in the log panel at the bottom. Operations like "Graph saved", "Snippet loaded", "Validation passed (0 errors)" give no immediate visual feedback in the main workspace. Users must look at the log panel to know if an action succeeded. **Expected:** Brief toast notifications (auto-dismissing after 3–5 seconds) for key operations: save/load success/failure, validation summary, snippet ID copied, etc.
 
 ## Low (nice to have)
 
-- [ ] **No Select All (Ctrl+A)** — There is no keyboard shortcut to select all nodes and frames on the canvas. Users must drag a selection box around the entire graph.
+- [x] **No Select All (Ctrl+A)** — There is no keyboard shortcut to select all nodes and frames on the canvas. Users must drag a selection box around the entire graph.
 
 - [ ] **No align/distribute for selection** — `distributeGraph()` auto-layouts the entire graph via dagre, but there is no way to align or evenly distribute just the selected nodes (align left/right/top/bottom, distribute horizontally/vertically). Useful for tidying up sub-sections of a large graph.
 

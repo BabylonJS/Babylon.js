@@ -441,22 +441,7 @@ export class GaussianSplattingMaterial extends PushMaterial {
             }
 
             // Bind part indices texture, if the
-            if (gsMesh.partIndicesTexture) {
-                effect.setTexture("partIndicesTexture", gsMesh.partIndicesTexture);
-                // Bind part world matrices
-                const partWorldData = new Float32Array(gsMesh.partCount * 16);
-                for (let i = 0; i < gsMesh.partCount; i++) {
-                    gsMesh.getWorldMatrixForPart(i).toArray(partWorldData, i * 16);
-                }
-                effect.setMatrices("partWorld", partWorldData);
-
-                // Bind part visibility data
-                const partVisibilityData: number[] = [];
-                for (let i = 0; i < gsMesh.partCount; i++) {
-                    partVisibilityData.push(gsMesh.partVisibility[i] ?? 1.0);
-                }
-                effect.setArray("partVisibility", partVisibilityData);
-            }
+            gsMesh.bindExtraEffectUniforms(effect);
         }
     }
     /**
@@ -571,19 +556,7 @@ export class GaussianSplattingMaterial extends PushMaterial {
             effect.setTexture("centersTexture", gsMesh.centersTexture);
             effect.setTexture("colorsTexture", gsMesh.colorsTexture);
 
-            if (gsMesh.partIndicesTexture) {
-                effect.setTexture("partIndicesTexture", gsMesh.partIndicesTexture);
-                const partWorldData = new Float32Array(gsMesh.partCount * 16);
-                for (let i = 0; i < gsMesh.partCount; i++) {
-                    gsMesh.getWorldMatrixForPart(i).toArray(partWorldData, i * 16);
-                }
-                effect.setMatrices("partWorld", partWorldData);
-                const partVisibilityData: number[] = [];
-                for (let i = 0; i < gsMesh.partCount; i++) {
-                    partVisibilityData.push(gsMesh.partVisibility[i] ?? 1.0);
-                }
-                effect.setArray("partVisibility", partVisibilityData);
-            }
+            gsMesh.bindExtraEffectUniforms(effect);
         }
     }
 
