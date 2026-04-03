@@ -1018,13 +1018,19 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
     }
 
     /**
-     * Parses a serialized GaussianSplattingMesh
+     * Internal helper to parses a serialized GaussianSplattingMesh or GaussianSplattingCompoundMesh
      * @param parsedMesh the serialized mesh
-     * @param scene the scene to create the GaussianSplattingMesh in
+     * @param scene the scene to create the GaussianSplattingMesh or GaussianSplattingCompoundMesh in
+     * @param ctor the constructor of the mesh to create
      * @returns the created GaussianSplattingMesh
+     * @internal
      */
-    public static override Parse(parsedMesh: any, scene: Scene): GaussianSplattingMesh {
-        const mesh = new GaussianSplattingMesh(parsedMesh.name, null, scene, parsedMesh.keepInRam);
+    public static _ParseInternal<T extends GaussianSplattingMesh>(
+        parsedMesh: any,
+        scene: Scene,
+        ctor: new(name: string, url: Nullable<string>, scene: Nullable<Scene>, keepInRam: boolean) => T
+    ): T {
+        const mesh = new ctor(parsedMesh.name, null, scene, parsedMesh.keepInRam);
 
         mesh.disableDepthSort = parsedMesh.disableDepthSort;
         mesh.viewUpdateThreshold = parsedMesh.viewUpdateThreshold;
@@ -1076,6 +1082,16 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
         }
 
         return mesh;
+    }
+
+    /**
+     * Parses a serialized GaussianSplattingMesh
+     * @param parsedMesh the serialized mesh
+     * @param scene the scene to create the GaussianSplattingMesh in
+     * @returns the created GaussianSplattingMesh
+     */
+    public static override Parse(parsedMesh: any, scene: Scene): GaussianSplattingMesh {
+        return GaussianSplattingMesh._ParseInternal(parsedMesh, scene, GaussianSplattingMesh);
     }
 }
 

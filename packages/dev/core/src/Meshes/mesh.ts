@@ -4464,6 +4464,15 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     };
 
     /**
+     * Holder function for GaussianSplattingCompoundMesh Parser, should be GaussianSplattingCompoundMesh.Parse after imported
+     * @internal
+     */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    public static _GaussianSplattingCompoundMeshParser = (parsedMesh: any, scene: Scene): Mesh => {
+        throw _WarnImport("GaussianSplattingCompoundMesh");
+    };
+
+    /**
      * Returns a new Mesh object parsed from the source provided.
      * @param parsedMesh is the source
      * @param scene defines the hosting scene
@@ -4486,7 +4495,11 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         } else if (parsedMesh.type && parsedMesh.type === "TrailMesh") {
             mesh = Mesh._TrailMeshParser(parsedMesh, scene);
         } else if (parsedMesh.type && parsedMesh.type === "GaussianSplattingMesh") {
-            mesh = Mesh._GaussianSplattingMeshParser(parsedMesh, scene);
+            if (parsedMesh._isCompound) {
+                mesh = Mesh._GaussianSplattingCompoundMeshParser(parsedMesh, scene);
+            } else {
+                mesh = Mesh._GaussianSplattingMeshParser(parsedMesh, scene);
+            }
             skipImportGeometry = true;
         } else if (parsedMesh.type && parsedMesh.type === "GaussianSplattingPartProxyMesh") {
             mesh = Mesh._GaussianSplattingPartProxyMeshParser(parsedMesh, scene);
