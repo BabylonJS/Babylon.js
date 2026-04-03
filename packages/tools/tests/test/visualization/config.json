@@ -3852,268 +3852,218 @@
         },
         {
             "title": "GPU Particles - Basic Properties - Size",
-            "playgroundId": "#3HLS3D#0",
-            "renderCount": 120,
+            "playgroundId": "#3HLS3D#2",
             "referenceImage": "gpu-particles-basic-size.png",
             "excludedEngines": ["webgl1"]
         },
         {
             "title": "GPU Particles - Basic Properties - Scale",
-            "playgroundId": "#8XGC0P#0",
-            "renderCount": 120,
+            "playgroundId": "#52KBLI#0",
             "referenceImage": "gpu-particles-basic-scale.png",
             "excludedEngines": ["webgl1"]
         },
         {
             "title": "GPU Particles - Basic Properties - Color",
-            "playgroundId": "#X0A210#0",
-            "renderCount": 120,
+            "playgroundId": "#30PAK9#0",
             "referenceImage": "gpu-particles-basic-color.png",
             "excludedEngines": ["webgl1"]
         },
         {
             "title": "GPU Particles - Basic Properties - Speed",
-            "playgroundId": "#GLWBT4#0",
-            "renderCount": 120,
+            "playgroundId": "#KU4I4J#0",
             "referenceImage": "gpu-particles-basic-speed.png",
             "excludedEngines": ["webgl1"]
         },
         {
             "title": "GPU Particles - Basic Properties - Angular Speed",
-            "playgroundId": "#RAHGER#0",
-            "renderCount": 120,
+            "playgroundId": "#9MOFU4#0",
             "referenceImage": "gpu-particles-basic-angular-speed.png",
             "excludedEngines": ["webgl1"]
         },
         {
             "title": "GPU Particles - Basic Properties - Rotation",
-            "playgroundId": "#KWL8XX#0",
-            "renderCount": 120,
+            "playgroundId": "#DEVC42#0",
             "referenceImage": "gpu-particles-basic-rotation.png",
             "excludedEngines": ["webgl1"]
         },
         {
             "title": "GPU Particles - Basic Properties - Translation Pivot",
-            "playgroundId": "#3FQ1IT#0",
-            "renderCount": 120,
+            "playgroundId": "#QC8XA2#0",
             "referenceImage": "gpu-particles-basic-translation-pivot.png",
             "excludedEngines": ["webgl1"]
         },
         {
             "title": "GPU Particles - Basic Properties - Direction",
-            "playgroundId": "#A4TTH4#0",
-            "renderCount": 120,
+            "playgroundId": "#M6QEUB#0",
             "referenceImage": "gpu-particles-basic-direction.png",
             "excludedEngines": ["webgl1"]
         },
         {
             "title": "GPU Particles - Basic Properties - Gravity",
-            "playgroundId": "#YMG1GY#0",
-            "renderCount": 120,
+            "playgroundId": "#9AGK0W#0",
             "referenceImage": "gpu-particles-basic-gravity.png",
             "excludedEngines": ["webgl1"]
         },
         {
             "title": "GPU Particles - Basic Properties - Emit Rate",
-            "playgroundId": "#CXGHEA#0",
-            "renderCount": 120,
+            "playgroundId": "#IBWI36#0",
             "referenceImage": "gpu-particles-basic-emit-rate.png",
             "excludedEngines": ["webgl1"]
         },
         {
             "title": "GPU Particles - Basic Properties - Lifetime",
-            "playgroundId": "#BTKZWF#0",
-            "renderCount": 120,
+            "playgroundId": "#RL6BAK#0",
             "referenceImage": "gpu-particles-basic-lifetime.png",
             "excludedEngines": ["webgl1"]
         },
         {
-            "title": "GPU Particles - Basic Properties - Pre-warm",
-            "playgroundId": "#LQJ1U9#0",
-            "renderCount": 120,
-            "referenceImage": "gpu-particles-basic-prewarm.png",
-            "excludedEngines": ["webgl1"]
-        },
-        {
             "title": "GPU Particles - Basic Properties - Target Stop Duration",
-            "playgroundId": "#UGLU35#0",
-            "renderCount": 200,
+            "playgroundId": "#4AJC72#0",
             "referenceImage": "gpu-particles-basic-target-stop.png",
             "excludedEngines": ["webgl1"]
         },
         {
             "title": "GPU Particles - Change - Size",
-            "playgroundId": "#FM963F#0",
-            "renderCount": 120,
+            "playgroundId": "#KF9X69#0",
             "referenceImage": "gpu-particles-change-size.png",
             "excludedEngines": ["webgl1"]
         },
         {
             "title": "GPU Particles - Change - Color",
-            "playgroundId": "#V3982K#0",
-            "renderCount": 120,
+            "playgroundId": "#UWRCY4#0",
             "referenceImage": "gpu-particles-change-color.png",
             "excludedEngines": ["webgl1"]
         },
         {
             "title": "GPU Particles - Change - Speed",
-            "playgroundId": "#Z1AR9I#0",
-            "renderCount": 120,
+            "playgroundId": "#KBHNCB#0",
             "referenceImage": "gpu-particles-change-speed.png",
             "excludedEngines": ["webgl1"]
         },
         {
             "title": "GPU Particles - Change - Speed Limit",
-            "playgroundId": "#QEQ77O#0",
-            "renderCount": 120,
+            "playgroundId": "#CTNM3R#0",
             "referenceImage": "gpu-particles-change-speed-limit.png",
             "excludedEngines": ["webgl1"]
         },
         {
             "title": "GPU Particles - Change - Angular Speed",
-            "playgroundId": "#53CZ96#0",
-            "renderCount": 120,
+            "playgroundId": "#1NLEIC#0",
             "referenceImage": "gpu-particles-change-angular-speed.png",
             "excludedEngines": ["webgl1"]
         },
         {
             "title": "GPU Particles - Change - Drag",
-            "playgroundId": "#XIDU7W#0",
-            "renderCount": 120,
+            "playgroundId": "#02KAQL#0",
             "referenceImage": "gpu-particles-change-drag.png",
             "excludedEngines": ["webgl1"]
         },
         {
             "title": "GPU Particles - Change - Size Range",
-            "playgroundId": "#ETMQOO#0",
-            "renderCount": 120,
+            "playgroundId": "#4EWZJ9#0",
             "referenceImage": "gpu-particles-change-size-range.png",
             "excludedEngines": ["webgl1"]
         },
         {
             "title": "GPU Particles - Change - Color Range",
-            "playgroundId": "#58B2XU#0",
-            "renderCount": 120,
+            "playgroundId": "#3M1JEJ#0",
             "referenceImage": "gpu-particles-change-color-range.png",
             "excludedEngines": ["webgl1"]
         },
         {
             "title": "GPU Particles - Emitters - Point",
-            "playgroundId": "#Q86FAQ#0",
-            "renderCount": 120,
+            "playgroundId": "#PS8GQ3#0",
             "referenceImage": "gpu-particles-emitters-point.png",
             "excludedEngines": ["webgl1"]
         },
         {
             "title": "GPU Particles - Emitters - Box",
-            "playgroundId": "#GYFEBA#0",
-            "renderCount": 120,
+            "playgroundId": "#2XD9BC#0",
             "referenceImage": "gpu-particles-emitters-box.png",
             "excludedEngines": ["webgl1"]
         },
         {
             "title": "GPU Particles - Emitters - Sphere",
-            "playgroundId": "#U9UBWW#0",
-            "renderCount": 120,
+            "playgroundId": "#H7XR87#0",
             "referenceImage": "gpu-particles-emitters-sphere.png",
             "excludedEngines": ["webgl1"]
         },
         {
             "title": "GPU Particles - Emitters - Directed Sphere",
-            "playgroundId": "#UL116B#0",
-            "renderCount": 120,
+            "playgroundId": "#0H1ATM#0",
             "referenceImage": "gpu-particles-emitters-directed-sphere.png",
             "excludedEngines": ["webgl1"]
         },
         {
             "title": "GPU Particles - Emitters - Hemisphere",
-            "playgroundId": "#N8MSD2#0",
-            "renderCount": 120,
+            "playgroundId": "#MRQTX7#0",
             "referenceImage": "gpu-particles-emitters-hemisphere.png",
             "excludedEngines": ["webgl1"],
             "errorRatio": 4
         },
         {
             "title": "GPU Particles - Emitters - Cylinder",
-            "playgroundId": "#ULCZSA#0",
-            "renderCount": 120,
+            "playgroundId": "#FGRJM1#0",
             "referenceImage": "gpu-particles-emitters-cylinder.png",
             "excludedEngines": ["webgl1"]
         },
         {
             "title": "GPU Particles - Emitters - Directed Cylinder",
-            "playgroundId": "#NJ0U20#0",
-            "renderCount": 120,
+            "playgroundId": "#40T8G0#0",
             "referenceImage": "gpu-particles-emitters-directed-cylinder.png",
             "excludedEngines": ["webgl1"]
         },
         {
             "title": "GPU Particles - Emitters - Cone",
-            "playgroundId": "#387QQP#0",
-            "renderCount": 120,
+            "playgroundId": "#W73H92#0",
             "referenceImage": "gpu-particles-emitters-cone.png",
             "excludedEngines": ["webgl1"]
         },
         {
             "title": "GPU Particles - Emitters - Directed Cone",
-            "playgroundId": "#E6SFBH#0",
-            "renderCount": 120,
+            "playgroundId": "#GSYICK#0",
             "referenceImage": "gpu-particles-emitters-directed-cone.png",
             "excludedEngines": ["webgl1"]
         },
         {
-            "title": "GPU Particles - Emitters - Custom",
-            "playgroundId": "#WUGNAC#0",
-            "renderCount": 120,
-            "referenceImage": "gpu-particles-emitters-custom.png",
-            "excludedEngines": ["webgl1", "webgpu"]
-        },
-        {
             "title": "GPU Particles - Billboard Y",
-            "playgroundId": "#R8TQS4#0",
-            "renderCount": 120,
+            "playgroundId": "#8QHGVT#0",
             "referenceImage": "gpu-particles-billboard-y.png",
             "excludedEngines": ["webgl1"]
         },
         {
             "title": "GPU Particles - Billboard Stretched",
-            "playgroundId": "#C9IR5N#0",
-            "renderCount": 120,
+            "playgroundId": "#0612KX#0",
             "referenceImage": "gpu-particles-billboard-stretched.png",
             "excludedEngines": ["webgl1"]
         },
         {
             "title": "GPU Particles - Multiply Blend",
-            "playgroundId": "#RWU4I5#0",
-            "renderCount": 120,
+            "playgroundId": "#D7LQAZ#0",
             "referenceImage": "gpu-particles-multiply-blend.png",
             "excludedEngines": ["webgl1"]
         },
         {
             "title": "GPU Particles - Animations",
-            "playgroundId": "#7LSYXQ#0",
-            "renderCount": 120,
+            "playgroundId": "#B0EJQY#0",
             "referenceImage": "gpu-particles-animations.png",
             "excludedEngines": ["webgl1"]
         },
         {
             "title": "GPU Particles - Noise",
-            "playgroundId": "#JLMFFK#0",
-            "renderCount": 120,
+            "playgroundId": "#P6JQIP#0",
             "referenceImage": "gpu-particles-noise.png",
             "excludedEngines": ["webgl1"]
         },
         {
             "title": "GPU Particles - Flowmaps",
-            "playgroundId": "#ODGUE6#0",
-            "renderCount": 120,
+            "playgroundId": "#SGAEHS#0",
             "referenceImage": "gpu-particles-flowmaps.png",
             "excludedEngines": ["webgl1"]
         },
         {
             "title": "GPU Particles - Local Space",
-            "playgroundId": "#3KOP48#0",
-            "renderCount": 120,
+            "playgroundId": "#NK19TU#0",
             "referenceImage": "gpu-particles-local-space.png",
             "excludedEngines": ["webgl1"]
         }
