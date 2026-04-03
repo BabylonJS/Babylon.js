@@ -3828,6 +3828,10 @@
             "playgroundId": "#ADUC74#28"
         },
         {
+            "title": "Selection outline layer with instances and LOD",
+            "playgroundId": "#8I487I#0"
+        },
+        {
             "title": "Vertex Pulling - Normals UVs Colors Tangents",
             "playgroundId": "#664OF3#6",
             "referenceImage": "vertexPullingNormalsUVsColors.png",

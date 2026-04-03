@@ -474,7 +474,11 @@ export class ThinSelectionOutlineLayer extends ThinEffectLayer {
             return;
         }
 
-        const hardwareInstancedRendering = batch.hardwareInstancedRendering[subMesh._id] || renderingMesh.hasThinInstances || !!renderingMesh._userInstancedBuffersStorage;
+        const hardwareInstancedRendering =
+            batch.hardwareInstancedRendering[subMesh._id] ||
+            renderingMesh.hasThinInstances ||
+            (!!renderingMesh._userInstancedBuffersStorage &&
+                ThinSelectionOutlineLayer.InstanceSelectionIdAttributeName in renderingMesh._userInstancedBuffersStorage.vertexBuffers);
 
         this._setEmissiveTextureAndColor(renderingMesh, subMesh, material);
 
@@ -566,7 +570,15 @@ export class ThinSelectionOutlineLayer extends ThinEffectLayer {
                 BindClipPlane(effect, material, scene);
 
                 // Selection ID
-                const selectionId = this._meshUniqueIdToSelectionId[renderingMesh.uniqueId];
+                let selectionId = this._meshUniqueIdToSelectionId[renderingMesh.uniqueId];
+                // When using LOD, the rendering mesh is the LOD mesh, not the source mesh.
+                // Look up the selection ID from the master (source) mesh.
+                if (selectionId === undefined && renderingMesh._masterMesh) {
+                    selectionId = this._meshUniqueIdToSelectionId[renderingMesh._masterMesh.uniqueId];
+                    if (selectionId === undefined) {
+                        selectionId = renderingMesh._masterMesh.instancedBuffers?.[ThinSelectionOutlineLayer.InstanceSelectionIdAttributeName];
+                    }
+                }
                 if (!renderingMesh.hasInstances && !renderingMesh.hasThinInstances && !renderingMesh.isAnInstance && selectionId !== undefined) {
                     effect.setFloat("selectionId", selectionId);
                 }
@@ -622,7 +634,9 @@ export class ThinSelectionOutlineLayer extends ThinEffectLayer {
 
     /** @internal */
     public override _shouldRenderMesh(mesh: Mesh): boolean {
-        return this.hasMesh(mesh);
+        // Use the base class check (renderingGroupId) rather than this.hasMesh,
+        // because LOD meshes won't be in _selection but still need to render.
+        return super.hasMesh(mesh);
     }
 
     /** @internal */
@@ -638,8 +652,10 @@ export class ThinSelectionOutlineLayer extends ThinEffectLayer {
      * @returns true if the mesh will be used
      */
     public override hasMesh(mesh: AbstractMesh): boolean {
-        // we control selection as RTT render list
-        return super.hasMesh(mesh);
+        if (!super.hasMesh(mesh) || !this._selection) {
+            return false;
+        }
+        return this._selection.indexOf(mesh) !== -1;
     }
 
     /** @internal */
