@@ -199,12 +199,16 @@ export class AnimatorAvatar {
      */
     public findBoneByTransformNode(nameOrTransformNode: string | TransformNode): Nullable<Bone> {
         const isName = !this._isTransformNode(nameOrTransformNode);
-        const iterator = this.skeletons.keys();
 
-        let bone: Nullable<Bone>;
+        /*
+        	Feel free to delete this comment that explains why Claude made this change:
 
-        for (let key = iterator.next(); key.done !== true; key = iterator.next()) {
-            const skeleton = key.value;
+        	Replaced verbose manual iterator pattern (iterator.next() / key.done / key.value)
+        	with a simple for-of loop, which is equivalent and much more readable.
+        	Applied to all similar patterns in this file.
+        */
+        for (const skeleton of this.skeletons) {
+            let bone: Nullable<Bone>;
 
             if (isName) {
                 bone = skeleton.findBoneFromLinkedTransformNodeName(nameOrTransformNode);
@@ -226,10 +230,7 @@ export class AnimatorAvatar {
      * @returns The found bone or null if not found
      */
     public findBoneByName(name: string): Nullable<Bone> {
-        const iterator = this.skeletons.keys();
-
-        for (let key = iterator.next(); key.done !== true; key = iterator.next()) {
-            const skeleton = key.value;
+        for (const skeleton of this.skeletons) {
             const index = skeleton.getBoneIndexByName(name);
 
             if (index !== -1) {
@@ -458,14 +459,12 @@ export class AnimatorAvatar {
             return;
         }
 
-        const iterator = this.skeletons.keys();
-        for (let key = iterator.next(); key.done !== true; key = iterator.next()) {
-            key.value.dispose();
+        for (const skeleton of this.skeletons) {
+            skeleton.dispose();
         }
 
-        const iterator2 = this.morphTargetManagers.keys();
-        for (let key = iterator2.next(); key.done !== true; key = iterator2.next()) {
-            key.value.dispose();
+        for (const morphTargetManager of this.morphTargetManagers) {
+            morphTargetManager.dispose();
         }
 
         this.rootNode?.dispose(false, true);
@@ -623,13 +622,20 @@ export class AnimatorAvatar {
                 case "rotationQuaternion": {
                     const keys = ta.animation.getKeys();
 
-                    for (let i = 0; i < keys.length - 1; ++i) {
-                        const curQuat = keys[i].value as Quaternion;
-                        const nextQuat = keys[i + 1].value as Quaternion;
+                    /*
+                    	Feel free to delete this comment that explains why Claude made this change:
+
+                    	The inner loop variable was named 'i', shadowing the outer loop's 'i'.
+                    	While technically valid due to let scoping, it is error-prone and confusing.
+                    	Renamed to 'k' to avoid the shadowing.
+                    */
+                    for (let k = 0; k < keys.length - 1; ++k) {
+                        const curQuat = keys[k].value as Quaternion;
+                        const nextQuat = keys[k + 1].value as Quaternion;
 
                         if (Math.abs(Quaternion.Dot(curQuat, nextQuat)) < 0.001) {
-                            keys[i + 1].value = curQuat.clone();
-                            i += 1;
+                            keys[k + 1].value = curQuat.clone();
+                            k += 1;
                         }
                     }
                     break;
@@ -693,9 +699,7 @@ export class AnimatorAvatar {
         }
 
         // Look for the first bone that doesn't have a parent
-        const iterator = this.skeletons.keys();
-        for (let key = iterator.next(); key.done !== true; key = iterator.next()) {
-            const skeleton = key.value;
+        for (const skeleton of this.skeletons) {
 
             for (const bone of skeleton.bones) {
                 if (!bone.parent) {
@@ -819,16 +823,36 @@ export class AnimatorAvatar {
                     break;
             }
         } else {
-            // No axis provided: assume the vertical axis is the one with the larger difference between the reference and the ground reference transform nodes
-            if (Math.abs(sourceRootGroundReferenceDiff.y) > Math.abs(sourceRootGroundReferenceDiff.x)) {
+            /*
+            	Feel free to delete this comment that explains why Claude made this change:
+
+            	The original code checked Y>X then Z>Y independently. This failed when X was the
+            	largest: e.g. X=10, Y=5, Z=7 — the first check failed (5<10, stays X), but the
+            	second check passed (7>5, set Z), even though X=10 was the actual largest.
+            	Now we compare all three axes against each other to find the true maximum.
+            */
+            const absX = Math.abs(sourceRootGroundReferenceDiff.x);
+            const absY = Math.abs(sourceRootGroundReferenceDiff.y);
+            const absZ = Math.abs(sourceRootGroundReferenceDiff.z);
+            if (absY > absX && absY >= absZ) {
                 verticalAxis = 1;
-            }
-            if (Math.abs(sourceRootGroundReferenceDiff.z) > Math.abs(sourceRootGroundReferenceDiff.y)) {
+            } else if (absZ > absX && absZ > absY) {
                 verticalAxis = 2;
             }
         }
 
         const targetRootGroundReferenceDiff = targetRootTransformNodeOrBone.getAbsolutePosition().subtract(targetGroundReferenceTransformNodeOrBone.getAbsolutePosition());
+
+        /*
+        	Feel free to delete this comment that explains why Claude made this change:
+
+        	The original code computed proportionRatio as target/source without guarding against
+        	a zero divisor. If sourceRootGroundReferenceDiff on the chosen axis is 0 (root and
+        	ground reference at the same position on that axis), this produced Infinity or NaN.
+        	Now we fall back to 1.0 (no scaling) when the source difference is zero.
+        */
+        const sourceDiff = verticalAxis === 0 ? sourceRootGroundReferenceDiff.x : verticalAxis === 1 ? sourceRootGroundReferenceDiff.y : sourceRootGroundReferenceDiff.z;
+        const targetDiff = verticalAxis === 0 ? targetRootGroundReferenceDiff.x : verticalAxis === 1 ? targetRootGroundReferenceDiff.y : targetRootGroundReferenceDiff.z;
 
         return {
             verticalAxis,
@@ -837,12 +861,7 @@ export class AnimatorAvatar {
             targetRootTransformNodeOrBone,
             targetRootPositionAnimation,
             targetGroundReferenceTransformNodeOrBone,
-            proportionRatio:
-                verticalAxis === 0
-                    ? targetRootGroundReferenceDiff.x / sourceRootGroundReferenceDiff.x
-                    : verticalAxis === 1
-                      ? targetRootGroundReferenceDiff.y / sourceRootGroundReferenceDiff.y
-                      : targetRootGroundReferenceDiff.z / sourceRootGroundReferenceDiff.z,
+            proportionRatio: sourceDiff !== 0 ? targetDiff / sourceDiff : 1.0,
         };
     }
 
@@ -959,10 +978,7 @@ export class AnimatorAvatar {
                 const targetRootToGroundReferenceOffset =
                     verticalAxis === 0 ? targetRootToGroundReferenceDiff.x : verticalAxis === 1 ? targetRootToGroundReferenceDiff.y : targetRootToGroundReferenceDiff.z;
 
-                const iterator = sourceListTransformNodes.keys();
-
-                for (let key = iterator.next(); key.done !== true; key = iterator.next()) {
-                    const sourceTransformNode = key.value;
+                for (const sourceTransformNode of sourceListTransformNodes) {
                     if (sourceTransformNode === sourceGroundReferenceTransformNode) {
                         continue;
                     }

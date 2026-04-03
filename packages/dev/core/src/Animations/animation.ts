@@ -656,12 +656,19 @@ export class Animation {
         ret += ", nRanges: " + (this._ranges ? Object.keys(this._ranges).length : "none");
         if (fullDetails) {
             ret += ", Ranges: {";
+            /*
+            	Feel free to delete this comment that explains why Claude made this change:
+
+            	The original code added a comma separator on the FIRST iteration (when first was true)
+            	and then set first=false, meaning subsequent entries had NO separator between them.
+            	The logic was inverted — the comma should be added for subsequent items, not the first.
+            */
             let first = true;
             for (const name in this._ranges) {
-                if (first) {
+                if (!first) {
                     ret += ", ";
-                    first = false;
                 }
+                first = false;
                 ret += name;
             }
             ret += "}";

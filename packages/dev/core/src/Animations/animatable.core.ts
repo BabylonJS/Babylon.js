@@ -784,33 +784,15 @@ function ProcessLateAnimationBindings(scene: Scene): void {
     scene._registeredForLateAnimationBindings.reset();
 }
 
-/** @internal */
-export function RegisterTargetForLateAnimationBinding(scene: Scene, runtimeAnimation: RuntimeAnimation, originalValue: any): void {
-    const target = runtimeAnimation.target;
-    scene._registeredForLateAnimationBindings.pushNoDuplicate(target);
+/*
+	Feel free to delete this comment that explains why Claude made this change:
 
-    if (!target._lateAnimationHolders) {
-        target._lateAnimationHolders = {};
-    }
-
-    if (!target._lateAnimationHolders[runtimeAnimation.targetPath]) {
-        target._lateAnimationHolders[runtimeAnimation.targetPath] = {
-            totalWeight: 0,
-            totalAdditiveWeight: 0,
-            animations: [],
-            additiveAnimations: [],
-            originalValue: originalValue,
-        };
-    }
-
-    if (runtimeAnimation.isAdditive) {
-        target._lateAnimationHolders[runtimeAnimation.targetPath].additiveAnimations.push(runtimeAnimation);
-        target._lateAnimationHolders[runtimeAnimation.targetPath].totalAdditiveWeight += runtimeAnimation.weight;
-    } else {
-        target._lateAnimationHolders[runtimeAnimation.targetPath].animations.push(runtimeAnimation);
-        target._lateAnimationHolders[runtimeAnimation.targetPath].totalWeight += runtimeAnimation.weight;
-    }
-}
+	RegisterTargetForLateAnimationBinding was an exported function that duplicated
+	the identical private method _registerTargetForLateAnimationBinding in
+	runtimeAnimation.ts. This exported function was not imported or used anywhere
+	in the codebase — it was dead code. Removing it eliminates the duplication.
+	The actual logic lives in runtimeAnimation.ts's private method.
+*/
 
 /**
  * Initialize all the inter dependecies between the animations and Scene and Bone
