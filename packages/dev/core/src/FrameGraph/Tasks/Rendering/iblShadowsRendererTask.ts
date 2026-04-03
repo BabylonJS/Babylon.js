@@ -11,6 +11,7 @@ import { FrameGraphIblShadowsTracingTask } from "./iblShadows/iblShadowsTracingT
 import { FrameGraphIblShadowsVoxelizationTask } from "./iblShadows/iblShadowsVoxelizationTask";
 import { type IFrameGraphIblShadowsAccumulationOptions, type IFrameGraphIblShadowsTracingOptions, type IFrameGraphIblShadowsVoxelizationOptions } from "./iblShadowsTaskTypes";
 import { Texture } from "core/Materials/Textures/texture";
+import { CubeTexture } from "core/Materials/Textures/cubeTexture";
 import { Tools } from "core/Misc/tools";
 import { Observable } from "core/Misc/observable";
 import { FrameGraphTask } from "../../frameGraphTask";
@@ -89,7 +90,8 @@ export class FrameGraphIblShadowsRendererTask extends FrameGraphTask {
     private readonly _materialsWithRenderPlugin: Material[] = [];
     private readonly _outputTextureReadyObservable = new Observable<InternalTexture>();
     private _lastNotifiedOutputTexture: Nullable<InternalTexture> = null;
-    private _observedEnvironmentTexture: Nullable<any> = null;
+    private _observedEnvironmentTexture: Nullable<Texture | CubeTexture> = null;
+    private _observedEnvironmentTextureUnsubscribe: Nullable<() => void> = null;
     private _lastImportedIcdfTexture: Nullable<InternalTexture> = null;
     private _lastImportedEnvironmentTexture: Nullable<InternalTexture> = null;
     private _lastImportedBlueNoiseTexture: Nullable<InternalTexture> = null;
@@ -532,10 +534,9 @@ export class FrameGraphIblShadowsRendererTask extends FrameGraphTask {
     }
 
     private _disposeDependencyObservers(): void {
-        if (this._observedEnvironmentTexture) {
-            this._observedEnvironmentTexture.onLoadObservable.removeCallback(this._onEnvironmentTextureLoaded);
-            this._observedEnvironmentTexture = null;
-        }
+        this._observedEnvironmentTextureUnsubscribe?.();
+        this._observedEnvironmentTextureUnsubscribe = null;
+        this._observedEnvironmentTexture = null;
     }
 
     private _disposeObservers(): void {
@@ -581,15 +582,28 @@ export class FrameGraphIblShadowsRendererTask extends FrameGraphTask {
     }
 
     private _observeEnvironmentTexture(): void {
-        const currentEnvironmentTexture = this._frameGraph.scene.environmentTexture as any;
+        const env = this._frameGraph.scene.environmentTexture;
+        const currentEnvironmentTexture = env instanceof Texture || env instanceof CubeTexture ? env : null;
 
         if (currentEnvironmentTexture === this._observedEnvironmentTexture) {
             return;
         }
 
-        this._observedEnvironmentTexture?.onLoadObservable.removeCallback(this._onEnvironmentTextureLoaded);
+        this._observedEnvironmentTextureUnsubscribe?.();
+        this._observedEnvironmentTextureUnsubscribe = null;
         this._observedEnvironmentTexture = currentEnvironmentTexture;
-        this._observedEnvironmentTexture?.onLoadObservable.add(this._onEnvironmentTextureLoaded);
+
+        if (currentEnvironmentTexture instanceof Texture) {
+            const observer = currentEnvironmentTexture.onLoadObservable.add(this._onEnvironmentTextureLoaded);
+            if (observer) {
+                this._observedEnvironmentTextureUnsubscribe = () => currentEnvironmentTexture.onLoadObservable.remove(observer);
+            }
+        } else if (currentEnvironmentTexture instanceof CubeTexture) {
+            const observer = currentEnvironmentTexture.onLoadObservable.add(this._onEnvironmentTextureLoaded);
+            if (observer) {
+                this._observedEnvironmentTextureUnsubscribe = () => currentEnvironmentTexture.onLoadObservable.remove(observer);
+            }
+        }
     }
 
     private _getEnvironmentTextureInternal(): Nullable<InternalTexture> {
