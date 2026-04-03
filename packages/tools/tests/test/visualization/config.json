@@ -90,6 +90,13 @@
             "referenceImage": "gsplat-part-test.png"
         },
         {
+            "title": "Gaussian Splatting Part Serialize Test",
+            "playgroundId": "#XQZVOI#0",
+            "renderCount": 15,
+            "errorRatio": 5,
+            "referenceImage": "gsplat-part-test.png"
+        },
+        {
             "title": "RH billboard",
             "playgroundId": "#PDO1L6#1",
             "referenceImage": "rh-billboard.png"
