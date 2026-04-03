@@ -486,11 +486,6 @@ export class _IblShadowsVoxelRenderer {
                 }
             },
         });
-        this._voxelMaterial.onEffectCreatedObservable.add(({ effect }) => {
-            if (!isWebGPU) {
-                effect._multiTarget = true;
-            }
-        });
 
         this._voxelMaterial.cullBackFaces = false;
         this._voxelMaterial.backFaceCulling = false;
