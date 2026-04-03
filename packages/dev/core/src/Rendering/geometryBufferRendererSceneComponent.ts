@@ -3,8 +3,7 @@ import { Scene } from "../scene";
 import { type ISceneComponent, SceneComponentConstants } from "../sceneComponent";
 import { type SmartArrayNoDuplicate } from "../Misc/smartArray";
 import { type RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
-import { GeometryBufferRenderer } from "./geometryBufferRenderer";
-import type { IGeometryBufferTextureTypeAndFormat } from "./geometryBufferRenderer";
+import { GeometryBufferRenderer, type IGeometryBufferTextureTypeAndFormat } from "./geometryBufferRenderer";
 import { Constants } from "../Engines/constants";
 
 declare module "../scene" {
