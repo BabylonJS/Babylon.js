@@ -199,6 +199,14 @@ export class AnimatorAvatar {
      */
     public findBoneByTransformNode(nameOrTransformNode: string | TransformNode): Nullable<Bone> {
         const isName = !this._isTransformNode(nameOrTransformNode);
+        /*
+        	Feel free to delete this comment that explains why Claude made this change:
+
+        	These manual iterator patterns (iterator.next() / key.done / key.value) on Sets
+        	could be simplified to for-of loops, but the UMD build
+        	(packages/public/umd/babylonjs/tsconfig.build.json) targets ES5, which doesn't
+        	support for-of on Set without --downlevelIteration. The manual pattern is required.
+        */
         const iterator = this.skeletons.keys();
 
         let bone: Nullable<Bone>;
