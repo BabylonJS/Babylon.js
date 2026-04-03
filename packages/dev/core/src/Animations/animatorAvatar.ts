@@ -199,12 +199,10 @@ export class AnimatorAvatar {
      */
     public findBoneByTransformNode(nameOrTransformNode: string | TransformNode): Nullable<Bone> {
         const isName = !this._isTransformNode(nameOrTransformNode);
-        const iterator = this.skeletons.keys();
 
         let bone: Nullable<Bone>;
 
-        for (let key = iterator.next(); key.done !== true; key = iterator.next()) {
-            const skeleton = key.value;
+        for (const skeleton of this.skeletons) {
 
             if (isName) {
                 bone = skeleton.findBoneFromLinkedTransformNodeName(nameOrTransformNode);
@@ -226,10 +224,7 @@ export class AnimatorAvatar {
      * @returns The found bone or null if not found
      */
     public findBoneByName(name: string): Nullable<Bone> {
-        const iterator = this.skeletons.keys();
-
-        for (let key = iterator.next(); key.done !== true; key = iterator.next()) {
-            const skeleton = key.value;
+        for (const skeleton of this.skeletons) {
             const index = skeleton.getBoneIndexByName(name);
 
             if (index !== -1) {
@@ -458,14 +453,12 @@ export class AnimatorAvatar {
             return;
         }
 
-        const iterator = this.skeletons.keys();
-        for (let key = iterator.next(); key.done !== true; key = iterator.next()) {
-            key.value.dispose();
+        for (const skeleton of this.skeletons) {
+            skeleton.dispose();
         }
 
-        const iterator2 = this.morphTargetManagers.keys();
-        for (let key = iterator2.next(); key.done !== true; key = iterator2.next()) {
-            key.value.dispose();
+        for (const morphTargetManager of this.morphTargetManagers) {
+            morphTargetManager.dispose();
         }
 
         this.rootNode?.dispose(false, true);
@@ -700,10 +693,7 @@ export class AnimatorAvatar {
         }
 
         // Look for the first bone that doesn't have a parent
-        const iterator = this.skeletons.keys();
-        for (let key = iterator.next(); key.done !== true; key = iterator.next()) {
-            const skeleton = key.value;
-
+        for (const skeleton of this.skeletons) {
             for (const bone of skeleton.bones) {
                 if (!bone.parent) {
                     // Make sure there's a transform node with that name in the source animation
@@ -981,10 +971,7 @@ export class AnimatorAvatar {
                 const targetRootToGroundReferenceOffset =
                     verticalAxis === 0 ? targetRootToGroundReferenceDiff.x : verticalAxis === 1 ? targetRootToGroundReferenceDiff.y : targetRootToGroundReferenceDiff.z;
 
-                const iterator = sourceListTransformNodes.keys();
-
-                for (let key = iterator.next(); key.done !== true; key = iterator.next()) {
-                    const sourceTransformNode = key.value;
+                for (const sourceTransformNode of sourceListTransformNodes) {
                     if (sourceTransformNode === sourceGroundReferenceTransformNode) {
                         continue;
                     }
