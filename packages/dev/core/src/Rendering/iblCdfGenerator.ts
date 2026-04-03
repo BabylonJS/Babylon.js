@@ -9,8 +9,8 @@ import { PostProcess, type PostProcessOptions } from "../PostProcesses/postProce
 import { Vector3, Vector4 } from "../Maths/math.vector";
 import { RawTexture } from "../Materials/Textures/rawTexture";
 import { type BaseTexture } from "../Materials/Textures/baseTexture";
-import { Observable, type Observer } from "../Misc/observable";
-import { type CubeTexture } from "../Materials/Textures/cubeTexture";
+import { Observable } from "../Misc/observable";
+import { CubeTexture } from "../Materials/Textures/cubeTexture";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { _WarnImport } from "../Misc/devTools";
 import { type Nullable } from "../types";
@@ -32,8 +32,7 @@ export class IblCdfGenerator {
     private _dominantDirectionPT: ProceduralTexture;
     private _iblSource: Nullable<BaseTexture>;
     private _dummyTexture: RawTexture;
-    private _iblSourceLoadObserver: Nullable<Observer<BaseTexture>> = null;
-    private _iblSourceObservedTexture: Nullable<BaseTexture> = null;
+    private _iblSourceLoadUnsubscribe: Nullable<() => void> = null;
     private _iblSourceReadyRetryObserver: Nullable<() => void> = null;
 
     private _cachedDominantDirection: Nullable<Vector3> = null;
@@ -73,8 +72,6 @@ export class IblCdfGenerator {
             return;
         }
 
-        this._iblSourceObservedTexture = source;
-
         const recreateFromObservedSourceIfReady = () => {
             if (this._iblSource !== source || !this._isIblSourceReady(source)) {
                 return;
@@ -89,9 +86,16 @@ export class IblCdfGenerator {
             return;
         }
 
-        const onLoadObservable = (source as any).onLoadObservable as Nullable<Observable<BaseTexture>>;
-        if (onLoadObservable) {
-            this._iblSourceLoadObserver = onLoadObservable.addOnce(recreateFromObservedSourceIfReady);
+        if (source instanceof Texture) {
+            const observer = source.onLoadObservable.addOnce(recreateFromObservedSourceIfReady);
+            if (observer) {
+                this._iblSourceLoadUnsubscribe = () => source.onLoadObservable.remove(observer);
+            }
+        } else if (source instanceof CubeTexture) {
+            const observer = source.onLoadObservable.addOnce(recreateFromObservedSourceIfReady);
+            if (observer) {
+                this._iblSourceLoadUnsubscribe = () => source.onLoadObservable.remove(observer);
+            }
         }
 
         this._iblSourceReadyRetryObserver = _RetryWithInterval(
@@ -113,7 +117,7 @@ export class IblCdfGenerator {
             return true;
         }
 
-        const internalTexture = (source as CubeTexture).getInternalTexture();
+        const internalTexture = source.getInternalTexture();
         return !!internalTexture && internalTexture.isReady;
     }
 
@@ -121,13 +125,8 @@ export class IblCdfGenerator {
         this._iblSourceReadyRetryObserver?.();
         this._iblSourceReadyRetryObserver = null;
 
-        const observedTexture = this._iblSourceObservedTexture as any;
-        if (observedTexture?.onLoadObservable && this._iblSourceLoadObserver) {
-            observedTexture.onLoadObservable.remove(this._iblSourceLoadObserver);
-        }
-        this._iblSourceLoadObserver = null;
-
-        this._iblSourceObservedTexture = null;
+        this._iblSourceLoadUnsubscribe?.();
+        this._iblSourceLoadUnsubscribe = null;
     }
 
     private _recreateAssetsFromNewIbl() {
