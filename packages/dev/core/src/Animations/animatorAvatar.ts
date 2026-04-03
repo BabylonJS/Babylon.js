@@ -627,15 +627,15 @@ export class AnimatorAvatar {
 
                     	The inner loop variable was named 'i', shadowing the outer loop's 'i'.
                     	While technically valid due to let scoping, it is error-prone and confusing.
-                    	Renamed to 'k' to avoid the shadowing.
+                    	Renamed to 'j' to avoid the shadowing.
                     */
-                    for (let k = 0; k < keys.length - 1; ++k) {
-                        const curQuat = keys[k].value as Quaternion;
-                        const nextQuat = keys[k + 1].value as Quaternion;
+                    for (let j = 0; j < keys.length - 1; ++j) {
+                        const curQuat = keys[j].value as Quaternion;
+                        const nextQuat = keys[j + 1].value as Quaternion;
 
                         if (Math.abs(Quaternion.Dot(curQuat, nextQuat)) < 0.001) {
-                            keys[k + 1].value = curQuat.clone();
-                            k += 1;
+                            keys[j + 1].value = curQuat.clone();
+                            j += 1;
                         }
                     }
                     break;
