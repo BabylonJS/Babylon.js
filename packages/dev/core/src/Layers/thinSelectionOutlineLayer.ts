@@ -749,6 +749,40 @@ export class ThinSelectionOutlineLayer extends ThinEffectLayer {
 
                 this._selection.splice(index, 1);
 
+                // Clean up GPU resources for this mesh
+                const kind = ThinSelectionOutlineLayer.InstanceSelectionIdAttributeName;
+                const m = mesh as Mesh;
+                if (m._userInstancedBuffersStorage) {
+                    if (m._userInstancedBuffersStorage.renderPasses) {
+                        for (const passId of this._objectRenderer.renderPassIds) {
+                            const passVBOs = m._userInstancedBuffersStorage.renderPasses[passId];
+                            if (passVBOs?.[kind]) {
+                                passVBOs[kind]!.dispose();
+                                delete passVBOs[kind];
+                            }
+                        }
+                    }
+                    m._userInstancedBuffersStorage.vertexBuffers[kind]?.dispose();
+                    const vao = m._userInstancedBuffersStorage.vertexArrayObjects?.[kind];
+                    if (vao) {
+                        (this._engine as ThinEngine).releaseVertexArrayObject(vao);
+                        delete m._userInstancedBuffersStorage.vertexArrayObjects![kind];
+                    }
+                    delete m._userInstancedBuffersStorage.data[kind];
+                    delete m._userInstancedBuffersStorage.vertexBuffers[kind];
+                    delete m._userInstancedBuffersStorage.strides[kind];
+                    delete m._userInstancedBuffersStorage.sizes[kind];
+                    if (Object.keys(m._userInstancedBuffersStorage.vertexBuffers).length === 0) {
+                        m._userInstancedBuffersStorage = undefined!;
+                    }
+                }
+                if (m.instancedBuffers?.[kind] !== undefined) {
+                    delete m.instancedBuffers[kind];
+                }
+                if (m.hasThinInstances) {
+                    m.thinInstanceSetBuffer(kind, null);
+                }
+
                 // Reclaim the selection ID when no more meshes reference it
                 if (selectionId !== undefined) {
                     if (--this._selectionIdRefCount[selectionId] <= 0) {
