@@ -93,6 +93,7 @@ export class ThinSelectionOutlineLayer extends ThinEffectLayer {
     public readonly _meshUniqueIdToSelectionId: number[] = [];
     /** @internal */
     public _selection: Nullable<AbstractMesh[]> = [];
+    private _instancedBufferSources: Set<Mesh> = new Set();
     private _nextSelectionId = 1;
 
     /**
@@ -709,6 +710,16 @@ export class ThinSelectionOutlineLayer extends ThinEffectLayer {
                 delete mesh.instancedBuffers[ThinSelectionOutlineLayer.InstanceSelectionIdAttributeName];
             }
         }
+
+        // Clean up source meshes that had instanceSelectionId registered via
+        // addSelection (which registers on sourceMesh, not the instance in _selection).
+        for (const sourceMesh of this._instancedBufferSources) {
+            if (sourceMesh.instancedBuffers?.[ThinSelectionOutlineLayer.InstanceSelectionIdAttributeName] !== undefined) {
+                delete sourceMesh.instancedBuffers[ThinSelectionOutlineLayer.InstanceSelectionIdAttributeName];
+            }
+        }
+        this._instancedBufferSources.clear();
+
         this._selection.length = 0;
         this._meshUniqueIdToSelectionId.length = 0;
 
@@ -746,6 +757,7 @@ export class ThinSelectionOutlineLayer extends ThinEffectLayer {
                 if (sourceMesh.instancedBuffers?.[ThinSelectionOutlineLayer.InstanceSelectionIdAttributeName] === undefined) {
                     sourceMesh.registerInstancedBuffer(ThinSelectionOutlineLayer.InstanceSelectionIdAttributeName, 1);
                 }
+                this._instancedBufferSources.add(sourceMesh);
 
                 mesh.instancedBuffers[ThinSelectionOutlineLayer.InstanceSelectionIdAttributeName] = nextId;
             } else if (mesh.hasThinInstances) {
