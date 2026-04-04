@@ -94,6 +94,8 @@ export class ThinSelectionOutlineLayer extends ThinEffectLayer {
     /** @internal */
     public _selection: Nullable<AbstractMesh[]> = [];
     private _nextSelectionId = 1;
+    private _freeSelectionIds: number[] = [];
+    private _selectionIdRefCount: number[] = [];
 
     /**
      * Instantiates a new selection outline Layer and references it to the scene..
@@ -711,10 +713,53 @@ export class ThinSelectionOutlineLayer extends ThinEffectLayer {
         }
         this._selection.length = 0;
         this._meshUniqueIdToSelectionId.length = 0;
+        this._selectionIdRefCount.length = 0;
+        this._freeSelectionIds.length = 0;
 
         this._nextSelectionId = 1;
 
         this._shouldRender = false;
+    }
+
+    /**
+     * Removes mesh or group of meshes from the current selection
+     * @param meshOrGroup Meshes to remove from the selection
+     */
+    public removeSelection(meshOrGroup: AbstractMesh | AbstractMesh[]): void {
+        if (!this._selection) {
+            return;
+        }
+
+        const group = Array.isArray(meshOrGroup) ? meshOrGroup : [meshOrGroup];
+
+        for (let meshIndex = 0; meshIndex < group.length; ++meshIndex) {
+            const mesh = group[meshIndex];
+            const index = this._selection.indexOf(mesh);
+            if (index !== -1) {
+                // Look up the selection ID before removing the mesh
+                let selectionId: number | undefined;
+                if (mesh.hasInstances || mesh.isAnInstance) {
+                    selectionId = mesh.instancedBuffers?.[ThinSelectionOutlineLayer.InstanceSelectionIdAttributeName];
+                } else if (mesh.hasThinInstances) {
+                    selectionId = (mesh as Mesh)._userInstancedBuffersStorage?.data[ThinSelectionOutlineLayer.InstanceSelectionIdAttributeName]?.[0];
+                } else {
+                    selectionId = this._meshUniqueIdToSelectionId[mesh.uniqueId];
+                    delete this._meshUniqueIdToSelectionId[mesh.uniqueId];
+                }
+
+                this._selection.splice(index, 1);
+
+                // Reclaim the selection ID when no more meshes reference it
+                if (selectionId !== undefined) {
+                    if (--this._selectionIdRefCount[selectionId] <= 0) {
+                        delete this._selectionIdRefCount[selectionId];
+                        this._freeSelectionIds.push(selectionId);
+                    }
+                }
+            }
+        }
+
+        this._shouldRender = this._selection.length > 0;
     }
 
     /**
@@ -728,12 +773,14 @@ export class ThinSelectionOutlineLayer extends ThinEffectLayer {
             return;
         }
 
-        const nextId = this._nextSelectionId;
+        const nextId = this._freeSelectionIds.length > 0 ? this._freeSelectionIds.pop()! : this._nextSelectionId++;
 
         const group = Array.isArray(meshOrGroup) ? meshOrGroup : [meshOrGroup];
         if (group.length === 0) {
             return;
         }
+
+        this._selectionIdRefCount[nextId] = group.length;
 
         for (let meshIndex = 0; meshIndex < group.length; ++meshIndex) {
             const mesh = group[meshIndex];
@@ -759,7 +806,6 @@ export class ThinSelectionOutlineLayer extends ThinEffectLayer {
                 this._meshUniqueIdToSelectionId[mesh.uniqueId] = nextId;
             }
         }
-        this._nextSelectionId += 1;
 
         this._shouldRender = true;
     }

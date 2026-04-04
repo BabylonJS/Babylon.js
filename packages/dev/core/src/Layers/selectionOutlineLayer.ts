@@ -321,6 +321,15 @@ export class SelectionOutlineLayer extends EffectLayer {
     }
 
     /**
+     * Removes mesh or group of meshes from the current selection
+     * @param meshOrGroup Meshes to remove from the selection
+     */
+    public removeSelection(meshOrGroup: AbstractMesh | AbstractMesh[]): void {
+        this._thinEffectLayer.removeSelection(meshOrGroup);
+        this._mainTexture.renderList = this._thinEffectLayer._selection; // update render list
+    }
+
+    /**
      * Free any resources and references associated to a mesh.
      * Internal use
      * @param mesh The mesh to free.
