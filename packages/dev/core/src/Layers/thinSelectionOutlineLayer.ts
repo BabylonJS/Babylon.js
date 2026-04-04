@@ -758,13 +758,19 @@ export class ThinSelectionOutlineLayer extends ThinEffectLayer {
             /*
                 Clean up GPU resources for this mesh.
 
-                Note: _userInstancedBuffersStorage lives on the source Mesh and is shared
-                by all its InstancedMeshes. For an InstancedMesh, this property is undefined
-                so the block below is safely skipped. However, if the source mesh itself is
-                removed while some of its instances are still selected, this cleanup will
-                destroy the shared GPU buffers those instances depend on. In practice this
-                requires selecting both a source mesh and its instances separately, which is
-                an unusual pattern.
+                `_userInstancedBuffersStorage` lives on the source `Mesh` and is shared
+                by all its `InstancedMesh`es. For an `InstancedMesh` passed here, this
+                property is undefined so the block below is safely skipped.
+
+                However, if the source mesh itself is passed to `removeSelection()`
+                while some of its instances are still in the selection, this will
+                dispose the shared GPU vertex buffers (and VAOs / render-pass VBOs)
+                that those instances still reference. `clearSelection()` does not
+                have this problem because it removes everything at once.
+
+                A future fix could skip the `_userInstancedBuffersStorage` teardown
+                when the source mesh still has selected instances, or defer cleanup
+                until the last instance is removed.
             */
             const kind = ThinSelectionOutlineLayer.InstanceSelectionIdAttributeName;
             const m = mesh as Mesh;
