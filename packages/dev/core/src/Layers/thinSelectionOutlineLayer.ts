@@ -710,6 +710,9 @@ export class ThinSelectionOutlineLayer extends ThinEffectLayer {
             if (mesh.instancedBuffers?.[ThinSelectionOutlineLayer.InstanceSelectionIdAttributeName] !== undefined) {
                 delete mesh.instancedBuffers[ThinSelectionOutlineLayer.InstanceSelectionIdAttributeName];
             }
+            if (mesh.hasThinInstances) {
+                mesh.thinInstanceSetBuffer(ThinSelectionOutlineLayer.InstanceSelectionIdAttributeName, null);
+            }
         }
         this._selection.length = 0;
         this._meshUniqueIdToSelectionId.length = 0;
