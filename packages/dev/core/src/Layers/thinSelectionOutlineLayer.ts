@@ -747,7 +747,7 @@ export class ThinSelectionOutlineLayer extends ThinEffectLayer {
             if (mesh.hasInstances || mesh.isAnInstance) {
                 selectionId = mesh.instancedBuffers?.[ThinSelectionOutlineLayer.InstanceSelectionIdAttributeName];
             } else if (mesh.hasThinInstances) {
-                selectionId = (mesh as Mesh)._userInstancedBuffersStorage?.data[ThinSelectionOutlineLayer.InstanceSelectionIdAttributeName]?.[0];
+                selectionId = (mesh as Mesh)._userThinInstanceBuffersStorage?.data[ThinSelectionOutlineLayer.InstanceSelectionIdAttributeName]?.[0];
             } else {
                 selectionId = this._meshUniqueIdToSelectionId[mesh.uniqueId];
                 delete this._meshUniqueIdToSelectionId[mesh.uniqueId];
@@ -755,7 +755,17 @@ export class ThinSelectionOutlineLayer extends ThinEffectLayer {
 
             this._selection.splice(index, 1);
 
-            // Clean up GPU resources for this mesh
+            /*
+                Clean up GPU resources for this mesh.
+
+                Note: _userInstancedBuffersStorage lives on the source Mesh and is shared
+                by all its InstancedMeshes. For an InstancedMesh, this property is undefined
+                so the block below is safely skipped. However, if the source mesh itself is
+                removed while some of its instances are still selected, this cleanup will
+                destroy the shared GPU buffers those instances depend on. In practice this
+                requires selecting both a source mesh and its instances separately, which is
+                an unusual pattern.
+            */
             const kind = ThinSelectionOutlineLayer.InstanceSelectionIdAttributeName;
             const m = mesh as Mesh;
             if (m._userInstancedBuffersStorage) {
