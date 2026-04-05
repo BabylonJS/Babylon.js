@@ -315,3 +315,31 @@ mat4 getPartWorld(uint partIndex) {
     return partWorld[partIndex];
 }
 #endif
+
+#if defined(IS_FOR_VOXELIZATION)
+vec4 computeVoxelSplatWorldPos(vec4 rotationA, vec4 rotationB, vec4 rotationScale, vec3 center, mat4 splatWorld, mat4 viewMatrix, mat4 invWorldScale, vec2 quadPos) {
+    mat3 splatRotation = mat3(
+        vec3(rotationA.x, rotationA.y, rotationA.z),
+        vec3(rotationA.w, rotationB.x, rotationB.y),
+        vec3(rotationB.z, rotationB.w, rotationScale.x)
+    );
+    vec3 splatScale = vec3(rotationScale.y, rotationScale.z, rotationScale.w);
+
+    // Find the splat axis with the longest projection length in view-space Z axis, which indicates the axis
+    // is the one most aligned with the view direction.
+    mat3 rotToView = mat3(viewMatrix) * mat3(invWorldScale) * mat3(splatWorld) * splatRotation;
+    vec3 axisLengthInViewZ = abs(vec3(rotToView[0][2], rotToView[1][2], rotToView[2][2]));
+
+    float gaussianSplatCutoffStddev = 1.4142135624 / 2.0;
+    vec3 offsetSplatSpace;
+    if (axisLengthInViewZ.x > axisLengthInViewZ.y && axisLengthInViewZ.x > axisLengthInViewZ.z) {
+        offsetSplatSpace = vec3(0.0, quadPos.x, quadPos.y) * splatScale * gaussianSplatCutoffStddev;
+    } else if (axisLengthInViewZ.y > axisLengthInViewZ.z) {
+        offsetSplatSpace = vec3(quadPos.x, 0.0, quadPos.y) * splatScale * gaussianSplatCutoffStddev;
+    } else {
+        offsetSplatSpace = vec3(quadPos.x, quadPos.y, 0.0) * splatScale * gaussianSplatCutoffStddev;
+    }
+    vec3 vertexObjectSpace = center + splatRotation * offsetSplatSpace;
+    return splatWorld * vec4(vertexObjectSpace, 1.0);
+}
+#endif

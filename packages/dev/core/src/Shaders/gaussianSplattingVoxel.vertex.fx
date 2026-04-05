@@ -27,12 +27,6 @@ varying vec2 vPatchPosition;
 void main(void) {
     float splatIndex = getSplatIndex(int(position.z + 0.5));
     Splat splat = readSplat(splatIndex);
-    mat3 splatRotation = mat3(
-        vec3(splat.rotationA.x, splat.rotationA.y, splat.rotationA.z),
-        vec3(splat.rotationA.w, splat.rotationB.x, splat.rotationB.y),
-        vec3(splat.rotationB.z, splat.rotationB.w, splat.rotationScale.x)
-    );
-    vec3 splatScale = vec3(splat.rotationScale.y, splat.rotationScale.z, splat.rotationScale.w);
 
 #if IS_COMPOUND
     mat4 splatWorld = getPartWorld(splat.partIndex);
@@ -40,22 +34,7 @@ void main(void) {
     mat4 splatWorld = world;
 #endif
 
-    // Find the splat axis with the longest projection length in view-space Z axis, which indicates the axis 
-    // is the one most aligned with the view direction.
-    mat3 rotToView = mat3(viewMatrix) * mat3(invWorldScale) * mat3(splatWorld) * splatRotation;
-    vec3 axisLengthInViewZ = abs(vec3(rotToView[0][2], rotToView[1][2], rotToView[2][2]));
-
-    float gaussianSplatCutoffStddev = 1.4142135624 / 2.0;
-    vec3 offsetSplatSpace;
-    if (axisLengthInViewZ.x > axisLengthInViewZ.y && axisLengthInViewZ.x > axisLengthInViewZ.z) {
-        offsetSplatSpace = vec3(0.0, position.x, position.y) * splatScale * gaussianSplatCutoffStddev;
-    } else if (axisLengthInViewZ.y > axisLengthInViewZ.z) {
-        offsetSplatSpace = vec3(position.x, 0.0, position.y) * splatScale * gaussianSplatCutoffStddev;
-    } else {
-        offsetSplatSpace = vec3(position.x, position.y, 0.0) * splatScale * gaussianSplatCutoffStddev;
-    }
-    vec3 vertexObjectSpace = splat.center.xyz + splatRotation * offsetSplatSpace;
-    vec4 worldPos = splatWorld * vec4(vertexObjectSpace, 1.0);
+    vec4 worldPos = computeVoxelSplatWorldPos(splat.rotationA, splat.rotationB, splat.rotationScale, splat.center.xyz, splatWorld, viewMatrix, invWorldScale, position.xy);
 
     gl_Position = viewMatrix * invWorldScale * worldPos;
     vNormalizedPosition = gl_Position.xyz * 0.5 + 0.5;
