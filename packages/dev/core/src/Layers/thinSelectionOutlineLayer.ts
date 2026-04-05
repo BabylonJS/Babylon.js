@@ -673,50 +673,14 @@ export class ThinSelectionOutlineLayer extends ThinEffectLayer {
         }
 
         for (let index = 0; index < this._selection.length; ++index) {
-            const mesh = this._selection[index] as Mesh;
-            if (mesh._userInstancedBuffersStorage) {
-                const kind = ThinSelectionOutlineLayer.InstanceSelectionIdAttributeName;
-
-                // Dispose per-pass VBOs for this layer's own render passes only (WebGPU)
-                if (mesh._userInstancedBuffersStorage.renderPasses) {
-                    for (const passId of this._objectRenderer.renderPassIds) {
-                        const passVBOs = mesh._userInstancedBuffersStorage.renderPasses[passId];
-                        if (passVBOs?.[kind]) {
-                            passVBOs[kind]!.dispose();
-                            delete passVBOs[kind];
-                        }
-                    }
-                }
-
-                mesh._userInstancedBuffersStorage.vertexBuffers[kind]?.dispose();
-
-                const vao = mesh._userInstancedBuffersStorage.vertexArrayObjects?.[kind];
-                if (vao) {
-                    // invalidate VAO is very important to keep sync between VAO and vertex buffers
-                    (this._engine as ThinEngine).releaseVertexArrayObject(vao);
-                    delete mesh._userInstancedBuffersStorage.vertexArrayObjects![kind];
-                }
-
-                delete mesh._userInstancedBuffersStorage.data[kind];
-                delete mesh._userInstancedBuffersStorage.vertexBuffers[kind];
-                delete mesh._userInstancedBuffersStorage.strides[kind];
-                delete mesh._userInstancedBuffersStorage.sizes[kind];
-
-                if (Object.keys(mesh._userInstancedBuffersStorage.vertexBuffers).length === 0) {
-                    mesh._userInstancedBuffersStorage = undefined!;
-                }
-            }
-            if (mesh.instancedBuffers?.[ThinSelectionOutlineLayer.InstanceSelectionIdAttributeName] !== undefined) {
-                delete mesh.instancedBuffers[ThinSelectionOutlineLayer.InstanceSelectionIdAttributeName];
-            }
+            this._cleanUpInstanceSelectionId(this._selection[index] as Mesh);
         }
 
-        // Clean up source meshes that had instanceSelectionId registered via
-        // addSelection (which registers on sourceMesh, not the instance in _selection).
+        // addSelection registers instanceSelectionId on the source mesh
+        // (via sourceMesh.registerInstancedBuffer), but _selection contains
+        // the instance, not the source. Clean up source meshes separately.
         for (const sourceMesh of this._instancedBufferSources) {
-            if (sourceMesh.instancedBuffers?.[ThinSelectionOutlineLayer.InstanceSelectionIdAttributeName] !== undefined) {
-                delete sourceMesh.instancedBuffers[ThinSelectionOutlineLayer.InstanceSelectionIdAttributeName];
-            }
+            this._cleanUpInstanceSelectionId(sourceMesh);
         }
         this._instancedBufferSources.clear();
 
@@ -726,6 +690,46 @@ export class ThinSelectionOutlineLayer extends ThinEffectLayer {
         this._nextSelectionId = 1;
 
         this._shouldRender = false;
+    }
+
+    /**
+     * Remove instanceSelectionId instanced buffer registration from a mesh,
+     * including GPU resources (per-pass VBOs, vertex buffers, VAOs).
+     */
+    private _cleanUpInstanceSelectionId(mesh: Mesh): void {
+        if (mesh._userInstancedBuffersStorage) {
+            const kind = ThinSelectionOutlineLayer.InstanceSelectionIdAttributeName;
+
+            if (mesh._userInstancedBuffersStorage.renderPasses) {
+                for (const passId of this._objectRenderer.renderPassIds) {
+                    const passVBOs = mesh._userInstancedBuffersStorage.renderPasses[passId];
+                    if (passVBOs?.[kind]) {
+                        passVBOs[kind]!.dispose();
+                        delete passVBOs[kind];
+                    }
+                }
+            }
+
+            mesh._userInstancedBuffersStorage.vertexBuffers[kind]?.dispose();
+
+            const vao = mesh._userInstancedBuffersStorage.vertexArrayObjects?.[kind];
+            if (vao) {
+                (this._engine as ThinEngine).releaseVertexArrayObject(vao);
+                delete mesh._userInstancedBuffersStorage.vertexArrayObjects![kind];
+            }
+
+            delete mesh._userInstancedBuffersStorage.data[kind];
+            delete mesh._userInstancedBuffersStorage.vertexBuffers[kind];
+            delete mesh._userInstancedBuffersStorage.strides[kind];
+            delete mesh._userInstancedBuffersStorage.sizes[kind];
+
+            if (Object.keys(mesh._userInstancedBuffersStorage.vertexBuffers).length === 0) {
+                mesh._userInstancedBuffersStorage = undefined!;
+            }
+        }
+        if (mesh.instancedBuffers?.[ThinSelectionOutlineLayer.InstanceSelectionIdAttributeName] !== undefined) {
+            delete mesh.instancedBuffers[ThinSelectionOutlineLayer.InstanceSelectionIdAttributeName];
+        }
     }
 
     /**
@@ -796,6 +800,13 @@ export class ThinSelectionOutlineLayer extends ThinEffectLayer {
                 mesh.removeVerticesData(ThinSelectionOutlineLayer.InstanceSelectionIdAttributeName);
             } else if (mesh.hasThinInstances) {
                 (mesh as Mesh).thinInstanceSetBuffer(ThinSelectionOutlineLayer.InstanceSelectionIdAttributeName, null);
+            }
+
+            if (mesh.isAnInstance) {
+                const sourceMesh = (mesh as unknown as InstancedMesh).sourceMesh;
+                if (sourceMesh) {
+                    this._instancedBufferSources.delete(sourceMesh);
+                }
             }
 
             if (selection.length === 0) {
