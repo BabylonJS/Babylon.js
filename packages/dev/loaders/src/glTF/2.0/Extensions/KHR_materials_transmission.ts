@@ -96,8 +96,10 @@ class TransmissionHelper {
 
     // For MultiMaterial meshes with mixed opaque/translucent sub-materials:
     // maps mesh → set of materialIndex values that are translucent.
-    // These submeshes are temporarily removed during the opaque RT render.
     private _translucentMaterialIndices: Map<AbstractMesh, Set<number>> = new Map();
+    // Precomputed opaque-only submesh arrays for mixed meshes, swapped in
+    // during the opaque RT render to avoid per-frame allocations.
+    private _opaqueOnlySubMeshes: Map<AbstractMesh, SubMesh[]> = new Map();
     private _savedSubMeshes: Map<AbstractMesh, SubMesh[]> = new Map();
 
     /**
@@ -225,10 +227,27 @@ class TransmissionHelper {
 
         if (hasTranslucent && hasOpaque) {
             this._translucentMaterialIndices.set(mesh, translucentIndices);
+            this._rebuildOpaqueOnlySubMeshes(mesh, translucentIndices);
             return "mixed";
         }
         this._translucentMaterialIndices.delete(mesh);
+        this._opaqueOnlySubMeshes.delete(mesh);
         return hasTranslucent ? "transparent" : "opaque";
+    }
+
+    /**
+     * Rebuild the cached opaque-only submesh array for a mixed mesh.
+     * Called when classification changes so the per-frame swap is allocation-free.
+     * @param mesh - The mesh to rebuild for
+     * @param translucentIndices - Set of materialIndex values that are translucent
+     */
+    private _rebuildOpaqueOnlySubMeshes(mesh: AbstractMesh, translucentIndices: Set<number>): void {
+        if (mesh.subMeshes) {
+            this._opaqueOnlySubMeshes.set(
+                mesh,
+                mesh.subMeshes.filter((sm: SubMesh) => !translucentIndices.has(sm.materialIndex))
+            );
+        }
     }
 
     private _addMesh(mesh: AbstractMesh): void {
@@ -267,6 +286,7 @@ class TransmissionHelper {
             this._opaqueMeshesCache.splice(idx, 1);
         }
         this._translucentMaterialIndices.delete(mesh);
+        this._opaqueOnlySubMeshes.delete(mesh);
     }
 
     private _parseScene(): void {
@@ -281,11 +301,6 @@ class TransmissionHelper {
     private _onMeshMaterialChanged(mesh: AbstractMesh) {
         const transparentIdx = this._transparentMeshesCache.indexOf(mesh);
         const opaqueIdx = this._opaqueMeshesCache.indexOf(mesh);
-
-        // For non-matching, non-MultiMaterial materials, skip reclassification
-        if (mesh.material && !(mesh.material instanceof MultiMaterial) && !this._loader.isMatchingMaterialType(mesh.material)) {
-            return;
-        }
 
         const classification = this._classifyMeshMaterials(mesh);
 
@@ -355,15 +370,15 @@ class TransmissionHelper {
                 opaqueRenderTarget.clearColor.copyFrom(this._options.clearColor);
             }
 
-            // For mixed MultiMaterial meshes, temporarily remove submeshes that use
-            // translucent materials so they don't render into the opaque texture.
-            const tlEntries = this._translucentMaterialIndices.entries();
+            // For mixed MultiMaterial meshes, swap in the precomputed opaque-only
+            // submesh array so translucent submeshes don't render into the opaque texture.
+            const tlEntries = this._opaqueOnlySubMeshes.entries();
             for (let tlEntry = tlEntries.next(); !tlEntry.done; tlEntry = tlEntries.next()) {
                 const mesh = tlEntry.value[0];
-                const translucentIndices = tlEntry.value[1];
-                if (mesh.subMeshes && translucentIndices.size > 0) {
+                const opaqueOnly = tlEntry.value[1];
+                if (mesh.subMeshes) {
                     this._savedSubMeshes.set(mesh, mesh.subMeshes);
-                    mesh.subMeshes = mesh.subMeshes.filter((sm: SubMesh) => !translucentIndices.has(sm.materialIndex));
+                    mesh.subMeshes = opaqueOnly;
                 }
             }
         });
@@ -405,6 +420,7 @@ class TransmissionHelper {
         this._transparentMeshesCache = [];
         this._opaqueMeshesCache = [];
         this._translucentMaterialIndices.clear();
+        this._opaqueOnlySubMeshes.clear();
         this._savedSubMeshes.clear();
     }
 }
