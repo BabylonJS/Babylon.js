@@ -594,11 +594,6 @@ export class _IblShadowsVoxelRenderer {
     private _setDebugBindings() {
         this._voxelSlabDebugMaterial.setMatrix("projection", this._scene.activeCamera!.getProjectionMatrix());
         this._voxelSlabDebugMaterial.setMatrix("cameraViewMatrix", this._scene.activeCamera!.getViewMatrix());
-
-        for (const mat of Array.from(this._gsVoxelSlabDebugMaterialCache.values())) {
-            mat.setMatrix("projection", this._scene.activeCamera!.getProjectionMatrix());
-            mat.setMatrix("view", this._scene.activeCamera!.getViewMatrix());
-        }
     }
 
     /**
@@ -770,6 +765,7 @@ export class _IblShadowsVoxelRenderer {
             const fillMode = sm.getMaterial()?.fillMode ?? Constants.MATERIAL_TriangleFillMode;
             engine.enableEffect(drawWrapper);
             renderingMesh._bind(sm, effect, fillMode);
+            gsVoxelMaterial._preBind(drawWrapper);
             gsVoxelMaterial.bind(effectiveMesh.getWorldMatrix(), effectiveMesh, effect);
             renderingMesh._processRendering(effectiveMesh, sm, effect, fillMode, batch, hardwareInstancedRendering, (_isInstance, world) => effect.setMatrix("world", world));
             gsVoxelMaterial.unbind();
