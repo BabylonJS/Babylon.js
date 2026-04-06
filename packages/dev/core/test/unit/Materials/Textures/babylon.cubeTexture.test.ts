@@ -1,5 +1,7 @@
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { type Engine, NullEngine } from "core/Engines";
 import { BaseTexture, CubeTexture, InternalTexture } from "core/Materials";
+import { InternalTextureSource } from "core/Materials/Textures/internalTexture";
 import { Scene } from "core/scene";
 
 /**
@@ -13,7 +15,7 @@ function createCachedCubeTexture(engine: Engine, scene: Scene, url: string): { c
     scene.useDelayedTextureLoading = false;
 
     // Create an InternalTexture and configure it to match the cache lookup keys
-    const internalTexture = new InternalTexture(engine, 0 /* Unknown */);
+    const internalTexture = new InternalTexture(engine, InternalTextureSource.Unknown);
     internalTexture.url = url;
     internalTexture.generateMipMaps = true;
     internalTexture.isCube = true;
@@ -52,7 +54,7 @@ describe("CubeTexture", () => {
 
             // Simulate what the environment texture loader does:
             // set _irradianceTexture on the InternalTexture
-            const irradianceInternalTexture = new InternalTexture(engine, 11 /* RenderTarget */);
+            const irradianceInternalTexture = new InternalTexture(engine, InternalTextureSource.RenderTarget);
             const irradianceBaseTexture = new BaseTexture(engine, irradianceInternalTexture);
             internalTexture._irradianceTexture = irradianceBaseTexture;
 
@@ -63,9 +65,9 @@ describe("CubeTexture", () => {
             // InternalTexture from cache, so both share it.
             const clonedTexture = cubeTexture.clone();
 
-            // Both original and clone should still have the irradianceTexture
-            expect(cubeTexture.irradianceTexture).toBeTruthy();
-            expect(clonedTexture.irradianceTexture).toBeTruthy();
+            // Both original and clone should still reference the same irradianceTexture
+            expect(cubeTexture.irradianceTexture).toBe(irradianceBaseTexture);
+            expect(clonedTexture.irradianceTexture).toBe(irradianceBaseTexture);
         });
     });
 });
