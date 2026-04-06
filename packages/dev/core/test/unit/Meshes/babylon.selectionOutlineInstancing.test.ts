@@ -147,6 +147,30 @@ describe("SelectionOutlineLayer instanced buffer cleanup", () => {
         expect(thinLayer._instancedBufferSources.has(source)).toBe(false);
     });
 
+    // Edge case: multiple instances from the same source — disposing one
+    // must not remove the source from tracking while another is still selected
+    test("_disposeMesh keeps source tracked when another instance from same source is still selected", () => {
+        const source = MeshBuilder.CreateBox("source", { size: 1 }, scene);
+        const inst1 = source.createInstance("inst1");
+        const inst2 = source.createInstance("inst2");
+
+        layer.addSelection([inst1, inst2]);
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const thinLayer = (layer as any)._thinEffectLayer;
+        expect(thinLayer._instancedBufferSources.has(source)).toBe(true);
+
+        // Dispose one instance — source should remain tracked
+        layer._disposeMesh(inst1 as unknown as Mesh);
+        expect(thinLayer._instancedBufferSources.has(source)).toBe(true);
+
+        // clearSelection should still clean up the source
+        layer.clearSelection();
+        if (source.instancedBuffers) {
+            expect(SELECTION_ID in source.instancedBuffers).toBe(false);
+        }
+    });
+
     // Source mesh passed directly (hasInstances, not isAnInstance)
     test("clearSelection cleans up source mesh passed directly to addSelection", () => {
         const source = MeshBuilder.CreateBox("source", { size: 1 }, scene);

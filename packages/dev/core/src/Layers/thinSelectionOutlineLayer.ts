@@ -803,7 +803,9 @@ export class ThinSelectionOutlineLayer extends ThinEffectLayer {
 
             if (mesh.isAnInstance) {
                 const sourceMesh = (mesh as unknown as InstancedMesh).sourceMesh;
-                if (sourceMesh) {
+                // Only remove the source from tracking if no other selected
+                // instance shares it, to avoid leaking its GPU resources.
+                if (sourceMesh && !selection.some((m) => m !== mesh && m.isAnInstance && (m as unknown as InstancedMesh).sourceMesh === sourceMesh)) {
                     this._instancedBufferSources.delete(sourceMesh);
                 }
             }
