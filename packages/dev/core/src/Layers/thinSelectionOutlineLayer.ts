@@ -683,7 +683,8 @@ export class ThinSelectionOutlineLayer extends ThinEffectLayer {
                 // a destroyed GPU buffer on the next submit.
                 if (mesh._userInstancedBuffersStorage.renderPasses) {
                     for (const passId in mesh._userInstancedBuffersStorage.renderPasses) {
-                        const passVBOs = mesh._userInstancedBuffersStorage.renderPasses[passId];
+                        const renderPassId = Number(passId);
+                        const passVBOs = mesh._userInstancedBuffersStorage.renderPasses[renderPassId];
                         if (passVBOs?.[kind]) {
                             passVBOs[kind]!.dispose();
                             delete passVBOs[kind];
@@ -718,7 +719,9 @@ export class ThinSelectionOutlineLayer extends ThinEffectLayer {
             // the same format (and thus the same hashCode), the pipeline cache
             // won't detect the change and would replay the stale bundle.
             // Resetting the draw cache forces new bundles to be recorded.
-            mesh.resetDrawCache();
+            if (this._engine.isWebGPU && !this._engine.compatibilityMode) {
+                mesh.resetDrawCache();
+            }
         }
         this._selection.length = 0;
         this._meshUniqueIdToSelectionId.length = 0;
