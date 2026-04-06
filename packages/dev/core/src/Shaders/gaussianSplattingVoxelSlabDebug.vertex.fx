@@ -23,7 +23,6 @@ uniform sampler2D partIndicesTexture;
 #endif
 
 varying vec3 vNormalizedPosition;
-varying vec3 vNormalizedCenterPosition;
 varying float vAlpha;
 varying vec2 vPatchPosition;
 
@@ -49,9 +48,6 @@ void main(void) {
 
     vec4 viewPos = viewMatrix * invWorldScale * worldPos;
     vNormalizedPosition = viewPos.xyz * 0.5 + 0.5;
-
-    vec4 viewCenterPos = viewMatrix * invWorldScale * splatWorld * vec4(splat.center.xyz, 1.0);
-    vNormalizedCenterPosition = viewCenterPos.xyz * 0.5 + 0.5;
 
     vAlpha = splat.color.w * alpha;
     
