@@ -679,9 +679,7 @@ export class ThinSelectionOutlineLayer extends ThinEffectLayer {
         // addSelection registers instanceSelectionId on the source mesh
         // (via sourceMesh.registerInstancedBuffer), but _selection contains
         // the instance, not the source. Clean up source meshes separately.
-        for (const sourceMesh of this._instancedBufferSources) {
-            this._cleanUpInstanceSelectionId(sourceMesh);
-        }
+        this._instancedBufferSources.forEach((sourceMesh) => this._cleanUpInstanceSelectionId(sourceMesh));
         this._instancedBufferSources.clear();
 
         this._selection.length = 0;
@@ -695,6 +693,7 @@ export class ThinSelectionOutlineLayer extends ThinEffectLayer {
     /**
      * Remove instanceSelectionId instanced buffer registration from a mesh,
      * including GPU resources (per-pass VBOs, vertex buffers, VAOs).
+     * @param mesh - The mesh to clean up
      */
     private _cleanUpInstanceSelectionId(mesh: Mesh): void {
         if (mesh._userInstancedBuffersStorage) {
