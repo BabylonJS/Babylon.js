@@ -3492,7 +3492,7 @@
         },
         {
             "title": "OpenPBR Subsurface Dense Scattering - Analytic Lights",
-            "playgroundId": "#GRQHVV#300",
+            "playgroundId": "#GRQHVV#306",
             "excludedEngines": ["webgl1"],
             "renderCount": 10
         },
