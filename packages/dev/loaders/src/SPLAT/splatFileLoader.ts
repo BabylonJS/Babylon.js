@@ -22,7 +22,7 @@ import { Color4 } from "core/Maths/math.color";
 import { VertexData } from "core/Meshes/mesh.vertexData";
 import { type SPLATLoadingOptions } from "./splatLoadingOptions";
 import { type GaussianSplattingMaterial } from "core/Materials/GaussianSplatting/gaussianSplattingMaterial";
-import { ParseSpz } from "./spz";
+import { ConvertSpzToSplatAsync } from "./spz";
 import { Mode, type IParsedSplat } from "./splatDefs";
 import { ParseSogMeta, type SOGRootData } from "./sog";
 import { Tools } from "core/Misc/tools";
@@ -325,23 +325,14 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
             });
         }
 
-        // Use GZip DecompressionStream for SPZ files
-        const readableStream = new ReadableStream({
-            start(controller) {
-                controller.enqueue(new Uint8Array(data));
-                controller.close();
-            },
-        });
-        const decompressionStream = new DecompressionStream("gzip");
-        const decompressedStream = readableStream.pipeThrough(decompressionStream);
-
         return new Promise((resolve) => {
-            new Response(decompressedStream)
-                .arrayBuffer()
-                // eslint-disable-next-line github/no-then
-                .then((buffer) => {
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
+            import("@adobe/spz").then(({ default: createSpzModule }) => {
+                // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
+                createSpzModule().then((spz) => {
+                    const cloud = spz.loadSpzFromBuffer(new Uint8Array(data), { to: spz.CoordinateSystem.RUB });
                     // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
-                    ParseSpz(buffer, scene, this._loadingOptions).then((parsedSPZ) => {
+                    ConvertSpzToSplatAsync(cloud, scene).then((parsedSPZ) => {
                         scene._blockEntityCollection = !!this._assetContainer;
                         const gaussianSplatting =
                             this._loadingOptions.gaussianSplattingMesh ?? new GaussianSplattingMesh("GaussianSplatting", null, scene, this._loadingOptions.keepInRam);
@@ -361,11 +352,8 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
                         this.applyAutoCameraLimits(parsedSPZ, scene);
                         resolve(babylonMeshesArray);
                     });
-                })
-                // eslint-disable-next-line github/no-then
-                .catch(() => {
-                    handlePLY(resolve);
                 });
+            });
         });
     }
 

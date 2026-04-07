@@ -21,5 +21,7 @@
         "@dev/core": "^1.0.0"
     },
     "sideEffects": true,
-    "dependencies": {}
+    "dependencies": {
+        "@adobe/spz": "^0.1.8"
+    }
 }
