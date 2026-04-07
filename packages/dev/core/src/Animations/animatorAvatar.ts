@@ -819,6 +819,7 @@ export class AnimatorAvatar {
                     break;
             }
         } else {
+            // No axis provided: assume the vertical axis is the one with the larger difference between the reference and the ground reference transform nodes
             const absX = Math.abs(sourceRootGroundReferenceDiff.x);
             const absY = Math.abs(sourceRootGroundReferenceDiff.y);
             const absZ = Math.abs(sourceRootGroundReferenceDiff.z);
