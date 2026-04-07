@@ -155,8 +155,6 @@ export class SelectionOutlineLayer extends EffectLayer {
 
         // Do not render as long as no meshes have been added
         this._shouldRender = false;
-
-        this._scene.enableDepthRenderer();
     }
 
     /**
