@@ -5137,6 +5137,9 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
         if (multiMultiMaterials) {
             subdivideWithSubMeshes = false;
+            // Sort meshes by material so that meshes sharing the same material are adjacent.
+            // This produces contiguous index ranges per material, enabling submesh consolidation below.
+            meshes.sort((a, b) => (a.material?.uniqueId ?? -1) - (b.material?.uniqueId ?? -1));
         }
         const materialArray: Array<Material> = new Array<Material>();
         const materialIndexArray: Array<number> = new Array<number>();
@@ -5193,6 +5196,25 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                     indiceArray.push({ start: indexOffset, count: mesh.getTotalIndices() });
                 }
             }
+        }
+
+        // Consolidate consecutive submesh entries that share the same material.
+        // After sorting by material above, same-material entries are adjacent with
+        // contiguous index ranges, so merging them reduces the final draw call count.
+        if (multiMultiMaterials && indiceArray.length > 1) {
+            let writeIdx = 0;
+            for (let readIdx = 1; readIdx < indiceArray.length; readIdx++) {
+                if (materialIndexArray[readIdx] === materialIndexArray[writeIdx]) {
+                    // Extend the previous entry to cover this one
+                    indiceArray[writeIdx].count += indiceArray[readIdx].count;
+                } else {
+                    writeIdx++;
+                    indiceArray[writeIdx] = indiceArray[readIdx];
+                    materialIndexArray[writeIdx] = materialIndexArray[readIdx];
+                }
+            }
+            indiceArray.length = writeIdx + 1;
+            materialIndexArray.length = writeIdx + 1;
         }
 
         const source = meshes[0];
