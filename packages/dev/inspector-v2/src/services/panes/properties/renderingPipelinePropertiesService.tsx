@@ -1,5 +1,5 @@
-import type { ServiceDefinition } from "../../../modularity/serviceDefinition";
-import type { IPropertiesService } from "./propertiesService";
+import { type ServiceDefinition } from "../../../modularity/serviceDefinition";
+import { type IPropertiesService, PropertiesServiceIdentity } from "./propertiesService";
 
 import { PostProcessRenderPipeline } from "core/PostProcesses/RenderPipeline/postProcessRenderPipeline";
 import { DefaultRenderingPipeline } from "core/PostProcesses/RenderPipeline/Pipelines/defaultRenderingPipeline";
@@ -37,8 +37,6 @@ import {
     IblShadowsRenderPipelineScreenspaceProperties,
     IblShadowsRenderPipelineDebugProperties,
 } from "../../../components/properties/renderingPipelines/iblShadowsRenderPipelineProperties";
-
-import { PropertiesServiceIdentity } from "./propertiesService";
 
 export const RenderingPipelinePropertiesServiceDefinition: ServiceDefinition<[], [IPropertiesService]> = {
     friendlyName: "Rendering Pipeline Properties",

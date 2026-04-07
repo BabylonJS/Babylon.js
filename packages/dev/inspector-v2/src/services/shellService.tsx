@@ -1,11 +1,5 @@
-import type { MenuTriggerProps } from "@fluentui/react-components";
-import type { ComponentType, FunctionComponent } from "react";
-
-import type { IDisposable, Nullable } from "core/index";
-import type { IService, ServiceDefinition } from "../modularity/serviceDefinition";
-import type { SettingDescriptor } from "./settingsStore";
-
 import {
+    type MenuTriggerProps,
     Button,
     Divider,
     Toolbar as FluentToolbar,
@@ -23,6 +17,12 @@ import {
     tokens,
     ToolbarRadioButton,
 } from "@fluentui/react-components";
+import { type ComponentType, type FunctionComponent, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+
+import { type IDisposable, type Nullable } from "core/index";
+import { type IService, type ServiceDefinition } from "../modularity/serviceDefinition";
+import { type SettingDescriptor } from "./settingsStore";
+
 import {
     LayoutColumnTwoFocusLeftFilled,
     LayoutColumnTwoFocusRightFilled,
@@ -38,7 +38,6 @@ import {
     PictureInPictureEnterRegular,
 } from "@fluentui/react-icons";
 import { Fade as FluentFade } from "@fluentui/react-motion-components-preview";
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 
 import { Observable } from "core/Misc/observable";
 import { ChildWindow } from "shared-ui-components/fluent/hoc/childWindow";

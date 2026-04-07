@@ -1,12 +1,14 @@
-import type { Nullable, int } from "../../types";
+import { type Nullable, type int } from "../../types";
 import { ThinEngine } from "../../Engines/thinEngine";
 import { AbstractMesh } from "../../Meshes/abstractMesh";
 import { _TimeToken } from "../../Instrumentation/timeToken";
-import type { Observer } from "../../Misc/observable";
-import type { AbstractEngine } from "../abstractEngine";
-import type { OcclusionQuery } from "../AbstractEngine/abstractEngine.query";
+import { type Observer } from "../../Misc/observable";
+import { type AbstractEngine } from "../abstractEngine";
+// eslint-disable-next-line import/no-duplicates
+import { type OcclusionQuery } from "../AbstractEngine/abstractEngine.query";
 
 import "../AbstractEngine/abstractEngine.timeQuery";
+// eslint-disable-next-line import/no-duplicates
 import "../AbstractEngine/abstractEngine.query";
 
 declare module "../../Engines/thinEngine" {

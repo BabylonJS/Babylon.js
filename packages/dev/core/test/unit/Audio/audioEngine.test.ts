@@ -1,5 +1,5 @@
 /**
- * @jest-environment jsdom
+ * @vitest-environment jsdom
  */
 
 import { AudioEngine } from "core/Audio";
@@ -7,9 +7,8 @@ import { AbstractEngine, NullEngine } from "core/Engines";
 import { Scene } from "core/scene";
 import { Sound } from "core/Audio/sound";
 
-import type { AudioContextMock } from "./helpers/mockedAudioObjects";
+import { type AudioContextMock, MockedAudioObjects } from "./helpers/mockedAudioObjects";
 
-import { MockedAudioObjects } from "./helpers/mockedAudioObjects";
 import { AudioTestSamples } from "./helpers/audioTestSamples";
 import { AudioTestHelper } from "./helpers/audioTestHelper";
 
@@ -67,7 +66,7 @@ describe("AudioEngine", () => {
     });
 
     it("should not show mute button until a sound plays when browser requires user interaction", () => {
-        jest.useFakeTimers();
+        vi.useFakeTimers();
 
         const audioEngine = createAudioEngine("suspended");
         (audioEngine._v2._audioContext as unknown as AudioContextMock).requireUserInteraction = true;
@@ -84,7 +83,7 @@ describe("AudioEngine", () => {
     });
 
     it("should not show mute button when sound plays and browser does not require user interaction", () => {
-        jest.useFakeTimers();
+        vi.useFakeTimers();
 
         const audioEngine = createAudioEngine("running");
 

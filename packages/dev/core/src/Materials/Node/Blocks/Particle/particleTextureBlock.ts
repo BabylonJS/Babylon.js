@@ -1,15 +1,15 @@
 import { NodeMaterialBlock } from "../../nodeMaterialBlock";
 import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
-import type { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
+import { type NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
-import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
-import type { NodeMaterialDefines, NodeMaterial } from "../../nodeMaterial";
+import { type NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
+import { type NodeMaterialDefines, type NodeMaterial } from "../../nodeMaterial";
 import { InputBlock } from "../Input/inputBlock";
-import type { BaseTexture } from "../../../Textures/baseTexture";
-import type { Nullable } from "../../../../types";
+import { type BaseTexture } from "../../../Textures/baseTexture";
+import { type Nullable } from "../../../../types";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import { Texture } from "../../../Textures/texture";
-import type { Scene } from "../../../../scene";
+import { type Scene } from "../../../../scene";
 
 /**
  * Base block used for the particle texture

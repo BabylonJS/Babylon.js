@@ -1,13 +1,13 @@
 import * as React from "react";
 import { GeneralPropertyTabComponent } from "./genericNodePropertyComponent";
-import type { IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
-import type { Observer } from "core/Misc/observable";
-import type { Nullable } from "core/types";
+import { type IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
+import { type Observer } from "core/Misc/observable";
+import { type Nullable } from "core/types";
 import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
 import { OptionsLine } from "shared-ui-components/lines/optionsLineComponent";
-import type { ParticleTeleportOutBlock } from "core/Particles/Node/Blocks/Teleport/particleTeleportOutBlock";
-import type { ParticleTeleportInBlock } from "core/Particles/Node/Blocks/Teleport/particleTeleportInBlock";
-import type { GlobalState } from "node-particle-editor/globalState";
+import { type ParticleTeleportOutBlock } from "core/Particles/Node/Blocks/Teleport/particleTeleportOutBlock";
+import { type ParticleTeleportInBlock } from "core/Particles/Node/Blocks/Teleport/particleTeleportInBlock";
+import { type GlobalState } from "node-particle-editor/globalState";
 
 export class TeleportOutPropertyTabComponent extends React.Component<IPropertyComponentProps> {
     private _onUpdateRequiredObserver: Nullable<Observer<any>>;

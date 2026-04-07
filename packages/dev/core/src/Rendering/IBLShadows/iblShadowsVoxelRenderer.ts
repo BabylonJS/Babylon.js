@@ -1,24 +1,21 @@
 import { Constants } from "../../Engines/constants";
-import { Engine } from "../../Engines/engine";
+import { type Engine } from "../../Engines/engine";
 import { ShaderMaterial } from "../../Materials/shaderMaterial";
 import { MultiRenderTarget } from "../../Materials/Textures/multiRenderTarget";
-import { RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture";
-import type { RenderTargetTextureOptions } from "../../Materials/Textures/renderTargetTexture";
-import type { TextureSize } from "../../Materials/Textures/textureCreationOptions";
+import { RenderTargetTexture, type RenderTargetTextureOptions } from "../../Materials/Textures/renderTargetTexture";
+import { type TextureSize } from "../../Materials/Textures/textureCreationOptions";
 import { Color4 } from "../../Maths/math.color";
 import { Matrix, Vector3, Vector4 } from "../../Maths/math.vector";
-import type { Mesh } from "../../Meshes/mesh";
-import type { Scene } from "../../scene";
+import { type Mesh } from "../../Meshes/mesh";
+import { type Scene } from "../../scene";
 import { Texture } from "../../Materials/Textures/texture";
 import { Logger } from "../../Misc/logger";
 import { Observable } from "../../Misc/observable";
-import { PostProcess } from "../../PostProcesses/postProcess";
-import type { PostProcessOptions } from "../../PostProcesses/postProcess";
-import { ProceduralTexture } from "../../Materials/Textures/Procedurals/proceduralTexture";
-import type { IProceduralTextureCreationOptions } from "../../Materials/Textures/Procedurals/proceduralTexture";
+import { PostProcess, type PostProcessOptions } from "../../PostProcesses/postProcess";
+import { ProceduralTexture, type IProceduralTextureCreationOptions } from "../../Materials/Textures/Procedurals/proceduralTexture";
 import { EffectRenderer, EffectWrapper } from "../../Materials/effectRenderer";
-import type { IblShadowsRenderPipeline } from "./iblShadowsRenderPipeline";
-import type { RenderTargetWrapper } from "core/Engines";
+import { type IblShadowsRenderPipeline } from "./iblShadowsRenderPipeline";
+import { type RenderTargetWrapper } from "core/Engines";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
 /**
@@ -567,7 +564,7 @@ export class _IblShadowsVoxelRenderer {
         });
         this._voxelMaterial.cullBackFaces = false;
         this._voxelMaterial.backFaceCulling = false;
-        this._voxelMaterial.depthFunction = Engine.ALWAYS;
+        this._voxelMaterial.depthFunction = Constants.ALWAYS;
 
         this._voxelSlabDebugMaterial = new ShaderMaterial("voxelSlabDebug", this._scene, "iblVoxelSlabDebug", {
             uniforms: ["world", "viewMatrix", "cameraViewMatrix", "projection", "invWorldScale", "nearPlane", "farPlane", "stepSize"],

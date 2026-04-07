@@ -1,6 +1,6 @@
-import type { Nullable } from "core/types";
-import type { RawLottieAnimation } from "./parsing/rawTypes";
-import type { AnimationConfiguration } from "./animationConfiguration";
+import { type Nullable } from "core/types";
+import { type RawLottieAnimation } from "./parsing/rawTypes";
+import { type AnimationConfiguration } from "./animationConfiguration";
 
 /**
  * Input parameters required to load and play an animation

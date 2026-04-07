@@ -1,11 +1,10 @@
-import type { Nullable } from "../../types";
+import { type Nullable } from "../../types";
 import { Vector3 } from "../../Maths/math.vector";
-import type { IPhysicsEngine } from "../IPhysicsEngine";
-import type { IPhysicsEnginePluginV2 } from "./IPhysicsEnginePlugin";
-import type { IRaycastQuery } from "../physicsRaycastResult";
-import { PhysicsRaycastResult } from "../physicsRaycastResult";
+import { type IPhysicsEngine } from "../IPhysicsEngine";
+import { type IPhysicsEnginePluginV2 } from "./IPhysicsEnginePlugin";
+import { type IRaycastQuery, PhysicsRaycastResult } from "../physicsRaycastResult";
 import { _WarnImport } from "../../Misc/devTools";
-import type { PhysicsBody } from "./physicsBody";
+import { type PhysicsBody } from "./physicsBody";
 
 /**
  * Class used to control physics engine

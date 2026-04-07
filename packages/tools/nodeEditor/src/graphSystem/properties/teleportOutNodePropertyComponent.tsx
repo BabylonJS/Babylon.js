@@ -1,13 +1,13 @@
 import * as React from "react";
 import { GetGeneralProperties } from "./genericNodePropertyComponent";
-import type { IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
-import type { Observer } from "core/Misc/observable";
-import type { Nullable } from "core/types";
+import { type IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
+import { type Observer } from "core/Misc/observable";
+import { type Nullable } from "core/types";
 import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
 import { OptionsLine } from "shared-ui-components/lines/optionsLineComponent";
-import type { NodeMaterialTeleportOutBlock } from "core/Materials/Node/Blocks/Teleport/teleportOutBlock";
-import type { NodeMaterialTeleportInBlock } from "core/Materials/Node/Blocks/Teleport/teleportInBlock";
-import type { GlobalState } from "../../globalState";
+import { type NodeMaterialTeleportOutBlock } from "core/Materials/Node/Blocks/Teleport/teleportOutBlock";
+import { type NodeMaterialTeleportInBlock } from "core/Materials/Node/Blocks/Teleport/teleportInBlock";
+import { type GlobalState } from "../../globalState";
 import { PropertyTabComponentBase } from "shared-ui-components/components/propertyTabComponentBase";
 
 export class TeleportOutPropertyTabComponent extends React.Component<IPropertyComponentProps> {

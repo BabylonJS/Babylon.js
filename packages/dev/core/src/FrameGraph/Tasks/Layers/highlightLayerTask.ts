@@ -1,9 +1,8 @@
-import type { FrameGraph, Scene, IThinHighlightLayerOptions } from "core/index";
+import { type FrameGraph, type Scene, type IThinHighlightLayerOptions } from "core/index";
 import { ThinHighlightLayer } from "core/Layers/thinHighlightLayer";
 import { Constants } from "core/Engines/constants";
-import { FrameGraphBaseLayerTask } from "./baseLayerTask";
+import { FrameGraphBaseLayerTask, FrameGraphBaseLayerBlurType } from "./baseLayerTask";
 import { HasStencilAspect } from "core/Materials/Textures/textureHelper.functions";
-import { FrameGraphBaseLayerBlurType } from "./baseLayerTask";
 
 /**
  * Task which applies a highlight effect to a texture.

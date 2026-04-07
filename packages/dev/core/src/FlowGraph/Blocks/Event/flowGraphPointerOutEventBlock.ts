@@ -1,10 +1,10 @@
-import type { FlowGraphContext } from "core/FlowGraph/flowGraphContext";
+import { type FlowGraphContext } from "core/FlowGraph/flowGraphContext";
 import { FlowGraphEventBlock } from "core/FlowGraph/flowGraphEventBlock";
 import { FlowGraphEventType } from "core/FlowGraph/flowGraphEventType";
 import { FlowGraphBlockNames } from "../flowGraphBlockNames";
-import type { AbstractMesh } from "core/Meshes/abstractMesh";
-import type { FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnection";
-import type { IFlowGraphBlockConfiguration } from "core/FlowGraph/flowGraphBlock";
+import { type AbstractMesh } from "core/Meshes/abstractMesh";
+import { type FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnection";
+import { type IFlowGraphBlockConfiguration } from "core/FlowGraph/flowGraphBlock";
 import { RichTypeAny, RichTypeNumber } from "core/FlowGraph/flowGraphRichTypes";
 import { RegisterClass } from "core/Misc/typeStore";
 import { _IsDescendantOf } from "core/FlowGraph/utils";

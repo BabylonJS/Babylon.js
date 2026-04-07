@@ -14,7 +14,7 @@
  * This file is a copy of the original implementation with the offending regexes replaced.
  */
 import { Color, HSLA } from "monaco-editor/esm/vs/base/common/color.js";
-import type { IPosition, IRange } from "monaco-editor/esm/vs/editor/editor.api";
+import { type IPosition, type IRange } from "monaco-editor/esm/vs/editor/editor.api";
 
 export interface IDocumentColorComputerTarget {
     getValue(): string;

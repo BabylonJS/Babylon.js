@@ -1,14 +1,14 @@
 import * as React from "react";
 
-import type { Observable } from "core/Misc/observable";
+import { type Observable } from "core/Misc/observable";
 
-import type { PropertyChangedEvent } from "../../../../propertyChangedEvent";
-import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
+import { type PropertyChangedEvent } from "../../../../propertyChangedEvent";
+import { type LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 import { CommonRenderingPipelinePropertyGridComponent } from "./commonRenderingPipelinePropertyGridComponent";
 import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent";
 import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
-import type { IblShadowsRenderPipeline } from "core/Rendering/IBLShadows/iblShadowsRenderPipeline";
-import type { GlobalState } from "../../../../globalState";
+import { type IblShadowsRenderPipeline } from "core/Rendering/IBLShadows/iblShadowsRenderPipeline";
+import { type GlobalState } from "../../../../globalState";
 import { CheckBoxLineComponent } from "shared-ui-components/lines/checkBoxLineComponent";
 import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineComponent";
 

@@ -1,22 +1,15 @@
-import type { Skeleton } from "core/Bones/skeleton";
-import type { ClusteredLightContainer } from "core/Lights/Clustered/clusteredLightContainer";
-import type { Material } from "core/Materials/material";
-import type { BaseTexture } from "core/Materials/Textures/baseTexture";
-import type { Node } from "core/node";
-import type { Nullable } from "core/types";
-import type { ClusteredLightContainerSelectorProps } from "../../primitives/clusteredLightContainerSelector";
-import type { MaterialSelectorProps } from "../../primitives/materialSelector";
-import type { NodeSelectorProps } from "../../primitives/nodeSelector";
-import type { SkeletonSelectorProps } from "../../primitives/skeletonSelector";
-import type { TextureSelectorProps } from "../../primitives/textureSelector";
-import type { PropertyLineProps } from "./propertyLine";
-
-import { ClusteredLightContainerSelector } from "../../primitives/clusteredLightContainerSelector";
-import { MaterialSelector } from "../../primitives/materialSelector";
-import { NodeSelector } from "../../primitives/nodeSelector";
-import { SkeletonSelector } from "../../primitives/skeletonSelector";
-import { TextureSelector } from "../../primitives/textureSelector";
-import { PropertyLine } from "./propertyLine";
+import { type Skeleton } from "core/Bones/skeleton";
+import { type ClusteredLightContainer } from "core/Lights/Clustered/clusteredLightContainer";
+import { type Material } from "core/Materials/material";
+import { type BaseTexture } from "core/Materials/Textures/baseTexture";
+import { type Node } from "core/node";
+import { type Nullable } from "core/types";
+import { type ClusteredLightContainerSelectorProps, ClusteredLightContainerSelector } from "../../primitives/clusteredLightContainerSelector";
+import { type MaterialSelectorProps, MaterialSelector } from "../../primitives/materialSelector";
+import { type NodeSelectorProps, NodeSelector } from "../../primitives/nodeSelector";
+import { type SkeletonSelectorProps, SkeletonSelector } from "../../primitives/skeletonSelector";
+import { type TextureSelectorProps, TextureSelector } from "../../primitives/textureSelector";
+import { type PropertyLineProps, PropertyLine } from "./propertyLine";
 
 type NodeSelectorPropertyLineProps = PropertyLineProps<Nullable<Node>> & NodeSelectorProps;
 type MaterialSelectorPropertyLineProps = PropertyLineProps<Nullable<Material>> & MaterialSelectorProps;

@@ -2,9 +2,8 @@
 import { checkArgs, findRootDirectory } from "./utils.js";
 import { spawn } from "child_process";
 
-// npx build-tools -c dw -p "@lts/core,@lts/gui" -wd --lts
 // npx build-tools -c dw -p "core,gui" -wd -wa
-// npx build-tools -c dw  -wd -wa --lts -s --https
+// npx build-tools -c dw  -wd -wa -s --https
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export const devWatch = () => {
@@ -16,7 +15,6 @@ export const devWatch = () => {
     const watchAssets = checkArgs(["-ws", "--watch-shaders", "-wa", "--watch-assets"], true);
     const serve = checkArgs(["-s", "--serve"], true);
     const https = checkArgs(["-https", "--https"], true);
-    const lts = checkArgs(["-lts", "--lts"], true);
     const skipCompilation = checkArgs(["-sc", "--skip-compilation"], true);
 
     const processes: { command: string; name: string; arguments: string[]; optional?: boolean }[] = [];
@@ -27,17 +25,10 @@ export const devWatch = () => {
         if (!skipCompilation) {
             processes.push({
                 command: "npm",
-                arguments: ["run", "watch:source:" + (lts ? "lts" : "dev")],
+                arguments: ["run", "watch:source:dev"],
                 name: "typescript-all",
             });
         }
-        // if (watchShaders) {
-        //     processes.push({
-        //         command: "npm",
-        //         arguments: ["run", "watch:shaders"],
-        //         name: "shaders-all",
-        //     });
-        // }
         if (watchAssets) {
             processes.push({
                 command: "npm",
@@ -45,19 +36,11 @@ export const devWatch = () => {
                 name: "assets-all",
             });
         }
-        if (lts) {
-            processes.push({
-                command: "npm",
-                arguments: ["run", "watch:generated"],
-                name: "lts-all",
-            });
-        }
     } else {
         packages.forEach((p) => {
             if (p[0] !== "@") {
-                p = `@${lts ? "lts" : "dev"}/${p}`;
+                p = `@dev/${p}`;
             }
-            const devName = p.replace("lts", "dev");
             if (!skipCompilation) {
                 processes.push({
                     command: "npm",
@@ -68,16 +51,8 @@ export const devWatch = () => {
             if (watchAssets) {
                 processes.push({
                     command: "npm",
-                    arguments: ["run", `watch:assets`, "-w", devName],
+                    arguments: ["run", `watch:assets`, "-w", p],
                     name: `assets-${p}`,
-                    optional: true,
-                });
-            }
-            if (p.startsWith("@lts")) {
-                processes.push({
-                    command: "npm",
-                    arguments: ["run", `watch:generated`, "-w", p],
-                    name: `lts-${p}`,
                     optional: true,
                 });
             }
@@ -91,17 +66,16 @@ export const devWatch = () => {
         processes.push({
             // npm run watch:declaration -w @tools/babylon-server
             command: "npm",
-            arguments: ["run", "watch:declaration:" + (lts ? "lts" : "dev"), "-w", "@tools/babylon-server", ...filterAddition],
+            arguments: ["run", "watch:declaration:dev", "-w", "@tools/babylon-server", ...filterAddition],
             name: "declaration",
         });
     }
 
     if (serve) {
-        const ltsArgs = lts ? ["--env=source=lts"] : [];
         const httpsArgs = https ? ["--server-type", "https", "--host", "::"] : [];
         processes.push({
             command: "npm",
-            arguments: ["run", "serve", "-w", "@tools/babylon-server", "--", ...ltsArgs, ...httpsArgs],
+            arguments: ["run", "serve", "-w", "@tools/babylon-server", "--", ...httpsArgs],
             name: "serve",
         });
     }

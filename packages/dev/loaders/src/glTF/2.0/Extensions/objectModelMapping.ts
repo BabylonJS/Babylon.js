@@ -1,23 +1,30 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 
-import type { TransformNode } from "core/Meshes/transformNode";
-import type { IAnimation, ICamera, IGLTF, IKHRLightsPunctual_Light, IEXTLightsArea_Light, IMaterial, IMesh, INode } from "../glTFLoaderInterfaces";
-import type { Vector3 } from "core/Maths/math.vector";
-import { Matrix, Quaternion, Vector2 } from "core/Maths/math.vector";
+import { type TransformNode } from "core/Meshes/transformNode";
+import {
+    type IAnimation,
+    type ICamera,
+    type IGLTF,
+    type IKHRLightsPunctual_Light,
+    type IEXTLightsArea_Light,
+    type IMaterial,
+    type IMesh,
+    type INode,
+} from "../glTFLoaderInterfaces";
+import { type Vector3, Matrix, Quaternion, Vector2 } from "core/Maths/math.vector";
 import { Constants } from "core/Engines/constants";
-import type { Color3 } from "core/Maths/math.color";
-import { Color4 } from "core/Maths/math.color";
-import type { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
-import type { Light } from "core/Lights/light";
-import type { Nullable } from "core/types";
+import { type Color3, Color4 } from "core/Maths/math.color";
+import { type PBRMaterial } from "core/Materials/PBR/pbrMaterial";
+import { type Light } from "core/Lights/light";
+import { type Nullable } from "core/types";
 import { SpotLight } from "core/Lights/spotLight";
-import type { IEXTLightsImageBased_LightImageBased } from "babylonjs-gltf2interface";
-import type { BaseTexture } from "core/Materials/Textures/baseTexture";
-import type { IInterpolationPropertyInfo, IObjectAccessor } from "core/FlowGraph/typeDefinitions";
+import { type IEXTLightsImageBased_LightImageBased } from "babylonjs-gltf2interface";
+import { type BaseTexture } from "core/Materials/Textures/baseTexture";
+import { type IInterpolationPropertyInfo, type IObjectAccessor } from "core/FlowGraph/typeDefinitions";
 import { GLTFPathToObjectConverter } from "./gltfPathToObjectConverter";
-import type { AnimationGroup } from "core/Animations/animationGroup";
-import type { Mesh } from "core/Meshes/mesh";
-import type { RectAreaLight } from "core/Lights/rectAreaLight";
+import { type AnimationGroup } from "core/Animations/animationGroup";
+import { type Mesh } from "core/Meshes/mesh";
+import { type RectAreaLight } from "core/Lights/rectAreaLight";
 
 export interface IGLTFObjectModelTree {
     cameras: IGLTFObjectModelTreeCamerasObject;
@@ -1051,7 +1058,7 @@ function GenerateTextureMap(textureType: keyof PBRMaterial, textureInObject?: st
             getTarget: GetMaterial,
             set: (value, material, _index?, payload?) => {
                 const texture = GetTexture(material, payload, textureType, textureInObject);
-                (texture.uOffset = value.x), (texture.vOffset = value.y);
+                ((texture.uOffset = value.x), (texture.vOffset = value.y));
             },
             getPropertyName: [
                 () => `${textureType}${textureInObject ? "." + textureInObject : ""}.uOffset`,
@@ -1075,7 +1082,7 @@ function GenerateTextureMap(textureType: keyof PBRMaterial, textureInObject?: st
             getTarget: GetMaterial,
             set: (value, material, index?, payload?) => {
                 const texture = GetTexture(material, payload, textureType, textureInObject);
-                (texture.uScale = value.x), (texture.vScale = value.y);
+                ((texture.uScale = value.x), (texture.vScale = value.y));
             },
             getPropertyName: [
                 () => `${textureType}${textureInObject ? "." + textureInObject : ""}.uScale`,

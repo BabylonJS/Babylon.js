@@ -1,6 +1,6 @@
-import type { Nullable, AbstractEngine, EffectWrapperCreationOptions } from "core/index";
+import { type Nullable, type AbstractEngine, type EffectWrapperCreationOptions } from "core/index";
 import { EffectWrapper } from "../Materials/effectRenderer";
-import { Engine } from "../Engines/engine";
+import { EngineStore } from "../Engines/engineStore";
 
 /**
  * Post process used to render a grain effect
@@ -35,7 +35,7 @@ export class ThinGrainPostProcess extends EffectWrapper {
         super({
             ...options,
             name,
-            engine: engine || Engine.LastCreatedEngine!,
+            engine: engine || EngineStore.LastCreatedEngine!,
             useShaderStore: true,
             useAsPostProcess: true,
             fragmentShader: ThinGrainPostProcess.FragmentUrl,

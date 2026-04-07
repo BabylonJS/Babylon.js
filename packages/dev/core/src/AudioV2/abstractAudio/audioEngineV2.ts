@@ -1,14 +1,14 @@
-import type { Nullable } from "../../types";
-import type { IAudioParameterRampOptions } from "../audioParameter";
-import type { AbstractAudioNode, AbstractNamedAudioNode } from "./abstractAudioNode";
-import type { AbstractSound } from "./abstractSound";
-import type { AbstractSoundSource, ISoundSourceOptions } from "./abstractSoundSource";
-import type { AudioBus, IAudioBusOptions } from "./audioBus";
-import type { IMainAudioBusOptions, MainAudioBus } from "./mainAudioBus";
-import type { IStaticSoundOptions, StaticSound } from "./staticSound";
-import type { IStaticSoundBufferOptions, StaticSoundBuffer } from "./staticSoundBuffer";
-import type { IStreamingSoundOptions, StreamingSound } from "./streamingSound";
-import type { AbstractSpatialAudioListener, ISpatialAudioListenerOptions } from "./subProperties/abstractSpatialAudioListener";
+import { type Nullable } from "../../types";
+import { type IAudioParameterRampOptions } from "../audioParameter";
+import { type AbstractAudioNode, type AbstractNamedAudioNode } from "./abstractAudioNode";
+import { type AbstractSound } from "./abstractSound";
+import { type AbstractSoundSource, type ISoundSourceOptions } from "./abstractSoundSource";
+import { type AudioBus, type IAudioBusOptions } from "./audioBus";
+import { type IMainAudioBusOptions, type MainAudioBus } from "./mainAudioBus";
+import { type IStaticSoundOptions, type StaticSound } from "./staticSound";
+import { type IStaticSoundBufferOptions, type StaticSoundBuffer } from "./staticSoundBuffer";
+import { type IStreamingSoundOptions, type StreamingSound } from "./streamingSound";
+import { type AbstractSpatialAudioListener, type ISpatialAudioListenerOptions } from "./subProperties/abstractSpatialAudioListener";
 
 const Instances: AudioEngineV2[] = [];
 

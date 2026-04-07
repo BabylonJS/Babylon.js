@@ -1,0 +1,38 @@
+{
+    "name": "create-babylonjs",
+    "version": "9.0.0",
+    "description": "Scaffold a new Babylon.js project with your choice of module format, language, and bundler.",
+    "bin": {
+        "create-babylonjs": "./dist/index.js"
+    },
+    "files": [
+        "dist"
+    ],
+    "scripts": {
+        "build": "tsc -p tsconfig.json",
+        "typecheck": "tsc -p tsconfig.json --noEmit"
+    },
+    "dependencies": {
+        "prompts": "^2.4.2"
+    },
+    "devDependencies": {
+        "@types/prompts": "^2.4.9",
+        "typescript": "^5.4.0"
+    },
+    "keywords": [
+        "babylonjs",
+        "babylon.js",
+        "webgl",
+        "webgpu",
+        "3d",
+        "scaffold",
+        "create",
+        "template"
+    ],
+    "license": "Apache-2.0",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/BabylonJS/Babylon.js.git",
+        "directory": "packages/public/create-babylonjs"
+    }
+}

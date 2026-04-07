@@ -1,5 +1,5 @@
-import type { ThinEngine } from "core/Engines/thinEngine";
-import type { Nullable } from "core/types";
+import { type ThinEngine } from "core/Engines/thinEngine";
+import { type Nullable } from "core/types";
 import {
     type SmartFilter,
     type BaseBlock,

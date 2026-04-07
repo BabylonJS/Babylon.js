@@ -1,17 +1,17 @@
 import { CameraMovement } from "./cameraMovement";
 import { Epsilon } from "../Maths/math.constants";
-import type { GeospatialLimits } from "./Limits/geospatialLimits";
+import { type GeospatialLimits } from "./Limits/geospatialLimits";
 import { Matrix, TmpVectors, Vector3 } from "../Maths/math.vector";
-import type { MeshPredicate } from "../Culling/ray.core";
+import { type MeshPredicate } from "../Culling/ray.core";
 import { Plane } from "../Maths/math.plane";
 import { Ray } from "../Culling/ray";
-import type { Scene } from "../scene";
+import { type Scene } from "../scene";
 import { Vector3Distance } from "../Maths/math.vector.functions";
 import { Clamp } from "../Maths/math.scalar.functions";
-import type { PickingInfo } from "../Collisions/pickingInfo";
-import type { Nullable } from "../types";
-import type { InterpolatingBehavior } from "../Behaviors/Cameras/interpolatingBehavior";
-import type { GeospatialCamera } from "./geospatialCamera";
+import { type PickingInfo } from "../Collisions/pickingInfo";
+import { type Nullable } from "../types";
+import { type InterpolatingBehavior } from "../Behaviors/Cameras/interpolatingBehavior";
+import { type GeospatialCamera } from "./geospatialCamera";
 
 /**
  * Geospatial-specific camera movement system that extends the base movement with

@@ -250,10 +250,29 @@ fn singleScatterToMultiScatterAlbedo(rho_ss: vec3f) -> vec3f {
   return (vec3f(1.0) - s) * (vec3f(1.0) - vec3f(0.139) * s) / (vec3f(1.0) + vec3f(1.17) * s);
 }
 
+fn multiScatterToSingleScatterAlbedo(rho_ms: vec3f) -> vec3f {
+    let s: vec3f = 4.09712f + 4.20863f * rho_ms - sqrt(9.59217f + 41.6808f * rho_ms + 17.7126f * rho_ms * rho_ms);
+    return 1.0f - s * s;
+}
+
+fn multiScatterToSingleScatterAlbedoWithAniso(rho_ms: vec3f, aniso: f32) -> vec3f {
+    let s: vec3f = 4.09712 + 4.20863f * rho_ms - sqrt(9.59217f + 41.6808f * rho_ms + 17.7126f * rho_ms * rho_ms);
+    return (vec3f(1.0f) - s * s) / maxEpsVec3(vec3f(1.0f) - vec3f(aniso) * s * s);
+}
+
 fn min3(v: vec3f) -> f32 {
     return min(v.x, min(v.y, v.z));
 }
 
 fn max3(v: vec3f) -> f32 {
     return max(v.x, max(v.y, v.z));
+}
+
+fn uint2float(i: u32) -> f32 {
+    return bitcast<f32>(0x3F800000u | (i >> 9u)) - 1.0;
+}
+
+fn plasticSequence(rstate: u32) -> vec2f {
+    return vec2f(uint2float(rstate * 3242174889u),
+                uint2float(rstate * 2447445414u));
 }

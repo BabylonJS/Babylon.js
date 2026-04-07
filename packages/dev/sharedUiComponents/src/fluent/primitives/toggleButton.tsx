@@ -1,8 +1,7 @@
 import { ToggleButton as FluentToggleButton, makeStyles } from "@fluentui/react-components";
-import type { ButtonProps } from "./button";
-import { useCallback, useContext, useEffect, useState } from "react";
-import type { FunctionComponent } from "react";
-import type { FluentIcon } from "@fluentui/react-icons";
+import { type ButtonProps } from "./button";
+import { useCallback, useContext, useEffect, useState, type FunctionComponent } from "react";
+import { type FluentIcon } from "@fluentui/react-icons";
 import { ToolContext } from "../hoc/fluentToolWrapper";
 import { Tooltip } from "./tooltip";
 

@@ -1,4 +1,4 @@
-import type { NodeMaterialBuildState } from "../nodeMaterialBuildState";
+import { type NodeMaterialBuildState } from "../nodeMaterialBuildState";
 import { RegisterClass } from "../../../Misc/typeStore";
 import { TriPlanarBlock } from "./triPlanarBlock";
 import { NodeMaterialBlockConnectionPointTypes } from "../Enums/nodeMaterialBlockConnectionPointTypes";

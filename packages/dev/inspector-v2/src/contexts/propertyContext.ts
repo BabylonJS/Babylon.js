@@ -1,4 +1,4 @@
-import type { Observable } from "core/index";
+import { type Observable } from "core/index";
 
 import { createContext, useCallback, useContext } from "react";
 

@@ -1,5 +1,5 @@
-import type { ReactElement } from "react";
-import type { HTMLTwinItem } from "./htmlTwinItem";
+import { type ReactElement } from "react";
+import { type HTMLTwinItem } from "./htmlTwinItem";
 export interface IHTMLTwinItemComponentProps {
     description: string | undefined;
     children: ReactElement[];

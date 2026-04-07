@@ -1,43 +1,43 @@
-import type {
-    IBufferView,
-    IAccessor,
-    INode,
-    IScene,
-    IMesh,
-    IMaterial,
-    ITexture,
-    IImage,
-    ISampler,
-    IAnimation,
-    IMeshPrimitive,
-    IBuffer,
-    IGLTF,
-    ITextureInfo,
-    ISkin,
-    ICamera,
+import {
+    type IBufferView,
+    type IAccessor,
+    type INode,
+    type IScene,
+    type IMesh,
+    type IMaterial,
+    type ITexture,
+    type IImage,
+    type ISampler,
+    type IAnimation,
+    type IMeshPrimitive,
+    type IBuffer,
+    type IGLTF,
+    type ITextureInfo,
+    type ISkin,
+    type ICamera,
+    AccessorComponentType,
+    AccessorType,
+    CameraType,
 } from "babylonjs-gltf2interface";
-import { AccessorComponentType, AccessorType, CameraType } from "babylonjs-gltf2interface";
-import type { FloatArray, IndicesArray, Nullable } from "core/types";
-import { TmpVectors, Quaternion } from "core/Maths/math.vector";
-import type { Matrix } from "core/Maths/math.vector";
+import { type FloatArray, type IndicesArray, type Nullable } from "core/types";
+import { TmpVectors, Quaternion, type Matrix } from "core/Maths/math.vector";
 import { Tools } from "core/Misc/tools";
-import type { Buffer } from "core/Buffers/buffer";
-import { VertexBuffer } from "core/Buffers/buffer";
-import type { Node } from "core/node";
+import { type Buffer, VertexBuffer } from "core/Buffers/buffer";
+import { type Node } from "core/node";
 import { TransformNode } from "core/Meshes/transformNode";
-import type { SubMesh } from "core/Meshes/subMesh";
-import type { Mesh } from "core/Meshes/mesh";
+import { type SubMesh } from "core/Meshes/subMesh";
+import { type Mesh } from "core/Meshes/mesh";
 import { AbstractMesh } from "core/Meshes/abstractMesh";
 import { InstancedMesh } from "core/Meshes/instancedMesh";
-import type { BaseTexture } from "core/Materials/Textures/baseTexture";
+import { type BaseTexture } from "core/Materials/Textures/baseTexture";
 import { Material } from "core/Materials/material";
 import { Engine } from "core/Engines/engine";
-import type { Scene } from "core/scene";
+import { type Scene } from "core/scene";
 import { EngineStore } from "core/Engines/engineStore";
 
-import type { IGLTFExporterExtensionV2 } from "./glTFExporterExtension";
+import { type IGLTFExporterExtensionV2 } from "./glTFExporterExtension";
 import { GLTFMaterialExporter } from "./glTFMaterialExporter";
-import type { IExportOptions } from "./glTFSerializer";
+import { type IExportOptions } from "./glTFSerializer";
 import { GLTFData } from "./glTFData";
 import {
     ConvertToRightHandedPosition,
@@ -68,11 +68,10 @@ import { PBRBaseMaterial } from "core/Materials/PBR/pbrBaseMaterial";
 import { StandardMaterial } from "core/Materials/standardMaterial";
 import { Logger } from "core/Misc/logger";
 import { EnumerateFloatValues, AreIndices32Bits } from "core/Buffers/bufferUtils";
-import type { Bone, Skeleton } from "core/Bones";
+import { type Bone, type Skeleton } from "core/Bones";
 import { _GLTFAnimation } from "./glTFAnimation";
-import type { MorphTarget } from "core/Morph";
-import { BuildMorphTargetBuffers } from "./glTFMorphTargetsUtilities";
-import type { IMorphTargetData } from "./glTFMorphTargetsUtilities";
+import { type MorphTarget } from "core/Morph";
+import { BuildMorphTargetBuffers, type IMorphTargetData } from "./glTFMorphTargetsUtilities";
 import { LinesMesh } from "core/Meshes/linesMesh";
 import { GreasedLineBaseMesh } from "core/Meshes/GreasedLine/greasedLineBaseMesh";
 import { Color3, Color4 } from "core/Maths/math.color";

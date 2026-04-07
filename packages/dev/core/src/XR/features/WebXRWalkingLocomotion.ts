@@ -1,12 +1,12 @@
-import type { Engine } from "../../Engines/engine";
+import { type Engine } from "../../Engines/engine";
 import { TmpVectors, Vector2, Vector3 } from "../../Maths/math.vector";
-import type { TransformNode } from "../../Meshes/transformNode";
+import { type TransformNode } from "../../Meshes/transformNode";
 import { Logger } from "../../Misc/logger";
 import { Observable } from "../../Misc/observable";
-import type { Nullable } from "../../types";
-import type { WebXRCamera } from "../webXRCamera";
+import { type Nullable } from "../../types";
+import { type WebXRCamera } from "../webXRCamera";
 import { WebXRFeatureName, WebXRFeaturesManager } from "../webXRFeaturesManager";
-import type { WebXRSessionManager } from "../webXRSessionManager";
+import { type WebXRSessionManager } from "../webXRSessionManager";
 import { WebXRAbstractFeature } from "./WebXRAbstractFeature";
 
 class CircleBuffer {

@@ -1,12 +1,11 @@
-import type { SpotLight } from "core/Lights/spotLight";
-import type { Nullable } from "core/types";
+import { type SpotLight } from "core/Lights/spotLight";
+import { type Nullable } from "core/types";
 import { Vector3, Quaternion, TmpVectors } from "core/Maths/math.vector";
 import { Light } from "core/Lights/light";
-import type { Node } from "core/node";
+import { type Node } from "core/node";
 import { ShadowLight } from "core/Lights/shadowLight";
-import type { INode, IKHRLightsPunctual_LightReference, IKHRLightsPunctual_Light, IKHRLightsPunctual } from "babylonjs-gltf2interface";
-import { KHRLightsPunctual_LightType } from "babylonjs-gltf2interface";
-import type { IGLTFExporterExtensionV2 } from "../glTFExporterExtension";
+import { type INode, type IKHRLightsPunctual_LightReference, type IKHRLightsPunctual_Light, type IKHRLightsPunctual, KHRLightsPunctual_LightType } from "babylonjs-gltf2interface";
+import { type IGLTFExporterExtensionV2 } from "../glTFExporterExtension";
 import { GLTFExporter } from "../glTFExporter";
 import { Logger } from "core/Misc/logger";
 import { ConvertToRightHandedPosition, OmitDefaultValues, CollapseChildIntoParent, IsChildCollapsible } from "../glTFUtilities";

@@ -1,12 +1,12 @@
 import * as React from "react";
-import type { Observable } from "core/Misc/observable";
-import type { IShadowLight } from "core/Lights/shadowLight";
-import type { PropertyChangedEvent } from "../../../../propertyChangedEvent";
+import { type Observable } from "core/Misc/observable";
+import { type IShadowLight } from "core/Lights/shadowLight";
+import { type PropertyChangedEvent } from "../../../../propertyChangedEvent";
 import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
 import { CheckBoxLineComponent } from "shared-ui-components/lines/checkBoxLineComponent";
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
-import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
-import type { GlobalState } from "../../../../globalState";
+import { type LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
+import { type GlobalState } from "../../../../globalState";
 import { OptionsLine } from "shared-ui-components/lines/optionsLineComponent";
 import { ShadowGenerator } from "core/Lights/Shadows/shadowGenerator";
 import { CascadedShadowGenerator } from "core/Lights/Shadows/cascadedShadowGenerator";

@@ -127,19 +127,6 @@
             "problemMatcher": ["$tsc"]
         },
         {
-            "label": "Build (LTS)",
-            "type": "shell",
-            "command": "npm run build:lts",
-            "isBackground": false,
-            "runOptions": {
-                "instanceLimit": 1
-            },
-            "presentation": {
-                "group": "build"
-            },
-            "problemMatcher": ["$tsc"]
-        },
-        {
             "label": "Run visualization tests (Dev)",
             "dependsOn": ["CDN Serve and watch (Dev)"],
             "type": "shell",
@@ -286,24 +273,6 @@
             "problemMatcher": ["$ts-webpack-watch", "$tslint-webpack-watch"]
         },
         {
-            "label": "CDN Serve (LTS)",
-            "dependsOn": ["Build (LTS)"],
-            "type": "shell",
-            "command": "npm",
-            "runOptions": {
-                "instanceLimit": 1
-            },
-            "options": {
-                "cwd": "${workspaceFolder}"
-            },
-            "args": ["run", "serve:lts", "-w", "@tools/babylon-server"],
-            "isBackground": true,
-            "presentation": {
-                "group": "serve"
-            },
-            "problemMatcher": ["$ts-webpack-watch", "$tslint-webpack-watch"]
-        },
-        {
             "label": "Playground Serve for core (Dev)",
             "type": "shell",
             "command": "npm",
@@ -326,24 +295,6 @@
             "type": "shell",
             "command": "npm",
             "dependsOn": ["CDN Serve and watch (Dev)"],
-            "runOptions": {
-                "instanceLimit": 1
-            },
-            "options": {
-                "cwd": "${workspaceFolder}"
-            },
-            "args": ["run", "serve", "-w", "@tools/playground"],
-            "isBackground": true,
-            "presentation": {
-                "group": "serve"
-            },
-            "problemMatcher": ["$ts-webpack-watch", "$tslint-webpack-watch"]
-        },
-        {
-            "label": "Playground Serve (LTS)",
-            "type": "shell",
-            "command": "npm",
-            "dependsOn": "CDN Serve and watch (LTS)",
             "runOptions": {
                 "instanceLimit": 1
             },
@@ -495,6 +446,48 @@
                 "cwd": "${workspaceFolder}"
             },
             "args": ["run", "serve", "-w", "@tools/node-geometry-editor"],
+            "isBackground": true,
+            "presentation": {
+                "group": "serve"
+            },
+            "problemMatcher": ["$ts-webpack-watch", "$tslint-webpack-watch"]
+        },
+        {
+            "label": "Flow Graph Editor Serve for core (Dev)",
+            "type": "shell",
+            "command": "npm",
+            "dependsOn": "CDN Serve and watch (Dev)",
+            "runOptions": {
+                "instanceLimit": 1
+            },
+            "options": {
+                "cwd": "${workspaceFolder}",
+                "env": {
+                    "FGE_PORT": "1345"
+                }
+            },
+            "args": ["run", "serve", "-w", "@tools/flow-graph-editor"],
+            "isBackground": true,
+            "presentation": {
+                "group": "serve"
+            },
+            "problemMatcher": ["$ts-webpack-watch", "$tslint-webpack-watch"]
+        },
+        {
+            "label": "Flow Graph Editor Serve (Dev)",
+            "type": "shell",
+            "command": "npm",
+            "dependsOn": "CDN Serve and watch (Dev)",
+            "runOptions": {
+                "instanceLimit": 1
+            },
+            "options": {
+                "cwd": "${workspaceFolder}",
+                "env": {
+                    "FGE_PORT": "1345"
+                }
+            },
+            "args": ["run", "serve", "-w", "@tools/flow-graph-editor"],
             "isBackground": true,
             "presentation": {
                 "group": "serve"

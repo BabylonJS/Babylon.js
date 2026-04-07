@@ -3,8 +3,8 @@ import { Vector2ToFixed, Vector3ToFixed } from "../../../Maths/math.vector.funct
 import { RegisterClass } from "../../../Misc/typeStore";
 import { NodeParticleBlockConnectionPointTypes } from "../Enums/nodeParticleBlockConnectionPointTypes";
 import { NodeParticleBlock } from "../nodeParticleBlock";
-import type { NodeParticleConnectionPoint } from "../nodeParticleBlockConnectionPoint";
-import type { NodeParticleBuildState } from "../nodeParticleBuildState";
+import { type NodeParticleConnectionPoint } from "../nodeParticleBlockConnectionPoint";
+import { type NodeParticleBuildState } from "../nodeParticleBuildState";
 import { Observable } from "core/Misc/observable";
 
 /**

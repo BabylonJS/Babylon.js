@@ -1,7 +1,6 @@
-import type { FunctionComponent } from "react";
+import { type FunctionComponent, useCallback, useEffect, useState } from "react";
 
 import { makeStyles, tokens, Divider } from "@fluentui/react-components";
-import { useCallback, useEffect, useState } from "react";
 import { AddRegular, DeleteRegular, FullScreenMaximizeRegular } from "@fluentui/react-icons";
 
 import { Animation } from "core/Animations/animation";

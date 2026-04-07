@@ -1,12 +1,12 @@
-import type { Nullable } from "core/types";
+import { type Nullable } from "core/types";
 import { Animation } from "core/Animations/animation";
 import { Observable } from "core/Misc/observable";
-import type { KeyPointComponent } from "./graph/keyPoint";
-import type { Scene } from "core/scene";
-import type { IAnimatable } from "core/Animations/animatable.interface";
-import type { AnimationGroup, TargetedAnimation } from "core/Animations/animationGroup";
-import type { Animatable } from "core/Animations/animatable";
-import type { AnimationKeyInterpolation } from "core/Animations/animationKey";
+import { type KeyPointComponent } from "./graph/keyPoint";
+import { type Scene } from "core/scene";
+import { type IAnimatable } from "core/Animations/animatable.interface";
+import { type AnimationGroup, type TargetedAnimation } from "core/Animations/animationGroup";
+import { type Animatable } from "core/Animations/animatable";
+import { type AnimationKeyInterpolation } from "core/Animations/animationKey";
 
 export interface IActiveAnimationChangedOptions {
     evaluateKeys?: boolean;

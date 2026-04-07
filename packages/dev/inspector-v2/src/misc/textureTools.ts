@@ -1,4 +1,4 @@
-import type { BaseTexture, Texture } from "core/index";
+import { type BaseTexture, type Texture } from "core/index";
 import { GetTextureDataAsync } from "core/Misc/textureTools";
 
 /**

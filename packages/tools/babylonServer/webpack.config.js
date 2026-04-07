@@ -31,8 +31,7 @@ env: {
 */
 
 module.exports = (env) => {
-    const source = env.source || process.env.SOURCE || "dev"; // || "lts";
-    const basePathForSources = path.resolve(__dirname, "../../", source);
+    const basePathForSources = path.resolve(__dirname, "../../", "dev");
     const basePathForTools = path.resolve(__dirname, "../../", "tools");
     const externals = externalsFunction();
     rules.shift();
@@ -78,7 +77,7 @@ module.exports = (env) => {
                 enableLiveReload: env.enableLiveReload,
             },
             {
-                port: env.cdnPort || env.CDN_PORT || 1337,
+                port: env.cdnPort || env.CDN_PORT || process.env.CDN_PORT || 1337,
                 static: ["public", "declarations", "../playground/public"],
                 showBuildProcess: true,
             }
@@ -86,19 +85,20 @@ module.exports = (env) => {
         entry: {
             sceneTs: "./src/sceneTs.ts",
             sceneJs: "./src/sceneJs.js",
-            babylon: `./src/core/index-${source}.ts`,
-            "gui/babylon.gui.min": `./src/gui/index-${source}.ts`,
+            babylon: `./src/core/index-dev.ts`,
+            "gui/babylon.gui.min": `./src/gui/index-dev.ts`,
             "inspector/babylon.inspector.min": `./src/inspector/index.ts`,
             "inspector/babylon.inspector-v2.bundle": `./src/inspector-v2/index.ts`,
-            "serializers/babylonjs.serializers.min": `./src/serializers/index-${source}.ts`,
-            "loaders/babylonjs.loaders.min": `./src/loaders/index-${source}.ts`,
-            "materialsLibrary/babylonjs.materials.min": `./src/materials/index-${source}.ts`,
-            "postProcessesLibrary/babylonjs.postProcess.min": `./src/postProcesses/index-${source}.ts`,
-            "proceduralTexturesLibrary/babylonjs.proceduralTextures.min": `./src/proceduralTextures/index-${source}.ts`,
+            "serializers/babylonjs.serializers.min": `./src/serializers/index-dev.ts`,
+            "loaders/babylonjs.loaders.min": `./src/loaders/index-dev.ts`,
+            "materialsLibrary/babylonjs.materials.min": `./src/materials/index-dev.ts`,
+            "postProcessesLibrary/babylonjs.postProcess.min": `./src/postProcesses/index-dev.ts`,
+            "proceduralTexturesLibrary/babylonjs.proceduralTextures.min": `./src/proceduralTextures/index-dev.ts`,
             "nodeEditor/babylon.nodeEditor.min": `./src/nodeEditor/index.ts`,
             "nodeGeometryEditor/babylon.nodeGeometryEditor.min": `./src/nodeGeometryEditor/index.ts`,
             "nodeRenderGraphEditor/babylon.nodeRenderGraphEditor.min": `./src/nodeRenderGraphEditor/index.ts`,
             "nodeParticleEditor/babylon.nodeParticleEditor.min": `./src/nodeParticleEditor/index.ts`,
+            "flowGraphEditor/babylon.flowGraphEditor.min": `./src/flowGraphEditor/index.ts`,
             "guiEditor/babylon.guiEditor.min": `./src/guiEditor/index.ts`,
             "addons/babylonjs.addons.min": `./src/addons/index.ts`,
             "accessibility/babylon.accessibility.min": `./src/accessibility/index.ts`,
@@ -120,6 +120,7 @@ module.exports = (env) => {
                 "node-geometry-editor": path.resolve(basePathForTools, "nodeGeometryEditor", outputDirectoryForAliases),
                 "node-render-graph-editor": path.resolve(basePathForTools, "nodeRenderGraphEditor", outputDirectoryForAliases),
                 "node-particle-editor": path.resolve(basePathForTools, "nodeParticleEditor", outputDirectoryForAliases),
+                "flow-graph-editor": path.resolve(basePathForTools, "flowGraphEditor", outputDirectoryForAliases),
                 "gui-editor": path.resolve(basePathForTools, "guiEditor", outputDirectoryForAliases),
                 accessibility: path.resolve(basePathForTools, "accessibility", outputDirectoryForAliases),
                 addons: path.resolve(basePathForSources, "addons", outputDirectoryForAliases),
@@ -236,6 +237,14 @@ module.exports = (env) => {
         {
             from: "/nodeParticleEditor/babylon.nodeParticleEditor.d.ts",
             to: "/node-particle-editor.d.ts",
+        },
+        {
+            from: "/flowGraphEditor/babylon.flowGraphEditor.js",
+            to: "/flowGraphEditor/babylon.flowGraphEditor.min.js",
+        },
+        {
+            from: "/flowGraphEditor/babylon.flowGraphEditor.d.ts",
+            to: "/flow-graph-editor.d.ts",
         },
         {
             from: "/guiEditor/babylon.guiEditor.js",

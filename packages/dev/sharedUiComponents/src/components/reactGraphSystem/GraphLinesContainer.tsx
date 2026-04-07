@@ -1,6 +1,5 @@
-import type { FC, PropsWithChildren } from "react";
-import type { DropTargetMonitor } from "react-dnd";
-import { useDrop } from "react-dnd";
+import { type FC, type PropsWithChildren } from "react";
+import { type DropTargetMonitor, useDrop } from "react-dnd";
 import { GraphLine, MarkerArrowId } from "./GraphLine";
 
 /**

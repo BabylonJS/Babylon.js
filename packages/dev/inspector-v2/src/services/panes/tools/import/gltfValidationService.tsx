@@ -1,10 +1,8 @@
-import type { ServiceDefinition } from "../../../../modularity/serviceDefinition";
-import { SceneLoader } from "core/Loading/sceneLoader";
-import type { ISceneLoaderPlugin, ISceneLoaderPluginAsync } from "core/Loading/sceneLoader";
-import type { GLTFFileLoader } from "loaders/glTF/glTFFileLoader";
+import { type ServiceDefinition } from "../../../../modularity/serviceDefinition";
+import { SceneLoader, type ISceneLoaderPlugin, type ISceneLoaderPluginAsync } from "core/Loading/sceneLoader";
+import { type GLTFFileLoader } from "loaders/glTF/glTFFileLoader";
 import { GLTFValidationTool } from "../../../../components/tools/import/gltfValidationTool";
-import type { IToolsService } from "../../toolsService";
-import { ToolsServiceIdentity } from "../../toolsService";
+import { type IToolsService, ToolsServiceIdentity } from "../../toolsService";
 import { MessageBar } from "shared-ui-components/fluent/primitives/messageBar";
 import { GLTFValidation } from "loaders/glTF/glTFValidation";
 import { useProperty } from "../../../../hooks/compoundPropertyHooks";

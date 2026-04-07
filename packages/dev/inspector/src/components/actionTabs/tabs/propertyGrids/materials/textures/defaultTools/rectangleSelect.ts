@@ -1,8 +1,7 @@
-import type { IToolData, IToolParameters } from "../textureEditorComponent";
-import type { PointerInfo } from "core/Events/pointerEvents";
-import { PointerEventTypes } from "core/Events/pointerEvents";
-import type { Nullable } from "core/types";
-import type { Observer } from "core/Misc/observable";
+import { type IToolData, type IToolParameters } from "../textureEditorComponent";
+import { type PointerInfo, PointerEventTypes } from "core/Events/pointerEvents";
+import { type Nullable } from "core/types";
+import { type Observer } from "core/Misc/observable";
 
 export const RectangleSelect: IToolData = {
     name: "Rectangle Select",

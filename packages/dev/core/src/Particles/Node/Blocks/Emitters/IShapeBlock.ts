@@ -1,4 +1,4 @@
-import type { NodeParticleConnectionPoint } from "../../nodeParticleBlockConnectionPoint";
+import { type NodeParticleConnectionPoint } from "../../nodeParticleBlockConnectionPoint";
 
 /**
  * Interface for shape blocks in the particle system.

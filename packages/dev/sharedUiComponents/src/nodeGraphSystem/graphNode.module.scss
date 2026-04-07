@@ -409,3 +409,64 @@
         pointer-events: none;
     }
 }
+
+// Validation badge — shown in the header area
+.validationBadge {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    z-index: 20;
+    pointer-events: auto;
+    cursor: help;
+    border: 2px solid black;
+    box-sizing: border-box;
+
+    &::after {
+        content: "!";
+        display: block;
+        text-align: center;
+        line-height: 12px;
+        font-size: 10px;
+        font-weight: bold;
+        color: white;
+    }
+}
+
+.validationError {
+    background: #e74c3c;
+    box-shadow: 0 0 6px rgba(231, 76, 60, 0.7);
+}
+
+.validationWarning {
+    background: #f39c12;
+    box-shadow: 0 0 6px rgba(243, 156, 18, 0.7);
+}
+
+// Breakpoint badge — shown on the left side of the header
+.breakpointBadge {
+    position: absolute;
+    top: 50%;
+    left: -8px;
+    transform: translateY(-50%);
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    z-index: 20;
+    pointer-events: none;
+    border: 2px solid black;
+    box-sizing: border-box;
+}
+
+.breakpointActive {
+    background: #e74c3c;
+    box-shadow: 0 0 4px rgba(231, 76, 60, 0.6);
+}
+
+.breakpointPaused {
+    background: #e74c3c;
+    box-shadow: 0 0 10px 3px rgba(255, 255, 0, 0.8);
+    border-color: #ffcc00;
+}
