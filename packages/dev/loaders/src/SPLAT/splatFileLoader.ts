@@ -22,7 +22,7 @@ import { Color4 } from "core/Maths/math.color";
 import { VertexData } from "core/Meshes/mesh.vertexData";
 import { type SPLATLoadingOptions } from "./splatLoadingOptions";
 import { type GaussianSplattingMaterial } from "core/Materials/GaussianSplatting/gaussianSplattingMaterial";
-import { ConvertSpzToSplatAsync } from "./spz";
+import { ConvertSpzToSplatAsync, GetSpzModule } from "./spz";
 import { Mode, type IParsedSplat } from "./splatDefs";
 import { ParseSogMeta, type SOGRootData } from "./sog";
 import { Tools } from "core/Misc/tools";
@@ -318,7 +318,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
             });
         };
 
-        // Check for gzip magic bytes (SPZ format) before attempting decompression
+        // Check for gzip magic bytes to detect SPZ format
         if (u8[0] !== 0x1f || u8[1] !== 0x8b) {
             return new Promise((resolve) => {
                 handlePLY(resolve);
@@ -327,31 +327,33 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
 
         return new Promise((resolve) => {
             // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
-            import("@adobe/spz").then(({ default: createSpzModule }) => {
+            GetSpzModule().then((spz) => {
+                const t0 = performance.now();
+                const cloud = spz.loadSpzFromBuffer(new Uint8Array(data), { to: spz.CoordinateSystem.RUB });
+                const t1 = performance.now();
+                Tools.Log(`SPZ decompress+decode: ${(t1 - t0).toFixed(1)}ms (${cloud.numPoints} splats)`);
                 // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
-                createSpzModule().then((spz) => {
-                    const cloud = spz.loadSpzFromBuffer(new Uint8Array(data), { to: spz.CoordinateSystem.RUB });
-                    // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
-                    ConvertSpzToSplatAsync(cloud, scene).then((parsedSPZ) => {
-                        scene._blockEntityCollection = !!this._assetContainer;
-                        const gaussianSplatting =
-                            this._loadingOptions.gaussianSplattingMesh ?? new GaussianSplattingMesh("GaussianSplatting", null, scene, this._loadingOptions.keepInRam);
-                        if (parsedSPZ.trainedWithAntialiasing) {
-                            const gsMaterial = gaussianSplatting.material as GaussianSplattingMaterial;
-                            gsMaterial.kernelSize = 0.1;
-                            gsMaterial.compensation = true;
-                        }
-                        gaussianSplatting._parentContainer = this._assetContainer;
-                        babylonMeshesArray.push(gaussianSplatting);
-                        gaussianSplatting.updateData(parsedSPZ.data, parsedSPZ.sh, { flipY: false });
-                        if (!this._loadingOptions.flipY) {
-                            gaussianSplatting.scaling.y *= -1.0;
-                            gaussianSplatting.computeWorldMatrix(true);
-                        }
-                        scene._blockEntityCollection = false;
-                        this.applyAutoCameraLimits(parsedSPZ, scene);
-                        resolve(babylonMeshesArray);
-                    });
+                ConvertSpzToSplatAsync(cloud, scene).then((parsedSPZ) => {
+                    const t2 = performance.now();
+                    Tools.Log(`SPZ ConvertSpzToSplat: ${(t2 - t1).toFixed(1)}ms`);
+                    scene._blockEntityCollection = !!this._assetContainer;
+                    const gaussianSplatting =
+                        this._loadingOptions.gaussianSplattingMesh ?? new GaussianSplattingMesh("GaussianSplatting", null, scene, this._loadingOptions.keepInRam);
+                    if (parsedSPZ.trainedWithAntialiasing) {
+                        const gsMaterial = gaussianSplatting.material as GaussianSplattingMaterial;
+                        gsMaterial.kernelSize = 0.1;
+                        gsMaterial.compensation = true;
+                    }
+                    gaussianSplatting._parentContainer = this._assetContainer;
+                    babylonMeshesArray.push(gaussianSplatting);
+                    gaussianSplatting.updateData(parsedSPZ.data, parsedSPZ.sh, { flipY: false });
+                    if (!this._loadingOptions.flipY) {
+                        gaussianSplatting.scaling.y *= -1.0;
+                        gaussianSplatting.computeWorldMatrix(true);
+                    }
+                    scene._blockEntityCollection = false;
+                    this.applyAutoCameraLimits(parsedSPZ, scene);
+                    resolve(babylonMeshesArray);
                 });
             });
         });
