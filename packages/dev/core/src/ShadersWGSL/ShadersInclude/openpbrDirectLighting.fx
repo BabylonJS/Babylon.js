@@ -157,6 +157,18 @@
                 #endif
 
                 #ifdef SCATTERING
+                    #ifdef USE_IRRADIANCE_TEXTURE_FOR_SCATTERING
+                        // If we have a precomputed multi-scatter texture, we can use the scatter vector to sample it and get a more accurate scattered environment light.
+                        // This allows us to capture higher order scattering effects that aren't possible with just a single scatter sample.
+                        let mfp: vec3f = vec3f(100.0f) / volumeParams.extinction_coeff;
+                        let diffused_forward_scattered_light: vec3f = sss_convolve(sceneIrradianceSampler, sceneDepthSampler, uniforms.renderTargetSize, mfp, scene.projection, scene.inverseProjection, 16, noise.xy);
+                    #else
+                        // Compute forward-scattered light that has been completely diffused. This will be used when
+                        // scattering is very strong.
+                        preInfoTrans.roughness = 1.0f;
+                        let diffused_forward_scattered_light: vec3f = computeSpecularLighting(preInfoTrans, normalW, vec3f(1.0f), vec3f(1.0f), 1.0f, lightColor{X}.rgb) * volume_absorption;
+                    #endif
+
                     #ifdef GEOMETRY_THIN_WALLED
                         // Direct Transmission (aka forward-scattered light from back side) 
                         let forward_scattered_light: vec3f = forwardScatteredLight * transmission_tint * volumeParams.multi_scatter_color * volumeParams.multi_scatter_color;
@@ -165,10 +177,6 @@
                         // Lerp between the back and forward scattering.
                         slab_translucent = mix(back_scattered_light, forward_scattered_light, 0.5f + 0.5f * volumeParams.anisotropy);
                     #else
-                        // Compute forward-scattered light that has been completely diffused. This will be used when
-                        // scattering is very strong.
-                        preInfoTrans.roughness = 1.0f;
-                        let diffused_forward_scattered_light: vec3f = computeSpecularLighting(preInfoTrans, normalW, vec3f(1.0f), vec3f(1.0f), 1.0f, lightColor{X}.rgb) * volume_absorption;
                         
                         // Compute back-scattered light
                         let back_scattered_normal: vec3f = normalize(normalW + viewDirectionW);

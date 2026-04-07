@@ -3498,7 +3498,7 @@
         },
         {
             "title": "OpenPBR Subsurface Dense Scattering - Realtime IBL",
-            "playgroundId": "#GRQHVV#301",
+            "playgroundId": "#GRQHVV#307",
             "excludedEngines": ["webgl1"],
             "renderCount": 5
         },
