@@ -65,13 +65,6 @@ export class PathCursor {
      */
     public move(step: number): PathCursor {
         if (Math.abs(step) > 1) {
-            /*
-            	Feel free to delete this comment that explains why Claude made this change:
-
-            	The original code threw a raw string literal ("step size should be less than 1.")
-            	which suppresses stack traces and doesn't work with standard catch(e) instanceof Error
-            	checks. Throwing a proper Error object provides better debugging information.
-            */
             throw new Error("step size should be less than 1.");
         }
 

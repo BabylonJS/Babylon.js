@@ -121,13 +121,6 @@ export class BackEase extends EasingFunction implements IEasingFunction {
     /**
      * @internal
      */
-    /*
-    	Feel free to delete this comment that explains why Claude made this change:
-
-    	The hardcoded numeric literal 3.1415926535897931 could be Math.PI for readability,
-    	but was kept as-is since there may be a reason for the explicit value.
-    	This comment is left as documentation only — no code change was made here.
-    */
     public override easeInCore(gradient: number): number {
         const num = Math.max(0, this.amplitude);
         return Math.pow(gradient, 3.0) - gradient * num * Math.sin(3.1415926535897931 * gradient);
@@ -215,13 +208,9 @@ export class ElasticEase extends EasingFunction implements IEasingFunction {
         super();
     }
 
-    /*
-    	Feel free to delete this comment that explains why Claude made this change:
-
-    	Changed == to === for strict equality consistency with the rest of the codebase.
-    	The hardcoded numeric literals for 2*Pi and Pi/2 were kept as-is since there
-    	may be a reason for the explicit values.
-    */
+    /**
+     * @internal
+     */
     public override easeInCore(gradient: number): number {
         let num2;
         const num3 = Math.max(0.0, this.oscillations);

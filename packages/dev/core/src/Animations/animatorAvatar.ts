@@ -199,14 +199,6 @@ export class AnimatorAvatar {
      */
     public findBoneByTransformNode(nameOrTransformNode: string | TransformNode): Nullable<Bone> {
         const isName = !this._isTransformNode(nameOrTransformNode);
-        /*
-        	Feel free to delete this comment that explains why Claude made this change:
-
-        	These manual iterator patterns (iterator.next() / key.done / key.value) on Sets
-        	could be simplified to for-of loops, but the UMD build
-        	(packages/public/umd/babylonjs/tsconfig.build.json) targets ES5, which doesn't
-        	support for-of on Set without --downlevelIteration. The manual pattern is required.
-        */
         const iterator = this.skeletons.keys();
 
         let bone: Nullable<Bone>;
@@ -631,13 +623,6 @@ export class AnimatorAvatar {
                 case "rotationQuaternion": {
                     const keys = ta.animation.getKeys();
 
-                    /*
-                    	Feel free to delete this comment that explains why Claude made this change:
-
-                    	The inner loop variable was named 'i', shadowing the outer loop's 'i'.
-                    	While technically valid due to let scoping, it is error-prone and confusing.
-                    	Renamed to 'j' to avoid the shadowing.
-                    */
                     for (let j = 0; j < keys.length - 1; ++j) {
                         const curQuat = keys[j].value as Quaternion;
                         const nextQuat = keys[j + 1].value as Quaternion;
@@ -834,14 +819,6 @@ export class AnimatorAvatar {
                     break;
             }
         } else {
-            /*
-            	Feel free to delete this comment that explains why Claude made this change:
-
-            	The original code checked Y>X then Z>Y independently. This failed when X was the
-            	largest: e.g. X=10, Y=5, Z=7 — the first check failed (5<10, stays X), but the
-            	second check passed (7>5, set Z), even though X=10 was the actual largest.
-            	Now we compare all three axes against each other to find the true maximum.
-            */
             const absX = Math.abs(sourceRootGroundReferenceDiff.x);
             const absY = Math.abs(sourceRootGroundReferenceDiff.y);
             const absZ = Math.abs(sourceRootGroundReferenceDiff.z);
@@ -854,14 +831,6 @@ export class AnimatorAvatar {
 
         const targetRootGroundReferenceDiff = targetRootTransformNodeOrBone.getAbsolutePosition().subtract(targetGroundReferenceTransformNodeOrBone.getAbsolutePosition());
 
-        /*
-        	Feel free to delete this comment that explains why Claude made this change:
-
-        	The original code computed proportionRatio as target/source without guarding against
-        	a zero divisor. If sourceRootGroundReferenceDiff on the chosen axis is 0 (root and
-        	ground reference at the same position on that axis), this produced Infinity or NaN.
-        	Now we fall back to 1.0 (no scaling) when the source difference is zero.
-        */
         const sourceDiff = verticalAxis === 0 ? sourceRootGroundReferenceDiff.x : verticalAxis === 1 ? sourceRootGroundReferenceDiff.y : sourceRootGroundReferenceDiff.z;
         const targetDiff = verticalAxis === 0 ? targetRootGroundReferenceDiff.x : verticalAxis === 1 ? targetRootGroundReferenceDiff.y : targetRootGroundReferenceDiff.z;
 
