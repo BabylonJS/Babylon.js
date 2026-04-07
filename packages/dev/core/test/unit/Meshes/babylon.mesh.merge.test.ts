@@ -1,8 +1,7 @@
 import { NullEngine } from "core/Engines";
 import { Mesh, MeshBuilder, SubMesh } from "core/Meshes";
-import { MultiMaterial, PBRMaterial, StandardMaterial } from "core/Materials";
+import { MultiMaterial, StandardMaterial } from "core/Materials";
 import { Scene } from "core/scene";
-import { Vector3 } from "core/Maths";
 
 describe("Mesh.MergeMeshes", () => {
     let engine: NullEngine;

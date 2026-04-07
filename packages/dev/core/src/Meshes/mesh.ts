@@ -5135,6 +5135,10 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 }
             }
         }
+        // Preserve the caller's first mesh for naming and property copying,
+        // since sorting below may reorder the array.
+        const source = meshes[0];
+
         if (multiMultiMaterials) {
             subdivideWithSubMeshes = false;
             // Sort meshes by material so that meshes sharing the same material are adjacent.
@@ -5198,18 +5202,21 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             }
         }
 
-        // Consolidate consecutive submesh entries that share the same material.
-        // After sorting by material above, same-material entries are adjacent with
-        // contiguous index ranges, so merging them reduces the final draw call count.
+        // Consolidate consecutive submesh entries that share the same material and
+        // have contiguous index ranges. Same-material entries are not guaranteed to
+        // be gap-free, so only merge when the next range starts exactly where the
+        // current one ends.
         if (multiMultiMaterials && indiceArray.length > 1) {
             let writeIdx = 0;
             for (let readIdx = 1; readIdx < indiceArray.length; readIdx++) {
-                if (materialIndexArray[readIdx] === materialIndexArray[writeIdx]) {
-                    // Extend the previous entry to cover this one
-                    indiceArray[writeIdx].count += indiceArray[readIdx].count;
+                const previousIndice = indiceArray[writeIdx];
+                const currentIndice = indiceArray[readIdx];
+                if (materialIndexArray[readIdx] === materialIndexArray[writeIdx] && previousIndice.start + previousIndice.count === currentIndice.start) {
+                    // Extend the previous entry only when this range is contiguous
+                    previousIndice.count += currentIndice.count;
                 } else {
                     writeIdx++;
-                    indiceArray[writeIdx] = indiceArray[readIdx];
+                    indiceArray[writeIdx] = currentIndice;
                     materialIndexArray[writeIdx] = materialIndexArray[readIdx];
                 }
             }
@@ -5217,15 +5224,13 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             materialIndexArray.length = writeIdx + 1;
         }
 
-        const source = meshes[0];
-
         const getVertexDataFromMesh = (mesh: Mesh) => {
             const wm = mesh.computeWorldMatrix(true);
             const vertexData = VertexData.ExtractFromMesh(mesh, false, false);
             return { vertexData, transform: wm };
         };
 
-        const { vertexData: sourceVertexData, transform: sourceTransform } = getVertexDataFromMesh(source);
+        const { vertexData: sourceVertexData, transform: sourceTransform } = getVertexDataFromMesh(meshes[0]);
         if (isAsync) {
             yield;
         }
