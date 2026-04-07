@@ -16,7 +16,7 @@ import { type BoundingInfo } from "../../Culling/boundingInfo";
 import { type BaseTexture } from "../../Materials/Textures/baseTexture";
 
 const _GaussianSplattingBytesPerSplat = 32;
-const _GaussianSplattingBytesPerSHTexel = 16;
+const _GaussianSplattingBytesPerShTexel = 16;
 
 interface IGaussianSplattingPartSource {
     name: string;
@@ -430,8 +430,8 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
 
         const splatByteOffset = proxy._splatsDataOffset * _GaussianSplattingBytesPerSplat;
         const splatByteLength = proxy._vertexCount * _GaussianSplattingBytesPerSplat;
-        const shByteOffset = proxy._shDataOffset * _GaussianSplattingBytesPerSHTexel;
-        const shByteLength = proxy._vertexCount * _GaussianSplattingBytesPerSHTexel;
+        const shByteOffset = proxy._shDataOffset * _GaussianSplattingBytesPerShTexel;
+        const shByteLength = proxy._vertexCount * _GaussianSplattingBytesPerShTexel;
 
         return {
             name: proxy.name,
@@ -484,12 +484,12 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
 
         const mergedShData: Uint8Array[] = [];
         for (let textureIndex = 0; textureIndex < shDegree; textureIndex++) {
-            mergedShData.push(new Uint8Array(totalCount * _GaussianSplattingBytesPerSHTexel));
+            mergedShData.push(new Uint8Array(totalCount * _GaussianSplattingBytesPerShTexel));
         }
 
         let shByteOffset = 0;
         if (this._shData && existingVertexCount > 0) {
-            const existingShByteLength = existingVertexCount * _GaussianSplattingBytesPerSHTexel;
+            const existingShByteLength = existingVertexCount * _GaussianSplattingBytesPerShTexel;
             for (let textureIndex = 0; textureIndex < mergedShData.length; textureIndex++) {
                 if (textureIndex < this._shData.length) {
                     mergedShData[textureIndex].set(this._shData[textureIndex].subarray(0, existingShByteLength), shByteOffset);
@@ -499,7 +499,7 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
         }
 
         for (const other of others) {
-            const otherShByteLength = other._vertexCount * _GaussianSplattingBytesPerSHTexel;
+            const otherShByteLength = other._vertexCount * _GaussianSplattingBytesPerShTexel;
             if (other._shData) {
                 for (let textureIndex = 0; textureIndex < mergedShData.length; textureIndex++) {
                     if (textureIndex < other._shData.length) {
@@ -1028,7 +1028,7 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
     public static _ParseInternal<T extends GaussianSplattingMesh>(
         parsedMesh: any,
         scene: Scene,
-        ctor: new(name: string, url: Nullable<string>, scene: Nullable<Scene>, keepInRam: boolean) => T
+        ctor: new (name: string, url: Nullable<string>, scene: Nullable<Scene>, keepInRam: boolean) => T
     ): T {
         const mesh = new ctor(parsedMesh.name, null, scene, parsedMesh.keepInRam);
 

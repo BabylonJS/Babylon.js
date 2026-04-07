@@ -245,8 +245,7 @@ export class GaussianSplattingPartProxyMesh extends Mesh {
     public static override Parse(parsedMesh: any, scene: Scene): GaussianSplattingPartProxyMesh {
         const partIndex = parsedMesh.partIndex;
         const compoundSplatMesh =
-            (parsedMesh.compoundSplatMesh as GaussianSplattingMesh | undefined) ??
-            (scene.getLastMeshById(parsedMesh.compoundSplatMeshId) as GaussianSplattingMesh | null);
+            (parsedMesh.compoundSplatMesh as GaussianSplattingMesh | undefined) ?? (scene.getLastMeshById(parsedMesh.compoundSplatMeshId) as GaussianSplattingMesh | null);
         if (!compoundSplatMesh) {
             throw new Error(`GaussianSplattingPartProxyMesh: compound mesh not found with ID ${parsedMesh.compoundSplatMeshId}`);
         }
