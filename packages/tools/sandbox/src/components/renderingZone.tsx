@@ -26,6 +26,7 @@ import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import type { AbstractEngine } from "core/Engines/abstractEngine";
 import { setOpenGLOrientationForUV, useOpenGLOrientationForUV } from "core/Compat/compatibilityOptions";
 import { ImageProcessingConfiguration } from "core/Materials/imageProcessingConfiguration";
+import { type Observer } from "core/Misc/observable";
 
 function GetFileExtension(str: string): string {
     return str.split(".").pop() || "";
@@ -61,6 +62,7 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
     private _scene: Scene;
     private _canvas: HTMLCanvasElement;
     private _restoreInspector = false;
+    private _onRequestSceneReloadObserver: Observer<void> | null = null;
 
     public constructor(props: IRenderingZoneProps) {
         super(props);
@@ -121,10 +123,7 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
                 }
             },
             () => {
-                // Ensure we stop any existing render loop when reloading, because if there was a previous scene loaded from the URL
-                // the filesInput will not know about it, and so it won't call stopRenderLoop.
-                this._engine.stopRenderLoop();
-                filesInput.reload();
+                this._reloadCurrentAsset();
             },
             (file, scene, message) => {
                 this.props.globalState.onError.notifyObservers({ message: message });
@@ -181,13 +180,28 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
         window.addEventListener("keydown", (event) => {
             // Press R to reload
             if (event.keyCode === 82 && event.target && (event.target as HTMLElement).nodeName !== "INPUT" && this._scene) {
-                if (this.props.globalState.assetUrl) {
-                    this.loadAssetFromUrl(this.props.globalState.assetUrl);
-                } else {
-                    filesInput.reload();
-                }
+                this._reloadCurrentAsset();
             }
         });
+
+        this._onRequestSceneReloadObserver = this.props.globalState.onRequestSceneReload.add(() => {
+            if (this._scene) {
+                this._reloadCurrentAsset();
+            }
+        });
+    }
+
+    private _reloadCurrentAsset(): void {
+        // Ensure we stop any existing render loop when reloading, because if there was a previous scene loaded from the URL
+        // filesInput will not know about it, and so it won't call stopRenderLoop.
+        this._engine.stopRenderLoop();
+
+        if (this.props.globalState.assetUrl) {
+            this.loadAssetFromUrl(this.props.globalState.assetUrl);
+            return;
+        }
+
+        this.props.globalState.filesInput.reload();
     }
 
     prepareCamera() {
@@ -421,6 +435,7 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
             if (this._currentPluginName === "gltf") {
                 const loader = plugin as GLTFFileLoader;
                 loader.transparencyAsCoverage = this.props.globalState.commerceMode;
+                loader.useOpenPBR = this.props.globalState.useOpenPBR;
 
                 loader.validate = true;
 
@@ -437,6 +452,13 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
         });
 
         this.initEngine();
+    }
+
+    public override componentWillUnmount(): void {
+        if (this._onRequestSceneReloadObserver) {
+            this.props.globalState.onRequestSceneReload.remove(this._onRequestSceneReloadObserver);
+            this._onRequestSceneReloadObserver = null;
+        }
     }
 
     override shouldComponentUpdate(nextProps: IRenderingZoneProps) {

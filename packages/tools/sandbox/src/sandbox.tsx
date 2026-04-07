@@ -104,6 +104,7 @@ export class Sandbox extends React.Component<
     public constructor(props: ISandboxProps) {
         super(props);
         this._globalState = new GlobalState({ version: props.version, bundles: props.bundles });
+        this._globalState.useOpenPBR = LocalStorageHelper.GetUseOpenPBR();
         this._logoRef = React.createRef();
         this._dropTextRef = React.createRef();
         this._clickInterceptorRef = React.createRef();

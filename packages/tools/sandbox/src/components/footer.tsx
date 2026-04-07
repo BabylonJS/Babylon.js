@@ -14,8 +14,10 @@ import babylonIdentity from "../img/babylon-identity.svg";
 import iconEdit from "../img/icon-edit.svg";
 import iconOpen from "../img/icon-open.svg";
 import iconIBL from "../img/icon-ibl.svg";
+import iconOpenPBR from "../img/icon-openpbr.png";
 import iconCameras from "../img/icon-cameras.svg";
 import iconVariants from "../img/icon-variants.svg";
+import { LocalStorageHelper } from "../tools/localStorageHelper";
 
 interface IFooterProps {
     globalState: GlobalState;
@@ -72,6 +74,17 @@ export class Footer extends React.Component<IFooterProps, IFooterState> {
 
     private _getVariantsExtension(): Nullable<KHR_materials_variants> {
         return this.props.globalState?.glTFLoaderExtensions["KHR_materials_variants"] as KHR_materials_variants;
+    }
+
+    private _toggleUseOpenPBR(): void {
+        this.props.globalState.useOpenPBR = !this.props.globalState.useOpenPBR;
+        LocalStorageHelper.SetUseOpenPBR(this.props.globalState.useOpenPBR);
+
+        if (this.props.globalState.currentScene) {
+            this.props.globalState.onRequestSceneReload.notifyObservers();
+        }
+
+        this.forceUpdate();
     }
 
     override render() {
@@ -150,6 +163,14 @@ export class Footer extends React.Component<IFooterProps, IFooterState> {
                         onOptionPicked={(option) => this.props.globalState.onEnvironmentChanged.notifyObservers(option)}
                         enabled={!!this.props.globalState.currentScene}
                         searchPlaceholder="Search environment"
+                    />
+                    <FooterButton
+                        globalState={this.props.globalState}
+                        icon={iconOpenPBR}
+                        label="Toggle OpenPBR for glTF loading"
+                        onClick={() => this._toggleUseOpenPBR()}
+                        enabled={true}
+                        active={this.props.globalState.useOpenPBR}
                     />
                     <FooterButton
                         globalState={this.props.globalState}

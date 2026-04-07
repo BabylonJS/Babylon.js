@@ -1,4 +1,5 @@
 const WelcomeDialogDismissedKey = "WelcomeDialogDismissed";
+const UseOpenPBRKey = "UseOpenPBR";
 
 export class LocalStorageHelper {
     public static ReadLocalStorageValue(key: string, defaultValue: number) {
@@ -29,5 +30,21 @@ export class LocalStorageHelper {
      */
     public static ClearWelcomeDialogDismissed(): void {
         localStorage.removeItem(WelcomeDialogDismissedKey);
+    }
+
+    /**
+     * Sets whether glTF loading should force OpenPBR materials.
+     * @param value The value to persist.
+     */
+    public static SetUseOpenPBR(value: boolean): void {
+        localStorage.setItem(UseOpenPBRKey, value ? "true" : "false");
+    }
+
+    /**
+     * Gets whether glTF loading should force OpenPBR materials.
+     * @returns true when OpenPBR mode is enabled.
+     */
+    public static GetUseOpenPBR(): boolean {
+        return localStorage.getItem(UseOpenPBRKey) === "true";
     }
 }

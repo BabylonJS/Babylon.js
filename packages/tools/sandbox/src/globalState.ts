@@ -12,6 +12,7 @@ export class GlobalState {
     public onEnvironmentChanged = new Observable<string>();
     public onRequestClickInterceptor = new Observable<void>();
     public onClickInterceptorClicked = new Observable<void>();
+    public onRequestSceneReload = new Observable<void>();
     public glTFLoaderExtensions: { [key: string]: import("loaders/glTF/index").IGLTFLoaderExtension } = {};
     public onFilesInputReady = new Observable<void>();
 
@@ -19,6 +20,7 @@ export class GlobalState {
     public isDebugLayerEnabled = false;
 
     public commerceMode = false;
+    public useOpenPBR = false;
 
     public assetUrl?: string;
     public autoRotate = false;

@@ -7,6 +7,7 @@ interface IFooterButtonProps {
     onClick: () => void;
     icon: any;
     label: string;
+    active?: boolean;
 }
 
 export class FooterButton extends React.Component<IFooterButtonProps> {
@@ -16,7 +17,7 @@ export class FooterButton extends React.Component<IFooterButtonProps> {
         }
 
         return (
-            <div className="button" onClick={() => this.props.onClick()}>
+            <div className={"button" + (this.props.active ? " active" : "")} onClick={() => this.props.onClick()}>
                 <img src={this.props.icon} alt={this.props.label} title={this.props.label} />
             </div>
         );
