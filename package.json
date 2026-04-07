@@ -35,7 +35,7 @@
         "prettier": "^3.0.3",
         "rimraf": "^6.1.3",
         "rollup-plugin-dts": "^6.4.1",
-        "serialize-javascript": "7.0.4",
+        "serialize-javascript": "7.0.5",
         "ts-node": "~10.9.0",
         "tslib": "^2.4.0",
         "typedoc": "^0.28.16",
