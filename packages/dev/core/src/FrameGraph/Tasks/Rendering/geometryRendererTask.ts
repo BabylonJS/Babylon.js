@@ -99,6 +99,11 @@ export class FrameGraphGeometryRendererTask extends FrameGraphObjectRendererTask
     public textureDescriptions: IFrameGraphGeometryRendererTextureDescription[] = [];
 
     /**
+     * The irradiance output texture. Will point to a valid texture only if that texture has been requested in textureDescriptions!
+     */
+    public readonly geometryIrradianceTexture: FrameGraphTextureHandle;
+
+    /**
      * The depth (in view space) output texture. Will point to a valid texture only if that texture has been requested in textureDescriptions!
      */
     public readonly geometryViewDepthTexture: FrameGraphTextureHandle;
@@ -205,6 +210,7 @@ export class FrameGraphGeometryRendererTask extends FrameGraphObjectRendererTask
         this._clearAttachmentsLayout = new Map();
         this._allAttachmentsLayout = [];
 
+        this.geometryIrradianceTexture = this._frameGraph.textureManager.createDanglingHandle();
         this.geometryViewDepthTexture = this._frameGraph.textureManager.createDanglingHandle();
         this.geometryNormViewDepthTexture = this._frameGraph.textureManager.createDanglingHandle();
         this.geometryScreenDepthTexture = this._frameGraph.textureManager.createDanglingHandle();
@@ -276,6 +282,9 @@ export class FrameGraphGeometryRendererTask extends FrameGraphObjectRendererTask
             const geometryDescription = MaterialHelperGeometryRendering.GeometryTextureDescriptions[index];
 
             switch (geometryDescription.type) {
+                case Constants.PREPASS_IRRADIANCE_TEXTURE_TYPE:
+                    this._frameGraph.textureManager.resolveDanglingHandle(this.geometryIrradianceTexture, handle);
+                    break;
                 case Constants.PREPASS_DEPTH_TEXTURE_TYPE:
                     this._frameGraph.textureManager.resolveDanglingHandle(this.geometryViewDepthTexture, handle);
                     break;

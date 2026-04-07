@@ -679,13 +679,13 @@ export class Constants {
     public static readonly SCENELOADER_DETAILED_LOGGING = 3;
 
     /**
-     * Constant used to retrieve the irradiance texture index in the textures array in the prepass
-     * using getIndex(Constants.PREPASS_IRRADIANCE_TEXTURE_TYPE)
+     * Constant used to retrieve the legacy irradiance texture index in the textures array in the prepass
+     * using getIndex(Constants.PREPASS_IRRADIANCE_LEGACY_TEXTURE_TYPE)
      */
-    public static readonly PREPASS_IRRADIANCE_TEXTURE_TYPE = 0;
+    public static readonly PREPASS_IRRADIANCE_LEGACY_TEXTURE_TYPE = 0;
     /**
      * Constant used to retrieve the position texture index in the textures array in the prepass
-     * using getIndex(Constants.PREPASS_POSITION_TEXTURE_INDEX)
+     * using getIndex(Constants.PREPASS_POSITION_TEXTURE_TYPE)
      */
     public static readonly PREPASS_POSITION_TEXTURE_TYPE = 1;
     /**
@@ -753,6 +753,12 @@ export class Constants {
      * Constant used to retrieve normalized camera view depth geometry texture
      */
     public static readonly PREPASS_NORMALIZED_VIEW_DEPTH_TEXTURE_TYPE = 13;
+
+    /**
+     * Constant used to retrieve the irradiance texture index in the textures array in the prepass
+     * using getIndex(Constants.PREPASS_IRRADIANCE_TEXTURE_TYPE)
+     */
+    public static readonly PREPASS_IRRADIANCE_TEXTURE_TYPE = 14;
 
     /** Flag to create a readable buffer (the buffer can be the source of a copy) */
     public static readonly BUFFER_CREATIONFLAG_READ = 1;

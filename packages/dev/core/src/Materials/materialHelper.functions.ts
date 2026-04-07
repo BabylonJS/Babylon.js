@@ -761,6 +761,7 @@ export function PrepareDefinesForIBL(
         defines.LODINREFLECTIONALPHA = reflectionTexture.lodLevelInAlpha;
         defines.LINEARSPECULARREFLECTION = reflectionTexture.linearSpecularLOD;
         defines.USEIRRADIANCEMAP = false;
+        defines.LODBASEDMICROSFURACE = scene.getEngine().getCaps().textureLOD;
 
         const engine = scene.getEngine();
         if (realTimeFiltering && realTimeFilteringQuality > 0) {
@@ -1248,9 +1249,9 @@ export function PrepareDefinesForPrePass(scene: Scene, defines: any, canRenderTo
             index: "PREPASS_REFLECTIVITY_INDEX",
         },
         {
-            type: Constants.PREPASS_IRRADIANCE_TEXTURE_TYPE,
-            define: "PREPASS_IRRADIANCE",
-            index: "PREPASS_IRRADIANCE_INDEX",
+            type: Constants.PREPASS_IRRADIANCE_LEGACY_TEXTURE_TYPE,
+            define: "PREPASS_IRRADIANCE_LEGACY",
+            index: "PREPASS_IRRADIANCE_LEGACY_INDEX",
         },
         {
             type: Constants.PREPASS_ALBEDO_SQRT_TEXTURE_TYPE,
@@ -1276,6 +1277,11 @@ export function PrepareDefinesForPrePass(scene: Scene, defines: any, canRenderTo
             type: Constants.PREPASS_WORLD_NORMAL_TEXTURE_TYPE,
             define: "PREPASS_WORLD_NORMAL",
             index: "PREPASS_WORLD_NORMAL_INDEX",
+        },
+        {
+            type: Constants.PREPASS_IRRADIANCE_TEXTURE_TYPE,
+            define: "PREPASS_IRRADIANCE",
+            index: "PREPASS_IRRADIANCE_INDEX",
         },
     ];
 

@@ -1168,7 +1168,7 @@ declare namespace BABYLON.GLTF2 {
     /** @internal */
     interface IKHRMaterialsVolumeScatter {
         scatterAnisotropy?: number;
-        multiscatterColor?: number[];
+        multiscatterColorFactor?: number[];
         multiscatterColorTexture?: ITextureInfo;
     }
 

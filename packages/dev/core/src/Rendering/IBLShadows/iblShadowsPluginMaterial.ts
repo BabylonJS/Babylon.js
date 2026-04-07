@@ -10,7 +10,7 @@ import { expandToProperty, serialize } from "core/Misc/decorators";
 import { RegisterClass } from "core/Misc/typeStore";
 
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
-import { OpenPBRMaterial } from "core/Materials/PBR/openpbrMaterial";
+import { type OpenPBRMaterial } from "core/Materials/PBR/openpbrMaterial";
 /**
  * @internal
  */
@@ -78,6 +78,10 @@ export class IBLShadowsPluginMaterial extends MaterialPluginBase {
         this._internalMarkAllSubMeshesAsTexturesDirty = material._dirtyCallbacks[Constants.MATERIAL_TextureDirtyFlag];
     }
 
+    private _isOpenPBRMaterial(): boolean {
+        return this._material.getClassName() === "OpenPBRMaterial";
+    }
+
     public override prepareDefines(defines: MaterialIBLShadowsRenderDefines) {
         defines.RENDER_WITH_IBL_SHADOWS = this._isEnabled;
         defines.COLORED_IBL_SHADOWS = this.isColored;
@@ -87,17 +91,35 @@ export class IBLShadowsPluginMaterial extends MaterialPluginBase {
         return "IBLShadowsPluginMaterial";
     }
 
-    public override getUniforms() {
-        return {
-            ubo: [
-                { name: "renderTargetSize", size: 2, type: "vec2" },
-                { name: "shadowOpacity", size: 1, type: "float" },
-            ],
-            fragment: `#ifdef RENDER_WITH_IBL_SHADOWS
+    public override getUniforms(_shaderLanguage: ShaderLanguage) {
+        const result: any = {};
+        result.ubo = [];
+        if (this._isOpenPBRMaterial()) {
+            if (_shaderLanguage === ShaderLanguage.WGSL) {
+                result.fragment = `#ifdef RENDER_WITH_IBL_SHADOWS
+                    var shadowOpacity: f32;
+                #endif`;
+            } else {
+                result.fragment = `#ifdef RENDER_WITH_IBL_SHADOWS
+                    uniform float shadowOpacity;
+                #endif`;
+            }
+        } else {
+            result.ubo.push({ name: "renderTargetSize", size: 2, type: "vec2" });
+            if (_shaderLanguage === ShaderLanguage.WGSL) {
+                result.fragment = `#ifdef RENDER_WITH_IBL_SHADOWS
+                    var renderTargetSize: vec2f;
+                    var shadowOpacity: f32;
+                #endif`;
+            } else {
+                result.fragment = `#ifdef RENDER_WITH_IBL_SHADOWS
                     uniform vec2 renderTargetSize;
                     uniform float shadowOpacity;
-                #endif`,
-        };
+                #endif`;
+            }
+        }
+        result.ubo.push({ name: "shadowOpacity", size: 1, type: "float" });
+        return result;
     }
 
     public override getSamplers(samplers: string[]) {
@@ -161,7 +183,7 @@ export class IBLShadowsPluginMaterial extends MaterialPluginBase {
                     #endif
                 #endif
             `;
-            } else if (this._material instanceof OpenPBRMaterial) {
+            } else if (this._isOpenPBRMaterial()) {
                 // eslint-disable-next-line @typescript-eslint/naming-convention
                 frag["CUSTOM_FRAGMENT_BEFORE_IBLLAYERCOMPOSITION"] = `
                 #ifdef RENDER_WITH_IBL_SHADOWS
@@ -238,7 +260,7 @@ export class IBLShadowsPluginMaterial extends MaterialPluginBase {
                     #endif
                 #endif
             `;
-            } else if (this._material instanceof OpenPBRMaterial) {
+            } else if (this._isOpenPBRMaterial()) {
                 // eslint-disable-next-line @typescript-eslint/naming-convention
                 frag["CUSTOM_FRAGMENT_BEFORE_IBLLAYERCOMPOSITION"] = `
                 #ifdef RENDER_WITH_IBL_SHADOWS

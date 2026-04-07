@@ -20,17 +20,37 @@ import "../Shaders/geometry.fragment";
 import "../Shaders/geometry.vertex";
 import { MaterialFlags } from "../Materials/materialFlags";
 import { AddClipPlaneUniforms, BindClipPlane, PrepareStringDefinesForClipPlanes } from "../Materials/clipPlaneMaterialHelper";
-import { BindMorphTargetParameters, BindSceneUniformBuffer, PrepareDefinesAndAttributesForMorphTargets, PushAttributesForInstances } from "../Materials/materialHelper.functions";
+import {
+    BindMorphTargetParameters,
+    BindSceneUniformBuffer,
+    PrepareDefinesAndAttributesForMorphTargets,
+    PushAttributesForInstances,
+    PrepareUniformsAndSamplersForIBL,
+    PrepareDefinesForIBL,
+} from "../Materials/materialHelper.functions";
 
 import "../Engines/Extensions/engine.multiRender";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { type OpenPBRMaterial } from "../Materials/PBR/openpbrMaterial";
+import { type IblShadowsRenderPipeline } from "./IBLShadows/iblShadowsRenderPipeline";
 
 /** @internal */
 interface ISavedTransformationMatrix {
     world: Matrix;
     viewProjection: Matrix;
 }
+
+const Samplers = [
+    "diffuseSampler",
+    "bumpSampler",
+    "reflectivitySampler",
+    "albedoSampler",
+    "morphTargets",
+    "boneSampler",
+    "transmissionWeightSampler",
+    "subsurfaceWeightSampler",
+    "iblShadowSampler",
+];
 
 /** list the uniforms used by the geometry renderer */
 const Uniforms = [
@@ -47,6 +67,13 @@ const Uniforms = [
     "albedoMatrix",
     "reflectivityColor",
     "albedoColor",
+    "reflectionMatrix",
+    "vTransmissionWeight",
+    "vSubsurfaceWeight",
+    "vEyePosition",
+    "vTransmissionScatterAnisotropy",
+    "vSubsurfaceScatterAnisotropy",
+    "shadowTextureSize",
     "metallic",
     "glossiness",
     "vTangentSpaceParams",
@@ -57,6 +84,7 @@ const Uniforms = [
     "morphTargetTextureIndices",
     "boneTextureInfo",
 ];
+PrepareUniformsAndSamplersForIBL(Uniforms, Samplers, true);
 AddClipPlaneUniforms(Uniforms);
 
 /**
@@ -107,6 +135,12 @@ export class GeometryBufferRenderer {
     public static readonly VELOCITY_LINEAR_TEXTURE_TYPE = 6;
 
     /**
+     * Constant used to retrieve the irradiance texture index in the G-Buffer textures array
+     * using getIndex(GeometryBufferRenderer.IRRADIANCE_TEXTURE_TYPE)
+     */
+    public static readonly IRRADIANCE_TEXTURE_TYPE = 7;
+
+    /**
      * Dictionary used to store the previous transformation matrices of each rendered mesh
      * in order to compute objects velocities when enableVelocity is set to "true"
      * @internal
@@ -153,6 +187,7 @@ export class GeometryBufferRenderer {
     private _enableVelocityLinear: boolean = false;
     private _enableReflectivity: boolean = false;
     private _enableScreenspaceDepth: boolean = false;
+    private _enableIrradiance: boolean = false;
     private _depthFormat: number;
     private _clearColor = new Color4(0, 0, 0, 0);
     private _clearDepthColor = new Color4(0, 0, 0, 1); // sets an invalid value by default - depth in the depth texture is view.z, so 0 is not possible because view.z can't be less than camera.minZ
@@ -164,6 +199,7 @@ export class GeometryBufferRenderer {
     private _depthIndex: number = -1;
     private _normalIndex: number = -1;
     private _screenspaceDepthIndex: number = -1;
+    private _irradianceIndex: number = -1;
 
     private _linkedWithPrePass: boolean = false;
     private _prePassRenderer: PrePassRenderer;
@@ -212,6 +248,7 @@ export class GeometryBufferRenderer {
         this._enableVelocity = false;
         this._enableVelocityLinear = false;
         this._enableScreenspaceDepth = false;
+        this._enableIrradiance = false;
         this._attachmentsFromPrePass = [];
     }
 
@@ -242,6 +279,9 @@ export class GeometryBufferRenderer {
         } else if (geometryBufferType === GeometryBufferRenderer.SCREENSPACE_DEPTH_TEXTURE_TYPE) {
             this._screenspaceDepthIndex = index;
             this._enableScreenspaceDepth = true;
+        } else if (geometryBufferType === GeometryBufferRenderer.IRRADIANCE_TEXTURE_TYPE) {
+            this._irradianceIndex = index;
+            this._enableIrradiance = true;
         }
     }
 
@@ -306,6 +346,8 @@ export class GeometryBufferRenderer {
                 return this._normalIndex;
             case GeometryBufferRenderer.SCREENSPACE_DEPTH_TEXTURE_TYPE:
                 return this._screenspaceDepthIndex;
+            case GeometryBufferRenderer.IRRADIANCE_TEXTURE_TYPE:
+                return this._irradianceIndex;
             default:
                 return -1;
         }
@@ -451,6 +493,31 @@ export class GeometryBufferRenderer {
             this._createRenderTargets();
         }
     }
+
+    /**
+     * Gets a boolean indicating if objects irradiance are enabled in the G buffer.
+     */
+    public get enableIrradiance(): boolean {
+        return this._enableIrradiance;
+    }
+
+    /**
+     * Sets whether or not objects irradiance are enabled for the G buffer.
+     */
+    public set enableIrradiance(enable: boolean) {
+        this._enableIrradiance = enable;
+
+        if (!this._linkedWithPrePass) {
+            this.dispose();
+            this._createRenderTargets();
+        }
+    }
+
+    /**
+     * This will store a mask in the alpha channel of the irradiance texture to indicate which pixels have
+     * scattering and should be taken into account when applying image-based lighting.
+     */
+    public generateIrradianceWithScatterMask = false;
 
     /**
      * If set to true (default: false), the depth texture will be cleared with the depth value corresponding to the far plane (1 in normal mode, 0 in reverse depth buffer mode)
@@ -703,35 +770,55 @@ export class GeometryBufferRenderer {
                         defines.push("#define REFLECTIVITYCOLOR");
                     }
                 } else if (material.getClassName() === "OpenPBRMaterial") {
-                    const pbrMaterial = material as OpenPBRMaterial;
+                    const openpbrMaterial = material as OpenPBRMaterial;
 
-                    defines.push("#define METALLICWORKFLOW");
                     defines.push("#define METALLIC");
                     defines.push("#define ROUGHNESS");
-                    if (pbrMaterial._useRoughnessFromMetallicTextureGreen && pbrMaterial.baseMetalnessTexture) {
+                    if (openpbrMaterial._useRoughnessFromMetallicTextureGreen && openpbrMaterial.baseMetalnessTexture) {
                         defines.push("#define ORMTEXTURE");
-                        defines.push(`#define REFLECTIVITY_UV${pbrMaterial.baseMetalnessTexture.coordinatesIndex + 1}`);
+                        defines.push(`#define REFLECTIVITY_UV${openpbrMaterial.baseMetalnessTexture.coordinatesIndex + 1}`);
                         needUv = true;
-                    } else if (pbrMaterial.baseMetalnessTexture) {
+                    } else if (openpbrMaterial.baseMetalnessTexture) {
                         defines.push("#define METALLIC_TEXTURE");
-                        defines.push(`#define METALLIC_UV${pbrMaterial.baseMetalnessTexture.coordinatesIndex + 1}`);
+                        defines.push(`#define METALLIC_UV${openpbrMaterial.baseMetalnessTexture.coordinatesIndex + 1}`);
                         needUv = true;
-                    } else if (pbrMaterial.specularRoughnessTexture) {
+                    } else if (openpbrMaterial.specularRoughnessTexture) {
                         defines.push("#define ROUGHNESS_TEXTURE");
-                        defines.push(`#define ROUGHNESS_UV${pbrMaterial.specularRoughnessTexture.coordinatesIndex + 1}`);
+                        defines.push(`#define ROUGHNESS_UV${openpbrMaterial.specularRoughnessTexture.coordinatesIndex + 1}`);
                         needUv = true;
                     }
 
-                    if (pbrMaterial.baseColorTexture) {
+                    if (openpbrMaterial.baseColorTexture) {
                         defines.push("#define ALBEDOTEXTURE");
-                        defines.push(`#define ALBEDO_UV${pbrMaterial.baseColorTexture.coordinatesIndex + 1}`);
-                        if (pbrMaterial.baseColorTexture.gammaSpace) {
+                        defines.push(`#define ALBEDO_UV${openpbrMaterial.baseColorTexture.coordinatesIndex + 1}`);
+                        if (openpbrMaterial.baseColorTexture.gammaSpace) {
                             defines.push("#define GAMMAALBEDO");
                         }
                         needUv = true;
                     }
-                    if (pbrMaterial.baseColor) {
+                    if (openpbrMaterial.baseColor) {
                         defines.push("#define ALBEDOCOLOR");
+                    }
+                }
+            }
+
+            if (this._enableIrradiance && this.generateIrradianceWithScatterMask) {
+                defines.push("#define IRRADIANCE_SCATTER_MASK");
+                if (material.getClassName() === "OpenPBRMaterial") {
+                    const openpbrMaterial = material as OpenPBRMaterial;
+                    if (openpbrMaterial.subsurfaceWeight > 0) {
+                        if (openpbrMaterial.subsurfaceWeightTexture) {
+                            defines.push("#define SUBSURFACE_WEIGHT");
+                            defines.push(`#define SUBSURFACEWEIGHT_UV${openpbrMaterial.subsurfaceWeightTexture.coordinatesIndex + 1}`);
+                            needUv = true;
+                        }
+                    }
+                    if (openpbrMaterial.transmissionWeight > 0) {
+                        if (openpbrMaterial.transmissionWeightTexture) {
+                            defines.push("#define TRANSMISSION_WEIGHT");
+                            defines.push(`#define TRANSMISSIONWEIGHT_UV${openpbrMaterial.transmissionWeightTexture.coordinatesIndex + 1}`);
+                            needUv = true;
+                        }
                     }
                 }
             }
@@ -792,6 +879,52 @@ export class GeometryBufferRenderer {
             if (this._screenspaceDepthIndex !== -1) {
                 defines.push("#define SCREENSPACE_DEPTH_INDEX " + this._screenspaceDepthIndex);
                 defines.push("#define SCREENSPACE_DEPTH");
+            }
+        }
+
+        if (this._enableIrradiance) {
+            if (this._irradianceIndex !== -1) {
+                defines.push("#define IRRADIANCE_INDEX " + this._irradianceIndex);
+                defines.push("#define IRRADIANCE");
+
+                // Check if scene has IBL setup
+                const scene = this._scene;
+                if (scene.environmentTexture) {
+                    const iblDefines: any = {};
+                    let realtime = false;
+                    let realtimeQuality: number = 0;
+                    if (
+                        material.getClassName() === "OpenPBRMaterial" ||
+                        material.getClassName() === "StandardMaterial" ||
+                        material.getClassName() === "PBRMetallicRoughnessMaterial" ||
+                        material.getClassName() === "PBRSpecularGlossinessMaterial" ||
+                        material.getClassName() === "PBRMaterial"
+                    ) {
+                        realtime = material.realtimeFiltering ? true : false;
+                        realtimeQuality = material.realtimeFilteringQuality || 0;
+                    }
+                    PrepareDefinesForIBL(scene, scene.environmentTexture, iblDefines, realtime, realtimeQuality, true);
+                    for (const define in iblDefines) {
+                        if (iblDefines[define]) {
+                            defines.push("#define " + define);
+                        }
+                    }
+                    if (!iblDefines.USEIRRADIANCEMAP) {
+                        defines.push("#define SPHERICAL_HARMONICS");
+                    }
+
+                    const iblShadowsPipeline = scene.postProcessRenderPipelineManager.supportedPipelines.find((p) => p.getClassName() === "IBLShadowsRenderPipeline");
+                    if (iblShadowsPipeline) {
+                        const pipeline = iblShadowsPipeline as IblShadowsRenderPipeline;
+                        const shadowTexture = pipeline._getAccumulatedTexture();
+                        if (shadowTexture) {
+                            defines.push("#define IBL_SHADOW_TEXTURE");
+                            if (pipeline.coloredShadows) {
+                                defines.push("#define COLORED_IBL_SHADOWS");
+                            }
+                        }
+                    }
+                }
             }
         }
 
@@ -866,7 +999,7 @@ export class GeometryBufferRenderer {
                     {
                         attributes: attribs,
                         uniformsNames: Uniforms,
-                        samplers: ["diffuseSampler", "bumpSampler", "reflectivitySampler", "albedoSampler", "morphTargets", "boneSampler"],
+                        samplers: Samplers,
                         defines: join,
                         onCompiled: null,
                         fallbacks: null,
@@ -973,6 +1106,13 @@ export class GeometryBufferRenderer {
             count++;
             textureNames.push("gBuffer_ScreenspaceDepth");
             textureTypesAndFormats.push(this._textureTypesAndFormats[GeometryBufferRenderer.SCREENSPACE_DEPTH_TEXTURE_TYPE]);
+        }
+
+        if (this._enableIrradiance) {
+            this._irradianceIndex = count;
+            count++;
+            textureNames.push("gBuffer_Irradiance");
+            textureTypesAndFormats.push(this._textureTypesAndFormats[GeometryBufferRenderer.IRRADIANCE_TEXTURE_TYPE]);
         }
 
         return [count, textureNames, textureTypesAndFormats];
@@ -1120,6 +1260,7 @@ export class GeometryBufferRenderer {
                 if (!this._useUbo) {
                     effect.setMatrix("viewProjection", scene.getTransformMatrix());
                     effect.setMatrix("view", scene.getViewMatrix());
+                    this._scene.bindEyePosition(effect, "vEyePosition");
                 } else {
                     BindSceneUniformBuffer(effect, this._scene.getSceneUniformBuffer());
                     this._scene.finalizeSceneUbo();
@@ -1264,6 +1405,81 @@ export class GeometryBufferRenderer {
                         if (openpbrMaterial.baseColor !== null) {
                             effect.setColor3("albedoColor", openpbrMaterial.baseColor);
                         }
+                    }
+                }
+
+                // IBL binding for irradiance
+                if (this._enableIrradiance && scene.environmentTexture) {
+                    const reflectionTexture = scene.environmentTexture;
+
+                    const iblShadowsPipeline = scene.postProcessRenderPipelineManager.supportedPipelines.find((p) => p.getClassName() === "IBLShadowsRenderPipeline");
+                    if (iblShadowsPipeline) {
+                        const pipeline = iblShadowsPipeline as IblShadowsRenderPipeline;
+                        const shadowTexture = pipeline._getAccumulatedTexture();
+                        if (shadowTexture) {
+                            effect.setTexture("iblShadowSampler", shadowTexture);
+                            effect.setFloat2("shadowTextureSize", shadowTexture.getSize().width, shadowTexture.getSize().height);
+                        }
+                    }
+
+                    // Bind reflection matrix
+                    effect.setMatrix("reflectionMatrix", reflectionTexture.getReflectionTextureMatrix());
+
+                    // Bind reflection info (intensity and other parameters)
+                    effect.setFloat2("vReflectionInfos", reflectionTexture.level * scene.iblIntensity, 0.0);
+
+                    // Bind reflection sampler
+                    effect.setTexture("reflectionSampler", reflectionTexture);
+
+                    // Bind irradiance sampler if available
+                    if (reflectionTexture.irradianceTexture) {
+                        effect.setTexture("irradianceSampler", reflectionTexture.irradianceTexture);
+                        if (reflectionTexture.irradianceTexture._dominantDirection) {
+                            effect.setVector3("vReflectionDominantDirection", reflectionTexture.irradianceTexture._dominantDirection);
+                        }
+                    }
+
+                    // Bind spherical harmonics uniforms if available
+                    if (reflectionTexture.sphericalPolynomial) {
+                        const polynomials = reflectionTexture.sphericalPolynomial;
+                        if (polynomials.preScaledHarmonics) {
+                            const harmonics = polynomials.preScaledHarmonics;
+                            effect.setVector3("vSphericalL00", harmonics.l00);
+                            effect.setVector3("vSphericalL1_1", harmonics.l1_1);
+                            effect.setVector3("vSphericalL10", harmonics.l10);
+                            effect.setVector3("vSphericalL11", harmonics.l11);
+                            effect.setVector3("vSphericalL2_2", harmonics.l2_2);
+                            effect.setVector3("vSphericalL2_1", harmonics.l2_1);
+                            effect.setVector3("vSphericalL20", harmonics.l20);
+                            effect.setVector3("vSphericalL21", harmonics.l21);
+                            effect.setVector3("vSphericalL22", harmonics.l22);
+                        } else {
+                            effect.setFloat3("vSphericalX", polynomials.x.x, polynomials.x.y, polynomials.x.z);
+                            effect.setFloat3("vSphericalY", polynomials.y.x, polynomials.y.y, polynomials.y.z);
+                            effect.setFloat3("vSphericalZ", polynomials.z.x, polynomials.z.y, polynomials.z.z);
+                            effect.setFloat3("vSphericalXX_ZZ", polynomials.xx.x - polynomials.zz.x, polynomials.xx.y - polynomials.zz.y, polynomials.xx.z - polynomials.zz.z);
+                            effect.setFloat3("vSphericalYY_ZZ", polynomials.yy.x - polynomials.zz.x, polynomials.yy.y - polynomials.zz.y, polynomials.yy.z - polynomials.zz.z);
+                            effect.setFloat3("vSphericalZZ", polynomials.zz.x, polynomials.zz.y, polynomials.zz.z);
+                            effect.setFloat3("vSphericalXY", polynomials.xy.x, polynomials.xy.y, polynomials.xy.z);
+                            effect.setFloat3("vSphericalYZ", polynomials.yz.x, polynomials.yz.y, polynomials.yz.z);
+                            effect.setFloat3("vSphericalZX", polynomials.zx.x, polynomials.zx.y, polynomials.zx.z);
+                        }
+                    }
+
+                    if (this.generateIrradianceWithScatterMask && material.getClassName() === "OpenPBRMaterial") {
+                        const openpbrMaterial = material as OpenPBRMaterial;
+                        effect.setFloat("vSubsurfaceWeight", openpbrMaterial.subsurfaceWeight);
+                        if (openpbrMaterial.subsurfaceWeightTexture) {
+                            effect.setTexture("subsurfaceWeightSampler", openpbrMaterial.subsurfaceWeightTexture);
+                            effect.setMatrix("subsurfaceWeightMatrix", openpbrMaterial.subsurfaceWeightTexture.getTextureMatrix());
+                        }
+                        effect.setFloat("vTransmissionWeight", openpbrMaterial.transmissionWeight);
+                        if (openpbrMaterial.transmissionWeightTexture) {
+                            effect.setTexture("transmissionWeightSampler", openpbrMaterial.transmissionWeightTexture);
+                            effect.setMatrix("transmissionWeightMatrix", openpbrMaterial.transmissionWeightTexture.getTextureMatrix());
+                        }
+                        effect.setFloat("vTransmissionScatterAnisotropy", openpbrMaterial.transmissionScatterAnisotropy);
+                        effect.setFloat("vSubsurfaceScatterAnisotropy", openpbrMaterial.subsurfaceScatterAnisotropy);
                     }
                 }
 

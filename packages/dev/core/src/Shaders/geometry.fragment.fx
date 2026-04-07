@@ -15,7 +15,7 @@ varying vec3 vNormalV;
 
 varying vec4 vViewPos;
 
-#if defined(POSITION) || defined(BUMP)
+#if defined(POSITION) || defined(BUMP) || defined(IRRADIANCE)
 varying vec3 vPositionW;
 #endif
 
@@ -75,6 +75,41 @@ uniform sampler2D diffuseSampler;
 #include<bumpFragmentMainFunctions>
 #include<bumpFragmentFunctions>
 #include<helperFunctions>
+
+// IBL includes for irradiance calculation
+#ifdef IRRADIANCE
+    #include<pbrFragmentReflectionDeclaration>
+    #ifdef REFLECTION
+        #ifdef USEIRRADIANCEMAP
+            #include<__decl__sceneFragment>
+            uniform mat4 reflectionMatrix;
+            uniform vec2 vReflectionInfos;
+            uniform vec3 vReflectionDominantDirection;
+            #include<pbrBRDFFunctions>
+            #include<openpbrDielectricReflectance>
+            #include<pbrIBLFunctions>
+            #include<reflectionFunction>
+            #include<openpbrGeometryInfo>
+            #include<openpbrIblFunctions>
+        #elif defined(USESPHERICALFROMREFLECTIONMAP)
+            varying vec3 vEnvironmentIrradiance;
+        #endif
+
+        #ifdef IBL_SHADOW_TEXTURE
+            uniform sampler2D iblShadowSampler;
+            uniform vec2 shadowTextureSize;
+        #endif
+
+        #ifdef IRRADIANCE_SCATTER_MASK
+            uniform float vSubsurfaceWeight;
+            #include<samplerFragmentDeclaration>(_DEFINENAME_,SUBSURFACE_WEIGHT,_VARYINGNAME_,SubsurfaceWeight,_SAMPLERNAME_,subsurfaceWeight)
+            uniform float vSubsurfaceScatterAnisotropy;
+            uniform float vTransmissionWeight;
+            #include<samplerFragmentDeclaration>(_DEFINENAME_,TRANSMISSION_WEIGHT,_VARYINGNAME_,TransmissionWeight,_SAMPLERNAME_,transmissionWeight)
+            uniform float vTransmissionScatterAnisotropy;
+        #endif
+    #endif
+#endif
 
 void main() {
     #include<clipPlaneFragment>
@@ -203,5 +238,83 @@ void main() {
             #endif
         #endif
         gl_FragData[REFLECTIVITY_INDEX] = reflectivity;
+    #endif
+
+    #ifdef IRRADIANCE
+        // Calculate environment irradiance for geometry buffer
+        vec3 irradiance = vec3(0.0);
+        float irradiance_alpha = 1.0;
+        #ifdef REFLECTION
+            #ifdef IRRADIANCE_SCATTER_MASK
+                vec3 vSubsurfaceColor = vec3(1.0);
+                float vSubsurfaceRadius = 0.0;
+                vec3 vSubsurfaceRadiusScale = vec3(1.0);
+                #include<openpbrSubsurfaceLayerData>
+                float vTransmissionDepth = 1.0;
+                vec3 vTransmissionColor = vec3(1.0);
+                vec3 vTransmissionScatter = vec3(0.0);
+                float vTransmissionDispersionScale = 0.0;
+                float vTransmissionDispersionAbbeNumber = 0.0;
+                #include<openpbrTransmissionLayerData>
+            #endif
+            #ifdef IBL_SHADOW_TEXTURE
+                #ifdef COLORED_IBL_SHADOWS
+                    vec3 iblShadowValue = texture(iblShadowSampler, gl_FragCoord.xy / shadowTextureSize).rgb;
+                #else
+                    vec3 iblShadowValue = vec3(texture(iblShadowSampler, gl_FragCoord.xy / shadowTextureSize).r);
+                #endif
+            #endif
+            #if defined(USEIRRADIANCEMAP)
+                #ifdef IRRADIANCE_SCATTER_MASK
+                    // Bend the normal towards the view direction based on the anisotropy. This is mainly to mimick
+                    // backscattering when the anisotropy is negative.
+                    float bendAmount = subsurface_weight * -min(subsurface_scatter_anisotropy, 0.0);
+                    bendAmount = mix(bendAmount, -min(transmission_scatter_anisotropy, 0.0), transmission_weight);
+                    vec3 viewVector = normalize(vEyePosition.xyz - vPositionW.xyz);
+                    vec3 bentNormal = mix(normalOutput, viewVector, bendAmount * dot(normalOutput, viewVector));
+                #else
+                    vec3 bentNormal = normalOutput;
+                #endif
+                
+                irradiance = sampleIrradiance(
+                    bentNormal
+                    #if defined(NORMAL) && defined(USESPHERICALINVERTEX)
+                        , vEnvironmentIrradiance
+                    #endif
+                    #if (defined(USESPHERICALFROMREFLECTIONMAP) && (!defined(NORMAL) || !defined(USESPHERICALINVERTEX))) || (defined(USEIRRADIANCEMAP) && defined(REFLECTIONMAP_3D))
+                        , reflectionMatrix
+                    #endif
+                    #ifdef USEIRRADIANCEMAP
+                        , irradianceSampler
+                        #ifdef USE_IRRADIANCE_DOMINANT_DIRECTION
+                            , vReflectionDominantDirection
+                        #endif
+                    #endif
+                    #ifdef REALTIME_FILTERING
+                        , vReflectionFilteringInfo
+                        #ifdef IBL_CDF_FILTERING
+                            , icdfSampler
+                        #endif
+                    #endif
+                    , vReflectionInfos
+                    , vViewPos.xyz
+                    , 1.0
+                    , vec3(1.0)
+                );
+            #elif defined(USESPHERICALFROMREFLECTIONMAP)
+                // Use pre-computed spherical harmonics irradiance from vertex shader
+                irradiance = vEnvironmentIrradiance;
+            #endif
+            #ifdef IBL_SHADOW_TEXTURE
+                irradiance *= iblShadowValue;
+            #endif
+            #ifndef BUMP
+                vec2 uvOffset = vec2(0.0);
+            #endif
+            #ifdef IRRADIANCE_SCATTER_MASK
+                irradiance_alpha = min(subsurface_weight + transmission_weight, 1.0);
+            #endif
+        #endif
+        gl_FragData[IRRADIANCE_INDEX] = vec4(irradiance, irradiance_alpha);
     #endif
 }

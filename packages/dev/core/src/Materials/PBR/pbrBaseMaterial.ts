@@ -70,11 +70,12 @@ import {
 import { ShaderLanguage } from "../shaderLanguage";
 import { MaterialHelperGeometryRendering } from "../materialHelper.geometryrendering";
 import { UVDefinesMixin } from "../uv.defines";
+import { PrepassDefinesMixin } from "../prepass.defines";
 import { ImageProcessingMixin } from "../imageProcessing";
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
-class PBRMaterialDefinesBase extends UVDefinesMixin(MaterialDefines) {}
+class PBRMaterialDefinesBase extends PrepassDefinesMixin(UVDefinesMixin(MaterialDefines)) {}
 
 /**
  * Manages the defines for the PBR Material.
@@ -193,38 +194,6 @@ export class PBRMaterialDefines extends ImageProcessingDefinesMixin(PBRMaterialD
     public INSTANCES = false;
     public THIN_INSTANCES = false;
     public INSTANCESCOLOR = false;
-
-    public PREPASS = false;
-    public PREPASS_COLOR = false;
-    public PREPASS_COLOR_INDEX = -1;
-    public PREPASS_IRRADIANCE = false;
-    public PREPASS_IRRADIANCE_INDEX = -1;
-    public PREPASS_ALBEDO = false;
-    public PREPASS_ALBEDO_INDEX = -1;
-    public PREPASS_ALBEDO_SQRT = false;
-    public PREPASS_ALBEDO_SQRT_INDEX = -1;
-    public PREPASS_DEPTH = false;
-    public PREPASS_DEPTH_INDEX = -1;
-    public PREPASS_SCREENSPACE_DEPTH = false;
-    public PREPASS_SCREENSPACE_DEPTH_INDEX = -1;
-    public PREPASS_NORMALIZED_VIEW_DEPTH = false;
-    public PREPASS_NORMALIZED_VIEW_DEPTH_INDEX = -1;
-    public PREPASS_NORMAL = false;
-    public PREPASS_NORMAL_INDEX = -1;
-    public PREPASS_NORMAL_WORLDSPACE = false;
-    public PREPASS_WORLD_NORMAL = false;
-    public PREPASS_WORLD_NORMAL_INDEX = -1;
-    public PREPASS_POSITION = false;
-    public PREPASS_POSITION_INDEX = -1;
-    public PREPASS_LOCAL_POSITION = false;
-    public PREPASS_LOCAL_POSITION_INDEX = -1;
-    public PREPASS_VELOCITY = false;
-    public PREPASS_VELOCITY_INDEX = -1;
-    public PREPASS_VELOCITY_LINEAR = false;
-    public PREPASS_VELOCITY_LINEAR_INDEX = -1;
-    public PREPASS_REFLECTIVITY = false;
-    public PREPASS_REFLECTIVITY_INDEX = -1;
-    public SCENE_MRT_COUNT = 0;
 
     public NUM_BONE_INFLUENCERS = 0;
     public BonesPerMesh = 0;
