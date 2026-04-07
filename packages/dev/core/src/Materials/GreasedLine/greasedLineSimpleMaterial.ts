@@ -167,7 +167,11 @@ export class GreasedLineSimpleMaterial extends ShaderMaterial implements IGrease
      * Disposes the plugin material.
      */
     public override dispose(): void {
-        this._colorsTexture?.dispose();
+        // Don't dispose the shared EmptyColorsTexture — it's owned by the static defaults
+        // and will be cleaned up when the engine is disposed.
+        if (this._colorsTexture && this._colorsTexture !== GreasedLineMaterialDefaults.EmptyColorsTexture) {
+            this._colorsTexture.dispose();
+        }
         super.dispose();
     }
 
@@ -210,7 +214,9 @@ export class GreasedLineSimpleMaterial extends ShaderMaterial implements IGrease
         this._colors = colors;
 
         if (colors === null || colors.length === 0) {
-            this._colorsTexture?.dispose();
+            if (this._colorsTexture && this._colorsTexture !== GreasedLineMaterialDefaults.EmptyColorsTexture) {
+                this._colorsTexture.dispose();
+            }
             return;
         }
 
@@ -222,7 +228,9 @@ export class GreasedLineSimpleMaterial extends ShaderMaterial implements IGrease
             const colorArray = GreasedLineTools.Color3toRGBAUint8(colors);
             this._colorsTexture.update(colorArray);
         } else {
-            this._colorsTexture?.dispose();
+            if (this._colorsTexture && this._colorsTexture !== GreasedLineMaterialDefaults.EmptyColorsTexture) {
+                this._colorsTexture.dispose();
+            }
             this.colorsTexture = GreasedLineTools.CreateColorsTexture(`${this.name}-colors-texture`, colors, this.colorsSampling, this.getScene());
         }
     }
