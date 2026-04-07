@@ -278,7 +278,7 @@ export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextu
                 // Notify frame observers
                 this.onXRSessionEnded.notifyObservers(null);
 
-                if (engine) {
+                if (engine && !engine.isDisposed) {
                     // make sure dimensions object is restored
                     engine.framebufferDimensionsObject = null;
 
