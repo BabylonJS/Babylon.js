@@ -819,20 +819,16 @@ export class AnimatorAvatar {
                     break;
             }
         } else {
-            const absX = Math.abs(sourceRootGroundReferenceDiff.x);
-            const absY = Math.abs(sourceRootGroundReferenceDiff.y);
-            const absZ = Math.abs(sourceRootGroundReferenceDiff.z);
-            if (absY > absX && absY >= absZ) {
+            // No axis provided: assume the vertical axis is the one with the larger difference between the reference and the ground reference transform nodes
+            if (Math.abs(sourceRootGroundReferenceDiff.y) > Math.abs(sourceRootGroundReferenceDiff.x)) {
                 verticalAxis = 1;
-            } else if (absZ > absX && absZ > absY) {
+            }
+            if (Math.abs(sourceRootGroundReferenceDiff.z) > Math.abs(sourceRootGroundReferenceDiff.y)) {
                 verticalAxis = 2;
             }
         }
 
         const targetRootGroundReferenceDiff = targetRootTransformNodeOrBone.getAbsolutePosition().subtract(targetGroundReferenceTransformNodeOrBone.getAbsolutePosition());
-
-        const sourceDiff = verticalAxis === 0 ? sourceRootGroundReferenceDiff.x : verticalAxis === 1 ? sourceRootGroundReferenceDiff.y : sourceRootGroundReferenceDiff.z;
-        const targetDiff = verticalAxis === 0 ? targetRootGroundReferenceDiff.x : verticalAxis === 1 ? targetRootGroundReferenceDiff.y : targetRootGroundReferenceDiff.z;
 
         return {
             verticalAxis,
@@ -841,7 +837,12 @@ export class AnimatorAvatar {
             targetRootTransformNodeOrBone,
             targetRootPositionAnimation,
             targetGroundReferenceTransformNodeOrBone,
-            proportionRatio: sourceDiff !== 0 ? targetDiff / sourceDiff : 1.0,
+            proportionRatio:
+                verticalAxis === 0
+                    ? targetRootGroundReferenceDiff.x / sourceRootGroundReferenceDiff.x
+                    : verticalAxis === 1
+                      ? targetRootGroundReferenceDiff.y / sourceRootGroundReferenceDiff.y
+                      : targetRootGroundReferenceDiff.z / sourceRootGroundReferenceDiff.z,
         };
     }
 
