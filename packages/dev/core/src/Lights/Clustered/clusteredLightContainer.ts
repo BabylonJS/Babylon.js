@@ -178,6 +178,7 @@ export class ClusteredLightContainer extends Light {
     /**
      * The number of slices to split the depth range by and cluster lights into.
      */
+    @serialize()
     public get depthSlices(): number {
         return this._depthSlices;
     }
@@ -596,6 +597,50 @@ export class ClusteredLightContainer extends Light {
     public override _isReady(): boolean {
         this._updateBatches();
         return this._proxyMesh.isReady(true, true);
+    }
+
+    /**
+     * Serializes the ClusteredLightContainer to a JSON object, including all child lights.
+     * @returns the serialized object
+     */
+    public override serialize(): any {
+        const serializationObject = super.serialize();
+
+        // Serialize child lights inline so they round-trip with the container.
+        // Child lights are removed from scene.lights by addLight(), so the scene
+        // serializer would not reach them on its own.
+        serializationObject.clusteredLights = [];
+        for (const light of this._lights) {
+            if (!light.doNotSerialize) {
+                serializationObject.clusteredLights.push(light.serialize());
+            }
+        }
+
+        return serializationObject;
+    }
+
+    protected override _onParsed(parsedLight: any, scene: Scene): void {
+        if (parsedLight.clusteredLights) {
+            // Parse child lights first, but defer addLight() until after the loader
+            // fixup passes (parent resolution, excluded/included mesh resolution)
+            // have run on scene.lights. addLight() removes lights from scene.lights,
+            // which would cause those fixups to miss the child lights.
+            const parsedChildLights: Light[] = [];
+            for (const parsedChildLight of parsedLight.clusteredLights) {
+                const childLight = Light.Parse(parsedChildLight, scene);
+                if (childLight) {
+                    parsedChildLights.push(childLight);
+                }
+            }
+
+            if (parsedChildLights.length > 0) {
+                scene.onDataLoadedObservable.addOnce(() => {
+                    for (const childLight of parsedChildLights) {
+                        this.addLight(childLight);
+                    }
+                });
+            }
+        }
     }
 }
 
