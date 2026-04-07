@@ -155,7 +155,13 @@ describe("ClusteredLightContainer", () => {
             expect(parsed).not.toBeNull();
             const parsedContainer = parsed as ClusteredLightContainer;
 
-            // Child lights should be parsed and added
+            // Child lights are deferred until onDataLoadedObservable fires
+            expect(parsedContainer.lights).toHaveLength(0);
+
+            // Simulate the loader finishing — triggers deferred addLight()
+            scene2.onDataLoadedObservable.notifyObservers(scene2);
+
+            // Child lights should now be parsed and added
             expect(parsedContainer.lights).toHaveLength(2);
             expect(parsedContainer.lights[0].name).toBe("point1");
             expect(parsedContainer.lights[0].intensity).toBe(0.75);
@@ -185,6 +191,9 @@ describe("ClusteredLightContainer", () => {
 
             const scene2 = new Scene(engine);
             const parsed = Light.Parse(serialized, scene2) as ClusteredLightContainer;
+
+            // Simulate the loader finishing — triggers deferred addLight()
+            scene2.onDataLoadedObservable.notifyObservers(scene2);
 
             expect(parsed.lights).toHaveLength(2);
             expect(parsed.lights[0]).toBeInstanceOf(PointLight);
