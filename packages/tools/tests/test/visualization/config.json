@@ -3033,6 +3033,11 @@
             "playgroundId": "#CSCJO2#72"
         },
         {
+            "title": "Clustered Light Serialization",
+            "playgroundId": "#QRQPNN#0",
+            "referenceImage": "clustered-light-serialization.png"
+        },
+        {
             "title": "Atmosphere Day",
             "playgroundId": "#VO1Z0C#39",
             "referenceImage": "atmosphere-day.png",
