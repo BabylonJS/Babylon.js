@@ -37,16 +37,16 @@ describe("SelectionOutlineLayer", () => {
         expect(scene._depthRenderer).toBeUndefined();
     });
 
-    it("should create a depth renderer only when selections are added and rendered", () => {
+    it("should enable rendering only after a selection is added", () => {
         const layer = new SelectionOutlineLayer("outline", scene);
         const sphere = MeshBuilder.CreateSphere("sphere", { diameter: 1 }, scene);
 
-        // Before adding any selection, no depth renderer
+        // Before adding any selection, no depth renderer and shouldRender is false
         expect(scene._depthRenderer).toBeUndefined();
+        expect(layer.shouldRender()).toBe(false);
 
+        // After adding a selection, shouldRender flips to true
         layer.addSelection(sphere);
-
-        // After adding a selection, shouldRender should be true
         expect(layer.shouldRender()).toBe(true);
     });
 });
