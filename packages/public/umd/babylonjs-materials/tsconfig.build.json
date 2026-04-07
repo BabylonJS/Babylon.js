@@ -4,13 +4,14 @@
     "compilerOptions": {
         "outDir": "./dist",
         "target": "ES5",
+        "ignoreDeprecations": "6.0",
         "rootDir": "../../../",
         "declaration": false,
         "importHelpers": true,
         "paths": {
-            "core/*": ["dev/core/dist/*"],
-            "materials/*": ["dev/materials/dist/*"],
-            "@lts/materials/*": ["lts/materials/dist/*"]
+            "core/*": ["../../../dev/core/dist/*"],
+            "materials/*": ["../../../dev/materials/dist/*"],
+            "@lts/materials/*": ["../../../lts/materials/dist/*"]
         }
     },
     "include": ["./src/**/*", "../../../dev/materials/src/**/*", "../../../lts/materials/src/**/*"]

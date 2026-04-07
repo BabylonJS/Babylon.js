@@ -1,13 +1,13 @@
 import { InternalTexture, InternalTextureSource } from "../../Materials/Textures/internalTexture";
-import type { IMultiRenderTargetOptions } from "../../Materials/Textures/multiRenderTarget";
+import { type IMultiRenderTargetOptions } from "../../Materials/Textures/multiRenderTarget";
 import { Logger } from "../../Misc/logger";
-import type { Nullable } from "../../types";
+import { type Nullable } from "../../types";
 import { Constants } from "../constants";
 import { ThinEngine } from "../thinEngine";
-import type { RenderTargetWrapper } from "../renderTargetWrapper";
-import type { WebGLRenderTargetWrapper } from "../WebGL/webGLRenderTargetWrapper";
-import type { WebGLHardwareTexture } from "../WebGL/webGLHardwareTexture";
-import type { TextureSize } from "../../Materials/Textures/textureCreationOptions";
+import { type RenderTargetWrapper } from "../renderTargetWrapper";
+import { type WebGLRenderTargetWrapper } from "../WebGL/webGLRenderTargetWrapper";
+import { type WebGLHardwareTexture } from "../WebGL/webGLHardwareTexture";
+import { type TextureSize } from "../../Materials/Textures/textureCreationOptions";
 
 declare module "../../Engines/abstractEngine" {
     // eslint-disable-next-line @typescript-eslint/naming-convention

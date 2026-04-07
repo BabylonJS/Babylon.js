@@ -1,9 +1,7 @@
 import { PostProcess } from "core/PostProcesses/postProcess";
 import { PostProcessProperties } from "../../../components/properties/postProcesses/postProcessProperties";
-import type { ServiceDefinition } from "../../../modularity/serviceDefinition";
-import type { IPropertiesService } from "./propertiesService";
-
-import { PropertiesServiceIdentity } from "./propertiesService";
+import { type ServiceDefinition } from "../../../modularity/serviceDefinition";
+import { type IPropertiesService, PropertiesServiceIdentity } from "./propertiesService";
 
 export const PostProcessPropertiesServiceDefinition: ServiceDefinition<[], [IPropertiesService]> = {
     friendlyName: "Post Process Properties",

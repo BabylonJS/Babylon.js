@@ -1,4 +1,4 @@
-import type { Scene } from "core/scene";
+import { type Scene } from "core/scene";
 import * as React from "react";
 import { createRoot } from "react-dom/client";
 import { HTMLTwinHostComponent } from "./htmlTwinHostComponent";

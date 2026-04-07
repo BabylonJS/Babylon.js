@@ -1,14 +1,14 @@
 import * as React from "react";
 import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineComponent";
-import type { GlobalState } from "../../../../../globalState";
+import { type GlobalState } from "../../../../../globalState";
 import { PopupComponent } from "../../../../../popupComponent";
 import { BottomBarComponent } from "./bottomBar/bottomBarComponent";
-import type { Context } from "./context";
+import { type Context } from "./context";
 import { TopBarComponent } from "./topBarComponent";
 import { CanvasComponent } from "./graph/canvasComponent";
 import { SideBarComponent } from "./sideBar/sideBarComponent";
-import type { Animation } from "core/Animations/animation";
-import type { TargetedAnimation } from "core/Animations/animationGroup";
+import { type Animation } from "core/Animations/animation";
+import { type TargetedAnimation } from "core/Animations/animationGroup";
 
 import "./scss/curveEditor.scss";
 

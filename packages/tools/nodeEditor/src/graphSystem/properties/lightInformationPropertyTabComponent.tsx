@@ -1,10 +1,10 @@
 import * as React from "react";
 import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
-import type { LightInformationBlock } from "core/Materials/Node/Blocks/Vertex/lightInformationBlock";
+import { type LightInformationBlock } from "core/Materials/Node/Blocks/Vertex/lightInformationBlock";
 import { GetGeneralProperties } from "./genericNodePropertyComponent";
-import type { Light } from "core/Lights/light";
-import type { GlobalState } from "../../globalState";
-import type { IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
+import { type Light } from "core/Lights/light";
+import { type GlobalState } from "../../globalState";
+import { type IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
 import { OptionsLine } from "shared-ui-components/lines/optionsLineComponent";
 import { PropertyTabComponentBase } from "shared-ui-components/components/propertyTabComponentBase";
 

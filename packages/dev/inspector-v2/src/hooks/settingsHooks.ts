@@ -1,8 +1,6 @@
-import type { Dispatch, SetStateAction } from "react";
+import { type Dispatch, type SetStateAction, useCallback, useEffect, useMemo } from "react";
 
-import type { SettingDescriptor } from "../services/settingsStore";
-
-import { useCallback, useEffect, useMemo } from "react";
+import { type SettingDescriptor } from "../services/settingsStore";
 
 import { Observable } from "core/Misc/observable";
 import { useSettingsStore } from "../contexts/settingsContext";

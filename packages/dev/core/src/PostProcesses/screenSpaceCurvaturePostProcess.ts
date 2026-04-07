@@ -1,11 +1,10 @@
-import type { Nullable } from "../types";
+import { type Nullable } from "../types";
 import { Logger } from "../Misc/logger";
-import type { Camera } from "../Cameras/camera";
-import type { Effect } from "../Materials/effect";
-import type { PostProcessOptions } from "./postProcess";
-import { PostProcess } from "./postProcess";
+import { type Camera } from "../Cameras/camera";
+import { type Effect } from "../Materials/effect";
+import { type PostProcessOptions, PostProcess } from "./postProcess";
 import { Constants } from "../Engines/constants";
-import type { GeometryBufferRenderer } from "../Rendering/geometryBufferRenderer";
+import { type GeometryBufferRenderer } from "../Rendering/geometryBufferRenderer";
 
 import "../Rendering/geometryBufferRendererSceneComponent";
 import "../Shaders/screenSpaceCurvature.fragment";
@@ -14,8 +13,8 @@ import { RegisterClass } from "../Misc/typeStore";
 import { serialize } from "../Misc/decorators";
 import { SerializationHelper } from "../Misc/decorators.serialization";
 
-import type { AbstractEngine } from "../Engines/abstractEngine";
-import type { Scene } from "../scene";
+import { type AbstractEngine } from "../Engines/abstractEngine";
+import { type Scene } from "../scene";
 import { ThinScreenSpaceCurvaturePostProcess } from "./thinScreenSpaceCurvaturePostProcess";
 
 /**

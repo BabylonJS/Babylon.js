@@ -1,7 +1,7 @@
 import { NodeGeometryBlockConnectionPointTypes } from "../../Enums/nodeGeometryConnectionPointTypes";
 import { NodeGeometryBlock } from "../../nodeGeometryBlock";
-import type { NodeGeometryConnectionPoint } from "../../nodeGeometryBlockConnectionPoint";
-import type { NodeGeometryBuildState } from "../../nodeGeometryBuildState";
+import { type NodeGeometryConnectionPoint } from "../../nodeGeometryBlockConnectionPoint";
+import { type NodeGeometryBuildState } from "../../nodeGeometryBuildState";
 import { GeometryInputBlock } from "../geometryInputBlock";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import { CreateSegmentedBoxVertexData } from "core/Meshes/Builders/boxBuilder";

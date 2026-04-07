@@ -1,7 +1,7 @@
-import type { Scene } from "core/scene";
-import type { BaseAction } from "./actions/BaseAction";
+import { type Scene } from "core/scene";
+import { type BaseAction } from "./actions/BaseAction";
 import { BaseBehavior } from "./BaseBehavior";
-import type { BaseTrigger } from "./triggers/BaseTrigger";
+import { type BaseTrigger } from "./triggers/BaseTrigger";
 
 /**
  * This class is responsible for checking the execution state of triggers and enabling actions to run

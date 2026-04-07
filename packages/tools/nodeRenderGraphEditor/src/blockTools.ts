@@ -1,5 +1,5 @@
-import type { Scene } from "core/scene";
-import type { FrameGraph } from "core/FrameGraph/frameGraph";
+import { type Scene } from "core/scene";
+import { type FrameGraph } from "core/FrameGraph/frameGraph";
 import { NodeRenderGraphBlockConnectionPointTypes } from "core/FrameGraph/Node/Types/nodeRenderGraphTypes";
 import { NodeRenderGraphOutputBlock } from "core/FrameGraph/Node/Blocks/outputBlock";
 import { NodeRenderGraphInputBlock } from "core/FrameGraph/Node/Blocks/inputBlock";

@@ -1,28 +1,32 @@
 /* eslint-disable @typescript-eslint/promise-function-async*/
 /* eslint-disable @typescript-eslint/naming-convention */
-import type { ISceneLoaderPluginAsync, ISceneLoaderPluginFactory, ISceneLoaderAsyncResult, ISceneLoaderProgressEvent, SceneLoaderPluginOptions } from "core/Loading/sceneLoader";
-import { RegisterSceneLoaderPlugin } from "core/Loading/sceneLoader";
+import {
+    type ISceneLoaderPluginAsync,
+    type ISceneLoaderPluginFactory,
+    type ISceneLoaderAsyncResult,
+    type ISceneLoaderProgressEvent,
+    type SceneLoaderPluginOptions,
+    RegisterSceneLoaderPlugin,
+} from "core/Loading/sceneLoader";
 import { SPLATFileLoaderMetadata } from "./splatFileLoader.metadata";
 import { GaussianSplattingMesh } from "core/Meshes/GaussianSplatting/gaussianSplattingMesh";
 import { AssetContainer } from "core/assetContainer";
-import type { Scene } from "core/scene";
-import type { Nullable } from "core/types";
-import type { AbstractMesh } from "core/Meshes/abstractMesh";
+import { type Scene } from "core/scene";
+import { type Nullable } from "core/types";
+import { type AbstractMesh } from "core/Meshes/abstractMesh";
 import { Mesh } from "core/Meshes/mesh";
 import { Logger } from "core/Misc/logger";
 import { Vector3 } from "core/Maths/math.vector";
 import { PointsCloudSystem } from "core/Particles/pointsCloudSystem";
 import { Color4 } from "core/Maths/math.color";
 import { VertexData } from "core/Meshes/mesh.vertexData";
-import type { SPLATLoadingOptions } from "./splatLoadingOptions";
-import type { GaussianSplattingMaterial } from "core/Materials/GaussianSplatting/gaussianSplattingMaterial";
+import { type SPLATLoadingOptions } from "./splatLoadingOptions";
+import { type GaussianSplattingMaterial } from "core/Materials/GaussianSplatting/gaussianSplattingMaterial";
 import { ParseSpz } from "./spz";
-import { Mode } from "./splatDefs";
-import type { IParsedSplat } from "./splatDefs";
-import { ParseSogMeta } from "./sog";
-import type { SOGRootData } from "./sog";
+import { Mode, type IParsedSplat } from "./splatDefs";
+import { ParseSogMeta, type SOGRootData } from "./sog";
 import { Tools } from "core/Misc/tools";
-import type { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
+import { type ArcRotateCamera } from "core/Cameras/arcRotateCamera";
 
 declare module "core/Loading/sceneLoader" {
     // eslint-disable-next-line jsdoc/require-jsdoc, @typescript-eslint/naming-convention

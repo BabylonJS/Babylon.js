@@ -1,9 +1,8 @@
-import type { ThemeMode } from "../services/themeService";
+import { type ThemeMode, ThemeModeSettingDescriptor, ThemeResolver } from "../services/themeService";
 
 import { useCallback } from "react";
 
 import { useSettingsStore } from "../contexts/settingsContext";
-import { ThemeModeSettingDescriptor, ThemeResolver } from "../services/themeService";
 import { DarkTheme, LightTheme } from "../themes/babylonTheme";
 import { useObservableState } from "./observableHooks";
 import { useResource } from "./resourceHooks";

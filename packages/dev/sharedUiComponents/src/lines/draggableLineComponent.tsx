@@ -1,7 +1,6 @@
 import { useContext } from "react";
 import { ToolContext } from "../fluent/hoc/fluentToolWrapper";
-import { DraggableLine } from "../fluent/primitives/draggable";
-import type { DraggableLineProps } from "../fluent/primitives/draggable";
+import { DraggableLine, type DraggableLineProps } from "../fluent/primitives/draggable";
 
 type DraggableLineComponentProps = Omit<DraggableLineProps, "label">;
 export const DraggableLineComponent: React.FunctionComponent<DraggableLineComponentProps> = (props) => {

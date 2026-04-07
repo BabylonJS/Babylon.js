@@ -1,9 +1,9 @@
-import type { IAction } from "core/Actions/action";
+import { type IAction } from "core/Actions/action";
 import { Constants } from "core/Engines/constants";
 import { Color4 } from "core/Maths/math.color";
 import { Mesh } from "core/Meshes/mesh";
-import type { Node } from "core/node";
-import type { Scene } from "core/scene";
+import { type Node } from "core/node";
+import { type Scene } from "core/scene";
 import { HTMLTwinItem } from "./htmlTwinItem";
 
 /**

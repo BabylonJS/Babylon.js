@@ -1,6 +1,6 @@
-import type { FunctionComponent } from "react";
+import { type FunctionComponent } from "react";
 
-import type { ArcRotateCamera } from "core/index";
+import { type ArcRotateCamera } from "core/index";
 
 import { NumberInputPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/inputPropertyLine";
 import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";

@@ -1,7 +1,7 @@
 import * as React from "react";
-import type { GlobalState } from "./globalState";
+import { type GlobalState } from "./globalState";
 import * as ReactDOM from "react-dom";
-import type { PropsWithChildren } from "react";
+import { type PropsWithChildren } from "react";
 
 interface IPortalProps {
     globalState: GlobalState;

@@ -1,8 +1,15 @@
 import * as ts from "typescript";
 import * as path from "path";
 import * as fs from "fs";
-import type { BuildType, PublicPackageVariable } from "./packageMapping.js";
-import { getDevPackagesByBuildType, getPublicPackageName, isValidDevPackageName, declarationsOnlyPackages, bundledESPackages } from "./packageMapping.js";
+import {
+    type BuildType,
+    type PublicPackageVariable,
+    getDevPackagesByBuildType,
+    getPublicPackageName,
+    isValidDevPackageName,
+    declarationsOnlyPackages,
+    bundledESPackages,
+} from "./packageMapping.js";
 
 const AddJS = (to: string, forceAppend?: boolean | string): string => (forceAppend && !to.endsWith(".js") ? to + (forceAppend === true ? ".js" : forceAppend) : to);
 
@@ -47,7 +54,7 @@ export const transformPackageLocation = (location: string, options: ITransformer
         }
         return AddJS(computedPath, options.appendJS);
     }
-    if (!basePackage || !isValidDevPackageName(basePackage, true) || declarationsOnlyPackages.indexOf(basePackage) !== -1) {
+    if (!basePackage || !isValidDevPackageName(basePackage) || declarationsOnlyPackages.indexOf(basePackage) !== -1) {
         return;
     }
 
@@ -90,7 +97,7 @@ type TransformerNode = ts.Bundle | ts.SourceFile;
 /**
  * Options to pass for the transform function
  */
-interface ITransformerOptions {
+export interface ITransformerOptions {
     /**
      * can be lts, esm, umd and es6
      */

@@ -1,5 +1,5 @@
 import { FlowGraphAsyncExecutionBlock } from "./flowGraphAsyncExecutionBlock";
-import type { FlowGraphContext } from "./flowGraphContext";
+import { type FlowGraphContext } from "./flowGraphContext";
 import { FlowGraphEventType } from "./flowGraphEventType";
 
 /**

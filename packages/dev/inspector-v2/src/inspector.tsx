@@ -1,9 +1,9 @@
-import type { IDisposable, IReadonlyObservable, Nullable, Scene } from "core/index";
-import type { WeaklyTypedServiceDefinition } from "./modularity/serviceContainer";
-import type { ServiceDefinition } from "./modularity/serviceDefinition";
-import type { ModularToolOptions } from "./modularTool";
-import type { ISceneContext } from "./services/sceneContext";
-import type { IShellService } from "./services/shellService";
+import { type IDisposable, type IReadonlyObservable, type Nullable, type Scene } from "core/index";
+import { type WeaklyTypedServiceDefinition } from "./modularity/serviceContainer";
+import { type ServiceDefinition } from "./modularity/serviceDefinition";
+import { type ModularToolOptions, MakeModularTool } from "./modularTool";
+import { type ISceneContext, SceneContextIdentity } from "./services/sceneContext";
+import { type IShellService, ShellServiceIdentity } from "./services/shellService";
 
 import { AsyncLock } from "core/Misc/asyncLock";
 import { Logger } from "core/Misc/logger";
@@ -11,7 +11,6 @@ import { Observable } from "core/Misc/observable";
 import { useEffect, useRef } from "react";
 import { DefaultInspectorExtensionFeed } from "./extensibility/defaultInspectorExtensionFeed";
 import { LegacyInspectableObjectPropertiesServiceDefinition } from "./legacy/inspectableCustomPropertiesService";
-import { MakeModularTool } from "./modularTool";
 import { GizmoServiceDefinition } from "./services/gizmoService";
 import { GizmoToolbarServiceDefinition } from "./services/gizmoToolbarService";
 import { HighlightServiceDefinition } from "./services/highlightService";
@@ -64,13 +63,11 @@ import { GLTFLoaderOptionsServiceDefinition } from "./services/panes/tools/impor
 import { GLTFValidationServiceDefinition } from "./services/panes/tools/import/gltfValidationService";
 import { ToolsServiceDefinition } from "./services/panes/toolsService";
 import { PickingServiceDefinition } from "./services/pickingService";
-import { SceneContextIdentity } from "./services/sceneContext";
 import { SelectionServiceDefinition } from "./services/selectionService";
-import { ShellServiceIdentity } from "./services/shellService";
 import { ShellSettingsServiceDefinition } from "./services/shellSettingsService";
 import { TextureEditorServiceDefinition } from "./services/textureEditor/textureEditorService";
 import { UserFeedbackServiceDefinition } from "./services/userFeedbackService";
-import { WatcherRefreshToolbarServiceDefinition, WatcherSettingsServiceDefinition } from "./services/watcherService";
+import { WatcherRefreshToolbarServiceDefinition, WatcherServiceDefinition, WatcherSettingsServiceDefinition } from "./services/watcherService";
 
 type LayoutMode = "inline" | "overlay";
 
@@ -307,6 +304,9 @@ export function ShowInspector(scene: Scene, options: Partial<InspectorOptions> =
         }
 
         serviceDefinitions.push(
+            // Watcher service for observing property changes.
+            WatcherServiceDefinition,
+
             // Helps with managing gizmos and a shared utility layer.
             GizmoServiceDefinition,
 

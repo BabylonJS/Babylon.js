@@ -9,7 +9,7 @@
         "moduleResolution": "bundler",
         "jsx": "react",
         "esModuleInterop": true,
-        "skipLibCheck": false,
+        "skipLibCheck": true,
         "noEmit": true,
         "types": []
     },

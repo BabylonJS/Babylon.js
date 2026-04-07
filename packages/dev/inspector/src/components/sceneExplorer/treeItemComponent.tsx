@@ -1,17 +1,16 @@
 import * as React from "react";
 
-import type { Nullable } from "core/types";
-import type { IInspectorContextMenuItem, IExplorerExtensibilityGroup } from "core/Debug/debugLayer";
+import { type Nullable } from "core/types";
+import { type IInspectorContextMenuItem, type IExplorerExtensibilityGroup } from "core/Debug/debugLayer";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlus, faMinus, faBan, faExpandArrowsAlt, faCompress } from "@fortawesome/free-solid-svg-icons";
 import { TreeItemSelectableComponent } from "./treeItemSelectableComponent";
 import { Tools } from "../../tools";
-import type { GlobalState } from "../globalState";
-import type { ContextMenuItem } from "shared-ui-components/fluent/primitives/contextMenu";
-import { ContextMenu } from "shared-ui-components/fluent/primitives/contextMenu";
+import { type GlobalState } from "../globalState";
+import { type ContextMenuItem, ContextMenu } from "shared-ui-components/fluent/primitives/contextMenu";
 import { FluentToolWrapper } from "shared-ui-components/fluent/hoc/fluentToolWrapper";
-import type { Camera } from "core/Cameras/camera";
+import { type Camera } from "core/Cameras/camera";
 
 const ConvertToContextMenuItems = (items?: IInspectorContextMenuItem[]): ContextMenuItem[] => {
     if (!items) {

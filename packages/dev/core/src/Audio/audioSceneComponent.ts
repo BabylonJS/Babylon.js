@@ -1,18 +1,17 @@
 import { Sound } from "./sound";
 import { SoundTrack } from "./soundTrack";
-import type { Nullable } from "../types";
+import { type Nullable } from "../types";
 import { Matrix, Vector3 } from "../Maths/math.vector";
-import type { ISceneSerializableComponent } from "../sceneComponent";
-import { SceneComponentConstants } from "../sceneComponent";
+import { type ISceneSerializableComponent, SceneComponentConstants } from "../sceneComponent";
 import { Scene } from "../scene";
-import type { AssetContainer } from "../assetContainer";
+import { type AssetContainer } from "../assetContainer";
 
 import "./audioEngine";
 import { PrecisionDate } from "../Misc/precisionDate";
 import { EngineStore } from "../Engines/engineStore";
 import { AbstractEngine } from "core/Engines/abstractEngine";
 import { AddParser } from "core/Loading/Plugins/babylonFileParser.function";
-import type { IAssetContainer } from "core/IAssetContainer";
+import { type IAssetContainer } from "core/IAssetContainer";
 
 // Adds the parser to the scene parsers.
 AddParser(SceneComponentConstants.NAME_AUDIO, (parsedData: any, scene: Scene, container: AssetContainer, rootUrl: string) => {

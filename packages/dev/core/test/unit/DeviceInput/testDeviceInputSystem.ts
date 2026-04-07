@@ -1,8 +1,8 @@
 import { DeviceEventFactory } from "core/DeviceInput/eventFactory";
 import { DeviceType } from "core/DeviceInput/InputDevices/deviceEnums";
-import type { IDeviceInputSystem } from "core/DeviceInput/inputInterfaces";
-import type { Engine } from "core/Engines/engine";
-import type { IUIEvent } from "core/Events/deviceInputEvents";
+import { type IDeviceInputSystem } from "core/DeviceInput/inputInterfaces";
+import { type Engine } from "core/Engines/engine";
+import { type IUIEvent } from "core/Events/deviceInputEvents";
 
 export interface ITestDeviceInputSystem {
     connectDevice(deviceType: DeviceType, deviceSlot: number, numberOfInputs: number): void;

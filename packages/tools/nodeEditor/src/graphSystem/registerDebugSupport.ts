@@ -1,4 +1,4 @@
-import type { StateManager } from "shared-ui-components/nodeGraphSystem/stateManager";
+import { type StateManager } from "shared-ui-components/nodeGraphSystem/stateManager";
 
 export const RegisterDebugSupport = (stateManager: StateManager) => {
     stateManager.isDebugConnectionAllowed = (a, b) => {

@@ -1,17 +1,14 @@
-import type { FunctionComponent } from "react";
+import { type FunctionComponent, useEffect, useState } from "react";
 
-import type { Vector3 } from "core/Maths/math.vector";
-import type { PrimitiveProps } from "../../primitives/primitive";
-import type { PropertyLineProps } from "./propertyLine";
+import { type Vector3, Quaternion, Vector2, Vector4 } from "core/Maths/math.vector";
+import { type PrimitiveProps } from "../../primitives/primitive";
+import { type PropertyLineProps, PropertyLine } from "./propertyLine";
 
 import { Body1 } from "@fluentui/react-components";
-import { useEffect, useState } from "react";
 
-import { Quaternion, Vector2, Vector4 } from "core/Maths/math.vector";
 import { Tools } from "core/Misc/tools";
 import { CalculatePrecision } from "../../primitives/utils";
 import { NumberInputPropertyLine } from "./inputPropertyLine";
-import { PropertyLine } from "./propertyLine";
 import { TextPropertyLine } from "./textPropertyLine";
 
 export type TensorPropertyLineProps<V extends Vector2 | Vector3 | Vector4 | Quaternion> = PropertyLineProps<V> &

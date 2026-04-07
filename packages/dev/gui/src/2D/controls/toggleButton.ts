@@ -1,11 +1,11 @@
-import type { Nullable } from "core/types";
+import { type Nullable } from "core/types";
 import { Observable } from "core/Misc/observable";
-import type { Vector2 } from "core/Maths/math.vector";
+import { type Vector2 } from "core/Maths/math.vector";
 
 import { Rectangle } from "./rectangle";
-import type { Control } from "./control";
+import { type Control } from "./control";
 import { RegisterClass } from "core/Misc/typeStore";
-import type { PointerInfoBase } from "core/Events/pointerEvents";
+import { type PointerInfoBase } from "core/Events/pointerEvents";
 
 /**
  * Class used to create toggle buttons

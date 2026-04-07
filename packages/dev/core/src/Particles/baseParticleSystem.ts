@@ -1,28 +1,28 @@
-import type { Nullable } from "../types";
+import { type Nullable } from "../types";
 import { Vector2, Vector3 } from "../Maths/math.vector";
-import type { AbstractMesh } from "../Meshes/abstractMesh";
-import type { ImageProcessingConfiguration } from "../Materials/imageProcessingConfiguration";
+import { type AbstractMesh } from "../Meshes/abstractMesh";
+import { type ImageProcessingConfiguration } from "../Materials/imageProcessingConfiguration";
 import { ImageProcessingConfigurationDefines } from "../Materials/imageProcessingConfiguration.defines";
-import type { ColorGradient, FactorGradient, Color3Gradient, IValueGradient } from "../Misc/gradients";
-import type { BoxParticleEmitter } from "../Particles/EmitterTypes/boxParticleEmitter";
+import { type ColorGradient, type FactorGradient, type Color3Gradient, type IValueGradient } from "../Misc/gradients";
+import { type BoxParticleEmitter } from "../Particles/EmitterTypes/boxParticleEmitter";
 import { Constants } from "../Engines/constants";
-import type { BaseTexture } from "../Materials/Textures/baseTexture";
+import { type BaseTexture } from "../Materials/Textures/baseTexture";
 import { Color4 } from "../Maths/math.color";
-import type { AbstractEngine } from "../Engines/abstractEngine";
+import { type AbstractEngine } from "../Engines/abstractEngine";
 
 import "../Engines/Extensions/engine.dynamicBuffer";
-import type { IClipPlanesHolder } from "../Misc/interfaces/iClipPlanesHolder";
-import type { Plane } from "../Maths/math.plane";
-import type { Animation } from "../Animations/animation";
-import type { Scene } from "../scene";
-import type { ProceduralTexture } from "../Materials/Textures/Procedurals/proceduralTexture";
-import type { RawTexture } from "../Materials/Textures/rawTexture";
-import type { IParticleEmitterType } from "./EmitterTypes/IParticleEmitterType";
-import type { PointParticleEmitter } from "./EmitterTypes/pointParticleEmitter";
-import type { HemisphericParticleEmitter } from "./EmitterTypes/hemisphericParticleEmitter";
-import type { SphereDirectedParticleEmitter, SphereParticleEmitter } from "./EmitterTypes/sphereParticleEmitter";
-import type { CylinderDirectedParticleEmitter, CylinderParticleEmitter } from "./EmitterTypes/cylinderParticleEmitter";
-import type { ConeDirectedParticleEmitter, ConeParticleEmitter } from "./EmitterTypes/coneParticleEmitter";
+import { type IClipPlanesHolder } from "../Misc/interfaces/iClipPlanesHolder";
+import { type Plane } from "../Maths/math.plane";
+import { type Animation } from "../Animations/animation";
+import { type Scene } from "../scene";
+import { type ProceduralTexture } from "../Materials/Textures/Procedurals/proceduralTexture";
+import { type RawTexture } from "../Materials/Textures/rawTexture";
+import { type IParticleEmitterType } from "./EmitterTypes/IParticleEmitterType";
+import { type PointParticleEmitter } from "./EmitterTypes/pointParticleEmitter";
+import { type HemisphericParticleEmitter } from "./EmitterTypes/hemisphericParticleEmitter";
+import { type SphereDirectedParticleEmitter, type SphereParticleEmitter } from "./EmitterTypes/sphereParticleEmitter";
+import { type CylinderDirectedParticleEmitter, type CylinderParticleEmitter } from "./EmitterTypes/cylinderParticleEmitter";
+import { type ConeDirectedParticleEmitter, type ConeParticleEmitter } from "./EmitterTypes/coneParticleEmitter";
 import { RegisterClass } from "../Misc/typeStore";
 
 /**

@@ -1,12 +1,12 @@
 import { WebXRFeatureName, WebXRFeaturesManager } from "../webXRFeaturesManager";
-import type { WebXRSessionManager } from "../webXRSessionManager";
+import { type WebXRSessionManager } from "../webXRSessionManager";
 import { WebXRAbstractFeature } from "./WebXRAbstractFeature";
 import { Observable } from "../../Misc/observable";
 import { Constants } from "../../Engines/constants";
 import { WebGLHardwareTexture } from "../../Engines/WebGL/webGLHardwareTexture";
 import { InternalTexture, InternalTextureSource } from "../../Materials/Textures/internalTexture";
 import { BaseTexture } from "../../Materials/Textures/baseTexture";
-import type { ThinEngine } from "../../Engines";
+import { type ThinEngine } from "../../Engines";
 
 /**
  * Options for raw camera access

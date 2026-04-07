@@ -1,6 +1,5 @@
-import type { ErrorInfo, ReactNode } from "react";
+import { type ErrorInfo, type ReactNode, Component } from "react";
 
-import { Component } from "react";
 import { makeStyles, tokens } from "@fluentui/react-components";
 import { ErrorCircleRegular } from "@fluentui/react-icons";
 import { Button } from "shared-ui-components/fluent/primitives/button";

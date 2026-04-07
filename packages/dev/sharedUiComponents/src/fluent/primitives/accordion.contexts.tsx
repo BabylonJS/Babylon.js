@@ -1,6 +1,5 @@
-import type { RefObject } from "react";
-import type { AccordionProps, AccordionSectionBlockProps, AccordionSectionItemProps } from "./accordion";
-import { createContext, useContext, useEffect, useMemo, useReducer, useRef } from "react";
+import { type RefObject, createContext, useContext, useEffect, useMemo, useReducer, useRef } from "react";
+import { type AccordionProps, type AccordionSectionBlockProps, type AccordionSectionItemProps } from "./accordion";
 import { DataStorage } from "core/Misc/dataStorage";
 import { Logger } from "core/Misc/logger";
 

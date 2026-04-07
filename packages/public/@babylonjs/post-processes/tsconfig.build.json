@@ -1,33 +1,21 @@
 {
     "extends": "../../../../tsconfig.build.json",
-
     "compilerOptions": {
         "outDir": "./",
         "rootDir": "../../../dev/postProcesses/src",
         "declaration": true,
         "importHelpers": true,
         "target": "ES2020",
-        "plugins": [
-            {
-                "transform": "@dev/build-tools/dist/pathTransform.js",
-                "after": true,
-                "buildType": "es6",
-                "basePackage": "@babylonjs/post-processes",
-                "appendJS": true
-            },
-            {
-                "transform": "@dev/build-tools/dist/pathTransform.js",
-                "afterDeclarations": true,
-                "buildType": "es6",
-                "basePackage": "@babylonjs/post-processes",
-                "appendJS": true
-            }
-        ],
         "paths": {
-            "core/*": ["dev/core/dist/*"],
-            "post-processes/*": ["dev/postProcesses/src/*"]
+            "core/*": [
+                "../../../dev/core/dist/*"
+            ],
+            "post-processes/*": [
+                "../../../dev/postProcesses/src/*"
+            ]
         }
     },
-
-    "include": ["../../../dev/postProcesses/src/**/*"]
+    "include": [
+        "../../../dev/postProcesses/src/**/*"
+    ]
 }

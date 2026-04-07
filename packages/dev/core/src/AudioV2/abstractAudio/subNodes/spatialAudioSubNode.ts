@@ -1,12 +1,11 @@
-import type { Quaternion, Vector3 } from "../../../Maths/math.vector";
-import type { Node } from "../../../node";
-import type { Nullable } from "../../../types";
-import type { SpatialAudioAttachmentType } from "../../spatialAudioAttachmentType";
-import type { AudioEngineV2 } from "../audioEngineV2";
+import { type Quaternion, type Vector3 } from "../../../Maths/math.vector";
+import { type Node } from "../../../node";
+import { type Nullable } from "../../../types";
+import { type SpatialAudioAttachmentType } from "../../spatialAudioAttachmentType";
+import { type AudioEngineV2 } from "../audioEngineV2";
 import { _SpatialAudioAttacherComponent } from "../components/spatialAudioAttacherComponent";
-import type { ISpatialAudioOptions } from "../subProperties/abstractSpatialAudio";
-import { _SpatialAudioDefaults } from "../subProperties/abstractSpatialAudio";
-import type { _AbstractAudioSubGraph } from "./abstractAudioSubGraph";
+import { type ISpatialAudioOptions, _SpatialAudioDefaults } from "../subProperties/abstractSpatialAudio";
+import { type _AbstractAudioSubGraph } from "./abstractAudioSubGraph";
 import { _AbstractAudioSubNode } from "./abstractAudioSubNode";
 import { AudioSubNode } from "./audioSubNode";
 

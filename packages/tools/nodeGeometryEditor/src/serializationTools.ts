@@ -1,8 +1,8 @@
-import type { GlobalState } from "./globalState";
-import type { Nullable } from "core/types";
-import type { GraphFrame } from "shared-ui-components/nodeGraphSystem/graphFrame";
-import type { NodeGeometry } from "core/Meshes/Node/nodeGeometry";
-import type { NodeGeometryBlock } from "core/Meshes/Node/nodeGeometryBlock";
+import { type GlobalState } from "./globalState";
+import { type Nullable } from "core/types";
+import { type GraphFrame } from "shared-ui-components/nodeGraphSystem/graphFrame";
+import { type NodeGeometry } from "core/Meshes/Node/nodeGeometry";
+import { type NodeGeometryBlock } from "core/Meshes/Node/nodeGeometryBlock";
 
 export class SerializationTools {
     public static UpdateLocations(geometry: NodeGeometry, globalState: GlobalState, frame?: Nullable<GraphFrame>) {

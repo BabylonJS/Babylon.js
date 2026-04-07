@@ -1,5 +1,5 @@
 import { FlowGraphEventBlock } from "../../flowGraphEventBlock";
-import type { FlowGraphContext } from "core/FlowGraph/flowGraphContext";
+import { type FlowGraphContext } from "core/FlowGraph/flowGraphContext";
 import { RegisterClass } from "../../../Misc/typeStore";
 import { FlowGraphBlockNames } from "../flowGraphBlockNames";
 import { FlowGraphEventType } from "core/FlowGraph/flowGraphEventType";

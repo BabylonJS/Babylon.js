@@ -1,13 +1,13 @@
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
-import type { Nullable } from "../types";
-import type { Observer } from "../Misc/observable";
-import type { Scene } from "../scene";
+import { type Nullable } from "../types";
+import { type Observer } from "../Misc/observable";
+import { type Scene } from "../scene";
 import { Vector3 } from "../Maths/math.vector";
 import { VertexBuffer } from "../Buffers/buffer";
 import { VertexData } from "../Meshes/mesh.vertexData";
 import { Lerp } from "../Maths/math.scalar.functions";
-import type { TransformNode } from "../Meshes/transformNode";
+import { type TransformNode } from "../Meshes/transformNode";
 
 Mesh._TrailMeshParser = (parsedMesh: any, scene: Scene) => {
     return TrailMesh.Parse(parsedMesh, scene);

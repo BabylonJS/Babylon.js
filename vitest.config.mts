@@ -16,7 +16,7 @@ const convertPathsToAliases = () => {
     for (const key in paths) {
         // Convert glob patterns to regex-compatible aliases
         const aliasKey = key.replace("/*", "");
-        const aliasValue = path.resolve(__dirname, "packages", paths[key][0].replace("/*", ""));
+        const aliasValue = path.resolve(__dirname, paths[key][0].replace("/*", ""));
         aliases[aliasKey] = aliasValue;
     }
     return aliases;

@@ -1,4 +1,4 @@
-import type { AbstractMesh, PickingInfo } from "core/index";
+import { type AbstractMesh, type PickingInfo } from "core/index";
 import { Vector3, TmpVectors, Matrix } from "../Maths/math.vector";
 import { VertexBuffer } from "../Buffers/buffer";
 import { Constants } from "core/Engines/constants";

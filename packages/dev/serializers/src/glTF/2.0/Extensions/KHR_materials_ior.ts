@@ -1,7 +1,7 @@
-import type { IMaterial, IKHRMaterialsIor } from "babylonjs-gltf2interface";
-import type { IGLTFExporterExtensionV2 } from "../glTFExporterExtension";
+import { type IMaterial, type IKHRMaterialsIor } from "babylonjs-gltf2interface";
+import { type IGLTFExporterExtensionV2 } from "../glTFExporterExtension";
 import { GLTFExporter } from "../glTFExporter";
-import type { Material } from "core/Materials/material";
+import { type Material } from "core/Materials/material";
 import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 
 const NAME = "KHR_materials_ior";

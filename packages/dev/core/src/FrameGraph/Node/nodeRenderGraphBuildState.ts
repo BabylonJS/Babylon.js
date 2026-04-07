@@ -1,4 +1,4 @@
-import type { Nullable, NodeRenderGraphConnectionPoint, Observable } from "core/index";
+import { type Nullable, type NodeRenderGraphConnectionPoint, type Observable } from "core/index";
 import { Logger } from "../../Misc/logger";
 
 /**

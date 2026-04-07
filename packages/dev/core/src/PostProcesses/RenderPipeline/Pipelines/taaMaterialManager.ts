@@ -1,12 +1,12 @@
-import type { Material } from "core/Materials/material";
+import { type Material } from "core/Materials/material";
 import { MaterialDefines } from "core/Materials/materialDefines";
 import { MaterialPluginBase } from "core/Materials/materialPluginBase";
 import { RegisterMaterialPlugin, UnregisterMaterialPlugin } from "core/Materials/materialPluginManager";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
-import type { UniformBuffer } from "core/Materials/uniformBuffer";
+import { type UniformBuffer } from "core/Materials/uniformBuffer";
 import { Vector2 } from "core/Maths/math.vector";
-import type { Scene } from "core/scene";
-import type { Nullable } from "core/types";
+import { type Scene } from "core/scene";
+import { type Nullable } from "core/types";
 import { RegisterClass } from "../../../Misc/typeStore";
 
 class TAAJitterMaterialDefines extends MaterialDefines {

@@ -2,7 +2,7 @@ import { Subdivide } from "core/Meshes/mesh.vertexData.subdivide";
 import { RegisterClass } from "../../../Misc/typeStore";
 import { NodeGeometryBlockConnectionPointTypes } from "../Enums/nodeGeometryConnectionPointTypes";
 import { NodeGeometryBlock } from "../nodeGeometryBlock";
-import type { NodeGeometryConnectionPoint } from "../nodeGeometryBlockConnectionPoint";
+import { type NodeGeometryConnectionPoint } from "../nodeGeometryBlockConnectionPoint";
 import { editableInPropertyPage, PropertyTypeForEdition } from "core/Decorators/nodeDecorator";
 /**
  * Block used to subdivide for a geometry using Catmull-Clark algorithm

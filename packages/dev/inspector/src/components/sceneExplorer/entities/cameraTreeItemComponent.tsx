@@ -1,15 +1,15 @@
-import type { Nullable } from "core/types";
-import type { Observer } from "core/Misc/observable";
-import type { IExplorerExtensibilityGroup } from "core/Debug/debugLayer";
-import type { Camera } from "core/Cameras/camera";
-import type { Scene } from "core/scene";
+import { type Nullable } from "core/types";
+import { type Observer } from "core/Misc/observable";
+import { type IExplorerExtensibilityGroup } from "core/Debug/debugLayer";
+import { type Camera } from "core/Cameras/camera";
+import { type Scene } from "core/scene";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faVideo, faCamera, faEye } from "@fortawesome/free-solid-svg-icons";
 import { TreeItemLabelComponent } from "../treeItemLabelComponent";
 import { ExtensionsComponent } from "../extensionsComponent";
 import * as React from "react";
-import type { GlobalState } from "../../globalState";
+import { type GlobalState } from "../../globalState";
 import { GetInspectorGizmoManager } from "../../../inspectorGizmoManager";
 
 interface ICameraTreeItemComponentProps {
