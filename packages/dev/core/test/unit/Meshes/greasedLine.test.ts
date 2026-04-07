@@ -25,32 +25,21 @@ describe("GreasedLine", () => {
         it("should not dispose the shared EmptyColorsTexture when a simple material is disposed", () => {
             const points = [-1, 0, 0, 1, 0, 0];
 
-            // Create the first line with materialType SIMPLE (2)
             const line1 = CreateGreasedLine("line1", { points }, { materialType: GreasedLineMeshMaterialType.MATERIAL_TYPE_SIMPLE }, scene);
-
-            // The shared EmptyColorsTexture should exist after creation
             expect(GreasedLineMaterialDefaults.EmptyColorsTexture).toBeTruthy();
 
-            // Dispose the line and its material
             line1.dispose(false, true);
 
-            // The shared EmptyColorsTexture's internal texture should NOT have been disposed.
-            // Before the fix, _colorsTexture.dispose() was called on the shared texture,
-            // which set its _texture to null, making it a zombie texture.
+            // The shared texture must survive individual material dispose
             const sharedTex = GreasedLineMaterialDefaults.EmptyColorsTexture!;
             expect(sharedTex.getInternalTexture()).toBeTruthy();
 
-            // Create a second line - this should work correctly
+            // A second line should work correctly
             const line2 = CreateGreasedLine("line2", { points }, { materialType: GreasedLineMeshMaterialType.MATERIAL_TYPE_SIMPLE }, scene);
-            expect(line2).toBeTruthy();
-            expect(line2.material).toBeTruthy();
-
-            // The material's colors texture should have a valid internal texture
             const simpleMat = line2.material as GreasedLineSimpleMaterial;
             expect(simpleMat.colorsTexture).toBeTruthy();
             expect(simpleMat.colorsTexture!.getInternalTexture()).toBeTruthy();
 
-            // Clean up
             line2.dispose(false, true);
         });
 
@@ -63,19 +52,37 @@ describe("GreasedLine", () => {
                 expect(line.material).toBeTruthy();
                 line.dispose(false, true);
 
-                // Shared texture should remain valid after each dispose
                 expect(GreasedLineMaterialDefaults.EmptyColorsTexture).toBeTruthy();
                 expect(GreasedLineMaterialDefaults.EmptyColorsTexture!.getInternalTexture()).toBeTruthy();
             }
 
-            // Final line should still work with a valid texture
             const finalLine = CreateGreasedLine("finalLine", { points }, { materialType: GreasedLineMeshMaterialType.MATERIAL_TYPE_SIMPLE }, scene);
-            expect(finalLine).toBeTruthy();
-            expect(finalLine.material).toBeTruthy();
             const simpleMat = finalLine.material as GreasedLineSimpleMaterial;
             expect(simpleMat.colorsTexture).toBeTruthy();
             expect(simpleMat.colorsTexture!.getInternalTexture()).toBeTruthy();
             finalLine.dispose(false, true);
+        });
+
+        it("should clear the shared EmptyColorsTexture when the scene is disposed and recreate it for a new scene", () => {
+            const points = [-1, 0, 0, 1, 0, 0];
+
+            const line1 = CreateGreasedLine("line1", { points }, { materialType: GreasedLineMeshMaterialType.MATERIAL_TYPE_SIMPLE }, scene);
+            expect(GreasedLineMaterialDefaults.EmptyColorsTexture).toBeTruthy();
+            line1.dispose(false, true);
+
+            // Dispose the scene — the shared texture's onDisposeObservable should null the static
+            scene.dispose();
+            expect(GreasedLineMaterialDefaults.EmptyColorsTexture).toBeNull();
+
+            // Create a new scene and a new line — should get a fresh shared texture
+            scene = new Scene(engine);
+            const line2 = CreateGreasedLine("line2", { points }, { materialType: GreasedLineMeshMaterialType.MATERIAL_TYPE_SIMPLE }, scene);
+            expect(GreasedLineMaterialDefaults.EmptyColorsTexture).toBeTruthy();
+            const simpleMat = line2.material as GreasedLineSimpleMaterial;
+            expect(simpleMat.colorsTexture).toBeTruthy();
+            expect(simpleMat.colorsTexture!.getInternalTexture()).toBeTruthy();
+
+            line2.dispose(false, true);
         });
     });
 });
