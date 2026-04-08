@@ -548,10 +548,12 @@ export abstract class AbstractMesh extends TransformNode implements IDisposable,
      */
     public alphaIndex = Number.MAX_VALUE;
 
+    public static DefaultIsPickable = true;
+
     /**
      * Gets or sets a boolean indicating if the mesh can be picked (by scene.pick for instance or through actions). Default is true
      */
-    public isPickable = true;
+    public isPickable = AbstractMesh.DefaultIsPickable;
 
     /**
      * Gets or sets a boolean indicating if the mesh can be near picked (touched by the XR controller or hands). Default is false
