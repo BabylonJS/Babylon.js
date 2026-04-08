@@ -227,12 +227,12 @@
             "referenceImage": "lottie-animated-rotation-frame0.png"
         },
         {
-            "title": "Lottie - Animated Rotation Frame 30 (Main Thread, URL)",
+            "title": "Lottie - Animated Rotation Frame 15 (Main Thread, URL)",
             "devHostQsps": "exp=lottie&file=animated_rotation.json&useWorker=false&useUrl=true&frame=15",
             "referenceImage": "lottie-animated-rotation-frame15.png"
         },
         {
-            "title": "Lottie - Animated Rotation Frame 60 (Main Thread, URL)",
+            "title": "Lottie - Animated Rotation Frame 38 (Main Thread, URL)",
             "devHostQsps": "exp=lottie&file=animated_rotation.json&useWorker=false&useUrl=true&frame=38",
             "referenceImage": "lottie-animated-rotation-frame38.png"
         },

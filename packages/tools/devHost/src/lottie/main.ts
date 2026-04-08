@@ -31,7 +31,8 @@ export async function Main(searchParams: URLSearchParams): Promise<void> {
 
     // Optional frame number to render a single frame without starting playback (useful for visual testing animations)
     const frameParam = searchParams.get("frame");
-    const stopAtFrame = frameParam !== null ? parseInt(frameParam, 10) : undefined;
+    const parsedFrame = frameParam !== null ? parseInt(frameParam, 10) : NaN;
+    const stopAtFrame = Number.isFinite(parsedFrame) && parsedFrame >= 0 ? parsedFrame : undefined;
 
     // Whether variables are present in the URL to be used for the animation
     const urlVariables = searchParams.get("variables");

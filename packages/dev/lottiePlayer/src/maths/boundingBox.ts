@@ -17,13 +17,13 @@ export type BoundingBox = {
     height: number;
     /** Width of the bounding box */
     width: number;
-    /** X coordinate of the center of the bounding box */
+    /** X offset for translating shape coordinates into the atlas cell. Accounts for stroke padding. */
     centerX: number;
-    /** Y coordinate of the center of the bounding box */
+    /** Y offset for translating shape coordinates into the atlas cell. Accounts for stroke padding. */
     centerY: number;
-    /** Box X offset, as the box may not be centered around (0,0) */
+    /** X coordinate of the geometric center of the shape in its local space */
     offsetX: number;
-    /** Box Y offset, as the box may not be centered around (0,0) */
+    /** Y coordinate of the geometric center of the shape in its local space */
     offsetY: number;
     /** Inset for the stroke, if applicable. */
     strokeInset: number;
