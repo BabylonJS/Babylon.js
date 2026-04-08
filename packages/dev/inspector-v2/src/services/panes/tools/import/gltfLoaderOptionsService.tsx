@@ -6,16 +6,45 @@ import { type IToolsService, ToolsServiceIdentity } from "../../toolsService";
 import { registeredGLTFExtensions } from "loaders/glTF/2.0/glTFLoaderExtensionRegistry";
 import { MessageBar } from "shared-ui-components/fluent/primitives/messageBar";
 import { GLTFExtensionOptionsTool, GLTFLoaderOptionsTool } from "../../../../components/tools/import/gltfLoaderOptionsTool";
-import { ExtensionOptionDefaults, LoaderOptionDefaults, type GLTFExtensionOptionsType, type GLTFLoaderOptionsType } from "./gltfLoaderOptionsDefaults";
+import { type ISettingsStore, type SettingDescriptor, SettingsStoreIdentity } from "../../../settingsStore";
+import { type IToastService, ToastServiceIdentity } from "../../../toastService";
+import { ExtensionOptionDefaults, type GLTFExtensionOptionsType, type GLTFLoaderOptionsType, LoaderOptionDefaults } from "./gltfLoaderOptionsDefaults";
 
 export const GLTFLoaderServiceIdentity = Symbol("GLTFLoaderService");
 
-export const GLTFLoaderOptionsServiceDefinition: ServiceDefinition<[], [IToolsService]> = {
+const LoaderOptionsSetting: SettingDescriptor<Partial<GLTFLoaderOptionsType>> = {
+    key: "glTFLoaderOptions",
+    defaultValue: {},
+};
+
+const ExtensionOptionsSetting: SettingDescriptor<Partial<GLTFExtensionOptionsType>> = {
+    key: "glTFExtensionOptions",
+    defaultValue: {},
+};
+
+function CreatePersistingProxy<T extends object>(target: T, settingsStore: ISettingsStore, descriptor: SettingDescriptor<Partial<T>>): T {
+    return new Proxy(target, {
+        set(obj, prop, value) {
+            const result = Reflect.set(obj, prop, value);
+            settingsStore.writeSetting(descriptor, { ...obj });
+            return result;
+        },
+    });
+}
+
+export const GLTFLoaderOptionsServiceDefinition: ServiceDefinition<[], [IToolsService, ISettingsStore, IToastService]> = {
     friendlyName: "GLTF Loader Options",
-    consumes: [ToolsServiceIdentity],
-    factory: (toolsService) => {
+    consumes: [ToolsServiceIdentity, SettingsStoreIdentity, ToastServiceIdentity],
+    factory: (toolsService, settingsStore, toastService) => {
         // Current loader options with nullable properties (null means "don't override the options coming in with load calls")
-        const currentLoaderOptions: GLTFLoaderOptionsType = Object.fromEntries(Object.keys(LoaderOptionDefaults).map((key) => [key, null])) as GLTFLoaderOptionsType;
+        let currentLoaderOptions: GLTFLoaderOptionsType = Object.fromEntries(Object.keys(LoaderOptionDefaults).map((key) => [key, null])) as GLTFLoaderOptionsType;
+
+        // Hydrate loader options from persisted settings
+        const persistedLoaderOptions = settingsStore.readSetting(LoaderOptionsSetting);
+        Object.assign(currentLoaderOptions, persistedLoaderOptions);
+
+        // Wrap in a proxy so property writes from the UI are automatically persisted
+        currentLoaderOptions = CreatePersistingProxy(currentLoaderOptions, settingsStore, LoaderOptionsSetting);
 
         // Build extension options dynamically from the registered extensions.
         // Every extension gets an 'enabled' toggle; extensions in ExtensionOptionDefaults also get their extra properties.
@@ -26,6 +55,25 @@ export const GLTFLoaderOptionsServiceDefinition: ServiceDefinition<[], [IToolsSe
             currentExtensionOptions[extName] = { enabled: null, ...extraNulls };
         }
 
+        // Hydrate extension options from persisted settings, only for extensions that are still registered
+        const persistedExtensionOptions = settingsStore.readSetting(ExtensionOptionsSetting);
+        for (const [extName, persistedOptions] of Object.entries(persistedExtensionOptions)) {
+            if (currentExtensionOptions[extName] && persistedOptions) {
+                Object.assign(currentExtensionOptions[extName], persistedOptions);
+            }
+        }
+
+        // Wrap each extension's options object in a proxy that persists the full extension options map on write
+        for (const extName of Object.keys(currentExtensionOptions)) {
+            currentExtensionOptions[extName] = new Proxy(currentExtensionOptions[extName], {
+                set(obj, prop, value) {
+                    const result = Reflect.set(obj, prop, value);
+                    settingsStore.writeSetting(ExtensionOptionsSetting, { ...currentExtensionOptions });
+                    return result;
+                },
+            });
+        }
+
         // Subscribe to plugin activation
         const pluginObserver = SceneLoader.OnPluginActivatedObservable.add((plugin: ISceneLoaderPlugin | ISceneLoaderPluginAsync) => {
             if (plugin.name === "gltf") {
@@ -33,7 +81,10 @@ export const GLTFLoaderOptionsServiceDefinition: ServiceDefinition<[], [IToolsSe
 
                 // Apply loader settings (filter out null values to not override options coming in with load calls)
                 const nonNullLoaderOptions = Object.fromEntries(Object.entries(currentLoaderOptions).filter(([_, v]) => v !== null));
+                const hasLoaderOverrides = Object.keys(nonNullLoaderOptions).length > 0;
                 Object.assign(loader, nonNullLoaderOptions);
+
+                let hasExtensionOverrides = false;
 
                 // Subscribe to extension loading
                 loader.onExtensionLoadedObservable.add((extension: IGLTFLoaderExtension) => {
@@ -41,7 +92,17 @@ export const GLTFLoaderOptionsServiceDefinition: ServiceDefinition<[], [IToolsSe
                     if (extensionOptions) {
                         // Apply extension settings (filter out null values to not override options coming in with load calls)
                         const nonNullExtOptions = Object.fromEntries(Object.entries(extensionOptions).filter(([_, v]) => v !== null));
+                        if (Object.keys(nonNullExtOptions).length > 0) {
+                            hasExtensionOverrides = true;
+                        }
                         Object.assign(extension, nonNullExtOptions);
+                    }
+                });
+
+                // Show a toast after all extensions have loaded if any overrides were applied
+                loader.onCompleteObservable.addOnce(() => {
+                    if (hasLoaderOverrides || hasExtensionOverrides) {
+                        toastService.showToast("Applied glTF loader option overrides");
                     }
                 });
             }
