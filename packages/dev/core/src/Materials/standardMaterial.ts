@@ -745,6 +745,10 @@ export class StandardMaterial extends StandardMaterialBase {
         // Lights
         defines._needNormals = PrepareDefinesForLights(scene, mesh, defines, true, this._maxSimultaneousLights, this._disableLighting);
 
+        if (defines._areLightTexturesReady === false) {
+            return false;
+        }
+
         // Multiview
         PrepareDefinesForMultiview(scene, defines);
 

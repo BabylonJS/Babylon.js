@@ -1665,6 +1665,10 @@ export class NodeMaterial extends NodeMaterialBase {
 
         const result = this._processDefines(defines, mesh, useInstances, subMesh);
 
+        if (defines._areLightTexturesReady === false) {
+            return false;
+        }
+
         if (result) {
             const previousEffect = subMesh.effect;
             // Compilation

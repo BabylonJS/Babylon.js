@@ -606,6 +606,10 @@ export class BackgroundMaterial extends BackgroundMaterialBase {
         PrepareDefinesForLights(scene, mesh, defines, false, this._maxSimultaneousLights);
         defines._needNormals = true;
 
+        if (defines._areLightTexturesReady === false) {
+            return false;
+        }
+
         // Multiview
         PrepareDefinesForMultiview(scene, defines);
 

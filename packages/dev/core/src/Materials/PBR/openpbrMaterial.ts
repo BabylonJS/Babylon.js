@@ -2241,6 +2241,10 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
         const lightDisposed = defines._areLightsDisposed;
         const effect = this._prepareEffect(mesh, subMesh.getRenderingMesh(), defines, this.onCompiled, this.onError, useInstances, null);
 
+        if (defines._areLightTexturesReady === false) {
+            return false;
+        }
+
         let forceWasNotReadyPreviously = false;
 
         if (effect) {

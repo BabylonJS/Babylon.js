@@ -243,6 +243,7 @@ export class LightBlock extends NodeMaterialBlock {
                 lightmapMode: false,
                 shadowEnabled: false,
                 specularEnabled: false,
+                lightTexturesReady: true,
             };
 
             PrepareDefinesForLight(scene, mesh, this.light, this._lightId, defines, true, state);
@@ -250,6 +251,8 @@ export class LightBlock extends NodeMaterialBlock {
             if (state.needRebuild) {
                 defines.rebuild();
             }
+
+            defines._areLightTexturesReady = state.lightTexturesReady;
         }
     }
 

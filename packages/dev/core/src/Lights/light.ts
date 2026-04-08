@@ -946,6 +946,15 @@ export abstract class Light extends Node implements ISortableLight {
     }
 
     /**
+     * Returns true when all texture resources used by this light are ready (e.g. projection textures).
+     * Override in subclasses that use texture resources.
+     * @returns true if all light textures are ready
+     */
+    public areLightTexturesReady(): boolean {
+        return true;
+    }
+
+    /**
      * Prepares the list of defines specific to the light type.
      * @param defines the list of defines
      * @param lightIndex defines the index of the light for the effect

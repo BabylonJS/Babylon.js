@@ -667,6 +667,7 @@ export function PrepareDefinesForLights(scene: Scene, mesh: AbstractMesh, define
         lightmapMode: false,
         shadowEnabled: false,
         specularEnabled: false,
+        lightTexturesReady: true,
     };
 
     if (scene.lightsEnabled && !disableLighting) {
@@ -682,6 +683,7 @@ export function PrepareDefinesForLights(scene: Scene, mesh: AbstractMesh, define
 
     defines["SPECULARTERM"] = state.specularEnabled;
     defines["SHADOWS"] = state.shadowEnabled;
+    defines._areLightTexturesReady = state.lightTexturesReady;
 
     // Resetting all other lights if any
     const maxLightCount = Math.max(maxSimultaneousLights, defines["MAXLIGHTCOUNT"] || 0);
@@ -899,6 +901,7 @@ export function PrepareDefinesForLight(
         shadowEnabled: boolean;
         specularEnabled: boolean;
         lightmapMode: boolean;
+        lightTexturesReady: boolean;
     }
 ) {
     state.needNormals = true;
@@ -917,6 +920,10 @@ export function PrepareDefinesForLight(
     defines["CLUSTLIGHT" + lightIndex] = false;
 
     light.prepareLightSpecificDefines(defines, lightIndex);
+
+    if (!light.areLightTexturesReady()) {
+        state.lightTexturesReady = false;
+    }
 
     // FallOff.
     defines["LIGHT_FALLOFF_PHYSICAL" + lightIndex] = false;
