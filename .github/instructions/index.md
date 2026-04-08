@@ -7,7 +7,7 @@ This directory contains instruction files that define coding practices, review r
 - **[code-review.instructions.md](code-review.instructions.md)** — PR review rules and label assignment based on the type and location of changes.
 - **[backcompat.instructions.md](backcompat.instructions.md)** — Backward compatibility rules for public APIs (compile-time and runtime).
 - **[comments.instructions.md](comments.instructions.md)** — Doc comment requirements for public APIs.
-- **[prohibited-apis.instructions.md](prohibited-apis.instructions.md)** — Banned APIs (e.g. `Function.bind`) and their alternatives.
+- **[prohibited-apis.instructions.md](prohibited-apis.instructions.md)** — Banned APIs (e.g. `Function.bind`), deprecated API usage rules, and their alternatives.
 
 ## Architecture & Patterns
 

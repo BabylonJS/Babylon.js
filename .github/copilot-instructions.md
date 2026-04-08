@@ -59,7 +59,7 @@ New public APIs should have corresponding playground examples with documentation
 
 ### Prohibited APIs
 
-`Function.bind` is prohibited; use arrow functions instead. See `.github/instructions/prohibited-apis.instructions.md`.
+`Function.bind` is prohibited; use arrow functions instead. Never call functions, methods, properties, or classes marked `@deprecated` — always use the recommended replacement. See `.github/instructions/prohibited-apis.instructions.md`.
 
 ### Inspector v2
 
