@@ -1,4 +1,4 @@
-jest.mock(
+vi.mock(
     "monaco-editor/esm/vs/language/typescript/lib/typescriptServices",
     () => ({
         typescript: {
@@ -13,14 +13,14 @@ jest.mock(
 
 import { SaveSnippet } from "../../src/saveSnippet";
 import { ParseSnippetResponse } from "../../src/snippetLoader";
-import type { IV2Manifest, ISnippetServerResponse } from "../../src/types";
+import { type IV2Manifest, type ISnippetServerResponse } from "../../src/types";
 
 // ---------------------------------------------------------------------------
 // Mock fetch
 // ---------------------------------------------------------------------------
 
 const originalFetch = globalThis.fetch;
-const mockFetch = jest.fn<Promise<Response>, [RequestInfo | URL, RequestInit?]>();
+const mockFetch = vi.fn<Promise<Response>, [RequestInfo | URL, RequestInit?]>();
 
 function mockFetchSuccess(id: string, version: string | number = "0") {
     mockFetch.mockResolvedValueOnce({

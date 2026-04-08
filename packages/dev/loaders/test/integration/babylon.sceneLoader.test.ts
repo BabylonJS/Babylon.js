@@ -1,5 +1,6 @@
+import { test, expect, Page } from "@playwright/test";
 import { evaluateDisposeEngine, evaluateCreateScene, evaluateInitEngine, getGlobalConfig, logPageErrors } from "@tools/test-tools";
-import type { GLTFFileLoader } from "loaders/glTF";
+import { type GLTFFileLoader } from "loaders/glTF";
 import {
     glbBase64,
     gltfBase64,
@@ -29,13 +30,23 @@ type GLTFOptions = NonNullable<ConstructorParameters<typeof GLTFFileLoader>[0]>;
 /**
  * Describes the test suite.
  */
-describe("Babylon Scene Loader", function () {
-    beforeAll(async () => {
+let page: Page;
+
+test.describe("Babylon Scene Loader", function () {
+    test.beforeAll(async ({ browser }) => {
+        page = await browser.newPage();
+        await page.goto(getGlobalConfig().baseUrl + `/empty.html`, {
+            waitUntil: "load",
+            timeout: 0,
+        });
+        await page.waitForSelector("#babylon-canvas", { timeout: 20000 });
+        await page.waitForFunction(() => window.BABYLON);
+        page.setDefaultTimeout(0);
         await logPageErrors(page, debug);
     });
-    jest.setTimeout(debug ? 1000000 : 30000);
+    test.setTimeout(debug ? 1000000 : 30000);
 
-    beforeEach(async () => {
+    test.beforeEach(async () => {
         await page.goto(getGlobalConfig().baseUrl + `/empty.html`, {
             waitUntil: "load",
             timeout: 0,
@@ -44,16 +55,19 @@ describe("Babylon Scene Loader", function () {
         await page.evaluate(evaluateCreateScene);
     });
 
-    afterEach(async () => {
-        debug && (await jestPuppeteer.debug());
+    test.afterEach(async () => {
         await page.evaluate(evaluateDisposeEngine);
+    });
+
+    test.afterAll(async () => {
+        await page.close();
     });
 
     /**
      * Integration tests for loading glTF assets.
      */
-    describe("Loaders - glTF", () => {
-        it("Load BoomBox GLTF", async () => {
+    test.describe("Loaders - glTF", () => {
+        test("Load BoomBox GLTF", async () => {
             const assertionData = await page.evaluate(() => {
                 return BABYLON.SceneLoader.AppendAsync("https://playground.babylonjs.com/scenes/BoomBox/", "BoomBox.gltf", window.scene).then((scene) => {
                     return {
@@ -66,7 +80,7 @@ describe("Babylon Scene Loader", function () {
             expect(assertionData.lights).toBe(1);
         });
 
-        it("Load BoomBox GLTF via rootUrl", async () => {
+        test("Load BoomBox GLTF via rootUrl", async () => {
             const assertionData = await page.evaluate(() => {
                 return BABYLON.SceneLoader.AppendAsync("https://playground.babylonjs.com/scenes/BoomBox/BoomBox.gltf", undefined, window.scene).then((scene) => {
                     return {
@@ -79,7 +93,7 @@ describe("Babylon Scene Loader", function () {
             expect(assertionData.lights).toBe(1);
         });
 
-        it("Load BoomBox GLTF via sceneFilename", async () => {
+        test("Load BoomBox GLTF via sceneFilename", async () => {
             const assertionData = await page.evaluate(() => {
                 return BABYLON.SceneLoader.AppendAsync("", "https://playground.babylonjs.com/scenes/BoomBox/BoomBox.gltf", window.scene).then((scene) => {
                     return {
@@ -92,7 +106,7 @@ describe("Babylon Scene Loader", function () {
             expect(assertionData.lights).toBe(1);
         });
 
-        it("Load BoomBox GLB", async () => {
+        test("Load BoomBox GLB", async () => {
             const assertionData = await page.evaluate(() => {
                 return BABYLON.SceneLoader.AppendAsync("https://playground.babylonjs.com/scenes/", "BoomBox.glb", window.scene).then((scene) => {
                     return {
@@ -105,7 +119,7 @@ describe("Babylon Scene Loader", function () {
             expect(assertionData.lights).toBe(1);
         });
 
-        it("Load BoomBox with ImportMesh", async () => {
+        test("Load BoomBox with ImportMesh", async () => {
             const assertionData = await page.evaluate(() => {
                 return BABYLON.SceneLoader.ImportMeshAsync(null, "https://playground.babylonjs.com/scenes/BoomBox/", "BoomBox.gltf", window.scene).then((result) => {
                     return {
@@ -123,7 +137,7 @@ describe("Babylon Scene Loader", function () {
             expect(assertionData.animationGroups).toBe(0);
         });
 
-        it("Load TwoQuads with ImportMesh and one node name", async () => {
+        test("Load TwoQuads with ImportMesh and one node name", async () => {
             const assertionData = await page.evaluate(() => {
                 return BABYLON.SceneLoader.ImportMeshAsync("node0", "https://models.babylonjs.com/Tests/TwoQuads/", "TwoQuads.gltf", window.scene).then(() => {
                     return {
@@ -136,7 +150,7 @@ describe("Babylon Scene Loader", function () {
             expect(assertionData.node1).not.toBeTruthy();
         });
 
-        it("Load TwoQuads with ImportMesh and two node names", async () => {
+        test("Load TwoQuads with ImportMesh and two node names", async () => {
             const assertionData = await page.evaluate(() => {
                 return BABYLON.SceneLoader.ImportMeshAsync(["node0", "node1"], "https://models.babylonjs.com/Tests/TwoQuads/", "TwoQuads.gltf", window.scene).then(() => {
                     return {
@@ -149,7 +163,7 @@ describe("Babylon Scene Loader", function () {
             expect(assertionData.node0).toBeTruthy();
         });
 
-        it("Load BoomBox with callbacks", async () => {
+        test("Load BoomBox with callbacks", async () => {
             const assertionData = await page.evaluate(() => {
                 let parsedCount = 0;
                 let meshCount = 0;
@@ -208,7 +222,7 @@ describe("Babylon Scene Loader", function () {
             expect(assertionData[1].textureCount).toBe(assertionData[1].filteredTextures);
         });
 
-        it("Load BoomBox with dispose", async () => {
+        test("Load BoomBox with dispose", async () => {
             const assertionData = await page.evaluate(() => {
                 let ready = false;
                 let disposed = false;
@@ -245,7 +259,7 @@ describe("Babylon Scene Loader", function () {
             expect(assertionData[0].disposed).toBeTruthy();
         });
 
-        it("Load BoomBox with mesh.isEnabled check", async () => {
+        test("Load BoomBox with mesh.isEnabled check", async () => {
             const assertionData = await page.evaluate(() => {
                 const promises = new Array<Promise<any>>();
                 window.engine!.runRenderLoop(() => {
@@ -265,7 +279,7 @@ describe("Babylon Scene Loader", function () {
             expect(assertionData[1].every((b: boolean) => b)).toBe(true);
         });
 
-        it("Load CompileMaterials", async () => {
+        test("Load CompileMaterials", async () => {
             const assertionData = await page.evaluate(async () => {
                 const promises = new Array<Promise<any>>();
                 let called = 0;
@@ -307,7 +321,7 @@ describe("Babylon Scene Loader", function () {
             });
         });
 
-        it("Load BrainStem with compileMaterials", async () => {
+        test("Load BrainStem with compileMaterials", async () => {
             const assertionData = await page.evaluate(() => {
                 const promises = new Array<Promise<boolean>>();
                 let called = 0;
@@ -353,7 +367,7 @@ describe("Babylon Scene Loader", function () {
             });
         });
 
-        it("Load Alien", async () => {
+        test("Load Alien", async () => {
             const skeletonsMapping = {
                 AlienHead: "skeleton0",
                 Collar: "skeleton1",
@@ -404,7 +418,7 @@ describe("Babylon Scene Loader", function () {
             expect(assertionData.positionAnimations, "positionAnimations").toBe(1);
         });
 
-        it("Load LevelOfDetail", async () => {
+        test("Load LevelOfDetail", async () => {
             const assertionData = await page.evaluate(async () => {
                 const promises = new Array<Promise<{ [key: string]: boolean }>>();
 
@@ -461,7 +475,7 @@ describe("Babylon Scene Loader", function () {
             });
         });
 
-        it("Load LevelOfDetail with onMaterialLODsLoadedObservable", async () => {
+        test("Load LevelOfDetail with onMaterialLODsLoadedObservable", async () => {
             const materialNames = ["Low", "Medium", "High"];
             const assertionData = await page.evaluate((materialNames) => {
                 const promises = new Array<Promise<void>>();
@@ -534,7 +548,7 @@ describe("Babylon Scene Loader", function () {
         //     expect(assertionData["indexLOD"]).toBe(0);
         // });
 
-        it("Load LevelOfDetail with useRangeRequests", async () => {
+        test("Load LevelOfDetail with useRangeRequests", async () => {
             const expectedSetRequestHeaderCalls = ["Range: bytes=0-19", "Range: bytes=20-1399", "Range: bytes=1400-1817", "Range: bytes=1820-3149", "Range: bytes=3152-8841"];
             const assertionData = await page.evaluate(() => {
                 const promises = new Array<Promise<void>>();
@@ -586,7 +600,7 @@ describe("Babylon Scene Loader", function () {
             // expect(assertionData["setRequestHeaderCalls3"]).toEqual(expectedSetRequestHeaderCalls.slice(0, 3));
         });
 
-        it("Load MultiPrimitive", async () => {
+        test("Load MultiPrimitive", async () => {
             const assertionData = await page.evaluate(() => {
                 return BABYLON.SceneLoader.ImportMeshAsync(null, "https://assets.babylonjs.com/meshes/Tests/MultiPrimitive/", "MultiPrimitive.gltf", window.scene).then(
                     (result) => {
@@ -615,7 +629,7 @@ describe("Babylon Scene Loader", function () {
             ]);
         });
 
-        it("Load BrainStem", async () => {
+        test("Load BrainStem", async () => {
             const assertionData = await page.evaluate(() => {
                 return BABYLON.SceneLoader.ImportMeshAsync(null, "https://assets.babylonjs.com/meshes/BrainStem/", "BrainStem.gltf", window.scene).then((result) => {
                     const node1 = window.scene!.getTransformNodesById("node1")[1];
@@ -642,7 +656,7 @@ describe("Babylon Scene Loader", function () {
             });
         });
 
-        it("Load BoomBox with transparencyAsCoverage", async () => {
+        test("Load BoomBox with transparencyAsCoverage", async () => {
             const assertionData = await page.evaluate(() => {
                 const promises = new Array<Promise<any>>();
                 const data: { [key: string]: any } = {};
@@ -675,7 +689,7 @@ describe("Babylon Scene Loader", function () {
             expect(assertionData["radianceOverAlpha"]).toBe(false);
         });
 
-        it("Load BoomBox without transparencyAsCoverage", async () => {
+        test("Load BoomBox without transparencyAsCoverage", async () => {
             const assertionData = await page.evaluate(() => {
                 const promises = new Array<Promise<any>>();
                 const data: { [key: string]: any } = {};
@@ -708,7 +722,7 @@ describe("Babylon Scene Loader", function () {
             expect(assertionData["radianceOverAlpha"]).toBe(true);
         });
 
-        it("Load BoomBox twice and check texture instancing", async () => {
+        test("Load BoomBox twice and check texture instancing", async () => {
             const assertionData = await page.evaluate(() => {
                 let called = false;
                 return BABYLON.SceneLoader.AppendAsync("https://assets.babylonjs.com/meshes/BoomBox/", "BoomBox.gltf", window.scene).then(() => {
@@ -727,7 +741,7 @@ describe("Babylon Scene Loader", function () {
             expect(assertionData).toBe(false);
         });
 
-        it("Load UFO with MSFT_audio_emitter", async () => {
+        test("Load UFO with MSFT_audio_emitter", async () => {
             const assertionData = await page.evaluate(() => {
                 return BABYLON.SceneLoader.ImportMeshAsync(null, "https://assets.babylonjs.com/meshes/", "ufo.glb", window.scene).then((result) => {
                     return {
@@ -749,7 +763,7 @@ describe("Babylon Scene Loader", function () {
             expect(assertionData["onEndedObservable"]).toBe(true);
         });
 
-        it("Load Box with extras", async () => {
+        test("Load Box with extras", async () => {
             const assertionData = await page.evaluate(() => {
                 return BABYLON.SceneLoader.AppendAsync("https://assets.babylonjs.com/meshes/Box/", "Box_extras.gltf", window.scene).then((scene) => {
                     const mesh = scene.getMeshByName("Box001")!;
@@ -792,8 +806,8 @@ describe("Babylon Scene Loader", function () {
             expect(assertionData["materialExtrasKind"]).toBe("materialProp");
         });
     });
-    describe("#OBJ", () => {
-        it("should load a tetrahedron (without colors)", async () => {
+    test.describe("#OBJ", () => {
+        test("should load a tetrahedron (without colors)", async () => {
             const fileContents = `
                 g tetrahedron
 
@@ -827,7 +841,7 @@ describe("Babylon Scene Loader", function () {
             expect(assertionData["meshesLength"]).toBe(1);
         });
 
-        it("should parse leniently allowing extra spaces with vertex definitions", async () => {
+        test("should parse leniently allowing extra spaces with vertex definitions", async () => {
             const fileContents = `
                 g tetrahedron
 
@@ -861,8 +875,8 @@ describe("Babylon Scene Loader", function () {
         });
     });
 
-    describe("#BVH", () => {
-        it("should load a basic BVH file", async () => {
+    test.describe("#BVH", () => {
+        test("should load a basic BVH file", async () => {
             const assertionData = await page.evaluate((content) => {
                 const scene = window.scene!;
                 return ImportMeshAsync("data:" + content, scene).then(() => {
@@ -911,7 +925,7 @@ describe("Babylon Scene Loader", function () {
             expect(assertionData.childPosition).not.toEqual([0, 0, 0]); // Child should have offset
         });
 
-        it("should handle BVH file with custom loading options", async () => {
+        test("should handle BVH file with custom loading options", async () => {
             const loadingOptions = {
                 loopMode: BABYLON.Animation.ANIMATIONLOOPMODE_RELATIVE,
             };
@@ -951,7 +965,7 @@ describe("Babylon Scene Loader", function () {
             expect(assertionData.boneHierarchy[1].parentName).toBe(assertionData.boneHierarchy[0].name); // First child
         });
 
-        it("should handle end sites in BVH hierarchy", async () => {
+        test("should handle end sites in BVH hierarchy", async () => {
             const assertionData = await page.evaluate((content) => {
                 const scene = window.scene!;
                 return ImportMeshAsync("data:" + content, scene).then(() => {
@@ -973,7 +987,7 @@ describe("Babylon Scene Loader", function () {
             expect(assertionData.endSiteAnimations).toBe(0); // End sites should have no animations
         });
 
-        it("should handle BVH file with three bones and rotation", async () => {
+        test("should handle BVH file with three bones and rotation", async () => {
             const assertionData = await page.evaluate((content) => {
                 const scene = window.scene!;
                 return BABYLON.SceneLoader.LoadAssetContainerAsync("", "data:" + content, scene, undefined, ".bvh").then((container) => {
@@ -1029,8 +1043,8 @@ describe("Babylon Scene Loader", function () {
         });
     });
 
-    describe("#AssetContainer", () => {
-        it("should be loaded from BoomBox GLTF", async () => {
+    test.describe("#AssetContainer", () => {
+        test("should be loaded from BoomBox GLTF", async () => {
             const assertionData = await page.evaluate(() => {
                 return BABYLON.SceneLoader.LoadAssetContainerAsync("https://assets.babylonjs.com/meshes/BoomBox/", "BoomBox.gltf", window.scene).then((container) => {
                     return {
@@ -1040,7 +1054,7 @@ describe("Babylon Scene Loader", function () {
             });
             expect(assertionData["meshesLength"]).toBe(2);
         });
-        it("should be adding and removing objects from scene", async () => {
+        test("should be adding and removing objects from scene", async () => {
             const assertionData = await page.evaluate(() => {
                 const scene = window.scene!;
                 const camera = new BABYLON.FreeCamera("camera1", new BABYLON.Vector3(0, 5, -10), scene);
@@ -1104,22 +1118,22 @@ describe("Babylon Scene Loader", function () {
         });
     });
 
-    describe("#ArgumentPermutations", () => {
-        it("Typical", async () => {
+    test.describe("#ArgumentPermutations", () => {
+        test("Typical", async () => {
             const assertionData = await page.evaluate(() => {
                 return BABYLON.SceneLoader.LoadAsync("https://playground.babylonjs.com/scenes/Box/", "Box.gltf").then(() => true);
             });
             expect(assertionData).toBe(true);
         });
 
-        it("Single url", async () => {
+        test("Single url", async () => {
             const assertionData = await page.evaluate(() => {
                 return BABYLON.SceneLoader.LoadAsync("https://playground.babylonjs.com/scenes/Box/Box.gltf").then(() => true);
             });
             expect(assertionData).toBe(true);
         });
 
-        it("Direct load", async () => {
+        test("Direct load", async () => {
             const assertionData = await page.evaluate(() => {
                 return BABYLON.Tools.LoadFileAsync("https://playground.babylonjs.com/scenes/Box/Box.gltf", false)
                     .then((gltf) => {
@@ -1130,7 +1144,7 @@ describe("Babylon Scene Loader", function () {
             expect(assertionData).toBe(true);
         });
 
-        it("Files input", async () => {
+        test("Files input", async () => {
             const assertionData = await page.evaluate(() => {
                 return Promise.all([
                     BABYLON.Tools.LoadFileAsync("https://playground.babylonjs.com/scenes/Box/Box.gltf", true),
@@ -1146,7 +1160,7 @@ describe("Babylon Scene Loader", function () {
             expect(assertionData).toBe(true);
         });
 
-        it("File object", async () => {
+        test("File object", async () => {
             const assertionData = await page.evaluate(() => {
                 return BABYLON.Tools.LoadFileAsync("https://playground.babylonjs.com/scenes/BoomBox.glb")
                     .then((glb) => {
@@ -1157,7 +1171,7 @@ describe("Babylon Scene Loader", function () {
             expect(assertionData).toBe(true);
         });
 
-        it("File url (Babylon Native)", async () => {
+        test("File url (Babylon Native)", async () => {
             const assertionData = await page.evaluate(() => {
                 const urlRedirects = {
                     "file:///Box.gltf": "https://playground.babylonjs.com/scenes/Box/Box.gltf",
@@ -1174,8 +1188,8 @@ describe("Babylon Scene Loader", function () {
         });
     });
 
-    describe("#DirectLoad", () => {
-        it("should load a raw obj with no mime type", async () => {
+    test.describe("#DirectLoad", () => {
+        test("should load a raw obj with no mime type", async () => {
             const assertionData = await page.evaluate((data) => {
                 return BABYLON.SceneLoader.ImportMeshAsync("", "", `data:${data}`, window.scene, undefined, ".obj").then((result) => {
                     return {
@@ -1190,7 +1204,7 @@ describe("Babylon Scene Loader", function () {
             });
         });
 
-        it("should load a base64 encoded obj with no mime type", async () => {
+        test("should load a base64 encoded obj with no mime type", async () => {
             const assertionData = await page.evaluate((data) => {
                 return BABYLON.SceneLoader.ImportMeshAsync("", "", `data:;base64,${data}`, window.scene, undefined, ".obj").then((result) => {
                     return {
@@ -1205,7 +1219,7 @@ describe("Babylon Scene Loader", function () {
             });
         });
 
-        it("should load a base64 encoded obj with a valid mime type", async () => {
+        test("should load a base64 encoded obj with a valid mime type", async () => {
             const assertionData = await page.evaluate((data) => {
                 return BABYLON.SceneLoader.ImportMeshAsync("", "", `data:model/obj;base64,${data}`, window.scene, undefined, ".obj").then((result) => {
                     return {
@@ -1220,7 +1234,7 @@ describe("Babylon Scene Loader", function () {
             });
         });
 
-        it("should load a base64 encoded obj with an invalid mime type", async () => {
+        test("should load a base64 encoded obj with an invalid mime type", async () => {
             const assertionData = await page.evaluate((data) => {
                 return BABYLON.SceneLoader.ImportMeshAsync("", "", `data:foo/bar;base64,${data}`, window.scene, undefined, ".obj").then((result) => {
                     return {
@@ -1235,7 +1249,7 @@ describe("Babylon Scene Loader", function () {
             });
         });
 
-        it("should direct load a glTF file without specifying a pluginExtension", async () => {
+        test("should direct load a glTF file without specifying a pluginExtension", async () => {
             const assertionData = await page.evaluate((data) => {
                 return BABYLON.SceneLoader.ImportMeshAsync("", "", `data:${data}`, window.scene).then((result) => {
                     return {
@@ -1250,7 +1264,7 @@ describe("Babylon Scene Loader", function () {
             });
         });
 
-        it("should direct load a base64 encoded glTF file", async () => {
+        test("should direct load a base64 encoded glTF file", async () => {
             const assertionData = await page.evaluate((data) => {
                 return BABYLON.SceneLoader.ImportMeshAsync("", "", `data:;base64,${data}`, window.scene, undefined, ".gltf").then((result) => {
                     return {
@@ -1265,7 +1279,7 @@ describe("Babylon Scene Loader", function () {
             });
         });
 
-        it("should not leak base64 data URIs into texture url or name for glTF with embedded images", async () => {
+        test("should not leak base64 data URIs into texture url or name for glTF with embedded images", async () => {
             const assertionData = await page.evaluate((data) => {
                 return BABYLON.SceneLoader.ImportMeshAsync("", "", `data:${data}`, window.scene, undefined, ".gltf").then(() => {
                     const textures = window.scene!.textures.filter((t) => t !== window.scene!.environmentBRDFTexture);
@@ -1280,7 +1294,7 @@ describe("Babylon Scene Loader", function () {
             expect(assertionData[0].nameContainsBase64Payload).toBe(false);
         });
 
-        it("should direct load a base64 encoded glb with a valid mime type and no pluginExtension", async () => {
+        test("should direct load a base64 encoded glb with a valid mime type and no pluginExtension", async () => {
             const assertionData = await page.evaluate((data) => {
                 return BABYLON.SceneLoader.ImportMeshAsync("", "", `data:model/gltf-binary;base64,${data}`, window.scene, undefined).then((result) => {
                     return {
@@ -1295,7 +1309,7 @@ describe("Babylon Scene Loader", function () {
             });
         });
 
-        it("should direct load a base64 encoded glb with an invalid mime type and pluginExtension specified", async () => {
+        test("should direct load a base64 encoded glb with an invalid mime type and pluginExtension specified", async () => {
             const assertionData = await page.evaluate((data) => {
                 return BABYLON.SceneLoader.ImportMeshAsync("", "", `data:image/jpg;base64,${data}`, window.scene, undefined, ".glb").then((result) => {
                     return {
@@ -1310,7 +1324,7 @@ describe("Babylon Scene Loader", function () {
             });
         });
 
-        it("should direct load an incorrectly formatted base64 encoded glb (backcompat)", async () => {
+        test("should direct load an incorrectly formatted base64 encoded glb (backcompat)", async () => {
             const assertionData = await page.evaluate((data) => {
                 return BABYLON.SceneLoader.ImportMeshAsync("", "", `data:base64,${data}`, window.scene).then((result) => {
                     return {
@@ -1325,7 +1339,7 @@ describe("Babylon Scene Loader", function () {
             });
         });
 
-        it("should direct load an ascii stl file", async () => {
+        test("should direct load an ascii stl file", async () => {
             const assertionData = await page.evaluate((data) => {
                 return BABYLON.SceneLoader.ImportMeshAsync("", "", `data:${data}`, window.scene, undefined, ".stl").then((result) => {
                     return {
@@ -1340,7 +1354,7 @@ describe("Babylon Scene Loader", function () {
             });
         });
 
-        it("should direct load a base64 encoded ascii stl file", async () => {
+        test("should direct load a base64 encoded ascii stl file", async () => {
             const assertionData = await page.evaluate((data) => {
                 return BABYLON.SceneLoader.ImportMeshAsync("", "", `data:;base64,${data}`, window.scene, undefined, ".stl").then((result) => {
                     return {
@@ -1355,7 +1369,7 @@ describe("Babylon Scene Loader", function () {
             });
         });
 
-        it("should direct load a base64 encoded binary stl file", async () => {
+        test("should direct load a base64 encoded binary stl file", async () => {
             const assertionData = await page.evaluate((data) => {
                 return BABYLON.SceneLoader.ImportMeshAsync("", "", `data:;base64,${data}`, window.scene, undefined, ".stl").then((result) => {
                     return {
@@ -1371,8 +1385,8 @@ describe("Babylon Scene Loader", function () {
         });
     });
 
-    describe("Options", () => {
-        it("appendSceneAsync without options", async () => {
+    test.describe("Options", () => {
+        test("appendSceneAsync without options", async () => {
             const assertionData = await page.evaluate(() => {
                 return BABYLON.appendSceneAsync("https://playground.babylonjs.com/scenes/BoomBox.glb", window.scene!).then(() => {
                     return {
@@ -1385,7 +1399,7 @@ describe("Babylon Scene Loader", function () {
             expect(assertionData.lights).toBe(1);
         });
 
-        it("loadSceneAsync without options", async () => {
+        test("loadSceneAsync without options", async () => {
             const assertionData = await page.evaluate(() => {
                 return BABYLON.loadSceneAsync("https://playground.babylonjs.com/scenes/BoomBox.glb", window.engine!).then((scene) => {
                     return {
@@ -1398,7 +1412,7 @@ describe("Babylon Scene Loader", function () {
             expect(assertionData.lights).toBe(1);
         });
 
-        it("loadAssetContainerAsync without options", async () => {
+        test("loadAssetContainerAsync without options", async () => {
             const assertionData = await page.evaluate(() => {
                 return BABYLON.loadAssetContainerAsync("https://playground.babylonjs.com/scenes/BoomBox.glb", window.scene!).then((assetContainer) => {
                     return {
@@ -1411,7 +1425,7 @@ describe("Babylon Scene Loader", function () {
             expect(assertionData.lights).toBe(1);
         });
 
-        it("loadAssetContainerAsync with rootUrl", async () => {
+        test("loadAssetContainerAsync with rootUrl", async () => {
             const assertionData = await page.evaluate(() => {
                 return BABYLON.loadAssetContainerAsync("BoomBox.glb", window.scene!, {
                     rootUrl: "https://playground.babylonjs.com/scenes/",
@@ -1426,7 +1440,7 @@ describe("Babylon Scene Loader", function () {
             expect(assertionData.lights).toBe(1);
         });
 
-        it("loadAssetContainerAsync with glTF options", async () => {
+        test("loadAssetContainerAsync with glTF options", async () => {
             const assertionData = await page.evaluate(async () => {
                 const gltfFileLoader = new BABYLON.GLTFFileLoader();
 
@@ -1495,7 +1509,7 @@ describe("Babylon Scene Loader", function () {
             expect(assertionData.gltfOptions).toEqual(assertionData.gltfLoaderProps);
         });
 
-        it("loadAssetContainerAsync with glTF callbacks", async () => {
+        test("loadAssetContainerAsync with glTF callbacks", async () => {
             const assertionData = await page.evaluate(async () => {
                 let parsed = false;
                 let cameraCount = 0;

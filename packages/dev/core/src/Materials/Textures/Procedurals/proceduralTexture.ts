@@ -1,30 +1,29 @@
 import { serialize } from "../../../Misc/decorators";
 import { Observable } from "../../../Misc/observable";
-import type { Nullable } from "../../../types";
-import type { Scene } from "../../../scene";
-import type { Matrix, Vector4, Vector3, Vector2 } from "../../../Maths/math.vector";
-import type { Color4, Color3 } from "../../../Maths/math.color";
-import type { AbstractEngine } from "../../../Engines/abstractEngine";
+import { type Nullable } from "../../../types";
+import { type Scene } from "../../../scene";
+import { type Matrix, type Vector4, type Vector3, type Vector2 } from "../../../Maths/math.vector";
+import { type Color4, type Color3 } from "../../../Maths/math.color";
+import { type AbstractEngine } from "../../../Engines/abstractEngine";
 import { VertexBuffer } from "../../../Buffers/buffer";
 import { SceneComponentConstants } from "../../../sceneComponent";
 
 import { Material } from "../../../Materials/material";
-import type { Effect } from "../../../Materials/effect";
+import { type Effect } from "../../../Materials/effect";
 import { Texture } from "../../../Materials/Textures/texture";
-import type { RenderTargetTextureOptions } from "../../../Materials/Textures/renderTargetTexture";
-import { RenderTargetTexture } from "../../../Materials/Textures/renderTargetTexture";
+import { type RenderTargetTextureOptions, RenderTargetTexture } from "../../../Materials/Textures/renderTargetTexture";
 import { ProceduralTextureSceneComponent } from "./proceduralTextureSceneComponent";
 
-import type { DataBuffer } from "../../../Buffers/dataBuffer";
+import { type DataBuffer } from "../../../Buffers/dataBuffer";
 import { RegisterClass } from "../../../Misc/typeStore";
-import type { NodeMaterial } from "../../Node/nodeMaterial";
-import type { TextureSize } from "../../../Materials/Textures/textureCreationOptions";
+import { type NodeMaterial } from "../../Node/nodeMaterial";
+import { type TextureSize } from "../../../Materials/Textures/textureCreationOptions";
 import { EngineStore } from "../../../Engines/engineStore";
 import { Constants } from "../../../Engines/constants";
 import { DrawWrapper } from "../../drawWrapper";
-import type { RenderTargetWrapper } from "../../../Engines/renderTargetWrapper";
+import { type RenderTargetWrapper } from "../../../Engines/renderTargetWrapper";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
-import type { ThinTexture } from "core/Materials/Textures/thinTexture";
+import { type ThinTexture } from "core/Materials/Textures/thinTexture";
 
 /**
  * Options to create a procedural texture

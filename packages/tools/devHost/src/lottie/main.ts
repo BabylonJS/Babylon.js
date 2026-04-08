@@ -1,5 +1,5 @@
-import type { AnimationConfiguration } from "lottie-player/animationConfiguration";
-import type { RawLottieAnimation } from "lottie-player/parsing/rawTypes";
+import { type AnimationConfiguration } from "lottie-player/animationConfiguration";
+import { type RawLottieAnimation } from "lottie-player/parsing/rawTypes";
 import { Player } from "lottie-player/player";
 import { LocalPlayer } from "lottie-player/localPlayer";
 import { DecodeQspStringToObject } from "./utils";

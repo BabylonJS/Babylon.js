@@ -1,13 +1,10 @@
-import type { ServiceDefinition } from "../../../modularity/serviceDefinition";
-import type { IPropertiesService } from "./propertiesService";
+import { type ServiceDefinition } from "../../../modularity/serviceDefinition";
+import { type IPropertiesService, PropertiesServiceIdentity } from "./propertiesService";
 
-import { AnimationGroup } from "core/Animations/animationGroup";
-import { TargetedAnimation } from "core/Animations/animationGroup";
-import { PropertiesServiceIdentity } from "./propertiesService";
+import { AnimationGroup, TargetedAnimation } from "core/Animations/animationGroup";
 import { TargetedAnimationGeneralProperties } from "../../../components/properties/animation/targetedAnimationProperties";
 import { AnimationGroupControlProperties, AnimationGroupInfoProperties } from "../../../components/properties/animation/animationGroupProperties";
-import type { ISelectionService } from "../../selectionService";
-import { SelectionServiceIdentity } from "../../selectionService";
+import { type ISelectionService, SelectionServiceIdentity } from "../../selectionService";
 
 export const AnimationGroupPropertiesServiceDefinition: ServiceDefinition<[], [IPropertiesService, ISelectionService]> = {
     friendlyName: "Animation Group Properties",

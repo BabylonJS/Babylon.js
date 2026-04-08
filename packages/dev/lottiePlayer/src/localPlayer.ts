@@ -1,11 +1,10 @@
-import type { Nullable } from "core/types";
-import type { AnimationInput } from "./types";
-import type { RawLottieAnimation } from "./parsing/rawTypes";
-import type { ScaleFactors } from "./rendering/calculateScaleFactor";
+import { type Nullable } from "core/types";
+import { type AnimationInput } from "./types";
+import { type RawLottieAnimation } from "./parsing/rawTypes";
+import { type ScaleFactors, CalculateScaleFactors } from "./rendering/calculateScaleFactor";
 
 import { GetRawAnimationDataAsync } from "./parsing/parser";
 import { AnimationController } from "./rendering/animationController";
-import { CalculateScaleFactors } from "./rendering/calculateScaleFactor";
 
 /**
  * Allows you to play Lottie animations using Babylon.js.

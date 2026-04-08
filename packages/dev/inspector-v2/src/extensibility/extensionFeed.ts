@@ -1,4 +1,4 @@
-import type { WeaklyTypedServiceDefinition } from "../modularity/serviceContainer";
+import { type WeaklyTypedServiceDefinition } from "../modularity/serviceContainer";
 
 export type PersonMetadata = {
     /**

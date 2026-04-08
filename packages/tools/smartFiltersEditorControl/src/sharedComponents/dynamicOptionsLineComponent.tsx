@@ -1,7 +1,7 @@
 import { Component, createRef } from "react";
-import type { Observable, Observer } from "core/Misc/observable";
-import type { IInspectableOptions } from "core/Misc/iInspectable";
-import type { Nullable } from "core/types";
+import { type Observable, type Observer } from "core/Misc/observable";
+import { type IInspectableOptions } from "core/Misc/iInspectable";
+import { type Nullable } from "core/types";
 import { type IOptionsLineProps, OptionsLine } from "shared-ui-components/lines/optionsLineComponent.js";
 
 /**

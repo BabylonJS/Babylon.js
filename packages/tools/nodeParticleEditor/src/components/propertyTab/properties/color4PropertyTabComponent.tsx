@@ -1,8 +1,8 @@
 import * as React from "react";
-import type { GlobalState } from "../../../globalState";
+import { type GlobalState } from "../../../globalState";
 import { Color4LineComponent } from "shared-ui-components/lines/color4LineComponent";
-import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
-import type { ParticleInputBlock } from "core/Particles/Node/Blocks/particleInputBlock";
+import { type LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
+import { type ParticleInputBlock } from "core/Particles/Node/Blocks/particleInputBlock";
 
 interface IColor4PropertyTabComponentProps {
     globalState: GlobalState;

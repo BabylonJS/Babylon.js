@@ -1,20 +1,19 @@
 import * as React from "react";
 import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
 import { CheckBoxLineComponent } from "../../sharedComponents/checkBoxLineComponent";
-import type { IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
+import { type IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
 import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
 import { Vector2LineComponent } from "shared-ui-components/lines/vector2LineComponent";
 import { OptionsLine } from "shared-ui-components/lines/optionsLineComponent";
 import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
 import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent";
-import type { NodeGeometryBlock } from "core/Meshes/Node/nodeGeometryBlock";
-import type { NodeGeometryConnectionPoint } from "core/Meshes/Node/nodeGeometryBlockConnectionPoint";
+import { type NodeGeometryBlock } from "core/Meshes/Node/nodeGeometryBlock";
+import { type NodeGeometryConnectionPoint } from "core/Meshes/Node/nodeGeometryBlockConnectionPoint";
 import { NodeGeometryBlockConnectionPointTypes } from "core/Meshes/Node/Enums/nodeGeometryConnectionPointTypes";
 import { Vector3LineComponent } from "shared-ui-components/lines/vector3LineComponent";
 import { Vector4LineComponent } from "shared-ui-components/lines/vector4LineComponent";
-import type { IEditablePropertyListOption } from "core/Decorators/nodeDecorator";
-import { PropertyTypeForEdition, type IPropertyDescriptionForEdition } from "core/Decorators/nodeDecorator";
+import { type IEditablePropertyListOption, PropertyTypeForEdition, type IPropertyDescriptionForEdition } from "core/Decorators/nodeDecorator";
 import { ForceRebuild } from "shared-ui-components/nodeGraphSystem/automaticProperties";
 
 export class GenericPropertyComponent extends React.Component<IPropertyComponentProps> {

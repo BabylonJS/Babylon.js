@@ -1,11 +1,10 @@
 /**
- * @jest-environment jsdom
+ * @vitest-environment jsdom
  */
 
-import type { ISoundOptions } from "core/Audio";
-import type { Nullable } from "core/types";
+import { type ISoundOptions, AudioEngine, Sound } from "core/Audio";
+import { type Nullable } from "core/types";
 
-import { AudioEngine, Sound } from "core/Audio";
 import { AbstractEngine, NullEngine } from "core/Engines";
 import { Scene } from "core/scene";
 
@@ -17,10 +16,10 @@ import { StaticSound } from "../../../src/AudioV2/abstractAudio/staticSound";
 import { StreamingSound } from "../../../src/AudioV2/abstractAudio/streamingSound";
 
 // Required for timers (eg. setTimeout) to work.
-jest.useFakeTimers();
-
-const realSetTimeout = jest.requireActual("timers").setTimeout;
-const realClearTimeout = jest.requireActual("timers").clearTimeout;
+// Store real timers before vi.useFakeTimers() replaces them
+const realSetTimeout = globalThis.setTimeout;
+const realClearTimeout = globalThis.clearTimeout;
+vi.useFakeTimers();
 
 async function CreateSoundAsync(
     name: string,
@@ -103,7 +102,7 @@ describe("Sound", () => {
 
     it("constructor sets given readyToPlayCallback", async () => {
         const audioSample = AudioTestSamples.Get("silence, 1 second, 1 channel, 48000 kHz");
-        const readyToPlayCallback = jest.fn();
+        const readyToPlayCallback = vi.fn();
         await CreateSoundAsync(expect.getState().currentTestName!, audioSample.arrayBuffer, scene, readyToPlayCallback);
 
         expect(readyToPlayCallback).toHaveBeenCalled();
@@ -362,7 +361,7 @@ describe("Sound", () => {
         const audioSample = AudioTestSamples.Get("silence, 1 second, 1 channel, 48000 kHz");
         const sound = await CreateSoundAsync(expect.getState().currentTestName!, audioSample.arrayBuffer);
         mock.audioContext.currentTime = 0.1;
-        const onended = jest.fn().mockName("onended");
+        const onended = vi.fn().mockName("onended");
         sound.onended = onended;
 
         sound.play();
@@ -376,7 +375,7 @@ describe("Sound", () => {
         const audioSample = AudioTestSamples.Get("silence, 1 second, 1 channel, 48000 kHz");
         const sound = await CreateSoundAsync(expect.getState().currentTestName!, audioSample.arrayBuffer);
         mock.audioContext.currentTime = 0.1;
-        const onended = jest.fn().mockName("onended");
+        const onended = vi.fn().mockName("onended");
         sound.onended = onended;
 
         sound.play();
@@ -389,7 +388,7 @@ describe("Sound", () => {
         const audioSample = AudioTestSamples.Get("silence, 1 second, 1 channel, 48000 kHz");
         const sound = await CreateSoundAsync(expect.getState().currentTestName!, audioSample.audioBuffer);
         mock.audioContext.currentTime = 0.1;
-        const onended = jest.fn().mockName("onended");
+        const onended = vi.fn().mockName("onended");
         sound.onended = onended;
 
         sound.play();
@@ -429,7 +428,7 @@ describe("Sound", () => {
 
         sound.stop();
         mock.audioContext.state = "running";
-        jest.advanceTimersByTime(500);
+        vi.advanceTimersByTime(500);
 
         expect((sound as any)._soundV2.state).toBe(SoundState.Stopped);
     });
@@ -559,7 +558,7 @@ describe("Sound", () => {
             streaming: true,
         })) as any;
 
-        const onended = jest.fn().mockName("onended");
+        const onended = vi.fn().mockName("onended");
         sound.onended = onended;
 
         // Play creates the instance; wait for the async canplaythrough event to fire.
@@ -571,7 +570,7 @@ describe("Sound", () => {
         expect(instance).not.toBeNull();
 
         // Spy on dispose to count calls.
-        const disposeSpy = jest.spyOn(instance, "dispose");
+        const disposeSpy = vi.spyOn(instance, "dispose");
 
         sound.stop();
 

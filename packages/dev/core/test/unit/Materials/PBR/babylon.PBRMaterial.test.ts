@@ -1,6 +1,5 @@
 import { Animation } from "core/Animations";
-import type { Engine } from "core/Engines";
-import { NullEngine } from "core/Engines";
+import { type Engine, NullEngine } from "core/Engines";
 import { ImageProcessingConfiguration, PBRMaterial, RenderTargetTexture, Texture } from "core/Materials";
 import { PrePassRenderer } from "core/Rendering";
 import "core/Rendering/prePassRendererSceneComponent";
@@ -276,7 +275,7 @@ describe("PBRMaterial", () => {
         it("should enable subSurfaceConfiguration when PrePassRenderer supported (WebGL2)", () => {
             expect(scene.subSurfaceConfiguration?.enabled).toBeFalsy();
 
-            jest.spyOn(PrePassRenderer.prototype, "isSupported", "get").mockReturnValue(true);
+            vi.spyOn(PrePassRenderer.prototype, "isSupported", "get").mockReturnValue(true);
 
             material.subSurface.isScatteringEnabled = true;
             material.setPrePassRenderer();
@@ -293,59 +292,59 @@ describe("PBRMaterial", () => {
         });
 
         describe("textures disposal", () => {
-            let albedoTextureDisposeSpy: jest.MockInstance<void, []>;
-            let ambientTextureDisposeSpy: jest.MockInstance<void, []>;
-            let opacityTextureDisposeSpy: jest.MockInstance<void, []>;
-            let reflectionTextureDisposeSpy: jest.MockInstance<void, []>;
-            let emissiveTextureDisposeSpy: jest.MockInstance<void, []>;
-            let reflectivityTextureDisposeSpy: jest.MockInstance<void, []>;
-            let metallicTextureDisposeSpy: jest.MockInstance<void, []>;
-            let metallicReflectanceTextureDisposeSpy: jest.MockInstance<void, []>;
-            let reflectanceTextureDisposeSpy: jest.MockInstance<void, []>;
-            let microSurfaceTextureDisposeSpy: jest.MockInstance<void, []>;
-            let bumpTextureDisposeSpy: jest.MockInstance<void, []>;
-            let lightmapTextureDisposeSpy: jest.MockInstance<void, []>;
-            let refractionTextureDisposeSpy: jest.MockInstance<void, []>;
+            let albedoTextureDisposeSpy: MockInstance;
+            let ambientTextureDisposeSpy: MockInstance;
+            let opacityTextureDisposeSpy: MockInstance;
+            let reflectionTextureDisposeSpy: MockInstance;
+            let emissiveTextureDisposeSpy: MockInstance;
+            let reflectivityTextureDisposeSpy: MockInstance;
+            let metallicTextureDisposeSpy: MockInstance;
+            let metallicReflectanceTextureDisposeSpy: MockInstance;
+            let reflectanceTextureDisposeSpy: MockInstance;
+            let microSurfaceTextureDisposeSpy: MockInstance;
+            let bumpTextureDisposeSpy: MockInstance;
+            let lightmapTextureDisposeSpy: MockInstance;
+            let refractionTextureDisposeSpy: MockInstance;
 
             beforeEach(() => {
                 material.albedoTexture = new Texture("texture.jpg", scene);
-                albedoTextureDisposeSpy = jest.spyOn(material.albedoTexture, "dispose");
+                albedoTextureDisposeSpy = vi.spyOn(material.albedoTexture, "dispose");
 
                 material.ambientTexture = new Texture("texture.jpg", scene);
-                ambientTextureDisposeSpy = jest.spyOn(material.ambientTexture, "dispose");
+                ambientTextureDisposeSpy = vi.spyOn(material.ambientTexture, "dispose");
 
                 material.opacityTexture = new Texture("texture.jpg", scene);
-                opacityTextureDisposeSpy = jest.spyOn(material.opacityTexture, "dispose");
+                opacityTextureDisposeSpy = vi.spyOn(material.opacityTexture, "dispose");
 
                 material.reflectionTexture = new Texture("texture.jpg", scene);
-                reflectionTextureDisposeSpy = jest.spyOn(material.reflectionTexture, "dispose");
+                reflectionTextureDisposeSpy = vi.spyOn(material.reflectionTexture, "dispose");
 
                 material.emissiveTexture = new Texture("texture.jpg", scene);
-                emissiveTextureDisposeSpy = jest.spyOn(material.emissiveTexture, "dispose");
+                emissiveTextureDisposeSpy = vi.spyOn(material.emissiveTexture, "dispose");
 
                 material.reflectivityTexture = new Texture("texture.jpg", scene);
-                reflectivityTextureDisposeSpy = jest.spyOn(material.reflectivityTexture, "dispose");
+                reflectivityTextureDisposeSpy = vi.spyOn(material.reflectivityTexture, "dispose");
 
                 material.metallicTexture = new Texture("texture.jpg", scene);
-                metallicTextureDisposeSpy = jest.spyOn(material.metallicTexture, "dispose");
+                metallicTextureDisposeSpy = vi.spyOn(material.metallicTexture, "dispose");
 
                 material.metallicReflectanceTexture = new Texture("texture.jpg", scene);
-                metallicReflectanceTextureDisposeSpy = jest.spyOn(material.metallicReflectanceTexture, "dispose");
+                metallicReflectanceTextureDisposeSpy = vi.spyOn(material.metallicReflectanceTexture, "dispose");
 
                 material.reflectanceTexture = new Texture("texture.jpg", scene);
-                reflectanceTextureDisposeSpy = jest.spyOn(material.reflectanceTexture, "dispose");
+                reflectanceTextureDisposeSpy = vi.spyOn(material.reflectanceTexture, "dispose");
 
                 material.microSurfaceTexture = new Texture("texture.jpg", scene);
-                microSurfaceTextureDisposeSpy = jest.spyOn(material.microSurfaceTexture, "dispose");
+                microSurfaceTextureDisposeSpy = vi.spyOn(material.microSurfaceTexture, "dispose");
 
                 material.bumpTexture = new Texture("texture.jpg", scene);
-                bumpTextureDisposeSpy = jest.spyOn(material.bumpTexture, "dispose");
+                bumpTextureDisposeSpy = vi.spyOn(material.bumpTexture, "dispose");
 
                 material.lightmapTexture = new Texture("texture.jpg", scene);
-                lightmapTextureDisposeSpy = jest.spyOn(material.lightmapTexture, "dispose");
+                lightmapTextureDisposeSpy = vi.spyOn(material.lightmapTexture, "dispose");
 
                 material.refractionTexture = new Texture("texture.jpg", scene);
-                refractionTextureDisposeSpy = jest.spyOn(material.refractionTexture, "dispose");
+                refractionTextureDisposeSpy = vi.spyOn(material.refractionTexture, "dispose");
             });
 
             it("should dispose all textures", () => {
@@ -391,8 +390,8 @@ describe("PBRMaterial", () => {
             scene.environmentBRDFTexture = texture;
             material.environmentBRDFTexture = texture;
 
-            const environmentTextureDisposeSpy = jest.spyOn(material.environmentBRDFTexture, "dispose");
-            const textureDisposeSpy = jest.spyOn(texture, "dispose");
+            const environmentTextureDisposeSpy = vi.spyOn(material.environmentBRDFTexture, "dispose");
+            const textureDisposeSpy = vi.spyOn(texture, "dispose");
 
             material.dispose(true, true);
 
@@ -405,8 +404,8 @@ describe("PBRMaterial", () => {
 
             material.environmentBRDFTexture = texture;
 
-            const environmentTextureDisposeSpy = jest.spyOn(material.environmentBRDFTexture, "dispose");
-            const textureDisposeSpy = jest.spyOn(texture, "dispose");
+            const environmentTextureDisposeSpy = vi.spyOn(material.environmentBRDFTexture, "dispose");
+            const textureDisposeSpy = vi.spyOn(texture, "dispose");
 
             material.dispose(true, true);
 
@@ -420,8 +419,8 @@ describe("PBRMaterial", () => {
             scene.environmentBRDFTexture = texture;
             material.environmentBRDFTexture = texture;
 
-            const environmentTextureDisposeSpy = jest.spyOn(material.environmentBRDFTexture, "dispose");
-            const textureDisposeSpy = jest.spyOn(texture, "dispose");
+            const environmentTextureDisposeSpy = vi.spyOn(material.environmentBRDFTexture, "dispose");
+            const textureDisposeSpy = vi.spyOn(texture, "dispose");
 
             material.dispose(true, false);
 
@@ -445,7 +444,7 @@ describe("PBRMaterial", () => {
 
             material.imageProcessingConfiguration = imageProcessingConfiguration;
 
-            const imageProcessingRemoveSpy = jest.spyOn(imageProcessingConfiguration.onUpdateParameters, "remove");
+            const imageProcessingRemoveSpy = vi.spyOn(imageProcessingConfiguration.onUpdateParameters, "remove");
 
             material.dispose();
 

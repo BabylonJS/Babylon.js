@@ -10,10 +10,10 @@
         "src"
     ],
     "scripts": {
-        "test": "jest --runInBand -c ../../../jest.config.ts",
+        "test": "vitest run",
         "test:debug": "set DEBUG=true && npm run test",
-        "update": "jest -u",
-        "build": "node ./build.js",
+        "update": "vitest run -u",
+        "build": "node ./build.mjs",
         "analyse": "webpack --profile --json > stats.json",
         "generate-file-size-report": "node ./scripts/generateFileSizes.js",
         "test:playwright": "playwright test --config ../../../playwright.config.ts"
@@ -25,17 +25,12 @@
         "@dev/materials": "^1.0.0",
         "@dev/serializers": "^1.0.0",
         "@dev/shared-ui-components": "^1.0.0",
+        "@tools/snippet-loader": "^1.0.0",
         "@tools/test-tools": "^1.0.0",
-        "@types/jest": "^30.0.0",
-        "@types/jest-image-snapshot": "^6.4.1",
         "@types/react": "^18.0.0",
         "@types/react-dom": "^18.0.0",
-        "jest": "^30.2.0",
         "sass": "^1.62.1",
         "browserstack-local": "^1.5.5"
-    },
-    "optionalDependencies": {
-        "jest-image-snapshot": "^6.1.0"
     },
     "sideEffects": false
 }

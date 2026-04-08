@@ -1,12 +1,11 @@
-import type { FunctionComponent } from "react";
-import type { ISelectionService } from "../../../services/selectionService";
+import { type FunctionComponent, Fragment, useCallback } from "react";
+import { type ISelectionService } from "../../../services/selectionService";
 
-import type { ParticleInputBlock } from "core/Particles/Node/Blocks/particleInputBlock";
-import type { ParticleSystem } from "core/Particles/particleSystem";
-import type { NodeParticleSystemSet } from "core/Particles/Node/nodeParticleSystemSet";
+import { type ParticleInputBlock } from "core/Particles/Node/Blocks/particleInputBlock";
+import { type ParticleSystem } from "core/Particles/particleSystem";
+import { type NodeParticleSystemSet } from "core/Particles/Node/nodeParticleSystemSet";
 
 import { makeStyles, Subtitle2, tokens } from "@fluentui/react-components";
-import { Fragment, useCallback } from "react";
 
 import { NodeParticleBlockConnectionPointTypes } from "core/Particles/Node/Enums/nodeParticleBlockConnectionPointTypes";
 import { Color4PropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/colorPropertyLine";

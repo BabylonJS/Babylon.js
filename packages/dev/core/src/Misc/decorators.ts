@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/naming-convention */
-import type { Nullable } from "../types";
+import { type Nullable } from "../types";
 import { GetDirectStore } from "./decorators.functions";
 import { _WarnImport } from "./devTools";
 
@@ -150,7 +150,7 @@ export function nativeOverride<T extends (...params: any[]) => boolean>(
 /**
  * Decorator factory that applies the nativeOverride decorator, but determines whether to redirect to the native implementation based on a filter function that evaluates the function arguments.
  * @param predicate
- * @example @nativeOverride.filter((...[arg1]: Parameters<typeof someClass.someMethod>) => arg1.length > 20)
+ * @example @nativeOverride.filter((arg1: string) => arg1.length > 20)
  *          public someMethod(arg1: string, arg2: number): string {
  * @internal
  */

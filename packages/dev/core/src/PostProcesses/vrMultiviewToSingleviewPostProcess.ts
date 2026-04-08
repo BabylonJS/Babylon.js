@@ -1,11 +1,11 @@
-import type { Camera } from "../Cameras/camera";
-import type { Effect } from "../Materials/effect";
+import { type Camera } from "../Cameras/camera";
+import { type Effect } from "../Materials/effect";
 import { Texture } from "../Materials/Textures/texture";
 import { PostProcess } from "./postProcess";
 
 import "../Shaders/vrMultiviewToSingleview.fragment";
 import "../Engines/Extensions/engine.multiview";
-import type { Nullable } from "../types";
+import { type Nullable } from "../types";
 
 /**
  * VRMultiviewToSingleview used to convert multiview texture arrays to standard textures for scenarios such as webVR

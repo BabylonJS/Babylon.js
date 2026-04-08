@@ -1,12 +1,12 @@
 import * as React from "react";
 import { Vector2 } from "core/Maths/math.vector";
-import type { Observable } from "core/Misc/observable";
+import { type Observable } from "core/Misc/observable";
 
 import { NumericInput } from "./numericInputComponent";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMinus, faPlus } from "@fortawesome/free-solid-svg-icons";
-import type { PropertyChangedEvent } from "../propertyChangedEvent";
-import type { LockObject } from "../tabs/propertyGrids/lockObject";
+import { type PropertyChangedEvent } from "../propertyChangedEvent";
+import { type LockObject } from "../tabs/propertyGrids/lockObject";
 
 interface IVector2LineComponentProps {
     label: string;

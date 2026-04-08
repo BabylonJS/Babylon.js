@@ -1,9 +1,9 @@
 import { PickingInfo } from "core/Collisions";
-import type { Engine } from "core/Engines";
-import { NullEngine } from "core/Engines";
+import { type Engine, NullEngine } from "core/Engines";
 import { PointerEventTypes, PointerInfo } from "core/Events";
-import type { FlowGraph, FlowGraphContext } from "core/FlowGraph";
 import {
+    type FlowGraph,
+    type FlowGraphContext,
     FlowGraphCoordinator,
     FlowGraphConsoleLogBlock,
     FlowGraphMeshPickEventBlock,
@@ -11,7 +11,9 @@ import {
     FlowGraphSceneReadyEventBlock,
     FlowGraphSendCustomEventBlock,
     RichTypeNumber,
+    RichTypeString,
 } from "core/FlowGraph";
+import { ParseFlowGraph } from "core/FlowGraph/flowGraphParser";
 import { Mesh } from "core/Meshes";
 import { Logger } from "core/Misc/logger";
 import { Scene } from "core/scene";
@@ -31,7 +33,7 @@ describe("Flow Graph Event Nodes", () => {
             deterministicLockstep: false,
             lockstepMaxSteps: 1,
         });
-        Logger.Log = jest.fn();
+        Logger.Log = vi.fn();
 
         scene = new Scene(engine);
         flowGraphCoordinator = new FlowGraphCoordinator({ scene });
@@ -81,6 +83,103 @@ describe("Flow Graph Event Nodes", () => {
         flowGraph.start();
 
         expect(Logger.Log).toHaveBeenCalledWith(randomValue);
+    });
+
+    it("SendCustomEvent serializes and deserializes eventData correctly", () => {
+        const eventId = "serializeTest";
+        const sendEvent = new FlowGraphSendCustomEventBlock({
+            eventId,
+            eventData: {
+                myNumber: { type: RichTypeNumber, value: 42 },
+            },
+        });
+
+        const serialized: any = {};
+        sendEvent.serialize(serialized);
+
+        // eventData should be stored with typeName strings, not RichType instances
+        expect(serialized.config.eventData.myNumber.type).toBe("number");
+        expect(serialized.config.eventData.myNumber.value).toBe(42);
+
+        // Reconstruct from serialized config — type is now a string
+        const deserialized = new FlowGraphSendCustomEventBlock(serialized.config);
+        const input = deserialized.getDataInput("myNumber");
+        expect(input).toBeDefined();
+        expect(input!.richType.typeName).toBe("number");
+    });
+
+    it("ReceiveCustomEvent serializes and deserializes eventData correctly", () => {
+        const eventId = "serializeTest";
+        const receiveEvent = new FlowGraphReceiveCustomEventBlock({
+            eventId,
+            eventData: {
+                myNumber: { type: RichTypeNumber },
+            },
+        });
+
+        const serialized: any = {};
+        receiveEvent.serialize(serialized);
+
+        expect(serialized.config.eventData.myNumber.type).toBe("number");
+
+        const deserialized = new FlowGraphReceiveCustomEventBlock(serialized.config);
+        const output = deserialized.getDataOutput("myNumber");
+        expect(output).toBeDefined();
+        expect(output!.richType.typeName).toBe("number");
+    });
+
+    it("Custom event round-trip preserves String type through full serialize/parse pipeline", () => {
+        // Build a graph with Send+Receive custom events using String type
+        const eventId = "stringTypeRoundTrip";
+        const sendBlock = new FlowGraphSendCustomEventBlock({
+            eventId,
+            eventData: {
+                myString: { type: RichTypeString, value: "hello" },
+            },
+        });
+        const receiveBlock = new FlowGraphReceiveCustomEventBlock({
+            eventId,
+            eventData: {
+                myString: { type: RichTypeString },
+            },
+        });
+
+        flowGraph.addBlock(sendBlock);
+        flowGraph.addBlock(receiveBlock);
+        flowGraph.addEventBlock(receiveBlock);
+
+        // Serialize the entire graph (same path as the editor)
+        const serializationObject: any = {};
+        flowGraph.serialize(serializationObject);
+
+        // Verify the serialized JSON has type "string"
+        const sendSerialized = serializationObject.allBlocks.find((b: any) => b.className === "FlowGraphSendCustomEventBlock");
+        const recvSerialized = serializationObject.allBlocks.find((b: any) => b.className === "FlowGraphReceiveCustomEventBlock");
+        expect(sendSerialized.config.eventData.myString.type).toBe("string");
+        expect(recvSerialized.config.eventData.myString.type).toBe("string");
+
+        // Parse the graph from the serialized object (same path as the editor's DeserializeAsync)
+        // Build resolvedClasses in the same order as serialized allBlocks
+        const resolvedClasses = serializationObject.allBlocks.map((b: any) =>
+            b.className === "FlowGraphSendCustomEventBlock" ? FlowGraphSendCustomEventBlock : FlowGraphReceiveCustomEventBlock
+        );
+        const parsedGraph = ParseFlowGraph(serializationObject, { coordinator: flowGraphCoordinator }, resolvedClasses);
+
+        // Check the parsed blocks have the correct type
+        const parsedBlocks = parsedGraph.getAllBlocks();
+        const parsedSend = parsedBlocks.find((b) => b.getClassName() === "FlowGraphSendCustomEventBlock") as FlowGraphSendCustomEventBlock;
+        const parsedRecv = parsedBlocks.find((b) => b.getClassName() === "FlowGraphReceiveCustomEventBlock") as FlowGraphReceiveCustomEventBlock;
+
+        expect(parsedSend).toBeDefined();
+        expect(parsedRecv).toBeDefined();
+
+        const sendInput = parsedSend.getDataInput("myString");
+        expect(sendInput).toBeDefined();
+        expect(sendInput!.richType.typeName).toBe("string");
+
+        const recvOutput = parsedRecv.getDataOutput("myString");
+        expect(recvOutput).toBeDefined();
+        expect(recvOutput!.richType.typeName).toBe("string");
     });
 
     it("Mesh Pick Event Bubbling", () => {

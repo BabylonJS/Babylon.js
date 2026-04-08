@@ -1,6 +1,6 @@
-import type { FunctionComponent } from "react";
+import { type FunctionComponent } from "react";
 
-import type { PostProcessRenderPipeline } from "core/PostProcesses/RenderPipeline/postProcessRenderPipeline";
+import { type PostProcessRenderPipeline } from "core/PostProcesses/RenderPipeline/postProcessRenderPipeline";
 
 import { SyncedSliderPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/syncedSliderPropertyLine";
 import { BoundProperty } from "../boundProperty";

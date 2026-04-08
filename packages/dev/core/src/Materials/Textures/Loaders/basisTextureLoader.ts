@@ -1,6 +1,6 @@
-import type { Nullable } from "../../../types";
-import type { InternalTexture } from "../../../Materials/Textures/internalTexture";
-import type { IInternalTextureLoader } from "./internalTextureLoader";
+import { type Nullable } from "../../../types";
+import { type InternalTexture } from "../../../Materials/Textures/internalTexture";
+import { type IInternalTextureLoader } from "./internalTextureLoader";
 import { LoadTextureFromTranscodeResult, TranscodeAsync } from "../../../Misc/basis";
 import { Tools } from "../../../Misc/tools";
 

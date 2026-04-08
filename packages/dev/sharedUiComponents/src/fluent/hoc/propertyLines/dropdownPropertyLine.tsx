@@ -1,10 +1,7 @@
 import { makeStyles } from "@fluentui/react-components";
-import { Dropdown } from "../../primitives/dropdown";
-import type { AcceptedDropdownValue, DropdownProps } from "../../primitives/dropdown";
-import { PropertyLine } from "./propertyLine";
-import type { PropertyLineProps } from "./propertyLine";
-import { forwardRef } from "react";
-import type { FunctionComponent } from "react";
+import { Dropdown, type AcceptedDropdownValue, type DropdownProps } from "../../primitives/dropdown";
+import { PropertyLine, type PropertyLineProps } from "./propertyLine";
+import { forwardRef, type FunctionComponent } from "react";
 import { UniformWidthStyling } from "../../primitives/utils";
 
 const useStyles = makeStyles({

@@ -1,4 +1,4 @@
-import type { Observable } from "core/index";
+import { type Observable } from "core/index";
 
 import { useEffect, useState } from "react";
 

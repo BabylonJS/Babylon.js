@@ -132,4 +132,6 @@ export interface EngineCapabilities {
     blendParametersPerTarget: boolean;
     /** Defines if dual source blending is supported */
     dualSourceBlending: boolean;
+    /** Defines if read-only and read-write storage textures are supported (WebGPU only, requires the readonly_and_readwrite_storage_textures WGSL language feature) */
+    supportReadWriteStorageTextures: boolean;
 }

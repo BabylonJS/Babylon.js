@@ -1,14 +1,18 @@
-import type { FunctionComponent } from "react";
+import { type FunctionComponent } from "react";
 
-import type { DropdownOption } from "shared-ui-components/fluent/primitives/dropdown";
-import type { GLTFExtensionOptionsType, GLTFLoaderOptionsType } from "../../../services/panes/tools/import/gltfLoaderOptionsDefaults";
+import { type DropdownOption } from "shared-ui-components/fluent/primitives/dropdown";
+import {
+    type GLTFExtensionOptionsType,
+    type GLTFLoaderOptionsType,
+    ExtensionOptionDefaults,
+    LoaderOptionDefaults,
+} from "../../../services/panes/tools/import/gltfLoaderOptionsDefaults";
 
 import { GLTFLoaderAnimationStartMode, GLTFLoaderCoordinateSystemMode } from "loaders/glTF/glTFFileLoader";
 import { NumberDropdownPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/dropdownPropertyLine";
 import { PropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/propertyLine";
 import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
 import { SyncedSliderPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/syncedSliderPropertyLine";
-import { ExtensionOptionDefaults, LoaderOptionDefaults } from "../../../services/panes/tools/import/gltfLoaderOptionsDefaults";
 import { BoundProperty } from "../../properties/boundProperty";
 
 const AnimationStartModeOptions: DropdownOption<number>[] = [

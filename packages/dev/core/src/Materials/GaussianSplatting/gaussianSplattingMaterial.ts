@@ -1,11 +1,11 @@
-import type { SubMesh } from "../../Meshes/subMesh";
-import type { AbstractMesh } from "../../Meshes/abstractMesh";
-import type { Mesh } from "../../Meshes/mesh";
-import type { Effect, IEffectCreationOptions } from "../../Materials/effect";
-import type { Scene } from "../../scene";
-import type { Matrix } from "../../Maths/math.vector";
-import type { GaussianSplattingMesh } from "../../Meshes/GaussianSplatting/gaussianSplattingMesh";
-import type { AbstractEngine } from "../../Engines/abstractEngine";
+import { type SubMesh } from "../../Meshes/subMesh";
+import { type AbstractMesh } from "../../Meshes/abstractMesh";
+import { type Mesh } from "../../Meshes/mesh";
+import { type Effect, type IEffectCreationOptions } from "../../Materials/effect";
+import { type Scene } from "../../scene";
+import { type Matrix } from "../../Maths/math.vector";
+import { type GaussianSplattingMesh } from "../../Meshes/GaussianSplatting/gaussianSplattingMesh";
+import { type AbstractEngine } from "../../Engines/abstractEngine";
 import { SerializationHelper } from "../../Misc/decorators.serialization";
 import { VertexBuffer } from "../../Buffers/buffer";
 import { MaterialDefines } from "../../Materials/materialDefines";
@@ -441,22 +441,7 @@ export class GaussianSplattingMaterial extends PushMaterial {
             }
 
             // Bind part indices texture, if the
-            if (gsMesh.partIndicesTexture) {
-                effect.setTexture("partIndicesTexture", gsMesh.partIndicesTexture);
-                // Bind part world matrices
-                const partWorldData = new Float32Array(gsMesh.partCount * 16);
-                for (let i = 0; i < gsMesh.partCount; i++) {
-                    gsMesh.getWorldMatrixForPart(i).toArray(partWorldData, i * 16);
-                }
-                effect.setMatrices("partWorld", partWorldData);
-
-                // Bind part visibility data
-                const partVisibilityData: number[] = [];
-                for (let i = 0; i < gsMesh.partCount; i++) {
-                    partVisibilityData.push(gsMesh.partVisibility[i] ?? 1.0);
-                }
-                effect.setArray("partVisibility", partVisibilityData);
-            }
+            gsMesh.bindExtraEffectUniforms(effect);
         }
     }
     /**
@@ -571,19 +556,7 @@ export class GaussianSplattingMaterial extends PushMaterial {
             effect.setTexture("centersTexture", gsMesh.centersTexture);
             effect.setTexture("colorsTexture", gsMesh.colorsTexture);
 
-            if (gsMesh.partIndicesTexture) {
-                effect.setTexture("partIndicesTexture", gsMesh.partIndicesTexture);
-                const partWorldData = new Float32Array(gsMesh.partCount * 16);
-                for (let i = 0; i < gsMesh.partCount; i++) {
-                    gsMesh.getWorldMatrixForPart(i).toArray(partWorldData, i * 16);
-                }
-                effect.setMatrices("partWorld", partWorldData);
-                const partVisibilityData: number[] = [];
-                for (let i = 0; i < gsMesh.partCount; i++) {
-                    partVisibilityData.push(gsMesh.partVisibility[i] ?? 1.0);
-                }
-                effect.setArray("partVisibility", partVisibilityData);
-            }
+            gsMesh.bindExtraEffectUniforms(effect);
         }
     }
 
@@ -624,6 +597,7 @@ export class GaussianSplattingMaterial extends PushMaterial {
                 needAlphaBlending: alphaBlendedDepth,
             }
         );
+        shaderMaterial.backFaceCulling = false;
         shaderMaterial.onBindObservable.add((mesh: AbstractMesh) => {
             const gsMaterial = mesh.material as GaussianSplattingMaterial;
             const gsMesh = mesh as GaussianSplattingMesh;
@@ -648,6 +622,7 @@ export class GaussianSplattingMaterial extends PushMaterial {
                 shaderLanguage: shaderLanguage,
             }
         );
+        shaderMaterial.backFaceCulling = false;
 
         const shadowDepthWrapper = new ShadowDepthWrapper(shaderMaterial, scene, {
             standalone: true,

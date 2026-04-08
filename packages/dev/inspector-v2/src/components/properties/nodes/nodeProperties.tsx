@@ -1,7 +1,7 @@
-import type { FunctionComponent } from "react";
+import { type FunctionComponent } from "react";
 
-import type { Node } from "core/index";
-import type { ISelectionService } from "../../../services/selectionService";
+import { type Node } from "core/index";
+import { type ISelectionService } from "../../../services/selectionService";
 
 import { NodeSelectorPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/entitySelectorPropertyLine";
 import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";

@@ -1,7 +1,6 @@
 import { ActionManager, IncrementValueAction } from "core/Actions";
-import { FreeCamera } from "core/Cameras";
-import type { Engine } from "core/Engines";
-import { NullEngine } from "core/Engines";
+import { FreeCamera } from "core/Cameras/freeCamera";
+import { type Engine, NullEngine } from "core/Engines";
 import { HemisphericLight } from "core/Lights";
 import { Vector2, Vector3 } from "core/Maths";
 import { TransformNode } from "core/Meshes";

@@ -1,8 +1,8 @@
 import * as React from "react";
-import type { GlobalState } from "../../globalState";
+import { type GlobalState } from "../../globalState";
 import { DataStorage } from "core/Misc/dataStorage";
-import type { Observer } from "core/Misc/observable";
-import type { Nullable } from "core/types";
+import { type Observer } from "core/Misc/observable";
+import { type Nullable } from "core/types";
 import { NodeMaterialModes } from "core/Materials/Node/Enums/nodeMaterialModes";
 
 import doubleSided from "./svgs/doubleSided.svg";

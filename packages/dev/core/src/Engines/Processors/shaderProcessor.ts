@@ -8,16 +8,16 @@ import { ShaderDefineOrOperator } from "./Expressions/Operators/shaderDefineOrOp
 import { ShaderDefineAndOperator } from "./Expressions/Operators/shaderDefineAndOperator";
 import { ShaderDefineExpression } from "./Expressions/shaderDefineExpression";
 import { ShaderDefineArithmeticOperator } from "./Expressions/Operators/shaderDefineArithmeticOperator";
-import type { _IProcessingOptions } from "./shaderProcessingOptions";
+import { type _IProcessingOptions } from "./shaderProcessingOptions";
 import { _WarnImport } from "../../Misc/devTools";
 import { ShaderLanguage } from "../../Materials/shaderLanguage";
 
-import type { WebRequest } from "../../Misc/webRequest";
-import type { LoadFileError } from "../../Misc/fileTools";
-import type { IOfflineProvider } from "../../Offline/IOfflineProvider";
-import type { IFileRequest } from "../../Misc/fileRequest";
+import { type WebRequest } from "../../Misc/webRequest";
+import { type LoadFileError } from "../../Misc/fileTools";
+import { type IOfflineProvider } from "../../Offline/IOfflineProvider";
+import { type IFileRequest } from "../../Misc/fileRequest";
 import { _GetGlobalDefines } from "../abstractEngine.functions";
-import type { AbstractEngine } from "../abstractEngine";
+import { type AbstractEngine } from "../abstractEngine";
 
 const RegexSe = /defined\s*?\((.+?)\)/g;
 const RegexSeRevert = /defined\s*?\[(.+?)\]/g;

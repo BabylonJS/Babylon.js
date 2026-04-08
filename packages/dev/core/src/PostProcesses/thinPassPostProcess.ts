@@ -1,6 +1,6 @@
-import type { Nullable, EffectWrapperCreationOptions, AbstractEngine } from "core/index";
+import { type Nullable, type EffectWrapperCreationOptions, type AbstractEngine } from "core/index";
 import { EffectWrapper } from "core/Materials/effectRenderer";
-import { Engine } from "../Engines/engine";
+import { EngineStore } from "../Engines/engineStore";
 
 /**
  * PassPostProcess which produces an output the same as it's input
@@ -31,7 +31,7 @@ export class ThinPassPostProcess extends EffectWrapper {
     constructor(name: string, engine: Nullable<AbstractEngine> = null, options?: EffectWrapperCreationOptions) {
         const localOptions: EffectWrapperCreationOptions = {
             name,
-            engine: engine || Engine.LastCreatedEngine!,
+            engine: engine || EngineStore.LastCreatedEngine!,
             useShaderStore: true,
             useAsPostProcess: true,
             fragmentShader: ThinPassPostProcess.FragmentUrl,
@@ -39,7 +39,7 @@ export class ThinPassPostProcess extends EffectWrapper {
         };
 
         if (!localOptions.engine) {
-            localOptions.engine = Engine.LastCreatedEngine!;
+            localOptions.engine = EngineStore.LastCreatedEngine!;
         }
 
         super(localOptions);
@@ -76,7 +76,7 @@ export class ThinPassCubePostProcess extends EffectWrapper {
         super({
             ...options,
             name,
-            engine: engine || Engine.LastCreatedEngine!,
+            engine: engine || EngineStore.LastCreatedEngine!,
             useShaderStore: true,
             useAsPostProcess: true,
             fragmentShader: ThinPassCubePostProcess.FragmentUrl,

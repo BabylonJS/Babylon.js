@@ -1,5 +1,5 @@
 import * as React from "react";
-import type { GlobalState } from "inspector/components/globalState";
+import { type GlobalState } from "inspector/components/globalState";
 import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
 import { CheckBoxLineComponent } from "shared-ui-components/lines/checkBoxLineComponent";
 import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineComponent";
@@ -228,7 +228,7 @@ export class MetadataGridComponent extends React.Component<
         return false;
     }
 
-    /* TODO: Convert testObjectCanSafelyStringify() to Jest unit tests
+    /* TODO: Convert testObjectCanSafelyStringify() to unit tests
     testObjectCanSafelyStringify() {
         const scene = this.props.entity._scene;
         console.log("/// test Truthy and Falsey ///");

@@ -1,23 +1,21 @@
 import { serialize, serializeAsTexture } from "../../Misc/decorators";
-import type { Observer } from "../../Misc/observable";
-import { Observable } from "../../Misc/observable";
-import type { Nullable } from "../../types";
-import type { Scene } from "../../scene";
-import { Matrix } from "../../Maths/math.vector";
-import type { Vector3 } from "../../Maths/math.vector";
+import { type Observer, Observable } from "../../Misc/observable";
+import { type Nullable } from "../../types";
+import { type Scene } from "../../scene";
+import { Matrix, type Vector3 } from "../../Maths/math.vector";
 import { EngineStore } from "../../Engines/engineStore";
-import type { InternalTexture } from "../../Materials/Textures/internalTexture";
+import { type InternalTexture } from "../../Materials/Textures/internalTexture";
 import { Constants } from "../../Engines/constants";
-import type { IAnimatable } from "../../Animations/animatable.interface";
+import { type IAnimatable } from "../../Animations/animatable.interface";
 import { RandomGUID } from "../../Misc/guid";
 
 import "../../Misc/fileTools";
-import type { AbstractEngine } from "../../Engines/abstractEngine";
+import { type AbstractEngine } from "../../Engines/abstractEngine";
 import { ThinTexture } from "./thinTexture";
 
-import type { Animation } from "../../Animations/animation";
+import { type Animation } from "../../Animations/animation";
 import { SerializationHelper } from "../../Misc/decorators.serialization";
-import type { IAssetContainer } from "core/IAssetContainer";
+import { type IAssetContainer } from "core/IAssetContainer";
 
 /**
  * Base class of all the textures in babylon.

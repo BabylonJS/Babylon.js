@@ -2,14 +2,14 @@ import "core/Engines/Extensions/engine.dynamicBuffer";
 import "core/Shaders/sprites.vertex";
 import "core/Shaders/sprites.fragment";
 
-import type { ThinEngine } from "core/Engines/thinEngine";
-import type { ThinTexture } from "core/Materials/Textures/thinTexture";
-import type { ThinSprite } from "core/Sprites/thinSprite";
+import { type ThinEngine } from "core/Engines/thinEngine";
+import { type ThinTexture } from "core/Materials/Textures/thinTexture";
+import { type ThinSprite } from "core/Sprites/thinSprite";
 import { SpriteRenderer } from "core/Sprites/spriteRenderer";
 
-import type { ThinMatrix } from "../maths/matrix";
+import { type ThinMatrix } from "../maths/matrix";
 
-import type { AnimationConfiguration } from "../animationConfiguration";
+import { type AnimationConfiguration } from "../animationConfiguration";
 
 /**
  * Represents all the sprites from the animation and manages their rendering.

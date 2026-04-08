@@ -1,7 +1,7 @@
 import { Vector3 } from "core/Maths/math.vector";
 import { Logger } from "core/Misc/logger";
 
-import type { ComputePathResult } from "../types";
+import { type ComputePathResult } from "../types";
 
 /**
  *  Converts navigation path points to a Vector3 array.

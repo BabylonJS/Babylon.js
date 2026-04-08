@@ -1,6 +1,6 @@
 import * as React from "react";
-import type { GlobalState } from "../../../../../../globalState";
-import type { Context } from "../context";
+import { type GlobalState } from "../../../../../../globalState";
+import { type Context } from "../context";
 
 interface IActionButtonComponentProps {
     globalState: GlobalState;

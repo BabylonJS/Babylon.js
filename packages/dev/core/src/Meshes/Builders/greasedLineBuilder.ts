@@ -1,17 +1,15 @@
 import { StandardMaterial } from "./../../Materials/standardMaterial";
 import { PBRMaterial } from "../../Materials/PBR/pbrMaterial";
-import type { Nullable } from "../../types";
+import { type Nullable } from "../../types";
 import { GreasedLineMesh } from "../GreasedLine/greasedLineMesh";
-import type { Scene } from "../../scene";
+import { type Scene } from "../../scene";
 import { EngineStore } from "../../Engines/engineStore";
-import type { Color3 } from "../../Maths/math.color";
+import { type Color3 } from "../../Maths/math.color";
 import { GreasedLineSimpleMaterial } from "../../Materials/GreasedLine/greasedLineSimpleMaterial";
 import { GreasedLineTools } from "../../Misc/greasedLineTools";
-import type { GreasedLineMeshOptions } from "../GreasedLine/greasedLineBaseMesh";
-import { GreasedLineRibbonAutoDirectionMode, GreasedLineRibbonFacesMode, GreasedLineRibbonPointsMode } from "../GreasedLine/greasedLineBaseMesh";
+import { type GreasedLineMeshOptions, GreasedLineRibbonAutoDirectionMode, GreasedLineRibbonFacesMode, GreasedLineRibbonPointsMode } from "../GreasedLine/greasedLineBaseMesh";
 import { GreasedLineRibbonMesh } from "../GreasedLine/greasedLineRibbonMesh";
-import type { GreasedLineMaterialOptions } from "../../Materials/GreasedLine/greasedLineMaterialInterfaces";
-import { GreasedLineMeshMaterialType } from "../../Materials/GreasedLine/greasedLineMaterialInterfaces";
+import { type GreasedLineMaterialOptions, GreasedLineMeshMaterialType } from "../../Materials/GreasedLine/greasedLineMaterialInterfaces";
 import { GreasedLinePluginMaterial } from "../../Materials/GreasedLine/greasedLinePluginMaterial";
 import { GreasedLineMaterialDefaults } from "../../Materials/GreasedLine/greasedLineMaterialDefaults";
 

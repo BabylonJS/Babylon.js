@@ -1,5 +1,4 @@
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import type { FontAwesomeIconProps } from "@fortawesome/react-fontawesome";
+import { FontAwesomeIcon, type FontAwesomeIconProps } from "@fortawesome/react-fontawesome";
 
 const ClassName = "faIconButton";
 

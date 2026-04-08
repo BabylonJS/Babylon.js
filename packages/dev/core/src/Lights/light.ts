@@ -1,18 +1,16 @@
 import { serialize, serializeAsColor3, expandToProperty } from "../Misc/decorators";
-import type { Nullable } from "../types";
-import type { Scene } from "../scene";
-import type { Matrix } from "../Maths/math.vector";
-import { Vector3 } from "../Maths/math.vector";
+import { type Nullable } from "../types";
+import { type Scene } from "../scene";
+import { type Matrix, Vector3 } from "../Maths/math.vector";
 import { Color3, TmpColors } from "../Maths/math.color";
 import { Node } from "../node";
-import type { AbstractMesh } from "../Meshes/abstractMesh";
-import type { Effect } from "../Materials/effect";
+import { type AbstractMesh } from "../Meshes/abstractMesh";
+import { type Effect } from "../Materials/effect";
 import { UniformBuffer } from "../Materials/uniformBuffer";
-import type { IShadowGenerator } from "./Shadows/shadowGenerator";
+import { type IShadowGenerator } from "./Shadows/shadowGenerator";
 import { GetClass } from "../Misc/typeStore";
-import type { ISortableLight } from "./lightConstants";
-import { LightConstants } from "./lightConstants";
-import type { Camera } from "../Cameras/camera";
+import { type ISortableLight, LightConstants } from "./lightConstants";
+import { type Camera } from "../Cameras/camera";
 import { SerializationHelper } from "../Misc/decorators.serialization";
 /**
  * Base class of all the lights in Babylon. It groups all the generic information about lights.
@@ -784,7 +782,19 @@ export abstract class Light extends Node implements ISortableLight {
             light.setEnabled(parsedLight.isEnabled);
         }
 
+        light._onParsed(parsedLight, scene);
+
         return light;
+    }
+
+    /**
+     * Called after the light has been fully parsed and all base properties have been set.
+     * Override in subclasses to handle custom serialized data.
+     * @param _parsedLight The JSON representation of the light
+     * @param _scene The scene the light belongs to
+     */
+    protected _onParsed(_parsedLight: any, _scene: Scene): void {
+        // Override in subclasses
     }
 
     private _hookArrayForExcluded(array: AbstractMesh[]): void {
@@ -801,7 +811,7 @@ export abstract class Light extends Node implements ISortableLight {
 
         const oldSplice = array.splice;
         array.splice = (index: number, deleteCount?: number) => {
-            const deleted = oldSplice.apply(array, [index, deleteCount]);
+            const deleted = oldSplice.call(array, index, deleteCount ?? array.length);
 
             for (const item of deleted) {
                 item._resyncLightSource(this);
@@ -827,7 +837,7 @@ export abstract class Light extends Node implements ISortableLight {
 
         const oldSplice = array.splice;
         array.splice = (index: number, deleteCount?: number) => {
-            const deleted = oldSplice.apply(array, [index, deleteCount]);
+            const deleted = oldSplice.call(array, index, deleteCount ?? array.length);
 
             this._resyncMeshes();
 

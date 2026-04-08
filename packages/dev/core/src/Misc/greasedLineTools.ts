@@ -1,14 +1,13 @@
 import { Curve3 } from "../Maths/math.path";
 import { VertexBuffer } from "../Buffers/buffer";
 import { TmpVectors, Vector3 } from "../Maths/math.vector";
-import type { AbstractMesh } from "../Meshes/abstractMesh";
-import type { IFontData } from "../Meshes/Builders/textBuilder";
-import { CreateTextShapePaths } from "../Meshes/Builders/textBuilder";
-import type { FloatArray, IndicesArray } from "../types";
-import type { GreasedLinePoints, GreasedLinePointsOptions } from "../Meshes/GreasedLine/greasedLineBaseMesh";
-import type { Color3 } from "../Maths/math.color";
+import { type AbstractMesh } from "../Meshes/abstractMesh";
+import { type IFontData, CreateTextShapePaths } from "../Meshes/Builders/textBuilder";
+import { type FloatArray, type IndicesArray } from "../types";
+import { type GreasedLinePoints, type GreasedLinePointsOptions } from "../Meshes/GreasedLine/greasedLineBaseMesh";
+import { type Color3 } from "../Maths/math.color";
 import { RawTexture } from "../Materials/Textures/rawTexture";
-import type { Scene } from "../scene";
+import { type Scene } from "../scene";
 import { Engine } from "../Engines/engine";
 import { GreasedLineMaterialDefaults } from "../Materials/GreasedLine/greasedLineMaterialDefaults";
 
@@ -564,6 +563,11 @@ export class GreasedLineTools {
             const colorsArray = new Uint8Array(4);
             GreasedLineMaterialDefaults.EmptyColorsTexture = new RawTexture(colorsArray, 1, 1, Engine.TEXTUREFORMAT_RGBA, scene, false, false, RawTexture.NEAREST_NEAREST);
             GreasedLineMaterialDefaults.EmptyColorsTexture.name = "grlEmptyColorsTexture";
+            // Clear the static reference when the texture is disposed (e.g. by scene.dispose())
+            // so that PrepareEmptyColorsTexture will create a fresh one for the next scene.
+            GreasedLineMaterialDefaults.EmptyColorsTexture.onDisposeObservable.addOnce(() => {
+                GreasedLineMaterialDefaults.EmptyColorsTexture = null;
+            });
         }
 
         return GreasedLineMaterialDefaults.EmptyColorsTexture;
