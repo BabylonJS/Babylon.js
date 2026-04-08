@@ -121,6 +121,7 @@ export class ComputeShaderParticleSystem implements IGPUParticleSystemPlatform {
         }
         if (this._parent.attractors.length > 0) {
             this._simParamsComputeShader.addUniform("attractorCount", 1);
+            // Must match GPUParticleSystem._MAX_ATTRACTORS and shader array size
             for (let i = 0; i < 8; i++) {
                 this._simParamsComputeShader.addUniform("attractorPosition" + i, 3);
                 this._simParamsComputeShader.addUniform("attractorStrength" + i, 1);

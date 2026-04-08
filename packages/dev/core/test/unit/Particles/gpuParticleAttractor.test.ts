@@ -1,3 +1,4 @@
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { NullEngine } from "core/Engines";
 import { Vector3 } from "core/Maths";
 import { Attractor } from "core/Particles/attractor";

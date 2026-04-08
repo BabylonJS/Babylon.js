@@ -1909,12 +1909,17 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         if (this._attractors.length > 0) {
             const count = Math.min(this._attractors.length, GPUParticleSystem._MAX_ATTRACTORS);
             this._updateBuffer.setInt("attractorCount", count);
+
+            // Compute inverse world matrix once for all attractors when in local space
+            let invWorld: Matrix | undefined;
+            if (this.isLocal) {
+                invWorld = TmpVectors.Matrix[1];
+                emitterWM!.invertToRef(invWorld);
+            }
+
             for (let i = 0; i < count; i++) {
                 const attractor = this._attractors[i];
-                if (this.isLocal) {
-                    // Transform attractor position from world space to local space
-                    const invWorld = TmpVectors.Matrix[1];
-                    emitterWM!.invertToRef(invWorld);
+                if (invWorld) {
                     const localPos = TmpVectors.Vector3[0];
                     Vector3.TransformCoordinatesToRef(attractor.position, invWorld, localPos);
                     this._updateBuffer.setFloat3("attractorPosition" + i, localPos.x, localPos.y, localPos.z);
