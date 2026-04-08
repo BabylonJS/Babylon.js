@@ -158,10 +158,7 @@
 
                 #ifdef SCATTERING
                     #ifdef USE_IRRADIANCE_TEXTURE_FOR_SCATTERING
-                        // If we have a precomputed multi-scatter texture, we can use the scatter vector to sample it and get a more accurate scattered environment light.
-                        // This allows us to capture higher order scattering effects that aren't possible with just a single scatter sample.
-                        let mfp: vec3f = vec3f(100.0f) / volumeParams.extinction_coeff;
-                        let diffused_forward_scattered_light: vec3f = sss_convolve(sceneIrradianceSampler, sceneDepthSampler, uniforms.renderTargetSize, mfp, scene.projection, scene.inverseProjection, 16, noise.xy);
+                        let diffused_forward_scattered_light: vec3f = scattered_light_from_irradiance_texture;
                     #else
                         // Compute forward-scattered light that has been completely diffused. This will be used when
                         // scattering is very strong.
@@ -184,8 +181,8 @@
                         preInfoTrans.NdotV = dot(back_scattered_normal, viewDirectionW);
                         preInfoTrans.H = normalize(viewDirectionW + preInfoTrans.L);
                         preInfoTrans.VdotH = clamp(dot(viewDirectionW, preInfoTrans.H), 0.0f, 1.0f);
-                        preInfoTrans.roughness = 0.05f;
-                        let back_scattered_light: vec3f = computeSpecularLighting(preInfoTrans, viewDirectionW, vec3f(1.0f), vec3f(1.0f), 0.025f, lightColor{X}.rgb);
+                        preInfoTrans.roughness = 0.2f;
+                        let back_scattered_light: vec3f = computeSpecularLighting(preInfoTrans, viewDirectionW, vec3f(1.0f), vec3f(0.08f), 0.0f, lightColor{X}.rgb);
                         // Direct Transmission (aka forward-scattered light from back side)
                         let forward_scattered_light: vec3f = (forwardScatteredLight * volume_absorption);
                         
