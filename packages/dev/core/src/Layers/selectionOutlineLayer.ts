@@ -155,8 +155,27 @@ export class SelectionOutlineLayer extends EffectLayer {
 
         // Do not render as long as no meshes have been added
         this._shouldRender = false;
+    }
 
-        this._scene.enableDepthRenderer();
+    /**
+     * Checks if the layer is ready to render.
+     * When selections are active, this also lazily creates the depth renderer
+     * and checks that its depth map is ready.
+     * @returns true if the layer is ready
+     */
+    public override isLayerReady(): boolean {
+        if (!super.isLayerReady()) {
+            return false;
+        }
+
+        if (this.shouldRender()) {
+            const depthRenderer = this._scene.enableDepthRenderer();
+            if (!depthRenderer.getDepthMap().isReadyForRendering()) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**

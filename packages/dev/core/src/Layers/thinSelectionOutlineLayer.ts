@@ -676,10 +676,15 @@ export class ThinSelectionOutlineLayer extends ThinEffectLayer {
             if (mesh._userInstancedBuffersStorage) {
                 const kind = ThinSelectionOutlineLayer.InstanceSelectionIdAttributeName;
 
-                // Dispose per-pass VBOs for this layer's own render passes only (WebGPU)
+                // Dispose per-pass VBOs for ALL render passes (WebGPU).
+                // _processInstancedBuffers creates per-pass VBOs for every render pass
+                // that renders this mesh (main scene, depth renderer, etc.), not just
+                // this layer's own passes. We must clean them all up to avoid using
+                // a destroyed GPU buffer on the next submit.
                 if (mesh._userInstancedBuffersStorage.renderPasses) {
-                    for (const passId of this._objectRenderer.renderPassIds) {
-                        const passVBOs = mesh._userInstancedBuffersStorage.renderPasses[passId];
+                    for (const passId in mesh._userInstancedBuffersStorage.renderPasses) {
+                        const renderPassId = Number(passId);
+                        const passVBOs = mesh._userInstancedBuffersStorage.renderPasses[renderPassId];
                         if (passVBOs?.[kind]) {
                             passVBOs[kind]!.dispose();
                             delete passVBOs[kind];
@@ -707,6 +712,15 @@ export class ThinSelectionOutlineLayer extends ThinEffectLayer {
             }
             if (mesh.instancedBuffers?.[ThinSelectionOutlineLayer.InstanceSelectionIdAttributeName] !== undefined) {
                 delete mesh.instancedBuffers[ThinSelectionOutlineLayer.InstanceSelectionIdAttributeName];
+            }
+
+            // In WebGPU non-compat mode, cached render bundles (fastBundle) bake
+            // vertex-buffer GPU handles at record time. Because the new VBO has
+            // the same format (and thus the same hashCode), the pipeline cache
+            // won't detect the change and would replay the stale bundle.
+            // Resetting the draw cache forces new bundles to be recorded.
+            if (this._engine.isWebGPU && !this._engine.compatibilityMode) {
+                mesh.resetDrawCache();
             }
         }
         this._selection.length = 0;

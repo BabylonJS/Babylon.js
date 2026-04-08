@@ -266,6 +266,16 @@ export class TextRenderer implements IDisposable {
     }
 
     /**
+     * Clear all paragraphs from the renderer to allow adding new ones from scratch
+     */
+    public clearParagraphs(): void {
+        this._charMatrices.length = 0;
+        this._charUvs.length = 0;
+        this._baseLine = 0;
+        this._isDirty = true;
+    }
+
+    /**
      * Render the text using the provided view and projection matrices
      * @param viewMatrix define the view matrix to use
      * @param projectionMatrix define the projection matrix to use
