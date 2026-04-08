@@ -336,15 +336,17 @@ export class AnimationController {
         }
 
         let stoppingAfterThisFrame = false;
-        if (this._currentFrame > this._animation.endFrame) {
-            if (this._loop) {
+        const effectiveEndFrame = this._configuration.stopAtFrame !== undefined ? Math.min(this._configuration.stopAtFrame, this._animation.endFrame) : this._animation.endFrame;
+
+        if (this._currentFrame > effectiveEndFrame) {
+            if (this._loop && this._configuration.stopAtFrame === undefined) {
                 this._currentFrame = (this._currentFrame % (this._animation.endFrame - this._animation.startFrame)) + this._animation.startFrame;
                 for (let i = 0; i < this._animation.nodes.length; i++) {
                     this._animation.nodes[i].reset();
                 }
             } else {
-                // When not looping, clamp to the last frame of the animation
-                this._currentFrame = this._animation.endFrame;
+                // When not looping, clamp to the effective end frame
+                this._currentFrame = effectiveEndFrame;
                 stoppingAfterThisFrame = true;
             }
         }
