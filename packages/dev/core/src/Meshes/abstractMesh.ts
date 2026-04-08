@@ -316,6 +316,13 @@ export abstract class AbstractMesh extends TransformNode implements IDisposable,
         return TransformNode.BILLBOARDMODE_USE_POSITION;
     }
 
+    /**
+     * Gets or sets the default value for isPickable for newly created meshes.
+     * When set to false, all meshes created after the change will not be pickable by default.
+     * Individual meshes can still override this by setting their own isPickable property.
+     */
+    public static DefaultIsPickable = true;
+
     // Internal data
     /** @internal */
     public _internalAbstractMeshDataInfo = new _InternalAbstractMeshDataInfo();
@@ -548,10 +555,9 @@ export abstract class AbstractMesh extends TransformNode implements IDisposable,
      */
     public alphaIndex = Number.MAX_VALUE;
 
-    public static DefaultIsPickable = true;
-
     /**
-     * Gets or sets a boolean indicating if the mesh can be picked (by scene.pick for instance or through actions). Default is true
+     * Gets or sets a boolean indicating if the mesh can be picked (by scene.pick for instance or through actions).
+     * Default value is determined by {@link AbstractMesh.DefaultIsPickable} (true unless changed).
      */
     public isPickable = AbstractMesh.DefaultIsPickable;
 
