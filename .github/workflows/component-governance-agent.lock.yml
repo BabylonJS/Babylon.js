@@ -23,9 +23,9 @@
 #
 # Scans Dependabot alerts and creates private GitHub Security Advisories with auto-fix PRs to avoid publicly advertising vulnerabilities
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"ee6199ffa9e7f9ac3106155502d7b78da52c5e1c53193e020c26ad5446b5e59c"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"a9748b33d64332b13757f6732c53d5806260d88f5cd88efbd47cabd60ccf2ca7"}
 
-name: "Private Security Fix"
+name: "Component Governance Agent"
 "on":
   workflow_dispatch:
 
@@ -34,7 +34,7 @@ permissions: {}
 concurrency:
   group: "gh-aw-${{ github.workflow }}"
 
-run-name: "Private Security Fix"
+run-name: "Component Governance Agent"
 
 jobs:
   activation:
@@ -69,7 +69,7 @@ jobs:
       - name: Check workflow file timestamps
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
-          GH_AW_WORKFLOW_FILE: "private-security-fix.lock.yml"
+          GH_AW_WORKFLOW_FILE: "component-governance-agent.lock.yml"
         with:
           script: |
             const { setupGlobals } = require('/opt/gh-aw/actions/setup_globals.cjs');
@@ -158,7 +158,7 @@ jobs:
           </system>
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
-          {{#runtime-import .github/workflows/private-security-fix.md}}
+          {{#runtime-import .github/workflows/component-governance-agent.md}}
           GH_AW_PROMPT_EOF
       - name: Interpolate variables and render templates
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
@@ -244,7 +244,7 @@ jobs:
       GH_AW_SAFE_OUTPUTS: /opt/gh-aw/safeoutputs/outputs.jsonl
       GH_AW_SAFE_OUTPUTS_CONFIG_PATH: /opt/gh-aw/safeoutputs/config.json
       GH_AW_SAFE_OUTPUTS_TOOLS_PATH: /opt/gh-aw/safeoutputs/tools.json
-      GH_AW_WORKFLOW_ID_SANITIZED: privatesecurityfix
+      GH_AW_WORKFLOW_ID_SANITIZED: componentgovernanceagent
     outputs:
       checkout_pr_success: ${{ steps.checkout-pr.outputs.checkout_pr_success || 'true' }}
       has_patch: ${{ steps.collect_output.outputs.has_patch }}
@@ -302,7 +302,7 @@ jobs:
               version: "",
               agent_version: "0.0.410",
               cli_version: "v0.46.0",
-              workflow_name: "Private Security Fix",
+              workflow_name: "Component Governance Agent",
               experimental: false,
               supports_tools_allowlist: true,
               run_id: context.runId,
@@ -769,8 +769,8 @@ jobs:
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
           GH_AW_NOOP_MAX: 1
-          GH_AW_WORKFLOW_NAME: "Private Security Fix"
-          GH_AW_TRACKER_ID: "private-security-fix"
+          GH_AW_WORKFLOW_NAME: "Component Governance Agent"
+          GH_AW_TRACKER_ID: "component-governance-agent"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
@@ -783,8 +783,8 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_WORKFLOW_NAME: "Private Security Fix"
-          GH_AW_TRACKER_ID: "private-security-fix"
+          GH_AW_WORKFLOW_NAME: "Component Governance Agent"
+          GH_AW_TRACKER_ID: "component-governance-agent"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
@@ -797,11 +797,11 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_WORKFLOW_NAME: "Private Security Fix"
-          GH_AW_TRACKER_ID: "private-security-fix"
+          GH_AW_WORKFLOW_NAME: "Component Governance Agent"
+          GH_AW_TRACKER_ID: "component-governance-agent"
           GH_AW_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           GH_AW_AGENT_CONCLUSION: ${{ needs.agent.result }}
-          GH_AW_WORKFLOW_ID: "private-security-fix"
+          GH_AW_WORKFLOW_ID: "component-governance-agent"
           GH_AW_SECRET_VERIFICATION_RESULT: ${{ needs.agent.outputs.secret_verification_result }}
           GH_AW_CHECKOUT_PR_SUCCESS: ${{ needs.agent.outputs.checkout_pr_success }}
         with:
@@ -816,8 +816,8 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_WORKFLOW_NAME: "Private Security Fix"
-          GH_AW_TRACKER_ID: "private-security-fix"
+          GH_AW_WORKFLOW_NAME: "Component Governance Agent"
+          GH_AW_TRACKER_ID: "component-governance-agent"
           GH_AW_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           GH_AW_AGENT_CONCLUSION: ${{ needs.agent.result }}
           GH_AW_NOOP_MESSAGE: ${{ steps.noop.outputs.noop_message }}
@@ -865,7 +865,7 @@ jobs:
       - name: Setup threat detection
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
-          WORKFLOW_NAME: "Private Security Fix"
+          WORKFLOW_NAME: "Component Governance Agent"
           WORKFLOW_DESCRIPTION: "Scans Dependabot alerts and creates private GitHub Security Advisories with auto-fix PRs to avoid publicly advertising vulnerabilities"
           HAS_PATCH: ${{ needs.agent.outputs.has_patch }}
         with:
@@ -940,9 +940,9 @@ jobs:
     timeout-minutes: 15
     env:
       GH_AW_ENGINE_ID: "copilot"
-      GH_AW_TRACKER_ID: "private-security-fix"
-      GH_AW_WORKFLOW_ID: "private-security-fix"
-      GH_AW_WORKFLOW_NAME: "Private Security Fix"
+      GH_AW_TRACKER_ID: "component-governance-agent"
+      GH_AW_WORKFLOW_ID: "component-governance-agent"
+      GH_AW_WORKFLOW_NAME: "Component Governance Agent"
     outputs:
       create_discussion_error_count: ${{ steps.process_safe_outputs.outputs.create_discussion_error_count }}
       create_discussion_errors: ${{ steps.process_safe_outputs.outputs.create_discussion_errors }}

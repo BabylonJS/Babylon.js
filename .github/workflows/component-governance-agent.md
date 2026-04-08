@@ -18,7 +18,7 @@ network:
 safe-outputs:
   noop:
 description: Scans Dependabot alerts and creates private GitHub Security Advisories with auto-fix PRs to avoid publicly advertising vulnerabilities
-name: Private Security Fix
+name: Component Governance Agent
 strict: false
 timeout-minutes: 45
 tools:
@@ -28,7 +28,7 @@ tools:
     - security_advisories
     - dependabot
     - code_security
-tracker-id: private-security-fix
+tracker-id: component-governance-agent
 ---
 
 # Private Security Fix Agent
@@ -120,7 +120,11 @@ FORK_FULL_NAME=$(echo "$FORK_INFO" | jq -r '.full_name')
 
 ## Phase 3: Fix in Private Fork
 
-### 3.1 Clone and branch
+### 3.1 Group alerts by package
+
+Before fixing, group alerts that reference the same `package@version`. Fix each unique package once rather than repeating work per-alert.
+
+### 3.2 Clone and branch
 
 ```bash
 git clone "https://x-access-token:$SECURITY_PAT@github.com/$FORK_FULL_NAME.git" /tmp/private-fix
@@ -128,24 +132,96 @@ cd /tmp/private-fix
 git checkout -b fix/PACKAGE_NAME
 ```
 
-### 3.2 Apply the dependency update
+### 3.3 Validate the alert against lockfiles
+
+Before attempting a fix, confirm the vulnerable `package@version` is actually present in the committed lockfiles. This avoids wasting time on stale alerts where the dependency has already been removed or updated.
 
 ```bash
-npm install PACKAGE_NAME@PATCHED_VERSION --save
+# Find all npm lockfiles in the repo
+find . -name package-lock.json -o -name npm-shrinkwrap.json
+```
+
+Search each lockfile for the vulnerable package at the exact vulnerable version. If the `package@version` **does not appear** in any lockfile, mark the alert as stale — the vulnerability may already be resolved but the Dependabot alert hasn't auto-closed yet. Record it as "stale — not present in lockfiles" and move to the next alert.
+
+### 3.4 Trace the dependency path
+
+If the vulnerable package is a **transitive dependency** (not listed directly in `package.json`), identify which direct dependency pulls it in:
+
+```bash
+npm ls PACKAGE_NAME --all 2>/dev/null || true
+```
+
+This reveals the dependency chain. Prefer upgrading the **nearest parent** that has a version bringing in the patched transitive dependency, rather than forcing a direct install of the transitive package itself. Upgrading a direct dependency is safer and more likely to produce a coherent lockfile.
+
+### 3.5 Apply the fix using the smallest safe change
+
+Try these strategies in order, stopping at the first one that works:
+
+**Strategy A — Upgrade the direct dependency (preferred)**
+
+If the vulnerable package is transitive, upgrade the parent dependency that owns it:
+
+```bash
+npm install PARENT_PACKAGE@LATEST_SAFE_VERSION --save
 # or --save-dev if it is a devDependency
 ```
 
-### 3.3 Validate
+If the vulnerable package is a direct dependency, upgrade it directly:
+
+```bash
+npm install PACKAGE_NAME@PATCHED_VERSION --save
+```
+
+**Strategy B — Use npm overrides (fallback for transitive deps)**
+
+If upgrading the parent doesn't resolve the transitive vulnerability (e.g., the parent hasn't released a fix yet), use an npm override to force the patched version:
+
+```json
+// Add to the relevant package.json under "overrides":
+{
+  "overrides": {
+    "PACKAGE_NAME": "PATCHED_VERSION"
+  }
+}
+```
+
+Then run `npm install` to regenerate the lockfile.
+
+**Strategy C — Stop and report the blocker**
+
+If no safe automated fix is apparent — e.g., the patched version introduces breaking API changes, the parent dependency has no compatible release, or the override causes cascading failures — **stop and report the blocker clearly** rather than forcing a speculative upgrade. Record the specific reason (e.g., "parent-package has no release with patched transitive dep", "patched version requires major API migration").
+
+### 3.6 Refresh and re-verify
+
+After applying any fix, regenerate the lockfile and verify the vulnerability is gone:
 
 ```bash
 npm install
+```
+
+Re-check that the vulnerable `package@version` no longer appears in the lockfile:
+
+```bash
+# Should return no results if the fix worked
+grep -r '"PACKAGE_NAME"' package-lock.json | grep '"VULNERABLE_VERSION"' || echo "Vulnerability cleared"
+```
+
+If the vulnerable version is still present, the fix didn't fully work. Try the next strategy or report the blocker.
+
+### 3.7 Validate build and tests
+
+```bash
 npm run build:dev
 npm test
 ```
 
-If validation fails, record the failure, clean up `/tmp/private-fix`, and move to the next alert.
+If validation fails:
+- Analyze the error output
+- Attempt targeted code fixes for failures caused by the dependency update
+- If code changes were made, note them clearly — they must be highlighted in the PR
+- If the failure cannot be resolved, record it as a blocker, clean up, and move to the next alert
 
-### 3.4 Commit, push, and open a PR in the private fork
+### 3.8 Commit, push, and open a PR in the private fork
 
 ```bash
 git add -A
@@ -161,14 +237,14 @@ gh api -X POST "/repos/$FORK_FULL_NAME/pulls" \
   --input - <<'EOF'
 {
   "title": "Fix: update PACKAGE_NAME to PATCHED_VERSION",
-  "body": "Updates **PACKAGE_NAME** to **PATCHED_VERSION** to resolve a SEVERITY vulnerability.\n\n- Dependabot alert #ALERT_NUMBER\n- Build ✅ Tests ✅\n\n*Private Security Fix Agent*",
+  "body": "Updates **PACKAGE_NAME** to **PATCHED_VERSION** to resolve a SEVERITY vulnerability.\n\n### Fix strategy\n- [Describe which strategy was used: direct upgrade, parent upgrade, or override]\n- [If transitive: name the dependency chain]\n\n### Validation\n- ✅ Vulnerable version no longer in lockfile\n- ✅ Build passes\n- ✅ Tests pass\n\n### Code changes\n- [List any source changes beyond package.json/lockfile, or 'None']\n\n*Component Governance Agent*",
   "head": "fix/PACKAGE_NAME",
   "base": "main"
 }
 EOF
 ```
 
-### 3.5 Clean up
+### 3.9 Clean up
 
 ```bash
 rm -rf /tmp/private-fix
@@ -193,7 +269,7 @@ gh api -X PATCH "/repos/${{ github.repository }}/security-advisories/GHSA_ID" \
   --header "Authorization: token $SECURITY_PAT" \
   --input - <<'EOF'
 {
-  "description": "ORIGINAL_DESCRIPTION\n\n---\n\n## ✅ Automated Fix Applied — DATE\n\n- **Package**: PACKAGE_NAME → PATCHED_VERSION\n- **Branch**: `fix/PACKAGE_NAME` in private fork\n- **Build**: ✅ Passed\n- **Tests**: ✅ Passed\n- **PR**: Created in private fork — ready for review\n\n### Next Steps\n1. Review and merge the PR in this advisory's private fork\n2. Publish this advisory to disclose responsibly\n3. The Dependabot alert will auto-dismiss when the fix reaches the default branch\n\n*Private Security Fix Agent*"
+  "description": "ORIGINAL_DESCRIPTION\n\n---\n\n## ✅ Automated Fix Applied — DATE\n\n- **Package**: PACKAGE_NAME → PATCHED_VERSION\n- **Branch**: `fix/PACKAGE_NAME` in private fork\n- **Build**: ✅ Passed\n- **Tests**: ✅ Passed\n- **PR**: Created in private fork — ready for review\n\n### Next Steps\n1. Review and merge the PR in this advisory's private fork\n2. Publish this advisory to disclose responsibly\n3. The Dependabot alert will auto-dismiss when the fix reaches the default branch\n\n*Component Governance Agent*"
 }
 EOF
 ```
@@ -205,7 +281,7 @@ gh api -X PATCH "/repos/${{ github.repository }}/security-advisories/GHSA_ID" \
   --header "Authorization: token $SECURITY_PAT" \
   --input - <<'EOF'
 {
-  "description": "ORIGINAL_DESCRIPTION\n\n---\n\n## ⚠️ Automated Fix Failed — DATE\n\n- **Package**: PACKAGE_NAME\n- **Target version**: PATCHED_VERSION\n- **Failure**: BUILD_OR_TEST_ERROR_SUMMARY\n\n### Manual Steps Required\n1. Check the private fork for any partial work\n2. Investigate the failure (see error summary above)\n3. Apply the fix manually and validate\n4. Merge the PR, then publish this advisory\n\n*Private Security Fix Agent*"
+  "description": "ORIGINAL_DESCRIPTION\n\n---\n\n## ⚠️ Automated Fix Failed — DATE\n\n- **Package**: PACKAGE_NAME\n- **Target version**: PATCHED_VERSION\n- **Strategies tried**: [direct upgrade / parent upgrade / npm override]\n- **Failure**: BUILD_OR_TEST_ERROR_SUMMARY\n- **Blocker**: [specific reason — e.g., 'parent-package has no release with patched dep', 'override causes peer dependency conflict']\n\n### Manual Steps Required\n1. Check the private fork for any partial work\n2. Investigate the failure (see error summary above)\n3. Apply the fix manually and validate\n4. Merge the PR, then publish this advisory\n\n*Component Governance Agent*"
 }
 EOF
 ```
@@ -226,10 +302,14 @@ If every alert already had a corresponding draft advisory, exit with `noop`.
 - Process only **critical** and **high** severity alerts with available patches.
 - Only update the vulnerable dependency — do not refactor unrelated code.
 - Do **not** use `npm audit fix --force`; stick to semver-compatible updates.
+- Prefer the **smallest safe dependency change** that clears the vulnerability.
+- When a vulnerable package is transitive, prefer upgrading the parent dependency over forcing a direct override.
+- When multiple alerts point to the same `package@version`, fix it once and re-verify before moving on.
 
 ### Error Handling
 - If advisory creation fails, log the error and continue to the next alert.
 - If the fix fails validation (build or tests), note it in the report and move on.
+- If no safe automated fix is apparent (breaking API change, no compatible parent release, cascading override failures), **stop and report the specific blocker** rather than forcing a speculative upgrade.
 - Always produce a summary, even when every fix failed.
 
 ### Exit with `noop` when
