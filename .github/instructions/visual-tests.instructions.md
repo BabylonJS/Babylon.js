@@ -53,7 +53,7 @@ If the user points you to existing tests as reference, study those first:
 
 If the user does not point to existing tests, read the relevant Babylon.js engine or tool code to understand the API and behavior you need to exercise.
 
-### Step 1: Write code, start servers, save snippet, verify
+### Step 1: Write code, save snippet, optionally start servers, verify
 
 Follow the Playground workflow in [playground-workflow.instructions.md](playground-workflow.instructions.md). After completing those steps you will have a snippet ID (e.g. `#ABC123#0`) ready for the config entry.
 

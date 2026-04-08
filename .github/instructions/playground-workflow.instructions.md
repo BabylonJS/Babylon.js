@@ -71,7 +71,9 @@ If you need to revise the snippet, edit the temp file and run `save-snippet.js` 
 
 ## Local Servers
 
-The Playground workflow needs two local servers:
+Local servers are only needed when you want to preview or run a snippet against a local engine build — for example, when validating visual tests locally or testing unreleased code changes. Snippet creation and saving via the helper scripts do not require local servers, and many tasks (API demos, repro cases, etc.) can use the public Playground at `https://playground.babylonjs.com` instead.
+
+When local servers are needed, there are two:
 
 - Babylon CDN server on `localhost:1337`
 - Playground server on `localhost:1338`
@@ -92,7 +94,7 @@ Test-NetConnection -ComputerName localhost -Port 1337 -WarningAction SilentlyCon
 Test-NetConnection -ComputerName localhost -Port 1338 -WarningAction SilentlyContinue -ErrorAction SilentlyContinue | Select-Object TcpTestSucceeded
 ```
 
-If both ports are already up, skip to snippet saving. If only `1337` is up, start only the Playground server. If neither is up, continue below.
+If both ports are already up, skip the server startup steps below. If only `1337` is up, start only the Playground server. If neither is up, continue below.
 
 ### Start the CDN server
 
@@ -161,7 +163,7 @@ http://localhost:1338/?webgpu#ABC123#0
 https://playground.babylonjs.com/?webgpu#ABC123#0
 ```
 
-This works on both the local and public Playground, provided the browser supports WebGPU. The playground also accepts the more explicit `?engine=WebGPU` form:
+This works on both the local and public Playground, provided the browser supports WebGPU. The Playground also accepts the more explicit `?engine=WebGPU` form:
 
 ```text
 http://localhost:1338/?engine=WebGPU#ABC123#0
