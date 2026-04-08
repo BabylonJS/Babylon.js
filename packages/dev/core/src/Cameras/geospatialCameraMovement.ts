@@ -103,20 +103,19 @@ export class GeospatialCameraMovement extends CameraMovement {
         this._cameraPosition.scaleToRef(hitPointRadius / this._cameraPosition.length(), this._dragPlaneOriginPointEcef);
 
         // The dragPlaneOffsetVector will later be recalculated when drag occurs, and the delta between the offset vectors will be applied to localTranslation
-        this.calculateUpVectorFromPointToRef(this._dragPlaneOriginPointEcef, this._dragPlaneNormal);
         ComputeLocalBasisToRefs(
             this._dragPlaneOriginPointEcef,
             TmpVectors.Vector3[0],
             TmpVectors.Vector3[1],
-            TmpVectors.Vector3[2],
+            this._dragPlaneNormal,
             this._scene.useRightHandedSystem,
             this.calculateUpVectorFromPointToRef
         );
-        const localToEcef = Matrix.FromXYZAxesToRef(TmpVectors.Vector3[0], TmpVectors.Vector3[1], TmpVectors.Vector3[2], localToEcefResult);
+        const localToEcef = Matrix.FromXYZAxesToRef(TmpVectors.Vector3[0], TmpVectors.Vector3[1], this._dragPlaneNormal, localToEcefResult);
         localToEcef.setTranslationFromFloats(this._dragPlaneOriginPointEcef.x, this._dragPlaneOriginPointEcef.y, this._dragPlaneOriginPointEcef.z);
         const ecefToLocal = localToEcef.invertToRef(TmpVectors.Matrix[1]);
 
-        // Now create a plane at that point, perpendicular to the camera's geocentric normal
+        // Now create a plane at that point, perpendicular to _dragPlaneNormal.
         Plane.FromPositionAndNormalToRef(this._dragPlaneOriginPointEcef, this._dragPlaneNormal, this._dragPlane);
 
         // Lastly, find the _dragPlaneHitPoint where the ray intersects the _dragPlane.
