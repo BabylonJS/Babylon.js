@@ -15,7 +15,15 @@ export class FrameGraphIblShadowsAccumulationTask extends FrameGraphTask {
     public velocityTexture?: FrameGraphTextureHandle;
     public positionTexture?: FrameGraphTextureHandle;
 
-    public remanence = 0.75;
+    private _remanence = 0.75;
+
+    public get remanence(): number {
+        return this._remanence;
+    }
+
+    public set remanence(value: number) {
+        this._remanence = Math.max(0, Math.min(value, 1));
+    }
     public reset = true;
     public isMoving = false;
     public voxelGridSize = 1;
@@ -65,10 +73,6 @@ export class FrameGraphIblShadowsAccumulationTask extends FrameGraphTask {
     public override record() {
         if (this.sourceTexture === undefined || this.velocityTexture === undefined || this.positionTexture === undefined) {
             throw new Error(`FrameGraphIblShadowsAccumulationTask ${this.name}: sourceTexture, velocityTexture and positionTexture are required`);
-        }
-
-        if (this.remanence < 0 || this.remanence > 1) {
-            throw new Error(`FrameGraphIblShadowsAccumulationTask ${this.name}: remanence must be in the [0, 1] range`);
         }
 
         const textureManager = this._frameGraph.textureManager;

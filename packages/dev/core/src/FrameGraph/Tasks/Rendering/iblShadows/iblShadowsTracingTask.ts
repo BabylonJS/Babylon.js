@@ -21,11 +21,38 @@ export class FrameGraphIblShadowsTracingTask extends FrameGraphTask {
     public environmentTexture?: FrameGraphTextureHandle;
     public blueNoiseTexture?: FrameGraphTextureHandle;
 
-    public sampleDirections = 2;
+    private _sampleDirections = 2;
+
+    public get sampleDirections(): number {
+        return this._sampleDirections;
+    }
+
+    public set sampleDirections(value: number) {
+        this._sampleDirections = Math.max(1, Math.round(value));
+    }
+
     public voxelShadowOpacity = 1;
     public ssShadowOpacity = 1;
-    public ssShadowSampleCount = 16;
-    public ssShadowStride = 8;
+
+    private _ssShadowSampleCount = 16;
+
+    public get ssShadowSampleCount(): number {
+        return this._ssShadowSampleCount;
+    }
+
+    public set ssShadowSampleCount(value: number) {
+        this._ssShadowSampleCount = Math.max(1, Math.round(value));
+    }
+
+    private _ssShadowStride = 8;
+
+    public get ssShadowStride(): number {
+        return this._ssShadowStride;
+    }
+
+    public set ssShadowStride(value: number) {
+        this._ssShadowStride = Math.max(1, Math.round(value));
+    }
     /** Scale factor applied to voxelGridSize / 2^resolutionExp to get the max SSS ray distance. */
     public ssShadowDistanceScale = 1.25;
     /** Scale factor applied to voxelGridSize to get the SSS surface thickness. */
@@ -116,18 +143,6 @@ export class FrameGraphIblShadowsTracingTask extends FrameGraphTask {
             this.icdfTexture === undefined
         ) {
             throw new Error(`FrameGraphIblShadowsTracingTask ${this.name}: camera, voxelGridTexture, depthTexture, normalTexture and icdfTexture are required`);
-        }
-
-        if (this.sampleDirections < 1) {
-            throw new Error(`FrameGraphIblShadowsTracingTask ${this.name}: sampleDirections must be >= 1`);
-        }
-
-        if (this.ssShadowSampleCount < 1) {
-            throw new Error(`FrameGraphIblShadowsTracingTask ${this.name}: ssShadowSampleCount must be >= 1`);
-        }
-
-        if (this.ssShadowStride < 1) {
-            throw new Error(`FrameGraphIblShadowsTracingTask ${this.name}: ssShadowStride must be >= 1`);
         }
 
         const textureManager = this._frameGraph.textureManager;
