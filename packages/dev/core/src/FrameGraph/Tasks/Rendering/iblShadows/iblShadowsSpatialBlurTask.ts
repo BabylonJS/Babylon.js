@@ -60,10 +60,6 @@ export class FrameGraphIblShadowsSpatialBlurTask extends FrameGraphTask {
             throw new Error(`FrameGraphIblShadowsSpatialBlurTask ${this.name}: sourceTexture, depthTexture and normalTexture are required`);
         }
 
-        if (this.voxelizationTask?.voxelGridSize !== undefined && this.voxelizationTask.voxelGridSize <= 0) {
-            throw new Error(`FrameGraphIblShadowsSpatialBlurTask ${this.name}: voxelizationTask.voxelGridSize must be > 0`);
-        }
-
         const textureManager = this._frameGraph.textureManager;
         const size = textureManager.getTextureAbsoluteDimensions(this.sourceTexture);
         const creationOptions: FrameGraphTextureCreationOptions = {

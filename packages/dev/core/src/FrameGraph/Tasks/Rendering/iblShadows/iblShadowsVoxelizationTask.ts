@@ -59,6 +59,8 @@ export class FrameGraphIblShadowsVoxelizationTask extends FrameGraphTask {
      */
     public dirty = true;
 
+    private _refreshRate = -1;
+
     /**
      * Controls how often voxelization is refreshed.
      * - -1: manual only (requires setting `dirty = true`)
@@ -66,7 +68,13 @@ export class FrameGraphIblShadowsVoxelizationTask extends FrameGraphTask {
      * - 1: skip 1 frame between updates
      * - N: skip N frames between updates
      */
-    public refreshRate = -1;
+    public get refreshRate(): number {
+        return this._refreshRate;
+    }
+
+    public set refreshRate(value: number) {
+        this._refreshRate = Math.max(-1, Math.round(value));
+    }
 
     /**
      * World-to-voxel normalization matrix used by tracing.
@@ -133,14 +141,6 @@ export class FrameGraphIblShadowsVoxelizationTask extends FrameGraphTask {
     public override record() {
         if (this.objectList === undefined) {
             throw new Error(`FrameGraphIblShadowsVoxelizationTask ${this.name}: objectList is required`);
-        }
-
-        if (this.voxelGridSize <= 0) {
-            throw new Error(`FrameGraphIblShadowsVoxelizationTask ${this.name}: voxelGridSize must be > 0`);
-        }
-
-        if (!Number.isFinite(this.refreshRate) || this.refreshRate < -1 || !Number.isInteger(this.refreshRate)) {
-            throw new Error(`FrameGraphIblShadowsVoxelizationTask ${this.name}: refreshRate must be an integer >= -1`);
         }
 
         this._ensureVoxelRenderer();
