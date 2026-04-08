@@ -12,7 +12,7 @@ Never call or reference functions, methods, properties, or classes marked with `
 
 When writing or reviewing code:
 
-1. **Check before you use** — hover over or inspect the documentation of any API you are about to call. If it carries a `@deprecated` tag, do not use it.
+1. **Check before you use** — inspect the documentation of any API you are about to call. If it carries a `@deprecated` tag, do not use it.
 2. **Use the recommended replacement** — the deprecation notice almost always names the successor API. Use that instead. If no replacement is documented, ask the user for guidance before proceeding.
 3. **Do not introduce new calls to deprecated APIs** — even if existing code in the same file already calls them. New code must use the current API.
 4. **Do not suppress deprecation warnings** — if a linter or editor flags a deprecated usage, fix it rather than silencing the warning.
