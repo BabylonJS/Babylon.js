@@ -1,14 +1,13 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import type { Nullable } from "core/types";
-import type { Material } from "core/Materials/material";
+import { type Nullable } from "core/types";
+import { type Material } from "core/Materials/material";
 import { Color3 } from "core/Maths/math.color";
-import type { BaseTexture } from "core/Materials/Textures/baseTexture";
-import type { IMaterial, ITextureInfo } from "../glTFLoaderInterfaces";
-import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
+import { type BaseTexture } from "core/Materials/Textures/baseTexture";
+import { type IMaterial, type ITextureInfo } from "../glTFLoaderInterfaces";
+import { type IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader } from "../glTFLoader";
-import type { IKHRMaterialsVolume } from "babylonjs-gltf2interface";
+import { type IKHRMaterialsVolume } from "babylonjs-gltf2interface";
 import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
-import { Vector3 } from "core/Maths/math.vector";
 
 const NAME = "KHR_materials_volume";
 
@@ -90,15 +89,12 @@ export class KHR_materials_volume implements IGLTFLoaderExtension {
             return Promise.resolve();
         }
 
+        adapter.geometryThinWalled = false;
         const attenuationDistance = extension.attenuationDistance !== undefined ? extension.attenuationDistance : Number.MAX_VALUE;
         const attenuationColor = extension.attenuationColor !== undefined && extension.attenuationColor.length == 3 ? Color3.FromArray(extension.attenuationColor) : Color3.White();
-        // Calculate the attenuation coefficient (i.e. extinction coefficient)
-        const extinctionCoefficient = new Vector3(-Math.log(attenuationColor.r), -Math.log(attenuationColor.g), -Math.log(attenuationColor.b));
-        extinctionCoefficient.scaleInPlace(1 / Math.max(attenuationDistance, 0.001));
-        adapter.extinctionCoefficient = extinctionCoefficient;
-
-        adapter.transmissionDepth = attenuationDistance;
+        adapter.configureVolume();
         adapter.transmissionColor = attenuationColor;
+        adapter.transmissionDepth = attenuationDistance;
 
         adapter.volumeThickness = extension.thicknessFactor ?? 0;
 

@@ -1,10 +1,10 @@
 import { _WebAudioEngine } from "../AudioV2/webAudio/webAudioEngine";
-import type { _WebAudioMainBus } from "../AudioV2/webAudio/webAudioMainBus";
+import { type _WebAudioMainBus } from "../AudioV2/webAudio/webAudioMainBus";
 import { AbstractEngine } from "../Engines/abstractEngine";
 import { Observable } from "../Misc/observable";
-import type { Nullable } from "../types";
-import type { Analyser } from "./analyser";
-import type { IAudioEngine } from "./Interfaces/IAudioEngine";
+import { type Nullable } from "../types";
+import { type Analyser } from "./analyser";
+import { type IAudioEngine } from "./Interfaces/IAudioEngine";
 
 // Sets the default audio engine to Babylon.js
 AbstractEngine.AudioEngineFactory = (

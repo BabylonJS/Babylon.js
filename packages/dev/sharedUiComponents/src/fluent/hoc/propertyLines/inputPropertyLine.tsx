@@ -1,10 +1,7 @@
-import { PropertyLine } from "./propertyLine";
-import type { PropertyLineProps } from "./propertyLine";
-import type { FunctionComponent } from "react";
-import type { TextInputProps } from "../../primitives/textInput";
-import { TextInput } from "../../primitives/textInput";
-import type { SpinButtonProps } from "../../primitives/spinButton";
-import { SpinButton } from "../../primitives/spinButton";
+import { PropertyLine, type PropertyLineProps } from "./propertyLine";
+import { type FunctionComponent } from "react";
+import { type TextInputProps, TextInput } from "../../primitives/textInput";
+import { type SpinButtonProps, SpinButton } from "../../primitives/spinButton";
 import { makeStyles, mergeClasses } from "@fluentui/react-components";
 import { UniformWidthStyling } from "../../primitives/utils";
 

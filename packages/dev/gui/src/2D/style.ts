@@ -1,6 +1,6 @@
 import { Observable } from "core/Misc/observable";
-import type { IDisposable } from "core/scene";
-import type { AdvancedDynamicTexture } from "./advancedDynamicTexture";
+import { type IDisposable } from "core/scene";
+import { type AdvancedDynamicTexture } from "./advancedDynamicTexture";
 import { ValueAndUnit } from "./valueAndUnit";
 
 /**

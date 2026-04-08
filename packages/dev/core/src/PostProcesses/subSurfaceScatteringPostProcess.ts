@@ -1,11 +1,10 @@
-import type { Nullable } from "../types";
-import type { Camera } from "../Cameras/camera";
-import type { Effect } from "../Materials/effect";
+import { type Nullable } from "../types";
+import { type Camera } from "../Cameras/camera";
+import { type Effect } from "../Materials/effect";
 import { Texture } from "../Materials/Textures/texture";
-import type { PostProcessOptions } from "./postProcess";
-import { PostProcess } from "./postProcess";
-import type { AbstractEngine } from "../Engines/abstractEngine";
-import type { Scene } from "../scene";
+import { type PostProcessOptions, PostProcess } from "./postProcess";
+import { type AbstractEngine } from "../Engines/abstractEngine";
+import { type Scene } from "../scene";
 import { Constants } from "../Engines/constants";
 import { Logger } from "../Misc/logger";
 
@@ -65,7 +64,10 @@ export class SubSurfaceScatteringPostProcess extends PostProcess {
             const texelSize = this.texelSize;
             effect.setFloat("metersPerUnit", scene.subSurfaceConfiguration.metersPerUnit);
             effect.setFloat2("texelSize", texelSize.x, texelSize.y);
-            effect.setTexture("irradianceSampler", scene.prePassRenderer.getRenderTarget().textures[scene.prePassRenderer.getIndex(Constants.PREPASS_IRRADIANCE_TEXTURE_TYPE)]);
+            effect.setTexture(
+                "irradianceSampler",
+                scene.prePassRenderer.getRenderTarget().textures[scene.prePassRenderer.getIndex(Constants.PREPASS_IRRADIANCE_LEGACY_TEXTURE_TYPE)]
+            );
             effect.setTexture("depthSampler", scene.prePassRenderer.getRenderTarget().textures[scene.prePassRenderer.getIndex(Constants.PREPASS_DEPTH_TEXTURE_TYPE)]);
             effect.setTexture("albedoSampler", scene.prePassRenderer.getRenderTarget().textures[scene.prePassRenderer.getIndex(Constants.PREPASS_ALBEDO_SQRT_TEXTURE_TYPE)]);
             effect.setFloat2(

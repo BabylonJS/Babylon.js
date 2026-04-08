@@ -1,4 +1,4 @@
-import type { FlowGraphBlock } from "../flowGraphBlock";
+import { type FlowGraphBlock } from "../flowGraphBlock";
 import { FlowGraphBlockNames } from "./flowGraphBlockNames";
 
 /**
@@ -242,6 +242,10 @@ export function blockFactory(blockName: FlowGraphBlockNames | string): () => Pro
             return async () => (await import("./Data/Math/flowGraphMathCombineExtractBlocks")).FlowGraphCombineVector4Block;
         case FlowGraphBlockNames.CombineMatrix:
             return async () => (await import("./Data/Math/flowGraphMathCombineExtractBlocks")).FlowGraphCombineMatrixBlock;
+        case FlowGraphBlockNames.CombineMatrix2D:
+            return async () => (await import("./Data/Math/flowGraphMathCombineExtractBlocks")).FlowGraphCombineMatrix2DBlock;
+        case FlowGraphBlockNames.CombineMatrix3D:
+            return async () => (await import("./Data/Math/flowGraphMathCombineExtractBlocks")).FlowGraphCombineMatrix3DBlock;
         case FlowGraphBlockNames.ExtractVector2:
             return async () => (await import("./Data/Math/flowGraphMathCombineExtractBlocks")).FlowGraphExtractVector2Block;
         case FlowGraphBlockNames.ExtractVector3:
@@ -250,6 +254,10 @@ export function blockFactory(blockName: FlowGraphBlockNames | string): () => Pro
             return async () => (await import("./Data/Math/flowGraphMathCombineExtractBlocks")).FlowGraphExtractVector4Block;
         case FlowGraphBlockNames.ExtractMatrix:
             return async () => (await import("./Data/Math/flowGraphMathCombineExtractBlocks")).FlowGraphExtractMatrixBlock;
+        case FlowGraphBlockNames.ExtractMatrix2D:
+            return async () => (await import("./Data/Math/flowGraphMathCombineExtractBlocks")).FlowGraphExtractMatrix2DBlock;
+        case FlowGraphBlockNames.ExtractMatrix3D:
+            return async () => (await import("./Data/Math/flowGraphMathCombineExtractBlocks")).FlowGraphExtractMatrix3DBlock;
         case FlowGraphBlockNames.TransformVector:
             return async () => (await import("./Data/Math/flowGraphVectorMathBlocks")).FlowGraphTransformBlock;
         case FlowGraphBlockNames.TransformCoordinates:
@@ -288,6 +296,12 @@ export function blockFactory(blockName: FlowGraphBlockNames | string): () => Pro
             return async () => (await import("./Event/flowGraphPointerOverEventBlock")).FlowGraphPointerOverEventBlock;
         case FlowGraphBlockNames.PointerOutEvent:
             return async () => (await import("./Event/flowGraphPointerOutEventBlock")).FlowGraphPointerOutEventBlock;
+        case FlowGraphBlockNames.PointerDownEvent:
+            return async () => (await import("./Event/flowGraphPointerDownEventBlock")).FlowGraphPointerDownEventBlock;
+        case FlowGraphBlockNames.PointerUpEvent:
+            return async () => (await import("./Event/flowGraphPointerUpEventBlock")).FlowGraphPointerUpEventBlock;
+        case FlowGraphBlockNames.PointerMoveEvent:
+            return async () => (await import("./Event/flowGraphPointerMoveEventBlock")).FlowGraphPointerMoveEventBlock;
         case FlowGraphBlockNames.Context:
             return async () => (await import("./Data/Utils/flowGraphContextBlock")).FlowGraphContextBlock;
         case FlowGraphBlockNames.ArrayIndex:
@@ -300,6 +314,42 @@ export function blockFactory(blockName: FlowGraphBlockNames | string): () => Pro
             return async () => (await import("./Data/Utils/flowGraphFunctionReferenceBlock")).FlowGraphFunctionReferenceBlock;
         case FlowGraphBlockNames.DataSwitch:
             return async () => (await import("./Data/flowGraphDataSwitchBlock")).FlowGraphDataSwitchBlock;
+        case FlowGraphBlockNames.DebugBlock:
+            return async () => (await import("./Data/flowGraphDebugBlock")).FlowGraphDebugBlock;
+        // Physics
+        case FlowGraphBlockNames.PhysicsCollisionEvent:
+            return async () => (await import("./Event/flowGraphPhysicsCollisionEventBlock")).FlowGraphPhysicsCollisionEventBlock;
+        case FlowGraphBlockNames.PhysicsApplyForce:
+            return async () => (await import("./Execution/Physics/flowGraphApplyForceBlock")).FlowGraphApplyForceBlock;
+        case FlowGraphBlockNames.PhysicsApplyImpulse:
+            return async () => (await import("./Execution/Physics/flowGraphApplyImpulseBlock")).FlowGraphApplyImpulseBlock;
+        case FlowGraphBlockNames.PhysicsSetLinearVelocity:
+            return async () => (await import("./Execution/Physics/flowGraphSetLinearVelocityBlock")).FlowGraphSetLinearVelocityBlock;
+        case FlowGraphBlockNames.PhysicsSetAngularVelocity:
+            return async () => (await import("./Execution/Physics/flowGraphSetAngularVelocityBlock")).FlowGraphSetAngularVelocityBlock;
+        case FlowGraphBlockNames.PhysicsSetMotionType:
+            return async () => (await import("./Execution/Physics/flowGraphSetPhysicsMotionTypeBlock")).FlowGraphSetPhysicsMotionTypeBlock;
+        case FlowGraphBlockNames.PhysicsGetLinearVelocity:
+            return async () => (await import("./Data/Physics/flowGraphGetLinearVelocityBlock")).FlowGraphGetLinearVelocityBlock;
+        case FlowGraphBlockNames.PhysicsGetAngularVelocity:
+            return async () => (await import("./Data/Physics/flowGraphGetAngularVelocityBlock")).FlowGraphGetAngularVelocityBlock;
+        case FlowGraphBlockNames.PhysicsGetMassProperties:
+            return async () => (await import("./Data/Physics/flowGraphGetPhysicsMassPropertiesBlock")).FlowGraphGetPhysicsMassPropertiesBlock;
+        // Audio
+        case FlowGraphBlockNames.AudioPlaySound:
+            return async () => (await import("./Execution/Audio/flowGraphPlaySoundBlock")).FlowGraphPlaySoundBlock;
+        case FlowGraphBlockNames.AudioStopSound:
+            return async () => (await import("./Execution/Audio/flowGraphStopSoundBlock")).FlowGraphStopSoundBlock;
+        case FlowGraphBlockNames.AudioPauseSound:
+            return async () => (await import("./Execution/Audio/flowGraphPauseSoundBlock")).FlowGraphPauseSoundBlock;
+        case FlowGraphBlockNames.AudioSetVolume:
+            return async () => (await import("./Execution/Audio/flowGraphSetSoundVolumeBlock")).FlowGraphSetSoundVolumeBlock;
+        case FlowGraphBlockNames.AudioSoundEndedEvent:
+            return async () => (await import("./Event/flowGraphSoundEndedEventBlock")).FlowGraphSoundEndedEventBlock;
+        case FlowGraphBlockNames.AudioGetVolume:
+            return async () => (await import("./Data/Audio/flowGraphGetSoundVolumeBlock")).FlowGraphGetSoundVolumeBlock;
+        case FlowGraphBlockNames.AudioIsSoundPlaying:
+            return async () => (await import("./Data/Audio/flowGraphIsSoundPlayingBlock")).FlowGraphIsSoundPlayingBlock;
         default:
             // check if the block is a custom block
             if (CustomBlocks[blockName]) {

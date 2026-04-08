@@ -1,0 +1,123 @@
+#flow-graph-editor-graph-root {
+    display: grid;
+    grid-template-rows: 100%;
+    height: 100%;
+    width: 100%;
+    background: #464646;
+    font: 14px "acumin-pro";
+
+    &.popup {
+        grid-template-columns: 100%;
+        overflow: hidden;
+    }
+
+    & ~ .wait-screen {
+        display: grid;
+        justify-content: center;
+        align-content: center;
+        height: 100%;
+        width: 100%;
+        background: #464646;
+        opacity: 0.95;
+        color: white;
+        font: 24px "acumin-pro";
+        position: absolute;
+        top: 0;
+        left: 0;
+
+        &.hidden {
+            visibility: hidden;
+        }
+    }
+
+    .diagram-container {
+        background: #3a4a4f;
+        width: 100%;
+        height: 100%;
+
+        .diagram {
+            display: none;
+            width: 100%;
+            height: 100%;
+        }
+    }
+
+    .diagram-canvas-pane {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+
+        // GraphCanvasComponent sits below the controls bar and fills remaining space
+        > :last-child {
+            flex: 1;
+            min-height: 0;
+            overflow: hidden;
+        }
+    }
+
+    .fge-right-panel {
+        height: 100%;
+        overflow: hidden;
+    }
+
+    #propertyTab {
+        grid-row: 1;
+        grid-column: 1;
+        overflow-y: auto;
+    }
+
+    .button {
+        display: grid;
+        justify-content: center;
+        align-content: center;
+        height: auto;
+        width: calc(100% / 7);
+        cursor: pointer;
+
+        &:hover {
+            background: rgb(51, 183, 102);
+            color: white;
+            opacity: 0.8;
+        }
+
+        &.selected {
+            background: rgb(51, 183, 102);
+            color: white;
+        }
+
+        &.align {
+            justify-content: stretch;
+            text-align: center;
+        }
+    }
+}
+
+.blocker {
+    position: absolute;
+    width: calc(100% - 40px);
+    height: 100%;
+    top: 0;
+    left: 0;
+
+    background: rgba(20, 20, 20, 0.95);
+    font-family: "acumin-pro";
+    color: white;
+    font-size: 24px;
+
+    display: none;
+    align-content: center;
+    justify-content: center;
+
+    user-select: none;
+
+    padding: 20px;
+    text-align: center;
+}
+
+@media screen and (max-width: 899px) {
+    .blocker {
+        display: grid;
+    }
+}

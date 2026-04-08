@@ -1,11 +1,10 @@
-import type { FrameGraph, FrameGraphTextureCreationOptions, FrameGraphTextureHandle, AbstractEngine, Camera } from "core/index";
+import { type FrameGraph, type FrameGraphTextureCreationOptions, type FrameGraphTextureHandle, type AbstractEngine, type Camera } from "core/index";
 import { Constants } from "core/Engines/constants";
 import { FrameGraphTask } from "../../frameGraphTask";
-import { ThinDepthOfFieldEffectBlurLevel } from "core/PostProcesses/thinDepthOfFieldEffect";
+import { ThinDepthOfFieldEffectBlurLevel, ThinDepthOfFieldEffect } from "core/PostProcesses/thinDepthOfFieldEffect";
 import { FrameGraphDepthOfFieldMergeTask } from "./depthOfFieldMergeTask";
 import { FrameGraphCircleOfConfusionTask } from "./circleOfConfusionTask";
 import { FrameGraphDepthOfFieldBlurTask } from "./depthOfFieldBlurTask";
-import { ThinDepthOfFieldEffect } from "core/PostProcesses/thinDepthOfFieldEffect";
 
 /**
  * Task which applies a depth of field effect.

@@ -1,0 +1,87 @@
+.sticky-note {
+    position: absolute;
+    min-width: 140px;
+    min-height: 80px;
+    background: rgba(255, 235, 130, 0.92);
+    border: 2px solid rgba(200, 180, 60, 0.7);
+    border-radius: 4px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    z-index: 3;
+    box-shadow: 2px 3px 8px rgba(0, 0, 0, 0.25);
+    cursor: default;
+    user-select: none;
+
+    &.selected {
+        border-color: white;
+        box-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
+    }
+}
+
+.sticky-note-header {
+    display: flex;
+    align-items: center;
+    padding: 4px 8px;
+    font-size: 11px;
+    font-weight: 700;
+    color: rgba(60, 50, 10, 0.85);
+    cursor: grab;
+    border-bottom: 1px solid rgba(200, 180, 60, 0.3);
+    flex-shrink: 0;
+
+    &:active {
+        cursor: grabbing;
+    }
+}
+
+.sticky-note-title {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    outline: none;
+
+    &[contenteditable="true"] {
+        cursor: text;
+    }
+}
+
+.sticky-note-close {
+    width: 16px;
+    height: 16px;
+    line-height: 16px;
+    text-align: center;
+    font-size: 14px;
+    cursor: pointer;
+    opacity: 0.5;
+    flex-shrink: 0;
+    margin-left: 4px;
+
+    &:hover {
+        opacity: 1;
+    }
+}
+
+.sticky-note-body {
+    flex: 1;
+    padding: 6px 8px;
+    font-size: 12px;
+    line-height: 1.4;
+    color: rgba(40, 35, 5, 0.9);
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    overflow-y: auto;
+    outline: none;
+    cursor: text;
+    min-height: 40px;
+}
+
+.sticky-note-resize {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    width: 12px;
+    height: 12px;
+    cursor: nwse-resize;
+}

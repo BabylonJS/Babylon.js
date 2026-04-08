@@ -1,8 +1,8 @@
-import type { Camera, Gizmo, IDisposable, IReadonlyObservable, Light, Node, Nullable, Scene, TransformNode } from "core/index";
-import type { IService, ServiceDefinition } from "../modularity/serviceDefinition";
-import type { ISceneContext } from "./sceneContext";
-import type { ISelectionService } from "./selectionService";
-import type { IWatcherService } from "./watcherService";
+import { type Camera, type Gizmo, type IDisposable, type IReadonlyObservable, type Light, type Node, type Nullable, type Scene, type TransformNode } from "core/index";
+import { type IService, type ServiceDefinition } from "../modularity/serviceDefinition";
+import { type ISceneContext, SceneContextIdentity } from "./sceneContext";
+import { type ISelectionService, SelectionServiceIdentity } from "./selectionService";
+import { type IWatcherService, WatcherServiceIdentity } from "./watcherService";
 
 import { Bone } from "core/Bones/bone";
 import { Camera as CameraClass } from "core/Cameras/camera";
@@ -16,9 +16,6 @@ import { AbstractMesh } from "core/Meshes/abstractMesh";
 import { Observable } from "core/Misc/observable";
 import { Node as NodeClass } from "core/node";
 import { UtilityLayerRenderer } from "core/Rendering/utilityLayerRenderer";
-import { SceneContextIdentity } from "./sceneContext";
-import { SelectionServiceIdentity } from "./selectionService";
-import { WatcherServiceIdentity } from "./watcherService";
 
 type Reference<T> = {
     value: T;

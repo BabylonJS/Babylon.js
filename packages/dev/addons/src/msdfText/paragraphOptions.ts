@@ -1,8 +1,8 @@
 /* eslint-disable jsdoc/require-jsdoc */
 
-import type { IVector2Like } from "core/Maths/math.like";
-import type { SdfTextLine } from "./sdf/line";
-import type { SdfGlyph } from "./sdf/glyph";
+import { type IVector2Like } from "core/Maths/math.like";
+import { type SdfTextLine } from "./sdf/line";
+import { type SdfGlyph } from "./sdf/glyph";
 
 export interface ISdfTextParagraphMetrics {
     /** @internal */

@@ -1,14 +1,14 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-import type { Atmosphere } from "./atmosphere";
-import type { AtmospherePhysicalProperties } from "./atmospherePhysicalProperties";
+import { type Atmosphere } from "./atmosphere";
+import { type AtmospherePhysicalProperties } from "./atmospherePhysicalProperties";
 import { Clamp } from "core/Maths/math.scalar.functions";
 import { Constants } from "core/Engines/constants";
 import { EffectRenderer, EffectWrapper } from "core/Materials/effectRenderer";
 import { FromHalfFloat } from "core/Misc/textureTools";
-import type { IColor3Like, IColor4Like, IVector2Like, IVector3Like } from "core/Maths/math.like";
-import type { Nullable } from "core/types";
+import { type IColor3Like, type IColor4Like, type IVector2Like, type IVector3Like } from "core/Maths/math.like";
+import { type Nullable } from "core/types";
 import { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
 import { Sample2DRgbaToRef } from "./sampling";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";

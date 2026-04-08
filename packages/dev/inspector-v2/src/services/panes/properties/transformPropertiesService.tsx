@@ -1,10 +1,9 @@
-import type { ServiceDefinition } from "../../../modularity/serviceDefinition";
-import type { IPropertiesService } from "./propertiesService";
+import { type ServiceDefinition } from "../../../modularity/serviceDefinition";
+import { type IPropertiesService, PropertiesServiceIdentity } from "./propertiesService";
 
 import { Bone } from "core/Bones/bone";
 import { TransformNode } from "core/Meshes/transformNode";
 import { TransformProperties } from "../../../components/properties/transformProperties";
-import { PropertiesServiceIdentity } from "./propertiesService";
 
 export const TransformPropertiesServiceDefinition: ServiceDefinition<[], [IPropertiesService]> = {
     friendlyName: "Transform Properties",

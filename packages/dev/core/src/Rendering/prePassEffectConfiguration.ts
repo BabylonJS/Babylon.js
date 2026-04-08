@@ -1,5 +1,5 @@
-import type { Color4 } from "core/Maths/math.color";
-import type { PostProcess } from "../PostProcesses/postProcess";
+import { type Color4 } from "core/Maths/math.color";
+import { type PostProcess } from "../PostProcesses/postProcess";
 
 /**
  * Interface for defining prepass effects in the prepass post-process pipeline

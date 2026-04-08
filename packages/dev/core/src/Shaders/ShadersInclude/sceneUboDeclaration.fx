@@ -8,5 +8,6 @@ uniform Scene {
 	mat4 view;
 	mat4 projection;
     vec4 vEyePosition;
+	mat4 inverseProjection;
 };
 

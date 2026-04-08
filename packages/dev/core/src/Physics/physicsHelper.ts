@@ -1,17 +1,17 @@
-import type { Nullable } from "../types";
+import { type Nullable } from "../types";
 import { Logger } from "../Misc/logger";
 import { TmpVectors, Vector3 } from "../Maths/math.vector";
-import type { AbstractMesh } from "../Meshes/abstractMesh";
-import type { Mesh } from "../Meshes/mesh";
+import { type AbstractMesh } from "../Meshes/abstractMesh";
+import { type Mesh } from "../Meshes/mesh";
 import { CreateSphere } from "../Meshes/Builders/sphereBuilder";
 import { CreateCylinder } from "../Meshes/Builders/cylinderBuilder";
 import { Ray } from "../Culling/ray";
-import type { Scene } from "../scene";
-import type { PhysicsEngine as PhysicsEngineV1 } from "./physicsEngine";
-import type { PhysicsEngine as PhysicsEngineV2 } from "./v2/physicsEngine";
-import type { IPhysicsEngine } from "./IPhysicsEngine";
-import type { PhysicsImpostor } from "./v1/physicsImpostor";
-import type { PhysicsBody } from "./v2/physicsBody";
+import { type Scene } from "../scene";
+import { type PhysicsEngine as PhysicsEngineV1 } from "./physicsEngine";
+import { type PhysicsEngine as PhysicsEngineV2 } from "./v2/physicsEngine";
+import { type IPhysicsEngine } from "./IPhysicsEngine";
+import { type PhysicsImpostor } from "./v1/physicsImpostor";
+import { type PhysicsBody } from "./v2/physicsBody";
 import { PhysicsMotionType } from "./v2/IPhysicsEnginePlugin";
 
 class HelperTools {

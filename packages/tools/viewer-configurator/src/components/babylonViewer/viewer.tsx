@@ -1,9 +1,8 @@
-import type { ViewerOptions } from "viewer/viewer";
-import type { ViewerElement } from "viewer/viewerElement";
+import { type ViewerOptions } from "viewer/viewer";
+import { type ViewerElement, ConfigureCustomViewerElement } from "viewer/viewerElement";
 import "./viewer.scss";
 import { useEffect, type FunctionComponent } from "react";
 import { Logger } from "core/Misc/logger";
-import { ConfigureCustomViewerElement } from "viewer/viewerElement";
 import "viewer";
 
 interface IHTML3DElementAttributes extends React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement> {

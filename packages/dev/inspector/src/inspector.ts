@@ -1,22 +1,19 @@
 import * as React from "react";
-import type { Root } from "react-dom/client";
-import { createRoot } from "react-dom/client";
+import { type Root, createRoot } from "react-dom/client";
 
-import type { IInspectorOptions } from "core/Debug/debugLayer";
-import type { Nullable } from "core/types";
-import type { Observer } from "core/Misc/observable";
-import { Observable } from "core/Misc/observable";
+import { type IInspectorOptions } from "core/Debug/debugLayer";
+import { type Nullable } from "core/types";
+import { type Observer, Observable } from "core/Misc/observable";
 import { EngineStore } from "core/Engines/engineStore";
-import type { Scene } from "core/scene";
+import { type Scene } from "core/scene";
 import { SceneLoader } from "core/Loading/sceneLoader";
 
 import { ActionTabsComponent } from "./components/actionTabs/actionTabsComponent";
 import { SceneExplorerComponent } from "./components/sceneExplorer/sceneExplorerComponent";
 import { EmbedHostComponent } from "./components/embedHost/embedHostComponent";
-import type { PropertyChangedEvent } from "./components/propertyChangedEvent";
+import { type PropertyChangedEvent } from "./components/propertyChangedEvent";
 import { GlobalState } from "./components/globalState";
-import type { IPopupComponentProps } from "./components/popupComponent";
-import { PopupComponent } from "./components/popupComponent";
+import { type IPopupComponentProps, PopupComponent } from "./components/popupComponent";
 import { CopyStyles } from "shared-ui-components/styleHelper";
 import { CreatePopup } from "shared-ui-components/popupHelper";
 import { DisposeInspectorGizmoManager } from "./inspectorGizmoManager";

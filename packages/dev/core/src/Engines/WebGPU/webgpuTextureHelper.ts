@@ -3,8 +3,8 @@
 import * as WebGPUConstants from "./webgpuConstants";
 import { ILog2 } from "../../Maths/math.scalar.functions";
 import { Constants } from "../constants";
-import type { InternalTexture } from "../../Materials/Textures/internalTexture";
-import type { IHardwareTextureWrapper } from "../../Materials/Textures/hardwareTextureWrapper";
+import { type InternalTexture } from "../../Materials/Textures/internalTexture";
+import { type IHardwareTextureWrapper } from "../../Materials/Textures/hardwareTextureWrapper";
 
 /** @internal */
 export class WebGPUTextureHelper {

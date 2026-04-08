@@ -8,13 +8,14 @@
     "sideEffects": true,
     "scripts": {
         "build": "npm run clean && npm run compile",
-        "test": "jest -c ../../../jest.config.ts",
+        "test": "vitest run",
         "clean": "rimraf dist && rimraf *.tsbuildinfo -g",
         "compile": "tsc -b tsconfig.build.json",
         "serve": "webpack serve --mode development",
         "watch": "tsc -b tsconfig.build.json -w",
         "watch:dev": "npm run watch",
-        "makeAvatar": "node scripts/makeAvatar.mjs"
+        "makeAvatar": "node scripts/makeAvatar.mjs",
+        "babylon-inspector": "node --no-warnings dist/cli/cli.js --bridge-script dist/cli/bridge.js"
     },
     "devDependencies": {
         "@dev/addons": "1.0.0",

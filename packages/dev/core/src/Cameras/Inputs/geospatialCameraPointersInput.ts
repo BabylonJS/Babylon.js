@@ -1,9 +1,9 @@
-import type { GeospatialCamera } from "../../Cameras/geospatialCamera";
-import type { IPointerEvent } from "../../Events/deviceInputEvents";
-import type { PointerTouch } from "../../Events/pointerEvents";
-import { Vector3Distance } from "../../Maths/math.vector.functions";
-import type { Nullable } from "../../types";
+import { type GeospatialCamera } from "../../Cameras/geospatialCamera";
+import { type IPointerEvent } from "../../Events/deviceInputEvents";
+import { type PointerTouch } from "../../Events/pointerEvents";
+import { type Nullable } from "../../types";
 import { OrbitCameraPointersInput } from "./orbitCameraPointersInput";
+import { Vector3Distance } from "../../Maths/math.vector.functions";
 
 /**
  * Geospatial camera inputs can simulate dragging the globe around or tilting the camera around some point on the globe

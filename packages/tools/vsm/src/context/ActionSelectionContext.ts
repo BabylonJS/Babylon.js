@@ -1,6 +1,6 @@
 import { createContext } from "react";
-import type { Nullable } from "core/types";
-import type { BaseAction } from "../actions/actions/BaseAction";
+import { type Nullable } from "core/types";
+import { type BaseAction } from "../actions/actions/BaseAction";
 
 export interface IActionSelectionContextWrapper {
     action: Nullable<BaseAction>;

@@ -1,28 +1,28 @@
-import type { Immutable, Nullable } from "../types";
-import type { Vector2, Vector3, Matrix } from "../Maths/math.vector";
-import type { Color3, Color4 } from "../Maths/math.color";
-import type { BaseTexture } from "../Materials/Textures/baseTexture";
-import type {
-    BoxParticleEmitter,
-    IParticleEmitterType,
-    PointParticleEmitter,
-    HemisphericParticleEmitter,
-    SphereParticleEmitter,
-    SphereDirectedParticleEmitter,
-    CylinderParticleEmitter,
-    CylinderDirectedParticleEmitter,
-    ConeParticleEmitter,
-    ConeDirectedParticleEmitter,
+import { type Immutable, type Nullable } from "../types";
+import { type Vector2, type Vector3, type Matrix } from "../Maths/math.vector";
+import { type Color3, type Color4 } from "../Maths/math.color";
+import { type BaseTexture } from "../Materials/Textures/baseTexture";
+import {
+    type BoxParticleEmitter,
+    type IParticleEmitterType,
+    type PointParticleEmitter,
+    type HemisphericParticleEmitter,
+    type SphereParticleEmitter,
+    type SphereDirectedParticleEmitter,
+    type CylinderParticleEmitter,
+    type CylinderDirectedParticleEmitter,
+    type ConeParticleEmitter,
+    type ConeDirectedParticleEmitter,
 } from "../Particles/EmitterTypes/index";
-import type { Scene } from "../scene";
-import type { ColorGradient, FactorGradient, Color3Gradient } from "../Misc/gradients";
-import type { Effect } from "../Materials/effect";
-import type { Observable } from "../Misc/observable";
-import type { VertexBuffer } from "../Buffers/buffer";
-import type { DataBuffer } from "../Buffers/dataBuffer";
+import { type Scene } from "../scene";
+import { type ColorGradient, type FactorGradient, type Color3Gradient } from "../Misc/gradients";
+import { type Effect } from "../Materials/effect";
+import { type Observable } from "../Misc/observable";
+import { type VertexBuffer } from "../Buffers/buffer";
+import { type DataBuffer } from "../Buffers/dataBuffer";
 
-import type { Animation } from "../Animations/animation";
-import type { AbstractMesh } from "../Meshes/abstractMesh";
+import { type Animation } from "../Animations/animation";
+import { type AbstractMesh } from "../Meshes/abstractMesh";
 
 /**
  * Interface representing a particle system in Babylon.js.

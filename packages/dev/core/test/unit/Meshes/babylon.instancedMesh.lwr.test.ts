@@ -1,4 +1,4 @@
-import type { Engine } from "core/Engines";
+import { type Engine } from "core/Engines";
 import { NullEngine } from "core/Engines/nullEngine";
 import { PerformanceConfigurator } from "core/Engines/performanceConfigurator";
 import { Vector3 } from "core/Maths/math.vector";

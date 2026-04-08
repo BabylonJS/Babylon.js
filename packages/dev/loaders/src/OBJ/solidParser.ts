@@ -1,16 +1,16 @@
-import type { AssetContainer } from "core/assetContainer";
+import { type AssetContainer } from "core/assetContainer";
 import { VertexBuffer } from "core/Buffers/buffer";
-import type { Material } from "core/Materials/material";
+import { type Material } from "core/Materials/material";
 import { StandardMaterial } from "core/Materials/standardMaterial";
 import { Color3, Color4 } from "core/Maths/math.color";
 import { Vector2, Vector3 } from "core/Maths/math.vector";
-import type { AbstractMesh } from "core/Meshes/abstractMesh";
+import { type AbstractMesh } from "core/Meshes/abstractMesh";
 import { Geometry } from "core/Meshes/geometry";
 import { Mesh } from "core/Meshes/mesh";
 import { VertexData } from "core/Meshes/mesh.vertexData";
-import type { Scene } from "core/scene";
-import type { Nullable } from "core/types";
-import type { OBJLoadingOptions } from "./objLoadingOptions";
+import { type Scene } from "core/scene";
+import { type Nullable } from "core/types";
+import { type OBJLoadingOptions } from "./objLoadingOptions";
 import { Logger } from "core/Misc/logger";
 
 type MeshObject = {

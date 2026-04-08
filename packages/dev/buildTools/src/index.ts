@@ -2,7 +2,6 @@
 /* eslint-disable no-console */
 import { addJsExtensionsToCompiledFilesCommand } from "./addJSToCompiledFiles.js";
 import { generateDeclaration } from "./generateDeclaration.js";
-import { transformLtsCommand } from "./ltsTransformer.js";
 import { prepareES6Build } from "./prepareEs6Build.js";
 import { checkArgs, copyFolder, externalArgs, populateEnvironment } from "./utils.js";
 import { devWatch } from "./devWatcher.js";
@@ -11,6 +10,7 @@ import { prepareSnapshot } from "./prepareSnapshot.js";
 import { umdPackageMapping } from "./packageMapping.js";
 import { updateEngineVersion } from "./updateEngineVersion.js";
 import { declarationsEs6 } from "./declarationsEs6.js";
+import { PostCompileTransformCommand } from "./postCompileTransform.js";
 // public API
 import transformer from "./pathTransform.js";
 import * as webpackTools from "./webpackTools.js";
@@ -63,10 +63,6 @@ function RunCommand(command: string) {
             case "bs":
                 processAssets({ extensions: ["fx"] });
                 break;
-            case "transform-lts":
-            case "tlts":
-                transformLtsCommand();
-                break;
             case "prepare-es6-build":
             case "peb":
                 // eslint-disable-next-line github/no-then
@@ -95,6 +91,10 @@ function RunCommand(command: string) {
             case "declarations-es6":
             case "des6":
                 declarationsEs6();
+                break;
+            case "transform-paths":
+            case "tp":
+                PostCompileTransformCommand();
                 break;
             case "copy":
             case "cp":

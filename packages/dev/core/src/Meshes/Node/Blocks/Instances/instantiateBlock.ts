@@ -1,8 +1,8 @@
-import type { NodeGeometryConnectionPoint } from "../../nodeGeometryBlockConnectionPoint";
+import { type NodeGeometryConnectionPoint } from "../../nodeGeometryBlockConnectionPoint";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import { NodeGeometryBlockConnectionPointTypes } from "../../Enums/nodeGeometryConnectionPointTypes";
-import type { NodeGeometryBuildState } from "../../nodeGeometryBuildState";
-import type { VertexData } from "../../../mesh.vertexData";
+import { type NodeGeometryBuildState } from "../../nodeGeometryBuildState";
+import { type VertexData } from "../../../mesh.vertexData";
 import { Vector3 } from "../../../../Maths/math.vector";
 import { InstantiateBaseBlock } from "./instantiateBaseBlock";
 

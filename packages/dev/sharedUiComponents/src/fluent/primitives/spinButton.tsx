@@ -1,12 +1,11 @@
-import type { ChangeEvent, FocusEvent, KeyboardEvent, PointerEvent } from "react";
+import { type ChangeEvent, type FocusEvent, type KeyboardEvent, type PointerEvent, forwardRef, useCallback, useContext, useEffect, useRef, useState } from "react";
 
-import type { PrimitiveProps } from "./primitive";
+import { type PrimitiveProps } from "./primitive";
 
 import { Input, makeStyles, mergeClasses, tokens, useId, useMergedRefs } from "@fluentui/react-components";
 import { ArrowBidirectionalUpDownFilled } from "@fluentui/react-icons";
 
 import { Clamp } from "core/Maths/math.scalar.functions";
-import { forwardRef, useCallback, useContext, useEffect, useRef, useState } from "react";
 import { ToolContext } from "../hoc/fluentToolWrapper";
 import { useKeyState } from "../hooks/keyboardHooks";
 import { InfoLabel } from "./infoLabel";

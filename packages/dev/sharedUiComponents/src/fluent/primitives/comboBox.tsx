@@ -1,9 +1,8 @@
 import { useState, useContext, useEffect, forwardRef } from "react";
-import { Combobox as FluentComboBox, makeStyles, useComboboxFilter, useId, Option } from "@fluentui/react-components";
-import type { OptionOnSelectData, SelectionEvents } from "@fluentui/react-components";
+import { Combobox as FluentComboBox, makeStyles, useComboboxFilter, useId, Option, type OptionOnSelectData, type SelectionEvents } from "@fluentui/react-components";
 import { ToolContext } from "../hoc/fluentToolWrapper";
 import { CustomTokens } from "./utils";
-import type { PrimitiveProps } from "./primitive";
+import { type PrimitiveProps } from "./primitive";
 
 const useStyles = makeStyles({
     root: {

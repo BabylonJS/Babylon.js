@@ -1,9 +1,9 @@
-import type { Nullable } from "../types";
-import type { Scene } from "../scene";
+import { type Nullable } from "../types";
+import { type Scene } from "../scene";
 import { serialize, expandToProperty, serializeAsTexture } from "../Misc/decorators";
-import type { BaseTexture } from "../Materials/Textures/baseTexture";
+import { type BaseTexture } from "../Materials/Textures/baseTexture";
 import { Vector4 } from "../Maths/math.vector";
-import type { Effect } from "../Materials/effect";
+import { type Effect } from "../Materials/effect";
 import { EngineStore } from "../Engines/engineStore";
 import { SerializationHelper } from "../Misc/decorators.serialization";
 

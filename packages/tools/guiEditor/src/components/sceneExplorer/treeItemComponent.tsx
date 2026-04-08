@@ -1,16 +1,15 @@
 import * as React from "react";
 
-import type { Nullable } from "core/types";
-import type { IExplorerExtensibilityGroup } from "core/Debug/debugLayer";
+import { type Nullable } from "core/types";
+import { type IExplorerExtensibilityGroup } from "core/Debug/debugLayer";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBan } from "@fortawesome/free-solid-svg-icons";
 import { TreeItemSelectableComponent } from "./treeItemSelectableComponent";
 import { Tools } from "../../tools";
-import type { ContextMenuItem } from "shared-ui-components/fluent/primitives/contextMenu";
-import { ContextMenu } from "shared-ui-components/fluent/primitives/contextMenu";
+import { type ContextMenuItem, ContextMenu } from "shared-ui-components/fluent/primitives/contextMenu";
 import { FluentToolWrapper } from "shared-ui-components/fluent/hoc/fluentToolWrapper";
-import type { GlobalState } from "../../globalState";
+import { type GlobalState } from "../../globalState";
 
 import expandedIcon from "../../imgs/expandedIcon.svg";
 import collapsedIcon from "../../imgs/collapsedIcon.svg";

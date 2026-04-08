@@ -1,4 +1,4 @@
-import type { IXmlBuilder } from "./xml.interfaces";
+import { type IXmlBuilder } from "./xml.interfaces";
 
 /**
  */

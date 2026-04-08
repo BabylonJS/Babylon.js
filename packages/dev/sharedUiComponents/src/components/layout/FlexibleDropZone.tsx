@@ -1,4 +1,4 @@
-import type { FC, PropsWithChildren } from "react";
+import { type FC, type PropsWithChildren } from "react";
 import * as style from "./FlexibleDropZone.module.scss";
 import { FlexibleResizeBar } from "./FlexibleResizeBar";
 import { ResizeDirections } from "./types";

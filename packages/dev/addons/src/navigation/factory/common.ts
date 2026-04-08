@@ -1,7 +1,7 @@
 import { _LoadScriptModuleAsync } from "core/Misc/tools.internals";
-import type { Nullable } from "core/types";
+import { type Nullable } from "core/types";
 
-import type { RecastInjection } from "../types";
+import { type RecastInjection } from "../types";
 
 /**
  * Gets the RecastInjection instance (reference to the recast-navigation-js library).

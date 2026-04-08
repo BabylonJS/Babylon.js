@@ -1,28 +1,28 @@
 import { SerializationHelper } from "../Misc/decorators.serialization";
-import type { Nullable } from "../types";
+import { type Nullable } from "../types";
 import { Scene } from "../scene";
 import { Matrix, Quaternion } from "../Maths/math.vector";
-import type { AbstractMesh } from "../Meshes/abstractMesh";
-import type { Mesh } from "../Meshes/mesh";
-import type { SubMesh } from "../Meshes/subMesh";
+import { type AbstractMesh } from "../Meshes/abstractMesh";
+import { type Mesh } from "../Meshes/mesh";
+import { type SubMesh } from "../Meshes/subMesh";
 import { VertexBuffer } from "../Buffers/buffer";
-import type { BaseTexture } from "../Materials/Textures/baseTexture";
+import { type BaseTexture } from "../Materials/Textures/baseTexture";
 import { Texture } from "../Materials/Textures/texture";
-import type { Effect, IEffectCreationOptions, IShaderPath } from "./effect";
+import { type Effect, type IEffectCreationOptions, type IShaderPath } from "./effect";
 import { RegisterClass } from "../Misc/typeStore";
 import { EffectFallbacks } from "./effectFallbacks";
 import { WebRequest } from "../Misc/webRequest";
-import type { ShaderLanguage } from "./shaderLanguage";
-import type { UniformBuffer } from "./uniformBuffer";
-import type { TextureSampler } from "./Textures/textureSampler";
-import type { StorageBuffer } from "../Buffers/storageBuffer";
+import { type ShaderLanguage } from "./shaderLanguage";
+import { type UniformBuffer } from "./uniformBuffer";
+import { type TextureSampler } from "./Textures/textureSampler";
+import { type StorageBuffer } from "../Buffers/storageBuffer";
 import { PushMaterial } from "./pushMaterial";
 import { EngineStore } from "../Engines/engineStore";
 import { Constants } from "../Engines/constants";
 import { AddClipPlaneUniforms, BindClipPlane, PrepareStringDefinesForClipPlanes } from "./clipPlaneMaterialHelper";
-import type { WebGPUEngine } from "core/Engines/webgpuEngine";
+import { type WebGPUEngine } from "core/Engines/webgpuEngine";
 
-import type { ExternalTexture } from "./Textures/externalTexture";
+import { type ExternalTexture } from "./Textures/externalTexture";
 import {
     BindBonesParameters,
     BindFogParameters,
@@ -32,11 +32,10 @@ import {
     PrepareDefinesAndAttributesForMorphTargets,
     PushAttributesForInstances,
 } from "./materialHelper.functions";
-import type { IColor3Like, IColor4Like, IVector2Like, IVector3Like, IVector4Like } from "core/Maths/math.like";
-import type { InternalTexture } from "./Textures/internalTexture";
+import { type IColor3Like, type IColor4Like, type IVector2Like, type IVector3Like, type IVector4Like } from "core/Maths/math.like";
+import { type InternalTexture } from "./Textures/internalTexture";
 
-import { PrepareVertexPullingUniforms, BindVertexPullingUniforms } from "./vertexPullingHelper.functions";
-import type { IVertexPullingMetadata } from "./vertexPullingHelper.functions";
+import { PrepareVertexPullingUniforms, BindVertexPullingUniforms, type IVertexPullingMetadata } from "./vertexPullingHelper.functions";
 
 const OnCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
@@ -769,8 +768,8 @@ export class ShaderMaterial extends PushMaterial {
             if (skeleton.isUsingTextureForMatrices) {
                 defines.push("#define BONETEXTURE");
 
-                if (uniforms.indexOf("boneTextureWidth") === -1) {
-                    uniforms.push("boneTextureWidth");
+                if (uniforms.indexOf("boneTextureInfo") === -1) {
+                    uniforms.push("boneTextureInfo");
                 }
 
                 if (this._options.samplers.indexOf("boneSampler") === -1) {

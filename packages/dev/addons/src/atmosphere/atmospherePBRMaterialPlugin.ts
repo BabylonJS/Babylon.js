@@ -1,13 +1,13 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-import type { Atmosphere } from "./atmosphere";
-import type { BaseTexture } from "core/Materials/Textures/baseTexture";
-import type { Material } from "core/Materials/material";
+import { type Atmosphere } from "./atmosphere";
+import { type BaseTexture } from "core/Materials/Textures/baseTexture";
+import { type Material } from "core/Materials/material";
 import { MaterialDefines } from "core/Materials/materialDefines";
 import { MaterialPluginBase } from "core/Materials/materialPluginBase";
-import type { Nullable } from "core/types";
-import type { UniformBuffer } from "core/Materials/uniformBuffer";
+import { type Nullable } from "core/types";
+import { type UniformBuffer } from "core/Materials/uniformBuffer";
 import { Vector3FromFloatsToRef, Vector3ScaleToRef } from "core/Maths/math.vector.functions";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import "./ShadersWGSL/ShadersInclude/atmosphereFunctions";

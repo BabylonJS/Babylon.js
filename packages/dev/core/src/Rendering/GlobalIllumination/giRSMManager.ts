@@ -5,27 +5,27 @@
  * - C++ implementation by Luis Angel: https://github.com/imyoungmin/RSM
  * - Javascript implementation by Erkaman: https://github.com/Erkaman/webgl-rsm
  */
-import type { Scene } from "core/scene";
-import type { GIRSM } from "./giRSM";
-import type { Material } from "core/Materials/material";
+import { type Scene } from "core/scene";
+import { type GIRSM } from "./giRSM";
+import { type Material } from "core/Materials/material";
 import { RawTexture } from "core/Materials/Textures/rawTexture";
-import type { Nullable } from "core/types";
+import { type Nullable } from "core/types";
 import { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
 import { PostProcess } from "core/PostProcesses/postProcess";
 import { Observable, type Observer } from "core/Misc/observable";
 import { Layer } from "core/Layers/layer";
 import { Matrix } from "core/Maths/math.vector";
 import { Constants } from "core/Engines/constants";
-import type { RenderTargetWrapper } from "core/Engines/renderTargetWrapper";
+import { type RenderTargetWrapper } from "core/Engines/renderTargetWrapper";
 import { MaterialPluginBase } from "core/Materials/materialPluginBase";
-import type { InternalTexture } from "core/Materials/Textures/internalTexture";
-import type { StandardMaterial } from "core/Materials/standardMaterial";
+import { type InternalTexture } from "core/Materials/Textures/internalTexture";
+import { type StandardMaterial } from "core/Materials/standardMaterial";
 import { PBRBaseMaterial } from "core/Materials/PBR/pbrBaseMaterial";
-import type { UniformBuffer } from "core/Materials/uniformBuffer";
-import type { AbstractEngine } from "core/Engines/abstractEngine";
+import { type UniformBuffer } from "core/Materials/uniformBuffer";
+import { type AbstractEngine } from "core/Engines/abstractEngine";
 import { GeometryBufferRenderer } from "../geometryBufferRenderer";
 import { BaseTexture } from "core/Materials/Textures/baseTexture";
-import type { WebGPURenderTargetWrapper } from "core/Engines/WebGPU/webgpuRenderTargetWrapper";
+import { type WebGPURenderTargetWrapper } from "core/Engines/WebGPU/webgpuRenderTargetWrapper";
 import { expandToProperty, serialize } from "core/Misc/decorators";
 import { MaterialDefines } from "core/Materials/materialDefines";
 import { RegisterClass } from "core/Misc/typeStore";

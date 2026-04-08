@@ -1,20 +1,19 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import type { Scene } from "../scene";
+import { type Scene } from "../scene";
 import { Vector2 } from "../Maths/math.vector";
 import { VertexBuffer } from "../Buffers/buffer";
-import type { SubMesh } from "../Meshes/subMesh";
-import type { AbstractMesh } from "../Meshes/abstractMesh";
-import type { Mesh } from "../Meshes/mesh";
-import type { Texture } from "../Materials/Textures/texture";
-import type { Effect } from "../Materials/effect";
+import { type SubMesh } from "../Meshes/subMesh";
+import { type AbstractMesh } from "../Meshes/abstractMesh";
+import { type Mesh } from "../Meshes/mesh";
+import { type Texture } from "../Materials/Textures/texture";
+import { type Effect } from "../Materials/effect";
 import { Material } from "../Materials/material";
-import { ThinEffectLayer } from "./thinEffectLayer";
+import { ThinEffectLayer, type IThinEffectLayerOptions } from "./thinEffectLayer";
 import { Constants } from "../Engines/constants";
 import { Color4 } from "../Maths/math.color";
-import type { PBRMaterial } from "../Materials/PBR/pbrMaterial";
+import { type PBRMaterial } from "../Materials/PBR/pbrMaterial";
 
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
-import type { IThinEffectLayerOptions } from "./thinEffectLayer";
 import { ThinBlurPostProcess } from "core/PostProcesses/thinBlurPostProcess";
 
 /**

@@ -1,8 +1,7 @@
 import { FrameGraph } from "core/FrameGraph/frameGraph";
-import type { ServiceDefinition } from "../../../modularity/serviceDefinition";
-import type { IPropertiesService } from "./propertiesService";
+import { type ServiceDefinition } from "../../../modularity/serviceDefinition";
+import { type IPropertiesService, PropertiesServiceIdentity } from "./propertiesService";
 
-import { PropertiesServiceIdentity } from "./propertiesService";
 import { FrameGraphTaskProperties, FrameGraphGeneralProperties } from "../../../components/properties/frameGraph/frameGraphProperties";
 
 export const FrameGraphPropertiesServiceDefinition: ServiceDefinition<[], [IPropertiesService]> = {

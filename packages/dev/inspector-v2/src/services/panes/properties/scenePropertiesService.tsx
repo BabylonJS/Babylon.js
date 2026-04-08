@@ -1,8 +1,6 @@
-import type { ServiceDefinition } from "../../../modularity/serviceDefinition";
-import type { IPropertiesService } from "./propertiesService";
-import { PropertiesServiceIdentity } from "./propertiesService";
-import type { ISelectionService } from "../../selectionService";
-import { SelectionServiceIdentity } from "../../selectionService";
+import { type ServiceDefinition } from "../../../modularity/serviceDefinition";
+import { type IPropertiesService, PropertiesServiceIdentity } from "./propertiesService";
+import { type ISelectionService, SelectionServiceIdentity } from "../../selectionService";
 import {
     SceneCollisionsProperties,
     SceneMaterialImageProcessingProperties,

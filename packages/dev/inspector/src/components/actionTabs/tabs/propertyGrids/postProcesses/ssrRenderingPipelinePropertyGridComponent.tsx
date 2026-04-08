@@ -1,13 +1,13 @@
 import * as React from "react";
 
-import type { Observable } from "core/Misc/observable";
+import { type Observable } from "core/Misc/observable";
 
-import type { PropertyChangedEvent } from "../../../../propertyChangedEvent";
-import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
+import { type PropertyChangedEvent } from "../../../../propertyChangedEvent";
+import { type LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent";
 import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
-import type { SSRRenderingPipeline } from "core/PostProcesses/RenderPipeline/Pipelines/ssrRenderingPipeline";
-import type { GlobalState } from "../../../../globalState";
+import { type SSRRenderingPipeline } from "core/PostProcesses/RenderPipeline/Pipelines/ssrRenderingPipeline";
+import { type GlobalState } from "../../../../globalState";
 import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
 import { CheckBoxLineComponent } from "shared-ui-components/lines/checkBoxLineComponent";
 import { TextureLinkLineComponent } from "../../../lines/textureLinkLineComponent";

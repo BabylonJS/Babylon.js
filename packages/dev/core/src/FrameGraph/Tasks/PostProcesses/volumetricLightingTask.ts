@@ -1,4 +1,4 @@
-import type { AbstractEngine, Camera, DirectionalLight, FrameGraph, FrameGraphObjectList, FrameGraphTextureHandle } from "core/index";
+import { type AbstractEngine, type Camera, type DirectionalLight, type FrameGraph, type FrameGraphObjectList, type FrameGraphTextureHandle } from "core/index";
 import { FrameGraphVolumetricLightingBlendVolumeTask } from "./volumetricLightingBlendVolumeTask";
 import { Matrix, TmpVectors, Vector2, Vector3, Vector4 } from "core/Maths/math.vector";
 import { Color3, Color4 } from "core/Maths/math.color";

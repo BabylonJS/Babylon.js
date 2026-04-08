@@ -1,14 +1,14 @@
-import type { Scene } from "../../scene";
-import type { IGreasedLineMaterial } from "../../Materials/GreasedLine/greasedLineMaterialInterfaces";
+import { type Scene } from "../../scene";
+import { type IGreasedLineMaterial } from "../../Materials/GreasedLine/greasedLineMaterialInterfaces";
 import { GreasedLinePluginMaterial } from "../../Materials/GreasedLine/greasedLinePluginMaterial";
 import { Mesh } from "../mesh";
 import { Buffer } from "../../Buffers/buffer";
-import type { Vector3 } from "../../Maths/math.vector";
+import { type Vector3 } from "../../Maths/math.vector";
 import { VertexData } from "../mesh.vertexData";
 import { DeepCopier } from "../../Misc/deepCopier";
 import { GreasedLineSimpleMaterial, GreasedLineUseOffsetsSimpleMaterialDefine } from "../../Materials/GreasedLine/greasedLineSimpleMaterial";
-import type { AbstractEngine } from "../../Engines/abstractEngine";
-import type { FloatArray, IndicesArray } from "../../types";
+import { type AbstractEngine } from "../../Engines/abstractEngine";
+import { type FloatArray, type IndicesArray } from "../../types";
 import { GreasedLineTools } from "../../Misc/greasedLineTools";
 
 /**

@@ -1,7 +1,6 @@
 import { VirtualJoystick, JoystickAxis } from "../../Misc/virtualJoystick";
-import type { ICameraInput } from "../../Cameras/cameraInputsManager";
-import { CameraInputTypes } from "../../Cameras/cameraInputsManager";
-import type { FreeCamera } from "../../Cameras/freeCamera";
+import { type ICameraInput, CameraInputTypes } from "../../Cameras/cameraInputsManager";
+import { type FreeCamera } from "../../Cameras/freeCamera";
 import { Matrix, Vector3 } from "../../Maths/math.vector";
 import { FreeCameraInputsManager } from "../../Cameras/freeCameraInputsManager";
 

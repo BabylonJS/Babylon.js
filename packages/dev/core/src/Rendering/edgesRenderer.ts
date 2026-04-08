@@ -1,19 +1,18 @@
-import type { Immutable, Nullable } from "../types";
+import { type Immutable, type Nullable } from "../types";
 import { VertexBuffer } from "../Buffers/buffer";
 import { AbstractMesh } from "../Meshes/abstractMesh";
-import type { Mesh } from "../Meshes/mesh";
+import { type Mesh } from "../Meshes/mesh";
 import { LinesMesh, InstancedLinesMesh } from "../Meshes/linesMesh";
-import type { Matrix } from "../Maths/math.vector";
-import { Vector3, TmpVectors } from "../Maths/math.vector";
-import type { IDisposable, Scene } from "../scene";
-import type { Observer } from "../Misc/observable";
+import { type Matrix, Vector3, TmpVectors } from "../Maths/math.vector";
+import { type IDisposable, type Scene } from "../scene";
+import { type Observer } from "../Misc/observable";
 import { Material } from "../Materials/material";
 import { ShaderMaterial } from "../Materials/shaderMaterial";
 import { Camera } from "../Cameras/camera";
 import { Constants } from "../Engines/constants";
-import type { Node } from "../node";
+import { type Node } from "../node";
 
-import type { DataBuffer } from "../Buffers/dataBuffer";
+import { type DataBuffer } from "../Buffers/dataBuffer";
 import { SmartArray } from "../Misc/smartArray";
 import { DrawWrapper } from "../Materials/drawWrapper";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
@@ -94,7 +93,7 @@ declare module "../Meshes/linesMesh" {
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 InstancedLinesMesh.prototype.enableEdgesRendering = function (epsilon = 0.95, checkVerticesInsteadOfIndices = false): InstancedLinesMesh {
-    LinesMesh.prototype.enableEdgesRendering.apply(this, arguments);
+    LinesMesh.prototype.enableEdgesRendering.apply(this, [epsilon, checkVerticesInsteadOfIndices]);
     return this;
 };
 
