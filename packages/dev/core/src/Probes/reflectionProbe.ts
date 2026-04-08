@@ -2,12 +2,12 @@ import { serializeAsMeshReference, serializeAsVector3 } from "../Misc/decorators
 import { SerializationHelper } from "../Misc/decorators.serialization";
 import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import { Matrix, Vector3 } from "../Maths/math.vector";
-import type { AbstractMesh } from "../Meshes/abstractMesh";
-import type { Nullable } from "../types";
+import { type AbstractMesh } from "../Meshes/abstractMesh";
+import { type Nullable } from "../types";
 import { Scene } from "../scene";
 import { Constants } from "../Engines/constants";
-import type { UniformBuffer } from "../Materials/uniformBuffer";
-import type { IAssetContainer } from "core/IAssetContainer";
+import { type UniformBuffer } from "../Materials/uniformBuffer";
+import { type IAssetContainer } from "core/IAssetContainer";
 
 declare module "../scene" {
     // eslint-disable-next-line @typescript-eslint/naming-convention

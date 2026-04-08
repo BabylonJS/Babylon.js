@@ -46,7 +46,13 @@ struct Atmosphere {
     cameraHeight: f32,
     cameraNearPlane: f32,
     originHeight: f32,
-    sinCameraAtmosphereHorizonAngleFromNadir: f32
+    sinCameraAtmosphereHorizonAngleFromNadir: f32,
+    transmittanceSampleCount: f32,
+    skyViewLutSampleCount: f32,
+    multiScatteringLutSampleCount: f32,
+    multiScatteringAzimuthSampleCount: f32,
+    multiScatteringInclinationSampleCount: f32,
+    diffuseSkyIrradianceLutSampleCount: f32
 };
 
 var<uniform> atmosphere : Atmosphere;

@@ -1,10 +1,9 @@
 /* eslint-disable @typescript-eslint/no-floating-promises */
 import "./configurator.scss";
-import type { IDisposable, IInspectableOptions, Nullable, Observable } from "core/index";
-import type { HotSpot, ShadowQuality, ToneMapping, Viewer, ViewerDetails, ViewerElement, ViewerOptions } from "viewer/index";
-import type { DragEndEvent } from "@dnd-kit/core";
+import { type IDisposable, type IInspectableOptions, type Nullable, type Observable } from "core/index";
+import { type HotSpot, type ShadowQuality, type ToneMapping, type Viewer, type ViewerDetails, type ViewerElement, type ViewerOptions } from "viewer/index";
+import { type DragEndEvent, closestCenter, DndContext, KeyboardSensor, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
 
-import { closestCenter, DndContext, KeyboardSensor, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { faQuestionCircle } from "@fortawesome/free-regular-svg-icons";
@@ -1097,7 +1096,7 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
     ]);
 
     // TODO: Ideally we can handle keyboard events from the text input components.
-    const onEnvironmentLightingUrlKeyDown = useCallback(
+    const _onEnvironmentLightingUrlKeyDown = useCallback(
         (event: React.KeyboardEvent<HTMLInputElement>) => {
             if (event.key === "Enter") {
                 setNeedsEnvironmentUpdate(true);
@@ -1112,7 +1111,7 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
     }, [setNeedsEnvironmentUpdate, lightingUrlConfig.update]);
 
     // TODO: Ideally we can handle keyboard events from the text input components.
-    const onEnvironmentSkyboxUrlKeyDown = useCallback(
+    const _onEnvironmentSkyboxUrlKeyDown = useCallback(
         (event: React.KeyboardEvent<HTMLInputElement>) => {
             if (event.key === "Enter") {
                 setNeedsEnvironmentUpdate(true);

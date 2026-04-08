@@ -2,8 +2,8 @@ import { Tools } from "../Misc/tools";
 import { Observable } from "../Misc/observable";
 import { Scene } from "../scene";
 import { EngineStore } from "../Engines/engineStore";
-import type { IInspectable } from "../Misc/iInspectable";
-import type { Camera } from "../Cameras/camera";
+import { type IInspectable } from "../Misc/iInspectable";
+import { type Camera } from "../Cameras/camera";
 import { AbstractEngine } from "core/Engines/abstractEngine";
 
 // declare INSPECTOR namespace for compilation issue

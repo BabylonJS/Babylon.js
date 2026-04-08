@@ -1,5 +1,5 @@
-import type { DeepImmutable } from "../types";
-import type { IVector2Like, IVector3Like, IVector4Like } from "./math.like";
+import { type DeepImmutable } from "../types";
+import { type IVector2Like, type IVector3Like, type IVector4Like } from "./math.like";
 
 /**
  * Creates a string representation of the IVector2Like

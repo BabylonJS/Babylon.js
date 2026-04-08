@@ -1,8 +1,8 @@
 import * as React from "react";
-import type { Observable } from "core/Misc/observable";
-import type { PropertyChangedEvent } from "shared-ui-components/propertyChangedEvent";
+import { type Observable } from "core/Misc/observable";
+import { type PropertyChangedEvent } from "shared-ui-components/propertyChangedEvent";
 import { CommonControlPropertyGridComponent } from "../gui/commonControlPropertyGridComponent";
-import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
+import { type LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 import { StackPanel } from "gui/2D/controls/stackPanel";
 import { CheckBoxLineComponent } from "shared-ui-components/lines/checkBoxLineComponent";
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
@@ -16,7 +16,7 @@ import { IconComponent } from "shared-ui-components/lines/iconComponent";
 import { ValueAndUnit } from "gui/2D/valueAndUnit";
 import { CoordinateHelper } from "../../../../diagram/coordinateHelper";
 import { UnitButton } from "shared-ui-components/lines/unitButton";
-import type { GlobalState } from "../../../../globalState";
+import { type GlobalState } from "../../../../globalState";
 
 interface IStackPanelPropertyGridComponentProps {
     stackPanels: StackPanel[];

@@ -1,26 +1,25 @@
-# Babylon.js inspector module
+# Babylon.js Inspector (Legacy)
 
-For usage documentation please visit https://doc.babylonjs.com/how_to/debug_layer.
+> **Note:** This is the legacy inspector. For the new inspector, use the [`@babylonjs/inspector`](https://www.npmjs.com/package/@babylonjs/inspector) package (published from `inspector-v2`). See the [Inspector v2 documentation](https://doc.babylonjs.com/toolsAndResources/inspectorv2/).
 
-# Installation instructions
+For usage documentation on the legacy inspector, see the [legacy inspector documentation](https://doc.babylonjs.com/legacy/inspector/).
 
-To install using npm :
+## Installation
 
-```shell
-npm install @babylonjs/core @babylonjs/inspector
+To install using npm:
+
+```bash
+npm install @babylonjs/core @babylonjs/inspector-legacy
 ```
 
-# How to use
-
-Afterwards it can be imported to your project using:
+## Usage
 
 ```javascript
 import "@babylonjs/core/Debug/debugLayer";
-import "@babylonjs/inspector";
+import "@babylonjs/inspector-legacy";
+
+// ...
+scene.debugLayer.show();
 ```
 
-The first line will ensure you can access the property debugLayer of the scene while the second will ensure the inspector can be used within your scene.
-
-This is a great example where code splitting or conditional loading could be used to ensure you are not delivering the inspector if not part of your final app.
-
-For more information you can have a look at our [ES6 dedicated documentation](https://doc.babylonjs.com/features/es6_support).
+For more information, see the [ES6 support documentation](https://doc.babylonjs.com/setup/frameworkPackages/es6Support/).

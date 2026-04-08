@@ -42,11 +42,9 @@ const DiffuseSkyIrradianceLutHalfTexelSize = vec2f(.5) / DiffuseSkyIrradianceLut
 const SkyViewLutSize = vec2f(128., 128.);
 const SkyViewLutDomainInUVSpace = (SkyViewLutSize - vec2f(1.)) / SkyViewLutSize;
 const SkyViewLutHalfTexelSize = vec2f(.5) / SkyViewLutSize;
-const SkyViewLutSampleCount = 30;
 
 const AerialPerspectiveLutKMPerSlice = 4.;
 const AerialPerspectiveLutRangeKM = AerialPerspectiveLutKMPerSlice * NumAerialPerspectiveLutLayers;
-const TransmittanceSampleCount = 128;
 
 const TransmittanceLutSize = vec2f(256., 64.);
 const TransmittanceLutDomainInUVSpace = (TransmittanceLutSize - vec2f(1.)) / TransmittanceLutSize;
@@ -226,17 +224,17 @@ fn sampleMediumRGB(
     *extinction = extinctionRayleigh + extinctionMie + extinctionOzone;
 }
 
-fn computeTransmittance(rayOriginGlobal: vec3f, rayDirection: vec3f, tMax: f32, sampleCount: i32) -> vec3f {
+fn computeTransmittance(rayOriginGlobal: vec3f, rayDirection: vec3f, tMax: f32, sampleCount: f32) -> vec3f {
     // Simpler version of integrateScatteredRadiance,
     // computing transmittance between origin and a point at tMax distance away along rayDirection.
 
     var opticalDepth = vec3f(0.);
 
     var t = 0.;
-    let sampleSegmentWeight = tMax / f32(sampleCount);
+    let sampleSegmentWeight = tMax / sampleCount;
     const sampleSegmentT = .3;
-    for (var s = 0; s < sampleCount; s += 1) {
-        let newT = sampleSegmentWeight * (f32(s) + sampleSegmentT);
+    for (var s = 0.; s < sampleCount; s += 1.) {
+        let newT = sampleSegmentWeight * (s + sampleSegmentT);
         let dt = newT - t;
         t = newT;
 
@@ -314,7 +312,7 @@ fn integrateScatteredRadiance(
     rayDirection: vec3f,
     directionToLightParam: vec3f,
     tMaxMax: f32,
-    sampleCount: i32,
+    sampleCount: f32,
     distanceToSurface: f32,
     transmittance: ptr<function, vec3f>
     #if COMPUTE_MULTI_SCATTERING
@@ -368,10 +366,10 @@ fn integrateScatteredRadiance(
     let transmittanceScale = select(1., atmosphere.aerialPerspectiveTransmittanceScale, isAerialPerspectiveLut);
 
     var t = 0.;
-    let sampleSegmentWeight = tMax / f32(sampleCount);
+    let sampleSegmentWeight = tMax / sampleCount;
     const sampleSegmentT = .3;
-    for (var s = 0; s < sampleCount; s += 1) {
-        let newT = sampleSegmentWeight * (f32(s) + sampleSegmentT);
+    for (var s = 0.; s < sampleCount; s += 1.) {
+        let newT = sampleSegmentWeight * (s + sampleSegmentT);
         let dt = newT - t;
         t = newT;
 
@@ -563,7 +561,7 @@ fn renderTransmittance(uv: vec2f) -> vec4f {
     let sinAngleLightToZenith = sqrtClamped(1. - cosAngleLightToZenith * cosAngleLightToZenith);
     let directionToLight = normalize(vec3f(0., cosAngleLightToZenith, sinAngleLightToZenith));
 
-    let transmittance = computeTransmittance(vec3f(0., radius, 0.), directionToLight, distanceToAtmosphereEdgeAlongAngle, TransmittanceSampleCount);
+    let transmittance = computeTransmittance(vec3f(0., radius, 0.), directionToLight, distanceToAtmosphereEdgeAlongAngle, atmosphere.transmittanceSampleCount);
     return vec4f(transmittance, avg(transmittance));
 }
 
@@ -576,15 +574,11 @@ fn getSphereSample(azimuth: f32, inclination: f32, sinInclination: ptr<function,
     return vec3f(*sinInclination * sin(azimuth), cos(inclination), *sinInclination * cos(azimuth));
 }
 
-// TODO: Uniforms.
-const MultiScatteringInclinationSampleCount = 8.;
-const MultiScatteringAzimuthSampleCount = 2. * MultiScatteringInclinationSampleCount;
-const MultiScatteringSampleCount = 64;
-const MultiScatteringAzimuthIterationAngle = TWO_PI / MultiScatteringAzimuthSampleCount;
-const MultiScatteringInclinationIterationAngle = PI / MultiScatteringInclinationSampleCount;
-const MultiScatteringAngleStepProduct = MultiScatteringAzimuthIterationAngle * MultiScatteringInclinationIterationAngle;
-
 fn renderMultiScattering(uv: vec2f, transmittanceLut: texture_2d<f32>) -> vec4f {
+    let MultiScatteringAzimuthIterationAngle = TWO_PI / atmosphere.multiScatteringAzimuthSampleCount;
+    let MultiScatteringInclinationIterationAngle = PI / atmosphere.multiScatteringInclinationSampleCount;
+    let MultiScatteringAngleStepProduct = MultiScatteringAzimuthIterationAngle * MultiScatteringInclinationIterationAngle;
+
     let unit = uvToUnit(uv, MultiScatteringLutDomainInUVSpace, MultiScatteringLutHalfTexelSize);
 
     let cosAngleLightToZenith = 2. * unit.x - 1.;
@@ -597,9 +591,9 @@ fn renderMultiScattering(uv: vec2f, transmittanceLut: texture_2d<f32>) -> vec4f 
     var inscattered = vec3f(0.);
     var multiScatteringTotal = vec3f(0.);
 
-    for (var i = .5; i < MultiScatteringAzimuthSampleCount; i += 1.) {
+    for (var i = .5; i < atmosphere.multiScatteringAzimuthSampleCount; i += 1.) {
         let azimuth = MultiScatteringAzimuthIterationAngle * i;
-        for (var j = .5; j < MultiScatteringInclinationSampleCount; j += 1.) {
+        for (var j = .5; j < atmosphere.multiScatteringInclinationSampleCount; j += 1.) {
             let inclination = MultiScatteringInclinationIterationAngle * j;
             var sinInclination: f32;
             let rayDirection = getSphereSample(azimuth, inclination, &sinInclination);
@@ -614,7 +608,7 @@ fn renderMultiScattering(uv: vec2f, transmittanceLut: texture_2d<f32>) -> vec4f 
                 rayDirection,
                 directionToLightLocal,
                 100000000.,
-                MultiScatteringSampleCount,
+                atmosphere.multiScatteringLutSampleCount,
                 -1., // No planet hit.
                 &transmittanceVal,
                 &multiScatteringVal);
@@ -705,7 +699,7 @@ fn renderSkyView(uv: vec2f, transmittanceLut: texture_2d<f32>, multiScatteringLu
         rayDirection,
         atmosphere.directionToLightRelativeToCameraGeocentricNormal,
         100000000.,
-        SkyViewLutSampleCount,
+        atmosphere.skyViewLutSampleCount,
         -1., // No planet hit.
         &transmittanceVal
     );
@@ -757,7 +751,7 @@ fn renderCameraVolume(
         tMaxMax = max(0., tMaxMax - distanceToAtmosphere);
     }
 
-    let sampleCount = i32(min(SkyViewLutSampleCount, 2. * layer + 2.));
+    let sampleCount = min(atmosphere.skyViewLutSampleCount, 2. * layer + 2.);
     var transmittance: vec3f;
     let radiance = integrateScatteredRadiance(
         true, // isAerialPerspectiveLut

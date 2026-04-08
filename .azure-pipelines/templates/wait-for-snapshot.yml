@@ -1,0 +1,30 @@
+# =============================================================================
+# Template: Wait for a Babylon snapshot to become available
+#
+# Polls a snapshot URL with retries until it's available, or times out.
+# Used by PR pipelines that depend on the main CI snapshot being deployed.
+# =============================================================================
+
+parameters:
+    - name: snapshotUrl
+      type: string
+      default: "$(SNAPSHOT_CDN_URL)/$(BuildName)/index.html"
+    - name: timeoutMinutes
+      type: number
+      default: 30
+    - name: displayName
+      type: string
+      default: "Wait for Babylon snapshot"
+
+steps:
+    - script: |
+          curl --connect-timeout 5 \
+              --max-time 10 \
+              --retry 500 \
+              --retry-delay 20 \
+              --retry-max-time 1200 \
+              --retry-all-errors \
+              --fail \
+              '${{ parameters.snapshotUrl }}'
+      displayName: "${{ parameters.displayName }}"
+      timeoutInMinutes: ${{ parameters.timeoutMinutes }}

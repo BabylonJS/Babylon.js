@@ -1,8 +1,7 @@
-import type { ReactNode, KeyboardEvent } from "react";
-import { Component } from "react";
-import type { Observable } from "core/Misc/observable";
-import type { PropertyChangedEvent } from "../propertyChangedEvent";
-import type { LockObject } from "../tabs/propertyGrids/lockObject";
+import { type ReactNode, type KeyboardEvent, Component } from "react";
+import { type Observable } from "core/Misc/observable";
+import { type PropertyChangedEvent } from "../propertyChangedEvent";
+import { type LockObject } from "../tabs/propertyGrids/lockObject";
 import { conflictingValuesPlaceholder } from "./targetsProxy";
 import { InputArrowsComponent } from "./inputArrowsComponent";
 import { TextInputPropertyLine, NumberInputPropertyLine } from "../fluent/hoc/propertyLines/inputPropertyLine";

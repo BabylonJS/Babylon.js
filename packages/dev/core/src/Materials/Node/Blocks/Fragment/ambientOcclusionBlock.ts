@@ -1,6 +1,6 @@
 import { NodeMaterialBlock } from "../../nodeMaterialBlock";
 import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
-import type { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
+import { type NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import { NodeMaterialConnectionPointDirection, type NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
 import { RegisterClass } from "../../../../Misc/typeStore";
@@ -10,11 +10,11 @@ import { RandomRange } from "../../../../Maths/math.scalar.functions";
 import { RawTexture } from "../../../Textures/rawTexture";
 import { Constants } from "../../../../Engines/constants";
 import { Texture } from "../../../Textures/texture";
-import type { Effect } from "../../../effect";
-import type { AbstractEngine } from "../../../../Engines/abstractEngine";
+import { type Effect } from "../../../effect";
+import { type AbstractEngine } from "../../../../Engines/abstractEngine";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
 import { ImageSourceBlock } from "../Dual/imageSourceBlock";
-import type { DepthSourceBlock } from "../Dual/depthSourceBlock";
+import { type DepthSourceBlock } from "../Dual/depthSourceBlock";
 
 /**
  * Block used to evaluate screen spaceambient occlusion in a shader

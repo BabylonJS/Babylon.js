@@ -1,4 +1,4 @@
-import type { FilesInput, IDisposable, Nullable, Scene, Vector3 } from "core/index";
+import { type FilesInput, type IDisposable, type Nullable, type Scene, type Vector3 } from "core/index";
 import { Observable } from "core/Misc/observable";
 
 type InspectorV2Module = typeof import("inspector/legacy/legacy") & typeof import("inspector/index");

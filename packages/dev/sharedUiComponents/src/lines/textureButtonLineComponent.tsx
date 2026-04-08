@@ -1,7 +1,7 @@
 import { faLink } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import type { BaseTexture } from "core/Materials/Textures/baseTexture";
-import type { Scene } from "core/scene";
+import { type BaseTexture } from "core/Materials/Textures/baseTexture";
+import { type Scene } from "core/scene";
 import * as React from "react";
 
 interface ITextureButtonLineProps {

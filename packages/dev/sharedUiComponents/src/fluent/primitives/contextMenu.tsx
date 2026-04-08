@@ -1,10 +1,20 @@
-import type { ReactElement, ReactNode } from "react";
-import { forwardRef, useState } from "react";
-import { Menu, MenuTrigger, MenuPopover, MenuList, MenuItem, MenuDivider, MenuGroup, MenuGroupHeader, makeStyles, tokens } from "@fluentui/react-components";
-import type { MenuProps as FluentMenuProps } from "@fluentui/react-components";
-import type { FluentIcon } from "@fluentui/react-icons";
+import { type ReactElement, type ReactNode, forwardRef, useState } from "react";
+import {
+    Menu,
+    MenuTrigger,
+    MenuPopover,
+    MenuList,
+    MenuItem,
+    MenuDivider,
+    MenuGroup,
+    MenuGroupHeader,
+    makeStyles,
+    tokens,
+    type MenuProps as FluentMenuProps,
+} from "@fluentui/react-components";
+import { type FluentIcon } from "@fluentui/react-icons";
 import { Button } from "shared-ui-components/fluent/primitives/button";
-import type { BasePrimitiveProps } from "./primitive";
+import { type BasePrimitiveProps } from "./primitive";
 
 const useStyles = makeStyles({
     menuPopover: {

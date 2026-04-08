@@ -1,26 +1,26 @@
 import { serialize } from "../../Misc/decorators";
 import { Observable } from "../../Misc/observable";
-import type { Nullable } from "../../types";
+import { type Nullable } from "../../types";
 import { Matrix, TmpVectors, Vector3 } from "../../Maths/math.vector";
 import { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { Constants } from "../../Engines/constants";
 import { GetClass, RegisterClass } from "../../Misc/typeStore";
 import { _WarnImport } from "../../Misc/devTools";
-import type { IInspectable } from "../../Misc/iInspectable";
-import type { AbstractEngine } from "../../Engines/abstractEngine";
+import { type IInspectable } from "../../Misc/iInspectable";
+import { type AbstractEngine } from "../../Engines/abstractEngine";
 import { TimingTools } from "../../Misc/timingTools";
 import { InstantiationTools } from "../../Misc/instantiationTools";
 import { Plane } from "../../Maths/math.plane";
 import { EncodeArrayBufferToBase64 } from "../../Misc/stringTools";
 import { GenerateBase64StringFromTexture, GenerateBase64StringFromTextureAsync } from "../../Misc/copyTools";
 import { useOpenGLOrientationForUV } from "../../Compat/compatibilityOptions";
-import type { InternalTexture } from "./internalTexture";
+import { type InternalTexture } from "./internalTexture";
 
-import type { CubeTexture } from "../../Materials/Textures/cubeTexture";
-import type { MirrorTexture } from "../../Materials/Textures/mirrorTexture";
-import type { RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture";
-import type { Scene } from "../../scene";
-import type { VideoTexture, VideoTextureSettings } from "./videoTexture";
+import { type CubeTexture } from "../../Materials/Textures/cubeTexture";
+import { type MirrorTexture } from "../../Materials/Textures/mirrorTexture";
+import { type RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture";
+import { type Scene } from "../../scene";
+import { type VideoTexture, type VideoTextureSettings } from "./videoTexture";
 
 import { SerializationHelper } from "../../Misc/decorators.serialization";
 
@@ -1089,7 +1089,7 @@ export class Texture extends BaseTexture {
                 } else {
                     let texture: Texture;
 
-                    if (parsedTexture.base64String && !internalTexture) {
+                    if (typeof parsedTexture.base64String === "string" && parsedTexture.base64String && !internalTexture) {
                         const options: ITextureCreationOptions = {
                             buffer: parsedTexture.base64String,
                             noMipmap: !generateMipMaps,
@@ -1103,7 +1103,10 @@ export class Texture extends BaseTexture {
                         };
 
                         // use the base64 string as the texture name for caching; the actual payload comes from options.buffer
-                        texture = Texture.CreateFromBase64String("", parsedTexture.base64String, scene, options);
+                        const base64String = parsedTexture.base64String;
+                        const noPrefixBase64String = base64String.startsWith("data:") ? base64String.substring(5) : base64String;
+
+                        texture = Texture.CreateFromBase64String("", noPrefixBase64String, scene, options);
 
                         // prettier name to fit with the loaded data
                         texture.name = parsedTexture.name;

@@ -1,4 +1,4 @@
-import type { FC, PropsWithChildren } from "react";
+import { type FC, type PropsWithChildren } from "react";
 import { useDrag } from "react-dnd";
 import { ClassNames } from "../classNames";
 import { GraphConnectorHandler } from "./GraphConnectorHandle";

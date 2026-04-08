@@ -1,12 +1,11 @@
-import type { FunctionComponent } from "react";
+import { type FunctionComponent, useCallback, useEffect, useState } from "react";
 
 import { makeStyles, Subtitle2, tokens } from "@fluentui/react-components";
-import { useCallback, useEffect, useState } from "react";
 
-import type { AbstractMesh } from "core/Meshes/abstractMesh";
-import type { Scene } from "core/scene";
-import type { Nullable } from "core/types";
-import type { ListItem } from "shared-ui-components/fluent/primitives/list";
+import { type AbstractMesh } from "core/Meshes/abstractMesh";
+import { type Scene } from "core/scene";
+import { type Nullable } from "core/types";
+import { type ListItem, List } from "shared-ui-components/fluent/primitives/list";
 
 import { GizmoManager } from "core/Gizmos/gizmoManager";
 import { UtilityLayerRenderer } from "core/Rendering/utilityLayerRenderer";
@@ -15,10 +14,9 @@ import { Color3 } from "core/Maths/math.color";
 import { Attractor } from "core/Particles/attractor";
 import { Color3PropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/colorPropertyLine";
 import { SyncedSliderPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/syncedSliderPropertyLine";
-import { List } from "shared-ui-components/fluent/primitives/list";
 import { useResource } from "../../../hooks/resourceHooks";
 import { AttractorComponent } from "./attractor";
-import type { IAttractorData, IAttractorSource } from "./attractorAdapter";
+import { type IAttractorData, type IAttractorSource } from "./attractorAdapter";
 
 const useStyles = makeStyles({
     subsection: {

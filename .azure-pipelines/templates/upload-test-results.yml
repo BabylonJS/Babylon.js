@@ -1,0 +1,58 @@
+# =============================================================================
+# Template: Upload Playwright test results to the deployment server
+#
+# Looks for a playwright-report directory, zips it, and uploads to the
+# deployment server. Supports a fallback directory for cases where the
+# report may be in a different location.
+# =============================================================================
+
+parameters:
+    - name: reportDir
+      type: string
+      default: "playwright-report"
+    - name: fallbackReportDir
+      type: string
+      default: ""
+    - name: deployPath
+      type: string
+    - name: storageAccount
+      type: string
+      default: "$(SNAPSHOTS_STORAGE_ACCOUNT)"
+    - name: displayName
+      type: string
+      default: "Upload test results"
+    - name: condition
+      type: string
+      default: "succeededOrFailed()"
+    - name: continueOnError
+      type: boolean
+      default: false
+
+steps:
+    - script: |
+          REPORT_DIR="${{ parameters.reportDir }}"
+          FALLBACK_DIR="${{ parameters.fallbackReportDir }}"
+
+          if test -d "$REPORT_DIR"; then
+            cd "$REPORT_DIR"
+          elif [ -n "$FALLBACK_DIR" ] && test -d "$FALLBACK_DIR"; then
+            cd "$FALLBACK_DIR"
+          else
+            echo "No report directory found, skipping upload"
+            exit 0
+          fi
+
+          zip -r $(Build.SourcesDirectory)/_test_report.zip *
+          cd $(Build.SourcesDirectory)
+
+          curl $(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_UPLOAD) -i -X POST \
+            -H "Content-Type: multipart/form-data" \
+            -H "Authorization: $(BASIC_AUTH)" \
+            -F "path=${{ parameters.deployPath }}" \
+            -F "storageAccount=${{ parameters.storageAccount }}" \
+            -F "zip=@_test_report.zip"
+
+          rm -f _test_report.zip
+      displayName: "${{ parameters.displayName }}"
+      condition: ${{ parameters.condition }}
+      continueOnError: ${{ parameters.continueOnError }}

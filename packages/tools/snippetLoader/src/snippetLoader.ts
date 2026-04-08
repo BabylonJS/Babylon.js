@@ -1,20 +1,21 @@
-import type {
-    ISnippetServerResponse,
-    SnippetContentType,
-    SnippetResult,
-    IPlaygroundSnippetResult,
-    IDataSnippetResult,
-    IUnknownSnippetResult,
-    IPlaygroundPayload,
-    IV2Manifest,
-    TranspileFn,
-    ModuleFormat,
-    ICreateEngineOptions,
-    CreateEngineSource,
-    IRuntimeFeatures,
-    IInitializeRuntimeOptions,
+import {
+    type ISnippetServerResponse,
+    type SnippetContentType,
+    type SnippetResult,
+    type IPlaygroundSnippetResult,
+    type IDataSnippetResult,
+    type IUnknownSnippetResult,
+    type IPlaygroundPayload,
+    type IV2Manifest,
+    type TranspileFn,
+    type ModuleFormat,
+    type ICreateEngineOptions,
+    type CreateEngineSource,
+    type IRuntimeFeatures,
+    type IInitializeRuntimeOptions,
+    DefaultRuntimeBaseUrl,
+    RuntimeScriptPaths,
 } from "./types";
-import { DefaultRuntimeBaseUrl, RuntimeScriptPaths } from "./types";
 import { FetchSnippet, DEFAULT_SNIPPET_URL } from "./fetchSnippet";
 
 // -----------------------------------------------------------------------
@@ -28,13 +29,16 @@ import { FetchSnippet, DEFAULT_SNIPPET_URL } from "./fetchSnippet";
  */
 let CachedTsPromise: Promise<typeof import("typescript")> | null = null;
 
+// Isolated dynamic import so the untyped module specifier is contained
+// in a single place and the @ts-expect-error applies cleanly.
+async function _LoadMonacoTs(): Promise<unknown> {
+    return await import(/* webpackChunkName: "typescript" */ "monaco-editor/esm/vs/language/typescript/lib/typescriptServices");
+}
+
 async function GetTypeScript(): Promise<typeof import("typescript")> {
     if (!CachedTsPromise) {
-        CachedTsPromise = import(
-            /* webpackChunkName: "typescript" */
-            "monaco-editor/esm/vs/language/typescript/lib/typescriptServices"
-            // eslint-disable-next-line github/no-then
-        ).then((m) => m.typescript);
+        // eslint-disable-next-line github/no-then
+        CachedTsPromise = (_LoadMonacoTs() as Promise<{ typescript: typeof import("typescript") }>).then((m) => m.typescript);
     }
     return await CachedTsPromise;
 }
@@ -1122,7 +1126,8 @@ function BuildFunctions(
     entryName: string,
     moduleFormat: ModuleFormat,
     engineType: string | undefined,
-    externalImports?: Record<string, string>
+    externalImports?: Record<string, string>,
+    assetBaseUrl?: string
 ): IBuildResult {
     // We defer the actual module loading to when createScene/createEngine
     // are first called, so the result object can be inspected synchronously.
@@ -1164,43 +1169,99 @@ function BuildFunctions(
         if (!createSceneFn) {
             throw new Error("No createScene export found in snippet " + "(tried: default.CreateScene, Playground.CreateScene, createScene, delayCreateScene, default).");
         }
-        // Bind `this` to a proxy for legacy snippet compatibility.
-        let sceneResult: any;
-        const bound = createSceneFn.bind(
-            new Proxy(
-                {},
-                {
-                    get(_target: any, prop: PropertyKey) {
-                        if (prop === "scene") {
-                            return sceneResult;
-                        }
-                        if (prop === "engine") {
-                            return engine;
-                        }
-                        if (prop === "canvas") {
-                            return canvas;
-                        }
-                        return (globalThis as any)[prop];
-                    },
-                    set(_target: any, prop: PropertyKey, value: any) {
-                        if (prop === "scene") {
-                            sceneResult = value;
-                            return true;
-                        }
-                        (globalThis as any)[prop] = value;
-                        return true;
-                    },
-                }
-            )
-        );
-        const returnValue = await bound(engine, canvas);
-        // Prefer the explicit return value; fall back to the value set via
-        // `this.scene = ...` in the proxy (common in legacy snippets that
-        // don't return the scene).
-        if (returnValue !== undefined && returnValue !== null) {
-            sceneResult = returnValue;
+
+        // In script mode, snippet code is executed via `new Function()`, so
+        // free-variable references like `engine` and `canvas` resolve against
+        // `globalThis`.  The real Playground sets these before calling
+        // createScene — replicate the same behavior here.
+        const g = globalThis as any;
+        const prevEngine = g.engine;
+        const prevCanvas = g.canvas;
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        const BABYLON = g.BABYLON;
+        const prevBaseUrl = BABYLON?.Tools?.BaseUrl;
+        const prevPreprocessUrl = BABYLON?.Tools?.PreprocessUrl;
+
+        if (moduleFormat === "script") {
+            g.engine = engine;
+            g.canvas = canvas;
         }
-        return sceneResult;
+
+        // When snippet code runs outside its original origin (e.g. the
+        // Flow Graph Editor running playground snippets from localhost),
+        // relative asset paths resolve against the wrong host.  If the
+        // caller provided an assetBaseUrl, set up PreprocessUrl so that
+        // relative paths resolve against that origin while absolute URLs
+        // pass through unchanged.  Applied before AND after snippet
+        // execution because the snippet may reset these globals.
+        const applyAssetUrlHooks = assetBaseUrl
+            ? () => {
+                  if (BABYLON?.Tools) {
+                      BABYLON.Tools.BaseUrl = "";
+                      BABYLON.Tools.PreprocessUrl = (url: string) => {
+                          if (/^https?:\/\//i.test(url) || url.startsWith("data:") || url.startsWith("blob:") || url.startsWith("file:")) {
+                              return url;
+                          }
+                          return assetBaseUrl + url;
+                      };
+                  }
+              }
+            : undefined;
+        applyAssetUrlHooks?.();
+
+        try {
+            // Bind `this` to a proxy for legacy snippet compatibility.
+            let sceneResult: any;
+            const bound = createSceneFn.bind(
+                new Proxy(
+                    {},
+                    {
+                        get(_target: any, prop: PropertyKey) {
+                            if (prop === "scene") {
+                                return sceneResult;
+                            }
+                            if (prop === "engine") {
+                                return engine;
+                            }
+                            if (prop === "canvas") {
+                                return canvas;
+                            }
+                            return (globalThis as any)[prop];
+                        },
+                        set(_target: any, prop: PropertyKey, value: any) {
+                            if (prop === "scene") {
+                                sceneResult = value;
+                                return true;
+                            }
+                            (globalThis as any)[prop] = value;
+                            return true;
+                        },
+                    }
+                )
+            );
+            const returnValue = await bound(engine, canvas);
+            // Prefer the explicit return value; fall back to the value set via
+            // `this.scene = ...` in the proxy (common in legacy snippets that
+            // don't return the scene).
+            if (returnValue !== undefined && returnValue !== null) {
+                sceneResult = returnValue;
+            }
+
+            // Re-apply in case the snippet code overwrote BaseUrl/PreprocessUrl.
+            applyAssetUrlHooks?.();
+
+            return sceneResult;
+        } finally {
+            // Restore globals that were mutated for snippet execution
+            if (moduleFormat === "script") {
+                g.engine = prevEngine;
+                g.canvas = prevCanvas;
+            }
+            if (BABYLON?.Tools) {
+                BABYLON.Tools.BaseUrl = prevBaseUrl;
+                BABYLON.Tools.PreprocessUrl = prevPreprocessUrl;
+            }
+        }
     };
 
     // We eagerly load in script mode since it's synchronous, so we can
@@ -1249,6 +1310,21 @@ export interface ILoadSnippetOptions {
      *   Suitable for environments where BABYLON is a global (e.g. UMD script-tag setups).
      */
     moduleFormat?: ModuleFormat;
+    /**
+     * Base URL to prepend to relative asset paths (textures, models, etc.)
+     * loaded by the snippet at runtime.
+     *
+     * When set, `BABYLON.Tools.BaseUrl` is cleared and `PreprocessUrl` is
+     * configured so that relative URLs resolve against this origin while
+     * absolute URLs pass through unchanged.
+     *
+     * Typical value: `"https://playground.babylonjs.com/"` — use this when
+     * running playground snippets outside the Playground itself (e.g. in
+     * the Flow Graph Editor or other embedded tools).
+     *
+     * When omitted, no URL rewriting is applied.
+     */
+    assetBaseUrl?: string;
 }
 
 /**
@@ -1331,7 +1407,7 @@ export async function ParseSnippetResponse(response: ISnippetServerResponse, sni
             }
 
             // Build the executable functions.
-            const fns = BuildFunctions(jsFiles, entryName, moduleFormat, parsed.engineType, parsed.manifest?.imports);
+            const fns = BuildFunctions(jsFiles, entryName, moduleFormat, parsed.engineType, parsed.manifest?.imports, options?.assetBaseUrl);
 
             // Ensure metadata fields are computed before returning the result object.
             await fns.initializeMetadataAsync();

@@ -12,6 +12,7 @@ uniform float edgeIntensity;
 uniform float edgeWidth;
 uniform int renderMode; // 0: General, 1: Normal, 2: Depth, 3: Outline
         
+#define inline
 vec3 boxBlur(sampler2D sampler, vec2 uv, vec2 texelSize) {
     vec3 result = vec3(0.0);
         

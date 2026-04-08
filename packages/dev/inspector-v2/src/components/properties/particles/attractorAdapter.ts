@@ -1,7 +1,7 @@
-import type { Vector3 } from "core/Maths/math.vector";
+import { type Vector3 } from "core/Maths/math.vector";
 import { Attractor } from "core/Particles/attractor";
-import type { ParticleSystem } from "core/Particles/particleSystem";
-import type { NodeParticleSystemSet } from "core/Particles/Node/nodeParticleSystemSet";
+import { type ParticleSystem } from "core/Particles/particleSystem";
+import { type NodeParticleSystemSet } from "core/Particles/Node/nodeParticleSystemSet";
 import { ParticleInputBlock } from "core/Particles/Node/Blocks/particleInputBlock";
 import { UpdateAttractorBlock } from "core/Particles/Node/Blocks/Update/updateAttractorBlock";
 

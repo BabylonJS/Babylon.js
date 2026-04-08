@@ -1,38 +1,38 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { serialize, serializeAsColor3, expandToProperty, serializeAsFresnelParameters, serializeAsTexture } from "../Misc/decorators";
 import { SmartArray } from "../Misc/smartArray";
-import type { IAnimatable } from "../Animations/animatable.interface";
+import { type IAnimatable } from "../Animations/animatable.interface";
 
-import type { Nullable } from "../types";
+import { type Nullable } from "../types";
 import { Scene } from "../scene";
-import type { Matrix } from "../Maths/math.vector";
+import { type Matrix } from "../Maths/math.vector";
 import { Color3 } from "../Maths/math.color";
 import { VertexBuffer } from "../Buffers/buffer";
-import type { SubMesh } from "../Meshes/subMesh";
-import type { AbstractMesh } from "../Meshes/abstractMesh";
-import type { Mesh } from "../Meshes/mesh";
+import { type SubMesh } from "../Meshes/subMesh";
+import { type AbstractMesh } from "../Meshes/abstractMesh";
+import { type Mesh } from "../Meshes/mesh";
 import { PrePassConfiguration } from "./prePassConfiguration";
 
 import { ImageProcessingDefinesMixin } from "./imageProcessingConfiguration.defines";
 import { ImageProcessingConfiguration } from "./imageProcessingConfiguration";
-import type { FresnelParameters } from "./fresnelParameters";
-import type { ICustomShaderNameResolveOptions } from "../Materials/material";
-import { Material } from "../Materials/material";
+import { type FresnelParameters } from "./fresnelParameters";
+import { type ICustomShaderNameResolveOptions, Material } from "../Materials/material";
 import { MaterialPluginEvent } from "./materialPluginEvent";
 import { MaterialDefines } from "../Materials/materialDefines";
 import { PushMaterial } from "./pushMaterial";
 
-import type { BaseTexture } from "../Materials/Textures/baseTexture";
-import type { CubeTexture } from "../Materials/Textures/cubeTexture";
-import type { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
+import { type BaseTexture } from "../Materials/Textures/baseTexture";
+import { type CubeTexture } from "../Materials/Textures/cubeTexture";
+import { type RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import { RegisterClass } from "../Misc/typeStore";
 import { MaterialFlags } from "./materialFlags";
 
 import { Constants } from "../Engines/constants";
 import { EffectFallbacks } from "./effectFallbacks";
-import type { Effect, IEffectCreationOptions } from "./effect";
+import { type Effect, type IEffectCreationOptions } from "./effect";
 import { DetailMapConfiguration } from "./material.detailMapConfiguration";
 import { AddClipPlaneUniforms, BindClipPlane } from "./clipPlaneMaterialHelper";
+import { PrepareVertexPullingUniforms, BindVertexPullingUniforms, type IVertexPullingMetadata } from "./vertexPullingHelper.functions";
 import {
     BindBonesParameters,
     BindFogParameters,
@@ -63,11 +63,12 @@ import { SerializationHelper } from "../Misc/decorators.serialization";
 import { ShaderLanguage } from "./shaderLanguage";
 import { MaterialHelperGeometryRendering } from "./materialHelper.geometryrendering";
 import { UVDefinesMixin } from "./uv.defines";
+import { PrepassDefinesMixin } from "./prepass.defines";
 import { ImageProcessingMixin } from "./imageProcessing";
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
-class StandardMaterialDefinesBase extends UVDefinesMixin(MaterialDefines) {}
+class StandardMaterialDefinesBase extends PrepassDefinesMixin(UVDefinesMixin(MaterialDefines)) {}
 
 /** @internal */
 export class StandardMaterialDefines extends ImageProcessingDefinesMixin(StandardMaterialDefinesBase) {
@@ -168,38 +169,6 @@ export class StandardMaterialDefines extends ImageProcessingDefinesMixin(Standar
     public ALPHATEST_AFTERALLALPHACOMPUTATIONS = false;
     public ALPHABLEND = true;
 
-    public PREPASS = false;
-    public PREPASS_COLOR = false;
-    public PREPASS_COLOR_INDEX = -1;
-    public PREPASS_IRRADIANCE = false;
-    public PREPASS_IRRADIANCE_INDEX = -1;
-    public PREPASS_ALBEDO = false;
-    public PREPASS_ALBEDO_INDEX = -1;
-    public PREPASS_ALBEDO_SQRT = false;
-    public PREPASS_ALBEDO_SQRT_INDEX = -1;
-    public PREPASS_DEPTH = false;
-    public PREPASS_DEPTH_INDEX = -1;
-    public PREPASS_SCREENSPACE_DEPTH = false;
-    public PREPASS_SCREENSPACE_DEPTH_INDEX = -1;
-    public PREPASS_NORMALIZED_VIEW_DEPTH = false;
-    public PREPASS_NORMALIZED_VIEW_DEPTH_INDEX = -1;
-    public PREPASS_NORMAL = false;
-    public PREPASS_NORMAL_INDEX = -1;
-    public PREPASS_NORMAL_WORLDSPACE = false;
-    public PREPASS_WORLD_NORMAL = false;
-    public PREPASS_WORLD_NORMAL_INDEX = -1;
-    public PREPASS_POSITION = false;
-    public PREPASS_POSITION_INDEX = -1;
-    public PREPASS_LOCAL_POSITION = false;
-    public PREPASS_LOCAL_POSITION_INDEX = -1;
-    public PREPASS_VELOCITY = false;
-    public PREPASS_VELOCITY_INDEX = -1;
-    public PREPASS_VELOCITY_LINEAR = false;
-    public PREPASS_VELOCITY_LINEAR_INDEX = -1;
-    public PREPASS_REFLECTIVITY = false;
-    public PREPASS_REFLECTIVITY_INDEX = -1;
-    public SCENE_MRT_COUNT = 0;
-
     public RGBDLIGHTMAP = false;
     public RGBDREFLECTION = false;
     public RGBDREFRACTION = false;
@@ -210,6 +179,8 @@ export class StandardMaterialDefines extends ImageProcessingDefinesMixin(Standar
     public CAMERA_PERSPECTIVE = false;
     public AREALIGHTSUPPORTED = true;
     public USE_VERTEX_PULLING = false;
+    public VERTEX_PULLING_USE_INDEX_BUFFER = false;
+    public VERTEX_PULLING_INDEX_BUFFER_32BITS = false;
     public RIGHT_HANDED = false;
 
     public CLUSTLIGHT_SLICES = 0;
@@ -592,6 +563,7 @@ export class StandardMaterial extends StandardMaterialBase {
     public applyDecalMapAfterDetailMap: boolean;
 
     private _shadersLoaded = false;
+    private _vertexPullingMetadata: Map<string, IVertexPullingMetadata> | null = null;
 
     /**
      * Defines additional PrePass parameters for the material.
@@ -1180,7 +1152,7 @@ export class StandardMaterial extends StandardMaterialBase {
                 "logarithmicDepthConstant",
                 "vTangentSpaceParams",
                 "alphaCutOff",
-                "boneTextureWidth",
+                "boneTextureInfo",
                 "morphTargetTextureInfo",
                 "morphTargetTextureIndices",
                 "cameraInfo",
@@ -1242,6 +1214,22 @@ export class StandardMaterial extends StandardMaterialBase {
             });
 
             AddClipPlaneUniforms(uniforms);
+
+            // Vertex pulling metadata uniforms
+            if (this._useVertexPulling) {
+                const renderingMesh = subMesh.getRenderingMesh();
+                const geometry = renderingMesh?.geometry;
+                if (geometry) {
+                    this._vertexPullingMetadata = PrepareVertexPullingUniforms(geometry);
+                    if (this._vertexPullingMetadata) {
+                        this._vertexPullingMetadata.forEach((_, attribute) => {
+                            uniforms.push(`vp_${attribute}_info`);
+                        });
+                    }
+                }
+            } else {
+                this._vertexPullingMetadata = null;
+            }
 
             const csnrOptions: ICustomShaderNameResolveOptions = {};
 
@@ -1423,6 +1411,12 @@ export class StandardMaterial extends StandardMaterialBase {
 
         // Bones
         BindBonesParameters(mesh, effect);
+
+        // Vertex pulling
+        if (this._vertexPullingMetadata) {
+            BindVertexPullingUniforms(effect, this._vertexPullingMetadata);
+        }
+
         const ubo = this._uniformBuffer;
         if (mustRebind) {
             this.bindViewProjection(effect);

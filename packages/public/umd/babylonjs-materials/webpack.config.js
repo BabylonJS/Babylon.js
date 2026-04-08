@@ -25,7 +25,6 @@ module.exports = (env) => {
         },
         alias: {
             materials: path.resolve(__dirname, "../../../dev/materials/src"),
-            "@lts/materials": path.resolve(__dirname, "../../../lts/materials/src"),
         },
         overrideFilename: (pathData) => {
             return pathData.chunk.name === "materials" ? `babylonjs.[name]${env.production ? ".min" : ""}.js` : `babylon.[name]Material${env.production ? ".min" : ""}.js`;

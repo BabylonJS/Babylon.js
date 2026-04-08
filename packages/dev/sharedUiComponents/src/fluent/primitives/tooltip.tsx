@@ -1,7 +1,6 @@
-import type { Nullable } from "core/index";
+import { type Nullable } from "core/index";
 
-import type { ReactElement } from "react";
-import { forwardRef } from "react";
+import { type ReactElement, forwardRef } from "react";
 
 import { Tooltip as FluentTooltip } from "@fluentui/react-components";
 

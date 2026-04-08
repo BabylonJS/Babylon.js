@@ -2,7 +2,7 @@ import { Constants, NullEngine } from "core/Engines";
 import { Scene } from "core/scene";
 import { FlowGraphCoordinator } from "core/FlowGraph/flowGraphCoordinator";
 import { Vector3 } from "core/Maths";
-import { ArcRotateCamera } from "core/Cameras";
+import { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
 import { Logger } from "core/Misc";
 import { ParseFlowGraphAsync } from "core/FlowGraph";
 import { InteractivityGraphToFlowGraphParser } from "loaders/glTF/2.0/Extensions/KHR_interactivity/interactivityGraphParser";
@@ -17,8 +17,8 @@ import { Animation } from "core/Animations/animation";
 describe("Interactivity/animation nodes", () => {
     let engine: NullEngine;
     let scene: Scene;
-    const log: jest.SpyInstance = jest.spyOn(Logger, "Log").mockImplementation(() => {});
-    const errorLog: jest.SpyInstance = jest.spyOn(Logger, "Error").mockImplementation(() => {});
+    const log: ReturnType<typeof vi.spyOn> = vi.spyOn(Logger, "Log").mockImplementation(() => {});
+    const errorLog: ReturnType<typeof vi.spyOn> = vi.spyOn(Logger, "Error").mockImplementation(() => {});
     let renderInterval: any;
 
     async function generateSimpleNodeGraph(
@@ -81,8 +81,8 @@ describe("Interactivity/animation nodes", () => {
         const ag = new AnimationGroup("test");
         ag.to = 10;
         // spy on the start, reset and stop functions
-        const startSpy = jest.spyOn(ag, "start");
-        const stopSpy = jest.spyOn(ag, "stop");
+        const startSpy = vi.spyOn(ag, "start");
+        const stopSpy = vi.spyOn(ag, "stop");
         const gltf = {
             animations: [
                 {
@@ -121,8 +121,8 @@ describe("Interactivity/animation nodes", () => {
         const ag = new AnimationGroup("test");
         ag.to = 600; // 600 frames mean 10 seconds at 60fps
         // spy on the start, reset and stop functions
-        const startSpy = jest.spyOn(ag, "start");
-        const stopSpy = jest.spyOn(ag, "stop");
+        const startSpy = vi.spyOn(ag, "start");
+        const stopSpy = vi.spyOn(ag, "stop");
         const gltf = {
             animations: [
                 {
@@ -174,8 +174,8 @@ describe("Interactivity/animation nodes", () => {
     test("animation/stop after a delay", async () => {
         const ag = new AnimationGroup("test");
         // spy on the start, reset and stop functions
-        const startSpy = jest.spyOn(ag, "start");
-        const stopSpy = jest.spyOn(ag, "stop");
+        const startSpy = vi.spyOn(ag, "start");
+        const stopSpy = vi.spyOn(ag, "stop");
         const gltf = {
             animations: [
                 {
@@ -259,8 +259,8 @@ describe("Interactivity/animation nodes", () => {
         ]);
         ag.addTargetedAnimation(animation, objectToAnimation);
         // spy on the start, reset and stop functions
-        const startSpy = jest.spyOn(ag, "start");
-        const stopSpy = jest.spyOn(ag, "stop");
+        const startSpy = vi.spyOn(ag, "start");
+        const stopSpy = vi.spyOn(ag, "stop");
         const gltf = {
             animations: [
                 {

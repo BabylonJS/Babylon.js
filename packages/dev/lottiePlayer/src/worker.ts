@@ -1,9 +1,16 @@
 /* eslint-disable require-atomic-updates */
 // Keep only type-only imports at module scope so nothing with side-effects runs in the worker at load time
-import type { Nullable } from "core/types";
-import type { RawLottieAnimation } from "./parsing/rawTypes";
-import type { AnimationController } from "./rendering/animationController";
-import type { Message, AnimationSizeMessage, AnimationUrlMessagePayload, StartAnimationMessagePayload, ContainerResizeMessagePayload, WorkerLoadedMessage } from "./messageTypes";
+import { type Nullable } from "core/types";
+import { type RawLottieAnimation } from "./parsing/rawTypes";
+import { type AnimationController } from "./rendering/animationController";
+import {
+    type Message,
+    type AnimationSizeMessage,
+    type AnimationUrlMessagePayload,
+    type StartAnimationMessagePayload,
+    type ContainerResizeMessagePayload,
+    type WorkerLoadedMessage,
+} from "./messageTypes";
 
 let RawAnimation: Nullable<RawLottieAnimation> = null;
 let Controller: Nullable<AnimationController> = null;

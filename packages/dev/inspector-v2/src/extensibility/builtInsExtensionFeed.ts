@@ -1,4 +1,4 @@
-import type { IExtensionFeed, ExtensionMetadata, IExtensionMetadataQuery, ExtensionModule } from "./extensionFeed";
+import { type IExtensionFeed, type ExtensionMetadata, type IExtensionMetadataQuery, type ExtensionModule } from "./extensionFeed";
 
 export type BuiltInExtension = ExtensionMetadata & {
     /**

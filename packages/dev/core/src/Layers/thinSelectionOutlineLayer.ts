@@ -1,23 +1,22 @@
 import { VertexBuffer } from "../Buffers/buffer";
 import { Camera } from "../Cameras/camera";
 import { Constants } from "../Engines/constants";
-import type { ThinEngine } from "../Engines/thinEngine";
+import { type ThinEngine } from "../Engines/thinEngine";
 import { AddClipPlaneUniforms, BindClipPlane, PrepareStringDefinesForClipPlanes } from "../Materials/clipPlaneMaterialHelper";
-import type { Effect, IEffectCreationOptions } from "../Materials/effect";
+import { type Effect, type IEffectCreationOptions } from "../Materials/effect";
 import { EffectFallbacks } from "../Materials/effectFallbacks";
 import { Material } from "../Materials/material";
 import { BindBonesParameters, BindMorphTargetParameters, PrepareDefinesAndAttributesForMorphTargets, PushAttributesForInstances } from "../Materials/materialHelper.functions";
 import { ShaderLanguage } from "../Materials/shaderLanguage";
-import type { BaseTexture } from "../Materials/Textures/baseTexture";
+import { type BaseTexture } from "../Materials/Textures/baseTexture";
 import { Color3, Color4 } from "../Maths/math.color";
-import type { AbstractMesh } from "../Meshes/abstractMesh";
-import type { InstancedMesh } from "../Meshes/instancedMesh";
-import type { Mesh } from "../Meshes/mesh";
-import type { SubMesh } from "../Meshes/subMesh";
-import type { Scene } from "../scene";
-import type { Nullable } from "../types";
-import type { IThinEffectLayerOptions } from "./thinEffectLayer";
-import { ThinEffectLayer } from "./thinEffectLayer";
+import { type AbstractMesh } from "../Meshes/abstractMesh";
+import { type InstancedMesh } from "../Meshes/instancedMesh";
+import { type Mesh } from "../Meshes/mesh";
+import { type SubMesh } from "../Meshes/subMesh";
+import { type Scene } from "../scene";
+import { type Nullable } from "../types";
+import { type IThinEffectLayerOptions, ThinEffectLayer } from "./thinEffectLayer";
 
 /**
  * Selection outline layer options. This helps customizing the behaviour
@@ -289,7 +288,7 @@ export class ThinSelectionOutlineLayer extends ThinEffectLayer {
                 "view",
                 "morphTargetInfluences",
                 "morphTargetCount",
-                "boneTextureWidth",
+                "boneTextureInfo",
                 "diffuseMatrix",
                 "morphTargetTextureInfo",
                 "morphTargetTextureIndices",
@@ -475,7 +474,11 @@ export class ThinSelectionOutlineLayer extends ThinEffectLayer {
             return;
         }
 
-        const hardwareInstancedRendering = batch.hardwareInstancedRendering[subMesh._id] || renderingMesh.hasThinInstances || !!renderingMesh._userInstancedBuffersStorage;
+        const hardwareInstancedRendering =
+            batch.hardwareInstancedRendering[subMesh._id] ||
+            renderingMesh.hasThinInstances ||
+            (!!renderingMesh._userInstancedBuffersStorage &&
+                ThinSelectionOutlineLayer.InstanceSelectionIdAttributeName in renderingMesh._userInstancedBuffersStorage.vertexBuffers);
 
         this._setEmissiveTextureAndColor(renderingMesh, subMesh, material);
 
@@ -567,7 +570,15 @@ export class ThinSelectionOutlineLayer extends ThinEffectLayer {
                 BindClipPlane(effect, material, scene);
 
                 // Selection ID
-                const selectionId = this._meshUniqueIdToSelectionId[renderingMesh.uniqueId];
+                let selectionId = this._meshUniqueIdToSelectionId[renderingMesh.uniqueId];
+                // When using LOD, the rendering mesh is the LOD mesh, not the source mesh.
+                // Look up the selection ID from the master (source) mesh.
+                if (selectionId === undefined && renderingMesh._masterMesh) {
+                    selectionId = this._meshUniqueIdToSelectionId[renderingMesh._masterMesh.uniqueId];
+                    if (selectionId === undefined) {
+                        selectionId = renderingMesh._masterMesh.instancedBuffers?.[ThinSelectionOutlineLayer.InstanceSelectionIdAttributeName];
+                    }
+                }
                 if (!renderingMesh.hasInstances && !renderingMesh.hasThinInstances && !renderingMesh.isAnInstance && selectionId !== undefined) {
                     effect.setFloat("selectionId", selectionId);
                 }
@@ -623,7 +634,9 @@ export class ThinSelectionOutlineLayer extends ThinEffectLayer {
 
     /** @internal */
     public override _shouldRenderMesh(mesh: Mesh): boolean {
-        return this.hasMesh(mesh);
+        // Use the base class check (renderingGroupId) rather than this.hasMesh,
+        // because LOD meshes won't be in _selection but still need to render.
+        return super.hasMesh(mesh);
     }
 
     /** @internal */
@@ -639,8 +652,10 @@ export class ThinSelectionOutlineLayer extends ThinEffectLayer {
      * @returns true if the mesh will be used
      */
     public override hasMesh(mesh: AbstractMesh): boolean {
-        // we control selection as RTT render list
-        return super.hasMesh(mesh);
+        if (!super.hasMesh(mesh) || !this._selection) {
+            return false;
+        }
+        return this._selection.indexOf(mesh) !== -1;
     }
 
     /** @internal */
@@ -661,10 +676,15 @@ export class ThinSelectionOutlineLayer extends ThinEffectLayer {
             if (mesh._userInstancedBuffersStorage) {
                 const kind = ThinSelectionOutlineLayer.InstanceSelectionIdAttributeName;
 
-                // Dispose per-pass VBOs for this layer's own render passes only (WebGPU)
+                // Dispose per-pass VBOs for ALL render passes (WebGPU).
+                // _processInstancedBuffers creates per-pass VBOs for every render pass
+                // that renders this mesh (main scene, depth renderer, etc.), not just
+                // this layer's own passes. We must clean them all up to avoid using
+                // a destroyed GPU buffer on the next submit.
                 if (mesh._userInstancedBuffersStorage.renderPasses) {
-                    for (const passId of this._objectRenderer.renderPassIds) {
-                        const passVBOs = mesh._userInstancedBuffersStorage.renderPasses[passId];
+                    for (const passId in mesh._userInstancedBuffersStorage.renderPasses) {
+                        const renderPassId = Number(passId);
+                        const passVBOs = mesh._userInstancedBuffersStorage.renderPasses[renderPassId];
                         if (passVBOs?.[kind]) {
                             passVBOs[kind]!.dispose();
                             delete passVBOs[kind];
@@ -692,6 +712,15 @@ export class ThinSelectionOutlineLayer extends ThinEffectLayer {
             }
             if (mesh.instancedBuffers?.[ThinSelectionOutlineLayer.InstanceSelectionIdAttributeName] !== undefined) {
                 delete mesh.instancedBuffers[ThinSelectionOutlineLayer.InstanceSelectionIdAttributeName];
+            }
+
+            // In WebGPU non-compat mode, cached render bundles (fastBundle) bake
+            // vertex-buffer GPU handles at record time. Because the new VBO has
+            // the same format (and thus the same hashCode), the pipeline cache
+            // won't detect the change and would replay the stale bundle.
+            // Resetting the draw cache forces new bundles to be recorded.
+            if (this._engine.isWebGPU && !this._engine.compatibilityMode) {
+                mesh.resetDrawCache();
             }
         }
         this._selection.length = 0;

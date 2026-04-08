@@ -1,4 +1,4 @@
-import type { Nullable } from "../types";
+import { type Nullable } from "../types";
 import { Logger } from "../Misc/logger";
 import { WebRequest } from "../Misc/webRequest";
 import { AudioParameterRampShape } from "./audioParameter";

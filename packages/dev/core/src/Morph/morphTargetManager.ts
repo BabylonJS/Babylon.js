@@ -1,15 +1,15 @@
-import type { Observer } from "../Misc/observable";
+import { type Observer } from "../Misc/observable";
 import { SmartArray } from "../Misc/smartArray";
 import { Logger } from "../Misc/logger";
-import type { Nullable } from "../types";
-import type { IDisposable, Scene } from "../scene";
+import { type Nullable } from "../types";
+import { type IDisposable, type Scene } from "../scene";
 import { EngineStore } from "../Engines/engineStore";
-import type { Mesh } from "../Meshes/mesh";
+import { type Mesh } from "../Meshes/mesh";
 import { MorphTarget } from "./morphTarget";
 import { Constants } from "../Engines/constants";
-import type { Effect } from "../Materials/effect";
+import { type Effect } from "../Materials/effect";
 import { RawTexture2DArray } from "../Materials/Textures/rawTexture2DArray";
-import type { IAssetContainer } from "core/IAssetContainer";
+import { type IAssetContainer } from "core/IAssetContainer";
 /**
  * This class is used to deform meshes using morphing between different targets
  * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/morphTargets

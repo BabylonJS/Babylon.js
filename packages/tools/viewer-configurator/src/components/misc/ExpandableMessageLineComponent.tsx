@@ -1,5 +1,4 @@
-import type { FunctionComponent } from "react";
-import { useCallback, useMemo, useState } from "react";
+import { type FunctionComponent, useCallback, useMemo, useState } from "react";
 import { FontAwesomeIconButton } from "./FontAwesomeIconButton";
 import { faChevronDown, faChevronUp } from "@fortawesome/free-solid-svg-icons";
 

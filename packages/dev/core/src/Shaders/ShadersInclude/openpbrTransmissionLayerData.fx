@@ -5,7 +5,7 @@ float transmission_weight = vTransmissionWeight;
 vec3 transmission_color = vTransmissionColor.rgb;
 float transmission_depth = vTransmissionDepth;
 vec3 transmission_scatter = vTransmissionScatter.rgb;
-float transmission_scatter_anisotropy = vTransmissionScatterAnisotropy;
+float transmission_scatter_anisotropy = clamp(vTransmissionScatterAnisotropy, -0.9999, 0.9999);
 float transmission_dispersion_scale = vTransmissionDispersionScale;
 float transmission_dispersion_abbe_number = vTransmissionDispersionAbbeNumber;
 

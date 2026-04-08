@@ -1,22 +1,20 @@
 import { GeospatialCameraInputsManager } from "./geospatialCameraInputsManager";
-import { Vector3, Matrix, TmpVectors } from "../Maths/math.vector";
-import type { Vector2 } from "../Maths/math.vector";
+import { Vector3, Matrix, TmpVectors, type Vector2 } from "../Maths/math.vector";
 import { Epsilon } from "../Maths/math.constants";
 import { Camera } from "./camera";
 import { serialize, serializeAsVector3 } from "../Misc/decorators";
-import type { Scene } from "../scene";
-import type { MeshPredicate } from "../Culling/ray.core";
-import type { DeepImmutable } from "../types";
+import { type Scene } from "../scene";
+import { type MeshPredicate } from "../Culling/ray.core";
+import { type DeepImmutable } from "../types";
 import { GeospatialLimits } from "./Limits/geospatialLimits";
 import { ClampCenterFromPolesInPlace, ComputeLocalBasisToRefs, GeospatialCameraMovement } from "./geospatialCameraMovement";
-import type { IVector3Like } from "../Maths/math.like";
+import { type IVector3Like } from "../Maths/math.like";
 import { Vector3CopyToRef, Vector3Distance, Vector3Dot, Vector3SubtractToRef } from "../Maths/math.vector.functions";
 import { Clamp, NormalizeRadians } from "../Maths/math.scalar.functions";
-import type { AllowedAnimValue } from "../Behaviors/Cameras/interpolatingBehavior";
-import { InterpolatingBehavior } from "../Behaviors/Cameras/interpolatingBehavior";
-import type { Collider } from "../Collisions/collider";
-import type { EasingFunction } from "../Animations/easing";
-import type { Animation } from "../Animations/animation";
+import { type AllowedAnimValue, InterpolatingBehavior } from "../Behaviors/Cameras/interpolatingBehavior";
+import { type Collider } from "../Collisions/collider";
+import { type EasingFunction } from "../Animations/easing";
+import { type Animation } from "../Animations/animation";
 import { RegisterClass } from "../Misc/typeStore";
 
 export type GeospatialCameraOptions = {

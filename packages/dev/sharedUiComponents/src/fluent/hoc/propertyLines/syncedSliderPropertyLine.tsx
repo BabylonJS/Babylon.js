@@ -1,7 +1,5 @@
-import { PropertyLine } from "./propertyLine";
-import type { PropertyLineProps } from "./propertyLine";
-import { SyncedSliderInput } from "../../primitives/syncedSlider";
-import type { SyncedSliderProps } from "../../primitives/syncedSlider";
+import { PropertyLine, type PropertyLineProps } from "./propertyLine";
+import { SyncedSliderInput, type SyncedSliderProps } from "../../primitives/syncedSlider";
 import { forwardRef } from "react";
 import { makeStyles, mergeClasses } from "@fluentui/react-components";
 import { UniformWidthStyling } from "../../primitives/utils";

@@ -1,14 +1,14 @@
 import { InternalTexture, InternalTextureSource } from "../../../Materials/Textures/internalTexture";
-import type { RenderTargetCreationOptions, DepthTextureCreationOptions, TextureSize } from "../../../Materials/Textures/textureCreationOptions";
-import type { Nullable } from "../../../types";
+import { type RenderTargetCreationOptions, type DepthTextureCreationOptions, type TextureSize } from "../../../Materials/Textures/textureCreationOptions";
+import { type Nullable } from "../../../types";
 import { Constants } from "../../constants";
-import type { RenderTargetWrapper } from "../../renderTargetWrapper";
+import { type RenderTargetWrapper } from "../../renderTargetWrapper";
 import { WebGPURenderTargetWrapper } from "../webgpuRenderTargetWrapper";
 import { GetTypeForDepthTexture, HasStencilAspect } from "core/Materials/Textures/textureHelper.functions";
 
 import "../../AbstractEngine/abstractEngine.texture";
 import { ThinWebGPUEngine } from "core/Engines/thinWebGPUEngine";
-import type { WebGPUHardwareTexture } from "../webgpuHardwareTexture";
+import { type WebGPUHardwareTexture } from "../webgpuHardwareTexture";
 
 declare module "../../abstractEngine" {
     // eslint-disable-next-line @typescript-eslint/naming-convention

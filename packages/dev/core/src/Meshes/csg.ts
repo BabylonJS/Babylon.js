@@ -1,11 +1,11 @@
-import type { Nullable } from "../types";
-import type { Scene } from "../scene";
+import { type Nullable } from "../types";
+import { type Scene } from "../scene";
 import { Quaternion, Matrix, Vector3, Vector2 } from "../Maths/math.vector";
 import { VertexBuffer } from "../Buffers/buffer";
-import type { AbstractMesh } from "../Meshes/abstractMesh";
+import { type AbstractMesh } from "../Meshes/abstractMesh";
 import { SubMesh } from "../Meshes/subMesh";
 import { Mesh } from "../Meshes/mesh";
-import type { Material } from "../Materials/material";
+import { type Material } from "../Materials/material";
 import { Color4 } from "../Maths/math.color";
 import { Constants } from "../Engines/constants";
 import { VertexData } from "./mesh.vertexData";

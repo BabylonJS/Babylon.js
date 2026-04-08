@@ -1,16 +1,14 @@
 import { Mesh } from "./mesh";
-import type { IDisposable, Scene } from "core/scene";
-import type { IVertexDataLike } from "./mesh.vertexData";
-import { VertexData } from "./mesh.vertexData";
+import { type IDisposable, type Scene } from "core/scene";
+import { type IVertexDataLike, VertexData } from "./mesh.vertexData";
 import { VertexBuffer } from "../Buffers/buffer";
 import { Logger } from "core/Misc/logger";
 import { MultiMaterial } from "core/Materials/multiMaterial";
 import { SubMesh } from "./subMesh";
-import type { Material } from "core/Materials/material";
+import { type Material } from "core/Materials/material";
 import { _LoadScriptModuleAsync } from "core/Misc/tools.internals";
-import type { FloatArray, Nullable } from "core/types";
-import type { Matrix } from "core/Maths/math.vector";
-import { Vector3 } from "core/Maths/math.vector";
+import { type FloatArray, type Nullable } from "core/types";
+import { type Matrix, Vector3 } from "core/Maths/math.vector";
 
 /**
  * Main manifold library
@@ -476,7 +474,7 @@ export function IsCSG2Ready() {
  */
 export async function InitializeCSG2Async(options?: Partial<ICSG2Options>) {
     const localOptions = {
-        manifoldUrl: "https://unpkg.com/manifold-3d@3.3.0",
+        manifoldUrl: "https://unpkg.com/manifold-3d@3.4.0",
         ...options,
     };
 

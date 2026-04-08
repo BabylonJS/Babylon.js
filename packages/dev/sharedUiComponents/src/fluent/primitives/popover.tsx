@@ -1,8 +1,6 @@
-import type { PropsWithChildren, ReactElement } from "react";
-import { forwardRef, useState } from "react";
-import { Popover as FluentPopover, PopoverTrigger, PopoverSurface, makeStyles, tokens } from "@fluentui/react-components";
-import type { PositioningShorthand } from "@fluentui/react-components";
-import type { FluentIcon } from "@fluentui/react-icons";
+import { type PropsWithChildren, type ReactElement, forwardRef, useState } from "react";
+import { Popover as FluentPopover, PopoverTrigger, PopoverSurface, makeStyles, tokens, type PositioningShorthand } from "@fluentui/react-components";
+import { type FluentIcon } from "@fluentui/react-icons";
 import { Button } from "shared-ui-components/fluent/primitives/button";
 
 const useStyles = makeStyles({

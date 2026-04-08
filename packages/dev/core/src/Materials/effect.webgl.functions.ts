@@ -1,11 +1,10 @@
-import type { AbstractEngine } from "core/Engines/abstractEngine";
-import type { IPipelineGenerationOptions } from "./effect.functions";
-import { _ProcessShaderCode, createAndPreparePipelineContext } from "./effect.functions";
-import type { IPipelineContext } from "core/Engines/IPipelineContext";
+import { type AbstractEngine } from "core/Engines/abstractEngine";
+import { type IPipelineGenerationOptions, _ProcessShaderCode, createAndPreparePipelineContext } from "./effect.functions";
+import { type IPipelineContext } from "core/Engines/IPipelineContext";
 import { _executeWhenRenderingStateIsCompiled, _isRenderingStateCompiled, _preparePipelineContext, createPipelineContext, getStateObject } from "core/Engines/thinEngine.functions";
 import { ShaderLanguage } from "./shaderLanguage";
 import { _GetGlobalDefines } from "core/Engines/abstractEngine.functions";
-import type { _IProcessingOptions } from "core/Engines/Processors/shaderProcessingOptions";
+import { type _IProcessingOptions } from "core/Engines/Processors/shaderProcessingOptions";
 import { ShaderStore } from "core/Engines/shaderStore";
 import { WebGL2ShaderProcessor } from "core/Engines/WebGL/webGL2ShaderProcessors";
 import { _RetryWithInterval } from "core/Misc/timingTools";

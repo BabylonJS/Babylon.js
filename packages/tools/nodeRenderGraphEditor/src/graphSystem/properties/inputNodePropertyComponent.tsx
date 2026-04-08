@@ -1,19 +1,19 @@
 import * as React from "react";
-import type { GlobalState } from "../../globalState";
+import { type GlobalState } from "../../globalState";
 import { LineContainerComponent } from "../../sharedComponents/lineContainerComponent";
 import { CheckBoxLineComponent } from "../../sharedComponents/checkBoxLineComponent";
 import { GeneralPropertyTabComponent, textureDepthStencilFormatList, textureFormatList, TextureTargetTypeList, textureTypeList } from "./genericNodePropertyComponent";
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
 import { OptionsLine } from "shared-ui-components/lines/optionsLineComponent";
-import type { Nullable } from "core/types";
-import type { Observer } from "core/Misc/observable";
-import type { IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
-import type { NodeRenderGraphInputBlock } from "core/FrameGraph/Node/Blocks/inputBlock";
+import { type Nullable } from "core/types";
+import { type Observer } from "core/Misc/observable";
+import { type IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
+import { type NodeRenderGraphInputBlock } from "core/FrameGraph/Node/Blocks/inputBlock";
 import { NodeRenderGraphBlockConnectionPointTypes } from "core/FrameGraph/Node/Types/nodeRenderGraphTypes";
 import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
-import type { FrameGraphObjectList } from "core/FrameGraph/frameGraphObjectList";
-import type { Camera } from "core/Cameras/camera";
-import type { IShadowLight } from "core/Lights/shadowLight";
+import { type FrameGraphObjectList } from "core/FrameGraph/frameGraphObjectList";
+import { type Camera } from "core/Cameras/camera";
+import { type IShadowLight } from "core/Lights/shadowLight";
 import { Constants } from "core/Engines/constants";
 
 export class InputPropertyTabComponent extends React.Component<IPropertyComponentProps> {

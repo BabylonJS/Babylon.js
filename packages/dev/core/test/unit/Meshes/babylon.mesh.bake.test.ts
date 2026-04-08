@@ -1,9 +1,7 @@
 import { VertexBuffer } from "core/Buffers";
-import type { Engine } from "core/Engines";
-import { NullEngine } from "core/Engines";
+import { type Engine, NullEngine } from "core/Engines";
 import { Matrix, Vector3 } from "core/Maths";
-import type { Mesh } from "core/Meshes";
-import { MeshBuilder } from "core/Meshes";
+import { type Mesh, MeshBuilder } from "core/Meshes";
 import { Scene } from "core/scene";
 
 describe("Mesh Baking", () => {

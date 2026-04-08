@@ -1,12 +1,12 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import type { Nullable } from "../types";
+import { type Nullable } from "../types";
 import { Tools } from "./tools";
 import { Texture } from "../Materials/Textures/texture";
 import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
 import { Constants } from "../Engines/constants";
 import { initializeWebWorker, workerFunction } from "./basisWorker";
-import type { AbstractEngine } from "core/Engines/abstractEngine";
-import type { Engine } from "core/Engines/engine";
+import { type AbstractEngine } from "core/Engines/abstractEngine";
+import { type Engine } from "core/Engines/engine";
 
 /**
  * Info about the .basis files

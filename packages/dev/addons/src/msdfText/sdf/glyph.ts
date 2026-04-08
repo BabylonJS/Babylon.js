@@ -1,5 +1,5 @@
 /* eslint-disable jsdoc/require-jsdoc */
-import type { BMFontChar } from "./bmFont";
+import { type BMFontChar } from "./bmFont";
 
 /** @internal */
 export type SdfGlyph = {

@@ -9,15 +9,15 @@ import { LocalStorageHelper } from "./tools/localStorageHelper";
 import { EnvironmentTools } from "./tools/environmentTools";
 import { Vector3 } from "core/Maths/math.vector";
 import { Deferred } from "core/Misc/deferred";
-import type { Scene } from "core/scene";
+import { type Scene } from "core/scene";
 import { CreateScreenshotAsync } from "core/Misc/screenshotTools";
-import type { IScreenshotSize } from "core/Misc/interfaces/screenshotSize";
+import { type IScreenshotSize } from "core/Misc/interfaces/screenshotSize";
 import { Color3, Color4 } from "core/Maths/math";
 import { FilesInputStore } from "core/Misc/filesInputStore";
 
 import "./scss/main.scss";
 import fullScreenLogo from "./img/logo-fullscreen.svg";
-import type { AbstractEngine } from "core/Engines/abstractEngine";
+import { type AbstractEngine } from "core/Engines/abstractEngine";
 import { ImageProcessingConfiguration } from "core/Materials/imageProcessingConfiguration";
 
 declare const BABYLON: typeof import("core/index");

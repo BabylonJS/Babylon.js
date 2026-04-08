@@ -1,9 +1,7 @@
-import type { EasingFunction } from "core/Animations/easing";
-import { BackEase, BezierCurveEase, BounceEase, CircleEase, CubicEase, ElasticEase, ExponentialEase } from "core/Animations/easing";
-import type { IFlowGraphBlockConfiguration } from "core/FlowGraph/flowGraphBlock";
-import { FlowGraphBlock } from "core/FlowGraph/flowGraphBlock";
-import type { FlowGraphContext } from "core/FlowGraph/flowGraphContext";
-import type { FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnection";
+import { type EasingFunction, BackEase, BezierCurveEase, BounceEase, CircleEase, CubicEase, ElasticEase, ExponentialEase } from "core/Animations/easing";
+import { type IFlowGraphBlockConfiguration, FlowGraphBlock } from "core/FlowGraph/flowGraphBlock";
+import { type FlowGraphContext } from "core/FlowGraph/flowGraphContext";
+import { type FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnection";
 import { RichTypeAny, RichTypeNumber } from "core/FlowGraph/flowGraphRichTypes";
 import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
 import { RegisterClass } from "core/Misc/typeStore";

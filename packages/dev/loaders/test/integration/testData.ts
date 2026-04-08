@@ -95,8 +95,114 @@ export const glbBase64 =
 
 // Minimal glTF with a base64-embedded PNG image used as a texture.
 // Used to verify that the loader does not leak base64 data URIs into texture URL/name properties.
-export const gltfWithEmbeddedImageBase64 =
-    "ewogICAgImFzc2V0IjogewogICAgICAgICJ2ZXJzaW9uIjogIjIuMCIKICAgIH0sCiAgICAic2NlbmUiOiAwLAogICAgInNjZW5lcyI6IFsKICAgICAgICB7CiAgICAgICAgICAgICJub2RlcyI6IFsKICAgICAgICAgICAgICAgIDAKICAgICAgICAgICAgXQogICAgICAgIH0KICAgIF0sCiAgICAibm9kZXMiOiBbCiAgICAgICAgewogICAgICAgICAgICAibWVzaCI6IDAKICAgICAgICB9CiAgICBdLAogICAgIm1lc2hlcyI6IFsKICAgICAgICB7CiAgICAgICAgICAgICJwcmltaXRpdmVzIjogWwogICAgICAgICAgICAgICAgewogICAgICAgICAgICAgICAgICAgICJhdHRyaWJ1dGVzIjogewogICAgICAgICAgICAgICAgICAgICAgICAiUE9TSVRJT04iOiAxCiAgICAgICAgICAgICAgICAgICAgfSwKICAgICAgICAgICAgICAgICAgICAiaW5kaWNlcyI6IDAsCiAgICAgICAgICAgICAgICAgICAgIm1hdGVyaWFsIjogMAogICAgICAgICAgICAgICAgfQogICAgICAgICAgICBdCiAgICAgICAgfQogICAgXSwKICAgICJtYXRlcmlhbHMiOiBbCiAgICAgICAgewogICAgICAgICAgICAicGJyTWV0YWxsaWNSb3VnaG5lc3MiOiB7CiAgICAgICAgICAgICAgICAiYmFzZUNvbG9yVGV4dHVyZSI6IHsKICAgICAgICAgICAgICAgICAgICAiaW5kZXgiOiAwCiAgICAgICAgICAgICAgICB9LAogICAgICAgICAgICAgICAgIm1ldGFsbGljRmFjdG9yIjogMAogICAgICAgICAgICB9CiAgICAgICAgfQogICAgXSwKICAgICJ0ZXh0dXJlcyI6IFsKICAgICAgICB7CiAgICAgICAgICAgICJzb3VyY2UiOiAwCiAgICAgICAgfQogICAgXSwKICAgICJpbWFnZXMiOiBbCiAgICAgICAgewogICAgICAgICAgICAidXJpIjogImRhdGE6aW1hZ2UvcG5nO2Jhc2U2NCxpVkJPUncwS0dnb0FBQUFOU1VoRVVnQUFBQUVBQUFBQkNBWUFBQUFmRmNTSkFBQUFEVWxFUVZSNDJtUDgvNStoSGdBSGdnSi9QY2hJN3dBQUFBQkpSVTVFcmtKZ2dnPT0iLAogICAgICAgICAgICAibWltZVR5cGUiOiAiaW1hZ2UvcG5nIgogICAgICAgIH0KICAgIF0sCiAgICAiYnVmZmVycyI6IFsKICAgICAgICB7CiAgICAgICAgICAgICJ1cmkiOiAiZGF0YTphcHBsaWNhdGlvbi9vY3RldC1zdHJlYW07YmFzZTY0LEFBQUJBQUlBQUFBQUFBQUFBQUFBQUFBQUFBQUFBSUEvQUFBQUFBQUFBQUFBQUFBQUFBQ0FQd0FBQUFBPSIsCiAgICAgICAgICAgICJieXRlTGVuZ3RoIjogNDQKICAgICAgICB9CiAgICBdLAogICAgImJ1ZmZlclZpZXdzIjogWwogICAgICAgIHsKICAgICAgICAgICAgImJ1ZmZlciI6IDAsCiAgICAgICAgICAgICJieXRlT2Zmc2V0IjogMCwKICAgICAgICAgICAgImJ5dGVMZW5ndGgiOiA2LAogICAgICAgICAgICAidGFyZ2V0IjogMzQ5NjMKICAgICAgICB9LAogICAgICAgIHsKICAgICAgICAgICAgImJ1ZmZlciI6IDAsCiAgICAgICAgICAgICJieXRlT2Zmc2V0IjogOCwKICAgICAgICAgICAgImJ5dGVMZW5ndGgiOiAzNiwKICAgICAgICAgICAgInRhcmdldCI6IDM0OTYyCiAgICAgICAgfQogICAgXSwKICAgICJhY2Nlc3NvcnMiOiBbCiAgICAgICAgewogICAgICAgICAgICAiYnVmZmVyVmlldyI6IDAsCiAgICAgICAgICAgICJieXRlT2Zmc2V0IjogMCwKICAgICAgICAgICAgImNvbXBvbmVudFR5cGUiOiA1MTIzLAogICAgICAgICAgICAiY291bnQiOiAzLAogICAgICAgICAgICAidHlwZSI6ICJTQ0FMQVIiLAogICAgICAgICAgICAibWF4IjogWwogICAgICAgICAgICAgICAgMgogICAgICAgICAgICBdLAogICAgICAgICAgICAibWluIjogWwogICAgICAgICAgICAgICAgMAogICAgICAgICAgICBdCiAgICAgICAgfSwKICAgICAgICB7CiAgICAgICAgICAgICJidWZmZXJWaWV3IjogMSwKICAgICAgICAgICAgImJ5dGVPZmZzZXQiOiAwLAogICAgICAgICAgICAiY29tcG9uZW50VHlwZSI6IDUxMjYsCiAgICAgICAgICAgICJjb3VudCI6IDMsCiAgICAgICAgICAgICJ0eXBlIjogIlZFQzMiLAogICAgICAgICAgICAibWF4IjogWwogICAgICAgICAgICAgICAgMSwKICAgICAgICAgICAgICAgIDEsCiAgICAgICAgICAgICAgICAwCiAgICAgICAgICAgIF0sCiAgICAgICAgICAgICJtaW4iOiBbCiAgICAgICAgICAgICAgICAwLAogICAgICAgICAgICAgICAgMCwKICAgICAgICAgICAgICAgIDAKICAgICAgICAgICAgXQogICAgICAgIH0KICAgIF0KfQ==";
+export const gltfWithEmbeddedImageBase64 = `
+{
+  "asset": {
+    "version": "2.0"
+  },
+  "scene": 0,
+  "scenes": [
+    {
+      "nodes": [0]
+    }
+  ],
+  "nodes": [
+    {
+      "mesh": 0
+    }
+  ],
+  "meshes": [
+    {
+      "primitives": [
+        {
+          "attributes": {
+            "POSITION": 1,
+            "TEXCOORD_0": 2
+          },
+          "indices": 0,
+          "material": 0
+        }
+      ]
+    }
+  ],
+  "materials": [
+    {
+      "pbrMetallicRoughness": {
+        "baseColorTexture": {
+          "index": 0
+        },
+        "metallicFactor": 0
+      }
+    }
+  ],
+  "textures": [
+    {
+      "source": 0
+    }
+  ],
+  "images": [
+    {
+      "uri": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==",
+      "mimeType": "image/png"
+    }
+  ],
+  "buffers": [
+    {
+      "uri": "data:application/octet-stream;base64,AAABAAIAAAAAAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAgD8=",
+      "byteLength": 68
+    }
+  ],
+  "bufferViews": [
+    {
+      "buffer": 0,
+      "byteOffset": 0,
+      "byteLength": 6,
+      "target": 34963
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 8,
+      "byteLength": 36,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 44,
+      "byteLength": 24,
+      "target": 34962
+    }
+  ],
+  "accessors": [
+    {
+      "bufferView": 0,
+      "byteOffset": 0,
+      "componentType": 5123,
+      "count": 3,
+      "type": "SCALAR",
+      "max": [2],
+      "min": [0]
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 0,
+      "componentType": 5126,
+      "count": 3,
+      "type": "VEC3",
+      "max": [1, 1, 0],
+      "min": [0, 0, 0]
+    },
+    {
+      "bufferView": 2,
+      "byteOffset": 0,
+      "componentType": 5126,
+      "count": 3,
+      "type": "VEC2",
+      "max": [1, 1],
+      "min": [0, 0]
+    }
+  ]
+}
+`;
 
 export const stlAsciiRaw = `
 solid triangle

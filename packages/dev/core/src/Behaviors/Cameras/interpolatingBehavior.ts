@@ -1,10 +1,10 @@
-import type { Behavior } from "../behavior";
+import { type Behavior } from "../behavior";
 import { CubicEase, EasingFunction } from "../../Animations/easing";
-import type { Nullable } from "../../types";
-import type { Animatable } from "../../Animations/animatable.core";
+import { type Nullable } from "../../types";
+import { type Animatable } from "../../Animations/animatable.core";
 import { Animation } from "../../Animations/animation";
-import type { Camera } from "../../Cameras/camera";
-import type { IColor3Like, IColor4Like, IMatrixLike, IQuaternionLike, IVector2Like, IVector3Like } from "../../Maths/math.like";
+import { type Camera } from "../../Cameras/camera";
+import { type IColor3Like, type IColor4Like, type IMatrixLike, type IQuaternionLike, type IVector2Like, type IVector3Like } from "../../Maths/math.like";
 
 export type AllowedAnimValue = number | IVector2Like | IVector3Like | IQuaternionLike | IMatrixLike | IColor3Like | IColor4Like | SizeLike | undefined;
 

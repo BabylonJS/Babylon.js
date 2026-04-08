@@ -1,18 +1,16 @@
-import type { Behavior } from "../../Behaviors/behavior";
-import type { AbstractMesh } from "../../Meshes/abstractMesh";
+import { type Behavior } from "../../Behaviors/behavior";
+import { type AbstractMesh } from "../../Meshes/abstractMesh";
 import { Scene } from "../../scene";
-import type { Nullable } from "../../types";
-import type { PointerInfo } from "../../Events/pointerEvents";
-import { PointerEventTypes } from "../../Events/pointerEvents";
+import { type Nullable } from "../../types";
+import { type PointerInfo, PointerEventTypes } from "../../Events/pointerEvents";
 import { Vector3, Quaternion, TmpVectors } from "../../Maths/math.vector";
-import type { Observer } from "../../Misc/observable";
-import { Observable } from "../../Misc/observable";
+import { type Observer, Observable } from "../../Misc/observable";
 import { TransformNode } from "../../Meshes/transformNode";
-import type { PickingInfo } from "../../Collisions/pickingInfo";
+import { type PickingInfo } from "../../Collisions/pickingInfo";
 import { Camera } from "../../Cameras/camera";
-import type { Ray } from "../../Culling/ray";
-import type { IPointerEvent } from "../../Events/deviceInputEvents";
-import type { ArcRotateCamera } from "../../Cameras/arcRotateCamera";
+import { type Ray } from "../../Culling/ray";
+import { type IPointerEvent } from "../../Events/deviceInputEvents";
+import { type ArcRotateCamera } from "../../Cameras/arcRotateCamera";
 
 /**
  * Data store to track virtual pointers movement
