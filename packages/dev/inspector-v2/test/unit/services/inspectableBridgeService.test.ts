@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { InspectableCommandRegistryIdentity } from "../../../src/services/cli/inspectableCommandRegistry";
+import { CliConnectionStatusIdentity } from "../../../src/services/cli/cliConnectionStatus";
 import { MakeInspectableBridgeServiceDefinition } from "../../../src/services/cli/inspectableBridgeService";
 
 describe("InspectableBridgeService", () => {
@@ -7,6 +8,11 @@ describe("InspectableBridgeService", () => {
         it("produces InspectableCommandRegistryIdentity", () => {
             const definition = MakeInspectableBridgeServiceDefinition({ port: 4400, name: "test" });
             expect(definition.produces).toContain(InspectableCommandRegistryIdentity);
+        });
+
+        it("produces CliConnectionStatusIdentity", () => {
+            const definition = MakeInspectableBridgeServiceDefinition({ port: 4400, name: "test" });
+            expect(definition.produces).toContain(CliConnectionStatusIdentity);
         });
 
         it("has a friendly name", () => {
@@ -74,6 +80,27 @@ describe("InspectableBridgeService", () => {
 
             expect(token2).toBeDefined();
             token2.dispose();
+            registry.dispose?.();
+        });
+    });
+
+    describe("connection status", () => {
+        it("starts disconnected", async () => {
+            const definition = MakeInspectableBridgeServiceDefinition({ port: 0, name: "test" });
+            const registry = await definition.factory();
+
+            expect(registry.isConnected).toBe(false);
+
+            registry.dispose?.();
+        });
+
+        it("exposes onConnectionStatusChanged observable", async () => {
+            const definition = MakeInspectableBridgeServiceDefinition({ port: 0, name: "test" });
+            const registry = await definition.factory();
+
+            expect(registry.onConnectionStatusChanged).toBeDefined();
+            expect(registry.onConnectionStatusChanged.add).toBeInstanceOf(Function);
+
             registry.dispose?.();
         });
     });
