@@ -10,6 +10,8 @@ import { VertexBuffer, Buffer } from "../Buffers/buffer";
 import { type IParticleSystem } from "./IParticleSystem";
 import { BaseParticleSystem } from "./baseParticleSystem";
 import { ParticleSystem } from "./particleSystem";
+import { Attractor } from "./attractor";
+import { Logger } from "../Misc/logger";
 import { BoxParticleEmitter } from "../Particles/EmitterTypes/boxParticleEmitter";
 import { type IDisposable, Scene } from "../scene";
 import { type Effect } from "../Materials/effect";
@@ -205,6 +207,41 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
 
     /** Indicates that the particle system is GPU based */
     public readonly isGPU = true;
+
+    /** Attractors */
+    private _attractors: Attractor[] = [];
+    private static readonly _MAX_ATTRACTORS = 8;
+
+    /**
+     * The list of attractors used to change the direction of the particles in the system.
+     * Please note that this is a copy of the internal array. If you want to modify it, please use the addAttractor and removeAttractor methods.
+     */
+    public get attractors(): Attractor[] {
+        return this._attractors.slice(0);
+    }
+
+    /**
+     * Add an attractor to the particle system. Attractors are used to change the direction of the particles in the system.
+     * @param attractor - The attractor to add to the particle system
+     */
+    public addAttractor(attractor: Attractor): void {
+        if (this._attractors.length >= GPUParticleSystem._MAX_ATTRACTORS) {
+            Logger.Warn(`GPU particle system supports a maximum of ${GPUParticleSystem._MAX_ATTRACTORS} attractors. Ignoring additional attractor.`);
+            return;
+        }
+        this._attractors.push(attractor);
+    }
+
+    /**
+     * Removes an attractor from the particle system. Attractors are used to change the direction of the particles in the system.
+     * @param attractor - The attractor to remove from the particle system
+     */
+    public removeAttractor(attractor: Attractor): void {
+        const index = this._attractors.indexOf(attractor);
+        if (index !== -1) {
+            this._attractors.splice(index, 1);
+        }
+    }
 
     /** Gets or sets a matrix to use to compute projection */
     public defaultProjectionMatrix: Matrix;
@@ -1444,6 +1481,10 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
             defines += "\n#define LOCAL";
         }
 
+        if (this._attractors.length > 0) {
+            defines += "\n#define ATTRACTORS";
+        }
+
         if (this._emitRateControl) {
             defines += "\n#define EMITRATECTRL";
         }
@@ -1865,6 +1906,25 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
             this._updateBuffer.setMatrix("emitterWM", emitterWM);
         }
 
+        if (this._attractors.length > 0) {
+            const count = Math.min(this._attractors.length, GPUParticleSystem._MAX_ATTRACTORS);
+            this._updateBuffer.setInt("attractorCount", count);
+            for (let i = 0; i < count; i++) {
+                const attractor = this._attractors[i];
+                if (this.isLocal) {
+                    // Transform attractor position from world space to local space
+                    const invWorld = TmpVectors.Matrix[1];
+                    emitterWM!.invertToRef(invWorld);
+                    const localPos = TmpVectors.Vector3[0];
+                    Vector3.TransformCoordinatesToRef(attractor.position, invWorld, localPos);
+                    this._updateBuffer.setFloat3("attractorPosition" + i, localPos.x, localPos.y, localPos.z);
+                } else {
+                    this._updateBuffer.setFloat3("attractorPosition" + i, attractor.position.x, attractor.position.y, attractor.position.z);
+                }
+                this._updateBuffer.setFloat("attractorStrength" + i, attractor.strength);
+            }
+        }
+
         this._platform.updateParticleBuffer(this._targetIndex, this._targetBuffer, this._currentActiveCount);
 
         // Switch VAOs
@@ -2223,6 +2283,14 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
             serializationObject.metadata = this.metadata;
         }
 
+        // Attractors
+        if (this._attractors.length > 0) {
+            serializationObject.attractors = [];
+            for (const attractor of this._attractors) {
+                serializationObject.attractors.push(attractor.serialize());
+            }
+        }
+
         return serializationObject;
     }
 
@@ -2298,6 +2366,16 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
 
         if (parsedParticleSystem.metadata) {
             particleSystem.metadata = parsedParticleSystem.metadata;
+        }
+
+        // Attractors
+        if (parsedParticleSystem.attractors) {
+            for (const attractorData of parsedParticleSystem.attractors) {
+                const attractor = new Attractor();
+                attractor.position = Vector3.FromArray(attractorData.position);
+                attractor.strength = attractorData.strength;
+                particleSystem.addAttractor(attractor);
+            }
         }
 
         if (!doNotStart && !particleSystem.preventAutoStart) {

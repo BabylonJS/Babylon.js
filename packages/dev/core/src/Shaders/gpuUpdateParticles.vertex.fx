@@ -177,6 +177,25 @@ uniform sampler2D noiseSampler;
 uniform vec4 cellInfos;
 #endif
 
+#ifdef ATTRACTORS
+uniform int attractorCount;
+uniform vec3 attractorPosition0;
+uniform vec3 attractorPosition1;
+uniform vec3 attractorPosition2;
+uniform vec3 attractorPosition3;
+uniform vec3 attractorPosition4;
+uniform vec3 attractorPosition5;
+uniform vec3 attractorPosition6;
+uniform vec3 attractorPosition7;
+uniform float attractorStrength0;
+uniform float attractorStrength1;
+uniform float attractorStrength2;
+uniform float attractorStrength3;
+uniform float attractorStrength4;
+uniform float attractorStrength5;
+uniform float attractorStrength6;
+uniform float attractorStrength7;
+#endif
 
 vec3 getRandomVec3(float offset) {
   return texture(randomSampler2, vec2(float(gl_VertexID) * offset / currentCount, 0)).rgb;
@@ -451,6 +470,34 @@ void main() {
         if (currentVelocity > limitVelocity) {
             updatedDirection = updatedDirection * limitVelocityDamping;
         }
+    #endif
+
+    #ifdef ATTRACTORS
+    {
+        vec3 attractorPositions[8];
+        attractorPositions[0] = attractorPosition0;
+        attractorPositions[1] = attractorPosition1;
+        attractorPositions[2] = attractorPosition2;
+        attractorPositions[3] = attractorPosition3;
+        attractorPositions[4] = attractorPosition4;
+        attractorPositions[5] = attractorPosition5;
+        attractorPositions[6] = attractorPosition6;
+        attractorPositions[7] = attractorPosition7;
+        float attractorStrengths[8];
+        attractorStrengths[0] = attractorStrength0;
+        attractorStrengths[1] = attractorStrength1;
+        attractorStrengths[2] = attractorStrength2;
+        attractorStrengths[3] = attractorStrength3;
+        attractorStrengths[4] = attractorStrength4;
+        attractorStrengths[5] = attractorStrength5;
+        attractorStrengths[6] = attractorStrength6;
+        attractorStrengths[7] = attractorStrength7;
+        for (int i = 0; i < attractorCount; i++) {
+            vec3 toAttractor = attractorPositions[i] - outPosition;
+            float distSq = dot(toAttractor, toAttractor) + 1.0;
+            updatedDirection += (attractorStrengths[i] / distSq) * normalize(toAttractor) * timeDelta;
+        }
+    }
     #endif
 
     outDirection = updatedDirection;
