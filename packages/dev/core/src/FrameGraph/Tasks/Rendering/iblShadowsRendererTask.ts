@@ -82,6 +82,11 @@ export class FrameGraphIblShadowsRendererTask extends FrameGraphTask {
     /**
      * Whether the task is disabled.
      */
+
+    public override get disabled(): boolean {
+        return this._disabled;
+    }
+
     public override set disabled(value: boolean) {
         this._disabled = value;
         if (!this._disabled && this._dependenciesResolved) {
@@ -455,15 +460,25 @@ export class FrameGraphIblShadowsRendererTask extends FrameGraphTask {
 
     // ------ Framework overrides ------
 
+    private _initAsyncCancel: Nullable<() => void> = null;
+
     // eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
     public override initAsync(): Promise<unknown> {
+        this._frameGraph.scene.enableIblCdfGenerator();
+
         return new Promise<void>((resolve, reject) => {
-            _RetryWithInterval(
+            this._initAsyncCancel = _RetryWithInterval(
                 () => this._tryEnableShadowsTasks(),
-                resolve,
-                (_e, isTimeout) => {
+                () => {
+                    this._initAsyncCancel = null;
+                    resolve();
+                },
+                (err, isTimeout) => {
+                    this._initAsyncCancel = null;
                     if (isTimeout) {
                         reject(new Error(`FrameGraphIblShadowsRendererTask "${this.name}": timed out waiting for shadow dependencies to be ready.`));
+                    } else {
+                        reject(new Error(err));
                     }
                 },
                 16,
@@ -513,6 +528,8 @@ export class FrameGraphIblShadowsRendererTask extends FrameGraphTask {
      * Disposes the task and owned resources.
      */
     public override dispose(): void {
+        this._initAsyncCancel?.();
+        this._initAsyncCancel = null;
         this._disposeObservers();
         this._voxelizationTask.dispose();
         this._tracingTask.dispose();
