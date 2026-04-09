@@ -4,187 +4,338 @@
         {
             "title": "Lottie - Unparented Triangles (Web Worker, URL, No Pre-Warm)",
             "devHostQsps": "exp=lottie&file=triangles_noParents_noCross.json&useWorker=true&useUrl=true&usePreWarm=false",
-            "referenceImage": "triangles-noParents-noCross.png"
+            "referenceImage": "triangles-noParents-noCross.png", "readySelector": "#lottie-ready"
         },
         {
             "title": "Lottie - Unparented Triangles (Web Worker, URL, Pre-Warm)",
             "devHostQsps": "exp=lottie&file=triangles_noParents_noCross.json&useWorker=true&useUrl=true&usePreWarm=true",
-            "referenceImage": "triangles-noParents-noCross.png"
+            "referenceImage": "triangles-noParents-noCross.png", "readySelector": "#lottie-ready"
         },
         {
             "title": "Lottie - Unparented Triangles (Web Worker, JSON, No Pre-Warm)",
             "devHostQsps": "exp=lottie&file=triangles_noParents_noCross.json&useWorker=true&useUrl=false&usePreWarm=false",
-            "referenceImage": "triangles-noParents-noCross.png"
+            "referenceImage": "triangles-noParents-noCross.png", "readySelector": "#lottie-ready"
         },
         {
             "title": "Lottie - Unparented Triangles (Web Worker, JSON, Pre-Warm)",
             "devHostQsps": "exp=lottie&file=triangles_noParents_noCross.json&useWorker=true&useUrl=false&usePreWarm=true",
-            "referenceImage": "triangles-noParents-noCross.png"
+            "referenceImage": "triangles-noParents-noCross.png", "readySelector": "#lottie-ready"
         },
         {
             "title": "Lottie - Unparented Triangles (Main Thread, URL)",
             "devHostQsps": "exp=lottie&file=triangles_noParents_noCross.json&useWorker=false&useUrl=true",
-            "referenceImage": "triangles-noParents-noCross.png"
+            "referenceImage": "triangles-noParents-noCross.png", "readySelector": "#lottie-ready"
         },
         {
             "title": "Lottie - Unparented Triangles (Main Thread, JSON)",
             "devHostQsps": "exp=lottie&file=triangles_noParents_noCross.json&useWorker=false&useUrl=false",
-            "referenceImage": "triangles-noParents-noCross.png"
+            "referenceImage": "triangles-noParents-noCross.png", "readySelector": "#lottie-ready"
         },
         {
             "title": "Lottie - Unparented Triangles with Cross (Web Worker, URL, No Pre-Warm)",
             "devHostQsps": "exp=lottie&file=triangles_noParents.json&useWorker=true&useUrl=true&usePreWarm=false",
-            "referenceImage": "triangles-noParents.png"
+            "referenceImage": "triangles-noParents.png", "readySelector": "#lottie-ready"
         },
         {
             "title": "Lottie - Unparented Triangles with Cross (Web Worker, URL, Pre-Warm)",
             "devHostQsps": "exp=lottie&file=triangles_noParents.json&useWorker=true&useUrl=true&usePreWarm=true",
-            "referenceImage": "triangles-noParents.png"
+            "referenceImage": "triangles-noParents.png", "readySelector": "#lottie-ready"
         },
         {
             "title": "Lottie - Unparented Triangles with Cross (Web Worker, JSON, No Pre-Warm)",
             "devHostQsps": "exp=lottie&file=triangles_noParents.json&useWorker=true&useUrl=false&usePreWarm=false",
-            "referenceImage": "triangles-noParents.png"
+            "referenceImage": "triangles-noParents.png", "readySelector": "#lottie-ready"
         },
         {
             "title": "Lottie - Unparented Triangles with Cross (Web Worker, JSON, Pre-Warm)",
             "devHostQsps": "exp=lottie&file=triangles_noParents.json&useWorker=true&useUrl=false&usePreWarm=true",
-            "referenceImage": "triangles-noParents.png"
+            "referenceImage": "triangles-noParents.png", "readySelector": "#lottie-ready"
         },
         {
             "title": "Lottie - Unparented Triangles with Cross (Main Thread, URL)",
             "devHostQsps": "exp=lottie&file=triangles_noParents.json&useWorker=false&useUrl=true",
-            "referenceImage": "triangles-noParents.png"
+            "referenceImage": "triangles-noParents.png", "readySelector": "#lottie-ready"
         },
         {
             "title": "Lottie - Unparented Triangles with Cross (Main Thread, JSON)",
             "devHostQsps": "exp=lottie&file=triangles_noParents.json&useWorker=false&useUrl=false",
-            "referenceImage": "triangles-noParents.png"
+            "referenceImage": "triangles-noParents.png", "readySelector": "#lottie-ready"
         },
         {
             "title": "Lottie - Parented Triangles with Cross (Web Worker, URL, No Pre-Warm)",
             "devHostQsps": "exp=lottie&file=triangles_redParent.json&useWorker=true&useUrl=true&usePreWarm=false",
-            "referenceImage": "triangles-redParent-withCross.png"
+            "referenceImage": "triangles-redParent-withCross.png", "readySelector": "#lottie-ready"
         },
         {
             "title": "Lottie - Parented Triangles with Cross (Web Worker, URL, Pre-Warm)",
             "devHostQsps": "exp=lottie&file=triangles_redParent.json&useWorker=true&useUrl=true&usePreWarm=true",
-            "referenceImage": "triangles-redParent-withCross.png"
+            "referenceImage": "triangles-redParent-withCross.png", "readySelector": "#lottie-ready"
         },
         {
             "title": "Lottie - Parented Triangles with Cross (Web Worker, JSON, No Pre-Warm)",
             "devHostQsps": "exp=lottie&file=triangles_redParent.json&useWorker=true&useUrl=false&usePreWarm=false",
-            "referenceImage": "triangles-redParent-withCross.png"
+            "referenceImage": "triangles-redParent-withCross.png", "readySelector": "#lottie-ready"
         },
         {
             "title": "Lottie - Parented Triangles with Cross (Web Worker, JSON, Pre-Warm)",
             "devHostQsps": "exp=lottie&file=triangles_redParent.json&useWorker=true&useUrl=false&usePreWarm=true",
-            "referenceImage": "triangles-redParent-withCross.png"
+            "referenceImage": "triangles-redParent-withCross.png", "readySelector": "#lottie-ready"
         },
         {
             "title": "Lottie - Parented Triangles with Cross (Main Thread, URL)",
             "devHostQsps": "exp=lottie&file=triangles_redParent.json&useWorker=false&useUrl=true",
-            "referenceImage": "triangles-redParent-withCross.png"
+            "referenceImage": "triangles-redParent-withCross.png", "readySelector": "#lottie-ready"
         },
         {
             "title": "Lottie - Parented Triangles with Cross (Main Thread, JSON)",
             "devHostQsps": "exp=lottie&file=triangles_redParent.json&useWorker=false&useUrl=false",
-            "referenceImage": "triangles-redParent-withCross.png"
+            "referenceImage": "triangles-redParent-withCross.png", "readySelector": "#lottie-ready"
         },
         {
             "title": "Lottie - Single Text (Web Worker, URL, No Pre-Warm)",
             "devHostQsps": "exp=lottie&file=textTestFile.json&useWorker=true&useUrl=true&usePreWarm=false",
-            "referenceImage": "text.png"
+            "referenceImage": "text.png", "readySelector": "#lottie-ready"
         },
         {
             "title": "Lottie - Single Text (Web Worker, URL, Pre-Warm)",
             "devHostQsps": "exp=lottie&file=textTestFile.json&useWorker=true&useUrl=true&usePreWarm=true",
-            "referenceImage": "text.png"
+            "referenceImage": "text.png", "readySelector": "#lottie-ready"
         },
         {
             "title": "Lottie - Single Text (Web Worker, JSON, No Pre-Warm)",
             "devHostQsps": "exp=lottie&file=textTestFile.json&useWorker=true&useUrl=false&usePreWarm=false",
-            "referenceImage": "text.png"
+            "referenceImage": "text.png", "readySelector": "#lottie-ready"
         },
         {
             "title": "Lottie - Single Text (Web Worker, JSON, Pre-Warm)",
             "devHostQsps": "exp=lottie&file=textTestFile.json&useWorker=true&useUrl=false&usePreWarm=true",
-            "referenceImage": "text.png"
+            "referenceImage": "text.png", "readySelector": "#lottie-ready"
         },
         {
             "title": "Lottie - Single Text (Main Thread, URL)",
             "devHostQsps": "exp=lottie&file=textTestFile.json&useWorker=false&useUrl=true",
-            "referenceImage": "text.png"
+            "referenceImage": "text.png", "readySelector": "#lottie-ready"
         },
         {
             "title": "Lottie - Single Text (Main Thread, JSON)",
             "devHostQsps": "exp=lottie&file=textTestFile.json&useWorker=false&useUrl=false",
-            "referenceImage": "text.png"
+            "referenceImage": "text.png", "readySelector": "#lottie-ready"
         },
         {
             "title": "Lottie - Single Text (Web Worker, URL, No Pre-Warm, With Variables)",
             "devHostQsps": "exp=lottie&file=textTestFileWithVariable.json&useWorker=true&useUrl=true&usePreWarm=false&variables=eyJ2YXIiOiJUZXh0IGluIEFFIn0",
-            "referenceImage": "text.png"
+            "referenceImage": "text.png", "readySelector": "#lottie-ready"
         },
         {
             "title": "Lottie - Single Text (Main Thread, URL, No Pre-Warm, With Variables)",
             "devHostQsps": "exp=lottie&file=textTestFileWithVariable.json&useWorker=false&useUrl=true&usePreWarm=false&variables=eyJ2YXIiOiJUZXh0IGluIEFFIn0",
-            "referenceImage": "text.png"
+            "referenceImage": "text.png", "readySelector": "#lottie-ready"
         },
         {
             "title": "Lottie - Triangles and Text (Web Worker, URL, No Pre-Warm)",
             "devHostQsps": "exp=lottie&file=trianglesAndText.json&useWorker=true&useUrl=true&usePreWarm=false",
-            "referenceImage": "triangles-text.png"
+            "referenceImage": "triangles-text.png", "readySelector": "#lottie-ready"
         },
         {
             "title": "Lottie - Triangles and Text (Web Worker, URL, Pre-Warm)",
             "devHostQsps": "exp=lottie&file=trianglesAndText.json&useWorker=true&useUrl=true&usePreWarm=true",
-            "referenceImage": "triangles-text.png"
+            "referenceImage": "triangles-text.png", "readySelector": "#lottie-ready"
         },
         {
             "title": "Lottie - Triangles and Text (Web Worker, JSON, No Pre-Warm)",
             "devHostQsps": "exp=lottie&file=trianglesAndText.json&useWorker=true&useUrl=false&usePreWarm=false",
-            "referenceImage": "triangles-text.png"
+            "referenceImage": "triangles-text.png", "readySelector": "#lottie-ready"
         },
         {
             "title": "Lottie - Triangles and Text (Web Worker, JSON, Pre-Warm)",
             "devHostQsps": "exp=lottie&file=trianglesAndText.json&useWorker=true&useUrl=false&usePreWarm=true",
-            "referenceImage": "triangles-text.png"
+            "referenceImage": "triangles-text.png", "readySelector": "#lottie-ready"
         },
         {
             "title": "Lottie - Triangles and Text (Main Thread, URL)",
             "devHostQsps": "exp=lottie&file=trianglesAndText.json&useWorker=false&useUrl=true",
-            "referenceImage": "triangles-text.png"
+            "referenceImage": "triangles-text.png", "readySelector": "#lottie-ready"
         },
         {
             "title": "Lottie - Triangles and Text (Main Thread, JSON)",
             "devHostQsps": "exp=lottie&file=trianglesAndText.json&useWorker=false&useUrl=false",
-            "referenceImage": "triangles-text.png"
+            "referenceImage": "triangles-text.png", "readySelector": "#lottie-ready"
         },
         {
             "title": "Lottie - Triangles and Text (Web Worker, URL, No Pre-Warm, With Variables)",
             "devHostQsps": "exp=lottie&file=trianglesAndTextWithVariable.json&useWorker=true&useUrl=true&usePreWarm=false&variables=eyJ2YXIiOiJUZXh0IGluIEFFIn0",
-            "referenceImage": "triangles-text.png"
+            "referenceImage": "triangles-text.png", "readySelector": "#lottie-ready"
         },
         {
             "title": "Lottie - Triangles and Text (Main Thread, URL, No Pre-Warm, With Variables)",
             "devHostQsps": "exp=lottie&file=trianglesAndTextWithVariable.json&useWorker=false&useUrl=true&usePreWarm=false&variables=eyJ2YXIiOiJUZXh0IGluIEFFIn0",
-            "referenceImage": "triangles-text.png"
+            "referenceImage": "triangles-text.png", "readySelector": "#lottie-ready"
         },
         {
             "title": "Lottie - Triangles and Text (Main Thread, URL, No Pre-Warm, Left Aligned)",
             "devHostQsps": "exp=lottie&file=trianglesAndTextLeft.json&useWorker=false&useUrl=true&usePreWarm=false&variables=eyJ2YXIiOiJUZXh0IGluIEFFIn0",
-            "referenceImage": "triangles-text-left.png"
+            "referenceImage": "triangles-text-left.png", "readySelector": "#lottie-ready"
         },
         {
             "title": "Lottie - Triangles and Text (Main Thread, URL, No Pre-Warm, Right Aligned)",
             "devHostQsps": "exp=lottie&file=trianglesAndTextRight.json&useWorker=false&useUrl=true&usePreWarm=false&variables=eyJ2YXIiOiJUZXh0IGluIEFFIn0",
-            "referenceImage": "triangles-text-right.png"
+            "referenceImage": "triangles-text-right.png", "readySelector": "#lottie-ready"
         },
         {
             "title": "Lottie - Triangles and Text (Main Thread, URL, No Pre-Warm, Center Aligned)",
             "devHostQsps": "exp=lottie&file=trianglesAndTextCentered.json&useWorker=false&useUrl=true&usePreWarm=false&variables=eyJ2YXIiOiJUZXh0IGluIEFFIn0",
-            "referenceImage": "triangles-text-center.png"
+            "referenceImage": "triangles-text-center.png", "readySelector": "#lottie-ready"
+        },
+        {
+            "title": "Lottie - Rectangles (Main Thread, URL)",
+            "devHostQsps": "exp=lottie&file=rectangles.json&useWorker=false&useUrl=true",
+            "referenceImage": "lottie-rectangles.png", "readySelector": "#lottie-ready"
+        },
+        {
+            "title": "Lottie - Strokes (Main Thread, URL)",
+            "devHostQsps": "exp=lottie&file=strokes.json&useWorker=false&useUrl=true",
+            "referenceImage": "lottie-strokes.png", "readySelector": "#lottie-ready"
+        },
+        {
+            "title": "Lottie - Gradient Fill (Main Thread, URL)",
+            "devHostQsps": "exp=lottie&file=gradientFill.json&useWorker=false&useUrl=true",
+            "referenceImage": "lottie-gradientFill.png", "readySelector": "#lottie-ready"
+        },
+        {
+            "title": "Lottie - Z-Order (Main Thread, URL)",
+            "devHostQsps": "exp=lottie&file=zOrder.json&useWorker=false&useUrl=true",
+            "referenceImage": "lottie-zOrder.png", "readySelector": "#lottie-ready"
+        },
+        {
+            "title": "Lottie - Animated Position Frame 0 (Main Thread, URL)",
+            "devHostQsps": "exp=lottie&file=animated_position.json&useWorker=false&useUrl=true&frame=0",
+            "referenceImage": "lottie-animated-position-frame0.png", "readySelector": "#lottie-ready"
+        },
+        {
+            "title": "Lottie - Animated Position Frame 30 (Main Thread, URL)",
+            "devHostQsps": "exp=lottie&file=animated_position.json&useWorker=false&useUrl=true&frame=30",
+            "referenceImage": "lottie-animated-position-frame30.png", "readySelector": "#lottie-ready"
+        },
+        {
+            "title": "Lottie - Animated Position Frame 60 (Main Thread, URL)",
+            "devHostQsps": "exp=lottie&file=animated_position.json&useWorker=false&useUrl=true&frame=60",
+            "referenceImage": "lottie-animated-position-frame60.png", "readySelector": "#lottie-ready"
+        },
+        {
+            "title": "Lottie - Animated Rotation Frame 0 (Main Thread, URL)",
+            "devHostQsps": "exp=lottie&file=animated_rotation.json&useWorker=false&useUrl=true&frame=0",
+            "referenceImage": "lottie-animated-rotation-frame0.png", "readySelector": "#lottie-ready"
+        },
+        {
+            "title": "Lottie - Animated Rotation Frame 15 (Main Thread, URL)",
+            "devHostQsps": "exp=lottie&file=animated_rotation.json&useWorker=false&useUrl=true&frame=15",
+            "referenceImage": "lottie-animated-rotation-frame15.png", "readySelector": "#lottie-ready"
+        },
+        {
+            "title": "Lottie - Animated Rotation Frame 38 (Main Thread, URL)",
+            "devHostQsps": "exp=lottie&file=animated_rotation.json&useWorker=false&useUrl=true&frame=38",
+            "referenceImage": "lottie-animated-rotation-frame38.png", "readySelector": "#lottie-ready"
+        },
+        {
+            "title": "Lottie - Animated Opacity Frame 0 (Main Thread, URL)",
+            "devHostQsps": "exp=lottie&file=animated_opacity.json&useWorker=false&useUrl=true&frame=0",
+            "referenceImage": "lottie-animated-opacity-frame0.png", "readySelector": "#lottie-ready"
+        },
+        {
+            "title": "Lottie - Animated Opacity Frame 30 (Main Thread, URL)",
+            "devHostQsps": "exp=lottie&file=animated_opacity.json&useWorker=false&useUrl=true&frame=30",
+            "referenceImage": "lottie-animated-opacity-frame30.png", "readySelector": "#lottie-ready"
+        },
+        {
+            "title": "Lottie - Animated Opacity Frame 60 (Main Thread, URL)",
+            "devHostQsps": "exp=lottie&file=animated_opacity.json&useWorker=false&useUrl=true&frame=60",
+            "referenceImage": "lottie-animated-opacity-frame60.png", "readySelector": "#lottie-ready"
+        },
+        {
+            "title": "Lottie - Null Layer Parenting Frame 0 (Main Thread, URL)",
+            "devHostQsps": "exp=lottie&file=nullLayerParenting.json&useWorker=false&useUrl=true&frame=0",
+            "referenceImage": "lottie-nullLayerParenting-frame0.png", "readySelector": "#lottie-ready"
+        },
+        {
+            "title": "Lottie - Null Layer Parenting Frame 30 (Main Thread, URL)",
+            "devHostQsps": "exp=lottie&file=nullLayerParenting.json&useWorker=false&useUrl=true&frame=30",
+            "referenceImage": "lottie-nullLayerParenting-frame30.png", "readySelector": "#lottie-ready"
+        },
+        {
+            "title": "Lottie - Rectangles (Web Worker, URL)",
+            "devHostQsps": "exp=lottie&file=rectangles.json&useWorker=true&useUrl=true",
+            "referenceImage": "lottie-rectangles.png", "readySelector": "#lottie-ready"
+        },
+        {
+            "title": "Lottie - Strokes (Web Worker, URL)",
+            "devHostQsps": "exp=lottie&file=strokes.json&useWorker=true&useUrl=true",
+            "referenceImage": "lottie-strokes.png", "readySelector": "#lottie-ready"
+        },
+        {
+            "title": "Lottie - Gradient Fill (Web Worker, URL)",
+            "devHostQsps": "exp=lottie&file=gradientFill.json&useWorker=true&useUrl=true",
+            "referenceImage": "lottie-gradientFill.png", "readySelector": "#lottie-ready"
+        },
+        {
+            "title": "Lottie - Z-Order (Web Worker, URL)",
+            "devHostQsps": "exp=lottie&file=zOrder.json&useWorker=true&useUrl=true",
+            "referenceImage": "lottie-zOrder.png", "readySelector": "#lottie-ready"
+        },
+        {
+            "title": "Lottie - Animated Position Frame 0 (Web Worker, URL)",
+            "devHostQsps": "exp=lottie&file=animated_position.json&useWorker=true&useUrl=true&frame=0",
+            "referenceImage": "lottie-animated-position-frame0.png", "readySelector": "#lottie-ready"
+        },
+        {
+            "title": "Lottie - Animated Position Frame 30 (Web Worker, URL)",
+            "devHostQsps": "exp=lottie&file=animated_position.json&useWorker=true&useUrl=true&frame=30",
+            "referenceImage": "lottie-animated-position-frame30.png", "readySelector": "#lottie-ready"
+        },
+        {
+            "title": "Lottie - Animated Position Frame 60 (Web Worker, URL)",
+            "devHostQsps": "exp=lottie&file=animated_position.json&useWorker=true&useUrl=true&frame=60",
+            "referenceImage": "lottie-animated-position-frame60.png", "readySelector": "#lottie-ready"
+        },
+        {
+            "title": "Lottie - Animated Rotation Frame 0 (Web Worker, URL)",
+            "devHostQsps": "exp=lottie&file=animated_rotation.json&useWorker=true&useUrl=true&frame=0",
+            "referenceImage": "lottie-animated-rotation-frame0.png", "readySelector": "#lottie-ready"
+        },
+        {
+            "title": "Lottie - Animated Rotation Frame 15 (Web Worker, URL)",
+            "devHostQsps": "exp=lottie&file=animated_rotation.json&useWorker=true&useUrl=true&frame=15",
+            "referenceImage": "lottie-animated-rotation-frame15.png", "readySelector": "#lottie-ready"
+        },
+        {
+            "title": "Lottie - Animated Rotation Frame 38 (Web Worker, URL)",
+            "devHostQsps": "exp=lottie&file=animated_rotation.json&useWorker=true&useUrl=true&frame=38",
+            "referenceImage": "lottie-animated-rotation-frame38.png", "readySelector": "#lottie-ready"
+        },
+        {
+            "title": "Lottie - Animated Opacity Frame 0 (Web Worker, URL)",
+            "devHostQsps": "exp=lottie&file=animated_opacity.json&useWorker=true&useUrl=true&frame=0",
+            "referenceImage": "lottie-animated-opacity-frame0.png", "readySelector": "#lottie-ready"
+        },
+        {
+            "title": "Lottie - Animated Opacity Frame 30 (Web Worker, URL)",
+            "devHostQsps": "exp=lottie&file=animated_opacity.json&useWorker=true&useUrl=true&frame=30",
+            "referenceImage": "lottie-animated-opacity-frame30.png", "readySelector": "#lottie-ready"
+        },
+        {
+            "title": "Lottie - Animated Opacity Frame 60 (Web Worker, URL)",
+            "devHostQsps": "exp=lottie&file=animated_opacity.json&useWorker=true&useUrl=true&frame=60",
+            "referenceImage": "lottie-animated-opacity-frame60.png", "readySelector": "#lottie-ready"
+        },
+        {
+            "title": "Lottie - Null Layer Parenting Frame 0 (Web Worker, URL)",
+            "devHostQsps": "exp=lottie&file=nullLayerParenting.json&useWorker=true&useUrl=true&frame=0",
+            "referenceImage": "lottie-nullLayerParenting-frame0.png", "readySelector": "#lottie-ready"
+        },
+        {
+            "title": "Lottie - Null Layer Parenting Frame 30 (Web Worker, URL)",
+            "devHostQsps": "exp=lottie&file=nullLayerParenting.json&useWorker=true&useUrl=true&frame=30",
+            "referenceImage": "lottie-nullLayerParenting-frame30.png", "readySelector": "#lottie-ready"
         }
     ]
 }
+
