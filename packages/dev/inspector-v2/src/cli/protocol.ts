@@ -10,6 +10,8 @@ export type CommandArgInfo = {
     description: string;
     /** Whether this argument is required. */
     required?: boolean;
+    /** The type of the argument. Defaults to "string". When "file", the CLI reads the file and sends its contents. */
+    type?: "string" | "file";
 };
 
 /**
