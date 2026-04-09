@@ -310,6 +310,7 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
         }
 
         this._engine = null;
+        this._inspectableToken = null;
 
         try {
             // Set up the global object ("window" and "this" for user code).
