@@ -37,8 +37,8 @@ export async function GetSpzModule(): Promise<any> {
  *
  * @param cloud The GaussianCloud returned by spz.loadSpzFromBuffer
  * @param scene The Babylon.js scene (used to query maxTextureSize for SH textures)
- * @param useCoroutine yield periodically to avoid blocking the main thread
- * @returns A coroutine yielding an IParsedSplat ready to be passed to updateData
+ * @param useCoroutine If true, yields periodically to avoid blocking the main thread
+ * @returns A coroutine returning an IParsedSplat ready to be passed to updateData
  */
 export function* ConvertSpzToSplat(cloud: any, scene: Scene, useCoroutine = false): Coroutine<IParsedSplat> {
     const splatCount: number = cloud.numPoints;

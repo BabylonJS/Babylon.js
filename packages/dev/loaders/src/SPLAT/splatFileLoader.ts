@@ -325,36 +325,28 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
             });
         }
 
-        return new Promise((resolve) => {
-            // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
-            GetSpzModule().then((spz) => {
-                const t0 = performance.now();
-                const cloud = spz.loadSpzFromBuffer(new Uint8Array(data), { to: spz.CoordinateSystem.RUB });
-                const t1 = performance.now();
-                Tools.Log(`SPZ decompress+decode: ${(t1 - t0).toFixed(1)}ms (${cloud.numPoints} splats)`);
-                // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
-                ConvertSpzToSplatAsync(cloud, scene).then((parsedSPZ) => {
-                    const t2 = performance.now();
-                    Tools.Log(`SPZ ConvertSpzToSplat: ${(t2 - t1).toFixed(1)}ms`);
-                    scene._blockEntityCollection = !!this._assetContainer;
-                    const gaussianSplatting =
-                        this._loadingOptions.gaussianSplattingMesh ?? new GaussianSplattingMesh("GaussianSplatting", null, scene, this._loadingOptions.keepInRam);
-                    if (parsedSPZ.trainedWithAntialiasing) {
-                        const gsMaterial = gaussianSplatting.material as GaussianSplattingMaterial;
-                        gsMaterial.kernelSize = 0.1;
-                        gsMaterial.compensation = true;
-                    }
-                    gaussianSplatting._parentContainer = this._assetContainer;
-                    babylonMeshesArray.push(gaussianSplatting);
-                    gaussianSplatting.updateData(parsedSPZ.data, parsedSPZ.sh, { flipY: false });
-                    if (!this._loadingOptions.flipY) {
-                        gaussianSplatting.scaling.y *= -1.0;
-                        gaussianSplatting.computeWorldMatrix(true);
-                    }
-                    scene._blockEntityCollection = false;
-                    this.applyAutoCameraLimits(parsedSPZ, scene);
-                    resolve(babylonMeshesArray);
-                });
+        // eslint-disable-next-line github/no-then
+        return GetSpzModule().then((spz) => {
+            const cloud = spz.loadSpzFromBuffer(new Uint8Array(data), { to: spz.CoordinateSystem.RUB });
+            // eslint-disable-next-line github/no-then
+            return ConvertSpzToSplatAsync(cloud, scene).then((parsedSPZ) => {
+                scene._blockEntityCollection = !!this._assetContainer;
+                const gaussianSplatting = this._loadingOptions.gaussianSplattingMesh ?? new GaussianSplattingMesh("GaussianSplatting", null, scene, this._loadingOptions.keepInRam);
+                if (parsedSPZ.trainedWithAntialiasing) {
+                    const gsMaterial = gaussianSplatting.material as GaussianSplattingMaterial;
+                    gsMaterial.kernelSize = 0.1;
+                    gsMaterial.compensation = true;
+                }
+                gaussianSplatting._parentContainer = this._assetContainer;
+                babylonMeshesArray.push(gaussianSplatting);
+                gaussianSplatting.updateData(parsedSPZ.data, parsedSPZ.sh, { flipY: false });
+                if (!this._loadingOptions.flipY) {
+                    gaussianSplatting.scaling.y *= -1.0;
+                    gaussianSplatting.computeWorldMatrix(true);
+                }
+                scene._blockEntityCollection = false;
+                this.applyAutoCameraLimits(parsedSPZ, scene);
+                return babylonMeshesArray;
             });
         });
     }
