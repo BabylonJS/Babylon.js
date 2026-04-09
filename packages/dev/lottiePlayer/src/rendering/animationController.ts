@@ -370,7 +370,11 @@ export class AnimationController {
         }
 
         if (stoppingAfterThisFrame) {
-            this._isPlaying = false;
+            if (this._configuration.stopAtFrame === undefined) {
+                this._isPlaying = false;
+            }
+            // When stopAtFrame is set, the render loop stays alive to prevent
+            // preserveDrawingBuffer:false from clearing the canvas.
         }
     }
 }
