@@ -229,6 +229,24 @@ export class MonacoManager {
 
         // Initialize getRunnable as a bound method
         this.globalState.getRunnable = this.getRunnableAsync.bind(this);
+
+        // Expose diagnostics from Monaco editor markers.
+        this.globalState.getDiagnostics = () => {
+            const result: import("../../globalState").IDiagnosticInfo[] = [];
+            const markers = monaco.editor.getModelMarkers({});
+            for (const marker of markers) {
+                const uri = marker.resource?.path ?? "";
+                const fileName = uri.startsWith("/pg/") ? uri.slice(4) : uri;
+                result.push({
+                    file: fileName,
+                    message: marker.message,
+                    severity: marker.severity === monaco.MarkerSeverity.Error ? "error" : marker.severity === monaco.MarkerSeverity.Warning ? "warning" : "info",
+                    line: marker.startLineNumber,
+                    column: marker.startColumn,
+                });
+            }
+            return result;
+        };
     }
 
     private _initializeFileState(entry: string) {

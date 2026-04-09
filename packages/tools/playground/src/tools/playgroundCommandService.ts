@@ -14,6 +14,21 @@ export function MakePlaygroundCommandServiceDefinition(globalState: GlobalState,
         friendlyName: "Playground Command Service",
         consumes: [inspectorModule.InspectableCommandRegistryIdentity],
         factory: (commandRegistry: any) => {
+            // Track the last error from the Playground for the get-errors command.
+            let lastError: { message: string; lineNumber?: number; columnNumber?: number } | null = null;
+            const errorTracker = globalState.onErrorObservable.add((error) => {
+                if (error) {
+                    const msg = error.message;
+                    lastError = {
+                        message: typeof msg === "string" ? msg : (msg?.messageText ?? "Unknown error"),
+                        lineNumber: error.lineNumber,
+                        columnNumber: error.columnNumber,
+                    };
+                } else {
+                    lastError = null;
+                }
+            });
+
             const listFilesReg = commandRegistry.addCommand({
                 id: "list-files",
                 description: "List all files managed in the Playground editor.",
@@ -210,8 +225,24 @@ export function MakePlaygroundCommandServiceDefinition(globalState: GlobalState,
                 },
             });
 
+            const getErrorsReg = commandRegistry.addCommand({
+                id: "get-errors",
+                description: "Get compile and runtime errors from the Playground.",
+                executeAsync: async () => {
+                    return JSON.stringify(
+                        {
+                            compileErrors: globalState.getDiagnostics(),
+                            runtimeError: lastError,
+                        },
+                        null,
+                        2
+                    );
+                },
+            });
+
             return {
                 dispose: () => {
+                    errorTracker.remove();
                     listFilesReg.dispose();
                     getContentReg.dispose();
                     setContentReg.dispose();
@@ -220,6 +251,7 @@ export function MakePlaygroundCommandServiceDefinition(globalState: GlobalState,
                     getSnippetIdReg.dispose();
                     savePlaygroundReg.dispose();
                     runPlaygroundReg.dispose();
+                    getErrorsReg.dispose();
                 },
             };
         },

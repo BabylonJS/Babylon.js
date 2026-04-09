@@ -40,6 +40,22 @@ export interface IEngineSwitchDialogRequest extends IEngineSwitchDialogOptions {
     resolve: (shouldSwitch: boolean) => void;
 }
 
+/**
+ * A diagnostic marker from the editor.
+ */
+export interface IDiagnosticInfo {
+    /** The file name. */
+    file: string;
+    /** The diagnostic message. */
+    message: string;
+    /** The severity: "error", "warning", or "info". */
+    severity: "error" | "warning" | "info";
+    /** The line number. */
+    line: number;
+    /** The column number. */
+    column: number;
+}
+
 export class GlobalState {
     // eslint-disable-next-line @typescript-eslint/naming-convention
     public readonly MobileSizeTrigger = 1024;
@@ -51,6 +67,7 @@ export class GlobalState {
     public getRunnable: () => Promise<V2Runner> = async () => {
         throw new Error("Must be set in runtime");
     };
+    public getDiagnostics: () => IDiagnosticInfo[] = () => [];
     currentRunner?: V2Runner | null;
 
     public language = Utilities.ReadStringFromStore("language", "JS");
