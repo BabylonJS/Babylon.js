@@ -6,6 +6,7 @@ import { type GlobalState, RuntimeMode } from "../globalState";
 import { Utilities } from "../tools/utilities";
 import { DownloadManager } from "../tools/downloadManager";
 import { AddFileRevision } from "../tools/localSession";
+import { type InspectableToken } from "inspector/inspectable";
 
 import { Engine, EngineStore, WebGPUEngine, LastCreatedAudioEngine, Logger, type IDisposable, type Nullable, type Scene, type ThinEngine } from "@dev/core";
 
@@ -13,7 +14,6 @@ import { MakePlaygroundCommandServiceDefinition } from "../tools/playgroundComma
 import "../scss/rendering.scss";
 
 type InspectorV2Module = typeof import("inspector/legacy/legacy") & typeof import("inspector/index");
-type InspectableToken = import("inspector/inspectable").InspectableToken;
 
 const RunnableCreationTimeoutMs = 15000;
 const SceneRunTimeoutMs = 30000;

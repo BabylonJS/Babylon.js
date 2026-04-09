@@ -56,10 +56,6 @@ function tick(ms = 50): Promise<void> {
     return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-/**
- * Makes a browser WebSocket automatically respond to `getInfo` requests
- * with the given name (or a function that returns the name).
- */
 function autoRespondGetInfo(ws: WebSocket, name: string | (() => string)): void {
     ws.on("message", (data) => {
         try {
