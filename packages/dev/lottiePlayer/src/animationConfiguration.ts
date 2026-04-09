@@ -56,6 +56,12 @@ export type AnimationConfiguration = {
      * Default is false.
      */
     supportDeviceLost: boolean;
+    /**
+     * When set, the animation will play normally but stop at this frame number.
+     * Useful for visual testing of animations at specific points in time.
+     * Default is undefined (play the full animation).
+     */
+    stopAtFrame?: number;
 };
 
 /**
