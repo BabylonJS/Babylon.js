@@ -210,7 +210,12 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
 
     /** Attractors */
     private _attractors: Attractor[] = [];
-    private static readonly _MAX_ATTRACTORS = 8;
+
+    /**
+     * Maximum number of attractors supported by GPU particle systems.
+     * Limited by the fixed-size uniform arrays in the update shaders.
+     */
+    public static readonly MAX_ATTRACTORS = 8;
 
     /**
      * The list of attractors used to change the direction of the particles in the system.
@@ -225,8 +230,8 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
      * @param attractor - The attractor to add to the particle system
      */
     public addAttractor(attractor: Attractor): void {
-        if (this._attractors.length >= GPUParticleSystem._MAX_ATTRACTORS) {
-            Logger.Warn(`GPU particle system supports a maximum of ${GPUParticleSystem._MAX_ATTRACTORS} attractors. Ignoring additional attractor.`);
+        if (this._attractors.length >= GPUParticleSystem.MAX_ATTRACTORS) {
+            Logger.Warn(`GPU particle system supports a maximum of ${GPUParticleSystem.MAX_ATTRACTORS} attractors. Ignoring additional attractor.`);
             return;
         }
         this._attractors.push(attractor);
@@ -1907,7 +1912,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         }
 
         if (this._attractors.length > 0) {
-            const count = Math.min(this._attractors.length, GPUParticleSystem._MAX_ATTRACTORS);
+            const count = Math.min(this._attractors.length, GPUParticleSystem.MAX_ATTRACTORS);
             this._updateBuffer.setInt("attractorCount", count);
 
             // Compute inverse world matrix once for all attractors when in local space
@@ -1919,14 +1924,14 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
 
             for (let i = 0; i < count; i++) {
                 const attractor = this._attractors[i];
+                const name = "attractorPositionAndStrength[" + i + "]";
                 if (invWorld) {
                     const localPos = TmpVectors.Vector3[0];
                     Vector3.TransformCoordinatesToRef(attractor.position, invWorld, localPos);
-                    this._updateBuffer.setFloat3("attractorPosition" + i, localPos.x, localPos.y, localPos.z);
+                    this._updateBuffer.setFloat4(name, localPos.x, localPos.y, localPos.z, attractor.strength);
                 } else {
-                    this._updateBuffer.setFloat3("attractorPosition" + i, attractor.position.x, attractor.position.y, attractor.position.z);
+                    this._updateBuffer.setFloat4(name, attractor.position.x, attractor.position.y, attractor.position.z, attractor.strength);
                 }
-                this._updateBuffer.setFloat("attractorStrength" + i, attractor.strength);
             }
         }
 

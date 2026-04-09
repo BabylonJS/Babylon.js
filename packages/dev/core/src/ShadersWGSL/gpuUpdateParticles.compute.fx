@@ -83,22 +83,7 @@ struct SimParams {
 
     #ifdef ATTRACTORS
         attractorCount : i32,
-        attractorPosition0 : vec3<f32>,
-        attractorStrength0 : f32,
-        attractorPosition1 : vec3<f32>,
-        attractorStrength1 : f32,
-        attractorPosition2 : vec3<f32>,
-        attractorStrength2 : f32,
-        attractorPosition3 : vec3<f32>,
-        attractorStrength3 : f32,
-        attractorPosition4 : vec3<f32>,
-        attractorStrength4 : f32,
-        attractorPosition5 : vec3<f32>,
-        attractorStrength5 : f32,
-        attractorPosition6 : vec3<f32>,
-        attractorStrength6 : f32,
-        attractorPosition7 : vec3<f32>,
-        attractorStrength7 : f32,
+        attractorPositionAndStrength : array<vec4<f32>, 8>,
     #endif
 
     // Emitter types
@@ -495,22 +480,10 @@ fn main(@builtin(global_invocation_id) GlobalInvocationID : vec3<u32>) {
 
             #ifdef ATTRACTORS
             {
-                let attractorPositions = array<vec3<f32>, 8>(
-                    params.attractorPosition0, params.attractorPosition1,
-                    params.attractorPosition2, params.attractorPosition3,
-                    params.attractorPosition4, params.attractorPosition5,
-                    params.attractorPosition6, params.attractorPosition7
-                );
-                let attractorStrengths = array<f32, 8>(
-                    params.attractorStrength0, params.attractorStrength1,
-                    params.attractorStrength2, params.attractorStrength3,
-                    params.attractorStrength4, params.attractorStrength5,
-                    params.attractorStrength6, params.attractorStrength7
-                );
                 for (var i : i32 = 0; i < params.attractorCount; i = i + 1) {
-                    let toAttractor : vec3<f32> = attractorPositions[i] - position;
+                    let toAttractor : vec3<f32> = params.attractorPositionAndStrength[i].xyz - position;
                     let distSq : f32 = dot(toAttractor, toAttractor) + 1.0;
-                    updatedDirection = updatedDirection + (attractorStrengths[i] / distSq) * normalize(toAttractor) * timeDelta;
+                    updatedDirection = updatedDirection + (params.attractorPositionAndStrength[i].w / distSq) * normalize(toAttractor) * timeDelta;
                 }
             }
             #endif
