@@ -168,6 +168,7 @@ export async function StartBridge(config: IBridgeConfig): Promise<IBridgeHandle>
                     await waitForSession();
 
                     // Query each session for its current name.
+                    const updatedNames = new Map<number, string>();
                     const infoPromises = Array.from(sessions.values()).map(async (s) => {
                         const requestId = generateRequestId();
                         sendBrowserRequest(s, { type: "getInfo", requestId });
@@ -175,7 +176,7 @@ export async function StartBridge(config: IBridgeConfig): Promise<IBridgeHandle>
                             const raw = await waitForBrowserResponse(requestId, 5000);
                             const info = JSON.parse(raw);
                             if (info.type === "infoResponse" && typeof info.name === "string") {
-                                s.name = info.name;
+                                updatedNames.set(s.id, info.name);
                             }
                         } catch {
                             // Keep the existing name if the session doesn't respond.
@@ -185,7 +186,7 @@ export async function StartBridge(config: IBridgeConfig): Promise<IBridgeHandle>
 
                     const sessionList: SessionInfo[] = Array.from(sessions.values()).map((s) => ({
                         id: s.id,
-                        name: s.name,
+                        name: updatedNames.get(s.id) ?? s.name,
                         connectedAt: s.connectedAt,
                     }));
                     sendCliResponse({ type: "sessionsResponse", sessions: sessionList });
