@@ -171,9 +171,21 @@ export type CommandResponse = {
 };
 
 /**
+ * Browser → Bridge: Response to a getInfo request from the bridge.
+ */
+export type InfoResponse = {
+    /** The message type discriminator. */
+    type: "infoResponse";
+    /** The identifier of the original request. */
+    requestId: string;
+    /** The current display name of the session. */
+    name: string;
+};
+
+/**
  * All messages that the browser sends to the bridge.
  */
-export type BrowserRequest = RegisterRequest | CommandListResponse | CommandResponse;
+export type BrowserRequest = RegisterRequest | CommandListResponse | CommandResponse | InfoResponse;
 
 /**
  * Bridge → Browser: Request the list of registered commands.
@@ -200,6 +212,16 @@ export type ExecCommandRequest = {
 };
 
 /**
+ * Bridge → Browser: Request current session information.
+ */
+export type GetInfoRequest = {
+    /** The message type discriminator. */
+    type: "getInfo";
+    /** A unique identifier for this request. */
+    requestId: string;
+};
+
+/**
  * All messages that the bridge sends to the browser.
  */
-export type BrowserResponse = ListCommandsRequest | ExecCommandRequest;
+export type BrowserResponse = ListCommandsRequest | ExecCommandRequest | GetInfoRequest;

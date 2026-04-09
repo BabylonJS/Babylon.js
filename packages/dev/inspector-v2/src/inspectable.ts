@@ -80,9 +80,6 @@ export function _StartInspectable(scene: Scene, options?: Partial<InspectableOpt
     let state = InspectableStates.get(scene);
 
     if (!state) {
-        const port = options?.port ?? DefaultPort;
-        const name = options?.name ?? (typeof document !== "undefined" ? document.title : "Babylon.js Scene");
-
         const serviceContainer = new ServiceContainer("InspectableContainer");
 
         const fullyDispose = () => {
@@ -105,8 +102,10 @@ export function _StartInspectable(scene: Scene, options?: Partial<InspectableOpt
             await serviceContainer.addServicesAsync(
                 sceneContextServiceDefinition,
                 MakeInspectableBridgeServiceDefinition({
-                    port,
-                    name,
+                    port: options?.port ?? DefaultPort,
+                    get name() {
+                        return options?.name ?? (typeof document !== "undefined" ? document.title : "Babylon.js Scene");
+                    },
                 }),
                 EntityQueryServiceDefinition,
                 ScreenshotCommandServiceDefinition,

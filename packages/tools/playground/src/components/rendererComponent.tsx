@@ -36,6 +36,7 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
     private _downloadManager: DownloadManager;
     private _inspectorFallback: boolean = false;
     private _inspectorV2Token: Nullable<IDisposable> = null;
+    private _inspectableToken: Nullable<IDisposable> = null;
 
     /**
      * Create the rendering component.
@@ -127,6 +128,10 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
         if (this._scene) {
             const inspectorV2Module: InspectorV2Module | undefined = (globalThis as any).INSPECTOR;
             if (inspectorV2Module?.ShowInspector) {
+                // Ensure the inspectable bridge is running before showing the inspector UI.
+                if (inspectorV2Module.StartInspectable && !this._inspectableToken) {
+                    this._inspectableToken = inspectorV2Module.StartInspectable(this._scene);
+                }
                 const options = {
                     ...inspectorV2Module.ConvertOptions({
                         embedMode: true,
@@ -227,6 +232,9 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
 
     private _disposeTransientResources() {
         try {
+            this._inspectableToken?.dispose();
+            this._inspectableToken = null;
+
             this._scene = null;
             this._engine = null;
 
@@ -264,6 +272,9 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
 
         this._inspectorV2Token?.dispose();
         this._inspectorV2Token = null;
+
+        this._inspectableToken?.dispose();
+        this._inspectableToken = null;
 
         let useWebGPU = location.search.indexOf("webgpu") !== -1 && webGPUSupported;
         let forceWebGL1 = false;
@@ -425,6 +436,12 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
             this._scene = sceneResult as Scene;
             (window as any).scene = this._scene;
             (window as any).startRenderLoop(this._engine, canvas);
+
+            // Start the inspectable bridge for the CLI if Inspector v2 is loaded.
+            const inspectorV2Module: InspectorV2Module | undefined = (globalThis as any).INSPECTOR;
+            if (inspectorV2Module?.StartInspectable) {
+                this._inspectableToken = inspectorV2Module.StartInspectable(this._scene);
+            }
 
             this._engine!.scenes[0]?.executeWhenReady(() => {
                 this.props.globalState.onRunExecutedObservable.notifyObservers();

@@ -8,11 +8,14 @@ import { SaveSnippet, type IV2Manifest } from "@tools/snippet-loader";
  * Handles saving playground code and multi-file manifests.
  */
 export class SaveManager {
+    private _baseTitle: string;
     /**
      * Creates a new SaveManager.
      * @param globalState Shared global state instance.
      */
     public constructor(public globalState: GlobalState) {
+        this._baseTitle = typeof document !== "undefined" ? document.title : "";
+
         globalState.onSaveRequiredObservable.add(() => {
             if (!this.globalState.currentSnippetTitle || !this.globalState.currentSnippetDescription || !this.globalState.currentSnippetTags) {
                 this.globalState.onMetadataWindowHiddenObservable.addOnce((status) => {
@@ -139,6 +142,15 @@ export class SaveManager {
             this._replaceUrlSilently(newUrl);
         }
 
+        this._updateDocumentTitle();
         this.globalState.onSavedObservable.notifyObservers();
+    }
+
+    private _updateDocumentTitle() {
+        const token = this.globalState.currentSnippetToken;
+        if (token && typeof document !== "undefined") {
+            const revision = this.globalState.currentSnippetRevision;
+            document.title = revision && revision !== "0" ? `${this._baseTitle} - #${token}#${revision}` : `${this._baseTitle} - #${token}`;
+        }
     }
 }
