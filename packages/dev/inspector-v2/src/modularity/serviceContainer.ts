@@ -40,8 +40,19 @@ export class ServiceContainer implements IDisposable {
     private readonly _serviceDefinitions = new Map<symbol, WeaklyTypedServiceDefinition>();
     private readonly _serviceDependents = new Map<WeaklyTypedServiceDefinition, Set<WeaklyTypedServiceDefinition>>();
     private readonly _serviceInstances = new Map<WeaklyTypedServiceDefinition, (IService<symbol> & Partial<IDisposable>) | void>();
+    private readonly _children = new Set<ServiceContainer>();
 
-    public constructor(private readonly _friendlyName: string) {}
+    /**
+     * Creates a new ServiceContainer.
+     * @param _friendlyName A human-readable name for debugging.
+     * @param _parent An optional parent container. Dependencies not found locally will be resolved from the parent.
+     */
+    public constructor(
+        private readonly _friendlyName: string,
+        private readonly _parent?: ServiceContainer
+    ) {
+        _parent?._children.add(this);
+    }
 
     /**
      * Adds a set of service definitions in the service container.
@@ -115,28 +126,61 @@ export class ServiceContainer implements IDisposable {
             this._serviceDefinitions.set(contract, service);
         });
 
-        const dependencies =
-            service.consumes?.map((dependency) => {
-                const dependencyDefinition = this._serviceDefinitions.get(dependency);
-                if (!dependencyDefinition) {
-                    throw new Error(`Service '${dependency.toString()}' has not been registered in the '${this._friendlyName}' container.`);
-                }
-
-                let dependentDefinitions = this._serviceDependents.get(dependencyDefinition);
-                if (!dependentDefinitions) {
-                    this._serviceDependents.set(dependencyDefinition, (dependentDefinitions = new Set()));
-                }
-                dependentDefinitions.add(service);
-
-                const dependencyInstance = this._serviceInstances.get(dependencyDefinition);
-                if (!dependencyInstance) {
-                    throw new Error(`Service '${dependency.toString()}' has not been instantiated in the '${this._friendlyName}' container.`);
-                }
-
-                return dependencyInstance;
-            }) ?? [];
+        const dependencies = service.consumes?.map((contract) => this._resolveDependency(contract, service)) ?? [];
 
         this._serviceInstances.set(service, await service.factory(...dependencies, abortSignal));
+    }
+
+    /**
+     * Resolves a dependency by contract identity for a consuming service.
+     * Checks local services first, then walks up the parent chain.
+     * Registers the consumer as a dependent in whichever container owns the dependency.
+     * @param contract The contract identity to resolve.
+     * @param consumer The service definition that consumes this dependency.
+     * @returns The resolved service instance.
+     */
+    private _resolveDependency(contract: symbol, consumer: WeaklyTypedServiceDefinition): IService<symbol> & Partial<IDisposable> {
+        const definition = this._serviceDefinitions.get(contract);
+        if (definition) {
+            let dependentDefinitions = this._serviceDependents.get(definition);
+            if (!dependentDefinitions) {
+                this._serviceDependents.set(definition, (dependentDefinitions = new Set()));
+            }
+            dependentDefinitions.add(consumer);
+
+            const instance = this._serviceInstances.get(definition);
+            if (!instance) {
+                throw new Error(`Service '${contract.toString()}' has not been instantiated in the '${this._friendlyName}' container.`);
+            }
+            return instance;
+        }
+
+        if (this._parent) {
+            return this._parent._resolveDependency(contract, consumer);
+        }
+
+        throw new Error(`Service '${contract.toString()}' has not been registered in the '${this._friendlyName}' container.`);
+    }
+
+    /**
+     * Removes a consumer from the dependent set for a given contract, checking locally first then the parent chain.
+     * @param contract The contract identity.
+     * @param consumer The service definition to remove as a dependent.
+     */
+    private _removeDependentFromChain(contract: symbol, consumer: WeaklyTypedServiceDefinition): void {
+        const definition = this._serviceDefinitions.get(contract);
+        if (definition) {
+            const dependentDefinitions = this._serviceDependents.get(definition);
+            if (dependentDefinitions) {
+                dependentDefinitions.delete(consumer);
+                if (dependentDefinitions.size === 0) {
+                    this._serviceDependents.delete(definition);
+                }
+            }
+            return;
+        }
+
+        this._parent?._removeDependentFromChain(contract, consumer);
     }
 
     private _removeService(service: WeaklyTypedServiceDefinition) {
@@ -145,7 +189,7 @@ export class ServiceContainer implements IDisposable {
         }
 
         const serviceDependents = this._serviceDependents.get(service);
-        if (serviceDependents) {
+        if (serviceDependents && serviceDependents.size > 0) {
             throw new Error(
                 `Service '${service.friendlyName}' has dependents: ${Array.from(serviceDependents)
                     .map((dependent) => dependent.friendlyName)
@@ -162,28 +206,26 @@ export class ServiceContainer implements IDisposable {
             this._serviceDefinitions.delete(contract);
         });
 
-        service.consumes?.forEach((dependency) => {
-            const dependencyDefinition = this._serviceDefinitions.get(dependency);
-            if (dependencyDefinition) {
-                const dependentDefinitions = this._serviceDependents.get(dependencyDefinition);
-                if (dependentDefinitions) {
-                    dependentDefinitions.delete(service);
-                    if (dependentDefinitions.size === 0) {
-                        this._serviceDependents.delete(dependencyDefinition);
-                    }
-                }
-            }
+        // Remove this service as a dependent from each of its consumed dependencies (local or in parent chain).
+        service.consumes?.forEach((contract) => {
+            this._removeDependentFromChain(contract, service);
         });
     }
 
     /**
      * Disposes the service container and all contained services.
+     * Throws if this container is still a parent of any live child containers.
      */
     public dispose() {
+        if (this._children.size > 0) {
+            throw new Error(`'${this._friendlyName}' container cannot be disposed because it has ${this._children.size} active child container(s).`);
+        }
+
         Array.from(this._serviceInstances.keys()).reverse().forEach(this._removeService.bind(this));
         this._serviceInstances.clear();
         this._serviceDependents.clear();
         this._serviceDefinitions.clear();
+        this._parent?._children.delete(this);
         this._isDisposed = true;
     }
 }
