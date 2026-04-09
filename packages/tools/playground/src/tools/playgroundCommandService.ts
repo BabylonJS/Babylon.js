@@ -177,8 +177,12 @@ export function MakePlaygroundCommandServiceDefinition(globalState: GlobalState,
                             resolve(revision && revision !== "0" ? `${token}#${revision}` : token);
                         });
 
-                        const errorObserver = globalState.onErrorObservable.addOnce((error) => {
+                        const errorObserver = globalState.onErrorObservable.add((error) => {
+                            if (!error) {
+                                return;
+                            }
                             clearTimeout(timeout);
+                            errorObserver.remove();
                             savedObserver.remove();
                             const msg = error?.message;
                             reject(new Error(typeof msg === "string" ? msg : (msg?.messageText ?? "Save failed.")));
@@ -195,6 +199,17 @@ export function MakePlaygroundCommandServiceDefinition(globalState: GlobalState,
                 },
             });
 
+            const runPlaygroundReg = commandRegistry.addCommand({
+                id: "run-playground",
+                description: "Run the current Playground code. The session will restart with a new session ID.",
+                executeAsync: async () => {
+                    // Defer the run so the command response is sent before the
+                    // scene teardown kills the inspectable WebSocket session.
+                    setTimeout(() => globalState.onRunRequiredObservable.notifyObservers(), 0);
+                    return "Run triggered.";
+                },
+            });
+
             return {
                 dispose: () => {
                     listFilesReg.dispose();
@@ -204,6 +219,7 @@ export function MakePlaygroundCommandServiceDefinition(globalState: GlobalState,
                     deleteFileReg.dispose();
                     getSnippetIdReg.dispose();
                     savePlaygroundReg.dispose();
+                    runPlaygroundReg.dispose();
                 },
             };
         },

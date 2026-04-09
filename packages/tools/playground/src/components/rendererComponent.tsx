@@ -13,6 +13,7 @@ import { MakePlaygroundCommandServiceDefinition } from "../tools/playgroundComma
 import "../scss/rendering.scss";
 
 type InspectorV2Module = typeof import("inspector/legacy/legacy") & typeof import("inspector/index");
+type InspectableToken = import("inspector/inspectable").InspectableToken;
 
 const RunnableCreationTimeoutMs = 15000;
 const SceneRunTimeoutMs = 30000;
@@ -37,7 +38,7 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
     private _downloadManager: DownloadManager;
     private _inspectorFallback: boolean = false;
     private _inspectorV2Token: Nullable<IDisposable> = null;
-    private _inspectableToken: Nullable<IDisposable> = null;
+    private _inspectableToken: Nullable<InspectableToken> = null;
 
     /**
      * Create the rendering component.
@@ -126,7 +127,10 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
     }
 
     private _ensureInspectable() {
-        if (this._inspectableToken || !this._scene) {
+        if (this._inspectableToken && !this._inspectableToken.isDisposed) {
+            return;
+        }
+        if (!this._scene) {
             return;
         }
         const inspectorV2Module: InspectorV2Module | undefined = (globalThis as any).INSPECTOR;
@@ -242,9 +246,6 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
 
     private _disposeTransientResources() {
         try {
-            this._inspectableToken?.dispose();
-            this._inspectableToken = null;
-
             this._scene = null;
             this._engine = null;
 
@@ -282,9 +283,6 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
 
         this._inspectorV2Token?.dispose();
         this._inspectorV2Token = null;
-
-        this._inspectableToken?.dispose();
-        this._inspectableToken = null;
 
         let useWebGPU = location.search.indexOf("webgpu") !== -1 && webGPUSupported;
         let forceWebGL1 = false;
