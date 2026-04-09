@@ -24,6 +24,7 @@ import { type SphereDirectedParticleEmitter, type SphereParticleEmitter } from "
 import { type CylinderDirectedParticleEmitter, type CylinderParticleEmitter } from "./EmitterTypes/cylinderParticleEmitter";
 import { type ConeDirectedParticleEmitter, type ConeParticleEmitter } from "./EmitterTypes/coneParticleEmitter";
 import { RegisterClass } from "../Misc/typeStore";
+import { type Attractor } from "./attractor";
 
 /**
  * This represents the base class for particle system in Babylon.
@@ -251,6 +252,36 @@ export class BaseParticleSystem implements IClipPlanesHolder {
 
     /** Gets or sets the strength to apply to the noise value (default is (10, 10, 10)) */
     public noiseStrength = new Vector3(10, 10, 10);
+
+    /** @internal */
+    protected _attractors: Attractor[] = [];
+
+    /**
+     * The list of attractors used to change the direction of the particles in the system.
+     * Please note that this is a copy of the internal array. If you want to modify it, please use the addAttractor and removeAttractor methods.
+     */
+    public get attractors(): Attractor[] {
+        return this._attractors.slice(0);
+    }
+
+    /**
+     * Add an attractor to the particle system. Attractors are used to change the direction of the particles in the system.
+     * @param attractor - The attractor to add to the particle system
+     */
+    public addAttractor(attractor: Attractor): void {
+        this._attractors.push(attractor);
+    }
+
+    /**
+     * Removes an attractor from the particle system. Attractors are used to change the direction of the particles in the system.
+     * @param attractor - The attractor to remove from the particle system
+     */
+    public removeAttractor(attractor: Attractor): void {
+        const index = this._attractors.indexOf(attractor);
+        if (index !== -1) {
+            this._attractors.splice(index, 1);
+        }
+    }
 
     /**
      * Callback triggered when the particle animation is ending.

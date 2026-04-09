@@ -209,8 +209,6 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
     public readonly isGPU = true;
 
     /** Attractors */
-    private _attractors: Attractor[] = [];
-
     /**
      * Maximum number of attractors supported by GPU particle systems.
      * Limited by the fixed-size uniform arrays in the update shaders.
@@ -218,34 +216,15 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
     public static readonly MAX_ATTRACTORS = 8;
 
     /**
-     * The list of attractors used to change the direction of the particles in the system.
-     * Please note that this is a copy of the internal array. If you want to modify it, please use the addAttractor and removeAttractor methods.
-     */
-    public get attractors(): Attractor[] {
-        return this._attractors.slice(0);
-    }
-
-    /**
      * Add an attractor to the particle system. Attractors are used to change the direction of the particles in the system.
      * @param attractor - The attractor to add to the particle system
      */
-    public addAttractor(attractor: Attractor): void {
+    public override addAttractor(attractor: Attractor): void {
         if (this._attractors.length >= GPUParticleSystem.MAX_ATTRACTORS) {
             Logger.Warn(`GPU particle system supports a maximum of ${GPUParticleSystem.MAX_ATTRACTORS} attractors. Ignoring additional attractor.`);
             return;
         }
-        this._attractors.push(attractor);
-    }
-
-    /**
-     * Removes an attractor from the particle system. Attractors are used to change the direction of the particles in the system.
-     * @param attractor - The attractor to remove from the particle system
-     */
-    public removeAttractor(attractor: Attractor): void {
-        const index = this._attractors.indexOf(attractor);
-        if (index !== -1) {
-            this._attractors.splice(index, 1);
-        }
+        super.addAttractor(attractor);
     }
 
     /** Gets or sets a matrix to use to compute projection */
