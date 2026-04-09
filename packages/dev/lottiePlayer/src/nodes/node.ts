@@ -299,7 +299,7 @@ export class Node {
             return false; // Animation not started yet
         }
 
-        if (frame > keyframes[keyframes.length - 1].time) {
+        if (frame >= keyframes[keyframes.length - 1].time) {
             this._position.currentValue = keyframes[keyframes.length - 1].value;
             return true;
         }
@@ -340,7 +340,7 @@ export class Node {
             return false; // Animation not started yet
         }
 
-        if (frame > keyframes[keyframes.length - 1].time) {
+        if (frame >= keyframes[keyframes.length - 1].time) {
             this._rotation.currentValue = keyframes[keyframes.length - 1].value;
             return true;
         }
@@ -378,7 +378,7 @@ export class Node {
             return false; // Animation not started yet
         }
 
-        if (frame > keyframes[keyframes.length - 1].time) {
+        if (frame >= keyframes[keyframes.length - 1].time) {
             this._scale.currentValue = keyframes[keyframes.length - 1].value;
             return true;
         }
@@ -421,7 +421,7 @@ export class Node {
             return false; // Animation not started yet
         }
 
-        if (frame > this._opacity.keyframes[this._opacity.keyframes.length - 1].time) {
+        if (frame >= this._opacity.keyframes[this._opacity.keyframes.length - 1].time) {
             this._opacity.currentValue = this._opacity.keyframes[this._opacity.keyframes.length - 1].value;
             return true;
         }
