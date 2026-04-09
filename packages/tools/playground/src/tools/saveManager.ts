@@ -8,15 +8,21 @@ import { SaveSnippet, type IV2Manifest } from "@tools/snippet-loader";
  * Handles saving playground code and multi-file manifests.
  */
 export class SaveManager {
-    private _baseTitle: string;
     /**
      * Creates a new SaveManager.
      * @param globalState Shared global state instance.
      */
     public constructor(public globalState: GlobalState) {
-        this._baseTitle = typeof document !== "undefined" ? document.title : "";
+        globalState.onSaveRequiredObservable.add((options) => {
+            // If save options are provided, apply them and skip the metadata dialog.
+            if (options) {
+                this.globalState.currentSnippetTitle = options.title ?? (this.globalState.currentSnippetTitle || "");
+                this.globalState.currentSnippetDescription = options.description ?? (this.globalState.currentSnippetDescription || "");
+                this.globalState.currentSnippetTags = options.tags ?? (this.globalState.currentSnippetTags || "");
+                this._saveSnippet();
+                return;
+            }
 
-        globalState.onSaveRequiredObservable.add(() => {
             if (!this.globalState.currentSnippetTitle || !this.globalState.currentSnippetDescription || !this.globalState.currentSnippetTags) {
                 this.globalState.onMetadataWindowHiddenObservable.addOnce((status) => {
                     if (status) {
@@ -142,15 +148,6 @@ export class SaveManager {
             this._replaceUrlSilently(newUrl);
         }
 
-        this._updateDocumentTitle();
         this.globalState.onSavedObservable.notifyObservers();
-    }
-
-    private _updateDocumentTitle() {
-        const token = this.globalState.currentSnippetToken;
-        if (token && typeof document !== "undefined") {
-            const revision = this.globalState.currentSnippetRevision;
-            document.title = revision && revision !== "0" ? `${this._baseTitle} - #${token}#${revision}` : `${this._baseTitle} - #${token}`;
-        }
     }
 }

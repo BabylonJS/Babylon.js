@@ -111,6 +111,23 @@ export class Playground extends React.Component<
         this.saveManager = new SaveManager(this._globalState);
         this.loadManager = new LoadManager(this._globalState);
         this.shortcutManager = new ShortcutManager(this._globalState);
+
+        // Keep document.title in sync with the snippet ID from the URL hash.
+        const baseTitle = typeof document !== "undefined" ? document.title : "";
+        const syncTitle = () => {
+            if (typeof document === "undefined") {
+                return;
+            }
+            const hash = location.hash;
+            if (hash && hash.length > 1) {
+                document.title = `${baseTitle} - ${hash}`;
+            } else {
+                document.title = baseTitle;
+            }
+        };
+        syncTitle();
+        window.addEventListener("hashchange", syncTitle);
+        this._globalState.onSavedObservable.add(syncTitle);
     }
 
     override componentDidMount() {

@@ -9,6 +9,7 @@ import { AddFileRevision } from "../tools/localSession";
 
 import { Engine, EngineStore, WebGPUEngine, LastCreatedAudioEngine, Logger, type IDisposable, type Nullable, type Scene, type ThinEngine } from "@dev/core";
 
+import { MakePlaygroundCommandServiceDefinition } from "../tools/playgroundCommandService";
 import "../scss/rendering.scss";
 
 type InspectorV2Module = typeof import("inspector/legacy/legacy") & typeof import("inspector/index");
@@ -124,14 +125,23 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
         window.addEventListener("error", this._saveError);
     }
 
+    private _ensureInspectable() {
+        if (this._inspectableToken || !this._scene) {
+            return;
+        }
+        const inspectorV2Module: InspectorV2Module | undefined = (globalThis as any).INSPECTOR;
+        if (inspectorV2Module?.StartInspectable) {
+            this._inspectableToken = inspectorV2Module.StartInspectable(this._scene, {
+                serviceDefinitions: [MakePlaygroundCommandServiceDefinition(this.props.globalState, inspectorV2Module)],
+            });
+        }
+    }
+
     private async _showInspectorAsync() {
         if (this._scene) {
             const inspectorV2Module: InspectorV2Module | undefined = (globalThis as any).INSPECTOR;
             if (inspectorV2Module?.ShowInspector) {
-                // Ensure the inspectable bridge is running before showing the inspector UI.
-                if (inspectorV2Module.StartInspectable && !this._inspectableToken) {
-                    this._inspectableToken = inspectorV2Module.StartInspectable(this._scene);
-                }
+                this._ensureInspectable();
                 const options = {
                     ...inspectorV2Module.ConvertOptions({
                         embedMode: true,
@@ -438,10 +448,7 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
             (window as any).startRenderLoop(this._engine, canvas);
 
             // Start the inspectable bridge for the CLI if Inspector v2 is loaded.
-            const inspectorV2Module: InspectorV2Module | undefined = (globalThis as any).INSPECTOR;
-            if (inspectorV2Module?.StartInspectable) {
-                this._inspectableToken = inspectorV2Module.StartInspectable(this._scene);
-            }
+            this._ensureInspectable();
 
             this._engine!.scenes[0]?.executeWhenReady(() => {
                 this.props.globalState.onRunExecutedObservable.notifyObservers();

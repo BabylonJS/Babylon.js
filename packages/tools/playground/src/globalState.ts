@@ -18,6 +18,19 @@ export enum RuntimeMode {
     Frame = 2,
 }
 
+/**
+ * Optional payload for onSaveRequiredObservable that allows callers to
+ * supply metadata and bypass the metadata dialog.
+ */
+export interface ISaveOptions {
+    /** Snippet title. Defaults to empty string if not provided. */
+    title?: string;
+    /** Snippet description. Defaults to empty string if not provided. */
+    description?: string;
+    /** Snippet tags. Defaults to empty string if not provided. */
+    tags?: string;
+}
+
 export interface IEngineSwitchDialogOptions {
     currentEngine: string;
     targetEngine: string;
@@ -75,7 +88,7 @@ export class GlobalState {
     public onNewRequiredObservable = new Observable<void>();
     public onInsertSnippetRequiredObservable = new Observable<string>();
     public onClearRequiredObservable = new Observable<void>();
-    public onSaveRequiredObservable = new Observable<void>();
+    public onSaveRequiredObservable = new Observable<ISaveOptions | void>();
     public onLocalSaveRequiredObservable = new Observable<void>();
     public onLoadRequiredObservable = new Observable<string>();
     public onLocalLoadRequiredObservable = new Observable<void>();
