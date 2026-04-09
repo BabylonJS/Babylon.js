@@ -1,6 +1,6 @@
 ---
 on:
-    workflow_dispatch:
+  workflow_dispatch:
 if: github.repository == 'BabylonJS/Babylon.js'
 permissions:
   contents: read
@@ -26,10 +26,10 @@ timeout-minutes: 45
 tools:
   github:
     toolsets:
-      - default
-      - security_advisories
-      - dependabot
-      - code_security
+    - default
+    - security_advisories
+    - dependabot
+    - code_security
 tracker-id: component-governance-agent
 ---
 
