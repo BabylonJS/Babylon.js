@@ -11,6 +11,8 @@ secrets:
   SECURITY_PAT:
     value: ${{ secrets.SECURITY_ADVISORY_PAT }}
     description: "PAT with security_advisories:write scope for creating advisories and private forks"
+env:
+  SECURITY_PAT: ${{ secrets.SECURITY_ADVISORY_PAT }}
 network:
   allowed:
     - github
