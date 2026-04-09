@@ -3,33 +3,33 @@ on:
     workflow_dispatch:
 if: github.repository == 'BabylonJS/Babylon.js'
 permissions:
-    contents: read
-    security-events: read
-    issues: read
-    pull-requests: read
+  contents: read
+  security-events: read
+  issues: read
+  pull-requests: read
 secrets:
-    SECURITY_PAT:
-        value: ${{ secrets.SECURITY_ADVISORY_PAT }}
-        description: "PAT with security_advisories:write scope for creating advisories and private forks"
+  SECURITY_PAT:
+    value: ${{ secrets.SECURITY_ADVISORY_PAT }}
+    description: "PAT with security_advisories:write scope for creating advisories and private forks"
 env:
-    SECURITY_PAT: ${{ secrets.SECURITY_ADVISORY_PAT }}
+  SECURITY_PAT: ${{ secrets.SECURITY_ADVISORY_PAT }}
 network:
-    allowed:
-        - github
-        - node
+  allowed:
+    - github
+    - node
 safe-outputs:
-    noop:
+  noop:
 description: Scans Dependabot alerts and creates private GitHub Security Advisories with auto-fix PRs to avoid publicly advertising vulnerabilities
 name: Component Governance Agent
 strict: false
 timeout-minutes: 45
 tools:
-    github:
-        toolsets:
-            - default
-            - security_advisories
-            - dependabot
-            - code_security
+  github:
+    toolsets:
+      - default
+      - security_advisories
+      - dependabot
+      - code_security
 tracker-id: component-governance-agent
 ---
 
@@ -181,9 +181,9 @@ If upgrading the parent doesn't resolve the transitive vulnerability (e.g., the 
 ```json
 // Add to the relevant package.json under "overrides":
 {
-    "overrides": {
-        "PACKAGE_NAME": "PATCHED_VERSION"
-    }
+  "overrides": {
+    "PACKAGE_NAME": "PATCHED_VERSION"
+  }
 }
 ```
 
