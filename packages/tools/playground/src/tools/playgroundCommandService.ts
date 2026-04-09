@@ -23,33 +23,33 @@ export function MakePlaygroundCommandServiceDefinition(globalState: GlobalState,
                 },
             });
 
-            const getFileReg = commandRegistry.addCommand({
-                id: "get-file",
-                description: "Get the content of a file by path.",
+            const getContentReg = commandRegistry.addCommand({
+                id: "get-content",
+                description: "Get the content of a file by name.",
                 args: [
                     {
-                        name: "path",
-                        description: "The file path (e.g. index.js, index.ts).",
+                        name: "name",
+                        description: "The file name (e.g. index.js, index.ts).",
                         required: true,
                     },
                 ],
                 executeAsync: async (args: Record<string, string>) => {
-                    const content = globalState.files[args.path];
+                    const content = globalState.files[args.name];
                     if (content === undefined) {
-                        const paths = Object.keys(globalState.files);
-                        throw new Error(`File "${args.path}" not found. Available files: ${paths.join(", ")}`);
+                        const names = Object.keys(globalState.files);
+                        throw new Error(`File "${args.name}" not found. Available files: ${names.join(", ")}`);
                     }
                     return content;
                 },
             });
 
-            const setFileReg = commandRegistry.addCommand({
-                id: "set-file",
-                description: "Set the content of a file by path.",
+            const setContentReg = commandRegistry.addCommand({
+                id: "set-content",
+                description: "Set the content of a file by name.",
                 args: [
                     {
-                        name: "path",
-                        description: "The file path (e.g. index.js, index.ts).",
+                        name: "name",
+                        description: "The file name (e.g. index.js, index.ts).",
                         required: true,
                     },
                     {
@@ -60,13 +60,13 @@ export function MakePlaygroundCommandServiceDefinition(globalState: GlobalState,
                     },
                 ],
                 executeAsync: async (args: Record<string, string>) => {
-                    if (!(args.path in globalState.files)) {
-                        const paths = Object.keys(globalState.files);
-                        throw new Error(`File "${args.path}" not found. Available files: ${paths.join(", ")}`);
+                    if (!(args.name in globalState.files)) {
+                        const names = Object.keys(globalState.files);
+                        throw new Error(`File "${args.name}" not found. Available files: ${names.join(", ")}`);
                     }
-                    globalState.files[args.path] = args.content;
+                    globalState.files[args.name] = args.content;
                     globalState.onFilesChangedObservable.notifyObservers();
-                    return `File "${args.path}" updated.`;
+                    return `File "${args.name}" updated.`;
                 },
             });
 
@@ -75,8 +75,8 @@ export function MakePlaygroundCommandServiceDefinition(globalState: GlobalState,
                 description: "Create a new file in the Playground editor.",
                 args: [
                     {
-                        name: "path",
-                        description: "The file path to create (e.g. utils.ts).",
+                        name: "name",
+                        description: "The file name to create (e.g. utils.ts).",
                         required: true,
                     },
                     {
@@ -87,19 +87,19 @@ export function MakePlaygroundCommandServiceDefinition(globalState: GlobalState,
                     },
                 ],
                 executeAsync: async (args: Record<string, string>) => {
-                    if (args.path in globalState.files) {
-                        throw new Error(`File "${args.path}" already exists.`);
+                    if (args.name in globalState.files) {
+                        throw new Error(`File "${args.name}" already exists.`);
                     }
                     const content = args.content ?? "";
-                    globalState.files[args.path] = content;
+                    globalState.files[args.name] = content;
                     globalState.onFilesChangedObservable.notifyObservers();
                     globalState.onManifestChangedObservable.notifyObservers();
 
                     // Open the new file as the active tab in the editor.
-                    globalState.activeFilePath = args.path;
+                    globalState.activeFilePath = args.name;
                     globalState.onActiveFileChangedObservable.notifyObservers();
 
-                    return `File "${args.path}" created.`;
+                    return `File "${args.name}" created.`;
                 },
             });
 
@@ -108,23 +108,23 @@ export function MakePlaygroundCommandServiceDefinition(globalState: GlobalState,
                 description: "Delete a file from the Playground editor.",
                 args: [
                     {
-                        name: "path",
-                        description: "The file path to delete.",
+                        name: "name",
+                        description: "The file name to delete.",
                         required: true,
                     },
                 ],
                 executeAsync: async (args: Record<string, string>) => {
-                    if (!(args.path in globalState.files)) {
-                        const paths = Object.keys(globalState.files);
-                        throw new Error(`File "${args.path}" not found. Available files: ${paths.join(", ")}`);
+                    if (!(args.name in globalState.files)) {
+                        const names = Object.keys(globalState.files);
+                        throw new Error(`File "${args.name}" not found. Available files: ${names.join(", ")}`);
                     }
                     if (Object.keys(globalState.files).length <= 1) {
                         throw new Error("Cannot delete the last file.");
                     }
-                    delete globalState.files[args.path];
+                    delete globalState.files[args.name];
                     globalState.onFilesChangedObservable.notifyObservers();
                     globalState.onManifestChangedObservable.notifyObservers();
-                    return `File "${args.path}" deleted.`;
+                    return `File "${args.name}" deleted.`;
                 },
             });
 
@@ -198,8 +198,8 @@ export function MakePlaygroundCommandServiceDefinition(globalState: GlobalState,
             return {
                 dispose: () => {
                     listFilesReg.dispose();
-                    getFileReg.dispose();
-                    setFileReg.dispose();
+                    getContentReg.dispose();
+                    setContentReg.dispose();
                     createFileReg.dispose();
                     deleteFileReg.dispose();
                     getSnippetIdReg.dispose();
