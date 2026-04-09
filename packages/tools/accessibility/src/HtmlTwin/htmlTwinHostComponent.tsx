@@ -1,7 +1,7 @@
 import * as React from "react";
-import type { HTMLTwinItem } from "./htmlTwinItem";
-import type { Scene } from "core/scene";
-import type { IHTMLTwinRendererOptions } from "./htmlTwinRenderer";
+import { type HTMLTwinItem } from "./htmlTwinItem";
+import { type Scene } from "core/scene";
+import { type IHTMLTwinRendererOptions } from "./htmlTwinRenderer";
 import { HTMLTwinSceneTree } from "./htmlTwinSceneTree";
 
 interface IHTMLTwinHostComponentProps {

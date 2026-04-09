@@ -1,4 +1,4 @@
-import type { IDisposable } from "core/index";
+import { type IDisposable } from "core/index";
 
 /**
  * Hooks that can be registered on a function to intercept its execution.

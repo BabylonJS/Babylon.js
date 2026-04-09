@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import type { IDisposable, Scene } from "../scene";
-import type { Nullable } from "../types";
+import { type IDisposable, type Scene } from "../scene";
+import { type Nullable } from "../types";
 import { SceneSerializer } from "./sceneSerializer";
 import { Mesh } from "../Meshes/mesh";
 import { Light } from "../Lights/light";

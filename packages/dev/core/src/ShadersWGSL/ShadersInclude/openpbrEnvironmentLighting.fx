@@ -246,18 +246,26 @@
         var slab_fuzz_ibl = fuzzEnvironmentLight * uniforms.vLightingIntensity.z;
     #endif
 
-    var slab_translucent_base_ibl: vec3f = slab_translucent_background.rgb * transmission_absorption;
+    var slab_translucent_base_ibl: vec3f = vec3f(0.0f, 0.0f, 0.0f);
     #ifdef REFRACTED_ENVIRONMENT
         
         #ifdef ANISOTROPIC_BASE
-            var environmentRefraction: vec3f = sampleRadianceAnisotropic(roughness_alpha_modified_for_scatter, uniforms.vReflectionMicrosurfaceInfos.rgb, uniforms.vReflectionInfos
+            var forwardScatteredEnvironmentLight: vec3f = sampleRadianceAnisotropic(roughness_alpha_modified_for_scatter, uniforms.vReflectionMicrosurfaceInfos.rgb, uniforms.vReflectionInfos
                 , baseGeoInfo
+                #ifdef GEOMETRY_THIN_WALLED
+                , viewDirectionW
+                #else
                 , normalW
+                #endif
                 , viewDirectionW
                 , fragmentInputs.vPositionW
                 , noise
                 , true // isRefraction
-                , specular_ior // Used for refraction
+                #ifdef GEOMETRY_THIN_WALLED
+                    , 1.05f // don't want much refraction for thin-walled but we need some to get an anisotropic effect
+                #else
+                    , specular_ior // Used for refraction
+                #endif
                 , reflectionSampler
                 , reflectionSamplerSampler
                 #ifdef REALTIME_FILTERING
@@ -265,7 +273,7 @@
                 #endif
             );
         #else
-            var environmentRefraction: vec3f = vec3f(0., 0., 0.);
+            var forwardScatteredEnvironmentLight: vec3f = vec3f(0., 0., 0.);
             #ifdef DISPERSION
                 for (var i: i32 = 0; i < 3; i++) {
                     var iblRefractionCoords: vec3f = refractedViewVectors[i];
@@ -281,7 +289,7 @@
 
             iblRefractionCoords = (uniforms.reflectionMatrix * vec4f(iblRefractionCoords, 0.0f)).xyz;
             #ifdef DISPERSION
-                environmentRefraction[i] = sampleRadiance(roughness_alpha_modified_for_scatter, uniforms.vReflectionMicrosurfaceInfos.rgb, uniforms.vReflectionInfos
+                forwardScatteredEnvironmentLight[i] = sampleRadiance(roughness_alpha_modified_for_scatter, uniforms.vReflectionMicrosurfaceInfos.rgb, uniforms.vReflectionInfos
                     , baseGeoInfo
                     , reflectionSampler
                     , reflectionSamplerSampler
@@ -291,7 +299,7 @@
                     #endif
                 )[i];
             #else
-                environmentRefraction = sampleRadiance(roughness_alpha_modified_for_scatter, uniforms.vReflectionMicrosurfaceInfos.rgb, uniforms.vReflectionInfos
+                forwardScatteredEnvironmentLight = sampleRadiance(roughness_alpha_modified_for_scatter, uniforms.vReflectionMicrosurfaceInfos.rgb, uniforms.vReflectionInfos
                     , baseGeoInfo
                     , reflectionSampler
                     , reflectionSamplerSampler
@@ -311,21 +319,32 @@
             // at low blurriness since it represents the transmitted light that is in front of the IBL.
             // At high blurriness, the refraction from the environment will be coming from more directions
             // and so we want to include more of this indirect lighting.
-            environmentRefraction *= max(roughness_alpha_modified_for_scatter * roughness_alpha_modified_for_scatter - 0.1f, 0.0f);
+            forwardScatteredEnvironmentLight = max(slab_translucent_background.rgb, mix(slab_translucent_background.rgb, forwardScatteredEnvironmentLight, roughness_alpha_modified_for_scatter));
         #endif
 
         #ifdef SCATTERING
-            // Isotropic Scattering
-            
-            #if defined(USEIRRADIANCEMAP) && defined(USE_IRRADIANCE_DOMINANT_DIRECTION)
-                var scatterVector: vec3f = mix(uniforms.vReflectionDominantDirection, normalW, max3(iso_scatter_density));
+            #ifdef USE_IRRADIANCE_TEXTURE_FOR_SCATTERING
+                // If we have a precomputed multi-scatter texture, we can use the scatter vector to sample it and get a more accurate scattered environment light.
+                // This allows us to capture higher order scattering effects that aren't possible with just a single scatter sample.
+                let mfp: vec3f = vec3f(100.0) / volumeParams.extinction_coeff;
+                var scatteredEnvironmentLight: vec3f = sss_convolve(sceneIrradianceSampler, sceneDepthSampler, uniforms.renderTargetSize, mfp, scene.projection, scene.inverseProjection, 16, noise.xy);
             #else
-                var scatterVector: vec3f = normalW;
-            #endif
+                #ifdef GEOMETRY_THIN_WALLED
+                    var scatterVector: vec3f = normalW;
+                #else
+                    // Handle isotropic and backscattering components
+                    // We'll approximate scattering as a diffuse lobe. If we have a dominant lighting direction,
+                    // we can bias the lobe towards that direction as the scatter density gets thinner.
+                    #if defined(USEIRRADIANCEMAP) && defined(USE_IRRADIANCE_DOMINANT_DIRECTION)
+                        var scatterVector: vec3f = mix(uniforms.vReflectionDominantDirection, normalW, max3(iso_scatter_density));
+                    #else
+                        var scatterVector: vec3f = normalW;
+                    #endif
 
-            // Backscattering can be approximated by sampling IBL along the view vector.
-            scatterVector = mix(viewDirectionW, scatterVector, back_to_iso_scattering_blend);
-            var scatteredEnvironmentLight: vec3f = sampleIrradiance(
+                    // We'll then bend the sample direction towards the view direction based on the anisotropy to approximate backscattering.
+                    scatterVector = mix(viewDirectionW, scatterVector, back_to_iso_scattering_blend);
+                #endif
+                var scatteredEnvironmentLight: vec3f = sampleIrradiance(
                 scatterVector
                 #if defined(NORMAL) && defined(USESPHERICALINVERTEX)
                     , vEnvironmentIrradiance //SH
@@ -349,34 +368,40 @@
                 #endif
                 , uniforms.vReflectionInfos
                 , viewDirectionW
-                , 1.0f
-                , multi_scatter_color
-            );
+                #if defined(GEOMETRY_THIN_WALLED)
+                    , base_diffuse_roughness
+                    , subsurface_color.rgb
+                #else
+                    , 1.0f
+                    , volumeParams.multi_scatter_color
+                #endif
+                );
+            #endif
 
-            if (transmission_depth>0.0f) {
+            #ifdef GEOMETRY_THIN_WALLED
                 // Direct Transmission (aka forward-scattered light from back side)
-                let forward_scattered_light: vec3f = environmentRefraction * transmission_absorption;
+                let forward_scattered_light: vec3f = forwardScatteredEnvironmentLight * transmission_tint * volumeParams.multi_scatter_color * volumeParams.multi_scatter_color;
                 // Back Scattering
-                let back_scattered_light: vec3f = mix(forward_scattered_light, scatteredEnvironmentLight * absorption_at_mfp, iso_scatter_density);
+                let back_scattered_light: vec3f = scatteredEnvironmentLight * volumeParams.multi_scatter_color;
+                // Lerp between the back and forward scattering.
+                slab_translucent_base_ibl = mix(back_scattered_light, forward_scattered_light, 0.5f + 0.5f * volumeParams.anisotropy);
+            #else
+                // Direct Transmission (aka forward-scattered light from back side)
+                let forward_scattered_light: vec3f = forwardScatteredEnvironmentLight * volume_absorption;
+                // Back Scattering
+                let back_scattered_light: vec3f = mix(forward_scattered_light, scatteredEnvironmentLight * backscatter_color, iso_scatter_density);
                 // Iso Scattering
-                let iso_scattered_light: vec3f = mix(forward_scattered_light, scatteredEnvironmentLight * multi_scatter_color, iso_scatter_density);
+                let iso_scattered_light: vec3f = mix(forward_scattered_light, scatteredEnvironmentLight * volumeParams.multi_scatter_color, iso_scatter_density);
 
                 // Lerp between the three based on the anisotropy
                 slab_translucent_base_ibl = mix(back_scattered_light, iso_scattered_light, back_to_iso_scattering_blend);
-                slab_translucent_base_ibl = mix(slab_translucent_base_ibl, forward_scattered_light, iso_to_forward_scattering_blend);
-            } else {
-                slab_translucent_base_ibl += environmentRefraction.rgb;
-            }
+                slab_translucent_base_ibl = mix(slab_translucent_base_ibl, forward_scattered_light, iso_to_forward_scattering_blend) * transmission_tint;
+            #endif
         #else
-            slab_translucent_base_ibl += environmentRefraction * transmission_absorption;
+            slab_translucent_base_ibl += forwardScatteredEnvironmentLight * transmission_tint * volume_absorption;
         #endif
     #endif
-
-    // TEMP
-    var slab_subsurface_ibl: vec3f = vec3f(0., 0., 0.);
-
-    slab_diffuse_ibl *= base_color.rgb;
-
+    
     // _____________________________ IBL Material Layer Composition ______________________________________
     #define CUSTOM_FRAGMENT_BEFORE_IBLLAYERCOMPOSITION
     slab_diffuse_ibl *= ambient_occlusion;
@@ -384,13 +409,12 @@
     slab_glossy_ibl *= specular_ambient_occlusion;
     slab_coat_ibl *= coat_specular_ambient_occlusion;
 
-    let material_opaque_base_ibl: vec3f = mix(slab_diffuse_ibl, slab_subsurface_ibl, subsurface_weight);
-    let material_dielectric_base_ibl: vec3f = mix(material_opaque_base_ibl, slab_translucent_base_ibl, transmission_weight);
+    let material_dielectric_base_ibl: vec3f = mix(slab_diffuse_ibl * base_color.rgb, slab_translucent_base_ibl, surface_translucency_weight);
     let material_dielectric_gloss_ibl: vec3f = material_dielectric_base_ibl * (1.0 - dielectricIblFresnel) + slab_glossy_ibl * dielectricIblColoredFresnel;
     let material_base_substrate_ibl: vec3f = mix(material_dielectric_gloss_ibl, slab_metal_ibl, base_metalness);
     let material_coated_base_ibl: vec3f = layer(material_base_substrate_ibl, slab_coat_ibl, coatIblFresnel, coatAbsorption, vec3f(1.0f));
     #ifdef FUZZ
-        slab_fuzz_ibl *= ambient_occlusion;
+        slab_fuzz_ibl *= min(vec3(specular_ambient_occlusion), ambient_occlusion);
         material_surface_ibl = layer(material_coated_base_ibl, slab_fuzz_ibl, fuzzIblFresnel * fuzz_weight, vec3f(1.0f), fuzz_color);
     #else
         material_surface_ibl = material_coated_base_ibl;

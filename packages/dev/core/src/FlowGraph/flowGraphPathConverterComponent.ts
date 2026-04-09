@@ -1,10 +1,10 @@
-import type { IObjectInfo, IPathToObjectConverter } from "../ObjectModel/objectModelInterfaces";
-import type { FlowGraphBlock } from "./flowGraphBlock";
-import type { FlowGraphContext } from "./flowGraphContext";
-import type { FlowGraphDataConnection } from "./flowGraphDataConnection";
+import { type IObjectInfo, type IPathToObjectConverter } from "../ObjectModel/objectModelInterfaces";
+import { type FlowGraphBlock } from "./flowGraphBlock";
+import { type FlowGraphContext } from "./flowGraphContext";
+import { type FlowGraphDataConnection } from "./flowGraphDataConnection";
 import { FlowGraphInteger } from "./CustomTypes/flowGraphInteger";
 import { RichTypeFlowGraphInteger } from "./flowGraphRichTypes";
-import type { IObjectAccessor } from "./typeDefinitions";
+import { type IObjectAccessor } from "./typeDefinitions";
 
 const PathHasTemplatesRegex = new RegExp(/\/\{(\w+)\}(?=\/|$)/g);
 

@@ -1,19 +1,18 @@
-import type { Nullable } from "core/types";
+import { type Nullable } from "core/types";
 import { Logger } from "core/Misc/logger";
-import type { Camera } from "core/Cameras/camera";
-import type { Effect } from "core/Materials/effect";
-import type { PostProcessOptions } from "core/PostProcesses/postProcess";
-import { PostProcess } from "core/PostProcesses/postProcess";
+import { type Camera } from "core/Cameras/camera";
+import { type Effect } from "core/Materials/effect";
+import { type PostProcessOptions, PostProcess } from "core/PostProcesses/postProcess";
 import { Constants } from "core/Engines/constants";
 import "core/Rendering/geometryBufferRendererSceneComponent";
-import type { GeometryBufferRenderer } from "core/Rendering/geometryBufferRenderer";
+import { type GeometryBufferRenderer } from "core/Rendering/geometryBufferRenderer";
 import { Color3 } from "core/Maths/math.color";
 import { serialize } from "core/Misc/decorators";
 import { SerializationHelper } from "core/Misc/decorators.serialization";
 import { RegisterClass } from "core/Misc/typeStore";
 import { EngineStore } from "core/Engines/engineStore";
 import { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
-import type { Scene } from "core/scene";
+import { type Scene } from "core/scene";
 import "./edgeDetection.fragment";
 
 /**

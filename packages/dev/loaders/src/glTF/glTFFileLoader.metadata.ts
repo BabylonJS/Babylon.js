@@ -1,4 +1,4 @@
-import type { ISceneLoaderPluginExtensions, ISceneLoaderPluginMetadata } from "core/index";
+import { type ISceneLoaderPluginExtensions, type ISceneLoaderPluginMetadata } from "core/index";
 
 export const GLTFMagicBase64Encoded = "Z2xURg"; // "glTF" base64 encoded (without the quotes!)
 

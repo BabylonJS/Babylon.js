@@ -1,8 +1,8 @@
 import * as React from "react";
 import * as styles from "./graphSearch.module.scss";
-import type { GraphCanvasComponent } from "./graphCanvas";
-import type { GraphNode } from "./graphNode";
-import type { GraphFrame } from "./graphFrame";
+import { type GraphCanvasComponent } from "./graphCanvas";
+import { type GraphNode } from "./graphNode";
+import { type GraphFrame } from "./graphFrame";
 
 /** A search result pointing to either a node or a frame. */
 interface ISearchResult {

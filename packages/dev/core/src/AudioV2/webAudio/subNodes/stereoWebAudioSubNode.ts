@@ -1,7 +1,7 @@
 import { _StereoAudioSubNode } from "../../abstractAudio/subNodes/stereoAudioSubNode";
 import { _WebAudioParameterComponent } from "../components/webAudioParameterComponent";
-import type { _WebAudioEngine } from "../webAudioEngine";
-import type { IWebAudioInNode } from "../webAudioNode";
+import { type _WebAudioEngine } from "../webAudioEngine";
+import { type IWebAudioInNode } from "../webAudioNode";
 
 /** @internal */
 // eslint-disable-next-line @typescript-eslint/require-await

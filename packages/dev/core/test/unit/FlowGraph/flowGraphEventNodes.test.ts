@@ -1,9 +1,9 @@
 import { PickingInfo } from "core/Collisions";
-import type { Engine } from "core/Engines";
-import { NullEngine } from "core/Engines";
+import { type Engine, NullEngine } from "core/Engines";
 import { PointerEventTypes, PointerInfo } from "core/Events";
-import type { FlowGraph, FlowGraphContext } from "core/FlowGraph";
 import {
+    type FlowGraph,
+    type FlowGraphContext,
     FlowGraphCoordinator,
     FlowGraphConsoleLogBlock,
     FlowGraphMeshPickEventBlock,

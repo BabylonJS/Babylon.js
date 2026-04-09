@@ -1,15 +1,14 @@
-import type { VertexBuffer } from "core/Buffers/buffer";
-import { Buffer } from "core/Buffers/buffer";
-import type { AbstractEngine } from "core/Engines/abstractEngine";
+import { type VertexBuffer, Buffer } from "core/Buffers/buffer";
+import { type AbstractEngine } from "core/Engines/abstractEngine";
 import { Constants } from "core/Engines/constants";
-import type { ThinEngine } from "core/Engines/thinEngine";
+import { type ThinEngine } from "core/Engines/thinEngine";
 import { DrawWrapper } from "core/Materials/drawWrapper";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
-import type { IDisposable } from "core/scene";
-import type { Nullable } from "core/types";
+import { type IDisposable } from "core/scene";
+import { type Nullable } from "core/types";
 import { SdfTextParagraph } from "./sdf/paragraph";
-import type { FontAsset } from "./fontAsset";
-import type { ParagraphOptions } from "./paragraphOptions";
+import { type FontAsset } from "./fontAsset";
+import { type ParagraphOptions } from "./paragraphOptions";
 import { ThinMatrix } from "core/Maths/ThinMaths/thinMath.matrix";
 import {
     CopyMatrixToArray,
@@ -19,7 +18,7 @@ import {
     ScalingMatrixToRef,
     TranslationMatrixToRef,
 } from "core/Maths/ThinMaths/thinMath.matrix.functions";
-import type { IColor4Like, IMatrixLike } from "core/Maths/math.like";
+import { type IColor4Like, type IMatrixLike } from "core/Maths/math.like";
 
 /**
  * Abstract Node class from Babylon.js
@@ -264,6 +263,16 @@ export class TextRenderer implements IDisposable {
         this._isDirty = true;
 
         this._baseLine -= paragraph.lineHeight * fontScale * paragraph.lines.length;
+    }
+
+    /**
+     * Clear all paragraphs from the renderer to allow adding new ones from scratch
+     */
+    public clearParagraphs(): void {
+        this._charMatrices.length = 0;
+        this._charUvs.length = 0;
+        this._baseLine = 0;
+        this._isDirty = true;
     }
 
     /**

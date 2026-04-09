@@ -1,9 +1,11 @@
 ﻿#if NUM_BONE_INFLUENCERS > 0
+	#ifndef USE_VERTEX_PULLING
 	attribute matricesIndices : vec4f;
 	attribute matricesWeights : vec4f;
 	#if NUM_BONE_INFLUENCERS > 4
 		attribute matricesIndicesExtra : vec4f;
 		attribute matricesWeightsExtra : vec4f;
+	#endif
 	#endif
 
     #ifndef BAKED_VERTEX_ANIMATION_TEXTURE

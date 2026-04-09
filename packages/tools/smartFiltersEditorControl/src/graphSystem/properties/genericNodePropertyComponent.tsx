@@ -2,7 +2,7 @@ import * as react from "react";
 import { LineContainerComponent } from "../../sharedComponents/lineContainerComponent.js";
 import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent.js";
 import { TextLineComponent } from "shared-ui-components/lines/textLineComponent.js";
-import type { IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
+import { type IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
 import { type BaseBlock, PropertyTypeForEdition, type IEditablePropertyOption, type IPropertyDescriptionForEdition } from "smart-filters";
 import { CheckBoxLineComponent } from "../../sharedComponents/checkBoxLineComponent.js";
 import { FloatSliderComponent } from "../../sharedComponents/floatSliderComponent.js";

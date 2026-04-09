@@ -1,6 +1,6 @@
-import type { Nullable, IndicesArray } from "../types";
+import { type Nullable, type IndicesArray } from "../types";
 import { Vector3 } from "../Maths/math.vector";
-import type { AbstractMesh } from "../Meshes/abstractMesh";
+import { type AbstractMesh } from "../Meshes/abstractMesh";
 import { Plane } from "../Maths/math.plane";
 
 const IntersectBoxAaSphere = (boxMin: Vector3, boxMax: Vector3, sphereCenter: Vector3, sphereRadius: number): boolean => {

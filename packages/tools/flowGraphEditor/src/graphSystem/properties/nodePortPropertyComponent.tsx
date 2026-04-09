@@ -1,11 +1,11 @@
 import * as React from "react";
 import { LineContainerComponent } from "../../sharedComponents/lineContainerComponent";
 import { CheckBoxLineComponent } from "../../sharedComponents/checkBoxLineComponent";
-import type { StateManager } from "shared-ui-components/nodeGraphSystem/stateManager";
+import { type StateManager } from "shared-ui-components/nodeGraphSystem/stateManager";
 import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
-import type { NodePort } from "shared-ui-components/nodeGraphSystem/nodePort";
+import { type NodePort } from "shared-ui-components/nodeGraphSystem/nodePort";
 import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
-import type { ConnectionPointPortData } from "../connectionPointPortData";
+import { type ConnectionPointPortData } from "../connectionPointPortData";
 
 export interface INodePortPropertyTabComponentProps {
     stateManager: StateManager;

@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import * as React from "react";
-import type { GlobalState } from "../../globalState";
+import { type GlobalState } from "../../globalState";
 import { LineContainerComponent } from "../../sharedComponents/lineContainerComponent";
 import { DraggableLineComponent } from "../../sharedComponents/draggableLineComponent";
-import type { Observer } from "core/Misc/observable";
-import type { Nullable } from "core/types";
+import { type Observer } from "core/Misc/observable";
+import { type Nullable } from "core/types";
 import { NodeLedger } from "shared-ui-components/nodeGraphSystem/nodeLedger";
 import { AllFlowGraphBlocks } from "../../allBlockNames";
 import { GetBlockType, BlockTypeHeaderColor } from "../../graphSystem/blockTypeColors";
@@ -61,6 +61,34 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         FlowGraphStopAnimationBlock: "Stops an animation",
         FlowGraphPauseAnimationBlock: "Pauses an animation",
         FlowGraphInterpolationBlock: "Interpolates a value over time",
+
+        // Physics Events
+        FlowGraphPhysicsCollisionEventBlock: "Fires when a physics collision occurs on a body",
+
+        // Physics Actions
+        FlowGraphApplyForceBlock: "Applies a force to a physics body at a location",
+        FlowGraphApplyImpulseBlock: "Applies an instantaneous impulse to a physics body",
+        FlowGraphSetLinearVelocityBlock: "Sets the linear velocity of a physics body",
+        FlowGraphSetAngularVelocityBlock: "Sets the angular velocity of a physics body",
+        FlowGraphSetPhysicsMotionTypeBlock: "Sets the motion type (static/animated/dynamic)",
+
+        // Physics Data
+        FlowGraphGetLinearVelocityBlock: "Gets the linear velocity of a physics body",
+        FlowGraphGetAngularVelocityBlock: "Gets the angular velocity of a physics body",
+        FlowGraphGetPhysicsMassPropertiesBlock: "Gets mass, center of mass, and inertia",
+
+        // Audio Actions
+        FlowGraphPlaySoundBlock: "Plays an Audio V2 sound with volume, offset, and loop options",
+        FlowGraphStopSoundBlock: "Stops an Audio V2 sound",
+        FlowGraphPauseSoundBlock: "Pauses or resumes an Audio V2 sound",
+        FlowGraphSetSoundVolumeBlock: "Sets the volume of an Audio V2 sound",
+
+        // Audio Events
+        FlowGraphSoundEndedEventBlock: "Fires when an Audio V2 sound stops or ends (including manual stop)",
+
+        // Audio Data
+        FlowGraphGetSoundVolumeBlock: "Gets the current volume of an Audio V2 sound",
+        FlowGraphIsSoundPlayingBlock: "Checks whether an Audio V2 sound is currently playing",
 
         // Math Constants
         FlowGraphEBlock: "Euler's number (e)",

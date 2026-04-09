@@ -8,6 +8,10 @@ For a complete inventory of all public `@babylonjs` npm packages and their corre
 
 For detailed architecture documentation of each product, see the files in [architecture/](architecture/):
 
+## Instruction Files
+
+For a full index of all coding practice, review, and workflow instruction files, see [instructions/index.md](instructions/index.md).
+
 ## Code review requirements
 
 When reviewing a PR you must follow the instructions in `.github/instructions/code-review.instructions.md`
@@ -55,7 +59,7 @@ New public APIs should have corresponding playground examples with documentation
 
 ### Prohibited APIs
 
-`Function.bind` is prohibited; use arrow functions instead. See `.github/instructions/prohibited-apis.instructions.md`.
+See `.github/instructions/prohibited-apis.instructions.md`.
 
 ### Inspector v2
 

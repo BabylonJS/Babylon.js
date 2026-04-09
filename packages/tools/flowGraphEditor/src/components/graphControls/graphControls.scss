@@ -53,6 +53,16 @@
         }
     }
 
+    .fge-ctrl-undo:not(:disabled),
+    .fge-ctrl-redo:not(:disabled) {
+        color: rgb(180, 180, 180);
+        border-color: rgb(120, 120, 120);
+
+        &:hover {
+            background: rgba(180, 180, 180, 0.15);
+        }
+    }
+
     .fge-ctrl-pause:not(:disabled) {
         color: rgb(220, 180, 60);
         border-color: rgb(220, 180, 60);

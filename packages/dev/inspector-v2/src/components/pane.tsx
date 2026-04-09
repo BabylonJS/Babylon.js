@@ -1,7 +1,6 @@
-import type { ComponentProps } from "react";
+import { type ComponentProps, forwardRef } from "react";
 
 import { makeStyles, mergeClasses, tokens } from "@fluentui/react-components";
-import { forwardRef } from "react";
 
 const useStyles = makeStyles({
     paneRootDiv: {

@@ -1,8 +1,8 @@
-import type { AbstractMesh } from "core/Meshes/abstractMesh";
-import type { GLTFLoader } from "../glTFLoader";
-import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
+import { type AbstractMesh } from "core/Meshes/abstractMesh";
+import { type GLTFLoader } from "../glTFLoader";
+import { type IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
-import type { INode } from "../glTFLoaderInterfaces";
+import { type INode } from "../glTFLoaderInterfaces";
 import { AddObjectAccessorToKey } from "./objectModelMapping";
 
 const NAME = "KHR_node_visibility";

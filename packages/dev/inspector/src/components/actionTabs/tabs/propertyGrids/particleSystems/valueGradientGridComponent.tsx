@@ -1,15 +1,14 @@
 import * as React from "react";
-import type { GlobalState } from "../../../../globalState";
-import type { IValueGradient } from "core/Misc/gradients";
-import { FactorGradient, ColorGradient, Color3Gradient } from "core/Misc/gradients";
-import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
+import { type GlobalState } from "../../../../globalState";
+import { type IValueGradient, FactorGradient, ColorGradient, Color3Gradient } from "core/Misc/gradients";
+import { type LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineComponent";
 import { FactorGradientStepGridComponent } from "./factorGradientStepGridComponent";
-import type { Nullable } from "core/types";
+import { type Nullable } from "core/types";
 import { ColorGradientStepGridComponent } from "./colorGradientStepGridComponent";
 import { Color4, Color3 } from "core/Maths/math.color";
 import { LinkButtonComponent } from "shared-ui-components/lines/linkButtonComponent";
-import type { IParticleSystem } from "core/Particles/IParticleSystem";
+import { type IParticleSystem } from "core/Particles/IParticleSystem";
 import { faTrash } from "@fortawesome/free-solid-svg-icons";
 
 export enum GradientGridMode {

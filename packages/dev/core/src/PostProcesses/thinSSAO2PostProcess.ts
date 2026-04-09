@@ -1,4 +1,4 @@
-import type { Nullable, Scene, EffectWrapperCreationOptions } from "core/index";
+import { type Nullable, type Scene, type EffectWrapperCreationOptions } from "core/index";
 import { Constants } from "core/Engines/constants";
 import { EffectWrapper } from "core/Materials/effectRenderer";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";

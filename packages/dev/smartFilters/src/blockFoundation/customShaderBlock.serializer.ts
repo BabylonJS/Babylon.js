@@ -1,5 +1,5 @@
-import type { ISerializedBlockV1, SerializeBlockV1 } from "../serialization/v1/smartFilterSerialization.types.js";
-import type { BaseBlock } from "./baseBlock.js";
+import { type ISerializedBlockV1, type SerializeBlockV1 } from "../serialization/v1/smartFilterSerialization.types.js";
+import { type BaseBlock } from "./baseBlock.js";
 import { CustomShaderBlock } from "./customShaderBlock.js";
 
 /**

@@ -1,9 +1,8 @@
-import type { Vector4 } from "../../Maths/math.vector";
-import { Vector3, Matrix } from "../../Maths/math.vector";
+import { type Vector4, Vector3, Matrix } from "../../Maths/math.vector";
 import { Mesh } from "../mesh";
 import { VertexData } from "../mesh.vertexData";
-import type { Scene } from "../../scene";
-import type { Nullable } from "../../types";
+import { type Scene } from "../../scene";
+import { type Nullable } from "../../types";
 import { useOpenGLOrientationForUV } from "../../Compat/compatibilityOptions";
 
 /**

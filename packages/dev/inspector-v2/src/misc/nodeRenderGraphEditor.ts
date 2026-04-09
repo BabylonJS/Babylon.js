@@ -1,4 +1,4 @@
-import type { NodeRenderGraph } from "core/index";
+import { type NodeRenderGraph } from "core/index";
 
 export async function EditNodeRenderGraph(nodeRenderGraph: NodeRenderGraph) {
     // TODO: Figure out how to get all the various build steps to work with this.

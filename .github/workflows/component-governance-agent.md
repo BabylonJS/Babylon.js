@@ -1,35 +1,35 @@
 ---
 on:
-  workflow_dispatch:
+    workflow_dispatch:
 if: github.repository == 'BabylonJS/Babylon.js'
 permissions:
-  contents: read
-  security-events: read
-  issues: read
-  pull-requests: read
+    contents: read
+    security-events: read
+    issues: read
+    pull-requests: read
 secrets:
-  SECURITY_PAT:
-    value: ${{ secrets.SECURITY_ADVISORY_PAT }}
-    description: "PAT with security_advisories:write scope for creating advisories and private forks"
+    SECURITY_PAT:
+        value: ${{ secrets.SECURITY_ADVISORY_PAT }}
+        description: "PAT with security_advisories:write scope for creating advisories and private forks"
 env:
-  SECURITY_PAT: ${{ secrets.SECURITY_ADVISORY_PAT }}
+    SECURITY_PAT: ${{ secrets.SECURITY_ADVISORY_PAT }}
 network:
-  allowed:
-    - github
-    - node
+    allowed:
+        - github
+        - node
 safe-outputs:
-  noop:
+    noop:
 description: Scans Dependabot alerts and creates private GitHub Security Advisories with auto-fix PRs to avoid publicly advertising vulnerabilities
 name: Component Governance Agent
 strict: false
 timeout-minutes: 45
 tools:
-  github:
-    toolsets:
-    - default
-    - security_advisories
-    - dependabot
-    - code_security
+    github:
+        toolsets:
+            - default
+            - security_advisories
+            - dependabot
+            - code_security
 tracker-id: component-governance-agent
 ---
 
@@ -181,9 +181,9 @@ If upgrading the parent doesn't resolve the transitive vulnerability (e.g., the 
 ```json
 // Add to the relevant package.json under "overrides":
 {
-  "overrides": {
-    "PACKAGE_NAME": "PATCHED_VERSION"
-  }
+    "overrides": {
+        "PACKAGE_NAME": "PATCHED_VERSION"
+    }
 }
 ```
 
@@ -218,6 +218,7 @@ npm test
 ```
 
 If validation fails:
+
 - Analyze the error output
 - Attempt targeted code fixes for failures caused by the dependency update
 - If code changes were made, note them clearly — they must be highlighted in the PR
@@ -297,10 +298,12 @@ If every alert already had a corresponding draft advisory, exit with `noop`.
 ## Guidelines
 
 ### Privacy
+
 - **Never create public GitHub issues, PRs, or comments with vulnerability details.** All fix work happens in the private advisory fork; notifications come from GitHub's built-in advisory email system.
 - No external notification services are used — everything stays within GitHub's private advisory infrastructure.
 
 ### Scope
+
 - Process only **critical** and **high** severity alerts with available patches.
 - Only update the vulnerable dependency — do not refactor unrelated code.
 - Do **not** use `npm audit fix --force`; stick to semver-compatible updates.
@@ -309,12 +312,14 @@ If every alert already had a corresponding draft advisory, exit with `noop`.
 - When multiple alerts point to the same `package@version`, fix it once and re-verify before moving on.
 
 ### Error Handling
+
 - If advisory creation fails, log the error and continue to the next alert.
 - If the fix fails validation (build or tests), note it in the report and move on.
 - If no safe automated fix is apparent (breaking API change, no compatible parent release, cascading override failures), **stop and report the specific blocker** rather than forcing a speculative upgrade.
 - Always produce a summary, even when every fix failed.
 
 ### Exit with `noop` when
+
 - No open critical/high alerts exist
 - No alerts have patched versions available
 - All alerts already have corresponding draft advisories

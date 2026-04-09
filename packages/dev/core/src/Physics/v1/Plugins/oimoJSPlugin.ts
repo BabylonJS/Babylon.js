@@ -1,15 +1,13 @@
 /* eslint-disable @typescript-eslint/no-unsafe-return */
 /* eslint-disable @typescript-eslint/naming-convention */
-import type { IPhysicsEnabledObject } from "../physicsImpostor";
-import { PhysicsImpostor } from "../physicsImpostor";
-import type { IMotorEnabledJoint, DistanceJointData, SpringJointData } from "../physicsJoint";
-import { PhysicsJoint } from "../physicsJoint";
-import type { AbstractMesh } from "../../../Meshes/abstractMesh";
+import { type IPhysicsEnabledObject, PhysicsImpostor } from "../physicsImpostor";
+import { type IMotorEnabledJoint, type DistanceJointData, type SpringJointData, PhysicsJoint } from "../physicsJoint";
+import { type AbstractMesh } from "../../../Meshes/abstractMesh";
 import { Vector3, Quaternion } from "../../../Maths/math.vector";
-import type { Nullable } from "../../../types";
+import { type Nullable } from "../../../types";
 import { Logger } from "../../../Misc/logger";
 import { PhysicsRaycastResult } from "../../physicsRaycastResult";
-import type { IPhysicsEnginePlugin, PhysicsImpostorJoint } from "../IPhysicsEnginePlugin";
+import { type IPhysicsEnginePlugin, type PhysicsImpostorJoint } from "../IPhysicsEnginePlugin";
 import { Epsilon } from "../../../Maths/math.constants";
 
 declare let OIMO: any;

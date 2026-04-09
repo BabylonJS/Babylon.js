@@ -1,5 +1,5 @@
-import type { ThinEngine } from "core/Engines/thinEngine";
-import type { SmartFilter, SmartFilterDeserializer } from "smart-filters";
+import { type ThinEngine } from "core/Engines/thinEngine";
+import { type SmartFilter, type SmartFilterDeserializer } from "smart-filters";
 import { SnippetUrl } from "./constants";
 
 /**

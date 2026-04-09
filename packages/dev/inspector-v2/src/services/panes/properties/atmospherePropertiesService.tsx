@@ -1,11 +1,8 @@
-import type { ServiceDefinition } from "../../../modularity/serviceDefinition";
-import type { ISelectionService } from "../../selectionService";
-import type { IPropertiesService } from "./propertiesService";
-import type { ISceneContext } from "../../../services/sceneContext";
-import type { Atmosphere } from "addons/atmosphere/atmosphere";
-import { SelectionServiceIdentity } from "../../selectionService";
-import { PropertiesServiceIdentity } from "./propertiesService";
-import { SceneContextIdentity } from "../../../services/sceneContext";
+import { type ServiceDefinition } from "../../../modularity/serviceDefinition";
+import { type ISelectionService, SelectionServiceIdentity } from "../../selectionService";
+import { type IPropertiesService, PropertiesServiceIdentity } from "./propertiesService";
+import { type ISceneContext, SceneContextIdentity } from "../../../services/sceneContext";
+import { type Atmosphere } from "addons/atmosphere/atmosphere";
 import {
     AerialPerspectiveProperties,
     DiffuseIrradianceProperties,

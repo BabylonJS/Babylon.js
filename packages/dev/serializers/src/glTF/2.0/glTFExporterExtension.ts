@@ -1,13 +1,13 @@
-import type { IMeshPrimitive, INode, IMaterial, ITextureInfo, IAccessor } from "babylonjs-gltf2interface";
-import type { Node } from "core/node";
-import type { Nullable } from "core/types";
+import { type IMeshPrimitive, type INode, type IMaterial, type ITextureInfo, type IAccessor } from "babylonjs-gltf2interface";
+import { type Node } from "core/node";
+import { type Nullable } from "core/types";
 
-import type { IDisposable } from "core/scene";
+import { type IDisposable } from "core/scene";
 
-import type { IGLTFExporterExtension } from "../glTFFileExporter";
-import type { Material } from "core/Materials/material";
-import type { BaseTexture } from "core/Materials/Textures/baseTexture";
-import type { BufferManager } from "./bufferManager";
+import { type IGLTFExporterExtension } from "../glTFFileExporter";
+import { type Material } from "core/Materials/material";
+import { type BaseTexture } from "core/Materials/Textures/baseTexture";
+import { type BufferManager } from "./bufferManager";
 
 /** @internal */
 // eslint-disable-next-line no-var, @typescript-eslint/naming-convention

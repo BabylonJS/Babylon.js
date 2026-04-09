@@ -242,6 +242,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
 #ifndef SSR_BLEND_WITH_FRESNEL
     SSR *= fresnel;
 #endif
+    SSR = clamp(SSR, vec3f(0.0), vec3f(1000.0)); // Sanity check to avoid artifacts on some devices (iPad, mobile)
 
     #ifdef SSR_USE_BLUR
         // from https://github.com/godotengine/godot/blob/master/servers/rendering/renderer_rd/shaders/effects/screen_space_reflection.glsl

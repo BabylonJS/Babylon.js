@@ -1,6 +1,5 @@
-import type { FunctionComponent } from "react";
+import { type FunctionComponent, useCallback, useRef } from "react";
 
-import { useCallback, useRef } from "react";
 import { Badge } from "@fluentui/react-components";
 
 import { PropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/propertyLine";
@@ -12,10 +11,10 @@ import { useObservableState } from "../../../hooks/observableHooks";
 import { NumberInputPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/inputPropertyLine";
 import { SyncedSliderPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/syncedSliderPropertyLine";
 import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
-import type { AnimationRange } from "core/Animations/animationRange";
-import type { Nullable } from "core/types";
-import type { IAnimatable } from "core/Animations/animatable.interface";
-import type { Scene } from "core/scene";
+import { type AnimationRange } from "core/Animations/animationRange";
+import { type Nullable } from "core/types";
+import { type IAnimatable } from "core/Animations/animatable.interface";
+import { type Scene } from "core/scene";
 import { AnimationPropertiesOverride } from "core/Animations/animationPropertiesOverride";
 import { useProperty } from "../../../hooks/compoundPropertyHooks";
 import { BoundProperty } from "../boundProperty";

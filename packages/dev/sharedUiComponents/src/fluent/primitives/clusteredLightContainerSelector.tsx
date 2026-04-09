@@ -1,11 +1,8 @@
-import type { FunctionComponent } from "react";
-import type { Scene } from "core/scene";
-import type { Nullable } from "core/types";
-import type { PrimitiveProps } from "./primitive";
-import type { EntitySelectorProps } from "./entitySelector";
-
-import { useCallback } from "react";
-import { EntitySelector } from "./entitySelector";
+import { type FunctionComponent, useCallback } from "react";
+import { type Scene } from "core/scene";
+import { type Nullable } from "core/types";
+import { type PrimitiveProps } from "./primitive";
+import { type EntitySelectorProps, EntitySelector } from "./entitySelector";
 
 import { ClusteredLightContainer } from "core/Lights/Clustered/clusteredLightContainer";
 

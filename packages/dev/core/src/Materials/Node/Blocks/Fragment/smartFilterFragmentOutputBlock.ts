@@ -1,5 +1,5 @@
 import { FragmentOutputBlock } from "./fragmentOutputBlock";
-import type { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
+import { type NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import { NodeMaterialModes } from "../../Enums/nodeMaterialModes";
 import { RegisterClass } from "core/Misc/typeStore";
 import { InputBlock } from "../Input/inputBlock";

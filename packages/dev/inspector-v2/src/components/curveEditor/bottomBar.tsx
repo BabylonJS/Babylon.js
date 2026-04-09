@@ -1,10 +1,9 @@
-import type { FunctionComponent } from "react";
+import { type FunctionComponent, memo, useCallback, useEffect, useRef, useState } from "react";
 
 import { makeStyles, tokens } from "@fluentui/react-components";
-import { memo, useCallback, useEffect, useRef, useState } from "react";
 import { PlayRegular, PreviousRegular, NextRegular, ArrowPreviousRegular, ArrowNextRegular, RecordStopRegular, TriangleLeftRegular } from "@fluentui/react-icons";
 
-import type { Animation } from "core/Animations/animation";
+import { type Animation } from "core/Animations/animation";
 
 import { Button } from "shared-ui-components/fluent/primitives/button";
 import { SpinButton } from "shared-ui-components/fluent/primitives/spinButton";

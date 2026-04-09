@@ -1,14 +1,13 @@
-import type { Nullable } from "core/types";
+import { type Nullable } from "core/types";
 import { Vector3, Quaternion, TmpVectors } from "core/Maths/math.vector";
 import { Light } from "core/Lights/light";
-import type { Node } from "core/node";
-import type { INode, IEXTLightsArea_LightReference, IEXTLightsArea_Light, IEXTLightsArea } from "babylonjs-gltf2interface";
-import { EXTLightsArea_LightType } from "babylonjs-gltf2interface";
-import type { IGLTFExporterExtensionV2 } from "../glTFExporterExtension";
+import { type Node } from "core/node";
+import { type INode, type IEXTLightsArea_LightReference, type IEXTLightsArea_Light, type IEXTLightsArea, EXTLightsArea_LightType } from "babylonjs-gltf2interface";
+import { type IGLTFExporterExtensionV2 } from "../glTFExporterExtension";
 import { GLTFExporter } from "../glTFExporter";
 import { Logger } from "core/Misc/logger";
 import { ConvertToRightHandedPosition, OmitDefaultValues, CollapseChildIntoParent, IsChildCollapsible } from "../glTFUtilities";
-import type { RectAreaLight } from "core/Lights/rectAreaLight";
+import { type RectAreaLight } from "core/Lights/rectAreaLight";
 
 const NAME = "EXT_lights_area";
 const DEFAULTS: Omit<IEXTLightsArea_Light, "type"> = {

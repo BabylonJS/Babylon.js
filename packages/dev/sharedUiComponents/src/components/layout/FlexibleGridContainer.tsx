@@ -1,5 +1,4 @@
-import type { FC } from "react";
-import { useContext } from "react";
+import { type FC, useContext } from "react";
 import { LayoutContext } from "./LayoutContext";
 import { FlexibleColumn } from "./FlexibleColumn";
 import { FlexibleDropZone } from "./FlexibleDropZone";

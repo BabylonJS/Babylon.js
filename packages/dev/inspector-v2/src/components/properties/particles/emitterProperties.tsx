@@ -1,9 +1,7 @@
-import type { FunctionComponent } from "react";
-import type { AbstractMesh } from "core/index";
-import type { GPUParticleSystem } from "core/Particles/gpuParticleSystem";
-import type { ISelectionService } from "../../../services/selectionService";
-
-import { useEffect, useMemo, useState } from "react";
+import { type FunctionComponent, useEffect, useMemo, useState } from "react";
+import { type AbstractMesh } from "core/index";
+import { type GPUParticleSystem } from "core/Particles/gpuParticleSystem";
+import { type ISelectionService } from "../../../services/selectionService";
 
 import { Vector3 } from "core/Maths/math.vector";
 import { ParticleSystem } from "core/Particles/particleSystem";

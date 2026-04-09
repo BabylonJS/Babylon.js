@@ -2,7 +2,7 @@
 import * as fs from "fs";
 import * as path from "path";
 import { checkDirectorySync, checkArgs, getHashOfFile, getHashOfContent } from "./utils.js";
-import type { DevPackageName } from "./packageMapping.js";
+import { type DevPackageName } from "./packageMapping.js";
 
 // import * as glob from "glob";
 // import * as chokidar from "chokidar";
