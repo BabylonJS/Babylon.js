@@ -1,6 +1,5 @@
 import { type GlobalState } from "../globalState";
 import { type WeaklyTypedServiceDefinition } from "inspector/modularity/serviceContainer";
-import * as monaco from "monaco-editor/esm/vs/editor/editor.api";
 
 type InspectorV2Module = typeof import("inspector/legacy/legacy") & typeof import("inspector/index");
 
@@ -65,14 +64,6 @@ export function MakePlaygroundCommandServiceDefinition(globalState: GlobalState,
                         throw new Error(`File "${args.path}" not found. Available files: ${paths.join(", ")}`);
                     }
                     globalState.files[args.path] = args.content;
-
-                    // Update the Monaco editor model so the UI reflects the change.
-                    const uri = monaco.Uri.parse(`file:///pg/${args.path.replace(/^\//, "")}`);
-                    const model = monaco.editor.getModel(uri);
-                    if (model && model.getValue() !== args.content) {
-                        model.setValue(args.content);
-                    }
-
                     globalState.onFilesChangedObservable.notifyObservers();
                     return `File "${args.path}" updated.`;
                 },

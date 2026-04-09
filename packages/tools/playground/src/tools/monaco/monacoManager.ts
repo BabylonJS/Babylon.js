@@ -188,13 +188,19 @@ export class MonacoManager {
         });
 
         this.globalState.onFilesChangedObservable.add(() => {
-            // Create models for any new files that don't have models yet.
+            // Create models for any new files that don't have models yet,
+            // and sync content for existing models that have changed externally.
             for (const [path, code] of Object.entries(this.globalState.files)) {
                 if (!this._files.has(path)) {
                     this._files.addFile(path, code, (p, c) => {
                         this.globalState.files[p] = c;
                         this._files.setDirty(true);
                     });
+                } else {
+                    const model = this._files.getModel(path);
+                    if (model && model.getValue() !== code) {
+                        model.setValue(code);
+                    }
                 }
             }
 
