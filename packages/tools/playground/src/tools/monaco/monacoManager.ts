@@ -188,6 +188,23 @@ export class MonacoManager {
         });
 
         this.globalState.onFilesChangedObservable.add(() => {
+            // Create models for any new files that don't have models yet.
+            for (const [path, code] of Object.entries(this.globalState.files)) {
+                if (!this._files.has(path)) {
+                    this._files.addFile(path, code, (p, c) => {
+                        this.globalState.files[p] = c;
+                        this._files.setDirty(true);
+                    });
+                }
+            }
+
+            // Remove models for files that no longer exist.
+            for (const path of this._files.paths()) {
+                if (!(path in this.globalState.files)) {
+                    this._files.removeFile(path);
+                }
+            }
+
             // Prevent worker restart during hydration to avoid race conditions
             if (!this._hydrating) {
                 this._tsPipeline.forceSyncModels();

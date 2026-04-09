@@ -99,16 +99,13 @@ export function MakePlaygroundCommandServiceDefinition(globalState: GlobalState,
                     }
                     const content = args.content ?? "";
                     globalState.files[args.path] = content;
-                    const uri = monaco.Uri.parse(`file:///pg/${args.path.replace(/^\//, "")}`);
-                    if (!monaco.editor.getModel(uri)) {
-                        const lang = args.path.endsWith(".ts") || args.path.endsWith(".tsx") ? "typescript" : "javascript";
-                        const model = monaco.editor.createModel(content, lang, uri);
-                        model.onDidChangeContent(() => {
-                            globalState.files[args.path] = model.getValue();
-                        });
-                    }
                     globalState.onFilesChangedObservable.notifyObservers();
                     globalState.onManifestChangedObservable.notifyObservers();
+
+                    // Open the new file as the active tab in the editor.
+                    globalState.activeFilePath = args.path;
+                    globalState.onActiveFileChangedObservable.notifyObservers();
+
                     return `File "${args.path}" created.`;
                 },
             });
@@ -132,11 +129,6 @@ export function MakePlaygroundCommandServiceDefinition(globalState: GlobalState,
                         throw new Error("Cannot delete the last file.");
                     }
                     delete globalState.files[args.path];
-                    const uri = monaco.Uri.parse(`file:///pg/${args.path.replace(/^\//, "")}`);
-                    const model = monaco.editor.getModel(uri);
-                    if (model) {
-                        model.dispose();
-                    }
                     globalState.onFilesChangedObservable.notifyObservers();
                     globalState.onManifestChangedObservable.notifyObservers();
                     return `File "${args.path}" deleted.`;
