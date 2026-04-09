@@ -467,7 +467,7 @@ export class FrameGraphIblShadowsRendererTask extends FrameGraphTask {
                     }
                 },
                 16,
-                30000
+                10000
             );
         });
     }
@@ -484,6 +484,12 @@ export class FrameGraphIblShadowsRendererTask extends FrameGraphTask {
         if (this.depthTexture === undefined || this.normalTexture === undefined || this.positionTexture === undefined || this.velocityTexture === undefined) {
             throw new Error(`FrameGraphIblShadowsRendererTask "${this.name}": depthTexture, normalTexture, positionTexture and velocityTexture are required`);
         }
+
+        this._lastImportedIcdfTexture = null;
+        this._lastImportedEnvironmentTexture = null;
+        this._lastImportedBlueNoiseTexture = null;
+
+        this._tryEnableShadowsTasks();
 
         // Set sub-task texture inputs (these are set here because handles may not be available at construction time)
         this._tracingTask.depthTexture = this.depthTexture;
