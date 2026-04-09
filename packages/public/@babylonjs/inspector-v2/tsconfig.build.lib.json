@@ -7,8 +7,6 @@
         "target": "ES2020",
         "importHelpers": true
     },
-    "include": [
-        "../../../dev/inspector-v2/src/**/*",
-        "../../../dev/sharedUiComponents/src/**/*"
-    ]
+    "include": ["../../../dev/inspector-v2/src/**/*", "../../../dev/sharedUiComponents/src/**/*"],
+    "exclude": ["../../../dev/inspector-v2/src/cli/**/*"]
 }

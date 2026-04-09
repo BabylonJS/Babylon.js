@@ -115,7 +115,10 @@ onmessage = async function (evt) {
                 payload.atlasScale,
                 payload.variables ?? new Map<string, string>(),
                 payload.configuration ?? {},
-                payload.mainThreadDevicePixelRatio
+                payload.mainThreadDevicePixelRatio,
+                () => {
+                    postMessage({ type: "firstRender", payload: {} });
+                }
             );
 
             controller.playAnimation();
