@@ -597,48 +597,80 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
         this._vertexCount = totalCount;
         this._shDegree = shDegreeNew;
 
-        // --- Upload to GPU ---
-        if (incremental) {
-            // Update the part-indices texture (handles both create and update-in-place).
-            // _ensurePartIndicesTexture is a no-op when the texture already exists, so on the
-            // second+ addPart the partIndices would be stale without this call.
-            this._onUpdateTextures(textureSize);
-            this._updateSubTextures(this._splatPositions, covA, covB, colorArray, firstNewLine, textureSize.y - firstNewLine, sh);
-        } else {
-            this._updateTextures(covA, covB, colorArray, sh);
+        // Gate the sort worker for the duration of this operation. _updateTextures (below) may create the worker and fire an
+        // immediate sort via _postToWorker. At that point partMatrices has not yet been updated for the incoming parts, so the
+        // worker would compute depthCoeffs for fewer parts than partIndices references — crashing with
+        // "Cannot read properties of undefined (reading '0')".
+        // When called from removePart, _rebuilding is already true and _canPostToWorker is already false, so the gate is a
+        // no-op — removePart handles the final post+sort.
+        const needsWorkerGate = !this._rebuilding;
+        if (needsWorkerGate) {
+            this._canPostToWorker = false;
+            this._rebuilding = true;
         }
 
-        this.getBoundingInfo().reConstruct(minimum, maximum, this.getWorldMatrix());
-        this.setEnabled(true);
-        this._cachedBoundingMin = minimum.clone();
-        this._cachedBoundingMax = maximum.clone();
-        this._notifyWorkerNewData();
-
-        // --- Create proxy meshes ---
-        const proxyMeshes: GaussianSplattingPartProxyMesh[] = [];
-        for (let i = 0; i < others.length; i++) {
-            const other = others[i];
-            const newPartIndex = assignedPartIndices[i];
-
-            const partWorldMatrix = other.getWorldMatrix();
-            this.setWorldMatrixForPart(newPartIndex, partWorldMatrix);
-
-            const proxyMesh = new GaussianSplattingPartProxyMesh(other.name, this.getScene(), this, other, newPartIndex);
-
-            if (disposeOthers) {
-                other.dispose();
+        try {
+            // --- Upload to GPU ---
+            if (incremental) {
+                // Update the part-indices texture (handles both create and update-in-place).
+                // _ensurePartIndicesTexture is a no-op when the texture already exists, so on the
+                // second+ addPart the partIndices would be stale without this call.
+                this._onUpdateTextures(textureSize);
+                this._updateSubTextures(this._splatPositions, covA, covB, colorArray, firstNewLine, textureSize.y - firstNewLine, sh);
+            } else {
+                this._updateTextures(covA, covB, colorArray, sh);
             }
 
-            const quaternion = new Quaternion();
-            partWorldMatrix.decompose(proxyMesh.scaling, quaternion, proxyMesh.position);
-            proxyMesh.rotationQuaternion = quaternion;
-            proxyMesh.computeWorldMatrix(true);
+            this.getBoundingInfo().reConstruct(minimum, maximum, this.getWorldMatrix());
+            this.setEnabled(true);
+            this._cachedBoundingMin = minimum.clone();
+            this._cachedBoundingMax = maximum.clone();
+            this._notifyWorkerNewData();
 
-            this._partProxies[newPartIndex] = proxyMesh;
-            proxyMeshes.push(proxyMesh);
+            // --- Create proxy meshes ---
+            const proxyMeshes: GaussianSplattingPartProxyMesh[] = [];
+            for (let i = 0; i < others.length; i++) {
+                const other = others[i];
+                const newPartIndex = assignedPartIndices[i];
+
+                const partWorldMatrix = other.getWorldMatrix();
+                this.setWorldMatrixForPart(newPartIndex, partWorldMatrix);
+
+                const proxyMesh = new GaussianSplattingPartProxyMesh(other.name, this.getScene(), this, other, newPartIndex);
+
+                if (disposeOthers) {
+                    other.dispose();
+                }
+
+                const quaternion = new Quaternion();
+                partWorldMatrix.decompose(proxyMesh.scaling, quaternion, proxyMesh.position);
+                proxyMesh.rotationQuaternion = quaternion;
+                proxyMesh.computeWorldMatrix(true);
+
+                this._partProxies[newPartIndex] = proxyMesh;
+                proxyMeshes.push(proxyMesh);
+            }
+
+            // Restore the rebuild gate and post the now-complete partMatrices in one message, then trigger a single sort pass.
+            // This ensures the worker sees a consistent partMatrices array that matches the partIndices for every splat.
+            if (needsWorkerGate) {
+                this._rebuilding = false;
+                if (this._worker) {
+                    this._worker.postMessage({ partMatrices: this._partMatrices.map((matrix) => new Float32Array(matrix.m)) });
+                }
+                this._canPostToWorker = true;
+                this._postToWorker(true);
+            }
+
+            return { proxyMeshes, assignedPartIndices };
+        } catch (e) {
+            // Ensure the gates are always restored so sorting is not permanently frozen.
+            if (needsWorkerGate) {
+                this._rebuilding = false;
+                this._canPostToWorker = true;
+            }
+            throw e;
         }
-
-        return { proxyMeshes, assignedPartIndices };
     }
 
     // ---------------------------------------------------------------------------
@@ -744,38 +776,45 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
         // Gate the sort worker: suppress any sort request until the full rebuild is committed.
         this._rebuilding = true;
         this._canPostToWorker = false;
-        const sources = survivors.map((s) => s.proxyMesh.proxiedMesh);
-        const { proxyMeshes: newProxies } = this._addPartsInternal(sources, false);
+        try {
+            const sources = survivors.map((s) => s.proxyMesh.proxiedMesh);
+            const { proxyMeshes: newProxies } = this._addPartsInternal(sources, false);
 
-        // Restore world matrices and re-map proxies
-        for (let i = 0; i < survivors.length; i++) {
-            const oldProxy = survivors[i].proxyMesh;
-            const newProxy = newProxies[i];
-            const newPartIndex = newProxy.partIndex;
+            // Restore world matrices and re-map proxies
+            for (let i = 0; i < survivors.length; i++) {
+                const oldProxy = survivors[i].proxyMesh;
+                const newProxy = newProxies[i];
+                const newPartIndex = newProxy.partIndex;
 
-            // Restore the world matrix and visibility the user had set on the old proxy
-            this.setWorldMatrixForPart(newPartIndex, survivors[i].worldMatrix);
-            this.setPartVisibility(newPartIndex, survivors[i].visibility);
-            const quaternion = new Quaternion();
-            survivors[i].worldMatrix.decompose(newProxy.scaling, quaternion, newProxy.position);
-            newProxy.rotationQuaternion = quaternion;
-            newProxy.computeWorldMatrix(true);
+                // Restore the world matrix and visibility the user had set on the old proxy
+                this.setWorldMatrixForPart(newPartIndex, survivors[i].worldMatrix);
+                this.setPartVisibility(newPartIndex, survivors[i].visibility);
+                const quaternion = new Quaternion();
+                survivors[i].worldMatrix.decompose(newProxy.scaling, quaternion, newProxy.position);
+                newProxy.rotationQuaternion = quaternion;
+                newProxy.computeWorldMatrix(true);
 
-            // Update the old proxy's index so any existing user references still work
-            oldProxy.updatePartIndex(newPartIndex);
-            this._partProxies[newPartIndex] = oldProxy;
+                // Update the old proxy's index so any existing user references still work
+                oldProxy.updatePartIndex(newPartIndex);
+                this._partProxies[newPartIndex] = oldProxy;
 
-            // newProxy is redundant — it was created inside _addPartsInternal; dispose it
-            newProxy.dispose();
+                // newProxy is redundant — it was created inside _addPartsInternal; dispose it
+                newProxy.dispose();
+            }
+
+            // Rebuild is complete: all partMatrices are now set correctly.
+            // Post the final complete set and fire one sort.
+            this._rebuilding = false;
+            // Break TypeScript's flow narrowing — _addPartsInternal may have reinstantiated _worker.
+            const workerAfterRebuild = this._worker as Worker | null;
+            workerAfterRebuild?.postMessage({ partMatrices: this._partMatrices.map((matrix) => new Float32Array(matrix.m)) });
+            this._canPostToWorker = true;
+            this._postToWorker(true);
+        } catch (e) {
+            // Ensure the gates are always restored so sorting is not permanently frozen.
+            this._rebuilding = false;
+            this._canPostToWorker = true;
+            throw e;
         }
-
-        // Rebuild is complete: all partMatrices are now set correctly.
-        // Post the final complete set and fire one sort.
-        this._rebuilding = false;
-        // Break TypeScript's flow narrowing — _addPartsInternal may have reinstantiated _worker.
-        const workerAfterRebuild = this._worker as Worker | null;
-        workerAfterRebuild?.postMessage({ partMatrices: this._partMatrices.map((matrix) => new Float32Array(matrix.m)) });
-        this._canPostToWorker = true;
-        this._postToWorker(true);
     }
 }
