@@ -186,7 +186,19 @@ export class GaussianSplattingMaterial extends PushMaterial {
     protected static _Attribs = [VertexBuffer.PositionKind, "splatIndex0", "splatIndex1", "splatIndex2", "splatIndex3"];
     protected static _Samplers = ["covariancesATexture", "covariancesBTexture", "centersTexture", "colorsTexture", "shTexture0", "shTexture1", "shTexture2", "partIndicesTexture"];
     protected static _UniformBuffers = ["Scene", "Mesh"];
-    protected static _VoxelUniforms = ["world", "dataTextureSize", "alpha", "invWorldScale", "viewMatrix", "nearPlane", "farPlane", "stepSize", "partWorld", "partVisibility"];
+    protected static _VoxelUniforms = [
+        "world",
+        "dataTextureSize",
+        "alpha",
+        "invWorldScale",
+        "viewMatrix",
+        "nearPlane",
+        "farPlane",
+        "stepSize",
+        "partWorld",
+        "partVisibility",
+        "axis",
+    ];
     protected static _VoxelSamplers = ["rotationsATexture", "rotationsBTexture", "rotationScaleTexture", "centersTexture", "colorsTexture", "partIndicesTexture"];
     protected static _VoxelSlabDebugUniforms = [
         "world",
@@ -730,6 +742,33 @@ export class GaussianSplattingMaterial extends PushMaterial {
                 shaderLanguage: shaderLanguage,
                 defines: defines,
                 needAlphaBlending: false,
+                extraInitializationsAsync: async () => {
+                    if (shaderLanguage === ShaderLanguage.WGSL) {
+                        if (isSlabDebug) {
+                            await Promise.all([
+                                import("../../ShadersWGSL/gaussianSplattingVoxelSlabDebug.vertex"),
+                                import("../../ShadersWGSL/gaussianSplattingVoxelSlabDebug.fragment"),
+                            ]);
+                        } else {
+                            await Promise.all([
+                                import("../../ShadersWGSL/gaussianSplattingVoxel.vertex"),
+                                import("../../ShadersWGSL/gaussianSplattingVoxel.fragment"),
+                            ]);
+                        }
+                    } else {
+                        if (isSlabDebug) {
+                            await Promise.all([
+                                import("../../Shaders/gaussianSplattingVoxelSlabDebug.vertex"),
+                                import("../../Shaders/gaussianSplattingVoxelSlabDebug.fragment"),
+                            ]);
+                        } else {
+                            await Promise.all([
+                                import("../../Shaders/gaussianSplattingVoxel.vertex"),
+                                import("../../Shaders/gaussianSplattingVoxel.fragment"),
+                            ]);
+                        }
+                    }
+                },
             }
         );
         shaderMaterial.cullBackFaces = false;

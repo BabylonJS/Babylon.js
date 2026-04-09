@@ -764,7 +764,17 @@ export class _IblShadowsVoxelRenderer {
             renderingMesh._bind(sm, effect, fillMode);
             gsVoxelMaterial._preBind(drawWrapper);
             gsVoxelMaterial.bind(effectiveMesh.getWorldMatrix(), effectiveMesh, effect);
-            renderingMesh._processRendering(effectiveMesh, sm, effect, fillMode, batch, hardwareInstancedRendering, (_isInstance, world) => effect.setMatrix("world", world));
+            if (engine.isWebGPU && !isSlabDebug) {
+                // WebGPU voxel shader writes directly to voxel_storage; one draw per axis (0=XY, 1=XZ, 2=YZ).
+                for (let axisIdx = 0; axisIdx < 3; axisIdx++) {
+                    effect.setInt("axis", axisIdx);
+                    renderingMesh._processRendering(effectiveMesh, sm, effect, fillMode, batch, hardwareInstancedRendering, (_isInstance, world) => {
+                        effect.setMatrix("world", world);
+                    });
+                }
+            } else {
+                renderingMesh._processRendering(effectiveMesh, sm, effect, fillMode, batch, hardwareInstancedRendering, (_isInstance, world) => effect.setMatrix("world", world));
+            }
             gsVoxelMaterial.unbind();
         };
 
@@ -863,11 +873,16 @@ export class _IblShadowsVoxelRenderer {
                     if (m.getClassName() === "GaussianSplattingMesh") {
                         const gsVoxelMat = useDebugMaterial ? this._gsVoxelSlabDebugMaterialCache.get(m.uniqueId) : this._gsVoxelMaterialCache.get(m.uniqueId);
                         if (gsVoxelMat) {
-                            gsVoxelMat.setMatrix("viewMatrix", viewMatrix);
                             gsVoxelMat.setMatrix("invWorldScale", this._invWorldScaleMatrix);
-                            gsVoxelMat.setFloat("nearPlane", nearPlane);
-                            gsVoxelMat.setFloat("farPlane", farPlane);
-                            gsVoxelMat.setFloat("stepSize", stepSize);
+                            if (this._engine.isWebGPU && !useDebugMaterial) {
+                                // WGSL voxel shader uses axis uniform + storage texture; no view/slab uniforms needed.
+                                gsVoxelMat.setTexture("voxel_storage", this.getVoxelGrid());
+                            } else {
+                                gsVoxelMat.setMatrix("viewMatrix", viewMatrix);
+                                gsVoxelMat.setFloat("nearPlane", nearPlane);
+                                gsVoxelMat.setFloat("farPlane", farPlane);
+                                gsVoxelMat.setFloat("stepSize", stepSize);
+                            }
                         }
                     }
                 }
