@@ -658,10 +658,10 @@ export class Animation {
             ret += ", Ranges: {";
             let first = true;
             for (const name in this._ranges) {
-                if (first) {
+                if (!first) {
                     ret += ", ";
-                    first = false;
                 }
+                first = false;
                 ret += name;
             }
             ret += "}";

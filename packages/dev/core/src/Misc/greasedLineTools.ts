@@ -563,6 +563,11 @@ export class GreasedLineTools {
             const colorsArray = new Uint8Array(4);
             GreasedLineMaterialDefaults.EmptyColorsTexture = new RawTexture(colorsArray, 1, 1, Engine.TEXTUREFORMAT_RGBA, scene, false, false, RawTexture.NEAREST_NEAREST);
             GreasedLineMaterialDefaults.EmptyColorsTexture.name = "grlEmptyColorsTexture";
+            // Clear the static reference when the texture is disposed (e.g. by scene.dispose())
+            // so that PrepareEmptyColorsTexture will create a fresh one for the next scene.
+            GreasedLineMaterialDefaults.EmptyColorsTexture.onDisposeObservable.addOnce(() => {
+                GreasedLineMaterialDefaults.EmptyColorsTexture = null;
+            });
         }
 
         return GreasedLineMaterialDefaults.EmptyColorsTexture;

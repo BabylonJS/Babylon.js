@@ -281,8 +281,7 @@ export class ConeDirectedParticleEmitter extends ConeParticleEmitter {
      * @param uboOrEffect defines the update shader
      */
     public override applyToShader(uboOrEffect: UniformBufferEffectCommonAccessor): void {
-        uboOrEffect.setFloat("radius", this.radius);
-        uboOrEffect.setFloat("radiusRange", this.radiusRange);
+        super.applyToShader(uboOrEffect);
         uboOrEffect.setVector3("direction1", this.direction1);
         uboOrEffect.setVector3("direction2", this.direction2);
     }
@@ -292,8 +291,7 @@ export class ConeDirectedParticleEmitter extends ConeParticleEmitter {
      * @param ubo ubo to create the structure for
      */
     public override buildUniformLayout(ubo: UniformBuffer): void {
-        ubo.addUniform("radius", 1);
-        ubo.addUniform("radiusRange", 1);
+        super.buildUniformLayout(ubo);
         ubo.addUniform("direction1", 3);
         ubo.addUniform("direction2", 3);
     }

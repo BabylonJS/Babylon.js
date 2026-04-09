@@ -576,6 +576,13 @@ export class CubeTexture extends BaseTexture {
     public override clone(): CubeTexture {
         let uniqueId = 0;
 
+        // Save the irradianceTexture before cloning. The irradianceTexture is
+        // stored on the InternalTexture (_texture._irradianceTexture), which may
+        // be shared between the source and clone when loaded from cache.
+        // BaseTexture.clone() returns null, so CopySource sets the shared
+        // irradianceTexture to null, losing it on both the original and the clone.
+        const savedIrradianceTexture = this.irradianceTexture;
+
         const newCubeTexture = SerializationHelper.Clone(() => {
             const cubeTexture = new CubeTexture(this.url, this.getScene() || this._getEngine()!, this._extensions, this._noMipmap, this._files);
             uniqueId = cubeTexture.uniqueId;
@@ -584,6 +591,11 @@ export class CubeTexture extends BaseTexture {
         }, this);
 
         newCubeTexture.uniqueId = uniqueId;
+
+        // Restore the irradianceTexture if it was cleared during cloning.
+        if (savedIrradianceTexture && !this.irradianceTexture) {
+            this.irradianceTexture = savedIrradianceTexture;
+        }
 
         return newCubeTexture;
     }
