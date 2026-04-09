@@ -47,11 +47,13 @@ export class AnimationController {
     private _lastFrameTime: number;
     private _deltaTime: number;
     private _loop: boolean;
+    private _hasRendered: boolean;
 
     private _accumulatedTime: number;
     private _framesToAdvance: number;
 
     private readonly _renderingManager: RenderingManager;
+    private readonly _onFirstRender?: () => void;
 
     /**
      * Gets the canvas used for rendering the animation.
@@ -86,6 +88,7 @@ export class AnimationController {
      * @param variables Map of variables to replace in the animation file.
      * @param configuration The partial configuration for the animation player. Will be finalized after engine creation.
      * @param mainThreadDevicePixelRatio The devicePixelRatio from the main thread (used in worker scenarios).
+     * @param onFirstRender Optional callback invoked after the first frame renders.
      */
     public constructor(
         canvas: HTMLCanvasElement | OffscreenCanvas,
@@ -94,7 +97,8 @@ export class AnimationController {
         atlasScale: number,
         variables: Map<string, string>,
         configuration: Partial<AnimationConfiguration>,
-        mainThreadDevicePixelRatio?: number
+        mainThreadDevicePixelRatio?: number,
+        onFirstRender?: () => void
     ) {
         this._isReady = false;
         this._canvas = canvas;
@@ -110,6 +114,8 @@ export class AnimationController {
         this._framesToAdvance = 0;
         this._frameDuration = 1000 / 30; // Default to 30 FPS
         this._firstRun = true;
+        this._hasRendered = false;
+        this._onFirstRender = onFirstRender;
 
         const supportDeviceLost = configuration.supportDeviceLost ?? true;
         this._engine = new ThinEngine(
@@ -357,6 +363,11 @@ export class AnimationController {
 
         // Render all layers of the animation
         this._renderingManager.render(this._worldMatrix, this._projectionMatrix);
+
+        if (!this._hasRendered) {
+            this._hasRendered = true;
+            this._onFirstRender?.();
+        }
 
         if (stoppingAfterThisFrame) {
             this._isPlaying = false;

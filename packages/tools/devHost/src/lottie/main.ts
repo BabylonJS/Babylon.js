@@ -56,8 +56,19 @@ export async function Main(searchParams: URLSearchParams): Promise<void> {
         stopAtFrame: stopAtFrame, // If set, the animation will stop at this frame (used by visual tests)
     };
 
+    // Signal that the first frame has been rendered (used by visual tests for deterministic screenshots)
+    const onFirstRender = () => {
+        if (!document.getElementById("lottie-ready")) {
+            const readyIndicator = document.createElement("div");
+            readyIndicator.id = "lottie-ready";
+            readyIndicator.style.width = "1px";
+            readyIndicator.style.height = "1px";
+            document.body.appendChild(readyIndicator);
+        }
+    };
+
     // Create the player and play the animation
-    const animationInput = { container: div, animationSource: useUrl ? fileUrl : (animationData as RawLottieAnimation), variables, configuration };
+    const animationInput = { container: div, animationSource: useUrl ? fileUrl : (animationData as RawLottieAnimation), variables, configuration, onFirstRender };
 
     if (useWorker) {
         const player = new Player();
