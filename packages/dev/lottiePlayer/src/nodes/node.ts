@@ -29,6 +29,7 @@ export class Node {
 
     protected _isControl = false;
     protected _isShape = false;
+    protected _isNullLayer = false;
 
     /**
      * Gets the id of this node.
@@ -83,6 +84,12 @@ export class Node {
 
         if (this._opacity.currentValue === 0) {
             return 0;
+        }
+
+        // Skip parent opacity if parent is a null layer control node - null layers may have opacity 0
+        // but their children should still be visible
+        if (this._parent && this._parent._isNullLayer) {
+            return this._opacity.currentValue;
         }
 
         return this._opacity.currentValue * (this._parent?.opacity ?? 1);

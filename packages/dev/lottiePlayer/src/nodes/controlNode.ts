@@ -19,6 +19,7 @@ export class ControlNode extends Node {
      * @param scale Scale of the node in the scene.
      * @param opacity Opacity of the node, from 0 to 1.
      * @param parent Parent node in the scenegraph.
+     * @param isNullLayer Whether this control node represents a null layer (type 3). Null layers' opacity is not inherited by children.
      */
     public constructor(
         id: string,
@@ -28,13 +29,15 @@ export class ControlNode extends Node {
         rotation?: ScalarProperty,
         scale?: Vector2Property,
         opacity?: ScalarProperty,
-        parent?: Node
+        parent?: Node,
+        isNullLayer?: boolean
     ) {
         super(id, position, rotation, scale, opacity, parent);
         this._inFrame = inFrame;
         this._outFrame = outFrame;
 
         this._isControl = true;
+        this._isNullLayer = isNullLayer ?? false;
     }
 
     /**

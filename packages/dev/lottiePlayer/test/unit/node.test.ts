@@ -108,6 +108,57 @@ describe("Node keyframe boundary", () => {
     });
 });
 
+describe("Null layer opacity isolation", () => {
+    it("child of null layer with opacity 0 returns its own opacity", () => {
+        const parentOpacity = makeScalarProperty(0, []);
+        const nullParent = new ControlNode("null-parent", 0, 100, undefined, undefined, undefined, parentOpacity, undefined, true);
+        nullParent.update(0);
+
+        const childOpacity: ScalarProperty = { startValue: 1, currentValue: 1, currentKeyframeIndex: 0 };
+        const child = new Node("child", undefined, undefined, undefined, childOpacity, nullParent);
+        child.isVisible = true;
+        nullParent.isVisible = true;
+
+        // Force update to propagate visibility
+        nullParent.update(0);
+
+        expect(child.opacity).toBe(1);
+    });
+
+    it("child of regular layer still multiplies by parent opacity", () => {
+        const parentOpacity: ScalarProperty = { startValue: 0.5, currentValue: 0.5, currentKeyframeIndex: 0 };
+        const regularParent = new ControlNode("regular-parent", 0, 100, undefined, undefined, undefined, parentOpacity, undefined, false);
+
+        const childOpacity: ScalarProperty = { startValue: 0.8, currentValue: 0.8, currentKeyframeIndex: 0 };
+        const child = new Node("child", undefined, undefined, undefined, childOpacity, regularParent);
+        child.isVisible = true;
+        regularParent.isVisible = true;
+
+        regularParent.update(0);
+
+        expect(child.opacity).toBeCloseTo(0.4, 5);
+    });
+
+    it("transforms from null layer parent still apply to children", () => {
+        const parentPosition = makePositionProperty(10, 20, []);
+        const nullParent = new ControlNode("null-parent", 0, 100, parentPosition, undefined, undefined, undefined, undefined, true);
+
+        const child = new Node("child", undefined, undefined, undefined, undefined, nullParent);
+        child.isVisible = true;
+        nullParent.isVisible = true;
+
+        nullParent.update(0);
+
+        // The child's world matrix should reflect the parent's position
+        const scale = { x: 0, y: 0 };
+        const translation = { x: 0, y: 0 };
+        child.worldMatrix.decompose(scale, translation);
+
+        expect(translation.x).toBeCloseTo(10, 5);
+        expect(translation.y).toBeCloseTo(20, 5);
+    });
+});
+
 describe("ControlNode out-frame exclusivity", () => {
     it("is visible at outFrame - 1", () => {
         const control = new ControlNode("test", 0, 30);
