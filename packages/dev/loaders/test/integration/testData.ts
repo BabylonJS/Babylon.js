@@ -271,6 +271,7 @@ ROOT Root
         JOINT End
         {
             OFFSET 0.00 1.00 0.00
+            CHANNELS 3 Zrotation Yrotation Xrotation
             End Site
             {
                 OFFSET 0.00 0.50 0.00
@@ -281,4 +282,4 @@ ROOT Root
 MOTION
 Frames: 1
 Frame Time: 0.033333
-0.00 0.00 0.00 45.00 0.00 0.00 30.00 0.00 0.00`;
+0.00 0.00 0.00 45.00 0.00 0.00 30.00 0.00 0.00 0.00 0.00 0.00`;

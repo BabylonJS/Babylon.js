@@ -1,8 +1,34 @@
 import { test, expect, Page } from "@playwright/test";
 import { evaluateDisposeEngine, evaluateCreateScene, evaluateInitEngine, getGlobalConfig, logPageErrors } from "@tools/test-tools";
 import { type IAnimationKey } from "core/Animations/animationKey";
-import { Constants } from "core/Engines";
-import { GetMimeType } from "core/Misc/fileTools";
+
+// Constants and helpers mirrored locally to avoid importing core source files through Playwright's Babel
+// (which cannot handle TypeScript `declare` class fields in the core source tree).
+const UNSIGNED_BYTE = 5121; // Constants.UNSIGNED_BYTE
+
+/** Lightweight MIME type inference from a URI, replacing core's GetMimeType for Node.js-side assertions. */
+function getMimeTypeFromUri(uri: string): string | undefined {
+    // Check for data URI
+    const dataMatch = uri.match(/^data:([^;,]+)/);
+    if (dataMatch) {
+        return dataMatch[1] || undefined;
+    }
+    const lastDot = uri.lastIndexOf(".");
+    if (lastDot === -1) return undefined;
+    const ext = uri.substring(lastDot + 1).toLowerCase();
+    const mimeMap: Record<string, string> = {
+        glb: "model/gltf-binary",
+        gltf: "model/gltf+json",
+        bin: "application/octet-stream",
+        png: "image/png",
+        jpg: "image/jpeg",
+        jpeg: "image/jpeg",
+        webp: "image/webp",
+        ktx2: "image/ktx2",
+        avif: "image/avif",
+    };
+    return mimeMap[ext];
+}
 
 declare const BABYLON: typeof import("core/index") &
     typeof import("serializers/index") & {
@@ -553,7 +579,7 @@ test.describe("Babylon glTF Serializer", () => {
 
         test.describe("exporting instances", () => {
             const instanceCount = 3;
-            const test = async (instanceCount: number, skipSource: boolean) => {
+            const exportInstances = async (instanceCount: number, skipSource: boolean) => {
                 const shouldExportNode = (node: any) => !skipSource || node.name !== "box";
                 const mesh = BABYLON.MeshBuilder.CreateBox("box", {}, window.scene!);
                 for (let i = 0; i < instanceCount; i++) {
@@ -565,7 +591,7 @@ test.describe("Babylon glTF Serializer", () => {
             };
 
             test("exports one mesh that is shared by all instances", async () => {
-                const assertionData = await page.evaluate(test, instanceCount, false);
+                const assertionData = await page.evaluate(exportInstances, instanceCount, false);
                 expect(assertionData.nodes).toHaveLength(instanceCount + 1);
                 expect(assertionData.meshes).toHaveLength(1);
                 for (const node of assertionData.nodes) {
@@ -574,7 +600,7 @@ test.describe("Babylon glTF Serializer", () => {
             });
 
             test("can export instances without their source mesh", async () => {
-                const assertionData = await page.evaluate(test, instanceCount, true);
+                const assertionData = await page.evaluate(exportInstances, instanceCount, true);
                 expect(assertionData.nodes).toHaveLength(instanceCount);
                 expect(assertionData.meshes).toHaveLength(1);
                 for (const node of assertionData.nodes) {
@@ -751,7 +777,7 @@ test.describe("Babylon glTF Serializer", () => {
 
             expect(assertionData.meshes.every((mesh: any) => mesh.primitives[0].attributes.JOINTS_0 === jointAccessor)).toBe(true);
             expect(accessorData.type).toEqual("VEC4");
-            expect(accessorData.componentType).toEqual(Constants.UNSIGNED_BYTE);
+            expect(accessorData.componentType).toEqual(UNSIGNED_BYTE);
         });
 
         test.describe("texture image extensions", () => {
@@ -772,7 +798,7 @@ test.describe("Babylon glTF Serializer", () => {
                 expect(imageIndex).toBeDefined();
                 const image = assertionData.images[imageIndex];
                 expect(image).toBeDefined();
-                const mime = image.mimeType || GetMimeType(image.uri);
+                const mime = image.mimeType || getMimeTypeFromUri(image.uri);
                 expect(mime).toEqual(mimeType);
             };
             test("uses KHR_texture_basisu to export a KTX2 image", async () => {
