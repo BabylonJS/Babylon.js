@@ -18,6 +18,15 @@ import {
 
 declare const BABYLON: typeof import("core/index") & typeof import("loaders/index");
 
+declare global {
+    interface Window {
+        BABYLON: typeof BABYLON;
+        engine: InstanceType<typeof BABYLON.Engine> | null;
+        scene: InstanceType<typeof BABYLON.Scene> | null;
+        canvas: HTMLCanvasElement;
+    }
+}
+
 const debug = process.env.DEBUG === "true";
 
 type GLTFOptions = NonNullable<ConstructorParameters<typeof GLTFFileLoader>[0]>;
@@ -194,7 +203,7 @@ test.describe("Babylon Scene Loader", function () {
                 promises.push(
                     BABYLON.SceneLoader.AppendAsync("https://playground.babylonjs.com/scenes/BoomBox/", "BoomBox.gltf", window.scene).then(() => {
                         ready = true;
-                        const filteredTextures = window.scene?.textures.filter((texture) => texture !== window.scene?.environmentBRDFTexture);
+                        const filteredTextures = window.scene?.textures.filter((texture: any) => texture !== window.scene?.environmentBRDFTexture);
                         return {
                             parsedCount,
                             meshCount,
@@ -258,15 +267,15 @@ test.describe("Babylon Scene Loader", function () {
             const assertionData = await page.evaluate(() => {
                 const promises = new Array<Promise<any>>();
                 window.engine!.runRenderLoop(() => {
-                    const nonReadyMeshes = window.scene!.meshes.filter((mesh) => mesh.getTotalVertices() !== 0);
+                    const nonReadyMeshes = window.scene!.meshes.filter((mesh: any) => mesh.getTotalVertices() !== 0);
                     if (nonReadyMeshes.length > 0 && promises.length === 0) {
-                        promises.push(Promise.resolve(nonReadyMeshes.map((mesh) => mesh.isEnabled())));
+                        promises.push(Promise.resolve(nonReadyMeshes.map((mesh: any) => mesh.isEnabled())));
                     }
                 });
 
                 const promise = BABYLON.SceneLoader.AppendAsync("https://playground.babylonjs.com/scenes/BoomBox/", "BoomBox.gltf", window.scene).then(() => {
                     window.engine!.stopRenderLoop();
-                    promises.push(Promise.resolve(window.scene!.meshes.filter((mesh) => mesh.getTotalVertices() !== 0).map((mesh) => mesh.isEnabled())));
+                    promises.push(Promise.resolve(window.scene!.meshes.filter((mesh: any) => mesh.getTotalVertices() !== 0).map((mesh: any) => mesh.isEnabled())));
                 });
                 return promise.then(() => Promise.all(promises));
             });
@@ -301,8 +310,8 @@ test.describe("Babylon Scene Loader", function () {
 
                 // this will wait for the scene to be ready
                 await promise;
-                const enabledMeshes = window.scene!.meshes.filter((mesh) => mesh.material && mesh.isEnabled());
-                enabledMeshes.forEach((mesh) => {
+                const enabledMeshes = window.scene!.meshes.filter((mesh: any) => mesh.material && mesh.isEnabled());
+                enabledMeshes.forEach((mesh: any) => {
                     promises.push(Promise.resolve(mesh.isReady(true)));
                 });
                 const data = await Promise.all(promises);
@@ -325,10 +334,10 @@ test.describe("Babylon Scene Loader", function () {
                 return BABYLON.SceneLoader.AppendAsync("https://playground.babylonjs.com/scenes/BrainStem/", "BrainStem.gltf", window.scene).then(() => {
                     // With compileMaterials=true, all meshes with materials should be ready
                     // immediately after loading completes — no deferred compilation needed.
-                    const enabledMeshes = window.scene!.meshes.filter((mesh) => mesh.material && mesh.isEnabled());
+                    const enabledMeshes = window.scene!.meshes.filter((mesh: any) => mesh.material && mesh.isEnabled());
                     return {
                         meshCount: enabledMeshes.length,
-                        allReady: enabledMeshes.every((mesh) => mesh.isReady(true)),
+                        allReady: enabledMeshes.every((mesh: any) => mesh.isReady(true)),
                     };
                 });
             });
@@ -429,8 +438,8 @@ test.describe("Babylon Scene Loader", function () {
                 return promise
                     .then(() => window.scene!.whenReadyAsync())
                     .then(() => {
-                        const enabledMeshes = window.scene!.meshes.filter((mesh) => mesh.material && mesh.isEnabled());
-                        enabledMeshes.forEach((mesh) => {
+                        const enabledMeshes = window.scene!.meshes.filter((mesh: any) => mesh.material && mesh.isEnabled());
+                        enabledMeshes.forEach((mesh: any) => {
                             promises.push(Promise.resolve({ [mesh.name]: mesh.isReady(true) }));
                         });
                     })
@@ -577,7 +586,7 @@ test.describe("Babylon Scene Loader", function () {
                         return {
                             meshes: result.meshes.length,
                             node: node instanceof BABYLON.TransformNode,
-                            nodeChildren: node?.getChildren().map((c) => {
+                            nodeChildren: node?.getChildren().map((c: any) => {
                                 return {
                                     child: c instanceof BABYLON.Mesh,
                                     geometry: !!(c as any).geometry,
@@ -605,7 +614,7 @@ test.describe("Babylon Scene Loader", function () {
                     return {
                         skeletons: result.skeletons.length,
                         node1: node1 instanceof BABYLON.TransformNode,
-                        node1Children: node1!.getChildren().map((c) => {
+                        node1Children: node1!.getChildren().map((c: any) => {
                             return {
                                 child: c instanceof BABYLON.Mesh,
                                 skeleton: !!(c as any).skeleton,
@@ -620,7 +629,7 @@ test.describe("Babylon Scene Loader", function () {
             expect(assertionData["node1"]).toBe(true);
             expect(assertionData["node1Children"]).toHaveLength(59);
 
-            assertionData["node1Children"].forEach((child) => {
+            assertionData["node1Children"].forEach((child: any) => {
                 expect(child).toEqual({ child: true, skeleton: true, skeletonName: true });
             });
         });
@@ -870,7 +879,7 @@ test.describe("Babylon Scene Loader", function () {
                         rootBoneName: rootBone.name,
                         childBoneName: childBone.name,
                         rootAnimations: rootBone.animations.length,
-                        rootAnimationTypes: rootBone.animations.map((anim) => ({
+                        rootAnimationTypes: rootBone.animations.map((anim: any) => ({
                             targetProperty: anim.targetProperty,
                             frameRate: anim.framePerSecond,
                             loopMode: anim.loopMode,
@@ -920,13 +929,13 @@ test.describe("Babylon Scene Loader", function () {
                         const rootBone = skeleton.bones[0];
                         return {
                             skeletonBones: skeleton.bones.length,
-                            rootAnimations: rootBone.animations.map((anim) => ({
+                            rootAnimations: rootBone.animations.map((anim: any) => ({
                                 name: anim.name,
                                 loopMode: anim.loopMode,
                                 numFrames: anim.getKeys().length,
                                 targetProperty: anim.targetProperty,
                             })),
-                            boneHierarchy: skeleton.bones.map((bone) => ({
+                            boneHierarchy: skeleton.bones.map((bone: any) => ({
                                 name: bone.name,
                                 parentName: bone.getParent()?.name || null,
                             })),
@@ -938,7 +947,7 @@ test.describe("Babylon Scene Loader", function () {
 
             expect(assertionData.skeletonBones).toBeGreaterThan(0);
             // Verify all animations use the custom loop mode
-            assertionData.rootAnimations.forEach((anim) => {
+            assertionData.rootAnimations.forEach((anim: any) => {
                 expect(anim.loopMode).toBe(ANIMATIONLOOPMODE_RELATIVE);
             });
             // Verify bone hierarchy is properly constructed
@@ -952,13 +961,13 @@ test.describe("Babylon Scene Loader", function () {
                 return BABYLON.ImportMeshAsync("data:" + content, scene, { pluginExtension: ".bvh" }).then(() => {
                     const skeleton = scene.skeletons[0];
                     // Find bones that represent end sites (typically have no children)
-                    const endSites = skeleton.bones.filter((bone) => {
-                        return !skeleton.bones.some((otherBone) => otherBone.getParent() === bone);
+                    const endSites = skeleton.bones.filter((bone: any) => {
+                        return !skeleton.bones.some((otherBone: any) => otherBone.getParent() === bone);
                     });
                     return {
                         totalBones: skeleton.bones.length,
                         endSiteBones: endSites.length,
-                        endSiteAnimations: endSites.reduce((count, bone) => count + bone.animations.length, 0),
+                        endSiteAnimations: endSites.reduce((count: number, bone: any) => count + bone.animations.length, 0),
                     };
                 });
             }, bvhBasicRaw);
@@ -976,15 +985,15 @@ test.describe("Babylon Scene Loader", function () {
                     const bones = skeleton.bones;
                     return {
                         numBones: bones.length,
-                        boneNames: bones.map((bone) => bone.name),
-                        boneHierarchy: bones.map((bone) => ({
+                        boneNames: bones.map((bone: any) => bone.name),
+                        boneHierarchy: bones.map((bone: any) => ({
                             name: bone.name,
                             parentName: bone.getParent()?.name || null,
                         })),
-                        animations: bones.map((bone) => ({
+                        animations: bones.map((bone: any) => ({
                             name: bone.name,
                             numAnimations: bone.animations.length,
-                            animationTypes: bone.animations.map((anim) => anim.targetProperty),
+                            animationTypes: bone.animations.map((anim: any) => anim.targetProperty),
                             numFrames: bone.animations.length > 0 ? bone.animations[0].getKeys().length : 0,
                         })),
                     };
@@ -1263,8 +1272,8 @@ test.describe("Babylon Scene Loader", function () {
         test("should not leak base64 data URIs into texture url or name for glTF with embedded images", async () => {
             const assertionData = await page.evaluate((data) => {
                 return BABYLON.SceneLoader.ImportMeshAsync("", "", `data:${data}`, window.scene, undefined, ".gltf").then(() => {
-                    const textures = window.scene!.textures.filter((t) => t !== window.scene!.environmentBRDFTexture);
-                    return textures.map((t) => ({
+                    const textures = window.scene!.textures.filter((t: any) => t !== window.scene!.environmentBRDFTexture);
+                    return textures.map((t: any) => ({
                         urlContainsBase64Payload: ((t as any).url || "").indexOf(";base64,") !== -1,
                         nameContainsBase64Payload: t.name.indexOf(";base64,") !== -1,
                     }));
@@ -1510,10 +1519,10 @@ test.describe("Babylon Scene Loader", function () {
                             onMaterialLoaded: (material) => {
                                 materialCount++;
                             },
-                            onMeshLoaded: (mesh) => {
+                            onMeshLoaded: (mesh: any) => {
                                 meshCount++;
                             },
-                            onTextureLoaded: (texture) => {
+                            onTextureLoaded: (texture: any) => {
                                 textureCount++;
                             },
                         },
