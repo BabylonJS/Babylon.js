@@ -1,5 +1,4 @@
 import {
-    type RawBezier,
     type RawElement,
     type RawFont,
     type RawPathShape,
@@ -8,7 +7,7 @@ import {
     type RawTextData,
     type RawTextDocument,
 } from "../parsing/rawTypes";
-import { GetAllVectorKeyframeValues } from "../parsing/rawPropertyHelpers";
+import { GetAllVectorKeyframeValues, GetAllBezierKeyframeData } from "../parsing/rawPropertyHelpers";
 
 /**
  * Represents a bounding box for a shape in the animation.
@@ -166,39 +165,43 @@ function GetRectangleVertices(boxCorners: Corners, rect: RawRectangleShape): voi
 }
 
 function GetPathVertices(boxCorners: Corners, path: RawPathShape): void {
-    const bezier = path.ks.k as RawBezier;
-    const vertices = bezier.v;
-    const inTangents = bezier.i;
-    const outTangents = bezier.o;
+    const allBeziers = GetAllBezierKeyframeData(path.ks);
 
-    // Check the control points of the path
-    for (let i = 0; i < vertices.length; i++) {
-        UpdateBoxCorners(boxCorners, vertices[i][0], vertices[i][1]);
-    }
+    for (let b = 0; b < allBeziers.length; b++) {
+        const bezier = allBeziers[b];
+        const vertices = bezier.v;
+        const inTangents = bezier.i;
+        const outTangents = bezier.o;
 
-    for (let i = 0; i < vertices.length; i++) {
-        // Skip last point if the path is not closed
-        if (!bezier.c && i === vertices.length - 1) {
-            continue;
+        // Check the control points of the path
+        for (let i = 0; i < vertices.length; i++) {
+            UpdateBoxCorners(boxCorners, vertices[i][0], vertices[i][1]);
         }
 
-        const start = vertices[i];
-        const end = i === vertices.length - 1 ? vertices[0] : vertices[i + 1];
-        const outTangent = outTangents[i];
-        const inTangent = i === vertices.length - 1 ? inTangents[0] : inTangents[i + 1];
+        for (let i = 0; i < vertices.length; i++) {
+            // Skip last point if the path is not closed
+            if (!bezier.c && i === vertices.length - 1) {
+                continue;
+            }
 
-        // Calculate the points where the tangent is zero
-        CalculatePointsWithTangentZero(
-            boxCorners,
-            start[0],
-            start[1],
-            end[0],
-            end[1],
-            start[0] + outTangent[0],
-            start[1] + outTangent[1],
-            end[0] + inTangent[0],
-            end[1] + inTangent[1]
-        );
+            const start = vertices[i];
+            const end = i === vertices.length - 1 ? vertices[0] : vertices[i + 1];
+            const outTangent = outTangents[i];
+            const inTangent = i === vertices.length - 1 ? inTangents[0] : inTangents[i + 1];
+
+            // Calculate the points where the tangent is zero
+            CalculatePointsWithTangentZero(
+                boxCorners,
+                start[0],
+                start[1],
+                end[0],
+                end[1],
+                start[0] + outTangent[0],
+                start[1] + outTangent[1],
+                end[0] + inTangent[0],
+                end[1] + inTangent[1]
+            );
+        }
     }
 }
 

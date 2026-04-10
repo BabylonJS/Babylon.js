@@ -6,7 +6,6 @@ import { type IVector2Like } from "core/Maths/math.like";
 import { ThinTexture } from "core/Materials/Textures/thinTexture";
 
 import {
-    type RawBezier,
     type RawElement,
     type RawFillShape,
     type RawFont,
@@ -17,7 +16,7 @@ import {
     type RawTextData,
     type RawTextDocument,
 } from "./rawTypes";
-import { GetInitialVectorValues } from "./rawPropertyHelpers";
+import { GetInitialVectorValues, GetInitialBezierData } from "./rawPropertyHelpers";
 
 import { type BoundingBox, GetShapesBoundingBox, GetTextBoundingBox } from "../maths/boundingBox";
 
@@ -391,7 +390,10 @@ export class SpritePacker {
     private _drawPath(shape: RawPathShape, boundingBox: BoundingBox): void {
         // The path data has to be translated to the center of the bounding box
         // If the paths have stroke, we need to account for the stroke width
-        const pathData = shape.ks.k as RawBezier;
+        const pathData = GetInitialBezierData(shape.ks);
+        if (!pathData) {
+            return;
+        }
         const xTranslate = boundingBox.centerX - Math.ceil(boundingBox.strokeInset);
         const yTranslate = boundingBox.centerY - Math.ceil(boundingBox.strokeInset);
 
