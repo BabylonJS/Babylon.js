@@ -8,6 +8,7 @@ import {
     type RawTextData,
     type RawTextDocument,
 } from "../parsing/rawTypes";
+import { GetAllVectorKeyframeValues } from "../parsing/rawPropertyHelpers";
 
 /**
  * Represents a bounding box for a shape in the animation.
@@ -149,14 +150,19 @@ export function GetTextBoundingBox(
 }
 
 function GetRectangleVertices(boxCorners: Corners, rect: RawRectangleShape): void {
-    const size = rect.s.k as number[];
-    const position = rect.p.k as number[];
+    const allSizes = GetAllVectorKeyframeValues(rect.s);
+    const allPositions = GetAllVectorKeyframeValues(rect.p);
 
-    // Calculate the four corners of the rectangle
-    UpdateBoxCorners(boxCorners, position[0] - size[0] / 2, position[1] - size[1] / 2);
-    UpdateBoxCorners(boxCorners, position[0] + size[0] / 2, position[1] - size[1] / 2);
-    UpdateBoxCorners(boxCorners, position[0] + size[0] / 2, position[1] + size[1] / 2);
-    UpdateBoxCorners(boxCorners, position[0] - size[0] / 2, position[1] + size[1] / 2);
+    for (let si = 0; si < allSizes.length; si++) {
+        const size = allSizes[si];
+        for (let pi = 0; pi < allPositions.length; pi++) {
+            const position = allPositions[pi];
+            UpdateBoxCorners(boxCorners, position[0] - size[0] / 2, position[1] - size[1] / 2);
+            UpdateBoxCorners(boxCorners, position[0] + size[0] / 2, position[1] - size[1] / 2);
+            UpdateBoxCorners(boxCorners, position[0] + size[0] / 2, position[1] + size[1] / 2);
+            UpdateBoxCorners(boxCorners, position[0] - size[0] / 2, position[1] + size[1] / 2);
+        }
+    }
 }
 
 function GetPathVertices(boxCorners: Corners, path: RawPathShape): void {
