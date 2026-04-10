@@ -16,7 +16,7 @@ import {
     type RawTextData,
     type RawTextDocument,
 } from "./rawTypes";
-import { GetInitialVectorValues, GetInitialBezierData } from "./rawPropertyHelpers";
+import { GetInitialScalarValue, GetInitialVectorValues, GetInitialBezierData } from "./rawPropertyHelpers";
 
 import { type BoundingBox, GetShapesBoundingBox, GetTextBoundingBox } from "../maths/boundingBox";
 
@@ -374,7 +374,7 @@ export class SpritePacker {
     private _drawRectangle(shape: RawRectangleShape, boundingBox: BoundingBox): void {
         const size = GetInitialVectorValues(shape.s);
         const position = GetInitialVectorValues(shape.p);
-        const radius = shape.r.k as number;
+        const radius = GetInitialScalarValue(shape.r);
 
         // Translate to the correct position within the atlas cell, same as paths use centerX/centerY
         const x = position[0] - size[0] / 2 + boundingBox.centerX - Math.ceil(boundingBox.strokeInset);

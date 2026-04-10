@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { GetInitialVectorValues, GetInitialBezierData } from "../../src/parsing/rawPropertyHelpers";
-import type { RawBezier, RawBezierShapeProperty, RawPositionProperty, RawVectorProperty } from "../../src/parsing/rawTypes";
+import { GetInitialScalarValue, GetInitialVectorValues, GetInitialBezierData } from "../../src/parsing/rawPropertyHelpers";
+import type { RawBezier, RawBezierShapeProperty, RawPositionProperty, RawScalarProperty, RawVectorProperty } from "../../src/parsing/rawTypes";
 
 function makeBezier(vertices: number[][]): RawBezier {
     return {
@@ -63,5 +63,28 @@ describe("GetInitialBezierData", () => {
     it("returns undefined for animated with empty keyframes", () => {
         const property: RawBezierShapeProperty = { a: 1, k: [] };
         expect(GetInitialBezierData(property)).toBeUndefined();
+    });
+});
+
+describe("GetInitialScalarValue", () => {
+    it("returns static value when not animated", () => {
+        const property: RawScalarProperty = { a: 0, k: 8 };
+        expect(GetInitialScalarValue(property)).toBe(8);
+    });
+
+    it("returns first keyframe value when animated", () => {
+        const property: RawScalarProperty = {
+            a: 1,
+            k: [
+                { t: 0, s: [5] },
+                { t: 30, s: [25] },
+            ],
+        };
+        expect(GetInitialScalarValue(property)).toBe(5);
+    });
+
+    it("returns default value when animated with empty keyframes", () => {
+        const property: RawScalarProperty = { a: 1, k: [] };
+        expect(GetInitialScalarValue(property, 0)).toBe(0);
     });
 });
