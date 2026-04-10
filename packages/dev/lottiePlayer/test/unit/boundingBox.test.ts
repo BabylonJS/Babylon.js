@@ -43,32 +43,16 @@ describe("GetShapesBoundingBox - rectangles", () => {
         expect(box.offsetY).toBe(30);
     });
 
-    it("computes union bounding box for animated rectangle size", () => {
+    it("uses initial keyframe for animated rectangle size", () => {
         const rect = makeAnimatedSizeRect([0, 0], [
             { t: 0, s: [10, 10] },
             { t: 30, s: [50, 50] },
         ]);
         const box = GetShapesBoundingBox([rect as unknown as RawElement]);
 
-        // Union should encompass the largest size
-        expect(box.width).toBe(50);
-        expect(box.height).toBe(50);
-    });
-
-    it("computes union bounding box for animated rectangle with multiple sizes", () => {
-        const rect = makeAnimatedSizeRect([0, 0], [
-            { t: 0, s: [20, 10] },
-            { t: 15, s: [10, 40] },
-            { t: 30, s: [30, 20] },
-        ]);
-        const box = GetShapesBoundingBox([rect as unknown as RawElement]);
-
-        // Union should encompass max width (30) from all sizes and max height (40)
-        // Width = max(20, 10, 30) = 30, but the bounding box is center-based:
-        // half-widths: 10, 5, 15 → max extent right = 15, left = -15 → width = 30
-        // half-heights: 5, 20, 10 → max extent down = 20, up = -20 → height = 40
-        expect(box.width).toBe(30);
-        expect(box.height).toBe(40);
+        // Uses first keyframe size (animated shape properties are not played back at runtime)
+        expect(box.width).toBe(10);
+        expect(box.height).toBe(10);
     });
 });
 
@@ -111,7 +95,7 @@ describe("GetShapesBoundingBox - paths", () => {
         expect(box.height).toBe(10);
     });
 
-    it("computes union bounding box for animated path", () => {
+    it("uses initial keyframe for animated path", () => {
         const path: RawPathShape = {
             ty: "sh",
             d: 1,
@@ -126,9 +110,9 @@ describe("GetShapesBoundingBox - paths", () => {
 
         const box = GetShapesBoundingBox([path as unknown as RawElement]);
 
-        // Union should encompass the 20x20 square
-        expect(box.width).toBe(20);
-        expect(box.height).toBe(20);
+        // Uses first keyframe bezier (animated shape properties are not played back at runtime)
+        expect(box.width).toBe(10);
+        expect(box.height).toBe(10);
     });
 
     it("handles empty animated path keyframes without crashing", () => {

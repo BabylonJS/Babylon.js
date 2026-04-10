@@ -7,7 +7,7 @@ import {
     type RawTextData,
     type RawTextDocument,
 } from "../parsing/rawTypes";
-import { GetAllVectorKeyframeValues, GetAllBezierKeyframeData } from "../parsing/rawPropertyHelpers";
+import { GetInitialVectorValues, GetInitialBezierData } from "../parsing/rawPropertyHelpers";
 
 /**
  * Represents a bounding box for a shape in the animation.
@@ -149,59 +149,54 @@ export function GetTextBoundingBox(
 }
 
 function GetRectangleVertices(boxCorners: Corners, rect: RawRectangleShape): void {
-    const allSizes = GetAllVectorKeyframeValues(rect.s);
-    const allPositions = GetAllVectorKeyframeValues(rect.p);
+    const size = GetInitialVectorValues(rect.s);
+    const position = GetInitialVectorValues(rect.p);
 
-    for (let si = 0; si < allSizes.length; si++) {
-        const size = allSizes[si];
-        for (let pi = 0; pi < allPositions.length; pi++) {
-            const position = allPositions[pi];
-            UpdateBoxCorners(boxCorners, position[0] - size[0] / 2, position[1] - size[1] / 2);
-            UpdateBoxCorners(boxCorners, position[0] + size[0] / 2, position[1] - size[1] / 2);
-            UpdateBoxCorners(boxCorners, position[0] + size[0] / 2, position[1] + size[1] / 2);
-            UpdateBoxCorners(boxCorners, position[0] - size[0] / 2, position[1] + size[1] / 2);
-        }
-    }
+    // Calculate the four corners of the rectangle
+    UpdateBoxCorners(boxCorners, position[0] - size[0] / 2, position[1] - size[1] / 2);
+    UpdateBoxCorners(boxCorners, position[0] + size[0] / 2, position[1] - size[1] / 2);
+    UpdateBoxCorners(boxCorners, position[0] + size[0] / 2, position[1] + size[1] / 2);
+    UpdateBoxCorners(boxCorners, position[0] - size[0] / 2, position[1] + size[1] / 2);
 }
 
 function GetPathVertices(boxCorners: Corners, path: RawPathShape): void {
-    const allBeziers = GetAllBezierKeyframeData(path.ks);
+    const bezier = GetInitialBezierData(path.ks);
+    if (!bezier) {
+        return;
+    }
 
-    for (let b = 0; b < allBeziers.length; b++) {
-        const bezier = allBeziers[b];
-        const vertices = bezier.v;
-        const inTangents = bezier.i;
-        const outTangents = bezier.o;
+    const vertices = bezier.v;
+    const inTangents = bezier.i;
+    const outTangents = bezier.o;
 
-        // Check the control points of the path
-        for (let i = 0; i < vertices.length; i++) {
-            UpdateBoxCorners(boxCorners, vertices[i][0], vertices[i][1]);
+    // Check the control points of the path
+    for (let i = 0; i < vertices.length; i++) {
+        UpdateBoxCorners(boxCorners, vertices[i][0], vertices[i][1]);
+    }
+
+    for (let i = 0; i < vertices.length; i++) {
+        // Skip last point if the path is not closed
+        if (!bezier.c && i === vertices.length - 1) {
+            continue;
         }
 
-        for (let i = 0; i < vertices.length; i++) {
-            // Skip last point if the path is not closed
-            if (!bezier.c && i === vertices.length - 1) {
-                continue;
-            }
+        const start = vertices[i];
+        const end = i === vertices.length - 1 ? vertices[0] : vertices[i + 1];
+        const outTangent = outTangents[i];
+        const inTangent = i === vertices.length - 1 ? inTangents[0] : inTangents[i + 1];
 
-            const start = vertices[i];
-            const end = i === vertices.length - 1 ? vertices[0] : vertices[i + 1];
-            const outTangent = outTangents[i];
-            const inTangent = i === vertices.length - 1 ? inTangents[0] : inTangents[i + 1];
-
-            // Calculate the points where the tangent is zero
-            CalculatePointsWithTangentZero(
-                boxCorners,
-                start[0],
-                start[1],
-                end[0],
-                end[1],
-                start[0] + outTangent[0],
-                start[1] + outTangent[1],
-                end[0] + inTangent[0],
-                end[1] + inTangent[1]
-            );
-        }
+        // Calculate the points where the tangent is zero
+        CalculatePointsWithTangentZero(
+            boxCorners,
+            start[0],
+            start[1],
+            end[0],
+            end[1],
+            start[0] + outTangent[0],
+            start[1] + outTangent[1],
+            end[0] + inTangent[0],
+            end[1] + inTangent[1]
+        );
     }
 }
 
