@@ -41,6 +41,10 @@ function IsCameraFrameGraphTask(task: FrameGraphTask): task is FrameGraphTask & 
     return (task as Partial<{ camera: Camera }>).camera instanceof Camera;
 }
 
+function IsNodesSectionType(node: Node): boolean {
+    return node instanceof TransformNode || node instanceof Camera || node instanceof Light;
+}
+
 export const NodeExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplorerService, ISceneContext, IGizmoService, IWatcherService]> = {
     friendlyName: "Node Explorer",
     consumes: [SceneExplorerServiceIdentity, SceneContextIdentity, GizmoServiceIdentity, WatcherServiceIdentity],
@@ -58,18 +62,28 @@ export const NodeExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplore
             getRootEntities: () => {
                 const rootNodes = [...scene.rootNodes];
 
-                // If any non-root node has a parent and that parent is not one of the node types shown in the Nodes section,
-                // then we should treat it as a root node, otherwise it won't show up anywhere in scene explorer.
-                // An example of this is when a Mesh or a TransformNode is parented under a Bone.
+                // Ensure all nodes in the scene are reachable in the explorer, even if their
+                // parent was removed from the scene or is not a type shown in the Nodes section.
                 for (const node of [...scene.meshes, ...scene.transformNodes, ...scene.cameras, ...scene.lights]) {
-                    if (
-                        node.parent &&
-                        !(node.parent instanceof AbstractMesh) &&
-                        !(node.parent instanceof TransformNode) &&
-                        !(node.parent instanceof Camera) &&
-                        !(node.parent instanceof Light)
-                    ) {
+                    if (!node.parent) {
+                        continue;
+                    }
+
+                    if (!IsNodesSectionType(node.parent)) {
+                        // Parent is not a type shown in the Nodes section (e.g. a Bone).
+                        // Treat this node as a root so it still appears in the explorer.
                         rootNodes.push(node);
+                    } else {
+                        // Walk up through Nodes-section-type parents to find the topmost ancestor.
+                        // If that ancestor was removed from the scene (not in rootNodes), add it
+                        // so the entire subtree remains visible in the explorer.
+                        let ancestor: Node = node.parent;
+                        while (ancestor.parent && IsNodesSectionType(ancestor.parent)) {
+                            ancestor = ancestor.parent;
+                        }
+                        if (!rootNodes.includes(ancestor)) {
+                            rootNodes.push(ancestor);
+                        }
                     }
                 }
 
