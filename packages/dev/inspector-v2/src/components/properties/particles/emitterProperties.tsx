@@ -101,6 +101,9 @@ export const ParticleSystemEmitterProperties: FunctionComponent<{ particleSystem
 
     const particleEmitterType = useProperty(system, "particleEmitterType");
 
+    const meshEmitter = particleEmitterType instanceof MeshParticleEmitter ? particleEmitterType : undefined;
+    const useMeshNormalsForDirection = useProperty(meshEmitter, "useMeshNormalsForDirection");
+
     // Use a simple string key for the dropdown, but store an emitter-type instance in the engine.
     type EmitterTypeKey = "box" | "sphere" | "cone" | "cylinder" | "hemispheric" | "point" | "mesh";
 
@@ -277,6 +280,13 @@ export const ParticleSystemEmitterProperties: FunctionComponent<{ particleSystem
                                 />
                             ) : (
                                 <Property component={TextPropertyLine} propertyPath="source" label="Source" value="No meshes in scene." />
+                            )}
+                            <BoundProperty component={SwitchPropertyLine} label="Use normals for direction" target={particleEmitterType} propertyKey="useMeshNormalsForDirection" />
+                            {!useMeshNormalsForDirection && (
+                                <>
+                                    <BoundProperty component={Vector3PropertyLine} label="Direction1" target={particleEmitterType} propertyKey="direction1" />
+                                    <BoundProperty component={Vector3PropertyLine} label="Direction2" target={particleEmitterType} propertyKey="direction2" />
+                                </>
                             )}
                         </>
                     )}
