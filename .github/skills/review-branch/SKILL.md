@@ -1,6 +1,6 @@
 ---
-description: "Review code changes on the current branch, flag issues, and fix them. Trigger with: 'review my code', 'review this branch', 'do a code review'."
-mode: "agent"
+name: review-branch
+description: "Thorough code review of all changes on the current branch. Flags issues by severity (Critical/Warning/Nit) and fixes them. Use when: review my code, review this branch, do a code review, review branch changes, check my changes."
 ---
 
 # Branch Code Review

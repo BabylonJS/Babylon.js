@@ -86,4 +86,4 @@ For looking up and fixing bugs from GitHub issues, see `.github/instructions/fix
 
 ### Branch code review
 
-To review all changes on the current branch (committed or uncommitted), use the `review-branch` prompt. It performs a detailed review against all repo coding practices, flags issues by severity, and fixes them. See `.github/instructions/branch-review.instructions.md` for the review checklist.
+To review all changes on the current branch (committed or uncommitted), use the `review-branch` skill. It performs a detailed review against all repo coding practices, flags issues by severity, and fixes them. See `.github/instructions/branch-review.instructions.md` for the review checklist.
