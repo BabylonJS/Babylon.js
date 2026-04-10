@@ -4099,7 +4099,7 @@
         },
         {
             "title": "GPU Particles - Change - Size Range",
-            "playgroundId": "#4EWZJ9#0",
+            "playgroundId": "#HWD2PR#0",
             "referenceImage": "gpu-particles-change-size-range.png",
             "excludedEngines": ["webgl1"]
         },
@@ -4107,6 +4107,30 @@
             "title": "GPU Particles - Change - Color Range",
             "playgroundId": "#3M1JEJ#0",
             "referenceImage": "gpu-particles-change-color-range.png",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "GPU Particles - Change - Speed Range",
+            "playgroundId": "#JPPZGY#0",
+            "referenceImage": "gpu-particles-change-speed-range.png",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "GPU Particles - Change - Speed Limit Range",
+            "playgroundId": "#UQ1RMS#0",
+            "referenceImage": "gpu-particles-change-speed-limit-range.png",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "GPU Particles - Change - Angular Speed Range",
+            "playgroundId": "#MSX6FE#0",
+            "referenceImage": "gpu-particles-change-angular-speed-range.png",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "GPU Particles - Change - Drag Range",
+            "playgroundId": "#Q1JW04#0",
+            "referenceImage": "gpu-particles-change-drag-range.png",
             "excludedEngines": ["webgl1"]
         },
         {
