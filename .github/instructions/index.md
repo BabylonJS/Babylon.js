@@ -30,6 +30,7 @@ This directory contains instruction files that define coding practices, review r
 
 ## Workflows
 
+- **[branch-review.instructions.md](branch-review.instructions.md)** — Branch code review checklist, severity categories, and review scope rules for reviewing changes on the current branch.
 - **[fix-bug.instructions.md](fix-bug.instructions.md)** — Bug-fixing workflow: investigating GitHub issues, extracting repro details, and test-driven fixes.
 - **[pg.instructions.md](pg.instructions.md)** — Playground examples for new public APIs.
 - **[playground-workflow.instructions.md](playground-workflow.instructions.md)** — Writing Playground code, managing snippets, running local servers, and forcing WebGPU.
