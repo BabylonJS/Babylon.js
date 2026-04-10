@@ -1,12 +1,4 @@
-import {
-    type RawElement,
-    type RawFont,
-    type RawPathShape,
-    type RawRectangleShape,
-    type RawStrokeShape,
-    type RawTextData,
-    type RawTextDocument,
-} from "../parsing/rawTypes";
+import { type RawElement, type RawFont, type RawPathShape, type RawRectangleShape, type RawStrokeShape, type RawTextData, type RawTextDocument } from "../parsing/rawTypes";
 import { GetInitialVectorValues, GetInitialBezierData } from "../parsing/rawPropertyHelpers";
 
 /**
