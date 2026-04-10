@@ -1,12 +1,6 @@
 # Branch Code Review Instructions
 
-These instructions define how to perform a thorough code review of changes on the current branch. This review targets all changes relative to a base branch (default: `master`) — whether committed or uncommitted, authored by a human or an AI agent.
-
-## Review Scope
-
-1. **Start from the diff** — identify all files changed relative to the base branch using `git diff` (for uncommitted changes) and `git diff <base>..HEAD` (for committed changes).
-2. **Read the full changed files** — don't review the diff in isolation. Read the complete files to understand how the changes fit into the surrounding code.
-3. **Trace impact** — for any changed public API, class, function, or type, find callers and consumers across the workspace. Verify the changes don't break or degrade those call sites.
+These instructions define the review standards for a branch code review. They specify severity categories and the checklist of rules to enforce.
 
 ## Severity Categories
 
@@ -20,7 +14,7 @@ Classify every issue into one of these severity levels:
 
 ## Review Checklist
 
-Review the diff against **all** of the following. Read each instruction file to understand the full rules before checking:
+Review the diff against **all** of the following. For each item that references an instruction file, read that file in full before checking — it contains the detailed rules:
 
 1. **Correctness** — logic errors, off-by-one, null/undefined access, race conditions, unhandled edge cases.
 2. **Security** — injection, unsafe deserialization, prototype pollution, OWASP Top 10.

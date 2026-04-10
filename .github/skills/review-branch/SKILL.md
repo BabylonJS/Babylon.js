@@ -35,31 +35,11 @@ Combine the results into a deduplicated list of changed files. If there are no c
 - Read the full content of each changed file (not just the diff) to understand the surrounding context.
 - Also get the actual diff hunks (`git diff <base>...HEAD` and `git diff`) to know exactly what changed.
 
-### Step 3: Trace impact
+### Step 3: Review against the checklist
 
-For any changed public API, exported function, class, type, or interface:
+Read `.github/instructions/branch-review.instructions.md` for severity categories and the review checklist. Apply every check from that file to the changed code, and read each referenced instruction file in full before checking.
 
-- Use workspace search to find all callers and consumers of the changed code.
-- Verify the changes don't break or degrade those call sites.
-- Check if the changes introduce inconsistencies with how the code is used elsewhere.
-
-### Step 4: Review against the checklist
-
-Read `.github/instructions/branch-review.instructions.md` for the full review checklist and severity categories. Apply every check from that file to the changed code.
-
-In particular, for files under `packages/dev/`:
-
-- Read and enforce `.github/instructions/backcompat.instructions.md`
-- Read and enforce `.github/instructions/comments.instructions.md`
-- Read and enforce `.github/instructions/side-effect-imports.instructions.md` (for `packages/dev/core/src/`)
-- Read and enforce `.github/instructions/prohibited-apis.instructions.md`
-- Read and enforce `.github/instructions/performance.instructions.md`
-- Read and enforce `.github/instructions/tests.instructions.md`
-- Read and enforce `.github/instructions/entities.instructions.md`
-- Read and enforce `.github/instructions/gltf-extensions.instructions.md` (for glTF extension files)
-- Read and enforce `.github/instructions/inspector.instructions.md` (for inspector-v2 files)
-
-### Step 5: Run quality tools
+### Step 4: Run quality tools
 
 Run the repo's quality commands and capture any failures:
 
@@ -71,7 +51,7 @@ npm run test:unit
 
 Include any failures from these tools as additional issues in the review.
 
-### Step 6: Compile the issue list
+### Step 5: Compile the issue list
 
 Create a numbered list of all issues found. For each issue, record:
 
@@ -83,7 +63,7 @@ Create a numbered list of all issues found. For each issue, record:
 
 Sort by severity: Critical first, then Warning, then Nit.
 
-### Step 7: Present or fix
+### Step 6: Present or fix
 
 **If interactive mode:**
 
@@ -96,7 +76,7 @@ Sort by severity: Critical first, then Warning, then Nit.
 1. Fix all Critical and Warning issues. Fix Nit issues as well unless they are purely subjective.
 2. After fixing, re-run the quality tools (`format:check`, `lint:check`, `test:unit`) to verify the fixes don't introduce new problems.
 
-### Step 8: Present the summary table
+### Step 7: Present the summary table
 
 After all fixes are applied, present the final summary as a markdown table:
 
