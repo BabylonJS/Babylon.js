@@ -124,10 +124,12 @@ describe("GetShapesBoundingBox - paths", () => {
 
         const box = GetShapesBoundingBox([path as unknown as RawElement]);
 
-        // Empty keyframes produce no vertices, so corners stay at Infinity/-Infinity.
-        // The resulting dimensions are non-finite — callers must guard against this.
-        expect(box).toBeDefined();
-        expect(Number.isFinite(box.width)).toBe(false);
-        expect(Number.isFinite(box.height)).toBe(false);
+        // Empty keyframes produce no vertices — falls back to a zero-size bounding box
+        expect(box.width).toBe(0);
+        expect(box.height).toBe(0);
+        expect(box.offsetX).toBe(0);
+        expect(box.offsetY).toBe(0);
+        expect(box.centerX).toBe(0);
+        expect(box.centerY).toBe(0);
     });
 });

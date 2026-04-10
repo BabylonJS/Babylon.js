@@ -65,6 +65,19 @@ export function GetShapesBoundingBox(rawElements: RawElement[]): BoundingBox {
         }
     }
 
+    // If no vertices were added (e.g., empty animated keyframes), return a zero-size bounding box
+    if (!Number.isFinite(boxCorners.minX)) {
+        return {
+            width: 0,
+            height: 0,
+            centerX: 0,
+            centerY: 0,
+            offsetX: 0,
+            offsetY: 0,
+            strokeInset: 0,
+        };
+    }
+
     const width = boxCorners.maxX - boxCorners.minX;
     const height = boxCorners.maxY - boxCorners.minY;
 
