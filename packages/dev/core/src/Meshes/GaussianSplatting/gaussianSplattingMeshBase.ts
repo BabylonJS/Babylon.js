@@ -1115,13 +1115,13 @@ export class GaussianSplattingMeshBase extends Mesh {
                 const value = GaussianSplattingMeshBase._ValueNameToEnum(name);
                 if (value != PLYValue.UNDEFINED) {
                     // SH degree 1,2,3 or 4 for 9, 24, 45 or 72 values
-                    if (value >= PLYValue.SH_45) {
+                    if (value >= PLYValue.SH_71) {
                         shDegree = 4;
-                    } else if (value >= PLYValue.SH_24) {
+                    } else if (value >= PLYValue.SH_44) {
                         shDegree = Math.max(shDegree, 3);
-                    } else if (value >= PLYValue.SH_9) {
+                    } else if (value >= PLYValue.SH_23) {
                         shDegree = Math.max(shDegree, 2);
-                    } else if (value >= PLYValue.SH_0) {
+                    } else if (value >= PLYValue.SH_8) {
                         shDegree = Math.max(shDegree, 1);
                     }
                 }
