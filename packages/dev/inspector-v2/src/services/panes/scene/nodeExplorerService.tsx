@@ -56,15 +56,22 @@ export const NodeExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplore
 
         const nodeMovedObservable = new Observable<Node>();
 
+        // Set of all nodes known to be in the scene, rebuilt each time getRootEntities
+        // is called. Used by getEntityDisplayInfo to detect orphaned ancestor nodes.
+        const knownSceneNodes = new Set<Node>();
+
         const sectionRegistration = sceneExplorerService.addSection({
             displayName: "Nodes",
             order: DefaultSectionsOrder.Nodes,
             getRootEntities: () => {
                 const rootNodes = [...scene.rootNodes];
+                knownSceneNodes.clear();
 
                 // Ensure all nodes in the scene are reachable in the explorer, even if their
                 // parent was removed from the scene or is not a type shown in the Nodes section.
                 for (const node of [...scene.meshes, ...scene.transformNodes, ...scene.cameras, ...scene.lights]) {
+                    knownSceneNodes.add(node);
+
                     if (!node.parent) {
                         continue;
                     }
@@ -92,6 +99,7 @@ export const NodeExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplore
                 for (const light of scene.lights) {
                     if (light instanceof ClusteredLightContainer) {
                         for (const childLight of light.lights) {
+                            knownSceneNodes.add(childLight);
                             if (!childLight.parent && !rootNodes.includes(childLight)) {
                                 rootNodes.push(childLight);
                             }
@@ -109,10 +117,19 @@ export const NodeExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplore
 
                 const parentHookToken = watcherService.watchProperty(node, "parent", () => nodeMovedObservable.notifyObservers(node));
 
+                // A node is "not in the scene" if it is a Nodes-section type but is not
+                // a known scene node. This handles nodes that were removed from the scene
+                // but still appear because a descendant is in the scene. Nodes from the
+                // !IsNodesSectionType(parent) branch are unaffected because they always
+                // come from the scene's tracking lists. Clustered light children are also
+                // unaffected because they are added to knownSceneNodes explicitly.
+                const isNotInScene = IsNodesSectionType(node) && !knownSceneNodes.has(node);
+
                 return {
                     get name() {
                         return node.name || `Unnamed ${node.getClassName()}`;
                     },
+                    isNotInScene,
                     onChange: onChangeObservable,
                     dispose: () => {
                         nameHookToken.dispose();

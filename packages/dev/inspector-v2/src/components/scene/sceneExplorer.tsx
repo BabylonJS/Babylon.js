@@ -25,7 +25,16 @@ import {
     TreeItemLayout,
     treeItemLevelToken,
 } from "@fluentui/react-components";
-import { type FluentIcon, ArrowCollapseAllRegular, ArrowExpandAllRegular, createFluentIcon, FilterRegular, GlobeRegular, TextSortAscendingRegular } from "@fluentui/react-icons";
+import {
+    type FluentIcon,
+    ArrowCollapseAllRegular,
+    ArrowExpandAllRegular,
+    createFluentIcon,
+    FilterRegular,
+    GlobeRegular,
+    TextSortAscendingRegular,
+    WarningRegular,
+} from "@fluentui/react-icons";
 import { type ComponentType, type FunctionComponent, type KeyboardEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { type IDisposable, type IReadonlyObservable, type Nullable, type Scene } from "core/index";
@@ -77,6 +86,12 @@ export type EntityDisplayInfo = Partial<IDisposable> &
          * An observable that notifies when the display info (such as the name) changes.
          */
         onChange?: IReadonlyObservable<void>;
+
+        /**
+         * When true, indicates that this entity is not tracked by the scene but is shown
+         * in the Scene Explorer because a descendant entity is still in the scene.
+         */
+        isNotInScene?: boolean;
     }>;
 
 /**
@@ -462,6 +477,9 @@ const useStyles = makeStyles({
         outline: `${tokens.strokeWidthThick} solid ${tokens.colorBrandForeground1}`,
         outlineOffset: `-${tokens.strokeWidthThick}`,
     },
+    entityNameNotInScene: {
+        textDecorationLine: "line-through",
+    },
 });
 
 function GetCommandDescription(command: SceneExplorerCommand): string {
@@ -804,6 +822,13 @@ const EntityTreeItem: FunctionComponent<
                 >
                     <TreeItemLayout
                         iconBefore={entityItem.icon ? <entityItem.icon entity={entityItem.entity} /> : null}
+                        iconAfter={
+                            displayInfo.isNotInScene ? (
+                                <Tooltip content="This entity is not in the scene but is shown because a descendant is still in the scene." relationship="description">
+                                    <WarningRegular />
+                                </Tooltip>
+                            ) : undefined
+                        }
                         className={mergeClasses(
                             hasChildren ? classes.treeItemLayoutBranch : classes.treeItemLayoutLeaf,
                             compactMode ? classes.treeItemLayoutCompact : undefined,
@@ -822,7 +847,7 @@ const EntityTreeItem: FunctionComponent<
                         }}
                     >
                         <Tooltip content={name} relationship="description">
-                            <Body1 wrap={false} truncate>
+                            <Body1 wrap={false} truncate className={displayInfo.isNotInScene ? classes.entityNameNotInScene : undefined}>
                                 {name}
                             </Body1>
                         </Tooltip>
