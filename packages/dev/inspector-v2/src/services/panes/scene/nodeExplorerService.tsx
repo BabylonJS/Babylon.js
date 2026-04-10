@@ -123,13 +123,14 @@ export const NodeExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplore
                 // !IsNodesSectionType(parent) branch are unaffected because they always
                 // come from the scene's tracking lists. Clustered light children are also
                 // unaffected because they are added to knownSceneNodes explicitly.
-                const isNotInScene = IsNodesSectionType(node) && !knownSceneNodes.has(node);
+                const validationError =
+                    IsNodesSectionType(node) && !knownSceneNodes.has(node) ? "This entity is not in the scene but is shown because a descendant is still in the scene." : undefined;
 
                 return {
                     get name() {
                         return node.name || `Unnamed ${node.getClassName()}`;
                     },
-                    isNotInScene,
+                    validationError,
                     onChange: onChangeObservable,
                     dispose: () => {
                         nameHookToken.dispose();

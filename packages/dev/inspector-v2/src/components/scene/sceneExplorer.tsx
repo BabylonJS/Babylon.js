@@ -88,10 +88,10 @@ export type EntityDisplayInfo = Partial<IDisposable> &
         onChange?: IReadonlyObservable<void>;
 
         /**
-         * When true, indicates that this entity is not tracked by the scene but is shown
-         * in the Scene Explorer because a descendant entity is still in the scene.
+         * An optional validation error message for this entity. When present, the entity's
+         * icon is replaced with a warning icon whose tooltip displays this message.
          */
-        isNotInScene?: boolean;
+        validationError?: string;
     }>;
 
 /**
@@ -477,9 +477,6 @@ const useStyles = makeStyles({
         outline: `${tokens.strokeWidthThick} solid ${tokens.colorBrandForeground1}`,
         outlineOffset: `-${tokens.strokeWidthThick}`,
     },
-    entityNameNotInScene: {
-        textDecorationLine: "line-through",
-    },
 });
 
 function GetCommandDescription(command: SceneExplorerCommand): string {
@@ -822,8 +819,8 @@ const EntityTreeItem: FunctionComponent<
                 >
                     <TreeItemLayout
                         iconBefore={
-                            displayInfo.isNotInScene ? (
-                                <Tooltip content="This entity is not in the scene but is shown because a descendant is still in the scene." relationship="description">
+                            displayInfo.validationError ? (
+                                <Tooltip content={displayInfo.validationError} relationship="description">
                                     <WarningRegular />
                                 </Tooltip>
                             ) : entityItem.icon ? (
@@ -848,7 +845,7 @@ const EntityTreeItem: FunctionComponent<
                         }}
                     >
                         <Tooltip content={name} relationship="description">
-                            <Body1 wrap={false} truncate className={displayInfo.isNotInScene ? classes.entityNameNotInScene : undefined}>
+                            <Body1 wrap={false} truncate>
                                 {name}
                             </Body1>
                         </Tooltip>
