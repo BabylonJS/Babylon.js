@@ -330,7 +330,7 @@ export function BindIBLParameters(
                 }
             } else if (usePBR) {
                 // If we're using an irradiance map with a dominant direction assigned, set it.
-                if (defines.USEIRRADIANCEMAP && defines.USE_IRRADIANCE_DOMINANT_DIRECTION) {
+                if (defines.USEIRRADIANCEMAP && defines.USE_IRRADIANCE_DOMINANT_DIRECTION && reflectionTexture.irradianceTexture) {
                     ubo.updateVector3("vReflectionDominantDirection", reflectionTexture.irradianceTexture!._dominantDirection!);
                 }
             }

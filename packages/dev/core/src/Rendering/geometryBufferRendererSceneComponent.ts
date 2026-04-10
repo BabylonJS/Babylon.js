@@ -3,7 +3,7 @@ import { Scene } from "../scene";
 import { type ISceneComponent, SceneComponentConstants } from "../sceneComponent";
 import { type SmartArrayNoDuplicate } from "../Misc/smartArray";
 import { type RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
-import { GeometryBufferRenderer } from "./geometryBufferRenderer";
+import { GeometryBufferRenderer, type IGeometryBufferTextureTypeAndFormat } from "./geometryBufferRenderer";
 import { Constants } from "../Engines/constants";
 
 declare module "../scene" {
@@ -21,13 +21,14 @@ declare module "../scene" {
          * Enables a GeometryBufferRender and associates it with the scene
          * @param ratioOrDimensions defines the scaling ratio to apply to the renderer (1 by default which means same resolution). You can also directly pass a width and height for the generated textures
          * @param depthFormat Format of the depth texture (default: Constants.TEXTUREFORMAT_DEPTH16)
-         * @param textureTypesAndFormats The types and formats of textures to create as render targets. If not provided, all textures will be RGBA and float or half float, depending on the engine capabilities.
+         * @param textureTypesAndFormats The types, formats and optional sampling modes of textures to create as render targets.
+         * If not provided, all textures will be RGBA and float or half float, depending on the engine capabilities.
          * @returns the GeometryBufferRenderer
          */
         enableGeometryBufferRenderer(
             ratioOrDimensions?: number | { width: number; height: number },
             depthFormat?: number,
-            textureTypesAndFormats?: { [key: number]: { textureType: number; textureFormat: number } }
+            textureTypesAndFormats?: { [key: number]: IGeometryBufferTextureTypeAndFormat }
         ): Nullable<GeometryBufferRenderer>;
 
         /**
@@ -53,7 +54,7 @@ Object.defineProperty(Scene.prototype, "geometryBufferRenderer", {
 Scene.prototype.enableGeometryBufferRenderer = function (
     ratio: number | { width: number; height: number } = 1,
     depthFormat = Constants.TEXTUREFORMAT_DEPTH16,
-    textureTypesAndFormats?: { [key: number]: { textureType: number; textureFormat: number } }
+    textureTypesAndFormats?: { [key: number]: IGeometryBufferTextureTypeAndFormat }
 ): Nullable<GeometryBufferRenderer> {
     if (this._geometryBufferRenderer) {
         return this._geometryBufferRenderer;

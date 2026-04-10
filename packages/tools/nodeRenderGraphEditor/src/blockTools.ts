@@ -46,6 +46,7 @@ import { NodeRenderGraphComputeShaderBlock } from "core/FrameGraph/Node/Blocks/c
 import { NodeRenderGraphVolumetricLightingBlock } from "core/FrameGraph/Node/Blocks/PostProcesses/volumetricLightingBlock";
 import { NodeRenderGraphLightingVolumeBlock } from "core/FrameGraph/Node/Blocks/lightingVolumeBlock";
 import { NodeRenderGraphSelectionOutlineLayerBlock } from "core/FrameGraph/Node/Blocks/Layers/selectionOutlineLayerBlock";
+import { NodeRenderGraphIblShadowsRendererBlock } from "core/FrameGraph/Node/Blocks/Rendering/iblShadowsRendererBlock";
 
 /**
  * Static class for BlockTools
@@ -207,6 +208,9 @@ export class BlockTools {
             case "SelectionOutlineLayerBlock": {
                 return new NodeRenderGraphSelectionOutlineLayerBlock("Selection Outline Layer", frameGraph, scene);
             }
+            case "IblShadowsRendererBlock": {
+                return new NodeRenderGraphIblShadowsRendererBlock("IBL Shadows", frameGraph, scene);
+            }
         }
 
         return null;
@@ -251,6 +255,9 @@ export class BlockTools {
                 break;
             case NodeRenderGraphBlockConnectionPointTypes.TextureVelocity:
                 color = "#e55151";
+                break;
+            case NodeRenderGraphBlockConnectionPointTypes.TextureIrradiance:
+                color = "#e52151";
                 break;
             case NodeRenderGraphBlockConnectionPointTypes.TextureScreenDepth:
                 color = "#e55185";
@@ -317,6 +324,8 @@ export class BlockTools {
                 return NodeRenderGraphBlockConnectionPointTypes.TextureWorldPosition;
             case "TextureVelocity":
                 return NodeRenderGraphBlockConnectionPointTypes.TextureVelocity;
+            case "TextureIrradiance":
+                return NodeRenderGraphBlockConnectionPointTypes.TextureIrradiance;
             case "TextureScreenDepth":
                 return NodeRenderGraphBlockConnectionPointTypes.TextureScreenDepth;
             case "TextureLocalPosition":
@@ -362,6 +371,8 @@ export class BlockTools {
                 return "TextureReflectivity";
             case NodeRenderGraphBlockConnectionPointTypes.TextureWorldPosition:
                 return "TexturePosition";
+            case NodeRenderGraphBlockConnectionPointTypes.TextureIrradiance:
+                return "TextureIrradiance";
             case NodeRenderGraphBlockConnectionPointTypes.TextureVelocity:
                 return "TextureVelocity";
             case NodeRenderGraphBlockConnectionPointTypes.TextureScreenDepth:

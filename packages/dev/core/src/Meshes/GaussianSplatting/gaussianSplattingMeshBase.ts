@@ -1589,13 +1589,16 @@ export class GaussianSplattingMeshBase extends Mesh {
                 const cameraForward = e.data.cameraForward;
                 const cameraPosition = e.data.cameraPosition;
 
-                const vertexCountPadded = (positions.length / 4 + 15) & ~0xf;
+                depthMix = e.data.depthMix;
+
                 if (!positions || !cameraForward) {
-                    // Sanity check, it shouldn't happen!
-                    throw new Error("positions or camera info is not defined!");
+                    // Sort request arrived before positions were initialized — return the buffer unchanged so the main thread can unlock _canPostToWorker.
+                    self.postMessage({ depthMix, cameraId }, [depthMix.buffer]);
+                    return;
                 }
 
-                depthMix = e.data.depthMix;
+                const vertexCountPadded = (positions.length / 4 + 15) & ~0xf;
+
                 indices = new Uint32Array(depthMix.buffer);
                 floatMix = new Float32Array(depthMix.buffer);
 
@@ -1616,31 +1619,39 @@ export class GaussianSplattingMeshBase extends Mesh {
                     ];
                 };
 
-                if (partMatrices && partIndices) {
-                    // Precompute depth coefficients for each rig node
-                    const depthCoeffs = partMatrices.map((m) => computeDepthCoeffs(m));
+                try {
+                    if (partMatrices && partIndices) {
+                        // Precompute depth coefficients for each rig node
+                        const depthCoeffs = partMatrices.map((m) => computeDepthCoeffs(m));
 
-                    // NB: For performance reasons, we assume that part indices are valid
-                    const length = partIndices.length;
-                    for (let j = 0; j < vertexCountPadded; j++) {
-                        // NB: We need this 'min' because vertex array is padded, not partIndices
-                        const partIndex = partIndices[Math.min(j, length - 1)];
-                        const coeff = depthCoeffs[partIndex];
-                        floatMix[2 * j + 1] = coeff[0] * positions[4 * j + 0] + coeff[1] * positions[4 * j + 1] + coeff[2] * positions[4 * j + 2] + coeff[3];
-                        // instead of using minus to sort back to front, we use bitwise not operator to invert the order of indices
-                        // might not be faster but a minus sign implies a reference value that may not be enough and will decrease floatting precision
-                        indices[2 * j + 1] = ~indices[2 * j + 1];
+                        // NB: For performance reasons, we assume that part indices are valid
+                        const length = partIndices.length;
+                        for (let j = 0; j < vertexCountPadded; j++) {
+                            // NB: We need this 'min' because vertex array is padded, not partIndices
+                            const partIndex = partIndices[Math.min(j, length - 1)];
+                            const coeff = depthCoeffs[partIndex];
+                            floatMix[2 * j + 1] = coeff[0] * positions[4 * j + 0] + coeff[1] * positions[4 * j + 1] + coeff[2] * positions[4 * j + 2] + coeff[3];
+                            // instead of using minus to sort back to front, we use bitwise not operator to invert the order of indices
+                            // might not be faster but a minus sign implies a reference value that may not be enough and will decrease floatting precision
+                            indices[2 * j + 1] = ~indices[2 * j + 1];
+                        }
+                    } else {
+                        // Compute depth coefficients from global world matrix
+                        const [a, b, c, d] = computeDepthCoeffs(globalWorldMatrix);
+                        for (let j = 0; j < vertexCountPadded; j++) {
+                            floatMix[2 * j + 1] = a * positions[4 * j + 0] + b * positions[4 * j + 1] + c * positions[4 * j + 2] + d;
+                            indices[2 * j + 1] = ~indices[2 * j + 1];
+                        }
                     }
-                } else {
-                    // Compute depth coefficients from global world matrix
-                    const [a, b, c, d] = computeDepthCoeffs(globalWorldMatrix);
-                    for (let j = 0; j < vertexCountPadded; j++) {
-                        floatMix[2 * j + 1] = a * positions[4 * j + 0] + b * positions[4 * j + 1] + c * positions[4 * j + 2] + d;
-                        indices[2 * j + 1] = ~indices[2 * j + 1];
-                    }
+
+                    depthMix.sort();
+                } catch (sortError) {
+                    // Transient data inconsistency (e.g. partIndices/partMatrices mismatch during addPart/removePart rebuild).
+                    // Return the buffer unsorted so the main thread can unlock _canPostToWorker and retry next frame.
+                    // Logger is unavailable inside the worker — console is the only option.
+                    // eslint-disable-next-line no-console
+                    console.error("Gaussian splat sort worker encountered an error (will retry next frame):", sortError);
                 }
-
-                depthMix.sort();
 
                 self.postMessage({ depthMix, cameraId }, [depthMix.buffer]);
             }
@@ -2166,6 +2177,11 @@ export class GaussianSplattingMeshBase extends Mesh {
 
         this._worker.postMessage({ positions }, [positions.buffer]);
         this._onWorkerCreated(this._worker!);
+
+        this._worker.onerror = () => {
+            // If the worker throws an unhandled error, unlock the posting gate so the next frame can retry the sort.
+            this._canPostToWorker = true;
+        };
 
         this._worker.onmessage = (e) => {
             // Recompute vertexCountPadded in case _vertexCount has changed since the last update
