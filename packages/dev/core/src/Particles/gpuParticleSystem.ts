@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { type Immutable, type Nullable, type float, type DataArray } from "../types";
-import { type Color3Gradient, type IValueGradient, FactorGradient, ColorGradient, GradientHelper } from "../Misc/gradients";
+import { type Color3Gradient, type IValueGradient, type FactorGradient, ColorGradient, GradientHelper } from "../Misc/gradients";
 import { Observable } from "../Misc/observable";
 import { Vector3, Matrix, TmpVectors } from "../Maths/math.vector";
 import { Color4, TmpColors } from "../Maths/math.color";
@@ -675,13 +675,6 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
     /** @internal */
     public _dragGradientsTexture: RawTexture;
 
-    private _addFactorGradient(factorGradients: FactorGradient[], gradient: number, factor: number, factor2?: number) {
-        const valueGradient = new FactorGradient(gradient, factor, factor2);
-        factorGradients.push(valueGradient);
-
-        this._releaseBuffers();
-    }
-
     /**
      * Adds a new size gradient
      * @param gradient defines the gradient to use (between 0 and 1)
@@ -696,7 +689,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
 
         this._addFactorGradient(this._sizeGradients, gradient, factor, factor2);
 
-        this._refreshFactorGradient(this._sizeGradients, "_sizeGradientsTexture", true);
+        this._refreshFactorGradient(this._sizeGradients, "_sizeGradientsTexture");
 
         this._releaseBuffers();
 
@@ -715,21 +708,9 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         return this;
     }
 
-    private _refreshFactorGradient(factorGradients: Nullable<FactorGradient[]>, textureName: string, reorder = false) {
+    private _refreshFactorGradient(factorGradients: Nullable<FactorGradient[]>, textureName: string) {
         if (!factorGradients) {
             return;
-        }
-
-        if (reorder) {
-            factorGradients.sort((a, b) => {
-                if (a.gradient < b.gradient) {
-                    return -1;
-                } else if (a.gradient > b.gradient) {
-                    return 1;
-                }
-
-                return 0;
-            });
         }
 
         const that = this as any;
@@ -752,7 +733,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         }
 
         this._addFactorGradient(this._angularSpeedGradients, gradient, factor, factor2);
-        this._refreshFactorGradient(this._angularSpeedGradients, "_angularSpeedGradientsTexture", true);
+        this._refreshFactorGradient(this._angularSpeedGradients, "_angularSpeedGradientsTexture");
 
         this._releaseBuffers();
 
@@ -784,7 +765,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         }
 
         this._addFactorGradient(this._velocityGradients, gradient, factor, factor2);
-        this._refreshFactorGradient(this._velocityGradients, "_velocityGradientsTexture", true);
+        this._refreshFactorGradient(this._velocityGradients, "_velocityGradientsTexture");
 
         this._releaseBuffers();
 
@@ -816,7 +797,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         }
 
         this._addFactorGradient(this._limitVelocityGradients, gradient, factor, factor2);
-        this._refreshFactorGradient(this._limitVelocityGradients, "_limitVelocityGradientsTexture", true);
+        this._refreshFactorGradient(this._limitVelocityGradients, "_limitVelocityGradientsTexture");
 
         this._releaseBuffers();
 
@@ -848,7 +829,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         }
 
         this._addFactorGradient(this._dragGradients, gradient, factor, factor2);
-        this._refreshFactorGradient(this._dragGradients, "_dragGradientsTexture", true);
+        this._refreshFactorGradient(this._dragGradients, "_dragGradientsTexture");
 
         this._releaseBuffers();
 

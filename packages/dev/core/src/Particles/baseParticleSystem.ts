@@ -3,7 +3,7 @@ import { Vector2, Vector3 } from "../Maths/math.vector";
 import { type AbstractMesh } from "../Meshes/abstractMesh";
 import { type ImageProcessingConfiguration } from "../Materials/imageProcessingConfiguration";
 import { ImageProcessingConfigurationDefines } from "../Materials/imageProcessingConfiguration.defines";
-import { type ColorGradient, type FactorGradient, type Color3Gradient, type IValueGradient } from "../Misc/gradients";
+import { type ColorGradient, FactorGradient, type Color3Gradient, type IValueGradient } from "../Misc/gradients";
 import { type BoxParticleEmitter } from "../Particles/EmitterTypes/boxParticleEmitter";
 import { Constants } from "../Engines/constants";
 import { type BaseTexture } from "../Materials/Textures/baseTexture";
@@ -810,6 +810,48 @@ export class BaseParticleSystem implements IClipPlanesHolder {
 
     /** @internal */
     protected _reset() {}
+
+    /**
+     * Adds a new factor gradient to the given array, sorted by gradient value.
+     * @param factorGradients - The array of factor gradients to add to
+     * @param gradient - The gradient value (between 0 and 1)
+     * @param factor - The first factor value
+     * @param factor2 - Optional second factor value for per-particle randomization
+     */
+    protected _addFactorGradient(factorGradients: FactorGradient[], gradient: number, factor: number, factor2?: number) {
+        const newGradient = new FactorGradient(gradient, factor, factor2);
+        factorGradients.push(newGradient);
+
+        factorGradients.sort((a, b) => {
+            if (a.gradient < b.gradient) {
+                return -1;
+            } else if (a.gradient > b.gradient) {
+                return 1;
+            }
+
+            return 0;
+        });
+    }
+
+    /**
+     * Removes a factor gradient from the given array by its gradient value.
+     * @param factorGradients - The array of factor gradients to remove from
+     * @param gradient - The gradient value to match for removal
+     */
+    protected _removeFactorGradient(factorGradients: Nullable<FactorGradient[]>, gradient: number) {
+        if (!factorGradients) {
+            return;
+        }
+
+        let index = 0;
+        for (const factorGradient of factorGradients) {
+            if (factorGradient.gradient === gradient) {
+                factorGradients.splice(index, 1);
+                break;
+            }
+            index++;
+        }
+    }
 
     /**
      * @internal
