@@ -42,7 +42,7 @@ export class InputDisplayManager implements IDisplayManager {
         switch (inputBlock.type) {
             case NodeParticleBlockConnectionPointTypes.Color4: {
                 if (inputBlock.value) {
-                    color = inputBlock.value.toHexString();
+                    color = inputBlock.value.toHexString(true);
                     break;
                 }
             }
@@ -157,10 +157,9 @@ export class InputDisplayManager implements IDisplayManager {
                 case NodeParticleBlockConnectionPointTypes.Color4: {
                     const col4Value = inputBlock.value as Color4;
                     value = `(${col4Value.r.toFixed(2)}, ${col4Value.g.toFixed(2)}, ${col4Value.b.toFixed(2)}, ${col4Value.a.toFixed(2)})`;
-                    // Use black or white text for readability based on perceived luminance
+                    // Use black or white text for readability based on perceived luminance (ignore alpha)
                     const luminance = 0.3 * col4Value.r + 0.59 * col4Value.g + 0.11 * col4Value.b;
-                    const effectiveLuminance = luminance * col4Value.a + (1 - col4Value.a);
-                    const isDarkBackground = effectiveLuminance < 0.5;
+                    const isDarkBackground = luminance < 0.5;
                     contentArea.style.color = isDarkBackground ? "white" : "black";
                     break;
                 }

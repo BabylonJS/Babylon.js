@@ -4,14 +4,12 @@ import { type BaseTexture } from "core/Materials/Textures/baseTexture";
 import { type Nullable } from "core/types";
 import { Color3 } from "core/Maths/math.color";
 import { type IMaterialLoadingAdapter } from "./materialLoadingAdapter";
-import { Vector3 } from "core/Maths/math.vector";
 
 /**
  * Material Loading Adapter for OpenPBR materials that provides a unified OpenPBR-like interface.
  */
 export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
     private _material: OpenPBRMaterial;
-    private _extinctionCoefficient: Vector3 = Vector3.Zero();
 
     /**
      * Creates a new instance of the OpenPBRMaterialLoadingAdapter.
@@ -649,7 +647,9 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
      * Configures transmission for OpenPBR material.
      */
     public configureTransmission(): void {
-        // OpenPBR transmission will be configured differently when available
+        // Material is thin-walled until otherwise specified by the glTF volume extension.
+        this._material.geometryThinWalled = 1.0;
+        this._material.transmissionDepth = 0.0;
     }
 
     /**
@@ -658,13 +658,6 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
      */
     public set transmissionWeight(value: number) {
         this._material.transmissionWeight = value;
-        // If the transmission weight is greater than 0, let's check if the base color
-        // is set and use that for a surface tint in OpenPBR. This may later be
-        // overridden by the volume properties but, without volume, this will give us
-        // glTF compatibility in OpenPBR.
-        this._material.transmissionColor = this._material.baseColor;
-        this._material.transmissionColorTexture = this._material.baseColorTexture;
-        this._material.transmissionDepth = 0.0;
     }
 
     /**
@@ -699,10 +692,18 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
         return this._material.transmissionScatter;
     }
 
+    /**
+     * Sets the transmission scatter texture.
+     * @param value The transmission scatter texture or null
+     */
     public set transmissionScatterTexture(value: Nullable<BaseTexture>) {
         this._material.transmissionScatterTexture = value;
     }
 
+    /**
+     * Gets the transmission scatter texture.
+     * @returns The transmission scatter texture or null
+     */
     public get transmissionScatterTexture(): Nullable<BaseTexture> {
         return this._material.transmissionScatterTexture;
     }
@@ -789,6 +790,29 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
         this._material.backgroundRefractionTexture = value;
     }
 
+    // ========================================
+    // VOLUME PROPERTIES
+    // ========================================
+
+    public configureVolume(): void {
+        // If we're configuring volume, we assume the material is not thin-walled (i.e. it's volumetric).
+        this._material.geometryThinWalled = 0.0;
+    }
+
+    /**
+     * Sets whether the material is thin-walled (i.e. non-volumetric) or not.
+     */
+    public set geometryThinWalled(value: boolean) {
+        this._material.geometryThinWalled = value ? 1.0 : 0.0;
+    }
+
+    /**
+     * Gets whether the material is thin-walled (i.e. non-volumetric) or not.
+     */
+    public get geometryThinWalled(): boolean {
+        return this._material.geometryThinWalled ? true : false;
+    }
+
     /**
      * Sets the thickness texture.
      * @param value The thickness texture or null
@@ -814,41 +838,27 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
      * Configures subsurface properties for PBR material
      */
     public configureSubsurface(): void {
-        // TODO
-    }
-
-    /**
-     * Sets the extinction coefficient of the volume.
-     * @param value The extinction coefficient as a Vector3
-     */
-    public set extinctionCoefficient(value: Vector3) {
-        this._extinctionCoefficient = value;
-    }
-
-    /**
-     * Gets the extinction coefficient of the volume.
-     */
-    public get extinctionCoefficient(): Vector3 {
-        return this._extinctionCoefficient;
+        // glTF diffuse transmission is thin-walled (before volume extension is applied) will map to the subsurface slab and, without a
+        this._material.geometryThinWalled = 1.0;
+        this._material.subsurfaceScatterAnisotropy = 1.0;
     }
 
     /**
      * Sets the subsurface weight
      */
     public set subsurfaceWeight(value: number) {
-        // TODO
+        this._material.subsurfaceWeight = value;
     }
 
     public get subsurfaceWeight(): number {
-        // TODO
-        return 0;
+        return this._material.subsurfaceWeight;
     }
 
     /**
      * Sets the subsurface weight texture
      */
     public set subsurfaceWeightTexture(value: Nullable<BaseTexture>) {
-        // TODO
+        this._material.subsurfaceWeightTexture = value;
     }
 
     /**
@@ -856,7 +866,7 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
      * @param value The subsurface tint color as a Color3
      */
     public set subsurfaceColor(value: Color3) {
-        // TODO
+        this._material.subsurfaceColor = value;
     }
 
     /**
@@ -864,30 +874,31 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
      * @param value The subsurface tint texture or null
      */
     public set subsurfaceColorTexture(value: Nullable<BaseTexture>) {
-        // TODO
+        this._material.subsurfaceColorTexture = value;
+    }
+
+    private _diffuseTransmissionTint: Color3 = Color3.White();
+    private _diffuseTransmissionTintTexture: Nullable<BaseTexture> = null;
+
+    /**
+     * Sets the diffuse transmission tint of the material
+     */
+    public set diffuseTransmissionTint(value: Color3) {
+        this._diffuseTransmissionTint = value;
     }
 
     /**
-     * Sets the surface tint of the material (when using subsurface scattering)
+     * Gets the diffuse transmission tint of the material
      */
-    public set subsurfaceConstantTint(value: Color3) {
-        // There is no equivalent in OpenPBR
-        // Maybe multiply this by subsurfaceColor?
+    public get diffuseTransmissionTint(): Color3 {
+        return this._diffuseTransmissionTint;
     }
 
     /**
-     * Gets the surface tint of the material (when using subsurface scattering)
+     * Sets the diffuse transmission tint texture of the material
      */
-    public get subsurfaceConstantTint(): Color3 {
-        return Color3.White();
-    }
-
-    /**
-     * Sets the surface tint texture of the material (when using subsurface scattering)
-     */
-    public set subsurfaceConstantTintTexture(value: Nullable<BaseTexture>) {
-        // There is no equivalent in OpenPBR
-        // Maybe multiply this by subsurfaceColorTexture?
+    public set diffuseTransmissionTintTexture(value: Nullable<BaseTexture>) {
+        this._diffuseTransmissionTintTexture = value;
     }
 
     /**
@@ -895,8 +906,7 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
      * subsurfaceRadiusScale * subsurfaceRadius gives the mean free path per color channel.
      */
     public get subsurfaceRadius(): number {
-        // TODO
-        return 0;
+        return this._material.subsurfaceRadius;
     }
 
     /**
@@ -905,7 +915,7 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
      * @param value The subsurface radius value
      */
     public set subsurfaceRadius(value: number) {
-        // TODO
+        this._material.subsurfaceRadius = value;
     }
 
     /**
@@ -913,8 +923,7 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
      * subsurfaceRadiusScale * subsurfaceRadius gives the mean free path per color channel.
      */
     public get subsurfaceRadiusScale(): Color3 {
-        // TODO
-        return Color3.White();
+        return this._material.subsurfaceRadiusScale;
     }
 
     /**
@@ -923,7 +932,7 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
      * @param value The subsurface radius scale as a Color3
      */
     public set subsurfaceRadiusScale(value: Color3) {
-        // TODO
+        this._material.subsurfaceRadiusScale = value;
     }
 
     /**
@@ -931,7 +940,15 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
      * @param value The anisotropy intensity value
      */
     public set subsurfaceScatterAnisotropy(value: number) {
-        // TODO
+        this._material.subsurfaceScatterAnisotropy = value;
+    }
+
+    /**
+     * Does this material have a translucent surface (i.e. either transmission or subsurface)?
+     * @returns True if the material is translucent, false otherwise
+     */
+    public isTranslucent(): boolean {
+        return this.transmissionWeight > 0 || this.subsurfaceWeight > 0;
     }
 
     // ========================================
@@ -1183,6 +1200,51 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
     public set geometryCoatNormalTextureScale(value: number) {
         if (this._material.geometryCoatNormalTexture) {
             this._material.geometryCoatNormalTexture.level = value;
+        }
+    }
+
+    public finalize(): void {
+        // Do final configuration for the material to handle any interactions/dependencies between properties that we had to defer until all properties were loaded.
+
+        // If the material is volumetric, we may need to create a coat layer to handle the surface tint.
+        if ((this._diffuseTransmissionTint && !this._diffuseTransmissionTint.equals(Color3.White())) || this._diffuseTransmissionTintTexture) {
+            if (this._material.geometryThinWalled) {
+                // Use the subsurface slab for surface tinting.
+                this.subsurfaceColor = this._diffuseTransmissionTint;
+                this.subsurfaceColorTexture = this._diffuseTransmissionTintTexture;
+            } else {
+                // The material is volumetric and we have surface tinting, so we need to move that tinting to the coat layer to preserve it.
+                // TODO: If we already have a coat slab, we'll have to merge the two.
+                if (this._material.coatWeight == 0 && (!this.baseColor.equals(Color3.White()) || this.baseColorTexture)) {
+                    this._material.coatWeight = this.subsurfaceWeight;
+                    this._material.coatWeightTexture = this.subsurfaceWeightTexture;
+                    this._material.coatColor = this._diffuseTransmissionTint;
+                    this._material.coatColorTexture = this._diffuseTransmissionTintTexture;
+                    this._material.coatIor = this._material.specularIor; // Use the same IOR for the coat as the specular layer to try to match the original reflection as closely as possible.
+                    this._material.coatDarkening = 0.0;
+                    this._material.coatRoughness = this._material.specularRoughness;
+                    this._material.coatRoughnessTexture = this._material.specularRoughnessTexture;
+                }
+            }
+        }
+        // If the material has transmission, we need to use the base color to tint the transmission.
+        if (this.transmissionWeight > 0) {
+            if (this._material.geometryThinWalled || this._material.transmissionDepth === 0) {
+                // If the material is thin-walled or has no attenuation depth, we can use the base color as the transmission color directly.
+                this._material.transmissionColor = this._material.baseColor;
+                this._material.transmissionColorTexture = this._material.baseColorTexture;
+            } else if (this._material.coatWeight == 0 && (!this.baseColor.equals(Color3.White()) || this.baseColorTexture !== null)) {
+                // Otherwise, we have volumetric attenuation so we need to use the coat layer to preserve the base color tinting of glTF.
+                // TODO: If we already have a coat slab, we'll have to merge the two.
+                this._material.coatWeight = this.transmissionWeight;
+                this._material.coatWeightTexture = this.transmissionWeightTexture;
+                this._material.coatColor = this.baseColor;
+                this._material.coatColorTexture = this.baseColorTexture;
+                this._material.coatIor = this._material.specularIor; // Use the same IOR for the coat as the specular layer to try to match the original reflection as closely as possible.
+                this._material.coatDarkening = 0.0;
+                this._material.coatRoughness = this._material.specularRoughness;
+                this._material.coatRoughnessTexture = this._material.specularRoughnessTexture;
+            }
         }
     }
 }

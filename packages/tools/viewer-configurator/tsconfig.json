@@ -5,13 +5,13 @@
         "target": "ESNext",
         "module": "ESNext",
         "paths": {
-            "core/*": ["dev/core/src/*"],
-            "inspector/*": ["dev/inspector-v2/src/*"],
-            "loaders/*": ["dev/loaders/src/*"],
-            "materials/*": ["dev/materials/src/*"],
-            "shared-ui-components/*": ["dev/sharedUiComponents/src/*"],
-            "viewer/*": ["tools/viewer/src/*"],
-            "viewer": ["tools/viewer/src/index"]
+            "core/*": ["../../dev/core/src/*"],
+            "inspector/*": ["../../dev/inspector-v2/src/*"],
+            "loaders/*": ["../../dev/loaders/src/*"],
+            "materials/*": ["../../dev/materials/src/*"],
+            "shared-ui-components/*": ["../../dev/sharedUiComponents/src/*"],
+            "viewer/*": ["../../tools/viewer/src/*"],
+            "viewer": ["../../tools/viewer/src/index"]
         },
         "strict": true
     }

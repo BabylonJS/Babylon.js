@@ -29,6 +29,7 @@ export class HDRCubeTexture extends EnvCubeTexture {
      * @param supersample Defines if texture must be supersampled (default: false)
      * @param prefilterIrradianceOnLoad Prefilters HDR texture to allow use of this texture for irradiance lighting.
      * @param prefilterUsingCdf Defines if the prefiltering should be done using a CDF instead of the default approach.
+     * @param sphericalPolynomialTargetSize Target face size for spherical polynomial computation. 0 = full resolution (default).
      */
     constructor(
         url: string,
@@ -42,9 +43,24 @@ export class HDRCubeTexture extends EnvCubeTexture {
         onError: Nullable<(message?: string, exception?: any) => void> = null,
         supersample = false,
         prefilterIrradianceOnLoad = false,
-        prefilterUsingCdf = false
+        prefilterUsingCdf = false,
+        sphericalPolynomialTargetSize = 0
     ) {
-        super(url, sceneOrEngine, size, noMipmap, generateHarmonics, gammaSpace, prefilterOnLoad, onLoad, onError, supersample, prefilterIrradianceOnLoad, prefilterUsingCdf);
+        super(
+            url,
+            sceneOrEngine,
+            size,
+            noMipmap,
+            generateHarmonics,
+            gammaSpace,
+            prefilterOnLoad,
+            onLoad,
+            onError,
+            supersample,
+            prefilterIrradianceOnLoad,
+            prefilterUsingCdf,
+            sphericalPolynomialTargetSize
+        );
     }
 
     /**

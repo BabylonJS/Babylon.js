@@ -32,7 +32,7 @@ float writeGeometryInfo = finalColor.a > ALPHATESTVALUE ? 1.0 : 0.0;
     vec3 sqAlbedo = sqrt(surfaceAlbedo); // for pre and post scatter
 #endif
 
-#ifdef PREPASS_IRRADIANCE
+#ifdef PREPASS_IRRADIANCE_LEGACY
     vec3 irradiance = finalDiffuse;
     #ifndef UNLIT
         #ifdef REFLECTION
@@ -52,9 +52,20 @@ float writeGeometryInfo = finalColor.a > ALPHATESTVALUE ? 1.0 : 0.0;
         float scatteringDiffusionProfile = 255.;
     #endif
 
-    gl_FragData[PREPASS_IRRADIANCE_INDEX] = vec4(clamp(irradiance, vec3(0.), vec3(1.)), writeGeometryInfo * scatteringDiffusionProfile / 255.); // Irradiance + SS diffusion profile
-#elif defined(PREPASS_COLOR)
-    gl_FragData[PREPASS_COLOR_INDEX] = vec4(finalColor.rgb, finalColor.a);
+    gl_FragData[PREPASS_IRRADIANCE_LEGACY_INDEX] = vec4(clamp(irradiance, vec3(0.), vec3(1.)), writeGeometryInfo * scatteringDiffusionProfile / 255.); // Irradiance + SS diffusion profile
+#else
+    #ifdef PREPASS_IRRADIANCE
+        vec3 irradiance = finalDiffuse;
+        #ifndef UNLIT
+            #ifdef REFLECTION
+                irradiance += finalIrradiance;
+            #endif
+        #endif
+        gl_FragData[PREPASS_IRRADIANCE_INDEX] = vec4(irradiance, writeGeometryInfo);
+    #endif
+    #if defined(PREPASS_COLOR)
+        gl_FragData[PREPASS_COLOR_INDEX] = vec4(finalColor.rgb, finalColor.a);
+    #endif
 #endif
 
 #ifdef PREPASS_DEPTH

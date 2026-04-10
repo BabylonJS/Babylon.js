@@ -68,7 +68,7 @@ export class MultiMaterial extends Material {
 
         const oldSplice = array.splice;
         array.splice = (index: number, deleteCount?: number) => {
-            const deleted = oldSplice.apply(array, [index, deleteCount]);
+            const deleted = oldSplice.call(array, index, deleteCount ?? array.length);
 
             this._markAllSubMeshesAsTexturesDirty();
 

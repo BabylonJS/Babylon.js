@@ -174,6 +174,7 @@ test('selected-animation="n"', async ({ page }) => {
         if (viewerDetails?.model) {
             return viewerDetails.viewer.selectedAnimation;
         }
+        return undefined;
     }, viewerElementHandle);
 
     expect(await selectedAnimation.jsonValue()).toEqual(1);
@@ -197,6 +198,7 @@ test('camera-orbit="a b r"', async ({ page }) => {
         if (viewerDetails?.model) {
             return [viewerDetails.camera.alpha, viewerDetails.camera.beta, viewerDetails.camera.radius];
         }
+        return undefined;
     }, viewerElementHandle);
 
     expect(await cameraPose.jsonValue()).toEqual([1, 2, 0.1]);
@@ -223,6 +225,7 @@ test('camera-target="x y z"', async ({ page }) => {
         if (viewerDetails?.model) {
             return [viewerDetails.camera.target.x, viewerDetails.camera.target.y, viewerDetails.camera.target.z];
         }
+        return undefined;
     }, viewerElementHandle);
 
     expect(await cameraPose.jsonValue()).toEqual([1, 2, 3]);
@@ -246,6 +249,7 @@ test('tone-mapping="none"', async ({ page }) => {
         if (viewerDetails?.model) {
             return viewerDetails.viewer.postProcessing.toneMapping;
         }
+        return undefined;
     }, viewerElementHandle);
 
     expect(await toneMapping.jsonValue()).toEqual("none");
@@ -272,6 +276,7 @@ test('material-variant="name"', async ({ page }) => {
         if (viewerDetails?.model) {
             return viewerDetails.viewer.selectedMaterialVariant;
         }
+        return undefined;
     }, viewerElementHandle);
 
     expect(await materialVariant.jsonValue()).toEqual("street");

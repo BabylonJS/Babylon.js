@@ -7,6 +7,7 @@ import { Tools } from "../../Misc/tools";
 import { Constants } from "../../Engines/constants";
 import { LoadImage } from "../../Misc/fileTools";
 import { IsDocumentAvailable } from "core/Misc/domManagement";
+import "../../Materials/Textures/baseTexture.polynomial";
 
 /**
  * This represents a texture coming from an equirectangular image supported by the web browser canvas.
@@ -48,6 +49,7 @@ export class EquiRectangularCubeTexture extends BaseTexture {
      * @param onLoad — defines a callback called when texture is loaded
      * @param onError — defines a callback called if there is an error
      * @param supersample — defines if texture must be supersampled (default: false)
+     * @param sphericalPolynomialTargetSize — target face size for spherical polynomial computation. 0 = full resolution (default).
      */
     constructor(
         url: string,
@@ -57,7 +59,8 @@ export class EquiRectangularCubeTexture extends BaseTexture {
         gammaSpace: boolean = true,
         onLoad: Nullable<() => void> = null,
         onError: Nullable<(message?: string, exception?: any) => void> = null,
-        supersample = false
+        supersample = false,
+        sphericalPolynomialTargetSize = 0
     ) {
         super(scene);
 
@@ -74,6 +77,7 @@ export class EquiRectangularCubeTexture extends BaseTexture {
         this.gammaSpace = gammaSpace;
         this._onLoad = onLoad;
         this._onError = onError;
+        this._sphericalPolynomialTargetSize = sphericalPolynomialTargetSize;
 
         this.hasAlpha = false;
         this.isCube = true;

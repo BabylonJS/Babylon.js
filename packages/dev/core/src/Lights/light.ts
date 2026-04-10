@@ -782,7 +782,19 @@ export abstract class Light extends Node implements ISortableLight {
             light.setEnabled(parsedLight.isEnabled);
         }
 
+        light._onParsed(parsedLight, scene);
+
         return light;
+    }
+
+    /**
+     * Called after the light has been fully parsed and all base properties have been set.
+     * Override in subclasses to handle custom serialized data.
+     * @param _parsedLight The JSON representation of the light
+     * @param _scene The scene the light belongs to
+     */
+    protected _onParsed(_parsedLight: any, _scene: Scene): void {
+        // Override in subclasses
     }
 
     private _hookArrayForExcluded(array: AbstractMesh[]): void {
@@ -799,7 +811,7 @@ export abstract class Light extends Node implements ISortableLight {
 
         const oldSplice = array.splice;
         array.splice = (index: number, deleteCount?: number) => {
-            const deleted = oldSplice.apply(array, [index, deleteCount]);
+            const deleted = oldSplice.call(array, index, deleteCount ?? array.length);
 
             for (const item of deleted) {
                 item._resyncLightSource(this);
@@ -825,7 +837,7 @@ export abstract class Light extends Node implements ISortableLight {
 
         const oldSplice = array.splice;
         array.splice = (index: number, deleteCount?: number) => {
-            const deleted = oldSplice.apply(array, [index, deleteCount]);
+            const deleted = oldSplice.call(array, index, deleteCount ?? array.length);
 
             this._resyncMeshes();
 

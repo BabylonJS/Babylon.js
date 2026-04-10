@@ -216,7 +216,7 @@ export class ElasticEase extends EasingFunction implements IEasingFunction {
         const num3 = Math.max(0.0, this.oscillations);
         const num = Math.max(0.0, this.springiness);
 
-        if (num == 0) {
+        if (num === 0) {
             num2 = gradient;
         } else {
             num2 = (Math.exp(num * gradient) - 1.0) / (Math.exp(num) - 1.0);

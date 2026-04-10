@@ -5,12 +5,14 @@
         "outDir": "./dist",
         "rootDir": "../../../",
         "target": "ES5",
+        "ignoreDeprecations": "6.0",
         "declaration": false,
         "importHelpers": true,
         "paths": {
-            "core/*": ["dev/core/dist/*"],
-            "procedural-textures/*": ["dev/proceduralTextures/src/*"]
+            "core/*": ["../../../dev/core/dist/*"],
+            "procedural-textures/*": ["../../../dev/proceduralTextures/src/*"],
+            "@lts/procedural-textures/*": ["../../../lts/proceduralTextures/src/*"]
         }
     },
-    "include": ["./src/**/*", "../../../dev/proceduralTextures/src/**/*"]
+    "include": ["./src/**/*", "../../../dev/proceduralTextures/src/**/*", "../../../lts/proceduralTextures/src/**/*"]
 }

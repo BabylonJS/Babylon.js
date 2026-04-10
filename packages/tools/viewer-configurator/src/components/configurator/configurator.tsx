@@ -2,8 +2,6 @@
 import { type IDisposable, type Nullable, type Observable } from "core/index";
 import { type HotSpot, type ShadowQuality, type ToneMapping, type Viewer, type ViewerDetails, type ViewerElement, type ViewerOptions } from "viewer/index";
 import { type DragEndEvent, closestCenter, DndContext, KeyboardSensor, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
-import { type DropdownOption } from "shared-ui-components/fluent/primitives/dropdown";
-
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { makeStyles, tokens, Textarea } from "@fluentui/react-components";
@@ -27,7 +25,7 @@ import { MessageBar } from "shared-ui-components/fluent/primitives/messageBar";
 import { Button } from "shared-ui-components/fluent/primitives/button";
 import { LineContainer, PropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/propertyLine";
 import { ColorPickerPopup } from "shared-ui-components/fluent/primitives/colorPicker";
-import { Dropdown } from "shared-ui-components/fluent/primitives/dropdown";
+import { type DropdownOption, Dropdown } from "shared-ui-components/fluent/primitives/dropdown";
 import { Switch } from "shared-ui-components/fluent/primitives/switch";
 import { SyncedSliderInput } from "shared-ui-components/fluent/primitives/syncedSlider";
 import { TextInput } from "shared-ui-components/fluent/primitives/textInput";
@@ -60,6 +58,7 @@ const useStyles = makeStyles({
         flexDirection: "column",
         gap: tokens.spacingVerticalS,
         // Pin the snippet section at the top when there is enough vertical space.
+        // eslint-disable-next-line @typescript-eslint/naming-convention
         "@media (min-height: 600px)": {
             position: "sticky",
             top: 0,

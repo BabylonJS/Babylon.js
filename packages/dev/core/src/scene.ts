@@ -1783,6 +1783,8 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
     /** @internal */
     public _projectionMatrix: Matrix;
     /** @internal */
+    public _inverseProjectionMatrix: Matrix;
+    /** @internal */
     public _forcedViewPosition: Nullable<Vector3>;
 
     /** @internal */
@@ -2778,6 +2780,14 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
     }
 
     /**
+     * Gets the current inverse projection matrix
+     * @returns a Matrix
+     */
+    public getInverseProjectionMatrix(): Matrix {
+        return this._inverseProjectionMatrix;
+    }
+
+    /**
      * Gets the current transform matrix
      * @returns a Matrix made of View * Projection
      */
@@ -2804,6 +2814,10 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         this._projectionUpdateFlag = projectionL.updateFlag;
         this._viewMatrix = viewL;
         this._projectionMatrix = projectionL;
+        if (!this._inverseProjectionMatrix) {
+            this._inverseProjectionMatrix = new Matrix();
+        }
+        this._projectionMatrix.invertToRef(this._inverseProjectionMatrix);
 
         this._viewMatrix.multiplyToRef(this._projectionMatrix, this._transformMatrix);
 
@@ -2820,6 +2834,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
             this._sceneUbo.updateMatrix("viewProjection", this._transformMatrix);
             this._sceneUbo.updateMatrix("view", this._viewMatrix);
             this._sceneUbo.updateMatrix("projection", this._projectionMatrix);
+            this._sceneUbo.updateMatrix("inverseProjection", this._inverseProjectionMatrix);
         }
     }
 
@@ -2852,7 +2867,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         sceneUbo.addUniform("view", 16);
         sceneUbo.addUniform("projection", 16);
         sceneUbo.addUniform("vEyePosition", 4);
-
+        sceneUbo.addUniform("inverseProjection", 16);
         return sceneUbo;
     }
 

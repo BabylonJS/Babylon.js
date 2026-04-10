@@ -5,3 +5,4 @@ uniform mat4 viewProjection;
 uniform mat4 view;
 uniform mat4 projection;
 uniform vec4 vEyePosition;
+uniform mat4 inverseProjection;
