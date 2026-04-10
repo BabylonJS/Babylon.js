@@ -16,7 +16,7 @@ import {
     type RawTextData,
     type RawTextDocument,
 } from "./rawTypes";
-import { GetInitialVectorValues, GetLargestBezierData, GetLargestVectorValues } from "./rawPropertyHelpers";
+import { GetInitialVectorValues, GetInitialBezierData } from "./rawPropertyHelpers";
 
 import { type BoundingBox, GetShapesBoundingBox, GetTextBoundingBox } from "../maths/boundingBox";
 
@@ -372,9 +372,7 @@ export class SpritePacker {
     }
 
     private _drawRectangle(shape: RawRectangleShape, boundingBox: BoundingBox): void {
-        // Use max size across all keyframes so the sprite is rasterized at its largest,
-        // preventing blurriness when the shape grows during animation
-        const size = GetLargestVectorValues(shape.s);
+        const size = GetInitialVectorValues(shape.s);
         const position = GetInitialVectorValues(shape.p);
         const radius = shape.r.k as number;
 
@@ -390,9 +388,9 @@ export class SpritePacker {
     }
 
     private _drawPath(shape: RawPathShape, boundingBox: BoundingBox): void {
-        // Use the largest bezier across all keyframes so the sprite is rasterized at its
-        // largest extent, preventing blurriness when the path grows during animation
-        const pathData = GetLargestBezierData(shape.ks);
+        // The path data has to be translated to the center of the bounding box
+        // If the paths have stroke, we need to account for the stroke width
+        const pathData = GetInitialBezierData(shape.ks);
         if (!pathData) {
             return;
         }
