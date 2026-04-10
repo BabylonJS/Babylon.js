@@ -5,7 +5,7 @@ import { type FunctionComponent } from "react";
 import { BooleanBadgePropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/booleanBadgePropertyLine";
 import { TextPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/textPropertyLine";
 import { StringifiedPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/stringifiedPropertyLine";
-import { useObservableState } from "../../hooks/observableHooks";
+import { useObservableState } from "shared-ui-components/modularTool/hooks/observableHooks";
 
 export const SystemStats: FunctionComponent<{ context: Scene }> = ({ context: scene }) => {
     const engine = scene.getEngine();

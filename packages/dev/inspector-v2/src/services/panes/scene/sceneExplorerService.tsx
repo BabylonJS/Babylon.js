@@ -1,15 +1,15 @@
 import { type IDisposable } from "core/index";
 
 import { type SceneExplorerCommandProvider, type SceneExplorerSection, SceneExplorer } from "../../../components/scene/sceneExplorer";
-import { type IService, type ServiceDefinition } from "../../../modularity/serviceDefinition";
+import { type IService, type ServiceDefinition } from "shared-ui-components/modularTool/modularity/serviceDefinition";
 import { type ISceneContext, SceneContextIdentity } from "../../sceneContext";
 import { type ISelectionService, SelectionServiceIdentity } from "../../selectionService";
-import { type IShellService, ShellServiceIdentity } from "../../shellService";
+import { type IShellService, ShellServiceIdentity } from "shared-ui-components/modularTool/services/shellService";
 
 import { CubeTreeRegular } from "@fluentui/react-icons";
 
-import { useObservableState, useOrderedObservableCollection } from "../../../hooks/observableHooks";
-import { ObservableCollection } from "../../../misc/observableCollection";
+import { useObservableState, useOrderedObservableCollection } from "shared-ui-components/modularTool/hooks/observableHooks";
+import { ObservableCollection } from "shared-ui-components/modularTool/misc/observableCollection";
 
 /**
  * The unique identity symbol for the scene explorer service.

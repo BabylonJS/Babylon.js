@@ -12,8 +12,8 @@ import {
     Tooltip,
 } from "@fluentui/react-components";
 import { type ServiceDefinition } from "../modularity/serviceDefinition";
-import { type IShellService, ShellServiceIdentity } from "../services/shellService";
-import { type ThemeMode } from "../services/themeService";
+import { type IShellService, ShellServiceIdentity } from "./shellService";
+import { type ThemeMode } from "./themeService";
 
 import { WeatherMoonRegular, WeatherSunnyRegular } from "@fluentui/react-icons";
 import { useCallback } from "react";

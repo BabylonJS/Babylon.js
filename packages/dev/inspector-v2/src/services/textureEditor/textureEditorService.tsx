@@ -2,10 +2,10 @@ import { type ComponentType } from "react";
 
 import { type IDisposable } from "core/index";
 import { type TextureEditorProps, type TextureEditorToolProvider, TextureEditor } from "../../components/textureEditor/textureEditor";
-import { type IService, type ServiceDefinition } from "../../modularity/serviceDefinition";
+import { type IService, type ServiceDefinition } from "shared-ui-components/modularTool/modularity/serviceDefinition";
 
-import { useOrderedObservableCollection } from "../../hooks/observableHooks";
-import { ObservableCollection } from "../../misc/observableCollection";
+import { useOrderedObservableCollection } from "shared-ui-components/modularTool/hooks/observableHooks";
+import { ObservableCollection } from "shared-ui-components/modularTool/misc/observableCollection";
 import { Contrast } from "./tools/contrast";
 import { Eyedropper } from "./tools/eyedropper";
 import { Floodfill } from "./tools/floodfill";

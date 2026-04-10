@@ -1,5 +1,5 @@
 import { type FrameGraphTask, type IDisposable, type Nullable } from "core/index";
-import { type ServiceDefinition } from "../../../modularity/serviceDefinition";
+import { type ServiceDefinition } from "shared-ui-components/modularTool/modularity/serviceDefinition";
 import { type IGizmoService, GizmoServiceIdentity } from "../../gizmoService";
 import { type ISceneContext, SceneContextIdentity } from "../../sceneContext";
 import { type IWatcherService, WatcherServiceIdentity } from "../../watcherService";

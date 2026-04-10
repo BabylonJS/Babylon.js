@@ -1,11 +1,11 @@
-import { type ServiceDefinition } from "../../modularity/serviceDefinition";
+import { type ServiceDefinition } from "shared-ui-components/modularTool/modularity/serviceDefinition";
 import { type ISceneContext, SceneContextIdentity } from "../../services/sceneContext";
 import { type ISelectionService, SelectionServiceIdentity } from "../../services/selectionService";
-import { type IShellService, ShellServiceIdentity } from "../../services/shellService";
+import { type IShellService, ShellServiceIdentity } from "shared-ui-components/modularTool/services/shellService";
 import { Accordion as BabylonAccordion, AccordionSection as BabylonAccordionSection } from "shared-ui-components/fluent/primitives/accordion";
 
 import { CollectionsAdd20Regular } from "@fluentui/react-icons";
-import { useObservableState } from "../../hooks/observableHooks";
+import { useObservableState } from "shared-ui-components/modularTool/hooks/observableHooks";
 
 // Side-effect import needed for GPUParticleSystem
 import "core/Particles/webgl2ParticleSystem";

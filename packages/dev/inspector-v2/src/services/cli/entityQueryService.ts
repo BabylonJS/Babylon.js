@@ -22,7 +22,7 @@ import {
     type TransformNode,
 } from "core/index";
 import { UniqueIdGenerator } from "core/Misc/uniqueIdGenerator";
-import { type ServiceDefinition } from "../../modularity/serviceDefinition";
+import { type ServiceDefinition } from "shared-ui-components/modularTool/modularity/serviceDefinition";
 import { type ISceneContext, SceneContextIdentity } from "../sceneContext";
 import { type IInspectableCommandRegistry, type InspectableCommandDescriptor, InspectableCommandRegistryIdentity } from "./inspectableCommandRegistry";
 

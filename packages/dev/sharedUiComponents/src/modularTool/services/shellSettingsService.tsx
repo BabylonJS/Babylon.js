@@ -1,5 +1,5 @@
 import { type ServiceDefinition } from "../modularity/serviceDefinition";
-import { type ISettingsService, SettingsServiceIdentity } from "./panes/settingsService";
+import { type ISettingsService, SettingsServiceIdentity } from "./settingsService";
 
 import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
 import { useSetting } from "../hooks/settingsHooks";

@@ -1,6 +1,6 @@
-import { type ExtensionMetadata } from "./extensionFeed";
+import { type ExtensionMetadata } from "shared-ui-components/modularTool/extensibility/extensionFeed";
 
-import { BuiltInsExtensionFeed } from "./builtInsExtensionFeed";
+import { BuiltInsExtensionFeed } from "shared-ui-components/modularTool/extensibility/builtInsExtensionFeed";
 
 // Created by running the following command from the packages/dev/inspector-v2 directory:
 // npm run makeAvatar https://raw.githubusercontent.com/BabylonJS/Brand-Toolkit/master/babylon_logo/fullColor/babylon_logo_color.png 0.8
