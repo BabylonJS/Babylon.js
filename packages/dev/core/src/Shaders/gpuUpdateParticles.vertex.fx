@@ -177,6 +177,10 @@ uniform sampler2D noiseSampler;
 uniform vec4 cellInfos;
 #endif
 
+#ifdef ATTRACTORS
+uniform int attractorCount;
+uniform vec4 attractorPositionAndStrength[MAX_ATTRACTORS];
+#endif
 
 vec3 getRandomVec3(float offset) {
   return texture(randomSampler2, vec2(float(gl_VertexID) * offset / currentCount, 0)).rgb;
@@ -451,6 +455,16 @@ void main() {
         if (currentVelocity > limitVelocity) {
             updatedDirection = updatedDirection * limitVelocityDamping;
         }
+    #endif
+
+    #ifdef ATTRACTORS
+    {
+        for (int i = 0; i < attractorCount; i++) {
+            vec3 toAttractor = attractorPositionAndStrength[i].xyz - outPosition;
+            float distSq = dot(toAttractor, toAttractor) + 1.0;
+            updatedDirection += (attractorPositionAndStrength[i].w / distSq) * normalize(toAttractor) * timeDelta;
+        }
+    }
     #endif
 
     outDirection = updatedDirection;

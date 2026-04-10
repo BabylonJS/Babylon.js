@@ -4205,6 +4205,34 @@
             "playgroundId": "#NK19TU#0",
             "referenceImage": "gpu-particles-local-space.png",
             "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "GPU Particles - Attractors Single",
+            "playgroundId": "#2GCFP9#0",
+            "referenceImage": "gpu-particles-attractors-single.png",
+            "excludedEngines": ["webgl1"],
+            "errorRatio": 2.5
+        },
+        {
+            "title": "GPU Particles - Attractors Multiple",
+            "playgroundId": "#S02QKE#0",
+            "referenceImage": "gpu-particles-attractors-multiple.png",
+            "excludedEngines": ["webgl1"],
+            "errorRatio": 2.5
+        },
+        {
+            "title": "GPU Particles - Attractors Ring",
+            "playgroundId": "#D08NSG#0",
+            "referenceImage": "gpu-particles-attractors-ring.png",
+            "excludedEngines": ["webgl1"],
+            "errorRatio": 2.5
+        },
+        {
+            "title": "GPU Particles - Attractors Local",
+            "playgroundId": "#UK6P4V#0",
+            "referenceImage": "gpu-particles-attractors-local.png",
+            "excludedEngines": ["webgl1"],
+            "errorRatio": 2.5
         }
     ]
 }

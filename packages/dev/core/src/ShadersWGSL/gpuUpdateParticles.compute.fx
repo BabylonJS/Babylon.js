@@ -81,6 +81,11 @@ struct SimParams {
         emitterWM : mat4x4<f32>,
     #endif
 
+    #ifdef ATTRACTORS
+        attractorCount : i32,
+        attractorPositionAndStrength : array<vec4<f32>, MAX_ATTRACTORS>,
+    #endif
+
     // Emitter types
 
     #ifdef BOXEMITTER
@@ -471,6 +476,16 @@ fn main(@builtin(global_invocation_id) GlobalInvocationID : vec3<u32>) {
                 if (currentVelocity > limitVelocity) {
                     updatedDirection = updatedDirection * params.limitVelocityDamping;
                 }
+            #endif
+
+            #ifdef ATTRACTORS
+            {
+                for (var i : i32 = 0; i < params.attractorCount; i = i + 1) {
+                    let toAttractor : vec3<f32> = params.attractorPositionAndStrength[i].xyz - position;
+                    let distSq : f32 = dot(toAttractor, toAttractor) + 1.0;
+                    updatedDirection = updatedDirection + (params.attractorPositionAndStrength[i].w / distSq) * normalize(toAttractor) * timeDelta;
+                }
+            }
             #endif
 
             particlesOut.particles[index].direction = updatedDirection;

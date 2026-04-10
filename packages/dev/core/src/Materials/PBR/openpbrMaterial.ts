@@ -2232,6 +2232,18 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
                         return false;
                     }
                 }
+
+                // When both SSS textures are assigned they will be used for screen-space subsurface
+                // scattering. Block readiness until both underlying textures are loaded so that
+                // scene.onReadyObservable never fires with missing SSS data.
+                if (this._sssIrradianceTexture && this._sssDepthTexture) {
+                    if (!this._sssIrradianceTexture.isReady()) {
+                        return false;
+                    }
+                    if (!this._sssDepthTexture.isReady()) {
+                        return false;
+                    }
+                }
             }
         }
 
