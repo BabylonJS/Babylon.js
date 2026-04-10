@@ -718,22 +718,35 @@ test.describe("Babylon Scene Loader", function () {
         });
 
         test("Load UFO with MSFT_audio_emitter", async () => {
-            const assertionData = await page.evaluate(() => {
-                return BABYLON.SceneLoader.ImportMeshAsync(null, "https://assets.babylonjs.com/meshes/", "ufo.glb", window.scene).then((result) => {
-                    const soundCount = window.scene!.mainSoundTrack.soundCollection.length;
-                    return {
-                        sceneMeshes: window.scene!.meshes.length,
-                        meshes: result.meshes.length,
-                        particleSystems: result.particleSystems.length,
-                        animationGroups: result.animationGroups.length,
-                        soundTracks: window.scene!.soundTracks!.length,
-                        mainSoundTrack: soundCount,
-                        // Audio may be unavailable in headless browsers (no AudioContext),
-                        // in which case Sound objects are not created and soundCollection is empty.
-                        onEndedObservable: soundCount > 0 ? window.scene!.mainSoundTrack.soundCollection[0].onEndedObservable.hasObservers() : null,
-                        audioAvailable: !!BABYLON.Engine.audioEngine,
-                    };
-                });
+            const assertionData = await page.evaluate(async () => {
+                const result = await BABYLON.SceneLoader.ImportMeshAsync(null, "https://assets.babylonjs.com/meshes/", "ufo.glb", window.scene);
+
+                const audioAvailable = !!BABYLON.Engine.audioEngine;
+
+                // Sound objects are added to mainSoundTrack asynchronously in _onReadyToPlay,
+                // so we need to poll until they are ready rather than reading immediately.
+                let soundCount = 0;
+                if (audioAvailable) {
+                    const expectedSounds = 3;
+                    const maxWaitMs = 5000;
+                    const pollIntervalMs = 100;
+                    const start = performance.now();
+                    while (window.scene!.mainSoundTrack.soundCollection.length < expectedSounds && performance.now() - start < maxWaitMs) {
+                        await new Promise((resolve) => setTimeout(resolve, pollIntervalMs));
+                    }
+                    soundCount = window.scene!.mainSoundTrack.soundCollection.length;
+                }
+
+                return {
+                    sceneMeshes: window.scene!.meshes.length,
+                    meshes: result.meshes.length,
+                    particleSystems: result.particleSystems.length,
+                    animationGroups: result.animationGroups.length,
+                    soundTracks: window.scene!.soundTracks!.length,
+                    mainSoundTrack: soundCount,
+                    onEndedObservable: soundCount > 0 ? window.scene!.mainSoundTrack.soundCollection[0].onEndedObservable.hasObservers() : null,
+                    audioAvailable,
+                };
             });
             expect(assertionData["meshes"]).toBe(assertionData["sceneMeshes"]);
             expect(assertionData["particleSystems"]).toBe(0);
