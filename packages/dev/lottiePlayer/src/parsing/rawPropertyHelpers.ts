@@ -1,4 +1,12 @@
-import type { RawBezier, RawBezierShapeKeyframe, RawBezierShapeProperty, RawPositionProperty, RawScalarProperty, RawVectorKeyframe, RawVectorProperty } from "./rawTypes";
+import {
+    type RawBezier,
+    type RawBezierShapeKeyframe,
+    type RawBezierShapeProperty,
+    type RawPositionProperty,
+    type RawScalarProperty,
+    type RawVectorKeyframe,
+    type RawVectorProperty,
+} from "./rawTypes";
 
 /**
  * Gets the initial (first keyframe or static) scalar value from a Lottie scalar property.
@@ -13,7 +21,7 @@ export function GetInitialScalarValue(property: RawScalarProperty, defaultValue:
         return property.k as number;
     }
 
-    return ((property.k as RawVectorKeyframe[])[0]?.s[0] ?? defaultValue);
+    return (property.k as RawVectorKeyframe[])[0]?.s[0] ?? defaultValue;
 }
 
 /**
@@ -28,7 +36,7 @@ export function GetInitialVectorValues(property: RawVectorProperty | RawPosition
         return property.k as number[];
     }
 
-    return ((property.k as RawVectorKeyframe[])[0]?.s ?? [0, 0]);
+    return (property.k as RawVectorKeyframe[])[0]?.s ?? [0, 0];
 }
 
 /**
