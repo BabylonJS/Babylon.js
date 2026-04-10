@@ -349,7 +349,7 @@ export class Node {
         }
 
         if (frame >= keyframes[keyframes.length - 1].time) {
-            this._rotation.currentValue = keyframes[keyframes.length - 1].value;
+            this._rotation.currentValue = -keyframes[keyframes.length - 1].value;
             return true;
         }
 

@@ -106,6 +106,25 @@ describe("Node keyframe boundary", () => {
 
         expect(node.opacity).toBe(1);
     });
+
+    it("applies correct sign for rotation at exactly the last keyframe time", () => {
+        const rotation = makeScalarProperty(0, [
+            { time: 0, value: 0 },
+            { time: 30, value: Math.PI / 2 },
+        ]);
+
+        const node = new Node("test", undefined, rotation);
+        node.isVisible = true;
+
+        // At mid-frame, interpolation applies negation
+        node.update(15);
+        const midValue = node.rotationCurrent;
+        expect(midValue).toBeLessThan(0);
+
+        // At exact last keyframe, clamp should also apply negation
+        node.update(30);
+        expect(node.rotationCurrent).toBe(-Math.PI / 2);
+    });
 });
 
 describe("Null layer opacity isolation", () => {
