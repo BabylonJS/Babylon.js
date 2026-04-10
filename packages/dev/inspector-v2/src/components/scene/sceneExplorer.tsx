@@ -821,13 +821,14 @@ const EntityTreeItem: FunctionComponent<
                     {...dragProps}
                 >
                     <TreeItemLayout
-                        iconBefore={entityItem.icon ? <entityItem.icon entity={entityItem.entity} /> : null}
-                        iconAfter={
+                        iconBefore={
                             displayInfo.isNotInScene ? (
                                 <Tooltip content="This entity is not in the scene but is shown because a descendant is still in the scene." relationship="description">
                                     <WarningRegular />
                                 </Tooltip>
-                            ) : undefined
+                            ) : entityItem.icon ? (
+                                <entityItem.icon entity={entityItem.entity} />
+                            ) : null
                         }
                         className={mergeClasses(
                             hasChildren ? classes.treeItemLayoutBranch : classes.treeItemLayoutLeaf,
