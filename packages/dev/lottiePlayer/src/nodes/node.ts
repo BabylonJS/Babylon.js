@@ -87,9 +87,10 @@ export class Node {
         }
 
         // Skip parent opacity if parent is a null layer control node - null layers may have opacity 0
-        // but their children should still be visible
+        // but their children should still be visible. Still multiply by the null layer's parent opacity
+        // so that ancestors above the null layer are respected.
         if (this._parent && this._parent._isNullLayer) {
-            return this._opacity.currentValue;
+            return this._opacity.currentValue * (this._parent._parent?.opacity ?? 1);
         }
 
         return this._opacity.currentValue * (this._parent?.opacity ?? 1);

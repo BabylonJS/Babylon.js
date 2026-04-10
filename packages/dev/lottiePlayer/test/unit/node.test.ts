@@ -109,7 +109,7 @@ describe("Node keyframe boundary", () => {
 });
 
 describe("Null layer opacity isolation", () => {
-    it("child of null layer with opacity 0 returns its own opacity", () => {
+    it("child of null layer with opacity 0 returns its own opacity when no grandparent", () => {
         const parentOpacity = makeScalarProperty(0, []);
         const nullParent = new ControlNode("null-parent", 0, 100, undefined, undefined, undefined, parentOpacity, undefined, true);
         nullParent.update(0);
@@ -123,6 +123,23 @@ describe("Null layer opacity isolation", () => {
         nullParent.update(0);
 
         expect(child.opacity).toBe(1);
+    });
+
+    it("child of null layer still inherits grandparent opacity", () => {
+        const grandparentOpacity: ScalarProperty = { startValue: 0.5, currentValue: 0.5, currentKeyframeIndex: 0 };
+        const grandparent = new ControlNode("grandparent", 0, 100, undefined, undefined, undefined, grandparentOpacity);
+
+        const nullOpacity = makeScalarProperty(0, []);
+        const nullParent = new ControlNode("null-parent", 0, 100, undefined, undefined, undefined, nullOpacity, grandparent, true);
+
+        const childOpacity: ScalarProperty = { startValue: 0.8, currentValue: 0.8, currentKeyframeIndex: 0 };
+        const child = new Node("child", undefined, undefined, undefined, childOpacity, nullParent);
+
+        grandparent.isVisible = true;
+        grandparent.update(0);
+
+        // Child should skip null layer's opacity (0) but still multiply by grandparent's opacity (0.5)
+        expect(child.opacity).toBeCloseTo(0.4, 5);
     });
 
     it("child of regular layer still multiplies by parent opacity", () => {
