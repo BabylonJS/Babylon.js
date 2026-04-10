@@ -20,12 +20,13 @@ If the user says "interactive", "review first", "show me the issues first", or s
 
 ### Step 1: Gather the diff
 
-Run the following git commands to collect all changes (committed and uncommitted) relative to the base branch:
+Run the following git commands to collect all changes (committed, uncommitted, and untracked) relative to the base branch:
 
 ```
 git diff <base>...HEAD --name-only
 git diff --name-only
 git diff --name-only --cached
+git ls-files --others --exclude-standard
 ```
 
 Combine the results into a deduplicated list of changed files. If there are no changes, inform the user and stop.
@@ -33,6 +34,8 @@ Combine the results into a deduplicated list of changed files. If there are no c
 ### Step 2: Read the changed files and the diff
 
 - Read the full content of each changed file (not just the diff) to understand the surrounding context.
+- For deleted files, use `git show <base>:<path>` to read the base version and review the deletion via the diff only.
+- For renamed files, review both the old and new paths — read the new file from disk and the old file via `git show <base>:<old-path>`.
 - Also get the actual diff hunks (`git diff <base>...HEAD` and `git diff`) to know exactly what changed.
 
 ### Step 3: Review against the checklist
