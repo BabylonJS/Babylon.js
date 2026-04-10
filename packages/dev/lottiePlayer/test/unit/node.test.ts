@@ -142,6 +142,30 @@ describe("Null layer opacity isolation", () => {
         expect(child.opacity).toBeCloseTo(0.4, 5);
     });
 
+    it("child of nested null layers still inherits ancestor opacity", () => {
+        // Mirror the real scene graph: ControlNode → anchor Node → ControlNode → anchor Node → ...
+        const ancestorOpacity: ScalarProperty = { startValue: 0.5, currentValue: 0.5, currentKeyframeIndex: 0 };
+        const ancestor = new ControlNode("ancestor", 0, 100, undefined, undefined, undefined, ancestorOpacity);
+        const ancestorAnchor = new Node("ancestor-anchor", undefined, undefined, undefined, undefined, ancestor);
+
+        const null1Opacity = makeScalarProperty(0, []);
+        const null1 = new ControlNode("null1", 0, 100, undefined, undefined, undefined, null1Opacity, ancestorAnchor, true);
+        const null1Anchor = new Node("null1-anchor", undefined, undefined, undefined, undefined, null1);
+
+        const null2Opacity = makeScalarProperty(0, []);
+        const null2 = new ControlNode("null2", 0, 100, undefined, undefined, undefined, null2Opacity, null1Anchor, true);
+        const null2Anchor = new Node("null2-anchor", undefined, undefined, undefined, undefined, null2);
+
+        const childOpacity: ScalarProperty = { startValue: 1, currentValue: 1, currentKeyframeIndex: 0 };
+        const child = new Node("child", undefined, undefined, undefined, childOpacity, null2Anchor);
+
+        ancestor.isVisible = true;
+        ancestor.update(0);
+
+        // Both null layers' opacities (0) should be skipped, but ancestor's 0.5 should be preserved
+        expect(child.opacity).toBeCloseTo(0.5, 5);
+    });
+
     it("child of regular layer still multiplies by parent opacity", () => {
         const parentOpacity: ScalarProperty = { startValue: 0.5, currentValue: 0.5, currentKeyframeIndex: 0 };
         const regularParent = new ControlNode("regular-parent", 0, 100, undefined, undefined, undefined, parentOpacity, undefined, false);
