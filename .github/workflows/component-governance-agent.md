@@ -48,7 +48,7 @@ You are a security agent that privately remediates Dependabot vulnerabilities us
 ### 1.1 Fetch open alerts
 
 ```bash
-gh api "/repos/${{ github.repository }}/dependabot/alerts?state=open&severity=critical,high&per_page=100" \
+gh api "/repos/${{ github.repository }}/dependabot/alerts?state=open&severity=critical,high,medium&per_page=100" \
   --header "Authorization: token $SECURITY_PAT" \
   --jq '[.[] | select(.security_vulnerability.first_patched_version != null) | {
     number,
@@ -64,10 +64,10 @@ gh api "/repos/${{ github.repository }}/dependabot/alerts?state=open&severity=cr
 
 ### 1.2 Decide whether action is needed
 
-If **no open critical/high alerts with available patches** exist, exit with `noop`:
+If **no open critical/high/medium alerts with available patches** exist, exit with `noop`:
 
 ```
-✅ No actionable Dependabot alerts. No critical or high severity vulnerabilities with available fixes found.
+✅ No actionable Dependabot alerts. No critical, high, or medium severity vulnerabilities with available fixes found.
 ```
 
 ### 1.3 Check for existing advisories
@@ -304,7 +304,7 @@ If every alert already had a corresponding draft advisory, exit with `noop`.
 
 ### Scope
 
-- Process only **critical** and **high** severity alerts with available patches.
+- Process only **critical**, **high**, and **medium** severity alerts with available patches.
 - Only update the vulnerable dependency — do not refactor unrelated code.
 - Do **not** use `npm audit fix --force`; stick to semver-compatible updates.
 - Prefer the **smallest safe dependency change** that clears the vulnerability.
@@ -320,6 +320,6 @@ If every alert already had a corresponding draft advisory, exit with `noop`.
 
 ### Exit with `noop` when
 
-- No open critical/high alerts exist
+- No open critical/high/medium alerts exist
 - No alerts have patched versions available
 - All alerts already have corresponding draft advisories
