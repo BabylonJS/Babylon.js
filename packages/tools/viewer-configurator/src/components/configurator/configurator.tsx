@@ -41,7 +41,7 @@ import { WithinEpsilon } from "core/Maths/math.scalar.functions";
 import { CreateHotSpotQueryForPickingInfo } from "core/Meshes/abstractMesh.hotSpot";
 import { Logger } from "core/Misc/logger";
 
-import { useObservableState } from "inspector/hooks/observableHooks";
+import { useObservableState } from "shared-ui-components/modularTool/hooks/observableHooks";
 import { PickModel } from "../../modelLoader";
 import { ToolContext } from "shared-ui-components/fluent/hoc/fluentToolWrapper";
 

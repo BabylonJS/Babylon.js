@@ -1,5 +1,5 @@
 import { type IMetadataContainer, MetadataProperties } from "../../../components/properties/metadataProperties";
-import { type ServiceDefinition } from "../../../modularity/serviceDefinition";
+import { type ServiceDefinition } from "shared-ui-components/modularTool/modularity/serviceDefinition";
 import { type IPropertiesService, PropertiesServiceIdentity } from "./propertiesService";
 
 function IsMetadataContainer(entity: unknown): entity is IMetadataContainer {

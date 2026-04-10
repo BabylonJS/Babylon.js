@@ -1,4 +1,4 @@
-import { type ServiceDefinition } from "../../../modularity/serviceDefinition";
+import { type ServiceDefinition } from "shared-ui-components/modularTool/modularity/serviceDefinition";
 import { type IPropertiesService, PropertiesServiceIdentity } from "./propertiesService";
 
 import { Bone } from "core/Bones/bone";

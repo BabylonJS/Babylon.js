@@ -1,4 +1,4 @@
-import { MakeModularTool } from "inspector/modularTool";
+import { MakeModularTool } from "shared-ui-components/modularTool/modularTool";
 
 import { ViewerServiceDefinition } from "./viewerService";
 import { ConfiguratorServiceDefinition } from "./configuratorService";

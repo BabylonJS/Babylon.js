@@ -1,6 +1,6 @@
 import { FrameGraphUtils } from "core/FrameGraph/frameGraphUtils";
 import { CreateScreenshotUsingRenderTargetAsync } from "core/Misc/screenshotTools";
-import { type ServiceDefinition } from "../../modularity/serviceDefinition";
+import { type ServiceDefinition } from "shared-ui-components/modularTool/modularity/serviceDefinition";
 import { type ISceneContext, SceneContextIdentity } from "../sceneContext";
 import { type IInspectableCommandRegistry, InspectableCommandRegistryIdentity } from "./inspectableCommandRegistry";
 

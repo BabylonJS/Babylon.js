@@ -21,7 +21,6 @@ module.exports = (env) => {
             extensions: [".js", ".ts", ".tsx"],
             alias: {
                 core: path.resolve("../../dev/core/dist"),
-                inspector: path.resolve("../../dev/inspector-v2/src"),
                 loaders: path.resolve("../../dev/loaders/dist"), // "src" results in unknown babylonjs-gltf2interface
                 materials: path.resolve("../../dev/materials/dist"),
                 viewer: path.resolve("../../tools/viewer/dist/tsbuild"), // "src" results in runtime viewer error

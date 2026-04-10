@@ -1,8 +1,8 @@
-import { type ServiceDefinition } from "inspector/modularity/serviceDefinition";
-import { type IShellService, ShellServiceIdentity } from "inspector/services/shellService";
+import { type ServiceDefinition } from "shared-ui-components/modularTool/modularity/serviceDefinition";
+import { type IShellService, ShellServiceIdentity } from "shared-ui-components/modularTool/services/shellService";
 
 import { QuestionCircleRegular } from "@fluentui/react-icons";
-import { useObservableState } from "inspector/hooks/observableHooks";
+import { useObservableState } from "shared-ui-components/modularTool/hooks/observableHooks";
 import { Button } from "shared-ui-components/fluent/primitives/button";
 import { useCallback } from "react";
 

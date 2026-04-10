@@ -34,10 +34,10 @@ import { type DragDropProps, type DropProps, useSceneExplorerDragDrop } from "./
 import { UniqueIdGenerator } from "core/Misc/uniqueIdGenerator";
 import { ToggleButton } from "shared-ui-components/fluent/primitives/toggleButton";
 import { CustomTokens } from "shared-ui-components/fluent/primitives/utils";
-import { useObservableState } from "../../hooks/observableHooks";
-import { useResource } from "../../hooks/resourceHooks";
-import { useSetting } from "../../hooks/settingsHooks";
-import { TraverseGraph } from "../../misc/graphUtils";
+import { useObservableState } from "shared-ui-components/modularTool/hooks/observableHooks";
+import { useResource } from "shared-ui-components/modularTool/hooks/resourceHooks";
+import { useSetting } from "shared-ui-components/modularTool/hooks/settingsHooks";
+import { TraverseGraph } from "shared-ui-components/modularTool/misc/graphUtils";
 import { CompactModeSettingDescriptor } from "../../services/globalSettings";
 
 const SyntheticUniqueIds = new WeakMap<object, number>();
