@@ -64,7 +64,7 @@ export const NodeExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplore
             displayName: "Nodes",
             order: DefaultSectionsOrder.Nodes,
             getRootEntities: () => {
-                const rootNodes = [...scene.rootNodes];
+                const rootNodes = new Set<Node>(scene.rootNodes);
                 knownSceneNodes.clear();
 
                 // Ensure all nodes in the scene are reachable in the explorer, even if their
@@ -79,7 +79,7 @@ export const NodeExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplore
                     if (!IsNodesSectionType(node.parent)) {
                         // Parent is not a type shown in the Nodes section (e.g. a Bone).
                         // Treat this node as a root so it still appears in the explorer.
-                        rootNodes.push(node);
+                        rootNodes.add(node);
                     } else {
                         // Walk up through Nodes-section-type parents to find the topmost ancestor.
                         // If that ancestor was removed from the scene (not in rootNodes), add it
@@ -88,9 +88,7 @@ export const NodeExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplore
                         while (ancestor.parent && IsNodesSectionType(ancestor.parent)) {
                             ancestor = ancestor.parent;
                         }
-                        if (!rootNodes.includes(ancestor)) {
-                            rootNodes.push(ancestor);
-                        }
+                        rootNodes.add(ancestor);
                     }
                 }
 
@@ -100,14 +98,14 @@ export const NodeExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplore
                     if (light instanceof ClusteredLightContainer) {
                         for (const childLight of light.lights) {
                             knownSceneNodes.add(childLight);
-                            if (!childLight.parent && !rootNodes.includes(childLight)) {
-                                rootNodes.push(childLight);
+                            if (!childLight.parent) {
+                                rootNodes.add(childLight);
                             }
                         }
                     }
                 }
 
-                return rootNodes;
+                return [...rootNodes];
             },
             getEntityChildren: (node) => node.getChildren(),
             getEntityDisplayInfo: (node) => {
