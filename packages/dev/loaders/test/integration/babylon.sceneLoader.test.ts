@@ -18,6 +18,7 @@ import {
 
 declare const BABYLON: typeof import("core/index") & typeof import("loaders/index");
 
+const debug = process.env.DEBUG === "true";
 declare global {
     interface Window {
         BABYLON: typeof BABYLON;
@@ -26,8 +27,6 @@ declare global {
         canvas: HTMLCanvasElement;
     }
 }
-
-const debug = process.env.DEBUG === "true";
 
 type GLTFOptions = NonNullable<ConstructorParameters<typeof GLTFFileLoader>[0]>;
 
@@ -46,7 +45,7 @@ test.describe("Babylon Scene Loader", function () {
         await page.waitForSelector("#babylon-canvas", { timeout: 20000 });
         await page.waitForFunction(() => window.BABYLON);
         page.setDefaultTimeout(0);
-        await logPageErrors(page as never, debug);
+        await logPageErrors(page, debug);
     });
     test.setTimeout(debug ? 1000000 : 30000);
 

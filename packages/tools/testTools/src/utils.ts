@@ -7,11 +7,11 @@ import { type StacktracedObject } from "./window";
 interface Page {
     evaluate: (...args: any[]) => Promise<any>;
     evaluateHandle: (...args: any[]) => Promise<any>;
-    queryObjects: (...args: any[]) => Promise<any>;
+    queryObjects?: (...args: any[]) => Promise<any>;
     goto: (...args: any[]) => Promise<any>;
     waitForSelector: (...args: any[]) => Promise<any>;
-    waitForNetworkIdle: (...args: any[]) => Promise<any>;
-    on: (event: string, handler: (...args: any[]) => void) => Page;
+    waitForNetworkIdle?: (...args: any[]) => Promise<any>;
+    on: (...args: any[]) => any;
 }
 
 declare const page: Page;
@@ -330,14 +330,14 @@ export const prepareLeakDetection = async (classes: string[] = ClassesToCheck) =
 
 // eslint-disable-next-line no-restricted-syntax
 export const countObjects = async (page: Page, classes = ClassesToCheck) => {
-    await page.waitForNetworkIdle({
+    await page.waitForNetworkIdle!({
         idleTime: 300,
         timeout: 0,
     });
     await page.evaluate(() => window.gc && window.gc());
 
     const prototypeHandle = await page.evaluateHandle(() => Object.prototype);
-    const objectsHandle = await page.queryObjects(prototypeHandle);
+    const objectsHandle = await page.queryObjects!(prototypeHandle);
     const numberOfObjects = await page.evaluate((instances: any[]) => instances.length, objectsHandle);
     const usedJSHeapSize = await page.evaluate(() => {
         return ((window.performance as any).memory && (window.performance as any).memory.usedJSHeapSize) || 0;
@@ -353,7 +353,7 @@ export const countObjects = async (page: Page, classes = ClassesToCheck) => {
         const prototype = classToCheck + ".prototype";
         // tslint:disable-next-line: no-eval
         const prototypeHandle = await page.evaluateHandle((p: string) => eval(p), prototype);
-        const objectsHandle = await page.queryObjects(prototypeHandle);
+        const objectsHandle = await page.queryObjects!(prototypeHandle);
         const array = await page.evaluate(
             (objects: any[]) =>
                 objects.map((object: any) => {
@@ -924,7 +924,7 @@ export const checkPerformanceOfScene = async (
 
 // eslint-disable-next-line no-restricted-syntax
 export const logPageErrors = async (page: Page, debug?: boolean) => {
-    page.on("console", async (msg) => {
+    page.on("console", async (msg: any) => {
         // serialize my args the way I want
         const args: any[] = await Promise.all(
             msg.args().map((arg: any) =>
