@@ -34,6 +34,10 @@ struct Splat {
 #if SH_DEGREE > 2
     uvec4 sh2;
 #endif
+#if SH_DEGREE > 3
+    uvec4 sh3;
+    uvec4 sh4;
+#endif
 #if IS_COMPOUND
     uint partIndex;
 #endif
@@ -87,6 +91,10 @@ Splat readSplat(float splatIndex)
 #if SH_DEGREE > 2
     splat.sh2 = texelFetch(shTexture2, splatUVint, 0);
 #endif
+#if SH_DEGREE > 3
+    splat.sh3 = texelFetch(shTexture3, splatUVint, 0);
+    splat.sh4 = texelFetch(shTexture4, splatUVint, 0);
+#endif
 #if IS_COMPOUND
     splat.partIndex = uint(texture2D(partIndicesTexture, splatUV).r * 255.0 + 0.5);
 #endif
@@ -96,7 +104,7 @@ Splat readSplat(float splatIndex)
 #if defined(WEBGL2) || defined(WEBGPU) || defined(NATIVE)
 // no SH for GS and WebGL1
 // dir = normalized(splat pos - cam pos)
-vec3 computeColorFromSHDegree(vec3 dir, const vec3 sh[16])
+vec3 computeColorFromSHDegree(vec3 dir, const vec3 sh[25])
 {
     const float SH_C0 = 0.28209479;
     const float SH_C1 = 0.48860251;
@@ -115,6 +123,17 @@ vec3 computeColorFromSHDegree(vec3 dir, const vec3 sh[16])
     SH_C3[4] = -0.45704579;
     SH_C3[5] = 1.445305721;
     SH_C3[6] = -0.59004358;
+
+    float SH_C4[9];
+    SH_C4[0] =  2.5033429418;
+    SH_C4[1] = -1.7701307698;
+    SH_C4[2] =  0.9461746958;
+    SH_C4[3] = -0.6690465436;
+    SH_C4[4] =  0.1057855469;
+    SH_C4[5] = -0.6690465436;
+    SH_C4[6] =  0.4730873479;
+    SH_C4[7] = -1.7701307698;
+    SH_C4[8] =  0.6258357354;
 
 	vec3 result = /*SH_C0 * */sh[0];
 
@@ -143,6 +162,19 @@ vec3 computeColorFromSHDegree(vec3 dir, const vec3 sh[16])
         SH_C3[4] * x * (4.0 * zz - xx - yy) * sh[13] +
         SH_C3[5] * z * (xx - yy) * sh[14] +
         SH_C3[6] * x * (xx - 3.0 * yy) * sh[15];
+
+#if SH_DEGREE > 3
+    result +=
+        SH_C4[0] * x * y * (xx - yy) * sh[16] +
+        SH_C4[1] * y * z * (3.0 * xx - yy) * sh[17] +
+        SH_C4[2] * x * y * (7.0 * zz - 1.0) * sh[18] +
+        SH_C4[3] * y * z * (7.0 * zz - 3.0) * sh[19] +
+        SH_C4[4] * (zz * (35.0 * zz - 30.0) + 3.0) * sh[20] +
+        SH_C4[5] * x * z * (7.0 * zz - 3.0) * sh[21] +
+        SH_C4[6] * (xx - yy) * (7.0 * zz - 1.0) * sh[22] +
+        SH_C4[7] * x * z * (xx - 3.0 * yy) * sh[23] +
+        SH_C4[8] * (xx * (xx - 3.0 * yy) - yy * (3.0 * xx - yy)) * sh[24];
+#endif
 #endif
 #endif
 #endif
@@ -163,7 +195,7 @@ vec4 decompose(uint value)
 
 vec3 computeSH(Splat splat, vec3 dir)
 {
-    vec3 sh[16];
+    vec3 sh[25];
     
     sh[0] = vec3(0.,0.,0.);
 #if SH_DEGREE > 0
@@ -200,7 +232,26 @@ vec3 computeSH(Splat splat, vec3 dir)
     sh[12] = vec3(sh08.y, sh08.z, sh08.w);
     sh[13] = vec3(sh09.x, sh09.y, sh09.z);
     sh[14] = vec3(sh09.w, sh10.x, sh10.y);
-    sh[15] = vec3(sh10.z, sh10.w, sh11.x);    
+    sh[15] = vec3(sh10.z, sh10.w, sh11.x);
+#endif
+#if SH_DEGREE > 3
+    // sh[16] R/G/B are in sh11.y/z/w (j=45,46,47 — last 3 bytes of texture2)
+    vec4 sh12 = decompose(splat.sh3.x);
+    vec4 sh13 = decompose(splat.sh3.y);
+    vec4 sh14 = decompose(splat.sh3.z);
+    vec4 sh15 = decompose(splat.sh3.w);
+    vec4 sh16 = decompose(splat.sh4.x);
+    vec4 sh17 = decompose(splat.sh4.y);
+
+    sh[16] = vec3(sh11.y, sh11.z, sh11.w);
+    sh[17] = vec3(sh12.x, sh12.y, sh12.z);
+    sh[18] = vec3(sh12.w, sh13.x, sh13.y);
+    sh[19] = vec3(sh13.z, sh13.w, sh14.x);
+    sh[20] = vec3(sh14.y, sh14.z, sh14.w);
+    sh[21] = vec3(sh15.x, sh15.y, sh15.z);
+    sh[22] = vec3(sh15.w, sh16.x, sh16.y);
+    sh[23] = vec3(sh16.z, sh16.w, sh17.x);
+    sh[24] = vec3(sh17.y, sh17.z, sh17.w);
 #endif
 
     return computeColorFromSHDegree(dir, sh);

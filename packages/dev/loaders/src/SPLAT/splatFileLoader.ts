@@ -211,7 +211,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
             const gaussianSplatting = this._loadingOptions.gaussianSplattingMesh ?? new GaussianSplattingMesh("GaussianSplatting", null, scene, this._loadingOptions.keepInRam);
             gaussianSplatting._parentContainer = this._assetContainer;
             babylonMeshesArray.push(gaussianSplatting);
-            gaussianSplatting.updateData(parsedSOG.data, parsedSOG.sh, { flipY: false });
+            gaussianSplatting.updateData(parsedSOG.data, parsedSOG.sh, { flipY: false }, undefined, parsedSOG.shDegree);
             gaussianSplatting.scaling.y *= -1;
             gaussianSplatting.computeWorldMatrix(true);
             scene._blockEntityCollection = false;
@@ -266,7 +266,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
                                 this._loadingOptions.gaussianSplattingMesh ?? new GaussianSplattingMesh("GaussianSplatting", null, scene, this._loadingOptions.keepInRam);
                             gaussianSplatting._parentContainer = this._assetContainer;
                             babylonMeshesArray.push(gaussianSplatting);
-                            gaussianSplatting.updateData(parsedPLY.data, parsedPLY.sh, { flipY: false });
+                            gaussianSplatting.updateData(parsedPLY.data, parsedPLY.sh, { flipY: false }, undefined, parsedPLY.shDegree);
                             gaussianSplatting.scaling.y *= -1.0;
 
                             if (parsedPLY.chirality === "RightHanded") {
@@ -339,7 +339,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
                 }
                 gaussianSplatting._parentContainer = this._assetContainer;
                 babylonMeshesArray.push(gaussianSplatting);
-                gaussianSplatting.updateData(parsedSPZ.data, parsedSPZ.sh, { flipY: false });
+                gaussianSplatting.updateData(parsedSPZ.data, parsedSPZ.sh, { flipY: false }, undefined, parsedSPZ.shDegree);
                 if (!this._loadingOptions.flipY) {
                     gaussianSplatting.scaling.y *= -1.0;
                     gaussianSplatting.computeWorldMatrix(true);
@@ -560,7 +560,16 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
             // early exit for chunked/quantized ply
             if (chunkCount) {
                 return await new Promise((resolve) => {
-                    resolve({ mode: Mode.Splat, data: splatsData.buffer, sh: splatsData.sh, faces: faces, hasVertexColors: false, compressed: true, rawSplat: false });
+                    resolve({
+                        mode: Mode.Splat,
+                        data: splatsData.buffer,
+                        sh: splatsData.sh,
+                        shDegree: splatsData.shDegree,
+                        faces: faces,
+                        hasVertexColors: false,
+                        compressed: true,
+                        rawSplat: false,
+                    });
                 });
             }
             // count available properties. if all necessary are present then it's a splat. Otherwise, it's a point cloud
@@ -587,6 +596,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
                     mode: currentMode,
                     data: splatsData.buffer,
                     sh: splatsData.sh,
+                    shDegree: splatsData.shDegree,
                     faces: faces,
                     hasVertexColors: !!propertyColorCount,
                     compressed: false,
