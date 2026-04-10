@@ -18,6 +18,7 @@ import { ExamplesComponent } from "./components/examplesComponent";
 import { QRCodeComponent } from "./components/qrCodeComponent";
 import { SplitContainer } from "shared-ui-components/split/splitContainer";
 import { Splitter } from "shared-ui-components/split/splitter";
+import { type IObserver } from "core/Misc";
 
 import "./scss/main.scss";
 import { ControlledSize, SplitDirection } from "shared-ui-components/split/splitContext";
@@ -54,6 +55,8 @@ export class Playground extends React.Component<
     private _splitContainerRef: React.RefObject<HTMLDivElement>;
 
     private _globalState: GlobalState;
+    private _syncTitle: () => void = () => {};
+    private _savedObserver: IObserver | null = null;
 
     /**
      *
@@ -114,7 +117,7 @@ export class Playground extends React.Component<
 
         // Keep document.title in sync with the snippet ID from the URL hash.
         const baseTitle = typeof document !== "undefined" ? document.title : "";
-        const syncTitle = () => {
+        this._syncTitle = () => {
             if (typeof document === "undefined") {
                 return;
             }
@@ -125,13 +128,18 @@ export class Playground extends React.Component<
                 document.title = baseTitle;
             }
         };
-        syncTitle();
-        window.addEventListener("hashchange", syncTitle);
-        this._globalState.onSavedObservable.add(syncTitle);
+        this._syncTitle();
+        window.addEventListener("hashchange", this._syncTitle);
+        this._savedObserver = this._globalState.onSavedObservable.add(this._syncTitle);
     }
 
     override componentDidMount() {
         this.checkSize();
+    }
+
+    override componentWillUnmount() {
+        window.removeEventListener("hashchange", this._syncTitle);
+        this._savedObserver?.remove();
     }
 
     override componentDidUpdate() {
