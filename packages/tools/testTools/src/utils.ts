@@ -742,18 +742,24 @@ export const checkPerformanceOfScene = async (
 export const logPageErrors = async (page: Page, debug?: boolean) => {
     page.on("console", async (msg: any) => {
         // serialize my args the way I want
-        const args: any[] = await Promise.all(
-            msg.args().map((arg: any) =>
-                arg.evaluate((argument: string | Error) => {
-                    // I'm in a page context now. If my arg is an error - get me its message.
-                    if (argument instanceof Error) {
-                        return `[ERR] ${argument.message}`;
-                    }
-                    //Return the argument if it is just a message
-                    return `[STR] ${argument}`;
-                }, arg)
-            )
-        );
+        let args: any[];
+        try {
+            args = await Promise.all(
+                msg.args().map((arg: any) =>
+                    arg.evaluate((argument: string | Error) => {
+                        // I'm in a page context now. If my arg is an error - get me its message.
+                        if (argument instanceof Error) {
+                            return `[ERR] ${argument.message}`;
+                        }
+                        //Return the argument if it is just a message
+                        return `[STR] ${argument}`;
+                    }, arg)
+                )
+            );
+        } catch {
+            // Execution context can be destroyed during page navigation; ignore silently.
+            return;
+        }
         args.filter((arg) => arg !== null).forEach((arg) => console.log(arg));
         // fallback
         if (!debug) {

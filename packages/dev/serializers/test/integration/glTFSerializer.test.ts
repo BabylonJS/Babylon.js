@@ -463,7 +463,7 @@ test.describe("Babylon glTF Serializer", () => {
             const intensity = 0.2;
             const red = [1, 0, 0];
             const assertionData = await page.evaluate(
-                async (intensity, red) => {
+                async ({ intensity, red }: { intensity: number; red: number[] }) => {
                     const pointLight = new BABYLON.PointLight("pointLight", new BABYLON.Vector3(4, 4, 0), window.scene!);
                     pointLight.intensity = intensity;
                     const diffuseColor = BABYLON.Color3.FromArray(red);
@@ -473,8 +473,7 @@ test.describe("Babylon glTF Serializer", () => {
                     const jsonString = glTFData.files["test.gltf"] as string;
                     return JSON.parse(jsonString);
                 },
-                intensity,
-                red
+                { intensity, red }
             );
             expect(Object.keys(assertionData)).toHaveLength(6);
             expect(assertionData.extensions["KHR_lights_punctual"].lights).toHaveLength(1);
@@ -489,7 +488,7 @@ test.describe("Babylon glTF Serializer", () => {
             const innerAngle = Math.PI / 8;
             const angle = Math.PI / 4;
             const assertionData = await page.evaluate(
-                async (intensity, red, innerAngle, angle) => {
+                async ({ intensity, red, innerAngle, angle }: { intensity: number; red: number[]; innerAngle: number; angle: number }) => {
                     const spotLight = new BABYLON.SpotLight("spotLight", new BABYLON.Vector3(-4, 4, 0), new BABYLON.Vector3(0, angle, 0), angle, 2, window.scene!);
                     spotLight.intensity = intensity;
                     spotLight.innerAngle = innerAngle;
@@ -500,10 +499,7 @@ test.describe("Babylon glTF Serializer", () => {
                     const jsonString = glTFData.files["test.gltf"] as string;
                     return JSON.parse(jsonString);
                 },
-                intensity,
-                red,
-                innerAngle,
-                angle
+                { intensity, red, innerAngle, angle }
             );
             expect(Object.keys(assertionData)).toHaveLength(6);
             expect(assertionData.extensions["KHR_lights_punctual"].lights).toHaveLength(1);
@@ -518,7 +514,7 @@ test.describe("Babylon glTF Serializer", () => {
             const intensity = 0.2;
             const red = [1, 0, 0];
             const assertionData = await page.evaluate(
-                async (intensity, red) => {
+                async ({ intensity, red }: { intensity: number; red: number[] }) => {
                     const directionalLight = new BABYLON.DirectionalLight("directionalLight", BABYLON.Vector3.Forward(), window.scene!);
                     const diffuseColor = BABYLON.Color3.FromArray(red);
                     directionalLight.diffuse = diffuseColor;
@@ -528,8 +524,7 @@ test.describe("Babylon glTF Serializer", () => {
                     const jsonString = glTFData.files["test.gltf"] as string;
                     return JSON.parse(jsonString);
                 },
-                intensity,
-                red
+                { intensity, red }
             );
             expect(Object.keys(assertionData)).toHaveLength(6);
             expect(assertionData.extensions["KHR_lights_punctual"].lights).toHaveLength(1);
@@ -579,10 +574,10 @@ test.describe("Babylon glTF Serializer", () => {
 
         test.describe("exporting instances", () => {
             const instanceCount = 3;
-            const exportInstances = async (instanceCount: number, skipSource: boolean) => {
+            const exportInstances = async ({ count, skipSource }: { count: number; skipSource: boolean }) => {
                 const shouldExportNode = (node: any) => !skipSource || node.name !== "box";
                 const mesh = BABYLON.MeshBuilder.CreateBox("box", {}, window.scene!);
-                for (let i = 0; i < instanceCount; i++) {
+                for (let i = 0; i < count; i++) {
                     mesh.createInstance("boxInstance" + i);
                 }
                 const glTFData = await BABYLON.GLTF2Export.GLTFAsync(window.scene!, "test", { shouldExportNode });
@@ -591,7 +586,7 @@ test.describe("Babylon glTF Serializer", () => {
             };
 
             test("exports one mesh that is shared by all instances", async () => {
-                const assertionData = await page.evaluate(exportInstances, instanceCount, false);
+                const assertionData = await page.evaluate(exportInstances, { count: instanceCount, skipSource: false });
                 expect(assertionData.nodes).toHaveLength(instanceCount + 1);
                 expect(assertionData.meshes).toHaveLength(1);
                 for (const node of assertionData.nodes) {
@@ -600,7 +595,7 @@ test.describe("Babylon glTF Serializer", () => {
             });
 
             test("can export instances without their source mesh", async () => {
-                const assertionData = await page.evaluate(exportInstances, instanceCount, true);
+                const assertionData = await page.evaluate(exportInstances, { count: instanceCount, skipSource: true });
                 expect(assertionData.nodes).toHaveLength(instanceCount);
                 expect(assertionData.meshes).toHaveLength(1);
                 for (const node of assertionData.nodes) {
@@ -717,7 +712,7 @@ test.describe("Babylon glTF Serializer", () => {
             };
             const transformsRH = {
                 translation: [-0.2, 0.3, 0.4],
-                rotation: [-0.5, -0.5, 0.5, 0.5],
+                rotation: [0.5, -0.5, -0.5, 0.5],
             };
             const assertionData = await page.evaluate(async (transformsLH) => {
                 const parent = BABYLON.MeshBuilder.CreateBox("box");
