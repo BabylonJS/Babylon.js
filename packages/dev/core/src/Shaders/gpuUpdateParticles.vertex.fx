@@ -179,7 +179,7 @@ uniform vec4 cellInfos;
 
 #ifdef ATTRACTORS
 uniform int attractorCount;
-uniform vec4 attractorPositionAndStrength[8];
+uniform vec4 attractorPositionAndStrength[MAX_ATTRACTORS];
 #endif
 
 vec3 getRandomVec3(float offset) {

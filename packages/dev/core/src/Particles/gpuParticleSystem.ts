@@ -210,18 +210,19 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
 
     /** Attractors */
     /**
-     * Maximum number of attractors supported by GPU particle systems.
+     * Maximum number of attractors for this GPU particle system instance.
+     * Determined at construction time via the `maxAttractors` option (default 8).
      * Limited by the fixed-size uniform arrays in the update shaders.
      */
-    public static readonly MAX_ATTRACTORS = 8;
+    public readonly maxAttractors: number;
 
     /**
      * Add an attractor to the particle system. Attractors are used to change the direction of the particles in the system.
      * @param attractor - The attractor to add to the particle system
      */
     public override addAttractor(attractor: Attractor): void {
-        if (this._attractors.length >= GPUParticleSystem.MAX_ATTRACTORS) {
-            Logger.Warn(`GPU particle system supports a maximum of ${GPUParticleSystem.MAX_ATTRACTORS} attractors. Ignoring additional attractor.`);
+        if (this._attractors.length >= this.maxAttractors) {
+            Logger.Warn(`GPU particle system supports a maximum of ${this.maxAttractors} attractors. Ignoring additional attractor.`);
             return;
         }
         super.addAttractor(attractor);
@@ -1014,6 +1015,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
             capacity: number;
             randomTextureSize: number;
             emitRateControl: boolean;
+            maxAttractors: number;
         }>,
         sceneOrEngine: Scene | AbstractEngine,
         customEffect: Nullable<Effect> = null,
@@ -1078,6 +1080,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         this._currentActiveCount = 0;
         this._isAnimationSheetEnabled = isAnimationSheetEnabled;
         this._emitRateControl = !!options.emitRateControl;
+        this.maxAttractors = options.maxAttractors ?? 8;
 
         this.particleEmitterType = new BoxParticleEmitter();
 
@@ -1467,6 +1470,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
 
         if (this._attractors.length > 0) {
             defines += "\n#define ATTRACTORS";
+            defines += "\n#define MAX_ATTRACTORS " + this.maxAttractors;
         }
 
         if (this._emitRateControl) {
@@ -1891,8 +1895,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         }
 
         if (this._attractors.length > 0) {
-            const count = Math.min(this._attractors.length, GPUParticleSystem.MAX_ATTRACTORS);
-            this._updateBuffer.setInt("attractorCount", count);
+            this._updateBuffer.setInt("attractorCount", this._attractors.length);
 
             // Compute inverse world matrix once for all attractors when in local space
             let invWorld: Matrix | undefined;
@@ -1901,7 +1904,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
                 emitterWM!.invertToRef(invWorld);
             }
 
-            for (let i = 0; i < count; i++) {
+            for (let i = 0; i < this._attractors.length; i++) {
                 const attractor = this._attractors[i];
                 const name = "attractorPositionAndStrength[" + i + "]";
                 if (invWorld) {
@@ -2263,6 +2266,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         serializationObject.activeParticleCount = this.activeParticleCount;
         serializationObject.randomTextureSize = this._randomTextureSize;
         serializationObject.emitRateControl = this._emitRateControl;
+        serializationObject.maxAttractors = this.maxAttractors;
         serializationObject.customShader = this.customShader;
 
         serializationObject.preventAutoStart = this.preventAutoStart;
@@ -2310,6 +2314,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
                 capacity: capacity || parsedParticleSystem.capacity,
                 randomTextureSize: parsedParticleSystem.randomTextureSize,
                 emitRateControl: parsedParticleSystem.emitRateControl,
+                maxAttractors: parsedParticleSystem.maxAttractors,
             },
             sceneOrEngine,
             null,

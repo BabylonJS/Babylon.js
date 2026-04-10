@@ -83,7 +83,7 @@ struct SimParams {
 
     #ifdef ATTRACTORS
         attractorCount : i32,
-        attractorPositionAndStrength : array<vec4<f32>, 8>,
+        attractorPositionAndStrength : array<vec4<f32>, MAX_ATTRACTORS>,
     #endif
 
     // Emitter types

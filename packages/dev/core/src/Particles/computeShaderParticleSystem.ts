@@ -4,7 +4,7 @@ import { ComputeShader } from "../Compute/computeShader";
 import { UniformBuffer } from "../Materials/uniformBuffer";
 import { type IGPUParticleSystemPlatform } from "./IGPUParticleSystemPlatform";
 import { type Buffer, type VertexBuffer } from "../Buffers/buffer";
-import { GPUParticleSystem } from "./gpuParticleSystem";
+import { type GPUParticleSystem } from "./gpuParticleSystem";
 
 import { type DataArray, type Nullable } from "../types";
 import { type DataBuffer } from "../Buffers/dataBuffer";
@@ -121,7 +121,7 @@ export class ComputeShaderParticleSystem implements IGPUParticleSystemPlatform {
         }
         if (this._parent.attractors.length > 0) {
             this._simParamsComputeShader.addUniform("attractorCount", 1);
-            for (let i = 0; i < GPUParticleSystem.MAX_ATTRACTORS; i++) {
+            for (let i = 0; i < this._parent.maxAttractors; i++) {
                 this._simParamsComputeShader.addUniform("attractorPositionAndStrength[" + i + "]", 4);
             }
         }

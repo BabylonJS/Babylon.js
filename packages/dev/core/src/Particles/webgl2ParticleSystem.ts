@@ -80,15 +80,6 @@ export class WebGL2ParticleSystem implements IGPUParticleSystemPlatform {
                 "limitVelocityDamping",
                 "flowMapProjection",
                 "flowMapStrength",
-                "attractorCount",
-                "attractorPositionAndStrength[0]",
-                "attractorPositionAndStrength[1]",
-                "attractorPositionAndStrength[2]",
-                "attractorPositionAndStrength[3]",
-                "attractorPositionAndStrength[4]",
-                "attractorPositionAndStrength[5]",
-                "attractorPositionAndStrength[6]",
-                "attractorPositionAndStrength[7]",
             ],
             uniformBuffersNames: [],
             samplers: [
@@ -165,6 +156,15 @@ export class WebGL2ParticleSystem implements IGPUParticleSystemPlatform {
         }
 
         this._updateEffectOptions.defines = defines;
+
+        // Add attractor uniform names dynamically based on maxAttractors
+        if (defines.indexOf("ATTRACTORS") !== -1) {
+            this._updateEffectOptions.uniformsNames.push("attractorCount");
+            for (let i = 0; i < this._parent.maxAttractors; i++) {
+                this._updateEffectOptions.uniformsNames.push("attractorPositionAndStrength[" + i + "]");
+            }
+        }
+
         this._updateEffect = this._engine.createEffect("gpuUpdateParticles", this._updateEffectOptions, this._engine);
 
         return new UniformBufferEffectCommonAccessor(this._updateEffect);
