@@ -2,9 +2,7 @@ import { type IDisposable, type IReadonlyObservable } from "core/index";
 import { type ViewerElement, type ViewerOptions } from "viewer/index";
 
 import { type IService, type ServiceDefinition } from "inspector/modularity/serviceDefinition";
-import { type IShellService } from "inspector/services/shellService";
-
-import { ShellServiceIdentity } from "inspector/services/shellService";
+import { type IShellService, ShellServiceIdentity } from "inspector/services/shellService";
 import { Observable } from "core/Misc/observable";
 
 import { LoadModel } from "./modelLoader";
