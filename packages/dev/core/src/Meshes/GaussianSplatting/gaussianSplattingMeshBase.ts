@@ -349,7 +349,7 @@ export class GaussianSplattingMeshBase extends Mesh {
     private static readonly _BatchSize = 16; // 16 splats per instance
     private _cameraViewInfos = new Map<number, ICameraViewInfo>();
 
-    private static readonly _DefaultViewUpdateThreshold = 1e-4;
+    protected static readonly _DefaultViewUpdateThreshold = 1e-4;
 
     /**
      * Cosine value of the angle threshold to update view dependent splat sorting. Default is 0.0001.

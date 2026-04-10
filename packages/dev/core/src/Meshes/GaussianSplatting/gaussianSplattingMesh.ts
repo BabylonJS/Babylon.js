@@ -1072,8 +1072,8 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
     ): T {
         const mesh = new ctor(parsedMesh.name, null, scene, parsedMesh.keepInRam);
 
-        mesh.disableDepthSort = parsedMesh.disableDepthSort;
-        mesh.viewUpdateThreshold = parsedMesh.viewUpdateThreshold;
+        mesh.disableDepthSort = parsedMesh.disableDepthSort ?? false;
+        mesh.viewUpdateThreshold = parsedMesh.viewUpdateThreshold ?? GaussianSplattingMeshBase._DefaultViewUpdateThreshold;
 
         let splatsData: ArrayBuffer | string | undefined = parsedMesh.splatsData;
         if (typeof splatsData === "string") {
