@@ -277,7 +277,8 @@ export class Parser {
             transform.rotation,
             transform.scale,
             transform.opacity,
-            parentNode
+            parentNode,
+            layer.ty === 3 // isNullLayer
         );
 
         let anchorNode: Node | undefined = undefined;

@@ -3,74 +3,18 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { type StacktracedObject } from "./window";
 
-// Minimal Page-like interface to avoid depending on the puppeteer package.
+// Minimal Page-like interface compatible with both Puppeteer and Playwright.
 interface Page {
     evaluate: (...args: any[]) => Promise<any>;
-    evaluateHandle: (...args: any[]) => Promise<any>;
-    queryObjects: (...args: any[]) => Promise<any>;
     goto: (...args: any[]) => Promise<any>;
     waitForSelector: (...args: any[]) => Promise<any>;
-    waitForNetworkIdle: (...args: any[]) => Promise<any>;
-    on: (event: string, handler: (...args: any[]) => void) => Page;
+    on: (...args: any[]) => any;
 }
 
 declare const page: Page;
 declare const BABYLON: typeof window.BABYLON;
 
 const ClassesToCheck = ["BABYLON.Camera", "BABYLON.TransformNode", "BABYLON.Scene", "BABYLON.Vector3", "BABYLON.BaseTexture", "BABYLON.Material"];
-
-export interface CountValues {
-    numberOfObjects: number;
-    usedJSHeapSize: number;
-    specifics: {
-        [type: string]: string[];
-    };
-    eventsRegistered: typeof window.eventsRegistered;
-}
-
-// eslint-disable-next-line no-restricted-syntax
-export const countCurrentObjects = async (initialValues: CountValues, classes = ClassesToCheck, checkGlobalObjects?: boolean, flip?: boolean) => {
-    const current = await countObjects(page, classes);
-    // check that all events are cleared and all objects are gone:
-    Object.keys(current.eventsRegistered).forEach((eventName) => {
-        const stacks = current.eventsRegistered[eventName].stackTraces;
-        const numberOfActiveListeners = current.eventsRegistered[eventName].numberAdded - current.eventsRegistered[eventName].numberRemoved;
-        if (flip) {
-            expect(numberOfActiveListeners, `event ${eventName} is not removed ${numberOfActiveListeners} time(s). ${(stacks || []).join("\n")}`).toBeGreaterThanOrEqual(0);
-        } else {
-            expect(numberOfActiveListeners, `event ${eventName} is not removed ${numberOfActiveListeners} time(s). ${(stacks || []).join("\n")}`).toBeLessThanOrEqual(0);
-        }
-    });
-
-    Object.keys(current.specifics).forEach((type) => {
-        const delta = current.specifics[type].length - initialValues.specifics[type].length;
-
-        // cross before and after
-        current.specifics[type]
-            .filter((id) => initialValues.specifics[type].indexOf(id) === -1)
-            .forEach((id) => {
-                expect(id, `Type ${type} (${current.stackTraces[id]?.className}) is not disposed; StackTrace: ${current.stackTraces[id]?.stackTrace}`).toBe(null);
-            });
-        if (flip) {
-            expect(delta, `type ${type} is not disposed ${delta} times`).toBeGreaterThanOrEqual(0);
-        } else {
-            expect(delta, `type ${type} is not disposed ${delta} times`).toBeLessThanOrEqual(0);
-        }
-    });
-
-    // this test is too specific and requires thorough testing
-    if (checkGlobalObjects) {
-        if (flip) {
-            expect(current.numberOfObjects, `number of objects is not disposed ${current.numberOfObjects - initialValues.numberOfObjects} times`).toBeGreaterThanOrEqual(
-                initialValues.numberOfObjects
-            );
-        } else {
-            expect(current.numberOfObjects, `number of objects is not disposed ${current.numberOfObjects - initialValues.numberOfObjects} times`).toBeLessThanOrEqual(
-                initialValues.numberOfObjects
-            );
-        }
-    }
-};
 
 // eslint-disable-next-line no-restricted-syntax
 export const evaluateInitEngine = async ({
@@ -108,85 +52,6 @@ export const evaluateInitEngine = async ({
     window.engine.renderEvenInBackground = true;
     window.engine.getCaps().parallelShaderCompile = undefined;
     return !!window.engine;
-};
-
-// eslint-disable-next-line no-restricted-syntax
-export const evaluateEventListenerAugmentation = async () => {
-    const realAddEventListener = EventTarget.prototype.addEventListener;
-    const realRemoveEventListener = EventTarget.prototype.removeEventListener;
-
-    window.eventsRegistered = {};
-
-    EventTarget.prototype.addEventListener = function (a, b, c) {
-        realAddEventListener(a, b, c);
-        window.eventsRegistered[a] = window.eventsRegistered[a] || {
-            numberAdded: 0,
-            numberRemoved: 0,
-            registeredFunctions: [],
-        };
-        window.eventsRegistered[a].numberAdded++;
-        // find if this function was registered already
-        const registered = window.eventsRegistered[a].registeredFunctions.findIndex((f) => f && f.eventListener === b);
-        if (registered === -1) {
-            window.eventsRegistered[a].registeredFunctions.push({
-                eventListener: b,
-                timesAdded: 1,
-            });
-        } else {
-            window.eventsRegistered[a].registeredFunctions[registered]!.timesAdded++;
-        }
-        try {
-            throw new Error();
-        } catch (err) {
-            if (window.sourceMappedStackTrace) {
-                window.sourcemapPromises = window.sourcemapPromises || [];
-                const promise = new Promise<null>((resolve) => {
-                    try {
-                        window.sourceMappedStackTrace.mapStackTrace(
-                            err.stack,
-                            (stackArray) => {
-                                window.eventsRegistered[a].stackTraces = window.eventsRegistered[a].stackTraces || [];
-                                window.eventsRegistered[a].stackTraces.push(stackArray.join("\n").replace(/^Error\n/, "Stacktrace\n") + "\n>>\n");
-                                resolve(null);
-                            },
-                            {
-                                sync: true,
-                                cacheGlobally: true,
-                                filter: (line: string) => {
-                                    return line.indexOf("puppeteer") === -1;
-                                },
-                            }
-                        );
-                    } catch (err) {
-                        window.eventsRegistered[a].stackTraces = window.eventsRegistered[a].stackTraces || [];
-                        window.eventsRegistered[a].stackTraces.push(err.stack.replace(/^Error\n/, "Stacktrace\n") + "\n>>\n");
-                        resolve(null);
-                    }
-                });
-                window.sourcemapPromises.push(promise);
-            } else {
-                window.eventsRegistered[a].stackTraces = window.eventsRegistered[a].stackTraces || [];
-                window.eventsRegistered[a].stackTraces.push(err.stack.replace(/^Error\n/, "Stacktrace\n") + "\n>>\n");
-            }
-        }
-    };
-
-    EventTarget.prototype.removeEventListener = function (a, b, c) {
-        realRemoveEventListener(a, b, c);
-        window.eventsRegistered[a] = window.eventsRegistered[a] || {
-            numberAdded: 0,
-            numberRemoved: 0,
-            registeredFunctions: [],
-        };
-        // find the registered
-        const registered = window.eventsRegistered[a].registeredFunctions.findIndex((f) => f && f.eventListener === b);
-        if (registered !== -1) {
-            window.eventsRegistered[a].numberRemoved += window.eventsRegistered[a].registeredFunctions[registered]!.timesAdded;
-            window.eventsRegistered[a].registeredFunctions[registered] = null;
-        } else {
-            // console.error("could not find registered function");
-        }
-    };
 };
 
 // eslint-disable-next-line no-restricted-syntax
@@ -326,55 +191,6 @@ export const prepareLeakDetection = async (classes: string[] = ClassesToCheck) =
             this.__disposeCalled = true;
         };
     });
-};
-
-// eslint-disable-next-line no-restricted-syntax
-export const countObjects = async (page: Page, classes = ClassesToCheck) => {
-    await page.waitForNetworkIdle({
-        idleTime: 300,
-        timeout: 0,
-    });
-    await page.evaluate(() => window.gc && window.gc());
-
-    const prototypeHandle = await page.evaluateHandle(() => Object.prototype);
-    const objectsHandle = await page.queryObjects(prototypeHandle);
-    const numberOfObjects = await page.evaluate((instances: any[]) => instances.length, objectsHandle);
-    const usedJSHeapSize = await page.evaluate(() => {
-        return ((window.performance as any).memory && (window.performance as any).memory.usedJSHeapSize) || 0;
-    });
-    await Promise.all([prototypeHandle.dispose(), objectsHandle.dispose()]);
-    const specifics: { [type: string]: string[] } = {};
-    await page.evaluate(async () => {
-        if (window.sourcemapPromises) {
-            await Promise.all(window.sourcemapPromises);
-        }
-    });
-    for (const classToCheck of classes) {
-        const prototype = classToCheck + ".prototype";
-        // tslint:disable-next-line: no-eval
-        const prototypeHandle = await page.evaluateHandle((p: string) => eval(p), prototype);
-        const objectsHandle = await page.queryObjects(prototypeHandle);
-        const array = await page.evaluate(
-            (objects: any[]) =>
-                objects.map((object: any) => {
-                    if (!object.__id) {
-                        object.__id = Math.random().toString(36).substring(2, 15);
-                    }
-                    return object.__id;
-                }),
-            objectsHandle
-        );
-        // const count = await page.evaluate((objects) => objects.length, objectsHandle);
-        await prototypeHandle.dispose();
-        await objectsHandle.dispose();
-        specifics[classToCheck] = array;
-    }
-    const eventsRegistered = await page.evaluate(() => window.eventsRegistered);
-    const stackTraces = await page.evaluate(() => window.classesConstructed);
-
-    // TODO - check if we can use performance.memory.usedJSHeapSize
-
-    return { numberOfObjects, usedJSHeapSize, specifics, eventsRegistered, stackTraces };
 };
 
 export type PerformanceTestType = "dev" | "preview" | "stable";
@@ -924,20 +740,26 @@ export const checkPerformanceOfScene = async (
 
 // eslint-disable-next-line no-restricted-syntax
 export const logPageErrors = async (page: Page, debug?: boolean) => {
-    page.on("console", async (msg) => {
+    page.on("console", async (msg: any) => {
         // serialize my args the way I want
-        const args: any[] = await Promise.all(
-            msg.args().map((arg: any) =>
-                arg.evaluate((argument: string | Error) => {
-                    // I'm in a page context now. If my arg is an error - get me its message.
-                    if (argument instanceof Error) {
-                        return `[ERR] ${argument.message}`;
-                    }
-                    //Return the argument if it is just a message
-                    return `[STR] ${argument}`;
-                }, arg)
-            )
-        );
+        let args: any[];
+        try {
+            args = await Promise.all(
+                msg.args().map((arg: any) =>
+                    arg.evaluate((argument: string | Error) => {
+                        // I'm in a page context now. If my arg is an error - get me its message.
+                        if (argument instanceof Error) {
+                            return `[ERR] ${argument.message}`;
+                        }
+                        //Return the argument if it is just a message
+                        return `[STR] ${argument}`;
+                    }, arg)
+                )
+            );
+        } catch {
+            // Execution context can be destroyed during page navigation; ignore silently.
+            return;
+        }
         args.filter((arg) => arg !== null).forEach((arg) => console.log(arg));
         // fallback
         if (!debug) {

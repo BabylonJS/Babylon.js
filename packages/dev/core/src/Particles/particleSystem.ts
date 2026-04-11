@@ -165,16 +165,7 @@ export class ParticleSystem extends ThinParticleSystem {
     }
 
     /** Attractors */
-    private _attractors: Attractor[] = [];
     private _attractorUpdate: Nullable<_IExecutionQueueItem> = null;
-
-    /**
-     * The list of attractors used to change the direction of the particles in the system.
-     * Please note that this is a copy of the internal array. If you want to modify it, please use the addAttractor and removeAttractor methods.
-     */
-    public get attractors(): Attractor[] {
-        return this._attractors.slice(0);
-    }
 
     /**
      * Gets or sets an object used to store user defined information for the particle system
@@ -185,8 +176,8 @@ export class ParticleSystem extends ThinParticleSystem {
      * Add an attractor to the particle system. Attractors are used to change the direction of the particles in the system.
      * @param attractor The attractor to add to the particle system
      */
-    public addAttractor(attractor: Attractor): void {
-        this._attractors.push(attractor);
+    public override addAttractor(attractor: Attractor): void {
+        super.addAttractor(attractor);
 
         if (this._attractors.length === 1) {
             this._attractorUpdate = {
@@ -206,14 +197,11 @@ export class ParticleSystem extends ThinParticleSystem {
      * Removes an attractor from the particle system. Attractors are used to change the direction of the particles in the system.
      * @param attractor The attractor to remove from the particle system
      */
-    public removeAttractor(attractor: Attractor): void {
-        const index = this._attractors.indexOf(attractor);
-        if (index !== -1) {
-            this._attractors.splice(index, 1);
-        }
+    public override removeAttractor(attractor: Attractor): void {
+        super.removeAttractor(attractor);
 
-        if (this._attractors.length === 0) {
-            _RemoveFromQueue(this._attractorUpdate!);
+        if (this._attractors.length === 0 && this._attractorUpdate) {
+            _RemoveFromQueue(this._attractorUpdate);
         }
     }
 

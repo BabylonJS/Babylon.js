@@ -1,13 +1,5 @@
-import {
-    type RawBezier,
-    type RawElement,
-    type RawFont,
-    type RawPathShape,
-    type RawRectangleShape,
-    type RawStrokeShape,
-    type RawTextData,
-    type RawTextDocument,
-} from "../parsing/rawTypes";
+import { type RawElement, type RawFont, type RawPathShape, type RawRectangleShape, type RawStrokeShape, type RawTextData, type RawTextDocument } from "../parsing/rawTypes";
+import { GetInitialVectorValues, GetInitialBezierData } from "../parsing/rawPropertyHelpers";
 
 /**
  * Represents a bounding box for a shape in the animation.
@@ -63,6 +55,19 @@ export function GetShapesBoundingBox(rawElements: RawElement[]): BoundingBox {
         } else if (rawElements[i].ty === "st") {
             strokeWidth = Math.max(strokeWidth, GetStrokeInset(rawElements[i] as RawStrokeShape));
         }
+    }
+
+    // If no vertices were added (e.g., empty animated keyframes), return a zero-size bounding box
+    if (!Number.isFinite(boxCorners.minX)) {
+        return {
+            width: 0,
+            height: 0,
+            centerX: 0,
+            centerY: 0,
+            offsetX: 0,
+            offsetY: 0,
+            strokeInset: 0,
+        };
     }
 
     const width = boxCorners.maxX - boxCorners.minX;
@@ -149,8 +154,8 @@ export function GetTextBoundingBox(
 }
 
 function GetRectangleVertices(boxCorners: Corners, rect: RawRectangleShape): void {
-    const size = rect.s.k as number[];
-    const position = rect.p.k as number[];
+    const size = GetInitialVectorValues(rect.s);
+    const position = GetInitialVectorValues(rect.p);
 
     // Calculate the four corners of the rectangle
     UpdateBoxCorners(boxCorners, position[0] - size[0] / 2, position[1] - size[1] / 2);
@@ -160,7 +165,11 @@ function GetRectangleVertices(boxCorners: Corners, rect: RawRectangleShape): voi
 }
 
 function GetPathVertices(boxCorners: Corners, path: RawPathShape): void {
-    const bezier = path.ks.k as RawBezier;
+    const bezier = GetInitialBezierData(path.ks);
+    if (!bezier) {
+        return;
+    }
+
     const vertices = bezier.v;
     const inTangents = bezier.i;
     const outTangents = bezier.o;

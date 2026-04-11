@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
-import { ServiceContainer } from "../../../src/modularity/serviceContainer";
-import { type ServiceDefinition, type IService } from "../../../src/modularity/serviceDefinition";
+import { ServiceContainer } from "../../../src/modularTool/modularity/serviceContainer";
+import { type ServiceDefinition, type IService } from "../../../src/modularTool/modularity/serviceDefinition";
 import { type IDisposable } from "core/scene";
 
 // ---------------------------------------------------------------------------

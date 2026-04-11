@@ -2,6 +2,12 @@
 
 Extensive documentation for Babylon.js can be found at <https://doc.babylonjs.com/>.
 
+## Product identity
+
+Babylon.js is not a single product but a platform containing an API published via NPM and several supporting tools. The tools include deployed web-based apps such as the Playground, Sandbox, and editors: Node Material Editor (NME), GUI Editor, Node Geometry Editor (NGE), Node Render Graph Editor (NRGE), Smart Filters Editor (SFE), Node Particle Editor (NPE), and the Viewer.
+
+When creating HTML mocks, match the look and feel of the tool's existing UI. Don't guess at what the tool looks like — read the UI code and create a close approximation.
+
 ## Product and Architecture Reference
 
 For a complete inventory of all public `@babylonjs` npm packages and their corresponding implementation packages, see [product-inventory.md](product-inventory.md).
@@ -12,6 +18,18 @@ For detailed architecture documentation of each product, see the files in [archi
 
 For a full index of all coding practice, review, and workflow instruction files, see [instructions/index.md](instructions/index.md).
 
+## Feature documentation
+
+Feature documentation lives in `/specs/`. Each feature has its own folder named `<feature-name>/` containing `goals.md`, `requirements.md`, and `architecture.md` as applicable. Within that folder, a `.temp/` directory holds files that don't need to be kept after development is complete (e.g., `mocks.html`, `mocks.context.md`, `implementation_plan/`).
+
+## Quality commands
+
+Run these commands to verify code quality. All must pass before committing.
+
+- **Format**: `npm run format:check`
+- **Check (lint + typecheck + ratchets)**: `npm run lint:check`
+- **Unit tests**: `npm run test:unit`
+
 ## Code review requirements
 
 When reviewing a PR you must follow the instructions in `.github/instructions/code-review.instructions.md`
@@ -20,18 +38,7 @@ When reviewing a PR you must follow the instructions in `.github/instructions/co
 
 ### Side-Effect Imports for Prototype Augmentations (CRITICAL)
 
-This codebase uses TypeScript **module augmentation** to add methods to class prototypes (`Scene`, `Engine`, `ThinEngine`, `AbstractEngine`) in separate files. TypeScript will NOT flag a missing import — the `declare module` block makes methods type-check globally, but at runtime the prototype is `undefined` unless the augmenting file is imported, causing a crash.
-
-**When writing or reviewing code in `packages/dev/core/src/`, always add a side-effect import for any call to a prototype-augmented method.** For example:
-
-```ts
-// Required when calling scene.getPhysicsEngine()
-import "../Physics/joinedPhysicsEngineComponent";
-```
-
-No named imports are needed — the import just ensures the module executes and the prototype assignment runs. The import path should be relative to the consuming file.
-
-See `.github/instructions/side-effect-imports.instructions.md` for the full table of augmented methods and their required imports.
+In `packages/dev/core/src/`, always add a side-effect import for any call to a prototype-augmented method. TypeScript won't flag a missing import, but the method will be `undefined` at runtime without it. See `.github/instructions/side-effect-imports.instructions.md` for details and the full method table.
 
 ### Backward Compatibility
 
@@ -68,3 +75,11 @@ Inspector v2 extensions and UI code must use shared UI components, unsized Fluen
 ### Tests
 
 New APIs should have vitest tests following the existing test structure and conventions, and visualization tests via Playwright when applicable. See `.github/instructions/tests.instructions.md`.
+
+### Manual testing
+
+To manually test, see `.github/instructions/manual-testing.instructions.md`.
+
+### Fix bug workflow
+
+For looking up and fixing bugs from GitHub issues, see `.github/instructions/fix-bug.instructions.md`.

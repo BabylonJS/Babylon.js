@@ -41,6 +41,10 @@ function IsCameraFrameGraphTask(task: FrameGraphTask): task is FrameGraphTask & 
     return (task as Partial<{ camera: Camera }>).camera instanceof Camera;
 }
 
+function IsNodesSectionType(node: Node): boolean {
+    return node instanceof TransformNode || node instanceof Camera || node instanceof Light;
+}
+
 export const NodeExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplorerService, ISceneContext, IGizmoService, IWatcherService]> = {
     friendlyName: "Node Explorer",
     consumes: [SceneExplorerServiceIdentity, SceneContextIdentity, GizmoServiceIdentity, WatcherServiceIdentity],
@@ -52,24 +56,39 @@ export const NodeExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplore
 
         const nodeMovedObservable = new Observable<Node>();
 
+        // Set of all nodes known to be in the scene, rebuilt each time getRootEntities
+        // is called. Used by getEntityDisplayInfo to detect orphaned ancestor nodes.
+        const knownSceneNodes = new Set<Node>();
+
         const sectionRegistration = sceneExplorerService.addSection({
             displayName: "Nodes",
             order: DefaultSectionsOrder.Nodes,
             getRootEntities: () => {
-                const rootNodes = [...scene.rootNodes];
+                const rootNodes = new Set<Node>(scene.rootNodes);
+                knownSceneNodes.clear();
 
-                // If any non-root node has a parent and that parent is not one of the node types shown in the Nodes section,
-                // then we should treat it as a root node, otherwise it won't show up anywhere in scene explorer.
-                // An example of this is when a Mesh or a TransformNode is parented under a Bone.
+                // Ensure all nodes in the scene are reachable in the explorer, even if their
+                // parent was removed from the scene or is not a type shown in the Nodes section.
                 for (const node of [...scene.meshes, ...scene.transformNodes, ...scene.cameras, ...scene.lights]) {
-                    if (
-                        node.parent &&
-                        !(node.parent instanceof AbstractMesh) &&
-                        !(node.parent instanceof TransformNode) &&
-                        !(node.parent instanceof Camera) &&
-                        !(node.parent instanceof Light)
-                    ) {
-                        rootNodes.push(node);
+                    knownSceneNodes.add(node);
+
+                    if (!node.parent) {
+                        continue;
+                    }
+
+                    if (!IsNodesSectionType(node.parent)) {
+                        // Parent is not a type shown in the Nodes section (e.g. a Bone).
+                        // Treat this node as a root so it still appears in the explorer.
+                        rootNodes.add(node);
+                    } else {
+                        // Walk up through Nodes-section-type parents to find the topmost ancestor.
+                        // If that ancestor was removed from the scene (not in rootNodes), add it
+                        // so the entire subtree remains visible in the explorer.
+                        let ancestor: Node = node.parent;
+                        while (ancestor.parent && IsNodesSectionType(ancestor.parent)) {
+                            ancestor = ancestor.parent;
+                        }
+                        rootNodes.add(ancestor);
                     }
                 }
 
@@ -78,14 +97,15 @@ export const NodeExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplore
                 for (const light of scene.lights) {
                     if (light instanceof ClusteredLightContainer) {
                         for (const childLight of light.lights) {
-                            if (!childLight.parent && !rootNodes.includes(childLight)) {
-                                rootNodes.push(childLight);
+                            knownSceneNodes.add(childLight);
+                            if (!childLight.parent) {
+                                rootNodes.add(childLight);
                             }
                         }
                     }
                 }
 
-                return rootNodes;
+                return [...rootNodes];
             },
             getEntityChildren: (node) => node.getChildren(),
             getEntityDisplayInfo: (node) => {
@@ -95,10 +115,20 @@ export const NodeExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplore
 
                 const parentHookToken = watcherService.watchProperty(node, "parent", () => nodeMovedObservable.notifyObservers(node));
 
+                // A node is "not in the scene" if it is a Nodes-section type but is not
+                // a known scene node. This handles nodes that were removed from the scene
+                // but still appear because a descendant is in the scene. Nodes from the
+                // !IsNodesSectionType(parent) branch are unaffected because they always
+                // come from the scene's tracking lists. Clustered light children are also
+                // unaffected because they are added to knownSceneNodes explicitly.
+                const validationError =
+                    IsNodesSectionType(node) && !knownSceneNodes.has(node) ? "This entity is not in the scene but is shown because a descendant is still in the scene." : undefined;
+
                 return {
                     get name() {
                         return node.name || `Unnamed ${node.getClassName()}`;
                     },
+                    validationError,
                     onChange: onChangeObservable,
                     dispose: () => {
                         nameHookToken.dispose();

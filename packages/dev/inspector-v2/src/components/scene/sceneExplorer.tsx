@@ -25,7 +25,16 @@ import {
     TreeItemLayout,
     treeItemLevelToken,
 } from "@fluentui/react-components";
-import { type FluentIcon, ArrowCollapseAllRegular, ArrowExpandAllRegular, createFluentIcon, FilterRegular, GlobeRegular, TextSortAscendingRegular } from "@fluentui/react-icons";
+import {
+    type FluentIcon,
+    ArrowCollapseAllRegular,
+    ArrowExpandAllRegular,
+    createFluentIcon,
+    FilterRegular,
+    GlobeRegular,
+    TextSortAscendingRegular,
+    WarningRegular,
+} from "@fluentui/react-icons";
 import { type ComponentType, type FunctionComponent, type KeyboardEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { type IDisposable, type IReadonlyObservable, type Nullable, type Scene } from "core/index";
@@ -77,6 +86,12 @@ export type EntityDisplayInfo = Partial<IDisposable> &
          * An observable that notifies when the display info (such as the name) changes.
          */
         onChange?: IReadonlyObservable<void>;
+
+        /**
+         * An optional validation error message for this entity. When present, the entity's
+         * icon is replaced with a warning icon whose tooltip displays this message.
+         */
+        validationError?: string;
     }>;
 
 /**
@@ -803,7 +818,15 @@ const EntityTreeItem: FunctionComponent<
                     {...dragProps}
                 >
                     <TreeItemLayout
-                        iconBefore={entityItem.icon ? <entityItem.icon entity={entityItem.entity} /> : null}
+                        iconBefore={
+                            displayInfo.validationError ? (
+                                <Tooltip content={displayInfo.validationError} relationship="description">
+                                    <WarningRegular />
+                                </Tooltip>
+                            ) : entityItem.icon ? (
+                                <entityItem.icon entity={entityItem.entity} />
+                            ) : null
+                        }
                         className={mergeClasses(
                             hasChildren ? classes.treeItemLayoutBranch : classes.treeItemLayoutLeaf,
                             compactMode ? classes.treeItemLayoutCompact : undefined,

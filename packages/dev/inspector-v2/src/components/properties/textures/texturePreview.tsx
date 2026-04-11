@@ -2,7 +2,7 @@ import { type CSSProperties, type FunctionComponent, type Ref, useCallback, useC
 
 import { type BaseTexture } from "core/index";
 
-import { Button, Toolbar, ToolbarButton, makeStyles, tokens } from "@fluentui/react-components";
+import { Button, Label, Slider, Toolbar, ToolbarButton, makeStyles, tokens } from "@fluentui/react-components";
 
 import { Clamp } from "core/Maths/math.scalar.functions";
 import { WhenTextureReadyAsync } from "core/Misc/textureTools";
@@ -22,6 +22,10 @@ const useStyles = makeStyles({
         display: "flex",
         gap: tokens.spacingHorizontalXS,
         padding: 0,
+    },
+    sliderContainer: {
+        marginTop: tokens.spacingVerticalXS,
+        marginBottom: tokens.spacingVerticalXS,
     },
     controlButton: {
         minWidth: "auto",
@@ -57,30 +61,76 @@ const TextureChannelStates = {
 } as const;
 
 export type TexturePreviewImperativeRef = {
+    /**
+     * Refreshes the preview canvas.
+     */
     refresh: () => Promise<void>;
 };
 
+/**
+ * Properties for the texture preview component.
+ */
 export type TexturePreviewProps = {
+    /**
+     * Texture to display.
+     */
     texture: BaseTexture;
+    /**
+     * Disables preview toolbar controls.
+     */
     disableToolbar?: boolean;
+    /**
+     * Maximum preview width CSS value.
+     */
     maxWidth?: string;
+    /**
+     * Maximum preview height CSS value.
+     */
     maxHeight?: string;
+    /**
+     * Horizontal offset in source pixels.
+     */
     offsetX?: number;
+    /**
+     * Vertical offset in source pixels.
+     */
     offsetY?: number;
+    /**
+     * Preview width override.
+     */
     width?: number;
+    /**
+     * Preview height override.
+     */
     height?: number;
+    /**
+     * Optional imperative ref.
+     */
     imperativeRef?: Ref<TexturePreviewImperativeRef>;
 };
 
+/**
+ * Displays a 2D preview for a texture, including channels/cube face controls.
+ * @param props The component properties.
+ * @returns The rendered component.
+ */
 export const TexturePreview: FunctionComponent<TexturePreviewProps> = (props) => {
     const { texture, disableToolbar = false, maxWidth = "100%", maxHeight = "384px", offsetX = 0, offsetY = 0, width, height, imperativeRef } = props;
     const classes = useStyles();
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const [channels, setChannels] = useState<(typeof TextureChannelStates)[keyof typeof TextureChannelStates]>(TextureChannelStates.ALL);
     const [face, setFace] = useState(0);
+    const [slice, setSlice] = useState(0);
+    const [lod, setLod] = useState(0);
     const [layer, setLayer] = useState(0);
     const [canvasStyle, setCanvasStyle] = useState<CSSProperties>();
     const internalTexture = useProperty(texture, "_texture");
+    const is3DTexture = !!internalTexture?.is3D;
+    const baseDepth = Math.max(internalTexture?.depth ?? 1, 1);
+    const lodDepth = Math.max(1, Math.floor(baseDepth / Math.pow(2, lod)));
+    const maxSlice = lodDepth - 1;
+    const lodBaseSize = Math.max(1, Math.min(internalTexture?.width ?? 1, internalTexture?.height ?? 1, is3DTexture ? (internalTexture?.depth ?? 1) : Number.MAX_SAFE_INTEGER));
+    const maxLod = internalTexture?.generateMipMaps ? Math.max(0, Math.floor(Math.log2(lodBaseSize))) : 0;
 
     const showLayerDropdown = texture.is2DArray;
 
@@ -103,7 +153,15 @@ export const TexturePreview: FunctionComponent<TexturePreviewProps> = (props) =>
         }
         try {
             await WhenTextureReadyAsync(texture); // Ensure texture is loaded before grabbing size
-            const { width: textureWidth, height: textureHeight } = texture.getSize();
+            const size = texture.getSize();
+            let textureWidth = size.width || internalTexture?.width || 1;
+            let textureHeight = size.height || internalTexture?.height || textureWidth;
+
+            if (is3DTexture) {
+                const squareSize = Math.max(1, Math.min(textureWidth, textureHeight));
+                textureWidth = squareSize;
+                textureHeight = squareSize;
+            }
 
             // Calculate canvas dimensions
             const canvasWidth = width ?? textureWidth;
@@ -116,7 +174,7 @@ export const TexturePreview: FunctionComponent<TexturePreviewProps> = (props) =>
             setCanvasStyle({ width: imageWidth });
 
             // Fetch texture data BEFORE clearing the canvas to avoid flicker
-            const data = await ApplyChannelsToTextureDataAsync(texture, textureWidth, textureHeight, texture.is2DArray ? layer : face, channels);
+            const data = await ApplyChannelsToTextureDataAsync(texture, textureWidth, textureHeight, texture.is2DArray ? layer : face, channels, lod, slice);
 
             // Now set canvas dimensions (this clears the canvas) and draw immediately
             canvas.width = canvasWidth;
@@ -132,7 +190,23 @@ export const TexturePreview: FunctionComponent<TexturePreviewProps> = (props) =>
         } catch {
             // If we fail, leave the canvas empty
         }
-    }, [texture, face, channels, offsetX, offsetY, width, height, internalTexture, layer]);
+    }, [texture, face, channels, lod, slice, offsetX, offsetY, width, height, internalTexture, layer]);
+
+    useEffect(() => {
+        if (!is3DTexture || slice <= maxSlice) {
+            return;
+        }
+
+        setSlice(maxSlice);
+    }, [is3DTexture, maxSlice, slice]);
+
+    useEffect(() => {
+        if (lod <= maxLod) {
+            return;
+        }
+
+        setLod(maxLod);
+    }, [lod, maxLod]);
 
     useImperativeHandle(imperativeRef, () => ({ refresh: updatePreviewAsync }), [updatePreviewAsync]);
 
@@ -169,6 +243,20 @@ export const TexturePreview: FunctionComponent<TexturePreviewProps> = (props) =>
                             </ToolbarButton>
                         ))}
                     </Toolbar>
+                )}
+                {is3DTexture && (
+                    <div className={classes.sliderContainer}>
+                        <Label>
+                            Slice: {slice} / {maxSlice}
+                        </Label>
+                        <Slider min={0} max={maxSlice} step={1} value={slice} onChange={(_, data) => setSlice(data.value)} />
+                    </div>
+                )}
+                {maxLod > 0 && (
+                    <div className={classes.sliderContainer}>
+                        <Label>LOD: {lod}</Label>
+                        <Slider min={0} max={maxLod} step={1} value={lod} onChange={(_, data) => setLod(data.value)} />
+                    </div>
                 )}
                 <div className={classes.previewContainer}>
                     <canvas ref={canvasRef} className={classes.preview} style={canvasStyle} />
