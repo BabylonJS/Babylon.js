@@ -245,7 +245,10 @@ export const SpinButton = forwardRef<HTMLInputElement, SpinButtonProps>((props, 
                 setEditText(formatValue(newValue));
             }
 
-            HandleKeyDown(event);
+            // Ignore modifier keys so the useKeyState calls above can still observe them.
+            if (event.key !== "Alt" && event.key !== "Shift") {
+                HandleKeyDown(event);
+            }
         },
         [value, step, constrainValue, tryCommitValue, commitEditText, formatValue]
     );

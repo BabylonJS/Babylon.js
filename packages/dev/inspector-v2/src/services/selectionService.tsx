@@ -1,13 +1,13 @@
 import { type IDisposable, type IReadonlyObservable, type Nullable } from "core/index";
-import { type IService, type ServiceDefinition } from "../modularity/serviceDefinition";
-import { type ISettingsService, SettingsServiceIdentity } from "./panes/settingsService";
+import { type IService, type ServiceDefinition } from "shared-ui-components/modularTool/modularity/serviceDefinition";
+import { type ISettingsService, SettingsServiceIdentity } from "shared-ui-components/modularTool/services/settingsService";
 import { type ISceneContext, SceneContextIdentity } from "./sceneContext";
-import { type ISettingsStore, type SettingDescriptor, SettingsStoreIdentity } from "./settingsStore";
-import { type IShellService, ShellServiceIdentity } from "./shellService";
+import { type ISettingsStore, type SettingDescriptor, SettingsStoreIdentity } from "shared-ui-components/modularTool/services/settingsStore";
+import { type IShellService, ShellServiceIdentity } from "shared-ui-components/modularTool/services/shellService";
 
 import { Observable } from "core/Misc/observable";
 import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
-import { useSetting } from "../hooks/settingsHooks";
+import { useSetting } from "shared-ui-components/modularTool/hooks/settingsHooks";
 import { InterceptFunction } from "../instrumentation/functionInstrumentation";
 
 /**

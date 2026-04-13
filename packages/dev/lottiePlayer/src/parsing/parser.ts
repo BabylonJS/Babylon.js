@@ -260,7 +260,7 @@ export class Parser {
         }
 
         let parentNode: Node | undefined = undefined;
-        if (layer.parent) {
+        if (layer.parent !== undefined) {
             parentNode = this._parentNodes.get(layer.parent);
             if (parentNode === undefined) {
                 this._unsupportedFeatures.push(`Parent node with index ${layer.parent} not found for layer ${layer.nm}`);
@@ -277,7 +277,8 @@ export class Parser {
             transform.rotation,
             transform.scale,
             transform.opacity,
-            parentNode
+            parentNode,
+            layer.ty === 3 // isNullLayer
         );
 
         let anchorNode: Node | undefined = undefined;

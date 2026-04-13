@@ -8,7 +8,7 @@ import { Vector2, Vector3, Quaternion } from "core/Maths/math.vector";
 import { Color3, Color4 } from "core/Maths/math.color";
 
 import { useCurveEditor } from "../curveEditorContext";
-import { useObservableState } from "../../../hooks/observableHooks";
+import { useObservableState } from "shared-ui-components/modularTool/hooks/observableHooks";
 import { CurveData } from "./curveData";
 import { Curve } from "./curve";
 import { KeyPointComponent } from "./keyPoint";

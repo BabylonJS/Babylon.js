@@ -11,7 +11,7 @@ import { type Scene } from "core/scene";
 import { useCallback, useEffect, useState, type FunctionComponent } from "react";
 import { SyncedSliderInput } from "shared-ui-components/fluent/primitives/syncedSlider";
 import { ToggleButton } from "shared-ui-components/fluent/primitives/toggleButton";
-import { useAsyncResource, useResource } from "../../../hooks/resourceHooks";
+import { useAsyncResource, useResource } from "shared-ui-components/modularTool/hooks/resourceHooks";
 import { type IAttractorData } from "./attractorAdapter";
 
 type AttractorProps = {

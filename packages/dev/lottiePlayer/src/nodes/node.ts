@@ -29,6 +29,7 @@ export class Node {
 
     protected _isControl = false;
     protected _isShape = false;
+    protected _isNullLayer = false;
 
     /**
      * Gets the id of this node.
@@ -83,6 +84,13 @@ export class Node {
 
         if (this._opacity.currentValue === 0) {
             return 0;
+        }
+
+        // Skip parent opacity if parent is a null layer control node - null layers may have opacity 0
+        // but their children should still be visible. Still multiply by the null layer's parent opacity
+        // so that ancestors above the null layer are respected.
+        if (this._parent && this._parent._isNullLayer) {
+            return this._opacity.currentValue * (this._parent._parent?.opacity ?? 1);
         }
 
         return this._opacity.currentValue * (this._parent?.opacity ?? 1);
@@ -299,7 +307,7 @@ export class Node {
             return false; // Animation not started yet
         }
 
-        if (frame > keyframes[keyframes.length - 1].time) {
+        if (frame >= keyframes[keyframes.length - 1].time) {
             this._position.currentValue = keyframes[keyframes.length - 1].value;
             return true;
         }
@@ -340,8 +348,8 @@ export class Node {
             return false; // Animation not started yet
         }
 
-        if (frame > keyframes[keyframes.length - 1].time) {
-            this._rotation.currentValue = keyframes[keyframes.length - 1].value;
+        if (frame >= keyframes[keyframes.length - 1].time) {
+            this._rotation.currentValue = -keyframes[keyframes.length - 1].value;
             return true;
         }
 
@@ -378,7 +386,7 @@ export class Node {
             return false; // Animation not started yet
         }
 
-        if (frame > keyframes[keyframes.length - 1].time) {
+        if (frame >= keyframes[keyframes.length - 1].time) {
             this._scale.currentValue = keyframes[keyframes.length - 1].value;
             return true;
         }
@@ -421,7 +429,7 @@ export class Node {
             return false; // Animation not started yet
         }
 
-        if (frame > this._opacity.keyframes[this._opacity.keyframes.length - 1].time) {
+        if (frame >= this._opacity.keyframes[this._opacity.keyframes.length - 1].time) {
             this._opacity.currentValue = this._opacity.keyframes[this._opacity.keyframes.length - 1].value;
             return true;
         }

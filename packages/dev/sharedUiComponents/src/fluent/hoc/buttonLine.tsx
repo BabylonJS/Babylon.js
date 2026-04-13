@@ -15,9 +15,11 @@ type ButtonLineProps = Omit<ButtonProps, "label"> & {
 export const ButtonLine: FunctionComponent<ButtonLineProps> = (props) => {
     ButtonLine.displayName = "ButtonLine";
 
+    const { uniqueId, ...buttonProps } = props;
+
     return (
-        <LineContainer uniqueId={props.uniqueId ?? props.label}>
-            <Button {...props} />
+        <LineContainer uniqueId={uniqueId ?? props.label}>
+            <Button {...buttonProps} />
         </LineContainer>
     );
 };

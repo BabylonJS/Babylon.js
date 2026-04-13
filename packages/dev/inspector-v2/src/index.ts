@@ -2,42 +2,42 @@
 export * from "./components/properties/boundProperty";
 export * from "./components/properties/linkToEntityPropertyLine";
 export type { EntityDisplayInfo, SceneExplorerCommand, SceneExplorerCommandProvider, SceneExplorerSection } from "./components/scene/sceneExplorer";
-export * from "./components/errorBoundary";
-export * from "./components/extensibleAccordion";
-export { SidePaneContainer } from "./components/pane";
-export * from "./components/theme";
-export * from "./components/teachingMoment";
+export * from "shared-ui-components/modularTool/components/errorBoundary";
+export * from "shared-ui-components/modularTool/components/extensibleAccordion";
+export { SidePaneContainer } from "shared-ui-components/modularTool/components/pane";
+export * from "shared-ui-components/modularTool/components/theme";
+export * from "shared-ui-components/modularTool/components/teachingMoment";
 export * from "./contexts/propertyContext";
-export * from "./extensibility/extensionFeed";
-export * from "./extensibility/builtInsExtensionFeed";
+export * from "shared-ui-components/modularTool/extensibility/extensionFeed";
+export * from "shared-ui-components/modularTool/extensibility/builtInsExtensionFeed";
 export * from "./hooks/compoundPropertyHooks";
 export * from "./hooks/instrumentationHooks";
-export * from "./hooks/observableHooks";
+export * from "shared-ui-components/modularTool/hooks/observableHooks";
 export * from "./hooks/pollingHooks";
-export * from "./hooks/resourceHooks";
+export * from "shared-ui-components/modularTool/hooks/resourceHooks";
 export * from "./hooks/settingsHooks";
-export * from "./hooks/teachingMomentHooks";
-export * from "./hooks/themeHooks";
+export * from "shared-ui-components/modularTool/hooks/teachingMomentHooks";
+export * from "shared-ui-components/modularTool/hooks/themeHooks";
 export * from "./instrumentation/functionInstrumentation";
 export * from "./instrumentation/propertyInstrumentation";
-export * from "./misc/observableCollection";
-export * from "./modularity/serviceDefinition";
+export * from "shared-ui-components/modularTool/misc/observableCollection";
+export * from "shared-ui-components/modularTool/modularity/serviceDefinition";
 export type { IPropertiesService } from "./services/panes/properties/propertiesService";
 export { PropertiesServiceIdentity } from "./services/panes/properties/propertiesService";
 export type { ISceneExplorerService } from "./services/panes/scene/sceneExplorerService";
 export { SceneExplorerServiceIdentity } from "./services/panes/scene/sceneExplorerService";
 export type { IDebugService } from "./services/panes/debugService";
 export { DebugServiceIdentity } from "./services/panes/debugService";
-export type { ISettingsService } from "./services/panes/settingsService";
-export { SettingsServiceIdentity } from "./services/panes/settingsService";
+export type { ISettingsService } from "shared-ui-components/modularTool/services/settingsService";
+export { SettingsServiceIdentity } from "shared-ui-components/modularTool/services/settingsService";
 export type { IStatsService } from "./services/panes/statsService";
 export { StatsServiceIdentity } from "./services/panes/statsService";
 export type { IToolsService } from "./services/panes/toolsService";
 export { ToolsServiceIdentity } from "./services/panes/toolsService";
-export type { IThemeService } from "./services/themeService";
-export { ThemeServiceIdentity } from "./services/themeService";
-export type { ISettingsStore, SettingDescriptor } from "./services/settingsStore";
-export { SettingsStoreIdentity } from "./services/settingsStore";
+export type { IThemeService } from "shared-ui-components/modularTool/services/themeService";
+export { ThemeServiceIdentity } from "shared-ui-components/modularTool/services/themeService";
+export type { ISettingsStore, SettingDescriptor } from "shared-ui-components/modularTool/services/settingsStore";
+export { SettingsStoreIdentity } from "shared-ui-components/modularTool/services/settingsStore";
 export type { IGizmoService, GizmoMode } from "./services/gizmoService";
 export { GizmoServiceIdentity } from "./services/gizmoService";
 export type { IWatcherService } from "./services/watcherService";
@@ -45,8 +45,20 @@ export { WatcherServiceIdentity } from "./services/watcherService";
 
 export * from "./services/sceneContext";
 export * from "./services/selectionService";
-export type { IShellService, ToolbarItemDefinition, SidePaneDefinition, CentralContentDefinition } from "./services/shellService";
-export { ShellServiceIdentity } from "./services/shellService";
+export * from "shared-ui-components/modularTool/services/settingsStore";
+export type {
+    IShellService,
+    ToolbarItemDefinition,
+    SidePaneDefinition,
+    CentralContentDefinition,
+    HorizontalLocation,
+    VerticalLocation,
+    ShellServiceOptions,
+} from "shared-ui-components/modularTool/services/shellService";
+export { ShellServiceIdentity } from "shared-ui-components/modularTool/services/shellService";
+export type { ModularToolOptions } from "shared-ui-components/modularTool/modularTool";
+export { MakeModularTool } from "shared-ui-components/modularTool/modularTool";
+export type { WeaklyTypedServiceDefinition } from "shared-ui-components/modularTool/modularity/serviceContainer";
 export * from "./inspector";
 export { StartInspectable, type InspectableToken, type InspectableOptions } from "./inspectable";
 export type { IInspectableCommandRegistry, InspectableCommandDescriptor, InspectableCommandArg } from "./services/cli/inspectableCommandRegistry";

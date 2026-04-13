@@ -1,5 +1,5 @@
 import { type AdvancedDynamicTexture } from "gui/2D/advancedDynamicTexture";
-import { type ServiceDefinition } from "../../../modularity/serviceDefinition";
+import { type ServiceDefinition } from "shared-ui-components/modularTool/modularity/serviceDefinition";
 import { type ITextureEditorService, TextureEditorServiceIdentity } from "../../textureEditor/textureEditorService";
 import { type IPropertiesService, PropertiesServiceIdentity } from "./propertiesService";
 

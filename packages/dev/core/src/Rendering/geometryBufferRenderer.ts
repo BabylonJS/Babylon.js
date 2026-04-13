@@ -40,6 +40,18 @@ interface ISavedTransformationMatrix {
     viewProjection: Matrix;
 }
 
+/**
+ * Type, format and sampling settings for a geometry buffer render target.
+ */
+export interface IGeometryBufferTextureTypeAndFormat {
+    /** Texture type for the target. */
+    textureType: number;
+    /** Texture format for the target. */
+    textureFormat: number;
+    /** Optional sampling mode for the target texture. Defaults to bilinear when omitted. */
+    samplingMode?: number;
+}
+
 const Samplers = [
     "diffuseSampler",
     "bumpSampler",
@@ -178,7 +190,7 @@ export class GeometryBufferRenderer {
     private _scene: Scene;
     private _resizeObserver: Nullable<Observer<AbstractEngine>> = null;
     private _multiRenderTarget: MultiRenderTarget;
-    private _textureTypesAndFormats: { [key: number]: { textureType: number; textureFormat: number } };
+    private _textureTypesAndFormats: { [key: number]: IGeometryBufferTextureTypeAndFormat };
     private _ratioOrDimensions: number | { width: number; height: number };
     private _enableDepth: boolean = true;
     private _enableNormal: boolean = true;
@@ -562,13 +574,14 @@ export class GeometryBufferRenderer {
      * @param scene The scene the buffer belongs to
      * @param ratioOrDimensions How big is the buffer related to the main canvas (default: 1). You can also directly pass a width and height for the generated textures
      * @param depthFormat Format of the depth texture (default: Constants.TEXTUREFORMAT_DEPTH16)
-     * @param textureTypesAndFormats The types and formats of textures to create as render targets. If not provided, all textures will be RGBA and float or half float, depending on the engine capabilities.
+     * @param textureTypesAndFormats The types, formats and optional sampling modes of textures to create as render targets.
+     * If not provided, all textures will be RGBA and float or half float, depending on the engine capabilities.
      */
     constructor(
         scene: Scene,
         ratioOrDimensions: number | { width: number; height: number } = 1,
         depthFormat = Constants.TEXTUREFORMAT_DEPTH16,
-        textureTypesAndFormats?: { [key: number]: { textureType: number; textureFormat: number } }
+        textureTypesAndFormats?: { [key: number]: IGeometryBufferTextureTypeAndFormat }
     ) {
         this._scene = scene;
         this._ratioOrDimensions = ratioOrDimensions;
@@ -1054,9 +1067,9 @@ export class GeometryBufferRenderer {
         this.getGBuffer().dispose();
     }
 
-    private _assignRenderTargetIndices(): [number, string[], Array<{ textureType: number; textureFormat: number } | undefined>] {
+    private _assignRenderTargetIndices(): [number, string[], Array<IGeometryBufferTextureTypeAndFormat | undefined>] {
         const textureNames: string[] = [];
-        const textureTypesAndFormats: Array<{ textureType: number; textureFormat: number } | undefined> = [];
+        const textureTypesAndFormats: Array<IGeometryBufferTextureTypeAndFormat | undefined> = [];
         let count = 0;
 
         if (this._enableDepth) {
@@ -1136,14 +1149,17 @@ export class GeometryBufferRenderer {
 
         const textureTypes: number[] = [];
         const textureFormats: number[] = [];
+        const samplingModes: number[] = [];
 
         for (const typeAndFormat of textureTypesAndFormat) {
             if (typeAndFormat) {
                 textureTypes.push(typeAndFormat.textureType);
                 textureFormats.push(typeAndFormat.textureFormat);
+                samplingModes.push(typeAndFormat.samplingMode ?? Constants.TEXTURE_BILINEAR_SAMPLINGMODE);
             } else {
                 textureTypes.push(type);
                 textureFormats.push(Constants.TEXTUREFORMAT_RGBA);
+                samplingModes.push(Constants.TEXTURE_BILINEAR_SAMPLINGMODE);
             }
         }
 
@@ -1156,7 +1172,7 @@ export class GeometryBufferRenderer {
             dimensions,
             count,
             this._scene,
-            { generateMipMaps: false, generateDepthTexture: true, types: textureTypes, formats: textureFormats, depthTextureFormat: this._depthFormat },
+            { generateMipMaps: false, generateDepthTexture: true, types: textureTypes, formats: textureFormats, samplingModes, depthTextureFormat: this._depthFormat },
             textureNames.concat("gBuffer_DepthBuffer")
         );
         if (!this.isSupported) {

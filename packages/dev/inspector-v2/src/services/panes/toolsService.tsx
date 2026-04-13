@@ -1,11 +1,11 @@
 import { type Nullable } from "core/types";
 import { type IDisposable, type Scene } from "core/scene";
-import { type IService, type ServiceDefinition } from "../../modularity/serviceDefinition";
-import { type IShellService, ShellServiceIdentity } from "../shellService";
-import { type DynamicAccordionSection, type DynamicAccordionSectionContent } from "../../components/extensibleAccordion";
+import { type IService, type ServiceDefinition } from "shared-ui-components/modularTool/modularity/serviceDefinition";
+import { type IShellService, ShellServiceIdentity } from "shared-ui-components/modularTool/services/shellService";
+import { type DynamicAccordionSection, type DynamicAccordionSectionContent } from "shared-ui-components/modularTool/components/extensibleAccordion";
 import { WrenchRegular } from "@fluentui/react-icons";
-import { useObservableCollection, useObservableState, useOrderedObservableCollection } from "../../hooks/observableHooks";
-import { ObservableCollection } from "../../misc/observableCollection";
+import { useObservableCollection, useObservableState, useOrderedObservableCollection } from "shared-ui-components/modularTool/hooks/observableHooks";
+import { ObservableCollection } from "shared-ui-components/modularTool/misc/observableCollection";
 import { ToolsPane } from "../../components/tools/toolsPane";
 import { SceneContextIdentity, type ISceneContext } from "../sceneContext";
 

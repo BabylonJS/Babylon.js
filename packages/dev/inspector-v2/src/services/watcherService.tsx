@@ -1,10 +1,10 @@
 import { type IDisposable, type Nullable } from "core/index";
 import { type DropdownOption } from "shared-ui-components/fluent/primitives/dropdown";
-import { type IService, type ServiceDefinition } from "../modularity/serviceDefinition";
-import { type ISettingsService, SettingsServiceIdentity } from "./panes/settingsService";
-import { type ISettingsStore, type SettingDescriptor, SettingsStoreIdentity } from "./settingsStore";
-import { type IShellService, ShellServiceIdentity } from "./shellService";
-import { type IReactContextService, type ReactContextHandle, ReactContextServiceIdentity } from "./reactContextService";
+import { type IService, type ServiceDefinition } from "shared-ui-components/modularTool/modularity/serviceDefinition";
+import { type ISettingsService, SettingsServiceIdentity } from "shared-ui-components/modularTool/services/settingsService";
+import { type ISettingsStore, type SettingDescriptor, SettingsStoreIdentity } from "shared-ui-components/modularTool/services/settingsStore";
+import { type IShellService, ShellServiceIdentity } from "shared-ui-components/modularTool/services/shellService";
+import { type IReactContextService, type ReactContextHandle, ReactContextServiceIdentity } from "shared-ui-components/modularTool/services/reactContextService";
 
 import { ArrowClockwiseRegular } from "@fluentui/react-icons";
 
@@ -14,7 +14,7 @@ import { SyncedSliderPropertyLine } from "shared-ui-components/fluent/hoc/proper
 import { Button } from "shared-ui-components/fluent/primitives/button";
 import { Collapse } from "shared-ui-components/fluent/primitives/collapse";
 import { WatcherContext } from "../contexts/watcherContext";
-import { useSetting } from "../hooks/settingsHooks";
+import { useSetting } from "shared-ui-components/modularTool/hooks/settingsHooks";
 import { InterceptProperty } from "../instrumentation/propertyInstrumentation";
 import { DefaultToolbarItemOrder } from "./defaultToolbarMetadata";
 
