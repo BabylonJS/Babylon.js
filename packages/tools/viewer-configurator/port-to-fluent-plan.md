@@ -13,16 +13,16 @@ It needs to be ported to:
 - **`@fluentui/react-components`** for anything not covered by shared components (`makeStyles`, `tokens`, `Textarea`, `Button`, etc.)
 - **`@fluentui/react-icons`** replacing all FontAwesome icons
 - **`makeStyles` from Fluent** for all styling (zero raw CSS/SCSS)
-- **Inspector v2 `MakeModularTool` framework** for bootstrapping with a ServiceContainer, but with a **minimal set of services** and **no extensibility** (no extension feeds)
-- **Inspector v2 `IShellService` for the app shell (central content, side panes, toolbars).
+- **`MakeModularTool` framework** from `shared-ui-components/modularTool/` for bootstrapping with a ServiceContainer, but with a **minimal set of services** and **no extensibility** (no extension feeds)
+- **`IShellService`** from `shared-ui-components/modularTool/services/shellService` for the app shell (central content, side panes, toolbars).
 
-Viewer Configurator should take a dependency on inspector-v2, and anything we need from it (like MakeModularTool) that is not exported we should go ahead and export.
+Viewer Configurator takes a dependency on `@dev/shared-ui-components` (which already contains both the Fluent primitives and the ModularTool framework). No dependency on `@dev/inspector` is needed.
 
 ## Approach
 
 Viewer Configurator will register a few services to populate the `IShellService` central content and side pane.
 
-1. Use `MakeModularTool` for bootstrapping (theming, settings store, watcher service).
+1. Use `MakeModularTool` for bootstrapping (theming, settings store).
 2. Define the services for the central content and the side pane.
 3. Replace all old shared-ui-components with the new Fluent components in shared-ui-components, and fall back to low level Fluent components from @fluentui/react-components when necessary.
 4. Replace all FontAwesome icons with `@fluentui/react-icons`.
@@ -33,7 +33,7 @@ Viewer Configurator will register a few services to populate the `IShellService`
 
 | Old Component                          | Fluent Replacement                                                                                           |
 | -------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
-| Side pane container div                | `ExtensibleAccordion` from `shared-ui-components/fluent/primitives/accordion`                                |
+| Side pane container div                | `Accordion` from `shared-ui-components/fluent/primitives/accordion`                                          |
 | `LineContainerComponent`               | `AccordionSection` from `shared-ui-components/fluent/primitives/accordion`                                   |
 | `CheckBoxLineComponent`                | `SwitchPropertyLine` from `shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine`                 |
 | `SliderLineComponent`                  | `SyncedSliderPropertyLine` from `shared-ui-components/fluent/hoc/propertyLines/syncedSliderPropertyLine`     |
@@ -47,7 +47,7 @@ Viewer Configurator will register a few services to populate the `IShellService`
 | `LockObject`                           | Not needed (Fluent property lines don't use it)                                                              |
 | `FontAwesomeIconButton`                | `Button` from `shared-ui-components/fluent/primitives/button` with `icon` prop using `@fluentui/react-icons` |
 | `FontAwesomeIcon`                      | Direct icon component from `@fluentui/react-icons`                                                           |
-| `SplitContainer` / `Splitter`          | Not needed (this functionality is part if `IShellService`)                                                   |
+| `SplitContainer` / `Splitter`          | Not needed (this functionality is part of `IShellService`)                                                   |
 
 ## Icon Mapping (FontAwesome → Fluent)
 
@@ -91,6 +91,8 @@ Root.render(<App />);
 
 **After** (`index.tsx`):
 ```tsx
+import { MakeModularTool } from "shared-ui-components/modularTool/modularTool";
+
 MakeModularTool({
     namespace: "ViewerConfigurator",
     containerElement: document.getElementById("root")!,
@@ -119,7 +121,7 @@ MakeModularTool({
   - Replace all old shared-ui-component imports with Fluent equivalents
   - Replace all FontAwesome imports with `@fluentui/react-icons`
   - Replace class-name-based styling with `makeStyles`
-  - Use `ExtensibleAccordion` to contain most of the right pane content, except the very top part with the snippet, which should be outside of the scrolling area and always visible.
+  - Use `Accordion` to contain most of the right pane content, except the very top part with the snippet, which should be outside of the scrolling area and always visible.
   - Update `OptionsLine` → `StringDropdownPropertyLine` (different API)
   - Update `CheckBoxLineComponent` → `SwitchPropertyLine`
   - Update `SliderLineComponent` → `SyncedSliderPropertyLine`
@@ -132,9 +134,9 @@ MakeModularTool({
   - Keep `@dnd-kit` for hotspot reordering (UI-framework-agnostic)
 - `src/components/babylonViewer/viewer.tsx` — remove SCSS import, use `makeStyles`
 - `src/components/misc/ExpandableMessageLineComponent.tsx` - use `MessageBar` instead
-- `package.json` — update dependencies (add Fluent, add `@dev/inspector`, remove FontAwesome/SCSS tooling if safe)
+- `package.json` — update dependencies (add Fluent, remove FontAwesome/SCSS tooling if safe)
 - `webpack.config.js` — remove `.scss` from resolve extensions, update aliases
-- `src/hooks/observableHooks.ts` — use the similar hooks from inspector-v2
+- `src/hooks/observableHooks.ts` — use the hooks from `shared-ui-components/modularTool/hooks/observableHooks`
 
 ### Files UNCHANGED
 - `src/modelLoader.ts` — pure business logic
@@ -142,10 +144,10 @@ MakeModularTool({
 ## Detailed Todos
 
 ### 1. `setup-dependencies` — Update package.json and install dependencies
-Add `@fluentui/react-components`, `@fluentui/react-icons`, `@dev/inspector` (for `MakeModularTool`, `IShellService`, service types). Remove FontAwesome direct deps. Update webpack config aliases to include `inspector-v2`. Audit inspector-v2 exports and export anything needed that isn't already exported (e.g. `MakeModularTool`, `IShellService`, `ShellServiceIdentity`, service definition types).
+Add `@fluentui/react-components`, `@fluentui/react-icons`. Remove FontAwesome direct deps. Update webpack config aliases if needed. The `MakeModularTool`, `IShellService`, `ShellServiceIdentity`, and service definition types are all available from `shared-ui-components/modularTool/`.
 
-### 2. `export-inspector-v2` — Export needed symbols from inspector-v2
-Ensure `MakeModularTool`, `ModularToolOptions`, `IShellService`, `ShellServiceIdentity`, and any other types needed by the viewer-configurator are exported from inspector-v2's public API. Add exports as needed.
+### 2. `export-inspector-v2` — *(No longer needed)*
+All required symbols (`MakeModularTool`, `IShellService`, `ShellServiceIdentity`, `ServiceDefinition`, etc.) are now exported from `shared-ui-components/modularTool/`. No inspector-v2 dependency is needed.
 
 ### 3. `create-viewer-service` — Create ViewerService
 Create `src/viewerService.ts`. This service:
@@ -169,7 +171,7 @@ Subtasks:
 - a. Replace all old shared-ui-component imports with Fluent equivalents
 - b. Replace all FontAwesome imports with `@fluentui/react-icons`
 - c. Convert all SCSS class-based styling to `makeStyles`
-- d. Wrap the side pane in `ExtensibleAccordion` with `AccordionSection` children — **except** the snippet section at the top, which should be outside the scrolling area and always visible
+- d. Wrap the side pane in `Accordion` with `AccordionSection` children — **except** the snippet section at the top, which should be outside the scrolling area and always visible
 - e. Update each UI control to the Fluent equivalent API:
   - `OptionsLine` → `StringDropdownPropertyLine`
   - `CheckBoxLineComponent` → `SwitchPropertyLine`
@@ -184,8 +186,8 @@ Subtasks:
 ### 7. `rewrite-viewer-component` — Rewrite viewer.tsx
 Remove SCSS import. Add `makeStyles` for the viewer element background pattern. This component becomes the central content rendered by `ViewerService`.
 
-### 8. `switch-observable-hooks` — Switch to inspector-v2 observable hooks
-Replace `src/hooks/observableHooks.ts` with imports from inspector-v2's equivalent hooks. Remove the local file if inspector-v2's hooks are a full replacement.
+### 8. `switch-observable-hooks` — Switch to shared-ui-components observable hooks
+Replace `src/hooks/observableHooks.ts` with imports from `shared-ui-components/modularTool/hooks/observableHooks`. Remove the local file if the shared hooks are a full replacement.
 
 ### 9. `delete-obsolete-files` — Clean up deleted files
 Remove:
@@ -196,10 +198,10 @@ Remove:
 - `src/scssDeclaration.d.ts`
 - `src/components/misc/FontAwesomeIconButton.tsx` — replaced by Fluent `Button` with icon
 - `src/components/misc/ExpandableMessageLineComponent.tsx` — replaced by `MessageBar`
-- `src/hooks/observableHooks.ts` — replaced by inspector-v2 hooks
+- `src/hooks/observableHooks.ts` — replaced by shared-ui-components hooks
 
 ### 10. `update-webpack` — Update webpack config
-Remove `.scss` from resolve extensions. Add inspector-v2 alias. Remove SCSS-related webpack loaders/plugins if no longer needed. Verify build works.
+Remove `.scss` from resolve extensions. Remove SCSS-related webpack loaders/plugins if no longer needed. Verify build works.
 
 ### 11. `verify-build` — Build and verify
 Run the build to verify everything compiles and renders correctly.
@@ -229,13 +231,13 @@ setup-dependencies
 
 ## Key Decisions
 
-1. **IShellService for layout** — The shell service from inspector-v2 handles central content + side panes, replacing the old `SplitContainer`/`Splitter`.
+1. **IShellService for layout** — The shell service from `shared-ui-components/modularTool/` handles central content + side panes, replacing the old `SplitContainer`/`Splitter`.
 
 2. **Toolbar** — Use `toolbarMode: "compact"` for a minimal toolbar. The theme selector can be part of the toolbar. The logo custom header (logo, title, docs link) moves into the side pane.
 
 3. **Theme** — Enable theme support via `MakeModularTool` with `showThemeSelector: true` for a theme toggle in the compact toolbar.
 
-4. **ExtensibleAccordion** — Use `ExtensibleAccordion` from shared Fluent components for the side pane's collapsible sections, with the snippet section **pinned above** the scrolling area.
+4. **Accordion** — Use `Accordion` from shared Fluent components for the side pane's collapsible sections, with the snippet section **pinned above** the scrolling area.
 
 5. **Property Line model** — Use the new `value + onChange` pattern directly, which aligns with `useConfiguration`.
 
@@ -246,8 +248,8 @@ setup-dependencies
 ## Notes
 
 - The `useConfiguration` hook is valuable custom logic — preserve it unchanged.
-- The `observableHooks.ts` local hooks should be replaced with inspector-v2's equivalent hooks.
+- The `observableHooks.ts` local hooks should be replaced with `shared-ui-components/modularTool/hooks/observableHooks`.
 - The `modelLoader.ts` is purely business logic — no changes needed.
 - The snippet generation logic (HTML/JSON) is pure string construction — no changes needed.
 - `MakeModularTool` already provides `FluentProvider` and `Theme`, so no need for `FluentToolWrapper`.
-- Inspector-v2 may need new exports added for symbols the viewer-configurator needs to import.
+- No dependency on `@dev/inspector` is needed — all framework symbols come from `@dev/shared-ui-components`.
