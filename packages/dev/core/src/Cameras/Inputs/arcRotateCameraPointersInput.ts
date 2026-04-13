@@ -229,7 +229,10 @@ export class ArcRotateCameraPointersInput extends OrbitCameraPointersInput {
      */
     public override onButtonDown(evt: IPointerEvent): void {
         if (this.camera.movement) {
-            this._activeType = this.camera.movement.resolveInteraction("pointer", { button: evt.button });
+            this._activeType = this.camera.movement.resolveInteraction("pointer", {
+                button: evt.button,
+                modifiers: { ctrl: evt.ctrlKey, alt: evt.altKey, shift: evt.shiftKey },
+            });
         } else {
             this._isPanClick = evt.button === this.camera._panningMouseButton;
         }

@@ -49,7 +49,10 @@ export class GeospatialCameraPointersInput extends OrbitCameraPointersInput {
         this.camera.movement.activeInput = true;
         const scene = this.camera.getScene();
 
-        this._activeType = this.camera.movement.resolveInteraction("pointer", { button: evt.button });
+        this._activeType = this.camera.movement.resolveInteraction("pointer", {
+            button: evt.button,
+            modifiers: { ctrl: evt.ctrlKey, alt: evt.altKey, shift: evt.shiftKey },
+        });
 
         if (this._activeType === "pan") {
             this.camera.movement.handlers.pan.start(scene.pointerX, scene.pointerY);

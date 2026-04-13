@@ -144,6 +144,7 @@ export class GeospatialCameraMovement extends CameraMovement {
             { source: "pointer", button: 1, interaction: "rotate" },
             { source: "pointer", button: 2, interaction: "rotate" },
             { source: "wheel", interaction: "zoom" },
+            { source: "keyboard", key: [187, 107, 189, 109], interaction: "zoom" }, // +/-/numpad+/numpad-
             { source: "keyboard", modifiers: { ctrl: true }, interaction: "rotate" },
             { source: "keyboard", modifiers: { alt: true }, interaction: "rotate" },
             { source: "keyboard", interaction: "pan" },

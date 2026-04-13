@@ -7,7 +7,7 @@ import { type ICameraInput, CameraInputTypes } from "../../Cameras/cameraInputsM
 import { type KeyboardInfo, KeyboardEventTypes } from "../../Events/keyboardEvents";
 import { Tools } from "../../Misc/tools";
 import { type AbstractEngine } from "../../Engines/abstractEngine";
-import { type InputConditions } from "../cameraInteractions";
+import { type KeyboardConditions } from "../cameraInteractions";
 
 /**
  * Manage the keyboard inputs to control the movement of an arc rotate camera.
@@ -124,7 +124,7 @@ export class ArcRotateCameraKeyboardMoveInput implements ICameraInput<ArcRotateC
     private _scene: Scene;
 
     /** Cached conditions object to avoid per-frame allocations in checkInputs */
-    private _keyboardConditions: InputConditions = { modifiers: { ctrl: false, alt: false } };
+    private _keyboardConditions: KeyboardConditions = { modifiers: { ctrl: false, alt: false } };
 
     /**
      * Attach the input controls to a specific dom element to get the input from.
@@ -231,20 +231,13 @@ export class ArcRotateCameraKeyboardMoveInput implements ICameraInput<ArcRotateC
                 // Update cached conditions (avoids per-frame allocations)
                 this._keyboardConditions.modifiers!.ctrl = this._ctrlPressed;
                 this._keyboardConditions.modifiers!.alt = this._altPressed;
-                const interaction = movement.resolveInteraction("keyboard", this._keyboardConditions);
 
                 for (let index = 0; index < this._keys.length; index++) {
                     const keyCode = this._keys[index];
 
-                    // Zoom keys always map to zoom regardless of modifiers
-                    if (this.keysZoomIn.indexOf(keyCode) !== -1) {
-                        movement.handlers.zoom(this.zoomSensitivity);
-                        continue;
-                    }
-                    if (this.keysZoomOut.indexOf(keyCode) !== -1) {
-                        movement.handlers.zoom(-this.zoomSensitivity);
-                        continue;
-                    }
+                    // Resolve per key — allows different keys to map to different interactions
+                    this._keyboardConditions.key = keyCode;
+                    const interaction = movement.resolveInteraction("keyboard", this._keyboardConditions);
 
                     if (interaction === "pan") {
                         if (this.keysLeft.indexOf(keyCode) !== -1) {
@@ -257,9 +250,9 @@ export class ArcRotateCameraKeyboardMoveInput implements ICameraInput<ArcRotateC
                             movement.handlers.pan(0, -this.panSensitivity);
                         }
                     } else if (interaction === "zoom") {
-                        if (this.keysUp.indexOf(keyCode) !== -1) {
+                        if (this.keysUp.indexOf(keyCode) !== -1 || this.keysZoomIn.indexOf(keyCode) !== -1) {
                             movement.handlers.zoom(this.zoomSensitivity);
-                        } else if (this.keysDown.indexOf(keyCode) !== -1) {
+                        } else if (this.keysDown.indexOf(keyCode) !== -1 || this.keysZoomOut.indexOf(keyCode) !== -1) {
                             movement.handlers.zoom(-this.zoomSensitivity);
                         }
                     } else if (interaction === "rotate") {

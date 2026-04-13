@@ -7,7 +7,7 @@ import { type ICameraInput, CameraInputTypes } from "../cameraInputsManager";
 import { type KeyboardInfo, KeyboardEventTypes } from "../../Events/keyboardEvents";
 import { Tools } from "../../Misc/tools";
 import { type AbstractEngine } from "../../Engines/abstractEngine";
-import { type InputConditions } from "../cameraInteractions";
+import { type KeyboardConditions } from "../cameraInteractions";
 
 /**
  * Manage the keyboard inputs to control the movement of a geospatial camera.
@@ -89,7 +89,7 @@ export class GeospatialCameraKeyboardInput implements ICameraInput<GeospatialCam
     private _scene: Scene;
 
     /** Cached conditions object to avoid per-frame allocations in checkInputs */
-    private _keyboardConditions: InputConditions = { modifiers: { ctrl: false, alt: false, shift: false } };
+    private _keyboardConditions: KeyboardConditions = { modifiers: { ctrl: false, alt: false, shift: false } };
 
     /**
      * Attach the input controls to a specific dom element to get the input from.
@@ -195,26 +195,25 @@ export class GeospatialCameraKeyboardInput implements ICameraInput<GeospatialCam
             const camera = this.camera;
             const movement = camera.movement;
 
-            // Resolve interaction once per frame — modifier state is constant across all keys
+            // Update cached modifier state
             this._keyboardConditions.modifiers!.ctrl = this._ctrlPressed;
             this._keyboardConditions.modifiers!.alt = this._altPressed;
             this._keyboardConditions.modifiers!.shift = this._shiftPressed;
-            const interaction = movement.resolveInteraction("keyboard", this._keyboardConditions);
 
             for (let index = 0; index < this._keys.length; index++) {
                 const keyCode = this._keys[index];
 
-                // Zoom keys always map to zoom regardless of modifiers
-                if (this.keysZoomIn.indexOf(keyCode) !== -1) {
-                    movement.handlers.zoom(this.zoomSensitivity, false);
-                    continue;
-                }
-                if (this.keysZoomOut.indexOf(keyCode) !== -1) {
-                    movement.handlers.zoom(-this.zoomSensitivity, false);
-                    continue;
-                }
+                // Resolve per key — allows different keys to map to different interactions
+                this._keyboardConditions.key = keyCode;
+                const interaction = movement.resolveInteraction("keyboard", this._keyboardConditions);
 
-                if (interaction === "rotate") {
+                if (interaction === "zoom") {
+                    if (this.keysZoomIn.indexOf(keyCode) !== -1 || this.keysUp.indexOf(keyCode) !== -1) {
+                        movement.handlers.zoom(this.zoomSensitivity, false);
+                    } else if (this.keysZoomOut.indexOf(keyCode) !== -1 || this.keysDown.indexOf(keyCode) !== -1) {
+                        movement.handlers.zoom(-this.zoomSensitivity, false);
+                    }
+                } else if (interaction === "rotate") {
                     if (this.keysLeft.indexOf(keyCode) !== -1) {
                         movement.handlers.rotate(-this.rotationSensitivity, 0);
                     } else if (this.keysRight.indexOf(keyCode) !== -1) {

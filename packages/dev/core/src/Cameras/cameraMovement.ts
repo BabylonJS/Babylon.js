@@ -1,6 +1,6 @@
 import { type Scene } from "../scene";
 import { Vector3 } from "../Maths/math.vector";
-import type { InputMapEntry, InputConditions, InputSource, InputModifiers } from "./cameraInteractions";
+import type { InputMapEntry, InputModifiers, InputConditions, InputSource } from "./cameraInteractions";
 import { type InterpolatingBehavior } from "../Behaviors/Cameras/interpolatingBehavior";
 
 const FrameDurationAt60FPS = 1000 / 60;
@@ -39,7 +39,7 @@ export class CameraMovement {
      * Returns the interaction string of the first matching entry, or "none" if no entry matches.
      * The returned string corresponds to a handler property name on the camera's movement subclass.
      * @param source - The physical input source (e.g. "pointer", "keyboard")
-     * @param conditions - Optional conditions to match against (button, modifiers, touchCount)
+     * @param conditions - Conditions to match against, specific to the source type
      * @returns The resolved interaction type string, or "none"
      */
     public resolveInteraction(source: InputSource, conditions?: InputConditions): string {
@@ -67,6 +67,11 @@ export class CameraMovement {
                     }
                     break;
                 case "keyboard":
+                    if (entry.key !== undefined) {
+                        if (Array.isArray(entry.key) ? entry.key.indexOf(conditions?.key ?? -1) === -1 : entry.key !== conditions?.key) {
+                            continue;
+                        }
+                    }
                     if (!this._matchModifiers(entry.modifiers, conditions?.modifiers)) {
                         continue;
                     }

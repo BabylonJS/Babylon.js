@@ -78,6 +78,7 @@ export class ArcRotateCameraMovement extends CameraMovement {
             { source: "pointer", button: 0, interaction: "rotate" },
             { source: "pointer", button: 2, interaction: "pan" },
             { source: "wheel", interaction: "zoom" },
+            { source: "keyboard", key: [187, 107, 189, 109], interaction: "zoom" }, // +/-/numpad+/numpad-
             { source: "keyboard", modifiers: { ctrl: true }, interaction: "pan" },
             { source: "keyboard", modifiers: { alt: true }, interaction: "zoom" },
             { source: "keyboard", interaction: "rotate" },
