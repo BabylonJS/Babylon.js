@@ -405,7 +405,7 @@ export class Parser {
             if (elements[i].ty === "gr") {
                 this._parseGroup(elements[i], parent);
                 //break;
-            } else if (elements[i].ty === "sh" || elements[i].ty === "rc") {
+            } else if (elements[i].ty === "sh" || elements[i].ty === "rc" || elements[i].ty === "el") {
                 this._parseShapes(elements, parent);
                 break; // After parsing the shapes, this array of elements is done
             } else {

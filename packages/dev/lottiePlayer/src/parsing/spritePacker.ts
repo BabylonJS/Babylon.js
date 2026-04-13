@@ -7,6 +7,7 @@ import { ThinTexture } from "core/Materials/Textures/thinTexture";
 
 import {
     type RawElement,
+    type RawEllipseShape,
     type RawFillShape,
     type RawFont,
     type RawGradientFillShape,
@@ -303,6 +304,9 @@ export class SpritePacker {
                 case "rc":
                     this._drawRectangle(shape as RawRectangleShape, boundingBox);
                     break;
+                case "el":
+                    this._drawEllipse(shape as RawEllipseShape, boundingBox);
+                    break;
                 case "sh":
                     this._drawPath(shape as RawPathShape, boundingBox);
                     break;
@@ -385,6 +389,19 @@ export class SpritePacker {
         } else {
             this._spritesCanvasContext.roundRect(x, y, size[0], size[1], radius);
         }
+    }
+
+    private _drawEllipse(shape: RawEllipseShape, boundingBox: BoundingBox): void {
+        const size = GetInitialVectorValues(shape.s);
+        const position = GetInitialVectorValues(shape.p);
+
+        const centerX = position[0] + boundingBox.centerX - Math.ceil(boundingBox.strokeInset);
+        const centerY = position[1] + boundingBox.centerY - Math.ceil(boundingBox.strokeInset);
+        const radiusX = size[0] / 2;
+        const radiusY = size[1] / 2;
+
+        this._spritesCanvasContext.moveTo(centerX + radiusX, centerY);
+        this._spritesCanvasContext.ellipse(centerX, centerY, radiusX, radiusY, 0, 0, Math.PI * 2);
     }
 
     private _drawPath(shape: RawPathShape, boundingBox: BoundingBox): void {

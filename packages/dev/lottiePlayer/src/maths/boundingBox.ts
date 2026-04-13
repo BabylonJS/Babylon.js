@@ -1,4 +1,13 @@
-import { type RawElement, type RawFont, type RawPathShape, type RawRectangleShape, type RawStrokeShape, type RawTextData, type RawTextDocument } from "../parsing/rawTypes";
+import {
+    type RawElement,
+    type RawFont,
+    type RawEllipseShape,
+    type RawPathShape,
+    type RawRectangleShape,
+    type RawStrokeShape,
+    type RawTextData,
+    type RawTextDocument,
+} from "../parsing/rawTypes";
 import { GetInitialVectorValues, GetInitialBezierData } from "../parsing/rawPropertyHelpers";
 
 /**
@@ -50,6 +59,8 @@ export function GetShapesBoundingBox(rawElements: RawElement[]): BoundingBox {
     for (let i = 0; i < rawElements.length; i++) {
         if (rawElements[i].ty === "rc") {
             GetRectangleVertices(boxCorners, rawElements[i] as RawRectangleShape);
+        } else if (rawElements[i].ty === "el") {
+            GetEllipseVertices(boxCorners, rawElements[i] as RawEllipseShape);
         } else if (rawElements[i].ty === "sh") {
             GetPathVertices(boxCorners, rawElements[i] as RawPathShape);
         } else if (rawElements[i].ty === "st") {
@@ -158,6 +169,17 @@ function GetRectangleVertices(boxCorners: Corners, rect: RawRectangleShape): voi
     const position = GetInitialVectorValues(rect.p);
 
     // Calculate the four corners of the rectangle
+    UpdateBoxCorners(boxCorners, position[0] - size[0] / 2, position[1] - size[1] / 2);
+    UpdateBoxCorners(boxCorners, position[0] + size[0] / 2, position[1] - size[1] / 2);
+    UpdateBoxCorners(boxCorners, position[0] + size[0] / 2, position[1] + size[1] / 2);
+    UpdateBoxCorners(boxCorners, position[0] - size[0] / 2, position[1] + size[1] / 2);
+}
+
+function GetEllipseVertices(boxCorners: Corners, ellipse: RawEllipseShape): void {
+    const size = GetInitialVectorValues(ellipse.s);
+    const position = GetInitialVectorValues(ellipse.p);
+
+    // The axis-aligned bounding box of an ellipse is the same as a rectangle with the same size
     UpdateBoxCorners(boxCorners, position[0] - size[0] / 2, position[1] - size[1] / 2);
     UpdateBoxCorners(boxCorners, position[0] + size[0] / 2, position[1] - size[1] / 2);
     UpdateBoxCorners(boxCorners, position[0] + size[0] / 2, position[1] + size[1] / 2);
