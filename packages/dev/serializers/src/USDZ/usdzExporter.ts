@@ -12,11 +12,13 @@ import { Matrix, Vector2 } from "core/Maths/math.vector";
 import { type Geometry } from "core/Meshes/geometry";
 import { type Mesh } from "core/Meshes/mesh";
 import { DumpTools } from "core/Misc/dumpTools";
+import { GetMimeType } from "core/Misc/fileTools";
 import { Tools } from "core/Misc/tools";
 import { type Scene } from "core/scene";
 import { type FloatArray, type Nullable } from "core/types";
 import { IsNoopNode } from "../exportUtils";
 import { GetTextureDataAsync } from "core/Misc/textureTools";
+import { InternalTextureSource } from "core/Materials/Textures/internalTexture";
 
 /**
  * Ported from https://github.com/mrdoob/three.js/blob/master/examples/jsm/exporters/USDZExporter.js
@@ -651,6 +653,53 @@ function ExtractMeshInformations(mesh: Mesh) {
 }
 
 /**
+ * Gets cached image data from a texture's internal buffer, if available.
+ * This allows texture export without requiring a WebGL or canvas rendering context,
+ * enabling server-side (Node.js) export with NullEngine.
+ * @param babylonTexture texture to check for cached image data
+ * @returns PNG blob if found and directly usable; null otherwise
+ */
+async function GetCachedImageAsync(babylonTexture: BaseTexture): Promise<Nullable<Blob>> {
+    const internalTexture = babylonTexture.getInternalTexture();
+    if (!internalTexture || internalTexture.source !== InternalTextureSource.Url) {
+        return null;
+    }
+
+    const buffer = internalTexture._buffer;
+
+    let data;
+    let mimeType = (babylonTexture as Texture).mimeType;
+
+    try {
+        if (!buffer) {
+            data = await Tools.LoadFileAsync(internalTexture.url);
+            mimeType = GetMimeType(internalTexture.url) || mimeType;
+        } else if (ArrayBuffer.isView(buffer)) {
+            data = buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength) as ArrayBuffer;
+        } else if (buffer instanceof ArrayBuffer) {
+            data = buffer;
+        } else if (buffer instanceof Blob) {
+            data = await buffer.arrayBuffer();
+            mimeType = buffer.type || mimeType;
+        } else if (typeof buffer === "string") {
+            data = await Tools.LoadFileAsync(buffer);
+            mimeType = GetMimeType(buffer) || mimeType;
+        } else if (typeof HTMLImageElement !== "undefined" && buffer instanceof HTMLImageElement) {
+            data = await Tools.LoadFileAsync(buffer.src);
+            mimeType = GetMimeType(buffer.src) || mimeType;
+        }
+    } catch {
+        return null;
+    }
+
+    if (data && mimeType) {
+        return new Blob([data], { type: mimeType });
+    }
+
+    return null;
+}
+
+/**
  *
  * @param scene scene to export
  * @param options options to configure the export
@@ -745,14 +794,24 @@ export async function USDZExportAsync(scene: Scene, options: Partial<IUSDZExport
     for (const id in textureToExports) {
         const texture = textureToExports[id];
 
-        const size = texture.getSize();
+        // Try to get the image directly from the internal texture buffer (works without WebGL/canvas)
         // eslint-disable-next-line no-await-in-loop
-        const textureData = await GetTextureDataAsync(texture);
+        const cachedImage = await GetCachedImageAsync(texture);
+        if (cachedImage) {
+            // eslint-disable-next-line no-await-in-loop
+            const arrayBuffer = await cachedImage.arrayBuffer();
+            files[`textures/Texture_${id}.png`] = new Uint8Array(arrayBuffer);
+        } else {
+            // Fall back to GPU texture read + DumpTools (requires WebGL/canvas context)
+            const size = texture.getSize();
+            // eslint-disable-next-line no-await-in-loop
+            const textureData = await GetTextureDataAsync(texture);
 
-        // eslint-disable-next-line no-await-in-loop
-        const fileContent = await DumpTools.DumpDataAsync(size.width, size.height, textureData, "image/png", undefined, false, true);
+            // eslint-disable-next-line no-await-in-loop
+            const fileContent = await DumpTools.DumpDataAsync(size.width, size.height, textureData, "image/png", undefined, false, true);
 
-        files[`textures/Texture_${id}.png`] = new Uint8Array(fileContent as ArrayBuffer).slice(); // This is to avoid getting a link and not a copy
+            files[`textures/Texture_${id}.png`] = new Uint8Array(fileContent as ArrayBuffer).slice(); // This is to avoid getting a link and not a copy
+        }
     }
 
     // 64 byte alignment
