@@ -139,22 +139,24 @@ const updatePackages = (version) => {
     // get all package.json files in the public folder
     const files = glob.globSync(path.join(baseDirectory, "packages", "public", "**", "package.json").replace(/\\/g, "/"));
     files.forEach((file) => {
+        if (file.indexOf("node_modules") !== -1) {
+            return;
+        }
         try {
             // get the package.json as js objects
             const data = fs.readFileSync(file, "utf-8").replace(/\r/gm, "");
             const packageJson = JSON.parse(data);
 
             const name = packageJson.name;
-            if (name.startsWith("babylonjs") || name.startsWith("@babylonjs")) {
+            if (name.startsWith("babylonjs") || name.startsWith("@babylonjs") || name.startsWith("create-babylonjs")) {
                 // if not private bump the revision.
                 packageJson.version = version;
+                console.log(`Updating Babylon package json version in ${file} to ${version}`);
             }
 
             // And lets update the devDependencies/dependencies
             updateDependencies(version, packageJson.devDependencies);
             updateDependencies(version, packageJson.dependencies);
-
-            console.log(`Updating Babylon package json version in ${file} to ${version}`);
 
             // write file
             fs.writeFileSync(file, JSON.stringify(packageJson, null, 4));
