@@ -144,7 +144,7 @@ function makeStaticEllipse(position: number[], size: number[]): RawEllipseShape 
 }
 
 describe("GetShapesBoundingBox - ellipses", () => {
-    it("computes correct bounding box for static ellipse at origin", () => {
+    it("computes correct bounding box for static ellipse at non-zero center", () => {
         const ellipse = makeStaticEllipse([50, 50], [100, 60]);
         const box = GetShapesBoundingBox([ellipse as unknown as RawElement]);
 
