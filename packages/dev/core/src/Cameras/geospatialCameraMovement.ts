@@ -38,8 +38,8 @@ export type GeospatialPanHandler = {
 export type GeospatialHandlers = {
     /** Handler for pan (globe drag) interactions — object because it needs start/update/stop lifecycle */
     pan: GeospatialPanHandler;
-    /** Handler for rotate (tilt) interactions — accepts pre-scaled pixel deltas (deltaX, deltaY) */
-    rotate: (deltaX: number, deltaY: number) => void;
+    /** Handler for rotate (tilt) interactions — accepts yaw (horizontal) and pitch (vertical) deltas */
+    rotate: (yaw: number, pitch: number) => void;
     /** Handler for zoom interactions — accepts delta and whether to zoom toward cursor */
     zoom: (delta: number, toCursor: boolean) => void;
 };
@@ -118,9 +118,10 @@ export class GeospatialCameraMovement extends CameraMovement {
                     this.stopDrag();
                 },
             },
-            rotate: (deltaX, deltaY) => {
-                this.rotationAccumulatedPixels.y += deltaX;
-                this.rotationAccumulatedPixels.x += deltaY;
+            rotate: (yaw, pitch) => {
+                this.rotationAccumulatedPixels.y += yaw;
+                // Negate pitch: screen Y increases downward, but pitch-up should be positive
+                this.rotationAccumulatedPixels.x -= pitch;
             },
             zoom: (delta, toCursor) => {
                 this.handleZoom(delta, toCursor);
