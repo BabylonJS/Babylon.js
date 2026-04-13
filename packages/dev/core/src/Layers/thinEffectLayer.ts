@@ -544,11 +544,9 @@ export class ThinEffectLayer {
             // uniform path for NodeMaterial).
             // This mirrors what _renderSubMesh does when actually rendering.
             material._glowModeEnabled = true;
-            try {
-                return material.isReadyForSubMesh(subMesh.getMesh(), subMesh, useInstances);
-            } finally {
-                material._glowModeEnabled = false;
-            }
+            const isReady = material.isReadyForSubMesh(subMesh.getMesh(), subMesh, useInstances);
+            material._glowModeEnabled = false;
+            return isReady;
         }
 
         const defines: string[] = [];
