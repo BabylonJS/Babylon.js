@@ -637,9 +637,7 @@ export class ArcRotateCamera extends TargetCamera {
 
         // Handle _useCtrlForPanning: remove ctrl+keyboard→pan entry when false
         if (!this._useCtrlForPanning) {
-            const idx = this.movement.inputMap.findIndex(
-                (e) => e.source === "keyboard" && "modifiers" in e && e.modifiers?.ctrl === true && e.interaction === "pan"
-            );
+            const idx = this.movement.inputMap.findIndex((e) => e.source === "keyboard" && "modifiers" in e && e.modifiers?.ctrl === true && e.interaction === "pan");
             if (idx !== -1) {
                 this.movement.inputMap.splice(idx, 1);
             }
@@ -656,9 +654,7 @@ export class ArcRotateCamera extends TargetCamera {
         // Handle useAltToZoom: remove alt+keyboard→zoom entry when false
         const keyboardInput = this.inputs.attached["keyboard"] as ArcRotateCameraKeyboardMoveInput | undefined;
         if (keyboardInput && !keyboardInput.useAltToZoom) {
-            const idx = this.movement.inputMap.findIndex(
-                (e) => e.source === "keyboard" && "modifiers" in e && e.modifiers?.alt === true && e.interaction === "zoom"
-            );
+            const idx = this.movement.inputMap.findIndex((e) => e.source === "keyboard" && "modifiers" in e && e.modifiers?.alt === true && e.interaction === "zoom");
             if (idx !== -1) {
                 this.movement.inputMap.splice(idx, 1);
             }
@@ -1105,6 +1101,27 @@ export class ArcRotateCamera extends TargetCamera {
     }
 
     /**
+     * Applies rotation and zoom deltas to the camera, handling invertRotation, handedness, and beta-flip.
+     * Shared by both the movement system and legacy inertia paths.
+     * @param alphaOffset - Alpha (horizontal orbit) delta
+     * @param betaOffset - Beta (vertical orbit) delta
+     * @param radiusOffset - Radius (zoom) delta
+     */
+    private _applyRotationAndZoomDelta(alphaOffset: number, betaOffset: number, radiusOffset: number): void {
+        const directionModifier = this.invertRotation ? -1 : 1;
+        const handednessMultiplier = this._calculateHandednessMultiplier();
+        let adjustedAlpha = alphaOffset * handednessMultiplier;
+
+        if (this.beta < 0) {
+            adjustedAlpha *= -1;
+        }
+
+        this.alpha += adjustedAlpha * directionModifier;
+        this.beta += betaOffset * directionModifier;
+        this.radius -= radiusOffset;
+    }
+
+    /**
      * Applies a pan delta to the camera target in screen space.
      * Shared by both the movement system and legacy inertia paths.
      * @param panX - Horizontal pan delta
@@ -1155,7 +1172,6 @@ export class ArcRotateCamera extends TargetCamera {
         let hasUserInteractions = false;
 
         if (this.movement) {
-            // Movement system path: framerate-independent deltas
             this.movement.computeCurrentFrameDeltas();
 
             const rotDelta = this.movement.rotationDeltaCurrentFrame;
@@ -1164,18 +1180,7 @@ export class ArcRotateCamera extends TargetCamera {
 
             if (rotDelta.x !== 0 || rotDelta.y !== 0 || zoomDelta !== 0 || panDelta.x !== 0 || panDelta.y !== 0) {
                 hasUserInteractions = true;
-
-                const directionModifier = this.invertRotation ? -1 : 1;
-                const handednessMultiplier = this._calculateHandednessMultiplier();
-                let alphaOffset = rotDelta.x * handednessMultiplier;
-
-                if (this.beta < 0) {
-                    alphaOffset *= -1;
-                }
-
-                this.alpha += alphaOffset * directionModifier;
-                this.beta += rotDelta.y * directionModifier;
-                this.radius -= zoomDelta;
+                this._applyRotationAndZoomDelta(rotDelta.x, rotDelta.y, zoomDelta);
 
                 if (panDelta.x !== 0 || panDelta.y !== 0) {
                     this._applyPanDelta(panDelta.x, panDelta.y);
@@ -1185,19 +1190,8 @@ export class ArcRotateCamera extends TargetCamera {
             // Legacy inertia path
             if (this.inertialAlphaOffset !== 0 || this.inertialBetaOffset !== 0 || this.inertialRadiusOffset !== 0) {
                 hasUserInteractions = true;
+                this._applyRotationAndZoomDelta(this.inertialAlphaOffset, this.inertialBetaOffset, this.inertialRadiusOffset);
 
-                const directionModifier = this.invertRotation ? -1 : 1;
-                const handednessMultiplier = this._calculateHandednessMultiplier();
-                let inertialAlphaOffset = this.inertialAlphaOffset * handednessMultiplier;
-
-                if (this.beta < 0) {
-                    inertialAlphaOffset *= -1;
-                }
-
-                this.alpha += inertialAlphaOffset * directionModifier;
-                this.beta += this.inertialBetaOffset * directionModifier;
-
-                this.radius -= this.inertialRadiusOffset;
                 this.inertialAlphaOffset *= this.inertia;
                 this.inertialBetaOffset *= this.inertia;
                 this.inertialRadiusOffset *= this.inertia;
