@@ -539,7 +539,13 @@ export class ThinEffectLayer {
         }
 
         if (this._useMeshMaterial(subMesh.getRenderingMesh())) {
-            return material.isReadyForSubMesh(subMesh.getMesh(), subMesh, useInstances);
+            // Enable glow mode during readiness check so the material compiles the
+            // correct shader variant (e.g. the ADDITIONAL_COLOR define for NodeMaterial).
+            // This mirrors what _renderSubMesh does when actually rendering.
+            material._glowModeEnabled = true;
+            const isReady = material.isReadyForSubMesh(subMesh.getMesh(), subMesh, useInstances);
+            material._glowModeEnabled = false;
+            return isReady;
         }
 
         const defines: string[] = [];

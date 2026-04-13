@@ -153,7 +153,9 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
     public override prepareDefines(defines: NodeMaterialDefines, nodeMaterial: NodeMaterial) {
         defines.setValue(this._linearDefineName, this.convertToLinearSpace, true);
         defines.setValue(this._gammaDefineName, this.convertToGammaSpace, true);
-        defines.setValue(this._additionalColorDefineName, this.additionalColor.connectedPoint && nodeMaterial._useAdditionalColor, true);
+        if (this._additionalColorDefineName) {
+            defines.setValue(this._additionalColorDefineName, !!this.additionalColor.connectedPoint && nodeMaterial._useAdditionalColor, true);
+        }
     }
 
     /**
