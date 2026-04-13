@@ -18,8 +18,11 @@ This directory contains instruction files that define coding practices, review r
 
 ## UI & Editors
 
-- **[inspector.instructions.md](inspector.instructions.md)** — Inspector v2 UI conventions (shared components, `makeStyles`, Fluent icons, `ISettingsStore`).
+- **[react.instructions.md](react.instructions.md)** — React component conventions (FunctionComponent declarations, props destructuring, conditional rendering).
+- **[fluent.instructions.md](fluent.instructions.md)** — Fluent UI conventions (shared components, `makeStyles`, spacing tokens, icon imports, `Collapse`, `ToggleButton`).
+- **[inspector.instructions.md](inspector.instructions.md)** — Inspector v2-specific conventions (`ISettingsStore`, extension architecture, service definitions).
 - **[editor-interaction.instructions.md](editor-interaction.instructions.md)** — How to interact with Babylon editors (layout, wiring nodes, selecting blocks/wires).
+- **[porting-tools-to-fluent.instructions.md](porting-tools-to-fluent.instructions.md)** — Guide for porting tools from legacy shared-ui-components to Fluent UI and `MakeModularTool`.
 
 ## Testing
 
