@@ -219,9 +219,9 @@ export class GeospatialCameraKeyboardInput implements ICameraInput<GeospatialCam
                     } else if (this.keysRight.indexOf(keyCode) !== -1) {
                         movement.handlers.rotate(this.rotationSensitivity, 0);
                     } else if (this.keysUp.indexOf(keyCode) !== -1) {
-                        movement.handlers.rotate(0, this.rotationSensitivity);
-                    } else if (this.keysDown.indexOf(keyCode) !== -1) {
                         movement.handlers.rotate(0, -this.rotationSensitivity);
+                    } else if (this.keysDown.indexOf(keyCode) !== -1) {
+                        movement.handlers.rotate(0, this.rotationSensitivity);
                     }
                 } else if (interaction === "pan") {
                     // Call into movement class handleDrag so that behavior matches that of pointer input, simulating drag from center of screen.

@@ -120,8 +120,7 @@ export class GeospatialCameraMovement extends CameraMovement {
             },
             rotate: (yaw, pitch) => {
                 this.rotationAccumulatedPixels.y += yaw;
-                // Negate pitch: screen Y increases downward, but pitch-up should be positive
-                this.rotationAccumulatedPixels.x -= pitch;
+                this.rotationAccumulatedPixels.x += pitch;
             },
             zoom: (delta, toCursor) => {
                 this.handleZoom(delta, toCursor);

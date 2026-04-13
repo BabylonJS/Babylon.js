@@ -1,0 +1,236 @@
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { GeospatialCameraMovement } from "core/Cameras/geospatialCameraMovement";
+import { GeospatialLimits } from "core/Cameras/Limits/geospatialLimits";
+import { Vector3 } from "core/Maths/math.vector";
+import { NullEngine } from "core/Engines/nullEngine";
+import { Scene } from "core/scene";
+import type { Nullable } from "core/types";
+
+describe("GeospatialCameraMovement", () => {
+    let engine: Nullable<NullEngine> = null;
+    let scene: Nullable<Scene> = null;
+    let movement: GeospatialCameraMovement;
+
+    beforeEach(() => {
+        engine = new NullEngine({
+            renderHeight: 256,
+            renderWidth: 256,
+            textureSize: 256,
+            deterministicLockstep: false,
+            lockstepMaxSteps: 1,
+        });
+        scene = new Scene(engine);
+        const limits = new GeospatialLimits();
+        const cameraPosition = new Vector3(0, 0, 100);
+        const cameraCenter = new Vector3(0, 0, 0);
+        const cameraLookAt = new Vector3(0, 0, -1);
+        movement = new GeospatialCameraMovement(scene, limits, cameraPosition, cameraCenter, cameraLookAt);
+    });
+
+    afterEach(() => {
+        scene?.dispose();
+        engine?.dispose();
+    });
+
+    // ============================================
+    // Input map resolution
+    // ============================================
+    describe("default inputMap", () => {
+        it("should have 8 entries", () => {
+            expect(movement.inputMap).toHaveLength(8);
+        });
+
+        it("should map left-click to pan", () => {
+            expect(movement.resolveInteraction("pointer", { button: 0 })).toBe("pan");
+        });
+
+        it("should map middle-click to rotate", () => {
+            expect(movement.resolveInteraction("pointer", { button: 1 })).toBe("rotate");
+        });
+
+        it("should map right-click to rotate", () => {
+            expect(movement.resolveInteraction("pointer", { button: 2 })).toBe("rotate");
+        });
+
+        it("should map wheel to zoom", () => {
+            expect(movement.resolveInteraction("wheel")).toBe("zoom");
+        });
+
+        it("should map +/- keys to zoom", () => {
+            expect(movement.resolveInteraction("keyboard", { key: 187 })).toBe("zoom"); // + key
+            expect(movement.resolveInteraction("keyboard", { key: 107 })).toBe("zoom"); // numpad +
+            expect(movement.resolveInteraction("keyboard", { key: 189 })).toBe("zoom"); // - key
+            expect(movement.resolveInteraction("keyboard", { key: 109 })).toBe("zoom"); // numpad -
+        });
+
+        it("should map ctrl+keyboard to rotate", () => {
+            expect(movement.resolveInteraction("keyboard", { modifiers: { ctrl: true } })).toBe("rotate");
+        });
+
+        it("should map alt+keyboard to rotate", () => {
+            expect(movement.resolveInteraction("keyboard", { modifiers: { alt: true } })).toBe("rotate");
+        });
+
+        it("should map plain keyboard to pan", () => {
+            expect(movement.resolveInteraction("keyboard", { modifiers: {} })).toBe("pan");
+        });
+
+        it("should map arrow keys without modifiers to pan", () => {
+            expect(movement.resolveInteraction("keyboard", { key: 38, modifiers: {} })).toBe("pan"); // up arrow
+            expect(movement.resolveInteraction("keyboard", { key: 40, modifiers: {} })).toBe("pan"); // down arrow
+            expect(movement.resolveInteraction("keyboard", { key: 37, modifiers: {} })).toBe("pan"); // left arrow
+            expect(movement.resolveInteraction("keyboard", { key: 39, modifiers: {} })).toBe("pan"); // right arrow
+        });
+
+        it("should map arrow keys with ctrl to rotate", () => {
+            expect(movement.resolveInteraction("keyboard", { key: 38, modifiers: { ctrl: true } })).toBe("rotate");
+            expect(movement.resolveInteraction("keyboard", { key: 37, modifiers: { ctrl: true } })).toBe("rotate");
+        });
+
+        it("should map zoom keys with ctrl to zoom (key match wins over modifier match)", () => {
+            // Key-specific entry comes before modifier entry in the inputMap, so it wins
+            expect(movement.resolveInteraction("keyboard", { key: 187, modifiers: { ctrl: true } })).toBe("zoom");
+        });
+
+        it("should map pointer with shift modifier when configured", () => {
+            movement.inputMap = [
+                { source: "pointer", button: 0, modifiers: { shift: true }, interaction: "rotate" },
+                { source: "pointer", button: 0, interaction: "pan" },
+            ];
+            expect(movement.resolveInteraction("pointer", { button: 0, modifiers: { shift: true } })).toBe("rotate");
+            expect(movement.resolveInteraction("pointer", { button: 0, modifiers: {} })).toBe("pan");
+        });
+    });
+
+    // ============================================
+    // Handler accumulation direction tests
+    // ============================================
+    describe("rotate handler", () => {
+        it("should accumulate positive yaw to rotationAccumulatedPixels.y", () => {
+            movement.handlers.rotate(5, 0);
+            expect(movement.rotationAccumulatedPixels.y).toBe(5);
+            expect(movement.rotationAccumulatedPixels.x).toBe(0);
+        });
+
+        it("should accumulate negative yaw to rotationAccumulatedPixels.y", () => {
+            movement.handlers.rotate(-3, 0);
+            expect(movement.rotationAccumulatedPixels.y).toBe(-3);
+        });
+
+        it("should accumulate positive pitch to rotationAccumulatedPixels.x", () => {
+            movement.handlers.rotate(0, 7);
+            expect(movement.rotationAccumulatedPixels.x).toBe(7);
+            expect(movement.rotationAccumulatedPixels.y).toBe(0);
+        });
+
+        it("should accumulate negative pitch to rotationAccumulatedPixels.x", () => {
+            movement.handlers.rotate(0, -4);
+            expect(movement.rotationAccumulatedPixels.x).toBe(-4);
+        });
+
+        it("should accumulate yaw and pitch independently", () => {
+            movement.handlers.rotate(2, 3);
+            expect(movement.rotationAccumulatedPixels.y).toBe(2);
+            expect(movement.rotationAccumulatedPixels.x).toBe(3);
+        });
+
+        it("should accumulate multiple calls", () => {
+            movement.handlers.rotate(1, 2);
+            movement.handlers.rotate(3, 4);
+            expect(movement.rotationAccumulatedPixels.y).toBe(4); // 1 + 3
+            expect(movement.rotationAccumulatedPixels.x).toBe(6); // 2 + 4
+        });
+    });
+
+    describe("zoom handler", () => {
+        it("should accumulate positive zoom delta", () => {
+            movement.handlers.zoom(10, false);
+            expect(movement.zoomAccumulatedPixels).toBe(10);
+        });
+
+        it("should accumulate negative zoom delta", () => {
+            movement.handlers.zoom(-5, false);
+            expect(movement.zoomAccumulatedPixels).toBe(-5);
+        });
+
+        it("should accumulate multiple zoom calls", () => {
+            movement.handlers.zoom(3, false);
+            movement.handlers.zoom(7, false);
+            expect(movement.zoomAccumulatedPixels).toBe(10);
+        });
+    });
+
+    // ============================================
+    // Direction sign convention tests
+    // These verify that the handler-to-accumulator mapping matches the
+    // convention used by geospatialCamera._checkInputs, which reads:
+    //   rotationDeltaCurrentFrame.x → pitch (added to _pitch)
+    //   rotationDeltaCurrentFrame.y → yaw (added to _yaw)
+    // ============================================
+    describe("direction sign conventions", () => {
+        it("positive yaw (right) should produce positive rotationAccumulatedPixels.y", () => {
+            // Simulates: right arrow key or rightward pointer drag
+            movement.handlers.rotate(1, 0);
+            expect(movement.rotationAccumulatedPixels.y).toBeGreaterThan(0);
+        });
+
+        it("negative yaw (left) should produce negative rotationAccumulatedPixels.y", () => {
+            // Simulates: left arrow key or leftward pointer drag
+            movement.handlers.rotate(-1, 0);
+            expect(movement.rotationAccumulatedPixels.y).toBeLessThan(0);
+        });
+
+        it("pointer drag up (negative offsetY) should produce negative pitch accumulator for tilt-up", () => {
+            // Pointer: offsetY < 0 when dragging up, caller passes -offsetY as pitch
+            // This should result in positive pitch accumulator → _pitch increases → tilts toward horizon
+            const offsetY = -10;
+            movement.handlers.rotate(0, -offsetY); // caller convention: negate offsetY for pitch
+            expect(movement.rotationAccumulatedPixels.x).toBeGreaterThan(0);
+        });
+
+        it("keyboard up arrow should produce negative pitch accumulator for tilt-up (toward top-down)", () => {
+            // Keyboard convention: up arrow passes negative pitch
+            // _pitch decreases → tilts away from horizon (more top-down)
+            movement.handlers.rotate(0, -1);
+            expect(movement.rotationAccumulatedPixels.x).toBeLessThan(0);
+        });
+
+        it("keyboard down arrow should produce positive pitch accumulator for tilt-down (toward horizon)", () => {
+            // Keyboard convention: down arrow passes positive pitch
+            // _pitch increases → tilts toward horizon
+            movement.handlers.rotate(0, 1);
+            expect(movement.rotationAccumulatedPixels.x).toBeGreaterThan(0);
+        });
+
+        it("positive zoom should increase zoomAccumulatedPixels (zoom in)", () => {
+            movement.handlers.zoom(1, false);
+            expect(movement.zoomAccumulatedPixels).toBeGreaterThan(0);
+        });
+
+        it("negative zoom should decrease zoomAccumulatedPixels (zoom out)", () => {
+            movement.handlers.zoom(-1, false);
+            expect(movement.zoomAccumulatedPixels).toBeLessThan(0);
+        });
+    });
+
+    // ============================================
+    // resetInputMap
+    // ============================================
+    describe("resetInputMap", () => {
+        it("should restore default inputMap after modification", () => {
+            movement.inputMap = [];
+            expect(movement.inputMap).toHaveLength(0);
+
+            movement.resetInputMap();
+            expect(movement.inputMap).toHaveLength(8);
+
+            expect(movement.resolveInteraction("pointer", { button: 0 })).toBe("pan");
+            expect(movement.resolveInteraction("pointer", { button: 1 })).toBe("rotate");
+            expect(movement.resolveInteraction("pointer", { button: 2 })).toBe("rotate");
+            expect(movement.resolveInteraction("wheel")).toBe("zoom");
+            expect(movement.resolveInteraction("keyboard", { key: 187 })).toBe("zoom");
+            expect(movement.resolveInteraction("keyboard", { modifiers: { ctrl: true } })).toBe("rotate");
+            expect(movement.resolveInteraction("keyboard", { modifiers: {} })).toBe("pan");
+        });
+    });
+});

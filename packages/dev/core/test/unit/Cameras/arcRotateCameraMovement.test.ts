@@ -28,8 +28,8 @@ describe("ArcRotateCameraMovement", () => {
     });
 
     describe("default inputMap", () => {
-        it("should have exactly 6 entries", () => {
-            expect(movement.inputMap).toHaveLength(6);
+        it("should have exactly 7 entries", () => {
+            expect(movement.inputMap).toHaveLength(7);
         });
 
         it("should map left-click to rotate", () => {
@@ -42,6 +42,17 @@ describe("ArcRotateCameraMovement", () => {
 
         it("should map wheel to zoom", () => {
             expect(movement.resolveInteraction("wheel")).toBe("zoom");
+        });
+
+        it("should map +/- keys to zoom", () => {
+            expect(movement.resolveInteraction("keyboard", { key: 187 })).toBe("zoom"); // + key
+            expect(movement.resolveInteraction("keyboard", { key: 107 })).toBe("zoom"); // numpad +
+            expect(movement.resolveInteraction("keyboard", { key: 189 })).toBe("zoom"); // - key
+            expect(movement.resolveInteraction("keyboard", { key: 109 })).toBe("zoom"); // numpad -
+        });
+
+        it("should map zoom keys with ctrl to zoom (key match wins over modifier match)", () => {
+            expect(movement.resolveInteraction("keyboard", { key: 187, modifiers: { ctrl: true } })).toBe("zoom");
         });
 
         it("should map ctrl+keyboard to pan", () => {
@@ -89,11 +100,12 @@ describe("ArcRotateCameraMovement", () => {
             expect(movement.inputMap).toHaveLength(0);
 
             movement.resetInputMap();
-            expect(movement.inputMap).toHaveLength(6);
+            expect(movement.inputMap).toHaveLength(7);
 
             expect(movement.resolveInteraction("pointer", { button: 0 })).toBe("rotate");
             expect(movement.resolveInteraction("pointer", { button: 2 })).toBe("pan");
             expect(movement.resolveInteraction("wheel")).toBe("zoom");
+            expect(movement.resolveInteraction("keyboard", { key: 187 })).toBe("zoom");
             expect(movement.resolveInteraction("keyboard", { modifiers: { ctrl: true } })).toBe("pan");
             expect(movement.resolveInteraction("keyboard", { modifiers: { alt: true } })).toBe("zoom");
             expect(movement.resolveInteraction("keyboard", { modifiers: {} })).toBe("rotate");

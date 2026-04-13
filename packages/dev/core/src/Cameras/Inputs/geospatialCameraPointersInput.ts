@@ -65,7 +65,7 @@ export class GeospatialCameraPointersInput extends OrbitCameraPointersInput {
         if (this._activeType === "pan") {
             this.camera.movement.handlers.pan.update(scene.pointerX, scene.pointerY);
         } else if (this._activeType === "rotate") {
-            this.camera.movement.handlers.rotate(offsetX * this.yawSensitivity, offsetY * this.pitchSensitivity);
+            this.camera.movement.handlers.rotate(offsetX * this.yawSensitivity, -offsetY * this.pitchSensitivity);
         }
     }
 
