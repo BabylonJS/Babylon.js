@@ -1,7 +1,11 @@
+import { type FunctionComponent } from "react";
+
 import { type ISceneLoaderPlugin, type ISceneLoaderPluginAsync, SceneLoader } from "core/Loading/sceneLoader";
 import { registeredGLTFExtensions } from "loaders/glTF/2.0/glTFLoaderExtensionRegistry";
 import { type GLTFFileLoader, type IGLTFLoaderExtension } from "loaders/glTF/glTFFileLoader";
+import { Collapse } from "shared-ui-components/fluent/primitives/collapse";
 import { MessageBar } from "shared-ui-components/fluent/primitives/messageBar";
+import { useSetting } from "shared-ui-components/modularTool/hooks/settingsHooks";
 import { type ServiceDefinition } from "shared-ui-components/modularTool/modularity/serviceDefinition";
 import { type ISettingsStore, type SettingDescriptor, SettingsStoreIdentity } from "shared-ui-components/modularTool/services/settingsStore";
 import { type IToastService, ToastServiceIdentity } from "shared-ui-components/modularTool/services/toastService";
@@ -30,6 +34,29 @@ function CreatePersistingProxy<T extends object>(target: T, settingsStore: ISett
         },
     });
 }
+
+function HasNonNullValues(obj: object): boolean {
+    return Object.values(obj).some((v) => v !== null);
+}
+
+const OverridesWarning: FunctionComponent<{ loaderOptions: GLTFLoaderOptionsType; extensionOptions: GLTFExtensionOptionsType }> = (props) => {
+    const { loaderOptions, extensionOptions } = props;
+    const [persistedLoaderOptions] = useSetting(LoaderOptionsSetting);
+    const [persistedExtensionOptions] = useSetting(ExtensionOptionsSetting);
+
+    // Check the live options objects, but depend on the persisted settings to trigger re-renders
+    void persistedLoaderOptions;
+    void persistedExtensionOptions;
+
+    const hasLoaderOverrides = HasNonNullValues(loaderOptions);
+    const hasExtensionOverrides = Object.values(extensionOptions).some((opts) => HasNonNullValues(opts));
+
+    return (
+        <Collapse visible={hasLoaderOverrides || hasExtensionOverrides}>
+            <MessageBar intent="warning" message="Loader option overrides are enabled and will persist across refreshes until disabled or reset." />
+        </Collapse>
+    );
+};
 
 export const GLTFLoaderOptionsServiceDefinition: ServiceDefinition<[], [IToolsService, ISettingsStore, IToastService]> = {
     friendlyName: "GLTF Loader Options",
@@ -115,6 +142,7 @@ export const GLTFLoaderOptionsServiceDefinition: ServiceDefinition<[], [IToolsSe
                 return (
                     <>
                         <MessageBar intent="info" message="Reload the file for changes to take effect" />
+                        <OverridesWarning loaderOptions={currentLoaderOptions} extensionOptions={currentExtensionOptions} />
                         <GLTFLoaderOptionsTool loaderOptions={currentLoaderOptions} />
                         <GLTFExtensionOptionsTool extensionOptions={currentExtensionOptions} />
                     </>
