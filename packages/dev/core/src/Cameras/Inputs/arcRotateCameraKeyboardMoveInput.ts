@@ -51,6 +51,20 @@ export class ArcRotateCameraKeyboardMoveInput implements ICameraInput<ArcRotateC
     public keysReset = [220];
 
     /**
+     * Defines the list of key codes associated with the zoom in action.
+     * Only used when CameraMovement is active — these keys always trigger zoom regardless of modifiers.
+     */
+    @serialize()
+    public keysZoomIn: number[] = [187, 107]; // 187 = +/= key, 107 = numpad +
+
+    /**
+     * Defines the list of key codes associated with the zoom out action.
+     * Only used when CameraMovement is active — these keys always trigger zoom regardless of modifiers.
+     */
+    @serialize()
+    public keysZoomOut: number[] = [189, 109]; // 189 = -/_ key, 109 = numpad -
+
+    /**
      * Defines the panning sensibility of the inputs.
      * (How fast is the camera panning)
      */
@@ -76,6 +90,30 @@ export class ArcRotateCameraKeyboardMoveInput implements ICameraInput<ArcRotateC
      */
     @serialize()
     public angularSpeed = 0.01;
+
+    /**
+     * Defines the number of virtual pixels of pan input per frame while a key is held.
+     * Only used when CameraMovement is active. CameraMovement handles framerate normalization.
+     * Default calibrated to match legacy 1/panningSensibility (1/50 = 0.02).
+     */
+    @serialize()
+    public panSensitivity = 0.02;
+
+    /**
+     * Defines the number of virtual pixels of zoom input per frame while a key is held.
+     * Only used when CameraMovement is active. CameraMovement handles framerate normalization.
+     * Default calibrated to match legacy 1/zoomingSensibility (1/25 = 0.04).
+     */
+    @serialize()
+    public zoomSensitivity = 0.04;
+
+    /**
+     * Defines the number of virtual pixels of rotation input per frame while a key is held.
+     * Only used when CameraMovement is active. CameraMovement handles framerate normalization.
+     * Default calibrated to match legacy angularSpeed (0.01).
+     */
+    @serialize()
+    public rotationSensitivity = 0.01;
 
     private _keys = new Array<number>();
     private _ctrlPressed: boolean;
@@ -119,7 +157,9 @@ export class ArcRotateCameraKeyboardMoveInput implements ICameraInput<ArcRotateC
                         this.keysDown.indexOf(evt.keyCode) !== -1 ||
                         this.keysLeft.indexOf(evt.keyCode) !== -1 ||
                         this.keysRight.indexOf(evt.keyCode) !== -1 ||
-                        this.keysReset.indexOf(evt.keyCode) !== -1
+                        this.keysReset.indexOf(evt.keyCode) !== -1 ||
+                        this.keysZoomIn.indexOf(evt.keyCode) !== -1 ||
+                        this.keysZoomOut.indexOf(evt.keyCode) !== -1
                     ) {
                         const index = this._keys.indexOf(evt.keyCode);
 
@@ -139,7 +179,9 @@ export class ArcRotateCameraKeyboardMoveInput implements ICameraInput<ArcRotateC
                         this.keysDown.indexOf(evt.keyCode) !== -1 ||
                         this.keysLeft.indexOf(evt.keyCode) !== -1 ||
                         this.keysRight.indexOf(evt.keyCode) !== -1 ||
-                        this.keysReset.indexOf(evt.keyCode) !== -1
+                        this.keysReset.indexOf(evt.keyCode) !== -1 ||
+                        this.keysZoomIn.indexOf(evt.keyCode) !== -1 ||
+                        this.keysZoomOut.indexOf(evt.keyCode) !== -1
                     ) {
                         const index = this._keys.indexOf(evt.keyCode);
 
@@ -194,31 +236,41 @@ export class ArcRotateCameraKeyboardMoveInput implements ICameraInput<ArcRotateC
                 for (let index = 0; index < this._keys.length; index++) {
                     const keyCode = this._keys[index];
 
+                    // Zoom keys always map to zoom regardless of modifiers
+                    if (this.keysZoomIn.indexOf(keyCode) !== -1) {
+                        movement.handlers.zoom(this.zoomSensitivity);
+                        continue;
+                    }
+                    if (this.keysZoomOut.indexOf(keyCode) !== -1) {
+                        movement.handlers.zoom(-this.zoomSensitivity);
+                        continue;
+                    }
+
                     if (interaction === "pan") {
                         if (this.keysLeft.indexOf(keyCode) !== -1) {
-                            movement.handlers.pan(-1 / this.panningSensibility, 0);
+                            movement.handlers.pan(-this.panSensitivity, 0);
                         } else if (this.keysRight.indexOf(keyCode) !== -1) {
-                            movement.handlers.pan(1 / this.panningSensibility, 0);
+                            movement.handlers.pan(this.panSensitivity, 0);
                         } else if (this.keysUp.indexOf(keyCode) !== -1) {
-                            movement.handlers.pan(0, 1 / this.panningSensibility);
+                            movement.handlers.pan(0, this.panSensitivity);
                         } else if (this.keysDown.indexOf(keyCode) !== -1) {
-                            movement.handlers.pan(0, -1 / this.panningSensibility);
+                            movement.handlers.pan(0, -this.panSensitivity);
                         }
                     } else if (interaction === "zoom") {
                         if (this.keysUp.indexOf(keyCode) !== -1) {
-                            movement.handlers.zoom(1 / this.zoomingSensibility);
+                            movement.handlers.zoom(this.zoomSensitivity);
                         } else if (this.keysDown.indexOf(keyCode) !== -1) {
-                            movement.handlers.zoom(-1 / this.zoomingSensibility);
+                            movement.handlers.zoom(-this.zoomSensitivity);
                         }
                     } else if (interaction === "rotate") {
                         if (this.keysLeft.indexOf(keyCode) !== -1) {
-                            movement.handlers.rotate(-this.angularSpeed, 0);
+                            movement.handlers.rotate(-this.rotationSensitivity, 0);
                         } else if (this.keysRight.indexOf(keyCode) !== -1) {
-                            movement.handlers.rotate(this.angularSpeed, 0);
+                            movement.handlers.rotate(this.rotationSensitivity, 0);
                         } else if (this.keysUp.indexOf(keyCode) !== -1) {
-                            movement.handlers.rotate(0, -this.angularSpeed);
+                            movement.handlers.rotate(0, -this.rotationSensitivity);
                         } else if (this.keysDown.indexOf(keyCode) !== -1) {
-                            movement.handlers.rotate(0, this.angularSpeed);
+                            movement.handlers.rotate(0, this.rotationSensitivity);
                         }
                     }
 

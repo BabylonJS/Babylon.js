@@ -1,6 +1,5 @@
 import { type Scene } from "../scene";
 import { Vector3 } from "../Maths/math.vector";
-import { Epsilon } from "../Maths/math.constants";
 import type { InputMapEntry, InputConditions, InputSource, InputModifiers } from "./cameraInteractions";
 import { type InterpolatingBehavior } from "../Behaviors/Cameras/interpolatingBehavior";
 
@@ -13,8 +12,8 @@ export class CameraMovement {
     protected _scene: Scene;
 
     /**
-     * Should be set by input classes to indicates whether there is active input this frame
-     * This helps us differentiate between 0 pixel delta due to no input vs user actively holding still
+     * Should be set by input classes to indicate whether there is active input this frame.
+     * This helps differentiate between 0 pixel delta due to no input vs user actively holding still.
      */
     public activeInput: boolean = false;
 
@@ -282,6 +281,7 @@ export class CameraMovement {
         this.zoomAccumulatedPixels = 0;
         this.panAccumulatedPixels.setAll(0);
         this.rotationAccumulatedPixels.setAll(0);
+        this.activeInput = false;
     }
 
     public get isInterpolating(): boolean {
@@ -299,7 +299,7 @@ export class CameraMovement {
             // If we are not receiving input and velocity isn't already zero, apply inertial decay to decelerate velocity
             const frameIndependentDecay = Math.pow(inertialDecayFactor, this._prevFrameTimeMs / FrameDurationAt60FPS);
             inputVelocity *= frameIndependentDecay;
-            if (Math.abs(inputVelocity) <= Epsilon) {
+            if (Math.abs(inputVelocity) < 1e-6) {
                 inputVelocity = 0;
             }
         }

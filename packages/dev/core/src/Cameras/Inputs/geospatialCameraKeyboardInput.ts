@@ -80,14 +80,16 @@ export class GeospatialCameraKeyboardInput implements ICameraInput<GeospatialCam
     public zoomSensitivity: number = 1.0;
 
     private _keys = new Array<number>();
-    private _modifierPressed: boolean;
+    private _ctrlPressed: boolean;
+    private _altPressed: boolean;
+    private _shiftPressed: boolean;
     private _onCanvasBlurObserver: Nullable<Observer<AbstractEngine>>;
     private _onKeyboardObserver: Nullable<Observer<KeyboardInfo>>;
     private _engine: AbstractEngine;
     private _scene: Scene;
 
     /** Cached conditions object to avoid per-frame allocations in checkInputs */
-    private _keyboardConditions: InputConditions = { modifiers: { ctrl: false, alt: false } };
+    private _keyboardConditions: InputConditions = { modifiers: { ctrl: false, alt: false, shift: false } };
 
     /**
      * Attach the input controls to a specific dom element to get the input from.
@@ -120,7 +122,9 @@ export class GeospatialCameraKeyboardInput implements ICameraInput<GeospatialCam
             // Block metaKey for other keys to avoid capturing browser shortcuts (e.g., Cmd+=/Cmd+-).
             if (!evt.metaKey || isArrowKey) {
                 if (info.type === KeyboardEventTypes.KEYDOWN) {
-                    this._modifierPressed = evt.ctrlKey || evt.altKey;
+                    this._ctrlPressed = evt.ctrlKey;
+                    this._altPressed = evt.altKey;
+                    this._shiftPressed = evt.shiftKey;
 
                     if (
                         this.keysUp.indexOf(evt.keyCode) !== -1 ||
@@ -191,6 +195,12 @@ export class GeospatialCameraKeyboardInput implements ICameraInput<GeospatialCam
             const camera = this.camera;
             const movement = camera.movement;
 
+            // Resolve interaction once per frame — modifier state is constant across all keys
+            this._keyboardConditions.modifiers!.ctrl = this._ctrlPressed;
+            this._keyboardConditions.modifiers!.alt = this._altPressed;
+            this._keyboardConditions.modifiers!.shift = this._shiftPressed;
+            const interaction = movement.resolveInteraction("keyboard", this._keyboardConditions);
+
             for (let index = 0; index < this._keys.length; index++) {
                 const keyCode = this._keys[index];
 
@@ -203,11 +213,6 @@ export class GeospatialCameraKeyboardInput implements ICameraInput<GeospatialCam
                     movement.handlers.zoom(-this.zoomSensitivity, false);
                     continue;
                 }
-
-                // Arrow keys: resolve interaction based on modifier state
-                this._keyboardConditions.modifiers!.ctrl = this._modifierPressed;
-                this._keyboardConditions.modifiers!.alt = this._modifierPressed;
-                const interaction = movement.resolveInteraction("keyboard", this._keyboardConditions);
 
                 if (interaction === "rotate") {
                     if (this.keysLeft.indexOf(keyCode) !== -1) {
