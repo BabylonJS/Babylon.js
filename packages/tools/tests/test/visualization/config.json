@@ -4141,6 +4141,36 @@
             "excludedEngines": ["webgl1"]
         },
         {
+            "title": "GPU Particles - Change - Emit Rate Gradient",
+            "playgroundId": "#SV62YO#1",
+            "referenceImage": "gpu-particles-change-emit-rate-gradient.png",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "GPU Particles - Change - Emit Rate Gradient 2",
+            "playgroundId": "#RBK6TJ#1",
+            "referenceImage": "gpu-particles-change-emit-rate-gradient-2.png",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "GPU Particles - Change - Start Size Gradient",
+            "playgroundId": "#HF5UQ7#0",
+            "referenceImage": "gpu-particles-change-start-size-gradient.png",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "GPU Particles - Change - Lifetime Gradient",
+            "playgroundId": "#ZEQD5L#0",
+            "referenceImage": "gpu-particles-change-lifetime-gradient.png",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "GPU Particles - Change - Lifetime Gradient 2",
+            "playgroundId": "#E980M9#0",
+            "referenceImage": "gpu-particles-change-lifetime-gradient-2.png",
+            "excludedEngines": ["webgl1"]
+        },
+        {
             "title": "GPU Particles - Emitters - Point",
             "playgroundId": "#PS8GQ3#0",
             "referenceImage": "gpu-particles-emitters-point.png",

@@ -165,6 +165,14 @@ export class WebGL2ParticleSystem implements IGPUParticleSystemPlatform {
             }
         }
 
+        if (defines.indexOf("STARTSIZEGRADIENTS") !== -1) {
+            this._updateEffectOptions.uniformsNames.push("startSizeGradientFactor");
+        }
+
+        if (defines.indexOf("LIFETIMEGRADIENTS") !== -1) {
+            this._updateEffectOptions.uniformsNames.push("lifeTimeGradientFactor");
+        }
+
         this._updateEffect = this._engine.createEffect("gpuUpdateParticles", this._updateEffectOptions, this._engine);
 
         return new UniformBufferEffectCommonAccessor(this._updateEffect);
