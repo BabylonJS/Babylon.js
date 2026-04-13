@@ -4,7 +4,7 @@ import { type AccordionProps, type AccordionSectionProps, Accordion, AccordionSe
 
 import { makeStyles } from "@fluentui/react-components";
 
-import { UXContextProvider } from "../components/uxContextProvider";
+import { UXContextProvider } from "./uxContextProvider";
 
 function AsReadonlyArray<T>(array: T[]): readonly T[] {
     return array;

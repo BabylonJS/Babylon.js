@@ -323,6 +323,7 @@ export class GaussianSplattingMeshBase extends Mesh {
     private _textureSize: Vector2 = new Vector2(0, 0);
     protected readonly _keepInRam: boolean = false;
     protected _alwaysRetainSplatsData: boolean = false;
+    protected _flipY = false;
 
     private _delayedTextureUpdate: Nullable<IDelayedTextureUpdate> = null;
     protected _useRGBACovariants = false;
@@ -348,7 +349,7 @@ export class GaussianSplattingMeshBase extends Mesh {
     private static readonly _BatchSize = 16; // 16 splats per instance
     private _cameraViewInfos = new Map<number, ICameraViewInfo>();
 
-    private static readonly _DefaultViewUpdateThreshold = 1e-4;
+    protected static readonly _DefaultViewUpdateThreshold = 1e-4;
 
     /**
      * Cosine value of the angle threshold to update view dependent splat sorting. Default is 0.0001.
@@ -554,6 +555,7 @@ export class GaussianSplattingMeshBase extends Mesh {
         const gaussianSplattingMaterial = new GaussianSplattingMaterial(this.name + "_material", this._scene);
         // Cast is safe: GaussianSplattingMeshBase is @internal; all concrete instances are GaussianSplattingMesh.
         gaussianSplattingMaterial.setSourceMesh(this as any);
+        gaussianSplattingMaterial.doNotSerialize = true;
         this._material = gaussianSplattingMaterial;
 
         // delete meshes created for cameras on camera removal
@@ -658,6 +660,7 @@ export class GaussianSplattingMeshBase extends Mesh {
             } else {
                 // mesh doesn't exist yet for this camera
                 const cameraMesh = new Mesh(this.name + "_cameraMesh_" + cameraId, this._scene);
+                cameraMesh.doNotSerialize = true;
                 // not visible with inspector or the scene graph
                 cameraMesh.reservedDataStore = { hidden: true };
                 cameraMesh.setEnabled(false);
@@ -1509,8 +1512,8 @@ export class GaussianSplattingMeshBase extends Mesh {
         this._cachedBoundingMin = null;
         this._cachedBoundingMax = null;
         // Note: _splatsData and _shData are intentionally kept alive after dispose.
-        // They serve as the source reference for the compound API (addPart/removePart)
-        // when this mesh is held by a GaussianSplattingPartProxyMesh.compoundSplatMesh.
+        // They can still be used as runtime source buffers by a compound mesh that retained
+        // this mesh's data before disposal.
 
         this._worker?.terminate();
         this._worker = null;
@@ -1925,6 +1928,7 @@ export class GaussianSplattingMeshBase extends Mesh {
         if (!this._covariancesATexture) {
             this._readyToDisplay = false;
         }
+        this._flipY = flipY;
 
         const uBuffer = new Uint8Array(data);
         const fBuffer = new Float32Array(uBuffer.buffer);

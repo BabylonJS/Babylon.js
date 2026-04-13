@@ -3,7 +3,7 @@ import { useCallback } from "react";
 import { Color3, Color4 } from "core/Maths/math.color";
 import { Quaternion, Vector3 } from "core/Maths/math.vector";
 import { useInterceptObservable } from "./instrumentationHooks";
-import { useObservableState } from "./observableHooks";
+import { useObservableState } from "shared-ui-components/modularTool/hooks/observableHooks";
 
 type PropertyKeys<TargetT, PropertyT> = { [PropertyKeyT in keyof TargetT]: TargetT[PropertyKeyT] extends PropertyT | null | undefined ? PropertyKeyT : never }[keyof TargetT];
 
