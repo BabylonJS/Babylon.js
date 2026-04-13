@@ -48,8 +48,14 @@
             "referenceImage": "gsplat-spz-sh.png"
         },
         {
-            "title": "Gaussian Splatting SPZ Extensions",
-            "playgroundId": "#XSNFXP#4",
+            "title": "Gaussian Splatting SPZ SH WASM",
+            "playgroundId": "#XSNFXP#9",
+            "renderCount": 15,
+            "referenceImage": "gsplat-spz-sh.png"
+        },
+        {
+            "title": "Gaussian Splatting SPZ Extensions WASM",
+            "playgroundId": "#XSNFXP#8",
             "renderCount": 15,
             "referenceImage": "gsplat-spz-extensions.png"
         },
@@ -60,8 +66,20 @@
             "referenceImage": "gsplat-spz-sh-order-4.png"
         },
         {
+            "title": "Gaussian Splatting SPZ SH Order 4 WASM",
+            "playgroundId": "#XSNFXP#10",
+            "renderCount": 15,
+            "referenceImage": "gsplat-spz-sh-order-4.png"
+        },
+        {
             "title": "Gaussian Splatting SPZ Detailed Splat",
             "playgroundId": "#XSNFXP#6",
+            "renderCount": 15,
+            "referenceImage": "gsplat-spz-detailed-splat.png"
+        },
+        {
+            "title": "Gaussian Splatting SPZ Detailed Splat WASM",
+            "playgroundId": "#XSNFXP#11",
             "renderCount": 15,
             "referenceImage": "gsplat-spz-detailed-splat.png"
         },

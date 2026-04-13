@@ -237,7 +237,7 @@ export async function GetSpzModule(url: string): Promise<any> {
  *   [28-31] quaternion wxyz (uint8 x4, encoded as q * 127.5 + 127.5)
  *
  * SH coefficients from the cloud (Float32, range ~[-1,1]) are encoded to bytes
- * using the same convention as the PLY converter: byte = coeff * 127.5 + 127.5.
+ * using the SPZ convention (load-spz.cc unquantizeSH): byte = coeff * 128 + 128.
  *
  * @param cloud The GaussianCloud returned by spz.loadSpzFromBuffer
  * @param scene The Babylon.js scene (used to query maxTextureSize for SH textures)
@@ -336,7 +336,7 @@ export function* ConvertSpzToSplat(cloud: any, scene: Scene, useCoroutine = fals
                 const chunkStart = chunkStarts[t];
                 const chunkEnd = chunkEnds[t];
                 for (let j = chunkStart; j < chunkEnd; j++) {
-                    const v = cloudSh[shSplatBase + j] * 127.5 + 127.5;
+                    const v = cloudSh[shSplatBase + j] * 128.0 + 128.0;
                     shT[offsetPerSplat + j - chunkStart] = v <= 0 ? 0 : v >= 255 ? 255 : (v + 0.5) | 0;
                 }
             }
