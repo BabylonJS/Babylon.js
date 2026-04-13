@@ -4043,6 +4043,8 @@ export class WebGPUEngine extends ThinWebGPUEngine {
      * @param byteLength the byte length to clear (optional)
      */
     public clearStorageBuffer(storageBuffer: DataBuffer, byteOffset?: number, byteLength?: number): void {
+        // clearBuffer is a command encoder operation and cannot be recorded while a render pass is open on the same encoder.
+        this._endCurrentRenderPass();
         this._renderEncoder.clearBuffer(storageBuffer.underlyingResource, byteOffset, byteLength);
     }
 

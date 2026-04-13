@@ -341,6 +341,13 @@ export class ClusteredLightContainer extends Light {
         this._tileMaskTexture.onBeforeBindObservable.add(() => {
             currentRenderTarget = engine._currentRenderTarget;
             this._updateLightData();
+            // On WebGPU, clear the storage buffer here (before bindFramebuffer) because
+            // clearBuffer is a command encoder operation that cannot run while a render pass is open.
+            // In snapshot rendering mode, bindFramebuffer eagerly creates the render pass, so
+            // clearing must happen before that point.
+            if (engine.isWebGPU) {
+                this._tileMaskBuffer?.clear();
+            }
         });
 
         this._tileMaskTexture.onAfterUnbindObservable.add(() => {
@@ -354,10 +361,7 @@ export class ClusteredLightContainer extends Light {
         });
 
         this._tileMaskTexture.onClearObservable.add(() => {
-            if (engine.isWebGPU) {
-                // Clear the storage buffer for WebGPU
-                this._tileMaskBuffer?.clear();
-            } else {
+            if (!engine.isWebGPU) {
                 // Only clear the texture on WebGL
                 engine.clear({ r: 0, g: 0, b: 0, a: 1 }, true, false);
             }
