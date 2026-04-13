@@ -272,6 +272,31 @@ export const performanceStats = {
         const pValue = 1 - tDistCDF(t, df);
         return { t, df, pValue };
     },
+
+    /**
+     * Perform a paired t-test on an array of differences (B - A).
+     * Tests the one-tailed hypothesis that the mean difference is greater than zero
+     * (i.e., B is slower than A).
+     * A low p-value (< 0.05) means B is significantly slower than A.
+     * @see https://en.wikipedia.org/wiki/Student%27s_t-test#Paired_samples
+     * @param differences Array of paired differences (candidate - baseline).
+     * @returns An object containing the t-statistic, degrees of freedom, and p-value.
+     */
+    pairedTTest(differences: number[]): { t: number; df: number; pValue: number } {
+        const n = differences.length;
+        if (n < 2) {
+            return { t: 0, df: 0, pValue: 1 };
+        }
+        const meanDiff = performanceStats.mean(differences);
+        const sdDiff = performanceStats.stddev(differences);
+        if (sdDiff === 0) {
+            return { t: meanDiff > 0 ? Infinity : meanDiff < 0 ? -Infinity : 0, df: n - 1, pValue: meanDiff > 0 ? 0 : 1 };
+        }
+        const t = meanDiff / (sdDiff / Math.sqrt(n));
+        const df = n - 1;
+        const pValue = 1 - tDistCDF(t, df);
+        return { t, df, pValue };
+    },
 };
 
 /**
@@ -461,6 +486,68 @@ const defaultPerfOptions: Required<PerformanceTestOptions> = {
 };
 
 /**
+ * Resolve the page URL for a given build type and performance test options.
+ * @param type - Whether to load the "dev", "stable", or "preview" build.
+ * @param baseUrl - Base URL of the local test server.
+ * @param opts - Performance test options (uses cdnVersion).
+ * @returns The resolved URL string.
+ */
+function resolvePageUrl(type: PerformanceTestType, baseUrl: string, opts: Required<PerformanceTestOptions>): string {
+    if (type === "dev") {
+        return baseUrl + "/empty.html";
+    } else if (opts.cdnVersion === "latest") {
+        return "https://cdn.babylonjs.com/empty.html";
+    } else if (opts.cdnVersion) {
+        return `https://cdn.babylonjs.com/v${opts.cdnVersion}/empty.html`;
+    } else {
+        return baseUrl + `/empty-${type}.html`;
+    }
+}
+
+/**
+ * Run a single measurement pass: navigate to the URL, init engine, create scene,
+ * render frames, dispose, and return the render time.
+ * @param page - Playwright page instance.
+ * @param url - The page URL to navigate to.
+ * @param baseUrl - Base URL of the test server (passed to engine init).
+ * @param createSceneFunction - Function evaluated in the page to create the scene.
+ * @param opts - Performance test options.
+ * @param evaluateArg - Optional serializable argument for the scene function.
+ * @returns The render time in ms, or `{ skipped: string }` if the API is incompatible.
+ */
+async function runSinglePass(
+    page: Page,
+    url: string,
+    baseUrl: string,
+    createSceneFunction: (...args: any[]) => Promise<void>,
+    opts: Required<PerformanceTestOptions>,
+    evaluateArg?: any
+): Promise<number | { skipped: string }> {
+    await page.goto(url, { timeout: 0 });
+    await page.waitForSelector("#babylon-canvas", { timeout: 20000 });
+    await page.evaluate(evaluateInitEngine, { engineName: opts.engineName, baseUrl });
+    try {
+        if (evaluateArg !== undefined) {
+            await page.evaluate(createSceneFunction, evaluateArg);
+        } else {
+            await page.evaluate(createSceneFunction);
+        }
+    } catch (e: any) {
+        const msg = e?.message || String(e);
+        if (msg.includes("is not a constructor") || msg.includes("is not defined") || msg.includes("is not a function") || msg.includes("Cannot read properties of undefined")) {
+            await page.evaluate(evaluateDisposeScene);
+            await page.evaluate(evaluateDisposeEngine);
+            return { skipped: `Incompatible API: ${msg}` };
+        }
+        throw e;
+    }
+    const time = await page.evaluate(evaluateRenderScene, opts.framesToRender);
+    await page.evaluate(evaluateDisposeScene);
+    await page.evaluate(evaluateDisposeEngine);
+    return time;
+}
+
+/**
  * Collect render-time measurements for a scene.
  * Includes warmup passes that are discarded, then `numberOfPasses` measured passes.
  * @param page - Playwright page instance.
@@ -555,12 +642,114 @@ export const collectPerformanceSamples = async (
 };
 
 /**
+ * Result of interleaved sample collection, containing individual build results
+ * and paired differences for the paired t-test.
+ */
+interface InterleavedSamplesResult {
+    /** Performance measurements for the baseline (stable/CDN) build. */
+    stable: PerformanceResult;
+    /** Performance measurements for the candidate (dev/CDN-B) build. */
+    dev: PerformanceResult;
+    /** Trimmed paired differences (candidate - baseline) from interleaved rounds. */
+    pairedDifferences: number[];
+}
+
+/**
+ * Collect interleaved render-time measurements for two builds.
+ * Alternates between stable and dev on each pass so that environmental drift
+ * (thermal throttling, noisy neighbors, GC pressure) affects both equally.
+ * Even-numbered passes run stable first; odd-numbered passes run dev first
+ * to cancel any ordering bias within a pair.
+ * @param page - Playwright page instance.
+ * @param baseUrl - Base URL of the test server.
+ * @param createSceneFunction - Function evaluated in the page to create the scene.
+ * @param opts - Performance test options.
+ * @param evaluateArg - Optional serializable argument for the scene function.
+ * @returns Interleaved results with paired differences, or `{ skipped }` if an API is incompatible.
+ */
+// eslint-disable-next-line no-restricted-syntax
+const collectInterleavedSamples = async (
+    page: Page,
+    baseUrl: string,
+    createSceneFunction: (...args: any[]) => Promise<void>,
+    opts: Required<PerformanceTestOptions>,
+    evaluateArg?: any
+): Promise<InterleavedSamplesResult | { skipped: string }> => {
+    const stableUrl = resolvePageUrl("stable", baseUrl, opts);
+    const devUrl = opts.cdnVersionB ? resolvePageUrl("stable", baseUrl, { ...opts, cdnVersion: opts.cdnVersionB }) : resolvePageUrl("dev", baseUrl, opts);
+
+    const stableRaw: number[] = [];
+    const devRaw: number[] = [];
+    const rawDifferences: number[] = [];
+    const totalPasses = opts.warmupPasses + opts.numberOfPasses;
+
+    for (let i = 0; i < totalPasses; i++) {
+        const isWarmup = i < opts.warmupPasses;
+        // Alternate which build runs first to cancel ordering bias
+        const stableFirst = i % 2 === 0;
+
+        let stableTime: number;
+        let devTime: number;
+
+        if (stableFirst) {
+            const s = await runSinglePass(page, stableUrl, baseUrl, createSceneFunction, opts, evaluateArg);
+            if (typeof s !== "number") {
+                return s;
+            }
+            const d = await runSinglePass(page, devUrl, baseUrl, createSceneFunction, opts, evaluateArg);
+            if (typeof d !== "number") {
+                return d;
+            }
+            stableTime = s;
+            devTime = d;
+        } else {
+            const d = await runSinglePass(page, devUrl, baseUrl, createSceneFunction, opts, evaluateArg);
+            if (typeof d !== "number") {
+                return d;
+            }
+            const s = await runSinglePass(page, stableUrl, baseUrl, createSceneFunction, opts, evaluateArg);
+            if (typeof s !== "number") {
+                return s;
+            }
+            stableTime = s;
+            devTime = d;
+        }
+
+        if (!isWarmup) {
+            stableRaw.push(stableTime);
+            devRaw.push(devTime);
+            rawDifferences.push(devTime - stableTime);
+        }
+    }
+
+    const stableTrimmed = performanceStats.trimmed(stableRaw, opts.trimCount);
+    const devTrimmed = performanceStats.trimmed(devRaw, opts.trimCount);
+    const pairedDifferences = performanceStats.trimmed(rawDifferences, opts.trimCount);
+
+    return {
+        stable: {
+            mean: performanceStats.mean(stableTrimmed),
+            raw: stableRaw,
+            trimmed: stableTrimmed,
+            cov: performanceStats.coefficientOfVariation(stableTrimmed),
+        },
+        dev: {
+            mean: performanceStats.mean(devTrimmed),
+            raw: devRaw,
+            trimmed: devTrimmed,
+            cov: performanceStats.coefficientOfVariation(devTrimmed),
+        },
+        pairedDifferences,
+    };
+};
+
+/**
  * Compare performance of stable vs dev builds for a scene.
- * Uses statistical analysis to determine if a regression is real:
- * 1. Collects samples for both stable and dev (with warmup).
+ * Uses interleaved sampling and paired statistical analysis for reliability:
+ * 1. Alternates stable/dev measurements so environmental drift affects both equally.
  * 2. Checks coefficient of variation to detect noisy measurements.
- * 3. Uses ratio check AND Welch's t-test — both must indicate regression to fail.
- * 4. On failure, runs confirmation passes to reduce false positives.
+ * 3. Uses ratio check AND paired t-test — both must indicate regression to fail.
+ * 4. On failure, runs confirmation passes (also interleaved) to reduce false positives.
  * @param page - Playwright page instance.
  * @param baseUrl - Base URL of the test server.
  * @param createSceneFunction - Function evaluated in the page to create the scene.
@@ -583,36 +772,23 @@ export const comparePerformance = async (
         opts.numberOfPasses = opts.trimCount * 2 + 3;
     }
 
-    // Collect initial samples
     const versionLabel = (v: string) => (v === "latest" ? "Latest" : `v${v}`);
     const baselineLabel = opts.cdnVersion ? versionLabel(opts.cdnVersion) : "Stable";
     const candidateLabel = opts.cdnVersionB ? versionLabel(opts.cdnVersionB) : "Dev";
 
-    const stable = await collectPerformanceSamples(page, baseUrl, "stable", createSceneFunction, opts, evaluateArg);
+    // Collect interleaved samples (stable/dev alternate to cancel environmental drift)
+    const initial = await collectInterleavedSamples(page, baseUrl, createSceneFunction, opts, evaluateArg);
 
-    // If the baseline was skipped due to incompatible APIs, skip the whole comparison
-    if (stable.skipped) {
+    if ("skipped" in initial) {
         const empty: PerformanceResult = { mean: 0, raw: [], trimmed: [], cov: 0 };
-        return { stable, dev: empty, ratio: 1, pValue: 1, passed: true, summary: stable.skipped, skipped: stable.skipped };
+        return { stable: empty, dev: empty, ratio: 1, pValue: 1, passed: true, summary: initial.skipped, skipped: initial.skipped };
     }
 
-    let dev: PerformanceResult;
-    if (opts.cdnVersionB) {
-        // CDN vs CDN: run the stable page again with the second version
-        const cdnBOpts = { ...opts, cdnVersion: opts.cdnVersionB };
-        dev = await collectPerformanceSamples(page, baseUrl, "stable", createSceneFunction, cdnBOpts, evaluateArg);
-    } else {
-        dev = await collectPerformanceSamples(page, baseUrl, "dev", createSceneFunction, opts, evaluateArg);
-    }
+    const { stable, dev, pairedDifferences } = initial;
 
-    // If the candidate was skipped due to incompatible APIs, skip the whole comparison
-    if (dev.skipped) {
-        return { stable, dev, ratio: 1, pValue: 1, passed: true, summary: dev.skipped, skipped: dev.skipped };
-    }
-
-    const buildResult = (stableRes: PerformanceResult, devRes: PerformanceResult): PerformanceComparisonResult => {
+    const buildResult = (stableRes: PerformanceResult, devRes: PerformanceResult, diffs: number[]): PerformanceComparisonResult => {
         const ratio = devRes.mean / stableRes.mean;
-        const { pValue } = performanceStats.welchTTest(stableRes.trimmed, devRes.trimmed);
+        const { pValue } = performanceStats.pairedTTest(diffs);
 
         const ratioExceeded = ratio > 1 + opts.acceptedThreshold;
         const statisticallySignificant = pValue < opts.pValueThreshold;
@@ -641,48 +817,46 @@ export const comparePerformance = async (
         return { stable: stableRes, dev: devRes, ratio, pValue, passed, summary };
     };
 
-    const initial = buildResult(stable, dev);
+    const result = buildResult(stable, dev, pairedDifferences);
 
     // If it looks like a regression and measurements are reliable, run confirmation passes
-    if (!initial.passed && opts.confirmationPasses > 0) {
+    if (!result.passed && opts.confirmationPasses > 0) {
         const effectiveConfirmationPasses = Math.max(opts.confirmationPasses, opts.trimCount * 2 + 3);
         console.log(
-            `[PERF] Initial result indicates regression (ratio: ${initial.ratio.toFixed(4)}, p: ${initial.pValue.toFixed(4)}). Running ${effectiveConfirmationPasses} confirmation passes...`
+            `[PERF] Initial result indicates regression (ratio: ${result.ratio.toFixed(4)}, p: ${result.pValue.toFixed(4)}). Running ${effectiveConfirmationPasses} confirmation passes...`
         );
 
         const confirmOpts = { ...opts, numberOfPasses: effectiveConfirmationPasses, warmupPasses: 1, confirmationPasses: 0 };
-        const stableConfirm = await collectPerformanceSamples(page, baseUrl, "stable", createSceneFunction, confirmOpts, evaluateArg);
-        let devConfirm: PerformanceResult;
-        if (opts.cdnVersionB) {
-            const cdnBOpts = { ...confirmOpts, cdnVersion: opts.cdnVersionB };
-            devConfirm = await collectPerformanceSamples(page, baseUrl, "stable", createSceneFunction, cdnBOpts, evaluateArg);
-        } else {
-            devConfirm = await collectPerformanceSamples(page, baseUrl, "dev", createSceneFunction, confirmOpts, evaluateArg);
+        const confirmResult = await collectInterleavedSamples(page, baseUrl, createSceneFunction, confirmOpts, evaluateArg);
+
+        if ("skipped" in confirmResult) {
+            return result;
         }
 
-        // Merge trimmed samples from both runs
-        const allStable = [...stable.trimmed, ...stableConfirm.trimmed];
-        const allDev = [...dev.trimmed, ...devConfirm.trimmed];
+        // Merge samples from both runs
+        const allStable = [...stable.trimmed, ...confirmResult.stable.trimmed];
+        const allDev = [...dev.trimmed, ...confirmResult.dev.trimmed];
+        const allDiffs = [...pairedDifferences, ...confirmResult.pairedDifferences];
 
         const mergedStable: PerformanceResult = {
             mean: performanceStats.mean(allStable),
-            raw: [...stable.raw, ...stableConfirm.raw],
+            raw: [...stable.raw, ...confirmResult.stable.raw],
             trimmed: allStable,
             cov: performanceStats.coefficientOfVariation(allStable),
         };
         const mergedDev: PerformanceResult = {
             mean: performanceStats.mean(allDev),
-            raw: [...dev.raw, ...devConfirm.raw],
+            raw: [...dev.raw, ...confirmResult.dev.raw],
             trimmed: allDev,
             cov: performanceStats.coefficientOfVariation(allDev),
         };
 
-        const confirmed = buildResult(mergedStable, mergedDev);
+        const confirmed = buildResult(mergedStable, mergedDev, allDiffs);
         confirmed.summary = `[CONFIRMED] ${confirmed.summary}`;
         return confirmed;
     }
 
-    return initial;
+    return result;
 };
 
 /**
