@@ -70,19 +70,19 @@ Each test scenario goes through this flow:
 
 Tests override defaults via `perfOptions`. All fields are optional:
 
-| Option               | Default    | Description                                                   |
-| -------------------- | ---------- | ------------------------------------------------------------- |
-| `numberOfPasses`     | 10         | Measured passes per build                                     |
-| `framesToRender`     | 2500       | Frames rendered per pass                                      |
-| `warmupPasses`       | 2          | Warmup passes (discarded)                                     |
-| `acceptedThreshold`  | 0.15       | Max allowed ratio above 1.0 (15%)                             |
-| `maxCov`             | 0.10       | Coefficient of variation above which results are inconclusive |
-| `trimCount`          | 2          | Outliers removed from each end                                |
-| `pValueThreshold`    | 0.05       | Statistical significance threshold                            |
-| `confirmationPasses` | 6          | Extra passes on suspected regression                          |
-| `cdnVersion`         | `""`       | Pin baseline to a CDN version                                 |
-| `cdnVersionB`        | `""`       | Pin candidate to a CDN version (skips dev)                    |
-| `engineName`         | `"webgl2"` | Engine to use: `"webgl2"` or `"webgpu"`                       |
+| Option               | Default    | Description                                                    |
+| -------------------- | ---------- | -------------------------------------------------------------- |
+| `numberOfPasses`     | 10         | Measured passes per build                                      |
+| `framesToRender`     | 2500       | Frames rendered per pass                                       |
+| `warmupPasses`       | 2          | Warmup passes (discarded)                                      |
+| `acceptedThreshold`  | 0.15       | Max allowed ratio above 1.0 (15%)                              |
+| `maxCov`             | 0.10       | Coefficient of variation above which results are inconclusive  |
+| `trimCount`          | 2          | Outliers removed from each end                                 |
+| `pValueThreshold`    | 0.05       | Statistical significance threshold                             |
+| `confirmationPasses` | 6          | Extra passes on suspected regression                           |
+| `cdnVersion`         | `""`       | Pin baseline to a CDN version                                  |
+| `cdnVersionB`        | `""`       | Pin candidate to a CDN version (skips dev)                     |
+| `engineName`         | `"webgl2"` | Engine to use: `"webgl2"` or `"webgpu"`                        |
 | `interleaved`        | `true`     | Alternate stable/dev each round with paired t-test (see below) |
 
 ## Test Output
