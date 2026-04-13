@@ -23,12 +23,14 @@ import { restrictToParentElement, restrictToVerticalAxis } from "@dnd-kit/modifi
 import { AccordionSection, Accordion } from "shared-ui-components/fluent/primitives/accordion";
 import { MessageBar } from "shared-ui-components/fluent/primitives/messageBar";
 import { Button } from "shared-ui-components/fluent/primitives/button";
+import { Collapse } from "shared-ui-components/fluent/primitives/collapse";
 import { LineContainer, PropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/propertyLine";
 import { ColorPickerPopup } from "shared-ui-components/fluent/primitives/colorPicker";
 import { type DropdownOption, Dropdown } from "shared-ui-components/fluent/primitives/dropdown";
 import { Switch } from "shared-ui-components/fluent/primitives/switch";
 import { SyncedSliderInput } from "shared-ui-components/fluent/primitives/syncedSlider";
 import { TextInput } from "shared-ui-components/fluent/primitives/textInput";
+import { ToggleButton } from "shared-ui-components/fluent/primitives/toggleButton";
 
 import { DefaultViewerOptions, SSAOOptions } from "viewer/viewer";
 import { HTML3DAnnotationElement } from "viewer/viewerAnnotationElement";
@@ -104,9 +106,6 @@ const useStyles = makeStyles({
         fontFamily: "monospace",
         whiteSpace: "pre",
         overflowX: "auto",
-    },
-    pickingActive: {
-        color: "rgb(51, 122, 183)",
     },
     hotspotRow: {
         display: "flex",
@@ -280,7 +279,6 @@ const HotSpotEntry: FunctionComponent<{
     }, []);
 
     const [isPicking, setIsPicking] = useState(false);
-    const [_hasPicked, setHasPicked] = useState(false);
 
     const pickingOperation = useRef<IDisposable>();
 
@@ -298,78 +296,83 @@ const HotSpotEntry: FunctionComponent<{
         }
     }, [index, setHotspots]);
 
-    const onHotspotPickClick = useCallback(() => {
-        if (isPicking) {
-            pickingOperation.current?.dispose();
-        } else if (viewerElement.viewerDetails?.model && hotspot) {
-            const originalCursor = getComputedStyle(viewerElement).cursor;
-            viewerElement.style.cursor = "crosshair";
-            const { scene, model, viewer } = viewerElement.viewerDetails;
+    const onHotspotPickClick = useCallback(
+        (checked: boolean) => {
+            if (!checked) {
+                pickingOperation.current?.dispose();
+            } else if (viewerElement.viewerDetails?.model && hotspot) {
+                const originalCursor = getComputedStyle(viewerElement).cursor;
+                viewerElement.style.cursor = "crosshair";
+                const { scene, model, viewer } = viewerElement.viewerDetails;
 
-            const cleanupActions: (() => void)[] = [() => setIsPicking(false), () => (viewerElement.style.cursor = originalCursor), () => (pickingOperation.current = undefined)];
+                const cleanupActions: (() => void)[] = [
+                    () => setIsPicking(false),
+                    () => (viewerElement.style.cursor = originalCursor),
+                    () => (pickingOperation.current = undefined),
+                ];
 
-            const cleanup = () => {
-                cleanupActions.forEach((action) => action());
-            };
-            pickingOperation.current = {
-                dispose: () => {
-                    cleanup();
-                },
-            };
+                const cleanup = () => {
+                    cleanupActions.forEach((action) => action());
+                };
+                pickingOperation.current = {
+                    dispose: () => {
+                        cleanup();
+                    },
+                };
 
-            const pointerObserver = scene.onPointerObservable.add(async (pointerInfo) => {
-                if (pointerInfo.type === PointerEventTypes.POINTERTAP) {
-                    if (viewerElement.viewerDetails) {
-                        const pickInfo = await viewerElement.viewerDetails.pick(pointerInfo.event.offsetX, pointerInfo.event.offsetY);
-                        if (pickInfo?.pickedMesh) {
-                            if (hotspot.data.type === "surface") {
-                                hotspot.data.meshIndex = model.assetContainer.meshes.indexOf(pickInfo.pickedMesh);
-                                const hotspotQuery = CreateHotSpotQueryForPickingInfo(pickInfo);
-                                if (hotspotQuery) {
-                                    hotspot.data.pointIndex = hotspotQuery.pointIndex;
-                                    hotspot.data.barycentric = hotspotQuery.barycentric;
+                const pointerObserver = scene.onPointerObservable.add(async (pointerInfo) => {
+                    if (pointerInfo.type === PointerEventTypes.POINTERTAP) {
+                        if (viewerElement.viewerDetails) {
+                            const pickInfo = await viewerElement.viewerDetails.pick(pointerInfo.event.offsetX, pointerInfo.event.offsetY);
+                            if (pickInfo?.pickedMesh) {
+                                if (hotspot.data.type === "surface") {
+                                    hotspot.data.meshIndex = model.assetContainer.meshes.indexOf(pickInfo.pickedMesh);
+                                    const hotspotQuery = CreateHotSpotQueryForPickingInfo(pickInfo);
+                                    if (hotspotQuery) {
+                                        hotspot.data.pointIndex = hotspotQuery.pointIndex;
+                                        hotspot.data.barycentric = hotspotQuery.barycentric;
+                                    }
                                 }
+
+                                setHotspots((hotspots) => {
+                                    return [...hotspots];
+                                });
+
+                                if (pickInfo.hit && pickInfo.pickedPoint) {
+                                    const camera = viewerElement.viewerDetails.camera;
+                                    const distance = pickInfo.pickedPoint.subtract(camera.position).dot(camera.getForwardRay().direction);
+                                    // Immediately reset the target and the radius based on the distance to the picked point.
+                                    // This eliminates unnecessary camera movement on the local z-axis when interpolating.
+                                    camera.target = camera.position.add(camera.getForwardRay().direction.scale(distance));
+                                    camera.radius = distance;
+                                    viewerElement.focusHotSpot(hotspot.name);
+                                }
+
+                                cleanup();
                             }
-
-                            setHotspots((hotspots) => {
-                                return [...hotspots];
-                            });
-
-                            if (pickInfo.hit && pickInfo.pickedPoint) {
-                                const camera = viewerElement.viewerDetails.camera;
-                                const distance = pickInfo.pickedPoint.subtract(camera.position).dot(camera.getForwardRay().direction);
-                                // Immediately reset the target and the radius based on the distance to the picked point.
-                                // This eliminates unnecessary camera movement on the local z-axis when interpolating.
-                                camera.target = camera.position.add(camera.getForwardRay().direction.scale(distance));
-                                camera.radius = distance;
-                                viewerElement.focusHotSpot(hotspot.name);
-                            }
-
-                            setHasPicked(true);
-
-                            cleanup();
                         }
                     }
-                }
-            });
-            cleanupActions.push(() => scene.onPointerObservable.remove(pointerObserver));
+                });
+                cleanupActions.push(() => scene.onPointerObservable.remove(pointerObserver));
 
-            const handleKeyDown = (e: KeyboardEvent) => {
-                if (e.key === "Escape") {
+                const handleKeyDown = (e: KeyboardEvent) => {
+                    if (e.key === "Escape") {
+                        cleanup();
+                    }
+                };
+                document.addEventListener("keydown", handleKeyDown);
+                cleanupActions.push(() => document.removeEventListener("keydown", handleKeyDown));
+
+                const modelChangedObserver = viewer.onModelChanged.addOnce(() => {
                     cleanup();
-                }
-            };
-            document.addEventListener("keydown", handleKeyDown);
-            cleanupActions.push(() => document.removeEventListener("keydown", handleKeyDown));
+                });
+                cleanupActions.push(() => viewer.onModelChanged.remove(modelChangedObserver));
 
-            const modelChangedObserver = viewer.onModelChanged.addOnce(() => {
-                cleanup();
-            });
-            cleanupActions.push(() => viewer.onModelChanged.remove(modelChangedObserver));
-
-            setIsPicking(true);
-        }
-    }, [isPicking, hotspot, setHotspots]);
+                setIsPicking(true);
+            }
+        },
+        [hotspot, setHotspots]
+    );
 
     const onCameraSnapshotClick = useCallback(() => {
         if (hotspot) {
@@ -403,13 +406,7 @@ const HotSpotEntry: FunctionComponent<{
                 <TextInput className={classes.fullWidth} key={id} value={hotspot?.name ?? ""} onChange={onHotSpotNameChange} />
             </div>
             <div className={classes.buttonGroup}>
-                <Button
-                    title="Pick from model"
-                    appearance="transparent"
-                    icon={TargetRegular}
-                    className={isPicking ? classes.pickingActive : undefined}
-                    onClick={onHotspotPickClick}
-                />
+                <ToggleButton title="Pick from model" appearance="transparent" checkedIcon={TargetRegular} value={isPicking} onChange={onHotspotPickClick} />
                 <Button title="Snapshot current camera state" appearance="transparent" icon={CameraRegular} onClick={onCameraSnapshotClick} />
                 <Button title="Delete Hot Spot" appearance="transparent" icon={DeleteRegular} onClick={onHotspotDeleteClick} />
             </div>
@@ -1375,7 +1372,7 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
                                     </div>
                                 </div>
                             </LineContainer>
-                            {!syncEnvironment && (
+                            <Collapse visible={!syncEnvironment}>
                                 <LineContainer uniqueId="skybox-url">
                                     <div className={classes.propertyContent}>
                                         <div className={classes.fillControl}>
@@ -1393,8 +1390,8 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
                                         </div>
                                     </div>
                                 </LineContainer>
-                            )}
-                            {hasSkybox && (
+                            </Collapse>
+                            <Collapse visible={hasSkybox}>
                                 <PropertyLine label="Blur" uniqueId="skybox-blur">
                                     <div className={classes.propertyContent}>
                                         <div className={classes.fillControl}>
@@ -1409,7 +1406,7 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
                                         />
                                     </div>
                                 </PropertyLine>
-                            )}
+                            </Collapse>
                             <PropertyLine label="Intensity" uniqueId="env-intensity">
                                 <div className={classes.propertyContent}>
                                     <div className={classes.fillControl}>
@@ -1568,50 +1565,42 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
                             <PropertyLine label="Auto Orbit" uniqueId="auto-orbit">
                                 <Switch value={autoOrbitConfig.configuredState} onChange={autoOrbitConfig.update} />
                             </PropertyLine>
-                            {autoOrbitConfig.configuredState && (
-                                <>
-                                    <PropertyLine label="Speed" uniqueId="orbit-speed">
-                                        <div className={classes.propertyContent}>
-                                            <div className={classes.fillControl}>
-                                                <SyncedSliderInput
-                                                    value={autoOrbitSpeedConfig.configuredState}
-                                                    min={0}
-                                                    max={0.524}
-                                                    step={0.01}
-                                                    onChange={autoOrbitSpeedConfig.update}
-                                                />
-                                            </div>
-                                            <Button
-                                                title="Reset auto orbit speed"
-                                                appearance="transparent"
-                                                disabled={!autoOrbitSpeedConfig.canReset}
-                                                icon={DeleteRegular}
-                                                onClick={autoOrbitSpeedConfig.reset}
+                            <Collapse visible={!!autoOrbitConfig.configuredState}>
+                                <PropertyLine label="Speed" uniqueId="orbit-speed">
+                                    <div className={classes.propertyContent}>
+                                        <div className={classes.fillControl}>
+                                            <SyncedSliderInput
+                                                value={autoOrbitSpeedConfig.configuredState}
+                                                min={0}
+                                                max={0.524}
+                                                step={0.01}
+                                                onChange={autoOrbitSpeedConfig.update}
                                             />
                                         </div>
-                                    </PropertyLine>
-                                    <PropertyLine label="Delay" uniqueId="orbit-delay">
-                                        <div className={classes.propertyContent}>
-                                            <div className={classes.fillControl}>
-                                                <SyncedSliderInput
-                                                    value={autoOrbitDelayConfig.configuredState}
-                                                    min={0}
-                                                    max={5000}
-                                                    step={1}
-                                                    onChange={autoOrbitDelayConfig.update}
-                                                />
-                                            </div>
-                                            <Button
-                                                title="Reset auto orbit delay"
-                                                appearance="transparent"
-                                                disabled={!autoOrbitDelayConfig.canReset}
-                                                icon={DeleteRegular}
-                                                onClick={autoOrbitDelayConfig.reset}
-                                            />
+                                        <Button
+                                            title="Reset auto orbit speed"
+                                            appearance="transparent"
+                                            disabled={!autoOrbitSpeedConfig.canReset}
+                                            icon={DeleteRegular}
+                                            onClick={autoOrbitSpeedConfig.reset}
+                                        />
+                                    </div>
+                                </PropertyLine>
+                                <PropertyLine label="Delay" uniqueId="orbit-delay">
+                                    <div className={classes.propertyContent}>
+                                        <div className={classes.fillControl}>
+                                            <SyncedSliderInput value={autoOrbitDelayConfig.configuredState} min={0} max={5000} step={1} onChange={autoOrbitDelayConfig.update} />
                                         </div>
-                                    </PropertyLine>
-                                </>
-                            )}
+                                        <Button
+                                            title="Reset auto orbit delay"
+                                            appearance="transparent"
+                                            disabled={!autoOrbitDelayConfig.canReset}
+                                            icon={DeleteRegular}
+                                            onClick={autoOrbitDelayConfig.reset}
+                                        />
+                                    </div>
+                                </PropertyLine>
+                            </Collapse>
                         </AccordionSection>
                         {hasAnimations && (
                             <AccordionSection title="Animation">
