@@ -33,4 +33,13 @@ export type SPLATLoadingOptions = {
      * Mesh that will be used to load data instead of creating a new one
      */
     gaussianSplattingMesh?: GaussianSplattingMesh;
+
+    /**
+     * URL to load the spz WASM ES module from (e.g. the \@adobe/spz package).
+     * When provided, the WASM-based SPZ loader is used, which supports 4th-order spherical
+     * harmonics, antialiasing metadata, and safe-orbit camera limits.
+     * When omitted or empty, the built-in manual SPZ parser is used instead.
+     * @example "https://unpkg.com/@adobe/spz/dist/spz.js"
+     */
+    spzLibraryUrl?: string;
 };

@@ -22,7 +22,7 @@ import { Color4 } from "core/Maths/math.color";
 import { VertexData } from "core/Meshes/mesh.vertexData";
 import { type SPLATLoadingOptions } from "./splatLoadingOptions";
 import { type GaussianSplattingMaterial } from "core/Materials/GaussianSplatting/gaussianSplattingMaterial";
-import { ConvertSpzToSplatAsync, GetSpzModule } from "./spz";
+import { ConvertSpzToSplatAsync, GetSpzModule, ParseSpz } from "./spz";
 import { Mode, type IParsedSplat } from "./splatDefs";
 import { ParseSogMeta, type SOGRootData } from "./sog";
 import { Tools } from "core/Misc/tools";
@@ -325,29 +325,64 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
             });
         }
 
-        // eslint-disable-next-line github/no-then
-        return GetSpzModule().then((spz) => {
-            const cloud = spz.loadSpzFromBuffer(new Uint8Array(data), { to: spz.CoordinateSystem.RUB });
+        const applyParsedSPZ = (parsedSPZ: IParsedSplat, resolve: (meshes: typeof babylonMeshesArray) => void) => {
+            scene._blockEntityCollection = !!this._assetContainer;
+            const gaussianSplatting = this._loadingOptions.gaussianSplattingMesh ?? new GaussianSplattingMesh("GaussianSplatting", null, scene, this._loadingOptions.keepInRam);
+            if (parsedSPZ.trainedWithAntialiasing) {
+                const gsMaterial = gaussianSplatting.material as GaussianSplattingMaterial;
+                gsMaterial.kernelSize = 0.1;
+                gsMaterial.compensation = true;
+            }
+            gaussianSplatting._parentContainer = this._assetContainer;
+            babylonMeshesArray.push(gaussianSplatting);
+            gaussianSplatting.updateData(parsedSPZ.data, parsedSPZ.sh, { flipY: false }, undefined, parsedSPZ.shDegree);
+            if (!this._loadingOptions.flipY) {
+                gaussianSplatting.scaling.y *= -1.0;
+                gaussianSplatting.computeWorldMatrix(true);
+            }
+            scene._blockEntityCollection = false;
+            this.applyAutoCameraLimits(parsedSPZ, scene);
+            resolve(babylonMeshesArray);
+        };
+
+        if (this._loadingOptions.spzLibraryUrl) {
+            // WASM path: load spz module from URL, pass raw gzip data directly
             // eslint-disable-next-line github/no-then
-            return ConvertSpzToSplatAsync(cloud, scene).then((parsedSPZ) => {
-                scene._blockEntityCollection = !!this._assetContainer;
-                const gaussianSplatting = this._loadingOptions.gaussianSplattingMesh ?? new GaussianSplattingMesh("GaussianSplatting", null, scene, this._loadingOptions.keepInRam);
-                if (parsedSPZ.trainedWithAntialiasing) {
-                    const gsMaterial = gaussianSplatting.material as GaussianSplattingMaterial;
-                    gsMaterial.kernelSize = 0.1;
-                    gsMaterial.compensation = true;
-                }
-                gaussianSplatting._parentContainer = this._assetContainer;
-                babylonMeshesArray.push(gaussianSplatting);
-                gaussianSplatting.updateData(parsedSPZ.data, parsedSPZ.sh, { flipY: false }, undefined, parsedSPZ.shDegree);
-                if (!this._loadingOptions.flipY) {
-                    gaussianSplatting.scaling.y *= -1.0;
-                    gaussianSplatting.computeWorldMatrix(true);
-                }
-                scene._blockEntityCollection = false;
-                this.applyAutoCameraLimits(parsedSPZ, scene);
-                return babylonMeshesArray;
+            return GetSpzModule(this._loadingOptions.spzLibraryUrl).then((spz) => {
+                const cloud = spz.loadSpzFromBuffer(new Uint8Array(data), { to: spz.CoordinateSystem.RUB });
+                // eslint-disable-next-line github/no-then
+                return ConvertSpzToSplatAsync(cloud, scene).then((parsedSPZ) => {
+                    return new Promise<AbstractMesh[]>((resolve) => {
+                        applyParsedSPZ(parsedSPZ, resolve);
+                    });
+                });
             });
+        }
+
+        // Manual path: decompress gzip, then parse with the built-in SPZ parser
+        const readableStream = new ReadableStream({
+            start(controller) {
+                controller.enqueue(new Uint8Array(data));
+                controller.close();
+            },
+        });
+        const decompressionStream = new DecompressionStream("gzip");
+        const decompressedStream = readableStream.pipeThrough(decompressionStream);
+
+        return new Promise((resolve) => {
+            new Response(decompressedStream)
+                .arrayBuffer()
+                // eslint-disable-next-line github/no-then
+                .then((buffer) => {
+                    // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
+                    ParseSpz(buffer, scene, this._loadingOptions).then((parsedSPZ) => {
+                        applyParsedSPZ(parsedSPZ, resolve);
+                    });
+                })
+                // eslint-disable-next-line github/no-then
+                .catch(() => {
+                    handlePLY(resolve);
+                });
         });
     }
 
