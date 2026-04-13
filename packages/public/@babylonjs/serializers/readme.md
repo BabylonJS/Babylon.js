@@ -1,29 +1,23 @@
-Babylon.js Serializers
-=====================
+# Babylon.js Serializers
 
-# Installation instructions
+## Installation
 
-To install using npm :
+To install using npm:
 
-```
-npm install --save @babylonjs/core @babylonjs/serializers
-```
-
-# How to use
-
-Afterwards it can be imported to your project using:
-
-```
-import { GLTF2Export } from '@babylonjs/serializers/glTF';
+```bash
+npm install @babylonjs/core @babylonjs/serializers
 ```
 
-And used as usual:
+## Usage
 
-```
+Import and use in your project:
+
+```javascript
+import { GLTF2Export } from "@babylonjs/serializers/glTF";
+
 GLTF2Export.GLTFAsync(scene, "fileName").then((gltf) => {
     gltf.downloadFiles();
 });
 ```
 
-For more information you can have a look at our [ES6 dedicated documentation](https://doc.babylonjs.com/features/es6_support) and the [gltf exporter documentation](https://doc.babylonjs.com/extensions/gltfexporter).
-
+For more information, see the [ES6 support documentation](https://doc.babylonjs.com/setup/frameworkPackages/es6Support/) and the [glTF exporter documentation](https://doc.babylonjs.com/features/featuresDeepDive/Exporters/glTFExporter/).

@@ -83,6 +83,13 @@
             "referenceImage": "gsplat-sogs-sh.png"
         },
         {
+            "title": "Gaussian Splatting Part Test",
+            "playgroundId": "#BTS11N#0",
+            "renderCount": 15,
+            "errorRatio": 5,
+            "referenceImage": "gsplat-part-test.png"
+        },
+        {
             "title": "RH billboard",
             "playgroundId": "#PDO1L6#1",
             "referenceImage": "rh-billboard.png"
@@ -1865,20 +1872,20 @@
         },
         {
             "title": "Scissor test",
-            "playgroundId": "#W7E7CF#34",
+            "playgroundId": "#W7E7CF#38",
             "excludedEngines": ["webgl1"],
             "referenceImage": "scissor-test.png"
         },
         {
             "title": "Scissor test with 0.9 hardware scaling",
-            "playgroundId": "#W7E7CF#34",
+            "playgroundId": "#W7E7CF#38",
             "replace": "//options//, hardwareScalingLevel = 0.9;",
             "excludedEngines": ["webgl1"],
             "referenceImage": "scissor-test-2.png"
         },
         {
             "title": "Scissor test with 1.5 hardware scaling",
-            "playgroundId": "#W7E7CF#34",
+            "playgroundId": "#W7E7CF#38",
             "replace": "//options//, hardwareScalingLevel = 1.5;",
             "excludedEngines": ["webgl1"],
             "referenceImage": "scissor-test-3.png"
@@ -2606,6 +2613,18 @@
             "renderCount": 2
         },
         {
+            "title": "Read-write storage texture compute",
+            "playgroundId": "#Z7YGTU#0",
+            "referenceImage": "readwrite-storage-texture-compute.png",
+            "excludedEngines": ["webgl1", "webgl2"]
+        },
+        {
+            "title": "Read-only storage texture fragment shader",
+            "playgroundId": "#1VFBXO#0",
+            "referenceImage": "readonly-storage-texture-fragment.png",
+            "excludedEngines": ["webgl1", "webgl2"]
+        },
+        {
             "title": "glTF Loader Capabilities",
             "playgroundId": "#EBO3J1#10",
             "referenceImage": "glTFLoaderCapabilities.png"
@@ -3014,6 +3033,11 @@
             "playgroundId": "#CSCJO2#72"
         },
         {
+            "title": "Clustered Light Serialization",
+            "playgroundId": "#QRQPNN#0",
+            "referenceImage": "clustered-light-serialization.png"
+        },
+        {
             "title": "Atmosphere Day",
             "playgroundId": "#VO1Z0C#39",
             "referenceImage": "atmosphere-day.png",
@@ -3383,33 +3407,150 @@
         },
         {
             "title": "OpenPBR Transmission Forward Scatter and Absorption - IBL",
-            "playgroundId": "#GRQHVV#149",
+            "playgroundId": "#GRQHVV#263",
             "excludedEngines": ["webgl1"]
         },
         {
             "title": "OpenPBR Transmission Scatter Anisotropy Reflect - IBL",
-            "playgroundId": "#GRQHVV#216",
+            "playgroundId": "#GRQHVV#264",
             "excludedEngines": ["webgl1"]
         },
         {
             "title": "OpenPBR Transmission Scatter Anisotropy Refract - IBL",
-            "playgroundId": "#GRQHVV#220",
-            "excludedEngines": ["webgl1"]
+            "playgroundId": "#GRQHVV#265",
+            "excludedEngines": ["webgl1"],
+            "renderCount": 5
         },
         {
             "title": "OpenPBR Transmission Scatter Anisotropy Refract - Analytic Lights",
-            "playgroundId": "#GRQHVV#217",
+            "playgroundId": "#GRQHVV#266",
             "excludedEngines": ["webgl1"]
         },
         {
             "title": "OpenPBR Transmission Scatter Anisotropy Reflect - Analytic Lights",
-            "playgroundId": "#GRQHVV#219",
+            "playgroundId": "#GRQHVV#268",
             "excludedEngines": ["webgl1"]
         },
         {
             "title": "OpenPBR Transmission Scatter Roughness - Analytic Lights",
-            "playgroundId": "#GRQHVV#218",
+            "playgroundId": "#GRQHVV#269",
             "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR Subsurface Radius vs Roughness - IBL",
+            "playgroundId": "#GRQHVV#270",
+            "excludedEngines": ["webgl1"],
+            "renderCount": 5
+        },
+        {
+            "title": "OpenPBR Subsurface Radius vs Anisotropy - IBL",
+            "playgroundId": "#GRQHVV#271",
+            "excludedEngines": ["webgl1"],
+            "renderCount": 2
+        },
+        {
+            "title": "OpenPBR Subsurface Radius vs Anisotropy - Analytic Lights",
+            "playgroundId": "#GRQHVV#272",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR Subsurface Radius vs Radius Scale - IBL",
+            "playgroundId": "#GRQHVV#273",
+            "excludedEngines": ["webgl1"],
+            "renderCount": 5
+        },
+        {
+            "title": "OpenPBR Subsurface Transmission Blending - IBL",
+            "playgroundId": "#GRQHVV#296",
+            "excludedEngines": ["webgl1"],
+            "renderCount": 5
+        },
+        {
+            "title": "OpenPBR Subsurface Transmission Blending - Analytic Lights",
+            "playgroundId": "#GRQHVV#299",
+            "excludedEngines": ["webgl1"],
+            "renderCount": 2
+        },
+        {
+            "title": "OpenPBR Subsurface Transmission Blending Zero Depth - IBL",
+            "playgroundId": "#GRQHVV#235",
+            "excludedEngines": ["webgl1"],
+            "renderCount": 5
+        },
+        {
+            "title": "OpenPBR Transmission Dense Scattering - IBL",
+            "playgroundId": "#GRQHVV#294",
+            "excludedEngines": ["webgl1"],
+            "renderCount": 10
+        },
+        {
+            "title": "OpenPBR Transmission Dense Scattering - SH",
+            "playgroundId": "#GRQHVV#293",
+            "excludedEngines": ["webgl1"],
+            "renderCount": 10
+        },
+        {
+            "title": "OpenPBR Subsurface Dense Scattering - IBL",
+            "playgroundId": "#GRQHVV#295",
+            "excludedEngines": ["webgl1"],
+            "renderCount": 10
+        },
+        {
+            "title": "OpenPBR Subsurface Dense Scattering - Analytic Lights",
+            "playgroundId": "#GRQHVV#306",
+            "excludedEngines": ["webgl1"],
+            "renderCount": 10
+        },
+        {
+            "title": "OpenPBR Subsurface Dense Scattering - Realtime IBL",
+            "playgroundId": "#GRQHVV#307",
+            "excludedEngines": ["webgl1"],
+            "renderCount": 5
+        },
+        {
+            "title": "OpenPBR Subsurface Color Scaling - IBL",
+            "playgroundId": "#GRQHVV#302",
+            "excludedEngines": ["webgl1"],
+            "renderCount": 5
+        },
+        {
+            "title": "OpenPBR Thin Walled Transmission IOR vs Roughness - IBL",
+            "playgroundId": "#GRQHVV#240",
+            "excludedEngines": ["webgl1"],
+            "renderCount": 5
+        },
+        {
+            "title": "OpenPBR Thin Walled Transmission IOR vs Roughness - Analytic Lights",
+            "playgroundId": "#GRQHVV#243",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR Thin Walled Anisotropic Transmission - IBL",
+            "playgroundId": "#GRQHVV#247",
+            "excludedEngines": ["webgl1"],
+            "renderCount": 5
+        },
+        {
+            "title": "OpenPBR Thin Walled Anisotropic Transmission - Analytic Lights",
+            "playgroundId": "#GRQHVV#244",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR Thin Walled Subsurface Anisotropy - IBL",
+            "playgroundId": "#GRQHVV#241",
+            "excludedEngines": ["webgl1"],
+            "renderCount": 5
+        },
+        {
+            "title": "OpenPBR Thin Walled Subsurface Anisotropy - Analytic Lights",
+            "playgroundId": "#GRQHVV#248",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR Thin Walled Subsurface Transmission Blending - IBL",
+            "playgroundId": "#GRQHVV#242",
+            "excludedEngines": ["webgl1"],
+            "renderCount": 5
         },
         {
             "title": "Background material blur",
@@ -3806,7 +3947,316 @@
         },
         {
             "title": "Selection outline layer with instances",
-            "playgroundId": "#ADUC74#28"
+            "playgroundId": "#UR9706#0"
+        },
+        {
+            "title": "Selection outline layer with instances and LOD",
+            "playgroundId": "#8I487I#0"
+        },
+        {
+            "title": "Vertex Pulling - Normals UVs Colors Tangents",
+            "playgroundId": "#664OF3#6",
+            "referenceImage": "vertexPullingNormalsUVsColors.png",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "Vertex Pulling - Index Buffer Variants",
+            "playgroundId": "#0C4ULD#2",
+            "referenceImage": "vertexPullingIndexBufferVariants.png",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "Vertex Pulling - Morph Targets and Bones",
+            "playgroundId": "#CT4C3C#2",
+            "referenceImage": "vertexPullingMorphBones.png",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "Vertex Pulling - isUnIndexed with index buffer",
+            "playgroundId": "#AWPYHM#4",
+            "referenceImage": "vertexPullingIsUnIndexed.png",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "Vertex Pulling - UV Channels 1-6",
+            "playgroundId": "#0SA2NH#4",
+            "referenceImage": "vertexPullingUVChannels.png",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "WebGPU async pipeline pre-warming",
+            "playgroundId": "#823Q62#0",
+            "referenceImage": "webgpuAsyncPipelinePreWarm.png",
+            "excludedEngines": ["webgl1", "webgl2"]
+        },
+        {
+            "title": "GPU Particles - Basic Properties - Size",
+            "playgroundId": "#3HLS3D#2",
+            "referenceImage": "gpu-particles-basic-size.png",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "GPU Particles - Basic Properties - Scale",
+            "playgroundId": "#52KBLI#0",
+            "referenceImage": "gpu-particles-basic-scale.png",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "GPU Particles - Basic Properties - Color",
+            "playgroundId": "#30PAK9#0",
+            "referenceImage": "gpu-particles-basic-color.png",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "GPU Particles - Basic Properties - Speed",
+            "playgroundId": "#KU4I4J#0",
+            "referenceImage": "gpu-particles-basic-speed.png",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "GPU Particles - Basic Properties - Angular Speed",
+            "playgroundId": "#9MOFU4#0",
+            "referenceImage": "gpu-particles-basic-angular-speed.png",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "GPU Particles - Basic Properties - Rotation",
+            "playgroundId": "#DEVC42#0",
+            "referenceImage": "gpu-particles-basic-rotation.png",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "GPU Particles - Basic Properties - Translation Pivot",
+            "playgroundId": "#QC8XA2#0",
+            "referenceImage": "gpu-particles-basic-translation-pivot.png",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "GPU Particles - Basic Properties - Direction",
+            "playgroundId": "#M6QEUB#0",
+            "referenceImage": "gpu-particles-basic-direction.png",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "GPU Particles - Basic Properties - Gravity",
+            "playgroundId": "#9AGK0W#0",
+            "referenceImage": "gpu-particles-basic-gravity.png",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "GPU Particles - Basic Properties - Emit Rate",
+            "playgroundId": "#IBWI36#0",
+            "referenceImage": "gpu-particles-basic-emit-rate.png",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "GPU Particles - Basic Properties - Lifetime",
+            "playgroundId": "#RL6BAK#0",
+            "referenceImage": "gpu-particles-basic-lifetime.png",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "GPU Particles - Basic Properties - Target Stop Duration",
+            "playgroundId": "#4AJC72#0",
+            "referenceImage": "gpu-particles-basic-target-stop.png",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "GPU Particles - Change - Size",
+            "playgroundId": "#KF9X69#0",
+            "referenceImage": "gpu-particles-change-size.png",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "GPU Particles - Change - Color",
+            "playgroundId": "#UWRCY4#0",
+            "referenceImage": "gpu-particles-change-color.png",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "GPU Particles - Change - Speed",
+            "playgroundId": "#KBHNCB#0",
+            "referenceImage": "gpu-particles-change-speed.png",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "GPU Particles - Change - Speed Limit",
+            "playgroundId": "#CTNM3R#0",
+            "referenceImage": "gpu-particles-change-speed-limit.png",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "GPU Particles - Change - Angular Speed",
+            "playgroundId": "#1NLEIC#0",
+            "referenceImage": "gpu-particles-change-angular-speed.png",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "GPU Particles - Change - Drag",
+            "playgroundId": "#02KAQL#0",
+            "referenceImage": "gpu-particles-change-drag.png",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "GPU Particles - Change - Size Range",
+            "playgroundId": "#HWD2PR#0",
+            "referenceImage": "gpu-particles-change-size-range.png",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "GPU Particles - Change - Color Range",
+            "playgroundId": "#3M1JEJ#0",
+            "referenceImage": "gpu-particles-change-color-range.png",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "GPU Particles - Change - Speed Range",
+            "playgroundId": "#JPPZGY#0",
+            "referenceImage": "gpu-particles-change-speed-range.png",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "GPU Particles - Change - Speed Limit Range",
+            "playgroundId": "#UQ1RMS#0",
+            "referenceImage": "gpu-particles-change-speed-limit-range.png",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "GPU Particles - Change - Angular Speed Range",
+            "playgroundId": "#MSX6FE#0",
+            "referenceImage": "gpu-particles-change-angular-speed-range.png",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "GPU Particles - Change - Drag Range",
+            "playgroundId": "#Q1JW04#0",
+            "referenceImage": "gpu-particles-change-drag-range.png",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "GPU Particles - Emitters - Point",
+            "playgroundId": "#PS8GQ3#0",
+            "referenceImage": "gpu-particles-emitters-point.png",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "GPU Particles - Emitters - Box",
+            "playgroundId": "#2XD9BC#0",
+            "referenceImage": "gpu-particles-emitters-box.png",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "GPU Particles - Emitters - Sphere",
+            "playgroundId": "#H7XR87#0",
+            "referenceImage": "gpu-particles-emitters-sphere.png",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "GPU Particles - Emitters - Directed Sphere",
+            "playgroundId": "#0H1ATM#0",
+            "referenceImage": "gpu-particles-emitters-directed-sphere.png",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "GPU Particles - Emitters - Hemisphere",
+            "playgroundId": "#MRQTX7#0",
+            "referenceImage": "gpu-particles-emitters-hemisphere.png",
+            "excludedEngines": ["webgl1"],
+            "errorRatio": 4
+        },
+        {
+            "title": "GPU Particles - Emitters - Cylinder",
+            "playgroundId": "#FGRJM1#0",
+            "referenceImage": "gpu-particles-emitters-cylinder.png",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "GPU Particles - Emitters - Directed Cylinder",
+            "playgroundId": "#40T8G0#0",
+            "referenceImage": "gpu-particles-emitters-directed-cylinder.png",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "GPU Particles - Emitters - Cone",
+            "playgroundId": "#W73H92#0",
+            "referenceImage": "gpu-particles-emitters-cone.png",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "GPU Particles - Emitters - Directed Cone",
+            "playgroundId": "#GSYICK#0",
+            "referenceImage": "gpu-particles-emitters-directed-cone.png",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "GPU Particles - Billboard Y",
+            "playgroundId": "#8QHGVT#0",
+            "referenceImage": "gpu-particles-billboard-y.png",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "GPU Particles - Billboard Stretched",
+            "playgroundId": "#0612KX#0",
+            "referenceImage": "gpu-particles-billboard-stretched.png",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "GPU Particles - Multiply Blend",
+            "playgroundId": "#D7LQAZ#0",
+            "referenceImage": "gpu-particles-multiply-blend.png",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "GPU Particles - Animations",
+            "playgroundId": "#B0EJQY#0",
+            "referenceImage": "gpu-particles-animations.png",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "GPU Particles - Noise",
+            "playgroundId": "#P6JQIP#0",
+            "referenceImage": "gpu-particles-noise.png",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "GPU Particles - Flowmaps",
+            "playgroundId": "#SGAEHS#0",
+            "referenceImage": "gpu-particles-flowmaps.png",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "GPU Particles - Local Space",
+            "playgroundId": "#NK19TU#0",
+            "referenceImage": "gpu-particles-local-space.png",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "GPU Particles - Attractors Single",
+            "playgroundId": "#2GCFP9#0",
+            "referenceImage": "gpu-particles-attractors-single.png",
+            "excludedEngines": ["webgl1"],
+            "errorRatio": 2.5
+        },
+        {
+            "title": "GPU Particles - Attractors Multiple",
+            "playgroundId": "#S02QKE#0",
+            "referenceImage": "gpu-particles-attractors-multiple.png",
+            "excludedEngines": ["webgl1"],
+            "errorRatio": 2.5
+        },
+        {
+            "title": "GPU Particles - Attractors Ring",
+            "playgroundId": "#D08NSG#0",
+            "referenceImage": "gpu-particles-attractors-ring.png",
+            "excludedEngines": ["webgl1"],
+            "errorRatio": 2.5
+        },
+        {
+            "title": "GPU Particles - Attractors Local",
+            "playgroundId": "#UK6P4V#0",
+            "referenceImage": "gpu-particles-attractors-local.png",
+            "excludedEngines": ["webgl1"],
+            "errorRatio": 2.5
         }
     ]
 }

@@ -1,11 +1,11 @@
 import { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
 import { Camera } from "core/Cameras/camera";
 import { BoundingSphere } from "core/Culling/boundingSphere";
-import type { Engine } from "core/Engines/engine";
+import { type Engine } from "core/Engines/engine";
 import { Constants } from "core/Engines/constants";
 import { NullEngine } from "core/Engines/nullEngine";
 import { Vector3 } from "core/Maths/math.vector";
-import type { Mesh } from "core/Meshes/mesh";
+import { type Mesh } from "core/Meshes/mesh";
 import { MeshBuilder } from "core/Meshes/meshBuilder";
 import { Scene } from "core/scene";
 

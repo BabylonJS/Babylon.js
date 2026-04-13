@@ -1,15 +1,13 @@
-import type { FunctionComponent } from "react";
+import { type FunctionComponent, useCallback } from "react";
 
-import type { Light } from "core/index";
-import type { ISelectionService } from "../../../services/selectionService";
-
-import { useCallback } from "react";
+import { type Light } from "core/index";
+import { type ISelectionService } from "../../../services/selectionService";
 
 import { ClusteredLightContainer } from "core/Lights/Clustered/clusteredLightContainer";
 import { ClusteredLightContainerSelectorPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/entitySelectorPropertyLine";
 import { Collapse } from "shared-ui-components/fluent/primitives/collapse";
 import { useInterceptObservable } from "../../../hooks/instrumentationHooks";
-import { useObservableState } from "../../../hooks/observableHooks";
+import { useObservableState } from "shared-ui-components/modularTool/hooks/observableHooks";
 
 function FindOwnerContainer(light: Light): ClusteredLightContainer | null {
     for (const sceneLight of light.getScene().lights) {

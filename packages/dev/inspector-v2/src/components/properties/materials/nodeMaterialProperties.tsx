@@ -1,10 +1,9 @@
-import type { FunctionComponent } from "react";
+import { type FunctionComponent, Fragment, useCallback } from "react";
 
-import type { GradientBlock, InputBlock, NodeMaterial } from "core/index";
+import { type GradientBlock, type InputBlock, type NodeMaterial } from "core/index";
 
 import { makeStyles, Subtitle2, tokens } from "@fluentui/react-components";
 import { EditRegular } from "@fluentui/react-icons";
-import { Fragment, useCallback } from "react";
 
 import { GradientBlockColorStep } from "core/Materials/Node/Blocks/gradientBlock";
 import { NodeMaterialBlockConnectionPointTypes } from "core/Materials/Node/Enums/nodeMaterialBlockConnectionPointTypes";
@@ -19,7 +18,7 @@ import { SyncedSliderPropertyLine } from "shared-ui-components/fluent/hoc/proper
 import { Vector2PropertyLine, Vector3PropertyLine, Vector4PropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/vectorPropertyLine";
 import { MessageBar } from "shared-ui-components/fluent/primitives/messageBar";
 import { useProperty } from "../../../hooks/compoundPropertyHooks";
-import { useObservableState } from "../../../hooks/observableHooks";
+import { useObservableState } from "shared-ui-components/modularTool/hooks/observableHooks";
 import { GroupBy } from "../../../misc/arrayUtils";
 import { BoundProperty } from "../boundProperty";
 import { EditNodeMaterial } from "../../../misc/nodeMaterialEditor";

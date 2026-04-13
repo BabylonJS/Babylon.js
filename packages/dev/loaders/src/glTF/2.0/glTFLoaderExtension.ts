@@ -1,32 +1,32 @@
-﻿import type { Nullable } from "core/types";
-import type { Animation } from "core/Animations/animation";
-import type { AnimationGroup } from "core/Animations/animationGroup";
-import type { Material } from "core/Materials/material";
-import type { Camera } from "core/Cameras/camera";
-import type { Geometry } from "core/Meshes/geometry";
-import type { TransformNode } from "core/Meshes/transformNode";
-import type { BaseTexture } from "core/Materials/Textures/baseTexture";
-import type { Mesh } from "core/Meshes/mesh";
-import type { AbstractMesh } from "core/Meshes/abstractMesh";
-import type { IDisposable } from "core/scene";
-import type {
-    IScene,
-    INode,
-    IMesh,
-    ISkin,
-    ICamera,
-    IMeshPrimitive,
-    IMaterial,
-    ITextureInfo,
-    IAnimation,
-    ITexture,
-    IBufferView,
-    IBuffer,
-    IAnimationChannel,
+﻿import { type Nullable } from "core/types";
+import { type Animation } from "core/Animations/animation";
+import { type AnimationGroup } from "core/Animations/animationGroup";
+import { type Material } from "core/Materials/material";
+import { type Camera } from "core/Cameras/camera";
+import { type Geometry } from "core/Meshes/geometry";
+import { type TransformNode } from "core/Meshes/transformNode";
+import { type BaseTexture } from "core/Materials/Textures/baseTexture";
+import { type Mesh } from "core/Meshes/mesh";
+import { type AbstractMesh } from "core/Meshes/abstractMesh";
+import { type IDisposable } from "core/scene";
+import {
+    type IScene,
+    type INode,
+    type IMesh,
+    type ISkin,
+    type ICamera,
+    type IMeshPrimitive,
+    type IMaterial,
+    type ITextureInfo,
+    type IAnimation,
+    type ITexture,
+    type IBufferView,
+    type IBuffer,
+    type IAnimationChannel,
 } from "./glTFLoaderInterfaces";
-import type { IGLTFLoaderExtension as IGLTFBaseLoaderExtension } from "../glTFFileLoader";
-import type { IProperty } from "babylonjs-gltf2interface";
-import type { IAnimatable } from "core/Animations/animatable.interface";
+import { type IGLTFLoaderExtension as IGLTFBaseLoaderExtension } from "../glTFFileLoader";
+import { type IProperty } from "babylonjs-gltf2interface";
+import { type IAnimatable } from "core/Animations/animatable.interface";
 
 /**
  * Interface for a glTF loader extension.

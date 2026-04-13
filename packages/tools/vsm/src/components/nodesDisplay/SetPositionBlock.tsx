@@ -1,5 +1,5 @@
-import type { Vector3 } from "core/Maths/math.vector";
-import type { FC } from "react";
+import { type Vector3 } from "core/Maths/math.vector";
+import { type FC } from "react";
 
 export interface ISetPositionBlockProps {
     targetPosition: Vector3;

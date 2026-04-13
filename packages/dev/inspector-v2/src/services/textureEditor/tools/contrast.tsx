@@ -1,11 +1,11 @@
-import type { TextureEditorToolProvider } from "../../../components/textureEditor/textureEditor";
+import { type TextureEditorToolProvider } from "../../../components/textureEditor/textureEditor";
 
 import { Label, makeStyles, Slider, tokens } from "@fluentui/react-components";
 import { CircleHalfFillRegular } from "@fluentui/react-icons";
 
 import { Observable } from "core/Misc/observable";
 import { useCallback } from "react";
-import { useObservableState } from "../../../hooks/observableHooks";
+import { useObservableState } from "shared-ui-components/modularTool/hooks/observableHooks";
 
 const useStyles = makeStyles({
     settingsContainer: {

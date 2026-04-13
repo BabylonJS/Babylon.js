@@ -2,15 +2,14 @@
 import * as React from "react";
 import { MonacoManager } from "../../tools/monaco/monacoManager";
 import { Utilities } from "../../tools/utilities";
-import type { GlobalState } from "../../globalState";
-import type { Observer } from "core/Misc";
+import { type GlobalState } from "../../globalState";
+import { type Observer } from "core/Misc";
 
 import { SplitContainer } from "shared-ui-components/split/splitContainer";
 import { Splitter } from "shared-ui-components/split/splitter";
 import { ControlledSize, SplitDirection } from "shared-ui-components/split/splitContext";
 
-import type { ActivityBarHandle } from "./activityBarComponent";
-import { ActivityBar } from "./activityBarComponent";
+import { type ActivityBarHandle, ActivityBar } from "./activityBarComponent";
 import { FileExplorer } from "./fileExplorerComponent";
 import AddFileIcon from "./icons/newFile.svg";
 import { SearchPanel } from "./searchPanelComponent";

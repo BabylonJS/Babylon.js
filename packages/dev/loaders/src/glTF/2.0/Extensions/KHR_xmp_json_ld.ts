@@ -1,6 +1,6 @@
-import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
-import type { GLTFLoader } from "../glTFLoader";
-import type { IKHRXmpJsonLd_Gltf, IKHRXmpJsonLd_Node } from "babylonjs-gltf2interface";
+import { type IGLTFLoaderExtension } from "../glTFLoaderExtension";
+import { type GLTFLoader } from "../glTFLoader";
+import { type IKHRXmpJsonLd_Gltf, type IKHRXmpJsonLd_Node } from "babylonjs-gltf2interface";
 import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
 
 const NAME = "KHR_xmp_json_ld";

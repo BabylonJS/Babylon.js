@@ -1,11 +1,10 @@
-import type { DragEvent } from "react";
+import { type DragEvent, useCallback, useRef, useState } from "react";
 
-import type { Nullable } from "core/index";
+import { type Nullable } from "core/index";
 
 import { tokens } from "@fluentui/react-components";
-import { useCallback, useRef, useState } from "react";
 
-import type { SceneExplorerDragDropConfig } from "./sceneExplorer";
+import { type SceneExplorerDragDropConfig } from "./sceneExplorer";
 
 /**
  * Props for drop-only event handlers on a section header.

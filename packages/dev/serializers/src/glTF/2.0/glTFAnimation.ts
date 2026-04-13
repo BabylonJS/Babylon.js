@@ -1,21 +1,30 @@
-import type { IAnimation, INode, IBufferView, IAccessor, IAnimationSampler, IAnimationChannel } from "babylonjs-gltf2interface";
-import { AnimationSamplerInterpolation, AnimationChannelTargetPath, AccessorType, AccessorComponentType } from "babylonjs-gltf2interface";
-import type { Node } from "core/node";
-import type { Nullable } from "core/types";
+import {
+    type IAnimation,
+    type INode,
+    type IBufferView,
+    type IAccessor,
+    type IAnimationSampler,
+    type IAnimationChannel,
+    AnimationSamplerInterpolation,
+    AnimationChannelTargetPath,
+    AccessorType,
+    AccessorComponentType,
+} from "babylonjs-gltf2interface";
+import { type Node } from "core/node";
+import { type Nullable } from "core/types";
 import { Vector3, Quaternion } from "core/Maths/math.vector";
 import { Tools } from "core/Misc/tools";
 import { Animation } from "core/Animations/animation";
 import { TransformNode } from "core/Meshes/transformNode";
-import type { Scene } from "core/scene";
+import { type Scene } from "core/scene";
 import { MorphTarget } from "core/Morph/morphTarget";
 import { Mesh } from "core/Meshes/mesh";
 
-import type { IAnimationKey } from "core/Animations/animationKey";
-import { AnimationKeyInterpolation } from "core/Animations/animationKey";
+import { type IAnimationKey, AnimationKeyInterpolation } from "core/Animations/animationKey";
 
 import { Camera } from "core/Cameras/camera";
 import { Light } from "core/Lights/light";
-import type { BufferManager } from "./bufferManager";
+import { type BufferManager } from "./bufferManager";
 import { GetAccessorElementCount, ConvertToRightHandedPosition, Rotate180Y, ConvertToRightHandedRotation } from "./glTFUtilities";
 
 /**

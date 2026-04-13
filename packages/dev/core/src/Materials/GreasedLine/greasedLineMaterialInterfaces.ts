@@ -1,7 +1,7 @@
-import type { RawTexture } from "../Textures/rawTexture";
-import type { Vector2 } from "../../Maths/math.vector";
-import type { Nullable } from "../../types";
-import type { Color3 } from "../../Maths/math.color";
+import { type RawTexture } from "../Textures/rawTexture";
+import { type Vector2 } from "../../Maths/math.vector";
+import { type Nullable } from "../../types";
+import { type Color3 } from "../../Maths/math.color";
 /**
  * Interface which defines the available methods for a GreasedLineMaterial
  */

@@ -1,47 +1,47 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import type { Immutable, Nullable, float, DataArray } from "../types";
-import type { Color3Gradient, IValueGradient } from "../Misc/gradients";
-import { FactorGradient, ColorGradient, GradientHelper } from "../Misc/gradients";
+import { type Immutable, type Nullable, type float, type DataArray } from "../types";
+import { type Color3Gradient, type IValueGradient, type FactorGradient, ColorGradient, GradientHelper } from "../Misc/gradients";
 import { Observable } from "../Misc/observable";
 import { Vector3, Matrix, TmpVectors } from "../Maths/math.vector";
 import { Color4, TmpColors } from "../Maths/math.color";
 import { Lerp } from "../Maths/math.scalar.functions";
 import { VertexBuffer, Buffer } from "../Buffers/buffer";
 
-import type { IParticleSystem } from "./IParticleSystem";
+import { type IParticleSystem } from "./IParticleSystem";
 import { BaseParticleSystem } from "./baseParticleSystem";
 import { ParticleSystem } from "./particleSystem";
+import { Attractor } from "./attractor";
+import { Logger } from "../Misc/logger";
 import { BoxParticleEmitter } from "../Particles/EmitterTypes/boxParticleEmitter";
-import type { IDisposable } from "../scene";
-import type { Effect } from "../Materials/effect";
+import { type IDisposable, Scene } from "../scene";
+import { type Effect } from "../Materials/effect";
 import { ImageProcessingConfiguration } from "../Materials/imageProcessingConfiguration";
 import { RawTexture } from "../Materials/Textures/rawTexture";
 import { Constants } from "../Engines/constants";
 import { EngineStore } from "../Engines/engineStore";
-import type { IAnimatable } from "../Animations/animatable.interface";
+import { type IAnimatable } from "../Animations/animatable.interface";
 import { CustomParticleEmitter } from "./EmitterTypes/customParticleEmitter";
 import { AbstractEngine } from "../Engines/abstractEngine";
-import type { DataBuffer } from "../Buffers/dataBuffer";
+import { type DataBuffer } from "../Buffers/dataBuffer";
 import { DrawWrapper } from "../Materials/drawWrapper";
-import type { UniformBufferEffectCommonAccessor } from "../Materials/uniformBufferEffectCommonAccessor";
-import type { IGPUParticleSystemPlatform } from "./IGPUParticleSystemPlatform";
+import { type UniformBufferEffectCommonAccessor } from "../Materials/uniformBufferEffectCommonAccessor";
+import { type IGPUParticleSystemPlatform } from "./IGPUParticleSystemPlatform";
 import { GetClass } from "../Misc/typeStore";
 import { AddClipPlaneUniforms, BindClipPlane, PrepareStringDefinesForClipPlanes } from "../Materials/clipPlaneMaterialHelper";
 
-import { Scene } from "../scene";
-import type { Engine } from "../Engines/engine";
-import type { AbstractMesh } from "../Meshes/abstractMesh";
+import { type Engine } from "../Engines/engine";
+import { type AbstractMesh } from "../Meshes/abstractMesh";
 
 import "../Engines/Extensions/engine.transformFeedback";
 
 import "../Shaders/gpuRenderParticles.fragment";
 import "../Shaders/gpuRenderParticles.vertex";
 import { BindFogParameters, BindLogDepth } from "../Materials/materialHelper.functions";
-import type { PointParticleEmitter } from "./EmitterTypes/pointParticleEmitter";
-import type { HemisphericParticleEmitter } from "./EmitterTypes/hemisphericParticleEmitter";
-import type { SphereDirectedParticleEmitter, SphereParticleEmitter } from "./EmitterTypes/sphereParticleEmitter";
-import type { CylinderDirectedParticleEmitter, CylinderParticleEmitter } from "./EmitterTypes/cylinderParticleEmitter";
-import type { ConeDirectedParticleEmitter, ConeParticleEmitter } from "./EmitterTypes/coneParticleEmitter";
+import { type PointParticleEmitter } from "./EmitterTypes/pointParticleEmitter";
+import { type HemisphericParticleEmitter } from "./EmitterTypes/hemisphericParticleEmitter";
+import { type SphereDirectedParticleEmitter, type SphereParticleEmitter } from "./EmitterTypes/sphereParticleEmitter";
+import { type CylinderDirectedParticleEmitter, type CylinderParticleEmitter } from "./EmitterTypes/cylinderParticleEmitter";
+import { type ConeDirectedParticleEmitter, type ConeParticleEmitter } from "./EmitterTypes/coneParticleEmitter";
 import {
     CreateConeEmitter,
     CreateCylinderEmitter,
@@ -52,7 +52,7 @@ import {
     CreatePointEmitter,
     CreateSphereEmitter,
 } from "./particleSystem.functions";
-import type { Texture } from "core/Materials/Textures/texture";
+import { type Texture } from "core/Materials/Textures/texture";
 
 /**
  * This represents a GPU particle system in Babylon
@@ -207,6 +207,26 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
 
     /** Indicates that the particle system is GPU based */
     public readonly isGPU = true;
+
+    /** Attractors */
+    /**
+     * Maximum number of attractors for this GPU particle system instance.
+     * Determined at construction time via the `maxAttractors` option (default 8).
+     * Limited by the fixed-size uniform arrays in the update shaders.
+     */
+    public readonly maxAttractors: number;
+
+    /**
+     * Add an attractor to the particle system. Attractors are used to change the direction of the particles in the system.
+     * @param attractor - The attractor to add to the particle system
+     */
+    public override addAttractor(attractor: Attractor): void {
+        if (this._attractors.length >= this.maxAttractors) {
+            Logger.Warn(`GPU particle system supports a maximum of ${this.maxAttractors} attractors. Ignoring additional attractor.`);
+            return;
+        }
+        super.addAttractor(attractor);
+    }
 
     /** Gets or sets a matrix to use to compute projection */
     public defaultProjectionMatrix: Matrix;
@@ -655,27 +675,21 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
     /** @internal */
     public _dragGradientsTexture: RawTexture;
 
-    private _addFactorGradient(factorGradients: FactorGradient[], gradient: number, factor: number) {
-        const valueGradient = new FactorGradient(gradient, factor);
-        factorGradients.push(valueGradient);
-
-        this._releaseBuffers();
-    }
-
     /**
      * Adds a new size gradient
      * @param gradient defines the gradient to use (between 0 and 1)
      * @param factor defines the size factor to affect to the specified gradient
+     * @param factor2 defines an additional factor used to define a range ([factor, factor2]) with main value to pick the final value from
      * @returns the current particle system
      */
-    public addSizeGradient(gradient: number, factor: number): GPUParticleSystem {
+    public addSizeGradient(gradient: number, factor: number, factor2?: number): GPUParticleSystem {
         if (!this._sizeGradients) {
             this._sizeGradients = [];
         }
 
-        this._addFactorGradient(this._sizeGradients, gradient, factor);
+        this._addFactorGradient(this._sizeGradients, gradient, factor, factor2);
 
-        this._refreshFactorGradient(this._sizeGradients, "_sizeGradientsTexture", true);
+        this._refreshFactorGradient(this._sizeGradients, "_sizeGradientsTexture");
 
         this._releaseBuffers();
 
@@ -694,21 +708,9 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         return this;
     }
 
-    private _refreshFactorGradient(factorGradients: Nullable<FactorGradient[]>, textureName: string, reorder = false) {
+    private _refreshFactorGradient(factorGradients: Nullable<FactorGradient[]>, textureName: string) {
         if (!factorGradients) {
             return;
-        }
-
-        if (reorder) {
-            factorGradients.sort((a, b) => {
-                if (a.gradient < b.gradient) {
-                    return -1;
-                } else if (a.gradient > b.gradient) {
-                    return 1;
-                }
-
-                return 0;
-            });
         }
 
         const that = this as any;
@@ -722,15 +724,16 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
      * Adds a new angular speed gradient
      * @param gradient defines the gradient to use (between 0 and 1)
      * @param factor defines the angular speed to affect to the specified gradient
+     * @param factor2 defines an additional factor used to define a range ([factor, factor2]) with main value to pick the final value from
      * @returns the current particle system
      */
-    public addAngularSpeedGradient(gradient: number, factor: number): GPUParticleSystem {
+    public addAngularSpeedGradient(gradient: number, factor: number, factor2?: number): GPUParticleSystem {
         if (!this._angularSpeedGradients) {
             this._angularSpeedGradients = [];
         }
 
-        this._addFactorGradient(this._angularSpeedGradients, gradient, factor);
-        this._refreshFactorGradient(this._angularSpeedGradients, "_angularSpeedGradientsTexture", true);
+        this._addFactorGradient(this._angularSpeedGradients, gradient, factor, factor2);
+        this._refreshFactorGradient(this._angularSpeedGradients, "_angularSpeedGradientsTexture");
 
         this._releaseBuffers();
 
@@ -753,15 +756,16 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
      * Adds a new velocity gradient
      * @param gradient defines the gradient to use (between 0 and 1)
      * @param factor defines the velocity to affect to the specified gradient
+     * @param factor2 defines an additional factor used to define a range ([factor, factor2]) with main value to pick the final value from
      * @returns the current particle system
      */
-    public addVelocityGradient(gradient: number, factor: number): GPUParticleSystem {
+    public addVelocityGradient(gradient: number, factor: number, factor2?: number): GPUParticleSystem {
         if (!this._velocityGradients) {
             this._velocityGradients = [];
         }
 
-        this._addFactorGradient(this._velocityGradients, gradient, factor);
-        this._refreshFactorGradient(this._velocityGradients, "_velocityGradientsTexture", true);
+        this._addFactorGradient(this._velocityGradients, gradient, factor, factor2);
+        this._refreshFactorGradient(this._velocityGradients, "_velocityGradientsTexture");
 
         this._releaseBuffers();
 
@@ -784,15 +788,16 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
      * Adds a new limit velocity gradient
      * @param gradient defines the gradient to use (between 0 and 1)
      * @param factor defines the limit velocity value to affect to the specified gradient
+     * @param factor2 defines an additional factor used to define a range ([factor, factor2]) with main value to pick the final value from
      * @returns the current particle system
      */
-    public addLimitVelocityGradient(gradient: number, factor: number): GPUParticleSystem {
+    public addLimitVelocityGradient(gradient: number, factor: number, factor2?: number): GPUParticleSystem {
         if (!this._limitVelocityGradients) {
             this._limitVelocityGradients = [];
         }
 
-        this._addFactorGradient(this._limitVelocityGradients, gradient, factor);
-        this._refreshFactorGradient(this._limitVelocityGradients, "_limitVelocityGradientsTexture", true);
+        this._addFactorGradient(this._limitVelocityGradients, gradient, factor, factor2);
+        this._refreshFactorGradient(this._limitVelocityGradients, "_limitVelocityGradientsTexture");
 
         this._releaseBuffers();
 
@@ -815,15 +820,16 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
      * Adds a new drag gradient
      * @param gradient defines the gradient to use (between 0 and 1)
      * @param factor defines the drag value to affect to the specified gradient
+     * @param factor2 defines an additional factor used to define a range ([factor, factor2]) with main value to pick the final value from
      * @returns the current particle system
      */
-    public addDragGradient(gradient: number, factor: number): GPUParticleSystem {
+    public addDragGradient(gradient: number, factor: number, factor2?: number): GPUParticleSystem {
         if (!this._dragGradients) {
             this._dragGradients = [];
         }
 
-        this._addFactorGradient(this._dragGradients, gradient, factor);
-        this._refreshFactorGradient(this._dragGradients, "_dragGradientsTexture", true);
+        this._addFactorGradient(this._dragGradients, gradient, factor, factor2);
+        this._refreshFactorGradient(this._dragGradients, "_dragGradientsTexture");
 
         this._releaseBuffers();
 
@@ -995,6 +1001,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
             capacity: number;
             randomTextureSize: number;
             emitRateControl: boolean;
+            maxAttractors: number;
         }>,
         sceneOrEngine: Scene | AbstractEngine,
         customEffect: Nullable<Effect> = null,
@@ -1059,6 +1066,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         this._currentActiveCount = 0;
         this._isAnimationSheetEnabled = isAnimationSheetEnabled;
         this._emitRateControl = !!options.emitRateControl;
+        this.maxAttractors = options.maxAttractors ?? 8;
 
         this.particleEmitterType = new BoxParticleEmitter();
 
@@ -1446,6 +1454,11 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
             defines += "\n#define LOCAL";
         }
 
+        if (this._attractors.length > 0) {
+            defines += "\n#define ATTRACTORS";
+            defines += "\n#define MAX_ATTRACTORS " + this.maxAttractors;
+        }
+
         if (this._emitRateControl) {
             defines += "\n#define EMITRATECTRL";
         }
@@ -1661,17 +1674,30 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
             return;
         }
 
-        const data = new Float32Array(this._rawTextureWidth);
+        const data = new Float32Array(this._rawTextureWidth * 2);
 
         for (let x = 0; x < this._rawTextureWidth; x++) {
             const ratio = x / this._rawTextureWidth;
 
             GradientHelper.GetCurrentGradient(ratio, factorGradients, (currentGradient, nextGradient, scale) => {
-                data[x] = Lerp((<FactorGradient>currentGradient).factor1, (<FactorGradient>nextGradient).factor1, scale);
+                const cg = currentGradient as FactorGradient;
+                const ng = nextGradient as FactorGradient;
+                data[x * 2] = Lerp(cg.factor1, ng.factor1, scale);
+                data[x * 2 + 1] = Lerp(cg.factor2 ?? cg.factor1, ng.factor2 ?? ng.factor1, scale);
             });
         }
 
-        (<any>this)[textureName] = RawTexture.CreateRTexture(data, this._rawTextureWidth, 1, this._scene || this._engine, false, false, Constants.TEXTURE_NEAREST_SAMPLINGMODE);
+        (<any>this)[textureName] = new RawTexture(
+            data,
+            this._rawTextureWidth,
+            1,
+            Constants.TEXTUREFORMAT_RG,
+            this._scene || this._engine,
+            false,
+            false,
+            Constants.TEXTURE_NEAREST_SAMPLINGMODE,
+            Constants.TEXTURETYPE_FLOAT
+        );
         (<any>this)[textureName].name = textureName.substring(1);
     }
 
@@ -1865,6 +1891,29 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
 
         if (!this.isLocal) {
             this._updateBuffer.setMatrix("emitterWM", emitterWM);
+        }
+
+        if (this._attractors.length > 0) {
+            this._updateBuffer.setInt("attractorCount", this._attractors.length);
+
+            // Compute inverse world matrix once for all attractors when in local space
+            let invWorld: Matrix | undefined;
+            if (this.isLocal) {
+                invWorld = TmpVectors.Matrix[1];
+                emitterWM!.invertToRef(invWorld);
+            }
+
+            for (let i = 0; i < this._attractors.length; i++) {
+                const attractor = this._attractors[i];
+                const name = "attractorPositionAndStrength[" + i + "]";
+                if (invWorld) {
+                    const localPos = TmpVectors.Vector3[0];
+                    Vector3.TransformCoordinatesToRef(attractor.position, invWorld, localPos);
+                    this._updateBuffer.setFloat4(name, localPos.x, localPos.y, localPos.z, attractor.strength);
+                } else {
+                    this._updateBuffer.setFloat4(name, attractor.position.x, attractor.position.y, attractor.position.z, attractor.strength);
+                }
+            }
         }
 
         this._platform.updateParticleBuffer(this._targetIndex, this._targetBuffer, this._currentActiveCount);
@@ -2216,6 +2265,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         serializationObject.activeParticleCount = this.activeParticleCount;
         serializationObject.randomTextureSize = this._randomTextureSize;
         serializationObject.emitRateControl = this._emitRateControl;
+        serializationObject.maxAttractors = this.maxAttractors;
         serializationObject.customShader = this.customShader;
 
         serializationObject.preventAutoStart = this.preventAutoStart;
@@ -2223,6 +2273,14 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
 
         if (this.metadata) {
             serializationObject.metadata = this.metadata;
+        }
+
+        // Attractors
+        if (this._attractors.length > 0) {
+            serializationObject.attractors = [];
+            for (const attractor of this._attractors) {
+                serializationObject.attractors.push(attractor.serialize());
+            }
         }
 
         return serializationObject;
@@ -2255,6 +2313,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
                 capacity: capacity || parsedParticleSystem.capacity,
                 randomTextureSize: parsedParticleSystem.randomTextureSize,
                 emitRateControl: parsedParticleSystem.emitRateControl,
+                maxAttractors: parsedParticleSystem.maxAttractors,
             },
             sceneOrEngine,
             null,
@@ -2300,6 +2359,16 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
 
         if (parsedParticleSystem.metadata) {
             particleSystem.metadata = parsedParticleSystem.metadata;
+        }
+
+        // Attractors
+        if (parsedParticleSystem.attractors) {
+            for (const attractorData of parsedParticleSystem.attractors) {
+                const attractor = new Attractor();
+                attractor.position = Vector3.FromArray(attractorData.position);
+                attractor.strength = attractorData.strength;
+                particleSystem.addAttractor(attractor);
+            }
         }
 
         if (!doNotStart && !particleSystem.preventAutoStart) {

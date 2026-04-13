@@ -1,7 +1,7 @@
-import type { Nullable } from "../types";
+import { type Nullable } from "../types";
 import { Matrix } from "../Maths/math.vector";
-import type { _IAnimationState } from "./animation";
 import {
+    type _IAnimationState,
     Animation,
     _StaticOffsetValueColor3,
     _StaticOffsetValueColor4,
@@ -10,10 +10,10 @@ import {
     _StaticOffsetValueVector2,
     _StaticOffsetValueVector3,
 } from "./animation";
-import type { AnimationEvent } from "./animationEvent";
-import type { Animatable } from "./animatable";
-import type { Scene } from "../scene";
-import type { IAnimationKey } from "./animationKey";
+import { type AnimationEvent } from "./animationEvent";
+import { type Animatable } from "./animatable";
+import { type Scene } from "../scene";
+import { type IAnimationKey } from "./animationKey";
 
 /**
  * Defines a runtime animation

@@ -1,4 +1,4 @@
-import type { GeospatialCamera } from "../../Cameras/geospatialCamera";
+import { type GeospatialCamera } from "../../Cameras/geospatialCamera";
 import { CameraInputTypes } from "../../Cameras/cameraInputsManager";
 import { BaseCameraMouseWheelInput } from "./BaseCameraMouseWheelInput";
 

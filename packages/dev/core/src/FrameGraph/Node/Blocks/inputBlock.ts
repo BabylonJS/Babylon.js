@@ -1,15 +1,15 @@
-import type {
-    NodeRenderGraphConnectionPoint,
-    Scene,
-    FrameGraph,
-    NodeRenderGraphBuildState,
-    Camera,
-    InternalTexture,
-    Nullable,
-    FrameGraphTextureCreationOptions,
-    FrameGraphTextureHandle,
-    FrameGraphObjectList,
-    IShadowLight,
+import {
+    type NodeRenderGraphConnectionPoint,
+    type Scene,
+    type FrameGraph,
+    type NodeRenderGraphBuildState,
+    type Camera,
+    type InternalTexture,
+    type Nullable,
+    type FrameGraphTextureCreationOptions,
+    type FrameGraphTextureHandle,
+    type FrameGraphObjectList,
+    type IShadowLight,
 } from "core/index";
 import { Observable } from "../../../Misc/observable";
 import { NodeRenderGraphBlockConnectionPointTypes } from "../Types/nodeRenderGraphTypes";

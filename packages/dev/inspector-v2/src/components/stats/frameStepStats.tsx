@@ -1,15 +1,13 @@
-import type { Scene } from "core/index";
+import { type Scene } from "core/index";
 
-import type { FunctionComponent } from "react";
-
-import { useCallback } from "react";
+import { type FunctionComponent, useCallback } from "react";
 
 import { EngineInstrumentation } from "core/Instrumentation/engineInstrumentation";
 import { SceneInstrumentation } from "core/Instrumentation/sceneInstrumentation";
 
-import { useObservableState } from "../../hooks/observableHooks";
+import { useObservableState } from "shared-ui-components/modularTool/hooks/observableHooks";
 import { usePollingObservable } from "../../hooks/pollingHooks";
-import { useResource } from "../../hooks/resourceHooks";
+import { useResource } from "shared-ui-components/modularTool/hooks/resourceHooks";
 
 // TODO: Dynamically import the right engine.query module based on the type of engine?
 import "core/Engines/AbstractEngine/abstractEngine.timeQuery";

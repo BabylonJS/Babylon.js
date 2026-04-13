@@ -1,10 +1,9 @@
-import type { FunctionComponent } from "react";
+import { type FunctionComponent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { makeStyles, tokens } from "@fluentui/react-components";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { useCurveEditor } from "../curveEditorContext";
-import { useObservableState } from "../../../hooks/observableHooks";
+import { useObservableState } from "shared-ui-components/modularTool/hooks/observableHooks";
 
 const useStyles = makeStyles({
     root: {

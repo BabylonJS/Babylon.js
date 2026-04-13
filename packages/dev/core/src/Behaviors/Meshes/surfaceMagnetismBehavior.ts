@@ -1,13 +1,12 @@
-import type { PickingInfo } from "../../Collisions/pickingInfo";
-import type { PointerInfo } from "../../Events/pointerEvents";
-import { PointerEventTypes } from "../../Events/pointerEvents";
+import { type PickingInfo } from "../../Collisions/pickingInfo";
+import { type PointerInfo, PointerEventTypes } from "../../Events/pointerEvents";
 import { Quaternion, TmpVectors, Vector3 } from "../../Maths/math.vector";
-import type { AbstractMesh } from "../../Meshes/abstractMesh";
-import type { Mesh } from "../../Meshes/mesh";
-import type { Observer } from "../../Misc/observable";
-import type { Scene } from "../../scene";
-import type { Nullable } from "../../types";
-import type { Behavior } from "../behavior";
+import { type AbstractMesh } from "../../Meshes/abstractMesh";
+import { type Mesh } from "../../Meshes/mesh";
+import { type Observer } from "../../Misc/observable";
+import { type Scene } from "../../scene";
+import { type Nullable } from "../../types";
+import { type Behavior } from "../behavior";
 
 /**
  * A behavior that allows a transform node to stick to a surface position/orientation

@@ -1,7 +1,7 @@
-import type { Sound } from "./sound";
-import type { Analyser } from "./analyser";
-import type { Nullable } from "../types";
-import type { Scene } from "../scene";
+import { type Sound } from "./sound";
+import { type Analyser } from "./analyser";
+import { type Nullable } from "../types";
+import { type Scene } from "../scene";
 import { EngineStore } from "../Engines/engineStore";
 import { AbstractEngine } from "core/Engines/abstractEngine";
 

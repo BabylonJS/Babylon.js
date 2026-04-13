@@ -1,13 +1,13 @@
 import { InternalTexture, InternalTextureSource } from "../../../Materials/Textures/internalTexture";
-import type { IMultiRenderTargetOptions } from "../../../Materials/Textures/multiRenderTarget";
+import { type IMultiRenderTargetOptions } from "../../../Materials/Textures/multiRenderTarget";
 import { Logger } from "../../../Misc/logger";
-import type { Nullable } from "../../../types";
+import { type Nullable } from "../../../types";
 import { Constants } from "../../constants";
-import type { TextureSize } from "../../../Materials/Textures/textureCreationOptions";
-import type { RenderTargetWrapper } from "../../renderTargetWrapper";
+import { type TextureSize } from "../../../Materials/Textures/textureCreationOptions";
+import { type RenderTargetWrapper } from "../../renderTargetWrapper";
 import { WebGPUEngine } from "../../webgpuEngine";
-import type { WebGPURenderTargetWrapper } from "../webgpuRenderTargetWrapper";
-import type { WebGPUHardwareTexture } from "../webgpuHardwareTexture";
+import { type WebGPURenderTargetWrapper } from "../webgpuRenderTargetWrapper";
+import { type WebGPUHardwareTexture } from "../webgpuHardwareTexture";
 declare module "../../abstractEngine" {
     // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface AbstractEngine {

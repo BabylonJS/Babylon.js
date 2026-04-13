@@ -1,8 +1,7 @@
 import { DataStorage } from "core/Misc/dataStorage.js";
 import * as react from "react";
 import downArrow from "../assets/imgs/downArrow.svg";
-import type { ContextMenuItem } from "shared-ui-components/fluent/primitives/contextMenu";
-import { ContextMenu } from "shared-ui-components/fluent/primitives/contextMenu";
+import { type ContextMenuItem, ContextMenu } from "shared-ui-components/fluent/primitives/contextMenu";
 import { FluentToolWrapper } from "shared-ui-components/fluent/hoc/fluentToolWrapper";
 
 interface ILineContainerComponentProps {

@@ -1,4 +1,13 @@
-import type { Scene, AbstractEngine, FrameGraphTask, Nullable, NodeRenderGraph, IDisposable, Camera, FrameGraphObjectRendererTask } from "core/index";
+import {
+    type Scene,
+    type AbstractEngine,
+    type FrameGraphTask,
+    type Nullable,
+    type NodeRenderGraph,
+    type IDisposable,
+    type Camera,
+    type FrameGraphObjectRendererTask,
+} from "core/index";
 import { FrameGraphPass } from "./Passes/pass";
 import { FrameGraphRenderPass } from "./Passes/renderPass";
 import { FrameGraphObjectListPass } from "./Passes/objectListPass";
@@ -317,6 +326,7 @@ export class FrameGraph implements IDisposable {
         return await new Promise((resolve, reject) => {
             this._whenReadyAsyncCancel = _RetryWithInterval(
                 () => {
+                    firstNotReadyTask = null;
                     let ready = this._renderContext._isReady();
                     for (const task of this._tasks) {
                         const taskIsReady = task.isReady();

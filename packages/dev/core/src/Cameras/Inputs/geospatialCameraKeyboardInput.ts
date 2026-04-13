@@ -1,15 +1,13 @@
-import type { Nullable } from "../../types";
+import { type Nullable } from "../../types";
 import { serialize } from "../../Misc/decorators";
-import type { Observer } from "../../Misc/observable";
-import type { Scene } from "../../scene";
-import type { GeospatialCamera } from "../geospatialCamera";
-import type { ICameraInput } from "../cameraInputsManager";
-import { CameraInputTypes } from "../cameraInputsManager";
-import type { KeyboardInfo } from "../../Events/keyboardEvents";
-import { KeyboardEventTypes } from "../../Events/keyboardEvents";
+import { type Observer } from "../../Misc/observable";
+import { type Scene } from "../../scene";
+import { type GeospatialCamera } from "../geospatialCamera";
+import { type ICameraInput, CameraInputTypes } from "../cameraInputsManager";
+import { type KeyboardInfo, KeyboardEventTypes } from "../../Events/keyboardEvents";
 import { Tools } from "../../Misc/tools";
-import type { AbstractEngine } from "../../Engines/abstractEngine";
-import type { InputConditions } from "../cameraInteractions";
+import { type AbstractEngine } from "../../Engines/abstractEngine";
+import { type InputConditions } from "../cameraInteractions";
 
 /**
  * Manage the keyboard inputs to control the movement of a geospatial camera.

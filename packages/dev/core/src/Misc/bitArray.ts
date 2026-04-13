@@ -3,7 +3,7 @@ function GetByteIndex(bitIndex: number): number {
 }
 
 function GetBitMask(bitIndex: number): number {
-    return 1 << bitIndex % 8;
+    return 1 << (bitIndex % 8);
 }
 
 /**

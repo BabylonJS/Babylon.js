@@ -1,6 +1,6 @@
-import type { Nullable, AbstractEngine, EffectWrapperCreationOptions, Camera } from "core/index";
+import { type Nullable, type AbstractEngine, type EffectWrapperCreationOptions, type Camera } from "core/index";
 import { EffectWrapper } from "../Materials/effectRenderer";
-import { Engine } from "../Engines/engine";
+import { EngineStore } from "../Engines/engineStore";
 import { TmpVectors } from "../Maths/math.vector";
 
 /**
@@ -35,7 +35,7 @@ export class ThinSSRBlurCombinerPostProcess extends EffectWrapper {
         super({
             ...options,
             name,
-            engine: engine || Engine.LastCreatedEngine!,
+            engine: engine || EngineStore.LastCreatedEngine!,
             useShaderStore: true,
             useAsPostProcess: true,
             fragmentShader: ThinSSRBlurCombinerPostProcess.FragmentUrl,

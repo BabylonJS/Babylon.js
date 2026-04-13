@@ -1,10 +1,10 @@
-import type { Nullable } from "../types";
+import { type Nullable } from "../types";
 import { Color4 } from "../Maths/math.color";
-import type { Mesh } from "../Meshes/mesh";
-import type { SubMesh } from "../Meshes/subMesh";
+import { type Mesh } from "../Meshes/mesh";
+import { type SubMesh } from "../Meshes/subMesh";
 import { VertexBuffer } from "../Buffers/buffer";
-import type { SmartArray } from "../Misc/smartArray";
-import type { Scene } from "../scene";
+import { type SmartArray } from "../Misc/smartArray";
+import { type Scene } from "../scene";
 import { Texture } from "../Materials/Textures/texture";
 import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import { Camera } from "../Cameras/camera";
@@ -15,14 +15,14 @@ import "../Shaders/depth.vertex";
 import { _WarnImport } from "../Misc/devTools";
 import { AddClipPlaneUniforms, BindClipPlane, PrepareStringDefinesForClipPlanes } from "../Materials/clipPlaneMaterialHelper";
 
-import type { Material } from "../Materials/material";
-import type { AbstractMesh } from "../Meshes/abstractMesh";
+import { type Material } from "../Materials/material";
+import { type AbstractMesh } from "../Meshes/abstractMesh";
 import { BindBonesParameters, BindMorphTargetParameters, PrepareDefinesAndAttributesForMorphTargets, PushAttributesForInstances } from "../Materials/materialHelper.functions";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { EffectFallbacks } from "core/Materials/effectFallbacks";
-import type { IEffectCreationOptions } from "core/Materials/effect";
-import type { GaussianSplattingMaterial } from "../Materials/GaussianSplatting/gaussianSplattingMaterial";
-import type { GaussianSplattingMesh } from "../Meshes/GaussianSplatting/gaussianSplattingMesh";
+import { type IEffectCreationOptions } from "core/Materials/effect";
+import { type GaussianSplattingMaterial } from "../Materials/GaussianSplatting/gaussianSplattingMaterial";
+import { type GaussianSplattingMesh } from "../Meshes/GaussianSplatting/gaussianSplattingMesh";
 
 /**
  * This represents a depth renderer in Babylon.
@@ -200,6 +200,14 @@ export class DepthRenderer {
             if ((preWarm || refreshRate === 0) && mesh.subMeshes) {
                 for (let i = 0; i < mesh.subMeshes.length; ++i) {
                     const subMesh = mesh.subMeshes[i];
+                    const material = subMesh.getMaterial();
+                    const effectiveMesh = subMesh.getEffectiveMesh();
+
+                    // Skip submeshes that won't be rendered by the depth renderer (mirroring renderSubMesh logic)
+                    if (!material || effectiveMesh.infiniteDistance || material.disableDepthWrite || subMesh.verticesCount === 0) {
+                        continue;
+                    }
+
                     const renderingMesh = subMesh.getRenderingMesh();
 
                     const batch = renderingMesh._getInstancesRenderList(subMesh._id, !!subMesh.getReplacementMesh());
@@ -260,7 +268,8 @@ export class DepthRenderer {
                 subMesh._renderId = scene.getRenderId();
 
                 let renderingMaterial = effectiveMesh._internalAbstractMeshDataInfo._materialForRenderPass?.[engine.currentRenderPassId];
-                if (effectiveMesh.getClassName() === "GaussianSplattingMesh") {
+                const gsClassName = effectiveMesh.getClassName();
+                if (gsClassName === "GaussianSplattingMesh") {
                     const cachedAlphaBlendedDepth = this._alphaBlendedDepthMaterialCache.get(effectiveMesh.uniqueId);
                     const compoundMesh = (effectiveMesh as GaussianSplattingMesh).isCompound;
                     // Recreate material if it doesn't exist or if alphaBlendedDepth changed
@@ -559,7 +568,7 @@ export class DepthRenderer {
             const uniforms = [
                 "world",
                 "mBones",
-                "boneTextureWidth",
+                "boneTextureInfo",
                 "pointSize",
                 "viewProjection",
                 "view",

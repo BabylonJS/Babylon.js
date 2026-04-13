@@ -1,5 +1,4 @@
-import type { PropsWithChildren } from "react";
-import { useContext, useEffect, useRef } from "react";
+import { type PropsWithChildren, useContext, useEffect, useRef } from "react";
 import * as styles from "./splitContainer.module.scss";
 import { ControlledSize, SplitDirection, SplitContext } from "./splitContext";
 import { ToolContext } from "shared-ui-components/fluent/hoc/fluentToolWrapper";
@@ -289,8 +288,9 @@ export const SplitContainer: React.FC<PropsWithChildren<ISplitContainerProps>> =
 
         if (size !== undefined) {
             const sizeString = `${size | 0}px`;
+            const alreadySet = props.direction === SplitDirection.Horizontal ? childArray[current].style.width : childArray[current].style.height;
 
-            if (!childArray[current].style.width) {
+            if (!alreadySet) {
                 if (props.direction === SplitDirection.Horizontal) {
                     childArray[current].style.width = sizeString;
                 } else {

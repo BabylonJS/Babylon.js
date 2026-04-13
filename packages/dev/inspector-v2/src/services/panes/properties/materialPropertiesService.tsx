@@ -1,6 +1,6 @@
-import type { ServiceDefinition } from "../../../modularity/serviceDefinition";
-import type { ISelectionService } from "../../selectionService";
-import type { IPropertiesService } from "./propertiesService";
+import { type ServiceDefinition } from "shared-ui-components/modularTool/modularity/serviceDefinition";
+import { type ISelectionService, SelectionServiceIdentity } from "../../selectionService";
+import { type IPropertiesService, PropertiesServiceIdentity } from "./propertiesService";
 
 import { Material } from "core/Materials/material";
 import { MultiMaterial } from "core/Materials/multiMaterial";
@@ -17,6 +17,7 @@ import {
     OpenPBRMaterialBaseProperties,
     OpenPBRMaterialSpecularProperties,
     OpenPBRMaterialTransmissionProperties,
+    OpenPBRMaterialSubsurfaceProperties,
     OpenPBRMaterialCoatProperties,
     OpenPBRMaterialFuzzProperties,
     OpenPBRMaterialEmissionProperties,
@@ -47,8 +48,6 @@ import {
     StandardMaterialTexturesProperties,
     StandardMaterialTransparencyProperties,
 } from "../../../components/properties/materials/standardMaterialProperties";
-import { SelectionServiceIdentity } from "../../selectionService";
-import { PropertiesServiceIdentity } from "./propertiesService";
 
 export const MaterialPropertiesServiceDefinition: ServiceDefinition<[], [IPropertiesService, ISelectionService]> = {
     friendlyName: "Material Properties",
@@ -197,6 +196,10 @@ export const MaterialPropertiesServiceDefinition: ServiceDefinition<[], [IProper
                 {
                     section: "OpenPBR",
                     component: ({ context }) => <OpenPBRMaterialTransmissionProperties material={context} />,
+                },
+                {
+                    section: "OpenPBR",
+                    component: ({ context }) => <OpenPBRMaterialSubsurfaceProperties material={context} />,
                 },
                 {
                     section: "OpenPBR",

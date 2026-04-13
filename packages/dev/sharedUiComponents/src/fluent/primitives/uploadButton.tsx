@@ -1,8 +1,6 @@
-import type { FunctionComponent } from "react";
-import { useRef } from "react";
+import { type FunctionComponent, useRef } from "react";
 import { ArrowUploadRegular } from "@fluentui/react-icons";
-import { Button } from "./button";
-import type { ButtonProps } from "./button";
+import { Button, type ButtonProps } from "./button";
 
 type UploadButtonProps = Omit<ButtonProps, "onClick" | "icon"> & {
     /**

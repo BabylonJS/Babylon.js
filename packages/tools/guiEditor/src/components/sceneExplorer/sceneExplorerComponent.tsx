@@ -1,17 +1,17 @@
 import * as React from "react";
 
-import type { Nullable } from "core/types";
-import type { Observer } from "core/Misc/observable";
-import type { IExplorerExtensibilityGroup } from "core/Debug/debugLayer";
-import type { Scene } from "core/scene";
+import { type Nullable } from "core/types";
+import { type Observer } from "core/Misc/observable";
+import { type IExplorerExtensibilityGroup } from "core/Debug/debugLayer";
+import { type Scene } from "core/scene";
 import { TreeItemComponent } from "./treeItemComponent";
 import { Tools } from "../../tools";
-import type { GlobalState } from "../../globalState";
-import type { PropertyChangedEvent } from "shared-ui-components/propertyChangedEvent";
+import { type GlobalState } from "../../globalState";
+import { type PropertyChangedEvent } from "shared-ui-components/propertyChangedEvent";
 
 import "./sceneExplorer.scss";
 import { Logger } from "core/Misc/logger";
-import type { PropsWithChildren } from "react";
+import { type PropsWithChildren } from "react";
 
 interface ISceneExplorerFilterComponentProps {
     onFilter: (filter: string) => void;

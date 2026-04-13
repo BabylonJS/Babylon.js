@@ -4,8 +4,9 @@ import { ViewerElement } from "viewer/viewerElement";
 
 // if running in the CI we need to use the babylon snapshot when loading the tools
 const snapshot = process.env.SNAPSHOT ? "?snapshot=" + process.env.SNAPSHOT : "";
+const cdnPort = ":" + (process.env.CDN_PORT || 1337);
 const viewerUrl =
-    (process.env.VIEWER_BASE_URL || getGlobalConfig().baseUrl.replace(":1337", process.env.VIEWER_PORT || ":1342")) + "/packages/tools/viewer/test/apps/web/test.html" + snapshot;
+    (process.env.VIEWER_BASE_URL || getGlobalConfig().baseUrl.replace(cdnPort, process.env.VIEWER_PORT || ":1342")) + "/packages/tools/viewer/test/apps/web/test.html" + snapshot;
 
 let pageErrors: Error[];
 let consoleErrors: string[];
@@ -173,6 +174,7 @@ test('selected-animation="n"', async ({ page }) => {
         if (viewerDetails?.model) {
             return viewerDetails.viewer.selectedAnimation;
         }
+        return undefined;
     }, viewerElementHandle);
 
     expect(await selectedAnimation.jsonValue()).toEqual(1);
@@ -196,6 +198,7 @@ test('camera-orbit="a b r"', async ({ page }) => {
         if (viewerDetails?.model) {
             return [viewerDetails.camera.alpha, viewerDetails.camera.beta, viewerDetails.camera.radius];
         }
+        return undefined;
     }, viewerElementHandle);
 
     expect(await cameraPose.jsonValue()).toEqual([1, 2, 0.1]);
@@ -222,6 +225,7 @@ test('camera-target="x y z"', async ({ page }) => {
         if (viewerDetails?.model) {
             return [viewerDetails.camera.target.x, viewerDetails.camera.target.y, viewerDetails.camera.target.z];
         }
+        return undefined;
     }, viewerElementHandle);
 
     expect(await cameraPose.jsonValue()).toEqual([1, 2, 3]);
@@ -245,6 +249,7 @@ test('tone-mapping="none"', async ({ page }) => {
         if (viewerDetails?.model) {
             return viewerDetails.viewer.postProcessing.toneMapping;
         }
+        return undefined;
     }, viewerElementHandle);
 
     expect(await toneMapping.jsonValue()).toEqual("none");
@@ -271,6 +276,7 @@ test('material-variant="name"', async ({ page }) => {
         if (viewerDetails?.model) {
             return viewerDetails.viewer.selectedMaterialVariant;
         }
+        return undefined;
     }, viewerElementHandle);
 
     expect(await materialVariant.jsonValue()).toEqual("street");
@@ -456,6 +462,26 @@ test("invalid model source fires modelerror", async ({ page }) => {
     });
 
     expect(errorFired).toBe(true);
+});
+
+// ============================================================
+// Gaussian Splatting
+// ============================================================
+
+test("load SPZ gaussian splat model", async ({ page }) => {
+    test.setTimeout(60000);
+    await attachViewerElement(
+        page,
+        `
+        <babylon-viewer
+            source="https://assets.babylonjs.com/splats/hornedlizard.spz"
+        >
+        </babylon-viewer>
+        `
+    );
+
+    await waitForModelLoaded(page);
+    await expectScreenshotMatch(page, "viewer-load-spz-splat.png");
 });
 
 // ============================================================

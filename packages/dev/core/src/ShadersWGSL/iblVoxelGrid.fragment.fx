@@ -1,4 +1,4 @@
-var voxel_storage: texture_storage_3d<rgba8unorm, write>;
+var voxel_storage: texture_storage_3d<r8unorm, write>;
 varying vNormalizedPosition: vec3f;
 flat varying f_swizzle: i32;
 

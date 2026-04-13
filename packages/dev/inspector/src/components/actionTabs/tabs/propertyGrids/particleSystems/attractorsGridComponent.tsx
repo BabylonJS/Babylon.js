@@ -1,9 +1,9 @@
 import * as React from "react";
-import type { GlobalState } from "../../../../globalState";
-import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
+import { type GlobalState } from "../../../../globalState";
+import { type LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 import { LinkButtonComponent } from "shared-ui-components/lines/linkButtonComponent";
 import { faTrash } from "@fortawesome/free-solid-svg-icons";
-import type { ParticleSystem } from "core/Particles/particleSystem";
+import { type ParticleSystem } from "core/Particles/particleSystem";
 import { Attractor } from "core/Particles/attractor";
 import { AttractorGridComponent } from "./attractorGridComponent";
 import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent";
@@ -12,10 +12,10 @@ import { LineContainerComponent } from "shared-ui-components/lines/lineContainer
 import { Color3, Color4 } from "core/Maths/math.color";
 import { StandardMaterial } from "core/Materials/standardMaterial";
 import { CreateSphere } from "core/Meshes/Builders/sphereBuilder";
-import type { Nullable } from "core/types";
+import { type Nullable } from "core/types";
 import { GizmoManager } from "core/Gizmos/gizmoManager";
-import type { Observer } from "core/Misc/observable";
-import type { Scene } from "core/scene";
+import { type Observer } from "core/Misc/observable";
+import { type Scene } from "core/scene";
 import { FontAsset } from "addons/msdfText/fontAsset";
 import { TextRenderer } from "addons/msdfText/textRenderer";
 import { Matrix } from "core/Maths/math.vector";

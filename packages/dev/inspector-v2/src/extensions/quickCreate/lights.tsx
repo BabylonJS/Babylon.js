@@ -3,14 +3,13 @@ import { PointLight } from "core/Lights/pointLight";
 import { DirectionalLight } from "core/Lights/directionalLight";
 import { SpotLight } from "core/Lights/spotLight";
 import { Vector3 } from "core/Maths/math.vector";
-import type { Scene } from "core/scene";
-import { useState } from "react";
-import type { FunctionComponent } from "react";
+import { type Scene } from "core/scene";
+import { useState, type FunctionComponent } from "react";
 import { TextInputPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/inputPropertyLine";
 import { SpinButtonPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/spinButtonPropertyLine";
 import { Vector3PropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/vectorPropertyLine";
 import { QuickCreateSection, QuickCreateItem } from "./quickCreateLayout";
-import type { ISelectionService } from "../../services/selectionService";
+import { type ISelectionService } from "../../services/selectionService";
 
 type LightsContentProps = {
     scene: Scene;

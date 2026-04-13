@@ -1,4 +1,4 @@
-import type { NavMesh, NavMeshCreateParams, OffMeshConnectionParams, TileCache, UnsignedCharArray, UnsignedShortArray } from "@recast-navigation/core";
+import { type NavMesh, type NavMeshCreateParams, type OffMeshConnectionParams, type TileCache, type UnsignedCharArray, type UnsignedShortArray } from "@recast-navigation/core";
 
 import { GetRecast } from "../factory/common";
 

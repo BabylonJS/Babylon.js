@@ -1,29 +1,27 @@
 import { Constants } from "../../Engines/constants";
 import { EngineStore } from "../../Engines/engineStore";
 import { Matrix, Vector3, Vector4, Quaternion } from "../../Maths/math.vector";
-import type { Mesh } from "../../Meshes/mesh";
-import type { Scene } from "../../scene";
+import { type Mesh } from "../../Meshes/mesh";
+import { type Scene } from "../../scene";
 import { Texture } from "../../Materials/Textures/texture";
 import { Logger } from "../../Misc/logger";
 import { _IblShadowsVoxelRenderer } from "./iblShadowsVoxelRenderer";
 import { _IblShadowsVoxelTracingPass } from "./iblShadowsVoxelTracingPass";
-import type { WebGPUEngine } from "../../Engines/webgpuEngine";
-import { PostProcess } from "../../PostProcesses/postProcess";
-import type { PostProcessOptions } from "../../PostProcesses/postProcess";
+import { type WebGPUEngine } from "../../Engines/webgpuEngine";
+import { PostProcess, type PostProcessOptions } from "../../PostProcesses/postProcess";
 import { _IblShadowsSpatialBlurPass } from "./iblShadowsSpatialBlurPass";
 import { _IblShadowsAccumulationPass } from "./iblShadowsAccumulationPass";
 import { PostProcessRenderPipeline } from "../../PostProcesses/RenderPipeline/postProcessRenderPipeline";
 import { PostProcessRenderEffect } from "core/PostProcesses/RenderPipeline/postProcessRenderEffect";
-import type { Camera } from "core/Cameras/camera";
+import { type Camera } from "core/Cameras/camera";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
-import { GeometryBufferRenderer } from "core/Rendering/geometryBufferRenderer";
+import { GeometryBufferRenderer, type IGeometryBufferTextureTypeAndFormat } from "core/Rendering/geometryBufferRenderer";
 import { RawTexture } from "core/Materials/Textures/rawTexture";
 import { RawTexture3D } from "core/Materials/Textures/rawTexture3D";
-import { Engine } from "core/Engines/engine";
 import { IBLShadowsPluginMaterial } from "./iblShadowsPluginMaterial";
 import { PBRBaseMaterial } from "core/Materials/PBR/pbrBaseMaterial";
 import { StandardMaterial } from "core/Materials/standardMaterial";
-import type { Material } from "core/Materials/material";
+import { type Material } from "core/Materials/material";
 import { Observable } from "core/Misc/observable";
 import "../geometryBufferRendererSceneComponent";
 import "../iblCdfGeneratorSceneComponent";
@@ -426,58 +424,6 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
     }
 
     /**
-     * This displays the voxel grid in slices spread across the screen.
-     * It also displays what slices of the model are stored in each layer
-     * of the voxel grid. Each red stripe represents one layer while each gradient
-     * (from bright red to black) represents the layers rendered in a single draw call.
-     */
-    public get voxelDebugEnabled(): boolean {
-        return this._voxelRenderer?.voxelDebugEnabled;
-    }
-
-    public set voxelDebugEnabled(enabled: boolean) {
-        if (!this._voxelRenderer) {
-            return;
-        }
-        if (enabled && !this.allowDebugPasses) {
-            Logger.Warn("Can't enable voxel debug view without setting allowDebugPasses to true.");
-            return;
-        }
-        this._voxelRenderer.voxelDebugEnabled = enabled;
-        if (enabled) {
-            this._enableEffect(this._voxelRenderer.debugPassName, this.cameras);
-        } else {
-            this._disableEffect(this._voxelRenderer.debugPassName, this.cameras);
-        }
-    }
-
-    /**
-     * When using tri-planar voxelization (the default), this value can be used to
-     * display only the voxelization result for that axis. z-axis = 0, y-axis = 1, x-axis = 2
-     */
-    public get voxelDebugAxis(): number {
-        return this._voxelRenderer?.voxelDebugAxis;
-    }
-
-    public set voxelDebugAxis(axisNum: number) {
-        if (!this._voxelRenderer) {
-            return;
-        }
-        this._voxelRenderer.voxelDebugAxis = axisNum;
-    }
-
-    /**
-     * Displays a given mip of the voxel grid. `voxelDebugAxis` must be undefined in this
-     * case because we only generate mips for the combined voxel grid.
-     */
-    public set voxelDebugDisplayMip(mipNum: number) {
-        if (!this._voxelRenderer) {
-            return;
-        }
-        this._voxelRenderer.setDebugMipNumber(mipNum);
-    }
-
-    /**
      * Display the debug view for just the shadow samples taken this frame.
      */
     public get voxelTracingDebugEnabled(): boolean {
@@ -792,15 +738,31 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
         this._cameras = cameras || [scene.activeCamera!];
         // Create the dummy textures to be used when the pipeline is not ready
         const blackPixels = new Uint8Array([0, 0, 0, 255]);
-        this._dummyTexture2d = new RawTexture(blackPixels, 1, 1, Engine.TEXTUREFORMAT_RGBA, scene, false);
-        this._dummyTexture3d = new RawTexture3D(blackPixels, 1, 1, 1, Engine.TEXTUREFORMAT_RGBA, scene, false);
+        this._dummyTexture2d = new RawTexture(blackPixels, 1, 1, Constants.TEXTUREFORMAT_RGBA, scene, false);
+        this._dummyTexture3d = new RawTexture3D(blackPixels, 1, 1, 1, Constants.TEXTUREFORMAT_RGBA, scene, false);
 
         // Setup the geometry buffer target formats
-        const textureTypesAndFormats: { [key: number]: { textureType: number; textureFormat: number } } = {};
-        textureTypesAndFormats[GeometryBufferRenderer.SCREENSPACE_DEPTH_TEXTURE_TYPE] = { textureFormat: Constants.TEXTUREFORMAT_R, textureType: Constants.TEXTURETYPE_FLOAT };
-        textureTypesAndFormats[GeometryBufferRenderer.VELOCITY_LINEAR_TEXTURE_TYPE] = { textureFormat: Constants.TEXTUREFORMAT_RG, textureType: Constants.TEXTURETYPE_HALF_FLOAT };
-        textureTypesAndFormats[GeometryBufferRenderer.POSITION_TEXTURE_TYPE] = { textureFormat: Constants.TEXTUREFORMAT_RGBA, textureType: Constants.TEXTURETYPE_HALF_FLOAT };
-        textureTypesAndFormats[GeometryBufferRenderer.NORMAL_TEXTURE_TYPE] = { textureFormat: Constants.TEXTUREFORMAT_RGBA, textureType: Constants.TEXTURETYPE_HALF_FLOAT };
+        const textureTypesAndFormats: { [key: number]: IGeometryBufferTextureTypeAndFormat } = {};
+        textureTypesAndFormats[GeometryBufferRenderer.SCREENSPACE_DEPTH_TEXTURE_TYPE] = {
+            textureFormat: Constants.TEXTUREFORMAT_R,
+            textureType: Constants.TEXTURETYPE_FLOAT,
+            samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
+        };
+        textureTypesAndFormats[GeometryBufferRenderer.VELOCITY_LINEAR_TEXTURE_TYPE] = {
+            textureFormat: Constants.TEXTUREFORMAT_RG,
+            textureType: Constants.TEXTURETYPE_HALF_FLOAT,
+            samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
+        };
+        textureTypesAndFormats[GeometryBufferRenderer.POSITION_TEXTURE_TYPE] = {
+            textureFormat: Constants.TEXTUREFORMAT_RGBA,
+            textureType: Constants.TEXTURETYPE_HALF_FLOAT,
+            samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
+        };
+        textureTypesAndFormats[GeometryBufferRenderer.NORMAL_TEXTURE_TYPE] = {
+            textureFormat: Constants.TEXTUREFORMAT_RGBA,
+            textureType: Constants.TEXTURETYPE_HALF_FLOAT,
+            samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
+        };
         const geometryBufferRenderer = scene.enableGeometryBufferRenderer(undefined, Constants.TEXTUREFORMAT_DEPTH32_FLOAT, textureTypesAndFormats);
         if (!geometryBufferRenderer) {
             Logger.Error("Geometry buffer renderer is required for IBL shadows to work.");
@@ -925,7 +887,6 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
         }
 
         this._debugPasses.push(
-            { pass: this._voxelRenderer.getDebugPassPP(), enabled: this.voxelDebugEnabled },
             { pass: this._voxelTracingPass.getDebugPassPP(), enabled: this.voxelTracingDebugEnabled },
             { pass: this._spatialBlurPass.getDebugPassPP(), enabled: this.spatialBlurPassDebugEnabled },
             { pass: this._accumulationPass.getDebugPassPP(), enabled: this.accumulationPassDebugEnabled },
@@ -983,9 +944,6 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
         if (this.cdfDebugEnabled) {
             count++;
         }
-        if (this.voxelDebugEnabled) {
-            count++;
-        }
         if (this.voxelTracingDebugEnabled) {
             count++;
         }
@@ -1013,14 +971,6 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
 
         if (this.cdfDebugEnabled && this.scene.iblCdfGenerator) {
             this.scene.iblCdfGenerator.setDebugDisplayParams(x, y, cols, rows);
-            x -= width;
-            if (x <= -1) {
-                x = 0;
-                y -= height;
-            }
-        }
-        if (this.voxelDebugEnabled) {
-            this._voxelRenderer.setDebugDisplayParams(x, y, cols, rows);
             x -= width;
             if (x <= -1) {
                 x = 0;
@@ -1089,7 +1039,6 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
                 const matIndex = this._materialsWithRenderPlugin.indexOf(m);
                 if (matIndex !== -1) {
                     this._materialsWithRenderPlugin.splice(matIndex, 1);
-                    // eslint-disable-next-line @typescript-eslint/no-non-null-asserted-optional-chain
                     const plugin = m.pluginManager?.getPlugin<IBLShadowsPluginMaterial>(IBLShadowsPluginMaterial.Name)!;
                     plugin.isEnabled = false;
                 }

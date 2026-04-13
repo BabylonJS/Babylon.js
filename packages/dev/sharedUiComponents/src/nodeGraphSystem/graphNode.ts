@@ -1,21 +1,20 @@
-import type { Nullable } from "core/types";
-import type { Observer } from "core/Misc/observable";
-import type { GraphCanvasComponent } from "./graphCanvas";
+import { type Nullable } from "core/types";
+import { type Observer } from "core/Misc/observable";
+import { type GraphCanvasComponent } from "./graphCanvas";
 import * as React from "react";
 import { NodePort } from "./nodePort";
-import type { GraphFrame } from "./graphFrame";
-import type { NodeLink } from "./nodeLink";
-import type { StateManager } from "./stateManager";
-import type { ISelectionChangedOptions } from "./interfaces/selectionChangedOptions";
-import type { IDisplayManager } from "./interfaces/displayManager";
+import { type GraphFrame } from "./graphFrame";
+import { type NodeLink } from "./nodeLink";
+import { type StateManager } from "./stateManager";
+import { type ISelectionChangedOptions } from "./interfaces/selectionChangedOptions";
+import { type IDisplayManager } from "./interfaces/displayManager";
 import { PropertyLedger } from "./propertyLedger";
 import { DisplayLedger } from "./displayLedger";
-import type { INodeData } from "./interfaces/nodeData";
-import type { IPortData } from "./interfaces/portData";
+import { type INodeData } from "./interfaces/nodeData";
+import { type IPortData } from "./interfaces/portData";
 import * as localStyles from "./graphNode.module.scss";
 import * as commonStyles from "./common.module.scss";
-import type { IEditablePropertyListOption, IEditablePropertyOption, IPropertyDescriptionForEdition } from "core/Decorators/nodeDecorator";
-import { PropertyTypeForEdition } from "core/Decorators/nodeDecorator";
+import { type IEditablePropertyListOption, type IEditablePropertyOption, type IPropertyDescriptionForEdition, PropertyTypeForEdition } from "core/Decorators/nodeDecorator";
 import { ForceRebuild } from "./automaticProperties";
 import dropdownArrowIcon from "../imgs/dropdownArrowIcon_white.svg";
 import { BuildFloatUI } from "./tools";
@@ -37,6 +36,8 @@ export class GraphNode {
     private _comments: HTMLDivElement;
     private _executionTime: HTMLDivElement;
     private _selectionBorder: HTMLDivElement;
+    private _validationBadge: HTMLDivElement;
+    private _breakpointBadge: HTMLDivElement;
     private _inputPorts: NodePort[] = [];
     private _outputPorts: NodePort[] = [];
     private _links: NodeLink[] = [];
@@ -66,6 +67,44 @@ export class GraphNode {
 
     public removeClassFromVisual(className: string) {
         this._visual.classList.remove(className);
+    }
+
+    /**
+     * Shows a validation badge on the node header.
+     * @param severity - "error" | "warning" | null. Pass null to hide the badge.
+     * @param tooltip - tooltip text shown on hover.
+     */
+    public setValidationState(severity: "error" | "warning" | null, tooltip?: string): void {
+        if (!this._validationBadge) {
+            return;
+        }
+        this._validationBadge.classList.remove(localStyles["validationError"], localStyles["validationWarning"]);
+        if (!severity) {
+            this._validationBadge.style.display = "none";
+            this._validationBadge.title = "";
+            return;
+        }
+        this._validationBadge.style.display = "";
+        this._validationBadge.classList.add(severity === "error" ? localStyles["validationError"] : localStyles["validationWarning"]);
+        this._validationBadge.title = tooltip ?? "";
+    }
+
+    /**
+     * Shows or hides a breakpoint indicator on the node.
+     * @param active - true to show the red breakpoint dot, false to hide.
+     * @param paused - true if execution is currently paused on this breakpoint.
+     */
+    public setBreakpointState(active: boolean, paused: boolean = false): void {
+        if (!this._breakpointBadge) {
+            return;
+        }
+        this._breakpointBadge.classList.remove(localStyles["breakpointActive"], localStyles["breakpointPaused"]);
+        if (!active) {
+            this._breakpointBadge.style.display = "none";
+            return;
+        }
+        this._breakpointBadge.style.display = "";
+        this._breakpointBadge.classList.add(paused ? localStyles["breakpointPaused"] : localStyles["breakpointActive"]);
     }
 
     public get isCollapsed() {
@@ -274,6 +313,14 @@ export class GraphNode {
         content.onInputRemoved = (index: number) => {
             this._removeInputPort(index);
         };
+
+        content.onOutputCountChanged = () => {
+            this._buildOutputPorts(true);
+        };
+
+        content.onOutputRemoved = (index: number) => {
+            this._removeOutputPort(index);
+        };
     }
 
     public isOverlappingFrame(frame: GraphFrame) {
@@ -362,7 +409,9 @@ export class GraphNode {
 
     public refresh() {
         if (this._displayManager) {
-            this._header.innerHTML = this._displayManager.getHeaderText(this.content);
+            const headerText = this._displayManager.getHeaderText(this.content);
+            this._header.innerHTML = headerText;
+            this._header.title = headerText;
             this._displayManager.updatePreviewContent(this.content, this._content);
             const backgroundColor = this._displayManager.getBackgroundColor(this.content);
             if (backgroundColor) {
@@ -391,6 +440,7 @@ export class GraphNode {
             }
         } else {
             this._header.innerHTML = this.content.name;
+            this._header.title = this.content.name;
         }
 
         for (const refresh of this._visualPropertiesRefresh) {
@@ -727,6 +777,24 @@ export class GraphNode {
         this._inputPorts.splice(index, 1);
     }
 
+    private _buildOutputPorts(addOnly = false) {
+        for (const output of this.content.outputs) {
+            if (addOnly) {
+                const existingPort = this._outputPorts.find((p) => p.portData === output);
+                if (existingPort) {
+                    continue;
+                }
+            }
+            this._outputPorts.push(NodePort.CreatePortElement(output, this, this._outputsContainer, this._displayManager, this._stateManager));
+        }
+    }
+
+    private _removeOutputPort(index: number) {
+        const port = this._outputPorts[index];
+        port.remove();
+        this._outputPorts.splice(index, 1);
+    }
+
     public appendVisual(root: HTMLDivElement, owner: GraphCanvasComponent) {
         this._ownerCanvas = owner;
 
@@ -818,6 +886,22 @@ export class GraphNode {
         this._executionTime.classList.add(localStyles.executionTime);
 
         this._visual.appendChild(this._executionTime);
+
+        // Validation badge (opt-in)
+        if (this._stateManager.enableNodeBadges) {
+            this._validationBadge = root.ownerDocument.createElement("div");
+            this._validationBadge.classList.add(localStyles.validationBadge);
+            this._validationBadge.style.display = "none";
+            this._headerContainer.appendChild(this._validationBadge);
+        }
+
+        // Breakpoint badge (opt-in)
+        if (this._stateManager.enableNodeBadges) {
+            this._breakpointBadge = root.ownerDocument.createElement("div");
+            this._breakpointBadge.classList.add(localStyles.breakpointBadge);
+            this._breakpointBadge.style.display = "none";
+            this._headerContainer.appendChild(this._breakpointBadge);
+        }
 
         // Options
         const propStore: IPropertyDescriptionForEdition[] = this.content.data._propStore;

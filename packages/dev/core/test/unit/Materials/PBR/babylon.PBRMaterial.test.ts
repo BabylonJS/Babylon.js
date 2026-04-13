@@ -1,6 +1,5 @@
 import { Animation } from "core/Animations";
-import type { Engine } from "core/Engines";
-import { NullEngine } from "core/Engines";
+import { type Engine, NullEngine } from "core/Engines";
 import { ImageProcessingConfiguration, PBRMaterial, RenderTargetTexture, Texture } from "core/Materials";
 import { PrePassRenderer } from "core/Rendering";
 import "core/Rendering/prePassRendererSceneComponent";

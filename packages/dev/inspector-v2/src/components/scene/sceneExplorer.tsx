@@ -1,13 +1,10 @@
-import type { ScrollToInterface } from "@fluentui-contrib/react-virtualizer";
-import type { MenuCheckedValueChangeData, MenuCheckedValueChangeEvent, TreeItemValue, TreeOpenChangeData, TreeOpenChangeEvent } from "@fluentui/react-components";
-import type { FluentIcon } from "@fluentui/react-icons";
-import type { ComponentType, FunctionComponent, KeyboardEvent } from "react";
-
-import type { IDisposable, IReadonlyObservable, Nullable, Scene } from "core/index";
-import type { DragDropProps, DropProps } from "./sceneExplorerDragDrop";
-
-import { VirtualizerScrollView } from "@fluentui-contrib/react-virtualizer";
+import { type ScrollToInterface, VirtualizerScrollView } from "@fluentui-contrib/react-virtualizer";
 import {
+    type MenuCheckedValueChangeData,
+    type MenuCheckedValueChangeEvent,
+    type TreeItemValue,
+    type TreeOpenChangeData,
+    type TreeOpenChangeEvent,
     Body1,
     Body1Strong,
     Button,
@@ -28,18 +25,29 @@ import {
     TreeItemLayout,
     treeItemLevelToken,
 } from "@fluentui/react-components";
-import { ArrowCollapseAllRegular, ArrowExpandAllRegular, createFluentIcon, FilterRegular, GlobeRegular, TextSortAscendingRegular } from "@fluentui/react-icons";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+    type FluentIcon,
+    ArrowCollapseAllRegular,
+    ArrowExpandAllRegular,
+    createFluentIcon,
+    FilterRegular,
+    GlobeRegular,
+    TextSortAscendingRegular,
+    WarningRegular,
+} from "@fluentui/react-icons";
+import { type ComponentType, type FunctionComponent, type KeyboardEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
+
+import { type IDisposable, type IReadonlyObservable, type Nullable, type Scene } from "core/index";
+import { type DragDropProps, type DropProps, useSceneExplorerDragDrop } from "./sceneExplorerDragDrop";
 
 import { UniqueIdGenerator } from "core/Misc/uniqueIdGenerator";
 import { ToggleButton } from "shared-ui-components/fluent/primitives/toggleButton";
 import { CustomTokens } from "shared-ui-components/fluent/primitives/utils";
-import { useObservableState } from "../../hooks/observableHooks";
-import { useResource } from "../../hooks/resourceHooks";
-import { useSetting } from "../../hooks/settingsHooks";
-import { TraverseGraph } from "../../misc/graphUtils";
+import { useObservableState } from "shared-ui-components/modularTool/hooks/observableHooks";
+import { useResource } from "shared-ui-components/modularTool/hooks/resourceHooks";
+import { useSetting } from "shared-ui-components/modularTool/hooks/settingsHooks";
+import { TraverseGraph } from "shared-ui-components/modularTool/misc/graphUtils";
 import { CompactModeSettingDescriptor } from "../../services/globalSettings";
-import { useSceneExplorerDragDrop } from "./sceneExplorerDragDrop";
 
 const SyntheticUniqueIds = new WeakMap<object, number>();
 function GetEntityId(entity: object): number {
@@ -78,6 +86,12 @@ export type EntityDisplayInfo = Partial<IDisposable> &
          * An observable that notifies when the display info (such as the name) changes.
          */
         onChange?: IReadonlyObservable<void>;
+
+        /**
+         * An optional validation error message for this entity. When present, the entity's
+         * icon is replaced with a warning icon whose tooltip displays this message.
+         */
+        validationError?: string;
     }>;
 
 /**
@@ -804,7 +818,15 @@ const EntityTreeItem: FunctionComponent<
                     {...dragProps}
                 >
                     <TreeItemLayout
-                        iconBefore={entityItem.icon ? <entityItem.icon entity={entityItem.entity} /> : null}
+                        iconBefore={
+                            displayInfo.validationError ? (
+                                <Tooltip content={displayInfo.validationError} relationship="description">
+                                    <WarningRegular />
+                                </Tooltip>
+                            ) : entityItem.icon ? (
+                                <entityItem.icon entity={entityItem.entity} />
+                            ) : null
+                        }
                         className={mergeClasses(
                             hasChildren ? classes.treeItemLayoutBranch : classes.treeItemLayoutLeaf,
                             compactMode ? classes.treeItemLayoutCompact : undefined,

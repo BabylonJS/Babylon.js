@@ -1,4 +1,4 @@
-import type { NodeRenderGraphConnectionPointDirection, NodeRenderGraphBlock, Nullable } from "core/index";
+import { type NodeRenderGraphConnectionPointDirection, type NodeRenderGraphBlock, type Nullable } from "core/index";
 import { NodeRenderGraphConnectionPoint } from "./nodeRenderGraphBlockConnectionPoint";
 import { NodeRenderGraphConnectionPointCompatibilityStates } from "./Types/nodeRenderGraphTypes";
 

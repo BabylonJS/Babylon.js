@@ -1,15 +1,13 @@
-import type { ServiceDefinition } from "../modularity/serviceDefinition";
-import type { ISceneContext } from "./sceneContext";
-import type { IShellService } from "./shellService";
+import { type ServiceDefinition } from "shared-ui-components/modularTool/modularity/serviceDefinition";
+import { type ISceneContext, SceneContextIdentity } from "./sceneContext";
+import { type IShellService, ShellServiceIdentity } from "shared-ui-components/modularTool/services/shellService";
 
 import { Badge, makeStyles, tokens } from "@fluentui/react-components";
 import { useCallback } from "react";
 
-import { useObservableState } from "../hooks/observableHooks";
+import { useObservableState } from "shared-ui-components/modularTool/hooks/observableHooks";
 import { usePollingObservable } from "../hooks/pollingHooks";
 import { DefaultToolbarItemOrder } from "./defaultToolbarMetadata";
-import { SceneContextIdentity } from "./sceneContext";
-import { ShellServiceIdentity } from "./shellService";
 
 const useStyles = makeStyles({
     badge: {

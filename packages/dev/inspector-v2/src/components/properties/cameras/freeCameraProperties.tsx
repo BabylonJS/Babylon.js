@@ -1,12 +1,12 @@
-import type { FunctionComponent } from "react";
+import { type FunctionComponent } from "react";
 
-import type { FreeCamera } from "core/index";
+import { type FreeCamera } from "core/index";
 
 import { NumberInputPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/inputPropertyLine";
 import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
 import { QuaternionPropertyLine, RotationVectorPropertyLine, Vector3PropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/vectorPropertyLine";
 import { useProperty } from "../../../hooks/compoundPropertyHooks";
-import { useSetting } from "../../../hooks/settingsHooks";
+import { useSetting } from "shared-ui-components/modularTool/hooks/settingsHooks";
 import { UseDegreesSettingDescriptor, UseEulerSettingDescriptor } from "../../../services/globalSettings";
 import { BoundProperty, Property } from "../boundProperty";
 

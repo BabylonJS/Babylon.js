@@ -1,6 +1,6 @@
-import type { Nullable } from "../types";
-import type { _IShaderProcessingContext } from "../Engines/Processors/shaderProcessingOptions";
-import type { Effect } from "../Materials/effect";
+import { type Nullable } from "../types";
+import { type _IShaderProcessingContext } from "../Engines/Processors/shaderProcessingOptions";
+import { type Effect } from "../Materials/effect";
 import { VertexBuffer } from "../Meshes/buffer";
 
 const VertexBufferKindForNonFloatProcessing: { [kind: string]: boolean } = {

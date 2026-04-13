@@ -1,12 +1,12 @@
 import { Vector3, Quaternion, Matrix, TmpVectors } from "core/Maths/math.vector";
-import type { Mesh } from "core/Meshes/mesh";
-import type { TransformNode } from "core/Meshes/transformNode";
-import type { Nullable } from "core/types";
+import { type Mesh } from "core/Meshes/mesh";
+import { type TransformNode } from "core/Meshes/transformNode";
+import { type Nullable } from "core/types";
 import { Logger } from "core/Misc/logger";
 import { GLTFLoader, ArrayItem } from "../glTFLoader";
-import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
-import type { INode } from "../glTFLoaderInterfaces";
-import type { IEXTMeshGpuInstancing } from "babylonjs-gltf2interface";
+import { type IGLTFLoaderExtension } from "../glTFLoaderExtension";
+import { type INode } from "../glTFLoaderInterfaces";
+import { type IEXTMeshGpuInstancing } from "babylonjs-gltf2interface";
 import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
 
 import "core/Meshes/thinInstanceMesh";

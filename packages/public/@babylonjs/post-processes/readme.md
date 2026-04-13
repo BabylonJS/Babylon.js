@@ -1,31 +1,23 @@
-Babylon.js Post Processes Library
-=====================
+# Babylon.js Post Processes Library
 
-For usage documentation please visit https://doc.babylonjs.com/extensions and choose "post process library".
+For usage documentation please visit the [post process library documentation](https://doc.babylonjs.com/toolsAndResources/assetLibraries/postProcessLibrary/).
 
-# Installation instructions
+## Installation
 
-To install using npm :
+To install using npm:
 
-```
-npm install --save @babylonjs/core @babylonjs/post-processes
-```
-
-# How to use
-
-Afterwards it can be imported to your project using:
-
-```
-import { AsciiArtPostProcess } from '@babylonjs/post-processes/asciiArt';
+```bash
+npm install @babylonjs/core @babylonjs/post-processes
 ```
 
-And used as usual:
+## Usage
 
-```
-// Some awesome code
-// Creates the post process
-let postProcess = new AsciiArtPostProcess("AsciiArt", camera);
-// Some more awesome code
+Import and use in your project:
+
+```javascript
+import { AsciiArtPostProcess } from "@babylonjs/post-processes/asciiArt";
+
+const postProcess = new AsciiArtPostProcess("AsciiArt", camera);
 ```
 
-For more information you can have a look at our [ES6 dedicated documentation](https://doc.babylonjs.com/features/es6_support).
+For more information, see the [ES6 support documentation](https://doc.babylonjs.com/setup/frameworkPackages/es6Support/).

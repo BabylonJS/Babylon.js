@@ -1,10 +1,10 @@
 import * as React from "react";
 
-import type { Observable } from "core/Misc/observable";
-import type { GlobalState } from "../../../../globalState";
-import type { PropertyChangedEvent } from "../../../../propertyChangedEvent";
-import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
-import type { PointParticleEmitter } from "core/Particles/EmitterTypes/pointParticleEmitter";
+import { type Observable } from "core/Misc/observable";
+import { type GlobalState } from "../../../../globalState";
+import { type PropertyChangedEvent } from "../../../../propertyChangedEvent";
+import { type LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
+import { type PointParticleEmitter } from "core/Particles/EmitterTypes/pointParticleEmitter";
 import { Vector3LineComponent } from "shared-ui-components/lines/vector3LineComponent";
 
 interface IPointEmitterGridComponentProps {

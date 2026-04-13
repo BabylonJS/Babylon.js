@@ -1,25 +1,22 @@
-import type { Scene } from "../scene";
-import type { AbstractMesh } from "../Meshes/abstractMesh";
-import type { TransformNode } from "../Meshes/transformNode";
-import type { IParticleSystem } from "../Particles/IParticleSystem";
-import type { Skeleton } from "../Bones/skeleton";
-import type { PluginOptions } from "../Loading/sceneLoader";
-import { SceneLoader, SceneLoaderAnimationGroupLoadingMode } from "../Loading/sceneLoader";
+import { type Scene } from "../scene";
+import { type AbstractMesh } from "../Meshes/abstractMesh";
+import { type TransformNode } from "../Meshes/transformNode";
+import { type IParticleSystem } from "../Particles/IParticleSystem";
+import { type Skeleton } from "../Bones/skeleton";
+import { type PluginOptions, SceneLoader, SceneLoaderAnimationGroupLoadingMode } from "../Loading/sceneLoader";
 import { Tools } from "./tools";
 import { Observable } from "./observable";
-import type { BaseTexture } from "../Materials/Textures/baseTexture";
-import type { ITextureCreationOptions } from "../Materials/Textures/texture";
-import { Texture } from "../Materials/Textures/texture";
-import type { ICubeTextureCreationOptions } from "../Materials/Textures/cubeTexture";
-import { CubeTexture } from "../Materials/Textures/cubeTexture";
+import { type BaseTexture } from "../Materials/Textures/baseTexture";
+import { type ITextureCreationOptions, Texture } from "../Materials/Textures/texture";
+import { type ICubeTextureCreationOptions, CubeTexture } from "../Materials/Textures/cubeTexture";
 import { HDRCubeTexture } from "../Materials/Textures/hdrCubeTexture";
 import { EquiRectangularCubeTexture } from "../Materials/Textures/equiRectangularCubeTexture";
 import { Logger } from "../Misc/logger";
-import type { Animatable } from "../Animations/animatable.core";
-import type { AnimationGroup } from "../Animations/animationGroup";
-import type { AssetContainer } from "../assetContainer";
+import { type Animatable } from "../Animations/animatable.core";
+import { type AnimationGroup } from "../Animations/animationGroup";
+import { type AssetContainer } from "../assetContainer";
 import { EngineStore } from "../Engines/engineStore";
-import type { Nullable } from "../types";
+import { type Nullable } from "../types";
 
 /**
  * Defines the list of states available for a task inside a AssetsManager

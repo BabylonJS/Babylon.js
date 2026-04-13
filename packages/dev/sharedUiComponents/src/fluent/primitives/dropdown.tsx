@@ -1,7 +1,6 @@
 import { Dropdown as FluentDropdown, makeStyles, mergeClasses, Option, useId } from "@fluentui/react-components";
-import { useContext, useEffect, useState } from "react";
-import type { FunctionComponent } from "react";
-import type { PrimitiveProps } from "./primitive";
+import { useContext, useEffect, useState, type FunctionComponent } from "react";
+import { type PrimitiveProps } from "./primitive";
 import { InfoLabel } from "./infoLabel";
 import { ToolContext } from "../hoc/fluentToolWrapper";
 

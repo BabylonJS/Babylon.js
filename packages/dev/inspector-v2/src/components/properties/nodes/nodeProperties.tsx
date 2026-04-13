@@ -1,11 +1,11 @@
-import type { FunctionComponent } from "react";
+import { type FunctionComponent } from "react";
 
-import type { Node } from "core/index";
-import type { ISelectionService } from "../../../services/selectionService";
+import { type Node } from "core/index";
+import { type ISelectionService } from "../../../services/selectionService";
 
 import { NodeSelectorPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/entitySelectorPropertyLine";
 import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
-import { useObservableState } from "../../../hooks/observableHooks";
+import { useObservableState } from "shared-ui-components/modularTool/hooks/observableHooks";
 import { BoundProperty, Property } from "../boundProperty";
 
 export const NodeGeneralProperties: FunctionComponent<{ node: Node; selectionService: ISelectionService }> = (props) => {

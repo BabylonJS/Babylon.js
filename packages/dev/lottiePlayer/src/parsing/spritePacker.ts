@@ -1,16 +1,26 @@
 import "core/Engines/Extensions/engine.dynamicTexture";
 
-import type { ThinEngine } from "core/Engines/thinEngine";
-import type { InternalTexture } from "core/Materials/Textures/internalTexture";
-import type { IVector2Like } from "core/Maths/math.like";
+import { type ThinEngine } from "core/Engines/thinEngine";
+import { type InternalTexture } from "core/Materials/Textures/internalTexture";
+import { type IVector2Like } from "core/Maths/math.like";
 import { ThinTexture } from "core/Materials/Textures/thinTexture";
 
-import type { RawBezier, RawElement, RawFillShape, RawFont, RawGradientFillShape, RawPathShape, RawRectangleShape, RawStrokeShape, RawTextData, RawTextDocument } from "./rawTypes";
+import {
+    type RawElement,
+    type RawFillShape,
+    type RawFont,
+    type RawGradientFillShape,
+    type RawPathShape,
+    type RawRectangleShape,
+    type RawStrokeShape,
+    type RawTextData,
+    type RawTextDocument,
+} from "./rawTypes";
+import { GetInitialScalarValue, GetInitialVectorValues, GetInitialBezierData } from "./rawPropertyHelpers";
 
-import type { BoundingBox } from "../maths/boundingBox";
-import { GetShapesBoundingBox, GetTextBoundingBox } from "../maths/boundingBox";
+import { type BoundingBox, GetShapesBoundingBox, GetTextBoundingBox } from "../maths/boundingBox";
 
-import type { AnimationConfiguration } from "../animationConfiguration";
+import { type AnimationConfiguration } from "../animationConfiguration";
 
 /**
  * Information about a sprite in the sprite atlas.
@@ -291,7 +301,7 @@ export class SpritePacker {
             const shape = rawElements[i];
             switch (shape.ty) {
                 case "rc":
-                    this._drawRectangle(shape as RawRectangleShape);
+                    this._drawRectangle(shape as RawRectangleShape, boundingBox);
                     break;
                 case "sh":
                     this._drawPath(shape as RawPathShape, boundingBox);
@@ -361,21 +371,29 @@ export class SpritePacker {
         this._spritesCanvasContext.restore();
     }
 
-    private _drawRectangle(shape: RawRectangleShape): void {
-        const size = shape.s.k as number[];
-        const radius = shape.r.k as number;
+    private _drawRectangle(shape: RawRectangleShape, boundingBox: BoundingBox): void {
+        const size = GetInitialVectorValues(shape.s);
+        const position = GetInitialVectorValues(shape.p);
+        const radius = GetInitialScalarValue(shape.r);
+
+        // Translate to the correct position within the atlas cell, same as paths use centerX/centerY
+        const x = position[0] - size[0] / 2 + boundingBox.centerX - Math.ceil(boundingBox.strokeInset);
+        const y = position[1] - size[1] / 2 + boundingBox.centerY - Math.ceil(boundingBox.strokeInset);
 
         if (radius <= 0) {
-            this._spritesCanvasContext.rect(0, 0, size[0], size[1]);
+            this._spritesCanvasContext.rect(x, y, size[0], size[1]);
         } else {
-            this._spritesCanvasContext.roundRect(0, 0, size[0], size[1], radius);
+            this._spritesCanvasContext.roundRect(x, y, size[0], size[1], radius);
         }
     }
 
     private _drawPath(shape: RawPathShape, boundingBox: BoundingBox): void {
         // The path data has to be translated to the center of the bounding box
         // If the paths have stroke, we need to account for the stroke width
-        const pathData = shape.ks.k as RawBezier;
+        const pathData = GetInitialBezierData(shape.ks);
+        if (!pathData) {
+            return;
+        }
         const xTranslate = boundingBox.centerX - Math.ceil(boundingBox.strokeInset);
         const yTranslate = boundingBox.centerY - Math.ceil(boundingBox.strokeInset);
 

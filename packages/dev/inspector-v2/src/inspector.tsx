@@ -1,17 +1,17 @@
-import type { IDisposable, IReadonlyObservable, Nullable, Scene } from "core/index";
-import type { WeaklyTypedServiceDefinition } from "./modularity/serviceContainer";
-import type { ServiceDefinition } from "./modularity/serviceDefinition";
-import type { ModularToolOptions } from "./modularTool";
-import type { ISceneContext } from "./services/sceneContext";
-import type { IShellService } from "./services/shellService";
+import { type IDisposable, type IReadonlyObservable, type Scene } from "core/index";
+import { type WeaklyTypedServiceDefinition } from "shared-ui-components/modularTool/modularity/serviceContainer";
+import { type ServiceDefinition } from "shared-ui-components/modularTool/modularity/serviceDefinition";
+import { type ModularToolOptions, MakeModularTool } from "shared-ui-components/modularTool/modularTool";
+import { type IShellService, ShellServiceIdentity } from "shared-ui-components/modularTool/services/shellService";
 
 import { AsyncLock } from "core/Misc/asyncLock";
 import { Logger } from "core/Misc/logger";
 import { Observable } from "core/Misc/observable";
 import { useEffect, useRef } from "react";
 import { DefaultInspectorExtensionFeed } from "./extensibility/defaultInspectorExtensionFeed";
+import { _StartInspectable } from "./inspectable";
 import { LegacyInspectableObjectPropertiesServiceDefinition } from "./legacy/inspectableCustomPropertiesService";
-import { MakeModularTool } from "./modularTool";
+import { CliConnectionStatusServiceDefinition } from "./services/cliConnectionStatusService";
 import { GizmoServiceDefinition } from "./services/gizmoService";
 import { GizmoToolbarServiceDefinition } from "./services/gizmoToolbarService";
 import { HighlightServiceDefinition } from "./services/highlightService";
@@ -55,7 +55,7 @@ import { SkeletonExplorerServiceDefinition } from "./services/panes/scene/skelet
 import { SoundExplorerServiceDefinition } from "./services/panes/scene/soundExplorerService";
 import { SpriteManagerExplorerServiceDefinition } from "./services/panes/scene/spriteManagerExplorerService";
 import { TextureExplorerServiceDefinition } from "./services/panes/scene/texturesExplorerService";
-import { SettingsServiceDefinition } from "./services/panes/settingsService";
+import { SettingsServiceDefinition } from "shared-ui-components/modularTool/services/settingsService";
 import { StatsServiceDefinition } from "./services/panes/statsService";
 import { CaptureToolsDefinition } from "./services/panes/tools/captureService";
 import { ExportServiceDefinition } from "./services/panes/tools/exportService";
@@ -64,13 +64,12 @@ import { GLTFLoaderOptionsServiceDefinition } from "./services/panes/tools/impor
 import { GLTFValidationServiceDefinition } from "./services/panes/tools/import/gltfValidationService";
 import { ToolsServiceDefinition } from "./services/panes/toolsService";
 import { PickingServiceDefinition } from "./services/pickingService";
-import { SceneContextIdentity } from "./services/sceneContext";
 import { SelectionServiceDefinition } from "./services/selectionService";
-import { ShellServiceIdentity } from "./services/shellService";
-import { ShellSettingsServiceDefinition } from "./services/shellSettingsService";
+import { ShellSettingsServiceDefinition } from "shared-ui-components/modularTool/services/shellSettingsService";
+import { InspectorSettingsServiceDefinition } from "./services/inspectorSettingsService";
 import { TextureEditorServiceDefinition } from "./services/textureEditor/textureEditorService";
 import { UserFeedbackServiceDefinition } from "./services/userFeedbackService";
-import { WatcherRefreshToolbarServiceDefinition, WatcherSettingsServiceDefinition } from "./services/watcherService";
+import { WatcherRefreshToolbarServiceDefinition, WatcherServiceDefinition, WatcherSettingsServiceDefinition } from "./services/watcherService";
 
 type LayoutMode = "inline" | "overlay";
 
@@ -231,6 +230,12 @@ export function ShowInspector(scene: Scene, options: Partial<InspectorOptions> =
         // This array will contain all the default Inspector service definitions.
         const serviceDefinitions: WeaklyTypedServiceDefinition[] = [];
 
+        // Ensure the inspectable bridge is running for this scene. The inspector's
+        // ServiceContainer will use the inspectable container as a parent, inheriting
+        // services like ISceneContext and IInspectableCommandRegistry.
+        const inspectableToken = _StartInspectable(scene);
+        disposeActions.push(() => inspectableToken.dispose());
+
         // Create a container element for the inspector UI.
         // This element will become the root React node, so it must be a new empty node
         // since React will completely take over its contents.
@@ -288,25 +293,15 @@ export function ShowInspector(scene: Scene, options: Partial<InspectorOptions> =
             parentElement.removeChild(containerElement);
         });
 
-        // This service exposes the scene that was passed into Inspector through ISceneContext, which is used by other services that may be used in other contexts outside of Inspector.
-        const sceneContextServiceDefinition: ServiceDefinition<[ISceneContext], []> = {
-            friendlyName: "Inspector Scene Context",
-            produces: [SceneContextIdentity],
-            factory: () => {
-                return {
-                    currentScene: scene,
-                    currentSceneObservable: new Observable<Nullable<Scene>>(),
-                };
-            },
-        };
-        serviceDefinitions.push(sceneContextServiceDefinition);
-
         if (options.autoResizeEngine) {
             const observer = scene.onBeforeRenderObservable.add(() => scene.getEngine().resize());
             disposeActions.push(() => observer.remove());
         }
 
         serviceDefinitions.push(
+            // Watcher service for observing property changes.
+            WatcherServiceDefinition,
+
             // Helps with managing gizmos and a shared utility layer.
             GizmoServiceDefinition,
 
@@ -371,6 +366,7 @@ export function ShowInspector(scene: Scene, options: Partial<InspectorOptions> =
 
             // Settings pane tab and related services.
             SettingsServiceDefinition,
+            InspectorSettingsServiceDefinition,
             WatcherSettingsServiceDefinition,
             ShellSettingsServiceDefinition,
 
@@ -392,6 +388,9 @@ export function ShowInspector(scene: Scene, options: Partial<InspectorOptions> =
             // Adds entry points for user feedback on Inspector v2 (probably eventually will be removed).
             UserFeedbackServiceDefinition,
 
+            // Shows CLI bridge connection status in the toolbar.
+            CliConnectionStatusServiceDefinition,
+
             // Adds always present "mini stats" (like fps) to the toolbar, etc.
             MiniStatsServiceDefinition,
 
@@ -402,6 +401,7 @@ export function ShowInspector(scene: Scene, options: Partial<InspectorOptions> =
         const modularTool = MakeModularTool({
             namespace: "Inspector",
             containerElement,
+            parentContainer: inspectableToken.serviceContainer,
             serviceDefinitions: [
                 // Default Inspector services.
                 ...serviceDefinitions,

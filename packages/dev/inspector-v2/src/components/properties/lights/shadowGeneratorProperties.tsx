@@ -1,9 +1,7 @@
-import type { FunctionComponent } from "react";
+import { type FunctionComponent, useEffect, useState } from "react";
 
-import type { Camera, IShadowGenerator, Nullable, ShadowLight } from "core/index";
-import type { DropdownOption } from "shared-ui-components/fluent/primitives/dropdown";
-
-import { useEffect, useState } from "react";
+import { type Camera, type IShadowGenerator, type Nullable, type ShadowLight } from "core/index";
+import { type DropdownOption } from "shared-ui-components/fluent/primitives/dropdown";
 
 import { DirectionalLight } from "core/Lights/directionalLight";
 import { CascadedShadowGenerator } from "core/Lights/Shadows/cascadedShadowGenerator";
@@ -14,7 +12,7 @@ import { NumberInputPropertyLine } from "shared-ui-components/fluent/hoc/propert
 import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
 import { SyncedSliderPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/syncedSliderPropertyLine";
 import { Collapse } from "shared-ui-components/fluent/primitives/collapse";
-import { useObservableState } from "../../../hooks/observableHooks";
+import { useObservableState } from "shared-ui-components/modularTool/hooks/observableHooks";
 import { useProperty } from "../../../hooks/compoundPropertyHooks";
 import { BoundProperty } from "../boundProperty";
 
