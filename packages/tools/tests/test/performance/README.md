@@ -64,7 +64,7 @@ Each test scenario goes through this flow:
     - **Ratio check** verifies the candidate is more than 15% slower.
     - Both must be true to flag a regression.
 5. **Noise detection** — If either side's coefficient of variation exceeds 10%, the result is marked INCONCLUSIVE and the test passes (noisy data cannot reliably detect regressions).
-6. **Confirmation** — If a regression is detected, 6 additional interleaved rounds are run and merged with the initial data before making a final determination.
+6. **Confirmation** — If a regression is detected, additional interleaved rounds are run and merged with the initial data before making a final determination. The confirmation pass defaults to 6 rounds but may be increased to satisfy trimming/statistical minimums (e.g. 7 rounds with the default `trimCount=2`).
 
 ## Configuration
 

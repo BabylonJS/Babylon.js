@@ -290,7 +290,11 @@ export const performanceStats = {
         const meanDiff = performanceStats.mean(differences);
         const sdDiff = performanceStats.stddev(differences);
         if (sdDiff === 0) {
-            return { t: meanDiff > 0 ? Infinity : meanDiff < 0 ? -Infinity : 0, df: n - 1, pValue: meanDiff > 0 ? 0 : 1 };
+            return {
+                t: meanDiff > 0 ? Infinity : meanDiff < 0 ? -Infinity : 0,
+                df: n - 1,
+                pValue: meanDiff > 0 ? 0 : meanDiff < 0 ? 1 : 0.5,
+            };
         }
         const t = meanDiff / (sdDiff / Math.sqrt(n));
         const df = n - 1;
@@ -421,7 +425,7 @@ export interface PerformanceComparisonResult {
     stable: PerformanceResult;
     dev: PerformanceResult;
     ratio: number;
-    /** Welch's t-test p-value (one-tailed: dev > stable) */
+    /** One-tailed p-value (dev \> stable). Paired t-test when `interleaved` is true, Welch's t-test otherwise. */
     pValue: number;
     passed: boolean;
     /** Human-readable summary */
@@ -578,21 +582,7 @@ export const collectPerformanceSamples = async (
     opts: Required<PerformanceTestOptions>,
     evaluateArg?: any
 ): Promise<PerformanceResult> => {
-    // Determine the URL to navigate to.
-    // When a specific CDN version is set, load empty.html directly from the CDN
-    // at the versioned path — its relative script tags resolve to the correct version
-    // automatically, no route interception needed.
-    // "latest" means use the base (unversioned) CDN path.
-    let url: string;
-    if (type === "dev") {
-        url = baseUrl + "/empty.html";
-    } else if (opts.cdnVersion === "latest") {
-        url = "https://cdn.babylonjs.com/empty.html";
-    } else if (opts.cdnVersion) {
-        url = `https://cdn.babylonjs.com/v${opts.cdnVersion}/empty.html`;
-    } else {
-        url = baseUrl + `/empty-${type}.html`;
-    }
+    const url = resolvePageUrl(type, baseUrl, opts);
 
     await page.goto(url, {
         timeout: 0,
@@ -688,9 +678,7 @@ const collectInterleavedSamples = async (
     const stableUrl = resolvePageUrl("stable", baseUrl, opts);
     const devUrl = opts.cdnVersionB ? resolvePageUrl("stable", baseUrl, { ...opts, cdnVersion: opts.cdnVersionB }) : resolvePageUrl("dev", baseUrl, opts);
 
-    const stableRaw: number[] = [];
-    const devRaw: number[] = [];
-    const rawDifferences: number[] = [];
+    const rounds: { stable: number; dev: number; diff: number }[] = [];
     const totalPasses = opts.warmupPasses + opts.numberOfPasses;
 
     for (let i = 0; i < totalPasses; i++) {
@@ -726,15 +714,20 @@ const collectInterleavedSamples = async (
         }
 
         if (!isWarmup) {
-            stableRaw.push(stableTime);
-            devRaw.push(devTime);
-            rawDifferences.push(devTime - stableTime);
+            rounds.push({ stable: stableTime, dev: devTime, diff: devTime - stableTime });
         }
     }
 
-    const stableTrimmed = performanceStats.trimmed(stableRaw, opts.trimCount);
-    const devTrimmed = performanceStats.trimmed(devRaw, opts.trimCount);
-    const pairedDifferences = performanceStats.trimmed(rawDifferences, opts.trimCount);
+    // Trim at the pair level: sort rounds by diff magnitude and drop outliers
+    // from both ends. This keeps stable, dev, and diff arrays aligned.
+    const sortedRounds = [...rounds].sort((a, b) => a.diff - b.diff);
+    const trimmedRounds = sortedRounds.slice(opts.trimCount, sortedRounds.length - opts.trimCount);
+
+    const stableRaw = rounds.map((r) => r.stable);
+    const devRaw = rounds.map((r) => r.dev);
+    const stableTrimmed = trimmedRounds.map((r) => r.stable);
+    const devTrimmed = trimmedRounds.map((r) => r.dev);
+    const pairedDifferences = trimmedRounds.map((r) => r.diff);
 
     return {
         stable: {
