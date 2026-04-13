@@ -290,7 +290,7 @@ async function ParseSogDatas(data: SOGRootData, imageDataArrays: IWebPImage[], s
     // --- SH
     if (data.shN) {
         const coeffs = data.shN.bands ? (data.shN.bands + 1) ** 2 - 1 : data.shN.shape[1] / 3; // 3 components per coeff
-        const shDegree = data.shN.bands ?? Math.round(Math.sqrt(coeffs + 1) - 1);
+        const shDegree = data.shN.bands !== undefined && data.shN.bands !== null ? data.shN.bands : Math.round(Math.sqrt(coeffs + 1) - 1);
         const shCentroids = imageDataArrays[5].bits;
         const shLabelsData = imageDataArrays[6].bits;
         const shCentroidsWidth = imageDataArrays[5].width;

@@ -160,7 +160,7 @@ export function* ConvertSpzToSplat(cloud: any, scene: Scene, useCoroutine = fals
         mode: Mode.Splat,
         data: buffer,
         hasVertexColors: false,
-        sh: sh ?? undefined,
+        sh: sh !== null ? sh : undefined,
         shDegree: shDegree > 0 ? shDegree : undefined,
         trainedWithAntialiasing: !!cloud.antialiased,
         safeOrbitCameraRadiusMin,
