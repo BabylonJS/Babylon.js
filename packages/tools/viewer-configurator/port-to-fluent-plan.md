@@ -41,8 +41,8 @@ Viewer Configurator will register a few services to populate the `IShellService`
 | `ButtonLineComponent`                  | `ButtonLine` from `shared-ui-components/fluent/hoc/buttonLine`                                               |
 | `TextInputLineComponent` (single-line) | `TextInputPropertyLine` from `shared-ui-components/fluent/hoc/propertyLines/inputPropertyLine`               |
 | `TextInputLineComponent` (multiline)   | `TextAreaPropertyLine` from `shared-ui-components/fluent/hoc/propertyLines/textAreaPropertyLine`             |
-| `MessageLineComponent`                 | `MessageBar` from `shared-ui-components/fluent/primitives/accordion`                                         |
-| `ExpandableMessageLineComponent`       | `MessageBar` from `shared-ui-components/fluent/primitives/accordion`                                         |
+| `MessageLineComponent`                 | `MessageBar` from `shared-ui-components/fluent/primitives/messageBar`                                        |
+| `ExpandableMessageLineComponent`       | `MessageBar` from `shared-ui-components/fluent/primitives/messageBar`                                        |
 | `Color4LineComponent`                  | `Color4PropertyLine` from `shared-ui-components/fluent/hoc/propertyLines/colorPropertyLine`                  |
 | `LockObject`                           | Not needed (Fluent property lines don't use it)                                                              |
 | `FontAwesomeIconButton`                | `Button` from `shared-ui-components/fluent/primitives/button` with `icon` prop using `@fluentui/react-icons` |
@@ -72,12 +72,11 @@ Viewer Configurator will register a few services to populate the `IShellService`
 The viewer-configurator will use `MakeModularTool` with these services only:
 
 1. **SettingsStore** (built-in to `MakeModularTool`) — persists user preferences
-2. **WatcherService** (built-in to `MakeModularTool`) — reactivity for observable changes
-3. **ThemeService** (built-in to `MakeModularTool`) — light/dark theme support
-4. **ThemeSelectorService** (built-in, optional) — theme toggle in toolbar
-5. **ShellService** (built-in to `MakeModularTool`) — provides the root layout container
-6. **ViewerService** (new, custom) - a service that exposes the underlying Babylon `ViewerElement` and `ViewerOptions`, and calls `IShellService.addCentralContent` to populate the central content.
-7. **ConfiguratorService** (new, custom) - a service that consumes the ViewerService to get the `ViewerElement` and `ViewerOptions`, and calls `IShellService.addSidePane` to add the right side pane.
+2. **ThemeService** (built-in to `MakeModularTool`) — light/dark theme support
+3. **ThemeSelectorService** (built-in, optional) — theme toggle in toolbar
+4. **ShellService** (built-in to `MakeModularTool`) — provides the root layout container
+5. **ViewerService** (new, custom) - a service that exposes the underlying Babylon `ViewerElement` and `ViewerOptions`, and calls `IShellService.addCentralContent` to populate the central content.
+6. **ConfiguratorService** (new, custom) - a service that consumes the ViewerService to get the `ViewerElement` and `ViewerOptions`, and calls `IShellService.addSidePane` to add the right side pane and `IShellService.addToolbarItem` to add toolbar buttons.
 
 No extension feeds should be passed to `MakeModularTool` to disable the extensions dialog.
 
@@ -98,25 +97,31 @@ MakeModularTool({
     containerElement: document.getElementById("root")!,
     serviceDefinitions: [ViewerServiceDefinition, ConfiguratorServiceDefinition],
     toolbarMode: "compact",
+    showThemeSelector: true,
+    rightPaneDefaultWidth: 400,
+    rightPaneMinWidth: 300,
 });
 ```
 
 ## File-Level Changes
 
 ### Files to DELETE
+- `src/App.tsx` — replaced by `MakeModularTool` shell + services
 - `src/App.scss` — replaced by `makeStyles`
 - `src/components/configurator/configurator.scss` — replaced by `makeStyles`
 - `src/components/babylonViewer/viewer.scss` — replaced by `makeStyles`
 - `src/scssDeclaration.d.ts` — no longer needed
 - `src/components/misc/FontAwesomeIconButton.tsx` — replaced by Fluent `Button` with icon
+- `src/components/misc/ExpandableMessageLineComponent.tsx` — replaced by `MessageBar`
+- `src/hooks/observableHooks.ts` — replaced by shared-ui-components hooks
 
 ### Files to CREATE
-- `src/viewerService.ts` — service definition that populates the shell central content and exposes the underlying viewer.
-- `src/configuratorService.ts` - service definition that consumes the viewer service and populates the shell right pane.
+- `src/viewerService.tsx` — service definition that populates the shell central content and exposes the underlying viewer.
+- `src/configuratorService.tsx` — service definition that consumes the viewer service, populates the shell right pane, and adds toolbar items.
+- `src/components/icons.ts` — custom Fluent icons (e.g. Babylon logo via `createFluentIcon`).
 
 ### Files to MODIFY
 - `src/index.tsx` — switch from `createRoot` + `<App />` to `MakeModularTool(…)`
-- `src/App.tsx` — rewrite: remove SCSS import, use `makeStyles`, the App component becomes the root component provided by the service
 - `src/components/configurator/configurator.tsx` — major rewrite:
   - Replace all old shared-ui-component imports with Fluent equivalents
   - Replace all FontAwesome imports with `@fluentui/react-icons`
@@ -126,16 +131,17 @@ MakeModularTool({
   - Update `CheckBoxLineComponent` → `SwitchPropertyLine`
   - Update `SliderLineComponent` → `SyncedSliderPropertyLine`
   - Update `Color4LineComponent` → `Color4PropertyLine`
-  - Update `ButtonLineComponent` → `ButtonLine`
+  - Update `ButtonLineComponent` → use `Button` primitive directly (not `ButtonLine`, to avoid nested border issues inside `PropertyLine`)
   - Update `TextInputLineComponent` → `TextInputPropertyLine` / `TextAreaPropertyLine`
   - Update `MessageLineComponent` → `MessageBar`
   - Replace `FontAwesomeIconButton` with Fluent `Button` with `icon` prop
-  - Wrap sections in `ExtensibleAccordion` + `AccordionSection` instead of `LineContainerComponent`
+  - Wrap sections in `Accordion` + `AccordionSection` instead of `LineContainerComponent`
+  - Use `PropertyLine` for labeled rows, `LineContainer` for unlabeled rows
+  - Wrap `ToolContext.Provider` with `size: "medium"` around the root content for consistent control sizing
   - Keep `@dnd-kit` for hotspot reordering (UI-framework-agnostic)
-- `src/components/babylonViewer/viewer.tsx` — remove SCSS import, use `makeStyles`
-- `src/components/misc/ExpandableMessageLineComponent.tsx` - use `MessageBar` instead
+- `src/components/babylonViewer/viewer.tsx` — remove SCSS import, use `makeStyles`, use `class=` not `className=` for custom elements
 - `package.json` — update dependencies (add Fluent, remove FontAwesome/SCSS tooling if safe)
-- `webpack.config.js` — remove `.scss` from resolve extensions, update aliases
+- `webpack.config.js` — set `includeCSS: false` in `getRules`, update aliases
 - `src/hooks/observableHooks.ts` — use the hooks from `shared-ui-components/modularTool/hooks/observableHooks`
 
 ### Files UNCHANGED
@@ -190,15 +196,7 @@ Remove SCSS import. Add `makeStyles` for the viewer element background pattern. 
 Replace `src/hooks/observableHooks.ts` with imports from `shared-ui-components/modularTool/hooks/observableHooks`. Remove the local file if the shared hooks are a full replacement.
 
 ### 9. `delete-obsolete-files` — Clean up deleted files
-Remove:
-- `src/App.tsx` — no longer needed (shell is the root, services populate it)
-- `src/App.scss`
-- `src/components/configurator/configurator.scss`
-- `src/components/babylonViewer/viewer.scss`
-- `src/scssDeclaration.d.ts`
-- `src/components/misc/FontAwesomeIconButton.tsx` — replaced by Fluent `Button` with icon
-- `src/components/misc/ExpandableMessageLineComponent.tsx` — replaced by `MessageBar`
-- `src/hooks/observableHooks.ts` — replaced by shared-ui-components hooks
+Remove all files listed in the "Files to DELETE" section above.
 
 ### 10. `update-webpack` — Update webpack config
 Remove `.scss` from resolve extensions. Remove SCSS-related webpack loaders/plugins if no longer needed. Verify build works.
@@ -210,23 +208,22 @@ Run the build to verify everything compiles and renders correctly.
 
 ```
 setup-dependencies
-  └─► export-inspector-v2
-        ├─► create-viewer-service
-        │     └─► create-configurator-service
-        │           └─► rewrite-entry
-        │                 └─► rewrite-configurator ──────────┐
-        │                       └─► rewrite-viewer-component │
-        │                                                    │
-        └─► switch-observable-hooks ─────────────────────────┘
-                                                             │
-                                                             ▼
-                                                   delete-obsolete-files
-                                                             │
-                                                             ▼
-                                                       update-webpack
-                                                             │
-                                                             ▼
-                                                        verify-build
+  ├─► create-viewer-service
+  │     └─► create-configurator-service
+  │           └─► rewrite-entry
+  │                 └─► rewrite-configurator ──────────┐
+  │                       └─► rewrite-viewer-component │
+  │                                                    │
+  └─► switch-observable-hooks ─────────────────────────┘
+                                                       │
+                                                       ▼
+                                             delete-obsolete-files
+                                                       │
+                                                       ▼
+                                                 update-webpack
+                                                       │
+                                                       ▼
+                                                  verify-build
 ```
 
 ## Key Decisions
@@ -253,3 +250,27 @@ setup-dependencies
 - The snippet generation logic (HTML/JSON) is pure string construction — no changes needed.
 - `MakeModularTool` already provides `FluentProvider` and `Theme`, so no need for `FluentToolWrapper`.
 - No dependency on `@dev/inspector` is needed — all framework symbols come from `@dev/shared-ui-components`.
+
+## Lessons Learned / Gotchas
+
+These are issues discovered during implementation that would apply to porting other tools:
+
+1. **PropertyLine vs LineContainer** — Use `PropertyLine` (label required) for rows with a label. Use `LineContainer` (no label) for rows without. `PropertyLine`'s internal `childWrapper` has `overflow: hidden` and `whiteSpace: nowrap`, so multi-element children need a flex wrapper div.
+
+2. **Use Button directly, not ButtonLine inside PropertyLine** — Nesting `ButtonLine` inside `PropertyLine` creates a `LineContainer` inside a `PropertyLine`, producing double borders. Use the `Button` primitive directly.
+
+3. **TextInput width override** — `TextInput` has a hardcoded `width: 150px` from Fluent's `UniformWidthStyling`. To make it fill: wrap in a `div` with `flex: 1; minWidth: 0`, and pass `className` with `width: 100%` to `TextInput` (Griffel deduplication overrides the internal 150px).
+
+4. **Textarea slot styling** — `className` on Fluent's `Textarea` applies to the outer wrapper, not the inner `<textarea>`. Use `textarea={{ className: ... }}` slot prop for inner styling (e.g. monospace font, no-wrap).
+
+5. **Custom element `class=`** — React's `className` doesn't work on HTML custom elements (e.g. `<babylon-viewer>`). Use `class=` and add a JSX `IntrinsicElements` declaration.
+
+6. **className forwarding** — Not all shared primitives forward `className`. `Button` and `Dropdown` do; `SyncedSliderInput` and `ColorPickerPopup` do not. Wrap non-forwarding primitives in a `<div>` when custom classes are needed.
+
+7. **Button group spacing** — When multiple action buttons appear together, wrap them in a gapless flex row. The gap should be between the left content and the button group, not between individual buttons.
+
+8. **Custom SVG icons** — Use `createFluentIcon` with `width="1em"` (viewBox defaults to `0 0 20 20`). For SVGs with different source viewBoxes, compute a transform to map content bounds into 20×20 space.
+
+9. **MessageBar outside accordion** — `MessageBar` wraps in `AccordionSectionItem` which registers with a parent accordion context. When used outside an accordion, it renders as a passthrough (no-op). Dynamic message text is fine outside accordion since the stability warning only fires when an accordion context is present.
+
+See also: `.github/instructions/porting-tools-to-fluent.instructions.md` for the general porting guide.

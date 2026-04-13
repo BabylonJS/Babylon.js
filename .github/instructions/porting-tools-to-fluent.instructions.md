@@ -1,6 +1,6 @@
 # Porting Babylon.js Tools to Fluent UI
 
-Guide for porting Babylon.js tools (NME, NGE, NPE, NRGE, Playground, etc.) from the legacy shared-ui-components to Fluent UI using the `MakeModularTool` framework from Inspector v2.
+Guide for porting Babylon.js tools (NME, NGE, NPE, NRGE, Playground, etc.) from the legacy shared-ui-components to Fluent UI using the `MakeModularTool` framework from `shared-ui-components/modularTool/`.
 
 **Reference implementation:** `packages/tools/viewer-configurator/` (fully ported).
 
@@ -24,10 +24,11 @@ A Fluent port replaces four layers:
 
 ```jsonc
 // package.json devDependencies
-"@dev/inspector": "1.0.0",           // for MakeModularTool, IShellService, service types
 "@fluentui/react-components": "^9.x", // for makeStyles, tokens, low-level Fluent components
 "@fluentui/react-icons": "^2.x"       // for all icons
 ```
+
+Note: `@dev/shared-ui-components` should already be a dependency. It contains both the Fluent primitives (`fluent/`) and the ModularTool framework (`modularTool/`). No dependency on `@dev/inspector` is needed.
 
 ### Remove
 
@@ -42,14 +43,13 @@ A Fluent port replaces four layers:
 
 ### Webpack config
 
-Add the `inspector` alias and disable CSS loaders:
+Ensure the `shared-ui-components` alias is present and disable CSS loaders:
 
 ```js
 resolve: {
     extensions: [".js", ".ts", ".tsx"],
     alias: {
         core: path.resolve("../../dev/core/dist"),
-        inspector: path.resolve("../../dev/inspector-v2/src"),
         "shared-ui-components": path.resolve("../../dev/sharedUiComponents/src"),
         // ... other aliases as needed
     },
@@ -66,11 +66,11 @@ module: {
 
 ### tsconfig.json
 
-Add the inspector path mapping:
+Ensure the `shared-ui-components` path mapping is present (no `inspector` mapping needed):
 
 ```jsonc
 "paths": {
-    "inspector/*": ["../../dev/inspector-v2/src/*"]
+    "shared-ui-components/*": ["../../dev/sharedUiComponents/src/*"]
 }
 ```
 
@@ -86,7 +86,7 @@ const root = createRoot(document.getElementById("root")!);
 root.render(<App />);
 
 // AFTER
-import { MakeModularTool } from "inspector/modularTool";
+import { MakeModularTool } from "shared-ui-components/modularTool/modularTool";
 MakeModularTool({
     namespace: "MyToolName",
     containerElement: document.getElementById("root")!,
@@ -100,7 +100,6 @@ MakeModularTool({
 `MakeModularTool` automatically provides:
 - `FluentProvider` + theme (light/dark)
 - `SettingsStore` (persisted user preferences)
-- `WatcherService` (reactivity)
 - `ThemeService` + optional `ThemeSelectorService`
 - `ShellService` (layout: central content, side panes, toolbars)
 - `ToastProvider` for toast notifications
@@ -165,10 +164,10 @@ All return `IDisposable` — clean up in your service's `dispose()`.
 
 ### Reactive state with useObservableState
 
-Use the `useObservableState` hook from inspector-v2 to subscribe to service state in React components:
+Use the `useObservableState` hook from `shared-ui-components/modularTool/` to subscribe to service state in React components:
 
 ```tsx
-import { useObservableState } from "inspector/hooks/observableHooks";
+import { useObservableState } from "shared-ui-components/modularTool/hooks/observableHooks";
 
 const myData = useObservableState(
     () => myService.someData,    // getter
@@ -404,35 +403,29 @@ The gap should be between the left content (e.g. a text input) and the button gr
 
 ---
 
-## 8. Inspector v2 Exports
+## 8. Import Paths
 
-If your tool needs symbols from inspector-v2 that aren't yet exported, add them to `packages/dev/inspector-v2/src/index.ts`. Currently exported for tool use:
+The ModularTool framework and Fluent components live in `shared-ui-components`:
 
 ```ts
 // Service framework
-export type { ModularToolOptions } from "./modularTool";
-export { MakeModularTool } from "./modularTool";
-export type { WeaklyTypedServiceDefinition } from "./modularity/serviceContainer";
+import { MakeModularTool } from "shared-ui-components/modularTool/modularTool";
+import { type ServiceDefinition, type IService } from "shared-ui-components/modularTool/modularity/serviceDefinition";
+import { type WeaklyTypedServiceDefinition } from "shared-ui-components/modularTool/modularity/serviceContainer";
 
 // Shell service
-export type { IShellService, ToolbarItemDefinition, SidePaneDefinition, CentralContentDefinition,
-              HorizontalLocation, VerticalLocation, ShellServiceOptions } from "./services/shellService";
-export { ShellServiceIdentity } from "./services/shellService";
+import { type IShellService, ShellServiceIdentity } from "shared-ui-components/modularTool/services/shellService";
 
 // Hooks
-export * from "shared-ui-components/fluent/hooks/keyboardHooks";
-export * from "shared-ui-components/fluent/hooks/eventHooks";
+import { useObservableState } from "shared-ui-components/modularTool/hooks/observableHooks";
 
-// Shared primitives (re-exported for convenience)
-export * from "shared-ui-components/fluent/primitives/accordion";
-export * from "shared-ui-components/fluent/primitives/button";
+// Fluent primitives and HOCs
+import { Accordion, AccordionSection } from "shared-ui-components/fluent/primitives/accordion";
+import { Button } from "shared-ui-components/fluent/primitives/button";
 // ... etc.
 ```
 
-Import service types from `inspector/modularity/serviceDefinition`:
-```ts
-import type { IService, ServiceDefinition } from "inspector/modularity/serviceDefinition";
-```
+No `inspector/` imports are needed for tools — everything comes from `shared-ui-components/`.
 
 ---
 
@@ -444,7 +437,7 @@ After porting, delete:
 - [ ] `scssDeclaration.d.ts` (SCSS module type declarations)
 - [ ] `FontAwesomeIconButton.tsx` or similar FA wrapper components
 - [ ] `ExpandableMessageLineComponent.tsx` or similar legacy message components
-- [ ] Local `observableHooks.ts` (use `inspector/hooks/observableHooks` instead)
+- [ ] Local `observableHooks.ts` (use `shared-ui-components/modularTool/hooks/observableHooks` instead)
 - [ ] `App.tsx` / `App.scss` if the root component is replaced by shell service content
 
 ### Verify
@@ -480,11 +473,10 @@ For `satisfies` clauses in const option arrays, use `satisfies DropdownOption<st
 1. **Update dependencies** — add Fluent + inspector, remove FontAwesome + SCSS
 2. **Update webpack** — add `inspector` alias, set `includeCSS: false`
 3. **Update tsconfig** — add `inspector` path mapping
-4. **Export needed symbols** from inspector-v2's `index.ts` (if not already exported)
-5. **Create services** — define service identities, contracts, and factory functions
-6. **Rewrite entry point** — replace `createRoot` with `MakeModularTool`
-7. **Port components** — replace legacy components with Fluent equivalents, convert SCSS to `makeStyles`
-8. **Replace icons** — swap FontAwesome for `@fluentui/react-icons`
-9. **Switch hooks** — use `useObservableState` from inspector-v2 instead of local hooks
-10. **Delete obsolete files** — remove SCSS, FA wrappers, legacy components
-11. **Build & verify** — ensure clean build and correct rendering in both themes
+4. **Create services** — define service identities, contracts, and factory functions
+5. **Rewrite entry point** — replace `createRoot` with `MakeModularTool`
+6. **Port components** — replace legacy components with Fluent equivalents, convert SCSS to `makeStyles`
+7. **Replace icons** — swap FontAwesome for `@fluentui/react-icons`
+8. **Switch hooks** — use `useObservableState` from `shared-ui-components/modularTool/` instead of local hooks
+9. **Delete obsolete files** — remove SCSS, FA wrappers, legacy components
+10. **Build & verify** — ensure clean build and correct rendering in both themes
