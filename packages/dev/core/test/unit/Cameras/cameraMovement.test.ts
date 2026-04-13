@@ -1,5 +1,6 @@
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { CameraMovement } from "core/Cameras/cameraMovement";
+import { FreeCamera } from "core/Cameras/freeCamera";
 import { Vector3 } from "core/Maths/math.vector";
 import { NullEngine } from "core/Engines/nullEngine";
 import { Scene } from "core/scene";
@@ -19,6 +20,8 @@ describe("CameraMovement", () => {
             lockstepMaxSteps: 1,
         });
         scene = new Scene(engine);
+        // Mock getDeltaTime to return a stable 16.67ms (60fps)
+        vi.spyOn(engine, "getDeltaTime").mockReturnValue(1000 / 60);
         movement = new CameraMovement(scene, Vector3.Zero());
     });
 
@@ -36,10 +39,10 @@ describe("CameraMovement", () => {
                 { source: "touch", interaction: "pan" },
             ];
 
-            expect(movement.resolveInteraction("pointer", { button: 0 })).toBe("rotate");
-            expect(movement.resolveInteraction("keyboard")).toBe("translate");
-            expect(movement.resolveInteraction("wheel")).toBe("zoom");
-            expect(movement.resolveInteraction("touch")).toBe("pan");
+            expect(movement.resolveInteraction("pointer", { button: 0 })?.interaction).toBe("rotate");
+            expect(movement.resolveInteraction("keyboard")?.interaction).toBe("translate");
+            expect(movement.resolveInteraction("wheel")?.interaction).toBe("zoom");
+            expect(movement.resolveInteraction("touch")?.interaction).toBe("pan");
         });
 
         it("should return first match when multiple entries exist for same source", () => {
@@ -48,52 +51,62 @@ describe("CameraMovement", () => {
                 { source: "pointer", button: 0, interaction: "pan" },
             ];
 
-            expect(movement.resolveInteraction("pointer", { button: 0 })).toBe("rotate");
+            expect(movement.resolveInteraction("pointer", { button: 0 })?.interaction).toBe("rotate");
         });
 
         it("should match exact modifiers", () => {
             movement.inputMap = [{ source: "keyboard", modifiers: { ctrl: true }, interaction: "pan" }];
 
-            expect(movement.resolveInteraction("keyboard", { modifiers: { ctrl: true } })).toBe("pan");
-            expect(movement.resolveInteraction("keyboard", { modifiers: { ctrl: false } })).toBe("none");
+            expect(movement.resolveInteraction("keyboard", { modifiers: { ctrl: true } })?.interaction).toBe("pan");
+            expect(movement.resolveInteraction("keyboard", { modifiers: { ctrl: false } })).toBeNull();
         });
 
         it("should match when entry has no modifiers (matches anything)", () => {
             movement.inputMap = [{ source: "keyboard", interaction: "rotate" }];
 
-            expect(movement.resolveInteraction("keyboard", { modifiers: { ctrl: true } })).toBe("rotate");
-            expect(movement.resolveInteraction("keyboard")).toBe("rotate");
+            expect(movement.resolveInteraction("keyboard", { modifiers: { ctrl: true } })?.interaction).toBe("rotate");
+            expect(movement.resolveInteraction("keyboard")?.interaction).toBe("rotate");
         });
 
         it("should match partial modifiers (only check specified keys)", () => {
             movement.inputMap = [{ source: "keyboard", modifiers: { ctrl: true }, interaction: "pan" }];
 
-            expect(movement.resolveInteraction("keyboard", { modifiers: { ctrl: true, shift: true } })).toBe("pan");
+            expect(movement.resolveInteraction("keyboard", { modifiers: { ctrl: true, shift: true } })?.interaction).toBe("pan");
         });
 
         it("should match pointer button", () => {
             movement.inputMap = [{ source: "pointer", button: 2, interaction: "pan" }];
 
-            expect(movement.resolveInteraction("pointer", { button: 2 })).toBe("pan");
-            expect(movement.resolveInteraction("pointer", { button: 0 })).toBe("none");
+            expect(movement.resolveInteraction("pointer", { button: 2 })?.interaction).toBe("pan");
+            expect(movement.resolveInteraction("pointer", { button: 0 })).toBeNull();
         });
 
         it("should match touch count", () => {
             movement.inputMap = [{ source: "touch", touchCount: 2, interaction: "zoom" }];
 
-            expect(movement.resolveInteraction("touch", { touchCount: 2 })).toBe("zoom");
-            expect(movement.resolveInteraction("touch", { touchCount: 1 })).toBe("none");
+            expect(movement.resolveInteraction("touch", { touchCount: 2 })?.interaction).toBe("zoom");
+            expect(movement.resolveInteraction("touch", { touchCount: 1 })).toBeNull();
         });
 
-        it("should return 'none' when no entry matches", () => {
+        it("should return null when no entry matches", () => {
             movement.inputMap = [{ source: "pointer", button: 0, interaction: "rotate" }];
 
-            expect(movement.resolveInteraction("keyboard")).toBe("none");
+            expect(movement.resolveInteraction("keyboard")).toBeNull();
         });
 
-        it("should return 'none' with empty inputMap", () => {
+        it("should return null with empty inputMap", () => {
             movement.inputMap = [];
-            expect(movement.resolveInteraction("pointer", { button: 0 })).toBe("none");
+            expect(movement.resolveInteraction("pointer", { button: 0 })).toBeNull();
+        });
+
+        it("should return sensitivity from matched entry", () => {
+            movement.inputMap = [{ source: "pointer", button: 0, interaction: "rotate", sensitivity: 0.5 }];
+            expect(movement.resolveInteraction("pointer", { button: 0 })?.sensitivity).toBe(0.5);
+        });
+
+        it("should return undefined sensitivity when not specified", () => {
+            movement.inputMap = [{ source: "pointer", button: 0, interaction: "rotate" }];
+            expect(movement.resolveInteraction("pointer", { button: 0 })?.sensitivity).toBeUndefined();
         });
     });
 
@@ -103,6 +116,7 @@ describe("CameraMovement", () => {
             movement.rotationAccumulatedPixels.y = 5;
             movement.zoomAccumulatedPixels = 3;
             movement.activeInput = true;
+
 
             movement.computeCurrentFrameDeltas();
 
@@ -116,12 +130,14 @@ describe("CameraMovement", () => {
             movement.panAccumulatedPixels.x = 10;
             movement.activeInput = true;
 
+
             movement.computeCurrentFrameDeltas();
             const firstDelta = movement.panDeltaCurrentFrame.x;
 
             movement.panSpeed = 4;
             movement.panAccumulatedPixels.x = 10;
             movement.activeInput = true;
+
 
             movement.computeCurrentFrameDeltas();
             const secondDelta = movement.panDeltaCurrentFrame.x;
@@ -136,16 +152,18 @@ describe("CameraMovement", () => {
             movement.rotationAccumulatedPixels.y = 10;
             movement.activeInput = true;
 
+
             movement.computeCurrentFrameDeltas();
 
             const ratio = movement.rotationDeltaCurrentFrame.y / movement.rotationDeltaCurrentFrame.x;
-            expect(Math.abs(ratio - 4)).toBeLessThan(0.01); // 2.0 / 0.5 = 4
+            expect(Math.abs(ratio - 4)).toBeLessThan(0.01);
         });
 
         it("should compute zoom delta with zoomSpeed", () => {
             movement.zoomSpeed = 3;
             movement.zoomAccumulatedPixels = 5;
             movement.activeInput = true;
+
 
             movement.computeCurrentFrameDeltas();
 
@@ -156,11 +174,12 @@ describe("CameraMovement", () => {
             movement.panInertia = 0.9;
             movement.panAccumulatedPixels.x = 100;
             movement.activeInput = true;
+
             movement.computeCurrentFrameDeltas();
             const firstDelta = Math.abs(movement.panDeltaCurrentFrame.x);
 
+
             movement.panAccumulatedPixels.x = 0;
-            movement.activeInput = false;
             movement.computeCurrentFrameDeltas();
             const secondDelta = Math.abs(movement.panDeltaCurrentFrame.x);
 
@@ -172,10 +191,11 @@ describe("CameraMovement", () => {
             movement.panInertia = 0;
             movement.panAccumulatedPixels.x = 100;
             movement.activeInput = true;
+
             movement.computeCurrentFrameDeltas();
 
+
             movement.panAccumulatedPixels.x = 0;
-            movement.activeInput = false;
             movement.computeCurrentFrameDeltas();
 
             expect(movement.panDeltaCurrentFrame.x).toBe(0);

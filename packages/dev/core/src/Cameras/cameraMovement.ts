@@ -1,6 +1,6 @@
 import { type Scene } from "../scene";
 import { Vector3 } from "../Maths/math.vector";
-import type { InputMapEntry, InputModifiers, InputConditions, InputSource } from "./cameraInteractions";
+import type { InputMapEntry, InputConditions, InputSource, InputModifiers } from "./cameraInteractions";
 import { type InterpolatingBehavior } from "../Behaviors/Cameras/interpolatingBehavior";
 
 const FrameDurationAt60FPS = 1000 / 60;
@@ -35,14 +35,15 @@ export class CameraMovement {
     public inputMap: InputMapEntry[] = [];
 
     /**
-     * Resolves a physical input event to a semantic interaction type by walking the inputMap.
-     * Returns the interaction string of the first matching entry, or "none" if no entry matches.
-     * The returned string corresponds to a handler property name on the camera's movement subclass.
+     * Resolves a physical input event to a matching inputMap entry.
+     * When multiple entries match, the most specific one wins (counted by number of conditions).
+     * Among equally specific entries, the first one in the array wins.
+     * Returns the matched entry, or null if no entry matches.
      * @param source - The physical input source (e.g. "pointer", "keyboard")
      * @param conditions - Conditions to match against, specific to the source type
-     * @returns The resolved interaction type string, or "none"
+     * @returns The matched InputMapEntry, or null if no entry matches
      */
-    public resolveInteraction(source: InputSource, conditions?: InputConditions): string {
+    public resolveInteraction(source: InputSource, conditions?: InputConditions): InputMapEntry | null {
         for (const entry of this.inputMap) {
             if (entry.source !== source) {
                 continue;
@@ -77,9 +78,9 @@ export class CameraMovement {
                     }
                     break;
             }
-            return entry.interaction;
+            return entry;
         }
-        return "none";
+        return null;
     }
 
     /**
@@ -89,6 +90,53 @@ export class CameraMovement {
      */
     public resetInputMap(): void {
         this.inputMap = [];
+    }
+
+    /**
+     * Finds the first inputMap entry matching the given source and interaction.
+     * Useful for modifying entry properties (e.g. sensitivity) without rebuilding the entire inputMap.
+     * @param source - The physical input source to match
+     * @param interaction - The interaction type to match
+     * @returns The matching entry, or undefined if not found
+     */
+    public getEntry(source: InputSource, interaction: string): InputMapEntry | undefined {
+        return this.inputMap.find((e) => e.source === source && e.interaction === interaction);
+    }
+
+    /**
+     * Adds an entry to the inputMap at the correct position based on specificity.
+     * More specific entries (with more conditions like button, key, modifiers) are placed
+     * before less specific ones, ensuring they match first. Among equally specific entries,
+     * the new entry is placed after existing ones.
+     * @param entry - The entry to add
+     */
+    public addEntry(entry: InputMapEntry): void {
+        const score = this._entrySpecificity(entry);
+        let insertIndex = this.inputMap.length;
+        for (let i = 0; i < this.inputMap.length; i++) {
+            if (this._entrySpecificity(this.inputMap[i]) < score) {
+                insertIndex = i;
+                break;
+            }
+        }
+        this.inputMap.splice(insertIndex, 0, entry);
+    }
+
+    private _entrySpecificity(entry: InputMapEntry): number {
+        let score = 0;
+        if ("button" in entry && entry.button !== undefined) {
+            score++;
+        }
+        if ("key" in entry && entry.key !== undefined) {
+            score++;
+        }
+        if ("touchCount" in entry && entry.touchCount !== undefined) {
+            score++;
+        }
+        if ("modifiers" in entry && entry.modifiers) {
+            score++;
+        }
+        return score;
     }
 
     private _matchModifiers(entryModifiers?: InputModifiers, conditionModifiers?: InputModifiers): boolean {
@@ -296,6 +344,10 @@ export class CameraMovement {
     private _calculateCurrentVelocity(velocityRef: number, pixelDelta: number, inertialDecayFactor: number): number {
         let inputVelocity = velocityRef;
         const deltaTimeMs = this._scene.getEngine().getDeltaTime();
+
+        if (deltaTimeMs === 0) {
+            return inputVelocity;
+        }
 
         // If we are actively receiving input or have accumulated some pixel delta since last frame, calculate inputVelocity (inertia doesn't kick in yet)
         if (pixelDelta !== 0 || this.activeInput) {

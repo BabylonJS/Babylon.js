@@ -5,6 +5,7 @@ import { CameraInputTypes } from "../../Cameras/cameraInputsManager";
 import { OrbitCameraPointersInput } from "../../Cameras/Inputs/orbitCameraPointersInput";
 import { type PointerTouch } from "../../Events/pointerEvents";
 import { type IPointerEvent } from "../../Events/deviceInputEvents";
+import { type InputMapEntry } from "../cameraInteractions";
 
 /**
  * Manage the pointers inputs to control an arc rotate camera.
@@ -81,40 +82,14 @@ export class ArcRotateCameraPointersInput extends OrbitCameraPointersInput {
     public panningSensibility: number = 1000.0;
 
     /**
-     * Defines the pointer panning sensitivity as a multiplier on pointer pixel deltas.
-     * Only used when CameraMovement is active. Higher values = faster panning.
-     * Default calibrated to match legacy 1/panningSensibility (1/1000 = 0.001).
-     */
-    @serialize()
-    public panSensitivity: number = 0.001;
-
-    /**
-     * Defines the pointer rotation sensitivity along the X axis as a multiplier on pointer pixel deltas.
-     * Only used when CameraMovement is active. Higher values = faster rotation.
-     * Default calibrated to match legacy 1/angularSensibilityX (1/1000 = 0.001).
-     */
-    @serialize()
-    public rotationSensitivityX: number = 0.001;
-
-    /**
-     * Defines the pointer rotation sensitivity along the Y axis as a multiplier on pointer pixel deltas.
-     * Only used when CameraMovement is active. Higher values = faster rotation.
-     * Default calibrated to match legacy 1/angularSensibilityY (1/1000 = 0.001).
-     */
-    @serialize()
-    public rotationSensitivityY: number = 0.001;
-
-    /**
      * Revers pinch action direction.
      */
     public pinchInwards = true;
 
     private _isPanClick: boolean = false;
 
-    /** The resolved interaction type for the current pointer gesture - used by new movement system in lieu of _isPanClick
-     * so that it can support more than just pan
-     */
-    private _activeType: string = "none";
+    /** Cached resolved inputMap entry for the current pointer gesture */
+    private _activeEntry: InputMapEntry | null = null;
 
     /**
      * Move camera from multi touch panning positions.
@@ -125,9 +100,10 @@ export class ArcRotateCameraPointersInput extends OrbitCameraPointersInput {
         if (previousMultiTouchPanPosition && multiTouchPanPosition) {
             const moveDeltaX = multiTouchPanPosition.x - previousMultiTouchPanPosition.x;
             const moveDeltaY = multiTouchPanPosition.y - previousMultiTouchPanPosition.y;
-            if (this.camera.movement) {
+            if (this.camera.movement && this._activeEntry) {
+                const sens = this._activeEntry.sensitivity ?? 1;
                 this.camera.movement.activeInput = true;
-                this.camera.movement.handlers.pan(-moveDeltaX * this.panSensitivity, moveDeltaY * this.panSensitivity);
+                this.camera.movement.handlers.pan(-moveDeltaX * sens, moveDeltaY * sens);
             } else if (this.panningSensibility !== 0) {
                 this.camera.inertialPanningX += -moveDeltaX / this.panningSensibility;
                 this.camera.inertialPanningY += moveDeltaY / this.panningSensibility;
@@ -172,13 +148,14 @@ export class ArcRotateCameraPointersInput extends OrbitCameraPointersInput {
      * @param offsetY offset on Y
      */
     public override onTouch(point: Nullable<PointerTouch>, offsetX: number, offsetY: number): void {
-        if (this.camera.movement) {
-            if (this._activeType === "pan") {
+        if (this.camera.movement && this._activeEntry) {
+            const sens = this._activeEntry.sensitivity ?? 1;
+            if (this._activeEntry.interaction === "pan") {
                 this.camera.movement.activeInput = true;
-                this.camera.movement.handlers.pan(-offsetX * this.panSensitivity, offsetY * this.panSensitivity);
-            } else if (this._activeType === "rotate") {
+                this.camera.movement.handlers.pan(-offsetX * sens, offsetY * sens);
+            } else if (this._activeEntry.interaction === "rotate") {
                 this.camera.movement.activeInput = true;
-                this.camera.movement.handlers.rotate(-offsetX * this.rotationSensitivityX, -offsetY * this.rotationSensitivityY);
+                this.camera.movement.handlers.rotate(-offsetX * sens, -offsetY * sens);
             }
         } else {
             if (this.panningSensibility !== 0 && ((this._ctrlKey && this.camera._useCtrlForPanning) || this._isPanClick)) {
@@ -229,7 +206,7 @@ export class ArcRotateCameraPointersInput extends OrbitCameraPointersInput {
      */
     public override onButtonDown(evt: IPointerEvent): void {
         if (this.camera.movement) {
-            this._activeType = this.camera.movement.resolveInteraction("pointer", {
+            this._activeEntry = this.camera.movement.resolveInteraction("pointer", {
                 button: evt.button,
                 modifiers: { ctrl: evt.ctrlKey, alt: evt.altKey, shift: evt.shiftKey },
             });
@@ -245,7 +222,7 @@ export class ArcRotateCameraPointersInput extends OrbitCameraPointersInput {
      * @param _evt Defines the event to track
      */
     public override onButtonUp(_evt: IPointerEvent): void {
-        this._activeType = "none";
+        this._activeEntry = null;
         this._isPanClick = false;
         super.onButtonUp(_evt);
     }
@@ -254,7 +231,7 @@ export class ArcRotateCameraPointersInput extends OrbitCameraPointersInput {
      * Called when window becomes inactive.
      */
     public override onLostFocus(): void {
-        this._activeType = "none";
+        this._activeEntry = null;
         this._isPanClick = false;
         super.onLostFocus();
     }

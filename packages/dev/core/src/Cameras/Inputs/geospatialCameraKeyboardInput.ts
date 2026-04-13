@@ -61,23 +61,62 @@ export class GeospatialCameraKeyboardInput implements ICameraInput<GeospatialCam
     /**
      * Defines the rotation sensitivity of the inputs.
      * (How many pixels of pointer input to apply per keypress, before rotation speed factor is applied by movement class)
+     * @deprecated Use the `sensitivity` field on the keyboard rotate entry in `camera.movement.inputMap` instead.
      */
-    @serialize()
-    public rotationSensitivity = 1.0;
+    public get rotationSensitivity(): number {
+        const entry = this.camera.movement?.inputMap.find((e) => e.source === "keyboard" && e.interaction === "rotate");
+        return entry?.sensitivity ?? 1;
+    }
+
+    public set rotationSensitivity(value: number) {
+        if (this.camera.movement) {
+            for (const entry of this.camera.movement.inputMap) {
+                if (entry.source === "keyboard" && entry.interaction === "rotate") {
+                    entry.sensitivity = value;
+                }
+            }
+        }
+    }
 
     /**
      * Defines the panning sensitivity of the inputs.
      * (How many pixels of pointer input to apply per keypress, before pan speed factor is applied by movement class)
+     * @deprecated Use the `sensitivity` field on the keyboard pan entry in `camera.movement.inputMap` instead.
      */
-    @serialize()
-    public panSensitivity: number = 1.0;
+    public get panSensitivity(): number {
+        const entry = this.camera.movement?.inputMap.find((e) => e.source === "keyboard" && e.interaction === "pan");
+        return entry?.sensitivity ?? 1;
+    }
+
+    public set panSensitivity(value: number) {
+        if (this.camera.movement) {
+            for (const entry of this.camera.movement.inputMap) {
+                if (entry.source === "keyboard" && entry.interaction === "pan") {
+                    entry.sensitivity = value;
+                }
+            }
+        }
+    }
 
     /**
      * Defines the zooming sensitivity of the inputs.
      * (How many pixels of pointer input to apply per keypress, before zoom speed factor is applied by movement class)
+     * @deprecated Use the `sensitivity` field on the keyboard zoom entry in `camera.movement.inputMap` instead.
      */
-    @serialize()
-    public zoomSensitivity: number = 1.0;
+    public get zoomSensitivity(): number {
+        const entry = this.camera.movement?.inputMap.find((e) => e.source === "keyboard" && e.interaction === "zoom");
+        return entry?.sensitivity ?? 1;
+    }
+
+    public set zoomSensitivity(value: number) {
+        if (this.camera.movement) {
+            for (const entry of this.camera.movement.inputMap) {
+                if (entry.source === "keyboard" && entry.interaction === "zoom") {
+                    entry.sensitivity = value;
+                }
+            }
+        }
+    }
 
     private _keys = new Array<number>();
     private _ctrlPressed: boolean;
@@ -205,42 +244,45 @@ export class GeospatialCameraKeyboardInput implements ICameraInput<GeospatialCam
 
                 // Resolve per key — allows different keys to map to different interactions
                 this._keyboardConditions.key = keyCode;
-                const interaction = movement.resolveInteraction("keyboard", this._keyboardConditions);
+                const resolved = movement.resolveInteraction("keyboard", this._keyboardConditions);
 
-                if (interaction === "zoom") {
-                    if (this.keysZoomIn.indexOf(keyCode) !== -1 || this.keysUp.indexOf(keyCode) !== -1) {
-                        movement.handlers.zoom(this.zoomSensitivity, false);
-                    } else if (this.keysZoomOut.indexOf(keyCode) !== -1 || this.keysDown.indexOf(keyCode) !== -1) {
-                        movement.handlers.zoom(-this.zoomSensitivity, false);
+                if (resolved) {
+                    const sens = resolved.sensitivity ?? 1;
+                    if (resolved.interaction === "zoom") {
+                        if (this.keysZoomIn.indexOf(keyCode) !== -1 || this.keysUp.indexOf(keyCode) !== -1) {
+                            movement.handlers.zoom(sens, false);
+                        } else if (this.keysZoomOut.indexOf(keyCode) !== -1 || this.keysDown.indexOf(keyCode) !== -1) {
+                            movement.handlers.zoom(-sens, false);
+                        }
+                    } else if (resolved.interaction === "rotate") {
+                        if (this.keysLeft.indexOf(keyCode) !== -1) {
+                            movement.handlers.rotate(-sens, 0);
+                        } else if (this.keysRight.indexOf(keyCode) !== -1) {
+                            movement.handlers.rotate(sens, 0);
+                        } else if (this.keysUp.indexOf(keyCode) !== -1) {
+                            movement.handlers.rotate(0, -sens);
+                        } else if (this.keysDown.indexOf(keyCode) !== -1) {
+                            movement.handlers.rotate(0, sens);
+                        }
+                    } else if (resolved.interaction === "pan") {
+                        // Call into movement class handleDrag so that behavior matches that of pointer input, simulating drag from center of screen.
+                        // getRenderWidth/Height return render buffer pixels (scaled by hardwareScalingLevel relative to CSS pixels),
+                        // but the picking logic (scene.pick via CreatePickingRayToRef) expects CSS pixels (it divides by hardwareScalingLevel internally).
+                        const hardwareScaling = this._engine.getHardwareScalingLevel();
+                        const centerX = (this._engine.getRenderWidth() / 2) * hardwareScaling;
+                        const centerY = (this._engine.getRenderHeight() / 2) * hardwareScaling;
+                        movement.handlers.pan.start(centerX, centerY);
+                        if (this.keysLeft.indexOf(keyCode) !== -1) {
+                            movement.handlers.pan.update(centerX + sens, centerY);
+                        } else if (this.keysRight.indexOf(keyCode) !== -1) {
+                            movement.handlers.pan.update(centerX - sens, centerY);
+                        } else if (this.keysUp.indexOf(keyCode) !== -1) {
+                            movement.handlers.pan.update(centerX, centerY + sens);
+                        } else if (this.keysDown.indexOf(keyCode) !== -1) {
+                            movement.handlers.pan.update(centerX, centerY - sens);
+                        }
+                        movement.handlers.pan.stop();
                     }
-                } else if (interaction === "rotate") {
-                    if (this.keysLeft.indexOf(keyCode) !== -1) {
-                        movement.handlers.rotate(-this.rotationSensitivity, 0);
-                    } else if (this.keysRight.indexOf(keyCode) !== -1) {
-                        movement.handlers.rotate(this.rotationSensitivity, 0);
-                    } else if (this.keysUp.indexOf(keyCode) !== -1) {
-                        movement.handlers.rotate(0, -this.rotationSensitivity);
-                    } else if (this.keysDown.indexOf(keyCode) !== -1) {
-                        movement.handlers.rotate(0, this.rotationSensitivity);
-                    }
-                } else if (interaction === "pan") {
-                    // Call into movement class handleDrag so that behavior matches that of pointer input, simulating drag from center of screen.
-                    // getRenderWidth/Height return render buffer pixels (scaled by hardwareScalingLevel relative to CSS pixels),
-                    // but the picking logic (scene.pick via CreatePickingRayToRef) expects CSS pixels (it divides by hardwareScalingLevel internally).
-                    const hardwareScaling = this._engine.getHardwareScalingLevel();
-                    const centerX = (this._engine.getRenderWidth() / 2) * hardwareScaling;
-                    const centerY = (this._engine.getRenderHeight() / 2) * hardwareScaling;
-                    movement.handlers.pan.start(centerX, centerY);
-                    if (this.keysLeft.indexOf(keyCode) !== -1) {
-                        movement.handlers.pan.update(centerX + this.panSensitivity, centerY);
-                    } else if (this.keysRight.indexOf(keyCode) !== -1) {
-                        movement.handlers.pan.update(centerX - this.panSensitivity, centerY);
-                    } else if (this.keysUp.indexOf(keyCode) !== -1) {
-                        movement.handlers.pan.update(centerX, centerY + this.panSensitivity);
-                    } else if (this.keysDown.indexOf(keyCode) !== -1) {
-                        movement.handlers.pan.update(centerX, centerY - this.panSensitivity);
-                    }
-                    movement.handlers.pan.stop();
                 }
             }
         }

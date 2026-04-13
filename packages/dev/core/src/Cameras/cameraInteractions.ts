@@ -20,7 +20,7 @@ export type InputModifiers = {
 export type PointerConditions = {
     /** Mouse button (0=left, 1=middle, 2=right). Omit to match any button. */
     button?: number;
-    /** Modifier key filters. Only specified keys are checked; omitted = don't-care. */
+    /** Modifier key state. Only specified keys are checked; omitted = don't-care. */
     modifiers?: InputModifiers;
 };
 
@@ -28,7 +28,7 @@ export type PointerConditions = {
  * Conditions for mouse wheel inputs.
  */
 export type WheelConditions = {
-    /** Modifier key filters. Only specified keys are checked; omitted = don't-care. */
+    /** Modifier key state. Only specified keys are checked; omitted = don't-care. */
     modifiers?: InputModifiers;
 };
 
@@ -46,7 +46,7 @@ export type TouchConditions = {
 export type KeyboardConditions = {
     /** Key code of the current key being resolved. Omit to match any key. */
     key?: number;
-    /** Modifier key filters. Only specified keys are checked; omitted = don't-care. */
+    /** Modifier key state. Only specified keys are checked; omitted = don't-care. */
     modifiers?: InputModifiers;
 };
 
@@ -58,6 +58,8 @@ export type KeyboardConditions = {
 export type PointerInputMapEntry<TInteraction extends string = string> = {
     source: "pointer";
     interaction: TInteraction;
+    /** Multiplier applied to input deltas before passing to the handler. Default is 1. */
+    sensitivity?: number;
 } & PointerConditions;
 
 /**
@@ -66,6 +68,8 @@ export type PointerInputMapEntry<TInteraction extends string = string> = {
 export type WheelInputMapEntry<TInteraction extends string = string> = {
     source: "wheel";
     interaction: TInteraction;
+    /** Multiplier applied to input deltas before passing to the handler. Default is 1. */
+    sensitivity?: number;
 } & WheelConditions;
 
 /**
@@ -74,6 +78,8 @@ export type WheelInputMapEntry<TInteraction extends string = string> = {
 export type TouchInputMapEntry<TInteraction extends string = string> = {
     source: "touch";
     interaction: TInteraction;
+    /** Multiplier applied to input deltas before passing to the handler. Default is 1. */
+    sensitivity?: number;
 } & TouchConditions;
 
 /**
@@ -84,9 +90,11 @@ export type TouchInputMapEntry<TInteraction extends string = string> = {
 export type KeyboardInputMapEntry<TInteraction extends string = string> = {
     source: "keyboard";
     interaction: TInteraction;
+    /** Multiplier applied to input deltas before passing to the handler. Default is 1. */
+    sensitivity?: number;
     /** Key code filter(s). Supports a single code or an array. Omit to match any key. */
     key?: number | number[];
-    /** Modifier key filters. Only specified keys are checked; omitted = don't-care. */
+    /** Modifier keys that must be active for this entry to match. Omit to match regardless of modifiers. */
     modifiers?: InputModifiers;
 };
 
@@ -112,7 +120,7 @@ export type InputMapEntry<TInteraction extends string = string> =
 export type InputConditions = {
     /** Mouse button (0=left, 1=middle, 2=right) */
     button?: number;
-    /** Modifier key state */
+    /** Current modifier key state */
     modifiers?: InputModifiers;
     /** Number of active touch points */
     touchCount?: number;

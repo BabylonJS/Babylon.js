@@ -41,55 +41,55 @@ describe("GeospatialCameraMovement", () => {
         });
 
         it("should map left-click to pan", () => {
-            expect(movement.resolveInteraction("pointer", { button: 0 })).toBe("pan");
+            expect(movement.resolveInteraction("pointer", { button: 0 })?.interaction).toBe("pan");
         });
 
         it("should map middle-click to rotate", () => {
-            expect(movement.resolveInteraction("pointer", { button: 1 })).toBe("rotate");
+            expect(movement.resolveInteraction("pointer", { button: 1 })?.interaction).toBe("rotate");
         });
 
         it("should map right-click to rotate", () => {
-            expect(movement.resolveInteraction("pointer", { button: 2 })).toBe("rotate");
+            expect(movement.resolveInteraction("pointer", { button: 2 })?.interaction).toBe("rotate");
         });
 
         it("should map wheel to zoom", () => {
-            expect(movement.resolveInteraction("wheel")).toBe("zoom");
+            expect(movement.resolveInteraction("wheel")?.interaction).toBe("zoom");
         });
 
         it("should map +/- keys to zoom", () => {
-            expect(movement.resolveInteraction("keyboard", { key: 187 })).toBe("zoom"); // + key
-            expect(movement.resolveInteraction("keyboard", { key: 107 })).toBe("zoom"); // numpad +
-            expect(movement.resolveInteraction("keyboard", { key: 189 })).toBe("zoom"); // - key
-            expect(movement.resolveInteraction("keyboard", { key: 109 })).toBe("zoom"); // numpad -
+            expect(movement.resolveInteraction("keyboard", { key: 187 })?.interaction).toBe("zoom"); // + key
+            expect(movement.resolveInteraction("keyboard", { key: 107 })?.interaction).toBe("zoom"); // numpad +
+            expect(movement.resolveInteraction("keyboard", { key: 189 })?.interaction).toBe("zoom"); // - key
+            expect(movement.resolveInteraction("keyboard", { key: 109 })?.interaction).toBe("zoom"); // numpad -
         });
 
         it("should map ctrl+keyboard to rotate", () => {
-            expect(movement.resolveInteraction("keyboard", { modifiers: { ctrl: true } })).toBe("rotate");
+            expect(movement.resolveInteraction("keyboard", { modifiers: { ctrl: true } })?.interaction).toBe("rotate");
         });
 
         it("should map alt+keyboard to rotate", () => {
-            expect(movement.resolveInteraction("keyboard", { modifiers: { alt: true } })).toBe("rotate");
+            expect(movement.resolveInteraction("keyboard", { modifiers: { alt: true } })?.interaction).toBe("rotate");
         });
 
         it("should map plain keyboard to pan", () => {
-            expect(movement.resolveInteraction("keyboard", { modifiers: {} })).toBe("pan");
+            expect(movement.resolveInteraction("keyboard", { modifiers: {} })?.interaction).toBe("pan");
         });
 
         it("should map arrow keys without modifiers to pan", () => {
-            expect(movement.resolveInteraction("keyboard", { key: 38, modifiers: {} })).toBe("pan"); // up arrow
-            expect(movement.resolveInteraction("keyboard", { key: 40, modifiers: {} })).toBe("pan"); // down arrow
-            expect(movement.resolveInteraction("keyboard", { key: 37, modifiers: {} })).toBe("pan"); // left arrow
-            expect(movement.resolveInteraction("keyboard", { key: 39, modifiers: {} })).toBe("pan"); // right arrow
+            expect(movement.resolveInteraction("keyboard", { key: 38, modifiers: {} })?.interaction).toBe("pan"); // up arrow
+            expect(movement.resolveInteraction("keyboard", { key: 40, modifiers: {} })?.interaction).toBe("pan"); // down arrow
+            expect(movement.resolveInteraction("keyboard", { key: 37, modifiers: {} })?.interaction).toBe("pan"); // left arrow
+            expect(movement.resolveInteraction("keyboard", { key: 39, modifiers: {} })?.interaction).toBe("pan"); // right arrow
         });
 
         it("should map arrow keys with ctrl to rotate", () => {
-            expect(movement.resolveInteraction("keyboard", { key: 38, modifiers: { ctrl: true } })).toBe("rotate");
-            expect(movement.resolveInteraction("keyboard", { key: 37, modifiers: { ctrl: true } })).toBe("rotate");
+            expect(movement.resolveInteraction("keyboard", { key: 38, modifiers: { ctrl: true } })?.interaction).toBe("rotate");
+            expect(movement.resolveInteraction("keyboard", { key: 37, modifiers: { ctrl: true } })?.interaction).toBe("rotate");
         });
 
         it("should map zoom keys with ctrl to zoom (key match wins over modifier match)", () => {
             // Key-specific entry comes before modifier entry in the inputMap, so it wins
-            expect(movement.resolveInteraction("keyboard", { key: 187, modifiers: { ctrl: true } })).toBe("zoom");
+            expect(movement.resolveInteraction("keyboard", { key: 187, modifiers: { ctrl: true } })?.interaction).toBe("zoom");
         });
 
         it("should map pointer with shift modifier when configured", () => {
@@ -97,8 +97,8 @@ describe("GeospatialCameraMovement", () => {
                 { source: "pointer", button: 0, modifiers: { shift: true }, interaction: "rotate" },
                 { source: "pointer", button: 0, interaction: "pan" },
             ];
-            expect(movement.resolveInteraction("pointer", { button: 0, modifiers: { shift: true } })).toBe("rotate");
-            expect(movement.resolveInteraction("pointer", { button: 0, modifiers: {} })).toBe("pan");
+            expect(movement.resolveInteraction("pointer", { button: 0, modifiers: { shift: true } })?.interaction).toBe("rotate");
+            expect(movement.resolveInteraction("pointer", { button: 0, modifiers: {} })?.interaction).toBe("pan");
         });
     });
 
@@ -224,13 +224,13 @@ describe("GeospatialCameraMovement", () => {
             movement.resetInputMap();
             expect(movement.inputMap).toHaveLength(8);
 
-            expect(movement.resolveInteraction("pointer", { button: 0 })).toBe("pan");
-            expect(movement.resolveInteraction("pointer", { button: 1 })).toBe("rotate");
-            expect(movement.resolveInteraction("pointer", { button: 2 })).toBe("rotate");
-            expect(movement.resolveInteraction("wheel")).toBe("zoom");
-            expect(movement.resolveInteraction("keyboard", { key: 187 })).toBe("zoom");
-            expect(movement.resolveInteraction("keyboard", { modifiers: { ctrl: true } })).toBe("rotate");
-            expect(movement.resolveInteraction("keyboard", { modifiers: {} })).toBe("pan");
+            expect(movement.resolveInteraction("pointer", { button: 0 })?.interaction).toBe("pan");
+            expect(movement.resolveInteraction("pointer", { button: 1 })?.interaction).toBe("rotate");
+            expect(movement.resolveInteraction("pointer", { button: 2 })?.interaction).toBe("rotate");
+            expect(movement.resolveInteraction("wheel")?.interaction).toBe("zoom");
+            expect(movement.resolveInteraction("keyboard", { key: 187 })?.interaction).toBe("zoom");
+            expect(movement.resolveInteraction("keyboard", { modifiers: { ctrl: true } })?.interaction).toBe("rotate");
+            expect(movement.resolveInteraction("keyboard", { modifiers: {} })?.interaction).toBe("pan");
         });
     });
 });
