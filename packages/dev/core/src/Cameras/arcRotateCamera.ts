@@ -1104,6 +1104,46 @@ export class ArcRotateCamera extends TargetCamera {
         }
     }
 
+    /**
+     * Applies a pan delta to the camera target in screen space.
+     * Shared by both the movement system and legacy inertia paths.
+     * @param panX - Horizontal pan delta
+     * @param panY - Vertical pan delta
+     */
+    private _applyPanDelta(panX: number, panY: number): void {
+        const localDirection = TmpVectors.Vector3[0].copyFromFloats(panX, panY, panY);
+
+        this._viewMatrix.invertToRef(this._cameraTransformMatrix);
+        localDirection.multiplyInPlace(this.panningAxis);
+        Vector3.TransformNormalToRef(localDirection, this._cameraTransformMatrix, this._transformedDirection);
+
+        if (this.mapPanning) {
+            const up = this.upVector;
+            const right = Vector3.CrossToRef(this._transformedDirection, up, this._transformedDirection);
+            Vector3.CrossToRef(up, right, this._transformedDirection);
+        } else if (!this.panningAxis.y) {
+            this._transformedDirection.y = 0;
+        }
+
+        if (!this._targetHost) {
+            if (this.panningDistanceLimit) {
+                this._transformedDirection.addInPlace(this._target);
+                const distanceSquared = Vector3.DistanceSquared(this._transformedDirection, this.panningOriginTarget);
+                if (distanceSquared <= this.panningDistanceLimit * this.panningDistanceLimit) {
+                    this._target.copyFrom(this._transformedDirection);
+                }
+            } else {
+                if (this.parent) {
+                    const m = TmpVectors.Matrix[0];
+                    this.parent.getWorldMatrix().getRotationMatrixToRef(m);
+                    m.transposeToRef(m);
+                    Vector3.TransformCoordinatesToRef(this._transformedDirection, m, this._transformedDirection);
+                }
+                this._target.addInPlace(this._transformedDirection);
+            }
+        }
+    }
+
     /** @internal */
     public override _checkInputs(): void {
         //if (async) collision inspection was triggered, don't update the camera's position - until the collision callback was called.
@@ -1125,7 +1165,6 @@ export class ArcRotateCamera extends TargetCamera {
             if (rotDelta.x !== 0 || rotDelta.y !== 0 || zoomDelta !== 0 || panDelta.x !== 0 || panDelta.y !== 0) {
                 hasUserInteractions = true;
 
-                // Apply rotation
                 const directionModifier = this.invertRotation ? -1 : 1;
                 const handednessMultiplier = this._calculateHandednessMultiplier();
                 let alphaOffset = rotDelta.x * handednessMultiplier;
@@ -1136,43 +1175,10 @@ export class ArcRotateCamera extends TargetCamera {
 
                 this.alpha += alphaOffset * directionModifier;
                 this.beta += rotDelta.y * directionModifier;
-
-                // Apply zoom
                 this.radius -= zoomDelta;
 
-                // Apply panning
                 if (panDelta.x !== 0 || panDelta.y !== 0) {
-                    const localDirection = TmpVectors.Vector3[0].copyFromFloats(panDelta.x, panDelta.y, panDelta.y);
-
-                    this._viewMatrix.invertToRef(this._cameraTransformMatrix);
-                    localDirection.multiplyInPlace(this.panningAxis);
-                    Vector3.TransformNormalToRef(localDirection, this._cameraTransformMatrix, this._transformedDirection);
-
-                    if (this.mapPanning) {
-                        const up = this.upVector;
-                        const right = Vector3.CrossToRef(this._transformedDirection, up, this._transformedDirection);
-                        Vector3.CrossToRef(up, right, this._transformedDirection);
-                    } else if (!this.panningAxis.y) {
-                        this._transformedDirection.y = 0;
-                    }
-
-                    if (!this._targetHost) {
-                        if (this.panningDistanceLimit) {
-                            this._transformedDirection.addInPlace(this._target);
-                            const distanceSquared = Vector3.DistanceSquared(this._transformedDirection, this.panningOriginTarget);
-                            if (distanceSquared <= this.panningDistanceLimit * this.panningDistanceLimit) {
-                                this._target.copyFrom(this._transformedDirection);
-                            }
-                        } else {
-                            if (this.parent) {
-                                const m = TmpVectors.Matrix[0];
-                                this.parent.getWorldMatrix().getRotationMatrixToRef(m);
-                                m.transposeToRef(m);
-                                Vector3.TransformCoordinatesToRef(this._transformedDirection, m, this._transformedDirection);
-                            }
-                            this._target.addInPlace(this._transformedDirection);
-                        }
-                    }
+                    this._applyPanDelta(panDelta.x, panDelta.y);
                 }
             }
         } else {
@@ -1210,39 +1216,7 @@ export class ArcRotateCamera extends TargetCamera {
             if (this.inertialPanningX !== 0 || this.inertialPanningY !== 0) {
                 hasUserInteractions = true;
 
-                const localDirection = new Vector3(this.inertialPanningX, this.inertialPanningY, this.inertialPanningY);
-
-                this._viewMatrix.invertToRef(this._cameraTransformMatrix);
-                localDirection.multiplyInPlace(this.panningAxis);
-                Vector3.TransformNormalToRef(localDirection, this._cameraTransformMatrix, this._transformedDirection);
-
-                // If mapPanning is enabled, we need to take the upVector into account and
-                // make sure we're not panning in the y direction
-                if (this.mapPanning) {
-                    const up = this.upVector;
-                    const right = Vector3.CrossToRef(this._transformedDirection, up, this._transformedDirection);
-                    Vector3.CrossToRef(up, right, this._transformedDirection);
-                } else if (!this.panningAxis.y) {
-                    this._transformedDirection.y = 0;
-                }
-
-                if (!this._targetHost) {
-                    if (this.panningDistanceLimit) {
-                        this._transformedDirection.addInPlace(this._target);
-                        const distanceSquared = Vector3.DistanceSquared(this._transformedDirection, this.panningOriginTarget);
-                        if (distanceSquared <= this.panningDistanceLimit * this.panningDistanceLimit) {
-                            this._target.copyFrom(this._transformedDirection);
-                        }
-                    } else {
-                        if (this.parent) {
-                            const m = TmpVectors.Matrix[0];
-                            this.parent.getWorldMatrix().getRotationMatrixToRef(m);
-                            m.transposeToRef(m);
-                            Vector3.TransformCoordinatesToRef(this._transformedDirection, m, this._transformedDirection);
-                        }
-                        this._target.addInPlace(this._transformedDirection);
-                    }
-                }
+                this._applyPanDelta(this.inertialPanningX, this.inertialPanningY);
 
                 this.inertialPanningX *= this.panningInertia;
                 this.inertialPanningY *= this.panningInertia;
