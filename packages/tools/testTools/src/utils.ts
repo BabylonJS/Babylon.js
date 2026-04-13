@@ -467,6 +467,15 @@ export interface PerformanceTestOptions {
      * Set to "webgpu" to test WebGPU performance.
      */
     engineName?: string;
+    /**
+     * Use interleaved sampling with paired t-test analysis (default: true).
+     * When true, stable and dev measurements alternate each pass so environmental
+     * drift affects both equally, and a paired t-test is used for higher statistical
+     * power. Recommended for shared/noisy environments (e.g. BrowserStack).
+     * When false, all stable passes run first, then all dev passes, using Welch's
+     * t-test. Faster (~2x) since each build's page is loaded once instead of per-pass.
+     */
+    interleaved?: boolean;
 }
 
 const defaultPerfOptions: Required<PerformanceTestOptions> = {
@@ -483,6 +492,7 @@ const defaultPerfOptions: Required<PerformanceTestOptions> = {
     cdnVersion: "",
     cdnVersionB: "",
     engineName: "webgl2",
+    interleaved: true,
 };
 
 /**
@@ -776,19 +786,47 @@ export const comparePerformance = async (
     const baselineLabel = opts.cdnVersion ? versionLabel(opts.cdnVersion) : "Stable";
     const candidateLabel = opts.cdnVersionB ? versionLabel(opts.cdnVersionB) : "Dev";
 
-    // Collect interleaved samples (stable/dev alternate to cancel environmental drift)
-    const initial = await collectInterleavedSamples(page, baseUrl, createSceneFunction, opts, evaluateArg);
+    // Choose between interleaved (paired) or sequential (independent) sampling
+    let stable: PerformanceResult;
+    let dev: PerformanceResult;
+    let pairedDifferences: number[] | null = null;
 
-    if ("skipped" in initial) {
-        const empty: PerformanceResult = { mean: 0, raw: [], trimmed: [], cov: 0 };
-        return { stable: empty, dev: empty, ratio: 1, pValue: 1, passed: true, summary: initial.skipped, skipped: initial.skipped };
+    if (opts.interleaved) {
+        // Interleaved: stable/dev alternate each pass to cancel environmental drift
+        const initial = await collectInterleavedSamples(page, baseUrl, createSceneFunction, opts, evaluateArg);
+
+        if ("skipped" in initial) {
+            const empty: PerformanceResult = { mean: 0, raw: [], trimmed: [], cov: 0 };
+            return { stable: empty, dev: empty, ratio: 1, pValue: 1, passed: true, summary: initial.skipped, skipped: initial.skipped };
+        }
+
+        stable = initial.stable;
+        dev = initial.dev;
+        pairedDifferences = initial.pairedDifferences;
+    } else {
+        // Sequential: all stable passes first, then all dev passes (faster, ~2x)
+        stable = await collectPerformanceSamples(page, baseUrl, "stable", createSceneFunction, opts, evaluateArg);
+
+        if (stable.skipped) {
+            const empty: PerformanceResult = { mean: 0, raw: [], trimmed: [], cov: 0 };
+            return { stable, dev: empty, ratio: 1, pValue: 1, passed: true, summary: stable.skipped, skipped: stable.skipped };
+        }
+
+        if (opts.cdnVersionB) {
+            const cdnBOpts = { ...opts, cdnVersion: opts.cdnVersionB };
+            dev = await collectPerformanceSamples(page, baseUrl, "stable", createSceneFunction, cdnBOpts, evaluateArg);
+        } else {
+            dev = await collectPerformanceSamples(page, baseUrl, "dev", createSceneFunction, opts, evaluateArg);
+        }
+
+        if (dev.skipped) {
+            return { stable, dev, ratio: 1, pValue: 1, passed: true, summary: dev.skipped, skipped: dev.skipped };
+        }
     }
 
-    const { stable, dev, pairedDifferences } = initial;
-
-    const buildResult = (stableRes: PerformanceResult, devRes: PerformanceResult, diffs: number[]): PerformanceComparisonResult => {
+    const buildResult = (stableRes: PerformanceResult, devRes: PerformanceResult, diffs: number[] | null): PerformanceComparisonResult => {
         const ratio = devRes.mean / stableRes.mean;
-        const { pValue } = performanceStats.pairedTTest(diffs);
+        const { pValue } = diffs ? performanceStats.pairedTTest(diffs) : performanceStats.welchTTest(stableRes.trimmed, devRes.trimmed);
 
         const ratioExceeded = ratio > 1 + opts.acceptedThreshold;
         const statisticallySignificant = pValue < opts.pValueThreshold;
@@ -827,26 +865,43 @@ export const comparePerformance = async (
         );
 
         const confirmOpts = { ...opts, numberOfPasses: effectiveConfirmationPasses, warmupPasses: 1, confirmationPasses: 0 };
-        const confirmResult = await collectInterleavedSamples(page, baseUrl, createSceneFunction, confirmOpts, evaluateArg);
 
-        if ("skipped" in confirmResult) {
-            return result;
+        let confirmStable: PerformanceResult;
+        let confirmDev: PerformanceResult;
+        let confirmDiffs: number[] | null = null;
+
+        if (opts.interleaved) {
+            const confirmResult = await collectInterleavedSamples(page, baseUrl, createSceneFunction, confirmOpts, evaluateArg);
+            if ("skipped" in confirmResult) {
+                return result;
+            }
+            confirmStable = confirmResult.stable;
+            confirmDev = confirmResult.dev;
+            confirmDiffs = confirmResult.pairedDifferences;
+        } else {
+            confirmStable = await collectPerformanceSamples(page, baseUrl, "stable", createSceneFunction, confirmOpts, evaluateArg);
+            if (opts.cdnVersionB) {
+                const cdnBOpts = { ...confirmOpts, cdnVersion: opts.cdnVersionB };
+                confirmDev = await collectPerformanceSamples(page, baseUrl, "stable", createSceneFunction, cdnBOpts, evaluateArg);
+            } else {
+                confirmDev = await collectPerformanceSamples(page, baseUrl, "dev", createSceneFunction, confirmOpts, evaluateArg);
+            }
         }
 
         // Merge samples from both runs
-        const allStable = [...stable.trimmed, ...confirmResult.stable.trimmed];
-        const allDev = [...dev.trimmed, ...confirmResult.dev.trimmed];
-        const allDiffs = [...pairedDifferences, ...confirmResult.pairedDifferences];
+        const allStable = [...stable.trimmed, ...confirmStable.trimmed];
+        const allDev = [...dev.trimmed, ...confirmDev.trimmed];
+        const allDiffs = pairedDifferences && confirmDiffs ? [...pairedDifferences, ...confirmDiffs] : null;
 
         const mergedStable: PerformanceResult = {
             mean: performanceStats.mean(allStable),
-            raw: [...stable.raw, ...confirmResult.stable.raw],
+            raw: [...stable.raw, ...confirmStable.raw],
             trimmed: allStable,
             cov: performanceStats.coefficientOfVariation(allStable),
         };
         const mergedDev: PerformanceResult = {
             mean: performanceStats.mean(allDev),
-            raw: [...dev.raw, ...confirmResult.dev.raw],
+            raw: [...dev.raw, ...confirmDev.raw],
             trimmed: allDev,
             cov: performanceStats.coefficientOfVariation(allDev),
         };
