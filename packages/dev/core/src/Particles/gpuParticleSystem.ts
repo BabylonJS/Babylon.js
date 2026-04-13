@@ -113,8 +113,20 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
     private _platform: IGPUParticleSystemPlatform;
     private _rebuildingAfterContextLost = false;
 
+    // Emit rate gradient caching (mirrors ThinParticleSystem)
+    private _currentEmitRateGradient: Nullable<FactorGradient> = null;
+    private _currentEmitRate1: number = 0;
+    private _currentEmitRate2: number = 0;
+
+    // Start size gradient caching (mirrors ThinParticleSystem)
+    private _currentStartSizeGradient: Nullable<FactorGradient> = null;
+    private _currentStartSize1: number = 0;
+    private _currentStartSize2: number = 0;
     private _startSizeGradientFactor: number = 1.0;
-    private _lifeTimeGradientFactor: number = 1.0;
+
+    // Life time gradient factor range for per-particle randomization in shader
+    private _lifeTimeGradientMin: number = 1.0;
+    private _lifeTimeGradientMax: number = 1.0;
 
     /**
      * Specifies if the particle system should be serialized
@@ -475,6 +487,29 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         this._stopped = false;
         this._actualFrame = 0;
         this._preWarmDone = false;
+
+        // Reset emit gradient so it acts the same on every start
+        if (this._emitRateGradients) {
+            if (this._emitRateGradients.length > 0) {
+                this._currentEmitRateGradient = this._emitRateGradients[0];
+                this._currentEmitRate1 = this._currentEmitRateGradient.getFactor();
+                this._currentEmitRate2 = this._currentEmitRate1;
+            }
+            if (this._emitRateGradients.length > 1) {
+                this._currentEmitRate2 = this._emitRateGradients[1].getFactor();
+            }
+        }
+        // Reset start size gradient so it acts the same on every start
+        if (this._startSizeGradients) {
+            if (this._startSizeGradients.length > 0) {
+                this._currentStartSizeGradient = this._startSizeGradients[0];
+                this._currentStartSize1 = this._currentStartSizeGradient.getFactor();
+                this._currentStartSize2 = this._currentStartSize1;
+            }
+            if (this._startSizeGradients.length > 1) {
+                this._currentStartSize2 = this._startSizeGradients[1].getFactor();
+            }
+        }
 
         // Animations
         if (this.beginAnimationOnStart && this.animations && this.animations.length > 0 && this._scene) {
@@ -863,8 +898,11 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
             this._startSizeGradients = [];
         }
 
+        const hadGradients = this._startSizeGradients.length > 0;
         this._addFactorGradient(this._startSizeGradients, gradient, factor, factor2);
-        this._resetEffect();
+        if (!hadGradients) {
+            this._resetEffect();
+        }
         return this;
     }
 
@@ -874,8 +912,11 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
      * @returns the current particle system
      */
     public removeStartSizeGradient(gradient: number): IParticleSystem {
+        const hadGradients = this._startSizeGradients && this._startSizeGradients.length > 0;
         this._removeFactorGradient(this._startSizeGradients, gradient);
-        this._resetEffect();
+        if (hadGradients && (!this._startSizeGradients || this._startSizeGradients.length === 0)) {
+            this._resetEffect();
+        }
         return this;
     }
 
@@ -973,8 +1014,11 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
             this._lifeTimeGradients = [];
         }
 
+        const hadGradients = this._lifeTimeGradients.length > 0;
         this._addFactorGradient(this._lifeTimeGradients, gradient, factor, factor2);
-        this._resetEffect();
+        if (!hadGradients) {
+            this._resetEffect();
+        }
         return this;
     }
 
@@ -984,8 +1028,11 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
      * @returns the current particle system
      */
     public removeLifeTimeGradient(gradient: number): IParticleSystem {
+        const hadGradients = this._lifeTimeGradients && this._lifeTimeGradients.length > 0;
         this._removeFactorGradient(this._lifeTimeGradients, gradient);
-        this._resetEffect();
+        if (hadGradients && (!this._lifeTimeGradients || this._lifeTimeGradients.length === 0)) {
+            this._resetEffect();
+        }
         return this;
     }
 
@@ -1939,7 +1986,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         }
 
         if (this._lifeTimeGradients && this._lifeTimeGradients.length > 0) {
-            this._updateBuffer.setFloat("lifeTimeGradientFactor", this._lifeTimeGradientFactor);
+            this._updateBuffer.setFloat2("lifeTimeGradientRange", this._lifeTimeGradientMin, this._lifeTimeGradientMax);
         }
 
         this._platform.updateParticleBuffer(this._targetIndex, this._targetBuffer, this._currentActiveCount);
@@ -2004,7 +2051,12 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         if (this._emitRateGradients && this._emitRateGradients.length > 0 && this.targetStopDuration) {
             const ratio = this._actualFrame / this.targetStopDuration;
             GradientHelper.GetCurrentGradient(ratio, this._emitRateGradients, (currentGradient, nextGradient, scale) => {
-                effectiveEmitRate = Lerp((<FactorGradient>currentGradient).factor1, (<FactorGradient>nextGradient).factor1, scale);
+                if (currentGradient !== this._currentEmitRateGradient) {
+                    this._currentEmitRate1 = this._currentEmitRate2;
+                    this._currentEmitRate2 = (<FactorGradient>nextGradient).getFactor();
+                    this._currentEmitRateGradient = <FactorGradient>currentGradient;
+                }
+                effectiveEmitRate = Lerp(this._currentEmitRate1, this._currentEmitRate2, scale);
             });
         }
 
@@ -2014,7 +2066,12 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
 
             if (this._startSizeGradients && this._startSizeGradients.length > 0) {
                 GradientHelper.GetCurrentGradient(ratio, this._startSizeGradients, (currentGradient, nextGradient, scale) => {
-                    this._startSizeGradientFactor = Lerp((<FactorGradient>currentGradient).factor1, (<FactorGradient>nextGradient).factor1, scale);
+                    if (currentGradient !== this._currentStartSizeGradient) {
+                        this._currentStartSize1 = this._currentStartSize2;
+                        this._currentStartSize2 = (<FactorGradient>nextGradient).getFactor();
+                        this._currentStartSizeGradient = <FactorGradient>currentGradient;
+                    }
+                    this._startSizeGradientFactor = Lerp(this._currentStartSize1, this._currentStartSize2, scale);
                 });
             } else {
                 this._startSizeGradientFactor = 1.0;
@@ -2022,10 +2079,14 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
 
             if (this._lifeTimeGradients && this._lifeTimeGradients.length > 0) {
                 GradientHelper.GetCurrentGradient(ratio, this._lifeTimeGradients, (currentGradient, nextGradient, scale) => {
-                    this._lifeTimeGradientFactor = Lerp((<FactorGradient>currentGradient).factor1, (<FactorGradient>nextGradient).factor1, scale);
+                    const current = <FactorGradient>currentGradient;
+                    const next = <FactorGradient>nextGradient;
+                    this._lifeTimeGradientMin = Lerp(current.factor1, next.factor1, scale);
+                    this._lifeTimeGradientMax = Lerp(current.factor2 ?? current.factor1, next.factor2 ?? next.factor1, scale);
                 });
             } else {
-                this._lifeTimeGradientFactor = 1.0;
+                this._lifeTimeGradientMin = 1.0;
+                this._lifeTimeGradientMax = 1.0;
             }
         }
 

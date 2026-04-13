@@ -129,7 +129,7 @@ export class ComputeShaderParticleSystem implements IGPUParticleSystemPlatform {
             this._simParamsComputeShader.addUniform("startSizeGradientFactor", 1);
         }
         if (this._parent._lifeTimeGradients && this._parent._lifeTimeGradients.length > 0) {
-            this._simParamsComputeShader.addUniform("lifeTimeGradientFactor", 1);
+            this._simParamsComputeShader.addUniform("lifeTimeGradientRange", 2);
         }
         if (this._parent.particleEmitterType) {
             this._parent.particleEmitterType.buildUniformLayout(this._simParamsComputeShader);

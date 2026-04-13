@@ -91,7 +91,7 @@ struct SimParams {
     #endif
 
     #ifdef LIFETIMEGRADIENTS
-        lifeTimeGradientFactor : f32,
+        lifeTimeGradientRange : vec2<f32>,
     #endif
 
     // Emitter types
@@ -238,7 +238,7 @@ fn main(@builtin(global_invocation_id) GlobalInvocationID : vec3<u32>) {
         // Age and life
         let outLife : f32 = params.lifeTime.x + (params.lifeTime.y - params.lifeTime.x) * randoms.r;
 #ifdef LIFETIMEGRADIENTS
-        particlesOut.particles[index].life = params.lifeTimeGradientFactor;
+        particlesOut.particles[index].life = params.lifeTimeGradientRange.x + (params.lifeTimeGradientRange.y - params.lifeTimeGradientRange.x) * randoms.r;
 #else
         particlesOut.particles[index].life = outLife;
 #endif

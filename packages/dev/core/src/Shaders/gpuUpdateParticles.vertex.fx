@@ -187,7 +187,7 @@ uniform float startSizeGradientFactor;
 #endif
 
 #ifdef LIFETIMEGRADIENTS
-uniform float lifeTimeGradientFactor;
+uniform vec2 lifeTimeGradientRange;
 #endif
 
 vec3 getRandomVec3(float offset) {
@@ -224,7 +224,7 @@ void main() {
     // Age and life
     outLife = lifeTime.x + (lifeTime.y - lifeTime.x) * randoms.r;
 #ifdef LIFETIMEGRADIENTS
-    outLife = lifeTimeGradientFactor;
+    outLife = lifeTimeGradientRange.x + (lifeTimeGradientRange.y - lifeTimeGradientRange.x) * randoms.r;
 #endif
 #ifdef EMITRATECTRL
     outAge = 0.0;
