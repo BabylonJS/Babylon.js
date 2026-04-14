@@ -5,7 +5,7 @@ import { runCoroutineAsync, createYieldingScheduler, type Coroutine } from "core
 import { _LoadScriptModuleAsync } from "core/Misc/tools.internals";
 import { type SPLATLoadingOptions } from "./splatLoadingOptions";
 import { Mode, type IParsedSplat } from "./splatDefs";
-import { type GaussianCloud, type SpzModule, SpzExtensionSafeOrbitCameraAdobe } from "@adobe/spz";
+import { type GaussianCloud, type SpzModule, type SpzExtensionSafeOrbitCameraAdobe } from "@adobe/spz";
 
 const _SpzConversionBatchSize = 32768;
 const _SH_C0 = 0.28209479177387814;
@@ -353,9 +353,10 @@ export function* ConvertSpzToSplat(cloud: GaussianCloud, scene: Scene, useCorout
     let safeOrbitCameraElevationMinMax: [number, number] | undefined;
     if (cloud.extensions) {
         for (const ext of cloud.extensions) {
-            if (ext instanceof SpzExtensionSafeOrbitCameraAdobe) {
-                safeOrbitCameraRadiusMin = ext.safeOrbitRadiusMin;
-                safeOrbitCameraElevationMinMax = [ext.safeOrbitElevationMin, ext.safeOrbitElevationMax];
+            const safeOrbitExt = ext as SpzExtensionSafeOrbitCameraAdobe;
+            if (safeOrbitExt.safeOrbitRadiusMin !== undefined) {
+                safeOrbitCameraRadiusMin = safeOrbitExt.safeOrbitRadiusMin;
+                safeOrbitCameraElevationMinMax = [safeOrbitExt.safeOrbitElevationMin, safeOrbitExt.safeOrbitElevationMax];
                 break;
             }
         }
