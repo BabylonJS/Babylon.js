@@ -4,7 +4,7 @@ This directory contains instruction files that define coding practices, review r
 
 ## Code Review & Contribution
 
-- **[code-review.instructions.md](code-review.instructions.md)** — PR review rules and label assignment based on the type and location of changes.
+- **[pr-labels.instructions.md](pr-labels.instructions.md)** — PR label assignment rules based on the type and location of changes.
 - **[backcompat.instructions.md](backcompat.instructions.md)** — Backward compatibility rules for public APIs (compile-time and runtime).
 - **[comments.instructions.md](comments.instructions.md)** — Doc comment requirements for public APIs.
 - **[prohibited-apis.instructions.md](prohibited-apis.instructions.md)** — Banned APIs (e.g. `Function.bind`), deprecated API usage rules, and their alternatives.
@@ -33,7 +33,5 @@ This directory contains instruction files that define coding practices, review r
 
 ## Workflows
 
-- **[branch-review.instructions.md](branch-review.instructions.md)** — Branch code review checklist, severity categories, and review scope rules for reviewing changes on the current branch.
 - **[fix-bug.instructions.md](fix-bug.instructions.md)** — Bug-fixing workflow: investigating GitHub issues, extracting repro details, and test-driven fixes.
-- **[pg.instructions.md](pg.instructions.md)** — Playground examples for new public APIs.
-- **[playground-workflow.instructions.md](playground-workflow.instructions.md)** — Writing Playground code, managing snippets, running local servers, and forcing WebGPU.
+- **[playground-workflow.instructions.md](playground-workflow.instructions.md)** — Playground examples for new public APIs, writing Playground code, managing snippets, running local servers, and forcing WebGPU.

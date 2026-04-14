@@ -1,9 +1,9 @@
 ---
-name: review-branch
+name: code-review
 description: "Thorough code review of all changes on the current branch. Flags issues by severity (Critical/Warning/Nit) and fixes them. Use when: review my code, review this branch, do a code review, review branch changes, check my changes."
 ---
 
-# Branch Code Review
+# Code Review
 
 You are performing a thorough code review of all changes on the current branch relative to the base branch. Your goal is to find every issue — do not accept code just because it is already written.
 
@@ -40,7 +40,23 @@ Combine the results into a deduplicated list of changed files. If there are no c
 
 ### Step 3: Review against the checklist
 
-Read `.github/instructions/branch-review.instructions.md` for severity categories and the review checklist. Apply every check from that file to the changed code, and read each referenced instruction file in full before checking.
+Apply the severity categories and review checklist below to every changed line. For checklist items that reference instruction files, read the referenced file in full before checking.
+
+#### Severity Categories
+
+| Severity     | Meaning                                                                                                                                                                                                                                      |
+| ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Critical** | Bugs, runtime crashes, data loss, broken public API contracts, missing side-effect imports that will cause `undefined` at runtime. Must be fixed.                                                                                            |
+| **Warning**  | Backward compatibility concerns, missing doc comments on public APIs, performance anti-patterns (render-loop allocations, unnecessary `notifyObservers`), missing tests for new APIs, use of deprecated or prohibited APIs. Should be fixed. |
+| **Nit**      | Style, naming, minor readability improvements, non-essential suggestions. Fix if convenient.                                                                                                                                                 |
+
+#### Review Checklist
+
+1. **All applicable instruction files** — read each file listed in [instructions/index.md](../../instructions/index.md) and apply its rules to the changed code.
+2. **Correctness** — logic errors, off-by-one, null/undefined access, race conditions, unhandled edge cases.
+3. **Security** — prototype pollution, unsafe `eval`/`Function()`, unsafe deserialization of untrusted input (e.g. parsed scene files, glTF extensions).
+4. **PR labels** — see `pr-labels.instructions.md`. Suggest labels based on the type and location of changes.
+5. **General quality** — dead code, unreachable branches, duplicated logic, overly complex control flow, poor naming.
 
 ### Step 4: Run quality tools
 

@@ -2,8 +2,6 @@
 applyTo: "packages/dev/**/*.{ts,tsx}"
 ---
 
-All public APIs that are exported from a package's root index file (except those prefixed with an underscore) are considered public APIs.
-
 # Compile-time Backward Compatibility
 
 Public APIs should maintain backward compatibility. Changes to public APIs that would cause a compile or runtime error should be avoided. When reviewing code, check if any changes to public APIs would break backward compatibility. If so, add a review comment explaining the breaking change and suggest an alternative approach that maintains backward compatibility.
