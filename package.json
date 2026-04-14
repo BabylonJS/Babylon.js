@@ -13,8 +13,8 @@
         "@typescript-eslint/eslint-plugin": "^8.56.1",
         "@typescript-eslint/parser": "^8.56.1",
         "@typescript-eslint/utils": "^8.56.1",
-        "@vitest/coverage-v8": "^4.1.0",
-        "@vitest/eslint-plugin": "^1.6.12",
+        "@vitest/coverage-v8": "^4.1.3",
+        "@vitest/eslint-plugin": "^1.6.14",
         "ajv": "~8.18.0",
         "chokidar": "~3.6.0",
         "dotenv": "~16.0.0",
@@ -35,13 +35,14 @@
         "prettier": "^3.0.3",
         "rimraf": "^6.1.3",
         "rollup-plugin-dts": "^6.4.1",
-        "serialize-javascript": "7.0.4",
+        "serialize-javascript": "7.0.5",
         "ts-node": "~10.9.0",
         "tslib": "^2.4.0",
         "typedoc": "^0.28.16",
         "typescript": "~6.0.2",
         "typescript-eslint": "^8.56.1",
-        "vitest": "^4.1.0",
+        "vite": "6.4.2",
+        "vitest": "^4.1.3",
         "webpack": "^5.103.0",
         "webpack-cli": "6.0.1"
     },
@@ -57,7 +58,7 @@
         "build:source:smart-filters": "npm run build:assets:smart-filters && tsc -b ./tsconfig.smartFilters.json",
         "build:umd": "npm run build:umd:libs && npm run build:umd:tools",
         "build:umd:libs": "nx run-many --outputStyle=static --target=build --parallel --maxParallel=6 --projects=babylonjs,babylonjs-gui,babylonjs-loaders,babylonjs-materials,babylonjs-serializers,babylonjs-post-process,babylonjs-procedural-textures,babylonjs-ktx2decoder,babylonjs-accessibility,babylonjs-addons",
-        "build:umd:tools": "nx run-many --outputStyle=static --target=build --parallel --maxParallel=2 --projects=babylonjs-inspector-legacy,babylonjs-node-editor,babylonjs-node-geometry-editor,babylonjs-node-render-graph-editor,babylonjs-node-particle-editor,babylonjs-gui-editor,babylonjs-inspector",
+        "build:umd:tools": "nx run-many --outputStyle=static --target=build --parallel --maxParallel=2 --projects=babylonjs-inspector-legacy,babylonjs-node-editor,babylonjs-node-geometry-editor,babylonjs-node-render-graph-editor,babylonjs-node-particle-editor,babylonjs-gui-editor,babylonjs-inspector,create-babylonjs",
         "build:es6": "npm run build:assets:smart-filters && npm run build:es6:libs && npm run build:es6:tools",
         "build:es6:libs": "nx run-many --outputStyle=static --target=build --parallel --maxParallel=6 --projects=@babylonjs/core,@babylonjs/gui,@babylonjs/loaders,@babylonjs/materials,@babylonjs/serializers,@babylonjs/post-processes,@babylonjs/procedural-textures,@babylonjs/viewer,@babylonjs/shared-ui-components,@babylonjs/addons,@babylonjs/accessibility,@babylonjs/ktx2decoder,@babylonjs/smart-filters,@babylonjs/smart-filters-blocks,@babylonjs/lottie-player",
         "build:es6:tools": "nx run-many --outputStyle=static --target=build --parallel --maxParallel=2 --projects=@babylonjs/node-editor,@babylonjs/node-geometry-editor,@babylonjs/node-render-graph-editor,@babylonjs/node-particle-editor,@babylonjs/inspector-legacy,@babylonjs/gui-editor,@tools/smart-filters-editor-control,@tools/smart-filters-debugger,@tools/smart-filters-editor,@babylonjs/inspector",
@@ -155,6 +156,7 @@
         },
         "react-refresh-typescript": {
             "typescript": "$typescript"
-        }
+        },
+        "dompurify": "3.3.3"
     }
 }

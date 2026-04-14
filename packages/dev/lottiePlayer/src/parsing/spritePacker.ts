@@ -6,8 +6,8 @@ import { type IVector2Like } from "core/Maths/math.like";
 import { ThinTexture } from "core/Materials/Textures/thinTexture";
 
 import {
-    type RawBezier,
     type RawElement,
+    type RawEllipseShape,
     type RawFillShape,
     type RawFont,
     type RawGradientFillShape,
@@ -17,10 +17,16 @@ import {
     type RawTextData,
     type RawTextDocument,
 } from "./rawTypes";
+import { GetInitialScalarValue, GetInitialVectorValues, GetInitialBezierData } from "./rawPropertyHelpers";
 
 import { type BoundingBox, GetShapesBoundingBox, GetTextBoundingBox } from "../maths/boundingBox";
 
 import { type AnimationConfiguration } from "../animationConfiguration";
+
+/**
+ * Type alias for the 2D drawing context used by the sprite packer.
+ */
+type DrawingContext = OffscreenCanvasRenderingContext2D | CanvasRenderingContext2D;
 
 /**
  * Information about a sprite in the sprite atlas.
@@ -192,7 +198,7 @@ export class SpritePacker {
         }
 
         // Draw the shape in the canvas
-        this._drawVectorShape(rawElements, boundingBox, scalingFactor);
+        this._drawVectorShape(rawElements, boundingBox, scalingFactor, this._spritesCanvasContext);
         this._isDirty = true;
 
         // Get the rest of the sprite information required to render the shape
@@ -247,7 +253,7 @@ export class SpritePacker {
         }
 
         // Draw the text in the canvas
-        this._drawText(textData, boundingBox, scalingFactor);
+        this._drawText(textData, boundingBox, scalingFactor, this._spritesCanvasContext);
         this._isDirty = true;
 
         // Get the rest of the sprite information required to render the text
@@ -288,71 +294,85 @@ export class SpritePacker {
         this._spritesCanvas = undefined as any; // Clear the canvas to allow garbage collection
     }
 
-    private _drawVectorShape(rawElements: RawElement[], boundingBox: BoundingBox, scalingFactor: IVector2Like): void {
-        this._spritesCanvasContext.save();
-        this._spritesCanvasContext.globalCompositeOperation = "destination-over";
+    private _drawVectorShape(rawElements: RawElement[], boundingBox: BoundingBox, scalingFactor: IVector2Like, ctx: DrawingContext): void {
+        ctx.save();
+        ctx.globalCompositeOperation = "destination-over";
 
-        this._spritesCanvasContext.translate(this._currentX + Math.ceil(boundingBox.strokeInset / 2), this._currentY + Math.ceil(boundingBox.strokeInset / 2));
-        this._spritesCanvasContext.scale(scalingFactor.x, scalingFactor.y);
+        ctx.translate(this._currentX + Math.ceil(boundingBox.strokeInset / 2), this._currentY + Math.ceil(boundingBox.strokeInset / 2));
+        ctx.scale(scalingFactor.x, scalingFactor.y);
 
-        this._spritesCanvasContext.beginPath();
+        ctx.beginPath();
 
         for (let i = 0; i < rawElements.length; i++) {
             const shape = rawElements[i];
             switch (shape.ty) {
                 case "rc":
-                    this._drawRectangle(shape as RawRectangleShape);
+                    this._drawRectangle(shape as RawRectangleShape, boundingBox, ctx);
+                    break;
+                case "el":
+                    this._drawEllipse(shape as RawEllipseShape, boundingBox, ctx);
                     break;
                 case "sh":
-                    this._drawPath(shape as RawPathShape, boundingBox);
+                    this._drawPath(shape as RawPathShape, boundingBox, ctx);
                     break;
                 case "fl":
-                    this._drawFill(shape as RawFillShape);
+                    this._drawFill(shape as RawFillShape, ctx);
                     break;
                 case "st":
-                    this._drawStroke(shape as RawStrokeShape);
+                    this._drawStroke(shape as RawStrokeShape, ctx);
                     break;
                 case "gf":
-                    this._drawGradientFill(shape as RawGradientFillShape, boundingBox);
+                    this._drawGradientFill(shape as RawGradientFillShape, boundingBox, ctx);
                     break;
                 case "tr":
                     break; // Nothing needed with transforms
             }
         }
 
-        this._spritesCanvasContext.restore();
+        ctx.restore();
     }
 
-    // This function assumes that GetTextBoundingBox has already been called as to measure the text
-    // we need to setup the canvas context with the correct font and styles, so we don't set them up here
-    // again, but we still need to make sure to restore the context when we are done
-    private _drawText(textData: RawTextData, boundingBox: BoundingBox, scalingFactor: IVector2Like): void {
+    private _drawText(textData: RawTextData, boundingBox: BoundingBox, scalingFactor: IVector2Like, ctx: DrawingContext): void {
         if (this._rawFonts === undefined) {
-            this._spritesCanvasContext.restore();
             return;
         }
 
-        this._spritesCanvasContext.translate(this._currentX, this._currentY);
-        this._spritesCanvasContext.scale(scalingFactor.x, scalingFactor.y);
-
         const textInfo = textData.d.k[0].s as RawTextDocument;
+
+        const fontFamily = textInfo.f;
+        const finalFont = this._rawFonts.get(fontFamily);
+        if (!finalFont) {
+            return;
+        }
+
+        ctx.save();
+        ctx.translate(this._currentX, this._currentY);
+        ctx.scale(scalingFactor.x, scalingFactor.y);
+
+        // Set up font (same setup as GetTextBoundingBox for measurement consistency)
+        const weight = finalFont.fWeight || "400";
+        ctx.font = `${weight} ${textInfo.s}px ${finalFont.fFamily}`;
+
+        if (textInfo.sc !== undefined && textInfo.sc.length >= 3 && textInfo.sw !== undefined && textInfo.sw > 0) {
+            ctx.lineWidth = textInfo.sw;
+        }
 
         if (textInfo.fc !== undefined && textInfo.fc.length >= 3) {
             const rawFillStyle = textInfo.fc;
             if (Array.isArray(rawFillStyle)) {
                 // If the fill style is an array, we assume it's a color array
-                this._spritesCanvasContext.fillStyle = this._lottieColorToCSSColor(rawFillStyle, 1);
+                ctx.fillStyle = this._lottieColorToCSSColor(rawFillStyle, 1);
             } else {
                 // If it's a string, we need to get the value from the variables map
                 const variableFillStyle = this._variables.get(rawFillStyle);
                 if (variableFillStyle !== undefined) {
-                    this._spritesCanvasContext.fillStyle = variableFillStyle;
+                    ctx.fillStyle = variableFillStyle;
                 }
             }
         }
 
         if (textInfo.sc !== undefined && textInfo.sc.length >= 3 && textInfo.sw !== undefined && textInfo.sw > 0) {
-            this._spritesCanvasContext.strokeStyle = this._lottieColorToCSSColor(textInfo.sc, 1);
+            ctx.strokeStyle = this._lottieColorToCSSColor(textInfo.sc, 1);
         }
 
         // Text is supported as a possible variable (for localization for example)
@@ -363,29 +383,50 @@ export class SpritePacker {
             text = variableText;
         }
 
-        this._spritesCanvasContext.fillText(text, 0, boundingBox.actualBoundingBoxAscent!);
+        ctx.fillText(text, 0, boundingBox.actualBoundingBoxAscent!);
         if (textInfo.sc !== undefined && textInfo.sc.length >= 3 && textInfo.sw !== undefined && textInfo.sw > 0 && textInfo.of === true) {
-            this._spritesCanvasContext.strokeText(text, 0, boundingBox.actualBoundingBoxAscent!);
+            ctx.strokeText(text, 0, boundingBox.actualBoundingBoxAscent!);
         }
 
-        this._spritesCanvasContext.restore();
+        ctx.restore();
     }
 
-    private _drawRectangle(shape: RawRectangleShape): void {
-        const size = shape.s.k as number[];
-        const radius = shape.r.k as number;
+    private _drawRectangle(shape: RawRectangleShape, boundingBox: BoundingBox, ctx: DrawingContext): void {
+        const size = GetInitialVectorValues(shape.s);
+        const position = GetInitialVectorValues(shape.p);
+        const radius = GetInitialScalarValue(shape.r);
+
+        // Translate to the correct position within the atlas cell, same as paths use centerX/centerY
+        const x = position[0] - size[0] / 2 + boundingBox.centerX - Math.ceil(boundingBox.strokeInset);
+        const y = position[1] - size[1] / 2 + boundingBox.centerY - Math.ceil(boundingBox.strokeInset);
 
         if (radius <= 0) {
-            this._spritesCanvasContext.rect(0, 0, size[0], size[1]);
+            ctx.rect(x, y, size[0], size[1]);
         } else {
-            this._spritesCanvasContext.roundRect(0, 0, size[0], size[1], radius);
+            ctx.roundRect(x, y, size[0], size[1], radius);
         }
     }
 
-    private _drawPath(shape: RawPathShape, boundingBox: BoundingBox): void {
+    private _drawEllipse(shape: RawEllipseShape, boundingBox: BoundingBox, ctx: DrawingContext): void {
+        const size = GetInitialVectorValues(shape.s);
+        const position = GetInitialVectorValues(shape.p);
+
+        const centerX = position[0] + boundingBox.centerX - Math.ceil(boundingBox.strokeInset);
+        const centerY = position[1] + boundingBox.centerY - Math.ceil(boundingBox.strokeInset);
+        const radiusX = size[0] / 2;
+        const radiusY = size[1] / 2;
+
+        ctx.moveTo(centerX + radiusX, centerY);
+        ctx.ellipse(centerX, centerY, radiusX, radiusY, 0, 0, Math.PI * 2);
+    }
+
+    private _drawPath(shape: RawPathShape, boundingBox: BoundingBox, ctx: DrawingContext): void {
         // The path data has to be translated to the center of the bounding box
         // If the paths have stroke, we need to account for the stroke width
-        const pathData = shape.ks.k as RawBezier;
+        const pathData = GetInitialBezierData(shape.ks);
+        if (!pathData) {
+            return;
+        }
         const xTranslate = boundingBox.centerX - Math.ceil(boundingBox.strokeInset);
         const yTranslate = boundingBox.centerY - Math.ceil(boundingBox.strokeInset);
 
@@ -394,7 +435,7 @@ export class SpritePacker {
         const outTangents = pathData.o;
 
         if (vertices.length > 0) {
-            this._spritesCanvasContext.moveTo(vertices[0][0] + xTranslate, vertices[0][1] + yTranslate);
+            ctx.moveTo(vertices[0][0] + xTranslate, vertices[0][1] + yTranslate);
 
             for (let i = 0; i < vertices.length - 1; i++) {
                 const start = vertices[i];
@@ -402,7 +443,7 @@ export class SpritePacker {
                 const outTangent = outTangents[i];
                 const inTangent = inTangents[i + 1];
 
-                this._spritesCanvasContext.bezierCurveTo(
+                ctx.bezierCurveTo(
                     start[0] + xTranslate + outTangent[0],
                     start[1] + yTranslate + outTangent[1],
                     end[0] + xTranslate + inTangent[0],
@@ -419,7 +460,7 @@ export class SpritePacker {
                 const outTangent = outTangents[vertices.length - 1];
                 const inTangent = inTangents[0];
 
-                this._spritesCanvasContext.bezierCurveTo(
+                ctx.bezierCurveTo(
                     start[0] + xTranslate + outTangent[0],
                     start[1] + yTranslate + outTangent[1],
                     end[0] + xTranslate + inTangent[0],
@@ -428,38 +469,38 @@ export class SpritePacker {
                     end[1] + yTranslate
                 );
 
-                this._spritesCanvasContext.closePath();
+                ctx.closePath();
             }
         }
     }
 
-    private _drawFill(fill: RawFillShape): void {
+    private _drawFill(fill: RawFillShape, ctx: DrawingContext): void {
         const color = this._lottieColorToCSSColor(fill.c.k as number[], (fill.o.k as number) / 100);
-        this._spritesCanvasContext.fillStyle = color;
+        ctx.fillStyle = color;
 
-        this._spritesCanvasContext.fill();
+        ctx.fill();
     }
 
-    private _drawStroke(stroke: RawStrokeShape): void {
+    private _drawStroke(stroke: RawStrokeShape, ctx: DrawingContext): void {
         // Color and opacity
         const opacity = (stroke.o?.k as number) ?? 100;
         const color = this._lottieColorToCSSColor((stroke.c?.k as number[]) ?? [0, 0, 0], opacity / 100);
-        this._spritesCanvasContext.strokeStyle = color;
+        ctx.strokeStyle = color;
 
         // Width
         const width = (stroke.w?.k as number) ?? 1;
-        this._spritesCanvasContext.lineWidth = width;
+        ctx.lineWidth = width;
 
         // Line cap
         switch (stroke.lc) {
             case 1:
-                this._spritesCanvasContext.lineCap = "butt";
+                ctx.lineCap = "butt";
                 break;
             case 2:
-                this._spritesCanvasContext.lineCap = "round";
+                ctx.lineCap = "round";
                 break;
             case 3:
-                this._spritesCanvasContext.lineCap = "square";
+                ctx.lineCap = "square";
                 break;
             default:
                 // leave default
@@ -469,13 +510,13 @@ export class SpritePacker {
         // Line join
         switch (stroke.lj) {
             case 1:
-                this._spritesCanvasContext.lineJoin = "miter";
+                ctx.lineJoin = "miter";
                 break;
             case 2:
-                this._spritesCanvasContext.lineJoin = "round";
+                ctx.lineJoin = "round";
                 break;
             case 3:
-                this._spritesCanvasContext.lineJoin = "bevel";
+                ctx.lineJoin = "bevel";
                 break;
             default:
                 // leave default
@@ -484,7 +525,7 @@ export class SpritePacker {
 
         // Miter limit
         if (stroke.ml !== undefined) {
-            this._spritesCanvasContext.miterLimit = stroke.ml;
+            ctx.miterLimit = stroke.ml;
         }
 
         // Dash pattern
@@ -497,26 +538,26 @@ export class SpritePacker {
                 }
             }
 
-            this._spritesCanvasContext.setLineDash(lineDashes);
+            ctx.setLineDash(lineDashes);
         }
 
-        this._spritesCanvasContext.stroke();
+        ctx.stroke();
     }
 
-    private _drawGradientFill(fill: RawGradientFillShape, boundingBox: BoundingBox): void {
+    private _drawGradientFill(fill: RawGradientFillShape, boundingBox: BoundingBox, ctx: DrawingContext): void {
         switch (fill.t) {
             case 1: {
-                this._drawLinearGradientFill(fill, boundingBox);
+                this._drawLinearGradientFill(fill, boundingBox, ctx);
                 break;
             }
             case 2: {
-                this._drawRadialGradientFill(fill, boundingBox);
+                this._drawRadialGradientFill(fill, boundingBox, ctx);
                 break;
             }
         }
     }
 
-    private _drawLinearGradientFill(fill: RawGradientFillShape, boundingBox: BoundingBox): void {
+    private _drawLinearGradientFill(fill: RawGradientFillShape, boundingBox: BoundingBox, ctx: DrawingContext): void {
         // We need to translate the gradient to the center of the bounding box
         const xTranslate = boundingBox.centerX;
         const yTranslate = boundingBox.centerY;
@@ -524,20 +565,15 @@ export class SpritePacker {
         // Create the gradient
         const startPoint = fill.s.k as number[];
         const endPoint = fill.e.k as number[];
-        const gradient = this._spritesCanvasContext.createLinearGradient(
-            startPoint[0] + xTranslate,
-            startPoint[1] + yTranslate,
-            endPoint[0] + xTranslate,
-            endPoint[1] + yTranslate
-        );
+        const gradient = ctx.createLinearGradient(startPoint[0] + xTranslate, startPoint[1] + yTranslate, endPoint[0] + xTranslate, endPoint[1] + yTranslate);
 
         this._addColorStops(gradient, fill);
 
-        this._spritesCanvasContext.fillStyle = gradient;
-        this._spritesCanvasContext.fill();
+        ctx.fillStyle = gradient;
+        ctx.fill();
     }
 
-    private _drawRadialGradientFill(fill: RawGradientFillShape, boundingBox: BoundingBox): void {
+    private _drawRadialGradientFill(fill: RawGradientFillShape, boundingBox: BoundingBox, ctx: DrawingContext): void {
         // We need to translate the gradient to the center of the bounding box
         const xTranslate = boundingBox.centerX;
         const yTranslate = boundingBox.centerY;
@@ -549,12 +585,12 @@ export class SpritePacker {
         const centerX = startPoint[0] + xTranslate;
         const centerY = startPoint[1] + yTranslate;
         const outerRadius = Math.hypot(endPoint[0] - startPoint[0], endPoint[1] - startPoint[1]);
-        const gradient = this._spritesCanvasContext.createRadialGradient(centerX, centerY, 0, centerX, centerY, outerRadius);
+        const gradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, outerRadius);
 
         this._addColorStops(gradient, fill);
 
-        this._spritesCanvasContext.fillStyle = gradient;
-        this._spritesCanvasContext.fill();
+        ctx.fillStyle = gradient;
+        ctx.fill();
     }
 
     private _addColorStops(gradient: CanvasGradient, fill: RawGradientFillShape): void {

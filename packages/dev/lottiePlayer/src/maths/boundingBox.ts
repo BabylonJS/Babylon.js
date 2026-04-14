@@ -1,13 +1,14 @@
 import {
-    type RawBezier,
     type RawElement,
     type RawFont,
+    type RawEllipseShape,
     type RawPathShape,
     type RawRectangleShape,
     type RawStrokeShape,
     type RawTextData,
     type RawTextDocument,
 } from "../parsing/rawTypes";
+import { GetInitialVectorValues, GetInitialBezierData } from "../parsing/rawPropertyHelpers";
 
 /**
  * Represents a bounding box for a shape in the animation.
@@ -17,13 +18,13 @@ export type BoundingBox = {
     height: number;
     /** Width of the bounding box */
     width: number;
-    /** X coordinate of the center of the bounding box */
+    /** X offset for translating shape coordinates into the atlas cell. Accounts for stroke padding. */
     centerX: number;
-    /** Y coordinate of the center of the bounding box */
+    /** Y offset for translating shape coordinates into the atlas cell. Accounts for stroke padding. */
     centerY: number;
-    /** Box X offset, as the box may not be centered around (0,0) */
+    /** X coordinate of the geometric center of the shape in its local space */
     offsetX: number;
-    /** Box Y offset, as the box may not be centered around (0,0) */
+    /** Y coordinate of the geometric center of the shape in its local space */
     offsetY: number;
     /** Inset for the stroke, if applicable. */
     strokeInset: number;
@@ -58,6 +59,8 @@ export function GetShapesBoundingBox(rawElements: RawElement[]): BoundingBox {
     for (let i = 0; i < rawElements.length; i++) {
         if (rawElements[i].ty === "rc") {
             GetRectangleVertices(boxCorners, rawElements[i] as RawRectangleShape);
+        } else if (rawElements[i].ty === "el") {
+            GetEllipseVertices(boxCorners, rawElements[i] as RawEllipseShape);
         } else if (rawElements[i].ty === "sh") {
             GetPathVertices(boxCorners, rawElements[i] as RawPathShape);
         } else if (rawElements[i].ty === "st") {
@@ -65,18 +68,31 @@ export function GetShapesBoundingBox(rawElements: RawElement[]): BoundingBox {
         }
     }
 
-    const width = Math.ceil(Math.abs(boxCorners.maxX)) + Math.ceil(Math.abs(boxCorners.minX));
-    const height = Math.ceil(Math.abs(boxCorners.maxY)) + Math.ceil(Math.abs(boxCorners.minY));
+    // If no vertices were added (e.g., empty animated keyframes), return a zero-size bounding box
+    if (!Number.isFinite(boxCorners.minX)) {
+        return {
+            width: 0,
+            height: 0,
+            centerX: 0,
+            centerY: 0,
+            offsetX: 0,
+            offsetY: 0,
+            strokeInset: 0,
+        };
+    }
 
-    const offsetX = (Math.abs(boxCorners.maxX) - Math.abs(boxCorners.minX)) / 2;
-    const offsetY = (Math.abs(boxCorners.maxY) - Math.abs(boxCorners.minY)) / 2;
+    const width = boxCorners.maxX - boxCorners.minX;
+    const height = boxCorners.maxY - boxCorners.minY;
+
+    const offsetX = (boxCorners.minX + boxCorners.maxX) / 2;
+    const offsetY = (boxCorners.minY + boxCorners.maxY) / 2;
 
     return {
         width: width + strokeWidth,
         height: height + strokeWidth,
-        // The center of the box is the center of its width and height, modified by its offset and the stroke width
-        centerX: width / 2 - offsetX + strokeWidth / 2,
-        centerY: height / 2 - offsetY + strokeWidth / 2,
+        // Translate the original min corner into the atlas cell, leaving room for stroke expansion.
+        centerX: -boxCorners.minX + strokeWidth / 2,
+        centerY: -boxCorners.minY + strokeWidth / 2,
         offsetX: offsetX,
         offsetY: offsetY,
         strokeInset: 0,
@@ -135,6 +151,8 @@ export function GetTextBoundingBox(
     const widthPx = Math.ceil(metrics.width);
     const heightPx = Math.ceil(metrics.actualBoundingBoxAscent) + Math.ceil(metrics.actualBoundingBoxDescent);
 
+    spritesCanvasContext.restore();
+
     return {
         width: widthPx,
         height: heightPx,
@@ -149,8 +167,8 @@ export function GetTextBoundingBox(
 }
 
 function GetRectangleVertices(boxCorners: Corners, rect: RawRectangleShape): void {
-    const size = rect.s.k as number[];
-    const position = rect.p.k as number[];
+    const size = GetInitialVectorValues(rect.s);
+    const position = GetInitialVectorValues(rect.p);
 
     // Calculate the four corners of the rectangle
     UpdateBoxCorners(boxCorners, position[0] - size[0] / 2, position[1] - size[1] / 2);
@@ -159,8 +177,23 @@ function GetRectangleVertices(boxCorners: Corners, rect: RawRectangleShape): voi
     UpdateBoxCorners(boxCorners, position[0] - size[0] / 2, position[1] + size[1] / 2);
 }
 
+function GetEllipseVertices(boxCorners: Corners, ellipse: RawEllipseShape): void {
+    const size = GetInitialVectorValues(ellipse.s);
+    const position = GetInitialVectorValues(ellipse.p);
+
+    // The axis-aligned bounding box of an ellipse is the same as a rectangle with the same size
+    UpdateBoxCorners(boxCorners, position[0] - size[0] / 2, position[1] - size[1] / 2);
+    UpdateBoxCorners(boxCorners, position[0] + size[0] / 2, position[1] - size[1] / 2);
+    UpdateBoxCorners(boxCorners, position[0] + size[0] / 2, position[1] + size[1] / 2);
+    UpdateBoxCorners(boxCorners, position[0] - size[0] / 2, position[1] + size[1] / 2);
+}
+
 function GetPathVertices(boxCorners: Corners, path: RawPathShape): void {
-    const bezier = path.ks.k as RawBezier;
+    const bezier = GetInitialBezierData(path.ks);
+    if (!bezier) {
+        return;
+    }
+
     const vertices = bezier.v;
     const inTangents = bezier.i;
     const outTangents = bezier.o;

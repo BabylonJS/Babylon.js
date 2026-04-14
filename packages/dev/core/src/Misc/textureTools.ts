@@ -302,18 +302,24 @@ export async function WhenTextureReadyAsync(texture: BaseTexture): Promise<void>
  * This is convienent to get 8-bit RGBA values for a texture in a GPU compressed format, which cannot be read using readPixels.
  * @internal
  */
-async function ReadPixelsUsingRTT(texture: BaseTexture, width: number, height: number, face: number, lod: number): Promise<Uint8Array> {
+async function ReadPixelsUsingRTT(texture: BaseTexture, width: number, height: number, face: number, lod: number, slice: number = 0): Promise<Uint8Array> {
     const scene = texture.getScene()!;
     const engine = scene.getEngine();
+    const sourceInternalTexture = texture.getInternalTexture();
+    const is3DTexture = texture.is3D || !!sourceInternalTexture?.is3D;
 
     if (!engine.isWebGPU) {
-        if (texture.isCube) {
+        if (is3DTexture) {
+            await import("../Shaders/lod3D.fragment");
+        } else if (texture.isCube) {
             await import("../Shaders/lodCube.fragment");
         } else {
             await import("../Shaders/lod.fragment");
         }
     } else {
-        if (texture.isCube) {
+        if (is3DTexture) {
+            await import("../ShadersWGSL/lod3D.fragment");
+        } else if (texture.isCube) {
             await import("../ShadersWGSL/lodCube.fragment");
         } else {
             await import("../ShadersWGSL/lod.fragment");
@@ -322,7 +328,14 @@ async function ReadPixelsUsingRTT(texture: BaseTexture, width: number, height: n
 
     let lodPostProcess: PostProcess;
 
-    if (!texture.isCube) {
+    if (is3DTexture) {
+        lodPostProcess = new PostProcess("lod3D", "lod3D", {
+            uniforms: ["lod", "gamma", "slice"],
+            samplingMode: Texture.NEAREST_NEAREST_MIPNEAREST,
+            engine,
+            shaderLanguage: engine.isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
+        });
+    } else if (!texture.isCube) {
         lodPostProcess = new PostProcess("lod", "lod", {
             uniforms: ["lod", "gamma"],
             samplingMode: Texture.NEAREST_NEAREST_MIPNEAREST,
@@ -354,13 +367,14 @@ async function ReadPixelsUsingRTT(texture: BaseTexture, width: number, height: n
         effect.setTexture("textureSampler", texture);
         effect.setFloat("lod", lod);
         effect.setInt("gamma", texture.gammaSpace ? 1 : 0);
+        if (is3DTexture) {
+            effect.setFloat("slice", slice);
+        }
     };
 
-    const internalTexture = texture.getInternalTexture();
-
     try {
-        if (rtt.renderTarget && internalTexture) {
-            const samplingMode = internalTexture.samplingMode;
+        if (rtt.renderTarget && sourceInternalTexture) {
+            const samplingMode = sourceInternalTexture.samplingMode;
             if (lod !== 0) {
                 texture.updateSamplingMode(Texture.NEAREST_NEAREST_MIPNEAREST);
             } else {
@@ -372,7 +386,7 @@ async function ReadPixelsUsingRTT(texture: BaseTexture, width: number, height: n
 
             //Reading datas from WebGL
             const bufferView = await engine.readPixels(0, 0, width, height);
-            const data = new Uint8Array(bufferView.buffer, 0, bufferView.byteLength);
+            const data = new Uint8Array(bufferView.buffer, bufferView.byteOffset, bufferView.byteLength);
 
             // Unbind
             engine.unBindFramebuffer(rtt.renderTarget);
@@ -391,12 +405,14 @@ async function ReadPixelsUsingRTT(texture: BaseTexture, width: number, height: n
  * Gets the pixel data of the specified texture, either by reading it directly
  * or by rendering it to an intermediate RGBA texture and retrieving the bytes from it.
  * This is convenient to get 8-bit RGBA values for a texture in a GPU compressed format.
+ * When direct readback returns non-RGBA channel layouts, the result is normalized to RGBA8.
  * @param texture the source texture
  * @param width the target width of the result, which does not have to match the source texture width
  * @param height the target height of the result, which does not have to match the source texture height
  * @param face if the texture has multiple faces, the face index to use for the source
  * @param lod if the texture has multiple LODs, the lod index to use for the source
  * @param forceRTT if true, forces the use of the RTT path for reading pixels (useful for cube maps to ensure correct orientation and gamma)
+ * @param slice if the texture is 3D, the depth slice index to use for the source
  * @returns the 8-bit texture data
  */
 export async function GetTextureDataAsync(
@@ -405,9 +421,12 @@ export async function GetTextureDataAsync(
     height?: number,
     face: number = 0,
     lod: number = 0,
-    forceRTT: boolean = false
+    forceRTT: boolean = false,
+    slice: number = 0
 ): Promise<Uint8Array> {
     await WhenTextureReadyAsync(texture);
+    const internalTexture = texture.getInternalTexture();
+    const is3DTexture = texture.is3D || !!internalTexture?.is3D;
 
     const { width: textureWidth, height: textureHeight } = texture.getSize();
     const targetWidth = width ?? textureWidth;
@@ -416,11 +435,12 @@ export async function GetTextureDataAsync(
     // If the internal texture format is compressed, we cannot read the pixels directly.
     // If we're resizing the texture, we need to use a render target texture.
     // forceRTT can be used to ensure correct orientation and gamma for cube maps.
-    if (forceRTT || IsCompressedTextureFormat(texture.textureFormat) || targetWidth !== textureWidth || targetHeight !== textureHeight) {
-        if (texture.is2DArray || texture.is3D) {
-            throw new Error(`Reading pixels from 2D array or 3D textures with ${forceRTT ? "RTT" : "compression"} is not supported.`);
+    // 3D textures must also use RTT because direct readPixels does not expose slice selection.
+    if (forceRTT || is3DTexture || IsCompressedTextureFormat(texture.textureFormat) || targetWidth !== textureWidth || targetHeight !== textureHeight) {
+        if (texture.is2DArray) {
+            throw new Error(`Reading pixels from 2D array textures with ${forceRTT ? "RTT" : "compression"} is not supported.`);
         }
-        return await ReadPixelsUsingRTT(texture, targetWidth, targetHeight, face, lod);
+        return await ReadPixelsUsingRTT(texture, targetWidth, targetHeight, face, lod, slice);
     }
 
     let data = (await texture.readPixels(face, lod)) as Nullable<Uint8Array | Float32Array>;
@@ -437,6 +457,52 @@ export async function GetTextureDataAsync(
             data2[n] = Math.round(Clamp(v) * 255);
         }
         data = data2;
+    }
+
+    // Some backends (notably WebGPU for single/dual/triple channel formats) can return
+    // readback data that is not RGBA8. The inspector preview pipeline expects 4 bytes
+    // per pixel, so normalize to RGBA here when needed.
+    const pixelCount = targetWidth * targetHeight;
+    const expectedLength = pixelCount * 4;
+
+    if (data.length !== expectedLength) {
+        const componentCount = pixelCount === 0 ? 0 : data.length / pixelCount;
+
+        if (componentCount === 1 || componentCount === 2 || componentCount === 3) {
+            const normalizedData = new Uint8Array(expectedLength);
+
+            for (let pixel = 0, src = 0, dst = 0; pixel < pixelCount; pixel++, dst += 4) {
+                const c0 = data[src++];
+
+                if (componentCount === 1) {
+                    // Luminance/R-style data: replicate to RGB and use opaque alpha.
+                    normalizedData[dst] = c0;
+                    normalizedData[dst + 1] = c0;
+                    normalizedData[dst + 2] = c0;
+                    normalizedData[dst + 3] = 255;
+                    continue;
+                }
+
+                const c1 = data[src++];
+                if (componentCount === 2) {
+                    // Two-channel data has no standard blue/alpha semantics for preview,
+                    // so preserve R/G, clear B, and force opaque alpha.
+                    normalizedData[dst] = c0;
+                    normalizedData[dst + 1] = c1;
+                    normalizedData[dst + 2] = 0;
+                    normalizedData[dst + 3] = 255;
+                    continue;
+                }
+
+                // RGB data: append an opaque alpha channel.
+                normalizedData[dst] = c0;
+                normalizedData[dst + 1] = c1;
+                normalizedData[dst + 2] = data[src++];
+                normalizedData[dst + 3] = 255;
+            }
+
+            return normalizedData;
+        }
     }
 
     return data;

@@ -3,7 +3,7 @@ import { type FunctionComponent, useCallback } from "react";
 import * as React from "react";
 import { Animation } from "core/Animations/animation";
 import { type CurveData } from "./curveData";
-import { useObservableState } from "../../../hooks/observableHooks";
+import { useObservableState } from "shared-ui-components/modularTool/hooks/observableHooks";
 
 type CurveProps = {
     curve: CurveData;

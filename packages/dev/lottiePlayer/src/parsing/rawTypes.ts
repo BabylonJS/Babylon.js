@@ -74,6 +74,12 @@ export type RawRectangleShape = RawElement & {
     r: RawScalarProperty; // rounded corners radius
 };
 
+export type RawEllipseShape = RawElement & {
+    d: RawShapeDirection; // direction the shape is drawn as, mostly relevant when using trim path
+    p: RawPositionProperty; // center of the ellipse
+    s: RawVectorProperty; // size of the ellipse (width, height)
+};
+
 export type RawPathShape = RawElement & {
     d: RawShapeDirection; // direction the shape is drawn as, mostly relevant when using trim path
     ks: RawBezierShapeProperty; // bezier path
@@ -267,7 +273,7 @@ export type RawTextDocument = {
 
 export type RawNumberBoolean = 0 | 1; // 0: false, 1: true;
 export type RawLayerType = 0 | 1 | 2 | 3 | 4 | 5 | 6; // Layer type (0: precomposition, 1: solid, 2: image, 3: null, 4: shape, 5: text, 6: audio)
-export type RawShapeType = "fl" | "st" | "gf" | "gr" | "tr" | "sh" | "rc"; // Shape type (fl: fill, st: stroke, gf: gradient fill, gr: group, tr: transform, sh: path, rc: rectangle)
+export type RawShapeType = "fl" | "st" | "gf" | "gr" | "tr" | "sh" | "rc" | "el"; // Shape type (fl: fill, st: stroke, gf: gradient fill, gr: group, tr: transform, sh: path, rc: rectangle, el: ellipse)
 export type RawShapeDirection = 1 | 3; // 1: clockwise, 3: counter-clockwise
 export type RawFillRule = 1 | 2; // Fill rule (1: non-zero, everything is colored (You can think of this as an OR), 2: even-odd, colored based on intersections and path direction, can be used to create "holes")
 export type RawStrokeLineCap = 1 | 2 | 3; // Stroke line cap (1: butt, 2: round, 3: square)

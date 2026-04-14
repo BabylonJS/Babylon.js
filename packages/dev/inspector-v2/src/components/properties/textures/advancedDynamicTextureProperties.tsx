@@ -9,9 +9,9 @@ import { StringifiedPropertyLine } from "shared-ui-components/fluent/hoc/propert
 import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
 import { SyncedSliderPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/syncedSliderPropertyLine";
 import { MakeLazyComponent } from "shared-ui-components/fluent/primitives/lazyComponent";
-import { useObservableState } from "../../../hooks/observableHooks";
+import { useObservableState } from "shared-ui-components/modularTool/hooks/observableHooks";
 import { usePollingObservable } from "../../../hooks/pollingHooks";
-import { useResource } from "../../../hooks/resourceHooks";
+import { useResource } from "shared-ui-components/modularTool/hooks/resourceHooks";
 import { BoundProperty } from "../boundProperty";
 
 export const AdvancedDynamicTextureGeneralProperties = MakeLazyComponent(

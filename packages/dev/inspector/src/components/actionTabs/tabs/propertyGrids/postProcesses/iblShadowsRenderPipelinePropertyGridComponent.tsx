@@ -149,12 +149,6 @@ export class IblShadowsRenderPipelinePropertyGridComponent extends React.Compone
                         target={renderPipeline}
                     />
                     <CheckBoxLineComponent
-                        label="Voxel Grid"
-                        propertyName="voxelDebugEnabled"
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                        target={renderPipeline}
-                    />
-                    <CheckBoxLineComponent
                         label="IBL CDF"
                         propertyName="cdfDebugEnabled"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}

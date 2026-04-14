@@ -271,19 +271,22 @@ export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextu
             () => {
                 this.inXRSession = false;
 
+                // Cache the value of engine in case it is disposed during onXRSessionEnded callbacks
+                const engine = this._engine;
+
                 // Notify frame observers
                 this.onXRSessionEnded.notifyObservers(null);
 
-                if (this._engine) {
+                if (engine && !engine.isDisposed) {
                     // make sure dimensions object is restored
-                    this._engine.framebufferDimensionsObject = null;
+                    engine.framebufferDimensionsObject = null;
 
                     // Restore frame buffer to avoid clear on xr framebuffer after session end
-                    this._engine.restoreDefaultFramebuffer();
+                    engine.restoreDefaultFramebuffer();
 
                     // Need to restart render loop as after the session is ended the last request for new frame will never call callback
-                    this._engine.customAnimationFrameRequester = null;
-                    this._engine._renderLoop();
+                    engine.customAnimationFrameRequester = null;
+                    engine._renderLoop();
                 }
 
                 // Dispose render target textures.
