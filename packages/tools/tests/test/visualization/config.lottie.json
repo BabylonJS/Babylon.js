@@ -335,6 +335,16 @@
             "title": "Lottie - Null Layer Parenting Frame 30 (Web Worker, URL)",
             "devHostQsps": "exp=lottie&file=nullLayerParenting.json&useWorker=true&useUrl=true&frame=30",
             "referenceImage": "lottie-nullLayerParenting-frame30.png", "readySelector": "#lottie-ready"
+        },
+        {
+            "title": "Lottie - Ellipse Basic (Main Thread, URL)",
+            "devHostQsps": "exp=lottie&file=ellipse_basic.json&useWorker=false&useUrl=true",
+            "referenceImage": "lottie-ellipse-basic.png", "readySelector": "#lottie-ready"
+        },
+        {
+            "title": "Lottie - Ellipse Basic (Web Worker, URL)",
+            "devHostQsps": "exp=lottie&file=ellipse_basic.json&useWorker=true&useUrl=true",
+            "referenceImage": "lottie-ellipse-basic.png", "readySelector": "#lottie-ready"
         }
     ]
 }

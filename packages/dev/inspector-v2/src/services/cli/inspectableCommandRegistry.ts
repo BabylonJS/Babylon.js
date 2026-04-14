@@ -1,5 +1,5 @@
 import { type IDisposable } from "core/index";
-import { type IService } from "../../modularity/serviceDefinition";
+import { type IService } from "shared-ui-components/modularTool/modularity/serviceDefinition";
 
 /**
  * Describes an argument for an inspectable command.

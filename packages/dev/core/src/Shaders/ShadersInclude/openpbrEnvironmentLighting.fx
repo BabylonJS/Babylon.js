@@ -318,10 +318,7 @@
 
         #ifdef SCATTERING
             #ifdef USE_IRRADIANCE_TEXTURE_FOR_SCATTERING
-                // If we have a precomputed multi-scatter texture, we can use the scatter vector to sample it and get a more accurate scattered environment light.
-                // This allows us to capture higher order scattering effects that aren't possible with just a single scatter sample.
-                vec3 mfp = vec3(100.0) / volumeParams.extinction_coeff;
-                vec3 scatteredEnvironmentLight = sss_convolve(sceneIrradianceSampler, sceneDepthSampler, renderTargetSize, mfp, projection, inverseProjection, 16, noise.xy);
+                vec3 scatteredEnvironmentLight = scattered_light_from_irradiance_texture;
             #else
                 #ifdef GEOMETRY_THIN_WALLED
                     vec3 scatterVector = normalW;

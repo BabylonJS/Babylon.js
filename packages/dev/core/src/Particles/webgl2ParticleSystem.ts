@@ -25,6 +25,7 @@ export class WebGL2ParticleSystem implements IGPUParticleSystemPlatform {
     private _renderVAO: WebGLVertexArrayObject[] = [];
     private _updateVAO: WebGLVertexArrayObject[] = [];
     private _renderVertexBuffers: { [key: string]: VertexBuffer };
+    private _baseUniformsNamesLength: number;
 
     /** @internal */
     public readonly alignDataInBuffer = false;
@@ -101,6 +102,7 @@ export class WebGL2ParticleSystem implements IGPUParticleSystemPlatform {
             maxSimultaneousLights: 0,
             transformFeedbackVaryings: [],
         };
+        this._baseUniformsNamesLength = this._updateEffectOptions.uniformsNames.length;
     }
 
     /** @internal */
@@ -122,6 +124,9 @@ export class WebGL2ParticleSystem implements IGPUParticleSystemPlatform {
 
     /** @internal */
     public createUpdateBuffer(defines: string): UniformBufferEffectCommonAccessor {
+        // Reset dynamic uniforms to avoid accumulating duplicates on rebuild
+        this._updateEffectOptions.uniformsNames.length = this._baseUniformsNamesLength;
+
         this._updateEffectOptions.transformFeedbackVaryings = ["outPosition"];
         this._updateEffectOptions.transformFeedbackVaryings.push("outAge");
         this._updateEffectOptions.transformFeedbackVaryings.push("outSize");
@@ -156,6 +161,23 @@ export class WebGL2ParticleSystem implements IGPUParticleSystemPlatform {
         }
 
         this._updateEffectOptions.defines = defines;
+
+        // Add attractor uniform names dynamically based on maxAttractors
+        if (defines.indexOf("ATTRACTORS") !== -1) {
+            this._updateEffectOptions.uniformsNames.push("attractorCount");
+            for (let i = 0; i < this._parent.maxAttractors; i++) {
+                this._updateEffectOptions.uniformsNames.push("attractorPositionAndStrength[" + i + "]");
+            }
+        }
+
+        if (defines.indexOf("STARTSIZEGRADIENTS") !== -1) {
+            this._updateEffectOptions.uniformsNames.push("startSizeGradientFactor");
+        }
+
+        if (defines.indexOf("LIFETIMEGRADIENTS") !== -1) {
+            this._updateEffectOptions.uniformsNames.push("lifeTimeGradientRange");
+        }
+
         this._updateEffect = this._engine.createEffect("gpuUpdateParticles", this._updateEffectOptions, this._engine);
 
         return new UniformBufferEffectCommonAccessor(this._updateEffect);

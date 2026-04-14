@@ -39,6 +39,7 @@ export * from "./PostProcesses/volumetricLightingBlock";
 
 export * from "./Rendering/csmShadowGeneratorBlock";
 export * from "./Rendering/geometryRendererBlock";
+export * from "./Rendering/iblShadowsRendererBlock";
 export * from "./Rendering/objectRendererBlock";
 export * from "./Rendering/shadowGeneratorBlock";
 export * from "./Rendering/utilityLayerRendererBlock";

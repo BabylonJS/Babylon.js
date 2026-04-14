@@ -1,5 +1,5 @@
 import { type Camera, type Gizmo, type IDisposable, type IReadonlyObservable, type Light, type Node, type Nullable, type Scene, type TransformNode } from "core/index";
-import { type IService, type ServiceDefinition } from "../modularity/serviceDefinition";
+import { type IService, type ServiceDefinition } from "shared-ui-components/modularTool/modularity/serviceDefinition";
 import { type ISceneContext, SceneContextIdentity } from "./sceneContext";
 import { type ISelectionService, SelectionServiceIdentity } from "./selectionService";
 import { type IWatcherService, WatcherServiceIdentity } from "./watcherService";

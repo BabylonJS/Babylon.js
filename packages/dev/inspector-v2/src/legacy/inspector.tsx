@@ -1,12 +1,12 @@
 import { type IInspectorContextMenuItem, type IInspectorContextMenuType, type IInspectorOptions as InspectorV1Options, type Nullable, type Scene } from "core/index";
 import { type InspectorToken, type InspectorOptions as InspectorV2Options, ShowInspector } from "../inspector";
-import { type WeaklyTypedServiceDefinition } from "../modularity/serviceContainer";
-import { type ServiceDefinition } from "../modularity/serviceDefinition";
+import { type WeaklyTypedServiceDefinition } from "shared-ui-components/modularTool/modularity/serviceContainer";
+import { type ServiceDefinition } from "shared-ui-components/modularTool/modularity/serviceDefinition";
 import { type IGizmoService, GizmoServiceIdentity } from "../services/gizmoService";
 import { type IPropertiesService, PropertiesServiceIdentity } from "../services/panes/properties/propertiesService";
 import { type ISceneExplorerService, SceneExplorerServiceIdentity } from "../services/panes/scene/sceneExplorerService";
 import { type ISelectionService, SelectionServiceIdentity } from "../services/selectionService";
-import { type IShellService, ShellServiceIdentity } from "../services/shellService";
+import { type IShellService, ShellServiceIdentity } from "shared-ui-components/modularTool/services/shellService";
 import { type IWatcherService, WatcherServiceIdentity } from "../services/watcherService";
 
 import { BranchRegular } from "@fluentui/react-icons";

@@ -48,7 +48,6 @@ export const IblShadowsRenderPipelineDebugProperties: FunctionComponent<{ pipeli
             <BoundProperty component={SwitchPropertyLine} label="Allow Debug Passes" target={pipeline} propertyKey="allowDebugPasses" />
             {allowDebugPasses && (
                 <>
-                    <BoundProperty component={SwitchPropertyLine} label="Voxel Debug Enabled" target={pipeline} propertyKey="voxelDebugEnabled" />
                     <BoundProperty component={SwitchPropertyLine} label="CDF Debug Enabled" target={pipeline} propertyKey="cdfDebugEnabled" />
                     <BoundProperty component={SwitchPropertyLine} label="Voxel Tracing Debug Enabled" target={pipeline} propertyKey="voxelTracingDebugEnabled" />
                     <BoundProperty component={SwitchPropertyLine} label="Spatial Blur Debug Enabled" target={pipeline} propertyKey="spatialBlurPassDebugEnabled" />

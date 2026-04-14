@@ -287,6 +287,15 @@ void main(void) {
                 vec3 iso_scatter_density = vec3(1.0);
                 float roughness_alpha_modified_for_scatter = 1.0;
             #else
+
+                #ifdef USE_IRRADIANCE_TEXTURE_FOR_SCATTERING
+                    // If we have a precomputed multi-scatter texture, we can use the scatter vector to sample it and get a more accurate scattered environment light.
+                    // This allows us to capture higher order scattering effects that aren't possible with just a single scatter sample.
+                    vec3 mfp = vec3(100.0) / volumeParams.extinction_coeff;
+                    vec3 scattered_light_from_irradiance_texture = sss_convolve(sceneIrradianceSampler, sceneDepthSampler, renderTargetSize, mfp, projection, inverseProjection, 16, noise.xy);
+                #else
+                    vec3 scattered_light_from_irradiance_texture = vec3(0.0);
+                #endif
                 
                 float back_to_iso_scattering_blend = min(1.0 + volumeParams.anisotropy, 1.0);
                 float iso_to_forward_scattering_blend = max(volumeParams.anisotropy, 0.0);
