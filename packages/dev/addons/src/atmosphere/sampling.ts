@@ -38,7 +38,7 @@ export function Sample2DRgbaToRef<T extends IColor4Like>(
     heightPx: number,
     data: Uint8Array | Uint16Array | Float32Array,
     result: T,
-    normalizeFunc = (value: number) => value / 255.0
+    normalizeFunc?: (value: number) => number
 ): T {
     if (widthPx <= 0 || heightPx <= 0) {
         throw new Error("Sample2DRgbaToRef: widthPx and heightPx must be positive.");
@@ -103,14 +103,21 @@ const TexelFetch2DRgbaToRef = <T extends IColor4Like>(
     height: number,
     data: Uint8Array | Uint16Array | Float32Array,
     result: T,
-    normalizeFunc = (value: number) => value / 255.0
+    normalizeFunc?: (value: number) => number
 ): T => {
     const clampedTexelX = Clamp(x, 0, width - 1);
     const clampedTexelY = Clamp(y, 0, height - 1);
     const index = 4 * (clampedTexelY * width + clampedTexelX);
-    result.r = normalizeFunc(data[index]);
-    result.g = normalizeFunc(data[index + 1]);
-    result.b = normalizeFunc(data[index + 2]);
-    result.a = normalizeFunc(data[index + 3]);
+    if (normalizeFunc) {
+        result.r = normalizeFunc(data[index]);
+        result.g = normalizeFunc(data[index + 1]);
+        result.b = normalizeFunc(data[index + 2]);
+        result.a = normalizeFunc(data[index + 3]);
+    } else {
+        result.r = data[index];
+        result.g = data[index + 1];
+        result.b = data[index + 2];
+        result.a = data[index + 3];
+    }
     return result;
 };
