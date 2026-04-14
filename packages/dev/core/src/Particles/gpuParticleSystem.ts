@@ -113,6 +113,16 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
     private _platform: IGPUParticleSystemPlatform;
     private _rebuildingAfterContextLost = false;
 
+    /**
+     * Whether the particle buffer needs to store the initial emission direction.
+     * True when particles are not billboarded (they orient by direction) or when
+     * using stretched-local billboard mode (stretches along initial direction).
+     * @internal
+     */
+    public get _needsInitialDirection(): boolean {
+        return !this._isBillboardBased || this.billboardMode === ParticleSystem.BILLBOARDMODE_STRETCHED_LOCAL;
+    }
+
     // Emit rate gradient caching (mirrors ThinParticleSystem)
     private _currentEmitRateGradient: Nullable<FactorGradient> = null;
     private _currentEmitRate1: number = 0;
@@ -1184,7 +1194,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         renderVertexBuffers["life"] = renderBuffer.createVertexBuffer("life", offset, 1, this._attributesStrideSize, true);
         offset += 1;
         offset += 4; // seed
-        if (this.billboardMode === ParticleSystem.BILLBOARDMODE_STRETCHED) {
+        if (this.billboardMode === ParticleSystem.BILLBOARDMODE_STRETCHED || this.billboardMode === ParticleSystem.BILLBOARDMODE_STRETCHED_LOCAL) {
             renderVertexBuffers["direction"] = renderBuffer.createVertexBuffer("direction", offset, 3, this._attributesStrideSize, true);
         }
         offset += 3; // direction
@@ -1204,7 +1214,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
             offset += 4;
         }
 
-        if (!this._isBillboardBased) {
+        if (this._needsInitialDirection) {
             renderVertexBuffers["initialDirection"] = renderBuffer.createVertexBuffer("initialDirection", offset, 3, this._attributesStrideSize, true);
             offset += 3;
             if (this._platform.alignDataInBuffer) {
@@ -1272,7 +1282,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
             }
         }
 
-        if (!this.isBillboardBased) {
+        if (this._needsInitialDirection) {
             this._attributesStrideSize += 3;
             if (this._platform.alignDataInBuffer) {
                 this._attributesStrideSize += 1;
@@ -1370,7 +1380,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
                 offset += 4;
             }
 
-            if (!this.isBillboardBased) {
+            if (this._needsInitialDirection) {
                 // initialDirection
                 data.push(0.0);
                 data.push(0.0);
@@ -1465,7 +1475,11 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         let defines = this.particleEmitterType ? this.particleEmitterType.getEffectDefines() : "";
 
         if (this._isBillboardBased) {
-            defines += "\n#define BILLBOARD";
+            // Stretched local needs initialDirection in the buffer, which requires !BILLBOARD in the update shader.
+            // The render shader still uses BILLBOARD — that's handled separately in fillDefines().
+            if (this.billboardMode !== ParticleSystem.BILLBOARDMODE_STRETCHED_LOCAL) {
+                defines += "\n#define BILLBOARD";
+            }
         }
 
         if (this._colorGradientsTexture) {
@@ -1579,7 +1593,13 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
     /**
      * @internal
      */
-    public static _GetAttributeNamesOrOptions(hasColorGradients = false, isAnimationSheetEnabled = false, isBillboardBased = false, isBillboardStretched = false): string[] {
+    public static _GetAttributeNamesOrOptions(
+        hasColorGradients = false,
+        isAnimationSheetEnabled = false,
+        isBillboardBased = false,
+        isBillboardStretched = false,
+        isBillboardStretchedLocal = false
+    ): string[] {
         const attributeNamesOrOptions = [VertexBuffer.PositionKind, "age", "life", "size", "angle"];
 
         if (!hasColorGradients) {
@@ -1590,7 +1610,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
             attributeNamesOrOptions.push("cellIndex");
         }
 
-        if (!isBillboardBased) {
+        if (!isBillboardBased || isBillboardStretchedLocal) {
             attributeNamesOrOptions.push("initialDirection");
         }
 
@@ -1661,6 +1681,10 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
                 case ParticleSystem.BILLBOARDMODE_STRETCHED:
                     defines.push("#define BILLBOARDSTRETCHED");
                     break;
+                case ParticleSystem.BILLBOARDMODE_STRETCHED_LOCAL:
+                    defines.push("#define BILLBOARDSTRETCHED");
+                    defines.push("#define BILLBOARDSTRETCHED_LOCAL");
+                    break;
                 case ParticleSystem.BILLBOARDMODE_ALL:
                     defines.push("#define BILLBOARDMODE_ALL");
                     break;
@@ -1699,7 +1723,8 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
                 !!this._colorGradientsTexture,
                 this._isAnimationSheetEnabled,
                 this._isBillboardBased,
-                this._isBillboardBased && this.billboardMode === ParticleSystem.BILLBOARDMODE_STRETCHED
+                this._isBillboardBased && (this.billboardMode === ParticleSystem.BILLBOARDMODE_STRETCHED || this.billboardMode === ParticleSystem.BILLBOARDMODE_STRETCHED_LOCAL),
+                this.billboardMode === ParticleSystem.BILLBOARDMODE_STRETCHED_LOCAL
             )
         );
 

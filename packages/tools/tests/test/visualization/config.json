@@ -4256,6 +4256,12 @@
             "excludedEngines": ["webgl1"]
         },
         {
+            "title": "GPU Particles - Billboard Stretched Local",
+            "playgroundId": "#HLL4B1#0",
+            "referenceImage": "gpu-particles-billboard-stretched-local.png",
+            "excludedEngines": ["webgl1"]
+        },
+        {
             "title": "GPU Particles - Multiply Blend",
             "playgroundId": "#D7LQAZ#0",
             "referenceImage": "gpu-particles-multiply-blend.png",

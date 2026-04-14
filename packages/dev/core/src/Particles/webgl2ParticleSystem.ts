@@ -142,7 +142,7 @@ export class WebGL2ParticleSystem implements IGPUParticleSystemPlatform {
             this._updateEffectOptions.transformFeedbackVaryings.push("outColor");
         }
 
-        if (!this._parent._isBillboardBased) {
+        if (this._parent._needsInitialDirection) {
             this._updateEffectOptions.transformFeedbackVaryings.push("outInitialDirection");
         }
 
@@ -308,7 +308,7 @@ export class WebGL2ParticleSystem implements IGPUParticleSystemPlatform {
             offset += 4;
         }
 
-        if (!this._parent._isBillboardBased) {
+        if (this._parent._needsInitialDirection) {
             updateVertexBuffers["initialDirection"] = source.createVertexBuffer("initialDirection", offset, 3);
             offset += 3;
         }
