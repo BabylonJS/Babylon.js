@@ -63,7 +63,7 @@ const SampleLutToRef = (
     }
 
     ComputeLutUVToRef(properties, positionDistanceToOrigin, cosAngleLightToZenith, Uv);
-    Sample2DRgbaToRef(Uv.x, Uv.y, LutWidthPx, LutHeightPx, lutData, result);
+    Sample2DRgbaToRef(Uv.x, Uv.y, LutWidthPx, LutHeightPx, lutData, result, null);
 
     const weight = Clamp(SmoothStep(1.0, 0.0, Clamp((Uv.x - TransmittanceMaxUnoccludedU) / TransmittanceHorizonRange)));
     result.r *= weight;
@@ -263,11 +263,11 @@ export class TransmittanceLut {
         }
         this._needsReadPixels = false;
 
-        const value = await this.renderTarget.readPixels(0, 0, undefined, undefined, UseHalfFloat /* noDataConversion */);
+        const value = await this.renderTarget.readPixels(0, 0, undefined, undefined, true /* noDataConversion */);
         if (value && !this._isDisposed) {
             const rawLutData = value as Uint8Array | Uint16Array;
             const lutData = (this._lutData = new Float32Array(rawLutData.length));
-            if (UseHalfFloat) {
+            if (rawLutData instanceof Uint16Array) {
                 for (let i = 0; i < rawLutData.length; i++) {
                     lutData[i] = FromHalfFloat(rawLutData[i]);
                 }

@@ -187,7 +187,7 @@ export class DiffuseSkyIrradianceLut {
 
         const cosAngleLightToZenith = Vector3Dot(directionToLight, cameraGeocentricNormal);
         ComputeLutUVToRef(properties, radius, cosAngleLightToZenith, UvTemp);
-        Sample2DRgbaToRef(UvTemp.x, UvTemp.y, LutWidthPx, LutHeightPx, this._lutData, Color4Temp);
+        Sample2DRgbaToRef(UvTemp.x, UvTemp.y, LutWidthPx, LutHeightPx, this._lutData, Color4Temp, null);
 
         const intensity = atmosphere.diffuseSkyIrradianceIntensity;
         result.r = intensity * (lightIrradiance * Color4Temp.r + additionalDiffuseSkyIrradiance.r);
