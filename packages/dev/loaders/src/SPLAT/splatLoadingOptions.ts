@@ -39,19 +39,10 @@ export type SPLATLoadingOptions = {
      * When provided, the WASM-based SPZ loader is used, which supports extra features
      * such as antialiasing metadata, and vendor-specific extensions such as safe-orbit
      * camera limits.
-     * When omitted or empty, the built-in manual SPZ parser is used instead.
+     * Defaults to the \@adobe/spz unpkg URL when WebAssembly is supported, and undefined otherwise.
+     * Set to undefined to force the built-in manual SPZ parser regardless of WebAssembly support.
      * @example Setting the URL directly on the loader options
      * spzLibraryUrl: "https://unpkg.com/\@adobe/spz\@0.2.0/dist/spz.js"
-     * @example Using with ImportMeshAsync
-     * await BABYLON.ImportMeshAsync(
-     *     "https://raw.githubusercontent.com/CedricGuillemet/dump/master/hornedlizard/hornedlizard.spz",
-     *     scene,
-     *     \{
-     *         pluginOptions: \{
-     *             splat: \{ spzLibraryUrl: "https://unpkg.com/\@adobe/spz\@0.2.0/dist/spz.js" \},
-     *         \},
-     *     \},
-     * );
      */
     spzLibraryUrl?: string;
 };

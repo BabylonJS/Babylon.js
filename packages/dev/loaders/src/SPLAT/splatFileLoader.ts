@@ -72,6 +72,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
     private static readonly _DefaultLoadingOptions = {
         keepInRam: false,
         flipY: false,
+        spzLibraryUrl: typeof WebAssembly === "object" ? "https://unpkg.com/@adobe/spz@0.2.0/dist/spz.js" : undefined,
     } as const satisfies SPLATLoadingOptions;
 
     /** @internal */
