@@ -61,6 +61,11 @@ export class GraphNode {
 
     public _visualPropertiesRefresh: Array<() => void> = [];
 
+    /** Direct access to the execution time label element for lightweight updates */
+    public get executionTimeElement(): HTMLDivElement {
+        return this._executionTime;
+    }
+
     public addClassToVisual(className: string) {
         this._visual.classList.add(className);
     }

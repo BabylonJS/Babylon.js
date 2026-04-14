@@ -44,6 +44,38 @@ The loaded scene's objects (meshes, lights, cameras, etc.) become available as r
 - **Load from file** — Import a previously saved JSON file.
 - **Load from snippet** — Enter a snippet ID to restore a graph (and its associated scene, if any).
 
+### glTF Import / Export
+
+**Importing a glTF with an interactive flow graph:**
+
+- Drag-and-drop a `.glb` or `.gltf` file onto the scene preview pane.
+- If the file contains a **KHR_interactivity** extension, the flow graph is automatically loaded into the editor.
+- If the file contains a **BABYLON_flow_graph** custom extension (created by this editor's export), the flow graph is restored as well.
+- The scene from the file is loaded as the preview scene so block references to meshes, cameras, and lights can be resolved.
+
+**Loading a glTF graph without a scene:**
+
+- Use the **Load glTF** button in the FILE section of the property panel.
+- This reads only the **BABYLON_flow_graph** extension from a `.glb`/`.gltf` file (no scene is loaded).
+
+**Exporting:**
+
+- Click **Export glTF (.glb)** in the FILE section of the property panel.
+- If a preview scene is loaded and the serializers package is available, the scene and flow graph are exported together.
+- Otherwise, a minimal `.glb` containing only the flow graph data is created.
+- The exported file uses the **BABYLON_flow_graph** custom extension and can be re-imported into this editor.
+
+### Composite Templates
+
+The palette contains a **Templates** section with pre-built multi-block patterns:
+
+- **Common Patterns** — Click → Log, Timer Loop, Toggle Boolean, Branch on Condition, Sequence Chain, Delayed Action, Pointer Interaction
+- **Animation Patterns** — Lerp Animation (tick-driven interpolation)
+- **Communication** — Custom Event Bridge (send + receive pair)
+- **glTF Interactivity** — Get → Set Property, Get → Set Variable
+
+Drag a template from the palette onto the canvas. All blocks are created and internally wired automatically. You can then edit individual blocks (change targets, configure conditions, etc.).
+
 ---
 
 ## Graph Controls
@@ -227,7 +259,7 @@ Signal ports (execution flow) have no type restrictions — any signal output ca
 | **Delete** / **Backspace**         | Delete selected blocks (removes from graph)   |
 | **Alt+Delete** / **Alt+Backspace** | Delete and auto-reconnect surrounding nodes   |
 | **Ctrl+Z** / **Cmd+Z**             | Undo                                          |
-| **Ctrl+Shift+Z** / **Cmd+Shift+Z** | Redo                                         |
+| **Ctrl+Shift+Z** / **Cmd+Shift+Z** | Redo                                          |
 | **Ctrl+A** / **Cmd+A**             | Select all nodes and frames                   |
 | **Ctrl+C** / **Cmd+C**             | Copy selected blocks (or frames)              |
 | **Ctrl+V** / **Cmd+V**             | Paste copied blocks at cursor position        |

@@ -12,7 +12,7 @@ When done with an issue, update the MANUAL.md to reflect the new feature or fix,
 
 - [x] **No local file loading (.glb/.gltf/.babylon drag-and-drop)** — The only way to get a scene is pasting a Playground snippet ID. Users cannot drag-and-drop a `.glb`, `.gltf`, or `.babylon` file onto the preview pane to use as their test scene. This forces every workflow through the Playground snippet server. **Expected:** Drag-and-drop (or a file picker) in the preview pane should load a local scene file using `SceneLoader`, extract meshes/lights/cameras into `SceneContext`, and allow flow graph authoring against it.
 
-- [ ] **No glTF / KHR_interactivity round-trip** — The editor cannot import a glTF file containing an embedded flow graph (via the `KHR_interactivity` extension), nor export one. This is the primary production use-case for flow graphs — authoring interactive behavior that ships with a 3D asset. Currently the editor only works with its own JSON format and the Babylon snippet server. **Expected:** "Import glTF" loads both the scene and the flow graph from `KHR_interactivity`; "Export glTF" serializes the flow graph back into the extension. This enables the standard asset pipeline: author in editor → export glTF → load in any Babylon.js app.
+- [x] **No glTF / KHR_interactivity round-trip** — The editor cannot import a glTF file containing an embedded flow graph (via the `KHR_interactivity` extension), nor export one. This is the primary production use-case for flow graphs — authoring interactive behavior that ships with a 3D asset. Currently the editor only works with its own JSON format and the Babylon snippet server. **Expected:** "Import glTF" loads both the scene and the flow graph from `KHR_interactivity`; "Export glTF" serializes the flow graph back into the extension. This enables the standard asset pipeline: author in editor → export glTF → load in any Babylon.js app.
 
 ## High (significantly impacts experience)
 
@@ -31,7 +31,6 @@ When done with an issue, update the MANUAL.md to reflect the new feature or fix,
     - **Frame:** Delete frame, Collapse/Expand, Export subgraph (future)
 
 - [x] **5 blocks missing from the editor palette** — These blocks exist in `FlowGraphBlockNames`, have tooltip descriptions written in `nodeListComponent.tsx`, but are absent from `allBlockNames.ts` so they never appear in the palette. All 5 are matrix-related data conversion blocks:
-
     - `TransformCoordinatesSystem` — transforms coordinates between local/world/view/projection spaces
     - `CombineMatrix2D` — constructs a 2D matrix from components
     - `CombineMatrix3D` — constructs a 3D matrix from components
@@ -40,7 +39,7 @@ When done with an issue, update the MANUAL.md to reflect the new feature or fix,
 
     **Fix:** Add these 5 entries to the `Data_Conversion` category in `allBlockNames.ts`.
 
-- [ ] **No composite block templates (pre-wired block groups)** — The KHR_interactivity glTF extension maps single interactivity nodes to groups of multiple Babylon.js flow graph blocks that must be instantiated together with pre-configured internal connections. For example, `pointer/interpolate` requires 4 blocks wired together (ValueInterpolation + JsonPointerParser + PlayAnimation + BezierCurveEasing), `pointer/get` and `pointer/set` each need 2 blocks (GetProperty/SetProperty + JsonPointerParser), and `animation/start` and `animation/stop` each need 3 blocks (PlayAnimation/StopAnimation + ArrayIndex + GLTFDataProvider). Currently these multi-block patterns only exist in the glTF loader's `declarationMapper.ts` as import-time wiring logic — there is no way to add them from the editor palette as a single drag-and-drop operation. **Expected:** A "composite block" or "block template" system that:
+- [x] **No composite block templates (pre-wired block groups)** — The KHR_interactivity glTF extension maps single interactivity nodes to groups of multiple Babylon.js flow graph blocks that must be instantiated together with pre-configured internal connections. For example, `pointer/interpolate` requires 4 blocks wired together (ValueInterpolation + JsonPointerParser + PlayAnimation + BezierCurveEasing), `pointer/get` and `pointer/set` each need 2 blocks (GetProperty/SetProperty + JsonPointerParser), and `animation/start` and `animation/stop` each need 3 blocks (PlayAnimation/StopAnimation + ArrayIndex + GLTFDataProvider). Currently these multi-block patterns only exist in the glTF loader's `declarationMapper.ts` as import-time wiring logic — there is no way to add them from the editor palette as a single drag-and-drop operation. **Expected:** A "composite block" or "block template" system that:
     - Defines a group of blocks with their internal connections as a reusable template (the `blocks[]` + `interBlockConnectors[]` + `typeToTypeMapping` structure in `declarationMapper.ts` is already a good model)
     - Appears in the block palette as a single entry (e.g., under a "Composites" or "glTF Interactivity" category)
     - When dropped onto the canvas, instantiates all constituent blocks, wires their internal connections, and optionally groups them in a frame

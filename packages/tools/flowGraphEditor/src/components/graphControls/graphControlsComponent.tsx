@@ -141,6 +141,14 @@ export class GraphControlsComponent extends React.Component<IGraphControlsProps,
                     }
                 }
             }
+            // Wire the flow graph to the preview scene so events (pick, tick, etc.)
+            // fire on the visible scene, not the editor's hidden host scene.
+            // setScene() clears stale execution contexts so start() creates
+            // a fresh one with the correct scene.
+            const previewScene = this.props.globalState.sceneContext?.scene;
+            if (previewScene) {
+                this.props.globalState.flowGraph.setScene(previewScene);
+            }
             this.props.globalState.flowGraph.start();
             this._log("Flow graph started.");
         } catch (err) {
@@ -159,6 +167,8 @@ export class GraphControlsComponent extends React.Component<IGraphControlsProps,
 
     private _onStop() {
         try {
+            // Snapshot user variables before stop() clears execution contexts
+            this.props.globalState.snapshotUserVariables();
             this.props.globalState.flowGraph.stop();
             this.setState({ breakpointPaused: false });
             this._log("Flow graph stopped.");

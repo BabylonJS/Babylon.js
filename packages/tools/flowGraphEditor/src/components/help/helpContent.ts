@@ -13,7 +13,9 @@ export type HelpTopicId =
     | "copy-paste"
     | "smart-groups"
     | "keyboard-shortcuts"
-    | "block-properties";
+    | "block-properties"
+    | "gltf-import-export"
+    | "composite-templates";
 
 /**
  * A single help topic section (sub-heading within a topic).
@@ -349,6 +351,41 @@ export const HelpTopics: IHelpTopic[] = [
 <tr><td>Send/Receive Custom Event</td><td>Key-type list editor for event data ports.</td></tr>
 </table>
 <p><em>Scene-dependent pickers require a scene to be loaded in the Preview panel.</em></p>`,
+            },
+        ],
+    },
+    {
+        id: "gltf-import-export",
+        title: "glTF Import / Export",
+        sections: [
+            {
+                heading: "Importing from glTF",
+                html: `<p>Drop a <code>.glb</code> or <code>.gltf</code> file on the scene preview pane. If the file contains a <strong>KHR_interactivity</strong> extension, the flow graph is automatically loaded into the editor.</p>
+<p>Files exported by this editor contain a <strong>BABYLON_flow_graph</strong> custom extension, which is also detected and imported on drop.</p>
+<p>Alternatively, use the <strong>Load glTF</strong> button in the FILE section to load only the flow graph (no scene).</p>`,
+            },
+            {
+                heading: "Exporting to glTF",
+                html: `<p>Click <strong>Export glTF (.glb)</strong> in the FILE section. The flow graph is embedded in the file as a <strong>BABYLON_flow_graph</strong> custom extension.</p>
+<p>If a preview scene is loaded and the serializers package is available, the full scene + flow graph are exported together. Otherwise a minimal <code>.glb</code> containing only the flow graph data is created.</p>`,
+            },
+        ],
+    },
+    {
+        id: "composite-templates",
+        title: "Composite Templates",
+        sections: [
+            {
+                heading: "Using Templates",
+                html: `<p>The palette contains a <strong>Templates</strong> section with pre-built multi-block patterns. Drag a template onto the canvas to create all blocks and wire them together automatically.</p>
+<p>Available template categories:</p>
+<ul>
+<li><strong>Common Patterns</strong> — Click → Log, Timer Loop, Toggle Boolean, Branch on Condition, Sequence Chain, Delayed Action, Pointer Interaction</li>
+<li><strong>Animation Patterns</strong> — Lerp Animation</li>
+<li><strong>Communication</strong> — Custom Event Bridge</li>
+<li><strong>glTF Interactivity</strong> — Get → Set Property, Get → Set Variable</li>
+</ul>
+<p>After dropping a template, each block can be configured individually in the property panel.</p>`,
             },
         ],
     },

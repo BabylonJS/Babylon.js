@@ -34,6 +34,47 @@ const useStyles = makeStyles({
 
 Use `tokens.spacingVerticalXS`, `tokens.spacingHorizontalM`, etc. from `@fluentui/react-components` for padding, margin, and gap values instead of hard-coded pixel strings. This ensures consistency across themes. See: https://storybooks.fluentui.dev/react/?path=/docs/theme-spacing--docs
 
+## Typography
+
+### Use Fluent text presets, typographyStyles, or font tokens — never raw HTML text elements
+
+Do not use raw HTML text elements (`<span>`, `<p>`, `<h1>`, etc.) directly. Do not hard-code `fontSize`, `lineHeight`, or `fontFamily` values. Instead, use Fluent's typography system in this order of preference:
+
+1. **Text preset components** (preferred) — Use `<Body1>`, `<Caption1>`, `<Subtitle1>`, `<Title3>`, etc. from `@fluentui/react-components`. These render a styled element with the correct font size, line height, weight, and font family from the theme. See: https://storybooks.fluentui.dev/react/?path=/docs/components-text--docs#presets-2
+
+2. **`typographyStyles`** — When you need to apply text styles to a non-text component (e.g. a `<div>` or custom wrapper), spread a typography style preset into `makeStyles`. See: https://storybooks.fluentui.dev/react/?path=/docs/theme-typography--docs
+
+3. **Font tokens** — When you need individual font properties (e.g. only `fontFamily` for a monospace override), use `tokens.fontFamilyMonospace`, `tokens.fontSizeBase300`, etc. See: https://storybooks.fluentui.dev/react/?path=/docs/theme-fonts--docs
+
+```tsx
+// ✅ Good — text preset component
+import { Body1, Caption1 } from "@fluentui/react-components";
+<Body1>Status message</Body1>
+<Caption1>Secondary info</Caption1>
+
+// ✅ Good — typographyStyles in makeStyles
+import { makeStyles, typographyStyles } from "@fluentui/react-components";
+const useStyles = makeStyles({
+    header: { ...typographyStyles.subtitle1 },
+});
+
+// ✅ Good — font token for a specific override
+import { makeStyles, tokens } from "@fluentui/react-components";
+const useStyles = makeStyles({
+    code: { fontFamily: tokens.fontFamilyMonospace },
+});
+
+// ❌ Bad — raw HTML text element
+<span>Status message</span>
+
+// ❌ Bad — hard-coded font values
+const useStyles = makeStyles({
+    text: { fontSize: "14px", lineHeight: "20px", fontFamily: "Segoe UI" },
+});
+```
+
+When reviewing code, flag any use of raw HTML text elements or hard-coded font sizes/line heights/font families and suggest the appropriate Fluent alternative.
+
 ## Icon Imports
 
 ### Use unsized icon variants

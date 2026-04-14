@@ -30,19 +30,7 @@ Similarly, `npm run build:dev` only needs to run once. If its output artifacts a
 
 ## Dev Host
 
-Use Dev Host while developing core changes, not just after the work is complete. As you implement the change, keep a small validation scene in `packages/tools/devHost/src/testScene/createScene.ts` and reload it to confirm the current behavior works before moving on.
-
-To test Dev Host, you need to build the dev packages and then start the Dev Host dev server. Here are the commands you need to run in order:
-
-`npm run build:dev` (skip if already completed in a prior workflow)
-Wait for the build to complete successfully, then continue.
-`npm run serve -w @tools/dev-host` (skip if port 1338 is already listening and the running process is Dev Host)
-Wait for "compiled successfully" then continue.
-
-Launch the tool in the browser by navigating to the following URL using playwright-cli:
-`http://localhost:1338/?exp=testScene`
-
-For core-engine validation, edit `packages/tools/devHost/src/testScene/createScene.ts` to build a small app that exercises the behavior you changed. Refresh the page as you develop so the app stays part of the implementation loop rather than a final after-the-fact check.
+For devhost setup, validation workflow, and cleanup, see [devhost-testing.instructions.md](devhost-testing.instructions.md).
 
 ## Smart Filter Editor (SFE)
 

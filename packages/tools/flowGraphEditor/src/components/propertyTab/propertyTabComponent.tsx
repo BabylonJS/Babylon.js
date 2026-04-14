@@ -97,6 +97,41 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         StringTools.DownloadAsFile(this.props.globalState.hostDocument, json, "flowGraph.json");
     }
 
+    /**
+     * Load a flow graph from a .glb/.gltf file that contains the BABYLON_flow_graph extension.
+     * @param file - the glb/gltf file to load
+     */
+    loadGlb(file: File) {
+        const doLoadAsync = async () => {
+            try {
+                const imported = await SerializationTools.ImportFromGlbAsync(file, this.props.globalState);
+                if (imported) {
+                    this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry("Flow graph loaded from glTF file", false));
+                } else {
+                    this.props.globalState.onLogRequiredObservable.notifyObservers(
+                        new LogEntry("No BABYLON_flow_graph extension found in this file. Drop the file on the preview pane to load its scene and KHR_interactivity data.", true)
+                    );
+                }
+            } catch (err) {
+                this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry("Error loading glTF: " + err, true));
+            }
+        };
+        void doLoadAsync();
+    }
+
+    /**
+     * Export the flow graph (and optionally the preview scene) as a .glb file.
+     */
+    async exportGlbAsync() {
+        try {
+            const scene = this.props.globalState.sceneContext?.scene ?? null;
+            await SerializationTools.ExportGlbAsync(this.props.globalState.flowGraph, this.props.globalState, scene);
+            this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry("Flow graph exported as flowGraph.glb", false));
+        } catch (err) {
+            this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry("Error exporting glTF: " + err, true));
+        }
+    }
+
     customSave() {
         this.setState({ uploadInProgress: true });
         this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry("Saving your flow graph to Babylon.js snippet server...", false));
@@ -298,10 +333,17 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                     </LineContainerComponent>
                     <LineContainerComponent title="FILE">
                         <FileButtonLineComponent label="Load" onClick={(file) => this.load(file)} accept=".json" />
+                        <FileButtonLineComponent label="Load glTF" onClick={(file) => this.loadGlb(file)} accept=".glb,.gltf" />
                         <ButtonLineComponent
                             label="Save"
                             onClick={() => {
                                 this.save();
+                            }}
+                        />
+                        <ButtonLineComponent
+                            label="Export glTF (.glb)"
+                            onClick={() => {
+                                void this.exportGlbAsync();
                             }}
                         />
                         {this.props.globalState.customSave && (

@@ -30,6 +30,12 @@
         "outputDirectory": "./declarations"
     },
     {
+        "declarationLibs": ["@dev/inspector"],
+        "devPackageName": "inspector",
+        "filename": "inspector-v2.d.ts",
+        "outputDirectory": "./declarations"
+    },
+    {
         "declarationLibs": ["@tools/node-editor"],
         "devPackageName": "node-editor",
         "filename": "node-editor.d.ts",
