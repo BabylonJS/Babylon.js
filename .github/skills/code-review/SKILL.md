@@ -1,9 +1,9 @@
 ---
-name: review-branch
+name: code-review
 description: "Thorough code review of all changes on the current branch. Flags issues by severity (Critical/Warning/Nit) and fixes them. Use when: review my code, review this branch, do a code review, review branch changes, check my changes."
 ---
 
-# Branch Code Review
+# Code Review
 
 You are performing a thorough code review of all changes on the current branch relative to the base branch. Your goal is to find every issue — do not accept code just because it is already written.
 
@@ -40,7 +40,7 @@ Combine the results into a deduplicated list of changed files. If there are no c
 
 ### Step 3: Review against the checklist
 
-Read `.github/instructions/branch-review.instructions.md` for severity categories and the review checklist. Apply every check from that file to the changed code, and read each referenced instruction file in full before checking.
+Read `.github/instructions/code-review.instructions.md` for severity categories and the review checklist. Apply every check from that file to the changed code, and read each referenced instruction file in full before checking.
 
 ### Step 4: Run quality tools
 

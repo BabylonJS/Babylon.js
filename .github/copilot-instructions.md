@@ -12,7 +12,7 @@ When creating HTML mocks, match the look and feel of the tool's existing UI. Don
 
 For a complete inventory of all public `@babylonjs` npm packages and their corresponding implementation packages, see [product-inventory.md](product-inventory.md).
 
-For detailed architecture documentation of each product, see the files in [architecture/](architecture/):
+For detailed architecture documentation of each product, see the files in [architecture/](architecture/)
 
 ## Instruction Files
 
@@ -32,7 +32,7 @@ Run these commands to verify code quality. All must pass before committing.
 
 ## Code review requirements
 
-When reviewing a PR you must follow the instructions in `.github/instructions/code-review.instructions.md`
+When reviewing a PR you must follow the instructions in `.github/instructions/pr-labels.instructions.md`
 
 ## Critical repo-wide coding practices
 
@@ -84,6 +84,6 @@ To manually test, see `.github/instructions/manual-testing.instructions.md`.
 
 For looking up and fixing bugs from GitHub issues, see `.github/instructions/fix-bug.instructions.md`.
 
-### Branch code review
+### Code review
 
-To review all changes on the current branch (committed or uncommitted), use the `review-branch` skill. It performs a detailed review against all repo coding practices, flags issues by severity, and fixes them. See `.github/instructions/branch-review.instructions.md` for the review checklist.
+To review all changes on the current branch (committed or uncommitted), use the `code-review` skill. It performs a detailed review against all repo coding practices, flags issues by severity, and fixes them. See `.github/instructions/code-review.instructions.md` for the review checklist.

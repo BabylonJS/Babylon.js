@@ -1,34 +1,30 @@
 # Code Review Instructions
 
-## Labels
+These instructions define the review standards for a code review. They specify severity categories and the checklist of rules to enforce.
 
-When reviewing a PR, suggest zero or more labels based on these rules:
+## Severity Categories
 
-- Changes to documentation, instructions, build scripts, or anything that is not under packages/dev or packages/tools should use the "skip changelog" label.
-- Accessibility improvements should use the "accessibility" label.
-- Changes under packages/dev/inspector-v2/src/components/curveEditor should use the "ace" label.
-- Changes under packages/dev/core related to animation should use the "animations" label.
-- Changes under packages/dev/core related to audio should use the "audio" label.
-- Changes under packages/dev/core related to bones or skeletal animation should use the "bones" label.
-- Breaking changes to public APIs (except those prefixed with an underscore) should use the "breaking change" label.
-- Bug fixes should use the "bug" label.
-- Changes to build scripts or pipelines should use the "build" label.
-- Changes to general documentation files or doc comments only should use the "documentation" label.
-- Improvements to existing features should use the "enhancement" label.
-- Changes under packages/dev/core/FrameGraph should use the "frame graph" label.
-- Changes under packages/dev/core related to gaussian splats should use the "gaussian splats" label.
-- Changes under packages/tools/guiEditor should use the "gui editor" label.
-- Changes under packages/dev/inspector-v2 should use the "inspector" label.
-- Changes under packages/dev/loaders should use the "loaders" label.
-- Changes under packages/dev/materials should use the "materials" label.
-- Changes to nativeEngine.ts or under packages/dev/core/src/Engines/Native should use the "native" label.
-- New features should use the "new feature" label.
-- Changes under packages/tools/nodeGeometryEditor should use the "nge" label.
-- Changes under packages/tools/nodeEditor should use the "nme" label.
-- Changes under packages/tools/nodeRenderGraphEditor should use the "nrge" label.
-- Changes related to performance optimizations should use the "optimizations" label.
-- Changes related to particles should use the "particles" label.
-- Changes related to physics should use the "physics" label.
-- Changes under packages/tools/playground should use the "playground" label.
-- Changes under packages/tools/sandbox should use the "sandbox" label.
-- Changes under packages/tools/viewer or packages/tools/viewer-configurator should use the "viewer" label.
+Classify every issue into one of these severity levels:
+
+| Severity     | Meaning                                                                                                                                                                                                                                      |
+| ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Critical** | Bugs, runtime crashes, security vulnerabilities, data loss, broken public API contracts, missing side-effect imports that will cause `undefined` at runtime. Must be fixed.                                                                  |
+| **Warning**  | Backward compatibility concerns, missing doc comments on public APIs, performance anti-patterns (render-loop allocations, unnecessary `notifyObservers`), missing tests for new APIs, use of deprecated or prohibited APIs. Should be fixed. |
+| **Nit**      | Style, naming, minor readability improvements, non-essential suggestions. Fix if convenient.                                                                                                                                                 |
+
+## Review Checklist
+
+Review the diff against **all** of the following. For each item that references an instruction file, read that file in full before checking — it contains the detailed rules:
+
+1. **Correctness** — logic errors, off-by-one, null/undefined access, race conditions, unhandled edge cases.
+2. **Security** — injection, unsafe deserialization, prototype pollution, OWASP Top 10.
+3. **Backward compatibility** — see `backcompat.instructions.md`. Flag any breaking change to a public API.
+4. **Doc comments** — see `comments.instructions.md`. All new or changed public APIs must have complete multi-line doc comments.
+5. **Side-effect imports** — see `side-effect-imports.instructions.md`. Any call to a prototype-augmented method on Scene/Engine/ThinEngine/AbstractEngine must have the corresponding side-effect import.
+6. **Prohibited APIs** — see `prohibited-apis.instructions.md`. No `Function.bind`, no calls to deprecated APIs.
+7. **Performance** — see `performance.instructions.md`. No allocations or `notifyObservers` in the render loop.
+8. **Tests** — see `tests.instructions.md`. New APIs should have unit tests; visual changes should have Playwright tests.
+9. **Entities** — see `entities.instructions.md`. New scene entities must be exposed in Inspector, serializer, and loader.
+10. **glTF extensions** — see `gltf-extensions.instructions.md`. New glTF 2.0 extensions must be registered in the dynamic imports file.
+11. **Inspector v2** — see `inspector.instructions.md`. UI code must use shared components, `makeStyles`, Fluent icons, and `ISettingsStore`.
+12. **General quality** — dead code, unreachable branches, duplicated logic, overly complex control flow, poor naming.
