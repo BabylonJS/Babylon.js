@@ -1,5 +1,5 @@
 import { type IReadonlyObservable } from "core/index";
-import { type IService } from "../../modularity/serviceDefinition";
+import { type IService } from "shared-ui-components/modularTool/modularity/serviceDefinition";
 
 /**
  * The service identity for the CLI connection status.

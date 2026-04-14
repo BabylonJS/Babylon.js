@@ -1,6 +1,6 @@
 {
     "name": "create-babylonjs",
-    "version": "9.0.0",
+    "version": "9.2.1",
     "description": "Scaffold a new Babylon.js project with your choice of module format, language, and bundler.",
     "bin": {
         "create-babylonjs": "./dist/index.js"

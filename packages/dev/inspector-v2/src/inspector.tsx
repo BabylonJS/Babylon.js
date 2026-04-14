@@ -1,8 +1,8 @@
 import { type IDisposable, type IReadonlyObservable, type Scene } from "core/index";
-import { type WeaklyTypedServiceDefinition } from "./modularity/serviceContainer";
-import { type ServiceDefinition } from "./modularity/serviceDefinition";
-import { type ModularToolOptions, MakeModularTool } from "./modularTool";
-import { type IShellService, ShellServiceIdentity } from "./services/shellService";
+import { type WeaklyTypedServiceDefinition } from "shared-ui-components/modularTool/modularity/serviceContainer";
+import { type ServiceDefinition } from "shared-ui-components/modularTool/modularity/serviceDefinition";
+import { type ModularToolOptions, MakeModularTool } from "shared-ui-components/modularTool/modularTool";
+import { type IShellService, ShellServiceIdentity } from "shared-ui-components/modularTool/services/shellService";
 
 import { AsyncLock } from "core/Misc/asyncLock";
 import { Logger } from "core/Misc/logger";
@@ -55,7 +55,7 @@ import { SkeletonExplorerServiceDefinition } from "./services/panes/scene/skelet
 import { SoundExplorerServiceDefinition } from "./services/panes/scene/soundExplorerService";
 import { SpriteManagerExplorerServiceDefinition } from "./services/panes/scene/spriteManagerExplorerService";
 import { TextureExplorerServiceDefinition } from "./services/panes/scene/texturesExplorerService";
-import { SettingsServiceDefinition } from "./services/panes/settingsService";
+import { SettingsServiceDefinition } from "shared-ui-components/modularTool/services/settingsService";
 import { StatsServiceDefinition } from "./services/panes/statsService";
 import { CaptureToolsDefinition } from "./services/panes/tools/captureService";
 import { ExportServiceDefinition } from "./services/panes/tools/exportService";
@@ -65,7 +65,8 @@ import { GLTFValidationServiceDefinition } from "./services/panes/tools/import/g
 import { ToolsServiceDefinition } from "./services/panes/toolsService";
 import { PickingServiceDefinition } from "./services/pickingService";
 import { SelectionServiceDefinition } from "./services/selectionService";
-import { ShellSettingsServiceDefinition } from "./services/shellSettingsService";
+import { ShellSettingsServiceDefinition } from "shared-ui-components/modularTool/services/shellSettingsService";
+import { InspectorSettingsServiceDefinition } from "./services/inspectorSettingsService";
 import { TextureEditorServiceDefinition } from "./services/textureEditor/textureEditorService";
 import { UserFeedbackServiceDefinition } from "./services/userFeedbackService";
 import { WatcherRefreshToolbarServiceDefinition, WatcherServiceDefinition, WatcherSettingsServiceDefinition } from "./services/watcherService";
@@ -365,6 +366,7 @@ export function ShowInspector(scene: Scene, options: Partial<InspectorOptions> =
 
             // Settings pane tab and related services.
             SettingsServiceDefinition,
+            InspectorSettingsServiceDefinition,
             WatcherSettingsServiceDefinition,
             ShellSettingsServiceDefinition,
 

@@ -3,7 +3,7 @@ import { GIFCaptureTool } from "../../../components/tools/capture/gifCaptureTool
 import { SceneReplayTool } from "../../../components/tools/capture/sceneReplayTool";
 import { ScreenshotTool } from "../../../components/tools/capture/screenshotTool";
 import { VideoCaptureTool } from "../../../components/tools/capture/videoCaptureTool";
-import { type ServiceDefinition } from "../../../modularity/serviceDefinition";
+import { type ServiceDefinition } from "shared-ui-components/modularTool/modularity/serviceDefinition";
 import { ToolsServiceIdentity, type IToolsService } from "../toolsService";
 import { type IDisposable } from "core/scene";
 

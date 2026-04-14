@@ -3,7 +3,7 @@ import { Vector2, Vector3 } from "../Maths/math.vector";
 import { type AbstractMesh } from "../Meshes/abstractMesh";
 import { type ImageProcessingConfiguration } from "../Materials/imageProcessingConfiguration";
 import { ImageProcessingConfigurationDefines } from "../Materials/imageProcessingConfiguration.defines";
-import { type ColorGradient, type FactorGradient, type Color3Gradient, type IValueGradient } from "../Misc/gradients";
+import { type ColorGradient, FactorGradient, type Color3Gradient, type IValueGradient } from "../Misc/gradients";
 import { type BoxParticleEmitter } from "../Particles/EmitterTypes/boxParticleEmitter";
 import { Constants } from "../Engines/constants";
 import { type BaseTexture } from "../Materials/Textures/baseTexture";
@@ -24,6 +24,7 @@ import { type SphereDirectedParticleEmitter, type SphereParticleEmitter } from "
 import { type CylinderDirectedParticleEmitter, type CylinderParticleEmitter } from "./EmitterTypes/cylinderParticleEmitter";
 import { type ConeDirectedParticleEmitter, type ConeParticleEmitter } from "./EmitterTypes/coneParticleEmitter";
 import { RegisterClass } from "../Misc/typeStore";
+import { type Attractor } from "./attractor";
 
 /**
  * This represents the base class for particle system in Babylon.
@@ -251,6 +252,36 @@ export class BaseParticleSystem implements IClipPlanesHolder {
 
     /** Gets or sets the strength to apply to the noise value (default is (10, 10, 10)) */
     public noiseStrength = new Vector3(10, 10, 10);
+
+    /** @internal */
+    protected _attractors: Attractor[] = [];
+
+    /**
+     * The list of attractors used to change the direction of the particles in the system.
+     * Please note that this is a copy of the internal array. If you want to modify it, please use the addAttractor and removeAttractor methods.
+     */
+    public get attractors(): Attractor[] {
+        return this._attractors.slice(0);
+    }
+
+    /**
+     * Add an attractor to the particle system. Attractors are used to change the direction of the particles in the system.
+     * @param attractor - The attractor to add to the particle system
+     */
+    public addAttractor(attractor: Attractor): void {
+        this._attractors.push(attractor);
+    }
+
+    /**
+     * Removes an attractor from the particle system. Attractors are used to change the direction of the particles in the system.
+     * @param attractor - The attractor to remove from the particle system
+     */
+    public removeAttractor(attractor: Attractor): void {
+        const index = this._attractors.indexOf(attractor);
+        if (index !== -1) {
+            this._attractors.splice(index, 1);
+        }
+    }
 
     /**
      * Callback triggered when the particle animation is ending.
@@ -589,6 +620,32 @@ export class BaseParticleSystem implements IClipPlanesHolder {
     }
 
     /**
+     * Adds a new emit rate gradient (please note that this will only work if you set the targetStopDuration property)
+     * @param gradient defines the gradient to use (between 0 and 1)
+     * @param factor defines the emit rate value to affect to the specified gradient
+     * @param factor2 defines an additional factor used to define a range ([factor, factor2]) with main value to pick the final value from
+     * @returns the current particle system
+     */
+    public addEmitRateGradient(gradient: number, factor: number, factor2?: number): this {
+        if (!this._emitRateGradients) {
+            this._emitRateGradients = [];
+        }
+
+        this._addFactorGradient(this._emitRateGradients, gradient, factor, factor2);
+        return this;
+    }
+
+    /**
+     * Remove a specific emit rate gradient
+     * @param gradient defines the gradient to remove
+     * @returns the current particle system
+     */
+    public removeEmitRateGradient(gradient: number): this {
+        this._removeFactorGradient(this._emitRateGradients, gradient);
+        return this;
+    }
+
+    /**
      * Random direction of each particle after it has been emitted, between direction1 and direction2 vectors.
      * This only works when particleEmitterTyps is a BoxParticleEmitter
      */
@@ -779,6 +836,48 @@ export class BaseParticleSystem implements IClipPlanesHolder {
 
     /** @internal */
     protected _reset() {}
+
+    /**
+     * Adds a new factor gradient to the given array, sorted by gradient value.
+     * @param factorGradients - The array of factor gradients to add to
+     * @param gradient - The gradient value (between 0 and 1)
+     * @param factor - The first factor value
+     * @param factor2 - Optional second factor value for per-particle randomization
+     */
+    protected _addFactorGradient(factorGradients: FactorGradient[], gradient: number, factor: number, factor2?: number) {
+        const newGradient = new FactorGradient(gradient, factor, factor2);
+        factorGradients.push(newGradient);
+
+        factorGradients.sort((a, b) => {
+            if (a.gradient < b.gradient) {
+                return -1;
+            } else if (a.gradient > b.gradient) {
+                return 1;
+            }
+
+            return 0;
+        });
+    }
+
+    /**
+     * Removes a factor gradient from the given array by its gradient value.
+     * @param factorGradients - The array of factor gradients to remove from
+     * @param gradient - The gradient value to match for removal
+     */
+    protected _removeFactorGradient(factorGradients: Nullable<FactorGradient[]>, gradient: number) {
+        if (!factorGradients) {
+            return;
+        }
+
+        let index = 0;
+        for (const factorGradient of factorGradients) {
+            if (factorGradient.gradient === gradient) {
+                factorGradients.splice(index, 1);
+                break;
+            }
+            index++;
+        }
+    }
 
     /**
      * @internal

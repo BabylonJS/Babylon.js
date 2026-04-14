@@ -4,11 +4,11 @@ import { useEffect, useRef } from "react";
 
 import { useToast } from "shared-ui-components/fluent/primitives/toast";
 import { Tooltip } from "shared-ui-components/fluent/primitives/tooltip";
-import { useObservableState } from "../hooks/observableHooks";
-import { type ServiceDefinition } from "../modularity/serviceDefinition";
+import { useObservableState } from "shared-ui-components/modularTool/hooks/observableHooks";
+import { type ServiceDefinition } from "shared-ui-components/modularTool/modularity/serviceDefinition";
 import { type ICliConnectionStatus, CliConnectionStatusIdentity } from "./cli/cliConnectionStatus";
 import { DefaultToolbarItemOrder } from "./defaultToolbarMetadata";
-import { type IShellService, ShellServiceIdentity } from "./shellService";
+import { type IShellService, ShellServiceIdentity } from "shared-ui-components/modularTool/services/shellService";
 
 export const CliConnectionStatusServiceDefinition: ServiceDefinition<[], [IShellService, ICliConnectionStatus]> = {
     friendlyName: "CLI Connection Status",

@@ -177,6 +177,18 @@ uniform sampler2D noiseSampler;
 uniform vec4 cellInfos;
 #endif
 
+#ifdef ATTRACTORS
+uniform int attractorCount;
+uniform vec4 attractorPositionAndStrength[MAX_ATTRACTORS];
+#endif
+
+#ifdef STARTSIZEGRADIENTS
+uniform float startSizeGradientFactor;
+#endif
+
+#ifdef LIFETIMEGRADIENTS
+uniform vec2 lifeTimeGradientRange;
+#endif
 
 vec3 getRandomVec3(float offset) {
   return texture(randomSampler2, vec2(float(gl_VertexID) * offset / currentCount, 0)).rgb;
@@ -211,6 +223,9 @@ void main() {
 
     // Age and life
     outLife = lifeTime.x + (lifeTime.y - lifeTime.x) * randoms.r;
+#ifdef LIFETIMEGRADIENTS
+    outLife = lifeTimeGradientRange.x + (lifeTimeGradientRange.y - lifeTimeGradientRange.x) * randoms.r;
+#endif
 #ifdef EMITRATECTRL
     outAge = 0.0;
 #else
@@ -222,12 +237,16 @@ void main() {
 
     // Size
 #ifdef SIZEGRADIENTS    
-    outSize.x = texture(sizeGradientSampler, vec2(0, 0)).r;
+    vec2 sizeGradientRange = texture(sizeGradientSampler, vec2(0, 0)).rg;
+    outSize.x = sizeGradientRange.x + (sizeGradientRange.y - sizeGradientRange.x) * seed.y;
 #else
     outSize.x = sizeRange.x + (sizeRange.y - sizeRange.x) * randoms.g;
 #endif
     outSize.y = scaleRange.x + (scaleRange.y - scaleRange.x) * randoms.b;
     outSize.z = scaleRange.z + (scaleRange.w - scaleRange.z) * randoms.a; 
+#ifdef STARTSIZEGRADIENTS
+    outSize.x *= startSizeGradientFactor;
+#endif
 
 #ifndef COLORGRADIENTS
     // Color
@@ -398,11 +417,13 @@ void main() {
     float ageGradient = newAge / life;
 
 #ifdef VELOCITYGRADIENTS
-    directionScale *= texture(velocityGradientSampler, vec2(ageGradient, 0)).r;
+    vec2 velocityGradientRange = texture(velocityGradientSampler, vec2(ageGradient, 0)).rg;
+    directionScale *= velocityGradientRange.x + (velocityGradientRange.y - velocityGradientRange.x) * seed.w;
 #endif
 
 #ifdef DRAGGRADIENTS
-    directionScale *= 1.0 - texture(dragGradientSampler, vec2(ageGradient, 0)).r;
+    vec2 dragGradientRange = texture(dragGradientSampler, vec2(ageGradient, 0)).rg;
+    directionScale *= 1.0 - (dragGradientRange.x + (dragGradientRange.y - dragGradientRange.x) * seed.x);
 #endif
 
 #if defined(CUSTOMEMITTER)
@@ -419,7 +440,8 @@ void main() {
 #endif
 
 #ifdef SIZEGRADIENTS
-	outSize.x = texture(sizeGradientSampler, vec2(ageGradient, 0)).r;
+	vec2 sizeGradientRange = texture(sizeGradientSampler, vec2(ageGradient, 0)).rg;
+	outSize.x = sizeGradientRange.x + (sizeGradientRange.y - sizeGradientRange.x) * seed.y;
     outSize.yz = size.yz;
 #else
     outSize = size;
@@ -444,13 +466,24 @@ void main() {
     #endif
 
     #ifdef LIMITVELOCITYGRADIENTS
-        float limitVelocity = texture(limitVelocityGradientSampler, vec2(ageGradient, 0)).r;
+        vec2 limitVelocityRange = texture(limitVelocityGradientSampler, vec2(ageGradient, 0)).rg;
+        float limitVelocity = limitVelocityRange.x + (limitVelocityRange.y - limitVelocityRange.x) * seed.y;
 
         float currentVelocity = length(updatedDirection);
 
         if (currentVelocity > limitVelocity) {
             updatedDirection = updatedDirection * limitVelocityDamping;
         }
+    #endif
+
+    #ifdef ATTRACTORS
+    {
+        for (int i = 0; i < attractorCount; i++) {
+            vec3 toAttractor = attractorPositionAndStrength[i].xyz - outPosition;
+            float distSq = dot(toAttractor, toAttractor) + 1.0;
+            updatedDirection += (attractorPositionAndStrength[i].w / distSq) * normalize(toAttractor) * timeDelta;
+        }
+    }
     #endif
 
     outDirection = updatedDirection;
@@ -470,7 +503,8 @@ void main() {
 #endif 
 
 #ifdef ANGULARSPEEDGRADIENTS
-    float angularSpeed = texture(angularSpeedGradientSampler, vec2(ageGradient, 0)).r;
+    vec2 angularSpeedRange = texture(angularSpeedGradientSampler, vec2(ageGradient, 0)).rg;
+    float angularSpeed = angularSpeedRange.x + (angularSpeedRange.y - angularSpeedRange.x) * seed.z;
     outAngle = angle + angularSpeed * timeDelta;
 #else
     outAngle = vec2(angle.x + angle.y * timeDelta, angle.y);

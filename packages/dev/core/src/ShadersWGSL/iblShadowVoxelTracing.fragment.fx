@@ -389,6 +389,9 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
       u32(currentPixel.x);
 
   var N : vec3f = textureLoad(worldNormalSampler, currentPixel, 0).xyz;
+#ifdef WORLD_NORMAL_UNSIGNED
+  N = N * vec3f(2.0) - vec3f(1.0);
+#endif
   if (length(N) < 0.01) {
     fragmentOutputs.color = vec4f(1.0, 1.0, 0.0, 1.0);
     return fragmentOutputs;

@@ -119,6 +119,18 @@ export class ComputeShaderParticleSystem implements IGPUParticleSystemPlatform {
         if (!this._parent.isLocal) {
             this._simParamsComputeShader.addUniform("emitterWM", 16);
         }
+        if (this._parent.attractors.length > 0) {
+            this._simParamsComputeShader.addUniform("attractorCount", 1);
+            for (let i = 0; i < this._parent.maxAttractors; i++) {
+                this._simParamsComputeShader.addUniform("attractorPositionAndStrength[" + i + "]", 4);
+            }
+        }
+        if (this._parent._startSizeGradients && this._parent._startSizeGradients.length > 0) {
+            this._simParamsComputeShader.addUniform("startSizeGradientFactor", 1);
+        }
+        if (this._parent._lifeTimeGradients && this._parent._lifeTimeGradients.length > 0) {
+            this._simParamsComputeShader.addUniform("lifeTimeGradientRange", 2);
+        }
         if (this._parent.particleEmitterType) {
             this._parent.particleEmitterType.buildUniformLayout(this._simParamsComputeShader);
         }
