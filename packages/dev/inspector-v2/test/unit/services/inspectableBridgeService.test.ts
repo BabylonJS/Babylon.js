@@ -85,10 +85,11 @@ describe("InspectableBridgeService", () => {
     });
 
     describe("connection status", () => {
-        it("starts disconnected", async () => {
+        it("starts disabled and disconnected", async () => {
             const definition = MakeInspectableBridgeServiceDefinition({ port: 0, name: "test" });
             const registry = await definition.factory();
 
+            expect(registry.isEnabled).toBe(false);
             expect(registry.isConnected).toBe(false);
 
             registry.dispose?.();
@@ -100,6 +101,21 @@ describe("InspectableBridgeService", () => {
 
             expect(registry.onConnectionStatusChanged).toBeDefined();
             expect(registry.onConnectionStatusChanged.add).toBeInstanceOf(Function);
+
+            registry.dispose?.();
+        });
+
+        it("notifies when isEnabled changes", async () => {
+            const definition = MakeInspectableBridgeServiceDefinition({ port: 0, name: "test" });
+            const registry = await definition.factory();
+
+            let notified = false;
+            registry.onConnectionStatusChanged.add(() => {
+                notified = true;
+            });
+
+            registry.isEnabled = true;
+            expect(notified).toBe(true);
 
             registry.dispose?.();
         });

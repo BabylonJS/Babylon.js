@@ -1,6 +1,6 @@
-import { Button, tokens } from "@fluentui/react-components";
-import { PlugConnectedRegular, PlugDisconnectedRegular } from "@fluentui/react-icons";
-import { useEffect, useRef } from "react";
+import { Button, makeStyles, tokens } from "@fluentui/react-components";
+import { PlugConnectedCheckmarkRegular, PlugConnectedRegular, PlugDisconnectedRegular } from "@fluentui/react-icons";
+import { useEffect, useRef, useState } from "react";
 
 import { useToast } from "shared-ui-components/fluent/primitives/toast";
 import { Tooltip } from "shared-ui-components/fluent/primitives/tooltip";
@@ -21,9 +21,22 @@ export const CliConnectionStatusServiceDefinition: ServiceDefinition<[], [IShell
             teachingMoment: false,
             order: DefaultToolbarItemOrder.CliStatus,
             component: () => {
+                const isEnabled = useObservableState(() => cliConnectionStatus.isEnabled, cliConnectionStatus.onConnectionStatusChanged);
                 const isConnected = useObservableState(() => cliConnectionStatus.isConnected, cliConnectionStatus.onConnectionStatusChanged);
                 const { showToast } = useToast();
                 const isFirstRender = useRef(true);
+                const [connectingIconToggle, setConnectingIconToggle] = useState(false);
+                const connecting = isEnabled && !isConnected;
+
+                useEffect(() => {
+                    if (!connecting) {
+                        return;
+                    }
+                    const interval = setInterval(() => {
+                        setConnectingIconToggle((prev) => !prev);
+                    }, 700);
+                    return () => clearInterval(interval);
+                }, [connecting]);
 
                 useEffect(() => {
                     if (isFirstRender.current) {
@@ -37,19 +50,32 @@ export const CliConnectionStatusServiceDefinition: ServiceDefinition<[], [IShell
                     }
                 }, [isConnected, showToast]);
 
-                // Using raw Fluent Button to pass color directly to the icon.
+                let icon: JSX.Element;
+                let tooltip: string;
+
+                if (!isEnabled) {
+                    icon = <PlugDisconnectedRegular color={tokens.colorNeutralForeground4} />;
+                    tooltip = "Inspector CLI bridge disabled — click to connect";
+                } else if (!isConnected) {
+                    icon = connectingIconToggle ? (
+                        <PlugConnectedRegular color={tokens.colorPaletteYellowForeground2} />
+                    ) : (
+                        <PlugDisconnectedRegular color={tokens.colorPaletteYellowForeground2} />
+                    );
+                    tooltip = "Connecting to Inspector CLI bridge — click to disconnect";
+                } else {
+                    icon = <PlugConnectedCheckmarkRegular color={tokens.colorPaletteGreenForeground2} />;
+                    tooltip = "Connected to Inspector CLI bridge — click to disconnect";
+                }
+
                 return (
-                    <Tooltip content={isConnected ? "Connected to Inspector CLI Bridge" : "Disconnected from Inspector CLI Bridge"}>
+                    <Tooltip content={tooltip}>
                         <Button
                             appearance="subtle"
-                            icon={
-                                isConnected ? (
-                                    <PlugConnectedRegular color={tokens.colorPaletteGreenForeground2} />
-                                ) : (
-                                    <PlugDisconnectedRegular color={tokens.colorPaletteRedForeground2} />
-                                )
-                            }
-                            onClick={() => window.open("https://www.npmjs.com/package/@babylonjs/inspector", "_blank")}
+                            icon={icon}
+                            onClick={() => {
+                                cliConnectionStatus.isEnabled = !cliConnectionStatus.isEnabled;
+                            }}
                         />
                     </Tooltip>
                 );
