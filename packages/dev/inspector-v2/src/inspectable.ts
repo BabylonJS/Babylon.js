@@ -29,6 +29,12 @@ export type InspectableOptions = {
     name?: string;
 
     /**
+     * Whether the CLI bridge should automatically start trying to connect
+     * when the inspectable session is created. Defaults to false.
+     */
+    autoStart?: boolean;
+
+    /**
      * Additional service definitions to register with the inspectable container.
      * These are added in a separate call from the built-in services and are removed
      * when the returned token is disposed.
@@ -107,6 +113,7 @@ export function _StartInspectable(scene: Scene, options?: Partial<InspectableOpt
                 MakeInspectableBridgeServiceDefinition({
                     port,
                     name,
+                    autoStart: options?.autoStart ?? false,
                 }),
                 EntityQueryServiceDefinition,
                 ScreenshotCommandServiceDefinition,

@@ -953,10 +953,11 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
 
                 output.endpoints!.forEach((endpoint) => {
                     const sourceFrames = this._frames.filter((f) => f.nodes.indexOf(node) !== -1);
+                    const targetNode = this._nodes.find((n) => n.content.data === endpoint.ownerData);
                     const targetFrames = this._frames.filter((f) => f.nodes.some((n) => n.content.data === endpoint.ownerData));
 
                     const sourceId = sourceFrames.length > 0 ? sourceFrames[0].id : node.id;
-                    const targetId = targetFrames.length > 0 ? targetFrames[0].id : endpoint.ownerData.uniqueId;
+                    const targetId = targetFrames.length > 0 ? targetFrames[0].id : targetNode ? targetNode.id : endpoint.ownerData.uniqueId;
 
                     graph.setEdge(sourceId.toString(), targetId.toString());
                 });
