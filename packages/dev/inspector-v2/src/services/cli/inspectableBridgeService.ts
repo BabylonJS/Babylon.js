@@ -20,6 +20,11 @@ export interface IInspectableBridgeServiceOptions {
      * The session display name sent to the bridge.
      */
     name: string;
+
+    /**
+     * Whether to automatically start connecting when the service is created.
+     */
+    autoStart: boolean;
 }
 
 /**
@@ -36,7 +41,7 @@ export function MakeInspectableBridgeServiceDefinition(options: IInspectableBrid
             let ws: WebSocket | null = null;
             let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
             let disposed = false;
-            let enabled = false;
+            let enabled = options.autoStart;
             let connected = false;
             const onConnectionStatusChanged = new Observable<void>();
 
@@ -154,6 +159,10 @@ export function MakeInspectableBridgeServiceDefinition(options: IInspectableBrid
                         break;
                     }
                 }
+            }
+
+            if (enabled) {
+                connect();
             }
 
             const registry: IInspectableCommandRegistry & ICliConnectionStatus & IDisposable = {

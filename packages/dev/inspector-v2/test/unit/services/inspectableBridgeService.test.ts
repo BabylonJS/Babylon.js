@@ -6,24 +6,24 @@ import { MakeInspectableBridgeServiceDefinition } from "../../../src/services/cl
 describe("InspectableBridgeService", () => {
     describe("service definition", () => {
         it("produces InspectableCommandRegistryIdentity", () => {
-            const definition = MakeInspectableBridgeServiceDefinition({ port: 4400, name: "test" });
+            const definition = MakeInspectableBridgeServiceDefinition({ port: 4400, name: "test", autoStart: false });
             expect(definition.produces).toContain(InspectableCommandRegistryIdentity);
         });
 
         it("produces CliConnectionStatusIdentity", () => {
-            const definition = MakeInspectableBridgeServiceDefinition({ port: 4400, name: "test" });
+            const definition = MakeInspectableBridgeServiceDefinition({ port: 4400, name: "test", autoStart: false });
             expect(definition.produces).toContain(CliConnectionStatusIdentity);
         });
 
         it("has a friendly name", () => {
-            const definition = MakeInspectableBridgeServiceDefinition({ port: 4400, name: "test" });
+            const definition = MakeInspectableBridgeServiceDefinition({ port: 4400, name: "test", autoStart: false });
             expect(definition.friendlyName).toBe("Inspectable Bridge Service");
         });
     });
 
     describe("command registry", () => {
         it("can register and unregister a command", async () => {
-            const definition = MakeInspectableBridgeServiceDefinition({ port: 0, name: "test" });
+            const definition = MakeInspectableBridgeServiceDefinition({ port: 0, name: "test", autoStart: false });
             const registry = await definition.factory();
 
             const disposal = registry.addCommand({
@@ -40,7 +40,7 @@ describe("InspectableBridgeService", () => {
         });
 
         it("throws when registering a duplicate command id", async () => {
-            const definition = MakeInspectableBridgeServiceDefinition({ port: 0, name: "test" });
+            const definition = MakeInspectableBridgeServiceDefinition({ port: 0, name: "test", autoStart: false });
             const registry = await definition.factory();
 
             registry.addCommand({
@@ -61,7 +61,7 @@ describe("InspectableBridgeService", () => {
         });
 
         it("allows re-registration after disposal", async () => {
-            const definition = MakeInspectableBridgeServiceDefinition({ port: 0, name: "test" });
+            const definition = MakeInspectableBridgeServiceDefinition({ port: 0, name: "test", autoStart: false });
             const registry = await definition.factory();
 
             const token = registry.addCommand({
@@ -86,7 +86,7 @@ describe("InspectableBridgeService", () => {
 
     describe("connection status", () => {
         it("starts disabled and disconnected", async () => {
-            const definition = MakeInspectableBridgeServiceDefinition({ port: 0, name: "test" });
+            const definition = MakeInspectableBridgeServiceDefinition({ port: 0, name: "test", autoStart: false });
             const registry = await definition.factory();
 
             expect(registry.isEnabled).toBe(false);
@@ -95,8 +95,17 @@ describe("InspectableBridgeService", () => {
             registry.dispose?.();
         });
 
+        it("starts enabled when autoStart is true", async () => {
+            const definition = MakeInspectableBridgeServiceDefinition({ port: 0, name: "test", autoStart: true });
+            const registry = await definition.factory();
+
+            expect(registry.isEnabled).toBe(true);
+
+            registry.dispose?.();
+        });
+
         it("exposes onConnectionStatusChanged observable", async () => {
-            const definition = MakeInspectableBridgeServiceDefinition({ port: 0, name: "test" });
+            const definition = MakeInspectableBridgeServiceDefinition({ port: 0, name: "test", autoStart: false });
             const registry = await definition.factory();
 
             expect(registry.onConnectionStatusChanged).toBeDefined();
@@ -106,7 +115,7 @@ describe("InspectableBridgeService", () => {
         });
 
         it("notifies when isEnabled changes", async () => {
-            const definition = MakeInspectableBridgeServiceDefinition({ port: 0, name: "test" });
+            const definition = MakeInspectableBridgeServiceDefinition({ port: 0, name: "test", autoStart: false });
             const registry = await definition.factory();
 
             let notified = false;
