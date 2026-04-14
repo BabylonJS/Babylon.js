@@ -133,15 +133,6 @@ export class SpritePacker {
     }
 
     /**
-     * Gets the texture atlas that contains all the sprites packed by this SpritePacker.
-     * For backwards compatibility, returns the first page's texture.
-     * @returns The texture atlas containing the sprites.
-     */
-    public get texture(): ThinTexture {
-        return this._pages[0].texture;
-    }
-
-    /**
      * Sets the fonts that will be used to render text in the sprite atlas.
      * @param rawFonts A map of font names to RawFont objects.
      */
