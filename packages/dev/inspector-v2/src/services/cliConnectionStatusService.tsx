@@ -1,7 +1,8 @@
-import { Body1, Button, Link, makeStyles, tokens } from "@fluentui/react-components";
+import { Body1, Button, makeStyles, tokens } from "@fluentui/react-components";
 import { PlugConnectedCheckmarkRegular, PlugConnectedRegular, PlugDisconnectedRegular } from "@fluentui/react-icons";
 import { useEffect, useRef, useState } from "react";
 
+import { Link } from "shared-ui-components/fluent/primitives/link";
 import { useToast } from "shared-ui-components/fluent/primitives/toast";
 import { Tooltip } from "shared-ui-components/fluent/primitives/tooltip";
 import { useObservableState } from "shared-ui-components/modularTool/hooks/observableHooks";
@@ -82,16 +83,16 @@ export const CliConnectionStatusServiceDefinition: ServiceDefinition<[], [IShell
                 const tooltipContent = (
                     <div className={classes.tooltipContent}>
                         <Body1>{statusText}</Body1>
-                        <Link href={DocUrl} target="_blank">
-                            Inspector CLI documentation
-                        </Link>
+                        <Link url={DocUrl} value="Inspector CLI documentation" />
                     </div>
                 );
 
+                // Using raw Fluent Button for custom icon coloring per connection state.
                 return (
                     <Tooltip content={tooltipContent}>
                         <Button
                             appearance="subtle"
+                            aria-label={statusText}
                             icon={icon}
                             onClick={() => {
                                 cliConnectionStatus.isEnabled = !cliConnectionStatus.isEnabled;

@@ -1,9 +1,27 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { InspectableCommandRegistryIdentity } from "../../../src/services/cli/inspectableCommandRegistry";
 import { CliConnectionStatusIdentity } from "../../../src/services/cli/cliConnectionStatus";
 import { MakeInspectableBridgeServiceDefinition } from "../../../src/services/cli/inspectableBridgeService";
 
 describe("InspectableBridgeService", () => {
+    let originalWebSocket: typeof WebSocket;
+
+    beforeEach(() => {
+        originalWebSocket = globalThis.WebSocket;
+        // Stub WebSocket to prevent real network I/O in tests.
+        globalThis.WebSocket = vi.fn(() => ({
+            onopen: null,
+            onclose: null,
+            onerror: null,
+            onmessage: null,
+            close: vi.fn(),
+            send: vi.fn(),
+        })) as unknown as typeof WebSocket;
+    });
+
+    afterEach(() => {
+        globalThis.WebSocket = originalWebSocket;
+    });
     describe("service definition", () => {
         it("produces InspectableCommandRegistryIdentity", () => {
             const definition = MakeInspectableBridgeServiceDefinition({ port: 4400, name: "test", autoStart: false });

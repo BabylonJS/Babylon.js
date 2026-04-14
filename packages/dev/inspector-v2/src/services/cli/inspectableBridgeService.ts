@@ -65,9 +65,17 @@ export function MakeInspectableBridgeServiceDefinition(options: IInspectableBrid
                     return;
                 }
 
-                // NOTE: The browser unconditionally logs a console error for failed WebSocket
-                // connections at the network level. This cannot be suppressed from JavaScript.
-                ws = new WebSocket(`ws://127.0.0.1:${options.port}`);
+                try {
+                    // NOTE: The browser unconditionally logs a console error for failed WebSocket
+                    // connections at the network level. This cannot be suppressed from JavaScript.
+                    ws = new WebSocket(`ws://127.0.0.1:${options.port}`);
+                } catch {
+                    ws = null;
+                    setConnected(false);
+                    Logger.Warn(`InspectableBridgeService: Failed to create WebSocket connection on port ${options.port}.`);
+                    scheduleReconnect();
+                    return;
+                }
 
                 ws.onopen = () => {
                     setConnected(true);
