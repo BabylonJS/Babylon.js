@@ -151,6 +151,8 @@ export function GetTextBoundingBox(
     const widthPx = Math.ceil(metrics.width);
     const heightPx = Math.ceil(metrics.actualBoundingBoxAscent) + Math.ceil(metrics.actualBoundingBoxDescent);
 
+    spritesCanvasContext.restore();
+
     return {
         width: widthPx,
         height: heightPx,

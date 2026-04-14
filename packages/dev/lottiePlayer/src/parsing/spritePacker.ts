@@ -332,19 +332,30 @@ export class SpritePacker {
         ctx.restore();
     }
 
-    // This function assumes that GetTextBoundingBox has already been called as to measure the text
-    // we need to setup the canvas context with the correct font and styles, so we don't set them up here
-    // again, but we still need to make sure to restore the context when we are done
     private _drawText(textData: RawTextData, boundingBox: BoundingBox, scalingFactor: IVector2Like, ctx: DrawingContext): void {
         if (this._rawFonts === undefined) {
-            ctx.restore();
             return;
         }
 
+        const textInfo = textData.d.k[0].s as RawTextDocument;
+
+        const fontFamily = textInfo.f;
+        const finalFont = this._rawFonts.get(fontFamily);
+        if (!finalFont) {
+            return;
+        }
+
+        ctx.save();
         ctx.translate(this._currentX, this._currentY);
         ctx.scale(scalingFactor.x, scalingFactor.y);
 
-        const textInfo = textData.d.k[0].s as RawTextDocument;
+        // Set up font (same setup as GetTextBoundingBox for measurement consistency)
+        const weight = finalFont.fWeight || "400";
+        ctx.font = `${weight} ${textInfo.s}px ${finalFont.fFamily}`;
+
+        if (textInfo.sc !== undefined && textInfo.sc.length >= 3 && textInfo.sw !== undefined && textInfo.sw > 0) {
+            ctx.lineWidth = textInfo.sw;
+        }
 
         if (textInfo.fc !== undefined && textInfo.fc.length >= 3) {
             const rawFillStyle = textInfo.fc;
