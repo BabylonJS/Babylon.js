@@ -5,12 +5,13 @@ import { runCoroutineAsync, createYieldingScheduler, type Coroutine } from "core
 import { _LoadScriptModuleAsync } from "core/Misc/tools.internals";
 import { type SPLATLoadingOptions } from "./splatLoadingOptions";
 import { Mode, type IParsedSplat } from "./splatDefs";
+import { type GaussianCloud, type SpzModule, SpzExtensionSafeOrbitCameraAdobe } from "@adobe/spz";
 
 const _SpzConversionBatchSize = 32768;
 const _SH_C0 = 0.28209479177387814;
 
 // Cached WASM module promise — initialized once, reused across all SPZ loads.
-let _SpzModulePromise: Promise<any> | null = null;
+let _SpzModulePromise: Promise<SpzModule> | null = null;
 let _SpzModuleUrl: string | null = null;
 
 /**
@@ -213,7 +214,7 @@ export function ParseSpz(data: ArrayBuffer, scene: Scene, _loadingOptions: SPLAT
  * @param url URL to the spz WASM ES module (its default export should be a factory function)
  * @returns A promise resolving to the initialized spz WASM module
  */
-export async function GetSpzModule(url: string): Promise<any> {
+export async function GetSpzModule(url: string): Promise<SpzModule> {
     if (_SpzModulePromise && _SpzModuleUrl === url) {
         return await _SpzModulePromise;
     }
@@ -244,7 +245,7 @@ export async function GetSpzModule(url: string): Promise<any> {
  * @param useCoroutine If true, yields periodically to avoid blocking the main thread
  * @returns A coroutine returning an IParsedSplat ready to be passed to updateData
  */
-export function* ConvertSpzToSplat(cloud: any, scene: Scene, useCoroutine = false): Coroutine<IParsedSplat> {
+export function* ConvertSpzToSplat(cloud: GaussianCloud, scene: Scene, useCoroutine = false): Coroutine<IParsedSplat> {
     const splatCount: number = cloud.numPoints;
     const rowOutputLength = 3 * 4 + 3 * 4 + 4 + 4; // 32 bytes
     const buffer = new ArrayBuffer(rowOutputLength * splatCount);
@@ -352,7 +353,7 @@ export function* ConvertSpzToSplat(cloud: any, scene: Scene, useCoroutine = fals
     let safeOrbitCameraElevationMinMax: [number, number] | undefined;
     if (cloud.extensions) {
         for (const ext of cloud.extensions) {
-            if (ext.safeOrbitRadiusMin !== undefined) {
+            if (ext instanceof SpzExtensionSafeOrbitCameraAdobe) {
                 safeOrbitCameraRadiusMin = ext.safeOrbitRadiusMin;
                 safeOrbitCameraElevationMinMax = [ext.safeOrbitElevationMin, ext.safeOrbitElevationMax];
                 break;
