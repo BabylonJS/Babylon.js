@@ -1,4 +1,4 @@
-import { Button, Link, makeStyles, tokens } from "@fluentui/react-components";
+import { Body1, Button, Link, makeStyles, tokens } from "@fluentui/react-components";
 import { PlugConnectedCheckmarkRegular, PlugConnectedRegular, PlugDisconnectedRegular } from "@fluentui/react-icons";
 import { useEffect, useRef, useState } from "react";
 
@@ -81,7 +81,7 @@ export const CliConnectionStatusServiceDefinition: ServiceDefinition<[], [IShell
 
                 const tooltipContent = (
                     <div className={classes.tooltipContent}>
-                        <span>{statusText}</span>
+                        <Body1>{statusText}</Body1>
                         <Link href={DocUrl} target="_blank">
                             Inspector CLI documentation
                         </Link>
