@@ -1,5 +1,6 @@
 import { type GlobalState } from "../globalState";
-import { type WeaklyTypedServiceDefinition } from "inspector/modularity/serviceContainer";
+import { type WeaklyTypedServiceDefinition } from "shared-ui-components/modularTool/modularity/serviceContainer";
+import { type IInspectableCommandRegistry } from "inspector/services/cli/inspectableCommandRegistry";
 
 type InspectorV2Module = typeof import("inspector/legacy/legacy") & typeof import("inspector/index");
 
@@ -13,7 +14,7 @@ export function MakePlaygroundCommandServiceDefinition(globalState: GlobalState,
     return {
         friendlyName: "Playground Command Service",
         consumes: [inspectorModule.InspectableCommandRegistryIdentity],
-        factory: (commandRegistry: any) => {
+        factory: (commandRegistry: IInspectableCommandRegistry) => {
             // Track the last error from the Playground for the get-errors command.
             let lastError: { message: string; lineNumber?: number; columnNumber?: number } | null = null;
             const errorTracker = globalState.onErrorObservable.add((error) => {
