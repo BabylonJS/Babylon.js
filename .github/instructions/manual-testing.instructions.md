@@ -50,92 +50,25 @@ Launch the tool in the browser by navigating to the following URL using playwrig
 
 Use the `.github\instructions\editor-interaction.instructions.md` instructions for interacting with SFE.
 
-## Node Material Editor (NME)
+## CDN-based Editors (NME, GUI Editor, NGE, NRGE, NPE)
 
-To test NME, you need to build the dev packages, start the CDN server, and then start the Node Editor dev server. Here are the commands you need to run in order:
+All CDN-based editors share the same prerequisite steps. Only the workspace name and port differ.
 
-`npm run build:dev` (skip if already completed in a prior workflow)
-Wait for the build to complete successfully, then continue.
-`npx build-tools -c dw -wd -wa -sc` (skip if already running)
-Wait for "watching for asset changes..." then continue.
-`npm run serve -w @tools/babylon-server` (skip if port 1337 is already listening)
-Wait for "compiled successfully" then continue.
-`npm run serve -w @tools/node-editor` (skip if port 1340 is already listening)
-Wait for "compiled successfully" then continue.
+| Editor | Workspace | Port | URL |
+|--------|-----------|------|-----|
+| Node Material Editor (NME) | `@tools/node-editor` | 1340 | `http://localhost:1340` |
+| GUI Editor | `@tools/gui-editor` | 1341 | `http://localhost:1341` |
+| Node Geometry Editor (NGE) | `@tools/node-geometry-editor` | 1343 | `http://localhost:1343` |
+| Node Render Graph Editor (NRGE) | `@tools/node-render-graph-editor` | 1344 | `http://localhost:1344` |
+| Node Particle Editor (NPE) | `@tools/node-particle-editor` | 1345 | `http://localhost:1345` |
 
-Launch the tool in the browser by navigating to the following URL using playwright-cli:
-`http://localhost:1340`
+### Steps
 
-Use the `.github\instructions\editor-interaction.instructions.md` instructions for interacting with NME.
+1. `npm run build:dev` (skip if already completed in a prior workflow)
+2. `npx build-tools -c dw -wd -wa -sc` (skip if already running)
+3. `npm run serve -w @tools/babylon-server` (skip if port 1337 is already listening)
+4. `npm run serve -w <workspace>` (skip if the editor's port is already listening)
 
-## GUI Editor
+Wait for each command to complete before starting the next. Launch the editor at its URL.
 
-To test the GUI Editor, you need to build the dev packages, start the CDN server, and then start the GUI Editor dev server. Here are the commands you need to run in order:
-
-`npm run build:dev` (skip if already completed in a prior workflow)
-Wait for the build to complete successfully, then continue.
-`npx build-tools -c dw -wd -wa -sc` (skip if already running)
-Wait for "watching for asset changes..." then continue.
-`npm run serve -w @tools/babylon-server` (skip if port 1337 is already listening)
-Wait for "compiled successfully" then continue.
-`npm run serve -w @tools/gui-editor` (skip if port 1341 is already listening)
-Wait for "compiled successfully" then continue.
-
-Launch the tool in the browser by navigating to the following URL using playwright-cli:
-`http://localhost:1341`
-
-Use the `.github\instructions\editor-interaction.instructions.md` instructions for interacting with the GUI Editor.
-
-## Node Geometry Editor (NGE)
-
-To test NGE, you need to build the dev packages, start the CDN server, and then start the Node Geometry Editor dev server. Here are the commands you need to run in order:
-
-`npm run build:dev` (skip if already completed in a prior workflow)
-Wait for the build to complete successfully, then continue.
-`npx build-tools -c dw -wd -wa -sc` (skip if already running)
-Wait for "watching for asset changes..." then continue.
-`npm run serve -w @tools/babylon-server` (skip if port 1337 is already listening)
-Wait for "compiled successfully" then continue.
-`npm run serve -w @tools/node-geometry-editor` (skip if port 1343 is already listening)
-Wait for "compiled successfully" then continue.
-
-Launch the tool in the browser by navigating to the following URL using playwright-cli:
-`http://localhost:1343`
-
-Use the `.github\instructions\editor-interaction.instructions.md` instructions for interacting with NGE.
-
-## Node Render Graph Editor (NRGE)
-
-To test NRGE, you need to build the dev packages, start the CDN server, and then start the Node Render Graph Editor dev server. Here are the commands you need to run in order:
-
-`npm run build:dev` (skip if already completed in a prior workflow)
-Wait for the build to complete successfully, then continue.
-`npx build-tools -c dw -wd -wa -sc` (skip if already running)
-Wait for "watching for asset changes..." then continue.
-`npm run serve -w @tools/babylon-server` (skip if port 1337 is already listening)
-Wait for "compiled successfully" then continue.
-`npm run serve -w @tools/node-render-graph-editor` (skip if port 1344 is already listening)
-Wait for "compiled successfully" then continue.
-
-Launch the tool in the browser by navigating to the following URL using playwright-cli:
-`http://localhost:1344`
-
-Use the `.github\instructions\editor-interaction.instructions.md` instructions for interacting with NRGE.
-
-## Node Particle Editor (NPE)
-
-To test NPE, you need to build the dev packages, start the CDN server, and then start the Node Particle Editor dev server. Here are the commands you need to run in order:
-
-`npm run build:dev` (skip if already completed in a prior workflow)
-Wait for the build to complete successfully, then continue.
-`npx build-tools -c dw -wd -wa -sc` (skip if already running)
-Wait for "watching for asset changes..." then continue.
-`npm run serve -w @tools/babylon-server` (skip if port 1337 is already listening)
-Wait for "compiled successfully" then continue.
-`npm run serve -w @tools/node-particle-editor` (skip if port 1345 is already listening)
-Wait for "compiled successfully" then continue.
-
-Launch the tool in the browser by navigating to the following URL using playwright-cli:
-`http://localhost:1345`
-
-Use the `.github\instructions\editor-interaction.instructions.md` instructions for interacting with NPE.
+Use [editor-interaction.instructions.md](editor-interaction.instructions.md) for interacting with any of these editors.
