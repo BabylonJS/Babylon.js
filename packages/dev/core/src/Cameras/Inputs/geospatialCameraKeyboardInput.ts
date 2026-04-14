@@ -69,11 +69,9 @@ export class GeospatialCameraKeyboardInput implements ICameraInput<GeospatialCam
     }
 
     public set rotationSensitivity(value: number) {
-        if (this.camera.movement) {
-            for (const entry of this.camera.movement.inputMap) {
-                if (entry.source === "keyboard" && entry.interaction === "rotate") {
-                    entry.sensitivity = value;
-                }
+        for (const entry of this.camera.movement.inputMap) {
+            if (entry.source === "keyboard" && entry.interaction === "rotate") {
+                entry.sensitivity = value;
             }
         }
     }
@@ -89,11 +87,9 @@ export class GeospatialCameraKeyboardInput implements ICameraInput<GeospatialCam
     }
 
     public set panSensitivity(value: number) {
-        if (this.camera.movement) {
-            for (const entry of this.camera.movement.inputMap) {
-                if (entry.source === "keyboard" && entry.interaction === "pan") {
-                    entry.sensitivity = value;
-                }
+        for (const entry of this.camera.movement.inputMap) {
+            if (entry.source === "keyboard" && entry.interaction === "pan") {
+                entry.sensitivity = value;
             }
         }
     }
@@ -109,11 +105,9 @@ export class GeospatialCameraKeyboardInput implements ICameraInput<GeospatialCam
     }
 
     public set zoomSensitivity(value: number) {
-        if (this.camera.movement) {
-            for (const entry of this.camera.movement.inputMap) {
-                if (entry.source === "keyboard" && entry.interaction === "zoom") {
-                    entry.sensitivity = value;
-                }
+        for (const entry of this.camera.movement.inputMap) {
+            if (entry.source === "keyboard" && entry.interaction === "zoom") {
+                entry.sensitivity = value;
             }
         }
     }

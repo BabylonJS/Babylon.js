@@ -5,8 +5,51 @@ import { type InterpolatingBehavior } from "../Behaviors/Cameras/interpolatingBe
 
 const FrameDurationAt60FPS = 1000 / 60;
 /**
- * Holds all logic related to converting input pixel deltas into current frame deltas, taking speed / framerate into account
- * to ensure smooth frame-rate-independent movement
+ * Base class for camera movement systems that convert raw input into framerate-independent camera deltas.
+ *
+ * The movement system has three layers of configuration:
+ *
+ * **1. Input mapping (`inputMap`)** — Controls which physical inputs trigger which camera interactions.
+ * Each entry maps a source (pointer, keyboard, wheel, touch) + optional conditions (button, modifiers, key)
+ * to a semantic interaction type (pan, rotate, zoom). First matching entry wins; use `addEntry()` to
+ * auto-insert based on specificity, or `getEntry()` to modify an existing entry.
+ *
+ * ```typescript
+ * // Swap left-click rotate to pan
+ * camera.movement.getEntry("pointer", "rotate")!.interaction = "pan";
+ * camera.movement.getEntry("pointer", "pan")!.interaction = "rotate";
+ *
+ * // Add shift+drag to pan (auto-inserted before less-specific entries)
+ * camera.movement.addEntry({ source: "pointer", button: 0, modifiers: { shift: true }, interaction: "pan", sensitivity: 0.002 });
+ *
+ * // Change sensitivity of pointer rotation
+ * camera.movement.getEntry("pointer", "rotate")!.sensitivity = 0.005;
+ *
+ * // Map +/- keys to zoom
+ * camera.movement.addEntry({ source: "keyboard", key: [187, 107, 189, 109], interaction: "zoom", sensitivity: 0.04 });
+ * ```
+ *
+ * **2. Sensitivity (`sensitivity` on each inputMap entry)** — Multiplier applied to input deltas before
+ * passing to the handler. Higher values = faster movement. Each entry can have its own sensitivity,
+ * allowing different sensitivity for e.g. keyboard rotate vs pointer rotate. When `sensitivity` is
+ * omitted from an entry, each input class uses its own built-in default for that interaction type.
+ *
+ * **3. Handlers** — Defined on camera-specific subclasses (e.g. `ArcRotateCameraMovement.handlers`).
+ * Handlers receive pre-scaled deltas and accumulate them into pixel accumulators. Override individual
+ * handlers to customize behavior without changing input mapping:
+ *
+ * ```typescript
+ * const defaultRotate = camera.movement.handlers.rotate;
+ * camera.movement.handlers.rotate = (dx, dy) => {
+ *     console.log("rotate:", dx, dy);
+ *     defaultRotate(dx, dy);
+ * };
+ * ```
+ *
+ * **4. Speed and inertia** — Properties on this base class that control how accumulated pixel deltas
+ * are converted to framerate-independent camera deltas via `computeCurrentFrameDeltas()`:
+ * - `panSpeed`, `rotationXSpeed`, `rotationYSpeed`, `zoomSpeed` — units of movement per pixel
+ * - `panInertia`, `rotationInertia`, `zoomInertia` — velocity decay factor when input stops (0 = instant stop, 0.9 = smooth glide)
  */
 export class CameraMovement {
     protected _scene: Scene;
@@ -40,47 +83,40 @@ export class CameraMovement {
      * Among equally specific entries, the first one in the array wins.
      * Returns the matched entry, or null if no entry matches.
      * @param source - The physical input source (e.g. "pointer", "keyboard")
-     * @param conditions - Conditions to match against, specific to the source type
+     * @param currentConditions - Conditions to match against, specific to the source type
      * @returns The matched InputMapEntry, or null if no entry matches
      */
-    public resolveInteraction(source: InputSource, conditions?: InputConditions): InputMapEntry | null {
+    public resolveInteraction(source: InputSource, currentConditions?: InputConditions): InputMapEntry | null {
         for (const entry of this.inputMap) {
-            if (entry.source !== source) {
-                continue;
+            if (entry.source === source && this._entryMatches(entry, currentConditions)) {
+                return entry;
             }
-            switch (entry.source) {
-                case "pointer":
-                    if (entry.button !== undefined && entry.button !== conditions?.button) {
-                        continue;
-                    }
-                    if (!this._matchModifiers(entry.modifiers, conditions?.modifiers)) {
-                        continue;
-                    }
-                    break;
-                case "wheel":
-                    if (!this._matchModifiers(entry.modifiers, conditions?.modifiers)) {
-                        continue;
-                    }
-                    break;
-                case "touch":
-                    if (entry.touchCount !== undefined && entry.touchCount !== conditions?.touchCount) {
-                        continue;
-                    }
-                    break;
-                case "keyboard":
-                    if (entry.key !== undefined) {
-                        if (Array.isArray(entry.key) ? entry.key.indexOf(conditions?.key ?? -1) === -1 : entry.key !== conditions?.key) {
-                            continue;
-                        }
-                    }
-                    if (!this._matchModifiers(entry.modifiers, conditions?.modifiers)) {
-                        continue;
-                    }
-                    break;
-            }
-            return entry;
         }
         return null;
+    }
+
+    private _entryMatches(entry: InputMapEntry, currentConditions?: InputConditions): boolean {
+        switch (entry.source) {
+            case "pointer":
+                if (entry.button !== undefined && entry.button !== currentConditions?.button) {
+                    return false;
+                }
+                return this._matchModifiers(entry.modifiers, currentConditions?.modifiers);
+            case "wheel":
+                return this._matchModifiers(entry.modifiers, currentConditions?.modifiers);
+            case "touch":
+                if (entry.touchCount !== undefined && entry.touchCount !== currentConditions?.touchCount) {
+                    return false;
+                }
+                return true;
+            case "keyboard":
+                if (entry.key !== undefined) {
+                    if (Array.isArray(entry.key) ? entry.key.indexOf(currentConditions?.key ?? -1) === -1 : entry.key !== currentConditions?.key) {
+                        return false;
+                    }
+                }
+                return this._matchModifiers(entry.modifiers, currentConditions?.modifiers);
+        }
     }
 
     /**
@@ -139,17 +175,17 @@ export class CameraMovement {
         return score;
     }
 
-    private _matchModifiers(entryModifiers?: InputModifiers, conditionModifiers?: InputModifiers): boolean {
+    private _matchModifiers(entryModifiers?: InputModifiers, currentModifiers?: InputModifiers): boolean {
         if (!entryModifiers) {
             return true;
         }
-        if (entryModifiers.ctrl !== undefined && entryModifiers.ctrl !== (conditionModifiers?.ctrl ?? false)) {
+        if (entryModifiers.ctrl !== undefined && entryModifiers.ctrl !== (currentModifiers?.ctrl ?? false)) {
             return false;
         }
-        if (entryModifiers.shift !== undefined && entryModifiers.shift !== (conditionModifiers?.shift ?? false)) {
+        if (entryModifiers.shift !== undefined && entryModifiers.shift !== (currentModifiers?.shift ?? false)) {
             return false;
         }
-        if (entryModifiers.alt !== undefined && entryModifiers.alt !== (conditionModifiers?.alt ?? false)) {
+        if (entryModifiers.alt !== undefined && entryModifiers.alt !== (currentModifiers?.alt ?? false)) {
             return false;
         }
         return true;
@@ -160,6 +196,11 @@ export class CameraMovement {
      * Speed defines the amount of camera movement expected per input pixel movement
      * -----------------------------------
      */
+    /**
+     * Global speed multiplier applied to all movement (pan, rotation, zoom).
+     * Acts as a master scale factor on top of the individual speed properties.
+     */
+    public speed: number = 1;
     /**
      * Desired coordinate unit movement per input pixel when zooming
      */
@@ -314,7 +355,7 @@ export class CameraMovement {
             this._calculateCurrentVelocity(this._panVelocity.y, this.panAccumulatedPixels.y, this.panInertia),
             this._calculateCurrentVelocity(this._panVelocity.z, this.panAccumulatedPixels.z, this.panInertia)
         );
-        this._panVelocity.scaleToRef(this.panSpeed * this._panSpeedMultiplier * deltaTimeMs, this.panDeltaCurrentFrame);
+        this._panVelocity.scaleToRef(this.speed * this.panSpeed * this._panSpeedMultiplier * deltaTimeMs, this.panDeltaCurrentFrame);
 
         this._rotationVelocity.copyFromFloats(
             this._calculateCurrentVelocity(this._rotationVelocity.x, this.rotationAccumulatedPixels.x, this.rotationInertia),
@@ -322,13 +363,13 @@ export class CameraMovement {
             this._calculateCurrentVelocity(this._rotationVelocity.z, this.rotationAccumulatedPixels.z, this.rotationInertia)
         );
         this.rotationDeltaCurrentFrame.copyFromFloats(
-            this._rotationVelocity.x * this.rotationXSpeed * deltaTimeMs,
-            this._rotationVelocity.y * this.rotationYSpeed * deltaTimeMs,
-            this._rotationVelocity.z * this.rotationYSpeed * deltaTimeMs
+            this._rotationVelocity.x * this.speed * this.rotationXSpeed * deltaTimeMs,
+            this._rotationVelocity.y * this.speed * this.rotationYSpeed * deltaTimeMs,
+            this._rotationVelocity.z * this.speed * this.rotationYSpeed * deltaTimeMs
         );
 
         this._zoomVelocity = this._calculateCurrentVelocity(this._zoomVelocity, this.zoomAccumulatedPixels, this.zoomInertia);
-        this.zoomDeltaCurrentFrame = this._zoomVelocity * (this.zoomSpeed * this._zoomSpeedMultiplier) * deltaTimeMs;
+        this.zoomDeltaCurrentFrame = this._zoomVelocity * (this.speed * this.zoomSpeed * this._zoomSpeedMultiplier) * deltaTimeMs;
 
         this._prevFrameTimeMs = deltaTimeMs;
         this.zoomAccumulatedPixels = 0;

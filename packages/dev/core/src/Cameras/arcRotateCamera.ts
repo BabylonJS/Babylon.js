@@ -643,7 +643,7 @@ export class ArcRotateCamera extends TargetCamera {
             }
         }
 
-        // Handle _panningMouseButton: update pointer→pan entry's button when not default (2)
+        // Handle _panningMouseButton: update pointer→pan entry's button when not the default (2)
         if (this._panningMouseButton !== 2) {
             const entry = this.movement.inputMap.find((e) => e.source === "pointer" && e.interaction === "pan");
             if (entry && entry.source === "pointer") {

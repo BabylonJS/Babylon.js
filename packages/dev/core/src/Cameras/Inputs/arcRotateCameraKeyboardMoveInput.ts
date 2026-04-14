@@ -102,6 +102,13 @@ export class ArcRotateCameraKeyboardMoveInput implements ICameraInput<ArcRotateC
     /** Cached conditions object to avoid per-frame allocations in checkInputs */
     private _keyboardConditions: KeyboardConditions = { modifiers: { ctrl: false, alt: false } };
 
+    /** Default sensitivity for keyboard rotate when the inputMap entry omits sensitivity */
+    private _defaultRotateSensitivity = 0.01;
+    /** Default sensitivity for keyboard pan when the inputMap entry omits sensitivity */
+    private _defaultPanSensitivity = 0.02;
+    /** Default sensitivity for keyboard zoom when the inputMap entry omits sensitivity */
+    private _defaultZoomSensitivity = 0.04;
+
     /**
      * Attach the input controls to a specific dom element to get the input from.
      * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
@@ -216,8 +223,8 @@ export class ArcRotateCameraKeyboardMoveInput implements ICameraInput<ArcRotateC
                     const resolved = movement.resolveInteraction("keyboard", this._keyboardConditions);
 
                     if (resolved) {
-                        const sens = resolved.sensitivity ?? 1;
                         if (resolved.interaction === "pan") {
+                            const sens = resolved.sensitivity ?? this._defaultPanSensitivity;
                             if (this.keysLeft.indexOf(keyCode) !== -1) {
                                 movement.handlers.pan(-sens, 0);
                             } else if (this.keysRight.indexOf(keyCode) !== -1) {
@@ -228,12 +235,14 @@ export class ArcRotateCameraKeyboardMoveInput implements ICameraInput<ArcRotateC
                                 movement.handlers.pan(0, -sens);
                             }
                         } else if (resolved.interaction === "zoom") {
+                            const sens = resolved.sensitivity ?? this._defaultZoomSensitivity;
                             if (this.keysUp.indexOf(keyCode) !== -1 || this.keysZoomIn.indexOf(keyCode) !== -1) {
                                 movement.handlers.zoom(sens);
                             } else if (this.keysDown.indexOf(keyCode) !== -1 || this.keysZoomOut.indexOf(keyCode) !== -1) {
                                 movement.handlers.zoom(-sens);
                             }
                         } else if (resolved.interaction === "rotate") {
+                            const sens = resolved.sensitivity ?? this._defaultRotateSensitivity;
                             if (this.keysLeft.indexOf(keyCode) !== -1) {
                                 movement.handlers.rotate(-sens, 0);
                             } else if (this.keysRight.indexOf(keyCode) !== -1) {

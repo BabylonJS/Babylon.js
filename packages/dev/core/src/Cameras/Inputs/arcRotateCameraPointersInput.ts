@@ -91,6 +91,11 @@ export class ArcRotateCameraPointersInput extends OrbitCameraPointersInput {
     /** Cached resolved inputMap entry for the current pointer gesture */
     private _activeEntry: InputMapEntry | null = null;
 
+    /** Default sensitivity for pointer pan when the inputMap entry omits sensitivity. Calibrated to match legacy movement behavior. */
+    private _defaultPanSensitivity = 0.001;
+    /** Default sensitivity for pointer rotate when the inputMap entry omits sensitivity. Calibrated to match legacy movement behavior. */
+    private _defaultRotateSensitivity = 0.001;
+
     /**
      * Move camera from multi touch panning positions.
      * @param previousMultiTouchPanPosition
@@ -101,7 +106,7 @@ export class ArcRotateCameraPointersInput extends OrbitCameraPointersInput {
             const moveDeltaX = multiTouchPanPosition.x - previousMultiTouchPanPosition.x;
             const moveDeltaY = multiTouchPanPosition.y - previousMultiTouchPanPosition.y;
             if (this.camera.movement && this._activeEntry) {
-                const sens = this._activeEntry.sensitivity ?? 1;
+                const sens = this._activeEntry.sensitivity ?? this._defaultPanSensitivity;
                 this.camera.movement.activeInput = true;
                 this.camera.movement.handlers.pan(-moveDeltaX * sens, moveDeltaY * sens);
             } else if (this.panningSensibility !== 0) {
@@ -149,11 +154,12 @@ export class ArcRotateCameraPointersInput extends OrbitCameraPointersInput {
      */
     public override onTouch(point: Nullable<PointerTouch>, offsetX: number, offsetY: number): void {
         if (this.camera.movement && this._activeEntry) {
-            const sens = this._activeEntry.sensitivity ?? 1;
             if (this._activeEntry.interaction === "pan") {
+                const sens = this._activeEntry.sensitivity ?? this._defaultPanSensitivity;
                 this.camera.movement.activeInput = true;
                 this.camera.movement.handlers.pan(-offsetX * sens, offsetY * sens);
             } else if (this._activeEntry.interaction === "rotate") {
+                const sens = this._activeEntry.sensitivity ?? this._defaultRotateSensitivity;
                 this.camera.movement.activeInput = true;
                 this.camera.movement.handlers.rotate(-offsetX * sens, -offsetY * sens);
             }
