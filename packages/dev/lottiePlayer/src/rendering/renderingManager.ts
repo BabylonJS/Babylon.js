@@ -23,6 +23,7 @@ export class RenderingManager {
     private _sprites: ThinSprite[];
     private _spriteLayerIndices: number[];
     private _spriteAtlasIndices: number[];
+    private _batches: { sprites: ThinSprite[]; pageIndex: number }[];
     private readonly _configuration: AnimationConfiguration;
 
     /**
@@ -36,6 +37,7 @@ export class RenderingManager {
         this._sprites = [];
         this._spriteLayerIndices = [];
         this._spriteAtlasIndices = [];
+        this._batches = [];
         this._configuration = configuration;
 
         this._spritesRenderer = new SpriteRenderer(this._engine, this._configuration.spritesCapacity, 0);
@@ -96,6 +98,25 @@ export class RenderingManager {
         });
         this._sprites = indices.map((i) => this._sprites[i]);
         this._spriteAtlasIndices = indices.map((i) => this._spriteAtlasIndices[i]);
+
+        // Layer indices are no longer needed after sorting
+        this._spriteLayerIndices.length = 0;
+
+        // Pre-compute render batches so render() doesn't allocate per frame
+        this._batches.length = 0;
+        if (this._sprites.length > 0 && this._spritesTextures.length > 1) {
+            let batchStart = 0;
+            let currentPage = this._spriteAtlasIndices[0];
+
+            for (let i = 1; i <= this._sprites.length; i++) {
+                const page = i < this._sprites.length ? this._spriteAtlasIndices[i] : -1;
+                if (page !== currentPage) {
+                    this._batches.push({ sprites: this._sprites.slice(batchStart, i), pageIndex: currentPage });
+                    batchStart = i;
+                    currentPage = page;
+                }
+            }
+        }
     }
 
     /**
@@ -108,24 +129,14 @@ export class RenderingManager {
     public render(worldMatrix: ThinMatrix, projectionMatrix: ThinMatrix): void {
         this._engine.clear(this._configuration.backgroundColor, true, false, false);
 
-        if (this._spritesTextures.length <= 1) {
+        if (this._batches.length === 0) {
             // Fast path: single atlas — render everything in one call
             this._spritesRenderer.render(this._sprites, 0, worldMatrix, projectionMatrix, this._customSpriteUpdate);
         } else {
-            // Multi-atlas: walk the sorted sprite list and batch consecutive runs
-            // that share the same atlas page, flushing whenever the page changes.
-            let batchStart = 0;
-            let currentPage = this._spriteAtlasIndices[0];
-
-            for (let i = 1; i <= this._sprites.length; i++) {
-                const page = i < this._sprites.length ? this._spriteAtlasIndices[i] : -1;
-                if (page !== currentPage) {
-                    // Flush the current batch
-                    this._spritesRenderer.texture = this._spritesTextures[currentPage];
-                    this._spritesRenderer.render(this._sprites.slice(batchStart, i), 0, worldMatrix, projectionMatrix, this._customSpriteUpdate);
-                    batchStart = i;
-                    currentPage = page;
-                }
+            // Multi-atlas: iterate pre-computed batches (no per-frame allocations)
+            for (const batch of this._batches) {
+                this._spritesRenderer.texture = this._spritesTextures[batch.pageIndex];
+                this._spritesRenderer.render(batch.sprites, 0, worldMatrix, projectionMatrix, this._customSpriteUpdate);
             }
         }
     }

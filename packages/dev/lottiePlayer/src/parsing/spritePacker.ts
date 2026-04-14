@@ -253,6 +253,7 @@ export class SpritePacker {
 
         // Draw the text in the canvas
         this._drawText(textData, boundingBox, scalingFactor, page);
+        this._extrudeSpriteEdges(page, page.currentX, page.currentY, this._spriteAtlasInfo.cellWidth, this._spriteAtlasInfo.cellHeight);
         page.isDirty = true;
 
         // Get the rest of the sprite information required to render the text
