@@ -40,7 +40,7 @@ Combine the results into a deduplicated list of changed files. If there are no c
 
 ### Step 3: Review against the checklist
 
-Apply the severity categories and review checklist below to every changed line. For checklist items that reference instruction files, read the referenced file in full before checking.
+Apply the severity categories and review checklist below to every changed line.
 
 #### Severity Categories
 
@@ -94,8 +94,9 @@ Sort by severity: Critical first, then Warning, then Nit.
 **If automatic mode (default):**
 
 1. Fix all Critical and Warning issues. Fix Nit issues as well unless they are purely subjective.
-2. **Exception — design-impacting fixes**: If fixing a Warning or Nit would change the architectural approach or design intent of the code (e.g., restructuring data flow, changing when allocations happen, altering the public API shape), do NOT auto-fix. Instead, flag it in the summary table and ask the user for confirmation before applying.
+2. **Exception — design-impacting fixes**: If fixing a Warning or Nit would change the architectural approach or design intent of the code (e.g., restructuring data flow, changing when allocations happen, altering the public API shape), do NOT auto-fix. Mark those issues as "Needs confirmation" in the summary table and skip them during the fix pass.
 3. After fixing, re-run the quality tools (`format:check`, `lint:check`, `test:unit`) to verify the fixes don't introduce new problems.
+4. Present the summary table. If any issues were marked "Needs confirmation", ask the user once which of those to fix (all, specific numbers, or skip). Apply the approved fixes, then re-run quality tools if any were applied.
 
 ### Step 7: Present the summary table
 
