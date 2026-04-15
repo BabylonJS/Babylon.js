@@ -103,9 +103,13 @@ When checks fail, read the CI logs (GitHub MCP `get_job_logs` or similar).
    ```bash
    sleep 300
    ```
-2. After sleeping, re-fetch all PR data (same commands as Step 2) and
-   print the updated status table to the main chat.
-3. Repeat from step 1.
+2. After sleeping, **re-fetch ALL PR data from scratch** using the same
+   `gh` and GraphQL commands as Step 2. Every column — checks, comments,
+   approval, state — must be queried fresh from the API. **Do not reuse
+   or cache any data from a previous polling iteration.** New commits
+   can restart all checks, so data from a previous poll may be stale.
+3. Print the fully refreshed status table to the main chat.
+4. Repeat from step 1.
 
 ### On each poll, also check
 
