@@ -58,6 +58,9 @@ import { SettingsServiceDefinition } from "./services/panes/settingsService";
 import { StatsServiceDefinition } from "./services/panes/statsService";
 import { CaptureToolsDefinition } from "./services/panes/tools/captureService";
 import { ExportServiceDefinition } from "./services/panes/tools/exportService";
+import { SmartAssetToolsServiceDefinition } from "./services/panes/tools/smartAssetToolsService";
+import { AssemblyToolsServiceDefinition } from "./services/panes/tools/assemblyToolsService";
+import { OverrideCaptureServiceDefinition } from "./services/panes/tools/overrideCaptureService";
 import { GLTFAnimationImportServiceDefinition } from "./services/panes/tools/import/gltfAnimationImportService";
 import { GLTFLoaderOptionsServiceDefinition } from "./services/panes/tools/import/gltfLoaderOptionsService";
 import { GLTFValidationServiceDefinition } from "./services/panes/tools/import/gltfValidationService";
@@ -361,6 +364,9 @@ export function ShowInspector(scene: Scene, options: Partial<InspectorOptions> =
             // Tools pane tab and related services.
             ToolsServiceDefinition,
             ExportServiceDefinition,
+            SmartAssetToolsServiceDefinition,
+            AssemblyToolsServiceDefinition,
+            OverrideCaptureServiceDefinition,
             GLTFAnimationImportServiceDefinition,
             GLTFLoaderOptionsServiceDefinition,
             GLTFValidationServiceDefinition,

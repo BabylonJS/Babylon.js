@@ -1,22 +1,16 @@
-import type { Scene } from "../scene";
-import type { AssetContainer } from "../assetContainer";
-import type { Node } from "../node";
-import type { Material } from "../Materials/material";
-import type { BaseTexture } from "../Materials/Textures/baseTexture";
-import type { AnimationGroup } from "../Animations/animationGroup";
+import { type Scene } from "../scene";
+import { type AssetContainer } from "../assetContainer";
+import { type Node } from "../node";
+import { type Material } from "../Materials/material";
+import { type BaseTexture } from "../Materials/Textures/baseTexture";
+import { type AnimationGroup } from "../Animations/animationGroup";
 import { Observable } from "../Misc/observable";
 import { Logger } from "../Misc/logger";
 import { LoadAssetContainerAsync } from "../Loading/sceneLoader";
 import { FileToolsOptions } from "../Misc/fileTools";
-import type { ISmartAssetProvenance } from "./smartAssetProvenance";
-import type { ISmartAssetLoadedEvent, ISmartAssetUrlChangedEvent, ISmartAssetErrorEvent, ISmartAssetUnloadedEvent } from "./smartAssetEvents";
-import {
-    type ISerializedSmartAssetMap,
-    serializeSmartAssetMap,
-    deserializeSmartAssetMap,
-    resolveAssetUrl,
-    readJsonSource,
-} from "./smartAssetSerializer";
+import { type ISmartAssetProvenance } from "./smartAssetProvenance";
+import { type ISmartAssetLoadedEvent, type ISmartAssetUrlChangedEvent, type ISmartAssetErrorEvent, type ISmartAssetUnloadedEvent } from "./smartAssetEvents";
+import { type ISerializedSmartAssetMap, serializeSmartAssetMap, deserializeSmartAssetMap, resolveAssetUrl, readJsonSource } from "./smartAssetSerializer";
 
 const SMART_ASSET_MANAGER_KEY = Symbol.for("babylonjs:smartAssetManager");
 const ASSET_PROTOCOL = "asset://";
@@ -39,7 +33,7 @@ export class SmartAssetManager {
     private _containers: Map<string, AssetContainer> = new Map();
     private _provenance: Map<string, ISmartAssetProvenance> = new Map();
     private _objectToKeyMap: WeakMap<object, string> = new WeakMap();
-    private _overrideManager: { applyOverridesForKey(key: string): void } | null = null;
+    private _applyOverridesForKey: ((key: string) => void) | null = null;
     private _originalPreprocessUrl: ((url: string) => string) | null = null;
 
     /**
@@ -216,21 +210,45 @@ export class SmartAssetManager {
             return existing;
         }
 
-        return this._loadSceneFile(key, resolvedUrl);
+        return await this._loadSceneFile(key, resolvedUrl);
     }
 
     /**
      * Loads all registered assets concurrently.
+     * Automatically detects standalone textures by file extension and uses
+     * the appropriate loader (loadTextureAsync for images/env, loadAsync for scene files).
      * @returns A promise resolving to an array of loaded AssetContainers.
      */
     public async loadAllAsync(): Promise<AssetContainer[]> {
-        const promises: Promise<AssetContainer>[] = [];
-        for (const [key] of this._urls) {
-            if (!this._containers.has(key)) {
-                promises.push(this.loadAsync(key));
+        const scenePromises: Promise<AssetContainer | null>[] = [];
+        const texturePromises: Promise<void>[] = [];
+
+        for (const [key, url] of this._urls) {
+            if (this._containers.has(key)) {
+                continue;
+            }
+            if (_isTextureExtension(url)) {
+                texturePromises.push(
+                    this.loadTextureAsync(key)
+                        .then(() => {})
+                        .catch(() => {
+                            Logger.Warn(`SmartAssetManager: Texture "${key}" could not be loaded — skipping.`);
+                        })
+                );
+            } else {
+                scenePromises.push(
+                    this.loadAsync(key).catch(() => {
+                        // Asset failed to load (and onAssetNotFound didn't resolve it) — skip it
+                        Logger.Warn(`SmartAssetManager: Asset "${key}" could not be loaded — skipping.`);
+                        return null;
+                    })
+                );
             }
         }
-        return Promise.all(promises);
+
+        await Promise.all(texturePromises);
+        const results = await Promise.all(scenePromises);
+        return results.filter((r): r is AssetContainer => r !== null);
     }
 
     // ── Loading (Textures) ──
@@ -307,8 +325,8 @@ export class SmartAssetManager {
     public async reloadAsync(key: string): Promise<AssetContainer> {
         await this.unloadAsync(key);
         const container = await this.loadAsync(key);
-        if (this._overrideManager) {
-            this._overrideManager.applyOverridesForKey(key);
+        if (this._applyOverridesForKey) {
+            this._applyOverridesForKey(key);
         }
         return container;
     }
@@ -376,7 +394,7 @@ export class SmartAssetManager {
      * @param overrideManager - The override manager to link.
      */
     public linkOverrideManager(overrideManager: { applyOverridesForKey(key: string): void }): void {
-        this._overrideManager = overrideManager;
+        this._applyOverridesForKey = (key: string) => overrideManager.applyOverridesForKey(key);
     }
 
     // ── Lifecycle ──
@@ -428,12 +446,21 @@ export class SmartAssetManager {
             if (this.onAssetNotFound) {
                 const resolution = await this.onAssetNotFound(key, url);
                 if (resolution !== null && resolution !== undefined) {
-                    const newUrl = typeof resolution === "string" ? resolution : URL.createObjectURL(resolution);
+                    let newUrl: string;
+                    let extensionHint: string | undefined;
                     if (typeof resolution === "string") {
-                        this.register(key, newUrl);
+                        newUrl = resolution;
+                    } else {
+                        newUrl = URL.createObjectURL(resolution);
+                        // Extract extension from the File name for loader selection
+                        extensionHint = _getExtension(resolution.name) || undefined;
                     }
+                    // Always update the registry so the URL map reflects the new location
+                    this.register(key, newUrl);
                     try {
-                        const container = await LoadAssetContainerAsync(newUrl, this._scene);
+                        const container = await LoadAssetContainerAsync(newUrl, this._scene, {
+                            pluginExtension: extensionHint,
+                        });
                         container.addAllToScene();
                         this._containers.set(key, container);
                         this._buildProvenance(key, container);
@@ -462,18 +489,33 @@ export class SmartAssetManager {
         };
         this._provenance.set(key, provenance);
 
-        for (const mesh of container.meshes) this._objectToKeyMap.set(mesh, key);
-        for (const mat of container.materials) this._objectToKeyMap.set(mat, key);
-        for (const tex of container.textures) this._objectToKeyMap.set(tex, key);
-        for (const ag of container.animationGroups) this._objectToKeyMap.set(ag, key);
-        for (const light of container.lights) this._objectToKeyMap.set(light, key);
-        for (const cam of container.cameras) this._objectToKeyMap.set(cam, key);
+        for (const mesh of container.meshes) {
+            this._objectToKeyMap.set(mesh, key);
+        }
+        for (const mat of container.materials) {
+            this._objectToKeyMap.set(mat, key);
+        }
+        for (const tex of container.textures) {
+            this._objectToKeyMap.set(tex, key);
+        }
+        for (const ag of container.animationGroups) {
+            this._objectToKeyMap.set(ag, key);
+        }
+        for (const light of container.lights) {
+            this._objectToKeyMap.set(light, key);
+        }
+        for (const cam of container.cameras) {
+            this._objectToKeyMap.set(cam, key);
+        }
     }
 }
 
 /**
  * Returns the file extension from a URL string, including the leading dot.
+ * @param url - The URL to extract the extension from.
+ * @returns The file extension including the dot, or an empty string if none found.
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 function _getExtension(url: string): string {
     const cleanUrl = url.split("?")[0].split("#")[0];
     const lastDot = cleanUrl.lastIndexOf(".");
@@ -482,4 +524,17 @@ function _getExtension(url: string): string {
         return cleanUrl.substring(lastDot);
     }
     return "";
+}
+
+const _TEXTURE_EXTENSIONS = new Set([".png", ".jpg", ".jpeg", ".bmp", ".tga", ".gif", ".webp", ".env", ".hdr", ".dds", ".ktx", ".ktx2", ".basis"]);
+
+/**
+ * Returns true if the URL points to a standalone texture file
+ * rather than a scene file (GLB, glTF, etc.).
+ * @param url - The URL to check.
+ * @returns True if the URL has a texture file extension.
+ */
+// eslint-disable-next-line @typescript-eslint/naming-convention
+function _isTextureExtension(url: string): boolean {
+    return _TEXTURE_EXTENSIONS.has(_getExtension(url).toLowerCase());
 }
