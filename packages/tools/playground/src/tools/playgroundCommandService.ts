@@ -1,8 +1,6 @@
-import { type GlobalState } from "../globalState";
+import { type GlobalState, type InspectorV2Module } from "../globalState";
 import { type WeaklyTypedServiceDefinition } from "shared-ui-components/modularTool/modularity/serviceContainer";
 import { type IInspectableCommandRegistry } from "inspector/services/cli/inspectableCommandRegistry";
-
-type InspectorV2Module = typeof import("inspector/legacy/legacy") & typeof import("inspector/index");
 
 /**
  * Creates a service definition that registers Playground-specific CLI commands.
@@ -194,6 +192,7 @@ export function MakePlaygroundCommandServiceDefinition(globalState: GlobalState,
                         });
 
                         const errorObserver = globalState.onErrorObservable.add((error) => {
+                            // The error observable fires with null/undefined to clear a previous error; skip those.
                             if (!error) {
                                 return;
                             }

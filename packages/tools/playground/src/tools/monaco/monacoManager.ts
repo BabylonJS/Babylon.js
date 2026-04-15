@@ -1,7 +1,7 @@
 /* eslint-disable no-await-in-loop */
 /* eslint-disable @typescript-eslint/no-floating-promises */
 import * as monaco from "monaco-editor/esm/vs/editor/editor.api";
-import { type GlobalState } from "../../globalState";
+import { type GlobalState, type IDiagnosticInfo } from "../../globalState";
 import { Utilities } from "../utilities";
 import { Logger, Observable } from "@dev/core";
 import { debounce } from "../debounce";
@@ -232,7 +232,7 @@ export class MonacoManager {
 
         // Expose diagnostics from Monaco editor markers.
         this.globalState.getDiagnostics = () => {
-            const result: import("../../globalState").IDiagnosticInfo[] = [];
+            const result: IDiagnosticInfo[] = [];
             const markers = monaco.editor.getModelMarkers({});
             for (const marker of markers) {
                 const uri = marker.resource?.path ?? "";

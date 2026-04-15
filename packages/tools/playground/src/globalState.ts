@@ -56,6 +56,11 @@ export interface IDiagnosticInfo {
     column: number;
 }
 
+/**
+ * The Inspector v2 UMD module shape, combining its legacy and main exports.
+ */
+export type InspectorV2Module = typeof import("inspector/legacy/legacy") & typeof import("inspector/index");
+
 export class GlobalState {
     // eslint-disable-next-line @typescript-eslint/naming-convention
     public readonly MobileSizeTrigger = 1024;

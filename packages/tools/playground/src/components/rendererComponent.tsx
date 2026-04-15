@@ -2,7 +2,7 @@
 /* eslint-disable github/no-then */
 /* eslint-disable @typescript-eslint/no-floating-promises */
 import * as React from "react";
-import { type GlobalState, RuntimeMode } from "../globalState";
+import { type GlobalState, RuntimeMode, type InspectorV2Module } from "../globalState";
 import { Utilities } from "../tools/utilities";
 import { DownloadManager } from "../tools/downloadManager";
 import { AddFileRevision } from "../tools/localSession";
@@ -12,8 +12,6 @@ import { Engine, EngineStore, WebGPUEngine, LastCreatedAudioEngine, Logger, type
 
 import { MakePlaygroundCommandServiceDefinition } from "../tools/playgroundCommandService";
 import "../scss/rendering.scss";
-
-type InspectorV2Module = typeof import("inspector/legacy/legacy") & typeof import("inspector/index");
 
 const RunnableCreationTimeoutMs = 15000;
 const SceneRunTimeoutMs = 30000;
