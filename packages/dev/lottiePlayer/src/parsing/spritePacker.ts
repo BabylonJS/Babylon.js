@@ -366,7 +366,7 @@ export class SpritePacker {
     }
 
     private _extrudeSpriteEdges(page: AtlasPage, x: number, y: number, width: number, height: number): void {
-        const padding = Math.min(2, this._configuration.gapSize);
+        const padding = Math.min(2, Math.floor(this._configuration.gapSize / 2));
         const pixelX = Math.floor(x);
         const pixelY = Math.floor(y);
         const pixelWidth = Math.ceil(width);

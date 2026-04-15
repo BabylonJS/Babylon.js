@@ -62,7 +62,7 @@ export class RenderingManager {
      * Prepares the rendering manager for rendering.
      * Sorts sprites so they render back-to-front based on the original Lottie layer order.
      * In Lottie, layer 0 is the frontmost (rendered last), so higher indices render first (further back).
-     * Sprites within the same layer preserve their relative insertion order.
+     * Within the same layer, later-added sprites render first (further back).
      *
      * Also auto-grows the SpriteRenderer capacity if needed and sets the atlas textures.
      * @param spriteTextures The final array of atlas page textures, captured after all sprites have been packed.
