@@ -54,10 +54,10 @@ For each PR, gather:
 | -------- | -------------------------------------------------------------------------------------------- |
 | PR       | `#<number>` linked to the PR URL                                                             |
 | Title    | `gh pr view --json "title"`                                                                  |
-| Checks   | `gh pr view --json "statusCheckRollup"` — summarize as ✅ pass / ❌ fail / ⏳ pending counts |
-| Comments | GraphQL `reviewThreads` query — resolved/total (e.g. `4/7`)                                  |
-| Approved | `gh pr view --json "reviewDecision"` — ✅ if `APPROVED`, ❌ otherwise                        |
-| Ready    | ✅ if all checks pass AND approved AND all comments resolved                                 |
+| Checks   | `gh pr view --json "statusCheckRollup"` — ✅ `all pass` / ❌ `N fail, M pending` / ⏳ `N pending` |
+| Comments | GraphQL `reviewThreads` query — ✅ `all resolved` / ❌ `N/M resolved`                        |
+| Approved | `gh pr view --json "reviewDecision"` — ✅ `N approvals` / ❌ `not approved`                  |
+| Ready    | ✅ `ready` if all checks pass AND approved AND all comments resolved, ❌ `not ready` otherwise |
 
 Review threads require the GraphQL API since `gh pr view --json` does not
 expose them:
