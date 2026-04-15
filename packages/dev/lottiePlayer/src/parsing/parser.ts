@@ -131,6 +131,9 @@ export class Parser {
             this._parseLayer(orderedLayers[i]);
         }
 
+        // Clear layer index map to allow raw JSON data to be garbage-collected
+        this._layerOriginalIndices.clear();
+
         // Update the atlas texture after creating all sprites from the animation
         this._packer.updateAtlasTexture();
 
