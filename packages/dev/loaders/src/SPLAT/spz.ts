@@ -218,13 +218,17 @@ export async function GetSpzModule(url: string): Promise<SpzModule> {
     if (_SpzModulePromise && _SpzModuleUrl === url) {
         return await _SpzModulePromise;
     }
-    _SpzModuleUrl = url;
-    _SpzModulePromise = _LoadScriptModuleAsync(
+
+    const spzModulePromise = _LoadScriptModuleAsync(
         `import createSpzModule from '${url}';
          const module = await createSpzModule();
          const returnedValue = module;`
     );
-    return await _SpzModulePromise;
+
+    _SpzModuleUrl = url;
+    _SpzModulePromise = spzModulePromise;
+
+    return await spzModulePromise;
 }
 
 /**
