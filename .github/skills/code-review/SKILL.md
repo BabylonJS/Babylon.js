@@ -55,9 +55,7 @@ Apply the severity categories and review checklist below to every changed line.
 1. **All applicable instruction files** — apply the rules from [instructions/index.md](../../instructions/index.md) to the changed code. If an instruction file's content is already in your system prompt context, apply it directly without re-reading from disk. Only read instruction files from disk when they are not already in context.
 2. **Correctness** — logic errors, off-by-one, null/undefined access, race conditions, unhandled edge cases. Verify that doc comments accurately describe the implementation behavior, not just that they exist.
 3. **Security** — prototype pollution, unsafe `eval`/`Function()`, unsafe deserialization of untrusted input (e.g. parsed scene files, glTF extensions).
-4. **PR labels** — see `pr-labels.instructions.md`. Suggest labels based on the type and location of changes.
-5. **General quality** — dead code, unreachable branches, duplicated logic, overly complex control flow, poor naming.
-6. **Test coverage** — check whether new code paths, branches, and features introduced by the changes have adequate test coverage. Flag new public APIs, new runtime branches, or new features that lack corresponding unit or integration tests.
+4. **General quality** — dead code, unreachable branches, duplicated logic, overly complex control flow, poor naming.
 
 ### Step 4: Run quality tools
 
