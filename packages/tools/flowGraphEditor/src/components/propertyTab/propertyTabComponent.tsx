@@ -8,6 +8,7 @@ import { Tools } from "core/Misc/tools";
 import { SerializationTools } from "../../serializationTools";
 import { CheckBoxLineComponent } from "../../sharedComponents/checkBoxLineComponent";
 import { DataStorage } from "core/Misc/dataStorage";
+import { VariablesPanelComponent } from "../variables/variablesPanelComponent";
 import { Engine } from "core/Engines/engine";
 import { FramePropertyTabComponent } from "../../graphSystem/properties/framePropertyComponent";
 import { FrameNodePortPropertyTabComponent } from "../../graphSystem/properties/frameNodePortPropertyComponent";
@@ -26,6 +27,7 @@ import { TextLineComponent } from "shared-ui-components/lines/textLineComponent"
 import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent";
 import { Constants } from "core/Engines/constants";
 import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
+import { ShowToast } from "../toast/toastComponent";
 
 interface IPropertyTabComponentProps {
     globalState: GlobalState;
@@ -84,6 +86,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                     this.props.globalState.onResetRequiredObservable.notifyObservers(false);
                     this.props.globalState.stateManager.onSelectionChangedObservable.notifyObservers(null);
                     this.props.globalState.onClearUndoStack.notifyObservers();
+                    ShowToast(this.props.globalState, "Flow graph loaded from file", "success");
                 };
                 void doLoadAsync();
             },
@@ -95,6 +98,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
     save() {
         const json = SerializationTools.Serialize(this.props.globalState.flowGraph, this.props.globalState);
         StringTools.DownloadAsFile(this.props.globalState.hostDocument, json, "flowGraph.json");
+        ShowToast(this.props.globalState, "Flow graph saved to file", "success");
     }
 
     /**
@@ -194,11 +198,9 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                     });
                 }
 
-                this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry("Flow graph saved with ID: " + newId, false));
-                this.props.globalState.hostDocument.defaultView!.alert("Flow graph saved with ID: " + newId + " (the ID was also copied to your clipboard)");
+                ShowToast(this.props.globalState, "Graph saved — ID: " + newId + " (copied to clipboard)", "success");
             } else {
-                this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry("Unable to save flow graph to snippet server", true));
-                this.props.globalState.hostDocument.defaultView!.alert(`Unable to save your flow graph (${(dataToSend.payload.length / 1024).toFixed(0)} KB). Please try again.`);
+                ShowToast(this.props.globalState, `Unable to save flow graph (${(dataToSend.payload.length / 1024).toFixed(0)} KB). Please try again.`, "error");
             }
         } catch {
             this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry("Unable to save flow graph to snippet server", true));
@@ -230,13 +232,15 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                     this.props.globalState.stateManager.onSelectionChangedObservable.notifyObservers(null);
                     this.props.globalState.onClearUndoStack.notifyObservers();
                     this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry("Flow graph loaded from snippet " + id, false));
+                    ShowToast(this.props.globalState, "Flow graph loaded from snippet " + id, "success");
                     this.forceUpdate();
                 } catch (err) {
                     this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry("Error loading snippet: " + err, true));
+                    ShowToast(this.props.globalState, "Error loading snippet: " + err, "error");
                 }
             } else {
                 this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry("Unable to load snippet " + id, true));
-                this.props.globalState.hostDocument.defaultView!.alert("Unable to load snippet " + id);
+                ShowToast(this.props.globalState, "Unable to load snippet " + id, "error");
             }
         } catch {
             this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry("Unable to load snippet " + id, true));
@@ -368,6 +372,9 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                         )}
                         <ButtonLineComponent label="Load from snippet server" onClick={async () => await this.loadFromSnippetAsync()} />
                         <ButtonLineComponent label="Save to snippet server" onClick={async () => await this.saveToSnippetServerAsync()} />
+                    </LineContainerComponent>
+                    <LineContainerComponent title="VARIABLES">
+                        <VariablesPanelComponent globalState={this.props.globalState} />
                     </LineContainerComponent>
                 </div>
             </div>

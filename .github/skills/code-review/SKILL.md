@@ -40,7 +40,7 @@ Combine the results into a deduplicated list of changed files. If there are no c
 
 ### Step 3: Review against the checklist
 
-Apply the severity categories and review checklist below to every changed line. For checklist items that reference instruction files, read the referenced file in full before checking.
+Apply the severity categories and review checklist below to every changed line.
 
 #### Severity Categories
 
@@ -52,12 +52,11 @@ Apply the severity categories and review checklist below to every changed line. 
 
 #### Review Checklist
 
-1. **All applicable instruction files** — read each file listed in [instructions/index.md](../../instructions/index.md) and apply its rules to the changed code.
-2. **Correctness** — logic errors, off-by-one, null/undefined access, race conditions, unhandled edge cases.
+1. **All applicable instruction files** — apply the rules from [instructions/index.md](../../instructions/index.md) to the changed code. If an instruction file's content is already in your system prompt context, apply it directly without re-reading from disk. Only read instruction files from disk when they are not already in context.
+2. **Correctness** — logic errors, off-by-one, null/undefined access, race conditions, unhandled edge cases. Verify that doc comments accurately describe the implementation behavior, not just that they exist.
 3. **Inadequate error handling** — when code detects an error or invalid state (exceeding limits, missing data, unsupported configuration) but does not handle it appropriately (e.g. just logging a warning or performing any other operation that doesn't truly address the underlying problem), flag it. The code must either bail out, fall back to a safe alternative, or properly resolve the condition.
 4. **Security** — prototype pollution, unsafe `eval`/`Function()`, unsafe deserialization of untrusted input (e.g. parsed scene files, glTF extensions).
-5. **PR labels** — see `pr-labels.instructions.md`. Suggest labels based on the type and location of changes.
-6. **General quality** — dead code, unreachable branches, duplicated logic, overly complex control flow, poor naming.
+5. **General quality** — dead code, unreachable branches, duplicated logic, overly complex control flow, poor naming.
 
 ### Step 4: Run quality tools
 
@@ -94,7 +93,9 @@ Sort by severity: Critical first, then Warning, then Nit.
 **If automatic mode (default):**
 
 1. Fix all Critical and Warning issues. Fix Nit issues as well unless they are purely subjective.
-2. After fixing, re-run the quality tools (`format:check`, `lint:check`, `test:unit`) to verify the fixes don't introduce new problems.
+2. **Exception — design-impacting fixes**: If fixing a Warning or Nit would change the architectural approach or design intent of the code (e.g., restructuring data flow, changing when allocations happen, altering the public API shape), do NOT auto-fix. Mark those issues as "Needs confirmation" in the summary table and skip them during the fix pass.
+3. After fixing, re-run the quality tools (`format:check`, `lint:check`, `test:unit`) to verify the fixes don't introduce new problems.
+4. Present the summary table. If any issues were marked "Needs confirmation", ask the user once which of those to fix (all, specific numbers, or skip). Apply the approved fixes, then re-run quality tools if any were applied.
 
 ### Step 7: Present the summary table
 

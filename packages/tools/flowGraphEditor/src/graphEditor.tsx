@@ -31,6 +31,9 @@ import { type IFlowGraphValidationResult, FlowGraphValidationSeverity } from "co
 import { AnalyzeSmartGroup, ApplySmartGroupExposure } from "./graphSystem/smartGroup";
 import { HelpDialogComponent } from "./components/help/helpDialogComponent";
 import { type HelpTopicId } from "./components/help/helpContent";
+import { ContextMenuComponent, type ContextMenuEntry } from "./components/contextMenu/contextMenuComponent";
+import { ToastContainerComponent, ShowToast } from "./components/toast/toastComponent";
+import { HowToUseDialogComponent } from "./components/howToUse/howToUseDialogComponent";
 import { AllCompositeTemplates, type ICompositeTemplate } from "./compositeTemplates";
 
 /**
@@ -47,6 +50,8 @@ interface IGraphEditorState {
     message: string;
     isError: boolean;
     helpTopicId: HelpTopicId | undefined | null;
+    contextMenu: { x: number; y: number; items: ContextMenuEntry[] } | null;
+    showHowToUse: boolean;
 }
 
 /**
@@ -230,6 +235,10 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         this.props.globalState.onHelpRequested.add((topicId) => {
             this.setState({ helpTopicId: topicId ?? undefined });
         });
+
+        this.props.globalState.onHowToUseRequested.add(() => {
+            this.setState({ showHowToUse: true });
+        });
     }
 
     /** @internal */
@@ -266,6 +275,8 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
             message: "",
             isError: true,
             helpTopicId: null,
+            contextMenu: null,
+            showHowToUse: false,
         };
 
         this._graphCanvasRef = React.createRef();
@@ -621,6 +632,206 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
     };
 
     /**
+     * Handle right-click context menu on the canvas.
+     * Determines what was clicked and builds the appropriate menu.
+     * @param evt the mouse event from the right-click
+     */
+    private _onContextMenu = (evt: React.MouseEvent) => {
+        // Don't suppress native context menu for text inputs
+        const target = evt.target;
+        if (target instanceof HTMLElement && (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.closest("[contenteditable]"))) {
+            return;
+        }
+        evt.preventDefault();
+        evt.stopPropagation();
+
+        const globalState = this.props.globalState;
+        const canvas = this._graphCanvas;
+        const items: ContextMenuEntry[] = [];
+
+        const selectedNodes = canvas.selectedNodes;
+        const selectedLink = canvas.selectedLink;
+        const selectedFrames = canvas.selectedFrames;
+
+        const isMac = navigator.platform.indexOf("Mac") >= 0;
+        const ctrlKey = isMac ? "⌘" : "Ctrl";
+
+        if (selectedNodes.length > 0) {
+            // ── Node context menu ──
+            items.push({
+                label: "Delete",
+                shortcut: "Del",
+                action: () => {
+                    for (const node of [...selectedNodes]) {
+                        const block = node.content?.data as FlowGraphBlock;
+                        if (block) {
+                            globalState.flowGraph.removeBlock(block);
+                        }
+                        node.dispose();
+                    }
+                    globalState.stateManager.onSelectionChangedObservable.notifyObservers(null);
+                    globalState.stateManager.onRebuildRequiredObservable.notifyObservers();
+                },
+            });
+            items.push({
+                label: "Duplicate",
+                shortcut: `${ctrlKey}+C / ${ctrlKey}+V`,
+                action: () => {
+                    // Update mouse location so paste places nodes at the right-click position
+                    this._mouseLocationX = evt.pageX;
+                    this._mouseLocationY = evt.pageY;
+                    // Use the copy/paste mechanism
+                    const keydownC = new KeyboardEvent("keydown", { key: "c", ctrlKey: !isMac, metaKey: isMac, bubbles: true });
+                    globalState.hostDocument.dispatchEvent(keydownC);
+                    setTimeout(() => {
+                        const keydownV = new KeyboardEvent("keydown", { key: "v", ctrlKey: !isMac, metaKey: isMac, bubbles: true });
+                        globalState.hostDocument.dispatchEvent(keydownV);
+                    }, 50);
+                },
+            });
+            items.push({ isSeparator: true });
+            if (selectedNodes.length === 1) {
+                const block = selectedNodes[0].content?.data as FlowGraphBlock;
+                if (block instanceof FlowGraphExecutionBlock) {
+                    const hasBreakpoint = globalState.hasBreakpoint(block.uniqueId);
+                    items.push({
+                        label: hasBreakpoint ? "Remove Breakpoint" : "Add Breakpoint",
+                        shortcut: "F9",
+                        action: () => {
+                            globalState.toggleBreakpoint(block.uniqueId);
+                        },
+                    });
+                }
+            }
+            if (selectedNodes.length >= 2) {
+                items.push({
+                    label: "Create Smart Group",
+                    shortcut: `${ctrlKey}+G`,
+                    action: () => this._createSmartGroup(),
+                });
+            }
+            items.push({ isSeparator: true });
+            items.push({
+                label: "Disconnect All Ports",
+                action: () => {
+                    for (const node of selectedNodes) {
+                        const block = node.content?.data as FlowGraphBlock;
+                        if (!block) {
+                            continue;
+                        }
+                        for (const input of block.dataInputs) {
+                            input.disconnectFromAll();
+                        }
+                        for (const output of block.dataOutputs) {
+                            output.disconnectFromAll();
+                        }
+                        if (block instanceof FlowGraphExecutionBlock) {
+                            for (const sig of block.signalInputs) {
+                                sig.disconnectFromAll();
+                            }
+                            for (const sig of block.signalOutputs) {
+                                sig.disconnectFromAll();
+                            }
+                        }
+                    }
+                    globalState.stateManager.onRebuildRequiredObservable.notifyObservers();
+                    ShowToast(globalState, "Disconnected all ports", "info");
+                },
+            });
+        } else if (selectedLink) {
+            // ── Link context menu ──
+            items.push({
+                label: "Delete Connection",
+                shortcut: "Del",
+                action: () => {
+                    selectedLink.dispose();
+                    globalState.stateManager.onSelectionChangedObservable.notifyObservers(null);
+                    globalState.stateManager.onRebuildRequiredObservable.notifyObservers();
+                },
+            });
+        } else if (selectedFrames.length > 0) {
+            // ── Frame context menu ──
+            items.push({
+                label: "Delete Frame",
+                shortcut: "Del",
+                action: () => {
+                    for (const frame of [...selectedFrames]) {
+                        frame.dispose();
+                    }
+                    globalState.stateManager.onSelectionChangedObservable.notifyObservers(null);
+                },
+            });
+            if (selectedFrames.length === 1) {
+                const frame = selectedFrames[0];
+                items.push({
+                    label: frame.isCollapsed ? "Expand" : "Collapse",
+                    action: () => {
+                        frame.isCollapsed = !frame.isCollapsed;
+                    },
+                });
+            }
+        } else {
+            // ── Canvas background context menu ──
+            items.push({
+                label: "Add Block...",
+                shortcut: "Space",
+                action: () => {
+                    canvas.showSearch();
+                },
+            });
+            items.push({
+                label: "Paste",
+                shortcut: `${ctrlKey}+V`,
+                action: () => {
+                    // Update mouse location so paste places nodes at the right-click position
+                    this._mouseLocationX = evt.pageX;
+                    this._mouseLocationY = evt.pageY;
+                    const keydownV = new KeyboardEvent("keydown", { key: "v", ctrlKey: !isMac, metaKey: isMac, bubbles: true });
+                    globalState.hostDocument.dispatchEvent(keydownV);
+                },
+            });
+            items.push({ isSeparator: true });
+            items.push({
+                label: "Create Sticky Note",
+                shortcut: `${ctrlKey}+M`,
+                action: () => {
+                    const container = globalState.hostDocument.querySelector(".diagram-container") as HTMLDivElement;
+                    const zoomLevel = canvas.zoom;
+                    const x = (evt.clientX - (container?.offsetLeft ?? 0) - canvas.x) / zoomLevel;
+                    const y = (evt.clientY - (container?.offsetTop ?? 0) - canvas.y) / zoomLevel;
+                    canvas.addStickyNote(x, y);
+                },
+            });
+            items.push({ isSeparator: true });
+            items.push({
+                label: "Select All",
+                shortcut: `${ctrlKey}+A`,
+                action: () => {
+                    globalState.stateManager.onSelectionChangedObservable.notifyObservers(null);
+                    for (const node of canvas.nodes) {
+                        globalState.stateManager.onSelectionChangedObservable.notifyObservers({ selection: node, forceKeepSelection: true });
+                    }
+                    for (const frame of canvas.frames) {
+                        globalState.stateManager.onSelectionChangedObservable.notifyObservers({ selection: frame, forceKeepSelection: true });
+                    }
+                },
+            });
+            items.push({
+                label: "Zoom to Fit",
+                action: () => globalState.onZoomToFitRequiredObservable.notifyObservers(),
+            });
+            items.push({
+                label: "Reorganize",
+                action: () => globalState.onReOrganizedRequiredObservable.notifyObservers(),
+            });
+        }
+
+        if (items.length > 0) {
+            this.setState({ contextMenu: { x: evt.clientX, y: evt.clientY, items } });
+        }
+    };
+
+    /**
      * Creates a smart group (frame) from the currently selected nodes.
      * Analyzes the blocks to determine which ports to expose on the frame boundary.
      * If the group has a single execution block + data blocks, ports are auto-configured.
@@ -959,7 +1170,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                             event.preventDefault();
                         }}
                     >
-                        <div className="diagram-canvas-pane">
+                        <div className="diagram-canvas-pane" onContextMenu={this._onContextMenu}>
                             <GraphControlsComponent globalState={this.props.globalState} />
                             <GraphCanvasComponent
                                 ref={this._graphCanvasRef}
@@ -991,8 +1202,18 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                 {this.state.helpTopicId !== null && (
                     <HelpDialogComponent initialTopicId={this.state.helpTopicId ?? undefined} onClose={() => this.setState({ helpTopicId: null })} />
                 )}
+                {this.state.showHowToUse && <HowToUseDialogComponent globalState={this.props.globalState} onClose={() => this.setState({ showHowToUse: false })} />}
                 <div className="blocker">Flow Graph Editor needs a horizontal resolution of at least 900px</div>
                 <div className="wait-screen hidden">Processing...please wait</div>
+                {this.state.contextMenu && (
+                    <ContextMenuComponent
+                        x={this.state.contextMenu.x}
+                        y={this.state.contextMenu.y}
+                        items={this.state.contextMenu.items}
+                        onClose={() => this.setState({ contextMenu: null })}
+                    />
+                )}
+                <ToastContainerComponent globalState={this.props.globalState} />
             </Portal>
         );
     }

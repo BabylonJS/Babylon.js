@@ -48,6 +48,48 @@
             "referenceImage": "gsplat-spz-sh.png"
         },
         {
+            "title": "Gaussian Splatting SPZ SH No WASM",
+            "playgroundId": "##XSNFXP#12",
+            "renderCount": 15,
+            "referenceImage": "gsplat-spz-sh.png"
+        },
+        {
+            "title": "Gaussian Splatting SPZ Extensions",
+            "playgroundId": "#XSNFXP#8",
+            "renderCount": 15,
+            "referenceImage": "gsplat-spz-extensions.png"
+        },
+        {
+            "title": "Gaussian Splatting SPZ SH Order 4",
+            "playgroundId": "#XSNFXP#5",
+            "renderCount": 15,
+            "referenceImage": "gsplat-spz-sh-order-4.png"
+        },
+        {
+            "title": "Gaussian Splatting SPZ SH Order 4 No WASM",
+            "playgroundId": "#XSNFXP#13",
+            "renderCount": 15,
+            "referenceImage": "gsplat-spz-sh-order-4.png"
+        },
+        {
+            "title": "Gaussian Splatting SPZ Detailed Splat",
+            "playgroundId": "#XSNFXP#6",
+            "renderCount": 15,
+            "referenceImage": "gsplat-spz-detailed-splat.png"
+        },
+        {
+            "title": "Gaussian Splatting SPZ Detailed Splat No WASM",
+            "playgroundId": "#XSNFXP#14",
+            "renderCount": 15,
+            "referenceImage": "gsplat-spz-detailed-splat.png"
+        },
+        {
+            "title": "Gaussian Splatting PLY SH Order 4",
+            "playgroundId": "#XSNFXP#7",
+            "renderCount": 15,
+            "referenceImage": "gsplat-ply-sh-order-4.png"
+        },
+        {
             "title": "Gaussian Splatting Update Data",
             "playgroundId": "#Q0LBM8#2",
             "renderCount": 15,

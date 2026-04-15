@@ -66,6 +66,10 @@ export class GlobalState {
     onDropEventReceivedObservable = new Observable<DragEvent>();
     /** Observable triggered when help dialog is requested. Payload is an optional topic id. */
     onHelpRequested = new Observable<HelpTopicId | undefined>();
+    /** Observable triggered when a toast notification should be shown. */
+    onToastNotification = new Observable<{ message: string; severity: "info" | "success" | "error" | "warning" }>();
+    /** Observable triggered when the "How to Use" (embed code) dialog is requested. */
+    onHowToUseRequested = new Observable<void>();
     /** Whether the pointer is over the canvas */
     pointerOverCanvas: boolean = false;
     /** Lock object for property grid */
