@@ -79,6 +79,8 @@ export class Parser {
 
     private _rootNodes: Node[]; // Array of root-level nodes in the animation, in top-down z order
     private _parentNodes: Map<number, Node> = new Map<number, Node>(); // Map of nodes to build the scenegraph from the animation layers
+    private _currentLayerOriginalIndex: number = 0; // Original array index of the layer currently being parsed, used for sprite z-ordering
+    private _layerOriginalIndices: Map<RawLottieLayer, number> = new Map<RawLottieLayer, number>(); // Maps layers to their original array index for z-ordering
 
     /**
      * Get the animation information parsed from the Lottie file.
@@ -125,14 +127,18 @@ export class Parser {
         // Layers data may come unorderer, we need to short into child-parents but maintaining z-order before parsing
         const orderedLayers = this._reoderLayers(rawData.layers);
         for (let i = 0; i < orderedLayers.length; i++) {
+            this._currentLayerOriginalIndex = this._layerOriginalIndices.get(orderedLayers[i]) ?? i;
             this._parseLayer(orderedLayers[i]);
         }
+
+        // Clear layer index map to allow raw JSON data to be garbage-collected
+        this._layerOriginalIndices.clear();
 
         // Update the atlas texture after creating all sprites from the animation
         this._packer.updateAtlasTexture();
 
-        // Reorder the sprites from back to front
-        this._renderingManager.ready();
+        // Reorder the sprites from back to front and set the final atlas textures
+        this._renderingManager.ready(this._packer.textures);
 
         // Release the canvas to avoid memory leaks
         this._packer.releaseCanvas();
@@ -159,6 +165,11 @@ export class Parser {
     }
 
     private _reoderLayers(layers: RawLottieLayer[]): RawLottieLayer[] {
+        // Record the original array index of each layer before reordering, for z-order preservation
+        for (let i = 0; i < layers.length; i++) {
+            this._layerOriginalIndices.set(layers[i], i);
+        }
+
         let unusedIndex = Number.MIN_SAFE_INTEGER;
         const layerTrees: LayerTree[] = [];
         let movedLayers = Number.MAX_VALUE;
@@ -354,7 +365,7 @@ export class Parser {
         sprite.height = spriteInfo.heightPx;
         sprite.invertV = true;
 
-        this._renderingManager.addSprite(sprite);
+        this._renderingManager.addSprite(sprite, this._currentLayerOriginalIndex, spriteInfo.atlasIndex);
 
         const positionProperty: Vector2Property = {
             startValue: { x: transform.anchorPoint.startValue.x, y: transform.anchorPoint.startValue.y },
@@ -464,7 +475,7 @@ export class Parser {
         sprite.height = spriteInfo.heightPx;
         sprite.invertV = true;
 
-        this._renderingManager.addSprite(sprite);
+        this._renderingManager.addSprite(sprite, this._currentLayerOriginalIndex, spriteInfo.atlasIndex);
 
         const positionProperty: Vector2Property = {
             startValue: { x: spriteInfo.centerX || 0, y: -spriteInfo.centerY || 0 },

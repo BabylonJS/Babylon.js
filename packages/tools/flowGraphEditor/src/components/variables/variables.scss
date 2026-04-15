@@ -1,0 +1,129 @@
+.fge-variables-panel {
+    padding: 8px 12px;
+    font:
+        13px "acumin-pro",
+        sans-serif;
+    color: #ccc;
+
+    .fge-variables-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 8px;
+        padding-bottom: 6px;
+        border-bottom: 1px solid #444;
+        gap: 6px;
+
+        h3 {
+            margin: 0;
+            font-size: 13px;
+            font-weight: 600;
+            color: #ddd;
+        }
+
+        .fge-variables-running-badge {
+            color: #4caf50;
+            font-size: 11px;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+
+        .fge-variables-add-btn {
+            background: #464646;
+            border: 1px solid #666;
+            border-radius: 3px;
+            color: #ccc;
+            cursor: pointer;
+            font-size: 12px;
+            padding: 2px 8px;
+            margin-left: auto;
+            &:hover {
+                background: #555;
+                color: #fff;
+            }
+        }
+    }
+
+    .fge-variables-empty {
+        color: #888;
+        font-style: italic;
+        font-size: 12px;
+        padding: 8px 0;
+    }
+
+    .fge-variable-row {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        padding: 4px 0;
+        border-bottom: 1px solid #333;
+
+        &:last-child {
+            border-bottom: none;
+        }
+
+        .fge-variable-row-top {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .fge-variable-name {
+            flex: 1;
+            background: #1e1e1e;
+            border: 1px solid #444;
+            border-radius: 3px;
+            color: #d4d4d4;
+            font:
+                12px "Consolas",
+                "Courier New",
+                monospace;
+            padding: 3px 6px;
+            outline: none;
+            min-width: 0;
+
+            &:focus {
+                border-color: #4a90d9;
+            }
+        }
+
+        .fge-variable-type {
+            color: #888;
+            font-size: 11px;
+            white-space: nowrap;
+            min-width: 50px;
+        }
+
+        .fge-variable-delete-btn {
+            background: none;
+            border: none;
+            color: #888;
+            cursor: pointer;
+            font-size: 14px;
+            padding: 0 4px;
+            line-height: 1;
+            &:hover {
+                color: #e55;
+            }
+        }
+
+        .fge-variable-value {
+            font:
+                11px "Consolas",
+                "Courier New",
+                monospace;
+            color: #4caf50;
+            padding: 0 6px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+    }
+
+    .fge-variables-info {
+        color: #777;
+        font-size: 11px;
+        margin-top: 8px;
+        line-height: 1.4;
+    }
+}

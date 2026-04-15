@@ -3,8 +3,11 @@ import { type GlobalState } from "../../globalState";
 import { type Nullable } from "core/types";
 import { type Observer } from "core/Misc/observable";
 import { type Scene } from "core/scene";
+import "core/Helpers/sceneHelpers";
 import { type Engine } from "core/Engines/engine";
+import { type FlowGraph } from "core/FlowGraph/flowGraph";
 import { SceneContext } from "../../sceneContext";
+import { SerializationTools } from "../../serializationTools";
 import { LogEntry } from "../log/logComponent";
 import { LoadSnippet, type IPlaygroundSnippetResult } from "@tools/snippet-loader";
 
@@ -243,6 +246,115 @@ export class ScenePreviewComponent extends React.Component<IScenePreviewComponen
     }
 
     /**
+     * After loading a glTF file, check whether the scene has flow graphs loaded
+     * from KHR_interactivity (or any coordinator). If found, serialize the first
+     * graph and load it into the editor, replacing the current graph.
+     * @param scene - the loaded scene
+     * @param fileName - the original file name (for log messages)
+     * @returns true if a flow graph was found and imported
+     */
+    private async _importFlowGraphsFromSceneAsync(scene: Scene, fileName: string): Promise<boolean> {
+        const { FlowGraphCoordinator } = await import("core/FlowGraph/flowGraphCoordinator");
+        const coordinators = FlowGraphCoordinator.SceneCoordinators.get(scene);
+        if (!coordinators || coordinators.length === 0) {
+            return false;
+        }
+
+        // Find the first coordinator that has at least one flow graph.
+        const findGraph = (): { graph: FlowGraph; coordinator: (typeof coordinators)[0] } | null => {
+            for (const coordinator of coordinators) {
+                if (coordinator.flowGraphs.length > 0) {
+                    return { graph: coordinator.flowGraphs[0], coordinator };
+                }
+            }
+            return null;
+        };
+
+        // KHR_interactivity's onReady() is async and may not have finished
+        // parsing yet (the glTF loader does not await extension onReady
+        // promises).  Retry with short delays to let the parse microtasks
+        // complete.
+        let found = findGraph();
+        if (!found) {
+            for (let attempt = 0; attempt < 10; attempt++) {
+                // eslint-disable-next-line no-await-in-loop
+                await new Promise<void>((resolve) => setTimeout(resolve, 50));
+                found = findGraph();
+                if (found) {
+                    break;
+                }
+            }
+        }
+
+        if (!found) {
+            return false;
+        }
+
+        const { graph: targetGraph, coordinator: targetCoordinator } = found;
+
+        // Extract the pathConverter from a JsonPointerParser block before serializing.
+        // KHR_interactivity injects a GLTFPathToObjectConverter into every such block.
+        // This object is not serializable (contains closures), so we must pass it
+        // through directly to the re-parse step.
+        let pathConverter: any = null;
+        // Also extract glTF config from GLTFDataProvider blocks — the glTF object
+        // contains _babylonTransformNode / _babylonAnimationGroup references that
+        // are NOT serializable.  After re-parse, GLTFDataProvider blocks end up
+        // with empty nodes/animationGroups arrays.  We stash the live glTF here
+        // and re-inject it after deserialization.
+        let liveGLTF: any = null;
+        for (const block of targetGraph.getAllBlocks()) {
+            if (!pathConverter && block.getClassName() === "FlowGraphJsonPointerParserBlock" && (block.config as any)?.pathConverter) {
+                pathConverter = (block.config as any).pathConverter;
+            }
+            if (!liveGLTF && block.getClassName() === "FlowGraphGLTFDataProvider" && (block.config as any)?.glTF) {
+                liveGLTF = (block.config as any).glTF;
+            }
+            if (pathConverter && liveGLTF) {
+                break;
+            }
+        }
+        // Serialize the loaded graph, then deserialize it into the editor
+        const serialized: any = {};
+        targetGraph.serialize(serialized);
+
+        // Stop the coordinator so its graphs don't keep running in the background
+        targetCoordinator.dispose();
+
+        await SerializationTools.DeserializeAsync(serialized, this.props.globalState, scene, pathConverter);
+
+        // Re-inject the live glTF into GLTFDataProvider blocks so their nodes
+        // and animationGroups outputs contain the actual Babylon objects rather
+        // than empty arrays from the non-serializable config.
+        if (liveGLTF && this.props.globalState.flowGraph) {
+            for (const block of this.props.globalState.flowGraph.getAllBlocks()) {
+                if (block.getClassName() === "FlowGraphGLTFDataProvider") {
+                    (block.config as any).glTF = liveGLTF;
+                    // Re-compute outputs from the live glTF data
+                    const nodes = liveGLTF.nodes?.map((n: any) => n._babylonTransformNode) || [];
+                    const animationGroups = liveGLTF.animations?.map((a: any) => a._babylonAnimationGroup) || [];
+                    const nodesOutput = block.getDataOutput("nodes");
+                    const agOutput = block.getDataOutput("animationGroups");
+                    if (nodesOutput) {
+                        (nodesOutput as any)._defaultValue = nodes;
+                    }
+                    if (agOutput) {
+                        (agOutput as any)._defaultValue = animationGroups;
+                    }
+                }
+            }
+        }
+
+        this.props.globalState.onResetRequiredObservable.notifyObservers(false);
+        this.props.globalState.stateManager.onSelectionChangedObservable.notifyObservers(null);
+        this.props.globalState.onClearUndoStack.notifyObservers();
+        this.props.globalState.onLogRequiredObservable.notifyObservers(
+            new LogEntry(`Imported flow graph from "${fileName}" (KHR_interactivity: ${targetGraph.getAllBlocks().length} blocks)`, false)
+        );
+        return true;
+    }
+
+    /**
      * Load a scene from a dropped file (glb, gltf, or babylon).
      * @param file - the main scene file
      * @param companionFiles - additional files dropped alongside (bin, textures)
@@ -287,11 +399,10 @@ export class ScenePreviewComponent extends React.Component<IScenePreviewComponen
             }
 
             // If the loaded scene has no camera, create a default one
-            if (!scene.activeCamera && scene.cameras.length === 0) {
-                const { ArcRotateCamera } = await import("core/Cameras/arcRotateCamera");
-                const { Vector3 } = await import("core/Maths/math.vector");
-                const camera = new ArcRotateCamera("camera", -Math.PI / 4, Math.PI / 3, 10, Vector3.Zero(), scene);
-                camera.attachControl(canvas, true);
+            scene.createDefaultCamera(true, true, true);
+            // Add a default light if the scene has none
+            if (scene.lights.length === 0) {
+                scene.createDefaultLight(true);
             }
 
             this._setupEngineRenderLoop(scene, engine);
@@ -300,6 +411,23 @@ export class ScenePreviewComponent extends React.Component<IScenePreviewComponen
 
             const sceneContext = this._publishSceneContext(scene);
             this.props.globalState.snippetId = "";
+
+            // Detect flow graphs from the loaded file:
+            // 1. KHR_interactivity (processed by the glTF loader into coordinators)
+            // 2. BABYLON_flow_graph custom extension (our round-trip format)
+            const foundViaCoordinator = await this._importFlowGraphsFromSceneAsync(scene, file.name);
+            if (!foundViaCoordinator) {
+                try {
+                    const imported = await SerializationTools.ImportFromGlbAsync(file, this.props.globalState);
+                    if (imported) {
+                        this.props.globalState.onLogRequiredObservable.notifyObservers(
+                            new LogEntry(`Imported flow graph from "${file.name}" (BABYLON_flow_graph extension)`, false)
+                        );
+                    }
+                } catch {
+                    // Custom extension not present or parse failed — that's fine
+                }
+            }
 
             this.setState({ isLoading: false, snippetId: "" });
             this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry(`Loaded "${file.name}" with ${sceneContext.entries.length} scene objects`, false));

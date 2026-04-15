@@ -35,11 +35,13 @@ const Versions = {
         "https://preview.babylonjs.com/babylon.js",
         "https://preview.babylonjs.com/gui/babylon.gui.min.js",
         "https://preview.babylonjs.com/loaders/babylonjs.loaders.min.js",
+        "https://preview.babylonjs.com/serializers/babylonjs.serializers.min.js",
     ],
     local: [
         `//${window.location.hostname}:1337/babylon.js`,
         `//${window.location.hostname}:1337/gui/babylon.gui.min.js`,
         `//${window.location.hostname}:1337/loaders/babylonjs.loaders.min.js`,
+        `//${window.location.hostname}:1337/serializers/babylonjs.serializers.min.js`,
     ],
 };
 

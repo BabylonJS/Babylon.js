@@ -1,4 +1,4 @@
-# Code Review Instructions
+# PR Label Instructions
 
 ## Labels
 

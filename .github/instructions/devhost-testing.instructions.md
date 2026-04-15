@@ -30,15 +30,7 @@ Prefer `createScene.ts` for AI-authored validation apps.
 
 ## Reusing running processes
 
-Before starting devhost, check whether it is already running. Devhost serves on port `1338` by default, and that port may also be used by other local workflows in this repo. Reuse an existing healthy devhost session when it is actually serving devhost; otherwise start a new one.
-
-You can check the port with:
-
-```powershell
-Get-NetTCPConnection -LocalPort 1338 -State Listen -ErrorAction SilentlyContinue
-```
-
-If `1338` is already in use, verify that the running process is devhost rather than assuming it is safe to reuse.
+Before starting devhost, check whether port `1338` is already in use — see the port table and check command in [manual-testing.instructions.md](manual-testing.instructions.md). Port `1338` is shared with the Playground, so verify the running process is actually devhost before reusing it.
 
 ## Starting devhost
 
