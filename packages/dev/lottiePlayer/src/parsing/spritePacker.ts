@@ -325,6 +325,9 @@ export class SpritePacker {
     /**
      * Returns a page with room for a sprite of the given size. Wraps to the next row if needed,
      * and creates a new page if the current page is full.
+     * @param cellWidth The width of the sprite cell in pixels.
+     * @param cellHeight The height of the sprite cell in pixels.
+     * @returns An atlas page with enough room for the sprite.
      */
     private _getPageWithRoom(cellWidth: number, cellHeight: number): AtlasPage {
         let page = this._pages[this._pages.length - 1];
