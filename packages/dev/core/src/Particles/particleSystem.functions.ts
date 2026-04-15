@@ -99,7 +99,8 @@ export function CreateDirectedConeEmitter(radius = 1, angle = Math.PI / 4, direc
 }
 
 /**
- * Creates a Box Emitter for the particle system (emits between direction1 and direction2 from within the box defined by minEmitBox and maxEmitBox)
+ * Creates a Box Emitter for the particle system.
+ * Direction and box bounds are configured on the returned emitter instance.
  * @returns the emitter
  */
 export function CreateBoxEmitter(): BoxParticleEmitter {

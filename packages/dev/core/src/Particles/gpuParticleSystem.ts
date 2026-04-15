@@ -281,6 +281,13 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
     /** @internal */
     public _meshTriangleCount: number = 0;
 
+    /** @internal */
+    public _meshTextureWidth: number = 0;
+
+    // Track mesh emitter inputs for invalidation
+    private _meshEmitterMeshId: number = -1;
+    private _meshEmitterUsedNormals: boolean = false;
+
     /**
      * Is this system ready to be used/rendered
      * @returns true if the system is ready
@@ -1691,19 +1698,49 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         this._createFactorGradientTexture(this._dragGradients, "_dragGradientsTexture");
     }
 
+    private _disposeMeshEmitterTextures() {
+        if (this._meshPositionTexture) {
+            this._meshPositionTexture.dispose();
+            this._meshPositionTexture = null;
+        }
+        if (this._meshNormalTexture) {
+            this._meshNormalTexture.dispose();
+            this._meshNormalTexture = null;
+        }
+        this._meshTriangleCount = 0;
+        this._meshTextureWidth = 0;
+        this._meshEmitterMeshId = -1;
+        this._meshEmitterUsedNormals = false;
+    }
+
     private _createMeshEmitterTextures() {
         if (!(this.particleEmitterType instanceof MeshParticleEmitter)) {
-            return;
-        }
-
-        // Already created
-        if (this._meshPositionTexture) {
+            // Emitter type changed away from mesh — dispose stale textures
+            if (this._meshPositionTexture) {
+                this._disposeMeshEmitterTextures();
+            }
             return;
         }
 
         const meshEmitter = this.particleEmitterType;
         const mesh = meshEmitter.mesh;
         if (!mesh) {
+            // Mesh removed — dispose stale textures
+            if (this._meshPositionTexture) {
+                this._disposeMeshEmitterTextures();
+            }
+            return;
+        }
+
+        const useNormals = meshEmitter.useMeshNormalsForDirection;
+
+        // Invalidate if the source mesh or normals usage changed
+        if (this._meshPositionTexture && (mesh.uniqueId !== this._meshEmitterMeshId || useNormals !== this._meshEmitterUsedNormals)) {
+            this._disposeMeshEmitterTextures();
+        }
+
+        // Already created and still valid
+        if (this._meshPositionTexture) {
             return;
         }
 
@@ -1718,24 +1755,15 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         const triangleCount = indices.length / 3;
         this._meshTriangleCount = triangleCount;
 
-        // Warn if mesh is excessively large
-        const maxTextureSize = this._engine.getCaps().maxTextureSize;
-        if (triangleCount * 3 > maxTextureSize) {
-            Logger.Warn(
-                "GPUParticleSystem: Mesh emitter has " +
-                    triangleCount +
-                    " triangles. Texture width (" +
-                    triangleCount * 3 +
-                    ") exceeds max texture size (" +
-                    maxTextureSize +
-                    "). Results may be incorrect."
-            );
-        }
+        // Use a 2D texture layout so large meshes don't exceed maxTextureSize
+        const totalTexels = triangleCount * 3;
+        const maxTexSize = this._engine.getCaps().maxTextureSize;
+        const texWidth = Math.min(totalTexels, maxTexSize);
+        const texHeight = Math.ceil(totalTexels / texWidth);
+        this._meshTextureWidth = texWidth;
 
-        // Pack vertex positions: one texel per vertex, 3 vertices per triangle
-        // Texture width = triangleCount * 3, height = 1, RGBA float (xyz + padding)
-        const texWidth = triangleCount * 3;
-        const posData = new Float32Array(texWidth * 4);
+        // Pack vertex positions: one texel per vertex, 3 vertices per triangle, RGBA float (xyz + padding)
+        const posData = new Float32Array(texWidth * texHeight * 4);
         for (let t = 0; t < triangleCount; t++) {
             const i0 = indices[t * 3];
             const i1 = indices[t * 3 + 1];
@@ -1758,7 +1786,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         this._meshPositionTexture = new RawTexture(
             posData,
             texWidth,
-            1,
+            texHeight,
             Constants.TEXTUREFORMAT_RGBA,
             this._scene || this._engine,
             false,
@@ -1769,8 +1797,8 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         this._meshPositionTexture.name = "meshPositionTexture";
 
         // Pack normals the same way if available
-        if (normals && meshEmitter.useMeshNormalsForDirection) {
-            const normData = new Float32Array(texWidth * 4);
+        if (normals && useNormals) {
+            const normData = new Float32Array(texWidth * texHeight * 4);
             for (let t = 0; t < triangleCount; t++) {
                 const i0 = indices[t * 3];
                 const i1 = indices[t * 3 + 1];
@@ -1793,7 +1821,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
             this._meshNormalTexture = new RawTexture(
                 normData,
                 texWidth,
-                1,
+                texHeight,
                 Constants.TEXTUREFORMAT_RGBA,
                 this._scene || this._engine,
                 false,
@@ -1803,6 +1831,9 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
             );
             this._meshNormalTexture.name = "meshNormalTexture";
         }
+
+        this._meshEmitterMeshId = mesh.uniqueId;
+        this._meshEmitterUsedNormals = useNormals;
     }
 
     private _createColorGradientTexture() {
@@ -2010,6 +2041,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
 
         if (this._meshPositionTexture) {
             this._updateBuffer.setInt("meshTriangleCount", this._meshTriangleCount);
+            this._updateBuffer.setInt("meshTextureWidth", this._meshTextureWidth);
         }
 
         this._platform.updateParticleBuffer(this._targetIndex, this._targetBuffer, this._currentActiveCount);
@@ -2239,14 +2271,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         this._cachedUpdateDefines = "";
 
         // Re-upload mesh emitter data if the mesh geometry changed
-        if (this._meshPositionTexture) {
-            this._meshPositionTexture.dispose();
-            this._meshPositionTexture = null;
-        }
-        if (this._meshNormalTexture) {
-            this._meshNormalTexture.dispose();
-            this._meshNormalTexture = null;
-        }
+        this._disposeMeshEmitterTextures();
 
         this._platform.contextLost();
         this._rebuildingAfterContextLost = true;
@@ -2331,15 +2356,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
             (<any>this._dragGradientsTexture) = null;
         }
 
-        if (this._meshPositionTexture) {
-            this._meshPositionTexture.dispose();
-            (<any>this._meshPositionTexture) = null;
-        }
-
-        if (this._meshNormalTexture) {
-            this._meshNormalTexture.dispose();
-            (<any>this._meshNormalTexture) = null;
-        }
+        this._disposeMeshEmitterTextures();
 
         if (this._randomTexture) {
             this._randomTexture.dispose();

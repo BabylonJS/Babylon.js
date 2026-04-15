@@ -96,6 +96,7 @@ struct SimParams {
 
     #ifdef MESHEMITTER
         meshTriangleCount : i32,
+        meshTextureWidth : i32,
         direction1 : vec3<f32>,
         direction2 : vec3<f32>,
     #endif
@@ -404,11 +405,14 @@ fn main(@builtin(global_invocation_id) GlobalInvocationID : vec3<u32>) {
             var triIdx : i32 = i32(floor(randoms2.x * f32(params.meshTriangleCount)));
             triIdx = min(triIdx, params.meshTriangleCount - 1);
 
-            // Fetch 3 vertex positions via textureLoad (one texel per vertex, 3 per triangle)
+            // Fetch 3 vertex positions via textureLoad (2D texture: linear index to x,y)
             let baseTexel : i32 = triIdx * 3;
-            let v0 : vec3<f32> = textureLoad(meshPositionTexture, vec2<i32>(baseTexel, 0), 0).xyz;
-            let v1 : vec3<f32> = textureLoad(meshPositionTexture, vec2<i32>(baseTexel + 1, 0), 0).xyz;
-            let v2 : vec3<f32> = textureLoad(meshPositionTexture, vec2<i32>(baseTexel + 2, 0), 0).xyz;
+            let t0 : i32 = baseTexel;
+            let t1 : i32 = baseTexel + 1;
+            let t2 : i32 = baseTexel + 2;
+            let v0 : vec3<f32> = textureLoad(meshPositionTexture, vec2<i32>(t0 % params.meshTextureWidth, t0 / params.meshTextureWidth), 0).xyz;
+            let v1 : vec3<f32> = textureLoad(meshPositionTexture, vec2<i32>(t1 % params.meshTextureWidth, t1 / params.meshTextureWidth), 0).xyz;
+            let v2 : vec3<f32> = textureLoad(meshPositionTexture, vec2<i32>(t2 % params.meshTextureWidth, t2 / params.meshTextureWidth), 0).xyz;
 
             // Barycentric coordinates
             let bu : f32 = randoms2.y;
@@ -418,9 +422,9 @@ fn main(@builtin(global_invocation_id) GlobalInvocationID : vec3<u32>) {
             newPosition = bu * v0 + bv * v1 + bw * v2;
 
             #ifdef MESHNORMALS
-                let n0 : vec3<f32> = textureLoad(meshNormalTexture, vec2<i32>(baseTexel, 0), 0).xyz;
-                let n1 : vec3<f32> = textureLoad(meshNormalTexture, vec2<i32>(baseTexel + 1, 0), 0).xyz;
-                let n2 : vec3<f32> = textureLoad(meshNormalTexture, vec2<i32>(baseTexel + 2, 0), 0).xyz;
+                let n0 : vec3<f32> = textureLoad(meshNormalTexture, vec2<i32>(t0 % params.meshTextureWidth, t0 / params.meshTextureWidth), 0).xyz;
+                let n1 : vec3<f32> = textureLoad(meshNormalTexture, vec2<i32>(t1 % params.meshTextureWidth, t1 / params.meshTextureWidth), 0).xyz;
+                let n2 : vec3<f32> = textureLoad(meshNormalTexture, vec2<i32>(t2 % params.meshTextureWidth, t2 / params.meshTextureWidth), 0).xyz;
                 newDirection = normalize(bu * n0 + bv * n1 + bw * n2);
             #else
                 newDirection = params.direction1 + (params.direction2 - params.direction1) * randoms3;

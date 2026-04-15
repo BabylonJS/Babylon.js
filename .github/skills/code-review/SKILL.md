@@ -54,9 +54,10 @@ Apply the severity categories and review checklist below to every changed line. 
 
 1. **All applicable instruction files** — read each file listed in [instructions/index.md](../../instructions/index.md) and apply its rules to the changed code.
 2. **Correctness** — logic errors, off-by-one, null/undefined access, race conditions, unhandled edge cases.
-3. **Security** — prototype pollution, unsafe `eval`/`Function()`, unsafe deserialization of untrusted input (e.g. parsed scene files, glTF extensions).
-4. **PR labels** — see `pr-labels.instructions.md`. Suggest labels based on the type and location of changes.
-5. **General quality** — dead code, unreachable branches, duplicated logic, overly complex control flow, poor naming.
+3. **Inadequate error handling** — when code detects an error or invalid state (exceeding limits, missing data, unsupported configuration) but does not handle it appropriately (e.g. just logging a warning or performing any other operation that doesn't truly address the underlying problem), flag it. The code must either bail out, fall back to a safe alternative, or properly resolve the condition.
+4. **Security** — prototype pollution, unsafe `eval`/`Function()`, unsafe deserialization of untrusted input (e.g. parsed scene files, glTF extensions).
+5. **PR labels** — see `pr-labels.instructions.md`. Suggest labels based on the type and location of changes.
+6. **General quality** — dead code, unreachable branches, duplicated logic, overly complex control flow, poor naming.
 
 ### Step 4: Run quality tools
 

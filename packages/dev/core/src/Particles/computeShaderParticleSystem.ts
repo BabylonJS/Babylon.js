@@ -139,6 +139,7 @@ export class ComputeShaderParticleSystem implements IGPUParticleSystemPlatform {
         }
         if (this._parent._meshPositionTexture) {
             this._simParamsComputeShader.addUniform("meshTriangleCount", 1);
+            this._simParamsComputeShader.addUniform("meshTextureWidth", 1);
         }
         if (this._parent.particleEmitterType) {
             this._parent.particleEmitterType.buildUniformLayout(this._simParamsComputeShader);

@@ -193,6 +193,7 @@ uniform vec2 lifeTimeGradientRange;
 #ifdef MESHEMITTER
 uniform sampler2D meshPositionSampler;
 uniform int meshTriangleCount;
+uniform int meshTextureWidth;
 uniform vec3 direction1;
 uniform vec3 direction2;
 #ifdef MESHNORMALS
@@ -381,11 +382,14 @@ void main() {
     int triIdx = int(floor(randoms2.x * float(meshTriangleCount)));
     triIdx = min(triIdx, meshTriangleCount - 1);
 
-    // Fetch 3 vertex positions via texelFetch (one texel per vertex, 3 per triangle)
+    // Fetch 3 vertex positions via texelFetch (2D texture: linear index to x,y)
     int baseTexel = triIdx * 3;
-    vec3 v0 = texelFetch(meshPositionSampler, ivec2(baseTexel, 0), 0).xyz;
-    vec3 v1 = texelFetch(meshPositionSampler, ivec2(baseTexel + 1, 0), 0).xyz;
-    vec3 v2 = texelFetch(meshPositionSampler, ivec2(baseTexel + 2, 0), 0).xyz;
+    int t0 = baseTexel;
+    int t1 = baseTexel + 1;
+    int t2 = baseTexel + 2;
+    vec3 v0 = texelFetch(meshPositionSampler, ivec2(t0 % meshTextureWidth, t0 / meshTextureWidth), 0).xyz;
+    vec3 v1 = texelFetch(meshPositionSampler, ivec2(t1 % meshTextureWidth, t1 / meshTextureWidth), 0).xyz;
+    vec3 v2 = texelFetch(meshPositionSampler, ivec2(t2 % meshTextureWidth, t2 / meshTextureWidth), 0).xyz;
 
     // Barycentric coordinates
     float bu = randoms2.y;
@@ -395,9 +399,9 @@ void main() {
     newPosition = bu * v0 + bv * v1 + bw * v2;
 
     #ifdef MESHNORMALS
-        vec3 n0 = texelFetch(meshNormalSampler, ivec2(baseTexel, 0), 0).xyz;
-        vec3 n1 = texelFetch(meshNormalSampler, ivec2(baseTexel + 1, 0), 0).xyz;
-        vec3 n2 = texelFetch(meshNormalSampler, ivec2(baseTexel + 2, 0), 0).xyz;
+        vec3 n0 = texelFetch(meshNormalSampler, ivec2(t0 % meshTextureWidth, t0 / meshTextureWidth), 0).xyz;
+        vec3 n1 = texelFetch(meshNormalSampler, ivec2(t1 % meshTextureWidth, t1 / meshTextureWidth), 0).xyz;
+        vec3 n2 = texelFetch(meshNormalSampler, ivec2(t2 % meshTextureWidth, t2 / meshTextureWidth), 0).xyz;
         newDirection = normalize(bu * n0 + bv * n1 + bw * n2);
     #else
         newDirection = direction1 + (direction2 - direction1) * randoms3;

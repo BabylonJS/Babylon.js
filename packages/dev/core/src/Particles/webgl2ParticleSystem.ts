@@ -182,6 +182,7 @@ export class WebGL2ParticleSystem implements IGPUParticleSystemPlatform {
 
         if (defines.indexOf("MESHEMITTER") !== -1) {
             this._updateEffectOptions.uniformsNames.push("meshTriangleCount");
+            this._updateEffectOptions.uniformsNames.push("meshTextureWidth");
         }
 
         this._updateEffect = this._engine.createEffect("gpuUpdateParticles", this._updateEffectOptions, this._engine);
