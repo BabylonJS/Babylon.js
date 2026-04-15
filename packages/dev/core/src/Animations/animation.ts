@@ -109,6 +109,16 @@ export class Animation {
     public static AllowMatrixDecomposeForInterpolation = true;
 
     /**
+     * When true, starting a new animation on a property that is already being animated
+     * will inherit the original value from the active animation instead of snapshotting
+     * the current (mid-animation) value. This prevents properties (e.g. morph target
+     * influence) from permanently sticking at intermediate values when animations
+     * overlap or interrupt each other.
+     * @see https://playground.babylonjs.com/#6A16YD#0
+     */
+    public static InheritOriginalValueFromActiveAnimations = false;
+
+    /**
      * Gets or sets the unique id of the animation (the uniqueness is solely among other animations)
      */
     public uniqueId: number;

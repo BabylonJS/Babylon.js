@@ -33,9 +33,13 @@ export class BlockNodeData implements INodeData {
      */
     public get name() {
         const raw = this.data.name;
+        const className = this.data.getClassName();
         // Only strip the boilerplate when the user hasn't chosen a custom name yet.
-        if (raw === this.data.getClassName()) {
-            return FlowGraphBlockDisplayName(raw);
+        // Also handle when raw is undefined/falsy (can happen with binary operation
+        // blocks where the base constructor runs getClassName() before the subclass
+        // parameter property is assigned).
+        if (!raw || raw === className) {
+            return FlowGraphBlockDisplayName(className);
         }
         return raw;
     }

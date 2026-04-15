@@ -90,6 +90,13 @@
             "referenceImage": "gsplat-part-test.png"
         },
         {
+            "title": "Gaussian Splatting Part Serialize Test",
+            "playgroundId": "#XQZVOI#0",
+            "renderCount": 15,
+            "errorRatio": 5,
+            "referenceImage": "gsplat-part-test.png"
+        },
+        {
             "title": "RH billboard",
             "playgroundId": "#PDO1L6#1",
             "referenceImage": "rh-billboard.png"
@@ -3515,13 +3522,13 @@
         },
         {
             "title": "OpenPBR Thin Walled Transmission IOR vs Roughness - IBL",
-            "playgroundId": "#GRQHVV#240",
+            "playgroundId": "#GRQHVV#311",
             "excludedEngines": ["webgl1"],
             "renderCount": 5
         },
         {
             "title": "OpenPBR Thin Walled Transmission IOR vs Roughness - Analytic Lights",
-            "playgroundId": "#GRQHVV#243",
+            "playgroundId": "#GRQHVV#312",
             "excludedEngines": ["webgl1"]
         },
         {
@@ -3548,7 +3555,7 @@
         },
         {
             "title": "OpenPBR Thin Walled Subsurface Transmission Blending - IBL",
-            "playgroundId": "#GRQHVV#242",
+            "playgroundId": "#GRQHVV#313",
             "excludedEngines": ["webgl1"],
             "renderCount": 5
         },
@@ -4134,6 +4141,54 @@
             "excludedEngines": ["webgl1"]
         },
         {
+            "title": "GPU Particles - Change - Emit Rate Gradient",
+            "playgroundId": "#SV62YO#1",
+            "referenceImage": "gpu-particles-change-emit-rate-gradient.png",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "GPU Particles - Change - Emit Rate Gradient 2",
+            "playgroundId": "#RBK6TJ#1",
+            "referenceImage": "gpu-particles-change-emit-rate-gradient-2.png",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "GPU Particles - Change - Emit Rate Gradient Range",
+            "playgroundId": "#9KLZH0#1",
+            "referenceImage": "gpu-particles-change-emit-rate-gradient-range.png",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "GPU Particles - Change - Start Size Gradient",
+            "playgroundId": "#HF5UQ7#0",
+            "referenceImage": "gpu-particles-change-start-size-gradient.png",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "GPU Particles - Change - Start Size Gradient Range",
+            "playgroundId": "#9QAHDL#0",
+            "referenceImage": "gpu-particles-change-start-size-gradient-range.png",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "GPU Particles - Change - Lifetime Gradient",
+            "playgroundId": "#ZEQD5L#0",
+            "referenceImage": "gpu-particles-change-lifetime-gradient.png",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "GPU Particles - Change - Lifetime Gradient 2",
+            "playgroundId": "#E980M9#0",
+            "referenceImage": "gpu-particles-change-lifetime-gradient-2.png",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "GPU Particles - Change - Lifetime Gradient Range",
+            "playgroundId": "#716Y0L#0",
+            "referenceImage": "gpu-particles-change-lifetime-gradient-range.png",
+            "excludedEngines": ["webgl1"]
+        },
+        {
             "title": "GPU Particles - Emitters - Point",
             "playgroundId": "#PS8GQ3#0",
             "referenceImage": "gpu-particles-emitters-point.png",
@@ -4198,6 +4253,12 @@
             "title": "GPU Particles - Billboard Stretched",
             "playgroundId": "#0612KX#0",
             "referenceImage": "gpu-particles-billboard-stretched.png",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "GPU Particles - Billboard Stretched Local",
+            "playgroundId": "#HLL4B1#0",
+            "referenceImage": "gpu-particles-billboard-stretched-local.png",
             "excludedEngines": ["webgl1"]
         },
         {

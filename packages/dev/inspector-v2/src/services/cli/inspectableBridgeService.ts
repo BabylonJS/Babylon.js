@@ -20,6 +20,11 @@ export interface IInspectableBridgeServiceOptions {
      * The session display name sent to the bridge.
      */
     name: string;
+
+    /**
+     * Whether to automatically start connecting when the service is created.
+     */
+    autoStart: boolean;
 }
 
 /**
@@ -36,13 +41,18 @@ export function MakeInspectableBridgeServiceDefinition(options: IInspectableBrid
             let ws: WebSocket | null = null;
             let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
             let disposed = false;
+            let enabled = options.autoStart;
             let connected = false;
-            const onConnectionStatusChanged = new Observable<boolean>();
+            const onConnectionStatusChanged = new Observable<void>();
+
+            function notifyStatusChanged() {
+                onConnectionStatusChanged.notifyObservers();
+            }
 
             function setConnected(value: boolean) {
                 if (connected !== value) {
                     connected = value;
-                    onConnectionStatusChanged.notifyObservers(value);
+                    notifyStatusChanged();
                 }
             }
 
@@ -51,13 +61,18 @@ export function MakeInspectableBridgeServiceDefinition(options: IInspectableBrid
             }
 
             function connect() {
-                if (disposed) {
+                if (disposed || !enabled) {
                     return;
                 }
 
                 try {
+                    // NOTE: The browser unconditionally logs a console error for failed WebSocket
+                    // connections at the network level. This cannot be suppressed from JavaScript.
                     ws = new WebSocket(`ws://127.0.0.1:${options.port}`);
                 } catch {
+                    ws = null;
+                    setConnected(false);
+                    Logger.Warn(`InspectableBridgeService: Failed to create WebSocket connection on port ${options.port}.`);
                     scheduleReconnect();
                     return;
                 }
@@ -87,8 +102,21 @@ export function MakeInspectableBridgeServiceDefinition(options: IInspectableBrid
                 };
             }
 
+            function disconnect() {
+                if (reconnectTimer !== null) {
+                    clearTimeout(reconnectTimer);
+                    reconnectTimer = null;
+                }
+                if (ws) {
+                    ws.onclose = null;
+                    ws.close();
+                    ws = null;
+                }
+                setConnected(false);
+            }
+
             function scheduleReconnect() {
-                if (disposed || reconnectTimer !== null) {
+                if (disposed || !enabled || reconnectTimer !== null) {
                     return;
                 }
                 reconnectTimer = setTimeout(() => {
@@ -141,8 +169,9 @@ export function MakeInspectableBridgeServiceDefinition(options: IInspectableBrid
                 }
             }
 
-            // Initiate connection.
-            connect();
+            if (enabled) {
+                connect();
+            }
 
             const registry: IInspectableCommandRegistry & ICliConnectionStatus & IDisposable = {
                 addCommand(descriptor: InspectableCommandDescriptor): IDisposable {
@@ -156,24 +185,30 @@ export function MakeInspectableBridgeServiceDefinition(options: IInspectableBrid
                         },
                     };
                 },
+                get isEnabled() {
+                    return enabled;
+                },
+                set isEnabled(value: boolean) {
+                    if (enabled !== value) {
+                        enabled = value;
+                        if (enabled) {
+                            connect();
+                        } else {
+                            disconnect();
+                        }
+                        notifyStatusChanged();
+                    }
+                },
                 get isConnected() {
                     return connected;
                 },
                 onConnectionStatusChanged,
                 dispose: () => {
                     disposed = true;
-                    if (reconnectTimer !== null) {
-                        clearTimeout(reconnectTimer);
-                        reconnectTimer = null;
-                    }
+                    enabled = false;
+                    disconnect();
                     commands.clear();
-                    setConnected(false);
                     onConnectionStatusChanged.clear();
-                    if (ws) {
-                        ws.onclose = null;
-                        ws.close();
-                        ws = null;
-                    }
                 },
             };
 

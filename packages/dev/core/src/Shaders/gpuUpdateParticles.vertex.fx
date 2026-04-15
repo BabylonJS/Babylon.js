@@ -182,6 +182,14 @@ uniform int attractorCount;
 uniform vec4 attractorPositionAndStrength[MAX_ATTRACTORS];
 #endif
 
+#ifdef STARTSIZEGRADIENTS
+uniform float startSizeGradientFactor;
+#endif
+
+#ifdef LIFETIMEGRADIENTS
+uniform vec2 lifeTimeGradientRange;
+#endif
+
 vec3 getRandomVec3(float offset) {
   return texture(randomSampler2, vec2(float(gl_VertexID) * offset / currentCount, 0)).rgb;
 }
@@ -215,6 +223,9 @@ void main() {
 
     // Age and life
     outLife = lifeTime.x + (lifeTime.y - lifeTime.x) * randoms.r;
+#ifdef LIFETIMEGRADIENTS
+    outLife = lifeTimeGradientRange.x + (lifeTimeGradientRange.y - lifeTimeGradientRange.x) * randoms.r;
+#endif
 #ifdef EMITRATECTRL
     outAge = 0.0;
 #else
@@ -233,6 +244,9 @@ void main() {
 #endif
     outSize.y = scaleRange.x + (scaleRange.y - scaleRange.x) * randoms.b;
     outSize.z = scaleRange.z + (scaleRange.w - scaleRange.z) * randoms.a; 
+#ifdef STARTSIZEGRADIENTS
+    outSize.x *= startSizeGradientFactor;
+#endif
 
 #ifndef COLORGRADIENTS
     // Color

@@ -125,6 +125,12 @@ export class ComputeShaderParticleSystem implements IGPUParticleSystemPlatform {
                 this._simParamsComputeShader.addUniform("attractorPositionAndStrength[" + i + "]", 4);
             }
         }
+        if (this._parent._startSizeGradients && this._parent._startSizeGradients.length > 0) {
+            this._simParamsComputeShader.addUniform("startSizeGradientFactor", 1);
+        }
+        if (this._parent._lifeTimeGradients && this._parent._lifeTimeGradients.length > 0) {
+            this._simParamsComputeShader.addUniform("lifeTimeGradientRange", 2);
+        }
         if (this._parent.particleEmitterType) {
             this._parent.particleEmitterType.buildUniformLayout(this._simParamsComputeShader);
         }

@@ -1,26 +1,36 @@
 /* eslint-disable @typescript-eslint/no-floating-promises */
-import "./configurator.scss";
-import { type IDisposable, type IInspectableOptions, type Nullable, type Observable } from "core/index";
+import { type IDisposable, type Nullable, type Observable } from "core/index";
 import { type HotSpot, type ShadowQuality, type ToneMapping, type Viewer, type ViewerDetails, type ViewerElement, type ViewerOptions } from "viewer/index";
 import { type DragEndEvent, closestCenter, DndContext, KeyboardSensor, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
-
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { faQuestionCircle } from "@fortawesome/free-regular-svg-icons";
-import { faBullseye, faCamera, faCheck, faCopy, faGripVertical, faRotateLeft, faSave, faSquarePlus, faTrashCan, faUpload } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { makeStyles, tokens, Textarea } from "@fluentui/react-components";
+import {
+    TargetRegular,
+    CameraRegular,
+    CheckmarkRegular,
+    CopyRegular,
+    ReOrderDotsVerticalRegular,
+    ArrowResetRegular,
+    SaveRegular,
+    AddSquareRegular,
+    DeleteRegular,
+    ArrowUploadRegular,
+} from "@fluentui/react-icons";
 import { useCallback, useEffect, useMemo, useRef, useState, type FunctionComponent } from "react";
 
 import { restrictToParentElement, restrictToVerticalAxis } from "@dnd-kit/modifiers";
-import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineComponent";
-import { CheckBoxLineComponent } from "shared-ui-components/lines/checkBoxLineComponent";
-import { Color4LineComponent } from "shared-ui-components/lines/color4LineComponent";
-import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
-import { MessageLineComponent } from "shared-ui-components/lines/messageLineComponent";
-import { OptionsLine } from "shared-ui-components/lines/optionsLineComponent";
-import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent";
-import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
-import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
+import { AccordionSection, Accordion } from "shared-ui-components/fluent/primitives/accordion";
+import { MessageBar } from "shared-ui-components/fluent/primitives/messageBar";
+import { Button } from "shared-ui-components/fluent/primitives/button";
+import { Collapse } from "shared-ui-components/fluent/primitives/collapse";
+import { LineContainer, PropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/propertyLine";
+import { ColorPickerPopup } from "shared-ui-components/fluent/primitives/colorPicker";
+import { type DropdownOption, Dropdown } from "shared-ui-components/fluent/primitives/dropdown";
+import { Switch } from "shared-ui-components/fluent/primitives/switch";
+import { SyncedSliderInput } from "shared-ui-components/fluent/primitives/syncedSlider";
+import { TextInput } from "shared-ui-components/fluent/primitives/textInput";
+import { ToggleButton } from "shared-ui-components/fluent/primitives/toggleButton";
 
 import { DefaultViewerOptions, SSAOOptions } from "viewer/viewer";
 import { HTML3DAnnotationElement } from "viewer/viewerAnnotationElement";
@@ -33,11 +43,82 @@ import { WithinEpsilon } from "core/Maths/math.scalar.functions";
 import { CreateHotSpotQueryForPickingInfo } from "core/Meshes/abstractMesh.hotSpot";
 import { Logger } from "core/Misc/logger";
 
-import { useObservableState } from "../../hooks/observableHooks";
-import { LoadModel, PickModel } from "../../modelLoader";
+import { useObservableState } from "shared-ui-components/modularTool/hooks/observableHooks";
+import { PickModel } from "../../modelLoader";
+import { ToolContext } from "shared-ui-components/fluent/hoc/fluentToolWrapper";
 
-import { ExpandableMessageLineComponent } from "../misc/ExpandableMessageLineComponent";
-import { FontAwesomeIconButton } from "../misc/FontAwesomeIconButton";
+const useStyles = makeStyles({
+    root: {
+        display: "flex",
+        flexDirection: "column",
+        height: "100%",
+        overflow: "auto",
+    },
+    snippetSection: {
+        padding: tokens.spacingVerticalS + " " + tokens.spacingHorizontalM,
+        display: "flex",
+        flexDirection: "column",
+        gap: tokens.spacingVerticalS,
+        // Pin the snippet section at the top when there is enough vertical space.
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        "@media (min-height: 600px)": {
+            position: "sticky",
+            top: 0,
+            zIndex: 1,
+            backgroundColor: tokens.colorNeutralBackground1,
+        },
+    },
+    snippetActions: {
+        display: "flex",
+        flexDirection: "row",
+        alignItems: "center",
+        gap: tokens.spacingHorizontalS,
+    },
+    accordionContainer: {},
+    propertyContent: {
+        display: "flex",
+        flexDirection: "row",
+        alignItems: "center",
+        gap: tokens.spacingHorizontalS,
+        width: "100%",
+    },
+    fillControl: {
+        flex: 1,
+        minWidth: 0,
+    },
+    fullWidth: {
+        width: "100%",
+    },
+    buttonGroup: {
+        display: "flex",
+        flexDirection: "row",
+        alignItems: "center",
+    },
+    headerRow: {
+        display: "flex",
+        alignItems: "center",
+        gap: tokens.spacingHorizontalS,
+    },
+    snippetTextarea: {
+        minHeight: "160px",
+    },
+    snippetTextareaInner: {
+        fontFamily: "monospace",
+        whiteSpace: "pre",
+        overflowX: "auto",
+    },
+    hotspotRow: {
+        display: "flex",
+        flexDirection: "row",
+        alignItems: "center",
+        gap: tokens.spacingHorizontalS,
+        width: "100%",
+        margin: `${tokens.spacingVerticalXS} 0`,
+    },
+    hotspotNameInput: {
+        flex: 1,
+    },
+});
 
 const DefaultModelUrl = "https://assets.babylonjs.com/meshes/Demos/optimized/acrobaticPlane_variants.glb";
 
@@ -53,28 +134,28 @@ type OutputFormat = "html" | "json";
 const OutputOptions = [
     { label: "HTML", value: "html" },
     { label: "JSON", value: "json" },
-] as const satisfies IInspectableOptions[] & { label: string; value: OutputFormat }[];
+] as const satisfies readonly DropdownOption<OutputFormat>[];
 
 const ShadowQualityOptions = [
     { label: "None", value: "none" },
     { label: "Normal", value: "normal" },
     { label: "High", value: "high" },
-] as const satisfies IInspectableOptions[] & { label: string; value: ShadowQuality }[];
+] as const satisfies readonly DropdownOption<ShadowQuality>[];
 
 const SSAOOptions = [
     { label: "Disabled", value: "disabled" },
     { label: "Enabled", value: "enabled" },
     { label: "Auto", value: "auto" },
-] as const satisfies IInspectableOptions[] & { label: string; value: SSAOOptions }[];
+] as const satisfies readonly DropdownOption<SSAOOptions>[];
 
 const ToneMappingOptions = [
     { label: "Standard", value: "standard" },
     { label: "None", value: "none" },
     { label: "Aces", value: "aces" },
     { label: "Neutral", value: "neutral" },
-] as const satisfies IInspectableOptions[] & { label: string; value: ToneMapping }[];
+] as const satisfies readonly DropdownOption<ToneMapping>[];
 
-const HotSpotTypeOptions = [{ label: "Surface", value: "surface" }] as const satisfies IInspectableOptions[];
+const HotSpotTypeOptions = [{ label: "Surface", value: "surface" }] as const satisfies readonly DropdownOption<string>[];
 
 const HotSpotsDndModifers = [restrictToVerticalAxis, restrictToParentElement];
 
@@ -164,6 +245,7 @@ const HotSpotEntry: FunctionComponent<{
     setHotspots: React.Dispatch<React.SetStateAction<HotSpotInfo[]>>;
     viewerElement: ViewerElement;
 }> = ({ id, hotspots, setHotspots, viewerElement }) => {
+    const classes = useStyles();
     const index = useMemo(() => {
         return hotspots.findIndex((hotspot) => hotspot.id === id);
     }, [id, hotspots]);
@@ -197,7 +279,6 @@ const HotSpotEntry: FunctionComponent<{
     }, []);
 
     const [isPicking, setIsPicking] = useState(false);
-    const [hasPicked, setHasPicked] = useState(false);
 
     const pickingOperation = useRef<IDisposable>();
 
@@ -215,78 +296,83 @@ const HotSpotEntry: FunctionComponent<{
         }
     }, [index, setHotspots]);
 
-    const onHotspotPickClick = useCallback(() => {
-        if (isPicking) {
-            pickingOperation.current?.dispose();
-        } else if (viewerElement.viewerDetails?.model && hotspot) {
-            const originalCursor = getComputedStyle(viewerElement).cursor;
-            viewerElement.style.cursor = "crosshair";
-            const { scene, model, viewer } = viewerElement.viewerDetails;
+    const onHotspotPickClick = useCallback(
+        (checked: boolean) => {
+            if (!checked) {
+                pickingOperation.current?.dispose();
+            } else if (viewerElement.viewerDetails?.model && hotspot) {
+                const originalCursor = getComputedStyle(viewerElement).cursor;
+                viewerElement.style.cursor = "crosshair";
+                const { scene, model, viewer } = viewerElement.viewerDetails;
 
-            const cleanupActions: (() => void)[] = [() => setIsPicking(false), () => (viewerElement.style.cursor = originalCursor), () => (pickingOperation.current = undefined)];
+                const cleanupActions: (() => void)[] = [
+                    () => setIsPicking(false),
+                    () => (viewerElement.style.cursor = originalCursor),
+                    () => (pickingOperation.current = undefined),
+                ];
 
-            const cleanup = () => {
-                cleanupActions.forEach((action) => action());
-            };
-            pickingOperation.current = {
-                dispose: () => {
-                    cleanup();
-                },
-            };
+                const cleanup = () => {
+                    cleanupActions.forEach((action) => action());
+                };
+                pickingOperation.current = {
+                    dispose: () => {
+                        cleanup();
+                    },
+                };
 
-            const pointerObserver = scene.onPointerObservable.add(async (pointerInfo) => {
-                if (pointerInfo.type === PointerEventTypes.POINTERTAP) {
-                    if (viewerElement.viewerDetails) {
-                        const pickInfo = await viewerElement.viewerDetails.pick(pointerInfo.event.offsetX, pointerInfo.event.offsetY);
-                        if (pickInfo?.pickedMesh) {
-                            if (hotspot.data.type === "surface") {
-                                hotspot.data.meshIndex = model.assetContainer.meshes.indexOf(pickInfo.pickedMesh);
-                                const hotspotQuery = CreateHotSpotQueryForPickingInfo(pickInfo);
-                                if (hotspotQuery) {
-                                    hotspot.data.pointIndex = hotspotQuery.pointIndex;
-                                    hotspot.data.barycentric = hotspotQuery.barycentric;
+                const pointerObserver = scene.onPointerObservable.add(async (pointerInfo) => {
+                    if (pointerInfo.type === PointerEventTypes.POINTERTAP) {
+                        if (viewerElement.viewerDetails) {
+                            const pickInfo = await viewerElement.viewerDetails.pick(pointerInfo.event.offsetX, pointerInfo.event.offsetY);
+                            if (pickInfo?.pickedMesh) {
+                                if (hotspot.data.type === "surface") {
+                                    hotspot.data.meshIndex = model.assetContainer.meshes.indexOf(pickInfo.pickedMesh);
+                                    const hotspotQuery = CreateHotSpotQueryForPickingInfo(pickInfo);
+                                    if (hotspotQuery) {
+                                        hotspot.data.pointIndex = hotspotQuery.pointIndex;
+                                        hotspot.data.barycentric = hotspotQuery.barycentric;
+                                    }
                                 }
+
+                                setHotspots((hotspots) => {
+                                    return [...hotspots];
+                                });
+
+                                if (pickInfo.hit && pickInfo.pickedPoint) {
+                                    const camera = viewerElement.viewerDetails.camera;
+                                    const distance = pickInfo.pickedPoint.subtract(camera.position).dot(camera.getForwardRay().direction);
+                                    // Immediately reset the target and the radius based on the distance to the picked point.
+                                    // This eliminates unnecessary camera movement on the local z-axis when interpolating.
+                                    camera.target = camera.position.add(camera.getForwardRay().direction.scale(distance));
+                                    camera.radius = distance;
+                                    viewerElement.focusHotSpot(hotspot.name);
+                                }
+
+                                cleanup();
                             }
-
-                            setHotspots((hotspots) => {
-                                return [...hotspots];
-                            });
-
-                            if (pickInfo.hit && pickInfo.pickedPoint) {
-                                const camera = viewerElement.viewerDetails.camera;
-                                const distance = pickInfo.pickedPoint.subtract(camera.position).dot(camera.getForwardRay().direction);
-                                // Immediately reset the target and the radius based on the distance to the picked point.
-                                // This eliminates unnecessary camera movement on the local z-axis when interpolating.
-                                camera.target = camera.position.add(camera.getForwardRay().direction.scale(distance));
-                                camera.radius = distance;
-                                viewerElement.focusHotSpot(hotspot.name);
-                            }
-
-                            setHasPicked(true);
-
-                            cleanup();
                         }
                     }
-                }
-            });
-            cleanupActions.push(() => scene.onPointerObservable.remove(pointerObserver));
+                });
+                cleanupActions.push(() => scene.onPointerObservable.remove(pointerObserver));
 
-            const handleKeyDown = (e: KeyboardEvent) => {
-                if (e.key === "Escape") {
+                const handleKeyDown = (e: KeyboardEvent) => {
+                    if (e.key === "Escape") {
+                        cleanup();
+                    }
+                };
+                document.addEventListener("keydown", handleKeyDown);
+                cleanupActions.push(() => document.removeEventListener("keydown", handleKeyDown));
+
+                const modelChangedObserver = viewer.onModelChanged.addOnce(() => {
                     cleanup();
-                }
-            };
-            document.addEventListener("keydown", handleKeyDown);
-            cleanupActions.push(() => document.removeEventListener("keydown", handleKeyDown));
+                });
+                cleanupActions.push(() => viewer.onModelChanged.remove(modelChangedObserver));
 
-            const modelChangedObserver = viewer.onModelChanged.addOnce(() => {
-                cleanup();
-            });
-            cleanupActions.push(() => viewer.onModelChanged.remove(modelChangedObserver));
-
-            setIsPicking(true);
-        }
-    }, [isPicking, hotspot, setHotspots]);
+                setIsPicking(true);
+            }
+        },
+        [hotspot, setHotspots]
+    );
 
     const onCameraSnapshotClick = useCallback(() => {
         if (hotspot) {
@@ -314,14 +400,16 @@ const HotSpotEntry: FunctionComponent<{
     );
 
     return (
-        <div ref={rootDivRef} className="flexRow" style={{ ...dndStyle }} {...dndAttributes}>
-            <FontAwesomeIcon title="Drag to reorder" icon={faGripVertical} {...dndListeners} />
-            <div style={{ flex: 1 }}>
-                <TextInputLineComponent key={id} value={hotspot?.name} onChange={onHotSpotNameChange} />
+        <div ref={rootDivRef} className={classes.hotspotRow} style={dndStyle} {...dndAttributes}>
+            <ReOrderDotsVerticalRegular title="Drag to reorder" {...dndListeners} />
+            <div className={classes.fillControl}>
+                <TextInput className={classes.fullWidth} key={id} value={hotspot?.name ?? ""} onChange={onHotSpotNameChange} />
             </div>
-            <FontAwesomeIconButton title="Pick from model" icon={faBullseye} color={isPicking ? "rgb(51, 122, 183)" : undefined} onClick={onHotspotPickClick} />
-            <FontAwesomeIconButton title="Snapshot current camera state" icon={faCamera} onClick={onCameraSnapshotClick} />
-            <FontAwesomeIconButton title="Delete Hot Spot" icon={faTrashCan} onClick={onHotspotDeleteClick} />
+            <div className={classes.buttonGroup}>
+                <ToggleButton title="Pick from model" appearance="transparent" checkedIcon={TargetRegular} value={isPicking} onChange={onHotspotPickClick} />
+                <Button title="Snapshot current camera state" appearance="transparent" icon={CameraRegular} onClick={onCameraSnapshotClick} />
+                <Button title="Delete Hot Spot" appearance="transparent" icon={DeleteRegular} onClick={onHotspotDeleteClick} />
+            </div>
         </div>
     );
 };
@@ -329,28 +417,6 @@ const HotSpotEntry: FunctionComponent<{
 export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; viewerElement: ViewerElement; viewerDetails: ViewerDetails; viewer: Viewer }> = (props) => {
     const { viewerOptions, viewerElement, viewerDetails, viewer } = props;
     const model = useObservableState(() => viewerDetails.model, viewer.onModelChanged, viewer.onModelError);
-    const lockObject = useMemo(() => new LockObject(), []);
-
-    // Allow models to be dragged and dropped into the viewer.
-    useEffect(() => {
-        const onDragOver = (event: DragEvent) => event.preventDefault();
-        // eslint-disable-next-line no-restricted-syntax
-        const onDrop = async (event: DragEvent) => {
-            const files = event.dataTransfer?.files;
-            if (files) {
-                event.preventDefault();
-                await LoadModel(viewerElement, files);
-            }
-        };
-
-        viewerElement.addEventListener("dragover", onDragOver);
-        viewerElement.addEventListener("drop", onDrop);
-
-        return () => {
-            viewerElement.removeEventListener("dragover", onDragOver);
-            viewerElement.removeEventListener("drop", onDrop);
-        };
-    }, [viewerElement]);
 
     const initialModelUrl = useMemo(() => viewerOptions.source ?? DefaultModelUrl, [viewerOptions.source]);
     const [modelUrl, setModelUrl] = useState(initialModelUrl);
@@ -386,13 +452,6 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
     }, [viewerElement]);
 
     const [outputFormat, setOutputFormat] = useState<OutputFormat>("html");
-    const onOutputFormatChange = useCallback((value: string | number) => {
-        setOutputFormat(value as OutputFormat);
-    }, []);
-    // This is only needed because the select expects to "bind" to an object and a property.
-    const outputFormatWrapper = useMemo(() => {
-        return { outputFormat } as const;
-    }, [outputFormat]);
 
     const lightingUrlConfig = useConfiguration(
         "",
@@ -466,10 +525,6 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
         [viewerDetails.scene.onClearColorChangedObservable],
         [viewerDetails.scene]
     );
-    // This is only needed because the color picker expects to "bind" to an object and a property.
-    const clearColorWrapper = useMemo(() => {
-        return { clearColor: clearColorConfig.configuredState } as const;
-    }, [clearColorConfig.configuredState]);
 
     const shadowQualityConfig = useConfiguration(
         DefaultViewerOptions.shadowConfig.quality,
@@ -480,10 +535,6 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
         [viewer.onPostProcessingChanged],
         [viewer]
     );
-    // This is only needed because the select expects to "bind" to an object and a property.
-    const shadowQualityWrapper = useMemo(() => {
-        return { shadowQuality: shadowQualityConfig.configuredState } as const;
-    }, [shadowQualityConfig.configuredState]);
 
     const cameraConfig = useConfiguration(
         {
@@ -551,10 +602,6 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
         [viewer.onPostProcessingChanged],
         [viewer]
     );
-    // This is only needed because the select expects to "bind" to an object and a property.
-    const toneMappingWrapper = useMemo(() => {
-        return { toneMapping: toneMappingConfig.configuredState } as const;
-    }, [toneMappingConfig.configuredState]);
 
     const contrastConfig = useConfiguration(
         DefaultViewerOptions.postProcessing.contrast,
@@ -585,10 +632,6 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
         [viewer.onPostProcessingChanged],
         [viewer]
     );
-    // This is only needed because the select expects to "bind" to an object and a property.
-    const ssaoOptionsWrapper = useMemo(() => {
-        return { ssaoOptions: ssaoConfig.configuredState } as const;
-    }, [ssaoConfig.configuredState]);
 
     const autoOrbitConfig = useConfiguration(
         DefaultViewerOptions.cameraAutoOrbit.enabled,
@@ -1034,16 +1077,6 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
         PickModel(viewerElement);
     }, [viewerElement]);
 
-    // TODO: Ideally we can handle keyboard events from the text input components.
-    const onModelUrlKeyDown = useCallback(
-        (event: React.KeyboardEvent<HTMLInputElement>) => {
-            if (event.key === "Enter") {
-                onModelUrlBlur();
-            }
-        },
-        [onLoadModelClick, onModelUrlBlur]
-    );
-
     const isEnvironmentLightingUrlValid = useMemo(() => {
         return !lightingUrlConfig.configuredState || lightingUrlConfig.configuredState === "auto" || URL.canParse(lightingUrlConfig.configuredState);
     }, [lightingUrlConfig.configuredState]);
@@ -1095,30 +1128,10 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
         skyboxBlurConfig.configuredState,
     ]);
 
-    // TODO: Ideally we can handle keyboard events from the text input components.
-    const _onEnvironmentLightingUrlKeyDown = useCallback(
-        (event: React.KeyboardEvent<HTMLInputElement>) => {
-            if (event.key === "Enter") {
-                setNeedsEnvironmentUpdate(true);
-            }
-        },
-        [setNeedsEnvironmentUpdate]
-    );
-
     const onEnvironmentLightingResetClick = useCallback(() => {
         lightingUrlConfig.update("");
         setNeedsEnvironmentUpdate(true);
     }, [setNeedsEnvironmentUpdate, lightingUrlConfig.update]);
-
-    // TODO: Ideally we can handle keyboard events from the text input components.
-    const _onEnvironmentSkyboxUrlKeyDown = useCallback(
-        (event: React.KeyboardEvent<HTMLInputElement>) => {
-            if (event.key === "Enter") {
-                setNeedsEnvironmentUpdate(true);
-            }
-        },
-        [setNeedsEnvironmentUpdate]
-    );
 
     const onEnvironmentSkyboxResetClick = useCallback(() => {
         skyboxUrlConfig.update("");
@@ -1140,27 +1153,6 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
             }
         },
         [setNeedsEnvironmentUpdate, lightingUrlConfig.configuredState, lightingUrlConfig.canReset, lightingUrlConfig.update, lightingUrlConfig.reset, setSyncEnvironment]
-    );
-
-    const onShadowQualityChange = useCallback(
-        (value: string | number) => {
-            shadowQualityConfig.update(value as ShadowQuality);
-        },
-        [shadowQualityConfig.update]
-    );
-
-    const onToneMappingChange = useCallback(
-        (value: string | number) => {
-            toneMappingConfig.update(value as ToneMapping);
-        },
-        [toneMappingConfig.update]
-    );
-
-    const onSSAOOptionChange = useCallback(
-        (value: string | number) => {
-            ssaoConfig.update(value as SSAOOptions);
-        },
-        [ssaoConfig.update]
     );
 
     const onAddHotspotClick = useCallback(() => {
@@ -1265,6 +1257,7 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
         toneMappingConfig.reset();
         contrastConfig.reset();
         exposureConfig.reset();
+        ssaoConfig.reset();
         cameraConfig.reset();
         autoOrbitConfig.reset();
         autoOrbitSpeedConfig.reset();
@@ -1285,6 +1278,7 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
         toneMappingConfig.reset,
         contrastConfig.reset,
         exposureConfig.reset,
+        ssaoConfig.reset,
         cameraConfig.reset,
         autoOrbitConfig.reset,
         autoOrbitSpeedConfig.reset,
@@ -1294,387 +1288,410 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
         selectedMaterialVariantConfig.reset,
     ]);
 
-    const openDocumentation = useCallback(() => {
-        window.open("https://doc.babylonjs.com/toolsAndResources/viewerConfigurator");
-    }, []);
-
     // SSAO is not supported when shadow quality is set to high (IBL).
     const validSSAOOptions = shadowQualityConfig.configuredState !== "high" ? SSAOOptions : SSAOOptions.filter((option) => option.value !== "enabled");
     const validShadowQualityOptions = ssaoConfig.configuredState !== "enabled" ? ShadowQualityOptions : ShadowQualityOptions.filter((option) => option.value !== "high");
 
+    const classes = useStyles();
+
     return (
-        <div className="configurator">
-            <div className="stickyContainer">
-                <div className="configuratorHeader">
-                    <img className="logo" src="https://www.babylonjs.com/Assets/logo-babylonjs-social-twitter.png" />
-                    <div className="title">VIEWER CONFIGURATOR</div>
-                    <FontAwesomeIconButton className="docs" title="Documentation" icon={faQuestionCircle} onClick={openDocumentation} />
-                </div>
-                <LineContainerComponent title="SNIPPET">
-                    <div className="flexColumn">
-                        <div style={{ flex: 1 }}>
-                            <OptionsLine
-                                label="Format"
-                                valuesAreStrings={true}
-                                options={OutputOptions}
-                                target={outputFormatWrapper}
-                                propertyName={"outputFormat"}
-                                noDirectUpdate={true}
-                                onSelect={onOutputFormatChange}
-                            />
-                        </div>
-                        <MessageLineComponent
-                            text={outputFormat === "html" ? "The HTML snippet can be used directly in a web page." : "The JSON snippet can be used as the Viewer options."}
-                        />
-                        <TextInputLineComponent multilines={true} value={outputFormat === "html" ? htmlSnippet : jsonSnippet} disabled={true} />
-                        <div className="flexRow">
-                            <div style={{ flex: 1 }}>
-                                <ButtonLineComponent label="Reset" onClick={resetAll} />
-                            </div>
-                            <FontAwesomeIconButton title="Revert all state to snippet" icon={faRotateLeft} onClick={revertAll} disabled={!canRevertAll} />
-                            <FontAwesomeIconButton title="Copy html to clipboard" icon={faCopy} onClick={copyToClipboard} />
-                            <FontAwesomeIconButton title="Save as snippet" icon={faSave} onClick={saveSnippet} disabled={!canSaveSnippet} />
-                        </div>
-                    </div>
-                </LineContainerComponent>
-            </div>
-            <LineContainerComponent title="MODEL">
-                <div>
-                    <div style={{ flex: 1 }}>
-                        <TextInputLineComponent placeholder="Model url" value={modelUrl} onChange={onModelUrlChange} />
-                    </div>
-                    <FontAwesomeIconButton title="Load from model url" icon={faCheck} onClick={onModelUrlBlur} />
-                    <FontAwesomeIconButton title="Load local model" icon={faUpload} onClick={onLoadModelClick} />
-                </div>
-            </LineContainerComponent>
-            <LineContainerComponent title="ENVIRONMENT">
-                <div style={{ height: "auto" }}>
-                    <ExpandableMessageLineComponent text="The same environment can be used for both image based lighting (IBL) and the skybox, or different environments can be used for each." />
-                </div>
-                <div>
-                    <CheckBoxLineComponent label="Sync Lighting & Skybox" isSelected={syncEnvironment} onSelect={onSyncEnvironmentChanged} />
-                </div>
-                <div>
-                    <div style={{ flex: 1 }}>
-                        <TextInputLineComponent
-                            key={syncEnvironment ? "env-url" : "light-url"} // Workaround to force re-render TextInputLine (to update placeholder prop on syncEnvironment change)
-                            placeholder={syncEnvironment ? "Environment url" : "Lighting url"}
-                            value={lightingUrlConfig.configuredState}
-                            onChange={onEnvironmentLightingUrlChange}
-                        />
-                    </div>
-                    <FontAwesomeIconButton
-                        title={syncEnvironment ? "Load environment url" : "Load lighting url"}
-                        icon={faCheck}
-                        disabled={!isEnvironmentLightingUrlValid}
-                        onClick={onEnvironmentUrlSubmit}
+        <ToolContext.Provider value={{ toolName: "Viewer Configurator", size: "medium", disableCopy: true, useFluent: true }}>
+            <div className={classes.root}>
+                <div className={classes.snippetSection}>
+                    <PropertyLine label="Format" uniqueId="output-format">
+                        <Dropdown options={OutputOptions} value={outputFormat} onChange={(value) => setOutputFormat(value as OutputFormat)} />
+                    </PropertyLine>
+                    <MessageBar
+                        message={outputFormat === "html" ? "The HTML snippet can be used directly in a web page." : "The JSON snippet can be used as the Viewer options."}
+                        intent="info"
                     />
-                    <FontAwesomeIconButton
-                        title={syncEnvironment ? "Reset environment" : "Reset lighting"}
-                        icon={faTrashCan}
-                        disabled={!lightingUrlConfig.canReset}
-                        onClick={onEnvironmentLightingResetClick}
+                    <Textarea
+                        value={outputFormat === "html" ? htmlSnippet : jsonSnippet}
+                        readOnly
+                        resize="vertical"
+                        className={classes.snippetTextarea}
+                        textarea={{ className: classes.snippetTextareaInner }}
                     />
-                </div>
-                {!syncEnvironment && (
-                    <div>
-                        <div style={{ flex: 1 }}>
-                            <TextInputLineComponent placeholder="Skybox url" value={skyboxUrlConfig.configuredState} onChange={onEnvironmentSkyboxUrlChange} />
+                    <div className={classes.snippetActions}>
+                        <Button className={classes.fillControl} label="Reset" onClick={resetAll} />
+                        <div className={classes.buttonGroup}>
+                            <Button title="Revert all state to snippet" appearance="transparent" icon={ArrowResetRegular} onClick={revertAll} disabled={!canRevertAll} />
+                            <Button title="Copy html to clipboard" appearance="transparent" icon={CopyRegular} onClick={copyToClipboard} />
+                            <Button title="Save as snippet" appearance="transparent" icon={SaveRegular} onClick={saveSnippet} disabled={!canSaveSnippet} />
                         </div>
-                        <FontAwesomeIconButton title="Load skybox url" icon={faCheck} onClick={onEnvironmentUrlSubmit} />
-                        <FontAwesomeIconButton title="Reset skybox" icon={faTrashCan} disabled={!skyboxUrlConfig.canReset} onClick={onEnvironmentSkyboxResetClick} />
                     </div>
-                )}
-                {hasSkybox && (
-                    <>
-                        <div>
-                            <div style={{ flex: 1 }}>
-                                <SliderLineComponent
-                                    label="Blur"
-                                    directValue={skyboxBlurConfig.configuredState}
-                                    minimum={0}
-                                    maximum={1}
-                                    step={0.01}
-                                    decimalCount={2}
-                                    target={viewerDetails.scene}
-                                    onChange={skyboxBlurConfig.update}
-                                    lockObject={lockObject}
+                </div>
+                <div className={classes.accordionContainer}>
+                    <Accordion>
+                        <AccordionSection title="Model">
+                            <LineContainer uniqueId="model-url">
+                                <div className={classes.propertyContent}>
+                                    <div className={classes.fillControl}>
+                                        <TextInput className={classes.fullWidth} value={modelUrl} onChange={onModelUrlChange} />
+                                    </div>
+                                    <div className={classes.buttonGroup}>
+                                        <Button title="Load from model url" appearance="transparent" icon={CheckmarkRegular} onClick={onModelUrlBlur} />
+                                        <Button title="Load local model" appearance="transparent" icon={ArrowUploadRegular} onClick={onLoadModelClick} />
+                                    </div>
+                                </div>
+                            </LineContainer>
+                        </AccordionSection>
+                        <AccordionSection title="Environment">
+                            <PropertyLine
+                                label="Sync Lighting & Skybox"
+                                uniqueId="sync-env"
+                                description="The same environment can be used for both image based lighting (IBL) and the skybox, or different environments can be used for each."
+                            >
+                                <Switch value={syncEnvironment} onChange={onSyncEnvironmentChanged} />
+                            </PropertyLine>
+                            <LineContainer uniqueId="lighting-url">
+                                <div className={classes.propertyContent}>
+                                    <div className={classes.fillControl}>
+                                        <TextInput
+                                            className={classes.fullWidth}
+                                            key={syncEnvironment ? "env-url" : "light-url"}
+                                            value={lightingUrlConfig.configuredState}
+                                            onChange={onEnvironmentLightingUrlChange}
+                                        />
+                                    </div>
+                                    <div className={classes.buttonGroup}>
+                                        <Button
+                                            title={syncEnvironment ? "Load environment url" : "Load lighting url"}
+                                            appearance="transparent"
+                                            icon={CheckmarkRegular}
+                                            disabled={!isEnvironmentLightingUrlValid}
+                                            onClick={onEnvironmentUrlSubmit}
+                                        />
+                                        <Button
+                                            title={syncEnvironment ? "Reset environment" : "Reset lighting"}
+                                            appearance="transparent"
+                                            icon={DeleteRegular}
+                                            disabled={!lightingUrlConfig.canReset}
+                                            onClick={onEnvironmentLightingResetClick}
+                                        />
+                                    </div>
+                                </div>
+                            </LineContainer>
+                            <Collapse visible={!syncEnvironment}>
+                                <LineContainer uniqueId="skybox-url">
+                                    <div className={classes.propertyContent}>
+                                        <div className={classes.fillControl}>
+                                            <TextInput className={classes.fullWidth} value={skyboxUrlConfig.configuredState} onChange={onEnvironmentSkyboxUrlChange} />
+                                        </div>
+                                        <div className={classes.buttonGroup}>
+                                            <Button title="Load skybox url" appearance="transparent" icon={CheckmarkRegular} onClick={onEnvironmentUrlSubmit} />
+                                            <Button
+                                                title="Reset skybox"
+                                                appearance="transparent"
+                                                icon={DeleteRegular}
+                                                disabled={!skyboxUrlConfig.canReset}
+                                                onClick={onEnvironmentSkyboxResetClick}
+                                            />
+                                        </div>
+                                    </div>
+                                </LineContainer>
+                            </Collapse>
+                            <Collapse visible={hasSkybox}>
+                                <PropertyLine label="Blur" uniqueId="skybox-blur">
+                                    <div className={classes.propertyContent}>
+                                        <div className={classes.fillControl}>
+                                            <SyncedSliderInput value={skyboxBlurConfig.configuredState} min={0} max={1} step={0.01} onChange={skyboxBlurConfig.update} />
+                                        </div>
+                                        <Button
+                                            title="Reset skybox blur"
+                                            appearance="transparent"
+                                            icon={DeleteRegular}
+                                            disabled={!skyboxBlurConfig.canReset}
+                                            onClick={skyboxBlurConfig.reset}
+                                        />
+                                    </div>
+                                </PropertyLine>
+                            </Collapse>
+                            <PropertyLine label="Intensity" uniqueId="env-intensity">
+                                <div className={classes.propertyContent}>
+                                    <div className={classes.fillControl}>
+                                        <SyncedSliderInput
+                                            value={environmentIntensityConfig.configuredState}
+                                            min={0}
+                                            max={5}
+                                            step={0.01}
+                                            onChange={environmentIntensityConfig.update}
+                                        />
+                                    </div>
+                                    <Button
+                                        title="Reset skybox intensity"
+                                        appearance="transparent"
+                                        icon={DeleteRegular}
+                                        disabled={!environmentIntensityConfig.canReset}
+                                        onClick={environmentIntensityConfig.reset}
+                                    />
+                                </div>
+                            </PropertyLine>
+                            <PropertyLine label="Rotation" uniqueId="env-rotation">
+                                <div className={classes.propertyContent}>
+                                    <div className={classes.fillControl}>
+                                        <SyncedSliderInput
+                                            value={environmentRotationConfig.configuredState}
+                                            min={0}
+                                            max={2 * Math.PI}
+                                            step={0.01}
+                                            onChange={environmentRotationConfig.update}
+                                        />
+                                    </div>
+                                    <Button
+                                        title="Reset skybox rotation"
+                                        appearance="transparent"
+                                        icon={DeleteRegular}
+                                        disabled={!environmentRotationConfig.canReset}
+                                        onClick={environmentRotationConfig.reset}
+                                    />
+                                </div>
+                            </PropertyLine>
+                            <PropertyLine label="Clear Color" uniqueId="clear-color">
+                                <div className={classes.propertyContent}>
+                                    <div className={classes.fillControl}>
+                                        <ColorPickerPopup value={clearColorConfig.configuredState} onChange={(color) => clearColorConfig.update(color as Color4)} />
+                                    </div>
+                                    <Button
+                                        title="Reset clear color"
+                                        appearance="transparent"
+                                        icon={DeleteRegular}
+                                        disabled={!clearColorConfig.canReset}
+                                        onClick={clearColorConfig.reset}
+                                    />
+                                </div>
+                            </PropertyLine>
+                        </AccordionSection>
+                        <AccordionSection title="Shadows">
+                            <PropertyLine label="Quality" uniqueId="shadow-quality">
+                                <div className={classes.propertyContent}>
+                                    <Dropdown
+                                        className={classes.fillControl}
+                                        options={validShadowQualityOptions}
+                                        value={shadowQualityConfig.configuredState}
+                                        onChange={(value) => shadowQualityConfig.update(value as ShadowQuality)}
+                                    />
+                                    <Button
+                                        title="Reset shadow quality"
+                                        appearance="transparent"
+                                        icon={DeleteRegular}
+                                        disabled={!shadowQualityConfig.canReset}
+                                        onClick={shadowQualityConfig.reset}
+                                    />
+                                </div>
+                            </PropertyLine>
+                        </AccordionSection>
+                        <AccordionSection title="Post Processing">
+                            <PropertyLine label="Tone Mapping" uniqueId="tone-mapping">
+                                <div className={classes.propertyContent}>
+                                    <Dropdown
+                                        className={classes.fillControl}
+                                        options={ToneMappingOptions}
+                                        value={toneMappingConfig.configuredState}
+                                        onChange={(value) => toneMappingConfig.update(value as ToneMapping)}
+                                    />
+                                    <Button
+                                        title="Reset tone mapping"
+                                        appearance="transparent"
+                                        icon={DeleteRegular}
+                                        disabled={!toneMappingConfig.canReset}
+                                        onClick={toneMappingConfig.reset}
+                                    />
+                                </div>
+                            </PropertyLine>
+                            <PropertyLine label="Contrast" uniqueId="contrast">
+                                <div className={classes.propertyContent}>
+                                    <div className={classes.fillControl}>
+                                        <SyncedSliderInput value={contrastConfig.configuredState} min={0} max={5} step={0.05} onChange={contrastConfig.update} />
+                                    </div>
+                                    <Button
+                                        title="Reset contrast"
+                                        appearance="transparent"
+                                        icon={DeleteRegular}
+                                        disabled={!contrastConfig.canReset}
+                                        onClick={contrastConfig.reset}
+                                    />
+                                </div>
+                            </PropertyLine>
+                            <PropertyLine label="Exposure" uniqueId="exposure">
+                                <div className={classes.propertyContent}>
+                                    <div className={classes.fillControl}>
+                                        <SyncedSliderInput value={exposureConfig.configuredState} min={0} max={5} step={0.05} onChange={exposureConfig.update} />
+                                    </div>
+                                    <Button
+                                        title="Reset exposure"
+                                        appearance="transparent"
+                                        icon={DeleteRegular}
+                                        disabled={!exposureConfig.canReset}
+                                        onClick={exposureConfig.reset}
+                                    />
+                                </div>
+                            </PropertyLine>
+                            <PropertyLine label="SSAO (Ambient Occlusion)" uniqueId="ssao">
+                                <div className={classes.propertyContent}>
+                                    <Dropdown
+                                        className={classes.fillControl}
+                                        options={validSSAOOptions}
+                                        value={ssaoConfig.configuredState}
+                                        onChange={(value) => ssaoConfig.update(value as SSAOOptions)}
+                                    />
+                                    <Button title="Reset SSAO" appearance="transparent" icon={DeleteRegular} disabled={!ssaoConfig.canReset} onClick={ssaoConfig.reset} />
+                                </div>
+                            </PropertyLine>
+                        </AccordionSection>
+                        <AccordionSection title="Camera">
+                            <MessageBar message="Position the camera in the viewer, and then click the button below to add the camera pose to the html snippet." intent="info" />
+                            <LineContainer uniqueId="camera-pose">
+                                <div className={classes.propertyContent}>
+                                    <Button className={classes.fillControl} label="Use Current Pose" onClick={cameraConfig.snapshot} />
+                                    <div className={classes.buttonGroup}>
+                                        <Button
+                                            title="Revert camera pose to snippet"
+                                            appearance="transparent"
+                                            disabled={!cameraConfig.canRevert}
+                                            icon={ArrowResetRegular}
+                                            onClick={cameraConfig.revert}
+                                        />
+                                        <Button
+                                            title="Reset camera pose attributes"
+                                            appearance="transparent"
+                                            disabled={!cameraConfig.canReset}
+                                            icon={DeleteRegular}
+                                            onClick={cameraConfig.reset}
+                                        />
+                                    </div>
+                                </div>
+                            </LineContainer>
+                            <PropertyLine label="Auto Orbit" uniqueId="auto-orbit">
+                                <Switch value={autoOrbitConfig.configuredState} onChange={autoOrbitConfig.update} />
+                            </PropertyLine>
+                            <Collapse visible={!!autoOrbitConfig.configuredState}>
+                                <PropertyLine label="Speed" uniqueId="orbit-speed">
+                                    <div className={classes.propertyContent}>
+                                        <div className={classes.fillControl}>
+                                            <SyncedSliderInput
+                                                value={autoOrbitSpeedConfig.configuredState}
+                                                min={0}
+                                                max={0.524}
+                                                step={0.01}
+                                                onChange={autoOrbitSpeedConfig.update}
+                                            />
+                                        </div>
+                                        <Button
+                                            title="Reset auto orbit speed"
+                                            appearance="transparent"
+                                            disabled={!autoOrbitSpeedConfig.canReset}
+                                            icon={DeleteRegular}
+                                            onClick={autoOrbitSpeedConfig.reset}
+                                        />
+                                    </div>
+                                </PropertyLine>
+                                <PropertyLine label="Delay" uniqueId="orbit-delay">
+                                    <div className={classes.propertyContent}>
+                                        <div className={classes.fillControl}>
+                                            <SyncedSliderInput value={autoOrbitDelayConfig.configuredState} min={0} max={5000} step={1} onChange={autoOrbitDelayConfig.update} />
+                                        </div>
+                                        <Button
+                                            title="Reset auto orbit delay"
+                                            appearance="transparent"
+                                            disabled={!autoOrbitDelayConfig.canReset}
+                                            icon={DeleteRegular}
+                                            onClick={autoOrbitDelayConfig.reset}
+                                        />
+                                    </div>
+                                </PropertyLine>
+                            </Collapse>
+                        </AccordionSection>
+                        {hasAnimations && (
+                            <AccordionSection title="Animation">
+                                <MessageBar
+                                    message="Select the animation and animation speed in the viewer, and then click the button below to add those selections to the html snippet."
+                                    intent="info"
                                 />
-                            </div>
-                            <FontAwesomeIconButton title="Reset skybox blur" icon={faTrashCan} disabled={!skyboxBlurConfig.canReset} onClick={skyboxBlurConfig.reset} />
-                        </div>
-                    </>
-                )}
-                <div>
-                    <div style={{ flex: 1 }}>
-                        <SliderLineComponent
-                            label="Intensity"
-                            directValue={environmentIntensityConfig.configuredState}
-                            minimum={0}
-                            maximum={5}
-                            step={0.01}
-                            decimalCount={2}
-                            target={viewerDetails.scene}
-                            onChange={environmentIntensityConfig.update}
-                            lockObject={lockObject}
-                        />
-                    </div>
-                    <FontAwesomeIconButton
-                        title="Reset skybox intensity"
-                        icon={faTrashCan}
-                        disabled={!environmentIntensityConfig.canReset}
-                        onClick={environmentIntensityConfig.reset}
-                    />
-                </div>
-                <div>
-                    <div style={{ flex: 1 }}>
-                        <SliderLineComponent
-                            label="Rotation"
-                            directValue={environmentRotationConfig.configuredState}
-                            minimum={0}
-                            maximum={2 * Math.PI}
-                            step={0.01}
-                            decimalCount={2}
-                            target={viewerDetails.scene}
-                            onChange={environmentRotationConfig.update}
-                            lockObject={lockObject}
-                        />
-                    </div>
-                    <FontAwesomeIconButton
-                        title="Reset skybox rotation"
-                        icon={faTrashCan}
-                        disabled={!environmentRotationConfig.canReset}
-                        onClick={environmentRotationConfig.reset}
-                    />
-                </div>
-                <div style={{ height: "auto" }}>
-                    <div style={{ flex: 1 }}>
-                        <Color4LineComponent
-                            label="Clear color"
-                            target={clearColorWrapper}
-                            propertyName="clearColor"
-                            onChange={() => clearColorConfig.update(clearColorWrapper.clearColor)}
-                            lockObject={lockObject}
-                        />
-                    </div>
-                    <FontAwesomeIconButton
-                        title="Reset clear color"
-                        style={{ alignSelf: "flex-start" }}
-                        icon={faTrashCan}
-                        disabled={!clearColorConfig.canReset}
-                        onClick={clearColorConfig.reset}
-                    />
-                </div>
-            </LineContainerComponent>
-            <LineContainerComponent title="SHADOWS">
-                <div>
-                    <div style={{ flex: 1 }}>
-                        <OptionsLine
-                            label="Quality"
-                            valuesAreStrings={true}
-                            options={validShadowQualityOptions}
-                            target={shadowQualityWrapper}
-                            propertyName={"shadowQuality"}
-                            noDirectUpdate={true}
-                            onSelect={onShadowQualityChange}
-                        />
-                    </div>
-                    <FontAwesomeIconButton title="Reset shadow quality" icon={faTrashCan} disabled={!shadowQualityConfig.canReset} onClick={shadowQualityConfig.reset} />
-                </div>
-            </LineContainerComponent>
-            <LineContainerComponent title="POST PROCESSING">
-                <div>
-                    <div style={{ flex: 1 }}>
-                        <OptionsLine
-                            label="Tone Mapping"
-                            valuesAreStrings={true}
-                            options={ToneMappingOptions}
-                            target={toneMappingWrapper}
-                            propertyName={"toneMapping"}
-                            noDirectUpdate={true}
-                            onSelect={onToneMappingChange}
-                        />
-                    </div>
-                    <FontAwesomeIconButton title="Reset tone mapping" icon={faTrashCan} disabled={!toneMappingConfig.canReset} onClick={toneMappingConfig.reset} />
-                </div>
-                <div>
-                    <div style={{ flex: 1 }}>
-                        <SliderLineComponent
-                            label="Contrast"
-                            directValue={contrastConfig.configuredState}
-                            minimum={0}
-                            maximum={5}
-                            step={0.05}
-                            lockObject={lockObject}
-                            onChange={contrastConfig.update}
-                        />
-                    </div>
-                    <FontAwesomeIconButton title="Reset contrast" icon={faTrashCan} disabled={!contrastConfig.canReset} onClick={contrastConfig.reset} />
-                </div>
-                <div>
-                    <div style={{ flex: 1 }}>
-                        <SliderLineComponent
-                            label="Exposure"
-                            directValue={exposureConfig.configuredState}
-                            minimum={0}
-                            maximum={5}
-                            step={0.05}
-                            lockObject={lockObject}
-                            onChange={exposureConfig.update}
-                        />
-                    </div>
-                    <FontAwesomeIconButton title="Reset exposure" icon={faTrashCan} disabled={!exposureConfig.canReset} onClick={exposureConfig.reset} />
-                </div>
-                <div>
-                    <div style={{ flex: 1 }}>
-                        <OptionsLine
-                            label="SSAO (Ambient Occlusion)"
-                            valuesAreStrings={true}
-                            options={validSSAOOptions}
-                            target={ssaoOptionsWrapper}
-                            propertyName={"ssaoOptions"}
-                            noDirectUpdate={true}
-                            onSelect={onSSAOOptionChange}
-                        />
-                    </div>
-                </div>
-            </LineContainerComponent>
-            <LineContainerComponent title="CAMERA">
-                <div style={{ height: "auto" }}>
-                    <ExpandableMessageLineComponent text="Position the camera in the viewer, and then click the button below to add the camera pose to the html snippet." />
-                </div>
-                <div>
-                    <div style={{ flex: 1 }}>
-                        <ButtonLineComponent label="Use Current Pose" onClick={cameraConfig.snapshot} />
-                    </div>
-                    <FontAwesomeIconButton title="Revert camera pose to snippet" disabled={!cameraConfig.canRevert} icon={faRotateLeft} onClick={cameraConfig.revert} />
-                    <FontAwesomeIconButton title="Reset camera pose attributes" disabled={!cameraConfig.canReset} icon={faTrashCan} onClick={cameraConfig.reset} />
-                </div>
-                <div>
-                    <CheckBoxLineComponent label="Auto Orbit" isSelected={autoOrbitConfig.configuredState} onSelect={autoOrbitConfig.update} />
-                </div>
-                {autoOrbitConfig.configuredState && (
-                    <>
-                        <div>
-                            <div style={{ flex: 1 }}>
-                                <SliderLineComponent
-                                    label="Speed"
-                                    directValue={autoOrbitSpeedConfig.configuredState}
-                                    minimum={0}
-                                    maximum={0.524}
-                                    step={0.01}
-                                    decimalCount={3}
-                                    lockObject={lockObject}
-                                    onChange={autoOrbitSpeedConfig.update}
+                                <LineContainer uniqueId="animation-state">
+                                    <div className={classes.propertyContent}>
+                                        <Button className={classes.fillControl} label="Use Current Selections" onClick={animationStateConfig.snapshot} disabled={!hasAnimations} />
+                                        <div className={classes.buttonGroup}>
+                                            <Button
+                                                title="Revert animation state to snippet"
+                                                appearance="transparent"
+                                                disabled={!animationStateConfig.canRevert}
+                                                icon={ArrowResetRegular}
+                                                onClick={animationStateConfig.revert}
+                                            />
+                                            <Button
+                                                title="Reset animation state attributes"
+                                                appearance="transparent"
+                                                disabled={!animationStateConfig.canReset}
+                                                icon={DeleteRegular}
+                                                onClick={animationStateConfig.reset}
+                                            />
+                                        </div>
+                                    </div>
+                                </LineContainer>
+                                <PropertyLine label="Auto Play" uniqueId="auto-play">
+                                    <Switch value={animationAutoPlayConfig.configuredState} onChange={animationAutoPlayConfig.update} />
+                                </PropertyLine>
+                            </AccordionSection>
+                        )}
+                        {hasMaterialVariants && (
+                            <AccordionSection title="Material Variants">
+                                <MessageBar
+                                    message="Select the material variant the viewer, and then click the button below to add that selection to the html snippet."
+                                    intent="info"
                                 />
-                            </div>
-                            <FontAwesomeIconButton
-                                title="Reset auto orbit speed"
-                                disabled={!autoOrbitSpeedConfig.canReset}
-                                icon={faTrashCan}
-                                onClick={autoOrbitSpeedConfig.reset}
-                            />
-                        </div>
-                        <div>
-                            <div style={{ flex: 1 }}>
-                                <SliderLineComponent
-                                    label="Delay"
-                                    directValue={autoOrbitDelayConfig.configuredState}
-                                    minimum={0}
-                                    maximum={5000}
-                                    step={1}
-                                    lockObject={lockObject}
-                                    onChange={autoOrbitDelayConfig.update}
-                                />
-                            </div>
-                            <FontAwesomeIconButton
-                                title="Reset auto orbit delay"
-                                disabled={!autoOrbitDelayConfig.canReset}
-                                icon={faTrashCan}
-                                onClick={autoOrbitDelayConfig.reset}
-                            />
-                        </div>
-                    </>
-                )}
-            </LineContainerComponent>
-            {hasAnimations && (
-                <LineContainerComponent title="ANIMATION">
-                    <div style={{ height: "auto" }}>
-                        <ExpandableMessageLineComponent text="Select the animation and animation speed in the viewer, and then click the button below to add those selections to the html snippet." />
-                    </div>
-                    <div>
-                        <div style={{ flex: 1 }}>
-                            <ButtonLineComponent label="Use Current Selections" onClick={animationStateConfig.snapshot} isDisabled={!hasAnimations} />
-                        </div>
-                        <FontAwesomeIconButton
-                            title="Revert animation state to snippet"
-                            disabled={!animationStateConfig.canRevert}
-                            icon={faRotateLeft}
-                            onClick={animationStateConfig.revert}
-                        />
-                        <FontAwesomeIconButton
-                            title="Reset animation state attributes"
-                            disabled={!animationStateConfig.canReset}
-                            icon={faTrashCan}
-                            onClick={animationStateConfig.reset}
-                        />
-                    </div>
-                    <div>
-                        <CheckBoxLineComponent label="Auto Play" isSelected={animationAutoPlayConfig.configuredState} onSelect={animationAutoPlayConfig.update} />
-                    </div>
-                </LineContainerComponent>
-            )}
-            {hasMaterialVariants && (
-                <LineContainerComponent title="MATERIAL VARIANTS">
-                    <div style={{ height: "auto" }}>
-                        <ExpandableMessageLineComponent text="Select the material variant the viewer, and then click the button below to add that selection to the html snippet." />
-                    </div>
-                    <div>
-                        <div style={{ flex: 1 }}>
-                            <ButtonLineComponent label="Snapshot Current State" onClick={selectedMaterialVariantConfig.snapshot} isDisabled={!hasMaterialVariants} />
-                        </div>
-                        <FontAwesomeIconButton
-                            title="Revert selected material variant to snippet"
-                            disabled={!selectedMaterialVariantConfig.canRevert}
-                            icon={faRotateLeft}
-                            onClick={selectedMaterialVariantConfig.revert}
-                        />
-                        <FontAwesomeIconButton
-                            title="Reset material variant attribute"
-                            icon={faTrashCan}
-                            disabled={!selectedMaterialVariantConfig.canReset}
-                            onClick={selectedMaterialVariantConfig.reset}
-                        />
-                    </div>
-                </LineContainerComponent>
-            )}
-            <LineContainerComponent title="HOT SPOTS">
-                <div style={{ height: "auto" }}>
-                    <ExpandableMessageLineComponent text="Surface hot spots track a point on the surface of a mesh. After adding a surface hot spot, click the target button and then click a point on the model to choose the surface point. After the hotspot point has been selected, optionally orbit the camera to the desired pose and then click the camera button. Annotations are optional child html elements that track a hotspot, and samples are included in the html snippet." />
-                </div>
-                <div className="flexColumn">
-                    <div className="flexRow">
-                        <div style={{ flex: 1 }}>
-                            <OptionsLine
+                                <LineContainer uniqueId="material-variant-state">
+                                    <div className={classes.propertyContent}>
+                                        <Button
+                                            className={classes.fillControl}
+                                            label="Snapshot Current State"
+                                            onClick={selectedMaterialVariantConfig.snapshot}
+                                            disabled={!hasMaterialVariants}
+                                        />
+                                        <div className={classes.buttonGroup}>
+                                            <Button
+                                                title="Revert selected material variant to snippet"
+                                                appearance="transparent"
+                                                disabled={!selectedMaterialVariantConfig.canRevert}
+                                                icon={ArrowResetRegular}
+                                                onClick={selectedMaterialVariantConfig.revert}
+                                            />
+                                            <Button
+                                                title="Reset material variant attribute"
+                                                appearance="transparent"
+                                                icon={DeleteRegular}
+                                                disabled={!selectedMaterialVariantConfig.canReset}
+                                                onClick={selectedMaterialVariantConfig.reset}
+                                            />
+                                        </div>
+                                    </div>
+                                </LineContainer>
+                            </AccordionSection>
+                        )}
+                        <AccordionSection title="Hot Spots">
+                            <PropertyLine
                                 label="Hot Spot Type"
-                                valuesAreStrings={true}
-                                options={HotSpotTypeOptions}
-                                target={HotSpotTypeOptions}
-                                propertyName=""
-                                noDirectUpdate={true}
-                            />
-                        </div>
-                        <FontAwesomeIconButton title="Add Hot Spot" icon={faSquarePlus} onClick={onAddHotspotClick} />
-                    </div>
-                    <DndContext sensors={dndSensors} modifiers={HotSpotsDndModifers} collisionDetection={closestCenter} onDragEnd={onHotSpotsReorder}>
-                        <SortableContext items={hotspots} strategy={verticalListSortingStrategy}>
-                            {hotspots.map((hotspot) => (
-                                <HotSpotEntry key={hotspot.id} id={hotspot.id} hotspots={hotspots} setHotspots={setHotspots} viewerElement={viewerElement} />
-                            ))}
-                        </SortableContext>
-                    </DndContext>
+                                uniqueId="hotspot-type"
+                                description="Surface hot spots track a point on the surface of a mesh. After adding a surface hot spot, click the target button and then click a point on the
+                                    model to choose the surface point. After the hotspot point has been selected, optionally orbit the camera to the desired pose and then click the
+                                    camera button. Annotations are optional child html elements that track a hotspot, and samples are included in the html snippet."
+                            >
+                                <div className={classes.propertyContent}>
+                                    <Dropdown className={classes.fillControl} options={HotSpotTypeOptions} value="surface" onChange={() => {}} />
+                                    <Button title="Add Hot Spot" appearance="transparent" icon={AddSquareRegular} onClick={onAddHotspotClick} />
+                                </div>
+                            </PropertyLine>
+                            <DndContext sensors={dndSensors} modifiers={HotSpotsDndModifers} collisionDetection={closestCenter} onDragEnd={onHotSpotsReorder}>
+                                <SortableContext items={hotspots} strategy={verticalListSortingStrategy}>
+                                    {hotspots.map((hotspot) => (
+                                        <HotSpotEntry key={hotspot.id} id={hotspot.id} hotspots={hotspots} setHotspots={setHotspots} viewerElement={viewerElement} />
+                                    ))}
+                                </SortableContext>
+                            </DndContext>
+                        </AccordionSection>
+                    </Accordion>
                 </div>
-            </LineContainerComponent>
-        </div>
+            </div>
+        </ToolContext.Provider>
     );
 };

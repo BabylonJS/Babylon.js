@@ -13,7 +13,9 @@ function IsMeshClassName(className: string) {
     return (
         className === "Mesh" ||
         className === "AbstractMesh" ||
+        className === "TransformNode" ||
         className === "GroundMesh" ||
+        className === "InstancedMesh" ||
         className === "InstanceMesh" ||
         className === "LinesMesh" ||
         className === "GoldbergMesh" ||
@@ -91,13 +93,25 @@ export function defaultValueSerializationFunction(key: string, value: any, seria
                 id: value.id,
                 name: value.name,
                 className,
+                uniqueId: value.uniqueId,
             };
         } else {
             if (typeof value !== "object" || value === null) {
                 serializationObject[key] = value;
             } else {
-                // Plain object (e.g. parsed event config) — store it if JSON-safe,
-                // otherwise skip (e.g. objects containing functions like pathConverter).
+                // Skip known non-serializable keys immediately to avoid
+                // expensive JSON.stringify attempts on large object trees
+                // (e.g. pathConverter holds the entire glTF parse tree).
+                if (key === "pathConverter") {
+                    return;
+                }
+                // Quick check: if any own property is a function, the object
+                // is not JSON-safe and stringify would be wasteful.
+                const hasFunction = Object.values(value).some((v) => typeof v === "function");
+                if (hasFunction) {
+                    return;
+                }
+                // Plain object (e.g. parsed event config) — store it if JSON-safe.
                 try {
                     serializationObject[key] = JSON.parse(JSON.stringify(value));
                 } catch {
@@ -148,19 +162,26 @@ export function defaultValueParseFunction(key: string, serializationObject: any,
         finalValue = intermediateValue.value;
     } else {
         if (Array.isArray(intermediateValue)) {
-            // configuration data of an event
-            finalValue = intermediateValue.reduce((acc, val) => {
-                if (!val.eventData) {
+            // Check if this is an event configuration array (objects with id/eventData)
+            // versus a plain array of primitives (e.g. variable name lists)
+            if (intermediateValue.length > 0 && typeof intermediateValue[0] === "object" && intermediateValue[0] !== null && "eventData" in intermediateValue[0]) {
+                // configuration data of an event
+                finalValue = intermediateValue.reduce((acc, val) => {
+                    if (!val.eventData) {
+                        return acc;
+                    }
+                    acc[val.id] = {
+                        type: getRichTypeByFlowGraphType(val.type),
+                    };
+                    if (typeof val.value !== "undefined") {
+                        acc[val.id].value = defaultValueParseFunction("value", val, assetsContainer, scene);
+                    }
                     return acc;
-                }
-                acc[val.id] = {
-                    type: getRichTypeByFlowGraphType(val.type),
-                };
-                if (typeof val.value !== "undefined") {
-                    acc[val.id].value = defaultValueParseFunction("value", val, assetsContainer, scene);
-                }
-                return acc;
-            }, {});
+                }, {});
+            } else {
+                // Plain array of primitives — return as-is
+                finalValue = intermediateValue;
+            }
         } else {
             finalValue = intermediateValue;
         }

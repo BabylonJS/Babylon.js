@@ -22,7 +22,32 @@ export abstract class FlowGraphEventBlock extends FlowGraphAsyncExecutionBlock {
      */
     public _execute(context: FlowGraphContext): void {
         context._notifyExecuteNode(this);
+        // Fire both signals: KHR_interactivity graphs connect to `done`,
+        // while editor-authored graphs typically connect to `out`.
+        // Both must fire so that either wiring style works correctly.
         this.done._activateSignal(context);
+        this.out._activateSignal(context);
+    }
+
+    /**
+     * @internal
+     * Override _startPendingTasks so that event blocks do NOT fire the
+     * `out` signal at graph-start time.  The base FlowGraphAsyncExecutionBlock
+     * fires `out` immediately in _startPendingTasks (useful for async blocks
+     * like PlayAnimation that start a task and let sync flow continue).
+     * Event blocks should only fire their output signals when the actual
+     * event occurs, which is handled by _execute.
+     */
+    public override _startPendingTasks(context: FlowGraphContext): void {
+        if (context._getExecutionVariable(this, "_initialized", false)) {
+            this._cancelPendingTasks(context);
+            this._resetAfterCanceled(context);
+        }
+        this._preparePendingTasks(context);
+        context._addPendingBlock(this);
+        // Do NOT fire out._activateSignal — event blocks fire both out and
+        // done in _execute when the actual event triggers.
+        context._setExecutionVariable(this, "_initialized", true);
     }
 
     /**

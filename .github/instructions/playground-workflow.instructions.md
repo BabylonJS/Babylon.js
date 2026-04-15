@@ -2,6 +2,10 @@
 
 This file describes how to write Babylon.js Playground code, manage snippets via helper scripts, and run the local Playground servers. It applies to any task that involves Playground snippets — visual tests, API demos, repro cases, etc.
 
+## Playground Examples for New APIs
+
+When new APIs are added to published packages (core, loaders, materials, etc.), a playground example (https://playground.babylonjs.com) should be created to demonstrate the new API. The example should be noted in a comment in the code where the new API is added, with a link to the playground example. These playgrounds are often useful for visualization tests as well. When reviewing code, check if any new APIs are added without a corresponding playground example. If so, add a review comment suggesting creating and linking to a playground example.
+
 ## Writing Playground Code
 
 Write the scene as a standard `createScene` function and save it to a temporary file. Default to `.js` unless the user asks for TypeScript or a nearby reference is already TypeScript. The helper script infers the snippet language from the file extension.
@@ -87,14 +91,7 @@ In multi-root workspaces, background terminals often start in the wrong folder, 
 
 ### Check whether the servers are already running
 
-In PowerShell:
-
-```powershell
-Test-NetConnection -ComputerName localhost -Port 1337 -WarningAction SilentlyContinue -ErrorAction SilentlyContinue | Select-Object TcpTestSucceeded
-Test-NetConnection -ComputerName localhost -Port 1338 -WarningAction SilentlyContinue -ErrorAction SilentlyContinue | Select-Object TcpTestSucceeded
-```
-
-If both ports are already up, skip the server startup steps below. If only `1337` is up, start only the Playground server. If neither is up, continue below.
+See the port table and check command in [manual-testing.instructions.md](manual-testing.instructions.md). If both `1337` and `1338` are already up, skip the server startup steps below. If only `1337` is up, start only the Playground server. If neither is up, continue below.
 
 ### Start the CDN server
 
@@ -115,8 +112,7 @@ npm run serve -w @tools/babylon-server
 Do not continue until `localhost:1337` accepts connections.
 
 ```powershell
-Start-Sleep -Seconds 15
-Test-NetConnection -ComputerName localhost -Port 1337 -WarningAction SilentlyContinue -ErrorAction SilentlyContinue | Select-Object TcpTestSucceeded
+Get-NetTCPConnection -LocalPort 1337 -State Listen -ErrorAction SilentlyContinue
 ```
 
 Repeat the check until the port is ready.
@@ -138,8 +134,7 @@ Start the Playground only after the CDN server is up.
 ### Wait for the Playground server to be ready
 
 ```powershell
-Start-Sleep -Seconds 15
-Test-NetConnection -ComputerName localhost -Port 1338 -WarningAction SilentlyContinue -ErrorAction SilentlyContinue | Select-Object TcpTestSucceeded
+Get-NetTCPConnection -LocalPort 1338 -State Listen -ErrorAction SilentlyContinue
 ```
 
 The local Playground at `http://localhost:1338` uses the local engine build served from the CDN server, which is why it reflects local Babylon.js code changes immediately.

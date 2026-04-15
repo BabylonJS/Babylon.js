@@ -86,6 +86,14 @@ struct SimParams {
         attractorPositionAndStrength : array<vec4<f32>, MAX_ATTRACTORS>,
     #endif
 
+    #ifdef STARTSIZEGRADIENTS
+        startSizeGradientFactor : f32,
+    #endif
+
+    #ifdef LIFETIMEGRADIENTS
+        lifeTimeGradientRange : vec2<f32>,
+    #endif
+
     // Emitter types
 
     #ifdef BOXEMITTER
@@ -229,7 +237,11 @@ fn main(@builtin(global_invocation_id) GlobalInvocationID : vec3<u32>) {
 
         // Age and life
         let outLife : f32 = params.lifeTime.x + (params.lifeTime.y - params.lifeTime.x) * randoms.r;
+#ifdef LIFETIMEGRADIENTS
+        particlesOut.particles[index].life = params.lifeTimeGradientRange.x + (params.lifeTimeGradientRange.y - params.lifeTimeGradientRange.x) * randoms.r;
+#else
         particlesOut.particles[index].life = outLife;
+#endif
 #ifdef EMITRATECTRL
         particlesOut.particles[index].age = 0.0;
 #else
@@ -246,6 +258,9 @@ fn main(@builtin(global_invocation_id) GlobalInvocationID : vec3<u32>) {
             sizex = sizeGradientRange.x + (sizeGradientRange.y - sizeGradientRange.x) * seed.y;
         #else
             sizex = params.sizeRange.x + (params.sizeRange.y - params.sizeRange.x) * randoms.g;
+        #endif
+        #ifdef STARTSIZEGRADIENTS
+            sizex *= params.startSizeGradientFactor;
         #endif
         particlesOut.particles[index].size = vec3<f32>(
             sizex,

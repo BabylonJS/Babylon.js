@@ -1149,33 +1149,6 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
     }
 
     /**
-     * Adds a new emit rate gradient (please note that this will only work if you set the targetStopDuration property)
-     * @param gradient defines the gradient to use (between 0 and 1)
-     * @param factor defines the emit rate value to affect to the specified gradient
-     * @param factor2 defines an additional factor used to define a range ([factor, factor2]) with main value to pick the final value from
-     * @returns the current particle system
-     */
-    public addEmitRateGradient(gradient: number, factor: number, factor2?: number): IParticleSystem {
-        if (!this._emitRateGradients) {
-            this._emitRateGradients = [];
-        }
-
-        this._addFactorGradient(this._emitRateGradients, gradient, factor, factor2);
-        return this;
-    }
-
-    /**
-     * Remove a specific emit rate gradient
-     * @param gradient defines the gradient to remove
-     * @returns the current particle system
-     */
-    public removeEmitRateGradient(gradient: number): IParticleSystem {
-        this._removeFactorGradient(this._emitRateGradients, gradient);
-
-        return this;
-    }
-
-    /**
      * Adds a new start size gradient (please note that this will only work if you set the targetStopDuration property)
      * @param gradient defines the gradient to use (between 0 and 1)
      * @param factor defines the start size value to affect to the specified gradient
