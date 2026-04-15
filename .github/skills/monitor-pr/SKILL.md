@@ -90,19 +90,45 @@ When checks fail, read the CI logs (GitHub MCP `get_job_logs` or similar).
 
 ## Step 4: Poll loop
 
-Re-poll every **~5 minutes**. On each poll:
+> **MANDATORY: You MUST implement a continuous polling loop.** Do not
+> display the status once and stop. Do not suggest the user re-invoke the
+> skill to refresh. You must keep running and re-checking every ~5 minutes
+> until every monitored PR is merged or closed. Use `sleep 300` (or
+> equivalent) between polls to wait 5 minutes, then re-fetch and print
+> the updated table. This is the core purpose of this skill.
 
-1. Re-fetch PR data and print the updated status table to the main chat.
-2. If a PR becomes **ready to merge** (all checks pass, approved, all
-   comments resolved):
+### How to poll
+
+1. After printing the initial status table, sleep for 5 minutes:
+   ```bash
+   sleep 300
+   ```
+2. After sleeping, re-fetch all PR data (same commands as Step 2) and
+   print the updated status table to the main chat.
+3. Repeat from step 1.
+
+### On each poll, also check
+
+- If a PR becomes **ready to merge** (all checks pass, approved, all
+  comments resolved):
     - Show a Windows dialog (if PowerShell is available):
         ```
         powershell -Command "Add-Type -AssemblyName System.Windows.Forms; [System.Windows.Forms.MessageBox]::Show('PR #<number> — <title> — is ready to merge.', 'PR Ready', 'OK', 'Information')"
         ```
     - Always also print a prominent message in the chat.
-3. If a PR is merged or closed, remove it from the table and note it.
-4. When all monitored PRs are resolved, stop polling and report final
-   status.
+- If a PR is merged or closed, remove it from the table and note it.
+
+### When to stop
+
+Stop polling **only** when:
+
+- Every monitored PR has been merged or closed, OR
+- The user explicitly tells you to stop.
+
+**Do NOT stop for any other reason.** Do not stop because "polling isn't
+practical in a chat session." Do not stop because "the user can re-invoke
+the skill." The entire point of this skill is continuous, autonomous
+monitoring.
 
 ## Retriggering CI
 
@@ -119,4 +145,6 @@ git push
 
 - Always read CI logs on failures — don't guess at the cause.
 - Print the status table to the main chat so the user can follow along.
-- Don't stop until explicitly told to or until all PRs are resolved.
+- **You MUST keep polling until all PRs are merged/closed or the user
+  tells you to stop.** Do not exit early. Do not suggest the user
+  re-invoke the skill. This skill runs continuously.
