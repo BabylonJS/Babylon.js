@@ -248,3 +248,82 @@ describe("ControlNode out-frame exclusivity", () => {
         expect(control.opacity).toBe(0);
     });
 });
+
+describe("decomposeWorldMatrixAtFrame", () => {
+    it("returns interpolated scale at mid-frame", () => {
+        const scale = makePositionProperty(1, 1, [
+            { time: 0, x: 1, y: 1 },
+            { time: 30, x: 2, y: 2 },
+        ]);
+
+        const node = new Node("test", undefined, undefined, scale);
+        const outScale = { x: 0, y: 0 };
+        const outTranslation = { x: 0, y: 0 };
+        node.decomposeWorldMatrixAtFrame(15, outScale, outTranslation);
+
+        expect(outScale.x).toBeCloseTo(1.5, 1);
+        expect(outScale.y).toBeCloseTo(1.5, 1);
+    });
+
+    it("returns start values when no keyframes", () => {
+        const node = new Node("test");
+        const outScale = { x: 0, y: 0 };
+        const outTranslation = { x: 0, y: 0 };
+        node.decomposeWorldMatrixAtFrame(10, outScale, outTranslation);
+
+        expect(outScale.x).toBeCloseTo(1, 5);
+        expect(outScale.y).toBeCloseTo(1, 5);
+        expect(outTranslation.x).toBeCloseTo(0, 5);
+        expect(outTranslation.y).toBeCloseTo(0, 5);
+    });
+
+    it("returns last keyframe values at frame beyond last keyframe", () => {
+        const scale = makePositionProperty(1, 1, [
+            { time: 0, x: 1, y: 1 },
+            { time: 30, x: 3, y: 3 },
+        ]);
+
+        const node = new Node("test", undefined, undefined, scale);
+        const outScale = { x: 0, y: 0 };
+        const outTranslation = { x: 0, y: 0 };
+        node.decomposeWorldMatrixAtFrame(50, outScale, outTranslation);
+
+        expect(outScale.x).toBeCloseTo(3, 1);
+        expect(outScale.y).toBeCloseTo(3, 1);
+    });
+
+    it("composes parent and child transforms", () => {
+        const parentScale = makePositionProperty(2, 2, [
+            { time: 0, x: 2, y: 2 },
+            { time: 30, x: 4, y: 4 },
+        ]);
+
+        const parent = new Node("parent", undefined, undefined, parentScale);
+        const child = new Node("child", undefined, undefined, undefined, undefined, parent);
+
+        const outScale = { x: 0, y: 0 };
+        const outTranslation = { x: 0, y: 0 };
+        child.decomposeWorldMatrixAtFrame(15, outScale, outTranslation);
+
+        // Parent scale at frame 15 = interpolated 3,3 → child inherits parent scale
+        expect(outScale.x).toBeCloseTo(3, 1);
+        expect(outScale.y).toBeCloseTo(3, 1);
+    });
+
+    it("does not mutate node state", () => {
+        const position = makePositionProperty(0, 0, [
+            { time: 0, x: 0, y: 0 },
+            { time: 30, x: 100, y: 200 },
+        ]);
+
+        const node = new Node("test", position);
+        const outScale = { x: 0, y: 0 };
+        const outTranslation = { x: 0, y: 0 };
+
+        // Call decomposeWorldMatrixAtFrame — should NOT change currentValue
+        node.decomposeWorldMatrixAtFrame(15, outScale, outTranslation);
+
+        expect(node.positionCurrent.x).toBe(0);
+        expect(node.positionCurrent.y).toBe(0);
+    });
+});
