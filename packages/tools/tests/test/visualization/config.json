@@ -4244,6 +4244,13 @@
             "excludedEngines": ["webgl1"]
         },
         {
+            "title": "GPU Particles - Emitters - Mesh",
+            "playgroundId": "#7XBJVF#0",
+            "referenceImage": "gpu-particles-emitters-mesh.png",
+            "renderCount": 120,
+            "excludedEngines": ["webgl1"]
+        },
+        {
             "title": "GPU Particles - Billboard Y",
             "playgroundId": "#8QHGVT#0",
             "referenceImage": "gpu-particles-billboard-y.png",

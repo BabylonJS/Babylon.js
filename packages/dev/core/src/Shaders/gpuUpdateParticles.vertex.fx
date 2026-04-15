@@ -190,6 +190,16 @@ uniform float startSizeGradientFactor;
 uniform vec2 lifeTimeGradientRange;
 #endif
 
+#ifdef MESHEMITTER
+uniform sampler2D meshPositionSampler;
+uniform int meshTriangleCount;
+uniform vec3 direction1;
+uniform vec3 direction2;
+#ifdef MESHNORMALS
+uniform sampler2D meshNormalSampler;
+#endif
+#endif
+
 vec3 getRandomVec3(float offset) {
   return texture(randomSampler2, vec2(float(gl_VertexID) * offset / currentCount, 0)).rgb;
 }
@@ -362,6 +372,35 @@ void main() {
         } else {
             newDirection = normalize(newPosition + directionRandomizer * randoms3);        
         }
+    #endif
+#elif defined(MESHEMITTER)
+    vec3 randoms2 = getRandomVec3(seed.y);
+    vec3 randoms3 = getRandomVec3(seed.z);
+
+    // Pick a random triangle (uniform by count, matching CPU behavior)
+    int triIdx = int(floor(randoms2.x * float(meshTriangleCount)));
+    triIdx = min(triIdx, meshTriangleCount - 1);
+
+    // Fetch 3 vertex positions via texelFetch (one texel per vertex, 3 per triangle)
+    int baseTexel = triIdx * 3;
+    vec3 v0 = texelFetch(meshPositionSampler, ivec2(baseTexel, 0), 0).xyz;
+    vec3 v1 = texelFetch(meshPositionSampler, ivec2(baseTexel + 1, 0), 0).xyz;
+    vec3 v2 = texelFetch(meshPositionSampler, ivec2(baseTexel + 2, 0), 0).xyz;
+
+    // Barycentric coordinates
+    float bu = randoms2.y;
+    float bv = randoms2.z * (1.0 - bu);
+    float bw = 1.0 - bu - bv;
+
+    newPosition = bu * v0 + bv * v1 + bw * v2;
+
+    #ifdef MESHNORMALS
+        vec3 n0 = texelFetch(meshNormalSampler, ivec2(baseTexel, 0), 0).xyz;
+        vec3 n1 = texelFetch(meshNormalSampler, ivec2(baseTexel + 1, 0), 0).xyz;
+        vec3 n2 = texelFetch(meshNormalSampler, ivec2(baseTexel + 2, 0), 0).xyz;
+        newDirection = normalize(bu * n0 + bv * n1 + bw * n2);
+    #else
+        newDirection = direction1 + (direction2 - direction1) * randoms3;
     #endif
 #elif defined(CUSTOMEMITTER)
       newPosition = initialPosition;
