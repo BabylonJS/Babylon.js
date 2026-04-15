@@ -40,6 +40,10 @@ var shTexture1: texture_2d<u32>;
 #if SH_DEGREE > 2
 var shTexture2: texture_2d<u32>;
 #endif
+#if SH_DEGREE > 3
+var shTexture3: texture_2d<u32>;
+var shTexture4: texture_2d<u32>;
+#endif
 #if IS_COMPOUND
 var partIndicesTexture: texture_2d<f32>;
 #endif

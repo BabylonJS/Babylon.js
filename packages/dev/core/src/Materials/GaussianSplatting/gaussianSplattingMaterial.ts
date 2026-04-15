@@ -184,7 +184,18 @@ export class GaussianSplattingMaterial extends PushMaterial {
     }
 
     protected static _Attribs = [VertexBuffer.PositionKind, "splatIndex0", "splatIndex1", "splatIndex2", "splatIndex3"];
-    protected static _Samplers = ["covariancesATexture", "covariancesBTexture", "centersTexture", "colorsTexture", "shTexture0", "shTexture1", "shTexture2", "partIndicesTexture"];
+    protected static _Samplers = [
+        "covariancesATexture",
+        "covariancesBTexture",
+        "centersTexture",
+        "colorsTexture",
+        "shTexture0",
+        "shTexture1",
+        "shTexture2",
+        "shTexture3",
+        "shTexture4",
+        "partIndicesTexture",
+    ];
     protected static _UniformBuffers = ["Scene", "Mesh"];
     protected static _VoxelUniforms = [
         "world",
@@ -482,7 +493,7 @@ export class GaussianSplattingMaterial extends PushMaterial {
             effect.setTexture("colorsTexture", gsMesh.colorsTexture);
 
             if (gsMesh.shTextures) {
-                for (let i = 0; i < gsMesh.shTextures?.length; i++) {
+                for (let i = 0; i < gsMesh.shTextures.length; i++) {
                     effect.setTexture(`shTexture${i}`, gsMesh.shTextures[i]);
                 }
             }
