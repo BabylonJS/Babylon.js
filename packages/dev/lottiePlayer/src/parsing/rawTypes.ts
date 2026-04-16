@@ -257,6 +257,8 @@ export type RawTextDocumentKeyframe = {
 };
 
 export type RawTextDocument = {
+    sz?: number[]; // Paragraph box size [width, height]
+    ps?: number[]; // Paragraph box top-left position [x, y] relative to the text layer origin
     f: string; // Font family
     s: number; // Font size
     lh: number; // Line height
