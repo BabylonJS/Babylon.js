@@ -25,7 +25,7 @@ struct Splat {
 #if IS_COMPOUND
     partIndex: u32,
 #endif
-#if defined(IS_FOR_VOXELIZATION) || defined(IS_FOR_VOXELIZATION_SLAB_DEBUG)
+#if defined(IS_FOR_VOXELIZATION)
     rotationA: vec4f,
     rotationB: vec4f,
     rotationScale: vec4f,
@@ -149,7 +149,7 @@ fn readSplat(splatIndex: f32, dataTextureSize: vec2f) -> Splat {
 #if IS_COMPOUND
     splat.partIndex = u32(textureLoad(partIndicesTexture, splatUVi32, 0).r * 255.0 + 0.5);
 #endif
-#if defined(IS_FOR_VOXELIZATION) || defined(IS_FOR_VOXELIZATION_SLAB_DEBUG)
+#if defined(IS_FOR_VOXELIZATION)
     splat.rotationA = textureLoad(rotationsATexture, splatUVi32, 0);
     splat.rotationB = textureLoad(rotationsBTexture, splatUVi32, 0);
     splat.rotationScale = textureLoad(rotationScaleTexture, splatUVi32, 0);
@@ -421,7 +421,7 @@ fn getPartWorld(partIndex: u32) -> mat4x4<f32> {
 }
 #endif
 
-#if defined(IS_FOR_VOXELIZATION) || defined(IS_FOR_VOXELIZATION_SLAB_DEBUG)
+#if defined(IS_FOR_VOXELIZATION)
 fn computeVoxelSplatWorldPos(rotationA: vec4f, rotationB: vec4f, rotationScale: vec4f, center: vec3f, splatWorld: mat4x4f, viewMatrix: mat4x4f, invWorldScale: mat4x4f, quadPos: vec2f) -> vec4f {
     let splatRotation = mat3x3f(
         rotationA.xyz,

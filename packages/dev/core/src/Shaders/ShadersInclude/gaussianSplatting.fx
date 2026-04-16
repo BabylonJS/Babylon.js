@@ -41,7 +41,7 @@ struct Splat {
 #if IS_COMPOUND
     uint partIndex;
 #endif
-#if defined(IS_FOR_VOXELIZATION) || defined(IS_FOR_VOXELIZATION_SLAB_DEBUG)
+#if defined(IS_FOR_VOXELIZATION)
     vec4 rotationA;
     vec4 rotationB;
     vec4 rotationScale;
@@ -367,7 +367,7 @@ mat4 getPartWorld(uint partIndex) {
 }
 #endif
 
-#if defined(IS_FOR_VOXELIZATION) || defined(IS_FOR_VOXELIZATION_SLAB_DEBUG)
+#if defined(IS_FOR_VOXELIZATION)
 vec4 computeVoxelSplatWorldPos(vec4 rotationA, vec4 rotationB, vec4 rotationScale, vec3 center, mat4 splatWorld, mat4 viewMatrix, mat4 invWorldScale, vec2 quadPos) {
     mat3 splatRotation = mat3(
         vec3(rotationA.x, rotationA.y, rotationA.z),
