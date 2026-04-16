@@ -205,6 +205,12 @@ export class FlowGraph {
         // Tear down old event coordinator
         this._detachEventObserver();
         this._sceneEventCoordinator.dispose();
+        // Clear execution contexts so start() creates fresh ones with the new scene.
+        // NOTE: This intentionally discards user variables and connection values.
+        // Callers that need to preserve them (e.g. the Flow Graph Editor) should
+        // snapshot context state BEFORE calling setScene() and restore it in a
+        // wrapped createContext() callback after start() re-creates contexts.
+        this._executionContexts.length = 0;
         // Rebuild with the new scene
         (this as { _scene: Scene })._scene = scene;
         this._scene.constantlyUpdateMeshUnderPointer = true; // ensure pointer info is always up to date for event blocks that need it

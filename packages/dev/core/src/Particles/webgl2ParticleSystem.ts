@@ -25,6 +25,7 @@ export class WebGL2ParticleSystem implements IGPUParticleSystemPlatform {
     private _renderVAO: WebGLVertexArrayObject[] = [];
     private _updateVAO: WebGLVertexArrayObject[] = [];
     private _renderVertexBuffers: { [key: string]: VertexBuffer };
+    private _baseUniformsNamesLength: number;
 
     /** @internal */
     public readonly alignDataInBuffer = false;
@@ -92,6 +93,8 @@ export class WebGL2ParticleSystem implements IGPUParticleSystemPlatform {
                 "noiseSampler",
                 "dragGradientSampler",
                 "flowMapSampler",
+                "meshPositionSampler",
+                "meshNormalSampler",
             ],
             defines: "",
             fallbacks: null,
@@ -101,6 +104,7 @@ export class WebGL2ParticleSystem implements IGPUParticleSystemPlatform {
             maxSimultaneousLights: 0,
             transformFeedbackVaryings: [],
         };
+        this._baseUniformsNamesLength = this._updateEffectOptions.uniformsNames.length;
     }
 
     /** @internal */
@@ -122,6 +126,9 @@ export class WebGL2ParticleSystem implements IGPUParticleSystemPlatform {
 
     /** @internal */
     public createUpdateBuffer(defines: string): UniformBufferEffectCommonAccessor {
+        // Reset dynamic uniforms to avoid accumulating duplicates on rebuild
+        this._updateEffectOptions.uniformsNames.length = this._baseUniformsNamesLength;
+
         this._updateEffectOptions.transformFeedbackVaryings = ["outPosition"];
         this._updateEffectOptions.transformFeedbackVaryings.push("outAge");
         this._updateEffectOptions.transformFeedbackVaryings.push("outSize");
@@ -137,7 +144,7 @@ export class WebGL2ParticleSystem implements IGPUParticleSystemPlatform {
             this._updateEffectOptions.transformFeedbackVaryings.push("outColor");
         }
 
-        if (!this._parent._isBillboardBased) {
+        if (this._parent._needsInitialDirection) {
             this._updateEffectOptions.transformFeedbackVaryings.push("outInitialDirection");
         }
 
@@ -163,6 +170,19 @@ export class WebGL2ParticleSystem implements IGPUParticleSystemPlatform {
             for (let i = 0; i < this._parent.maxAttractors; i++) {
                 this._updateEffectOptions.uniformsNames.push("attractorPositionAndStrength[" + i + "]");
             }
+        }
+
+        if (defines.indexOf("STARTSIZEGRADIENTS") !== -1) {
+            this._updateEffectOptions.uniformsNames.push("startSizeGradientFactor");
+        }
+
+        if (defines.indexOf("LIFETIMEGRADIENTS") !== -1) {
+            this._updateEffectOptions.uniformsNames.push("lifeTimeGradientRange");
+        }
+
+        if (defines.indexOf("MESHEMITTER") !== -1) {
+            this._updateEffectOptions.uniformsNames.push("meshTriangleCount");
+            this._updateEffectOptions.uniformsNames.push("meshTextureWidth");
         }
 
         this._updateEffect = this._engine.createEffect("gpuUpdateParticles", this._updateEffectOptions, this._engine);
@@ -238,6 +258,14 @@ export class WebGL2ParticleSystem implements IGPUParticleSystemPlatform {
             this._updateEffect.setTexture("noiseSampler", this._parent.noiseTexture);
         }
 
+        if (this._parent._meshPositionTexture) {
+            this._updateEffect.setTexture("meshPositionSampler", this._parent._meshPositionTexture);
+        }
+
+        if (this._parent._meshNormalTexture) {
+            this._updateEffect.setTexture("meshNormalSampler", this._parent._meshNormalTexture);
+        }
+
         // Bind source VAO
         this._engine.bindVertexArrayObject(this._updateVAO[index], null);
 
@@ -295,7 +323,7 @@ export class WebGL2ParticleSystem implements IGPUParticleSystemPlatform {
             offset += 4;
         }
 
-        if (!this._parent._isBillboardBased) {
+        if (this._parent._needsInitialDirection) {
             updateVertexBuffers["initialDirection"] = source.createVertexBuffer("initialDirection", offset, 3);
             offset += 3;
         }

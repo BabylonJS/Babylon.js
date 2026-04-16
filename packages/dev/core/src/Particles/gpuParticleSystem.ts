@@ -37,21 +37,7 @@ import "../Engines/Extensions/engine.transformFeedback";
 import "../Shaders/gpuRenderParticles.fragment";
 import "../Shaders/gpuRenderParticles.vertex";
 import { BindFogParameters, BindLogDepth } from "../Materials/materialHelper.functions";
-import { type PointParticleEmitter } from "./EmitterTypes/pointParticleEmitter";
-import { type HemisphericParticleEmitter } from "./EmitterTypes/hemisphericParticleEmitter";
-import { type SphereDirectedParticleEmitter, type SphereParticleEmitter } from "./EmitterTypes/sphereParticleEmitter";
-import { type CylinderDirectedParticleEmitter, type CylinderParticleEmitter } from "./EmitterTypes/cylinderParticleEmitter";
-import { type ConeDirectedParticleEmitter, type ConeParticleEmitter } from "./EmitterTypes/coneParticleEmitter";
-import {
-    CreateConeEmitter,
-    CreateCylinderEmitter,
-    CreateDirectedCylinderEmitter,
-    CreateDirectedSphereEmitter,
-    CreateDirectedConeEmitter,
-    CreateHemisphericEmitter,
-    CreatePointEmitter,
-    CreateSphereEmitter,
-} from "./particleSystem.functions";
+import { MeshParticleEmitter } from "./EmitterTypes/meshParticleEmitter";
 import { type Texture } from "core/Materials/Textures/texture";
 
 /**
@@ -112,6 +98,31 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
 
     private _platform: IGPUParticleSystemPlatform;
     private _rebuildingAfterContextLost = false;
+
+    /**
+     * Whether the particle buffer needs to store the initial emission direction.
+     * True when particles are not billboarded (they orient by direction) or when
+     * using stretched-local billboard mode (stretches along initial direction).
+     * @internal
+     */
+    public get _needsInitialDirection(): boolean {
+        return !this._isBillboardBased || this.billboardMode === ParticleSystem.BILLBOARDMODE_STRETCHED_LOCAL;
+    }
+
+    // Emit rate gradient caching (mirrors ThinParticleSystem)
+    private _currentEmitRateGradient: Nullable<FactorGradient> = null;
+    private _currentEmitRate1: number = 0;
+    private _currentEmitRate2: number = 0;
+
+    // Start size gradient caching (mirrors ThinParticleSystem)
+    private _currentStartSizeGradient: Nullable<FactorGradient> = null;
+    private _currentStartSize1: number = 0;
+    private _currentStartSize2: number = 0;
+    private _startSizeGradientFactor: number = 1.0;
+
+    // Life time gradient factor range for per-particle randomization in shader
+    private _lifeTimeGradientMin: number = 1.0;
+    private _lifeTimeGradientMax: number = 1.0;
 
     /**
      * Specifies if the particle system should be serialized
@@ -236,131 +247,6 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
      */
     public metadata: any = null;
 
-    /**
-     * Creates a Point Emitter for the particle system (emits directly from the emitter position)
-     * @param direction1 Particles are emitted between the direction1 and direction2 from within the box
-     * @param direction2 Particles are emitted between the direction1 and direction2 from within the box
-     * @returns the emitter
-     */
-    public override createPointEmitter(direction1: Vector3, direction2: Vector3): PointParticleEmitter {
-        const particleEmitter = CreatePointEmitter(direction1, direction2);
-        this.particleEmitterType = particleEmitter;
-        return particleEmitter;
-    }
-
-    /**
-     * Creates a Hemisphere Emitter for the particle system (emits along the hemisphere radius)
-     * @param radius The radius of the hemisphere to emit from
-     * @param radiusRange The range of the hemisphere to emit from [0-1] 0 Surface Only, 1 Entire Radius
-     * @returns the emitter
-     */
-    public override createHemisphericEmitter(radius = 1, radiusRange = 1): HemisphericParticleEmitter {
-        const particleEmitter = CreateHemisphericEmitter(radius, radiusRange);
-        this.particleEmitterType = particleEmitter;
-        return particleEmitter;
-    }
-
-    /**
-     * Creates a Sphere Emitter for the particle system (emits along the sphere radius)
-     * @param radius The radius of the sphere to emit from
-     * @param radiusRange The range of the sphere to emit from [0-1] 0 Surface Only, 1 Entire Radius
-     * @returns the emitter
-     */
-    public override createSphereEmitter(radius = 1, radiusRange = 1): SphereParticleEmitter {
-        const particleEmitter = CreateSphereEmitter(radius, radiusRange);
-        this.particleEmitterType = particleEmitter;
-        return particleEmitter;
-    }
-
-    /**
-     * Creates a Directed Sphere Emitter for the particle system (emits between direction1 and direction2)
-     * @param radius The radius of the sphere to emit from
-     * @param direction1 Particles are emitted between the direction1 and direction2 from within the sphere
-     * @param direction2 Particles are emitted between the direction1 and direction2 from within the sphere
-     * @returns the emitter
-     */
-    public override createDirectedSphereEmitter(radius = 1, direction1 = new Vector3(0, 1.0, 0), direction2 = new Vector3(0, 1.0, 0)): SphereDirectedParticleEmitter {
-        const particleEmitter = CreateDirectedSphereEmitter(radius, direction1, direction2);
-        this.particleEmitterType = particleEmitter;
-        return particleEmitter;
-    }
-
-    /**
-     * Creates a Cylinder Emitter for the particle system (emits from the cylinder to the particle position)
-     * @param radius The radius of the emission cylinder
-     * @param height The height of the emission cylinder
-     * @param radiusRange The range of emission [0-1] 0 Surface only, 1 Entire Radius
-     * @param directionRandomizer How much to randomize the particle direction [0-1]
-     * @returns the emitter
-     */
-    public override createCylinderEmitter(radius = 1, height = 1, radiusRange = 1, directionRandomizer = 0): CylinderParticleEmitter {
-        const particleEmitter = CreateCylinderEmitter(radius, height, radiusRange, directionRandomizer);
-        this.particleEmitterType = particleEmitter;
-        return particleEmitter;
-    }
-
-    /**
-     * Creates a Directed Cylinder Emitter for the particle system (emits between direction1 and direction2)
-     * @param radius The radius of the cylinder to emit from
-     * @param height The height of the emission cylinder
-     * @param radiusRange the range of the emission cylinder [0-1] 0 Surface only, 1 Entire Radius (1 by default)
-     * @param direction1 Particles are emitted between the direction1 and direction2 from within the cylinder
-     * @param direction2 Particles are emitted between the direction1 and direction2 from within the cylinder
-     * @returns the emitter
-     */
-    public override createDirectedCylinderEmitter(
-        radius = 1,
-        height = 1,
-        radiusRange = 1,
-        direction1 = new Vector3(0, 1.0, 0),
-        direction2 = new Vector3(0, 1.0, 0)
-    ): CylinderDirectedParticleEmitter {
-        const particleEmitter = CreateDirectedCylinderEmitter(radius, height, radiusRange, direction1, direction2);
-        this.particleEmitterType = particleEmitter;
-        return particleEmitter;
-    }
-
-    /**
-     * Creates a Cone Emitter for the particle system (emits from the cone to the particle position)
-     * @param radius The radius of the cone to emit from
-     * @param angle The base angle of the cone
-     * @returns the emitter
-     */
-    public override createConeEmitter(radius = 1, angle = Math.PI / 4): ConeParticleEmitter {
-        const particleEmitter = CreateConeEmitter(radius, angle);
-        this.particleEmitterType = particleEmitter;
-        return particleEmitter;
-    }
-
-    public override createDirectedConeEmitter(
-        radius = 1,
-        angle = Math.PI / 4,
-        direction1 = new Vector3(0, 1.0, 0),
-        direction2 = new Vector3(0, 1.0, 0)
-    ): ConeDirectedParticleEmitter {
-        const particleEmitter = CreateDirectedConeEmitter(radius, angle, direction1, direction2);
-        this.particleEmitterType = particleEmitter;
-        return particleEmitter;
-    }
-
-    /**
-     * Creates a Box Emitter for the particle system. (emits between direction1 and direction2 from withing the box defined by minEmitBox and maxEmitBox)
-     * @param direction1 Particles are emitted between the direction1 and direction2 from within the box
-     * @param direction2 Particles are emitted between the direction1 and direction2 from within the box
-     * @param minEmitBox Particles are emitted from the box between minEmitBox and maxEmitBox
-     * @param maxEmitBox  Particles are emitted from the box between minEmitBox and maxEmitBox
-     * @returns the emitter
-     */
-    public override createBoxEmitter(direction1: Vector3, direction2: Vector3, minEmitBox: Vector3, maxEmitBox: Vector3): BoxParticleEmitter {
-        const particleEmitter = new BoxParticleEmitter();
-        this.particleEmitterType = particleEmitter;
-        this.direction1 = direction1;
-        this.direction2 = direction2;
-        this.minEmitBox = minEmitBox;
-        this.maxEmitBox = maxEmitBox;
-        return particleEmitter;
-    }
-
     /** Flow map */
 
     /** @internal */
@@ -383,6 +269,24 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
 
         this._flowMap = value;
     }
+
+    /** Mesh emitter textures */
+
+    /** @internal */
+    public _meshPositionTexture: Nullable<RawTexture> = null;
+
+    /** @internal */
+    public _meshNormalTexture: Nullable<RawTexture> = null;
+
+    /** @internal */
+    public _meshTriangleCount: number = 0;
+
+    /** @internal */
+    public _meshTextureWidth: number = 0;
+
+    // Track mesh emitter inputs for invalidation
+    private _meshEmitterMeshId: number = -1;
+    private _meshEmitterUsedNormals: boolean = false;
 
     /**
      * Is this system ready to be used/rendered
@@ -472,6 +376,29 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         this._stopped = false;
         this._actualFrame = 0;
         this._preWarmDone = false;
+
+        // Reset emit gradient so it acts the same on every start
+        if (this._emitRateGradients) {
+            if (this._emitRateGradients.length > 0) {
+                this._currentEmitRateGradient = this._emitRateGradients[0];
+                this._currentEmitRate1 = this._currentEmitRateGradient.getFactor();
+                this._currentEmitRate2 = this._currentEmitRate1;
+            }
+            if (this._emitRateGradients.length > 1) {
+                this._currentEmitRate2 = this._emitRateGradients[1].getFactor();
+            }
+        }
+        // Reset start size gradient so it acts the same on every start
+        if (this._startSizeGradients) {
+            if (this._startSizeGradients.length > 0) {
+                this._currentStartSizeGradient = this._startSizeGradients[0];
+                this._currentStartSize1 = this._currentStartSizeGradient.getFactor();
+                this._currentStartSize2 = this._currentStartSize1;
+            }
+            if (this._startSizeGradients.length > 1) {
+                this._currentStartSize2 = this._startSizeGradients[1].getFactor();
+            }
+        }
 
         // Animations
         if (this.beginAnimationOnStart && this.animations && this.animations.length > 0 && this._scene) {
@@ -849,38 +776,36 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
     }
 
     /**
-     * Not supported by GPUParticleSystem
+     * Adds a new start size gradient (please note that this will only work if you set the targetStopDuration property)
+     * @param gradient defines the gradient to use (between 0 and 1)
+     * @param factor defines the start size factor to affect to the specified gradient
+     * @param factor2 defines an additional factor used to define a range ([factor, factor2]) with main value to pick the final value from
      * @returns the current particle system
      */
-    public addEmitRateGradient(): IParticleSystem {
-        // Do nothing as emit rate is not supported by GPUParticleSystem
+    public addStartSizeGradient(gradient: number, factor: number, factor2?: number): IParticleSystem {
+        if (!this._startSizeGradients) {
+            this._startSizeGradients = [];
+        }
+
+        const hadGradients = this._startSizeGradients.length > 0;
+        this._addFactorGradient(this._startSizeGradients, gradient, factor, factor2);
+        if (!hadGradients) {
+            this._resetEffect();
+        }
         return this;
     }
 
     /**
-     * Not supported by GPUParticleSystem
+     * Remove a specific start size gradient
+     * @param gradient defines the gradient to remove
      * @returns the current particle system
      */
-    public removeEmitRateGradient(): IParticleSystem {
-        // Do nothing as emit rate is not supported by GPUParticleSystem
-        return this;
-    }
-
-    /**
-     * Not supported by GPUParticleSystem
-     * @returns the current particle system
-     */
-    public addStartSizeGradient(): IParticleSystem {
-        // Do nothing as start size is not supported by GPUParticleSystem
-        return this;
-    }
-
-    /**
-     * Not supported by GPUParticleSystem
-     * @returns the current particle system
-     */
-    public removeStartSizeGradient(): IParticleSystem {
-        // Do nothing as start size is not supported by GPUParticleSystem
+    public removeStartSizeGradient(gradient: number): IParticleSystem {
+        const hadGradients = this._startSizeGradients && this._startSizeGradients.length > 0;
+        this._removeFactorGradient(this._startSizeGradients, gradient);
+        if (hadGradients && (!this._startSizeGradients || this._startSizeGradients.length === 0)) {
+            this._resetEffect();
+        }
         return this;
     }
 
@@ -967,22 +892,36 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
     }
 
     /**
-     * Not supported by GPUParticleSystem
+     * Adds a new life time gradient (please note that this will only work if you set the targetStopDuration property)
+     * @param gradient defines the gradient to use (between 0 and 1)
+     * @param factor defines the life time factor to affect to the specified gradient
+     * @param factor2 defines an additional factor used to define a range ([factor, factor2]) with main value to pick the final value from
      * @returns the current particle system
      */
-    public addLifeTimeGradient(): IParticleSystem {
-        //Not supported by GPUParticleSystem
+    public addLifeTimeGradient(gradient: number, factor: number, factor2?: number): IParticleSystem {
+        if (!this._lifeTimeGradients) {
+            this._lifeTimeGradients = [];
+        }
 
+        const hadGradients = this._lifeTimeGradients.length > 0;
+        this._addFactorGradient(this._lifeTimeGradients, gradient, factor, factor2);
+        if (!hadGradients) {
+            this._resetEffect();
+        }
         return this;
     }
 
     /**
-     * Not supported by GPUParticleSystem
+     * Remove a specific life time gradient
+     * @param gradient defines the gradient to remove
      * @returns the current particle system
      */
-    public removeLifeTimeGradient(): IParticleSystem {
-        //Not supported by GPUParticleSystem
-
+    public removeLifeTimeGradient(gradient: number): IParticleSystem {
+        const hadGradients = this._lifeTimeGradients && this._lifeTimeGradients.length > 0;
+        this._removeFactorGradient(this._lifeTimeGradients, gradient);
+        if (hadGradients && (!this._lifeTimeGradients || this._lifeTimeGradients.length === 0)) {
+            this._resetEffect();
+        }
         return this;
     }
 
@@ -1134,7 +1073,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         renderVertexBuffers["life"] = renderBuffer.createVertexBuffer("life", offset, 1, this._attributesStrideSize, true);
         offset += 1;
         offset += 4; // seed
-        if (this.billboardMode === ParticleSystem.BILLBOARDMODE_STRETCHED) {
+        if (this.billboardMode === ParticleSystem.BILLBOARDMODE_STRETCHED || this.billboardMode === ParticleSystem.BILLBOARDMODE_STRETCHED_LOCAL) {
             renderVertexBuffers["direction"] = renderBuffer.createVertexBuffer("direction", offset, 3, this._attributesStrideSize, true);
         }
         offset += 3; // direction
@@ -1154,7 +1093,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
             offset += 4;
         }
 
-        if (!this._isBillboardBased) {
+        if (this._needsInitialDirection) {
             renderVertexBuffers["initialDirection"] = renderBuffer.createVertexBuffer("initialDirection", offset, 3, this._attributesStrideSize, true);
             offset += 3;
             if (this._platform.alignDataInBuffer) {
@@ -1222,7 +1161,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
             }
         }
 
-        if (!this.isBillboardBased) {
+        if (this._needsInitialDirection) {
             this._attributesStrideSize += 3;
             if (this._platform.alignDataInBuffer) {
                 this._attributesStrideSize += 1;
@@ -1320,7 +1259,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
                 offset += 4;
             }
 
-            if (!this.isBillboardBased) {
+            if (this._needsInitialDirection) {
                 // initialDirection
                 data.push(0.0);
                 data.push(0.0);
@@ -1396,6 +1335,13 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         this._targetBuffer = this._buffer1;
     }
 
+    /**
+     * Forces the update effect to be recreated on the next render.
+     */
+    private _resetEffect() {
+        this._cachedUpdateDefines = "";
+    }
+
     /** @internal */
     public _recreateUpdateEffect() {
         this._createColorGradientTexture();
@@ -1404,11 +1350,16 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         this._createVelocityGradientTexture();
         this._createLimitVelocityGradientTexture();
         this._createDragGradientTexture();
+        this._createMeshEmitterTextures();
 
         let defines = this.particleEmitterType ? this.particleEmitterType.getEffectDefines() : "";
 
         if (this._isBillboardBased) {
-            defines += "\n#define BILLBOARD";
+            // Stretched local needs initialDirection in the buffer, which requires !BILLBOARD in the update shader.
+            // The render shader still uses BILLBOARD — that's handled separately in fillDefines().
+            if (this.billboardMode !== ParticleSystem.BILLBOARDMODE_STRETCHED_LOCAL) {
+                defines += "\n#define BILLBOARD";
+            }
         }
 
         if (this._colorGradientsTexture) {
@@ -1463,6 +1414,21 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
             defines += "\n#define EMITRATECTRL";
         }
 
+        if (this._startSizeGradients && this._startSizeGradients.length > 0) {
+            defines += "\n#define STARTSIZEGRADIENTS";
+        }
+
+        if (this._lifeTimeGradients && this._lifeTimeGradients.length > 0) {
+            defines += "\n#define LIFETIMEGRADIENTS";
+        }
+
+        if (this.particleEmitterType instanceof MeshParticleEmitter && this._meshPositionTexture) {
+            defines += "\n#define MESHEMITTER";
+            if (this._meshNormalTexture) {
+                defines += "\n#define MESHNORMALS";
+            }
+        }
+
         if (this._platform.isUpdateBufferCreated() && this._cachedUpdateDefines === defines) {
             return this._platform.isUpdateBufferReady();
         }
@@ -1514,7 +1480,13 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
     /**
      * @internal
      */
-    public static _GetAttributeNamesOrOptions(hasColorGradients = false, isAnimationSheetEnabled = false, isBillboardBased = false, isBillboardStretched = false): string[] {
+    public static _GetAttributeNamesOrOptions(
+        hasColorGradients = false,
+        isAnimationSheetEnabled = false,
+        isBillboardBased = false,
+        isBillboardStretched = false,
+        isBillboardStretchedLocal = false
+    ): string[] {
         const attributeNamesOrOptions = [VertexBuffer.PositionKind, "age", "life", "size", "angle"];
 
         if (!hasColorGradients) {
@@ -1525,7 +1497,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
             attributeNamesOrOptions.push("cellIndex");
         }
 
-        if (!isBillboardBased) {
+        if (!isBillboardBased || isBillboardStretchedLocal) {
             attributeNamesOrOptions.push("initialDirection");
         }
 
@@ -1596,6 +1568,10 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
                 case ParticleSystem.BILLBOARDMODE_STRETCHED:
                     defines.push("#define BILLBOARDSTRETCHED");
                     break;
+                case ParticleSystem.BILLBOARDMODE_STRETCHED_LOCAL:
+                    defines.push("#define BILLBOARDSTRETCHED");
+                    defines.push("#define BILLBOARDSTRETCHED_LOCAL");
+                    break;
                 case ParticleSystem.BILLBOARDMODE_ALL:
                     defines.push("#define BILLBOARDMODE_ALL");
                     break;
@@ -1634,7 +1610,8 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
                 !!this._colorGradientsTexture,
                 this._isAnimationSheetEnabled,
                 this._isBillboardBased,
-                this._isBillboardBased && this.billboardMode === ParticleSystem.BILLBOARDMODE_STRETCHED
+                this._isBillboardBased && (this.billboardMode === ParticleSystem.BILLBOARDMODE_STRETCHED || this.billboardMode === ParticleSystem.BILLBOARDMODE_STRETCHED_LOCAL),
+                this.billboardMode === ParticleSystem.BILLBOARDMODE_STRETCHED_LOCAL
             )
         );
 
@@ -1719,6 +1696,144 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
 
     private _createDragGradientTexture() {
         this._createFactorGradientTexture(this._dragGradients, "_dragGradientsTexture");
+    }
+
+    private _disposeMeshEmitterTextures() {
+        if (this._meshPositionTexture) {
+            this._meshPositionTexture.dispose();
+            this._meshPositionTexture = null;
+        }
+        if (this._meshNormalTexture) {
+            this._meshNormalTexture.dispose();
+            this._meshNormalTexture = null;
+        }
+        this._meshTriangleCount = 0;
+        this._meshTextureWidth = 0;
+        this._meshEmitterMeshId = -1;
+        this._meshEmitterUsedNormals = false;
+    }
+
+    private _createMeshEmitterTextures() {
+        if (!(this.particleEmitterType instanceof MeshParticleEmitter)) {
+            // Emitter type changed away from mesh — dispose stale textures
+            if (this._meshPositionTexture) {
+                this._disposeMeshEmitterTextures();
+            }
+            return;
+        }
+
+        const meshEmitter = this.particleEmitterType;
+        const mesh = meshEmitter.mesh;
+        if (!mesh) {
+            // Mesh removed — dispose stale textures
+            if (this._meshPositionTexture) {
+                this._disposeMeshEmitterTextures();
+            }
+            return;
+        }
+
+        const useNormals = meshEmitter.useMeshNormalsForDirection;
+
+        // Invalidate if the source mesh or normals usage changed
+        if (this._meshPositionTexture && (mesh.uniqueId !== this._meshEmitterMeshId || useNormals !== this._meshEmitterUsedNormals)) {
+            this._disposeMeshEmitterTextures();
+        }
+
+        // Already created and still valid
+        if (this._meshPositionTexture) {
+            return;
+        }
+
+        const positions = mesh.getVerticesData(VertexBuffer.PositionKind);
+        const normals = mesh.getVerticesData(VertexBuffer.NormalKind);
+        const indices = mesh.getIndices();
+
+        if (!positions || !indices) {
+            return;
+        }
+
+        const triangleCount = indices.length / 3;
+        this._meshTriangleCount = triangleCount;
+
+        // Use a 2D texture layout so large meshes don't exceed maxTextureSize
+        const totalTexels = triangleCount * 3;
+        const maxTexSize = this._engine.getCaps().maxTextureSize;
+        const texWidth = Math.min(totalTexels, maxTexSize);
+        const texHeight = Math.ceil(totalTexels / texWidth);
+        this._meshTextureWidth = texWidth;
+
+        // Pack vertex positions: one texel per vertex, 3 vertices per triangle, RGBA float (xyz + padding)
+        const posData = new Float32Array(texWidth * texHeight * 4);
+        for (let t = 0; t < triangleCount; t++) {
+            const i0 = indices[t * 3];
+            const i1 = indices[t * 3 + 1];
+            const i2 = indices[t * 3 + 2];
+            const baseOffset = t * 3 * 4;
+            posData[baseOffset] = positions[i0 * 3];
+            posData[baseOffset + 1] = positions[i0 * 3 + 1];
+            posData[baseOffset + 2] = positions[i0 * 3 + 2];
+            posData[baseOffset + 3] = 0;
+            posData[baseOffset + 4] = positions[i1 * 3];
+            posData[baseOffset + 5] = positions[i1 * 3 + 1];
+            posData[baseOffset + 6] = positions[i1 * 3 + 2];
+            posData[baseOffset + 7] = 0;
+            posData[baseOffset + 8] = positions[i2 * 3];
+            posData[baseOffset + 9] = positions[i2 * 3 + 1];
+            posData[baseOffset + 10] = positions[i2 * 3 + 2];
+            posData[baseOffset + 11] = 0;
+        }
+
+        this._meshPositionTexture = new RawTexture(
+            posData,
+            texWidth,
+            texHeight,
+            Constants.TEXTUREFORMAT_RGBA,
+            this._scene || this._engine,
+            false,
+            false,
+            Constants.TEXTURE_NEAREST_SAMPLINGMODE,
+            Constants.TEXTURETYPE_FLOAT
+        );
+        this._meshPositionTexture.name = "meshPositionTexture";
+
+        // Pack normals the same way if available
+        if (normals && useNormals) {
+            const normData = new Float32Array(texWidth * texHeight * 4);
+            for (let t = 0; t < triangleCount; t++) {
+                const i0 = indices[t * 3];
+                const i1 = indices[t * 3 + 1];
+                const i2 = indices[t * 3 + 2];
+                const baseOffset = t * 3 * 4;
+                normData[baseOffset] = normals[i0 * 3];
+                normData[baseOffset + 1] = normals[i0 * 3 + 1];
+                normData[baseOffset + 2] = normals[i0 * 3 + 2];
+                normData[baseOffset + 3] = 0;
+                normData[baseOffset + 4] = normals[i1 * 3];
+                normData[baseOffset + 5] = normals[i1 * 3 + 1];
+                normData[baseOffset + 6] = normals[i1 * 3 + 2];
+                normData[baseOffset + 7] = 0;
+                normData[baseOffset + 8] = normals[i2 * 3];
+                normData[baseOffset + 9] = normals[i2 * 3 + 1];
+                normData[baseOffset + 10] = normals[i2 * 3 + 2];
+                normData[baseOffset + 11] = 0;
+            }
+
+            this._meshNormalTexture = new RawTexture(
+                normData,
+                texWidth,
+                texHeight,
+                Constants.TEXTUREFORMAT_RGBA,
+                this._scene || this._engine,
+                false,
+                false,
+                Constants.TEXTURE_NEAREST_SAMPLINGMODE,
+                Constants.TEXTURETYPE_FLOAT
+            );
+            this._meshNormalTexture.name = "meshNormalTexture";
+        }
+
+        this._meshEmitterMeshId = mesh.uniqueId;
+        this._meshEmitterUsedNormals = useNormals;
     }
 
     private _createColorGradientTexture() {
@@ -1916,6 +2031,19 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
             }
         }
 
+        if (this._startSizeGradients && this._startSizeGradients.length > 0) {
+            this._updateBuffer.setFloat("startSizeGradientFactor", this._startSizeGradientFactor);
+        }
+
+        if (this._lifeTimeGradients && this._lifeTimeGradients.length > 0) {
+            this._updateBuffer.setFloat2("lifeTimeGradientRange", this._lifeTimeGradientMin, this._lifeTimeGradientMax);
+        }
+
+        if (this._meshPositionTexture) {
+            this._updateBuffer.setInt("meshTriangleCount", this._meshTriangleCount);
+            this._updateBuffer.setInt("meshTextureWidth", this._meshTextureWidth);
+        }
+
         this._platform.updateParticleBuffer(this._targetIndex, this._targetBuffer, this._currentActiveCount);
 
         // Switch VAOs
@@ -1973,6 +2101,50 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         // Get everything ready to render
         this._initialize();
 
+        // Compute effective emit rate, applying emit rate gradients if set
+        let effectiveEmitRate = this.emitRate;
+        if (this._emitRateGradients && this._emitRateGradients.length > 0 && this.targetStopDuration) {
+            const ratio = this._actualFrame / this.targetStopDuration;
+            GradientHelper.GetCurrentGradient(ratio, this._emitRateGradients, (currentGradient, nextGradient, scale) => {
+                if (currentGradient !== this._currentEmitRateGradient) {
+                    this._currentEmitRate1 = this._currentEmitRate2;
+                    this._currentEmitRate2 = (<FactorGradient>nextGradient).getFactor();
+                    this._currentEmitRateGradient = <FactorGradient>currentGradient;
+                }
+                effectiveEmitRate = Lerp(this._currentEmitRate1, this._currentEmitRate2, scale);
+            });
+        }
+
+        // Compute start size and life time gradient factors for shader uniforms
+        if (this.targetStopDuration) {
+            const ratio = this._actualFrame / this.targetStopDuration;
+
+            if (this._startSizeGradients && this._startSizeGradients.length > 0) {
+                GradientHelper.GetCurrentGradient(ratio, this._startSizeGradients, (currentGradient, nextGradient, scale) => {
+                    if (currentGradient !== this._currentStartSizeGradient) {
+                        this._currentStartSize1 = this._currentStartSize2;
+                        this._currentStartSize2 = (<FactorGradient>nextGradient).getFactor();
+                        this._currentStartSizeGradient = <FactorGradient>currentGradient;
+                    }
+                    this._startSizeGradientFactor = Lerp(this._currentStartSize1, this._currentStartSize2, scale);
+                });
+            } else {
+                this._startSizeGradientFactor = 1.0;
+            }
+
+            if (this._lifeTimeGradients && this._lifeTimeGradients.length > 0) {
+                GradientHelper.GetCurrentGradient(ratio, this._lifeTimeGradients, (currentGradient, nextGradient, scale) => {
+                    const current = <FactorGradient>currentGradient;
+                    const next = <FactorGradient>nextGradient;
+                    this._lifeTimeGradientMin = Lerp(current.factor1, next.factor1, scale);
+                    this._lifeTimeGradientMax = Lerp(current.factor2 ?? current.factor1, next.factor2 ?? next.factor1, scale);
+                });
+            } else {
+                this._lifeTimeGradientMin = 1.0;
+                this._lifeTimeGradientMax = 1.0;
+            }
+        }
+
         if (this._emitRateControl) {
             // Emit-rate-controlled mode: limits active particles to ~emitRate * maxLifeTime,
             // matching CPU particle behavior with circular buffer recycling.
@@ -1982,7 +2154,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
                 this._accumulatedCount += this.manualEmitCount;
                 this.manualEmitCount = 0;
             } else if (!this._stopped) {
-                this._accumulatedCount += this.emitRate * this._timeDelta;
+                this._accumulatedCount += effectiveEmitRate * this._timeDelta;
             }
 
             // Convert accumulated fractional count into whole particles to emit this frame.
@@ -1999,7 +2171,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
             // When emitRate is 0 but manualEmitCount is used, the rate-based steady state
             // would be 0, blocking buffer growth. Use newParticles as a floor so manual
             // emissions can always allocate slots.
-            const steadyStateCount = Math.min(Math.max(Math.ceil(this.emitRate * this.maxLifeTime), newParticles), this._maxActiveParticleCount);
+            const steadyStateCount = Math.min(Math.max(Math.ceil(effectiveEmitRate * this.maxLifeTime), newParticles), this._maxActiveParticleCount);
 
             // During ramp-up, grow the active buffer size by adding new slots.
             // Once _currentActiveCount reaches steadyStateCount, no new slots are added —
@@ -2027,7 +2199,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
                 this._accumulatedCount += this.manualEmitCount;
                 this.manualEmitCount = 0;
             } else {
-                this._accumulatedCount += this.emitRate * this._timeDelta;
+                this._accumulatedCount += effectiveEmitRate * this._timeDelta;
             }
             if (this._accumulatedCount >= 1) {
                 const intPart = this._accumulatedCount | 0;
@@ -2097,6 +2269,10 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         this._createIndexBuffer();
 
         this._cachedUpdateDefines = "";
+
+        // Re-upload mesh emitter data if the mesh geometry changed
+        this._disposeMeshEmitterTextures();
+
         this._platform.contextLost();
         this._rebuildingAfterContextLost = true;
 
@@ -2179,6 +2355,8 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
             this._dragGradientsTexture.dispose();
             (<any>this._dragGradientsTexture) = null;
         }
+
+        this._disposeMeshEmitterTextures();
 
         if (this._randomTexture) {
             this._randomTexture.dispose();

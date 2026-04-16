@@ -7,6 +7,7 @@ import { ThinTexture } from "core/Materials/Textures/thinTexture";
 
 import {
     type RawElement,
+    type RawEllipseShape,
     type RawFillShape,
     type RawFont,
     type RawGradientFillShape,
@@ -21,6 +22,11 @@ import { GetInitialScalarValue, GetInitialVectorValues, GetInitialBezierData } f
 import { type BoundingBox, GetShapesBoundingBox, GetTextBoundingBox } from "../maths/boundingBox";
 
 import { type AnimationConfiguration } from "../animationConfiguration";
+
+/**
+ * Type alias for the 2D drawing context used by the sprite packer.
+ */
+type DrawingContext = OffscreenCanvasRenderingContext2D | CanvasRenderingContext2D;
 
 /**
  * Information about a sprite in the sprite atlas.
@@ -69,6 +75,12 @@ export type SpriteAtlasInfo = {
      * Y coordinate of the center of the sprite bounding box, used for final positioning in the screen
      */
     centerY: number;
+
+    /**
+     * Index of the atlas page this sprite belongs to.
+     * Used when the animation has more sprites than fit in a single atlas texture.
+     */
+    atlasIndex: number;
 };
 
 /**
@@ -81,34 +93,43 @@ type GradientStop = {
 };
 
 /**
+ * Represents a single page in the sprite atlas. When sprites exceed the capacity of one
+ * texture, additional pages are created automatically.
+ */
+type AtlasPage = {
+    canvas: OffscreenCanvas | HTMLCanvasElement;
+    context: OffscreenCanvasRenderingContext2D | CanvasRenderingContext2D;
+    internalTexture: InternalTexture;
+    texture: ThinTexture;
+    isDirty: boolean;
+    currentX: number;
+    currentY: number;
+    maxRowHeight: number;
+};
+
+/**
  * SpritePacker is a class that handles the packing of sprites into a texture atlas.
+ * If sprites exceed the capacity of a single atlas texture, additional atlas pages are created.
  */
 export class SpritePacker {
     private readonly _engine: ThinEngine;
+    private readonly _isHtmlCanvas: boolean;
     private _atlasScale: number;
     private readonly _variables: Map<string, string>;
     private readonly _configuration: AnimationConfiguration;
     private _rawFonts: Map<string, RawFont> | undefined;
 
-    private _spritesCanvas: OffscreenCanvas | HTMLCanvasElement;
-    private _spritesCanvasContext: OffscreenCanvasRenderingContext2D | CanvasRenderingContext2D;
-    private readonly _spritesInternalTexture: InternalTexture;
-    private readonly _spritesTexture: ThinTexture;
-
-    private _isDirty: boolean; // Indicates if the sprite atlas needs to be updated
-    private _currentX: number;
-    private _currentY: number;
-    private _maxRowHeight: number; // Keep track of the maximum height of the current row to handle sprite packing correctly
+    private _pages: AtlasPage[];
 
     // Variable to avoid allocations
     private _spriteAtlasInfo: SpriteAtlasInfo;
 
     /**
-     * Gets the texture atlas that contains all the sprites packed by this SpritePacker.
-     * @returns The texture atlas containing the sprites.
+     * Gets the textures for all atlas pages.
+     * @returns An array of textures, one per atlas page.
      */
-    public get texture(): ThinTexture {
-        return this._spritesTexture;
+    public get textures(): ThinTexture[] {
+        return this._pages.map((p) => p.texture);
     }
 
     /**
@@ -129,30 +150,12 @@ export class SpritePacker {
      */
     public constructor(engine: ThinEngine, isHtmlCanvas: boolean, atlasScale: number, variables: Map<string, string>, configuration: AnimationConfiguration) {
         this._engine = engine;
+        this._isHtmlCanvas = isHtmlCanvas;
         this._atlasScale = atlasScale;
         this._variables = variables;
         this._configuration = configuration;
-        this._isDirty = false;
-        this._currentX = this._configuration.gapSize;
-        this._currentY = this._configuration.gapSize;
-        this._maxRowHeight = 0;
 
-        if (isHtmlCanvas) {
-            this._spritesCanvas = document.createElement("canvas");
-            this._spritesCanvas.width = this._configuration.spriteAtlasWidth;
-            this._spritesCanvas.height = this._configuration.spriteAtlasHeight;
-            this._spritesCanvasContext = this._spritesCanvas.getContext("2d") as CanvasRenderingContext2D;
-        } else {
-            this._spritesCanvas = new OffscreenCanvas(this._configuration.spriteAtlasWidth, this._configuration.spriteAtlasHeight);
-            this._spritesCanvasContext = this._spritesCanvas.getContext("2d") as OffscreenCanvasRenderingContext2D;
-        }
-
-        this._spritesInternalTexture = this._engine.createDynamicTexture(this._configuration.spriteAtlasWidth, this._configuration.spriteAtlasHeight, false, 2); // Linear filtering
-        this._engine.updateDynamicTexture(this._spritesInternalTexture, this._spritesCanvas, false);
-
-        this._spritesTexture = new ThinTexture(this._spritesInternalTexture);
-        this._spritesTexture.wrapU = 0; // Disable wrapping
-        this._spritesTexture.wrapV = 0; // Disable wrapping
+        this._pages = [this._createPage()];
 
         this._spriteAtlasInfo = {
             uOffset: 0,
@@ -163,6 +166,7 @@ export class SpritePacker {
             heightPx: 0,
             centerX: 0,
             centerY: 0,
+            atlasIndex: 0,
         };
     }
 
@@ -180,24 +184,20 @@ export class SpritePacker {
 
         // Calculate the size of the sprite in the atlas in pixels
         // This takes into account the scaling factor so in the call to _drawVectorShape the canvas will be scaled when rendering
-        this._spriteAtlasInfo.cellWidth = boundingBox.width * scalingFactor.x;
-        this._spriteAtlasInfo.cellHeight = boundingBox.height * scalingFactor.y;
+        this._spriteAtlasInfo.cellWidth = this._getAtlasCellDimension(boundingBox.width * scalingFactor.x);
+        this._spriteAtlasInfo.cellHeight = this._getAtlasCellDimension(boundingBox.height * scalingFactor.y);
 
-        // Check if the sprite fits in the current row
-        if (this._currentX + this._spriteAtlasInfo.cellWidth > this._configuration.spriteAtlasWidth) {
-            // Add a gap between sprites to avoid bleeding issues
-            this._currentX = this._configuration.gapSize;
-            this._currentY += this._maxRowHeight + this._configuration.gapSize;
-            this._maxRowHeight = 0;
-        }
+        // Get (or create) the page that has room for this sprite
+        const page = this._getPageWithRoom(this._spriteAtlasInfo.cellWidth, this._spriteAtlasInfo.cellHeight);
 
         // Draw the shape in the canvas
-        this._drawVectorShape(rawElements, boundingBox, scalingFactor);
-        this._isDirty = true;
+        this._drawVectorShape(rawElements, boundingBox, scalingFactor, page);
+        this._extrudeSpriteEdges(page, page.currentX, page.currentY, this._spriteAtlasInfo.cellWidth, this._spriteAtlasInfo.cellHeight);
+        page.isDirty = true;
 
         // Get the rest of the sprite information required to render the shape
-        this._spriteAtlasInfo.uOffset = this._currentX / this._configuration.spriteAtlasWidth;
-        this._spriteAtlasInfo.vOffset = this._currentY / this._configuration.spriteAtlasHeight;
+        this._spriteAtlasInfo.uOffset = page.currentX / this._configuration.spriteAtlasWidth;
+        this._spriteAtlasInfo.vOffset = page.currentY / this._configuration.spriteAtlasHeight;
 
         this._spriteAtlasInfo.widthPx = boundingBox.width;
         this._spriteAtlasInfo.heightPx = boundingBox.height;
@@ -205,9 +205,11 @@ export class SpritePacker {
         this._spriteAtlasInfo.centerX = boundingBox.offsetX;
         this._spriteAtlasInfo.centerY = boundingBox.offsetY;
 
+        this._spriteAtlasInfo.atlasIndex = this._pages.indexOf(page);
+
         // Advance the current position for the next sprite
-        this._currentX += this._spriteAtlasInfo.cellWidth + this._configuration.gapSize; // Add a gap between sprites to avoid bleeding
-        this._maxRowHeight = Math.max(this._maxRowHeight, this._spriteAtlasInfo.cellHeight);
+        page.currentX += this._spriteAtlasInfo.cellWidth + this._configuration.gapSize; // Add a gap between sprites to avoid bleeding
+        page.maxRowHeight = Math.max(page.maxRowHeight, this._spriteAtlasInfo.cellHeight);
 
         return this._spriteAtlasInfo;
     }
@@ -224,7 +226,7 @@ export class SpritePacker {
         }
 
         // If the text information is malformed and we can't get the bounding box, then just return
-        const boundingBox = GetTextBoundingBox(this._spritesCanvasContext, textData, this._rawFonts, this._variables);
+        const boundingBox = GetTextBoundingBox(this._pages[this._pages.length - 1].context, textData, this._rawFonts, this._variables);
         if (boundingBox === undefined) {
             return undefined;
         }
@@ -234,25 +236,20 @@ export class SpritePacker {
 
         // Calculate the size of the sprite in the atlas in pixels
         // This takes into account the scaling factor so in the call to _drawText the canvas will be scaled when rendering
-        this._spriteAtlasInfo.cellWidth = boundingBox.width * scalingFactor.x;
-        this._spriteAtlasInfo.cellHeight = boundingBox.height * scalingFactor.y;
+        this._spriteAtlasInfo.cellWidth = this._getAtlasCellDimension(boundingBox.width * scalingFactor.x);
+        this._spriteAtlasInfo.cellHeight = this._getAtlasCellDimension(boundingBox.height * scalingFactor.y);
 
-        // Find the position to draw the text
-        // If the text doesn't fit in the current row, move to the next row
-        if (this._currentX + this._spriteAtlasInfo.cellWidth > this._configuration.spriteAtlasWidth) {
-            // Add a gap between sprites to avoid bleeding issues
-            this._currentX = this._configuration.gapSize;
-            this._currentY += this._maxRowHeight + this._configuration.gapSize;
-            this._maxRowHeight = 0;
-        }
+        // Get (or create) the page that has room for this sprite
+        const page = this._getPageWithRoom(this._spriteAtlasInfo.cellWidth, this._spriteAtlasInfo.cellHeight);
 
         // Draw the text in the canvas
-        this._drawText(textData, boundingBox, scalingFactor);
-        this._isDirty = true;
+        this._drawText(textData, boundingBox, scalingFactor, page);
+        this._extrudeSpriteEdges(page, page.currentX, page.currentY, this._spriteAtlasInfo.cellWidth, this._spriteAtlasInfo.cellHeight);
+        page.isDirty = true;
 
         // Get the rest of the sprite information required to render the text
-        this._spriteAtlasInfo.uOffset = this._currentX / this._configuration.spriteAtlasWidth;
-        this._spriteAtlasInfo.vOffset = this._currentY / this._configuration.spriteAtlasHeight;
+        this._spriteAtlasInfo.uOffset = page.currentX / this._configuration.spriteAtlasWidth;
+        this._spriteAtlasInfo.vOffset = page.currentY / this._configuration.spriteAtlasHeight;
 
         this._spriteAtlasInfo.widthPx = boundingBox.width;
         this._spriteAtlasInfo.heightPx = boundingBox.height;
@@ -260,99 +257,268 @@ export class SpritePacker {
         this._spriteAtlasInfo.centerX = boundingBox.offsetX;
         this._spriteAtlasInfo.centerY = boundingBox.offsetY;
 
+        this._spriteAtlasInfo.atlasIndex = this._pages.indexOf(page);
+
         // Advance the current position for the next sprite
-        this._currentX += this._spriteAtlasInfo.cellWidth + this._configuration.gapSize; // Add a gap between sprites to avoid bleeding
-        this._maxRowHeight = Math.max(this._maxRowHeight, this._spriteAtlasInfo.cellHeight);
+        page.currentX += this._spriteAtlasInfo.cellWidth + this._configuration.gapSize; // Add a gap between sprites to avoid bleeding
+        page.maxRowHeight = Math.max(page.maxRowHeight, this._spriteAtlasInfo.cellHeight);
 
         return this._spriteAtlasInfo;
     }
 
     /**
-     * Updates the internal atlas texture with the information that has been added to the SpritePacker.
+     * Updates all dirty atlas page textures with the latest canvas content.
      */
     public updateAtlasTexture(): void {
-        if (!this._isDirty) {
-            return; // No need to update if nothing has changed
+        for (const page of this._pages) {
+            if (!page.isDirty) {
+                continue;
+            }
+            this._engine.updateDynamicTexture(page.internalTexture, page.canvas, false);
+            page.isDirty = false;
         }
-
-        // Update the internal texture with the new canvas content
-        this._engine.updateDynamicTexture(this._spritesInternalTexture, this._spritesCanvas, false);
-        this._isDirty = false;
     }
 
     /**
-     * Releases the canvas and its context to allow garbage collection.
+     * Releases the canvases and their contexts to allow garbage collection.
      */
     public releaseCanvas(): void {
-        this._spritesCanvasContext = undefined as any; // Clear the context to allow garbage collection
-        this._spritesCanvas = undefined as any; // Clear the canvas to allow garbage collection
+        for (const page of this._pages) {
+            page.context = undefined as any;
+            page.canvas = undefined as any;
+        }
     }
 
-    private _drawVectorShape(rawElements: RawElement[], boundingBox: BoundingBox, scalingFactor: IVector2Like): void {
-        this._spritesCanvasContext.save();
-        this._spritesCanvasContext.globalCompositeOperation = "destination-over";
+    private _createPage(): AtlasPage {
+        let canvas: OffscreenCanvas | HTMLCanvasElement;
+        let context: OffscreenCanvasRenderingContext2D | CanvasRenderingContext2D;
 
-        this._spritesCanvasContext.translate(this._currentX + Math.ceil(boundingBox.strokeInset / 2), this._currentY + Math.ceil(boundingBox.strokeInset / 2));
-        this._spritesCanvasContext.scale(scalingFactor.x, scalingFactor.y);
+        if (this._isHtmlCanvas) {
+            canvas = document.createElement("canvas");
+            canvas.width = this._configuration.spriteAtlasWidth;
+            canvas.height = this._configuration.spriteAtlasHeight;
+            context = canvas.getContext("2d") as CanvasRenderingContext2D;
+        } else {
+            canvas = new OffscreenCanvas(this._configuration.spriteAtlasWidth, this._configuration.spriteAtlasHeight);
+            context = canvas.getContext("2d") as OffscreenCanvasRenderingContext2D;
+        }
 
-        this._spritesCanvasContext.beginPath();
+        const internalTexture = this._engine.createDynamicTexture(this._configuration.spriteAtlasWidth, this._configuration.spriteAtlasHeight, false, 2);
+        this._engine.updateDynamicTexture(internalTexture, canvas, false);
+
+        const texture = new ThinTexture(internalTexture);
+        texture.wrapU = 0;
+        texture.wrapV = 0;
+
+        return {
+            canvas,
+            context,
+            internalTexture,
+            texture,
+            isDirty: false,
+            currentX: this._configuration.gapSize,
+            currentY: this._configuration.gapSize,
+            maxRowHeight: 0,
+        };
+    }
+
+    /**
+     * Returns a page with room for a sprite of the given size. Wraps to the next row if needed,
+     * and creates a new page if the current page is full.
+     * @param cellWidth The width of the sprite cell in pixels.
+     * @param cellHeight The height of the sprite cell in pixels.
+     * @returns An atlas page with enough room for the sprite.
+     */
+    private _getPageWithRoom(cellWidth: number, cellHeight: number): AtlasPage {
+        let page = this._pages[this._pages.length - 1];
+
+        // Clamp oversized cells to fit within a single atlas page
+        const maxCellWidth = this._configuration.spriteAtlasWidth - 2 * this._configuration.gapSize;
+        const maxCellHeight = this._configuration.spriteAtlasHeight - 2 * this._configuration.gapSize;
+        if (cellWidth > maxCellWidth || cellHeight > maxCellHeight) {
+            // eslint-disable-next-line no-console
+            console.warn(
+                `[SpritePacker] Sprite cell (${cellWidth}x${cellHeight}) exceeds atlas page (${this._configuration.spriteAtlasWidth}x${this._configuration.spriteAtlasHeight}). Clamping to fit.`
+            );
+            this._spriteAtlasInfo.cellWidth = Math.min(cellWidth, maxCellWidth);
+            this._spriteAtlasInfo.cellHeight = Math.min(cellHeight, maxCellHeight);
+            cellWidth = this._spriteAtlasInfo.cellWidth;
+            cellHeight = this._spriteAtlasInfo.cellHeight;
+        }
+
+        // Check if the sprite fits in the current row
+        if (page.currentX + cellWidth > this._configuration.spriteAtlasWidth) {
+            // Move to the next row
+            page.currentX = this._configuration.gapSize;
+            page.currentY += page.maxRowHeight + this._configuration.gapSize;
+            page.maxRowHeight = 0;
+        }
+
+        // Check if the sprite fits vertically on this page
+        if (page.currentY + cellHeight > this._configuration.spriteAtlasHeight) {
+            // Current page is full — create a new one
+            page = this._createPage();
+            this._pages.push(page);
+        }
+
+        return page;
+    }
+
+    private _getAtlasCellDimension(size: number): number {
+        return Math.max(1, Math.ceil(size));
+    }
+
+    private _extrudeSpriteEdges(page: AtlasPage, x: number, y: number, width: number, height: number): void {
+        const padding = Math.min(2, Math.floor(this._configuration.gapSize / 2));
+        const pixelX = Math.floor(x);
+        const pixelY = Math.floor(y);
+        const pixelWidth = Math.ceil(width);
+        const pixelHeight = Math.ceil(height);
+
+        if (padding <= 0 || pixelWidth <= 0 || pixelHeight <= 0) {
+            return;
+        }
+
+        for (let offset = 1; offset <= padding; offset++) {
+            // Left edge
+            if (pixelX - offset >= 0) {
+                page.context.drawImage(page.canvas, pixelX, pixelY, 1, pixelHeight, pixelX - offset, pixelY, 1, pixelHeight);
+            }
+
+            // Right edge
+            if (pixelX + pixelWidth - 1 + offset < this._configuration.spriteAtlasWidth) {
+                page.context.drawImage(page.canvas, pixelX + pixelWidth - 1, pixelY, 1, pixelHeight, pixelX + pixelWidth - 1 + offset, pixelY, 1, pixelHeight);
+            }
+
+            // Top edge
+            if (pixelY - offset >= 0) {
+                page.context.drawImage(page.canvas, pixelX, pixelY, pixelWidth, 1, pixelX, pixelY - offset, pixelWidth, 1);
+            }
+
+            // Bottom edge
+            if (pixelY + pixelHeight - 1 + offset < this._configuration.spriteAtlasHeight) {
+                page.context.drawImage(page.canvas, pixelX, pixelY + pixelHeight - 1, pixelWidth, 1, pixelX, pixelY + pixelHeight - 1 + offset, pixelWidth, 1);
+            }
+
+            // Top-left corner
+            if (pixelX - offset >= 0 && pixelY - offset >= 0) {
+                page.context.drawImage(page.canvas, pixelX, pixelY, 1, 1, pixelX - offset, pixelY - offset, 1, 1);
+            }
+
+            // Top-right corner
+            if (pixelX + pixelWidth - 1 + offset < this._configuration.spriteAtlasWidth && pixelY - offset >= 0) {
+                page.context.drawImage(page.canvas, pixelX + pixelWidth - 1, pixelY, 1, 1, pixelX + pixelWidth - 1 + offset, pixelY - offset, 1, 1);
+            }
+
+            // Bottom-left corner
+            if (pixelX - offset >= 0 && pixelY + pixelHeight - 1 + offset < this._configuration.spriteAtlasHeight) {
+                page.context.drawImage(page.canvas, pixelX, pixelY + pixelHeight - 1, 1, 1, pixelX - offset, pixelY + pixelHeight - 1 + offset, 1, 1);
+            }
+
+            // Bottom-right corner
+            if (pixelX + pixelWidth - 1 + offset < this._configuration.spriteAtlasWidth && pixelY + pixelHeight - 1 + offset < this._configuration.spriteAtlasHeight) {
+                page.context.drawImage(
+                    page.canvas,
+                    pixelX + pixelWidth - 1,
+                    pixelY + pixelHeight - 1,
+                    1,
+                    1,
+                    pixelX + pixelWidth - 1 + offset,
+                    pixelY + pixelHeight - 1 + offset,
+                    1,
+                    1
+                );
+            }
+        }
+    }
+
+    private _drawVectorShape(rawElements: RawElement[], boundingBox: BoundingBox, scalingFactor: IVector2Like, page: AtlasPage): void {
+        page.context.save();
+        page.context.globalCompositeOperation = "destination-over";
+
+        page.context.translate(page.currentX + Math.ceil(boundingBox.strokeInset / 2), page.currentY + Math.ceil(boundingBox.strokeInset / 2));
+        page.context.scale(scalingFactor.x, scalingFactor.y);
+
+        page.context.beginPath();
+        page.context.rect(0, 0, boundingBox.width, boundingBox.height);
+        page.context.clip();
+        page.context.beginPath();
 
         for (let i = 0; i < rawElements.length; i++) {
             const shape = rawElements[i];
             switch (shape.ty) {
                 case "rc":
-                    this._drawRectangle(shape as RawRectangleShape, boundingBox);
+                    this._drawRectangle(shape as RawRectangleShape, boundingBox, page.context);
+                    break;
+                case "el":
+                    this._drawEllipse(shape as RawEllipseShape, boundingBox, page.context);
                     break;
                 case "sh":
-                    this._drawPath(shape as RawPathShape, boundingBox);
+                    this._drawPath(shape as RawPathShape, boundingBox, page.context);
                     break;
                 case "fl":
-                    this._drawFill(shape as RawFillShape);
+                    this._drawFill(shape as RawFillShape, page.context);
                     break;
                 case "st":
-                    this._drawStroke(shape as RawStrokeShape);
+                    this._drawStroke(shape as RawStrokeShape, page.context);
                     break;
                 case "gf":
-                    this._drawGradientFill(shape as RawGradientFillShape, boundingBox);
+                    this._drawGradientFill(shape as RawGradientFillShape, boundingBox, page.context);
                     break;
                 case "tr":
                     break; // Nothing needed with transforms
             }
         }
 
-        this._spritesCanvasContext.restore();
+        page.context.restore();
     }
 
-    // This function assumes that GetTextBoundingBox has already been called as to measure the text
-    // we need to setup the canvas context with the correct font and styles, so we don't set them up here
-    // again, but we still need to make sure to restore the context when we are done
-    private _drawText(textData: RawTextData, boundingBox: BoundingBox, scalingFactor: IVector2Like): void {
+    private _drawText(textData: RawTextData, boundingBox: BoundingBox, scalingFactor: IVector2Like, page: AtlasPage): void {
         if (this._rawFonts === undefined) {
-            this._spritesCanvasContext.restore();
             return;
         }
 
-        this._spritesCanvasContext.translate(this._currentX, this._currentY);
-        this._spritesCanvasContext.scale(scalingFactor.x, scalingFactor.y);
-
         const textInfo = textData.d.k[0].s as RawTextDocument;
+
+        const fontFamily = textInfo.f;
+        const finalFont = this._rawFonts.get(fontFamily);
+        if (!finalFont) {
+            return;
+        }
+
+        page.context.save();
+        page.context.translate(page.currentX, page.currentY);
+        page.context.scale(scalingFactor.x, scalingFactor.y);
+
+        // Set up font (same setup as GetTextBoundingBox for measurement consistency)
+        const weight = finalFont.fWeight || "400";
+        page.context.font = `${weight} ${textInfo.s}px ${finalFont.fFamily}`;
+
+        if (textInfo.sc !== undefined && textInfo.sc.length >= 3 && textInfo.sw !== undefined && textInfo.sw > 0) {
+            page.context.lineWidth = textInfo.sw;
+        }
+
+        // Clip to cell bounds to prevent text overdraw into adjacent cells
+        page.context.beginPath();
+        page.context.rect(0, 0, boundingBox.width, boundingBox.height);
+        page.context.clip();
 
         if (textInfo.fc !== undefined && textInfo.fc.length >= 3) {
             const rawFillStyle = textInfo.fc;
             if (Array.isArray(rawFillStyle)) {
                 // If the fill style is an array, we assume it's a color array
-                this._spritesCanvasContext.fillStyle = this._lottieColorToCSSColor(rawFillStyle, 1);
+                page.context.fillStyle = this._lottieColorToCSSColor(rawFillStyle, 1);
             } else {
                 // If it's a string, we need to get the value from the variables map
                 const variableFillStyle = this._variables.get(rawFillStyle);
                 if (variableFillStyle !== undefined) {
-                    this._spritesCanvasContext.fillStyle = variableFillStyle;
+                    page.context.fillStyle = variableFillStyle;
                 }
             }
         }
 
         if (textInfo.sc !== undefined && textInfo.sc.length >= 3 && textInfo.sw !== undefined && textInfo.sw > 0) {
-            this._spritesCanvasContext.strokeStyle = this._lottieColorToCSSColor(textInfo.sc, 1);
+            page.context.strokeStyle = this._lottieColorToCSSColor(textInfo.sc, 1);
         }
 
         // Text is supported as a possible variable (for localization for example)
@@ -363,15 +529,15 @@ export class SpritePacker {
             text = variableText;
         }
 
-        this._spritesCanvasContext.fillText(text, 0, boundingBox.actualBoundingBoxAscent!);
+        page.context.fillText(text, 0, boundingBox.actualBoundingBoxAscent!);
         if (textInfo.sc !== undefined && textInfo.sc.length >= 3 && textInfo.sw !== undefined && textInfo.sw > 0 && textInfo.of === true) {
-            this._spritesCanvasContext.strokeText(text, 0, boundingBox.actualBoundingBoxAscent!);
+            page.context.strokeText(text, 0, boundingBox.actualBoundingBoxAscent!);
         }
 
-        this._spritesCanvasContext.restore();
+        page.context.restore();
     }
 
-    private _drawRectangle(shape: RawRectangleShape, boundingBox: BoundingBox): void {
+    private _drawRectangle(shape: RawRectangleShape, boundingBox: BoundingBox, ctx: DrawingContext): void {
         const size = GetInitialVectorValues(shape.s);
         const position = GetInitialVectorValues(shape.p);
         const radius = GetInitialScalarValue(shape.r);
@@ -381,13 +547,26 @@ export class SpritePacker {
         const y = position[1] - size[1] / 2 + boundingBox.centerY - Math.ceil(boundingBox.strokeInset);
 
         if (radius <= 0) {
-            this._spritesCanvasContext.rect(x, y, size[0], size[1]);
+            ctx.rect(x, y, size[0], size[1]);
         } else {
-            this._spritesCanvasContext.roundRect(x, y, size[0], size[1], radius);
+            ctx.roundRect(x, y, size[0], size[1], radius);
         }
     }
 
-    private _drawPath(shape: RawPathShape, boundingBox: BoundingBox): void {
+    private _drawEllipse(shape: RawEllipseShape, boundingBox: BoundingBox, ctx: DrawingContext): void {
+        const size = GetInitialVectorValues(shape.s);
+        const position = GetInitialVectorValues(shape.p);
+
+        const centerX = position[0] + boundingBox.centerX - Math.ceil(boundingBox.strokeInset);
+        const centerY = position[1] + boundingBox.centerY - Math.ceil(boundingBox.strokeInset);
+        const radiusX = size[0] / 2;
+        const radiusY = size[1] / 2;
+
+        ctx.moveTo(centerX + radiusX, centerY);
+        ctx.ellipse(centerX, centerY, radiusX, radiusY, 0, 0, Math.PI * 2);
+    }
+
+    private _drawPath(shape: RawPathShape, boundingBox: BoundingBox, ctx: DrawingContext): void {
         // The path data has to be translated to the center of the bounding box
         // If the paths have stroke, we need to account for the stroke width
         const pathData = GetInitialBezierData(shape.ks);
@@ -402,7 +581,7 @@ export class SpritePacker {
         const outTangents = pathData.o;
 
         if (vertices.length > 0) {
-            this._spritesCanvasContext.moveTo(vertices[0][0] + xTranslate, vertices[0][1] + yTranslate);
+            ctx.moveTo(vertices[0][0] + xTranslate, vertices[0][1] + yTranslate);
 
             for (let i = 0; i < vertices.length - 1; i++) {
                 const start = vertices[i];
@@ -410,7 +589,7 @@ export class SpritePacker {
                 const outTangent = outTangents[i];
                 const inTangent = inTangents[i + 1];
 
-                this._spritesCanvasContext.bezierCurveTo(
+                ctx.bezierCurveTo(
                     start[0] + xTranslate + outTangent[0],
                     start[1] + yTranslate + outTangent[1],
                     end[0] + xTranslate + inTangent[0],
@@ -427,7 +606,7 @@ export class SpritePacker {
                 const outTangent = outTangents[vertices.length - 1];
                 const inTangent = inTangents[0];
 
-                this._spritesCanvasContext.bezierCurveTo(
+                ctx.bezierCurveTo(
                     start[0] + xTranslate + outTangent[0],
                     start[1] + yTranslate + outTangent[1],
                     end[0] + xTranslate + inTangent[0],
@@ -436,38 +615,38 @@ export class SpritePacker {
                     end[1] + yTranslate
                 );
 
-                this._spritesCanvasContext.closePath();
+                ctx.closePath();
             }
         }
     }
 
-    private _drawFill(fill: RawFillShape): void {
+    private _drawFill(fill: RawFillShape, ctx: DrawingContext): void {
         const color = this._lottieColorToCSSColor(fill.c.k as number[], (fill.o.k as number) / 100);
-        this._spritesCanvasContext.fillStyle = color;
+        ctx.fillStyle = color;
 
-        this._spritesCanvasContext.fill();
+        ctx.fill();
     }
 
-    private _drawStroke(stroke: RawStrokeShape): void {
+    private _drawStroke(stroke: RawStrokeShape, ctx: DrawingContext): void {
         // Color and opacity
         const opacity = (stroke.o?.k as number) ?? 100;
         const color = this._lottieColorToCSSColor((stroke.c?.k as number[]) ?? [0, 0, 0], opacity / 100);
-        this._spritesCanvasContext.strokeStyle = color;
+        ctx.strokeStyle = color;
 
         // Width
         const width = (stroke.w?.k as number) ?? 1;
-        this._spritesCanvasContext.lineWidth = width;
+        ctx.lineWidth = width;
 
         // Line cap
         switch (stroke.lc) {
             case 1:
-                this._spritesCanvasContext.lineCap = "butt";
+                ctx.lineCap = "butt";
                 break;
             case 2:
-                this._spritesCanvasContext.lineCap = "round";
+                ctx.lineCap = "round";
                 break;
             case 3:
-                this._spritesCanvasContext.lineCap = "square";
+                ctx.lineCap = "square";
                 break;
             default:
                 // leave default
@@ -477,13 +656,13 @@ export class SpritePacker {
         // Line join
         switch (stroke.lj) {
             case 1:
-                this._spritesCanvasContext.lineJoin = "miter";
+                ctx.lineJoin = "miter";
                 break;
             case 2:
-                this._spritesCanvasContext.lineJoin = "round";
+                ctx.lineJoin = "round";
                 break;
             case 3:
-                this._spritesCanvasContext.lineJoin = "bevel";
+                ctx.lineJoin = "bevel";
                 break;
             default:
                 // leave default
@@ -492,7 +671,7 @@ export class SpritePacker {
 
         // Miter limit
         if (stroke.ml !== undefined) {
-            this._spritesCanvasContext.miterLimit = stroke.ml;
+            ctx.miterLimit = stroke.ml;
         }
 
         // Dash pattern
@@ -505,26 +684,26 @@ export class SpritePacker {
                 }
             }
 
-            this._spritesCanvasContext.setLineDash(lineDashes);
+            ctx.setLineDash(lineDashes);
         }
 
-        this._spritesCanvasContext.stroke();
+        ctx.stroke();
     }
 
-    private _drawGradientFill(fill: RawGradientFillShape, boundingBox: BoundingBox): void {
+    private _drawGradientFill(fill: RawGradientFillShape, boundingBox: BoundingBox, ctx: DrawingContext): void {
         switch (fill.t) {
             case 1: {
-                this._drawLinearGradientFill(fill, boundingBox);
+                this._drawLinearGradientFill(fill, boundingBox, ctx);
                 break;
             }
             case 2: {
-                this._drawRadialGradientFill(fill, boundingBox);
+                this._drawRadialGradientFill(fill, boundingBox, ctx);
                 break;
             }
         }
     }
 
-    private _drawLinearGradientFill(fill: RawGradientFillShape, boundingBox: BoundingBox): void {
+    private _drawLinearGradientFill(fill: RawGradientFillShape, boundingBox: BoundingBox, ctx: DrawingContext): void {
         // We need to translate the gradient to the center of the bounding box
         const xTranslate = boundingBox.centerX;
         const yTranslate = boundingBox.centerY;
@@ -532,20 +711,15 @@ export class SpritePacker {
         // Create the gradient
         const startPoint = fill.s.k as number[];
         const endPoint = fill.e.k as number[];
-        const gradient = this._spritesCanvasContext.createLinearGradient(
-            startPoint[0] + xTranslate,
-            startPoint[1] + yTranslate,
-            endPoint[0] + xTranslate,
-            endPoint[1] + yTranslate
-        );
+        const gradient = ctx.createLinearGradient(startPoint[0] + xTranslate, startPoint[1] + yTranslate, endPoint[0] + xTranslate, endPoint[1] + yTranslate);
 
         this._addColorStops(gradient, fill);
 
-        this._spritesCanvasContext.fillStyle = gradient;
-        this._spritesCanvasContext.fill();
+        ctx.fillStyle = gradient;
+        ctx.fill();
     }
 
-    private _drawRadialGradientFill(fill: RawGradientFillShape, boundingBox: BoundingBox): void {
+    private _drawRadialGradientFill(fill: RawGradientFillShape, boundingBox: BoundingBox, ctx: DrawingContext): void {
         // We need to translate the gradient to the center of the bounding box
         const xTranslate = boundingBox.centerX;
         const yTranslate = boundingBox.centerY;
@@ -557,12 +731,12 @@ export class SpritePacker {
         const centerX = startPoint[0] + xTranslate;
         const centerY = startPoint[1] + yTranslate;
         const outerRadius = Math.hypot(endPoint[0] - startPoint[0], endPoint[1] - startPoint[1]);
-        const gradient = this._spritesCanvasContext.createRadialGradient(centerX, centerY, 0, centerX, centerY, outerRadius);
+        const gradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, outerRadius);
 
         this._addColorStops(gradient, fill);
 
-        this._spritesCanvasContext.fillStyle = gradient;
-        this._spritesCanvasContext.fill();
+        ctx.fillStyle = gradient;
+        ctx.fill();
     }
 
     private _addColorStops(gradient: CanvasGradient, fill: RawGradientFillShape): void {

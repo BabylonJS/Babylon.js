@@ -48,6 +48,48 @@
             "referenceImage": "gsplat-spz-sh.png"
         },
         {
+            "title": "Gaussian Splatting SPZ SH No WASM",
+            "playgroundId": "##XSNFXP#12",
+            "renderCount": 15,
+            "referenceImage": "gsplat-spz-sh.png"
+        },
+        {
+            "title": "Gaussian Splatting SPZ Extensions",
+            "playgroundId": "#XSNFXP#8",
+            "renderCount": 15,
+            "referenceImage": "gsplat-spz-extensions.png"
+        },
+        {
+            "title": "Gaussian Splatting SPZ SH Order 4",
+            "playgroundId": "#XSNFXP#5",
+            "renderCount": 15,
+            "referenceImage": "gsplat-spz-sh-order-4.png"
+        },
+        {
+            "title": "Gaussian Splatting SPZ SH Order 4 No WASM",
+            "playgroundId": "#XSNFXP#13",
+            "renderCount": 15,
+            "referenceImage": "gsplat-spz-sh-order-4.png"
+        },
+        {
+            "title": "Gaussian Splatting SPZ Detailed Splat",
+            "playgroundId": "#XSNFXP#6",
+            "renderCount": 15,
+            "referenceImage": "gsplat-spz-detailed-splat.png"
+        },
+        {
+            "title": "Gaussian Splatting SPZ Detailed Splat No WASM",
+            "playgroundId": "#XSNFXP#14",
+            "renderCount": 15,
+            "referenceImage": "gsplat-spz-detailed-splat.png"
+        },
+        {
+            "title": "Gaussian Splatting PLY SH Order 4",
+            "playgroundId": "#XSNFXP#7",
+            "renderCount": 15,
+            "referenceImage": "gsplat-ply-sh-order-4.png"
+        },
+        {
             "title": "Gaussian Splatting Update Data",
             "playgroundId": "#Q0LBM8#2",
             "renderCount": 15,
@@ -2461,8 +2503,7 @@
         },
         {
             "title": "dissolve-effect-with-node-material-and-glow-layer",
-            "renderCount": 2,
-            "playgroundId": "#F6PGMC#12"
+            "playgroundId": "#F6PGMC#16"
         },
         {
             "title": "cascaded-shadow-maps-and-flying-saucers",
@@ -3967,6 +4008,11 @@
             "playgroundId": "#8I487I#0"
         },
         {
+            "title": "Selection outline layer instance selected with LOD",
+            "playgroundId": "#M4HHTC#0",
+            "referenceImage": "selectionOutlineInstanceLOD.png"
+        },
+        {
             "title": "Vertex Pulling - Normals UVs Colors Tangents",
             "playgroundId": "#664OF3#6",
             "referenceImage": "vertexPullingNormalsUVsColors.png",
@@ -4147,6 +4193,54 @@
             "excludedEngines": ["webgl1"]
         },
         {
+            "title": "GPU Particles - Change - Emit Rate Gradient",
+            "playgroundId": "#SV62YO#1",
+            "referenceImage": "gpu-particles-change-emit-rate-gradient.png",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "GPU Particles - Change - Emit Rate Gradient 2",
+            "playgroundId": "#RBK6TJ#1",
+            "referenceImage": "gpu-particles-change-emit-rate-gradient-2.png",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "GPU Particles - Change - Emit Rate Gradient Range",
+            "playgroundId": "#9KLZH0#1",
+            "referenceImage": "gpu-particles-change-emit-rate-gradient-range.png",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "GPU Particles - Change - Start Size Gradient",
+            "playgroundId": "#HF5UQ7#0",
+            "referenceImage": "gpu-particles-change-start-size-gradient.png",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "GPU Particles - Change - Start Size Gradient Range",
+            "playgroundId": "#9QAHDL#0",
+            "referenceImage": "gpu-particles-change-start-size-gradient-range.png",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "GPU Particles - Change - Lifetime Gradient",
+            "playgroundId": "#ZEQD5L#0",
+            "referenceImage": "gpu-particles-change-lifetime-gradient.png",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "GPU Particles - Change - Lifetime Gradient 2",
+            "playgroundId": "#E980M9#0",
+            "referenceImage": "gpu-particles-change-lifetime-gradient-2.png",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "GPU Particles - Change - Lifetime Gradient Range",
+            "playgroundId": "#716Y0L#0",
+            "referenceImage": "gpu-particles-change-lifetime-gradient-range.png",
+            "excludedEngines": ["webgl1"]
+        },
+        {
             "title": "GPU Particles - Emitters - Point",
             "playgroundId": "#PS8GQ3#0",
             "referenceImage": "gpu-particles-emitters-point.png",
@@ -4202,6 +4296,13 @@
             "excludedEngines": ["webgl1"]
         },
         {
+            "title": "GPU Particles - Emitters - Mesh",
+            "playgroundId": "#7XBJVF#0",
+            "referenceImage": "gpu-particles-emitters-mesh.png",
+            "renderCount": 120,
+            "excludedEngines": ["webgl1"]
+        },
+        {
             "title": "GPU Particles - Billboard Y",
             "playgroundId": "#8QHGVT#0",
             "referenceImage": "gpu-particles-billboard-y.png",
@@ -4211,6 +4312,12 @@
             "title": "GPU Particles - Billboard Stretched",
             "playgroundId": "#0612KX#0",
             "referenceImage": "gpu-particles-billboard-stretched.png",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "GPU Particles - Billboard Stretched Local",
+            "playgroundId": "#HLL4B1#0",
+            "referenceImage": "gpu-particles-billboard-stretched-local.png",
             "excludedEngines": ["webgl1"]
         },
         {

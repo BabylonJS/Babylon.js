@@ -1108,10 +1108,10 @@ export class TransformNode extends Node {
         if (this._infiniteDistance) {
             if (!this.parent && camera) {
                 const cameraWorldMatrix = camera.getWorldMatrix();
-                const cameraGlobalPosition = new Vector3(cameraWorldMatrix.m[12], cameraWorldMatrix.m[13], cameraWorldMatrix.m[14]);
+                const m = cameraWorldMatrix.m;
 
                 translation = TransformNode._TmpTranslation;
-                translation.copyFromFloats(this._position.x + cameraGlobalPosition.x, this._position.y + cameraGlobalPosition.y, this._position.z + cameraGlobalPosition.z);
+                translation.copyFromFloats(this._position.x + m[12], this._position.y + m[13], this._position.z + m[14]);
             }
         }
 

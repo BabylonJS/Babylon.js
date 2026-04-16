@@ -13,7 +13,7 @@ attribute vec3 position;
 attribute float age;
 attribute float life;
 attribute vec3 size;
-#ifndef BILLBOARD
+#if !defined(BILLBOARD) || defined(BILLBOARDSTRETCHED_LOCAL)
 attribute vec3 initialDirection;
 #endif
 #ifdef BILLBOARDSTRETCHED
@@ -74,12 +74,21 @@ vec3 rotate(vec3 yaxis, vec3 rotatedCorner) {
 #ifdef BILLBOARDSTRETCHED
 vec3 rotateAlign(vec3 toCamera, vec3 rotatedCorner) {
 	vec3 normalizedToCamera = normalize(toCamera);
+#ifdef BILLBOARDSTRETCHED_LOCAL
+	vec3 normalizedCrossDirToCamera = normalize(cross(normalize(initialDirection), normalizedToCamera));
+#else
 	vec3 normalizedCrossDirToCamera = normalize(cross(normalize(direction), normalizedToCamera));
-	vec3 crossProduct = normalize(cross(normalizedToCamera, normalizedCrossDirToCamera));
+#endif
 
 	vec3 row0 = vec3(normalizedCrossDirToCamera.x, normalizedCrossDirToCamera.y, normalizedCrossDirToCamera.z);
-	vec3 row1 = vec3(crossProduct.x, crossProduct.y, crossProduct.z);
 	vec3 row2 = vec3(normalizedToCamera.x, normalizedToCamera.y, normalizedToCamera.z);
+
+#ifdef BILLBOARDSTRETCHED_LOCAL
+	vec3 row1 = normalize(initialDirection);
+#else
+	vec3 crossProduct = normalize(cross(normalizedToCamera, normalizedCrossDirToCamera));
+	vec3 row1 = vec3(crossProduct.x, crossProduct.y, crossProduct.z);
+#endif
 
 	mat3 rotMatrix =  mat3(row0, row1, row2);
 

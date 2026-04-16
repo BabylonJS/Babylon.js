@@ -1,7 +1,8 @@
-import { Button, tokens } from "@fluentui/react-components";
-import { PlugConnectedRegular, PlugDisconnectedRegular } from "@fluentui/react-icons";
-import { useEffect, useRef } from "react";
+import { Body1, Button, makeStyles, tokens } from "@fluentui/react-components";
+import { PlugConnectedCheckmarkRegular, PlugConnectedRegular, PlugDisconnectedRegular } from "@fluentui/react-icons";
+import { useEffect, useRef, useState } from "react";
 
+import { Link } from "shared-ui-components/fluent/primitives/link";
 import { useToast } from "shared-ui-components/fluent/primitives/toast";
 import { Tooltip } from "shared-ui-components/fluent/primitives/tooltip";
 import { useObservableState } from "shared-ui-components/modularTool/hooks/observableHooks";
@@ -9,6 +10,16 @@ import { type ServiceDefinition } from "shared-ui-components/modularTool/modular
 import { type ICliConnectionStatus, CliConnectionStatusIdentity } from "./cli/cliConnectionStatus";
 import { DefaultToolbarItemOrder } from "./defaultToolbarMetadata";
 import { type IShellService, ShellServiceIdentity } from "shared-ui-components/modularTool/services/shellService";
+
+const DocUrl = "https://www.npmjs.com/package/@babylonjs/inspector#inspector-cli";
+
+const useStyles = makeStyles({
+    tooltipContent: {
+        display: "flex",
+        flexDirection: "column",
+        gap: tokens.spacingVerticalXS,
+    },
+});
 
 export const CliConnectionStatusServiceDefinition: ServiceDefinition<[], [IShellService, ICliConnectionStatus]> = {
     friendlyName: "CLI Connection Status",
@@ -21,9 +32,23 @@ export const CliConnectionStatusServiceDefinition: ServiceDefinition<[], [IShell
             teachingMoment: false,
             order: DefaultToolbarItemOrder.CliStatus,
             component: () => {
+                const classes = useStyles();
+                const isEnabled = useObservableState(() => cliConnectionStatus.isEnabled, cliConnectionStatus.onConnectionStatusChanged);
                 const isConnected = useObservableState(() => cliConnectionStatus.isConnected, cliConnectionStatus.onConnectionStatusChanged);
                 const { showToast } = useToast();
                 const isFirstRender = useRef(true);
+                const [connectingIconToggle, setConnectingIconToggle] = useState(false);
+                const connecting = isEnabled && !isConnected;
+
+                useEffect(() => {
+                    if (!connecting) {
+                        return;
+                    }
+                    const interval = setInterval(() => {
+                        setConnectingIconToggle((prev) => !prev);
+                    }, 700);
+                    return () => clearInterval(interval);
+                }, [connecting]);
 
                 useEffect(() => {
                     if (isFirstRender.current) {
@@ -37,19 +62,41 @@ export const CliConnectionStatusServiceDefinition: ServiceDefinition<[], [IShell
                     }
                 }, [isConnected, showToast]);
 
-                // Using raw Fluent Button to pass color directly to the icon.
+                let icon: JSX.Element;
+                let statusText: string;
+
+                if (!isEnabled) {
+                    icon = <PlugDisconnectedRegular color={tokens.colorNeutralForeground4} />;
+                    statusText = "Inspector CLI bridge disabled — click to connect";
+                } else if (!isConnected) {
+                    icon = connectingIconToggle ? (
+                        <PlugConnectedRegular color={tokens.colorPaletteYellowForeground2} />
+                    ) : (
+                        <PlugDisconnectedRegular color={tokens.colorPaletteYellowForeground2} />
+                    );
+                    statusText = "Connecting to Inspector CLI bridge — click to disconnect";
+                } else {
+                    icon = <PlugConnectedCheckmarkRegular color={tokens.colorPaletteGreenForeground2} />;
+                    statusText = "Connected to Inspector CLI bridge — click to disconnect";
+                }
+
+                const tooltipContent = (
+                    <div className={classes.tooltipContent}>
+                        <Body1>{statusText}</Body1>
+                        <Link url={DocUrl} value="Inspector CLI documentation" />
+                    </div>
+                );
+
+                // Using raw Fluent Button for custom icon coloring per connection state.
                 return (
-                    <Tooltip content={isConnected ? "Connected to Inspector CLI Bridge" : "Disconnected from Inspector CLI Bridge"}>
+                    <Tooltip content={tooltipContent}>
                         <Button
                             appearance="subtle"
-                            icon={
-                                isConnected ? (
-                                    <PlugConnectedRegular color={tokens.colorPaletteGreenForeground2} />
-                                ) : (
-                                    <PlugDisconnectedRegular color={tokens.colorPaletteRedForeground2} />
-                                )
-                            }
-                            onClick={() => window.open("https://www.npmjs.com/package/@babylonjs/inspector", "_blank")}
+                            aria-label={statusText}
+                            icon={icon}
+                            onClick={() => {
+                                cliConnectionStatus.isEnabled = !cliConnectionStatus.isEnabled;
+                            }}
                         />
                     </Tooltip>
                 );

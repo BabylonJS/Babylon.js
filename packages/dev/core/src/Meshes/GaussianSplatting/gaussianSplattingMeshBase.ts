@@ -224,6 +224,33 @@ const enum PLYValue {
     SH_42,
     SH_43,
     SH_44,
+    SH_45,
+    SH_46,
+    SH_47,
+    SH_48,
+    SH_49,
+    SH_50,
+    SH_51,
+    SH_52,
+    SH_53,
+    SH_54,
+    SH_55,
+    SH_56,
+    SH_57,
+    SH_58,
+    SH_59,
+    SH_60,
+    SH_61,
+    SH_62,
+    SH_63,
+    SH_64,
+    SH_65,
+    SH_66,
+    SH_67,
+    SH_68,
+    SH_69,
+    SH_70,
+    SH_71,
 
     UNDEFINED,
 }
@@ -345,6 +372,7 @@ export class GaussianSplattingMeshBase extends Mesh {
     private static _PlyConversionBatchSize = 32768;
     /** @internal */
     public _shDegree = 0;
+    private _maxShDegree = 0;
 
     private static readonly _BatchSize = 16; // 16 splats per instance
     private _cameraViewInfos = new Map<number, ICameraViewInfo>();
@@ -392,7 +420,7 @@ export class GaussianSplattingMeshBase extends Mesh {
     }
 
     public set shDegree(value: number) {
-        const maxDegree = this._shTextures?.length ?? 0;
+        const maxDegree = this._maxShDegree;
         const clamped = Math.max(0, Math.min(Math.round(value), maxDegree));
         if (this._shDegree === clamped) {
             return;
@@ -405,7 +433,7 @@ export class GaussianSplattingMeshBase extends Mesh {
      * Maximum SH degree available from the loaded data.
      */
     public get maxShDegree() {
-        return this._shTextures?.length ?? 0;
+        return this._maxShDegree;
     }
 
     /**
@@ -981,6 +1009,60 @@ export class GaussianSplattingMeshBase extends Mesh {
                 return PLYValue.SH_43;
             case "f_rest_44":
                 return PLYValue.SH_44;
+            case "f_rest_45":
+                return PLYValue.SH_45;
+            case "f_rest_46":
+                return PLYValue.SH_46;
+            case "f_rest_47":
+                return PLYValue.SH_47;
+            case "f_rest_48":
+                return PLYValue.SH_48;
+            case "f_rest_49":
+                return PLYValue.SH_49;
+            case "f_rest_50":
+                return PLYValue.SH_50;
+            case "f_rest_51":
+                return PLYValue.SH_51;
+            case "f_rest_52":
+                return PLYValue.SH_52;
+            case "f_rest_53":
+                return PLYValue.SH_53;
+            case "f_rest_54":
+                return PLYValue.SH_54;
+            case "f_rest_55":
+                return PLYValue.SH_55;
+            case "f_rest_56":
+                return PLYValue.SH_56;
+            case "f_rest_57":
+                return PLYValue.SH_57;
+            case "f_rest_58":
+                return PLYValue.SH_58;
+            case "f_rest_59":
+                return PLYValue.SH_59;
+            case "f_rest_60":
+                return PLYValue.SH_60;
+            case "f_rest_61":
+                return PLYValue.SH_61;
+            case "f_rest_62":
+                return PLYValue.SH_62;
+            case "f_rest_63":
+                return PLYValue.SH_63;
+            case "f_rest_64":
+                return PLYValue.SH_64;
+            case "f_rest_65":
+                return PLYValue.SH_65;
+            case "f_rest_66":
+                return PLYValue.SH_66;
+            case "f_rest_67":
+                return PLYValue.SH_67;
+            case "f_rest_68":
+                return PLYValue.SH_68;
+            case "f_rest_69":
+                return PLYValue.SH_69;
+            case "f_rest_70":
+                return PLYValue.SH_70;
+            case "f_rest_71":
+                return PLYValue.SH_71;
         }
 
         return PLYValue.UNDEFINED;
@@ -1035,10 +1117,12 @@ export class GaussianSplattingMeshBase extends Mesh {
 
                 const value = GaussianSplattingMeshBase._ValueNameToEnum(name);
                 if (value != PLYValue.UNDEFINED) {
-                    // SH degree 1,2 or 3 for 9, 24 or 45 values
-                    if (value >= PLYValue.SH_44) {
-                        shDegree = 3;
-                    } else if (value >= PLYValue.SH_24) {
+                    // SH degree 1,2,3 or 4 for 9, 24, 45 or 72 values
+                    if (value >= PLYValue.SH_71) {
+                        shDegree = 4;
+                    } else if (value >= PLYValue.SH_44) {
+                        shDegree = Math.max(shDegree, 3);
+                    } else if (value >= PLYValue.SH_23) {
                         shDegree = Math.max(shDegree, 2);
                     } else if (value >= PLYValue.SH_8) {
                         shDegree = Math.max(shDegree, 1);
@@ -1326,7 +1410,7 @@ export class GaussianSplattingMeshBase extends Mesh {
                     r3 = value;
                     break;
             }
-            if (sh && property.value >= PLYValue.SH_0 && property.value <= PLYValue.SH_44) {
+            if (sh && property.value >= PLYValue.SH_0 && property.value <= PLYValue.SH_71) {
                 const shIndex = property.value - PLYValue.SH_0;
                 if (property.type == PLYType.UCHAR && header.chunkCount) {
                     // compressed ply. dataView points to beginning of vertex
@@ -1344,7 +1428,7 @@ export class GaussianSplattingMeshBase extends Mesh {
         }
 
         if (sh) {
-            const shDim = header.shDegree == 1 ? 3 : header.shDegree == 2 ? 8 : 15;
+            const shDim = header.shDegree == 1 ? 3 : header.shDegree == 2 ? 8 : header.shDegree == 3 ? 15 : 24;
             for (let j = 0; j < shDim; j++) {
                 sh[j * 3 + 0] = plySH[j];
                 sh[j * 3 + 1] = plySH[j + shDim];
@@ -1420,7 +1504,7 @@ export class GaussianSplattingMeshBase extends Mesh {
             }
         }
 
-        return { buffer: header.buffer, sh: sh };
+        return { buffer: header.buffer, sh: sh, shDegree: header.shDegree };
     }
 
     /**
@@ -1923,7 +2007,8 @@ export class GaussianSplattingMeshBase extends Mesh {
         isAsync: boolean,
         sh?: Uint8Array[],
         partIndices?: Uint8Array,
-        { flipY = false, previousVertexCount = 0 }: IUpdateOptions = {}
+        { flipY = false, previousVertexCount = 0 }: IUpdateOptions = {},
+        shDegree?: number
     ): Coroutine<void> {
         if (!this._covariancesATexture) {
             this._readyToDisplay = false;
@@ -1950,8 +2035,8 @@ export class GaussianSplattingMeshBase extends Mesh {
             this._updateSplatIndexBuffer(vertexCount);
         }
         this._vertexCount = vertexCount;
-        // degree == 1 for 1 texture (3 terms), 2 for 2 textures (8 terms) and 3 for 3 textures (15 terms)
-        this._shDegree = sh ? sh.length : 0;
+        this._maxShDegree = sh ? (shDegree ?? 0) : 0;
+        this._shDegree = this._maxShDegree;
 
         const textureSize = this._getTextureSize(vertexCount);
         const textureLength = textureSize.x * textureSize.y;
@@ -2073,10 +2158,11 @@ export class GaussianSplattingMeshBase extends Mesh {
      * @param data array buffer containing center, color, orientation and scale of splats
      * @param sh optional array of uint8 array for SH data
      * @param partIndices optional array of uint8 for rig node indices
+     * @param shDegree optional SH degree of the data
      * @returns a promise
      */
-    public async updateDataAsync(data: ArrayBuffer, sh?: Uint8Array[], partIndices?: Uint8Array): Promise<void> {
-        return await runCoroutineAsync(this._updateData(data, true, sh, partIndices), createYieldingScheduler());
+    public async updateDataAsync(data: ArrayBuffer, sh?: Uint8Array[], partIndices?: Uint8Array, shDegree?: number): Promise<void> {
+        return await runCoroutineAsync(this._updateData(data, true, sh, partIndices, undefined, shDegree), createYieldingScheduler());
     }
 
     /**
@@ -2086,9 +2172,10 @@ export class GaussianSplattingMeshBase extends Mesh {
      * @param sh optional array of uint8 array for SH data
      * @param options optional informations on how to treat data (needs to be 3rd for backward compatibility)
      * @param partIndices optional array of uint8 for rig node indices
+     * @param shDegree optional SH degree of the data
      */
-    public updateData(data: ArrayBuffer, sh?: Uint8Array[], options: IUpdateOptions = { flipY: true }, partIndices?: Uint8Array): void {
-        runCoroutineSync(this._updateData(data, false, sh, partIndices, options));
+    public updateData(data: ArrayBuffer, sh?: Uint8Array[], options: IUpdateOptions = { flipY: true }, partIndices?: Uint8Array, shDegree?: number): void {
+        runCoroutineSync(this._updateData(data, false, sh, partIndices, options, shDegree));
     }
 
     /**

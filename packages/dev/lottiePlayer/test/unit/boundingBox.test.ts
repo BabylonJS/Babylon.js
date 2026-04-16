@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { GetShapesBoundingBox } from "../../src/maths/boundingBox";
-import type { RawBezier, RawElement, RawPathShape, RawRectangleShape } from "../../src/parsing/rawTypes";
+import type { RawBezier, RawElement, RawEllipseShape, RawPathShape, RawRectangleShape } from "../../src/parsing/rawTypes";
 
 function makeStaticRect(position: number[], size: number[]): RawRectangleShape {
     return {
@@ -131,5 +131,46 @@ describe("GetShapesBoundingBox - paths", () => {
         expect(box.offsetY).toBe(0);
         expect(box.centerX).toBe(0);
         expect(box.centerY).toBe(0);
+    });
+});
+
+function makeStaticEllipse(position: number[], size: number[]): RawEllipseShape {
+    return {
+        ty: "el",
+        d: 1,
+        p: { a: 0, k: position, l: 2 },
+        s: { a: 0, k: size, l: 2 },
+    } as RawEllipseShape;
+}
+
+describe("GetShapesBoundingBox - ellipses", () => {
+    it("computes correct bounding box for static ellipse at non-zero center", () => {
+        const ellipse = makeStaticEllipse([50, 50], [100, 60]);
+        const box = GetShapesBoundingBox([ellipse as unknown as RawElement]);
+
+        expect(box.width).toBe(100);
+        expect(box.height).toBe(60);
+        expect(box.offsetX).toBe(50);
+        expect(box.offsetY).toBe(50);
+    });
+
+    it("computes correct offset for ellipse at non-origin position", () => {
+        const ellipse = makeStaticEllipse([20, 30], [40, 80]);
+        const box = GetShapesBoundingBox([ellipse as unknown as RawElement]);
+
+        expect(box.width).toBe(40);
+        expect(box.height).toBe(80);
+        expect(box.offsetX).toBe(20);
+        expect(box.offsetY).toBe(30);
+    });
+
+    it("computes correct bounding box for ellipse centered at origin", () => {
+        const ellipse = makeStaticEllipse([0, 0], [100, 60]);
+        const box = GetShapesBoundingBox([ellipse as unknown as RawElement]);
+
+        expect(box.width).toBe(100);
+        expect(box.height).toBe(60);
+        expect(box.offsetX).toBe(0);
+        expect(box.offsetY).toBe(0);
     });
 });

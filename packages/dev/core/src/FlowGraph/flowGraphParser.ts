@@ -127,18 +127,37 @@ export function ParseFlowGraph(serializationObject: ISerializedFlowGraph, option
             graph.addEventBlock(block);
         }
     }
-    // After parsing all blocks, connect them
+    // After parsing all blocks, connect them.
+    // Build lookup maps for O(1) connection resolution instead of O(B*P) linear scans.
+    const dataOutMap = new Map<string, FlowGraphDataConnection<any>>();
+    const signalInMap = new Map<string, FlowGraphSignalConnection>();
+    for (const block of blocks) {
+        for (const dataOut of block.dataOutputs) {
+            dataOutMap.set(dataOut.uniqueId, dataOut);
+        }
+        if (block instanceof FlowGraphExecutionBlock) {
+            for (const signalIn of block.signalInputs) {
+                signalInMap.set(signalIn.uniqueId, signalIn);
+            }
+        }
+    }
     for (const block of blocks) {
         for (const dataIn of block.dataInputs) {
             for (const serializedConnection of dataIn.connectedPointIds) {
-                const connection = GetDataOutConnectionByUniqueId(blocks, serializedConnection);
+                const connection = dataOutMap.get(serializedConnection);
+                if (!connection) {
+                    throw new Error("Could not find data out connection with unique id " + serializedConnection);
+                }
                 dataIn.connectTo(connection);
             }
         }
         if (block instanceof FlowGraphExecutionBlock) {
             for (const signalOut of block.signalOutputs) {
                 for (const serializedConnection of signalOut.connectedPointIds) {
-                    const connection = GetSignalInConnectionByUniqueId(blocks, serializedConnection);
+                    const connection = signalInMap.get(serializedConnection);
+                    if (!connection) {
+                        throw new Error("Could not find signal in connection with unique id " + serializedConnection);
+                    }
                     signalOut.connectTo(connection);
                 }
             }
@@ -245,7 +264,7 @@ export function ParseFlowGraphBlockWithClassType(
     }
     if (needsPathConverter(serializationObject.className)) {
         if (!parseOptions.pathConverter) {
-            throw new Error("Path converter is required for this block");
+            throw new Error("Block " + serializationObject.className + " requires a path converter to be provided in parse options.");
         }
         parsedConfig.pathConverter = parseOptions.pathConverter;
     }

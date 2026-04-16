@@ -2,6 +2,12 @@ import { type IDisposable } from "core/index";
 import { type IService } from "shared-ui-components/modularTool/modularity/serviceDefinition";
 
 /**
+ * The type of an inspectable command argument, which determines how
+ * the CLI processes the value before sending it to the browser.
+ */
+export type InspectableCommandArgType = "string" | "file";
+
+/**
  * Describes an argument for an inspectable command.
  */
 export type InspectableCommandArg = {
@@ -19,6 +25,13 @@ export type InspectableCommandArg = {
      * Whether the argument is required.
      */
     required?: boolean;
+
+    /**
+     * The type of the argument. Defaults to "string".
+     * When set to "file", the CLI reads the file at the given path
+     * and passes its contents as the argument value.
+     */
+    type?: InspectableCommandArgType;
 };
 
 /**

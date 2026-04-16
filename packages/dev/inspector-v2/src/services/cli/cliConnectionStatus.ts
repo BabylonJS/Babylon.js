@@ -7,16 +7,23 @@ import { type IService } from "shared-ui-components/modularTool/modularity/servi
 export const CliConnectionStatusIdentity = Symbol("CliConnectionStatus");
 
 /**
- * Provides the connection status of the Inspector CLI bridge.
+ * Provides the connection status and enable/disable control for the Inspector CLI bridge.
  */
 export interface ICliConnectionStatus extends IService<typeof CliConnectionStatusIdentity> {
+    /**
+     * Whether the bridge is enabled. When true, the bridge actively tries to
+     * maintain a WebSocket connection. When false, the bridge is disconnected
+     * and idle.
+     */
+    isEnabled: boolean;
+
     /**
      * Whether the bridge WebSocket is currently connected.
      */
     readonly isConnected: boolean;
 
     /**
-     * Observable that fires when the connection status changes.
+     * Observable that fires when either {@link isEnabled} or {@link isConnected} changes.
      */
-    readonly onConnectionStatusChanged: IReadonlyObservable<boolean>;
+    readonly onConnectionStatusChanged: IReadonlyObservable<void>;
 }

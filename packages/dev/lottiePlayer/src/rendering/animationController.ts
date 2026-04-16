@@ -150,7 +150,7 @@ export class AnimationController {
         this._engine.setAlphaMode(ALPHA_PREMULTIPLIED);
 
         this._spritePacker = new SpritePacker(this._engine, this._isHtmlCanvas(canvas), this._atlasScale, this._variables, this._configuration);
-        this._renderingManager = new RenderingManager(this._engine, this._spritePacker.texture, this._configuration);
+        this._renderingManager = new RenderingManager(this._engine, this._configuration);
 
         this._projectionMatrix = new ThinMatrix();
         this._worldMatrix = new ThinMatrix();
@@ -229,7 +229,9 @@ export class AnimationController {
 
         this._engine.dispose();
         this._renderingManager.dispose();
-        this._spritePacker.texture.dispose();
+        for (const texture of this._spritePacker.textures) {
+            texture.dispose();
+        }
     }
 
     /**

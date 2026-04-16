@@ -2,16 +2,16 @@
 /* eslint-disable github/no-then */
 /* eslint-disable @typescript-eslint/no-floating-promises */
 import * as React from "react";
-import { type GlobalState, RuntimeMode } from "../globalState";
+import { type GlobalState, RuntimeMode, type InspectorV2Module } from "../globalState";
 import { Utilities } from "../tools/utilities";
 import { DownloadManager } from "../tools/downloadManager";
 import { AddFileRevision } from "../tools/localSession";
+import { type InspectableToken } from "inspector/inspectable";
 
 import { Engine, EngineStore, WebGPUEngine, LastCreatedAudioEngine, Logger, type IDisposable, type Nullable, type Scene, type ThinEngine } from "@dev/core";
 
+import { MakePlaygroundCommandServiceDefinition } from "../tools/playgroundCommandService";
 import "../scss/rendering.scss";
-
-type InspectorV2Module = typeof import("inspector/legacy/legacy") & typeof import("inspector/index");
 
 const RunnableCreationTimeoutMs = 15000;
 const SceneRunTimeoutMs = 30000;
@@ -36,6 +36,7 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
     private _downloadManager: DownloadManager;
     private _inspectorFallback: boolean = false;
     private _inspectorV2Token: Nullable<IDisposable> = null;
+    private _inspectableToken: Nullable<InspectableToken> = null;
 
     /**
      * Create the rendering component.
@@ -123,10 +124,26 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
         window.addEventListener("error", this._saveError);
     }
 
+    private _ensureInspectable() {
+        if (this._inspectableToken && !this._inspectableToken.isDisposed) {
+            return;
+        }
+        if (!this._scene) {
+            return;
+        }
+        const inspectorV2Module: InspectorV2Module | undefined = (globalThis as any).INSPECTOR;
+        if (inspectorV2Module?.StartInspectable) {
+            this._inspectableToken = inspectorV2Module.StartInspectable(this._scene, {
+                serviceDefinitions: [MakePlaygroundCommandServiceDefinition(this.props.globalState, inspectorV2Module)],
+            });
+        }
+    }
+
     private async _showInspectorAsync() {
         if (this._scene) {
             const inspectorV2Module: InspectorV2Module | undefined = (globalThis as any).INSPECTOR;
             if (inspectorV2Module?.ShowInspector) {
+                this._ensureInspectable();
                 const options = {
                     ...inspectorV2Module.ConvertOptions({
                         embedMode: true,
@@ -291,6 +308,7 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
         }
 
         this._engine = null;
+        this._inspectableToken = null;
 
         try {
             // Set up the global object ("window" and "this" for user code).
@@ -425,6 +443,9 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
             this._scene = sceneResult as Scene;
             (window as any).scene = this._scene;
             (window as any).startRenderLoop(this._engine, canvas);
+
+            // Start the inspectable bridge for the CLI if Inspector v2 is loaded.
+            this._ensureInspectable();
 
             this._engine!.scenes[0]?.executeWhenReady(() => {
                 this.props.globalState.onRunExecutedObservable.notifyObservers();

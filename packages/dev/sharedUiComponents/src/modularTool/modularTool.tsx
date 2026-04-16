@@ -40,7 +40,8 @@ import { createRoot } from "react-dom/client";
 
 import { Deferred } from "core/Misc/deferred";
 import { Logger } from "core/Misc/logger";
-import { ToastProvider } from "shared-ui-components/fluent/primitives/toast";
+import { type ToastHandle, type ToastOptions, ToastProvider } from "shared-ui-components/fluent/primitives/toast";
+import { type IToastService, ToastServiceIdentity } from "./services/toastService";
 import { Theme } from "./components/theme";
 import { ExtensionManagerContext } from "./contexts/extensionManagerContext";
 import { SettingsStoreContext } from "./contexts/settingsContext";
@@ -150,6 +151,18 @@ export function MakeModularTool(options: ModularToolOptions): IDisposable {
         const [requiredExtensionsDeferred, setRequiredExtensionsDeferred] = useState<Deferred<boolean>>();
         const [extensionInstallError, setExtensionInstallError] = useState<InstallFailedInfo>();
 
+        const [toastHandle, setToastHandle] = useState<ToastHandle | null>(null);
+        const [toastQueue, setToastQueue] = useState<{ message: string; options?: ToastOptions }[]>([]);
+
+        useEffect(() => {
+            if (toastHandle && toastQueue.length > 0) {
+                for (const { message, options } of toastQueue) {
+                    toastHandle.showToast(message, options);
+                }
+                setToastQueue([]);
+            }
+        }, [toastHandle, toastQueue]);
+
         const [rootComponentService, setRootComponentService] = useState<IRootComponentService>();
 
         const [contexts, updateContexts] = useReducer((state: ReactContextEntry[], action: ReactContextAction): ReactContextEntry[] => {
@@ -191,6 +204,17 @@ export function MakeModularTool(options: ModularToolOptions): IDisposable {
                                     updateContexts({ type: "remove", provider: typedProvider });
                                 },
                             };
+                        },
+                    }),
+                });
+
+                // Expose the toast service so non-React code (e.g. Observable callbacks) can show toasts.
+                await serviceContainer.addServiceAsync<[IToastService], []>({
+                    friendlyName: "Toast Service",
+                    produces: [ToastServiceIdentity],
+                    factory: (): IToastService => ({
+                        showToast: (message, options) => {
+                            setToastQueue((prev) => [...prev, { message, options }]);
                         },
                     }),
                 });
@@ -321,7 +345,7 @@ export function MakeModularTool(options: ModularToolOptions): IDisposable {
                     <SettingsStoreContext.Provider value={settingsStore}>
                         <ExtensionManagerContext.Provider value={extensionManagerContext}>
                             <Theme className={classes.app}>
-                                <ToastProvider>
+                                <ToastProvider imperativeRef={setToastHandle}>
                                     <Dialog open={!!requiredExtensions} modalType="alert">
                                         <DialogSurface>
                                             <DialogBody>
