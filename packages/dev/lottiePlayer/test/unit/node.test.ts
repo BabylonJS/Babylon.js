@@ -344,4 +344,32 @@ describe("decomposeWorldMatrixAtFrame", () => {
         expect(node.positionCurrent.x).toBe(0);
         expect(node.positionCurrent.y).toBe(0);
     });
+
+    it("applies negation consistently for animated rotation keyframes", () => {
+        // Rotation keyframes are stored without negation; negation is applied at interpolation time.
+        // startValue is pre-negated by the parser. This test covers the keyframe interpolation path
+        // to guard against regressions in the sign convention.
+        const rotation = makeScalarProperty(0, [
+            { time: 0, value: 0 },
+            { time: 30, value: Math.PI / 2 },
+        ]);
+
+        const node = new Node("test", undefined, rotation);
+
+        // Drive the legacy update path to get the "ground truth" rotation at frame 15.
+        node.isVisible = true;
+        node.update(15);
+        const expectedScale = { x: 0, y: 0 };
+        const expectedTranslation = { x: 0, y: 0 };
+        const expectedRotation = node.worldMatrix.decompose(expectedScale, expectedTranslation);
+
+        // Reset and verify the at-frame path produces the same rotation without mutating state.
+        node.reset();
+        const outScale = { x: 0, y: 0 };
+        const outTranslation = { x: 0, y: 0 };
+        const outRotation = node.decomposeWorldMatrixAtFrame(15, outScale, outTranslation);
+
+        expect(outRotation).toBeCloseTo(expectedRotation, 5);
+        expect(node.rotationCurrent).toBeCloseTo(0, 5); // reset restored startValue; decomposeWorldMatrixAtFrame did not mutate
+    });
 });
