@@ -94,6 +94,13 @@ struct SimParams {
         lifeTimeGradientRange : vec2<f32>,
     #endif
 
+    #ifdef MESHEMITTER
+        meshTriangleCount : i32,
+        meshTextureWidth : i32,
+        direction1 : vec3<f32>,
+        direction2 : vec3<f32>,
+    #endif
+
     // Emitter types
 
     #ifdef BOXEMITTER
@@ -190,6 +197,13 @@ struct SimParams {
 #ifdef FLOWMAP
     @binding(12) @group(1) var flowMapSampler : sampler;
     @binding(13) @group(1) var flowMapTexture : texture_2d<f32>;
+#endif
+
+#ifdef MESHEMITTER
+    @binding(14) @group(1) var meshPositionTexture : texture_2d<f32>;
+    #ifdef MESHNORMALS
+        @binding(15) @group(1) var meshNormalTexture : texture_2d<f32>;
+    #endif
 #endif
 
 fn getRandomVec3(offset : f32, vertexID : f32) -> vec3<f32> {
@@ -382,6 +396,38 @@ fn main(@builtin(global_invocation_id) GlobalInvocationID : vec3<u32>) {
                 } else {
                     newDirection = normalize(newPosition + params.directionRandomizer * randoms3);        
                 }
+            #endif
+        #elif defined(MESHEMITTER)
+            let randoms2 : vec3<f32> = getRandomVec3(seed.y, vertexID);
+            let randoms3 : vec3<f32> = getRandomVec3(seed.z, vertexID);
+
+            // Pick a random triangle (uniform by count, matching CPU behavior)
+            var triIdx : i32 = i32(floor(randoms2.x * f32(params.meshTriangleCount)));
+            triIdx = min(triIdx, params.meshTriangleCount - 1);
+
+            // Fetch 3 vertex positions via textureLoad (2D texture: linear index to x,y)
+            let baseTexel : i32 = triIdx * 3;
+            let t0 : i32 = baseTexel;
+            let t1 : i32 = baseTexel + 1;
+            let t2 : i32 = baseTexel + 2;
+            let v0 : vec3<f32> = textureLoad(meshPositionTexture, vec2<i32>(t0 % params.meshTextureWidth, t0 / params.meshTextureWidth), 0).xyz;
+            let v1 : vec3<f32> = textureLoad(meshPositionTexture, vec2<i32>(t1 % params.meshTextureWidth, t1 / params.meshTextureWidth), 0).xyz;
+            let v2 : vec3<f32> = textureLoad(meshPositionTexture, vec2<i32>(t2 % params.meshTextureWidth, t2 / params.meshTextureWidth), 0).xyz;
+
+            // Barycentric coordinates
+            let bu : f32 = randoms2.y;
+            let bv : f32 = randoms2.z * (1.0 - bu);
+            let bw : f32 = 1.0 - bu - bv;
+
+            newPosition = bu * v0 + bv * v1 + bw * v2;
+
+            #ifdef MESHNORMALS
+                let n0 : vec3<f32> = textureLoad(meshNormalTexture, vec2<i32>(t0 % params.meshTextureWidth, t0 / params.meshTextureWidth), 0).xyz;
+                let n1 : vec3<f32> = textureLoad(meshNormalTexture, vec2<i32>(t1 % params.meshTextureWidth, t1 / params.meshTextureWidth), 0).xyz;
+                let n2 : vec3<f32> = textureLoad(meshNormalTexture, vec2<i32>(t2 % params.meshTextureWidth, t2 / params.meshTextureWidth), 0).xyz;
+                newDirection = normalize(bu * n0 + bv * n1 + bw * n2);
+            #else
+                newDirection = params.direction1 + (params.direction2 - params.direction1) * randoms3;
             #endif
         #elif defined(CUSTOMEMITTER)
             newPosition = particlesIn.particles[index].initialPosition;

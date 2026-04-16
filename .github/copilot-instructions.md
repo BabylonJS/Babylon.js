@@ -36,4 +36,4 @@ Run these commands to verify code quality. All must pass before committing.
 
 ## Code review
 
-When reviewing a PR or reviewing changes on the current branch, use the `code-review` skill. It performs a detailed review against all repo coding practices, flags issues by severity, and fixes them. It also assigns PR labels per `.github/instructions/pr-labels.instructions.md`.
+When reviewing a PR or reviewing changes on the current branch, use the `code-review` skill. It performs a detailed review against all repo coding practices, flags issues by severity, and fixes them.
