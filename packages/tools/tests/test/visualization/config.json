@@ -3961,6 +3961,11 @@
             "playgroundId": "#8I487I#0"
         },
         {
+            "title": "Selection outline layer instance selected with LOD",
+            "playgroundId": "#M4HHTC#0",
+            "referenceImage": "selectionOutlineInstanceLOD.png"
+        },
+        {
             "title": "Vertex Pulling - Normals UVs Colors Tangents",
             "playgroundId": "#664OF3#6",
             "referenceImage": "vertexPullingNormalsUVsColors.png",
