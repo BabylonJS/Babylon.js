@@ -233,6 +233,9 @@
         sin2 = sin2 / (coat_ior * coat_ior);
         float cos_t = sqrt(1.0 - sin2);
         float coatPathLength = 1.0 / cos_t;
+        #if !defined(GEOMETRY_THIN_WALLED)
+            coat_color *= coat_color;
+        #endif
         vec3 colored_transmission = pow(coat_color, vec3(coatPathLength));
         coatAbsorption = mix(vec3(1.0), colored_transmission * darkened_transmission, coat_weight);
     }
