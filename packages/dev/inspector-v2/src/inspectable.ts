@@ -68,6 +68,7 @@ export type InternalInspectableToken = InspectableToken & {
 // Track shared state per scene: the service container, ref count, and teardown logic.
 type InspectableState = {
     refCount: number;
+    readonly fullyDisposed: boolean;
     serviceContainer: ServiceContainer;
     sceneDisposeObserver: { remove: () => void };
     fullyDispose: () => void;
@@ -86,13 +87,12 @@ export function _StartInspectable(scene: Scene, options?: Partial<InspectableOpt
     let state = InspectableStates.get(scene);
 
     if (!state) {
-        const port = options?.port ?? DefaultPort;
-        const name = options?.name ?? (typeof document !== "undefined" ? document.title : "Babylon.js Scene");
-
         const serviceContainer = new ServiceContainer("InspectableContainer");
 
+        let fullyDisposed = false;
         const fullyDispose = () => {
             InspectableStates.delete(scene);
+            fullyDisposed = true;
             serviceContainer.dispose();
             sceneDisposeObserver.remove();
         };
@@ -111,8 +111,10 @@ export function _StartInspectable(scene: Scene, options?: Partial<InspectableOpt
             await serviceContainer.addServicesAsync(
                 sceneContextServiceDefinition,
                 MakeInspectableBridgeServiceDefinition({
-                    port,
-                    name,
+                    port: options?.port ?? DefaultPort,
+                    get name() {
+                        return options?.name ?? (typeof document !== "undefined" ? document.title : "Babylon.js Scene");
+                    },
                     autoStart: options?.autoStart ?? false,
                 }),
                 EntityQueryServiceDefinition,
@@ -125,6 +127,9 @@ export function _StartInspectable(scene: Scene, options?: Partial<InspectableOpt
 
         state = {
             refCount: 0,
+            get fullyDisposed() {
+                return fullyDisposed;
+            },
             serviceContainer,
             sceneDisposeObserver: { remove: () => {} },
             fullyDispose,
@@ -182,7 +187,7 @@ export function _StartInspectable(scene: Scene, options?: Partial<InspectableOpt
     let disposed = false;
     const token: InternalInspectableToken = {
         get isDisposed() {
-            return disposed;
+            return disposed || owningState.fullyDisposed;
         },
         get serviceContainer() {
             return serviceContainer;

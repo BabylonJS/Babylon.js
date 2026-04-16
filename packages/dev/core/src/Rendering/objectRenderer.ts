@@ -559,9 +559,20 @@ export class ObjectRenderer {
     /**
      * Indicates if the renderer should render the current frame.
      * The output is based on the specified refresh rate.
+     * When snapshot rendering is active, this always returns true to ensure render pass
+     * topology stays consistent between the recording frame and playback frames.
      * @returns true if the renderer should render the current frame
      */
     public shouldRender(): boolean {
+        if (this._engine.snapshotRendering) {
+            // When snapshot rendering is active (recording or playing), we must always render
+            // to ensure the number of render passes stays consistent between the recording frame
+            // and all playback frames. If a render target is skipped during recording but not
+            // during playback (or vice versa), the recorded bundle list indices become misaligned,
+            // causing visual artifacts such as flickering.
+            return true;
+        }
+
         if (this._currentRefreshId === -1) {
             // At least render once
             this._currentRefreshId = 1;
