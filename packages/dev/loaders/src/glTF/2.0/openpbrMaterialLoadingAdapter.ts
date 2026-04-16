@@ -1224,6 +1224,10 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
                     this._material.coatDarkening = 0.0;
                     this._material.coatRoughness = this._material.specularRoughness;
                     this._material.coatRoughnessTexture = this._material.specularRoughnessTexture;
+
+                    // To simulate diffuse transmission, set the specular roughness to maximum and remove the roughness texture.
+                    this._material.specularRoughness = 1.0;
+                    this._material.specularRoughnessTexture = null;
                 }
             }
         }

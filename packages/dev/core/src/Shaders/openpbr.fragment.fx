@@ -213,7 +213,7 @@ void main(void) {
             float transmission_roughness = specular_roughness;
         #else
             // Transmission blurriness is affected by IOR so we scale the roughness accordingly
-            float transmission_roughness = specular_roughness * clamp(4.0 * (specular_ior - 1.0), 0.001, 1.0);
+            float transmission_roughness = clamp(specular_roughness * 3.0 * (specular_ior - 1.0), 0.001, 1.0);
         #endif
 
         #if (defined(TRANSMISSION_SLAB) || defined(SUBSURFACE_SLAB))
@@ -318,8 +318,14 @@ void main(void) {
 
         #if defined(TRANSMISSION_SLAB) && (!defined(TRANSMISSION_SLAB_VOLUME) || defined(GEOMETRY_THIN_WALLED))
             // Geometry is either thin-walled or we have a transmission slab with depth=0
-            // For now, assume that mesh is closed and light enters and exits through the surface, leading to double-tinting.
-            transmission_tint *= transmission_color.rgb * transmission_color.rgb;
+
+            // Apply surface tinting.
+            transmission_tint *= transmission_color.rgb;
+            #ifndef GEOMETRY_THIN_WALLED
+                // If this material is volumetric (i.e. not thin-walled), we'll
+                // assume that the mesh is manifold and light enters and exits through the surface, leading to double-tinting.
+                transmission_tint *= transmission_color.rgb;
+            #endif
 
             #ifdef SUBSURFACE_SLAB
                 // When subsurface is also present, we need to blend some values between transmission and subsurface slabs.

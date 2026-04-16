@@ -313,28 +313,32 @@
             // At low blurriness the transmitted light is mostly coming from the background geometry which is in front of the IBL.
             // At high blurriness, the refraction from the environment will be coming from more directions
             // and so we want to include more of this indirect lighting.
-            forwardScatteredEnvironmentLight = max(slab_translucent_background.rgb, mix(slab_translucent_background.rgb, forwardScatteredEnvironmentLight, roughness_alpha_modified_for_scatter));
+            #ifdef GEOMETRY_THIN_WALLED
+                forwardScatteredEnvironmentLight = mix(mix(forwardScatteredEnvironmentLight, slab_translucent_background.rgb, slab_translucent_background.a), forwardScatteredEnvironmentLight.rgb, 0.2 * roughness_alpha_modified_for_scatter);
+            #else
+                forwardScatteredEnvironmentLight = max(slab_translucent_background.rgb, mix(slab_translucent_background.rgb, forwardScatteredEnvironmentLight, roughness_alpha_modified_for_scatter));
+            #endif
         #endif
 
         #ifdef SCATTERING
-            #ifdef USE_IRRADIANCE_TEXTURE_FOR_SCATTERING
+            #ifdef GEOMETRY_THIN_WALLED
+                vec3 scatterVector = normalW;
+            #else
+                // Handle isotropic and backscattering components
+                // We'll approximate scattering as a diffuse lobe. If we have a dominant lighting direction,
+                // we can bias the lobe towards that direction as the scatter density gets thinner.
+                #if defined(USEIRRADIANCEMAP) && defined(USE_IRRADIANCE_DOMINANT_DIRECTION)
+                    vec3 scatterVector = mix(vReflectionDominantDirection, normalW, max3(iso_scatter_density));
+                #else
+                    vec3 scatterVector = normalW;
+                #endif
+
+                // We'll then bend the sample direction towards the view direction based on the anisotropy to approximate backscattering.
+                scatterVector = mix(viewDirectionW, scatterVector, back_to_iso_scattering_blend);
+            #endif
+            #if defined(USE_IRRADIANCE_TEXTURE_FOR_SCATTERING) && !defined(GEOMETRY_THIN_WALLED)
                 vec3 scatteredEnvironmentLight = scattered_light_from_irradiance_texture;
             #else
-                #ifdef GEOMETRY_THIN_WALLED
-                    vec3 scatterVector = normalW;
-                #else
-                    // Handle isotropic and backscattering components
-                    // We'll approximate scattering as a diffuse lobe. If we have a dominant lighting direction,
-                    // we can bias the lobe towards that direction as the scatter density gets thinner.
-                    #if defined(USEIRRADIANCEMAP) && defined(USE_IRRADIANCE_DOMINANT_DIRECTION)
-                        vec3 scatterVector = mix(vReflectionDominantDirection, normalW, max3(iso_scatter_density));
-                    #else
-                        vec3 scatterVector = normalW;
-                    #endif
-
-                    // We'll then bend the sample direction towards the view direction based on the anisotropy to approximate backscattering.
-                    scatterVector = mix(viewDirectionW, scatterVector, back_to_iso_scattering_blend);
-                #endif
                 vec3 scatteredEnvironmentLight = sampleIrradiance(
                     scatterVector
                     #if defined(NORMAL) && defined(USESPHERICALINVERTEX)
@@ -369,7 +373,7 @@
 
             #ifdef GEOMETRY_THIN_WALLED
                 // Direct Transmission (aka forward-scattered light from back side)
-                vec3 forward_scattered_light = forwardScatteredEnvironmentLight * transmission_tint * volumeParams.multi_scatter_color * volumeParams.multi_scatter_color;
+                vec3 forward_scattered_light = forwardScatteredEnvironmentLight * transmission_tint * volumeParams.multi_scatter_color;
                 // Back Scattering
                 vec3 back_scattered_light = scatteredEnvironmentLight * volumeParams.multi_scatter_color;
                 // Lerp between the back and forward scattering.

@@ -149,15 +149,21 @@
                 #endif
 
                 #ifdef REFRACTED_BACKGROUND
-                    // Scale the IBL refraction so that we only see it at higher roughnesses
-                    // At low blurriness the transmitted light is mostly coming from the background geometry which is in front of the IBL.
-                    // At high blurriness, the refraction from the environment will be coming from more directions
+                    // Scale the light refraction so that we only see it at higher roughnesses
+                    // At low blurriness the transmitted light is mostly coming from the background geometry which are assumed
+                    // to be in front of the direct lights.
+                    // At high blurriness, the refracted light will be coming from more directions
                     // and so we want to include more of this indirect lighting.
-                    forwardScatteredLight = max(slab_translucent_background.rgb, mix(slab_translucent_background.rgb, forwardScatteredLight, roughness_alpha_modified_for_scatter));
+                    #ifdef GEOMETRY_THIN_WALLED
+                        forwardScatteredLight = mix(mix(forwardScatteredLight, slab_translucent_background.rgb, slab_translucent_background.a), forwardScatteredLight.rgb, 0.2 * roughness_alpha_modified_for_scatter);
+                    #else
+                        forwardScatteredLight = max(slab_translucent_background.rgb, mix(slab_translucent_background.rgb, forwardScatteredLight, roughness_alpha_modified_for_scatter));
+                    #endif
                 #endif
 
                 #ifdef SCATTERING
-                    #ifdef USE_IRRADIANCE_TEXTURE_FOR_SCATTERING
+                
+                    #if defined(USE_IRRADIANCE_TEXTURE_FOR_SCATTERING)
                         let diffused_forward_scattered_light: vec3f = scattered_light_from_irradiance_texture;
                     #else
                         // Compute forward-scattered light that has been completely diffused. This will be used when
@@ -168,7 +174,7 @@
 
                     #ifdef GEOMETRY_THIN_WALLED
                         // Direct Transmission (aka forward-scattered light from back side) 
-                        let forward_scattered_light: vec3f = forwardScatteredLight * transmission_tint * volumeParams.multi_scatter_color * volumeParams.multi_scatter_color;
+                        let forward_scattered_light: vec3f = forwardScatteredLight * transmission_tint * volumeParams.multi_scatter_color;
                         // Back Scattering
                         let back_scattered_light: vec3f = slab_diffuse * volumeParams.multi_scatter_color;
                         // Lerp between the back and forward scattering.

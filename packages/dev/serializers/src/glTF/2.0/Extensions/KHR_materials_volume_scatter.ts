@@ -106,31 +106,8 @@ export class KHR_materials_volume_scatter implements IGLTFExporterExtensionV2 {
                 let transmissionMultiscatterColor = Vector3.Zero();
                 let transmissionScatterAnisotropy = 0;
                 if (babylonMaterial.transmissionWeight > 0) {
-                    const invDepth = 1.0 / babylonMaterial.transmissionDepth;
-                    let transmissionExtinctionCoefficient = new Vector3(
-                        -Math.log(babylonMaterial.transmissionColor.r) * invDepth,
-                        -Math.log(babylonMaterial.transmissionColor.g) * invDepth,
-                        -Math.log(babylonMaterial.transmissionColor.b) * invDepth
-                    );
-                    const transmissionScatteringCoefficient = new Vector3(
-                        babylonMaterial.transmissionScatter.r * invDepth,
-                        babylonMaterial.transmissionScatter.g * invDepth,
-                        babylonMaterial.transmissionScatter.b * invDepth
-                    );
-                    const transmissionAbsorptionCoefficient = transmissionExtinctionCoefficient.subtract(transmissionScatteringCoefficient);
-                    const minCoeff = Math.min(transmissionAbsorptionCoefficient.x, transmissionAbsorptionCoefficient.y, transmissionAbsorptionCoefficient.z);
-                    if (minCoeff < 0) {
-                        transmissionAbsorptionCoefficient.x = transmissionAbsorptionCoefficient.x - minCoeff;
-                        transmissionAbsorptionCoefficient.y = transmissionAbsorptionCoefficient.y - minCoeff;
-                        transmissionAbsorptionCoefficient.z = transmissionAbsorptionCoefficient.z - minCoeff;
-                    }
-                    transmissionExtinctionCoefficient = transmissionAbsorptionCoefficient.add(transmissionScatteringCoefficient);
-
-                    const ssAlbedo = new Vector3(
-                        transmissionScatteringCoefficient.x / Math.max(transmissionExtinctionCoefficient.x, 0.000001),
-                        transmissionScatteringCoefficient.y / Math.max(transmissionExtinctionCoefficient.y, 0.000001),
-                        transmissionScatteringCoefficient.z / Math.max(transmissionExtinctionCoefficient.z, 0.000001)
-                    );
+                    // In OpenPBR 1.2, the transmission_scatter_color represents the single scatter albedo.
+                    const ssAlbedo = new Vector3(babylonMaterial.transmissionScatter.r, babylonMaterial.transmissionScatter.g, babylonMaterial.transmissionScatter.b);
                     transmissionMultiscatterColor = SingleScatterToMultiScatterAlbedo(ssAlbedo);
                     transmissionScatterAnisotropy = babylonMaterial.transmissionScatterAnisotropy;
                 }
@@ -165,6 +142,7 @@ export class KHR_materials_volume_scatter implements IGLTFExporterExtensionV2 {
                     }
                 } else if (babylonMaterial.transmissionWeight > 0 && babylonMaterial.transmissionScatterTexture) {
                     this._exporter._materialNeedsUVsSet.add(babylonMaterial);
+                    // TODO - the transmission_scatter texture represents the single scatter albedo, not the multiscatter color. Convert it before exporting.
                     const transmissionTexture = this._exporter._materialExporter.getTextureInfo(babylonMaterial.transmissionScatterTexture);
                     if (transmissionTexture) {
                         volumeInfo.multiscatterColorTexture = transmissionTexture;

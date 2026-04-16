@@ -32,7 +32,7 @@ OpenPBRHomogeneousVolume computeOpenPBRTransmissionVolume(
             // Compute only if we have a valid transmission
             vec3 invDepth = vec3(1. / maxEps(transmission_depth));
             volumeParams.extinction_coeff = -log(maxEps(transmission_color.rgb)) * invDepth;
-            volumeParams.scatter_coeff = transmission_scatter.rgb * invDepth;
+            volumeParams.scatter_coeff = volumeParams.extinction_coeff * transmission_scatter.rgb;
             volumeParams.absorption_coeff = volumeParams.extinction_coeff - volumeParams.scatter_coeff.rgb;
             float minCoeff = min3(volumeParams.absorption_coeff);
             if (minCoeff < 0.0) {
@@ -40,7 +40,7 @@ OpenPBRHomogeneousVolume computeOpenPBRTransmissionVolume(
             }
             // Set extinction coefficient after shifting the absorption to be non-negative.
             volumeParams.extinction_coeff = volumeParams.absorption_coeff + volumeParams.scatter_coeff;
-            volumeParams.ss_albedo = volumeParams.scatter_coeff / (volumeParams.extinction_coeff);
+            volumeParams.ss_albedo = transmission_scatter.rgb;
         } else {
             volumeParams.extinction_coeff = volumeParams.absorption_coeff + volumeParams.scatter_coeff;
             volumeParams.ss_albedo = vec3(0.0);

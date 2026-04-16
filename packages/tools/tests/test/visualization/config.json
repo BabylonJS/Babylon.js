@@ -3544,7 +3544,13 @@
         },
         {
             "title": "OpenPBR Thin Walled Subsurface Anisotropy - IBL",
-            "playgroundId": "#GRQHVV#241",
+            "playgroundId": "#GRQHVV#309",
+            "excludedEngines": ["webgl1"],
+            "renderCount": 5
+        },
+        {
+            "title": "OpenPBR Thin Walled Subsurface Anisotropy - Realtime IBL",
+            "playgroundId": "#GRQHVV#308",
             "excludedEngines": ["webgl1"],
             "renderCount": 5
         },
