@@ -108,6 +108,12 @@
             "referenceImage": "gsplat-shadows.png"
         },
         {
+            "title": "Gaussian Splatting IBL Shadows",
+            "playgroundId": "#DAID4Q",
+            "renderCount": 15,
+            "referenceImage": "gsplat-ibl-shadows.png"
+        },
+        {
             "title": "NPE - Angle align",
             "playgroundId": "#H5RP91",
             "referenceImage": "npe-angle-align.png"

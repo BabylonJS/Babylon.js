@@ -29,6 +29,13 @@ import "../../Engines/Extensions/engine.multiRender";
  * @see https://playground.babylonjs.com/#8R5SSE#222
  */
 export class _IblShadowsVoxelRenderer {
+    // View matrices for the three voxelization axes.
+    private static readonly _VOXEL_VIEW_MATRICES = [
+        Matrix.LookAtLH(Vector3.Zero(), new Vector3(1, 0, 0), Vector3.Up()),
+        Matrix.LookAtLH(Vector3.Zero(), new Vector3(0, 1, 0), new Vector3(1, 0, 0)),
+        Matrix.LookAtLH(Vector3.Zero(), new Vector3(0, 0, 1), Vector3.Up()),
+    ];
+
     private _scene: Scene;
     private _engine: Engine;
 
@@ -679,9 +686,15 @@ export class _IblShadowsVoxelRenderer {
             gsVoxelMaterial._preBind(drawWrapper);
             gsVoxelMaterial.bind(effectiveMesh.getWorldMatrix(), effectiveMesh, effect);
             if (engine.isWebGPU) {
-                // WebGPU voxel shader writes directly to voxel_storage; one draw per axis (0=XY, 1=XZ, 2=YZ).
+                // A GSplat is a 3D Gaussian ellipsoid. To approximate its volume in the voxel grid
+                // we rasterize three planar cross-section quads — one per principal axis — each
+                // spanning the ellipsoid cross-section perpendicular to that axis. A quad rendered
+                // edge-on produces zero fragments, so we draw once per world axis: each draw lets
+                // computeVoxelSplatWorldPos pick the quad whose normal best aligns with that view,
+                // guaranteeing every splat is captured face-on from at least one direction.
+                const viewMatrices = _IblShadowsVoxelRenderer._VOXEL_VIEW_MATRICES;
                 for (let axisIdx = 0; axisIdx < 3; axisIdx++) {
-                    effect.setInt("axis", axisIdx);
+                    effect.setMatrix("viewMatrix", viewMatrices[axisIdx]);
                     renderingMesh._processRendering(effectiveMesh, sm, effect, fillMode, batch, hardwareInstancedRendering, (_isInstance, world) => {
                         effect.setMatrix("world", world);
                     });
@@ -767,20 +780,9 @@ export class _IblShadowsVoxelRenderer {
             const farPlane = (mrtIndex + 1) * slabSize;
             const stepSize = slabSize / this._maxDrawBuffers;
 
-            const cameraPosition = new Vector3(0, 0, 0);
-            let targetPosition = new Vector3(0, 0, 1);
-            if (axis === 0) {
-                targetPosition = new Vector3(1, 0, 0);
-            } else if (axis === 1) {
-                targetPosition = new Vector3(0, 1, 0);
-            }
-            let upDirection = new Vector3(0, 1, 0);
-            if (axis === 1) {
-                upDirection = new Vector3(1, 0, 0);
-            }
+            const viewMatrix = _IblShadowsVoxelRenderer._VOXEL_VIEW_MATRICES[axis];
             mrt.onBeforeRenderObservable.clear();
             mrt.onBeforeRenderObservable.add(() => {
-                const viewMatrix = Matrix.LookAtLH(cameraPosition, targetPosition, upDirection);
                 voxelMaterial.setMatrix("viewMatrix", viewMatrix);
                 voxelMaterial.setMatrix("invWorldScale", this._invWorldScaleMatrix);
                 voxelMaterial.setFloat("nearPlane", nearPlane);
@@ -797,7 +799,7 @@ export class _IblShadowsVoxelRenderer {
                         if (gsVoxelMat) {
                             gsVoxelMat.setMatrix("invWorldScale", this._invWorldScaleMatrix);
                             if (this._engine.isWebGPU) {
-                                // WGSL voxel shader uses axis uniform + storage texture; no view/slab uniforms needed.
+                                // WGSL GS voxel shader uses the same viewMatrix approach as WebGL; the per-axis viewMatrix is set per-draw in renderGsSplat.
                                 gsVoxelMat.setTexture("voxel_storage", this.getVoxelGrid());
                             } else {
                                 gsVoxelMat.setMatrix("viewMatrix", viewMatrix);
