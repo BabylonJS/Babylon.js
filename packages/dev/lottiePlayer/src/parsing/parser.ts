@@ -495,33 +495,47 @@ export class Parser {
     }
 
     private _getRasterizationFrame(layer: RawLottieLayer): number {
-        let frame = layer.ip ?? this._startFrame;
+        const fallback = layer.ip ?? this._startFrame;
 
         const opacityProp = layer.ks?.o;
         if (!opacityProp || opacityProp.a === 0) {
-            return frame;
+            return fallback;
         }
 
         const keyframes = opacityProp.k as RawVectorKeyframe[];
-        for (let i = 0; i < keyframes.length; i++) {
-            if (keyframes[i].s[0] > 0) {
-                frame = Math.max(frame, keyframes[i].t);
-                return frame;
+        if (keyframes.length === 0) {
+            return fallback;
+        }
+
+        // If the first keyframe is already non-zero, the layer is visible from its start.
+        if (keyframes[0].s[0] > 0) {
+            return Math.max(fallback, keyframes[0].t);
+        }
+
+        // Otherwise find the first segment where opacity transitions from 0 to > 0.
+        // For held segments (h === 1) the jump happens at the next keyframe's time.
+        // For interpolated segments the layer becomes visible just after the current keyframe's time
+        // (use t + 1 since lottie frame times are integers in practice).
+        for (let i = 0; i < keyframes.length - 1; i++) {
+            if (keyframes[i].s[0] === 0 && keyframes[i + 1].s[0] > 0) {
+                const visibleFrame = keyframes[i].h === 1 ? keyframes[i + 1].t : keyframes[i].t + 1;
+                return Math.max(fallback, visibleFrame);
             }
         }
 
-        return frame;
+        // Opacity never transitions to a visible value; fall back to the layer start.
+        return fallback;
     }
 
     private _getRasterizationScale(parent: Node, rasterizationFrame: number): IVector2Like {
         const scale = { x: 1, y: 1 };
         const tempPosition = { x: 0, y: 0 };
 
-        if (rasterizationFrame <= this._startFrame) {
-            parent.worldMatrix.decompose(scale, tempPosition);
-        } else {
-            parent.decomposeWorldMatrixAtFrame(rasterizationFrame, scale, tempPosition);
-        }
+        // Always evaluate via decomposeWorldMatrixAtFrame. The cached parent.worldMatrix reflects each
+        // ancestor's transform at its own first keyframe time, which is not guaranteed to equal
+        // rasterizationFrame (or even _startFrame) — composition ip and per-layer keyframe start times
+        // can all differ. decomposeWorldMatrixAtFrame handles frames before/at/after keyframes uniformly.
+        parent.decomposeWorldMatrixAtFrame(rasterizationFrame, scale, tempPosition);
 
         return scale;
     }

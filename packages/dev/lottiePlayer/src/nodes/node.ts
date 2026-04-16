@@ -308,170 +308,185 @@ export class Node {
      * @returns The rotation in radians.
      */
     public decomposeWorldMatrixAtFrame(frame: number, scale: IVector2Like, translation: IVector2Like): number {
-        const output = new ThinMatrix();
-        this._composeWorldMatrixAtFrame(frame, output);
-        return output.decompose(scale, translation);
-    }
-
-    private _composeWorldMatrixAtFrame(frame: number, output: ThinMatrix): void {
-        const scaleResult = Node._interpolateVector2AtFrame(this._scale, frame);
-        const scale = scaleResult ?? this._scale.startValue;
-
-        const rotationResult = Node._interpolateScalarAtFrame(this._rotation, frame);
-        // Keyframe values are stored without negation (negation is applied at runtime),
-        // but startValue is already negated by the parser, so only negate interpolated results.
-        const rotation = rotationResult !== undefined ? -rotationResult : this._rotation.startValue;
-
-        const positionResult = Node._interpolateVector2AtFrame(this._position, frame);
-        const position = positionResult ?? this._position.startValue;
-
-        if (!this._parent) {
-            output.compose(scale, rotation, position);
-            return;
+        // Collect the chain from this node up to the root.
+        const chain: Node[] = [this];
+        let parent = this._parent;
+        while (parent) {
+            chain.push(parent);
+            parent = parent._parent;
         }
 
-        const localMatrix = new ThinMatrix();
-        localMatrix.compose(scale, rotation, position);
+        // Iterative compose: two matrices + two vector scratches, independent of chain depth.
+        const acc = Node._ComposeScratchA;
+        const tmp = Node._ComposeScratchB;
+        const scratchScale = Node._ComposeScratchScale;
+        const scratchPos = Node._ComposeScratchPos;
 
-        const parentMatrix = new ThinMatrix();
-        this._parent._composeWorldMatrixAtFrame(frame, parentMatrix);
+        chain[0]._composeLocalAtFrame(frame, acc, scratchScale, scratchPos);
+        for (let i = 1; i < chain.length; i++) {
+            chain[i]._composeLocalAtFrame(frame, tmp, scratchScale, scratchPos);
+            // world(node) = node_local * parent_world, so accumulate: acc = acc * ancestor_local.
+            // multiplyToRef captures all inputs before writing, so acc can be the output.
+            acc.multiplyToRef(tmp, acc);
+        }
 
-        localMatrix.multiplyToRef(parentMatrix, output);
+        return acc.decompose(scale, translation);
     }
 
-    private static _interpolateVector2AtFrame(property: Vector2Property, frame: number, startIndex: number = 0, output?: IVector2Like): IVector2Like | undefined {
+    private _composeLocalAtFrame(frame: number, output: ThinMatrix, scratchScale: IVector2Like, scratchPos: IVector2Like): void {
+        const scaleIdx = Node._InterpolateVector2AtFrame(this._scale, frame, 0, scratchScale);
+        const scale = scaleIdx >= 0 ? scratchScale : this._scale.startValue;
+
+        const rotationIdx = Node._InterpolateScalarAtFrame(this._rotation, frame, 0, Node._ScalarScratch);
+        // Keyframe values are stored without negation (negation is applied at runtime),
+        // but startValue is already negated by the parser, so only negate interpolated results.
+        const rotation = rotationIdx >= 0 ? -Node._ScalarScratch.value : this._rotation.startValue;
+
+        const positionIdx = Node._InterpolateVector2AtFrame(this._position, frame, 0, scratchPos);
+        const position = positionIdx >= 0 ? scratchPos : this._position.startValue;
+
+        output.compose(scale, rotation, position);
+    }
+
+    // Scratch storage shared across interpolation helpers. Safe because all uses are synchronous
+    // and the results are consumed immediately after each call.
+    private static readonly _ScalarScratch: { value: number } = { value: 0 };
+    private static readonly _ComposeScratchA: ThinMatrix = new ThinMatrix();
+    private static readonly _ComposeScratchB: ThinMatrix = new ThinMatrix();
+    private static readonly _ComposeScratchScale: IVector2Like = { x: 0, y: 0 };
+    private static readonly _ComposeScratchPos: IVector2Like = { x: 0, y: 0 };
+
+    /**
+     * Interpolates a Vector2 property at a given frame and writes the result into `output`.
+     * @param property The Vector2 property to interpolate.
+     * @param frame The frame number to evaluate at.
+     * @param startIndex The keyframe index to start scanning from (for sequential playback optimization).
+     * @param output The vector that receives the interpolated value (only written when the return value is not -1).
+     * @returns The resolved segment index (0..len-2), or `len-1` if the frame is at/after the last keyframe,
+     * or `-1` if the frame is before the first keyframe or the property has no keyframes (in which case
+     * `output` is left unchanged).
+     */
+    private static _InterpolateVector2AtFrame(property: Vector2Property, frame: number, startIndex: number, output: IVector2Like): number {
         const keyframes = property.keyframes;
         if (!keyframes || keyframes.length === 0) {
-            return undefined;
+            return -1;
         }
 
         if (frame < keyframes[0].time) {
-            return undefined;
+            return -1;
         }
 
-        if (frame >= keyframes[keyframes.length - 1].time) {
-            const last = keyframes[keyframes.length - 1].value;
-            if (output) {
-                output.x = last.x;
-                output.y = last.y;
-                return output;
-            }
-            return last;
+        const lastIdx = keyframes.length - 1;
+        if (frame >= keyframes[lastIdx].time) {
+            const last = keyframes[lastIdx].value;
+            output.x = last.x;
+            output.y = last.y;
+            return lastIdx;
         }
 
-        let currentFrameIndex = -1;
-        for (let i = startIndex; i < keyframes.length - 1; i++) {
+        let segmentIndex = -1;
+        for (let i = startIndex; i < lastIdx; i++) {
             if (frame >= keyframes[i].time && frame < keyframes[i + 1].time) {
-                currentFrameIndex = i;
+                segmentIndex = i;
                 break;
             }
         }
 
-        if (currentFrameIndex === -1) {
-            return undefined;
+        if (segmentIndex === -1) {
+            return -1;
         }
 
-        const currentKeyframe = keyframes[currentFrameIndex];
-        const nextKeyframe = keyframes[currentFrameIndex + 1];
+        const currentKeyframe = keyframes[segmentIndex];
+        const nextKeyframe = keyframes[segmentIndex + 1];
         const gradient = (frame - currentKeyframe.time) / (nextKeyframe.time - currentKeyframe.time);
 
         const easeFactor1 = currentKeyframe.easeFunction1.interpolate(gradient);
         const easeFactor2 = currentKeyframe.easeFunction2.interpolate(gradient);
 
-        const x = currentKeyframe.value.x + easeFactor1 * (nextKeyframe.value.x - currentKeyframe.value.x);
-        const y = currentKeyframe.value.y + easeFactor2 * (nextKeyframe.value.y - currentKeyframe.value.y);
-
-        if (output) {
-            output.x = x;
-            output.y = y;
-            return output;
-        }
-
-        return { x, y };
+        output.x = currentKeyframe.value.x + easeFactor1 * (nextKeyframe.value.x - currentKeyframe.value.x);
+        output.y = currentKeyframe.value.y + easeFactor2 * (nextKeyframe.value.y - currentKeyframe.value.y);
+        return segmentIndex;
     }
 
-    private static _interpolateScalarAtFrame(property: ScalarProperty, frame: number, startIndex: number = 0): number | undefined {
+    /**
+     * Interpolates a scalar property at a given frame and writes the result into `output.value`.
+     * @param property The scalar property to interpolate.
+     * @param frame The frame number to evaluate at.
+     * @param startIndex The keyframe index to start scanning from (for sequential playback optimization).
+     * @param output Holder that receives the interpolated value (only written when the return value is not -1).
+     * @returns The resolved segment index (0..len-2), or `len-1` if the frame is at/after the last keyframe,
+     * or `-1` if the frame is before the first keyframe or the property has no keyframes (in which case
+     * `output.value` is left unchanged).
+     */
+    private static _InterpolateScalarAtFrame(property: ScalarProperty, frame: number, startIndex: number, output: { value: number }): number {
         const keyframes = property.keyframes;
         if (!keyframes || keyframes.length === 0) {
-            return undefined;
+            return -1;
         }
 
         if (frame < keyframes[0].time) {
-            return undefined;
+            return -1;
         }
 
-        if (frame >= keyframes[keyframes.length - 1].time) {
-            return keyframes[keyframes.length - 1].value;
+        const lastIdx = keyframes.length - 1;
+        if (frame >= keyframes[lastIdx].time) {
+            output.value = keyframes[lastIdx].value;
+            return lastIdx;
         }
 
-        let currentFrameIndex = -1;
-        for (let i = startIndex; i < keyframes.length - 1; i++) {
+        let segmentIndex = -1;
+        for (let i = startIndex; i < lastIdx; i++) {
             if (frame >= keyframes[i].time && frame < keyframes[i + 1].time) {
-                currentFrameIndex = i;
+                segmentIndex = i;
                 break;
             }
         }
 
-        if (currentFrameIndex === -1) {
-            return undefined;
+        if (segmentIndex === -1) {
+            return -1;
         }
 
-        const currentKeyframe = keyframes[currentFrameIndex];
-        const nextKeyframe = keyframes[currentFrameIndex + 1];
+        const currentKeyframe = keyframes[segmentIndex];
+        const nextKeyframe = keyframes[segmentIndex + 1];
         const gradient = (frame - currentKeyframe.time) / (nextKeyframe.time - currentKeyframe.time);
 
         const easeFactor = currentKeyframe.easeFunction?.interpolate(gradient) ?? 0;
-        return currentKeyframe.value + easeFactor * (nextKeyframe.value - currentKeyframe.value);
+        output.value = currentKeyframe.value + easeFactor * (nextKeyframe.value - currentKeyframe.value);
+        return segmentIndex;
     }
 
     private _updatePosition(frame: number): boolean {
-        if (!Node._interpolateVector2AtFrame(this._position, frame, this._position.currentKeyframeIndex, this._position.currentValue)) {
+        const idx = Node._InterpolateVector2AtFrame(this._position, frame, this._position.currentKeyframeIndex, this._position.currentValue);
+        if (idx < 0) {
             return false;
         }
-
-        // Update currentKeyframeIndex for sequential playback optimization
-        const keyframes = this._position.keyframes!;
-        for (let i = this._position.currentKeyframeIndex; i < keyframes.length - 1; i++) {
-            if (frame >= keyframes[i].time && frame < keyframes[i + 1].time) {
-                this._position.currentKeyframeIndex = i;
-                break;
-            }
+        // Only advance when we resolved a real segment; leave the index alone when clamped to the last keyframe
+        // to match prior behavior (the original update loop only ran up to keyframes.length - 1, exclusive).
+        if (idx < this._position.keyframes!.length - 1) {
+            this._position.currentKeyframeIndex = idx;
         }
-
         return true;
     }
 
     private _updateRotation(frame: number): boolean {
-        const result = Node._interpolateScalarAtFrame(this._rotation, frame, this._rotation.currentKeyframeIndex);
-        if (result === undefined) {
+        const idx = Node._InterpolateScalarAtFrame(this._rotation, frame, this._rotation.currentKeyframeIndex, Node._ScalarScratch);
+        if (idx < 0) {
             return false;
         }
-
-        // Update currentKeyframeIndex for sequential playback optimization
-        const keyframes = this._rotation.keyframes!;
-        for (let i = this._rotation.currentKeyframeIndex; i < keyframes.length - 1; i++) {
-            if (frame >= keyframes[i].time && frame < keyframes[i + 1].time) {
-                this._rotation.currentKeyframeIndex = i;
-                break;
-            }
+        if (idx < this._rotation.keyframes!.length - 1) {
+            this._rotation.currentKeyframeIndex = idx;
         }
-
-        this._rotation.currentValue = -result;
+        this._rotation.currentValue = -Node._ScalarScratch.value;
         return true;
     }
 
     private _updateScale(frame: number): boolean {
-        if (!Node._interpolateVector2AtFrame(this._scale, frame, this._scale.currentKeyframeIndex, this._scale.currentValue)) {
+        const idx = Node._InterpolateVector2AtFrame(this._scale, frame, this._scale.currentKeyframeIndex, this._scale.currentValue);
+        if (idx < 0) {
             return false;
         }
-
-        // Update currentKeyframeIndex for sequential playback optimization
-        const keyframes = this._scale.keyframes!;
-        for (let i = this._scale.currentKeyframeIndex; i < keyframes.length - 1; i++) {
-            if (frame >= keyframes[i].time && frame < keyframes[i + 1].time) {
-                this._scale.currentKeyframeIndex = i;
-                break;
-            }
+        if (idx < this._scale.keyframes!.length - 1) {
+            this._scale.currentKeyframeIndex = idx;
         }
         return true;
     }
@@ -481,20 +496,14 @@ export class Node {
             return false;
         }
 
-        const result = Node._interpolateScalarAtFrame(this._opacity, frame, this._opacity.currentKeyframeIndex);
-        if (result === undefined) {
+        const idx = Node._InterpolateScalarAtFrame(this._opacity, frame, this._opacity.currentKeyframeIndex, Node._ScalarScratch);
+        if (idx < 0) {
             return false;
         }
-
-        // Update currentKeyframeIndex for sequential playback optimization
-        for (let i = this._opacity.currentKeyframeIndex; i < this._opacity.keyframes.length - 1; i++) {
-            if (frame >= this._opacity.keyframes[i].time && frame < this._opacity.keyframes[i + 1].time) {
-                this._opacity.currentKeyframeIndex = i;
-                break;
-            }
+        if (idx < this._opacity.keyframes.length - 1) {
+            this._opacity.currentKeyframeIndex = idx;
         }
-
-        this._opacity.currentValue = result;
+        this._opacity.currentValue = Node._ScalarScratch.value;
         return true;
     }
 }
