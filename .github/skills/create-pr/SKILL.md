@@ -3,8 +3,9 @@ name: create-pr
 description: |
     Orchestrates the full PR lifecycle: merge upstream, create draft PR,
     self code review, mark ready, monitor, and iterate on fixes.
-    Input: [--remote <fork>] [--merge [branch]] [--mode automatic|interactive]
-argument-hint: "[--remote <fork>] [--merge [branch]] [--mode automatic|interactive]"
+    Can also monitor and iterate on an existing PR.
+    Input: [--remote <fork>] [--merge [branch]] [--mode automatic|interactive] [--pr <number>]
+argument-hint: "[--remote <fork>] [--merge [branch]] [--mode automatic|interactive] [--pr <number>]"
 allowed-tools: shell
 ---
 
@@ -17,14 +18,19 @@ invokes other skills as sub-agents and does its own work between them.
 
 Parse `$ARGUMENTS`:
 
-| Argument             | Description                                                                       |
-| -------------------- | --------------------------------------------------------------------------------- |
-| `--remote <fork>`    | Git remote (fork) to push to. If omitted, detect and prompt.                      |
-| `--merge [branch]`   | Merge upstream before creating the PR. If omitted, prompt.                        |
-| `--mode automatic`   | Fixes are applied, committed, pushed, and comments resolved automatically.        |
-| `--mode interactive` | Fixes are staged; skill pauses before commit/push/resolve so the user can review. |
+| Argument             | Description                                                                                                                 |
+| -------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| `--remote <fork>`    | Git remote (fork) to push to. If omitted, detect and prompt.                                                                |
+| `--merge [branch]`   | Merge upstream before creating the PR. If omitted, prompt.                                                                  |
+| `--mode automatic`   | Fixes are applied, committed, pushed, and comments resolved automatically.                                                  |
+| `--mode interactive` | Fixes are staged; skill pauses before commit/push/resolve so the user can review.                                           |
+| `--pr <number>`      | Monitor and iterate on an existing PR. Skips Steps 0–4 (no merge, no PR creation, no code review). Only `--mode` is needed. |
 
 If `--mode` is not specified, ask the user.
+
+If `--pr` is provided, skip directly to Step 5 (monitor) and Step 6
+(iteration loop). Do not prompt for remote, merge, title, body, reviewers,
+or labels — those only apply when creating a new PR.
 
 ## Prerequisites
 
@@ -32,13 +38,16 @@ If `--mode` is not specified, ask the user.
    link to https://github.com/cli/cli#installation and stop.
 2. Check if PowerShell is available for dialog notifications. If
    unavailable, fall back to text-only alerts.
-3. Check if the `babylon-skills:merge-and-resolve` skill is available
-   (e.g. `/skills list` or attempt to invoke it). If it is not installed,
-   warn the user: *"The merge-and-resolve skill was not found. The merge
-   step will be skipped."* Remember this for Step 0a so the merge option
-   is not offered.
+3. The merge step in Step 1 requires the `babylon-skills:merge-and-resolve`
+   skill. Do **not** try to pre-check its availability — the agent's
+   available skills list may be truncated, which causes false negatives.
+   Always offer the merge option in Step 0a; if invocation in Step 1
+   fails because the skill isn't installed, warn the user and skip.
 
 ## Step 0: Gather all inputs up front
+
+> **If `--pr` was provided**, skip this entire step and Steps 1–4. Only
+> collect `--mode` (ask if not specified), then jump to Step 5.
 
 Collect everything before starting the workflow so it doesn't stop midway.
 
@@ -49,12 +58,11 @@ Collect everything before starting the workflow so it doesn't stop midway.
    username from `gh api user --jq ".login"`).
 3. **If `--remote` not specified**, present the detected fork and ask the
    user to confirm or change it.
-4. **If `--merge` not specified** and the `merge-and-resolve` skill is
-   available, ask:
+4. **If `--merge` not specified**, ask:
    _"Would you like to merge and resolve before creating the PR?"_
-   The `merge-and-resolve` skill handles detecting the correct remote and
-   branch. The user can optionally specify a different branch/remote.
-   If `merge-and-resolve` is not available, skip this question.
+   The `babylon-skills:merge-and-resolve` skill handles detecting the
+   correct remote and branch. The user can optionally specify a different
+   branch/remote.
 
 ### 0b. Mode
 
@@ -67,10 +75,10 @@ Collect everything before starting the workflow so it doesn't stop midway.
 ### 0c. PR title and body
 
 1. Analyze the branch diff to understand changes:
-   ```bash
-   git log --oneline master..HEAD
-   git diff master...HEAD --stat
-   ```
+    ```bash
+    git log --oneline master..HEAD
+    git diff master...HEAD --stat
+    ```
 2. Generate a proposed title and body. The body should start with:
    `> 🤖 *This PR was created by the create-pr skill.*`
    Include a clear explanation of the changes, motivation, and any
@@ -82,18 +90,22 @@ Collect everything before starting the workflow so it doesn't stop midway.
 
 1. Suggest 1–2 reviewers by analyzing who recently touched the changed
    files:
-   ```bash
-   # Get changed files
-   git diff --name-only master..HEAD
 
-   # Find frequent authors of those files
-   git log --format="%an" master..HEAD -- <changed-files> | sort | uniq -c | sort -rn
-   ```
-   Also consider reviewers from recent PRs on similar areas:
-   ```bash
-   gh pr list --repo "BabylonJS/Babylon.js" -s merged -L 10 --json "number,reviews" \
-     --jq '.[].reviews[].author.login' | sort | uniq -c | sort -rn
-   ```
+    ```bash
+    # Get changed files
+    git diff --name-only master..HEAD
+
+    # Find frequent authors of those files
+    git log --format="%an" master..HEAD -- <changed-files> | sort | uniq -c | sort -rn
+    ```
+
+    Also consider reviewers from recent PRs on similar areas:
+
+    ```bash
+    gh pr list --repo "BabylonJS/Babylon.js" -s merged -L 10 --json "number,reviews" \
+      --jq '.[].reviews[].author.login' | sort | uniq -c | sort -rn
+    ```
+
 2. Ask the user to confirm or change.
 
 ### 0e. Labels
@@ -156,14 +168,16 @@ Ready to proceed?
 
 ## Step 1: Merge and resolve (optional)
 
-If the user opted to merge and the `merge-and-resolve` skill is available,
-invoke as a sub-agent:
+If the user opted to merge, invoke as a sub-agent:
 
 ```
 /babylon-skills:merge-and-resolve [branch] [remote] --mode <automatic|interactive>
 ```
 
 Only pass explicit branch/remote if the user specified them in Step 0.
+If invocation fails because the skill is not installed, warn the user
+_"The babylon-skills:merge-and-resolve skill was not found — skipping
+merge step."_ and continue.
 
 ## Step 2: Create the draft PR
 
@@ -241,7 +255,8 @@ Only pass explicit branch/remote if the user specified them in Step 0.
 
 ## Step 5: Monitor the PR
 
-Invoke the monitor-pr skill:
+Invoke the monitor-pr skill with the PR number (either from Step 2 or
+from the `--pr` argument):
 
 ```
 /monitor-pr <pr-number>
