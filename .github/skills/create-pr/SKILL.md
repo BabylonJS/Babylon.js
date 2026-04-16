@@ -46,6 +46,12 @@ or labels — those only apply when creating a new PR.
    Always offer the merge option in Step 0a; if invocation in Step 1
    fails because the skill isn't installed, warn the user and skip.
 
+> ⚠️ **Always pass `--no-pager` to `git`** (e.g. `git --no-pager log`,
+> `git --no-pager diff`, `git --no-pager show`). Without it, commands can
+> launch an interactive pager (`less`) that blocks the shell. This
+> applies to every `git` invocation in this skill, not just the examples
+> shown below.
+
 ## Step 0: Gather all inputs up front
 
 > **If `--pr` was provided**, skip this entire step and Steps 1–4. Only
@@ -94,10 +100,10 @@ they are reused in 0c, 0d, Step 1, and Step 2.
 
     ```bash
     # Branch commits not in upstream base
-    git log --oneline <upstream-remote>/<base-branch>...HEAD
+    git --no-pager log --oneline <upstream-remote>/<base-branch>...HEAD
 
     # Files changed by the branch only (excludes merged-in upstream changes)
-    git diff <upstream-remote>/<base-branch>...HEAD --stat
+    git --no-pager diff <upstream-remote>/<base-branch>...HEAD --stat
     ```
 
     > ⚠️ Do **not** use two-dot `..` or compare against local `master` —
@@ -113,25 +119,47 @@ they are reused in 0c, 0d, Step 1, and Step 2.
 
 ### 0d. Reviewers
 
-1. Suggest 1–2 reviewers by analyzing who recently touched the changed
-   files (same three-dot base from 0c):
+1. Collect reviewer candidates from two sources:
 
     ```bash
-    # Changed files on the branch only
-    git diff --name-only <upstream-remote>/<base-branch>...HEAD
+    # a. Frequent historical authors of the changed files (on upstream base)
+    git --no-pager diff --name-only <upstream-remote>/<base-branch>...HEAD
+    git --no-pager log <upstream-remote>/<base-branch> --format="%ae" -- <changed-files> | sort | uniq -c | sort -rn
 
-    # Find frequent authors of those files (historical, on upstream base)
-    git log <upstream-remote>/<base-branch> --format="%an" -- <changed-files> | sort | uniq -c | sort -rn
-    ```
-
-    Also consider reviewers from recent PRs on similar areas:
-
-    ```bash
-    gh pr list --repo "BabylonJS/Babylon.js" -s merged -L 10 --json "number,reviews" \
+    # b. Reviewers on recent merged PRs touching similar areas
+    gh pr list --repo "<upstream-owner>/<upstream-repo>" -s merged -L 20 \
+      --json "number,reviews" \
       --jq '.[].reviews[].author.login' | sort | uniq -c | sort -rn
     ```
 
-2. Ask the user to confirm or change.
+    > Note: `git log %an` returns display names, not GitHub logins. Use
+    > `%ae` (email) and then resolve to GitHub logins via commit authors
+    > on the upstream remote, e.g.
+    > `gh api "/repos/<upstream-owner>/<upstream-repo>/commits?author=<email>&per_page=1" --jq ".[0].author.login"`.
+
+2. **Filter candidates to organization members only.** Suggesting a
+   reviewer outside the upstream org fails (`gh pr create --reviewer`
+   errors) and wastes user time. For each candidate GitHub login, check
+   org membership using the upstream owner as the org:
+
+    ```bash
+    # Returns HTTP 204 (member) or 404 (not a member). Use --silent
+    # and check the exit code.
+    gh api "/orgs/<upstream-owner>/members/<login>" --silent 2>/dev/null \
+      && echo "<login>: member" \
+      || echo "<login>: not a member"
+    ```
+
+    Drop any candidate that is not a member. Exclude the PR author and
+    bots (logins ending in `[bot]`).
+
+3. From the filtered list, present the top 1–2 candidates and ask the
+   user to confirm or change.
+
+    > If `<upstream-owner>` is a user account rather than an org, the
+    > `/orgs/` endpoint returns 404 for everyone. Fall back to checking
+    > repo collaborator status instead:
+    > `gh api "/repos/<upstream-owner>/<upstream-repo>/collaborators/<login>" --silent`.
 
 ### 0e. Labels
 
