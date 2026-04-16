@@ -1564,6 +1564,12 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
                 (this.emitter as any).computeWorldMatrix(true);
             }
 
+            // Ensure the scene transform matrix is up-to-date so matrix-dependent
+            // update steps (notably flow map sampling, which projects world positions
+            // into screen space) produce correct results during pre-warm, before any
+            // render has had a chance to populate the matrix.
+            this._scene?.updateTransformMatrix();
+
             const noiseTextureAsProcedural = this.noiseTexture as ProceduralTexture;
 
             if (noiseTextureAsProcedural && noiseTextureAsProcedural.onGeneratedObservable) {

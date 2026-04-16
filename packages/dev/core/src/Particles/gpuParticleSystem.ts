@@ -2378,6 +2378,11 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
             this.noiseTexture = null;
         }
 
+        if (disposeTexture && this._flowMap) {
+            this._flowMap.dispose();
+            this._flowMap = null;
+        }
+
         // Callback
         this.onStoppedObservable.clear();
         this.onDisposeObservable.notifyObservers(this);
@@ -2428,6 +2433,261 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         result.emitter = newEmitter;
 
         return result;
+    }
+
+    /**
+     * Creates a new GPUParticleSystem from an existing CPU ParticleSystem, copying all shared properties.
+     * Features that are not supported on the GPU (sub-emitters, custom update/position/direction functions,
+     * custom shaders, ramp/remap gradients) are logged as warnings and skipped. Flow maps are converted:
+     * the CPU `FlowMap` image data is uploaded to a new `RawTexture` which is assigned to the result.
+     *
+     * Textures (particleTexture, noiseTexture) are shared by reference between the source and the result.
+     * All other mutable state (colors, vectors, emitter type, gradients, attractors) is cloned so that
+     * the two systems can be modified independently after the call.
+     *
+     * Note: unlike the GPUParticleSystem constructor, `emitRateControl` defaults to `true` here so that
+     * changes to `emitRate` on the converted system behave the same as on the CPU source. Pass
+     * `{ emitRateControl: false }` explicitly to opt out.
+     * @param source The CPU ParticleSystem to convert
+     * @param sceneOrEngine The scene or engine the new GPU particle system belongs to
+     * @param options Optional options forwarded to the new GPU particle system (capacity, randomTextureSize, emitRateControl, maxAttractors). `capacity` defaults to the source capacity and `emitRateControl` defaults to `true`.
+     * @returns A new GPUParticleSystem with shared properties copied from the source
+     */
+    public static fromParticleSystem(
+        source: ParticleSystem,
+        sceneOrEngine: Scene | AbstractEngine,
+        options?: Partial<{
+            capacity: number;
+            randomTextureSize: number;
+            emitRateControl: boolean;
+            maxAttractors: number;
+        }>
+    ): GPUParticleSystem {
+        // Warn on features that cannot be represented on a GPU particle system.
+        if (source.subEmitters && source.subEmitters.length > 0) {
+            Logger.Warn("GPUParticleSystem.fromParticleSystem: 'subEmitters' is not supported on GPUParticleSystem and will be skipped.");
+        }
+        if (source.startDirectionFunction) {
+            Logger.Warn("GPUParticleSystem.fromParticleSystem: 'startDirectionFunction' is not supported on GPUParticleSystem and will be skipped.");
+        }
+        if (source.startPositionFunction) {
+            Logger.Warn("GPUParticleSystem.fromParticleSystem: 'startPositionFunction' is not supported on GPUParticleSystem and will be skipped.");
+        }
+        if (source.customShader) {
+            Logger.Warn("GPUParticleSystem.fromParticleSystem: 'customShader' is not supported on GPUParticleSystem and will be skipped.");
+        }
+        const sourceRampGradients = source.getRampGradients();
+        if (sourceRampGradients && sourceRampGradients.length > 0) {
+            Logger.Warn("GPUParticleSystem.fromParticleSystem: 'rampGradients' are not supported on GPUParticleSystem and will be skipped.");
+        }
+        const sourceColorRemapGradients = source.getColorRemapGradients();
+        if (sourceColorRemapGradients && sourceColorRemapGradients.length > 0) {
+            Logger.Warn("GPUParticleSystem.fromParticleSystem: 'colorRemapGradients' are not supported on GPUParticleSystem and will be skipped.");
+        }
+        const sourceAlphaRemapGradients = source.getAlphaRemapGradients();
+        if (sourceAlphaRemapGradients && sourceAlphaRemapGradients.length > 0) {
+            Logger.Warn("GPUParticleSystem.fromParticleSystem: 'alphaRemapGradients' are not supported on GPUParticleSystem and will be skipped.");
+        }
+
+        const capacity = options?.capacity ?? source.getCapacity();
+        const gpuOptions: Partial<{ capacity: number; randomTextureSize: number; emitRateControl: boolean; maxAttractors: number }> = { capacity };
+        if (options?.randomTextureSize !== undefined) {
+            gpuOptions.randomTextureSize = options.randomTextureSize;
+        }
+        // Default emitRateControl to true here: on a freshly constructed GPUParticleSystem the default is
+        // false for backwards compatibility, but when converting an existing CPU system users expect
+        // changes to emitRate to take effect — matching CPU behavior.
+        gpuOptions.emitRateControl = options?.emitRateControl ?? true;
+        if (options?.maxAttractors !== undefined) {
+            gpuOptions.maxAttractors = options.maxAttractors;
+        }
+
+        const gpu = new GPUParticleSystem(source.name + " (GPU)", gpuOptions, sceneOrEngine, null, source.isAnimationSheetEnabled);
+
+        gpu.id = source.id;
+
+        // Emitter (shared by reference: mesh or Vector3 — users expect both systems to follow the same source).
+        gpu.emitter = source.emitter;
+
+        // Emitter type — cloned for independence.
+        if (source.particleEmitterType) {
+            gpu.particleEmitterType = source.particleEmitterType.clone();
+        }
+
+        // Textures — shared by reference.
+        gpu.particleTexture = source.particleTexture;
+        if (source.noiseTexture) {
+            gpu.noiseTexture = source.noiseTexture;
+        }
+
+        // Colors.
+        gpu.color1 = source.color1.clone();
+        gpu.color2 = source.color2.clone();
+        gpu.colorDead = source.colorDead.clone();
+        gpu.textureMask = source.textureMask.clone();
+
+        // Sizes.
+        gpu.minSize = source.minSize;
+        gpu.maxSize = source.maxSize;
+        gpu.minScaleX = source.minScaleX;
+        gpu.maxScaleX = source.maxScaleX;
+        gpu.minScaleY = source.minScaleY;
+        gpu.maxScaleY = source.maxScaleY;
+
+        // Speeds / rotation.
+        gpu.minEmitPower = source.minEmitPower;
+        gpu.maxEmitPower = source.maxEmitPower;
+        gpu.minAngularSpeed = source.minAngularSpeed;
+        gpu.maxAngularSpeed = source.maxAngularSpeed;
+        gpu.minInitialRotation = source.minInitialRotation;
+        gpu.maxInitialRotation = source.maxInitialRotation;
+
+        // Lifetime.
+        gpu.minLifeTime = source.minLifeTime;
+        gpu.maxLifeTime = source.maxLifeTime;
+
+        // Emission.
+        gpu.emitRate = source.emitRate;
+        gpu.manualEmitCount = source.manualEmitCount;
+
+        // Physics.
+        gpu.gravity = source.gravity.clone();
+        gpu.limitVelocityDamping = source.limitVelocityDamping;
+
+        // Rendering.
+        gpu.blendMode = source.blendMode;
+        gpu.billboardMode = source.billboardMode;
+        gpu.isBillboardBased = source.isBillboardBased;
+        gpu.forceDepthWrite = source.forceDepthWrite;
+        gpu.useLogarithmicDepth = source.useLogarithmicDepth;
+        gpu.renderingGroupId = source.renderingGroupId;
+        gpu.layerMask = source.layerMask;
+
+        // Animation sheet.
+        gpu.startSpriteCellID = source.startSpriteCellID;
+        gpu.endSpriteCellID = source.endSpriteCellID;
+        gpu.spriteCellWidth = source.spriteCellWidth;
+        gpu.spriteCellHeight = source.spriteCellHeight;
+        gpu.spriteCellChangeSpeed = source.spriteCellChangeSpeed;
+        gpu.spriteCellLoop = source.spriteCellLoop;
+        gpu.spriteRandomStartCell = source.spriteRandomStartCell;
+
+        // Space.
+        gpu.isLocal = source.isLocal;
+        gpu.worldOffset = source.worldOffset.clone();
+        gpu.translationPivot = source.translationPivot.clone();
+
+        // Lifecycle.
+        gpu.targetStopDuration = source.targetStopDuration;
+        gpu.disposeOnStop = source.disposeOnStop;
+        gpu.startDelay = source.startDelay;
+        gpu.preWarmCycles = source.preWarmCycles;
+        gpu.preWarmStepOffset = source.preWarmStepOffset;
+        gpu.updateSpeed = source.updateSpeed;
+        gpu.preventAutoStart = source.preventAutoStart;
+
+        // Animations (shared by reference, matching the rest of the scene-graph convention).
+        gpu.animations = source.animations;
+        gpu.beginAnimationOnStart = source.beginAnimationOnStart;
+        gpu.beginAnimationFrom = source.beginAnimationFrom;
+        gpu.beginAnimationTo = source.beginAnimationTo;
+        gpu.beginAnimationLoop = source.beginAnimationLoop;
+
+        // Noise.
+        gpu.noiseStrength = source.noiseStrength.clone();
+
+        // Flow map — convert the CPU FlowMap (JS-side image data) into a RawTexture for GPU sampling.
+        // The CPU FlowMap stores image data top-left origin and flips V in its sampler; to get the
+        // same orientation under the GPU shader's non-flipped sampling, the uploaded texture needs invertY=true.
+        if (source.flowMap) {
+            const sourceFlowMap = source.flowMap;
+            const flowTexture = new RawTexture(
+                new Uint8Array(sourceFlowMap.data.buffer, sourceFlowMap.data.byteOffset, sourceFlowMap.data.byteLength),
+                sourceFlowMap.width,
+                sourceFlowMap.height,
+                Constants.TEXTUREFORMAT_RGBA,
+                sceneOrEngine,
+                false,
+                true,
+                Constants.TEXTURE_BILINEAR_SAMPLINGMODE
+            );
+            gpu.flowMap = flowTexture;
+            gpu.flowMapStrength = source.flowMapStrength;
+        }
+
+        // Gradients. GPU addColorGradient only takes color1 (no color2 range), so drop color2 if present.
+        const colorGradients = source.getColorGradients();
+        if (colorGradients) {
+            for (const g of colorGradients) {
+                gpu.addColorGradient(g.gradient, g.color1.clone());
+            }
+        }
+
+        const sizeGradients = source.getSizeGradients();
+        if (sizeGradients) {
+            for (const g of sizeGradients) {
+                gpu.addSizeGradient(g.gradient, g.factor1, g.factor2);
+            }
+        }
+
+        const angularSpeedGradients = source.getAngularSpeedGradients();
+        if (angularSpeedGradients) {
+            for (const g of angularSpeedGradients) {
+                gpu.addAngularSpeedGradient(g.gradient, g.factor1, g.factor2);
+            }
+        }
+
+        const velocityGradients = source.getVelocityGradients();
+        if (velocityGradients) {
+            for (const g of velocityGradients) {
+                gpu.addVelocityGradient(g.gradient, g.factor1, g.factor2);
+            }
+        }
+
+        const limitVelocityGradients = source.getLimitVelocityGradients();
+        if (limitVelocityGradients) {
+            for (const g of limitVelocityGradients) {
+                gpu.addLimitVelocityGradient(g.gradient, g.factor1, g.factor2);
+            }
+        }
+
+        const dragGradients = source.getDragGradients();
+        if (dragGradients) {
+            for (const g of dragGradients) {
+                gpu.addDragGradient(g.gradient, g.factor1, g.factor2);
+            }
+        }
+
+        const emitRateGradients = source.getEmitRateGradients();
+        if (emitRateGradients) {
+            for (const g of emitRateGradients) {
+                gpu.addEmitRateGradient(g.gradient, g.factor1, g.factor2);
+            }
+        }
+
+        const startSizeGradients = source.getStartSizeGradients();
+        if (startSizeGradients) {
+            for (const g of startSizeGradients) {
+                gpu.addStartSizeGradient(g.gradient, g.factor1, g.factor2);
+            }
+        }
+
+        const lifeTimeGradients = source.getLifeTimeGradients();
+        if (lifeTimeGradients) {
+            for (const g of lifeTimeGradients) {
+                gpu.addLifeTimeGradient(g.gradient, g.factor1, g.factor2);
+            }
+        }
+
+        // Attractors — cloned.
+        for (const attractor of source.attractors) {
+            const newAttractor = new Attractor();
+            newAttractor.position = attractor.position.clone();
+            newAttractor.strength = attractor.strength;
+            gpu.addAttractor(newAttractor);
+        }
+
+        return gpu;
     }
 
     /**
