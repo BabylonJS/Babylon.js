@@ -70,6 +70,18 @@ export function MakeBridgeServiceDefinition(options: BridgeServiceOptions): Serv
                     return;
                 }
 
+                // Close any existing WebSocket to avoid orphaned connections that
+                // keep a stale session alive on the bridge.
+                if (ws) {
+                    const oldWs = ws;
+                    oldWs.onopen = null;
+                    oldWs.onclose = null;
+                    oldWs.onmessage = null;
+                    oldWs.onerror = null;
+                    oldWs.close();
+                    ws = null;
+                }
+
                 try {
                     // NOTE: The browser unconditionally logs a console error for failed WebSocket
                     // connections at the network level. This cannot be suppressed from JavaScript.
