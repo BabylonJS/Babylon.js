@@ -26,7 +26,7 @@ Wait for "compiled successfully" then continue.
 Launch the tool in the browser by navigating to the following URL using playwright-cli:
 `http://localhost:1346`
 
-Use the `.github\instructions\editor-interaction.instructions.md` instructions for interacting with SFE.
+Use the [editor-interaction.instructions.md](editor-interaction.instructions.md) instructions for interacting with SFE.
 
 ## CDN-based Editors (NME, GUI Editor, NGE, NRGE, NPE)
 
