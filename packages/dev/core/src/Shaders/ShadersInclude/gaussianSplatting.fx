@@ -381,7 +381,7 @@ vec4 computeVoxelSplatWorldPos(vec4 rotationA, vec4 rotationB, vec4 rotationScal
     mat3 rotToView = mat3(viewMatrix) * mat3(invWorldScale) * mat3(splatWorld) * splatRotation;
     vec3 axisLengthInViewZ = abs(vec3(rotToView[0][2], rotToView[1][2], rotToView[2][2]));
 
-    float gaussianSplatCutoffStddev = 1.4142135624 / 2.0;
+    float gaussianSplatCutoffStddev = 1.4142135624 / 2.0; // sqrt(2)/2
     vec3 offsetSplatSpace;
     if (axisLengthInViewZ.x > axisLengthInViewZ.y && axisLengthInViewZ.x > axisLengthInViewZ.z) {
         offsetSplatSpace = vec3(0.0, quadPos.x, quadPos.y) * splatScale * gaussianSplatCutoffStddev;

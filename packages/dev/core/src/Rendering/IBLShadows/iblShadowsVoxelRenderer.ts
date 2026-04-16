@@ -749,7 +749,7 @@ export class _IblShadowsVoxelRenderer {
         mrt.setMaterialForRendering(mesh as Mesh, gsVoxelMaterial);
     }
 
-    private _addRTsForRender(mrts: RenderTargetTexture[], includedMeshes: Mesh[], axis: number, _continuousRender: boolean = false) {
+    private _addRTsForRender(mrts: RenderTargetTexture[], includedMeshes: Mesh[], axis: number) {
         const slabSize = 1.0 / this._computeNumberOfSlabs();
         const voxelMaterial = this._voxelMaterial;
 
@@ -853,7 +853,6 @@ export class _IblShadowsVoxelRenderer {
      */
     public dispose() {
         this._disposeVoxelTextures();
-        // TODO - dispose all created voxel materials.
         for (const mat of Array.from(this._gsVoxelMaterialCache.values())) {
             mat.dispose();
         }

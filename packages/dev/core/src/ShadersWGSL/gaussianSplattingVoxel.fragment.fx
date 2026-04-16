@@ -19,7 +19,7 @@ fn gsVoxelPrngCanonical3d(co: vec3f) -> f32 {
 
 @fragment
 fn main(input: FragmentInputs) -> FragmentOutputs {
-    var normPos: vec3f = input.vNormalizedPosition;
+    let normPos: vec3f = input.vNormalizedPosition;
 
     // Derive stepSize from the voxel grid resolution (assumed cube).
     let stepSize: f32 = 1.0 / f32(textureDimensions(voxel_storage).x);
