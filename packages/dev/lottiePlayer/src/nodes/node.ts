@@ -318,7 +318,9 @@ export class Node {
         const scale = scaleResult ?? this._scale.startValue;
 
         const rotationResult = Node._interpolateScalarAtFrame(this._rotation, frame);
-        const rotation = -(rotationResult ?? this._rotation.startValue);
+        // Keyframe values are stored without negation (negation is applied at runtime),
+        // but startValue is already negated by the parser, so only negate interpolated results.
+        const rotation = rotationResult !== undefined ? -rotationResult : this._rotation.startValue;
 
         const positionResult = Node._interpolateVector2AtFrame(this._position, frame);
         const position = positionResult ?? this._position.startValue;
@@ -337,7 +339,7 @@ export class Node {
         localMatrix.multiplyToRef(parentMatrix, output);
     }
 
-    private static _interpolateVector2AtFrame(property: Vector2Property, frame: number, startIndex: number = 0): IVector2Like | undefined {
+    private static _interpolateVector2AtFrame(property: Vector2Property, frame: number, startIndex: number = 0, output?: IVector2Like): IVector2Like | undefined {
         const keyframes = property.keyframes;
         if (!keyframes || keyframes.length === 0) {
             return undefined;
@@ -348,7 +350,13 @@ export class Node {
         }
 
         if (frame >= keyframes[keyframes.length - 1].time) {
-            return keyframes[keyframes.length - 1].value;
+            const last = keyframes[keyframes.length - 1].value;
+            if (output) {
+                output.x = last.x;
+                output.y = last.y;
+                return output;
+            }
+            return last;
         }
 
         let currentFrameIndex = -1;
@@ -370,10 +378,16 @@ export class Node {
         const easeFactor1 = currentKeyframe.easeFunction1.interpolate(gradient);
         const easeFactor2 = currentKeyframe.easeFunction2.interpolate(gradient);
 
-        return {
-            x: currentKeyframe.value.x + easeFactor1 * (nextKeyframe.value.x - currentKeyframe.value.x),
-            y: currentKeyframe.value.y + easeFactor2 * (nextKeyframe.value.y - currentKeyframe.value.y),
-        };
+        const x = currentKeyframe.value.x + easeFactor1 * (nextKeyframe.value.x - currentKeyframe.value.x);
+        const y = currentKeyframe.value.y + easeFactor2 * (nextKeyframe.value.y - currentKeyframe.value.y);
+
+        if (output) {
+            output.x = x;
+            output.y = y;
+            return output;
+        }
+
+        return { x, y };
     }
 
     private static _interpolateScalarAtFrame(property: ScalarProperty, frame: number, startIndex: number = 0): number | undefined {
@@ -411,8 +425,7 @@ export class Node {
     }
 
     private _updatePosition(frame: number): boolean {
-        const result = Node._interpolateVector2AtFrame(this._position, frame, this._position.currentKeyframeIndex);
-        if (result === undefined) {
+        if (!Node._interpolateVector2AtFrame(this._position, frame, this._position.currentKeyframeIndex, this._position.currentValue)) {
             return false;
         }
 
@@ -425,8 +438,6 @@ export class Node {
             }
         }
 
-        this._position.currentValue.x = result.x;
-        this._position.currentValue.y = result.y;
         return true;
     }
 
@@ -450,8 +461,7 @@ export class Node {
     }
 
     private _updateScale(frame: number): boolean {
-        const result = Node._interpolateVector2AtFrame(this._scale, frame, this._scale.currentKeyframeIndex);
-        if (result === undefined) {
+        if (!Node._interpolateVector2AtFrame(this._scale, frame, this._scale.currentKeyframeIndex, this._scale.currentValue)) {
             return false;
         }
 
@@ -463,9 +473,6 @@ export class Node {
                 break;
             }
         }
-
-        this._scale.currentValue.x = result.x;
-        this._scale.currentValue.y = result.y;
         return true;
     }
 

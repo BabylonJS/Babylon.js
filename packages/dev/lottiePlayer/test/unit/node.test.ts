@@ -310,6 +310,24 @@ describe("decomposeWorldMatrixAtFrame", () => {
         expect(outScale.y).toBeCloseTo(3, 1);
     });
 
+    it("matches worldMatrix.decompose for static non-zero rotation (no keyframes)", () => {
+        const rotation: ScalarProperty = { startValue: -Math.PI / 4, currentValue: -Math.PI / 4, currentKeyframeIndex: 0 };
+
+        const node = new Node("test", undefined, rotation);
+
+        // Get expected rotation from worldMatrix.decompose (the constructor path)
+        const wmScale = { x: 0, y: 0 };
+        const wmTranslation = { x: 0, y: 0 };
+        const wmRotation = node.worldMatrix.decompose(wmScale, wmTranslation);
+
+        // decomposeWorldMatrixAtFrame should produce the same rotation
+        const outScale = { x: 0, y: 0 };
+        const outTranslation = { x: 0, y: 0 };
+        const outRotation = node.decomposeWorldMatrixAtFrame(10, outScale, outTranslation);
+
+        expect(outRotation).toBeCloseTo(wmRotation, 5);
+    });
+
     it("does not mutate node state", () => {
         const position = makePositionProperty(0, 0, [
             { time: 0, x: 0, y: 0 },
