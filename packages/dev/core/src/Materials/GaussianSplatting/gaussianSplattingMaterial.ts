@@ -589,7 +589,9 @@ export class GaussianSplattingMaterial extends PushMaterial {
         }
     }
 
-    protected _bindVoxelEffectUniforms(gsMesh: GaussianSplattingMesh, gsMaterial: GaussianSplattingMaterial, shaderMaterial: ShaderMaterial): void {
+    private _voxelMissingTextureWarned = new Set<number>();
+
+    protected _bindVoxelEffectUniforms(gsMesh: GaussianSplattingMesh, gsMaterial: GaussianSplattingMaterial, shaderMaterial: ShaderMaterial): boolean {
         if (!gsMesh.rotationsATexture) {
             // Attempt to enable rotation/scale texture generation (no-op if already enabled).
             // If the mesh is already loaded and splat data is in RAM this triggers updateData() synchronously.
@@ -597,17 +599,18 @@ export class GaussianSplattingMaterial extends PushMaterial {
             gsMesh.needsRotationScaleTextures = true;
 
             if (!gsMesh.rotationsATexture) {
-                // Mesh data was already processed but rotation textures couldn't be generated.
-                if (gsMesh.centersTexture && !gsMesh.splatsData) {
+                // Mesh data was already processed but rotation textures couldn't be generated — warn once.
+                if (gsMesh.centersTexture && !gsMesh.splatsData && !this._voxelMissingTextureWarned.has(gsMesh.uniqueId)) {
+                    this._voxelMissingTextureWarned.add(gsMesh.uniqueId);
                     Logger.Error(
                         "IBL voxelization: GaussianSplattingMesh rotation/scale textures are not available. " +
                             "Create the mesh either with keepInRam=true or needsRotationScaleTextures=true to enable IBL shadow voxelization."
                     );
                 }
-                // Either the mesh is not yet loaded (silent wait) or the error above was already fired; skip binding.
-                return;
+                return false;
             }
         }
+        this._voxelMissingTextureWarned.delete(gsMesh.uniqueId);
 
         const effect = shaderMaterial.getEffect()!;
         gsMesh.getMeshUniformBuffer().bindToEffect(effect, "Mesh");
@@ -634,6 +637,7 @@ export class GaussianSplattingMaterial extends PushMaterial {
             }
             effect.setArray("partVisibility", partVisibilityData);
         }
+        return true;
     }
 
     /**

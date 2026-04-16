@@ -685,6 +685,11 @@ export class _IblShadowsVoxelRenderer {
             renderingMesh._bind(sm, effect, fillMode);
             gsVoxelMaterial._preBind(drawWrapper);
             gsVoxelMaterial.bind(effectiveMesh.getWorldMatrix(), effectiveMesh, effect);
+            // If rotation/scale textures are missing, bind() logged the warning; skip the draw to avoid GPU errors.
+            if (!(effectiveMesh as GaussianSplattingMesh).rotationsATexture) {
+                gsVoxelMaterial.unbind();
+                return;
+            }
             if (engine.isWebGPU) {
                 // A GSplat is a 3D Gaussian ellipsoid. To approximate its volume in the voxel grid
                 // we rasterize three planar cross-section quads — one per principal axis — each
