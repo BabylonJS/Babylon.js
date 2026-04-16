@@ -2015,10 +2015,23 @@ export class GaussianSplattingMeshBase extends Mesh {
                 }
             }
 
-            if (this._needsRotationScaleTextures && this._rotationsATexture && this._rotationDataA) {
-                this._updateTextureFromData(this._rotationsATexture, this._rotationDataA, textureSize.x, 0, textureSize.y);
-                this._updateTextureFromData(this._rotationsBTexture!, this._rotationDataB!, textureSize.x, 0, textureSize.y);
-                this._updateTextureFromData(this._rotationScaleTexture!, this._rotationScaleData!, textureSize.x, 0, textureSize.y);
+            if (this._needsRotationScaleTextures && this._rotationDataA) {
+                if (this._rotationsATexture) {
+                    this._updateTextureFromData(this._rotationsATexture, this._rotationDataA, textureSize.x, 0, textureSize.y);
+                    this._updateTextureFromData(this._rotationsBTexture!, this._rotationDataB!, textureSize.x, 0, textureSize.y);
+                    this._updateTextureFromData(this._rotationScaleTexture!, this._rotationScaleData!, textureSize.x, 0, textureSize.y);
+                } else {
+                    // Rotation textures not yet created (needsRotationScaleTextures was enabled after initial load).
+                    this._rotationsATexture = createTextureFromDataF16(this._rotationDataA, textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA);
+                    this._rotationsBTexture = createTextureFromDataF16(this._rotationDataB!, textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA);
+                    this._rotationScaleTexture = createTextureFromDataF16(this._rotationScaleData!, textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA);
+                    this._rotationsATexture.wrapU = Constants.TEXTURE_CLAMP_ADDRESSMODE;
+                    this._rotationsATexture.wrapV = Constants.TEXTURE_CLAMP_ADDRESSMODE;
+                    this._rotationsBTexture.wrapU = Constants.TEXTURE_CLAMP_ADDRESSMODE;
+                    this._rotationsBTexture.wrapV = Constants.TEXTURE_CLAMP_ADDRESSMODE;
+                    this._rotationScaleTexture.wrapU = Constants.TEXTURE_CLAMP_ADDRESSMODE;
+                    this._rotationScaleTexture.wrapV = Constants.TEXTURE_CLAMP_ADDRESSMODE;
+                }
             }
 
             this._onUpdateTextures(textureSize);
