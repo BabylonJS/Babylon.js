@@ -210,7 +210,7 @@ export class ArcRotateCameraKeyboardMoveInput implements ICameraInput<ArcRotateC
             const camera = this.camera;
 
             if (camera.movement) {
-                const movement = camera.movement;
+                const input = camera.movement.input;
                 // Update cached conditions (avoids per-frame allocations)
                 this._keyboardConditions.modifiers!.ctrl = this._ctrlPressed;
                 this._keyboardConditions.modifiers!.alt = this._altPressed;
@@ -220,37 +220,37 @@ export class ArcRotateCameraKeyboardMoveInput implements ICameraInput<ArcRotateC
 
                     // Resolve per key — allows different keys to map to different interactions
                     this._keyboardConditions.key = keyCode;
-                    const resolved = movement.resolveInteraction("keyboard", this._keyboardConditions);
+                    const resolved = input.resolveInteraction("keyboard", this._keyboardConditions);
 
                     if (resolved) {
                         if (resolved.interaction === "pan") {
                             const sens = resolved.sensitivity ?? this._defaultPanSensitivity;
                             if (this.keysLeft.indexOf(keyCode) !== -1) {
-                                movement.handlers.pan(-sens, 0);
+                                input.handlers.pan(-sens, 0);
                             } else if (this.keysRight.indexOf(keyCode) !== -1) {
-                                movement.handlers.pan(sens, 0);
+                                input.handlers.pan(sens, 0);
                             } else if (this.keysUp.indexOf(keyCode) !== -1) {
-                                movement.handlers.pan(0, sens);
+                                input.handlers.pan(0, sens);
                             } else if (this.keysDown.indexOf(keyCode) !== -1) {
-                                movement.handlers.pan(0, -sens);
+                                input.handlers.pan(0, -sens);
                             }
                         } else if (resolved.interaction === "zoom") {
                             const sens = resolved.sensitivity ?? this._defaultZoomSensitivity;
                             if (this.keysUp.indexOf(keyCode) !== -1 || this.keysZoomIn.indexOf(keyCode) !== -1) {
-                                movement.handlers.zoom(sens);
+                                input.handlers.zoom(sens);
                             } else if (this.keysDown.indexOf(keyCode) !== -1 || this.keysZoomOut.indexOf(keyCode) !== -1) {
-                                movement.handlers.zoom(-sens);
+                                input.handlers.zoom(-sens);
                             }
                         } else if (resolved.interaction === "rotate") {
                             const sens = resolved.sensitivity ?? this._defaultRotateSensitivity;
                             if (this.keysLeft.indexOf(keyCode) !== -1) {
-                                movement.handlers.rotate(-sens, 0);
+                                input.handlers.rotate(-sens, 0);
                             } else if (this.keysRight.indexOf(keyCode) !== -1) {
-                                movement.handlers.rotate(sens, 0);
+                                input.handlers.rotate(sens, 0);
                             } else if (this.keysUp.indexOf(keyCode) !== -1) {
-                                movement.handlers.rotate(0, -sens);
+                                input.handlers.rotate(0, -sens);
                             } else if (this.keysDown.indexOf(keyCode) !== -1) {
-                                movement.handlers.rotate(0, sens);
+                                input.handlers.rotate(0, sens);
                             }
                         }
                     }

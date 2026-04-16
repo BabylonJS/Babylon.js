@@ -1,52 +1,16 @@
 import { type Scene } from "../scene";
 import { Vector3 } from "../Maths/math.vector";
-import type { InputMapEntry, InputConditions, InputSource, InputModifiers } from "./cameraInteractions";
 import { type InterpolatingBehavior } from "../Behaviors/Cameras/interpolatingBehavior";
 
 const FrameDurationAt60FPS = 1000 / 60;
 /**
  * Base class for camera movement systems that convert raw input into framerate-independent camera deltas.
  *
- * The movement system has three layers of configuration:
+ * This class handles the physics layer: velocity tracking, inertial decay, speed multipliers,
+ * and per-frame delta computation. Input mapping (which physical inputs trigger which interactions)
+ * is handled by an `InputMapper` instance composed on each movement subclass as `input`.
  *
- * **1. Input mapping (`inputMap`)** — Controls which physical inputs trigger which camera interactions.
- * Each entry maps a source (pointer, keyboard, wheel, touch) + optional conditions (button, modifiers, key)
- * to a semantic interaction type (pan, rotate, zoom). First matching entry wins; use `addEntry()` to
- * auto-insert based on specificity, or `getEntry()` to modify an existing entry.
- *
- * ```typescript
- * // Swap left-click rotate to pan
- * camera.movement.getEntry("pointer", "rotate")!.interaction = "pan";
- * camera.movement.getEntry("pointer", "pan")!.interaction = "rotate";
- *
- * // Add shift+drag to pan (auto-inserted before less-specific entries)
- * camera.movement.addEntry({ source: "pointer", button: 0, modifiers: { shift: true }, interaction: "pan", sensitivity: 0.002 });
- *
- * // Change sensitivity of pointer rotation
- * camera.movement.getEntry("pointer", "rotate")!.sensitivity = 0.005;
- *
- * // Map +/- keys to zoom
- * camera.movement.addEntry({ source: "keyboard", key: [187, 107, 189, 109], interaction: "zoom", sensitivity: 0.04 });
- * ```
- *
- * **2. Sensitivity (`sensitivity` on each inputMap entry)** — Multiplier applied to input deltas before
- * passing to the handler. Higher values = faster movement. Each entry can have its own sensitivity,
- * allowing different sensitivity for e.g. keyboard rotate vs pointer rotate. When `sensitivity` is
- * omitted from an entry, each input class uses its own built-in default for that interaction type.
- *
- * **3. Handlers** — Defined on camera-specific subclasses (e.g. `ArcRotateCameraMovement.handlers`).
- * Handlers receive pre-scaled deltas and accumulate them into pixel accumulators. Override individual
- * handlers to customize behavior without changing input mapping:
- *
- * ```typescript
- * const defaultRotate = camera.movement.handlers.rotate;
- * camera.movement.handlers.rotate = (dx, dy) => {
- *     console.log("rotate:", dx, dy);
- *     defaultRotate(dx, dy);
- * };
- * ```
- *
- * **4. Speed and inertia** — Properties on this base class that control how accumulated pixel deltas
+ * **Speed and inertia** — Properties on this class that control how accumulated pixel deltas
  * are converted to framerate-independent camera deltas via `computeCurrentFrameDeltas()`:
  * - `panSpeed`, `rotationXSpeed`, `rotationYSpeed`, `zoomSpeed` — units of movement per pixel
  * - `panInertia`, `rotationInertia`, `zoomInertia` — velocity decay factor when input stops (0 = instant stop, 0.9 = smooth glide)
@@ -59,137 +23,6 @@ export class CameraMovement {
      * This helps differentiate between 0 pixel delta due to no input vs user actively holding still.
      */
     public activeInput: boolean = false;
-
-    /**
-     * Ordered list of input-to-interaction mapping rules. First matching entry wins.
-     * Each entry maps a physical input source (+ optional conditions like button or modifier keys) to a semantic interaction type.
-     *
-     * Override this array to reconfigure which physical inputs trigger which camera interactions.
-     * @example
-     * ```ts
-     * // Map-style navigation: left-click pans, right-click rotates
-     * camera.movement.inputMap = [
-     *     { source: "pointer", button: 0, interaction: "pan" },
-     *     { source: "pointer", button: 2, interaction: "rotate" },
-     *     { source: "wheel",              interaction: "zoom" },
-     * ];
-     * ```
-     */
-    public inputMap: InputMapEntry[] = [];
-
-    /**
-     * Resolves a physical input event to a matching inputMap entry.
-     * When multiple entries match, the most specific one wins (counted by number of conditions).
-     * Among equally specific entries, the first one in the array wins.
-     * Returns the matched entry, or null if no entry matches.
-     * @param source - The physical input source (e.g. "pointer", "keyboard")
-     * @param currentConditions - Conditions to match against, specific to the source type
-     * @returns The matched InputMapEntry, or null if no entry matches
-     */
-    public resolveInteraction(source: InputSource, currentConditions?: InputConditions): InputMapEntry | null {
-        for (const entry of this.inputMap) {
-            if (entry.source === source && this._entryMatches(entry, currentConditions)) {
-                return entry;
-            }
-        }
-        return null;
-    }
-
-    private _entryMatches(entry: InputMapEntry, currentConditions?: InputConditions): boolean {
-        switch (entry.source) {
-            case "pointer":
-                if (entry.button !== undefined && entry.button !== currentConditions?.button) {
-                    return false;
-                }
-                return this._matchModifiers(entry.modifiers, currentConditions?.modifiers);
-            case "wheel":
-                return this._matchModifiers(entry.modifiers, currentConditions?.modifiers);
-            case "touch":
-                if (entry.touchCount !== undefined && entry.touchCount !== currentConditions?.touchCount) {
-                    return false;
-                }
-                return true;
-            case "keyboard":
-                if (entry.key !== undefined) {
-                    if (Array.isArray(entry.key) ? entry.key.indexOf(currentConditions?.key ?? -1) === -1 : entry.key !== currentConditions?.key) {
-                        return false;
-                    }
-                }
-                return this._matchModifiers(entry.modifiers, currentConditions?.modifiers);
-        }
-    }
-
-    /**
-     * Restores the inputMap to the default configuration for this camera type.
-     * The base class resets to an empty array. Subclasses override this to restore
-     * their camera-specific default mappings.
-     */
-    public resetInputMap(): void {
-        this.inputMap = [];
-    }
-
-    /**
-     * Finds the first inputMap entry matching the given source and interaction.
-     * Useful for modifying entry properties (e.g. sensitivity) without rebuilding the entire inputMap.
-     * @param source - The physical input source to match
-     * @param interaction - The interaction type to match
-     * @returns The matching entry, or undefined if not found
-     */
-    public getEntry(source: InputSource, interaction: string): InputMapEntry | undefined {
-        return this.inputMap.find((e) => e.source === source && e.interaction === interaction);
-    }
-
-    /**
-     * Adds an entry to the inputMap at the correct position based on specificity.
-     * More specific entries (with more conditions like button, key, modifiers) are placed
-     * before less specific ones, ensuring they match first. Among equally specific entries,
-     * the new entry is placed after existing ones.
-     * @param entry - The entry to add
-     */
-    public addEntry(entry: InputMapEntry): void {
-        const score = this._entrySpecificity(entry);
-        let insertIndex = this.inputMap.length;
-        for (let i = 0; i < this.inputMap.length; i++) {
-            if (this._entrySpecificity(this.inputMap[i]) < score) {
-                insertIndex = i;
-                break;
-            }
-        }
-        this.inputMap.splice(insertIndex, 0, entry);
-    }
-
-    private _entrySpecificity(entry: InputMapEntry): number {
-        let score = 0;
-        if ("button" in entry && entry.button !== undefined) {
-            score++;
-        }
-        if ("key" in entry && entry.key !== undefined) {
-            score++;
-        }
-        if ("touchCount" in entry && entry.touchCount !== undefined) {
-            score++;
-        }
-        if ("modifiers" in entry && entry.modifiers) {
-            score++;
-        }
-        return score;
-    }
-
-    private _matchModifiers(entryModifiers?: InputModifiers, currentModifiers?: InputModifiers): boolean {
-        if (!entryModifiers) {
-            return true;
-        }
-        if (entryModifiers.ctrl !== undefined && entryModifiers.ctrl !== (currentModifiers?.ctrl ?? false)) {
-            return false;
-        }
-        if (entryModifiers.shift !== undefined && entryModifiers.shift !== (currentModifiers?.shift ?? false)) {
-            return false;
-        }
-        if (entryModifiers.alt !== undefined && entryModifiers.alt !== (currentModifiers?.alt ?? false)) {
-            return false;
-        }
-        return true;
-    }
 
     /**
      * ------------ Speed ----------------
@@ -378,6 +211,10 @@ export class CameraMovement {
         this.activeInput = false;
     }
 
+    /**
+     * Returns true when the camera is playing an interpolating (fly-to) animation.
+     * Useful for suppressing user-input movement while a programmatic animation is active.
+     */
     public get isInterpolating(): boolean {
         return !!this._behavior?.isInterpolating;
     }

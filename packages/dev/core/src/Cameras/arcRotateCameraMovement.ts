@@ -3,7 +3,7 @@ import type { Scene } from "../scene";
 import type { Vector3 } from "../Maths/math.vector";
 import type { InterpolatingBehavior } from "../Behaviors/Cameras/interpolatingBehavior";
 import type { ArcRotateCamera } from "./arcRotateCamera";
-import type { InputMapEntry } from "./cameraInteractions";
+import { type InputMapEntry, InputMapper } from "./cameraInteractions";
 
 // ── ArcRotate handler types ────────────────────────────────────────
 
@@ -25,57 +25,40 @@ export type ArcRotateHandlers = {
 export type ArcRotateInteraction = keyof ArcRotateHandlers;
 
 /**
- * Arc-rotate camera movement system that extends the base movement with
- * the input mapping and handler pattern.
+ * Arc-rotate camera movement system that provides framerate-independent physics
+ * and input mapping for pan, rotate, and zoom interactions.
  *
- * Default handlers accumulate pixel deltas into the base class accumulators
+ * Default accumulator-based flow: input classes feed pixel deltas into the accumulators
  * (panAccumulatedPixels, rotationAccumulatedPixels, zoomAccumulatedPixels).
  * The base class's computeCurrentFrameDeltas() converts these to framerate-independent
  * deltas with proper inertia, which the camera reads each frame.
  */
 export class ArcRotateCameraMovement extends CameraMovement {
-    /**
-     * Interaction handlers for arc-rotate camera.
-     * Override individual handlers to customize camera behavior without changing input mapping.
-     */
-    public handlers: ArcRotateHandlers;
-
-    /**
-     * Input-to-interaction mapping rules, constrained to valid arc-rotate interaction types.
-     */
-    public override inputMap: InputMapEntry<ArcRotateInteraction>[] = [];
+    /** Input system that maps physical inputs to interactions and dispatches to handlers. */
+    public readonly input: InputMapper<ArcRotateHandlers>;
 
     constructor(scene: Scene, cameraPosition: Vector3, behavior?: InterpolatingBehavior<ArcRotateCamera>) {
         super(scene, cameraPosition, behavior);
 
         // Scale global speed to match legacy ArcRotateCamera feel.
-        // The movement system's velocity model produces ~3.5x less movement than legacy's
-        // inertia-accumulating model for the same sensitivity values.
         this.speed = 3.5;
 
-        this.handlers = {
-            pan: (deltaX, deltaY) => {
-                this.panAccumulatedPixels.x += deltaX;
-                this.panAccumulatedPixels.y += deltaY;
+        this.input = new InputMapper<ArcRotateHandlers>(
+            {
+                pan: (deltaX, deltaY) => {
+                    this.panAccumulatedPixels.x += deltaX;
+                    this.panAccumulatedPixels.y += deltaY;
+                },
+                rotate: (deltaX, deltaY) => {
+                    this.rotationAccumulatedPixels.x += deltaX;
+                    this.rotationAccumulatedPixels.y += deltaY;
+                },
+                zoom: (delta) => {
+                    this.zoomAccumulatedPixels += delta;
+                },
             },
-            rotate: (deltaX, deltaY) => {
-                this.rotationAccumulatedPixels.x += deltaX;
-                this.rotationAccumulatedPixels.y += deltaY;
-            },
-            zoom: (delta) => {
-                this.zoomAccumulatedPixels += delta;
-            },
-        };
-
-        this.resetInputMap();
-    }
-
-    /**
-     * Restores the inputMap to the default ArcRotateCamera configuration:
-     * left-click rotate, right-click pan, wheel zoom, ctrl+keyboard pan, alt+keyboard zoom, keyboard rotate.
-     */
-    public override resetInputMap(): void {
-        this.inputMap = this._createDefaultInputMap();
+            () => this._createDefaultInputMap()
+        );
     }
 
     private _createDefaultInputMap(): InputMapEntry<ArcRotateInteraction>[] {

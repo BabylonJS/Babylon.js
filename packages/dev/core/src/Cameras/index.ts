@@ -21,5 +21,6 @@ export * from "./VR/index";
 export * from "./RigModes/index";
 export * from "./geospatialCamera";
 export * from "./cameraInteractions";
+export * from "./cameraMovement";
 export * from "./geospatialCameraMovement";
 export * from "./arcRotateCameraMovement";

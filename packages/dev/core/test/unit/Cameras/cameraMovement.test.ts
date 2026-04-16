@@ -1,10 +1,146 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { CameraMovement } from "core/Cameras/cameraMovement";
-import { FreeCamera } from "core/Cameras/freeCamera";
+import { InputMapper } from "core/Cameras/cameraInteractions";
 import { Vector3 } from "core/Maths/math.vector";
 import { NullEngine } from "core/Engines/nullEngine";
 import { Scene } from "core/scene";
 import type { Nullable } from "core/types";
+
+describe("InputMapper", () => {
+    // Dummy handlers for testing — InputMapper needs handler keys to match interaction strings
+    type TestHandlers = { rotate: () => void; translate: () => void; zoom: () => void; pan: () => void };
+    const noop = () => {};
+    let mapper: InputMapper<TestHandlers>;
+
+    beforeEach(() => {
+        mapper = new InputMapper<TestHandlers>({ rotate: noop, translate: noop, zoom: noop, pan: noop });
+    });
+
+    describe("resolveInteraction", () => {
+        it("should match by source type", () => {
+            mapper.inputMap = [
+                { source: "pointer", button: 0, interaction: "rotate" },
+                { source: "keyboard", interaction: "translate" },
+                { source: "wheel", interaction: "zoom" },
+                { source: "touch", interaction: "pan" },
+            ];
+
+            expect(mapper.resolveInteraction("pointer", { button: 0 })?.interaction).toBe("rotate");
+            expect(mapper.resolveInteraction("keyboard")?.interaction).toBe("translate");
+            expect(mapper.resolveInteraction("wheel")?.interaction).toBe("zoom");
+            expect(mapper.resolveInteraction("touch")?.interaction).toBe("pan");
+        });
+
+        it("should return first match when multiple entries exist for same source", () => {
+            mapper.inputMap = [
+                { source: "pointer", button: 0, interaction: "rotate" },
+                { source: "pointer", button: 0, interaction: "pan" },
+            ];
+
+            expect(mapper.resolveInteraction("pointer", { button: 0 })?.interaction).toBe("rotate");
+        });
+
+        it("should match exact modifiers", () => {
+            mapper.inputMap = [{ source: "keyboard", modifiers: { ctrl: true }, interaction: "pan" }];
+
+            expect(mapper.resolveInteraction("keyboard", { modifiers: { ctrl: true } })?.interaction).toBe("pan");
+            expect(mapper.resolveInteraction("keyboard", { modifiers: { ctrl: false } })).toBeNull();
+        });
+
+        it("should match when entry has no modifiers (matches anything)", () => {
+            mapper.inputMap = [{ source: "keyboard", interaction: "rotate" }];
+
+            expect(mapper.resolveInteraction("keyboard", { modifiers: { ctrl: true } })?.interaction).toBe("rotate");
+            expect(mapper.resolveInteraction("keyboard")?.interaction).toBe("rotate");
+        });
+
+        it("should match partial modifiers (only check specified keys)", () => {
+            mapper.inputMap = [{ source: "keyboard", modifiers: { ctrl: true }, interaction: "pan" }];
+
+            expect(mapper.resolveInteraction("keyboard", { modifiers: { ctrl: true, shift: true } })?.interaction).toBe("pan");
+        });
+
+        it("should match pointer button", () => {
+            mapper.inputMap = [{ source: "pointer", button: 2, interaction: "pan" }];
+
+            expect(mapper.resolveInteraction("pointer", { button: 2 })?.interaction).toBe("pan");
+            expect(mapper.resolveInteraction("pointer", { button: 0 })).toBeNull();
+        });
+
+        it("should match touch count", () => {
+            mapper.inputMap = [{ source: "touch", touchCount: 2, interaction: "zoom" }];
+
+            expect(mapper.resolveInteraction("touch", { touchCount: 2 })?.interaction).toBe("zoom");
+            expect(mapper.resolveInteraction("touch", { touchCount: 1 })).toBeNull();
+        });
+
+        it("should return null when no entry matches", () => {
+            mapper.inputMap = [{ source: "pointer", button: 0, interaction: "rotate" }];
+
+            expect(mapper.resolveInteraction("keyboard")).toBeNull();
+        });
+
+        it("should return null with empty inputMap", () => {
+            mapper.inputMap = [];
+            expect(mapper.resolveInteraction("pointer", { button: 0 })).toBeNull();
+        });
+
+        it("should return sensitivity from matched entry", () => {
+            mapper.inputMap = [{ source: "pointer", button: 0, interaction: "rotate", sensitivity: 0.5 }];
+            expect(mapper.resolveInteraction("pointer", { button: 0 })?.sensitivity).toBe(0.5);
+        });
+
+        it("should return undefined sensitivity when not specified", () => {
+            mapper.inputMap = [{ source: "pointer", button: 0, interaction: "rotate" }];
+            expect(mapper.resolveInteraction("pointer", { button: 0 })?.sensitivity).toBeUndefined();
+        });
+    });
+
+    describe("resetInputMap", () => {
+        it("should reset to empty array when no factory provided", () => {
+            mapper.inputMap = [{ source: "pointer", button: 0, interaction: "rotate" }];
+            mapper.resetInputMap();
+            expect(mapper.inputMap).toEqual([]);
+        });
+
+        it("should reset to factory-provided defaults", () => {
+            const defaults = [
+                { source: "pointer" as const, button: 0, interaction: "rotate" as const },
+                { source: "wheel" as const, interaction: "zoom" as const },
+            ];
+            const mapperWithDefaults = new InputMapper<TestHandlers>(
+                { rotate: noop, translate: noop, zoom: noop, pan: noop },
+                () => [...defaults]
+            );
+            expect(mapperWithDefaults.inputMap).toHaveLength(2);
+
+            mapperWithDefaults.inputMap = [];
+            mapperWithDefaults.resetInputMap();
+            expect(mapperWithDefaults.inputMap).toHaveLength(2);
+            expect(mapperWithDefaults.inputMap[0].interaction).toBe("rotate");
+        });
+    });
+
+    describe("getEntry", () => {
+        it("should find entry by source and interaction", () => {
+            mapper.inputMap = [
+                { source: "pointer", button: 0, interaction: "rotate" },
+                { source: "pointer", button: 2, interaction: "pan" },
+            ];
+            expect(mapper.getEntry("pointer", "pan")?.source).toBe("pointer");
+            expect(mapper.getEntry("pointer", "zoom")).toBeUndefined();
+        });
+    });
+
+    describe("addEntry", () => {
+        it("should insert more specific entries before less specific ones", () => {
+            mapper.inputMap = [{ source: "keyboard", interaction: "rotate" }];
+            mapper.addEntry({ source: "keyboard", modifiers: { ctrl: true }, interaction: "pan" });
+            expect(mapper.inputMap[0].interaction).toBe("pan");
+            expect(mapper.inputMap[1].interaction).toBe("rotate");
+        });
+    });
+});
 
 describe("CameraMovement", () => {
     let engine: Nullable<NullEngine> = null;
@@ -28,86 +164,6 @@ describe("CameraMovement", () => {
     afterEach(() => {
         scene?.dispose();
         engine?.dispose();
-    });
-
-    describe("resolveInteraction", () => {
-        it("should match by source type", () => {
-            movement.inputMap = [
-                { source: "pointer", button: 0, interaction: "rotate" },
-                { source: "keyboard", interaction: "translate" },
-                { source: "wheel", interaction: "zoom" },
-                { source: "touch", interaction: "pan" },
-            ];
-
-            expect(movement.resolveInteraction("pointer", { button: 0 })?.interaction).toBe("rotate");
-            expect(movement.resolveInteraction("keyboard")?.interaction).toBe("translate");
-            expect(movement.resolveInteraction("wheel")?.interaction).toBe("zoom");
-            expect(movement.resolveInteraction("touch")?.interaction).toBe("pan");
-        });
-
-        it("should return first match when multiple entries exist for same source", () => {
-            movement.inputMap = [
-                { source: "pointer", button: 0, interaction: "rotate" },
-                { source: "pointer", button: 0, interaction: "pan" },
-            ];
-
-            expect(movement.resolveInteraction("pointer", { button: 0 })?.interaction).toBe("rotate");
-        });
-
-        it("should match exact modifiers", () => {
-            movement.inputMap = [{ source: "keyboard", modifiers: { ctrl: true }, interaction: "pan" }];
-
-            expect(movement.resolveInteraction("keyboard", { modifiers: { ctrl: true } })?.interaction).toBe("pan");
-            expect(movement.resolveInteraction("keyboard", { modifiers: { ctrl: false } })).toBeNull();
-        });
-
-        it("should match when entry has no modifiers (matches anything)", () => {
-            movement.inputMap = [{ source: "keyboard", interaction: "rotate" }];
-
-            expect(movement.resolveInteraction("keyboard", { modifiers: { ctrl: true } })?.interaction).toBe("rotate");
-            expect(movement.resolveInteraction("keyboard")?.interaction).toBe("rotate");
-        });
-
-        it("should match partial modifiers (only check specified keys)", () => {
-            movement.inputMap = [{ source: "keyboard", modifiers: { ctrl: true }, interaction: "pan" }];
-
-            expect(movement.resolveInteraction("keyboard", { modifiers: { ctrl: true, shift: true } })?.interaction).toBe("pan");
-        });
-
-        it("should match pointer button", () => {
-            movement.inputMap = [{ source: "pointer", button: 2, interaction: "pan" }];
-
-            expect(movement.resolveInteraction("pointer", { button: 2 })?.interaction).toBe("pan");
-            expect(movement.resolveInteraction("pointer", { button: 0 })).toBeNull();
-        });
-
-        it("should match touch count", () => {
-            movement.inputMap = [{ source: "touch", touchCount: 2, interaction: "zoom" }];
-
-            expect(movement.resolveInteraction("touch", { touchCount: 2 })?.interaction).toBe("zoom");
-            expect(movement.resolveInteraction("touch", { touchCount: 1 })).toBeNull();
-        });
-
-        it("should return null when no entry matches", () => {
-            movement.inputMap = [{ source: "pointer", button: 0, interaction: "rotate" }];
-
-            expect(movement.resolveInteraction("keyboard")).toBeNull();
-        });
-
-        it("should return null with empty inputMap", () => {
-            movement.inputMap = [];
-            expect(movement.resolveInteraction("pointer", { button: 0 })).toBeNull();
-        });
-
-        it("should return sensitivity from matched entry", () => {
-            movement.inputMap = [{ source: "pointer", button: 0, interaction: "rotate", sensitivity: 0.5 }];
-            expect(movement.resolveInteraction("pointer", { button: 0 })?.sensitivity).toBe(0.5);
-        });
-
-        it("should return undefined sensitivity when not specified", () => {
-            movement.inputMap = [{ source: "pointer", button: 0, interaction: "rotate" }];
-            expect(movement.resolveInteraction("pointer", { button: 0 })?.sensitivity).toBeUndefined();
-        });
     });
 
     describe("computeCurrentFrameDeltas", () => {
@@ -209,14 +265,6 @@ describe("CameraMovement", () => {
             expect(movement.rotationDeltaCurrentFrame.x).toBe(0);
             expect(movement.rotationDeltaCurrentFrame.y).toBe(0);
             expect(movement.zoomDeltaCurrentFrame).toBe(0);
-        });
-    });
-
-    describe("resetInputMap", () => {
-        it("should reset to empty array in base class", () => {
-            movement.inputMap = [{ source: "pointer", button: 0, interaction: "rotate" }];
-            movement.resetInputMap();
-            expect(movement.inputMap).toEqual([]);
         });
     });
 });

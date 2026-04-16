@@ -589,16 +589,16 @@ export class ArcRotateCamera extends TargetCamera {
     /** @internal */
     public override _viewMatrix = new Matrix();
     /** @internal */
-    public _useCtrlForPanning: boolean;
+    public _useCtrlForPanning: boolean = true;
     /** @internal */
-    public _panningMouseButton: number;
+    public _panningMouseButton: number = 2;
 
     /**
      * Defines the input associated to the camera.
      */
     public override inputs: ArcRotateCameraInputsManager;
 
-    /** Movement controller that turns input pixel deltas into framerate-independent deltas. When undefined, legacy inertial system is used. */
+    /** Movement controller that provides input mapping and framerate-independent physics. When undefined, legacy inertial system is used. */
     public movement?: ArcRotateCameraMovement;
 
     private _useMovementSystem: boolean = false;
@@ -633,19 +633,19 @@ export class ArcRotateCamera extends TargetCamera {
             return;
         }
 
-        this.movement.resetInputMap();
+        this.movement.input.resetInputMap();
 
         // Handle _useCtrlForPanning: remove ctrl+keyboard→pan entry when false
         if (!this._useCtrlForPanning) {
-            const idx = this.movement.inputMap.findIndex((e) => e.source === "keyboard" && "modifiers" in e && e.modifiers?.ctrl === true && e.interaction === "pan");
+            const idx = this.movement.input.inputMap.findIndex((e) => e.source === "keyboard" && "modifiers" in e && e.modifiers?.ctrl === true && e.interaction === "pan");
             if (idx !== -1) {
-                this.movement.inputMap.splice(idx, 1);
+                this.movement.input.inputMap.splice(idx, 1);
             }
         }
 
         // Handle _panningMouseButton: update pointer→pan entry's button when not the default (2)
         if (this._panningMouseButton !== 2) {
-            const entry = this.movement.inputMap.find((e) => e.source === "pointer" && e.interaction === "pan");
+            const entry = this.movement.input.inputMap.find((e) => e.source === "pointer" && e.interaction === "pan");
             if (entry && entry.source === "pointer") {
                 (entry as { button?: number }).button = this._panningMouseButton;
             }
@@ -654,9 +654,9 @@ export class ArcRotateCamera extends TargetCamera {
         // Handle useAltToZoom: remove alt+keyboard→zoom entry when false
         const keyboardInput = this.inputs.attached["keyboard"] as ArcRotateCameraKeyboardMoveInput | undefined;
         if (keyboardInput && !keyboardInput.useAltToZoom) {
-            const idx = this.movement.inputMap.findIndex((e) => e.source === "keyboard" && "modifiers" in e && e.modifiers?.alt === true && e.interaction === "zoom");
+            const idx = this.movement.input.inputMap.findIndex((e) => e.source === "keyboard" && "modifiers" in e && e.modifiers?.alt === true && e.interaction === "zoom");
             if (idx !== -1) {
-                this.movement.inputMap.splice(idx, 1);
+                this.movement.input.inputMap.splice(idx, 1);
             }
         }
     }

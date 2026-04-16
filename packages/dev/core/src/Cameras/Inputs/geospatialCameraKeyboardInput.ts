@@ -61,15 +61,15 @@ export class GeospatialCameraKeyboardInput implements ICameraInput<GeospatialCam
     /**
      * Defines the rotation sensitivity of the inputs.
      * (How many pixels of pointer input to apply per keypress, before rotation speed factor is applied by movement class)
-     * @deprecated Use the `sensitivity` field on the keyboard rotate entry in `camera.movement.inputMap` instead.
+     * @deprecated Use the `sensitivity` field on the keyboard rotate entry in `camera.movement.input.inputMap` instead.
      */
     public get rotationSensitivity(): number {
-        const entry = this.camera.movement?.inputMap.find((e) => e.source === "keyboard" && e.interaction === "rotate");
+        const entry = this.camera.movement.input.inputMap.find((e) => e.source === "keyboard" && e.interaction === "rotate");
         return entry?.sensitivity ?? 1;
     }
 
     public set rotationSensitivity(value: number) {
-        for (const entry of this.camera.movement.inputMap) {
+        for (const entry of this.camera.movement.input.inputMap) {
             if (entry.source === "keyboard" && entry.interaction === "rotate") {
                 entry.sensitivity = value;
             }
@@ -79,15 +79,15 @@ export class GeospatialCameraKeyboardInput implements ICameraInput<GeospatialCam
     /**
      * Defines the panning sensitivity of the inputs.
      * (How many pixels of pointer input to apply per keypress, before pan speed factor is applied by movement class)
-     * @deprecated Use the `sensitivity` field on the keyboard pan entry in `camera.movement.inputMap` instead.
+     * @deprecated Use the `sensitivity` field on the keyboard pan entry in `camera.movement.input.inputMap` instead.
      */
     public get panSensitivity(): number {
-        const entry = this.camera.movement?.inputMap.find((e) => e.source === "keyboard" && e.interaction === "pan");
+        const entry = this.camera.movement.input.inputMap.find((e) => e.source === "keyboard" && e.interaction === "pan");
         return entry?.sensitivity ?? 1;
     }
 
     public set panSensitivity(value: number) {
-        for (const entry of this.camera.movement.inputMap) {
+        for (const entry of this.camera.movement.input.inputMap) {
             if (entry.source === "keyboard" && entry.interaction === "pan") {
                 entry.sensitivity = value;
             }
@@ -97,15 +97,15 @@ export class GeospatialCameraKeyboardInput implements ICameraInput<GeospatialCam
     /**
      * Defines the zooming sensitivity of the inputs.
      * (How many pixels of pointer input to apply per keypress, before zoom speed factor is applied by movement class)
-     * @deprecated Use the `sensitivity` field on the keyboard zoom entry in `camera.movement.inputMap` instead.
+     * @deprecated Use the `sensitivity` field on the keyboard zoom entry in `camera.movement.input.inputMap` instead.
      */
     public get zoomSensitivity(): number {
-        const entry = this.camera.movement?.inputMap.find((e) => e.source === "keyboard" && e.interaction === "zoom");
+        const entry = this.camera.movement.input.inputMap.find((e) => e.source === "keyboard" && e.interaction === "zoom");
         return entry?.sensitivity ?? 1;
     }
 
     public set zoomSensitivity(value: number) {
-        for (const entry of this.camera.movement.inputMap) {
+        for (const entry of this.camera.movement.input.inputMap) {
             if (entry.source === "keyboard" && entry.interaction === "zoom") {
                 entry.sensitivity = value;
             }
@@ -226,7 +226,7 @@ export class GeospatialCameraKeyboardInput implements ICameraInput<GeospatialCam
     public checkInputs(): void {
         if (this._onKeyboardObserver) {
             const camera = this.camera;
-            const movement = camera.movement;
+            const input = camera.movement.input;
 
             // Update cached modifier state
             this._keyboardConditions.modifiers!.ctrl = this._ctrlPressed;
@@ -238,25 +238,25 @@ export class GeospatialCameraKeyboardInput implements ICameraInput<GeospatialCam
 
                 // Resolve per key — allows different keys to map to different interactions
                 this._keyboardConditions.key = keyCode;
-                const resolved = movement.resolveInteraction("keyboard", this._keyboardConditions);
+                const resolved = input.resolveInteraction("keyboard", this._keyboardConditions);
 
                 if (resolved) {
                     const sens = resolved.sensitivity ?? 1;
                     if (resolved.interaction === "zoom") {
                         if (this.keysZoomIn.indexOf(keyCode) !== -1 || this.keysUp.indexOf(keyCode) !== -1) {
-                            movement.handlers.zoom(sens, false);
+                            input.handlers.zoom(sens, false);
                         } else if (this.keysZoomOut.indexOf(keyCode) !== -1 || this.keysDown.indexOf(keyCode) !== -1) {
-                            movement.handlers.zoom(-sens, false);
+                            input.handlers.zoom(-sens, false);
                         }
                     } else if (resolved.interaction === "rotate") {
                         if (this.keysLeft.indexOf(keyCode) !== -1) {
-                            movement.handlers.rotate(-sens, 0);
+                            input.handlers.rotate(-sens, 0);
                         } else if (this.keysRight.indexOf(keyCode) !== -1) {
-                            movement.handlers.rotate(sens, 0);
+                            input.handlers.rotate(sens, 0);
                         } else if (this.keysUp.indexOf(keyCode) !== -1) {
-                            movement.handlers.rotate(0, -sens);
+                            input.handlers.rotate(0, -sens);
                         } else if (this.keysDown.indexOf(keyCode) !== -1) {
-                            movement.handlers.rotate(0, sens);
+                            input.handlers.rotate(0, sens);
                         }
                     } else if (resolved.interaction === "pan") {
                         // Call into movement class handleDrag so that behavior matches that of pointer input, simulating drag from center of screen.
@@ -265,17 +265,17 @@ export class GeospatialCameraKeyboardInput implements ICameraInput<GeospatialCam
                         const hardwareScaling = this._engine.getHardwareScalingLevel();
                         const centerX = (this._engine.getRenderWidth() / 2) * hardwareScaling;
                         const centerY = (this._engine.getRenderHeight() / 2) * hardwareScaling;
-                        movement.handlers.pan.start(centerX, centerY);
+                        input.handlers.pan.start(centerX, centerY);
                         if (this.keysLeft.indexOf(keyCode) !== -1) {
-                            movement.handlers.pan.update(centerX + sens, centerY);
+                            input.handlers.pan.update(centerX + sens, centerY);
                         } else if (this.keysRight.indexOf(keyCode) !== -1) {
-                            movement.handlers.pan.update(centerX - sens, centerY);
+                            input.handlers.pan.update(centerX - sens, centerY);
                         } else if (this.keysUp.indexOf(keyCode) !== -1) {
-                            movement.handlers.pan.update(centerX, centerY + sens);
+                            input.handlers.pan.update(centerX, centerY + sens);
                         } else if (this.keysDown.indexOf(keyCode) !== -1) {
-                            movement.handlers.pan.update(centerX, centerY - sens);
+                            input.handlers.pan.update(centerX, centerY - sens);
                         }
-                        movement.handlers.pan.stop();
+                        input.handlers.pan.stop();
                     }
                 }
             }

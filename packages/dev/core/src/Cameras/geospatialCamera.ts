@@ -34,7 +34,7 @@ export type GeospatialCameraOptions = {
 export class GeospatialCamera extends Camera {
     override inputs: GeospatialCameraInputsManager;
 
-    /** Movement controller that turns input pixelDeltas into currentFrameDeltas used by camera*/
+    /** Movement controller that provides input mapping and framerate-independent physics for geospatial interactions */
     public readonly movement: GeospatialCameraMovement;
 
     // Temp vars
@@ -67,6 +67,7 @@ export class GeospatialCamera extends Camera {
         this.addBehavior(this._flyingBehavior);
 
         this.movement = new GeospatialCameraMovement(scene, this._limits, this.position, this.center, this._lookAtVector, options.pickPredicate, this._flyingBehavior);
+
         this._resetToDefault(this._limits);
 
         this.inputs = new GeospatialCameraInputsManager(this);

@@ -127,3 +127,163 @@ export type InputConditions = {
     /** Key code of the current key being resolved */
     key?: number;
 };
+
+/**
+ * Extracts the string-typed interaction names from a handlers object type.
+ * Equivalent to `keyof THandlers & string` — filters out symbol/number keys.
+ */
+export type InteractionName<THandlers> = keyof THandlers & string;
+
+/**
+ * Generic input-to-interaction mapper that resolves physical input events to semantic interaction types
+ * and dispatches them to typed handlers.
+ *
+ * `InputMapper` is not tied to cameras — any object that needs a configurable, prioritized
+ * mapping from physical inputs (pointer, keyboard, wheel, touch) to named interactions can use it.
+ *
+ * The mapper holds an ordered `inputMap` array. When `resolveInteraction` is called, the first
+ * entry whose source and conditions match the current input wins. More specific entries (with more
+ * conditions like button, key, modifiers) should be placed before less specific ones; use `addEntry`
+ * to auto-insert based on specificity.
+ *
+ * @typeParam THandlers - Object type whose keys are the valid interaction type strings and values
+ *   are the handler functions/objects for each interaction (e.g. `ArcRotateHandlers`).
+ *   Interaction types are derived as `InteractionName<THandlers>`.
+ */
+export class InputMapper<THandlers extends Record<string, unknown>> {
+    /**
+     * Ordered list of input-to-interaction mapping rules. First matching entry wins.
+     */
+    public inputMap: InputMapEntry<InteractionName<THandlers>>[] = [];
+
+    /**
+     * Interaction handlers keyed by interaction type.
+     * Override individual handlers to customize behavior without changing input mapping.
+     */
+    public handlers: THandlers;
+
+    /**
+     * Creates a new InputMapper.
+     * @param handlers - The interaction handlers, keyed by interaction type.
+     * @param createDefaultEntries - Optional factory that returns the default inputMap entries.
+     *   Called by `resetInputMap()` and during construction. When omitted, the default map is empty.
+     */
+    constructor(handlers: THandlers, createDefaultEntries?: () => InputMapEntry<InteractionName<THandlers>>[]) {
+        this.handlers = handlers;
+        this._createDefaultEntries = createDefaultEntries;
+        this.resetInputMap();
+    }
+
+    private _createDefaultEntries?: () => InputMapEntry<InteractionName<THandlers>>[];
+
+    /**
+     * Resolves a physical input event to a matching inputMap entry.
+     * Iterates the inputMap in order; the first entry whose source and conditions match wins.
+     * @param source - The physical input source (e.g. "pointer", "keyboard")
+     * @param currentConditions - Conditions to match against, specific to the source type
+     * @returns The matched InputMapEntry, or null if no entry matches
+     */
+    public resolveInteraction(source: InputSource, currentConditions?: InputConditions): InputMapEntry<InteractionName<THandlers>> | null {
+        for (const entry of this.inputMap) {
+            if (entry.source === source && this._entryMatches(entry, currentConditions)) {
+                return entry;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Restores the inputMap to the default entries provided at construction time.
+     * If no factory was provided, resets to an empty array.
+     */
+    public resetInputMap(): void {
+        this.inputMap = this._createDefaultEntries?.() ?? [];
+    }
+
+    /**
+     * Finds the first inputMap entry matching the given source and interaction.
+     * Useful for modifying entry properties (e.g. sensitivity) without rebuilding the entire inputMap.
+     * @param source - The physical input source to match
+     * @param interaction - The interaction type to match
+     * @returns The matching entry, or undefined if not found
+     */
+    public getEntry(source: InputSource, interaction: InteractionName<THandlers>): InputMapEntry<InteractionName<THandlers>> | undefined {
+        return this.inputMap.find((e) => e.source === source && e.interaction === interaction);
+    }
+
+    /**
+     * Adds an entry to the inputMap at the correct position based on specificity.
+     * More specific entries (with more conditions like button, key, modifiers) are placed
+     * before less specific ones, ensuring they match first. Among equally specific entries,
+     * the new entry is placed after existing ones.
+     * @param entry - The entry to add
+     */
+    public addEntry(entry: InputMapEntry<InteractionName<THandlers>>): void {
+        const score = this._entrySpecificity(entry);
+        let insertIndex = this.inputMap.length;
+        for (let i = 0; i < this.inputMap.length; i++) {
+            if (this._entrySpecificity(this.inputMap[i]) < score) {
+                insertIndex = i;
+                break;
+            }
+        }
+        this.inputMap.splice(insertIndex, 0, entry);
+    }
+
+    private _entryMatches(entry: InputMapEntry<InteractionName<THandlers>>, currentConditions?: InputConditions): boolean {
+        switch (entry.source) {
+            case "pointer":
+                if (entry.button !== undefined && entry.button !== currentConditions?.button) {
+                    return false;
+                }
+                return this._matchModifiers(entry.modifiers, currentConditions?.modifiers);
+            case "wheel":
+                return this._matchModifiers(entry.modifiers, currentConditions?.modifiers);
+            case "touch":
+                if (entry.touchCount !== undefined && entry.touchCount !== currentConditions?.touchCount) {
+                    return false;
+                }
+                return true;
+            case "keyboard":
+                if (entry.key !== undefined) {
+                    if (Array.isArray(entry.key) ? entry.key.indexOf(currentConditions?.key ?? -1) === -1 : entry.key !== currentConditions?.key) {
+                        return false;
+                    }
+                }
+                return this._matchModifiers(entry.modifiers, currentConditions?.modifiers);
+        }
+    }
+
+    private _entrySpecificity(entry: InputMapEntry<InteractionName<THandlers>>): number {
+        let score = 0;
+        if ("button" in entry && entry.button !== undefined) {
+            score++;
+        }
+        if ("key" in entry && entry.key !== undefined) {
+            score++;
+        }
+        if ("touchCount" in entry && entry.touchCount !== undefined) {
+            score++;
+        }
+        if ("modifiers" in entry && entry.modifiers) {
+            score++;
+        }
+        return score;
+    }
+
+    private _matchModifiers(entryModifiers?: InputModifiers, currentModifiers?: InputModifiers): boolean {
+        if (!entryModifiers) {
+            return true;
+        }
+        if (entryModifiers.ctrl !== undefined && entryModifiers.ctrl !== (currentModifiers?.ctrl ?? false)) {
+            return false;
+        }
+        if (entryModifiers.shift !== undefined && entryModifiers.shift !== (currentModifiers?.shift ?? false)) {
+            return false;
+        }
+        if (entryModifiers.alt !== undefined && entryModifiers.alt !== (currentModifiers?.alt ?? false)) {
+            return false;
+        }
+        return true;
+    }
+}

@@ -8,11 +8,11 @@ import { Ray } from "../Culling/ray";
 import { type Scene } from "../scene";
 import { Vector3Distance } from "../Maths/math.vector.functions";
 import { Clamp } from "../Maths/math.scalar.functions";
-import { type InputMapEntry } from "./cameraInteractions";
 import { type PickingInfo } from "../Collisions/pickingInfo";
 import { type Nullable } from "../types";
 import { type InterpolatingBehavior } from "../Behaviors/Cameras/interpolatingBehavior";
 import { type GeospatialCamera } from "./geospatialCamera";
+import { type InputMapEntry, InputMapper } from "./cameraInteractions";
 
 // ── Geospatial handler types ────────────────────────────────────────
 
@@ -63,21 +63,21 @@ export class GeospatialCameraMovement extends CameraMovement {
     /** Predicate function to determine which meshes to pick against (e.g., globe mesh) */
     public pickPredicate?: MeshPredicate;
 
-    /** World-space picked point under cursor for zoom-to-cursor behavior (may be undefined) */
+    /**
+     * World-space picked point under the cursor, computed each frame that zoom input is active.
+     * Used to determine the zoom direction when `zoomToCursor` is true.
+     * Undefined when there is no active zoom or the pick misses the globe.
+     */
     public computedPerFrameZoomPickPoint?: Vector3;
 
+    /**
+     * When true, zooming moves toward the point under the cursor.
+     * When false, zooming moves along the camera's look vector.
+     */
     public zoomToCursor: boolean = true;
 
-    /**
-     * Interaction handlers for geospatial camera.
-     * Override individual handlers to customize camera behavior without changing input mapping.
-     */
-    public handlers: GeospatialHandlers;
-
-    /**
-     * Input-to-interaction mapping rules, constrained to valid geospatial interaction types.
-     */
-    public override inputMap: InputMapEntry<GeospatialInteraction>[] = [];
+    /** Input system that maps physical inputs to interactions and dispatches to handlers. */
+    public readonly input: InputMapper<GeospatialHandlers>;
 
     private _tempPickingRay: Ray;
 
@@ -106,36 +106,29 @@ export class GeospatialCameraMovement extends CameraMovement {
         this.rotationYSpeed = Math.PI / 500; // Move 1/500th of a half circle per pixel
         this.zoomSpeed = 2; // Base zoom speed; actual speed is scaled based on altitude
 
-        this.handlers = {
-            pan: {
-                start: (screenX, screenY) => {
-                    this.startDrag(screenX, screenY);
+        this.input = new InputMapper<GeospatialHandlers>(
+            {
+                pan: {
+                    start: (screenX: number, screenY: number) => {
+                        this.startDrag(screenX, screenY);
+                    },
+                    update: (screenX: number, screenY: number) => {
+                        this.handleDrag(screenX, screenY);
+                    },
+                    stop: () => {
+                        this.stopDrag();
+                    },
                 },
-                update: (screenX, screenY) => {
-                    this.handleDrag(screenX, screenY);
+                rotate: (yaw: number, pitch: number) => {
+                    this.rotationAccumulatedPixels.y += yaw;
+                    this.rotationAccumulatedPixels.x += pitch;
                 },
-                stop: () => {
-                    this.stopDrag();
+                zoom: (delta: number, toCursor: boolean) => {
+                    this.handleZoom(delta, toCursor);
                 },
             },
-            rotate: (yaw, pitch) => {
-                this.rotationAccumulatedPixels.y += yaw;
-                this.rotationAccumulatedPixels.x += pitch;
-            },
-            zoom: (delta, toCursor) => {
-                this.handleZoom(delta, toCursor);
-            },
-        };
-
-        this.resetInputMap();
-    }
-
-    /**
-     * Restores the inputMap to the default GeospatialCamera configuration:
-     * left-click pan, middle/right-click rotate, wheel zoom, ctrl/alt+keyboard rotate, keyboard pan.
-     */
-    public override resetInputMap(): void {
-        this.inputMap = this._createDefaultInputMap();
+            () => this._createDefaultInputMap()
+        );
     }
 
     private _createDefaultInputMap(): InputMapEntry<GeospatialInteraction>[] {
@@ -163,6 +156,12 @@ export class GeospatialCameraMovement extends CameraMovement {
         return point.normalizeToRef(result);
     };
 
+    /**
+     * Begins a drag (pan) gesture by picking the globe at the given screen position
+     * and establishing a drag plane for subsequent updates.
+     * @param pointerX - Screen X coordinate of the pointer
+     * @param pointerY - Screen Y coordinate of the pointer
+     */
     public startDrag(pointerX: number, pointerY: number) {
         const pickResult = this._scene.pick(pointerX, pointerY, this.pickPredicate);
         if (pickResult.pickedPoint && pickResult.ray) {
@@ -176,6 +175,9 @@ export class GeospatialCameraMovement extends CameraMovement {
         }
     }
 
+    /**
+     * Ends the current drag gesture, releasing the drag plane.
+     */
     public stopDrag() {
         this._hitPointRadius = undefined;
     }
@@ -214,6 +216,12 @@ export class GeospatialCameraMovement extends CameraMovement {
         }
     }
 
+    /**
+     * Updates the drag gesture by recalculating the intersection with the drag plane
+     * and accumulating the resulting pan delta.
+     * @param pointerX - Current screen X coordinate
+     * @param pointerY - Current screen Y coordinate
+     */
     public handleDrag(pointerX: number, pointerY: number) {
         const scene = this._scene;
         if (!this._hitPointRadius || !scene.activeCamera) {
@@ -283,10 +291,18 @@ export class GeospatialCameraMovement extends CameraMovement {
         super.computeCurrentFrameDeltas();
     }
 
+    /**
+     * Returns true when a drag gesture is active (between startDrag and stopDrag).
+     */
     public get isDragging() {
         return this._hitPointRadius !== undefined;
     }
 
+    /**
+     * Accumulates a zoom delta and determines the zoom target point via raycasting.
+     * @param zoomDelta - Signed zoom amount (positive = zoom in, negative = zoom out)
+     * @param toCursor - When true, zoom toward the point under the cursor; when false, zoom along the look vector
+     */
     public handleZoom(zoomDelta: number, toCursor: boolean) {
         if (zoomDelta !== 0) {
             this.zoomAccumulatedPixels += zoomDelta;
@@ -303,6 +319,11 @@ export class GeospatialCameraMovement extends CameraMovement {
         }
     }
 
+    /**
+     * Casts a ray from the camera position along the given direction and returns the pick result.
+     * @param vector - World-space direction to cast along
+     * @returns The pick result, or null if no hit
+     */
     public pickAlongVector(vector: Vector3): Nullable<PickingInfo> {
         this._tempPickingRay.origin.copyFrom(this._cameraPosition);
         this._tempPickingRay.direction.copyFrom(vector);
