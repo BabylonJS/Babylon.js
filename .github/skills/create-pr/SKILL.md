@@ -4,8 +4,8 @@ description: |
     Orchestrates the full PR lifecycle: merge upstream, create draft PR,
     self code review, mark ready, monitor, and iterate on fixes.
     Can also monitor and iterate on an existing PR.
-    Input: [--remote <fork>] [--merge [branch]] [--mode automatic|interactive] [--pr <number>]
-argument-hint: "[--remote <fork>] [--merge [branch]] [--mode automatic|interactive] [--pr <number>]"
+    Input: [--push-remote <fork>] [--upstream-remote <remote>] [--base <branch>] [--merge] [--mode automatic|interactive] [--pr <number>]
+argument-hint: "[--push-remote <fork>] [--upstream-remote <remote>] [--base <branch>] [--merge] [--mode automatic|interactive] [--pr <number>]"
 allowed-tools: shell
 ---
 
@@ -18,13 +18,15 @@ invokes other skills as sub-agents and does its own work between them.
 
 Parse `$ARGUMENTS`:
 
-| Argument             | Description                                                                                                                 |
-| -------------------- | --------------------------------------------------------------------------------------------------------------------------- |
-| `--remote <fork>`    | Git remote (fork) to push to. If omitted, detect and prompt.                                                                |
-| `--merge [branch]`   | Merge upstream before creating the PR. If omitted, prompt.                                                                  |
-| `--mode automatic`   | Fixes are applied, committed, pushed, and comments resolved automatically.                                                  |
-| `--mode interactive` | Fixes are staged; skill pauses before commit/push/resolve so the user can review.                                           |
-| `--pr <number>`      | Monitor and iterate on an existing PR. Skips Steps 0–4 (no merge, no PR creation, no code review). Only `--mode` is needed. |
+| Argument                   | Description                                                                                                                 |
+| -------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| `--push-remote <fork>`     | Git remote (user's fork) to push the branch to. If omitted, detect and prompt.                                              |
+| `--upstream-remote <name>` | Git remote pointing at the PR target repo (e.g. `upstream`, `origin`). If omitted, detect and prompt.                       |
+| `--base <branch>`          | Base branch the PR merges into (e.g. `master`). If omitted, use the upstream's default branch and prompt to confirm.        |
+| `--merge`                  | Merge upstream base into the feature branch before creating the PR. If omitted, prompt.                                     |
+| `--mode automatic`         | Fixes are applied, committed, pushed, and comments resolved automatically.                                                  |
+| `--mode interactive`       | Fixes are staged; skill pauses before commit/push/resolve so the user can review.                                           |
+| `--pr <number>`            | Monitor and iterate on an existing PR. Skips Steps 0–4 (no merge, no PR creation, no code review). Only `--mode` is needed. |
 
 If `--mode` is not specified, ask the user.
 
@@ -51,18 +53,31 @@ or labels — those only apply when creating a new PR.
 
 Collect everything before starting the workflow so it doesn't stop midway.
 
-### 0a. Remote and merge
+### 0a. Remotes, base branch, and merge
 
 1. Detect git remotes (`git remote -v`).
-2. Identify the user's fork (remote URL containing the user's GitHub
-   username from `gh api user --jq ".login"`).
-3. **If `--remote` not specified**, present the detected fork and ask the
-   user to confirm or change it.
-4. **If `--merge` not specified**, ask:
+2. **Push remote (user's fork)** — the remote whose URL contains the user's
+   GitHub login (`gh api user --jq ".login"`). If `--push-remote` is
+   specified, use it; otherwise present the detected fork and ask the user
+   to confirm or change it.
+3. **Upstream remote (PR target)** — the remote pointing at
+   `BabylonJS/Babylon.js` (often named `upstream` or `origin`). If
+   `--upstream-remote` is specified, use it; otherwise present the
+   detected remote and ask the user to confirm or change it.
+4. **Base branch** — if `--base` is specified, use it; otherwise default
+   to the upstream's default branch
+   (`gh repo view BabylonJS/Babylon.js --json "defaultBranchRef" --jq ".defaultBranchRef.name"`,
+   typically `master`) and prompt the user to confirm.
+5. Once the upstream remote and base branch are confirmed, fetch so the
+   base reference is current:
+   `git fetch <upstream-remote> <base-branch>`.
+6. **If `--merge` not specified**, ask:
    _"Would you like to merge and resolve before creating the PR?"_
-   The `babylon-skills:merge-and-resolve` skill handles detecting the
-   correct remote and branch. The user can optionally specify a different
-   branch/remote.
+   The `babylon-skills:merge-and-resolve` skill handles merging the
+   upstream base into the feature branch.
+
+Remember `<push-remote>`, `<upstream-remote>`, and `<base-branch>` —
+they are reused in 0c, 0d, Step 1, and Step 2.
 
 ### 0b. Mode
 
@@ -74,11 +89,21 @@ Collect everything before starting the workflow so it doesn't stop midway.
 
 ### 0c. PR title and body
 
-1. Analyze the branch diff to understand changes:
+1. Analyze **only branch-specific changes** using three-dot diff against
+   `<upstream-remote>/<base-branch>` (resolved in 0a):
+
     ```bash
-    git log --oneline master..HEAD
-    git diff master...HEAD --stat
+    # Branch commits not in upstream base
+    git log --oneline <upstream-remote>/<base-branch>...HEAD
+
+    # Files changed by the branch only (excludes merged-in upstream changes)
+    git diff <upstream-remote>/<base-branch>...HEAD --stat
     ```
+
+    > ⚠️ Do **not** use two-dot `..` or compare against local `master` —
+    > either can include unrelated upstream commits or miss recent
+    > upstream work, inflating the file count.
+
 2. Generate a proposed title and body. The body should start with:
    `> 🤖 *This PR was created by the create-pr skill.*`
    Include a clear explanation of the changes, motivation, and any
@@ -89,14 +114,14 @@ Collect everything before starting the workflow so it doesn't stop midway.
 ### 0d. Reviewers
 
 1. Suggest 1–2 reviewers by analyzing who recently touched the changed
-   files:
+   files (same three-dot base from 0c):
 
     ```bash
-    # Get changed files
-    git diff --name-only master..HEAD
+    # Changed files on the branch only
+    git diff --name-only <upstream-remote>/<base-branch>...HEAD
 
-    # Find frequent authors of those files
-    git log --format="%an" master..HEAD -- <changed-files> | sort | uniq -c | sort -rn
+    # Find frequent authors of those files (historical, on upstream base)
+    git log <upstream-remote>/<base-branch> --format="%an" -- <changed-files> | sort | uniq -c | sort -rn
     ```
 
     Also consider reviewers from recent PRs on similar areas:
@@ -149,12 +174,14 @@ Present the summary and wait for confirmation:
 
 ```
 Here's the plan:
-- Remote: <remote>
-- Merge: yes / skip
-- Mode: automatic / interactive
-- Title: <title>
-- Reviewers: <reviewers>
-- Labels: <labels>
+- Push remote (fork):    <push-remote>
+- Upstream remote:       <upstream-remote>
+- Base branch:           <base-branch>
+- Merge upstream first:  yes / skip
+- Mode:                  automatic / interactive
+- Title:                 <title>
+- Reviewers:             <reviewers>
+- Labels:                <labels>
 
 Steps:
 1. Merge and resolve upstream changes (if selected)
@@ -168,48 +195,44 @@ Ready to proceed?
 
 ## Step 1: Merge and resolve (optional)
 
-If the user opted to merge, invoke as a sub-agent:
+If the user opted to merge, invoke as a sub-agent, passing the resolved
+base branch and upstream remote from Step 0a:
 
 ```
-/babylon-skills:merge-and-resolve [branch] [remote] --mode <automatic|interactive>
+/babylon-skills:merge-and-resolve <base-branch> <upstream-remote> --mode <automatic|interactive>
 ```
 
-Only pass explicit branch/remote if the user specified them in Step 0.
 If invocation fails because the skill is not installed, warn the user
 _"The babylon-skills:merge-and-resolve skill was not found — skipping
 merge step."_ and continue.
 
 ## Step 2: Create the draft PR
 
+Use `<push-remote>`, `<upstream-remote>`, and `<base-branch>` from 0a.
+
 1. Push the branch:
 
     ```bash
-    git push -u <remote> HEAD
+    git push -u <push-remote> HEAD
     ```
 
-2. Determine the upstream repo and default branch:
-
-    ```bash
-    # Find upstream remote URL
-    git remote -v | grep -E "BabylonJS|microsoft"
-
-    # Get default branch
-    gh repo view "<upstream-owner>/<upstream-repo>" --json "defaultBranchRef" --jq ".defaultBranchRef.name"
-    ```
-
-3. Get the current branch name and user:
+2. Get the current branch name and user login:
 
     ```bash
     git rev-parse --abbrev-ref HEAD
     gh api user --jq ".login"
     ```
 
+3. Determine the upstream owner/repo from the upstream remote URL (e.g.
+   `git remote get-url <upstream-remote>` → parse `owner/repo`). For this
+   repo that is `BabylonJS/Babylon.js`.
+
 4. Create the draft PR:
     ```bash
     gh pr create \
       --repo "<upstream-owner>/<upstream-repo>" \
       --head "<user>:<branch>" \
-      --base "<default-branch>" \
+      --base "<base-branch>" \
       --title "<title>" \
       --body "<body>" \
       --draft \
@@ -236,7 +259,7 @@ merge step."_ and continue.
     Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>
     ```
 
-4. Push: `git push <remote> HEAD`
+4. Push: `git push <push-remote> HEAD`
 
 ## Step 4: Mark PR as ready for review
 
