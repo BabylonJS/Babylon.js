@@ -65,7 +65,9 @@ export function MakeModularBridge(options?: ModularBridgeOptions): ModularBridge
 
     const bridgeDefinition = MakeBridgeServiceDefinition({
         port: options?.port ?? DefaultPort,
-        name: options?.name ?? (typeof document !== "undefined" ? document.title : "Babylon.js"),
+        get name() {
+            return options?.name ?? (typeof document !== "undefined" ? document.title : "Babylon.js Scene");
+        },
         autoStart: options?.autoStart ?? false,
     });
 

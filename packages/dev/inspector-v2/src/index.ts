@@ -67,6 +67,7 @@ export {
     type BridgeCommandDescriptor,
     type BridgeCommandArg,
     type BridgeCommandArgType,
+    BridgeCommandRegistryIdentity,
 } from "shared-ui-components/modularTool/services/cli/bridgeCommandRegistry";
 export { MakeModularBridge, type ModularBridgeToken, type ModularBridgeOptions } from "shared-ui-components/modularTool/modularBridge";
 export { ConvertOptions, Inspector } from "./legacy/inspector";
