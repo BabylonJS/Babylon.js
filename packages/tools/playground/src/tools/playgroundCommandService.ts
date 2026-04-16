@@ -1,6 +1,6 @@
 import { type GlobalState, type InspectorV2Module } from "../globalState";
 import { type WeaklyTypedServiceDefinition } from "shared-ui-components/modularTool/modularity/serviceContainer";
-import { type IInspectableCommandRegistry } from "inspector/services/cli/inspectableCommandRegistry";
+import { type IBridgeCommandRegistry } from "shared-ui-components/modularTool/services/cli/bridgeCommandRegistry";
 
 /**
  * Creates a service definition that registers Playground-specific CLI commands.
@@ -11,8 +11,8 @@ import { type IInspectableCommandRegistry } from "inspector/services/cli/inspect
 export function MakePlaygroundCommandServiceDefinition(globalState: GlobalState, inspectorModule: InspectorV2Module): WeaklyTypedServiceDefinition {
     return {
         friendlyName: "Playground Command Service",
-        consumes: [inspectorModule.InspectableCommandRegistryIdentity],
-        factory: (commandRegistry: IInspectableCommandRegistry) => {
+        consumes: [inspectorModule.BridgeCommandRegistryIdentity],
+        factory: (commandRegistry: IBridgeCommandRegistry) => {
             // Track the last error from the Playground for the get-errors command.
             let lastError: { message: string; lineNumber?: number; columnNumber?: number } | null = null;
             const errorTracker = globalState.onErrorObservable.add((error) => {

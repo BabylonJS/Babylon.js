@@ -15,7 +15,7 @@ import {
     type ExecResponse,
     type SessionInfo,
     type SessionsResponse,
-} from "./protocol.js";
+} from "shared-ui-components/modularTool/services/cli/protocol";
 
 const Config = LoadConfig();
 

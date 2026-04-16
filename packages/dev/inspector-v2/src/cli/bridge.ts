@@ -2,7 +2,7 @@
 import { fileURLToPath } from "url";
 import { type WebSocket, WebSocketServer } from "./webSocket.js";
 import { LoadConfig } from "./config.js";
-import { type BrowserRequest, type BrowserResponse, type CliRequest, type CliResponse, type SessionInfo } from "./protocol.js";
+import { type BrowserRequest, type BrowserResponse, type CliRequest, type CliResponse, type SessionInfo } from "shared-ui-components/modularTool/services/cli/protocol";
 
 interface ISession extends SessionInfo {
     /** The WebSocket connection for this session. */

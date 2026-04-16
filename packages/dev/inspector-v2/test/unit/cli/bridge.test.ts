@@ -10,7 +10,7 @@ import {
     type InfoResponse,
     type SessionsResponse,
     type StopResponse,
-} from "../../../src/cli/protocol";
+} from "shared-ui-components/modularTool/services/cli/protocol";
 
 function connect(port: number): Promise<WebSocket> {
     return new Promise((resolve, reject) => {
