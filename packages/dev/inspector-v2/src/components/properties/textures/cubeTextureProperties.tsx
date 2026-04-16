@@ -1,12 +1,13 @@
 import { type FunctionComponent } from "react";
 
 import { type CubeTexture } from "core/index";
+import { type EnvCubeTexture } from "core/Materials/Textures/envCubeTexture";
 
 import { SyncedSliderPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/syncedSliderPropertyLine";
 import { useAngleConverters } from "../../../hooks/settingsHooks";
 import { BoundProperty } from "../boundProperty";
 
-export const CubeTextureTransformProperties: FunctionComponent<{ texture: CubeTexture }> = (props) => {
+export const CubeTextureTransformProperties: FunctionComponent<{ texture: CubeTexture | EnvCubeTexture }> = (props) => {
     const { texture } = props;
 
     const [toDisplayAngle, fromDisplayAngle] = useAngleConverters();
