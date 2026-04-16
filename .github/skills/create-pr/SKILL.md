@@ -119,47 +119,46 @@ they are reused in 0c, 0d, Step 1, and Step 2.
 
 ### 0d. Reviewers
 
-1. Collect reviewer candidates from two sources:
+Suggest the top 1–2 upstream-org members who authored or reviewed
+previous PRs touching the files/folders changed by this PR. Do the
+whole pipeline non-interactively. Reuse `<upstream-remote>`,
+`<upstream-owner>`, `<upstream-repo>`, `<base-branch>`, and
+`<self-login>` from Step 0a.
+
+1. **Collect recent commit SHAs** on the base that touched the PR's
+   changed files:
 
     ```bash
-    # a. Frequent historical authors of the changed files (on upstream base)
     git --no-pager diff --name-only <upstream-remote>/<base-branch>...HEAD
-    git --no-pager log <upstream-remote>/<base-branch> --format="%ae" -- <changed-files> | sort | uniq -c | sort -rn
-
-    # b. Reviewers on recent merged PRs touching similar areas
-    gh pr list --repo "<upstream-owner>/<upstream-repo>" -s merged -L 20 \
-      --json "number,reviews" \
-      --jq '.[].reviews[].author.login' | sort | uniq -c | sort -rn
+    git --no-pager log <upstream-remote>/<base-branch> --format="%H" -n 30 -- <file1> <file2> ...
     ```
 
-    > Note: `git log %an` returns display names, not GitHub logins. Use
-    > `%ae` (email) and then resolve to GitHub logins via commit authors
-    > on the upstream remote, e.g.
-    > `gh api "/repos/<upstream-owner>/<upstream-repo>/commits?author=<email>&per_page=1" --jq ".[0].author.login"`.
-
-2. **Filter candidates to organization members only.** Suggesting a
-   reviewer outside the upstream org fails (`gh pr create --reviewer`
-   errors) and wastes user time. For each candidate GitHub login, check
-   org membership using the upstream owner as the org:
+2. **For each SHA, map to its PR and collect author + review-submitters.**
+   Each appearance = +1 score for that login. Skip commits with no
+   associated PR.
 
     ```bash
-    # Returns HTTP 204 (member) or 404 (not a member). Use --silent
-    # and check the exit code.
-    gh api "/orgs/<upstream-owner>/members/<login>" --silent 2>/dev/null \
-      && echo "<login>: member" \
-      || echo "<login>: not a member"
+    gh api "/repos/<upstream-owner>/<upstream-repo>/commits/<sha>/pulls" --jq ".[0].number"
+    gh api "/repos/<upstream-owner>/<upstream-repo>/pulls/<pr>" --jq ".user.login"
+    gh api "/repos/<upstream-owner>/<upstream-repo>/pulls/<pr>/reviews" --jq "[.[].user.login] | unique | .[]"
     ```
 
-    Drop any candidate that is not a member. Exclude the PR author and
-    bots (logins ending in `[bot]`).
+3. **Rank by score** (highest first).
 
-3. From the filtered list, present the top 1–2 candidates and ask the
-   user to confirm or change.
+4. **Walk the ranked list and filter.** Drop and continue for:
+    - `<self-login>`
+    - Bots (logins ending in `[bot]`)
+    - Non-members of the upstream org:
+      `gh api "/orgs/<upstream-owner>/members/<login>" --silent` (exit 0 = member).
+      Fallback for user-owned repos:
+      `gh api "/repos/<upstream-owner>/<upstream-repo>/collaborators/<login>" --silent`.
 
-    > If `<upstream-owner>` is a user account rather than an org, the
-    > `/orgs/` endpoint returns 404 for everyone. Fall back to checking
-    > repo collaborator status instead:
-    > `gh api "/repos/<upstream-owner>/<upstream-repo>/collaborators/<login>" --silent`.
+   Stop after the first 1–2 survivors.
+
+5. **Present** the 1–2 candidates. Ask the user to confirm or change.
+   If none survive, skip `--reviewer` on `gh pr create`.
+
+Loop over commits explicitly — don't try to one-line the whole pipeline.
 
 ### 0e. Labels
 
