@@ -18,6 +18,8 @@ export interface IInspectableBridgeServiceOptions {
 
     /**
      * The session display name sent to the bridge.
+     * Can be a getter to provide a dynamic value that is re-read
+     * each time the bridge queries session information.
      */
     name: string;
 
@@ -137,6 +139,14 @@ export function MakeInspectableBridgeServiceDefinition(options: IInspectableBrid
                             type: "commandListResponse",
                             requestId: message.requestId,
                             commands: commandList,
+                        });
+                        break;
+                    }
+                    case "getInfo": {
+                        sendToBridge({
+                            type: "infoResponse",
+                            requestId: message.requestId,
+                            name: options.name,
                         });
                         break;
                     }

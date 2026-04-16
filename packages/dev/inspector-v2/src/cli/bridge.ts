@@ -124,7 +124,8 @@ export async function StartBridge(config: IBridgeConfig): Promise<IBridgeHandle>
                     break;
                 }
                 case "commandListResponse":
-                case "commandResponse": {
+                case "commandResponse":
+                case "infoResponse": {
                     // Forward response back to the CLI that requested it.
                     const resolve = pendingBrowserRequests.get(message.requestId);
                     if (resolve) {
@@ -165,9 +166,27 @@ export async function StartBridge(config: IBridgeConfig): Promise<IBridgeHandle>
                 case "sessions": {
                     // Wait for at least one session to connect before responding.
                     await waitForSession();
+
+                    // Query each session for its current name.
+                    const updatedNames = new Map<number, string>();
+                    const infoPromises = Array.from(sessions.values()).map(async (s) => {
+                        const requestId = generateRequestId();
+                        sendBrowserRequest(s, { type: "getInfo", requestId });
+                        try {
+                            const raw = await waitForBrowserResponse(requestId, 5000);
+                            const info = JSON.parse(raw);
+                            if (info.type === "infoResponse" && typeof info.name === "string") {
+                                updatedNames.set(s.id, info.name);
+                            }
+                        } catch {
+                            // Keep the existing name if the session doesn't respond.
+                        }
+                    });
+                    await Promise.all(infoPromises);
+
                     const sessionList: SessionInfo[] = Array.from(sessions.values()).map((s) => ({
                         id: s.id,
-                        name: s.name,
+                        name: updatedNames.get(s.id) ?? s.name,
                         connectedAt: s.connectedAt,
                     }));
                     sendCliResponse({ type: "sessionsResponse", sessions: sessionList });

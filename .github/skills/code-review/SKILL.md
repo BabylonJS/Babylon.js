@@ -85,8 +85,9 @@ Apply each item to every changed line that is not excluded under Step 2.
 
 1. **Repository conventions.** Apply every rule from the instruction files in [instructions/index.md](../../instructions/index.md) that matches the changed files — coding conventions, prohibited APIs, performance rules for render-loop code, side-effect imports, backward-compatibility rules, documentation standards, test patterns, and any domain-specific rules (Inspector, glTF extensions, playgrounds, etc.). If an instruction file's content is already in your system prompt context, apply it directly; only read from disk when it is not.
 2. **Correctness.** Logic errors, off-by-one, null/undefined access, race conditions, unhandled edge cases, incorrect operator precedence, wrong loop bounds. Verify that doc comments accurately describe the implementation's actual behavior.
-3. **Security.** Prototype pollution, unsafe `eval` / `Function()`, unsafe deserialization of untrusted input (e.g. parsed scene files, glTF extensions, user-supplied JSON).
-4. **General quality.** Dead code, unreachable branches, duplicated logic, overly complex control flow, poor or misleading naming.
+3. **Error handling.** When code detects an error or invalid state (exceeding limits, missing data, unsupported configuration), it must handle it appropriately — bail out, fall back to a safe alternative, or properly resolve the condition. Flag cases that merely log a warning or swallow the error while continuing as if nothing happened.
+4. **Security.** Prototype pollution, unsafe `eval` / `Function()`, unsafe deserialization of untrusted input (e.g. parsed scene files, glTF extensions, user-supplied JSON).
+5. **General quality.** Dead code, unreachable branches, duplicated logic, overly complex control flow, poor or misleading naming.
 
 #### Scaling the review to large diffs
 
