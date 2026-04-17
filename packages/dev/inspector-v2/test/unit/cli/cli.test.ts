@@ -279,32 +279,8 @@ describe("ResolveSessionId", () => {
         await expect(ResolveSessionId(socket as never, "2")).rejects.toThrow(/Session 2 does not exist.*No active sessions/);
     });
 
-    it("auto-resolves when exactly one session is active", async () => {
-        const response: SessionsResponse = {
-            type: "sessionsResponse",
-            sessions: [{ id: 7, name: "My Scene", connectedAt: new Date().toISOString() }],
-        };
-        const socket = makeMockSocket(response);
-        const id = await ResolveSessionId(socket as never);
-        expect(id).toBe(7);
-    });
-
-    it("throws when no sessions are active", async () => {
-        const response: SessionsResponse = { type: "sessionsResponse", sessions: [] };
-        const socket = makeMockSocket(response);
-        await expect(ResolveSessionId(socket as never)).rejects.toThrow("No active sessions");
-    });
-
-    it("throws when multiple sessions are active", async () => {
-        const response: SessionsResponse = {
-            type: "sessionsResponse",
-            sessions: [
-                { id: 1, name: "Scene A", connectedAt: new Date().toISOString() },
-                { id: 2, name: "Scene B", connectedAt: new Date().toISOString() },
-            ],
-        };
-        const socket = makeMockSocket(response);
-        await expect(ResolveSessionId(socket as never)).rejects.toThrow("Multiple active sessions");
+    it("throws when no explicit session id is provided", async () => {
+        await expect(ResolveSessionId({} as never, undefined)).rejects.toThrow("A session id is required");
     });
 });
 
