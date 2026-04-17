@@ -59,7 +59,7 @@ columns** — it is not the output format):
 | Title    | `gh pr view --json "title"`                                                                                                                |
 | Checks   | `gh pr view --json "statusCheckRollup"` — ✅ `all pass` / ❌ `N fail, M pending (ETA ~Xm)` / ⏳ `N pending (ETA ~Xm)`. See ETA note below. |
 | Comments | GraphQL `reviewThreads` query — ✅ `all resolved` / ❌ `N/M resolved`                                                                      |
-| Approved | `gh pr view --json "reviewDecision"` — ✅ `N approvals` / ❌ `not approved`                                                                |
+| Approved | `gh pr view --json "reviewDecision"` — ✅ `approved` / ❌ `not approved` (the field is an enum, not a count)                              |
 | Ready    | ✅ `ready` if all checks pass AND approved AND all comments resolved, ❌ `not ready` otherwise                                             |
 
 Review threads require the GraphQL API since `gh pr view --json` does not
@@ -78,6 +78,10 @@ query {
   }
 }' --jq '.data.repository.pullRequest.reviewThreads | {total: .totalCount, resolved: ([.nodes[] | select(.isResolved)] | length)}'
 ```
+
+> If `totalCount > 100`, the single-page query above will undercount
+> resolved threads. Page through with `pageInfo { hasNextPage endCursor }`
+> + `after:` until all threads are fetched, then sum the resolved counts.
 
 ### Checks ETA
 

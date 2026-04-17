@@ -271,7 +271,8 @@ Use `<push-remote>`, `<upstream-remote>`, and `<base-branch>` from 0a.
 
 4. Create the draft PR. Write the title and body to temp files first
    so shell escaping doesn't mangle backticks, `$`, `!`, or backslashes
-   in the markdown, then pass them with `--title-file` / `--body-file`:
+   in the markdown, then pass the single-line title with
+   `--title "$(cat ...)"` and the multi-line body with `--body-file`:
 
     ```bash
     # Write files (exact markdown, no escaping needed)
@@ -297,6 +298,10 @@ Use `<push-remote>`, `<upstream-remote>`, and `<base-branch>` from 0a.
     > `--label` and `--reviewer` can each be repeated (or take a
     > comma-separated list) — pass one flag per label/reviewer chosen
     > in 0d/0e.
+
+5. `gh pr create` prints the new PR's full URL on success — surface it
+   prominently in the chat (e.g. _"Draft PR created: <url>"_) so the
+   user can click through to review it.
 
 ## Step 3: Self code review
 
@@ -328,13 +333,15 @@ Use `<push-remote>`, `<upstream-remote>`, and `<base-branch>` from 0a.
     ```
 
 2. Add a PR comment. If code-review produced changes, link to the commit
-   within the PR context:
+   and list the fixes as a bullet list on the next line:
 
     ```
-    Self code review completed. Review fixes: https://github.com/<owner>/<repo>/pull/<pr-number>/changes/<commit-sha>
+    Self code review completed by the code-review skill. Review fixes: https://github.com/<owner>/<repo>/pull/<pr-number>/changes/<commit-sha>
+    - <fix 1 — brief description>
+    - <fix 2 — brief description>
     ```
 
-    If no changes: _"Self code review completed. No issues found."_
+    If no changes: _"Self code review completed by the code-review skill. No issues found."_
 
     > ⚠️ Post the comment with `--body-file`, never with `--body`.
     > Shells interpret backticks, `$`, `!`, and backslashes inside
@@ -366,10 +373,43 @@ Watch the monitor-pr output and react to actionable events.
 
 ### Handling events
 
-1. **Unresolved review comments:** Read the comment, analyze if it needs a
-   code change and/or response. Make fixes. Prepare a response prefixed
-   with `[Responded by Copilot on behalf of <user>]` (user from
-   `gh api user --jq ".login"`).
+1. **Unresolved review comments:** Enumerate them with a single
+   GraphQL query that captures everything you need to react, reply, and
+   resolve (so you don't re-query later):
+
+    ```bash
+    gh api graphql -f query='
+    query {
+      repository(owner: "<owner>", name: "<repo>") {
+        pullRequest(number: <pr-number>) {
+          reviewThreads(first: 100) {
+            nodes {
+              id                 # thread id (PRRT_...) — used to resolve the thread
+              isResolved
+              isOutdated
+              path
+              line
+              comments(first: 5) {
+                nodes {
+                  databaseId     # numeric id — used to reply to the comment
+                  author { login }
+                  body
+                  url            # also encodes the databaseId as #discussion_r<databaseId>
+                }
+              }
+            }
+          }
+        }
+      }
+    }'
+    ```
+
+    For each unresolved thread, read the comment, analyze if it needs a
+    code change and/or response. Make fixes. Prepare a response prefixed
+    with `[Responded by Copilot on behalf of <user>]` (user from
+    `gh api user --jq ".login"`). Carry the thread `id` and parent
+    comment `databaseId` forward — they're needed when posting the
+    reply and resolving the thread.
 
 2. **Pipeline/CI failures (real, not flakes):** Read CI logs, identify root
    cause, make the fix.
@@ -396,6 +436,12 @@ they pass — do not push broken code.
     | #   | Comment                             | Proposed Response | Code Changes                |
     | --- | ----------------------------------- | ----------------- | --------------------------- |
     | 1   | [`<comment text>`](link-to-comment) | `<response>`      | `<fix description + files>` |
+
+    Keep the table compact — it's for the human to review. Persist the
+    thread `id` and parent comment `databaseId` for each row in
+    session-local storage (e.g. a `review_threads` SQL table keyed by
+    row `#`) so the reply/resolve step can look them up without
+    re-querying or cluttering the table.
 
     **Pipeline failure fixes:**
 
@@ -425,10 +471,15 @@ automatically.
 
 When responding (in either mode), **post the response as a reply to the
 review comment, not a top-level PR comment.** Do **not** use
-`gh pr comment` — it creates an unlinked PR-level comment. Reply via
-REST, using the parent comment's `databaseId` from the same
-`reviewThreads` GraphQL query (each thread's
-`comments.nodes[0].databaseId`):
+`gh pr comment` — it creates an unlinked PR-level comment.
+
+Use the parent `databaseId` and thread `id` persisted for this row in
+session-local storage (populated from the GraphQL query at the top of
+Step 6). Do **not** re-query — the IDs are already in hand. As a
+fallback, the parent `databaseId` is also encoded in the comment's URL
+as `#discussion_r<databaseId>`.
+
+Post the reply via REST:
 
 ```bash
 gh api -X POST \
@@ -438,7 +489,7 @@ rm reply.md
 ```
 
 Then resolve the thread via the `resolveReviewThread` GraphQL mutation
-using the thread `id` from the same query.
+using the captured thread `id`.
 
 ### Exit conditions
 
