@@ -462,6 +462,18 @@
             "devHostQsps": "exp=lottie&file=textParagraphBoxWrap.json&useWorker=true&useUrl=true",
             "referenceImage": "lottie-text-paragraph-box-wrap.png",
             "readySelector": "#lottie-ready"
+        },
+        {
+            "title": "Lottie - Text Child Parent (Main Thread, URL)",
+            "devHostQsps": "exp=lottie&file=textChildParent.json&useWorker=false&useUrl=true",
+            "referenceImage": "lottie-text-child-parent.png",
+            "readySelector": "#lottie-ready"
+        },
+        {
+            "title": "Lottie - Text Child Parent (Web Worker, URL)",
+            "devHostQsps": "exp=lottie&file=textChildParent.json&useWorker=true&useUrl=true",
+            "referenceImage": "lottie-text-child-parent.png",
+            "readySelector": "#lottie-ready"
         }
     ]
 }

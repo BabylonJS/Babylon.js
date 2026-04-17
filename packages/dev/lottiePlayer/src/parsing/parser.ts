@@ -378,8 +378,8 @@ export class Parser {
         // spriteInfo.centerX/centerY (boundingBox.offsetX/offsetY). Y is negated because Lottie's
         // Y axis points down while Babylon's sprite system has Y pointing up. Same pattern as _parseShapes.
         const positionProperty: Vector2Property = {
-            startValue: { x: spriteInfo.centerX, y: -spriteInfo.centerY },
-            currentValue: { x: spriteInfo.centerX, y: -spriteInfo.centerY },
+            startValue: { x: spriteInfo.centerX || 0, y: -spriteInfo.centerY || 0 },
+            currentValue: { x: spriteInfo.centerX || 0, y: -spriteInfo.centerY || 0 },
             currentKeyframeIndex: 0,
         };
 
