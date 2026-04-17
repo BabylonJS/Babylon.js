@@ -4163,6 +4163,12 @@
             "excludedEngines": ["webgl1"]
         },
         {
+            "title": "GPU Particles - Change - Color Gradient With Color2",
+            "playgroundId": "#3PCCJ0#0",
+            "referenceImage": "gpu-particles-change-color-gradient-with-color2.png",
+            "excludedEngines": ["webgl1"]
+        },
+        {
             "title": "GPU Particles - Change - Speed Range",
             "playgroundId": "#JPPZGY#0",
             "referenceImage": "gpu-particles-change-speed-range.png",

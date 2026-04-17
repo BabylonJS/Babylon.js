@@ -249,6 +249,34 @@ describe("GPUParticleSystem.fromParticleSystem", () => {
         cpu.dispose();
     });
 
+    it("should preserve color2 on color gradients", () => {
+        const cpu = new ParticleSystem("source", 100, scene);
+        cpu.addColorGradient(0.0, new Color4(1, 0, 0, 1), new Color4(0, 1, 0, 1));
+        cpu.addColorGradient(0.5, new Color4(0.25, 0.5, 0.75, 1)); // no color2 — should survive as undefined
+        cpu.addColorGradient(1.0, new Color4(0, 0, 0, 0), new Color4(1, 1, 1, 0));
+
+        const gpu = GPUParticleSystem.fromParticleSystem(cpu, scene);
+
+        const grads = gpu.getColorGradients()!;
+        expect(grads.length).toBe(3);
+
+        // First gradient: color1 and color2 both present and independent clones.
+        expect(grads[0].color1.equals(new Color4(1, 0, 0, 1))).toBe(true);
+        expect(grads[0].color2).toBeDefined();
+        expect(grads[0].color2!.equals(new Color4(0, 1, 0, 1))).toBe(true);
+        expect(grads[0].color1).not.toBe(cpu.getColorGradients()![0].color1);
+        expect(grads[0].color2).not.toBe(cpu.getColorGradients()![0].color2);
+
+        // Middle gradient: no color2 on source → no color2 on destination.
+        expect(grads[1].color2).toBeUndefined();
+
+        // Last gradient: color2 preserved.
+        expect(grads[2].color2!.equals(new Color4(1, 1, 1, 0))).toBe(true);
+
+        gpu.dispose();
+        cpu.dispose();
+    });
+
     it("should copy attractors independently", () => {
         const cpu = createSourceSystem();
         const gpu = GPUParticleSystem.fromParticleSystem(cpu, scene);
