@@ -1,14 +1,6 @@
-import {
-    type RawElement,
-    type RawFont,
-    type RawEllipseShape,
-    type RawPathShape,
-    type RawRectangleShape,
-    type RawStrokeShape,
-    type RawTextData,
-    type RawTextDocument,
-} from "../parsing/rawTypes";
+import { type RawElement, type RawFont, type RawEllipseShape, type RawPathShape, type RawRectangleShape, type RawStrokeShape, type RawTextData } from "../parsing/rawTypes";
 import { GetInitialVectorValues, GetInitialBezierData } from "../parsing/rawPropertyHelpers";
+import { ApplyLottieTextContext, MeasureLottieText, ResolveLottieText } from "../parsing/textLayout";
 
 /**
  * Represents a bounding box for a shape in the animation.
@@ -28,10 +20,10 @@ export type BoundingBox = {
     offsetY: number;
     /** Inset for the stroke, if applicable. */
     strokeInset: number;
-    /** Optional: Canvas2D text metrics for precise vertical alignment */
-    actualBoundingBoxAscent?: number;
-    /** Optional: Canvas2D text metrics for precise vertical alignment */
-    actualBoundingBoxDescent?: number;
+    /** Optional: Distance from the top of the text texture to the first baseline. Only populated for text bounding boxes. */
+    baselineOffsetY?: number;
+    /** Optional: Descent (in pixels) of the last text line below its baseline. Only populated for text bounding boxes. */
+    descent?: number;
 };
 
 // Corners of the bounding box
@@ -114,55 +106,29 @@ export function GetTextBoundingBox(
     variables: Map<string, string>
 ): BoundingBox | undefined {
     spritesCanvasContext.save();
-    let textInfo: RawTextDocument | undefined = undefined;
-    if (textData.d && textData.d.k && textData.d.k.length > 0) {
-        textInfo = textData.d.k[0].s as RawTextDocument;
-    }
 
-    if (!textInfo) {
+    const resolvedText = ResolveLottieText(textData, rawFonts, variables);
+    if (!resolvedText) {
         spritesCanvasContext.restore();
         return undefined;
     }
 
-    const fontSize = textInfo.s;
-    const fontFamily = textInfo.f;
-    const finalFont = rawFonts.get(fontFamily);
-    if (!finalFont) {
-        spritesCanvasContext.restore();
-        return undefined;
-    }
+    ApplyLottieTextContext(spritesCanvasContext, resolvedText);
 
-    const weight = finalFont.fWeight || "400"; // Default to normal weight if not specified
-    spritesCanvasContext.font = `${weight} ${fontSize}px ${finalFont.fFamily}`;
-
-    if (textInfo.sc !== undefined && textInfo.sc.length >= 3 && textInfo.sw !== undefined && textInfo.sw > 0) {
-        spritesCanvasContext.lineWidth = textInfo.sw;
-    }
-
-    // Text is supported as a possible variable (for localization for example)
-    // Check if the text is a variable and replace it if it is
-    let text = textInfo.t;
-    const variableText = variables.get(text);
-    if (variableText !== undefined) {
-        text = variableText;
-    }
-    const metrics = spritesCanvasContext.measureText(text);
-
-    const widthPx = Math.ceil(metrics.width);
-    const heightPx = Math.ceil(metrics.actualBoundingBoxAscent) + Math.ceil(metrics.actualBoundingBoxDescent);
+    const layout = MeasureLottieText(resolvedText, (text) => spritesCanvasContext.measureText(text));
 
     spritesCanvasContext.restore();
 
     return {
-        width: widthPx,
-        height: heightPx,
-        centerX: widthPx / 2,
-        centerY: heightPx / 2,
-        offsetX: 0, // The bounding box calculated by the canvas for the text is always centered in (0, 0)
-        offsetY: 0, // The bounding box calculated by the canvas for the text is always centered in (0, 0)
+        width: layout.width,
+        height: layout.height,
+        centerX: layout.width / 2,
+        centerY: layout.height / 2,
+        offsetX: layout.offsetX,
+        offsetY: layout.offsetY,
         strokeInset: 0, // Text bounding box ignores stroke padding here
-        actualBoundingBoxAscent: metrics.actualBoundingBoxAscent,
-        actualBoundingBoxDescent: metrics.actualBoundingBoxDescent,
+        baselineOffsetY: layout.baselineOffsetY,
+        descent: layout.descent,
     };
 }
 

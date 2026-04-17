@@ -75,101 +75,14 @@ If you need to revise the snippet, edit the temp file and run `save-snippet.js` 
 
 ## Local Servers
 
-Local servers are only needed when you want to preview or run a snippet against a local engine build — for example, when validating visual tests locally or testing unreleased code changes. Snippet creation and saving via the helper scripts do not require local servers, and many tasks (API demos, repro cases, etc.) can use the public Playground at `https://playground.babylonjs.com` instead.
+Local servers are only needed when you want to preview or run a snippet against a local engine build. Snippet creation and saving via the helper scripts do not require local servers.
 
-When local servers are needed, there are two:
-
-- Babylon CDN server on `localhost:1337`
-- Playground server on `localhost:1338`
-
-The safest option is to use the VS Code tasks already defined in `.vscode/tasks.json`, because they already use the correct working directory:
-
-- `CDN Serve and watch (Dev)`
-- `Playground Serve for core (Dev)`
-
-In multi-root workspaces, background terminals often start in the wrong folder, so VS Code tasks are more reliable than ad hoc background shells.
-
-### Check whether the servers are already running
-
-See the port table and check command in [manual-testing.instructions.md](manual-testing.instructions.md). If both `1337` and `1338` are already up, skip the server startup steps below. If only `1337` is up, start only the Playground server. If neither is up, continue below.
-
-### Start the CDN server
-
-Preferred approach:
-
-- Start the `.vscode` task `CDN Serve and watch (Dev)`.
-
-Manual fallback from the Babylon.js repo root:
-
-```bash
-npm run build:dev
-npx build-tools -c dw -wd -wa -sc
-npm run serve -w @tools/babylon-server
-```
-
-### Wait for the CDN server to be ready
-
-Do not continue until `localhost:1337` accepts connections.
-
-```powershell
-Get-NetTCPConnection -LocalPort 1337 -State Listen -ErrorAction SilentlyContinue
-```
-
-Repeat the check until the port is ready.
-
-### Start the Playground server
-
-Preferred approach:
-
-- Start the `.vscode` task `Playground Serve for core (Dev)`.
-
-Manual fallback from the Babylon.js repo root:
-
-```bash
-npm run serve -w @tools/playground
-```
-
-Start the Playground only after the CDN server is up.
-
-### Wait for the Playground server to be ready
-
-```powershell
-Get-NetTCPConnection -LocalPort 1338 -State Listen -ErrorAction SilentlyContinue
-```
-
-The local Playground at `http://localhost:1338` uses the local engine build served from the CDN server, which is why it reflects local Babylon.js code changes immediately.
-
-## Verifying a Snippet in the Browser
-
-Open the saved snippet in the local Playground:
-
-```text
-http://localhost:1338/#ABC123#0
-```
-
-Note that the Playground editor covers part of the canvas. That is fine for a preview. Visual tests capture the render canvas directly, not the visible editor layout.
+For server startup steps, port numbers, and readiness checks, see [local-servers.md](local-servers.md). The key servers are CDN (`localhost:1337`) and Playground (`localhost:1338`).
 
 ## Forcing WebGPU
 
-By default the Playground uses WebGL2. To force WebGPU rendering, append `?webgpu` to the URL:
-
-```text
-http://localhost:1338/?webgpu#ABC123#0
-https://playground.babylonjs.com/?webgpu#ABC123#0
-```
-
-This works on both the local and public Playground, provided the browser supports WebGPU. The Playground also accepts the more explicit `?engine=WebGPU` form:
-
-```text
-http://localhost:1338/?engine=WebGPU#ABC123#0
-```
+Add `?engine=webgpu` to the Playground URL to force WebGPU rendering.
 
 ## Cleanup
 
-Remove temporary Playground source files when done:
-
-```bash
-rm temp_pg_mytest.js
-```
-
-Stop any long-running servers you started specifically for the task.
+After finishing, remove any `temp_pg_*.js` / `temp_pg_*.ts` files and stop servers you started.

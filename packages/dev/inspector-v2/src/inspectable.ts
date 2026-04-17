@@ -1,11 +1,10 @@
 import { type IDisposable, type Nullable } from "core/index";
-import { Logger } from "core/Misc/logger";
 import { Observable } from "core/Misc/observable";
 import { type Scene } from "core/scene";
 import { type WeaklyTypedServiceDefinition, ServiceContainer } from "shared-ui-components/modularTool/modularity/serviceContainer";
 import { type ServiceDefinition } from "shared-ui-components/modularTool/modularity/serviceDefinition";
+import { type ModularBridgeToken, MakeModularBridge } from "shared-ui-components/modularTool/modularBridge";
 import { EntityQueryServiceDefinition } from "./services/cli/entityQueryService";
-import { MakeInspectableBridgeServiceDefinition } from "./services/cli/inspectableBridgeService";
 import { PerfTraceCommandServiceDefinition } from "./services/cli/perfTraceCommandService";
 import { ScreenshotCommandServiceDefinition } from "./services/cli/screenshotCommandService";
 import { ShaderCommandServiceDefinition } from "./services/cli/shaderCommandService";
@@ -19,28 +18,41 @@ const DefaultPort = 4400;
  */
 export type InspectableOptions = {
     /**
-     * WebSocket port for the bridge's browser port. Defaults to 4400.
-     */
-    port?: number;
-
-    /**
-     * Session display name reported to the bridge. Defaults to `document.title`.
-     */
-    name?: string;
-
-    /**
-     * Whether the CLI bridge should automatically start trying to connect
-     * when the inspectable session is created. Defaults to false.
-     */
-    autoStart?: boolean;
-
-    /**
      * Additional service definitions to register with the inspectable container.
      * These are added in a separate call from the built-in services and are removed
      * when the returned token is disposed.
      */
     serviceDefinitions?: readonly WeaklyTypedServiceDefinition[];
-};
+} & (
+    | {
+          /**
+           * An existing modular bridge token whose ServiceContainer will be used as
+           * the parent for the inspectable container. The bridge already exists
+           * in the bridge token's container, so bridge options are not accepted.
+           * @experimental
+           */
+          bridgeToken: ModularBridgeToken;
+          port?: never;
+          name?: never;
+          autoStart?: never;
+      }
+    | {
+          bridgeToken?: never;
+          /**
+           * WebSocket port for the bridge's browser port. Defaults to 4400.
+           */
+          port?: number;
+          /**
+           * Session display name reported to the bridge. Defaults to `document.title`.
+           */
+          name?: string;
+          /**
+           * Whether the CLI bridge should automatically start trying to connect
+           * when the inspectable session is created. Defaults to false.
+           */
+          autoStart?: boolean;
+      }
+);
 
 /**
  * A token returned by {@link StartInspectable} that can be disposed to disconnect
@@ -68,11 +80,9 @@ export type InternalInspectableToken = InspectableToken & {
 // Track shared state per scene: the service container, ref count, and teardown logic.
 type InspectableState = {
     refCount: number;
+    readonly fullyDisposed: boolean;
     serviceContainer: ServiceContainer;
-    sceneDisposeObserver: { remove: () => void };
     fullyDispose: () => void;
-    /** Resolves when the built-in services have been initialized. Rejects if initialization fails. */
-    readyPromise: Promise<void>;
 };
 
 const InspectableStates = new Map<Scene, InspectableState>();
@@ -86,18 +96,35 @@ export function _StartInspectable(scene: Scene, options?: Partial<InspectableOpt
     let state = InspectableStates.get(scene);
 
     if (!state) {
-        const port = options?.port ?? DefaultPort;
-        const name = options?.name ?? (typeof document !== "undefined" ? document.title : "Babylon.js Scene");
+        const disposeActions: (() => void)[] = [];
 
-        const serviceContainer = new ServiceContainer("InspectableContainer");
+        // When a bridgeToken is provided, use its container as the parent and skip bridge creation.
+        // When not, create an internal bridge container via MakeModularBridge.
+        let bridgeToken: ModularBridgeToken;
+        if (options?.bridgeToken) {
+            bridgeToken = options.bridgeToken;
+        } else {
+            bridgeToken = MakeModularBridge({
+                port: options?.port ?? DefaultPort,
+                name: options?.name,
+                autoStart: options?.autoStart,
+            });
+            disposeActions.push(() => bridgeToken.dispose());
+        }
 
+        const serviceContainer = new ServiceContainer("InspectableContainer", bridgeToken.serviceContainer);
+        disposeActions.push(() => serviceContainer.dispose());
+
+        let fullyDisposed = false;
         const fullyDispose = () => {
             InspectableStates.delete(scene);
-            serviceContainer.dispose();
-            sceneDisposeObserver.remove();
+            fullyDisposed = true;
+            for (const action of disposeActions.reverse()) {
+                action();
+            }
         };
 
-        // Initialize the service container asynchronously.
+        // Initialize the service container.
         const sceneContextServiceDefinition: ServiceDefinition<[ISceneContext], []> = {
             friendlyName: "Inspectable Scene Context",
             produces: [SceneContextIdentity],
@@ -107,53 +134,42 @@ export function _StartInspectable(scene: Scene, options?: Partial<InspectableOpt
             }),
         };
 
-        const readyPromise = (async () => {
-            await serviceContainer.addServicesAsync(
-                sceneContextServiceDefinition,
-                MakeInspectableBridgeServiceDefinition({
-                    port,
-                    name,
-                    autoStart: options?.autoStart ?? false,
-                }),
-                EntityQueryServiceDefinition,
-                ScreenshotCommandServiceDefinition,
-                ShaderCommandServiceDefinition,
-                StatsCommandServiceDefinition,
-                PerfTraceCommandServiceDefinition
-            );
-        })();
+        serviceContainer.addServices(
+            sceneContextServiceDefinition,
+            EntityQueryServiceDefinition,
+            ScreenshotCommandServiceDefinition,
+            ShaderCommandServiceDefinition,
+            StatsCommandServiceDefinition,
+            PerfTraceCommandServiceDefinition
+        );
 
         state = {
             refCount: 0,
+            get fullyDisposed() {
+                return fullyDisposed;
+            },
             serviceContainer,
-            sceneDisposeObserver: { remove: () => {} },
             fullyDispose,
-            readyPromise,
         };
 
         const capturedState = state;
 
         InspectableStates.set(scene, state);
 
-        // Auto-dispose when the scene is disposed.
-        const sceneDisposeObserver = scene.onDisposeObservable.addOnce(() => {
-            capturedState.refCount = 0;
-            capturedState.fullyDispose();
-        });
-        state.sceneDisposeObserver = sceneDisposeObserver;
-
-        // Handle initialization failure (guard against already-disposed state).
-        void (async () => {
-            try {
-                await readyPromise;
-            } catch (error: unknown) {
-                if (InspectableStates.has(scene)) {
-                    Logger.Error(`Failed to initialize Inspectable: ${error}`);
-                    capturedState.refCount = 0;
-                    capturedState.fullyDispose();
-                }
-            }
-        })();
+        // Auto-dispose when the scene is disposed. Use insertFirst so that
+        // callbacks registered later (e.g. ShowInspector) fire before this one,
+        // ensuring child containers are disposed before this parent container.
+        const sceneDisposeObserver = scene.onDisposeObservable.add(
+            () => {
+                capturedState.refCount = 0;
+                capturedState.fullyDispose();
+            },
+            undefined,
+            true,
+            undefined,
+            true
+        );
+        disposeActions.push(() => sceneDisposeObserver.remove());
     }
 
     state.refCount++;
@@ -163,26 +179,15 @@ export function _StartInspectable(scene: Scene, options?: Partial<InspectableOpt
     // If additional service definitions were provided, add them in a separate call
     // so they can be independently removed when this token is disposed.
     let extraServicesDisposable: IDisposable | undefined;
-    const extraAbortController = new AbortController();
     const extraServiceDefinitions = options?.serviceDefinitions;
     if (extraServiceDefinitions && extraServiceDefinitions.length > 0) {
-        // Wait for the built-in services to be ready, then add the extra ones.
-        void (async () => {
-            try {
-                await owningState.readyPromise;
-                extraServicesDisposable = await serviceContainer.addServicesAsync(...extraServiceDefinitions, extraAbortController.signal);
-            } catch (error: unknown) {
-                if (!extraAbortController.signal.aborted) {
-                    Logger.Error(`Failed to add extra inspectable services: ${error}`);
-                }
-            }
-        })();
+        extraServicesDisposable = serviceContainer.addServices(...extraServiceDefinitions);
     }
 
     let disposed = false;
     const token: InternalInspectableToken = {
         get isDisposed() {
-            return disposed;
+            return disposed || owningState.fullyDisposed;
         },
         get serviceContainer() {
             return serviceContainer;
@@ -193,8 +198,7 @@ export function _StartInspectable(scene: Scene, options?: Partial<InspectableOpt
             }
             disposed = true;
 
-            // Abort any in-flight extra service initialization and remove already-added extra services.
-            extraAbortController.abort();
+            // Remove extra services that were added for this token.
             extraServicesDisposable?.dispose();
 
             owningState.refCount--;
@@ -209,9 +213,12 @@ export function _StartInspectable(scene: Scene, options?: Partial<InspectableOpt
 
 /**
  * Makes a scene inspectable by connecting it to the Inspector CLI bridge.
- * This creates a headless {@link ServiceContainer} (no UI) and registers the
- * {@link InspectableBridgeService} which opens a WebSocket to the bridge and
- * exposes a command registry for CLI-invocable commands.
+ * This creates a headless {@link ServiceContainer} (no UI) that registers
+ * scene-specific CLI command services (entity query, screenshot, shader, stats, etc.).
+ *
+ * When {@link InspectableOptions.bridgeToken} is provided, the inspectable container
+ * is created as a child of the CLI container, inheriting the bridge and command registry.
+ * When not provided, a bridge container is created internally via {@link MakeModularBridge}.
  *
  * Multiple callers may call this for the same scene. Each returned token is
  * ref-counted — the underlying connection is only torn down when all tokens

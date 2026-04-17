@@ -106,19 +106,26 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
     private _partIndicesTexture: Nullable<BaseTexture> = null;
     private _partIndices: Nullable<Uint8Array> = null;
 
+    /** Gets the part indices texture used for compound rendering */
+    public get partIndicesTexture() {
+        return this._partIndicesTexture;
+    }
+
     /**
      * Creates a new GaussianSplattingMesh
      * @param name the name of the mesh
      * @param url optional URL to load a Gaussian Splatting file from
      * @param scene the hosting scene
      * @param keepInRam whether to keep the raw splat data in RAM after uploading to GPU
+     * @param needsRotationScaleTextures generate rotation and scale matrix textures required for voxel-based IBL shadows
      */
-    constructor(name: string, url: Nullable<string> = null, scene: Nullable<Scene> = null, keepInRam: boolean = false) {
+    constructor(name: string, url: Nullable<string> = null, scene: Nullable<Scene> = null, keepInRam: boolean = false, needsRotationScaleTextures: boolean = false) {
         super(name, url, scene, keepInRam);
         // Ensure _splatsData is retained once compound mode is entered — addPart/addParts need
         // the source data for full-texture rebuilds. Set after super() so it is visible to
         // _updateData when the async load completes.
         this._alwaysRetainSplatsData = true;
+        this._needsRotationScaleTextures = needsRotationScaleTextures;
     }
 
     /**
@@ -137,9 +144,7 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
         for (const proxy of this._partProxies) {
             proxy.dispose();
         }
-        if (this._partIndicesTexture) {
-            this._partIndicesTexture.dispose();
-        }
+        this._partIndicesTexture?.dispose();
         this._partProxies = [];
         this._partMatrices = [];
         this._partVisibility = [];
@@ -932,10 +937,16 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
         this._covariancesBTexture?.dispose();
         this._centersTexture?.dispose();
         this._colorsTexture?.dispose();
+        this._rotationsATexture?.dispose();
+        this._rotationsBTexture?.dispose();
+        this._rotationScaleTexture?.dispose();
         this._covariancesATexture = null;
         this._covariancesBTexture = null;
         this._centersTexture = null;
         this._colorsTexture = null;
+        this._rotationsATexture = null;
+        this._rotationsBTexture = null;
+        this._rotationScaleTexture = null;
         if (this._shTextures) {
             for (const t of this._shTextures) {
                 t.dispose();

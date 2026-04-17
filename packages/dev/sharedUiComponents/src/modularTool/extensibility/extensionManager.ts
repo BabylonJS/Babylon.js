@@ -322,7 +322,7 @@ export class ExtensionManager implements IDisposable {
                 // Register the ServiceDefinitions.
                 let servicesRegistrationToken: Nullable<IDisposable> = null;
                 if (installedExtension.extensionModule.default.serviceDefinitions) {
-                    servicesRegistrationToken = await this._serviceContainer.addServicesAsync(...installedExtension.extensionModule.default.serviceDefinitions);
+                    servicesRegistrationToken = this._serviceContainer.addServices(...installedExtension.extensionModule.default.serviceDefinitions);
                 }
 
                 // Create a registration token to for dispose.

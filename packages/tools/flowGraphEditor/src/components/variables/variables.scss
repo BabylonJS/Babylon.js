@@ -1,129 +1,337 @@
-.fge-variables-panel {
-    padding: 8px 12px;
+// Variables strip — compact horizontal panel between toolbar and canvas
+.fge-variables-strip {
+    background: #252525;
+    border-bottom: 1px solid #555;
+    flex-shrink: 0;
     font:
-        13px "acumin-pro",
+        12px "acumin-pro",
         sans-serif;
     color: #ccc;
 
-    .fge-variables-header {
+    .fge-variables-strip-header {
         display: flex;
         align-items: center;
-        justify-content: space-between;
-        margin-bottom: 8px;
-        padding-bottom: 6px;
-        border-bottom: 1px solid #444;
+        height: 26px;
+        padding: 0 8px;
         gap: 6px;
-
-        h3 {
-            margin: 0;
-            font-size: 13px;
-            font-weight: 600;
-            color: #ddd;
-        }
-
-        .fge-variables-running-badge {
-            color: #4caf50;
-            font-size: 11px;
-            font-weight: 600;
-            flex-shrink: 0;
-        }
-
-        .fge-variables-add-btn {
-            background: #464646;
-            border: 1px solid #666;
-            border-radius: 3px;
-            color: #ccc;
-            cursor: pointer;
-            font-size: 12px;
-            padding: 2px 8px;
-            margin-left: auto;
-            &:hover {
-                background: #555;
-                color: #fff;
-            }
-        }
+        background: #2a2a2a;
     }
 
-    .fge-variables-empty {
+    .fge-variables-toggle {
+        background: none;
+        border: none;
         color: #888;
-        font-style: italic;
-        font-size: 12px;
-        padding: 8px 0;
+        cursor: pointer;
+        font-size: 9px;
+        padding: 0 2px;
+        line-height: 1;
+
+        &:hover {
+            color: #ccc;
+        }
     }
 
-    .fge-variable-row {
+    .fge-variables-strip-title {
+        font-size: 11px;
+        font-weight: 600;
+        color: #aaa;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        user-select: none;
+    }
+
+    .fge-variables-live-badge {
+        color: #4caf50;
+        font-size: 10px;
+        font-weight: 600;
+    }
+
+    .fge-variables-strip-add {
+        margin-left: auto;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 20px;
+        height: 20px;
+        background: #464646;
+        color: rgb(51, 183, 102);
+        border: 1px solid rgb(51, 183, 102);
+        border-radius: 3px;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 700;
+        line-height: 1;
+
+        &:hover {
+            background: rgba(51, 183, 102, 0.2);
+            color: #fff;
+        }
+    }
+
+    .fge-variables-strip-body {
+        max-height: 120px;
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+
+    .fge-variables-strip-empty {
+        color: #666;
+        font-style: italic;
+        font-size: 11px;
+        padding: 4px 12px;
+    }
+
+    .fge-variables-strip-table {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1px;
+        padding: 4px 8px;
+    }
+
+    .fge-var-cell {
         display: flex;
         flex-direction: column;
-        gap: 2px;
-        padding: 4px 0;
-        border-bottom: 1px solid #333;
+        background: #2e2e2e;
+        border: 1px solid #3a3a3a;
+        border-radius: 3px;
+        padding: 3px 6px;
+        min-width: 120px;
+        max-width: 220px;
 
-        &:last-child {
-            border-bottom: none;
-        }
-
-        .fge-variable-row-top {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .fge-variable-name {
-            flex: 1;
-            background: #1e1e1e;
-            border: 1px solid #444;
-            border-radius: 3px;
-            color: #d4d4d4;
-            font:
-                12px "Consolas",
-                "Courier New",
-                monospace;
-            padding: 3px 6px;
-            outline: none;
-            min-width: 0;
-
-            &:focus {
-                border-color: #4a90d9;
-            }
-        }
-
-        .fge-variable-type {
-            color: #888;
-            font-size: 11px;
-            white-space: nowrap;
-            min-width: 50px;
-        }
-
-        .fge-variable-delete-btn {
-            background: none;
-            border: none;
-            color: #888;
-            cursor: pointer;
-            font-size: 14px;
-            padding: 0 4px;
-            line-height: 1;
-            &:hover {
-                color: #e55;
-            }
-        }
-
-        .fge-variable-value {
-            font:
-                11px "Consolas",
-                "Courier New",
-                monospace;
-            color: #4caf50;
-            padding: 0 6px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
+        &:hover {
+            border-color: #555;
         }
     }
 
-    .fge-variables-info {
-        color: #777;
+    .fge-var-cell-name-row {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .fge-var-cell-name {
+        flex: 1;
+        font:
+            11px "Consolas",
+            "Courier New",
+            monospace;
+        color: #d4d4d4;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        cursor: default;
+        min-width: 0;
+    }
+
+    .fge-var-cell-name-input {
+        flex: 1;
+        background: #1e1e1e;
+        border: 1px solid #4a90d9;
+        border-radius: 2px;
+        color: #d4d4d4;
+        font:
+            11px "Consolas",
+            "Courier New",
+            monospace;
+        padding: 1px 4px;
+        outline: none;
+        min-width: 0;
+    }
+
+    .fge-var-cell-delete {
+        background: none;
+        border: none;
+        color: #666;
+        cursor: pointer;
         font-size: 11px;
-        margin-top: 8px;
-        line-height: 1.4;
+        padding: 0 2px;
+        line-height: 1;
+        flex-shrink: 0;
+
+        &:hover {
+            color: #e55;
+        }
+    }
+
+    // --- Type selector row ---
+    .fge-var-cell-type-row {
+        margin-top: 2px;
+    }
+
+    .fge-var-cell-type-select {
+        width: 100%;
+        height: 20px;
+        padding: 0 2px;
+        font-size: 10px;
+        font-weight: 500;
+        color: #bbb;
+        background: #333;
+        border: 1px solid #555;
+        border-radius: 2px;
+        cursor: pointer;
+        outline: none;
+        box-sizing: border-box;
+
+        &:hover {
+            border-color: #777;
+        }
+
+        &:focus {
+            border-color: rgb(100, 160, 220);
+        }
+
+        option {
+            background: #2a2a2a;
+            color: #ccc;
+        }
+
+        optgroup {
+            color: #888;
+            font-style: normal;
+        }
+    }
+
+    // --- Value editor row ---
+    .fge-var-cell-value-row {
+        margin-top: 2px;
+    }
+
+    .fge-var-cell-value {
+        display: block;
+        font:
+            10px "Consolas",
+            "Courier New",
+            monospace;
+        color: #4caf50;
+        cursor: pointer;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        padding: 1px 0;
+        border-bottom: 1px dashed transparent;
+
+        &:hover {
+            color: #6bd06b;
+            border-bottom-color: #4caf50;
+        }
+    }
+
+    .fge-var-cell-value-input {
+        width: 100%;
+        background: #1e1e1e;
+        border: 1px solid #4caf50;
+        border-radius: 2px;
+        color: #4caf50;
+        font:
+            10px "Consolas",
+            "Courier New",
+            monospace;
+        padding: 1px 4px;
+        outline: none;
+        box-sizing: border-box;
+    }
+
+    // --- Number input ---
+    .fge-var-cell-number-input {
+        width: 100%;
+        height: 20px;
+        background: #1e1e1e;
+        border: 1px solid #555;
+        border-radius: 2px;
+        color: #4caf50;
+        font:
+            10px "Consolas",
+            "Courier New",
+            monospace;
+        padding: 1px 4px;
+        outline: none;
+        box-sizing: border-box;
+
+        &:focus {
+            border-color: #4caf50;
+        }
+    }
+
+    // --- Boolean toggle ---
+    .fge-var-cell-bool-toggle {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        cursor: pointer;
+        font:
+            10px "Consolas",
+            "Courier New",
+            monospace;
+        color: #4caf50;
+
+        input[type="checkbox"] {
+            accent-color: #4caf50;
+            cursor: pointer;
+        }
+    }
+
+    // --- Vector / Color component inputs ---
+    .fge-var-cell-components {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 2px;
+    }
+
+    .fge-var-cell-component {
+        display: flex;
+        align-items: center;
+        gap: 2px;
+    }
+
+    .fge-var-cell-component-label {
+        font-size: 9px;
+        font-weight: 600;
+        color: #888;
+        text-transform: uppercase;
+        min-width: 8px;
+    }
+
+    .fge-var-cell-component-input {
+        width: 42px;
+        height: 18px;
+        background: #1e1e1e;
+        border: 1px solid #555;
+        border-radius: 2px;
+        color: #4caf50;
+        font:
+            9px "Consolas",
+            "Courier New",
+            monospace;
+        padding: 0 2px;
+        outline: none;
+        box-sizing: border-box;
+
+        &:focus {
+            border-color: #4caf50;
+        }
+    }
+
+    // --- Scene object picker ---
+    .fge-var-cell-object-select {
+        width: 100%;
+        height: 20px;
+        padding: 0 2px;
+        font-size: 10px;
+        color: #4caf50;
+        background: #1e1e1e;
+        border: 1px solid #555;
+        border-radius: 2px;
+        cursor: pointer;
+        outline: none;
+        box-sizing: border-box;
+
+        &:focus {
+            border-color: #4caf50;
+        }
+
+        option {
+            background: #2a2a2a;
+            color: #ccc;
+        }
     }
 }

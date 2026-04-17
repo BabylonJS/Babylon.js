@@ -224,6 +224,33 @@ const enum PLYValue {
     SH_42,
     SH_43,
     SH_44,
+    SH_45,
+    SH_46,
+    SH_47,
+    SH_48,
+    SH_49,
+    SH_50,
+    SH_51,
+    SH_52,
+    SH_53,
+    SH_54,
+    SH_55,
+    SH_56,
+    SH_57,
+    SH_58,
+    SH_59,
+    SH_60,
+    SH_61,
+    SH_62,
+    SH_63,
+    SH_64,
+    SH_65,
+    SH_66,
+    SH_67,
+    SH_68,
+    SH_69,
+    SH_70,
+    SH_71,
 
     UNDEFINED,
 }
@@ -313,6 +340,13 @@ export class GaussianSplattingMeshBase extends Mesh {
     protected _covariancesBTexture: Nullable<BaseTexture> = null;
     protected _centersTexture: Nullable<BaseTexture> = null;
     protected _colorsTexture: Nullable<BaseTexture> = null;
+    protected _rotationsATexture: Nullable<BaseTexture> = null;
+    protected _rotationsBTexture: Nullable<BaseTexture> = null;
+    protected _rotationScaleTexture: Nullable<BaseTexture> = null;
+    private _rotationDataA: Nullable<Uint16Array> = null;
+    private _rotationDataB: Nullable<Uint16Array> = null;
+    private _rotationScaleData: Nullable<Uint16Array> = null;
+    protected _needsRotationScaleTextures: boolean = false;
     protected _splatPositions: Nullable<Float32Array> = null;
     private _splatIndex: Nullable<Float32Array> = null;
     protected _shTextures: Nullable<BaseTexture[]> = null;
@@ -345,6 +379,7 @@ export class GaussianSplattingMeshBase extends Mesh {
     private static _PlyConversionBatchSize = 32768;
     /** @internal */
     public _shDegree = 0;
+    private _maxShDegree = 0;
 
     private static readonly _BatchSize = 16; // 16 splats per instance
     private _cameraViewInfos = new Map<number, ICameraViewInfo>();
@@ -392,7 +427,7 @@ export class GaussianSplattingMeshBase extends Mesh {
     }
 
     public set shDegree(value: number) {
-        const maxDegree = this._shTextures?.length ?? 0;
+        const maxDegree = this._maxShDegree;
         const clamped = Math.max(0, Math.min(Math.round(value), maxDegree));
         if (this._shDegree === clamped) {
             return;
@@ -405,7 +440,7 @@ export class GaussianSplattingMeshBase extends Mesh {
      * Maximum SH degree available from the loaded data.
      */
     public get maxShDegree() {
-        return this._shTextures?.length ?? 0;
+        return this._maxShDegree;
     }
 
     /**
@@ -463,6 +498,51 @@ export class GaussianSplattingMeshBase extends Mesh {
      */
     public get colorsTexture() {
         return this._colorsTexture;
+    }
+
+    /**
+     * Gets the rotation matrix A texture (rotation elements m[0],m[1],m[2],m[4])
+     */
+    public get rotationsATexture() {
+        return this._rotationsATexture;
+    }
+
+    /**
+     * Gets the rotation matrix B texture (rotation elements m[5],m[6],m[8],m[9])
+     */
+    public get rotationsBTexture() {
+        return this._rotationsBTexture;
+    }
+
+    /**
+     * Gets the rotation scale texture (rotation element m[10] followed by scale diagonal sx,sy,sz)
+     */
+    public get rotationScaleTexture() {
+        return this._rotationScaleTexture;
+    }
+
+    /**
+     * Enables or disables generation of rotation and scale matrix textures, required for voxel-based IBL shadows.
+     */
+    public get needsRotationScaleTextures() {
+        return this._needsRotationScaleTextures;
+    }
+
+    public set needsRotationScaleTextures(value: boolean) {
+        if (this._needsRotationScaleTextures === value) {
+            return;
+        }
+        this._needsRotationScaleTextures = value;
+        if (value && this._covariancesATexture) {
+            if (this._splatsData) {
+                this.updateData(this._splatsData, this._shData ?? undefined, { flipY: false });
+            } else {
+                Logger.Error(
+                    "GaussianSplattingMeshBase: needsRotationScaleTextures was enabled after the mesh was already loaded, but the splat data is not kept in RAM. " +
+                        "The rotation and scale matrix textures cannot be initialized. Please reload the mesh data via updateData() or construct with keepInRam=true."
+                );
+            }
+        }
     }
 
     /**
@@ -981,6 +1061,60 @@ export class GaussianSplattingMeshBase extends Mesh {
                 return PLYValue.SH_43;
             case "f_rest_44":
                 return PLYValue.SH_44;
+            case "f_rest_45":
+                return PLYValue.SH_45;
+            case "f_rest_46":
+                return PLYValue.SH_46;
+            case "f_rest_47":
+                return PLYValue.SH_47;
+            case "f_rest_48":
+                return PLYValue.SH_48;
+            case "f_rest_49":
+                return PLYValue.SH_49;
+            case "f_rest_50":
+                return PLYValue.SH_50;
+            case "f_rest_51":
+                return PLYValue.SH_51;
+            case "f_rest_52":
+                return PLYValue.SH_52;
+            case "f_rest_53":
+                return PLYValue.SH_53;
+            case "f_rest_54":
+                return PLYValue.SH_54;
+            case "f_rest_55":
+                return PLYValue.SH_55;
+            case "f_rest_56":
+                return PLYValue.SH_56;
+            case "f_rest_57":
+                return PLYValue.SH_57;
+            case "f_rest_58":
+                return PLYValue.SH_58;
+            case "f_rest_59":
+                return PLYValue.SH_59;
+            case "f_rest_60":
+                return PLYValue.SH_60;
+            case "f_rest_61":
+                return PLYValue.SH_61;
+            case "f_rest_62":
+                return PLYValue.SH_62;
+            case "f_rest_63":
+                return PLYValue.SH_63;
+            case "f_rest_64":
+                return PLYValue.SH_64;
+            case "f_rest_65":
+                return PLYValue.SH_65;
+            case "f_rest_66":
+                return PLYValue.SH_66;
+            case "f_rest_67":
+                return PLYValue.SH_67;
+            case "f_rest_68":
+                return PLYValue.SH_68;
+            case "f_rest_69":
+                return PLYValue.SH_69;
+            case "f_rest_70":
+                return PLYValue.SH_70;
+            case "f_rest_71":
+                return PLYValue.SH_71;
         }
 
         return PLYValue.UNDEFINED;
@@ -1035,10 +1169,12 @@ export class GaussianSplattingMeshBase extends Mesh {
 
                 const value = GaussianSplattingMeshBase._ValueNameToEnum(name);
                 if (value != PLYValue.UNDEFINED) {
-                    // SH degree 1,2 or 3 for 9, 24 or 45 values
-                    if (value >= PLYValue.SH_44) {
-                        shDegree = 3;
-                    } else if (value >= PLYValue.SH_24) {
+                    // SH degree 1,2,3 or 4 for 9, 24, 45 or 72 values
+                    if (value >= PLYValue.SH_71) {
+                        shDegree = 4;
+                    } else if (value >= PLYValue.SH_44) {
+                        shDegree = Math.max(shDegree, 3);
+                    } else if (value >= PLYValue.SH_23) {
                         shDegree = Math.max(shDegree, 2);
                     } else if (value >= PLYValue.SH_8) {
                         shDegree = Math.max(shDegree, 1);
@@ -1326,7 +1462,7 @@ export class GaussianSplattingMeshBase extends Mesh {
                     r3 = value;
                     break;
             }
-            if (sh && property.value >= PLYValue.SH_0 && property.value <= PLYValue.SH_44) {
+            if (sh && property.value >= PLYValue.SH_0 && property.value <= PLYValue.SH_71) {
                 const shIndex = property.value - PLYValue.SH_0;
                 if (property.type == PLYType.UCHAR && header.chunkCount) {
                     // compressed ply. dataView points to beginning of vertex
@@ -1344,7 +1480,7 @@ export class GaussianSplattingMeshBase extends Mesh {
         }
 
         if (sh) {
-            const shDim = header.shDegree == 1 ? 3 : header.shDegree == 2 ? 8 : 15;
+            const shDim = header.shDegree == 1 ? 3 : header.shDegree == 2 ? 8 : header.shDegree == 3 ? 15 : 24;
             for (let j = 0; j < shDim; j++) {
                 sh[j * 3 + 0] = plySH[j];
                 sh[j * 3 + 1] = plySH[j + shDim];
@@ -1420,7 +1556,7 @@ export class GaussianSplattingMeshBase extends Mesh {
             }
         }
 
-        return { buffer: header.buffer, sh: sh };
+        return { buffer: header.buffer, sh: sh, shDegree: header.shDegree };
     }
 
     /**
@@ -1504,6 +1640,15 @@ export class GaussianSplattingMeshBase extends Mesh {
             }
         }
 
+        this._rotationsATexture?.dispose();
+        this._rotationsBTexture?.dispose();
+        this._rotationScaleTexture?.dispose();
+        this._rotationsATexture = null;
+        this._rotationsBTexture = null;
+        this._rotationScaleTexture = null;
+        this._rotationDataA = null;
+        this._rotationDataB = null;
+        this._rotationScaleData = null;
         this._covariancesATexture = null;
         this._covariancesBTexture = null;
         this._centersTexture = null;
@@ -1536,6 +1681,11 @@ export class GaussianSplattingMeshBase extends Mesh {
             for (const shTexture of source._shTextures) {
                 this._shTextures?.push(shTexture.clone()!);
             }
+        }
+        if (source._rotationsATexture) {
+            this._rotationsATexture = source._rotationsATexture.clone()!;
+            this._rotationsBTexture = source._rotationsBTexture?.clone()!;
+            this._rotationScaleTexture = source._rotationScaleTexture?.clone()!;
         }
     }
 
@@ -1730,6 +1880,31 @@ export class GaussianSplattingMeshBase extends Mesh {
 
         Matrix.ScalingToRef(fBuffer[8 * srcIndex + 3 + 0] * 2, fBuffer[8 * srcIndex + 3 + 1] * 2, fBuffer[8 * srcIndex + 3 + 2] * 2, matrixScale);
 
+        if (this._needsRotationScaleTextures) {
+            if (!this._rotationDataA || this._rotationDataA.length < covA.length) {
+                this._rotationDataA = new Uint16Array(covA.length);
+                this._rotationDataB = new Uint16Array(covA.length);
+                this._rotationScaleData = new Uint16Array(covA.length);
+            }
+            const rotDataA = this._rotationDataA;
+            const rotDataB = this._rotationDataB!;
+            const rotScaleData = this._rotationScaleData!;
+            const rm = matrixRotation.m;
+            const sm = matrixScale.m;
+            rotDataA[dstIndex * 4 + 0] = ToHalfFloat(rm[0]);
+            rotDataA[dstIndex * 4 + 1] = ToHalfFloat(rm[1]);
+            rotDataA[dstIndex * 4 + 2] = ToHalfFloat(rm[2]);
+            rotDataA[dstIndex * 4 + 3] = ToHalfFloat(rm[4]);
+            rotDataB[dstIndex * 4 + 0] = ToHalfFloat(rm[5]);
+            rotDataB[dstIndex * 4 + 1] = ToHalfFloat(rm[6]);
+            rotDataB[dstIndex * 4 + 2] = ToHalfFloat(rm[8]);
+            rotDataB[dstIndex * 4 + 3] = ToHalfFloat(rm[9]);
+            rotScaleData[dstIndex * 4 + 0] = ToHalfFloat(rm[10]);
+            rotScaleData[dstIndex * 4 + 1] = ToHalfFloat(sm[0]);
+            rotScaleData[dstIndex * 4 + 2] = ToHalfFloat(sm[5]);
+            rotScaleData[dstIndex * 4 + 3] = ToHalfFloat(sm[10]);
+        }
+
         const m = matrixRotation.multiplyToRef(matrixScale, TmpVectors.Matrix[0]).m;
 
         const covariances = this._tmpCovariances;
@@ -1840,6 +2015,25 @@ export class GaussianSplattingMeshBase extends Mesh {
                 }
             }
 
+            if (this._needsRotationScaleTextures && this._rotationDataA) {
+                if (this._rotationsATexture) {
+                    this._updateTextureFromData(this._rotationsATexture, this._rotationDataA, textureSize.x, 0, textureSize.y);
+                    this._updateTextureFromData(this._rotationsBTexture!, this._rotationDataB!, textureSize.x, 0, textureSize.y);
+                    this._updateTextureFromData(this._rotationScaleTexture!, this._rotationScaleData!, textureSize.x, 0, textureSize.y);
+                } else {
+                    // Rotation textures not yet created (needsRotationScaleTextures was enabled after initial load).
+                    this._rotationsATexture = createTextureFromDataF16(this._rotationDataA, textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA);
+                    this._rotationsBTexture = createTextureFromDataF16(this._rotationDataB!, textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA);
+                    this._rotationScaleTexture = createTextureFromDataF16(this._rotationScaleData!, textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA);
+                    this._rotationsATexture.wrapU = Constants.TEXTURE_CLAMP_ADDRESSMODE;
+                    this._rotationsATexture.wrapV = Constants.TEXTURE_CLAMP_ADDRESSMODE;
+                    this._rotationsBTexture.wrapU = Constants.TEXTURE_CLAMP_ADDRESSMODE;
+                    this._rotationsBTexture.wrapV = Constants.TEXTURE_CLAMP_ADDRESSMODE;
+                    this._rotationScaleTexture.wrapU = Constants.TEXTURE_CLAMP_ADDRESSMODE;
+                    this._rotationScaleTexture.wrapV = Constants.TEXTURE_CLAMP_ADDRESSMODE;
+                }
+            }
+
             this._onUpdateTextures(textureSize);
 
             this._postToWorker(true);
@@ -1864,6 +2058,24 @@ export class GaussianSplattingMeshBase extends Mesh {
                     shTexture.wrapV = Constants.TEXTURE_CLAMP_ADDRESSMODE;
                     this._shTextures!.push(shTexture);
                 }
+            }
+
+            if (this._needsRotationScaleTextures) {
+                const rotDataA = this._rotationDataA ?? new Uint16Array(covA.length);
+                const rotDataB = this._rotationDataB ?? new Uint16Array(covA.length);
+                const rotScaleData = this._rotationScaleData ?? new Uint16Array(covA.length);
+                this._rotationsATexture?.dispose();
+                this._rotationsBTexture?.dispose();
+                this._rotationScaleTexture?.dispose();
+                this._rotationsATexture = createTextureFromDataF16(rotDataA, textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA);
+                this._rotationsBTexture = createTextureFromDataF16(rotDataB, textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA);
+                this._rotationScaleTexture = createTextureFromDataF16(rotScaleData, textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA);
+                this._rotationsATexture.wrapU = Constants.TEXTURE_CLAMP_ADDRESSMODE;
+                this._rotationsATexture.wrapV = Constants.TEXTURE_CLAMP_ADDRESSMODE;
+                this._rotationsBTexture.wrapU = Constants.TEXTURE_CLAMP_ADDRESSMODE;
+                this._rotationsBTexture.wrapV = Constants.TEXTURE_CLAMP_ADDRESSMODE;
+                this._rotationScaleTexture.wrapU = Constants.TEXTURE_CLAMP_ADDRESSMODE;
+                this._rotationScaleTexture.wrapV = Constants.TEXTURE_CLAMP_ADDRESSMODE;
             }
 
             this._onUpdateTextures(textureSize);
@@ -1923,7 +2135,8 @@ export class GaussianSplattingMeshBase extends Mesh {
         isAsync: boolean,
         sh?: Uint8Array[],
         partIndices?: Uint8Array,
-        { flipY = false, previousVertexCount = 0 }: IUpdateOptions = {}
+        { flipY = false, previousVertexCount = 0 }: IUpdateOptions = {},
+        shDegree?: number
     ): Coroutine<void> {
         if (!this._covariancesATexture) {
             this._readyToDisplay = false;
@@ -1950,8 +2163,8 @@ export class GaussianSplattingMeshBase extends Mesh {
             this._updateSplatIndexBuffer(vertexCount);
         }
         this._vertexCount = vertexCount;
-        // degree == 1 for 1 texture (3 terms), 2 for 2 textures (8 terms) and 3 for 3 textures (15 terms)
-        this._shDegree = sh ? sh.length : 0;
+        this._maxShDegree = sh ? (shDegree ?? 0) : 0;
+        this._shDegree = this._maxShDegree;
 
         const textureSize = this._getTextureSize(vertexCount);
         const textureLength = textureSize.x * textureSize.y;
@@ -2073,10 +2286,11 @@ export class GaussianSplattingMeshBase extends Mesh {
      * @param data array buffer containing center, color, orientation and scale of splats
      * @param sh optional array of uint8 array for SH data
      * @param partIndices optional array of uint8 for rig node indices
+     * @param shDegree optional SH degree of the data
      * @returns a promise
      */
-    public async updateDataAsync(data: ArrayBuffer, sh?: Uint8Array[], partIndices?: Uint8Array): Promise<void> {
-        return await runCoroutineAsync(this._updateData(data, true, sh, partIndices), createYieldingScheduler());
+    public async updateDataAsync(data: ArrayBuffer, sh?: Uint8Array[], partIndices?: Uint8Array, shDegree?: number): Promise<void> {
+        return await runCoroutineAsync(this._updateData(data, true, sh, partIndices, undefined, shDegree), createYieldingScheduler());
     }
 
     /**
@@ -2086,9 +2300,10 @@ export class GaussianSplattingMeshBase extends Mesh {
      * @param sh optional array of uint8 array for SH data
      * @param options optional informations on how to treat data (needs to be 3rd for backward compatibility)
      * @param partIndices optional array of uint8 for rig node indices
+     * @param shDegree optional SH degree of the data
      */
-    public updateData(data: ArrayBuffer, sh?: Uint8Array[], options: IUpdateOptions = { flipY: true }, partIndices?: Uint8Array): void {
-        runCoroutineSync(this._updateData(data, false, sh, partIndices, options));
+    public updateData(data: ArrayBuffer, sh?: Uint8Array[], options: IUpdateOptions = { flipY: true }, partIndices?: Uint8Array, shDegree?: number): void {
+        runCoroutineSync(this._updateData(data, false, sh, partIndices, options, shDegree));
     }
 
     /**
@@ -2140,6 +2355,14 @@ export class GaussianSplattingMeshBase extends Mesh {
         this._updateTextureFromData(this._covariancesBTexture!, covBView, textureSize.x, lineStart, lineCount);
         this._updateTextureFromData(this._centersTexture!, centersView, textureSize.x, lineStart, lineCount);
         this._updateTextureFromData(this._colorsTexture!, colorsView, textureSize.x, lineStart, lineCount);
+        if (this._rotationsATexture && this._rotationDataA) {
+            const rotAView = new Uint16Array(this._rotationDataA.buffer, texelStart * 4 * Uint16Array.BYTES_PER_ELEMENT, texelCount * 4);
+            const rotBView = new Uint16Array(this._rotationDataB!.buffer, texelStart * 4 * Uint16Array.BYTES_PER_ELEMENT, texelCount * 4);
+            const rotScaleView = new Uint16Array(this._rotationScaleData!.buffer, texelStart * 4 * Uint16Array.BYTES_PER_ELEMENT, texelCount * 4);
+            this._updateTextureFromData(this._rotationsATexture, rotAView, textureSize.x, lineStart, lineCount);
+            this._updateTextureFromData(this._rotationsBTexture!, rotBView, textureSize.x, lineStart, lineCount);
+            this._updateTextureFromData(this._rotationScaleTexture!, rotScaleView, textureSize.x, lineStart, lineCount);
+        }
         if (sh) {
             for (let i = 0; i < sh.length; i++) {
                 const componentCount = 4;

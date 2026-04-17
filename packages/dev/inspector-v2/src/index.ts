@@ -61,8 +61,15 @@ export { MakeModularTool } from "shared-ui-components/modularTool/modularTool";
 export type { WeaklyTypedServiceDefinition } from "shared-ui-components/modularTool/modularity/serviceContainer";
 export * from "./inspector";
 export { StartInspectable, type InspectableToken, type InspectableOptions } from "./inspectable";
-export type { IInspectableCommandRegistry, InspectableCommandDescriptor, InspectableCommandArg } from "./services/cli/inspectableCommandRegistry";
-export { InspectableCommandRegistryIdentity } from "./services/cli/inspectableCommandRegistry";
+// Re-export canonical bridge types from sharedUiComponents.
+export {
+    type IBridgeCommandRegistry,
+    type BridgeCommandDescriptor,
+    type BridgeCommandArg,
+    type BridgeCommandArgType,
+    BridgeCommandRegistryIdentity,
+} from "shared-ui-components/modularTool/services/cli/bridgeCommandRegistry";
+export { MakeModularBridge, type ModularBridgeToken, type ModularBridgeOptions } from "shared-ui-components/modularTool/modularBridge";
 export { ConvertOptions, Inspector } from "./legacy/inspector";
 export { AttachDebugLayer, DetachDebugLayer } from "./legacy/debugLayer";
 

@@ -23,8 +23,21 @@ import { type HemisphericParticleEmitter } from "./EmitterTypes/hemisphericParti
 import { type SphereDirectedParticleEmitter, type SphereParticleEmitter } from "./EmitterTypes/sphereParticleEmitter";
 import { type CylinderDirectedParticleEmitter, type CylinderParticleEmitter } from "./EmitterTypes/cylinderParticleEmitter";
 import { type ConeDirectedParticleEmitter, type ConeParticleEmitter } from "./EmitterTypes/coneParticleEmitter";
+import { type MeshParticleEmitter } from "./EmitterTypes/meshParticleEmitter";
 import { RegisterClass } from "../Misc/typeStore";
 import { type Attractor } from "./attractor";
+import {
+    CreateBoxEmitter,
+    CreateConeEmitter,
+    CreateCylinderEmitter,
+    CreateDirectedConeEmitter,
+    CreateDirectedCylinderEmitter,
+    CreateDirectedSphereEmitter,
+    CreateHemisphericEmitter,
+    CreateMeshEmitter,
+    CreatePointEmitter,
+    CreateSphereEmitter,
+} from "./particleSystem.functions";
 
 /**
  * This represents the base class for particle system in Babylon.
@@ -917,27 +930,36 @@ export class BaseParticleSystem implements IClipPlanesHolder {
      * Creates a Point Emitter for the particle system (emits directly from the emitter position)
      * @param direction1 Particles are emitted between the direction1 and direction2 from within the box
      * @param direction2 Particles are emitted between the direction1 and direction2 from within the box
+     * @returns the emitter
      */
     public createPointEmitter(direction1: Vector3, direction2: Vector3): PointParticleEmitter {
-        throw new Error("Method not implemented.");
+        const particleEmitter = CreatePointEmitter(direction1, direction2);
+        this.particleEmitterType = particleEmitter;
+        return particleEmitter;
     }
 
     /**
      * Creates a Hemisphere Emitter for the particle system (emits along the hemisphere radius)
      * @param radius The radius of the hemisphere to emit from
      * @param radiusRange The range of the hemisphere to emit from [0-1] 0 Surface Only, 1 Entire Radius
+     * @returns the emitter
      */
     public createHemisphericEmitter(radius = 1, radiusRange = 1): HemisphericParticleEmitter {
-        throw new Error("Method not implemented.");
+        const particleEmitter = CreateHemisphericEmitter(radius, radiusRange);
+        this.particleEmitterType = particleEmitter;
+        return particleEmitter;
     }
 
     /**
      * Creates a Sphere Emitter for the particle system (emits along the sphere radius)
      * @param radius The radius of the sphere to emit from
      * @param radiusRange The range of the sphere to emit from [0-1] 0 Surface Only, 1 Entire Radius
+     * @returns the emitter
      */
     public createSphereEmitter(radius = 1, radiusRange = 1): SphereParticleEmitter {
-        throw new Error("Method not implemented.");
+        const particleEmitter = CreateSphereEmitter(radius, radiusRange);
+        this.particleEmitterType = particleEmitter;
+        return particleEmitter;
     }
 
     /**
@@ -945,9 +967,12 @@ export class BaseParticleSystem implements IClipPlanesHolder {
      * @param radius The radius of the sphere to emit from
      * @param direction1 Particles are emitted between the direction1 and direction2 from within the sphere
      * @param direction2 Particles are emitted between the direction1 and direction2 from within the sphere
+     * @returns the emitter
      */
     public createDirectedSphereEmitter(radius = 1, direction1 = new Vector3(0, 1.0, 0), direction2 = new Vector3(0, 1.0, 0)): SphereDirectedParticleEmitter {
-        throw new Error("Method not implemented.");
+        const particleEmitter = CreateDirectedSphereEmitter(radius, direction1, direction2);
+        this.particleEmitterType = particleEmitter;
+        return particleEmitter;
     }
 
     /**
@@ -956,9 +981,12 @@ export class BaseParticleSystem implements IClipPlanesHolder {
      * @param height The height of the emission cylinder
      * @param radiusRange The range of emission [0-1] 0 Surface only, 1 Entire Radius
      * @param directionRandomizer How much to randomize the particle direction [0-1]
+     * @returns the emitter
      */
     public createCylinderEmitter(radius = 1, height = 1, radiusRange = 1, directionRandomizer = 0): CylinderParticleEmitter {
-        throw new Error("Method not implemented.");
+        const particleEmitter = CreateCylinderEmitter(radius, height, radiusRange, directionRandomizer);
+        this.particleEmitterType = particleEmitter;
+        return particleEmitter;
     }
 
     /**
@@ -968,6 +996,7 @@ export class BaseParticleSystem implements IClipPlanesHolder {
      * @param radiusRange the range of the emission cylinder [0-1] 0 Surface only, 1 Entire Radius (1 by default)
      * @param direction1 Particles are emitted between the direction1 and direction2 from within the cylinder
      * @param direction2 Particles are emitted between the direction1 and direction2 from within the cylinder
+     * @returns the emitter
      */
     public createDirectedCylinderEmitter(
         radius = 1,
@@ -976,38 +1005,64 @@ export class BaseParticleSystem implements IClipPlanesHolder {
         direction1 = new Vector3(0, 1.0, 0),
         direction2 = new Vector3(0, 1.0, 0)
     ): CylinderDirectedParticleEmitter {
-        throw new Error("Method not implemented.");
+        const particleEmitter = CreateDirectedCylinderEmitter(radius, height, radiusRange, direction1, direction2);
+        this.particleEmitterType = particleEmitter;
+        return particleEmitter;
     }
 
     /**
      * Creates a Cone Emitter for the particle system (emits from the cone to the particle position)
      * @param radius The radius of the cone to emit from
      * @param angle The base angle of the cone
+     * @returns the emitter
      */
     public createConeEmitter(radius = 1, angle = Math.PI / 4): ConeParticleEmitter {
-        throw new Error("Method not implemented.");
+        const particleEmitter = CreateConeEmitter(radius, angle);
+        this.particleEmitterType = particleEmitter;
+        return particleEmitter;
     }
 
     /**
-     * Creates a Cone Emitter for the particle system (emits from the cone to the particle position)
+     * Creates a Directed Cone Emitter for the particle system (emits between direction1 and direction2)
      * @param radius The radius of the cone to emit from
      * @param angle The base angle of the cone
      * @param direction1 Particles are emitted between the direction1 and direction2 from within the cone
      * @param direction2 Particles are emitted between the direction1 and direction2 from within the cone
+     * @returns the emitter
      */
     public createDirectedConeEmitter(radius = 1, angle = Math.PI / 4, direction1 = new Vector3(0, 1.0, 0), direction2 = new Vector3(0, 1.0, 0)): ConeDirectedParticleEmitter {
-        throw new Error("Method not implemented.");
+        const particleEmitter = CreateDirectedConeEmitter(radius, angle, direction1, direction2);
+        this.particleEmitterType = particleEmitter;
+        return particleEmitter;
     }
 
     /**
-     * Creates a Box Emitter for the particle system. (emits between direction1 and direction2 from withing the box defined by minEmitBox and maxEmitBox)
+     * Creates a Box Emitter for the particle system. (emits between direction1 and direction2 from within the box defined by minEmitBox and maxEmitBox)
      * @param direction1 Particles are emitted between the direction1 and direction2 from within the box
      * @param direction2 Particles are emitted between the direction1 and direction2 from within the box
      * @param minEmitBox Particles are emitted from the box between minEmitBox and maxEmitBox
      * @param maxEmitBox  Particles are emitted from the box between minEmitBox and maxEmitBox
+     * @returns the emitter
      */
     public createBoxEmitter(direction1: Vector3, direction2: Vector3, minEmitBox: Vector3, maxEmitBox: Vector3): BoxParticleEmitter {
-        throw new Error("Method not implemented.");
+        const particleEmitter = CreateBoxEmitter();
+        this.particleEmitterType = particleEmitter;
+        this.direction1 = direction1;
+        this.direction2 = direction2;
+        this.minEmitBox = minEmitBox;
+        this.maxEmitBox = maxEmitBox;
+        return particleEmitter;
+    }
+
+    /**
+     * Creates a Mesh Emitter for the particle system (emits from the surface of a mesh)
+     * @param mesh The mesh to use as the emitter source
+     * @returns the emitter
+     */
+    public createMeshEmitter(mesh: Nullable<AbstractMesh> = null): MeshParticleEmitter {
+        const particleEmitter = CreateMeshEmitter(mesh);
+        this.particleEmitterType = particleEmitter;
+        return particleEmitter;
     }
 }
 

@@ -2,15 +2,15 @@ import { FrameGraphUtils } from "core/FrameGraph/frameGraphUtils";
 import { CreateScreenshotUsingRenderTargetAsync } from "core/Misc/screenshotTools";
 import { type ServiceDefinition } from "shared-ui-components/modularTool/modularity/serviceDefinition";
 import { type ISceneContext, SceneContextIdentity } from "../sceneContext";
-import { type IInspectableCommandRegistry, InspectableCommandRegistryIdentity } from "./inspectableCommandRegistry";
+import { type IBridgeCommandRegistry, BridgeCommandRegistryIdentity } from "shared-ui-components/modularTool/services/cli/bridgeCommandRegistry";
 
 /**
  * Service that registers a CLI command for capturing a screenshot of the scene.
  * Returns the image as a base64 data string, suitable for consumption by AI agents.
  */
-export const ScreenshotCommandServiceDefinition: ServiceDefinition<[], [IInspectableCommandRegistry, ISceneContext]> = {
+export const ScreenshotCommandServiceDefinition: ServiceDefinition<[], [IBridgeCommandRegistry, ISceneContext]> = {
     friendlyName: "Screenshot Command Service",
-    consumes: [InspectableCommandRegistryIdentity, SceneContextIdentity],
+    consumes: [BridgeCommandRegistryIdentity, SceneContextIdentity],
     factory: (commandRegistry, sceneContext) => {
         const registration = commandRegistry.addCommand({
             id: "take-screenshot",

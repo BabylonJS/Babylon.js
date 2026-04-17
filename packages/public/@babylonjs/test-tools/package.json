@@ -1,7 +1,7 @@
 {
     "name": "@babylonjs/test-tools",
     "private": true,
-    "version": "9.2.1",
+    "version": "9.3.1",
     "main": "dist/index.js",
     "module": "dist/index.js",
     "types": "dist/index.d.ts",

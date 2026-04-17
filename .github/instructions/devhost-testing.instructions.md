@@ -30,7 +30,7 @@ Prefer `createScene.ts` for AI-authored validation apps.
 
 ## Reusing running processes
 
-Before starting devhost, check whether port `1338` is already in use — see the port table and check command in [manual-testing.instructions.md](manual-testing.instructions.md). Port `1338` is shared with the Playground, so verify the running process is actually devhost before reusing it.
+Before starting devhost, check whether port `1338` is already in use — see [local-servers.md](local-servers.md). Port `1338` is shared with the Playground, so verify the running process is actually devhost before reusing it.
 
 ## Starting devhost
 

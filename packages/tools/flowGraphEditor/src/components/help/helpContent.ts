@@ -20,7 +20,8 @@ export type HelpTopicId =
     | "how-to-use"
     | "variables"
     | "gltf-import-export"
-    | "composite-templates";
+    | "composite-templates"
+    | "execution-contexts";
 
 /**
  * A single help topic section (sub-heading within a topic).
@@ -485,6 +486,26 @@ export const HelpTopics: IHelpTopic[] = [
 <li><strong>glTF Interactivity</strong> — Get → Set Property, Get → Set Variable</li>
 </ul>
 <p>After dropping a template, each block can be configured individually in the property panel.</p>`,
+            },
+        ],
+    },
+    {
+        id: "execution-contexts",
+        title: "Execution Contexts",
+        sections: [
+            {
+                html: `<p>A flow graph can run with multiple <b>execution contexts</b>, each representing an independent execution of the same graph logic with its own variable state.</p>
+<p>The <b>Ctx</b> dropdown in the toolbar shows all contexts. By default, one context ("Context 0") is created when the graph starts.</p>`,
+            },
+            {
+                heading: "Managing Contexts",
+                html: `<ul>
+<li><b>Ctx dropdown</b> — select which context is active for debug/variables</li>
+<li><b>+</b> — create a new context with independent variable state</li>
+<li><b>−</b> — remove the selected context (disabled when only one remains)</li>
+<li><b>✎</b> — rename the selected context</li>
+</ul>
+<p>Switching contexts updates the debug highlighting, breakpoints, and Variables panel to reflect the selected context's state.</p>`,
             },
         ],
     },

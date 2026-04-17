@@ -717,6 +717,7 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
      * Reads the pixels stored in the webgl texture and returns them as an ArrayBuffer.
      * This will returns an RGBA array buffer containing either in values (0-255) or
      * float values (0-1) depending of the underlying buffer type.
+     * Note that you can use {@link GetTextureDataAsync} instead, which will also support reading from a compressed texture (by rendering it to an intermediate RGBA texture and retrieving the bytes from it).
      * @param faceIndex defines the face of the texture to read (in case of cube texture)
      * @param level defines the LOD level of the texture to read (in case of Mip Maps)
      * @param buffer defines a user defined buffer to fill with data (can be null)

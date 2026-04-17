@@ -13,6 +13,7 @@ import {
     type CylinderDirectedParticleEmitter,
     type ConeParticleEmitter,
     type ConeDirectedParticleEmitter,
+    type MeshParticleEmitter,
 } from "../Particles/EmitterTypes/index";
 import { type Scene } from "../scene";
 import { type ColorGradient, type FactorGradient, type Color3Gradient } from "../Misc/gradients";
@@ -760,6 +761,13 @@ export interface IParticleSystem {
      * @returns the emitter
      */
     createBoxEmitter(direction1: Vector3, direction2: Vector3, minEmitBox: Vector3, maxEmitBox: Vector3): BoxParticleEmitter;
+
+    /**
+     * Creates a Mesh Emitter for the particle system (emits from the surface of a mesh)
+     * @param mesh The mesh to use as the emitter source
+     * @returns the emitter
+     */
+    createMeshEmitter(mesh: Nullable<AbstractMesh>): MeshParticleEmitter;
 
     /**
      * Get hosting scene

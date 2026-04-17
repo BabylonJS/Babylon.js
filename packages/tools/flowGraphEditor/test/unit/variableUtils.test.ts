@@ -3,7 +3,27 @@ import { type Engine, NullEngine } from "core/Engines";
 import { type FlowGraph, type FlowGraphContext, FlowGraphCoordinator, FlowGraphGetVariableBlock } from "core/FlowGraph";
 import { FlowGraphSetVariableBlock } from "core/FlowGraph/Blocks/Execution/flowGraphSetVariableBlock";
 import { Scene } from "core/scene";
-import { GatherVariables, GatherVariableNames, RenameVariable, DeleteVariable, FormatVariableValue, FilterSuggestions, type IVariableEntry } from "flow-graph-editor/variableUtils";
+import { Vector2, Vector3 } from "core/Maths/math.vector";
+import { Color3, Color4 } from "core/Maths/math.color";
+import {
+    GatherVariables,
+    GatherVariableNames,
+    RenameVariable,
+    DeleteVariable,
+    FormatVariableValue,
+    FilterSuggestions,
+    ParseVariableValue,
+    IsSceneObjectType,
+    IsVectorOrColorType,
+    GetComponentCount,
+    GetComponentLabels,
+    GetComponents,
+    BuildFromComponents,
+    GetDefaultValueForType,
+    InferVariableType,
+    type IVariableEntry,
+    type VariableTypeName,
+} from "flow-graph-editor/variableUtils";
 import { CONSTRUCTOR_CONFIG } from "flow-graph-editor/graphSystem/properties/constructorConfigRegistry";
 
 describe("Flow Graph Variable Utils", () => {
@@ -476,6 +496,275 @@ describe("Flow Graph Variable Utils", () => {
 
             const result = GatherVariables(flowGraph);
             expect(result.map((v) => v.name)).not.toContain("toGo");
+        });
+    });
+
+    // --------------------------------------------------------
+    // ParseVariableValue
+    // --------------------------------------------------------
+    describe("ParseVariableValue", () => {
+        it("parses boolean true", () => {
+            expect(ParseVariableValue("true", false)).toBe(true);
+        });
+
+        it("parses boolean false", () => {
+            expect(ParseVariableValue("false", true)).toBe(false);
+        });
+
+        it("parses null", () => {
+            expect(ParseVariableValue("null", "anything")).toBe(null);
+        });
+
+        it("parses undefined", () => {
+            expect(ParseVariableValue("undefined", 42)).toBe(undefined);
+        });
+
+        it("parses number when current value is number", () => {
+            expect(ParseVariableValue("42.5", 10)).toBe(42.5);
+        });
+
+        it("parses number when current value is undefined", () => {
+            expect(ParseVariableValue("7", undefined)).toBe(7);
+        });
+
+        it("returns string when number parse fails and current is number", () => {
+            expect(ParseVariableValue("hello", 10)).toBe("hello");
+        });
+
+        it("parses JSON object", () => {
+            expect(ParseVariableValue('{"a":1}', "x")).toEqual({ a: 1 });
+        });
+
+        it("parses JSON array", () => {
+            expect(ParseVariableValue("[1,2,3]", "x")).toEqual([1, 2, 3]);
+        });
+
+        it("returns string for invalid JSON starting with {", () => {
+            expect(ParseVariableValue("{bad", "x")).toBe("{bad");
+        });
+
+        it("returns plain string for regular text", () => {
+            expect(ParseVariableValue("hello world", "prev")).toBe("hello world");
+        });
+
+        it("trims whitespace", () => {
+            expect(ParseVariableValue("  42  ", 0)).toBe(42);
+        });
+
+        it("handles negative numbers", () => {
+            expect(ParseVariableValue("-3.14", 0)).toBe(-3.14);
+        });
+    });
+
+    // -------------------------------------------------------
+    // Type system helpers
+    // -------------------------------------------------------
+
+    describe("IsSceneObjectType", () => {
+        it("returns true for scene object types", () => {
+            const sceneTypes: VariableTypeName[] = ["Mesh", "TransformNode", "Camera", "Light", "Material", "AnimationGroup"];
+            for (const t of sceneTypes) {
+                expect(IsSceneObjectType(t)).toBe(true);
+            }
+        });
+
+        it("returns false for non-scene types", () => {
+            const nonScene: VariableTypeName[] = ["any", "string", "number", "boolean", "FlowGraphInteger", "Vector2", "Vector3", "Vector4", "Color3", "Color4"];
+            for (const t of nonScene) {
+                expect(IsSceneObjectType(t)).toBe(false);
+            }
+        });
+    });
+
+    describe("IsVectorOrColorType", () => {
+        it("returns true for vector and color types", () => {
+            const vecColor: VariableTypeName[] = ["Vector2", "Vector3", "Vector4", "Color3", "Color4"];
+            for (const t of vecColor) {
+                expect(IsVectorOrColorType(t)).toBe(true);
+            }
+        });
+
+        it("returns false for non-vector types", () => {
+            expect(IsVectorOrColorType("number")).toBe(false);
+            expect(IsVectorOrColorType("Mesh")).toBe(false);
+            expect(IsVectorOrColorType("any")).toBe(false);
+        });
+    });
+
+    describe("GetComponentCount", () => {
+        it("returns correct counts", () => {
+            expect(GetComponentCount("Vector2")).toBe(2);
+            expect(GetComponentCount("Vector3")).toBe(3);
+            expect(GetComponentCount("Vector4")).toBe(4);
+            expect(GetComponentCount("Color3")).toBe(3);
+            expect(GetComponentCount("Color4")).toBe(4);
+        });
+
+        it("returns 0 for non-vector types", () => {
+            expect(GetComponentCount("number")).toBe(0);
+            expect(GetComponentCount("Mesh")).toBe(0);
+        });
+    });
+
+    describe("GetComponentLabels", () => {
+        it("returns xyz labels for vectors", () => {
+            expect(GetComponentLabels("Vector2")).toEqual(["x", "y"]);
+            expect(GetComponentLabels("Vector3")).toEqual(["x", "y", "z"]);
+            expect(GetComponentLabels("Vector4")).toEqual(["x", "y", "z", "w"]);
+        });
+
+        it("returns rgba labels for colors", () => {
+            expect(GetComponentLabels("Color3")).toEqual(["r", "g", "b"]);
+            expect(GetComponentLabels("Color4")).toEqual(["r", "g", "b", "a"]);
+        });
+
+        it("returns empty array for non-vector types", () => {
+            expect(GetComponentLabels("number")).toEqual([]);
+        });
+    });
+
+    describe("GetComponents", () => {
+        it("extracts components from a Vector3", () => {
+            const v = new Vector3(1, 2, 3);
+            expect(GetComponents(v, "Vector3")).toEqual([1, 2, 3]);
+        });
+
+        it("extracts components from a Color4", () => {
+            const c = new Color4(0.1, 0.2, 0.3, 0.4);
+            expect(GetComponents(c, "Color4")).toEqual([0.1, 0.2, 0.3, 0.4]);
+        });
+
+        it("returns zeros for null value", () => {
+            expect(GetComponents(null, "Vector3")).toEqual([0, 0, 0]);
+        });
+
+        it("returns zeros for non-object value", () => {
+            expect(GetComponents(42, "Vector2")).toEqual([0, 0]);
+        });
+
+        it("returns empty array for non-vector type", () => {
+            expect(GetComponents({}, "number")).toEqual([]);
+        });
+    });
+
+    describe("BuildFromComponents", () => {
+        it("builds a Vector2", () => {
+            const v = BuildFromComponents([3, 4], "Vector2") as Vector2;
+            expect(v.x).toBe(3);
+            expect(v.y).toBe(4);
+        });
+
+        it("builds a Vector3", () => {
+            const v = BuildFromComponents([1, 2, 3], "Vector3") as Vector3;
+            expect(v.x).toBe(1);
+            expect(v.y).toBe(2);
+            expect(v.z).toBe(3);
+        });
+
+        it("builds a Color3", () => {
+            const c = BuildFromComponents([0.5, 0.6, 0.7], "Color3") as Color3;
+            expect(c.r).toBe(0.5);
+            expect(c.g).toBe(0.6);
+            expect(c.b).toBe(0.7);
+        });
+
+        it("builds a Color4", () => {
+            const c = BuildFromComponents([0.1, 0.2, 0.3, 1], "Color4") as Color4;
+            expect(c.r).toBe(0.1);
+            expect(c.g).toBe(0.2);
+            expect(c.b).toBe(0.3);
+            expect(c.a).toBe(1);
+        });
+
+        it("returns undefined for non-vector type", () => {
+            expect(BuildFromComponents([1], "number")).toBeUndefined();
+        });
+    });
+
+    describe("GetDefaultValueForType", () => {
+        it("returns 0 for number", () => {
+            expect(GetDefaultValueForType("number")).toBe(0);
+        });
+
+        it("returns empty string for string", () => {
+            expect(GetDefaultValueForType("string")).toBe("");
+        });
+
+        it("returns false for boolean", () => {
+            expect(GetDefaultValueForType("boolean")).toBe(false);
+        });
+
+        it("returns a FlowGraphInteger for FlowGraphInteger", () => {
+            const val = GetDefaultValueForType("FlowGraphInteger") as { value: number; getClassName: () => string };
+            expect(val.getClassName()).toBe("FlowGraphInteger");
+            expect(val.value).toBe(0);
+        });
+
+        it("returns Vector3.Zero for Vector3", () => {
+            const v = GetDefaultValueForType("Vector3") as Vector3;
+            expect(v.x).toBe(0);
+            expect(v.y).toBe(0);
+            expect(v.z).toBe(0);
+        });
+
+        it("returns Color3.Black for Color3", () => {
+            const c = GetDefaultValueForType("Color3") as Color3;
+            expect(c.r).toBe(0);
+            expect(c.g).toBe(0);
+            expect(c.b).toBe(0);
+        });
+
+        it("returns Color4(0,0,0,1) for Color4", () => {
+            const c = GetDefaultValueForType("Color4") as Color4;
+            expect(c.r).toBe(0);
+            expect(c.g).toBe(0);
+            expect(c.b).toBe(0);
+            expect(c.a).toBe(1);
+        });
+
+        it("returns undefined for scene object types", () => {
+            expect(GetDefaultValueForType("Mesh")).toBeUndefined();
+            expect(GetDefaultValueForType("Camera")).toBeUndefined();
+        });
+
+        it("returns undefined for any", () => {
+            expect(GetDefaultValueForType("any")).toBeUndefined();
+        });
+    });
+
+    describe("InferVariableType", () => {
+        it("infers string", () => {
+            expect(InferVariableType("hello")).toBe("string");
+        });
+
+        it("infers number", () => {
+            expect(InferVariableType(42)).toBe("number");
+        });
+
+        it("infers boolean", () => {
+            expect(InferVariableType(true)).toBe("boolean");
+        });
+
+        it("returns any for null/undefined", () => {
+            expect(InferVariableType(null)).toBe("any");
+            expect(InferVariableType(undefined)).toBe("any");
+        });
+
+        it("infers Vector3 from object with getClassName", () => {
+            expect(InferVariableType(new Vector3(1, 2, 3))).toBe("Vector3");
+        });
+
+        it("infers Color3 from object with getClassName", () => {
+            expect(InferVariableType(new Color3(1, 0, 0))).toBe("Color3");
+        });
+
+        it("returns any for unknown objects", () => {
+            expect(InferVariableType({ foo: "bar" })).toBe("any");
+        });
+
+        it("returns any for objects with unrecognized className", () => {
+            const obj = { getClassName: () => "SomeUnknownType" };
+            expect(InferVariableType(obj)).toBe("any");
         });
     });
 });

@@ -48,6 +48,48 @@
             "referenceImage": "gsplat-spz-sh.png"
         },
         {
+            "title": "Gaussian Splatting SPZ SH No WASM",
+            "playgroundId": "##XSNFXP#12",
+            "renderCount": 15,
+            "referenceImage": "gsplat-spz-sh.png"
+        },
+        {
+            "title": "Gaussian Splatting SPZ Extensions",
+            "playgroundId": "#XSNFXP#8",
+            "renderCount": 15,
+            "referenceImage": "gsplat-spz-extensions.png"
+        },
+        {
+            "title": "Gaussian Splatting SPZ SH Order 4",
+            "playgroundId": "#XSNFXP#5",
+            "renderCount": 15,
+            "referenceImage": "gsplat-spz-sh-order-4.png"
+        },
+        {
+            "title": "Gaussian Splatting SPZ SH Order 4 No WASM",
+            "playgroundId": "#XSNFXP#13",
+            "renderCount": 15,
+            "referenceImage": "gsplat-spz-sh-order-4.png"
+        },
+        {
+            "title": "Gaussian Splatting SPZ Detailed Splat",
+            "playgroundId": "#XSNFXP#6",
+            "renderCount": 15,
+            "referenceImage": "gsplat-spz-detailed-splat.png"
+        },
+        {
+            "title": "Gaussian Splatting SPZ Detailed Splat No WASM",
+            "playgroundId": "#XSNFXP#14",
+            "renderCount": 15,
+            "referenceImage": "gsplat-spz-detailed-splat.png"
+        },
+        {
+            "title": "Gaussian Splatting PLY SH Order 4",
+            "playgroundId": "#XSNFXP#7",
+            "renderCount": 15,
+            "referenceImage": "gsplat-ply-sh-order-4.png"
+        },
+        {
             "title": "Gaussian Splatting Update Data",
             "playgroundId": "#Q0LBM8#2",
             "renderCount": 15,
@@ -64,6 +106,12 @@
             "playgroundId": "#OE54M5#16",
             "renderCount": 15,
             "referenceImage": "gsplat-shadows.png"
+        },
+        {
+            "title": "Gaussian Splatting IBL Shadows",
+            "playgroundId": "#DAID4Q",
+            "renderCount": 15,
+            "referenceImage": "gsplat-ibl-shadows.png"
         },
         {
             "title": "NPE - Angle align",
@@ -2461,8 +2509,7 @@
         },
         {
             "title": "dissolve-effect-with-node-material-and-glow-layer",
-            "renderCount": 2,
-            "playgroundId": "#F6PGMC#12"
+            "playgroundId": "#F6PGMC#16"
         },
         {
             "title": "cascaded-shadow-maps-and-flying-saucers",
@@ -3961,6 +4008,11 @@
             "playgroundId": "#8I487I#0"
         },
         {
+            "title": "Selection outline layer instance selected with LOD",
+            "playgroundId": "#M4HHTC#0",
+            "referenceImage": "selectionOutlineInstanceLOD.png"
+        },
+        {
             "title": "Vertex Pulling - Normals UVs Colors Tangents",
             "playgroundId": "#664OF3#6",
             "referenceImage": "vertexPullingNormalsUVsColors.png",
@@ -4241,6 +4293,13 @@
             "title": "GPU Particles - Emitters - Directed Cone",
             "playgroundId": "#GSYICK#0",
             "referenceImage": "gpu-particles-emitters-directed-cone.png",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "GPU Particles - Emitters - Mesh",
+            "playgroundId": "#7XBJVF#0",
+            "referenceImage": "gpu-particles-emitters-mesh.png",
+            "renderCount": 120,
             "excludedEngines": ["webgl1"]
         },
         {

@@ -33,17 +33,15 @@ type ExtractContractIdentities<ServiceContracts extends IService<symbol>[]> = {
 // This is specifically used to determine the type that a service factory function returns when it produces multiple services.
 type UnionToIntersection<Union> = (Union extends any ? (k: Union) => void : never) extends (k: infer Intersection) => void ? Intersection : never;
 
-type MaybePromise<T> = T | Promise<T>;
-
 /**
  * A factory function responsible for creating a service instance.
  * Consumed services are passed as arguments to the factory function.
- * The returned value must implement all produced services, and may IDisposable.
- * If not services are produced, the returned value may implement IDisposable, otherwise it may return void.
+ * The returned value must implement all produced services, and may implement IDisposable.
+ * If no services are produced, the returned value may implement IDisposable, otherwise it may return void.
  */
 export type ServiceFactory<Produces extends IService<symbol>[], Consumes extends IService<symbol>[]> = (
-    ...dependencies: [...Consumes, abortSignal?: AbortSignal]
-) => MaybePromise<Produces extends [] ? Partial<IDisposable> | void : Partial<IDisposable> & UnionToIntersection<Produces[number]>>;
+    ...dependencies: [...Consumes]
+) => Produces extends [] ? Partial<IDisposable> | void : Partial<IDisposable> & UnionToIntersection<Produces[number]>;
 
 /**
  * Defines a service, which is a logical unit that consumes other services (dependencies), and optionally produces services that can be consumed by other services (dependents).
