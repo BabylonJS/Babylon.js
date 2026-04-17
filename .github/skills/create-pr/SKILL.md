@@ -254,18 +254,30 @@ Use `<push-remote>`, `<upstream-remote>`, and `<base-branch>` from 0a.
    `git remote get-url <upstream-remote>` → parse `owner/repo`). For this
    repo that is `BabylonJS/Babylon.js`.
 
-4. Create the draft PR:
+4. Create the draft PR. Write the title and body to temp files first
+   so shell escaping doesn't mangle backticks, `$`, `!`, or backslashes
+   in the markdown, then pass them with `--title-file` / `--body-file`:
+
     ```bash
+    # Write files (exact markdown, no escaping needed)
+    # ... create pr-title.txt and pr-body.md ...
+
     gh pr create \
       --repo "<upstream-owner>/<upstream-repo>" \
       --head "<user>:<branch>" \
       --base "<base-branch>" \
-      --title "<title>" \
-      --body "<body>" \
+      --title "$(cat pr-title.txt)" \
+      --body-file pr-body.md \
       --draft \
       --label "<label>" \
       --reviewer "<reviewer>"
+
+    rm pr-title.txt pr-body.md
     ```
+
+    > `gh pr create` does not accept `--title-file`, so a short
+    > single-line title via `$(cat ...)` is fine; the multi-line body
+    > must use `--body-file`.
 
 ## Step 3: Self code review
 
@@ -298,10 +310,23 @@ Use `<push-remote>`, `<upstream-remote>`, and `<base-branch>` from 0a.
 
 2. Add a PR comment. If code-review produced changes, link to the commit
    within the PR context:
+
     ```
     Self code review completed. Review fixes: https://github.com/<owner>/<repo>/pull/<pr-number>/changes/<commit-sha>
     ```
+
     If no changes: _"Self code review completed. No issues found."_
+
+    > ⚠️ Post the comment with `--body-file`, never with `--body`.
+    > Shells interpret backticks, `$`, `!`, and backslashes inside
+    > double-quoted strings, which mangles markdown code spans and
+    > special characters. Write the comment body to a temp file (e.g.
+    > `pr-comment.md`) exactly as it should appear, then:
+    >
+    > ```bash
+    > gh pr comment <pr-number> --repo "<upstream-owner>/<upstream-repo>" --body-file pr-comment.md
+    > rm pr-comment.md
+    > ```
 
 ## Step 5: Monitor the PR
 
