@@ -231,14 +231,6 @@ async function WithBridge(bridgeScript: string | undefined, fn: (socket: WebSock
 }
 
 /**
- * Resolves the session id to use. If an explicit id is provided, returns it.
- * If not, queries the bridge: returns the sole session's id when exactly one
- * is active, or errors if zero or multiple sessions are active.
- * @param socket The WebSocket connection to the bridge.
- * @param explicitId An optional explicit session id string.
- * @returns The resolved numeric session id.
- */
-/**
  * Parses and validates an explicit session id string against the list of active sessions.
  * @param explicitId The session id string to validate.
  * @param sessions The list of active sessions from the bridge.
