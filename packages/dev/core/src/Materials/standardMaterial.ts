@@ -58,6 +58,7 @@ import {
     PrepareUniformsAndSamplersForIBL,
     PrepareUniformsAndSamplersList,
     PrepareUniformLayoutForIBL,
+    AreLightsTexturesReady,
 } from "./materialHelper.functions";
 import { SerializationHelper } from "../Misc/decorators.serialization";
 import { ShaderLanguage } from "./shaderLanguage";
@@ -745,7 +746,7 @@ export class StandardMaterial extends StandardMaterialBase {
         // Lights
         defines._needNormals = PrepareDefinesForLights(scene, mesh, defines, true, this._maxSimultaneousLights, this._disableLighting);
 
-        if (defines._areLightTexturesReady === false) {
+        if (!AreLightsTexturesReady(scene, mesh, this._maxSimultaneousLights, this._disableLighting)) {
             return false;
         }
 

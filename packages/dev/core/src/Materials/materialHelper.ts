@@ -216,7 +216,6 @@ export class MaterialHelper {
      * @param state.shadowEnabled
      * @param state.specularEnabled
      * @param state.lightmapMode
-     * @param state.lightTexturesReady
      */
     public static PrepareDefinesForLight: (
         scene: Scene,
@@ -231,7 +230,6 @@ export class MaterialHelper {
             shadowEnabled: boolean;
             specularEnabled: boolean;
             lightmapMode: boolean;
-            lightTexturesReady: boolean;
         }
     ) => void = PrepareDefinesForLight;
 

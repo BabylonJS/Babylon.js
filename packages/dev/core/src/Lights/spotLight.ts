@@ -513,10 +513,10 @@ export class SpotLight extends ShadowLight {
 
     /** @override */
     public override areLightTexturesReady(): boolean {
-        if (this._projectionTexture && !this._projectionTexture.isReady()) {
+        if (this._projectionTexture && !this._projectionTexture.isReadyOrNotBlocking()) {
             return false;
         }
-        if (this._iesProfileTexture && !this._iesProfileTexture.isReady()) {
+        if (this._iesProfileTexture && !this._iesProfileTexture.isReadyOrNotBlocking()) {
             return false;
         }
         return true;

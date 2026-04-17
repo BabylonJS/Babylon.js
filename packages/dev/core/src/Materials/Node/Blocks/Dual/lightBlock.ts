@@ -243,7 +243,6 @@ export class LightBlock extends NodeMaterialBlock {
                 lightmapMode: false,
                 shadowEnabled: false,
                 specularEnabled: false,
-                lightTexturesReady: true,
             };
 
             PrepareDefinesForLight(scene, mesh, this.light, this._lightId, defines, true, state);
@@ -251,9 +250,21 @@ export class LightBlock extends NodeMaterialBlock {
             if (state.needRebuild) {
                 defines.rebuild();
             }
-
-            defines._areLightTexturesReady = state.lightTexturesReady;
         }
+    }
+
+    /**
+     * Checks if the block is ready
+     * @param mesh - the mesh to check
+     * @param nodeMaterial - the node material
+     * @param defines - the list of defines
+     * @returns true if ready
+     */
+    public override isReady(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
+        if (this.light && !this.light.areLightTexturesReady()) {
+            return false;
+        }
+        return true;
     }
 
     /**
@@ -404,6 +415,9 @@ export class LightBlock extends NodeMaterialBlock {
         const accessor = isWGSL ? "fragmentInputs." : "";
         state.sharedData.forcedBindableBlocks.push(this);
         state.sharedData.blocksWithDefines.push(this);
+        if (this.light) {
+            state.sharedData.blockingBlocks.push(this);
+        }
         const worldPos = this.worldPosition;
 
         let worldPosVariableName = worldPos.associatedVariableName;

@@ -62,7 +62,7 @@ import { type PrePassOutputBlock } from "./Blocks/Fragment/prePassOutputBlock";
 import { type NodeMaterialTeleportOutBlock } from "./Blocks/Teleport/teleportOutBlock";
 import { type NodeMaterialTeleportInBlock } from "./Blocks/Teleport/teleportInBlock";
 import { Logger } from "core/Misc/logger";
-import { PrepareDefinesForCamera, PrepareDefinesForPrePass } from "../materialHelper.functions";
+import { PrepareDefinesForCamera, PrepareDefinesForPrePass, AreLightsTexturesReady } from "../materialHelper.functions";
 import { ImageProcessingDefinesMixin } from "../imageProcessingConfiguration.defines";
 import { ShaderLanguage } from "../shaderLanguage";
 import { AbstractEngine } from "../../Engines/abstractEngine";
@@ -1663,11 +1663,11 @@ export class NodeMaterial extends NodeMaterialBase {
             return false;
         }
 
-        const result = this._processDefines(defines, mesh, useInstances, subMesh);
-
-        if (defines._areLightTexturesReady === false) {
+        if (!AreLightsTexturesReady(scene, mesh, this.maxSimultaneousLights)) {
             return false;
         }
+
+        const result = this._processDefines(defines, mesh, useInstances, subMesh);
 
         if (result) {
             const previousEffect = subMesh.effect;

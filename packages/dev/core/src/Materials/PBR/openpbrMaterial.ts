@@ -44,6 +44,7 @@ import {
     PrepareUniformsAndSamplersList,
     PrepareUniformsAndSamplersForIBL,
     PrepareUniformLayoutForIBL,
+    AreLightsTexturesReady,
 } from "../materialHelper.functions";
 import { Constants } from "../../Engines/constants";
 import { VertexBuffer } from "../../Buffers/buffer";
@@ -2237,13 +2238,13 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
             Logger.Warn("OpenPBRMaterial: Normals have been created for the mesh: " + mesh.name);
         }
 
+        if (!AreLightsTexturesReady(scene, mesh, this._maxSimultaneousLights, this._disableLighting)) {
+            return false;
+        }
+
         const previousEffect = subMesh.effect;
         const lightDisposed = defines._areLightsDisposed;
         const effect = this._prepareEffect(mesh, subMesh.getRenderingMesh(), defines, this.onCompiled, this.onError, useInstances, null);
-
-        if (defines._areLightTexturesReady === false) {
-            return false;
-        }
 
         let forceWasNotReadyPreviously = false;
 

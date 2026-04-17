@@ -45,6 +45,7 @@ import {
     PrepareUniformsAndSamplersList,
     PrepareUniformsAndSamplersForIBL,
     PrepareUniformLayoutForIBL,
+    AreLightsTexturesReady,
 } from "../materialHelper.functions";
 import { SerializationHelper } from "../../Misc/decorators.serialization";
 import { ShaderLanguage } from "../shaderLanguage";
@@ -606,7 +607,7 @@ export class BackgroundMaterial extends BackgroundMaterialBase {
         PrepareDefinesForLights(scene, mesh, defines, false, this._maxSimultaneousLights);
         defines._needNormals = true;
 
-        if (defines._areLightTexturesReady === false) {
+        if (!AreLightsTexturesReady(scene, mesh, this._maxSimultaneousLights)) {
             return false;
         }
 

@@ -66,6 +66,7 @@ import {
     PrepareUniformsAndSamplersList,
     PrepareUniformsAndSamplersForIBL,
     PrepareUniformLayoutForIBL,
+    AreLightsTexturesReady,
 } from "../materialHelper.functions";
 import { ShaderLanguage } from "../shaderLanguage";
 import { MaterialHelperGeometryRendering } from "../materialHelper.geometryrendering";
@@ -1190,13 +1191,13 @@ export abstract class PBRBaseMaterial extends PBRBaseMaterialBase {
             Logger.Warn("PBRMaterial: Normals have been created for the mesh: " + mesh.name);
         }
 
+        if (!AreLightsTexturesReady(scene, mesh, this._maxSimultaneousLights, this._disableLighting)) {
+            return false;
+        }
+
         const previousEffect = subMesh.effect;
         const lightDisposed = defines._areLightsDisposed;
         const effect = this._prepareEffect(mesh, subMesh.getRenderingMesh(), defines, this.onCompiled, this.onError, useInstances, null);
-
-        if (defines._areLightTexturesReady === false) {
-            return false;
-        }
 
         let forceWasNotReadyPreviously = false;
 

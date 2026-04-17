@@ -834,7 +834,6 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
                 lightmapMode: false,
                 shadowEnabled: false,
                 specularEnabled: false,
-                lightTexturesReady: true,
             };
 
             PrepareDefinesForLight(scene, mesh, this.light, this._lightId, defines, true, state);
@@ -842,8 +841,6 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
             if (state.needRebuild) {
                 defines.rebuild();
             }
-
-            defines._areLightTexturesReady = state.lightTexturesReady;
         }
     }
 
@@ -890,6 +887,10 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
             if (!nodeMaterial.imageProcessingConfiguration.isReady()) {
                 return false;
             }
+        }
+
+        if (this.light && !this.light.areLightTexturesReady()) {
+            return false;
         }
 
         return true;
