@@ -377,11 +377,7 @@ before pushing**, plus any tests relevant to the changed code (e.g.
 integration/visualization tests for rendering changes). Iterate until
 they pass — do not push broken code.
 
-**Automatic mode:** After validation passes, commit (new commit, never
-amend), push, respond to comments, resolve threads. The monitor picks
-up new checks automatically.
-
-**Interactive mode:**
+**Interactive mode** — gate on user approval first:
 
 1. Stage changes: `git add -A`
 2. **Do NOT commit, push, respond, or resolve yet.**
@@ -410,7 +406,32 @@ up new checks automatically.
     ```
     powershell -Command "Add-Type -AssemblyName System.Windows.Forms; [System.Windows.Forms.MessageBox]::Show('Fixes are staged and ready for review.', 'Fixes Ready', 'OK', 'Information')"
     ```
-5. Wait for user approval, then commit, push, respond, and resolve.
+5. Wait for user approval, then proceed with the Automatic mode steps
+   below.
+
+**Automatic mode:** Commit (new commit, never amend), push, respond to
+comments, resolve threads (see "Posting responses to review comments"
+below for how to reply correctly). The monitor picks up new checks
+automatically.
+
+### Posting responses to review comments
+
+When responding (in either mode), **post the response as a reply to the
+review comment, not a top-level PR comment.** Do **not** use
+`gh pr comment` — it creates an unlinked PR-level comment. Reply via
+REST, using the parent comment's `databaseId` from the same
+`reviewThreads` GraphQL query (each thread's
+`comments.nodes[0].databaseId`):
+
+```bash
+gh api -X POST \
+  "/repos/<owner>/<repo>/pulls/<pr-number>/comments/<parent-id>/replies" \
+  -F body=@reply.md
+rm reply.md
+```
+
+Then resolve the thread via the `resolveReviewThread` GraphQL mutation
+using the thread `id` from the same query.
 
 ### Exit conditions
 
