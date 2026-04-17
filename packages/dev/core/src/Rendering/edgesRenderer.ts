@@ -93,7 +93,7 @@ declare module "../Meshes/linesMesh" {
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 InstancedLinesMesh.prototype.enableEdgesRendering = function (epsilon = 0.95, checkVerticesInsteadOfIndices = false): InstancedLinesMesh {
-    LinesMesh.prototype.enableEdgesRendering.apply(this, arguments);
+    LinesMesh.prototype.enableEdgesRendering.apply(this, [epsilon, checkVerticesInsteadOfIndices]);
     return this;
 };
 

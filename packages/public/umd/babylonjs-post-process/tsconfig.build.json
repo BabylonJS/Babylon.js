@@ -5,12 +5,14 @@
         "outDir": "./dist",
         "rootDir": "../../../",
         "target": "ES5",
+        "ignoreDeprecations": "6.0",
         "declaration": false,
         "importHelpers": true,
         "paths": {
-            "core/*": ["dev/core/dist/*"],
-            "post-processes/*": ["dev/postProcesses/src/*"]
+            "core/*": ["../../../dev/core/dist/*"],
+            "post-processes/*": ["../../../dev/postProcesses/src/*"],
+            "@lts/post-processes/*": ["../../../lts/postProcesses/src/*"]
         }
     },
-    "include": ["./src/**/*", "../../../dev/postProcesses/src/**/*"]
+    "include": ["./src/**/*", "../../../dev/postProcesses/src/**/*", "../../../lts/postProcesses/src/**/*"]
 }

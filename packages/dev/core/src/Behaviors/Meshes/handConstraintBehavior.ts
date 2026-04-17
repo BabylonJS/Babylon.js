@@ -202,7 +202,15 @@ export class HandConstraintBehavior implements Behavior<TransformNode> {
                 Vector3.CrossToRef(up, forward, forward);
                 Vector3.CrossToRef(forward, up, left);
 
-                Quaternion.FromLookDirectionLHToRef(forward, up, handPose.quaternion);
+                if (this.handedness === "right") {
+                    forward.negateInPlace();
+                }
+
+                if (this._scene.useRightHandedSystem) {
+                    Quaternion.FromLookDirectionRHToRef(forward, up, handPose.quaternion);
+                } else {
+                    Quaternion.FromLookDirectionLHToRef(forward, up, handPose.quaternion);
+                }
 
                 return handPose;
             }

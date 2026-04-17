@@ -223,6 +223,20 @@ export class HistoryStack implements IDisposable {
     }
 
     /**
+     * Whether an undo operation is available
+     */
+    public get canUndo(): boolean {
+        return this._historyStack.length > 0;
+    }
+
+    /**
+     * Whether a redo operation is available
+     */
+    public get canRedo(): boolean {
+        return this._redoStack.length > 0;
+    }
+
+    /**
      * Undo the latest operation
      */
     public undo() {

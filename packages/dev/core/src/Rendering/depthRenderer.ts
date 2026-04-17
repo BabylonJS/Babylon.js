@@ -200,6 +200,14 @@ export class DepthRenderer {
             if ((preWarm || refreshRate === 0) && mesh.subMeshes) {
                 for (let i = 0; i < mesh.subMeshes.length; ++i) {
                     const subMesh = mesh.subMeshes[i];
+                    const material = subMesh.getMaterial();
+                    const effectiveMesh = subMesh.getEffectiveMesh();
+
+                    // Skip submeshes that won't be rendered by the depth renderer (mirroring renderSubMesh logic)
+                    if (!material || effectiveMesh.infiniteDistance || material.disableDepthWrite || subMesh.verticesCount === 0) {
+                        continue;
+                    }
+
                     const renderingMesh = subMesh.getRenderingMesh();
 
                     const batch = renderingMesh._getInstancesRenderList(subMesh._id, !!subMesh.getReplacementMesh());
@@ -260,7 +268,8 @@ export class DepthRenderer {
                 subMesh._renderId = scene.getRenderId();
 
                 let renderingMaterial = effectiveMesh._internalAbstractMeshDataInfo._materialForRenderPass?.[engine.currentRenderPassId];
-                if (effectiveMesh.getClassName() === "GaussianSplattingMesh") {
+                const gsClassName = effectiveMesh.getClassName();
+                if (gsClassName === "GaussianSplattingMesh") {
                     const cachedAlphaBlendedDepth = this._alphaBlendedDepthMaterialCache.get(effectiveMesh.uniqueId);
                     const compoundMesh = (effectiveMesh as GaussianSplattingMesh).isCompound;
                     // Recreate material if it doesn't exist or if alphaBlendedDepth changed

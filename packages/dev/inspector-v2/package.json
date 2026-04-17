@@ -14,7 +14,8 @@
         "serve": "webpack serve --mode development",
         "watch": "tsc -b tsconfig.build.json -w",
         "watch:dev": "npm run watch",
-        "makeAvatar": "node scripts/makeAvatar.mjs"
+        "makeAvatar": "node scripts/makeAvatar.mjs",
+        "babylon-inspector": "node --no-warnings dist/cli/cli.js --bridge-script dist/cli/bridge.js"
     },
     "devDependencies": {
         "@dev/addons": "1.0.0",

@@ -14,4 +14,6 @@ export type AnimationInput = {
     variables: Nullable<Map<string, string>>;
     /** Configuration options for the animation */
     configuration: Nullable<Partial<AnimationConfiguration>>;
+    /** Callback invoked after the first frame of the animation has been rendered. Not serialized to workers. */
+    onFirstRender?: () => void;
 };

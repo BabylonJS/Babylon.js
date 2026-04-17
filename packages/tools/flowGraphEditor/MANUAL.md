@@ -10,7 +10,24 @@ The Flow Graph Editor is a visual tool for building, debugging, and testing Baby
 
 ## Getting Started
 
-### Loading a Scene
+### Default Scene
+
+When the editor opens without a Playground snippet, a **default scene** is automatically created with:
+
+- An **ArcRotateCamera** (orbit camera with mouse controls)
+- A **HemisphericLight**
+- A **ground plane** (8×8)
+- Three primitive meshes: a **box** (blue), a **sphere** (red), and a **cylinder** (green)
+
+This lets you start building and testing flow graph logic immediately. The default scene is replaced when you load a Playground snippet or drop a scene file.
+
+### Loading a Scene from File
+
+You can drag and drop a `.glb`, `.gltf`, or `.babylon` file onto the **Scene Preview** pane to load it as the test scene. For `.gltf` files that reference separate `.bin` or texture files, drop all files together.
+
+The loaded scene replaces the current scene (default or snippet) and populates the scene context with all objects found in the file.
+
+### Loading a Playground Snippet
 
 The editor can load a Babylon.js Playground snippet as a live scene to test your flow graph against.
 
@@ -27,17 +44,89 @@ The loaded scene's objects (meshes, lights, cameras, etc.) become available as r
 - **Load from file** — Import a previously saved JSON file.
 - **Load from snippet** — Enter a snippet ID to restore a graph (and its associated scene, if any).
 
+### How to Use (Embed Code)
+
+Click the **&lt;/&gt;** button in the toolbar to open the **How to Use** dialog. It shows copy-to-clipboard code samples for integrating your flow graph into a project:
+
+- **From snippet server** — Fetch the snippet JSON from `https://snippet.babylonjs.com/<snippetId>`, parse the payload, then call `ParseFlowGraphAsync(data, { coordinator })` from `@babylonjs/core/FlowGraph/flowGraphParser`.
+- **From JSON file** — Load the saved `.json` file and call `ParseFlowGraphAsync(data, { coordinator })` from `@babylonjs/core/FlowGraph/flowGraphParser`.
+
+Each code sample includes the necessary import statements and is ready to paste into your project.
+
+---
+
+## Variables Panel
+
+The **Variables** section in the property panel (right sidebar, when no block is selected) lists all variables referenced by `GetVariable` and `SetVariable` blocks in the graph.
+
+### Viewing Variables
+
+Each variable row shows:
+
+- The **variable name**
+- A reference count (`2G / 1S` means 2 GetVariable blocks and 1 SetVariable block reference it)
+
+### Adding Variables
+
+Click **+ Add** to create a new variable with an auto-generated name. The variable is registered on context 0 with an undefined default value.
+
+### Renaming Variables
+
+Double-click a variable name to edit it. Press **Enter** to confirm or **Escape** to cancel. Renaming propagates to all `GetVariable` and `SetVariable` blocks that reference the old name, and also updates the variable in all execution contexts.
+
+### Deleting Variables
+
+Click the **✕** button on a variable row to delete it. This removes all `GetVariable` and `SetVariable` blocks that reference the variable, and removes the variable from all execution contexts.
+
+### glTF Import / Export
+
+**Importing a glTF with an interactive flow graph:**
+
+- Drag-and-drop a `.glb` or `.gltf` file onto the scene preview pane.
+- If the file contains a **KHR_interactivity** extension, the flow graph is automatically loaded into the editor.
+- If the file contains a **BABYLON_flow_graph** custom extension (created by this editor's export), the flow graph is restored as well.
+- The scene from the file is loaded as the preview scene so block references to meshes, cameras, and lights can be resolved.
+
+**Loading a glTF graph without a scene:**
+
+- Use the **Load glTF** button in the FILE section of the property panel.
+- This reads only the **BABYLON_flow_graph** extension from a `.glb`/`.gltf` file (no scene is loaded).
+
+**Exporting:**
+
+- Click **Export glTF (.glb)** in the FILE section of the property panel.
+- If a preview scene is loaded and the serializers package is available, the scene and flow graph are exported together.
+- Otherwise, a minimal `.glb` containing only the flow graph data is created.
+- The exported file uses the **BABYLON_flow_graph** custom extension and can be re-imported into this editor.
+
+### Composite Templates
+
+The palette contains a **Templates** section with pre-built multi-block patterns:
+
+- **Common Patterns** — Click → Log, Timer Loop, Toggle Boolean, Branch on Condition, Sequence Chain, Delayed Action, Pointer Interaction
+- **Animation Patterns** — Lerp Animation (tick-driven interpolation)
+- **Communication** — Custom Event Bridge (send + receive pair)
+- **glTF Interactivity** — Get → Set Property, Get → Set Variable
+
+Drag a template from the palette onto the canvas. All blocks are created and internally wired automatically. You can then edit individual blocks (change targets, configure conditions, etc.).
+
 ---
 
 ## Graph Controls
 
-The toolbar at the top provides execution controls:
+The toolbar at the top provides editing and execution controls:
+
+### Undo / Redo
+
+The **Undo** (↩) and **Redo** (↪) buttons are at the left side of the toolbar. They are disabled when there is nothing to undo or redo. You can also use **Ctrl+Z** / **Cmd+Z** to undo and **Ctrl+Shift+Z** / **Cmd+Shift+Z** to redo.
+
+### Execution Controls
 
 | Button | Label     | Description                                                                                                                                                     |
 | ------ | --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| ▶     | **Start** | Starts executing the flow graph. Enabled when the graph is stopped or paused.                                                                                   |
-| ⏸     | **Pause** | Pauses execution. The graph can be resumed with Start.                                                                                                          |
-| ⏹     | **Stop**  | Stops execution and resets execution state.                                                                                                                     |
+| ▶      | **Start** | Starts executing the flow graph. Enabled when the graph is stopped or paused.                                                                                   |
+| ⏸      | **Pause** | Pauses execution. The graph can be resumed with Start.                                                                                                          |
+| ⏹      | **Stop**  | Stops execution and resets execution state.                                                                                                                     |
 | ↺      | **Reset** | Stops execution and reloads the scene from its snippet (if one was loaded). If the reload fails, an error is logged and the graph returns to the Stopped state. |
 
 The **state indicator** next to the controls shows the current graph state: `Stopped`, `Running`, `Paused`, or `Breakpoint`.
@@ -55,6 +144,23 @@ The **Speed** buttons in the toolbar let you slow down or speed up scene executi
 | **2×**    | Double speed — fast forward                                                      |
 
 The time scale affects **everything**: scene animations, FlowGraph delta time, interpolation blocks, async waits, and timer-based logic. The active speed button is highlighted in orange. The selected speed persists when the scene is reloaded via Reset.
+
+### Execution Contexts
+
+A `FlowGraph` can have multiple **execution contexts**, each representing an independent execution of the same graph logic with its own variable state. This enables patterns like running the same "click to animate" behavior on 10 different meshes, each with its own score, health, or animation state.
+
+The **Ctx** dropdown in the toolbar shows all execution contexts. By default, there is one context ("Context 0") created when the graph starts.
+
+| Control          | Description                                                                                                             |
+| ---------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| **Ctx dropdown** | Select which context is active — debug highlighting, breakpoints, and the Variables panel reflect the selected context. |
+| **+**            | Create a new execution context. Each new context starts with independent variable state.                                |
+| **−**            | Remove the selected context. Disabled when only one context remains.                                                    |
+| **✎**            | Rename the selected context. Press Enter to confirm, Escape to cancel.                                                  |
+
+**Per-context variables:** Each context maintains its own set of user variables. When you switch contexts, the Variables panel shows the values for the selected context. Adding a variable via the Variables panel sets it on the currently selected context.
+
+**Serialization:** Context names and per-context variables are preserved when saving and loading flow graphs.
 
 ---
 
@@ -111,8 +217,8 @@ When execution reaches a block with a breakpoint, the graph pauses immediately *
 
 | Button | Label        | Description                                                                                             |
 | ------ | ------------ | ------------------------------------------------------------------------------------------------------- |
-| ▶▶   | **Continue** | Resumes normal execution from the breakpoint. The graph runs until the next breakpoint (or completion). |
-| ▶\|   | **Step**     | Executes only the current block, then pauses again at the next execution block.                         |
+| ▶▶     | **Continue** | Resumes normal execution from the breakpoint. The graph runs until the next breakpoint (or completion). |
+| ▶\|    | **Step**     | Executes only the current block, then pauses again at the next execution block.                         |
 
 ### Removing Breakpoints
 
@@ -190,7 +296,7 @@ If you release the mouse on an incompatible port, an error dialog explains the t
 | ------------------------------------- | ----------------------------- |
 | Any                                   | All types (wildcard)          |
 | Same type                             | Always compatible             |
-| Number ↔ Integer                     | Interchangeable               |
+| Number ↔ Integer                      | Interchangeable               |
 | Vector3, Vector4, Matrix → Quaternion | Accepted via type transformer |
 
 Signal ports (execution flow) have no type restrictions — any signal output can connect to any signal input.
@@ -203,6 +309,9 @@ Signal ports (execution flow) have no type restrictions — any signal output ca
 | ---------------------------------- | --------------------------------------------- |
 | **Delete** / **Backspace**         | Delete selected blocks (removes from graph)   |
 | **Alt+Delete** / **Alt+Backspace** | Delete and auto-reconnect surrounding nodes   |
+| **Ctrl+Z** / **Cmd+Z**             | Undo                                          |
+| **Ctrl+Shift+Z** / **Cmd+Shift+Z** | Redo                                          |
+| **Ctrl+A** / **Cmd+A**             | Select all nodes and frames                   |
 | **Ctrl+C** / **Cmd+C**             | Copy selected blocks (or frames)              |
 | **Ctrl+V** / **Cmd+V**             | Paste copied blocks at cursor position        |
 | **Ctrl+G** / **Cmd+G**             | Create a smart group from selected blocks     |
@@ -320,6 +429,68 @@ Press **Escape** or click the **X** button to close the search bar. All highligh
 
 ---
 
+## Physics Blocks
+
+The editor includes a set of blocks for interacting with the Babylon.js Physics V2 system. These blocks operate on `PhysicsBody` references, which can be obtained from mesh objects that have physics enabled (e.g., via `PhysicsAggregate`).
+
+### Physics Events
+
+| Block                     | Description                                                                                                                                        |
+| ------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **PhysicsCollisionEvent** | Fires whenever a collision occurs on the specified physics body. Outputs the other body, contact point, normal, impulse, and penetration distance. |
+
+### Physics Actions (Execution Blocks)
+
+| Block                    | Description                                                                                                   |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------- |
+| **ApplyForce**           | Applies a continuous force to a body at a world-space location. Use in a per-frame loop for sustained forces. |
+| **ApplyImpulse**         | Applies an instantaneous impulse (velocity change) to a body at a world-space location.                       |
+| **SetLinearVelocity**    | Directly sets the linear velocity vector of a body.                                                           |
+| **SetAngularVelocity**   | Directly sets the angular velocity vector of a body.                                                          |
+| **SetPhysicsMotionType** | Changes the body's motion type: 0 = STATIC, 1 = ANIMATED, 2 = DYNAMIC.                                        |
+
+### Physics Data (Read-Only Blocks)
+
+| Block                        | Description                                                    |
+| ---------------------------- | -------------------------------------------------------------- |
+| **GetLinearVelocity**        | Reads the current linear velocity of a physics body.           |
+| **GetAngularVelocity**       | Reads the current angular velocity of a physics body.          |
+| **GetPhysicsMassProperties** | Reads the mass, center of mass, and inertia of a physics body. |
+
+> **Note:** Physics blocks require a scene with Physics V2 enabled and bodies attached to meshes. Without a physics engine loaded, the blocks will report errors at runtime.
+
+---
+
+## Audio Blocks
+
+The editor includes blocks for controlling audio playback using the Babylon.js Audio V2 system. These blocks operate on `AbstractSound` references (either `StaticSound` or `StreamingSound` instances created via `CreateSoundAsync` / `CreateStreamingSoundAsync`).
+
+### Audio Actions (Execution Blocks)
+
+| Block              | Description                                                               |
+| ------------------ | ------------------------------------------------------------------------- |
+| **PlaySound**      | Plays the sound with configurable volume, start offset, and loop options. |
+| **StopSound**      | Stops the sound immediately.                                              |
+| **PauseSound**     | Pauses the sound if playing, or resumes it if paused.                     |
+| **SetSoundVolume** | Sets the volume (0–1) of the sound.                                       |
+
+### Audio Events
+
+| Block               | Description                                                               |
+| ------------------- | ------------------------------------------------------------------------- |
+| **SoundEndedEvent** | Fires when the sound finishes playing (does not fire if loop is enabled). |
+
+### Audio Data (Read-Only Blocks)
+
+| Block              | Description                                                 |
+| ------------------ | ----------------------------------------------------------- |
+| **GetSoundVolume** | Reads the current volume of a sound.                        |
+| **IsSoundPlaying** | Returns true if the sound is currently playing or starting. |
+
+> **Note:** Audio blocks require sounds created via the Audio V2 API (`CreateSoundAsync`, `CreateStreamingSoundAsync`). The legacy `Sound` class (V1) is not supported by these blocks.
+
+---
+
 ## Tips
 
 - **Use debug blocks liberally** — they're zero-cost when the graph isn't running and give you visibility into data flow.
@@ -327,6 +498,77 @@ Press **Escape** or click the **X** button to close the search bar. All highligh
 - **Watch the flow animation** — in debug mode, the animated dots show you the actual order of execution, which can reveal unexpected paths.
 - **Reset vs. Stop** — use Reset when you've modified the scene's state and need a clean slate; use Stop when you just want to halt execution.
 - **Minimap** — when you zoom or pan, a minimap appears in the bottom-right corner showing all nodes, frames, and your current viewport. Click or drag on the minimap to navigate directly to that area. It auto-hides after 1.5 seconds of inactivity.
+
+---
+
+## Right-Click Context Menus
+
+Right-click on the canvas, a node, a link, or a frame to open a context menu with relevant actions. The menu items change depending on what was clicked.
+
+### Canvas (Background)
+
+| Action                 | Shortcut | Description                                   |
+| ---------------------- | -------- | --------------------------------------------- |
+| **Add Block...**       | Space    | Opens the block search box to add a new block |
+| **Paste**              | Ctrl+V   | Pastes previously copied blocks               |
+| **Create Sticky Note** | Ctrl+M   | Adds a sticky note at the click position      |
+| **Select All**         | Ctrl+A   | Selects all nodes and frames                  |
+| **Zoom to Fit**        | —        | Zooms to fit the entire graph                 |
+| **Reorganize**         | —        | Auto-layouts the graph                        |
+
+### Node(s)
+
+| Action                    | Shortcut | Description                                               |
+| ------------------------- | -------- | --------------------------------------------------------- |
+| **Delete**                | Del      | Deletes the selected node(s)                              |
+| **Duplicate**             | Ctrl+C/V | Copies and pastes the selected node(s)                    |
+| **Add/Remove Breakpoint** | F9       | Toggles a breakpoint (single execution block only)        |
+| **Create Smart Group**    | Ctrl+G   | Groups 2+ selected blocks into a frame (when applicable)  |
+| **Disconnect All Ports**  | —        | Disconnects all input and output ports from the selection |
+
+### Link
+
+| Action                | Shortcut | Description                          |
+| --------------------- | -------- | ------------------------------------ |
+| **Delete Connection** | Del      | Removes the selected connection line |
+
+### Frame
+
+| Action              | Shortcut | Description                                             |
+| ------------------- | -------- | ------------------------------------------------------- |
+| **Delete Frame**    | Del      | Removes the frame (keeps contained blocks)              |
+| **Collapse/Expand** | —        | Toggles the frame between collapsed and expanded states |
+
+---
+
+## Port Tooltips
+
+Hover over any port icon (the colored dot or shape on a node) to see a tooltip showing:
+
+- **Port name** — the connection point's label (e.g., "a", "result", "in")
+- **Data type** — for data ports, the rich type (e.g., Number, Vector3, Boolean)
+- **Direction** — whether it's an Input or Output port
+
+Signal ports (execution flow) show "Signal Input" or "Signal Output".
+
+---
+
+## Toast Notifications
+
+Brief notifications appear in the bottom-right corner of the editor for key operations. Toasts auto-dismiss after 4 seconds and can be closed early by clicking the ✕ button.
+
+### Operations That Trigger Toasts
+
+| Event                     | Severity | Message                                       |
+| ------------------------- | -------- | --------------------------------------------- |
+| File load success         | Success  | "Flow graph loaded from file"                 |
+| File save                 | Success  | "Flow graph saved to file"                    |
+| Snippet save              | Success  | "Graph saved — ID: ... (copied to clipboard)" |
+| Snippet load success      | Success  | "Flow graph loaded from snippet ..."          |
+| Snippet save/load failure | Error    | Error description                             |
+| Disconnect all ports      | Info     | "Disconnected all ports"                      |
+
+All toast messages are also logged to the Log panel for reference.
 
 ---
 

@@ -589,7 +589,7 @@ export class VertexData implements IVertexDataLike {
         return this;
     }
 
-    @nativeOverride.filter((...[coordinates]: Parameters<typeof VertexData._TransformVector3Coordinates>) => !Array.isArray(coordinates))
+    @nativeOverride.filter((...args: Parameters<typeof VertexData._TransformVector3Coordinates>) => !Array.isArray(args[0]))
     private static _TransformVector3Coordinates(coordinates: FloatArray, transformation: DeepImmutable<Matrix>, offset = 0, length = coordinates.length) {
         const coordinate = TmpVectors.Vector3[0];
         const transformedCoordinate = TmpVectors.Vector3[1];
@@ -602,7 +602,7 @@ export class VertexData implements IVertexDataLike {
         }
     }
 
-    @nativeOverride.filter((...[normals]: Parameters<typeof VertexData._TransformVector3Normals>) => !Array.isArray(normals))
+    @nativeOverride.filter((...args: Parameters<typeof VertexData._TransformVector3Normals>) => !Array.isArray(args[0]))
     private static _TransformVector3Normals(normals: FloatArray, transformation: DeepImmutable<Matrix>, offset = 0, length = normals.length) {
         const normal = TmpVectors.Vector3[0];
         const transformedNormal = TmpVectors.Vector3[1];
@@ -615,7 +615,7 @@ export class VertexData implements IVertexDataLike {
         }
     }
 
-    @nativeOverride.filter((...[normals]: Parameters<typeof VertexData._TransformVector4Normals>) => !Array.isArray(normals))
+    @nativeOverride.filter((...args: Parameters<typeof VertexData._TransformVector4Normals>) => !Array.isArray(args[0]))
     private static _TransformVector4Normals(normals: FloatArray, transformation: DeepImmutable<Matrix>, offset = 0, length = normals.length) {
         const normal = TmpVectors.Vector4[0];
         const transformedNormal = TmpVectors.Vector4[1];
@@ -629,7 +629,7 @@ export class VertexData implements IVertexDataLike {
         }
     }
 
-    @nativeOverride.filter((...[indices]: Parameters<typeof VertexData._FlipFaces>) => !Array.isArray(indices))
+    @nativeOverride.filter((...args: Parameters<typeof VertexData._FlipFaces>) => !Array.isArray(args[0]))
     private static _FlipFaces(indices: IndicesArray, offset = 0, length = indices.length) {
         for (let index = offset; index < offset + length; index += 3) {
             const tmp = indices[index + 1];

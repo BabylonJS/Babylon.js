@@ -326,6 +326,7 @@ export class FrameGraph implements IDisposable {
         return await new Promise((resolve, reject) => {
             this._whenReadyAsyncCancel = _RetryWithInterval(
                 () => {
+                    firstNotReadyTask = null;
                     let ready = this._renderContext._isReady();
                     for (const task of this._tasks) {
                         const taskIsReady = task.isReady();

@@ -464,6 +464,21 @@ const LoadAssetContainer = (scene: Scene, data: string | object, rootUrl: string
                         instance._parentContainer = container;
                     }
                 }
+                // Load partProxies from GaussianSplattingMesh into AssetContainer
+                if (mesh.getClassName() === "GaussianSplattingMesh") {
+                    const partProxies = (mesh as any)._partProxies as AbstractMesh[] | Map<number, AbstractMesh> | undefined;
+                    const proxies = Array.isArray(partProxies) ? partProxies : partProxies ? Array.from(partProxies.values()) : [];
+                    for (const partProxy of proxies) {
+                        if (!partProxy) {
+                            continue;
+                        }
+                        container.meshes.push(partProxy);
+                        partProxy._parentContainer = container;
+                        if (partProxy._waitingParsedUniqueId != null) {
+                            TempIndexContainer[partProxy._waitingParsedUniqueId] = partProxy;
+                        }
+                    }
+                }
                 log += index === 0 ? "\n\tMeshes:" : "";
                 log += "\n\t\t" + mesh.toString(fullDetails);
             }
@@ -1000,6 +1015,17 @@ RegisterSceneLoaderPlugin({
                         meshes.push(mesh);
                         parsedIdToNodeMap.set(mesh._waitingParsedUniqueId!, mesh);
                         mesh._waitingParsedUniqueId = null;
+                        if (mesh.getClassName() === "GaussianSplattingMesh") {
+                            const partProxies = (mesh as any)._partProxies as AbstractMesh[] | Map<number, AbstractMesh> | undefined;
+                            const proxies = Array.isArray(partProxies) ? partProxies : partProxies ? Array.from(partProxies.values()) : [];
+                            for (const partProxy of proxies) {
+                                if (!partProxy || partProxy._waitingParsedUniqueId == null) {
+                                    continue;
+                                }
+                                parsedIdToNodeMap.set(partProxy._waitingParsedUniqueId, partProxy);
+                                partProxy._waitingParsedUniqueId = null;
+                            }
+                        }
                         log += "\n\tMesh " + mesh.toString(fullDetails);
                     }
                 }

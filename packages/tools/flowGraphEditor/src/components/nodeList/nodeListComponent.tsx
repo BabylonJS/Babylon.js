@@ -8,6 +8,7 @@ import { type Nullable } from "core/types";
 import { NodeLedger } from "shared-ui-components/nodeGraphSystem/nodeLedger";
 import { AllFlowGraphBlocks } from "../../allBlockNames";
 import { GetBlockType, BlockTypeHeaderColor } from "../../graphSystem/blockTypeColors";
+import { GetTemplatesByCategory, AllCompositeTemplates } from "../../compositeTemplates";
 
 import "./nodeList.scss";
 
@@ -61,6 +62,34 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         FlowGraphStopAnimationBlock: "Stops an animation",
         FlowGraphPauseAnimationBlock: "Pauses an animation",
         FlowGraphInterpolationBlock: "Interpolates a value over time",
+
+        // Physics Events
+        FlowGraphPhysicsCollisionEventBlock: "Fires when a physics collision occurs on a body",
+
+        // Physics Actions
+        FlowGraphApplyForceBlock: "Applies a force to a physics body at a location",
+        FlowGraphApplyImpulseBlock: "Applies an instantaneous impulse to a physics body",
+        FlowGraphSetLinearVelocityBlock: "Sets the linear velocity of a physics body",
+        FlowGraphSetAngularVelocityBlock: "Sets the angular velocity of a physics body",
+        FlowGraphSetPhysicsMotionTypeBlock: "Sets the motion type (static/animated/dynamic)",
+
+        // Physics Data
+        FlowGraphGetLinearVelocityBlock: "Gets the linear velocity of a physics body",
+        FlowGraphGetAngularVelocityBlock: "Gets the angular velocity of a physics body",
+        FlowGraphGetPhysicsMassPropertiesBlock: "Gets mass, center of mass, and inertia",
+
+        // Audio Actions
+        FlowGraphPlaySoundBlock: "Plays an Audio V2 sound with volume, offset, and loop options",
+        FlowGraphStopSoundBlock: "Stops an Audio V2 sound",
+        FlowGraphPauseSoundBlock: "Pauses or resumes an Audio V2 sound",
+        FlowGraphSetSoundVolumeBlock: "Sets the volume of an Audio V2 sound",
+
+        // Audio Events
+        FlowGraphSoundEndedEventBlock: "Fires when an Audio V2 sound stops or ends (including manual stop)",
+
+        // Audio Data
+        FlowGraphGetSoundVolumeBlock: "Gets the current volume of an Audio V2 sound",
+        FlowGraphIsSoundPlayingBlock: "Checks whether an Audio V2 sound is currently playing",
 
         // Math Constants
         FlowGraphEBlock: "Euler's number (e)",
@@ -286,8 +315,29 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 if (finalName.endsWith("Block")) {
                     finalName = finalName.substring(0, finalName.length - 5);
                 }
+
                 return finalName;
             };
+        }
+
+        // Add composite template entries to the palette
+        const templateCategories = GetTemplatesByCategory();
+        for (const categoryName of Object.keys(templateCategories)) {
+            const templateNames = templateCategories[categoryName];
+            const templateItems = templateNames
+                .filter((name: string) => !this.state.filter || name.toLowerCase().indexOf(this.state.filter.toLowerCase()) !== -1)
+                .map((name: string) => {
+                    const template = AllCompositeTemplates[name];
+                    return <DraggableLineComponent key={name} data={name} tooltip={template.description} color="#8854d0" />;
+                });
+
+            if (templateItems.length) {
+                blockMenu.push(
+                    <LineContainerComponent key={"template_" + categoryName} title={"Templates: " + categoryName} closed={false}>
+                        {templateItems}
+                    </LineContainerComponent>
+                );
+            }
         }
 
         return (

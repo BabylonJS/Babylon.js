@@ -54,7 +54,7 @@ export class GeospatialCameraMovement extends CameraMovement {
     ) {
         super(scene, cameraPosition, behavior);
         this.pickPredicate = pickPredicate;
-        this._tempPickingRay = new Ray(this._cameraPosition, this._cameraLookAt);
+        this._tempPickingRay = Ray.Zero();
         this.panInertia = 0;
         this.rotationInertia = 0;
         this.rotationXSpeed = Math.PI / 500; // Move 1/500th of a half circle per pixel
@@ -100,23 +100,22 @@ export class GeospatialCameraMovement extends CameraMovement {
      */
     private _recalculateDragPlaneHitPoint(hitPointRadius: number, ray: Ray, localToEcefResult: Matrix): void {
         // Use the camera's geocentric normal to find the dragPlaneOriginPoint which lives at hitPointRadius along the camera's geocentric normal
-        this.calculateUpVectorFromPointToRef(this._cameraPosition, this._dragPlaneNormal);
-        this._dragPlaneNormal.scaleToRef(hitPointRadius, this._dragPlaneOriginPointEcef);
+        this._cameraPosition.scaleToRef(hitPointRadius / Math.max(0.00001, this._cameraPosition.length()), this._dragPlaneOriginPointEcef);
 
         // The dragPlaneOffsetVector will later be recalculated when drag occurs, and the delta between the offset vectors will be applied to localTranslation
         ComputeLocalBasisToRefs(
             this._dragPlaneOriginPointEcef,
             TmpVectors.Vector3[0],
             TmpVectors.Vector3[1],
-            TmpVectors.Vector3[2],
+            this._dragPlaneNormal,
             this._scene.useRightHandedSystem,
             this.calculateUpVectorFromPointToRef
         );
-        const localToEcef = Matrix.FromXYZAxesToRef(TmpVectors.Vector3[0], TmpVectors.Vector3[1], TmpVectors.Vector3[2], localToEcefResult);
+        const localToEcef = Matrix.FromXYZAxesToRef(TmpVectors.Vector3[0], TmpVectors.Vector3[1], this._dragPlaneNormal, localToEcefResult);
         localToEcef.setTranslationFromFloats(this._dragPlaneOriginPointEcef.x, this._dragPlaneOriginPointEcef.y, this._dragPlaneOriginPointEcef.z);
         const ecefToLocal = localToEcef.invertToRef(TmpVectors.Matrix[1]);
 
-        // Now create a plane at that point, perpendicular to the camera's geocentric normal
+        // Now create a plane at that point, perpendicular to _dragPlaneNormal.
         Plane.FromPositionAndNormalToRef(this._dragPlaneOriginPointEcef, this._dragPlaneNormal, this._dragPlane);
 
         // Lastly, find the _dragPlaneHitPoint where the ray intersects the _dragPlane.
@@ -127,30 +126,32 @@ export class GeospatialCameraMovement extends CameraMovement {
     }
 
     public handleDrag(pointerX: number, pointerY: number) {
-        if (this._hitPointRadius) {
-            const pickResult = this._scene.pick(pointerX, pointerY, this.pickPredicate);
-            if (pickResult.ray) {
-                const localToEcef = TmpVectors.Matrix[0];
-                this._recalculateDragPlaneHitPoint(this._hitPointRadius, pickResult.ray, localToEcef);
-
-                const delta = this._dragPlaneHitPointLocal.subtractToRef(this._previousDragPlaneHitPointLocal, TmpVectors.Vector3[6]);
-
-                // When the camera is pitched nearly parallel to the drag plane, ray-plane intersection
-                // can produce enormous deltas. Clamp the delta to avoid massive jumps.
-                const maxDragDelta = this._hitPointRadius * 0.1; // Max 10% of hit radius per frame
-                const deltaLength = delta.length();
-                if (deltaLength > maxDragDelta) {
-                    delta.scaleInPlace(maxDragDelta / deltaLength);
-                }
-
-                this._previousDragPlaneHitPointLocal.copyFrom(this._dragPlaneHitPointLocal);
-
-                Vector3.TransformNormalToRef(delta, localToEcef, delta);
-                this._dragPlaneOriginPointEcef.addInPlace(delta);
-
-                this.panAccumulatedPixels.subtractInPlace(delta);
-            }
+        const scene = this._scene;
+        if (!this._hitPointRadius || !scene.activeCamera) {
+            return;
         }
+
+        scene.createPickingRayToRef(pointerX, pointerY, null, this._tempPickingRay, scene.activeCamera);
+
+        const localToEcef = TmpVectors.Matrix[0];
+        this._recalculateDragPlaneHitPoint(this._hitPointRadius, this._tempPickingRay, localToEcef);
+
+        const delta = this._dragPlaneHitPointLocal.subtractToRef(this._previousDragPlaneHitPointLocal, TmpVectors.Vector3[6]);
+
+        // When the camera is pitched nearly parallel to the drag plane, ray-plane intersection
+        // can produce enormous deltas. Clamp the delta to avoid massive jumps.
+        const maxDragDelta = this._hitPointRadius * 0.1; // Max 10% of hit radius per frame
+        const deltaLength = delta.length();
+        if (deltaLength > maxDragDelta) {
+            delta.scaleInPlace(maxDragDelta / deltaLength);
+        }
+
+        this._previousDragPlaneHitPointLocal.copyFrom(this._dragPlaneHitPointLocal);
+
+        Vector3.TransformNormalToRef(delta, localToEcef, delta);
+        this._dragPlaneOriginPointEcef.addInPlace(delta);
+
+        this.panAccumulatedPixels.subtractInPlace(delta);
     }
 
     /** @override */
@@ -178,9 +179,9 @@ export class GeospatialCameraMovement extends CameraMovement {
             this._panSpeedMultiplier = 1;
         }
 
-        // If a pan drag or rotate is occurring, stop zooming.
+        // If a pan drag is occurring, stop zooming.
         let zoomTargetDistance: number | undefined;
-        if (this.isDragging || this.rotationAccumulatedPixels.lengthSquared() > Epsilon) {
+        if (this.isDragging) {
             this._zoomSpeedMultiplier = 0;
             this._zoomVelocity = 0;
         } else {

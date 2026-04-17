@@ -33,11 +33,13 @@ export class FlowGraphGLTFDataProvider extends FlowGraphBlock {
     public readonly nodes: FlowGraphDataConnection<TransformNode[]>;
 
     constructor(config: IFlowGraphGLTFDataProviderBlockConfiguration) {
-        super();
+        super(config);
         const glTF = config.glTF;
-        const animationGroups = glTF.animations?.map((a) => a._babylonAnimationGroup) || [];
+        // glTF may be undefined when the block is re-created from serialized data
+        // (e.g. in the Flow Graph Editor) where the live glTF parse tree is unavailable.
+        const animationGroups = glTF?.animations?.map((a) => a._babylonAnimationGroup) || [];
         this.animationGroups = this.registerDataOutput("animationGroups", RichTypeAny, animationGroups);
-        const nodes = glTF.nodes?.map((n) => n._babylonTransformNode) || [];
+        const nodes = glTF?.nodes?.map((n) => n._babylonTransformNode) || [];
         this.nodes = this.registerDataOutput("nodes", RichTypeAny, nodes);
     }
 

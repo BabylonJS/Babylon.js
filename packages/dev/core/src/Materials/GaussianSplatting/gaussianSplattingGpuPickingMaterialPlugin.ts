@@ -21,6 +21,7 @@ export class GaussianSplattingGpuPickingMaterialPlugin extends MaterialPluginBas
     private _pickingColor: [number, number, number] = [0, 0, 0];
     private _isCompound: boolean = false;
     private _partPickingColors: number[] = [];
+    private _partVisibility: number[] = [];
     private _maxPartCount: number;
 
     /**
@@ -80,6 +81,21 @@ export class GaussianSplattingGpuPickingMaterialPlugin extends MaterialPluginBas
             colors.push(c[0], c[1], c[2]);
         }
         this._partPickingColors = colors;
+    }
+
+    /**
+     * Sets which parts are active (pickable) for the compound picking pass.
+     * Parts not in the set are discarded in the shader by overriding partVisibility to 0.
+     * @param activeParts Array of part indices that should be pickable.
+     */
+    public setPartActive(activeParts: number[]): void {
+        const visibility = new Array(this._maxPartCount).fill(0.0);
+        for (const index of activeParts) {
+            if (index >= 0 && index < this._maxPartCount) {
+                visibility[index] = 1.0;
+            }
+        }
+        this._partVisibility = visibility;
     }
 
     /**
@@ -154,8 +170,10 @@ uniform vec3 pickingColor;
                 `,
                 CUSTOM_FRAGMENT_BEFORE_FRAGCOLOR: `
 #if IS_COMPOUND
+    if (vColor.a < 0.001) discard;
     finalColor = vec4(partPickingColors[int(vPartIndex + 0.5)], 1.0);
 #else
+    if (vColor.a < 0.001) discard;
     finalColor = vec4(pickingColor, 1.0);
 #endif
                 `,
@@ -188,8 +206,10 @@ uniform pickingColor: vec3f;
                 `,
                 CUSTOM_FRAGMENT_BEFORE_FRAGCOLOR: `
 #if IS_COMPOUND
+    if (fragmentInputs.vColor.a < 0.001) { discard; }
     finalColor = vec4f(uniforms.partPickingColors[i32(fragmentInputs.vPartIndex + 0.5)], 1.0);
 #else
+    if (fragmentInputs.vColor.a < 0.001) { discard; }
     finalColor = vec4f(uniforms.pickingColor, 1.0);
 #endif
                 `,
@@ -228,6 +248,9 @@ uniform pickingColor: vec3f;
 
         if (this._isCompound) {
             effect.setArray3("partPickingColors", this._partPickingColors);
+            // default all visible when setPartActive hasn't been called
+            const visibility = this._partVisibility.length > 0 ? this._partVisibility : new Array(this._maxPartCount).fill(1.0);
+            effect.setArray("partVisibility", visibility);
         } else {
             effect.setFloat3("pickingColor", this._pickingColor[0], this._pickingColor[1], this._pickingColor[2]);
         }

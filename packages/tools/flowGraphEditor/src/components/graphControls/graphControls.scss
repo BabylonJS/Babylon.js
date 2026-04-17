@@ -53,6 +53,16 @@
         }
     }
 
+    .fge-ctrl-undo:not(:disabled),
+    .fge-ctrl-redo:not(:disabled) {
+        color: rgb(180, 180, 180);
+        border-color: rgb(120, 120, 120);
+
+        &:hover {
+            background: rgba(180, 180, 180, 0.15);
+        }
+    }
+
     .fge-ctrl-pause:not(:disabled) {
         color: rgb(220, 180, 60);
         border-color: rgb(220, 180, 60);
@@ -243,6 +253,91 @@
             opacity: 0.85;
             background: rgba(243, 156, 18, 0.1);
         }
+    }
+    .fge-context-selector {
+        display: flex;
+        align-items: center;
+        gap: 3px;
+    }
+
+    .fge-context-label {
+        font-size: 10px;
+        font-weight: 600;
+        color: #999;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        margin-right: 2px;
+    }
+
+    .fge-context-dropdown {
+        height: 24px;
+        min-width: 90px;
+        max-width: 150px;
+        padding: 0 4px;
+        font-size: 11px;
+        font-weight: 500;
+        color: #ddd;
+        background: #3a3a3a;
+        border: 1px solid #666;
+        border-radius: 4px;
+        cursor: pointer;
+        outline: none;
+
+        &:hover {
+            border-color: #888;
+        }
+
+        &:focus {
+            border-color: rgb(100, 160, 220);
+        }
+
+        option {
+            background: #2a2a2a;
+            color: #ddd;
+        }
+    }
+
+    .fge-ctx-add:not(:disabled) {
+        color: rgb(51, 183, 102);
+        border-color: rgb(51, 183, 102);
+        font-size: 16px;
+        font-weight: 700;
+
+        &:hover {
+            background: rgba(51, 183, 102, 0.2);
+        }
+    }
+
+    .fge-ctx-remove:not(:disabled) {
+        color: rgb(220, 80, 60);
+        border-color: rgb(220, 80, 60);
+        font-size: 16px;
+        font-weight: 700;
+
+        &:hover {
+            background: rgba(220, 80, 60, 0.2);
+        }
+    }
+
+    .fge-ctx-rename:not(:disabled) {
+        color: rgb(180, 180, 180);
+        border-color: rgb(120, 120, 120);
+
+        &:hover {
+            background: rgba(180, 180, 180, 0.15);
+        }
+    }
+
+    .fge-ctx-rename-input {
+        height: 22px;
+        width: 100px;
+        padding: 0 4px;
+        font-size: 11px;
+        color: #ddd;
+        background: #3a3a3a;
+        border: 1px solid rgb(100, 160, 220);
+        border-radius: 3px;
+        outline: none;
     }
 }
 

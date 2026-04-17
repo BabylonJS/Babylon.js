@@ -18,7 +18,7 @@ import { SyncedSliderPropertyLine } from "shared-ui-components/fluent/hoc/proper
 import { Vector2PropertyLine, Vector3PropertyLine, Vector4PropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/vectorPropertyLine";
 import { MessageBar } from "shared-ui-components/fluent/primitives/messageBar";
 import { useProperty } from "../../../hooks/compoundPropertyHooks";
-import { useObservableState } from "../../../hooks/observableHooks";
+import { useObservableState } from "shared-ui-components/modularTool/hooks/observableHooks";
 import { GroupBy } from "../../../misc/arrayUtils";
 import { BoundProperty } from "../boundProperty";
 import { EditNodeMaterial } from "../../../misc/nodeMaterialEditor";

@@ -178,6 +178,7 @@ export class ClusteredLightContainer extends Light {
     /**
      * The number of slices to split the depth range by and cluster lights into.
      */
+    @serialize()
     public get depthSlices(): number {
         return this._depthSlices;
     }
@@ -340,6 +341,13 @@ export class ClusteredLightContainer extends Light {
         this._tileMaskTexture.onBeforeBindObservable.add(() => {
             currentRenderTarget = engine._currentRenderTarget;
             this._updateLightData();
+            // On WebGPU, clear the storage buffer here (before bindFramebuffer) because
+            // clearBuffer is a command encoder operation that cannot run while a render pass is open.
+            // In snapshot rendering mode, bindFramebuffer eagerly creates the render pass, so
+            // clearing must happen before that point.
+            if (engine.isWebGPU) {
+                this._tileMaskBuffer?.clear();
+            }
         });
 
         this._tileMaskTexture.onAfterUnbindObservable.add(() => {
@@ -353,10 +361,7 @@ export class ClusteredLightContainer extends Light {
         });
 
         this._tileMaskTexture.onClearObservable.add(() => {
-            if (engine.isWebGPU) {
-                // Clear the storage buffer for WebGPU
-                this._tileMaskBuffer?.clear();
-            } else {
+            if (!engine.isWebGPU) {
                 // Only clear the texture on WebGL
                 engine.clear({ r: 0, g: 0, b: 0, a: 1 }, true, false);
             }
@@ -596,6 +601,50 @@ export class ClusteredLightContainer extends Light {
     public override _isReady(): boolean {
         this._updateBatches();
         return this._proxyMesh.isReady(true, true);
+    }
+
+    /**
+     * Serializes the ClusteredLightContainer to a JSON object, including all child lights.
+     * @returns the serialized object
+     */
+    public override serialize(): any {
+        const serializationObject = super.serialize();
+
+        // Serialize child lights inline so they round-trip with the container.
+        // Child lights are removed from scene.lights by addLight(), so the scene
+        // serializer would not reach them on its own.
+        serializationObject.clusteredLights = [];
+        for (const light of this._lights) {
+            if (!light.doNotSerialize) {
+                serializationObject.clusteredLights.push(light.serialize());
+            }
+        }
+
+        return serializationObject;
+    }
+
+    protected override _onParsed(parsedLight: any, scene: Scene): void {
+        if (parsedLight.clusteredLights) {
+            // Parse child lights first, but defer addLight() until after the loader
+            // fixup passes (parent resolution, excluded/included mesh resolution)
+            // have run on scene.lights. addLight() removes lights from scene.lights,
+            // which would cause those fixups to miss the child lights.
+            const parsedChildLights: Light[] = [];
+            for (const parsedChildLight of parsedLight.clusteredLights) {
+                const childLight = Light.Parse(parsedChildLight, scene);
+                if (childLight) {
+                    parsedChildLights.push(childLight);
+                }
+            }
+
+            if (parsedChildLights.length > 0) {
+                scene.onDataLoadedObservable.addOnce(() => {
+                    for (const childLight of parsedChildLights) {
+                        this.addLight(childLight);
+                    }
+                });
+            }
+        }
     }
 }
 

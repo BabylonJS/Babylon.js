@@ -4,7 +4,7 @@ import { type ReactElement, forwardRef } from "react";
 
 import { Tooltip as FluentTooltip } from "@fluentui/react-components";
 
-export type TooltipProps = { content?: Nullable<string>; children: ReactElement };
+export type TooltipProps = { content?: Nullable<string | ReactElement>; children: ReactElement };
 
 // forwardRef wrapper to avoid "function components cannot be given refs" warning
 // FluentTooltip handles ref forwarding to children internally via applyTriggerPropsToChildren

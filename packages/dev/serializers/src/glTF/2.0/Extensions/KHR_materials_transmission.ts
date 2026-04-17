@@ -60,6 +60,9 @@ export class KHR_materials_transmission implements IGLTFExporterExtensionV2 {
             if (babylonMaterial.transmissionWeight > 0 && babylonMaterial.transmissionWeightTexture) {
                 additionalTextures.push(babylonMaterial.transmissionWeightTexture);
             }
+            if (babylonMaterial.subsurfaceWeight > 0 && babylonMaterial.subsurfaceWeightTexture) {
+                additionalTextures.push(babylonMaterial.subsurfaceWeightTexture);
+            }
         }
 
         return additionalTextures;
@@ -68,7 +71,7 @@ export class KHR_materials_transmission implements IGLTFExporterExtensionV2 {
     private _isExtensionEnabled(mat: Material): boolean {
         // This extension must not be used on a material that also uses KHR_materials_unlit
         if (mat instanceof OpenPBRMaterial && !mat.unlit) {
-            return mat.transmissionWeight > 0;
+            return mat.transmissionWeight > 0 || mat.subsurfaceWeight > 0;
         } else if (mat instanceof PBRMaterial && !mat.unlit) {
             const subs = mat.subSurface;
             return (
@@ -117,7 +120,8 @@ export class KHR_materials_transmission implements IGLTFExporterExtensionV2 {
         } else if (babylonMaterial instanceof OpenPBRMaterial) {
             this._wasUsed = true;
 
-            const transmissionFactor = babylonMaterial.transmissionWeight;
+            const subsurfaceFractionOfDielectric = (1.0 - babylonMaterial.transmissionWeight) * babylonMaterial.subsurfaceWeight;
+            const transmissionFactor = subsurfaceFractionOfDielectric + babylonMaterial.transmissionWeight;
 
             const transmissionInfo: IKHRMaterialsTransmission = {
                 transmissionFactor: transmissionFactor,
@@ -128,6 +132,12 @@ export class KHR_materials_transmission implements IGLTFExporterExtensionV2 {
                 const transmissionTexture = this._exporter._materialExporter.getTextureInfo(babylonMaterial.transmissionWeightTexture);
                 if (transmissionTexture) {
                     transmissionInfo.transmissionTexture = transmissionTexture;
+                }
+            } else if (babylonMaterial.subsurfaceWeightTexture) {
+                this._exporter._materialNeedsUVsSet.add(babylonMaterial);
+                const subsurfaceTexture = this._exporter._materialExporter.getTextureInfo(babylonMaterial.subsurfaceWeightTexture);
+                if (subsurfaceTexture) {
+                    transmissionInfo.transmissionTexture = subsurfaceTexture;
                 }
             }
 

@@ -177,6 +177,29 @@ uniform sampler2D noiseSampler;
 uniform vec4 cellInfos;
 #endif
 
+#ifdef ATTRACTORS
+uniform int attractorCount;
+uniform vec4 attractorPositionAndStrength[MAX_ATTRACTORS];
+#endif
+
+#ifdef STARTSIZEGRADIENTS
+uniform float startSizeGradientFactor;
+#endif
+
+#ifdef LIFETIMEGRADIENTS
+uniform vec2 lifeTimeGradientRange;
+#endif
+
+#ifdef MESHEMITTER
+uniform sampler2D meshPositionSampler;
+uniform int meshTriangleCount;
+uniform int meshTextureWidth;
+uniform vec3 direction1;
+uniform vec3 direction2;
+#ifdef MESHNORMALS
+uniform sampler2D meshNormalSampler;
+#endif
+#endif
 
 vec3 getRandomVec3(float offset) {
   return texture(randomSampler2, vec2(float(gl_VertexID) * offset / currentCount, 0)).rgb;
@@ -211,6 +234,9 @@ void main() {
 
     // Age and life
     outLife = lifeTime.x + (lifeTime.y - lifeTime.x) * randoms.r;
+#ifdef LIFETIMEGRADIENTS
+    outLife = lifeTimeGradientRange.x + (lifeTimeGradientRange.y - lifeTimeGradientRange.x) * randoms.r;
+#endif
 #ifdef EMITRATECTRL
     outAge = 0.0;
 #else
@@ -222,12 +248,16 @@ void main() {
 
     // Size
 #ifdef SIZEGRADIENTS    
-    outSize.x = texture(sizeGradientSampler, vec2(0, 0)).r;
+    vec2 sizeGradientRange = texture(sizeGradientSampler, vec2(0, 0)).rg;
+    outSize.x = sizeGradientRange.x + (sizeGradientRange.y - sizeGradientRange.x) * seed.y;
 #else
     outSize.x = sizeRange.x + (sizeRange.y - sizeRange.x) * randoms.g;
 #endif
     outSize.y = scaleRange.x + (scaleRange.y - scaleRange.x) * randoms.b;
     outSize.z = scaleRange.z + (scaleRange.w - scaleRange.z) * randoms.a; 
+#ifdef STARTSIZEGRADIENTS
+    outSize.x *= startSizeGradientFactor;
+#endif
 
 #ifndef COLORGRADIENTS
     // Color
@@ -344,6 +374,38 @@ void main() {
             newDirection = normalize(newPosition + directionRandomizer * randoms3);        
         }
     #endif
+#elif defined(MESHEMITTER)
+    vec3 randoms2 = getRandomVec3(seed.y);
+    vec3 randoms3 = getRandomVec3(seed.z);
+
+    // Pick a random triangle (uniform by count, matching CPU behavior)
+    int triIdx = int(floor(randoms2.x * float(meshTriangleCount)));
+    triIdx = min(triIdx, meshTriangleCount - 1);
+
+    // Fetch 3 vertex positions via texelFetch (2D texture: linear index to x,y)
+    int baseTexel = triIdx * 3;
+    int t0 = baseTexel;
+    int t1 = baseTexel + 1;
+    int t2 = baseTexel + 2;
+    vec3 v0 = texelFetch(meshPositionSampler, ivec2(t0 % meshTextureWidth, t0 / meshTextureWidth), 0).xyz;
+    vec3 v1 = texelFetch(meshPositionSampler, ivec2(t1 % meshTextureWidth, t1 / meshTextureWidth), 0).xyz;
+    vec3 v2 = texelFetch(meshPositionSampler, ivec2(t2 % meshTextureWidth, t2 / meshTextureWidth), 0).xyz;
+
+    // Barycentric coordinates
+    float bu = randoms2.y;
+    float bv = randoms2.z * (1.0 - bu);
+    float bw = 1.0 - bu - bv;
+
+    newPosition = bu * v0 + bv * v1 + bw * v2;
+
+    #ifdef MESHNORMALS
+        vec3 n0 = texelFetch(meshNormalSampler, ivec2(t0 % meshTextureWidth, t0 / meshTextureWidth), 0).xyz;
+        vec3 n1 = texelFetch(meshNormalSampler, ivec2(t1 % meshTextureWidth, t1 / meshTextureWidth), 0).xyz;
+        vec3 n2 = texelFetch(meshNormalSampler, ivec2(t2 % meshTextureWidth, t2 / meshTextureWidth), 0).xyz;
+        newDirection = normalize(bu * n0 + bv * n1 + bw * n2);
+    #else
+        newDirection = direction1 + (direction2 - direction1) * randoms3;
+    #endif
 #elif defined(CUSTOMEMITTER)
       newPosition = initialPosition;
       outInitialPosition = initialPosition;
@@ -398,11 +460,13 @@ void main() {
     float ageGradient = newAge / life;
 
 #ifdef VELOCITYGRADIENTS
-    directionScale *= texture(velocityGradientSampler, vec2(ageGradient, 0)).r;
+    vec2 velocityGradientRange = texture(velocityGradientSampler, vec2(ageGradient, 0)).rg;
+    directionScale *= velocityGradientRange.x + (velocityGradientRange.y - velocityGradientRange.x) * seed.w;
 #endif
 
 #ifdef DRAGGRADIENTS
-    directionScale *= 1.0 - texture(dragGradientSampler, vec2(ageGradient, 0)).r;
+    vec2 dragGradientRange = texture(dragGradientSampler, vec2(ageGradient, 0)).rg;
+    directionScale *= 1.0 - (dragGradientRange.x + (dragGradientRange.y - dragGradientRange.x) * seed.x);
 #endif
 
 #if defined(CUSTOMEMITTER)
@@ -419,7 +483,8 @@ void main() {
 #endif
 
 #ifdef SIZEGRADIENTS
-	outSize.x = texture(sizeGradientSampler, vec2(ageGradient, 0)).r;
+	vec2 sizeGradientRange = texture(sizeGradientSampler, vec2(ageGradient, 0)).rg;
+	outSize.x = sizeGradientRange.x + (sizeGradientRange.y - sizeGradientRange.x) * seed.y;
     outSize.yz = size.yz;
 #else
     outSize = size;
@@ -444,13 +509,24 @@ void main() {
     #endif
 
     #ifdef LIMITVELOCITYGRADIENTS
-        float limitVelocity = texture(limitVelocityGradientSampler, vec2(ageGradient, 0)).r;
+        vec2 limitVelocityRange = texture(limitVelocityGradientSampler, vec2(ageGradient, 0)).rg;
+        float limitVelocity = limitVelocityRange.x + (limitVelocityRange.y - limitVelocityRange.x) * seed.y;
 
         float currentVelocity = length(updatedDirection);
 
         if (currentVelocity > limitVelocity) {
             updatedDirection = updatedDirection * limitVelocityDamping;
         }
+    #endif
+
+    #ifdef ATTRACTORS
+    {
+        for (int i = 0; i < attractorCount; i++) {
+            vec3 toAttractor = attractorPositionAndStrength[i].xyz - outPosition;
+            float distSq = dot(toAttractor, toAttractor) + 1.0;
+            updatedDirection += (attractorPositionAndStrength[i].w / distSq) * normalize(toAttractor) * timeDelta;
+        }
+    }
     #endif
 
     outDirection = updatedDirection;
@@ -470,7 +546,8 @@ void main() {
 #endif 
 
 #ifdef ANGULARSPEEDGRADIENTS
-    float angularSpeed = texture(angularSpeedGradientSampler, vec2(ageGradient, 0)).r;
+    vec2 angularSpeedRange = texture(angularSpeedGradientSampler, vec2(ageGradient, 0)).rg;
+    float angularSpeed = angularSpeedRange.x + (angularSpeedRange.y - angularSpeedRange.x) * seed.z;
     outAngle = angle + angularSpeed * timeDelta;
 #else
     outAngle = vec2(angle.x + angle.y * timeDelta, angle.y);

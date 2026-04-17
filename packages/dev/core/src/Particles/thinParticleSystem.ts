@@ -1,5 +1,5 @@
 import { type Immutable, type Nullable } from "../types";
-import { FactorGradient, ColorGradient, Color3Gradient, GradientHelper } from "../Misc/gradients";
+import { type FactorGradient, ColorGradient, Color3Gradient, GradientHelper } from "../Misc/gradients";
 import { type Observer, Observable } from "../Misc/observable";
 import { Vector3, Matrix, TmpVectors } from "../Maths/math.vector";
 import { VertexBuffer, Buffer } from "../Buffers/buffer";
@@ -778,36 +778,6 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
         throw new Error("Method not implemented.");
     }
 
-    private _addFactorGradient(factorGradients: FactorGradient[], gradient: number, factor: number, factor2?: number) {
-        const newGradient = new FactorGradient(gradient, factor, factor2);
-        factorGradients.push(newGradient);
-
-        factorGradients.sort((a, b) => {
-            if (a.gradient < b.gradient) {
-                return -1;
-            } else if (a.gradient > b.gradient) {
-                return 1;
-            }
-
-            return 0;
-        });
-    }
-
-    private _removeFactorGradient(factorGradients: Nullable<FactorGradient[]>, gradient: number) {
-        if (!factorGradients) {
-            return;
-        }
-
-        let index = 0;
-        for (const factorGradient of factorGradients) {
-            if (factorGradient.gradient === gradient) {
-                factorGradients.splice(index, 1);
-                break;
-            }
-            index++;
-        }
-    }
-
     private _syncLifeTimeCreation() {
         if (this.targetStopDuration && this._lifeTimeGradients && this._lifeTimeGradients.length > 0) {
             this._lifeTimeCreation.process = _CreateLifeGradientsData;
@@ -1174,33 +1144,6 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
             _RemoveFromQueue(this._dragCreation);
             _RemoveFromQueue(this._dragGradientProcessing);
         }
-
-        return this;
-    }
-
-    /**
-     * Adds a new emit rate gradient (please note that this will only work if you set the targetStopDuration property)
-     * @param gradient defines the gradient to use (between 0 and 1)
-     * @param factor defines the emit rate value to affect to the specified gradient
-     * @param factor2 defines an additional factor used to define a range ([factor, factor2]) with main value to pick the final value from
-     * @returns the current particle system
-     */
-    public addEmitRateGradient(gradient: number, factor: number, factor2?: number): IParticleSystem {
-        if (!this._emitRateGradients) {
-            this._emitRateGradients = [];
-        }
-
-        this._addFactorGradient(this._emitRateGradients, gradient, factor, factor2);
-        return this;
-    }
-
-    /**
-     * Remove a specific emit rate gradient
-     * @param gradient defines the gradient to remove
-     * @returns the current particle system
-     */
-    public removeEmitRateGradient(gradient: number): IParticleSystem {
-        this._removeFactorGradient(this._emitRateGradients, gradient);
 
         return this;
     }
