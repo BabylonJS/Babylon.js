@@ -36,21 +36,17 @@ describe("SpotLight", () => {
     });
 
     describe("light texture readiness", () => {
-        // Regression tests for https://github.com/BabylonJS/Babylon.js/pull/18255.
+        // When a light owns texture resources that are not yet ready (e.g. a SpotLight's
+        // projectionTexture or iesProfileTexture), material readiness must reflect that
+        // so scene.isReady() returns false and scene.executeWhenReady() waits for those
+        // textures before firing. Otherwise, callers that render on executeWhenReady —
+        // such as visual-test harnesses — can produce frames before the texture-dependent
+        // effect is applied.
         //
-        // When a light owns texture resources that are not yet ready (a SpotLight's
-        // projectionTexture or iesProfileTexture being the current cases), material
-        // readiness must reflect that so that scene.isReady() returns false and
-        // scene.executeWhenReady() waits for the textures before firing. Callers such
-        // as the BN playground visual-test harness otherwise render frames before the
-        // projection effect is applied and produce intermittent visual-test regressions.
-        //
-        // Each test sets up a lit mesh with a StandardMaterial, pins some light-texture
+        // Each test sets up a lit mesh with a StandardMaterial, pins a light-texture
         // readiness signal to "not ready", and then polls scene.isReady(). Polling with
-        // a microtask yield lets the NullEngine's async shader compile settle, so that
-        // on master (no fix) the material reaches compiled state and scene.isReady()
-        // flips to true — reproducing the bug — while on the fix branch material
-        // readiness remains gated and scene.isReady() stays false.
+        // a microtask yield lets the NullEngine's async shader compile settle before the
+        // assertion, so the test guards against a material flipping to ready prematurely.
         async function pollSceneIsReady(scene: Scene): Promise<boolean> {
             for (let i = 0; i < 20; i++) {
                 if (scene.isReady()) {
