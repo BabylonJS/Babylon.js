@@ -79,6 +79,11 @@ export const RegisterNodePortDesign = (stateManager: StateManager) => {
     stateManager.applyNodePortDesign = (portData: IPortData, element: HTMLElement, imgHost: HTMLImageElement, _pip: HTMLDivElement) => {
         const cpd = portData as ConnectionPointPortData;
 
+        // Apply rich tooltip on the port icon
+        if (cpd.tooltip) {
+            element.title = cpd.tooltip;
+        }
+
         if (cpd.connectionKind === "signal") {
             element.style.background = BlockTools.GetSignalColor();
             imgHost.src = "data:image/svg+xml;base64," + _SvgSignal;

@@ -708,7 +708,7 @@ export class GraphNode {
             control = PropertyLedger.DefaultControl;
         }
 
-        return React.createElement(control, { stateManager: this._stateManager, nodeData: this.content });
+        return React.createElement(control, { key: this.content.uniqueId, stateManager: this._stateManager, nodeData: this.content });
     }
 
     public _forceRebuild(source: any, propertyName: string, notifiers?: IEditablePropertyOption["notifiers"]) {

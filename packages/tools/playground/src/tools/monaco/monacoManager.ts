@@ -1,7 +1,7 @@
 /* eslint-disable no-await-in-loop */
 /* eslint-disable @typescript-eslint/no-floating-promises */
 import * as monaco from "monaco-editor/esm/vs/editor/editor.api";
-import { type GlobalState } from "../../globalState";
+import { type GlobalState, type IDiagnosticInfo } from "../../globalState";
 import { Utilities } from "../utilities";
 import { Logger, Observable } from "@dev/core";
 import { debounce } from "../debounce";
@@ -188,6 +188,29 @@ export class MonacoManager {
         });
 
         this.globalState.onFilesChangedObservable.add(() => {
+            // Create models for any new files that don't have models yet,
+            // and sync content for existing models that have changed externally.
+            for (const [path, code] of Object.entries(this.globalState.files)) {
+                if (!this._files.has(path)) {
+                    this._files.addFile(path, code, (p, c) => {
+                        this.globalState.files[p] = c;
+                        this._files.setDirty(true);
+                    });
+                } else {
+                    const model = this._files.getModel(path);
+                    if (model && model.getValue() !== code) {
+                        model.setValue(code);
+                    }
+                }
+            }
+
+            // Remove models for files that no longer exist.
+            for (const path of this._files.paths()) {
+                if (!(path in this.globalState.files)) {
+                    this._files.removeFile(path);
+                }
+            }
+
             // Prevent worker restart during hydration to avoid race conditions
             if (!this._hydrating) {
                 this._tsPipeline.forceSyncModels();
@@ -206,6 +229,24 @@ export class MonacoManager {
 
         // Initialize getRunnable as a bound method
         this.globalState.getRunnable = this.getRunnableAsync.bind(this);
+
+        // Expose diagnostics from Monaco editor markers.
+        this.globalState.getDiagnostics = () => {
+            const result: IDiagnosticInfo[] = [];
+            const markers = monaco.editor.getModelMarkers({});
+            for (const marker of markers) {
+                const uri = marker.resource?.path ?? "";
+                const fileName = uri.startsWith("/pg/") ? uri.slice(4) : uri;
+                result.push({
+                    file: fileName,
+                    message: marker.message,
+                    severity: marker.severity === monaco.MarkerSeverity.Error ? "error" : marker.severity === monaco.MarkerSeverity.Warning ? "warning" : "info",
+                    line: marker.startLineNumber,
+                    column: marker.startColumn,
+                });
+            }
+            return result;
+        };
     }
 
     private _initializeFileState(entry: string) {

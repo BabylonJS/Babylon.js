@@ -79,6 +79,9 @@ export class Parser {
 
     private _rootNodes: Node[]; // Array of root-level nodes in the animation, in top-down z order
     private _parentNodes: Map<number, Node> = new Map<number, Node>(); // Map of nodes to build the scenegraph from the animation layers
+    private _currentLayerOriginalIndex: number = 0; // Original array index of the layer currently being parsed, used for sprite z-ordering
+    private _layerOriginalIndices: Map<RawLottieLayer, number> = new Map<RawLottieLayer, number>(); // Maps layers to their original array index for z-ordering
+    private _startFrame: number = 0;
 
     /**
      * Get the animation information parsed from the Lottie file.
@@ -119,20 +122,25 @@ export class Parser {
 
     private _loadFromData(rawData: RawLottieAnimation): AnimationInfo {
         this._unsupportedFeatures.length = 0; // Clear previous errors
+        this._startFrame = rawData.ip;
 
         this._parseFonts(rawData);
 
         // Layers data may come unorderer, we need to short into child-parents but maintaining z-order before parsing
         const orderedLayers = this._reoderLayers(rawData.layers);
         for (let i = 0; i < orderedLayers.length; i++) {
+            this._currentLayerOriginalIndex = this._layerOriginalIndices.get(orderedLayers[i]) ?? i;
             this._parseLayer(orderedLayers[i]);
         }
+
+        // Clear layer index map to allow raw JSON data to be garbage-collected
+        this._layerOriginalIndices.clear();
 
         // Update the atlas texture after creating all sprites from the animation
         this._packer.updateAtlasTexture();
 
-        // Reorder the sprites from back to front
-        this._renderingManager.ready();
+        // Reorder the sprites from back to front and set the final atlas textures
+        this._renderingManager.ready(this._packer.textures);
 
         // Release the canvas to avoid memory leaks
         this._packer.releaseCanvas();
@@ -159,6 +167,11 @@ export class Parser {
     }
 
     private _reoderLayers(layers: RawLottieLayer[]): RawLottieLayer[] {
+        // Record the original array index of each layer before reordering, for z-order preservation
+        for (let i = 0; i < layers.length; i++) {
+            this._layerOriginalIndices.set(layers[i], i);
+        }
+
         let unusedIndex = Number.MIN_SAFE_INTEGER;
         const layerTrees: LayerTree[] = [];
         let movedLayers = Number.MAX_VALUE;
@@ -324,16 +337,16 @@ export class Parser {
 
     private _parseShapeLayer(layer: RawShapeLayer, transform: Transform, parent: Node): Node {
         const anchorNode = this._parseNullLayer(layer, transform, parent);
-        this._parseElements(layer.shapes, anchorNode);
+        const rasterizationFrame = this._getRasterizationFrame(layer);
+        this._parseElements(layer.shapes, anchorNode, rasterizationFrame);
 
         return anchorNode;
     }
 
     private _parseTextLayer(layer: RawTextLayer, transform: Transform, parent: Node): Node | undefined {
-        // Get the scale and add the sprite to the texture packer
-        const currentScale = { x: 1, y: 1 };
-        const tempPosition = { x: 1, y: 1 };
-        parent.worldMatrix.decompose(currentScale, tempPosition);
+        // Get the rasterization scale at the frame when the layer first becomes visible
+        const rasterizationFrame = this._getRasterizationFrame(layer);
+        const currentScale = this._getRasterizationScale(parent, rasterizationFrame);
         const spriteInfo = this._packer.addLottieText(layer.t, currentScale);
 
         if (spriteInfo === undefined) {
@@ -354,7 +367,7 @@ export class Parser {
         sprite.height = spriteInfo.heightPx;
         sprite.invertV = true;
 
-        this._renderingManager.addSprite(sprite);
+        this._renderingManager.addSprite(sprite, this._currentLayerOriginalIndex, spriteInfo.atlasIndex);
 
         const positionProperty: Vector2Property = {
             startValue: { x: transform.anchorPoint.startValue.x, y: transform.anchorPoint.startValue.y },
@@ -388,7 +401,7 @@ export class Parser {
         );
     }
 
-    private _parseElements(elements: RawElement[] | undefined, parent: Node): void {
+    private _parseElements(elements: RawElement[] | undefined, parent: Node, rasterizationFrame: number): void {
         if (elements === undefined || elements.length <= 0) {
             return;
         }
@@ -403,10 +416,10 @@ export class Parser {
             }
 
             if (elements[i].ty === "gr") {
-                this._parseGroup(elements[i], parent);
+                this._parseGroup(elements[i], parent, rasterizationFrame);
                 //break;
             } else if (elements[i].ty === "sh" || elements[i].ty === "rc" || elements[i].ty === "el") {
-                this._parseShapes(elements, parent);
+                this._parseShapes(elements, parent, rasterizationFrame);
                 break; // After parsing the shapes, this array of elements is done
             } else {
                 this._unsupportedFeatures.push(`Only groups or shapes are supported as children of layers - Name: ${elements[i].nm} Type: ${elements[i].ty}`);
@@ -415,7 +428,7 @@ export class Parser {
         }
     }
 
-    private _parseGroup(group: RawElement, parent: Node): void {
+    private _parseGroup(group: RawElement, parent: Node, rasterizationFrame: number): void {
         if (group.it === undefined || group.it.length === 0) {
             this._unsupportedFeatures.push(`Unexpected empty group: ${group.nm}`);
             return;
@@ -440,14 +453,12 @@ export class Parser {
         );
 
         // Parse the children of the group
-        this._parseElements(group.it, anchorNode);
+        this._parseElements(group.it, anchorNode, rasterizationFrame);
     }
 
-    private _parseShapes(elements: RawElement[], parent: Node): void {
-        // Get the scale and add the sprite to the texture packer
-        const currentScale = { x: 1, y: 1 };
-        const tempPosition = { x: 1, y: 1 };
-        parent.worldMatrix.decompose(currentScale, tempPosition);
+    private _parseShapes(elements: RawElement[], parent: Node, rasterizationFrame: number): void {
+        // Get the rasterization scale at the frame when the layer first becomes visible
+        const currentScale = this._getRasterizationScale(parent, rasterizationFrame);
         const spriteInfo = this._packer.addLottieShape(elements, currentScale);
 
         // Build the ThinSprite from the texture packer information
@@ -464,7 +475,7 @@ export class Parser {
         sprite.height = spriteInfo.heightPx;
         sprite.invertV = true;
 
-        this._renderingManager.addSprite(sprite);
+        this._renderingManager.addSprite(sprite, this._currentLayerOriginalIndex, spriteInfo.atlasIndex);
 
         const positionProperty: Vector2Property = {
             startValue: { x: spriteInfo.centerX || 0, y: -spriteInfo.centerY || 0 },
@@ -481,6 +492,52 @@ export class Parser {
             undefined, // Opacity is not used for sprites final transform
             parent
         );
+    }
+
+    private _getRasterizationFrame(layer: RawLottieLayer): number {
+        const fallback = layer.ip ?? this._startFrame;
+
+        const opacityProp = layer.ks?.o;
+        if (!opacityProp || opacityProp.a === 0) {
+            return fallback;
+        }
+
+        const keyframes = opacityProp.k as RawVectorKeyframe[];
+        if (keyframes.length === 0) {
+            return fallback;
+        }
+
+        // If the first keyframe is already non-zero, the layer is visible from its start.
+        if (keyframes[0].s[0] > 0) {
+            return Math.max(fallback, keyframes[0].t);
+        }
+
+        // Otherwise find the first segment where opacity transitions from 0 to > 0.
+        // For held segments (h === 1) the jump happens at the next keyframe's time.
+        // For interpolated segments the layer becomes visible just after the current keyframe's time
+        // (use t + 1 since lottie frame times are integers in practice).
+        for (let i = 0; i < keyframes.length - 1; i++) {
+            if (keyframes[i].s[0] === 0 && keyframes[i + 1].s[0] > 0) {
+                const visibleFrame = keyframes[i].h === 1 ? keyframes[i + 1].t : keyframes[i].t + 1;
+                return Math.max(fallback, visibleFrame);
+            }
+        }
+
+        // Opacity never transitions to a visible value; fall back to the layer start.
+        return fallback;
+    }
+
+    private _getRasterizationScale(parent: Node, rasterizationFrame: number): IVector2Like {
+        const scale = { x: 1, y: 1 };
+        const tempPosition = { x: 0, y: 0 };
+
+        // Always evaluate via decomposeWorldMatrixAtFrame. The cached parent.worldMatrix reflects each
+        // ancestor's transform at its own first keyframe time, which is not guaranteed to equal
+        // rasterizationFrame (or even _startFrame) — composition ip and per-layer keyframe start times
+        // can all differ. decomposeWorldMatrixAtFrame handles frames before/at/after keyframes uniformly.
+        parent.decomposeWorldMatrixAtFrame(rasterizationFrame, scale, tempPosition);
+
+        return scale;
     }
 
     private _getTransform(elements: RawElement[] | undefined): Transform | undefined {

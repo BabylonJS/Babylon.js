@@ -44,6 +44,40 @@ The loaded scene's objects (meshes, lights, cameras, etc.) become available as r
 - **Load from file** — Import a previously saved JSON file.
 - **Load from snippet** — Enter a snippet ID to restore a graph (and its associated scene, if any).
 
+### How to Use (Embed Code)
+
+Click the **&lt;/&gt;** button in the toolbar to open the **How to Use** dialog. It shows copy-to-clipboard code samples for integrating your flow graph into a project:
+
+- **From snippet server** — Fetch the snippet JSON from `https://snippet.babylonjs.com/<snippetId>`, parse the payload, then call `ParseFlowGraphAsync(data, { coordinator })` from `@babylonjs/core/FlowGraph/flowGraphParser`.
+- **From JSON file** — Load the saved `.json` file and call `ParseFlowGraphAsync(data, { coordinator })` from `@babylonjs/core/FlowGraph/flowGraphParser`.
+
+Each code sample includes the necessary import statements and is ready to paste into your project.
+
+---
+
+## Variables Panel
+
+The **Variables** section in the property panel (right sidebar, when no block is selected) lists all variables referenced by `GetVariable` and `SetVariable` blocks in the graph.
+
+### Viewing Variables
+
+Each variable row shows:
+
+- The **variable name**
+- A reference count (`2G / 1S` means 2 GetVariable blocks and 1 SetVariable block reference it)
+
+### Adding Variables
+
+Click **+ Add** to create a new variable with an auto-generated name. The variable is registered on context 0 with an undefined default value.
+
+### Renaming Variables
+
+Double-click a variable name to edit it. Press **Enter** to confirm or **Escape** to cancel. Renaming propagates to all `GetVariable` and `SetVariable` blocks that reference the old name, and also updates the variable in all execution contexts.
+
+### Deleting Variables
+
+Click the **✕** button on a variable row to delete it. This removes all `GetVariable` and `SetVariable` blocks that reference the variable, and removes the variable from all execution contexts.
+
 ### glTF Import / Export
 
 **Importing a glTF with an interactive flow graph:**
@@ -110,6 +144,23 @@ The **Speed** buttons in the toolbar let you slow down or speed up scene executi
 | **2×**    | Double speed — fast forward                                                      |
 
 The time scale affects **everything**: scene animations, FlowGraph delta time, interpolation blocks, async waits, and timer-based logic. The active speed button is highlighted in orange. The selected speed persists when the scene is reloaded via Reset.
+
+### Execution Contexts
+
+A `FlowGraph` can have multiple **execution contexts**, each representing an independent execution of the same graph logic with its own variable state. This enables patterns like running the same "click to animate" behavior on 10 different meshes, each with its own score, health, or animation state.
+
+The **Ctx** dropdown in the toolbar shows all execution contexts. By default, there is one context ("Context 0") created when the graph starts.
+
+| Control          | Description                                                                                                             |
+| ---------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| **Ctx dropdown** | Select which context is active — debug highlighting, breakpoints, and the Variables panel reflect the selected context. |
+| **+**            | Create a new execution context. Each new context starts with independent variable state.                                |
+| **−**            | Remove the selected context. Disabled when only one context remains.                                                    |
+| **✎**            | Rename the selected context. Press Enter to confirm, Escape to cancel.                                                  |
+
+**Per-context variables:** Each context maintains its own set of user variables. When you switch contexts, the Variables panel shows the values for the selected context. Adding a variable via the Variables panel sets it on the currently selected context.
+
+**Serialization:** Context names and per-context variables are preserved when saving and loading flow graphs.
 
 ---
 
@@ -447,6 +498,77 @@ The editor includes blocks for controlling audio playback using the Babylon.js A
 - **Watch the flow animation** — in debug mode, the animated dots show you the actual order of execution, which can reveal unexpected paths.
 - **Reset vs. Stop** — use Reset when you've modified the scene's state and need a clean slate; use Stop when you just want to halt execution.
 - **Minimap** — when you zoom or pan, a minimap appears in the bottom-right corner showing all nodes, frames, and your current viewport. Click or drag on the minimap to navigate directly to that area. It auto-hides after 1.5 seconds of inactivity.
+
+---
+
+## Right-Click Context Menus
+
+Right-click on the canvas, a node, a link, or a frame to open a context menu with relevant actions. The menu items change depending on what was clicked.
+
+### Canvas (Background)
+
+| Action                 | Shortcut | Description                                   |
+| ---------------------- | -------- | --------------------------------------------- |
+| **Add Block...**       | Space    | Opens the block search box to add a new block |
+| **Paste**              | Ctrl+V   | Pastes previously copied blocks               |
+| **Create Sticky Note** | Ctrl+M   | Adds a sticky note at the click position      |
+| **Select All**         | Ctrl+A   | Selects all nodes and frames                  |
+| **Zoom to Fit**        | —        | Zooms to fit the entire graph                 |
+| **Reorganize**         | —        | Auto-layouts the graph                        |
+
+### Node(s)
+
+| Action                    | Shortcut | Description                                               |
+| ------------------------- | -------- | --------------------------------------------------------- |
+| **Delete**                | Del      | Deletes the selected node(s)                              |
+| **Duplicate**             | Ctrl+C/V | Copies and pastes the selected node(s)                    |
+| **Add/Remove Breakpoint** | F9       | Toggles a breakpoint (single execution block only)        |
+| **Create Smart Group**    | Ctrl+G   | Groups 2+ selected blocks into a frame (when applicable)  |
+| **Disconnect All Ports**  | —        | Disconnects all input and output ports from the selection |
+
+### Link
+
+| Action                | Shortcut | Description                          |
+| --------------------- | -------- | ------------------------------------ |
+| **Delete Connection** | Del      | Removes the selected connection line |
+
+### Frame
+
+| Action              | Shortcut | Description                                             |
+| ------------------- | -------- | ------------------------------------------------------- |
+| **Delete Frame**    | Del      | Removes the frame (keeps contained blocks)              |
+| **Collapse/Expand** | —        | Toggles the frame between collapsed and expanded states |
+
+---
+
+## Port Tooltips
+
+Hover over any port icon (the colored dot or shape on a node) to see a tooltip showing:
+
+- **Port name** — the connection point's label (e.g., "a", "result", "in")
+- **Data type** — for data ports, the rich type (e.g., Number, Vector3, Boolean)
+- **Direction** — whether it's an Input or Output port
+
+Signal ports (execution flow) show "Signal Input" or "Signal Output".
+
+---
+
+## Toast Notifications
+
+Brief notifications appear in the bottom-right corner of the editor for key operations. Toasts auto-dismiss after 4 seconds and can be closed early by clicking the ✕ button.
+
+### Operations That Trigger Toasts
+
+| Event                     | Severity | Message                                       |
+| ------------------------- | -------- | --------------------------------------------- |
+| File load success         | Success  | "Flow graph loaded from file"                 |
+| File save                 | Success  | "Flow graph saved to file"                    |
+| Snippet save              | Success  | "Graph saved — ID: ... (copied to clipboard)" |
+| Snippet load success      | Success  | "Flow graph loaded from snippet ..."          |
+| Snippet save/load failure | Error    | Error description                             |
+| Disconnect all ports      | Info     | "Disconnected all ports"                      |
+
+All toast messages are also logged to the Log panel for reference.
 
 ---
 

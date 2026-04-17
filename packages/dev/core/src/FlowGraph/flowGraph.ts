@@ -243,6 +243,28 @@ export class FlowGraph {
     }
 
     /**
+     * Returns the number of execution contexts currently attached to this graph.
+     */
+    public get contextCount(): number {
+        return this._executionContexts.length;
+    }
+
+    /**
+     * Remove an execution context by index. Any pending async blocks on
+     * the context are cleared before removal.
+     * @param index the index of the context to remove
+     * @returns the removed context, or undefined if the index was out of range
+     */
+    public removeContext(index: number): FlowGraphContext | undefined {
+        if (index < 0 || index >= this._executionContexts.length) {
+            return undefined;
+        }
+        const [removed] = this._executionContexts.splice(index, 1);
+        removed._clearPendingBlocks();
+        return removed;
+    }
+
+    /**
      * Returns all blocks registered in this graph, including disconnected ones.
      * @returns a read-only array of all blocks
      */

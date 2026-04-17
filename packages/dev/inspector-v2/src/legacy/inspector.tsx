@@ -447,7 +447,7 @@ export class Inspector {
     }
 
     public static Hide() {
-        this._CurrentInstance?.disposeToken.dispose();
+        void this._CurrentInstance?.disposeToken.dispose();
     }
 
     // @ts-expect-error TS6133: This is private, but used by debugLayer (same as Inspector v1).

@@ -1,6 +1,7 @@
 /* eslint-disable no-console */
 import { spawn } from "child_process";
 import { dirname, join, resolve } from "path";
+import { readFileSync } from "fs";
 import { fileURLToPath } from "url";
 import { parseArgs } from "util";
 import { WebSocket } from "./webSocket.js";
@@ -14,7 +15,7 @@ import {
     type ExecResponse,
     type SessionInfo,
     type SessionsResponse,
-} from "./protocol.js";
+} from "shared-ui-components/modularTool/services/cli/protocol";
 
 const Config = LoadConfig();
 
@@ -320,7 +321,8 @@ export function PrintCommandHelp(commandId: string, descriptor: CommandInfo, mis
         const maxLen = Math.max(...descriptor.args.map((a) => `--${a.name}${a.required ? " (required)" : ""}`.length));
         for (const arg of descriptor.args) {
             const label = `--${arg.name}${arg.required ? " (required)" : ""}`;
-            console.log(`  ${label.padEnd(maxLen)}  ${arg.description}`);
+            const typeHint = arg.type === "file" ? " [reads file content from path]" : "";
+            console.log(`  ${label.padEnd(maxLen)}  ${arg.description}${typeHint}`);
         }
     }
     if (missingRequired.length > 0 && !wantsHelp) {
@@ -402,6 +404,20 @@ async function HandleCommand(socket: WebSocket, args: IParsedArgs): Promise<void
     if (wantsHelp || missingRequired.length > 0) {
         PrintCommandHelp(commandId, descriptor, missingRequired, wantsHelp);
         return;
+    }
+
+    // Resolve "file" type arguments: read the file and replace the value with its contents.
+    for (const argDef of descriptor.args ?? []) {
+        if (argDef.type === "file" && argDef.name in commandArgs) {
+            const filePath = resolve(commandArgs[argDef.name]);
+            try {
+                commandArgs[argDef.name] = readFileSync(filePath, "utf-8");
+            } catch (err: unknown) {
+                console.error(`Error reading file for --${argDef.name}: ${err}`);
+                process.exitCode = 1;
+                return;
+            }
+        }
     }
 
     const response = await SendAndReceive<ExecResponse>(socket, {

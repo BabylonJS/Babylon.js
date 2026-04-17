@@ -7,9 +7,10 @@ import {
     type CommandResponse,
     type CommandsResponse,
     type ExecResponse,
+    type InfoResponse,
     type SessionsResponse,
     type StopResponse,
-} from "../../../src/cli/protocol";
+} from "shared-ui-components/modularTool/services/cli/protocol";
 
 function connect(port: number): Promise<WebSocket> {
     return new Promise((resolve, reject) => {
@@ -55,12 +56,30 @@ function tick(ms = 50): Promise<void> {
     return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+function autoRespondGetInfo(ws: WebSocket, name: string | (() => string)): void {
+    ws.on("message", (data) => {
+        try {
+            const msg = JSON.parse(data.toString());
+            if (msg.type === "getInfo") {
+                const response: InfoResponse = {
+                    type: "infoResponse",
+                    requestId: msg.requestId,
+                    name: typeof name === "function" ? name() : name,
+                };
+                ws.send(JSON.stringify(response));
+            }
+        } catch {
+            // ignore
+        }
+    });
+}
+
 describe("Inspector Bridge", () => {
     let bridge: IBridgeHandle;
 
     beforeEach(async () => {
         vi.spyOn(console, "log").mockImplementation(() => {});
-        bridge = await StartBridge({ browserPort: 0, cliPort: 0, sessionWaitTimeoutMs: 200 });
+        bridge = await StartBridge({ browserPort: 0, cliPort: 0, sessionWaitTimeoutMs: 200, infoTimeoutMs: 200 });
     });
 
     afterEach(() => {
@@ -76,6 +95,7 @@ describe("Inspector Bridge", () => {
 
     it("registers a browser session and lists it via CLI", async () => {
         const browser = await connect(bridge.browserPort);
+        autoRespondGetInfo(browser, "Test Scene");
         browser.send(JSON.stringify({ type: "register", name: "Test Scene" }));
         await tick();
 
@@ -110,6 +130,7 @@ describe("Inspector Bridge", () => {
 
     it("removes session when browser disconnects", async () => {
         const browser = await connect(bridge.browserPort);
+        autoRespondGetInfo(browser, "Temporary Scene");
         browser.send(JSON.stringify({ type: "register", name: "Temporary Scene" }));
         await tick();
 
@@ -132,6 +153,7 @@ describe("Inspector Bridge", () => {
 
     it("forwards command listing from browser to CLI", async () => {
         const browser = await connect(bridge.browserPort);
+        autoRespondGetInfo(browser, "Scene");
         browser.send(JSON.stringify({ type: "register", name: "Scene" }));
         await tick();
 
@@ -166,6 +188,7 @@ describe("Inspector Bridge", () => {
 
     it("forwards command execution from CLI to browser", async () => {
         const browser = await connect(bridge.browserPort);
+        autoRespondGetInfo(browser, "Scene");
         browser.send(JSON.stringify({ type: "register", name: "Scene" }));
         await tick();
 
@@ -237,10 +260,12 @@ describe("Inspector Bridge", () => {
 
     it("supports multiple browser sessions", async () => {
         const browser1 = await connect(bridge.browserPort);
+        autoRespondGetInfo(browser1, "Scene A");
         browser1.send(JSON.stringify({ type: "register", name: "Scene A" }));
         await tick();
 
         const browser2 = await connect(bridge.browserPort);
+        autoRespondGetInfo(browser2, "Scene B");
         browser2.send(JSON.stringify({ type: "register", name: "Scene B" }));
         await tick();
 
@@ -258,6 +283,7 @@ describe("Inspector Bridge", () => {
 
     it("ignores malformed JSON on browser port", async () => {
         const browser = await connect(bridge.browserPort);
+        autoRespondGetInfo(browser, "After Bad JSON");
         browser.send("not valid json{{{");
         await tick();
 
@@ -281,11 +307,75 @@ describe("Inspector Bridge", () => {
 
         // Bridge should still be functional — send a valid request.
         const browser = await connect(bridge.browserPort);
+        autoRespondGetInfo(browser, "Scene");
         browser.send(JSON.stringify({ type: "register", name: "Scene" }));
         await tick();
 
         const response = await sendAndReceive<SessionsResponse>(cli, { type: "sessions" });
         expect(response.sessions).toHaveLength(1);
+
+        await close(browser);
+        await close(cli);
+    });
+
+    it("removes session that does not respond to getInfo", async () => {
+        const browser = await connect(bridge.browserPort);
+        // Register but do NOT set up autoRespondGetInfo, so getInfo will time out.
+        browser.send(JSON.stringify({ type: "register", name: "Dead Session" }));
+        await tick();
+
+        const cli = await connect(bridge.cliPort);
+        const response = await sendAndReceive<SessionsResponse>(cli, { type: "sessions" });
+
+        expect(response.type).toBe("sessionsResponse");
+        expect(response.sessions).toHaveLength(0);
+
+        await close(browser);
+        await close(cli);
+    });
+
+    it("replaces session when same socket re-registers", async () => {
+        const browser = await connect(bridge.browserPort);
+        autoRespondGetInfo(browser, "Re-registered");
+
+        // Register twice on the same socket.
+        browser.send(JSON.stringify({ type: "register", name: "First" }));
+        await tick();
+        browser.send(JSON.stringify({ type: "register", name: "Re-registered" }));
+        await tick();
+
+        const cli = await connect(bridge.cliPort);
+        const response = await sendAndReceive<SessionsResponse>(cli, { type: "sessions" });
+
+        // Only one session should exist, not two.
+        expect(response.sessions).toHaveLength(1);
+        expect(response.sessions[0].name).toBe("Re-registered");
+
+        await close(browser);
+        await close(cli);
+    });
+
+    it("returns updated session name via getInfo on each listing", async () => {
+        let currentName = "Initial Name";
+        const browser = await connect(bridge.browserPort);
+        autoRespondGetInfo(browser, () => currentName);
+        browser.send(JSON.stringify({ type: "register", name: "Initial Name" }));
+        await tick();
+
+        const cli = await connect(bridge.cliPort);
+
+        // First listing returns the initial name.
+        const first = await sendAndReceive<SessionsResponse>(cli, { type: "sessions" });
+        expect(first.sessions).toHaveLength(1);
+        expect(first.sessions[0].name).toBe("Initial Name");
+
+        // Update the name on the browser side.
+        currentName = "Updated Name";
+
+        // Second listing reflects the updated name.
+        const second = await sendAndReceive<SessionsResponse>(cli, { type: "sessions" });
+        expect(second.sessions).toHaveLength(1);
+        expect(second.sessions[0].name).toBe("Updated Name");
 
         await close(browser);
         await close(cli);

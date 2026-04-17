@@ -1,3 +1,8 @@
+---
+name: porting-tools-to-fluent
+description: "Guide for porting Babylon.js tools from legacy shared-ui-components to Fluent UI using MakeModularTool. Use when: port to fluent, migrate to fluent, fluent migration, porting tool UI."
+---
+
 # Porting Babylon.js Tools to Fluent UI
 
 Guide for porting Babylon.js tools (NME, NGE, NPE, NRGE, Playground, etc.) from the legacy shared-ui-components to Fluent UI using the `MakeModularTool` framework from `shared-ui-components/modularTool/`.
@@ -238,7 +243,9 @@ const useStyles = makeStyles({
 
 ## 5. Icons
 
-Replace all FontAwesome icons with `@fluentui/react-icons`. Common mappings:
+Replace all FontAwesome icons with `@fluentui/react-icons`. For general icon conventions (unsized variants, `fontSize` sizing), see [fluent.instructions.md](fluent.instructions.md).
+
+Common FontAwesome → Fluent mappings:
 
 | FontAwesome | Fluent Icon |
 |---|---|
@@ -293,11 +300,11 @@ The default viewBox is `0 0 20 20`. If your SVG source has a different viewBox, 
 
 ## 6. Styling Migration (SCSS → makeStyles)
 
+For general `makeStyles`, spacing tokens, and inline style rules, see [fluent.instructions.md](fluent.instructions.md). This section covers migration-specific steps.
+
 ### Rules
 
 - **Zero raw CSS/SCSS** after the port. Delete all `.scss` files and `scssDeclaration.d.ts`.
-- Use `makeStyles` from `@fluentui/react-components` for all styles.
-- Use `tokens` from `@fluentui/react-components` for spacing, colors, border radii, font sizes, etc.
 - Only use inline `style={}` for truly dynamic values (e.g. drag-and-drop transforms).
 
 ### Example

@@ -1,5 +1,84 @@
 # Changelog
 
+## 9.3.1
+
+### Core
+
+- Flow Graph Editor: multi-context support with save/load round-trip - by [RaananW](https://github.com/RaananW) ([#18328](https://github.com/BabylonJS/Babylon.js/pull/18328))
+- feat(Gsplat): IBL shadows support for Gaussian Splats - by [raymondyfei](https://github.com/raymondyfei) ([#18331](https://github.com/BabylonJS/Babylon.js/pull/18331))
+- Fix WebGPU type conflicts with TypeScript 6.0 - by [RaananW](https://github.com/RaananW) ([#18327](https://github.com/BabylonJS/Babylon.js/pull/18327))
+- GPU Particle System: Mesh Emitter Support + Emitter Factory Consolidation - by [VicenteCartas](https://github.com/VicenteCartas) ([#18317](https://github.com/BabylonJS/Babylon.js/pull/18317))
+- SelectionOutlineLayer: Fix outline disappearing on instances during LOD transition - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#18324](https://github.com/BabylonJS/Babylon.js/pull/18324))
+- Fix flickering when shadow generator has refreshRate under snapshot rendering - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#18325](https://github.com/BabylonJS/Babylon.js/pull/18325))
+
+### Inspector
+
+- Inspector: Move CLI bridge infrastructure to shared ModularTool framework - by [ryantrem](https://github.com/ryantrem) ([#18332](https://github.com/BabylonJS/Babylon.js/pull/18332))
+
+### Loaders
+
+- feat(Gsplat): IBL shadows support for Gaussian Splats - by [raymondyfei](https://github.com/raymondyfei) ([#18331](https://github.com/BabylonJS/Babylon.js/pull/18331))
+
+### Lottie Player
+
+- Extract Lottie text layout module and align rendering with Lottie spec - by [VicenteCartas](https://github.com/VicenteCartas) ([#18333](https://github.com/BabylonJS/Babylon.js/pull/18333))
+- Refactor node interpolation into reusable static methods and add decomposeWorldMatrixAtFrame - by [VicenteCartas](https://github.com/VicenteCartas) ([#18322](https://github.com/BabylonJS/Babylon.js/pull/18322))
+
+### Playground
+
+- Inspector: Move CLI bridge infrastructure to shared ModularTool framework - by [ryantrem](https://github.com/ryantrem) ([#18332](https://github.com/BabylonJS/Babylon.js/pull/18332))
+
+## 9.3.0
+
+### Inspector
+
+- Inspector: CLI integration in Playground - by [ryantrem](https://github.com/ryantrem) ([#18271](https://github.com/BabylonJS/Babylon.js/pull/18271))
+
+### Playground
+
+- Inspector: CLI integration in Playground - by [ryantrem](https://github.com/ryantrem) ([#18271](https://github.com/BabylonJS/Babylon.js/pull/18271))
+
+## 9.2.2
+
+### Addons
+
+- Optimizations for LUT readback - by [kircher1](https://github.com/kircher1) ([#18306](https://github.com/BabylonJS/Babylon.js/pull/18306))
+
+### Core
+
+- feat(SPLAT): Extend with NianticLabs WASM implementation and enable 4-th order spherical harmonics - by [raymondyfei](https://github.com/raymondyfei) ([#18267](https://github.com/BabylonJS/Babylon.js/pull/18267))
+- GPU Particles: Add billboard stretched local mode - by [VicenteCartas](https://github.com/VicenteCartas) ([#18311](https://github.com/BabylonJS/Babylon.js/pull/18311))
+- more consistent physics viewer axis scaling - by [CedricGuillemet](https://github.com/CedricGuillemet) ([#18308](https://github.com/BabylonJS/Babylon.js/pull/18308))
+- Optimization for panning - by [kircher1](https://github.com/kircher1) ([#18307](https://github.com/BabylonJS/Babylon.js/pull/18307))
+- Flow Graph Editor: Phase 2 glTF round-trip + review fixes - by [RaananW](https://github.com/RaananW) ([#18299](https://github.com/BabylonJS/Babylon.js/pull/18299))
+- TransformNode: remove allocation of infinite-distance computeWorldMatrix - by [kzhsw](https://github.com/kzhsw) ([#18305](https://github.com/BabylonJS/Babylon.js/pull/18305))
+- GPU Particle System: Emit Rate, Start Size, and Life Time Gradients - by [VicenteCartas](https://github.com/VicenteCartas) ([#18303](https://github.com/BabylonJS/Babylon.js/pull/18303))
+- GaussianSplattingMesh: serialization support - by [kzhsw](https://github.com/kzhsw) ([#18032](https://github.com/BabylonJS/Babylon.js/pull/18032))
+- fix(glowLayer): fix readiness check and spurious recompilation for NodeMaterial glow - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#18297](https://github.com/BabylonJS/Babylon.js/pull/18297))
+- feat(animations): opt-in to inherit _originalValue from active animations - by [Popov72](https://github.com/Popov72) ([#18291](https://github.com/BabylonJS/Babylon.js/pull/18291))
+
+### Inspector
+
+- Inspector CLI: Don't auto connect by default - by [ryantrem](https://github.com/ryantrem) ([#18312](https://github.com/BabylonJS/Babylon.js/pull/18312))
+- Port Viewer Configurator to MakeModularTool and Fluent - by [ryantrem](https://github.com/ryantrem) ([#18301](https://github.com/BabylonJS/Babylon.js/pull/18301))
+- Inspector v2: Persist gltf loader options - by [ryantrem](https://github.com/ryantrem) ([#18300](https://github.com/BabylonJS/Babylon.js/pull/18300))
+
+### Loaders
+
+- fix (loaders/OBJ): fix a typo that cause the obj loader not loading v… - by [FairySunny](https://github.com/FairySunny) ([#18318](https://github.com/BabylonJS/Babylon.js/pull/18318))
+- feat(SPLAT): Extend with NianticLabs WASM implementation and enable 4-th order spherical harmonics - by [raymondyfei](https://github.com/raymondyfei) ([#18267](https://github.com/BabylonJS/Babylon.js/pull/18267))
+- Flow Graph Editor: Phase 2 glTF round-trip + review fixes - by [RaananW](https://github.com/RaananW) ([#18299](https://github.com/BabylonJS/Babylon.js/pull/18299))
+
+### Lottie Player
+
+- Lottie: Multi-page sprite atlas, z-order sort, and atlas bleed prevention - by [VicenteCartas](https://github.com/VicenteCartas) ([#18316](https://github.com/BabylonJS/Babylon.js/pull/18316))
+- Lottie: Refactor drawing methods to accept explicit canvas context parameter - by [VicenteCartas](https://github.com/VicenteCartas) ([#18304](https://github.com/BabylonJS/Babylon.js/pull/18304))
+- Adds support for Lottie ellipse shapes (`"el"`), which were previously ignored by the parser. - by [VicenteCartas](https://github.com/VicenteCartas) ([#18302](https://github.com/BabylonJS/Babylon.js/pull/18302))
+
+### Viewer
+
+- Port Viewer Configurator to MakeModularTool and Fluent - by [ryantrem](https://github.com/ryantrem) ([#18301](https://github.com/BabylonJS/Babylon.js/pull/18301))
+
 ## 9.2.1
 
 ### Addons

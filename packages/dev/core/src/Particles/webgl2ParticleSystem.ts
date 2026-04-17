@@ -93,6 +93,8 @@ export class WebGL2ParticleSystem implements IGPUParticleSystemPlatform {
                 "noiseSampler",
                 "dragGradientSampler",
                 "flowMapSampler",
+                "meshPositionSampler",
+                "meshNormalSampler",
             ],
             defines: "",
             fallbacks: null,
@@ -142,7 +144,7 @@ export class WebGL2ParticleSystem implements IGPUParticleSystemPlatform {
             this._updateEffectOptions.transformFeedbackVaryings.push("outColor");
         }
 
-        if (!this._parent._isBillboardBased) {
+        if (this._parent._needsInitialDirection) {
             this._updateEffectOptions.transformFeedbackVaryings.push("outInitialDirection");
         }
 
@@ -176,6 +178,11 @@ export class WebGL2ParticleSystem implements IGPUParticleSystemPlatform {
 
         if (defines.indexOf("LIFETIMEGRADIENTS") !== -1) {
             this._updateEffectOptions.uniformsNames.push("lifeTimeGradientRange");
+        }
+
+        if (defines.indexOf("MESHEMITTER") !== -1) {
+            this._updateEffectOptions.uniformsNames.push("meshTriangleCount");
+            this._updateEffectOptions.uniformsNames.push("meshTextureWidth");
         }
 
         this._updateEffect = this._engine.createEffect("gpuUpdateParticles", this._updateEffectOptions, this._engine);
@@ -251,6 +258,14 @@ export class WebGL2ParticleSystem implements IGPUParticleSystemPlatform {
             this._updateEffect.setTexture("noiseSampler", this._parent.noiseTexture);
         }
 
+        if (this._parent._meshPositionTexture) {
+            this._updateEffect.setTexture("meshPositionSampler", this._parent._meshPositionTexture);
+        }
+
+        if (this._parent._meshNormalTexture) {
+            this._updateEffect.setTexture("meshNormalSampler", this._parent._meshNormalTexture);
+        }
+
         // Bind source VAO
         this._engine.bindVertexArrayObject(this._updateVAO[index], null);
 
@@ -308,7 +323,7 @@ export class WebGL2ParticleSystem implements IGPUParticleSystemPlatform {
             offset += 4;
         }
 
-        if (!this._parent._isBillboardBased) {
+        if (this._parent._needsInitialDirection) {
             updateVertexBuffers["initialDirection"] = source.createVertexBuffer("initialDirection", offset, 3);
             offset += 3;
         }

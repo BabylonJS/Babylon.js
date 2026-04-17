@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { ParseCliArgs, ParseCommandArgs, PrintCommandHelp, ResolveSessionId, SendAndReceive, ValidateSessionId } from "../../../src/cli/cli";
-import { type CommandArgInfo, type CommandInfo, type SessionInfo, type SessionsResponse } from "../../../src/cli/protocol";
+import { type CommandArgInfo, type CommandInfo, type SessionInfo, type SessionsResponse } from "shared-ui-components/modularTool/services/cli/protocol";
 import { EventEmitter } from "events";
 
 // ---------------------------------------------------------------------------

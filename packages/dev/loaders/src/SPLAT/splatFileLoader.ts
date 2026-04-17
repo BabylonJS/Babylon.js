@@ -22,7 +22,7 @@ import { Color4 } from "core/Maths/math.color";
 import { VertexData } from "core/Meshes/mesh.vertexData";
 import { type SPLATLoadingOptions } from "./splatLoadingOptions";
 import { type GaussianSplattingMaterial } from "core/Materials/GaussianSplatting/gaussianSplattingMaterial";
-import { ParseSpz } from "./spz";
+import { ConvertSpzToSplatAsync, GetSpzModule, ParseSpz } from "./spz";
 import { Mode, type IParsedSplat } from "./splatDefs";
 import { ParseSogMeta, type SOGRootData } from "./sog";
 import { Tools } from "core/Misc/tools";
@@ -72,6 +72,8 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
     private static readonly _DefaultLoadingOptions = {
         keepInRam: false,
         flipY: false,
+        needsRotationScaleTextures: false,
+        spzLibraryUrl: typeof WebAssembly === "object" ? "https://unpkg.com/@adobe/spz@0.2.0/dist/spz.js" : undefined,
     } as const satisfies SPLATLoadingOptions;
 
     /** @internal */
@@ -208,10 +210,12 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
 
         const makeGSFromParsedSOG = (parsedSOG: IParsedSplat) => {
             scene._blockEntityCollection = !!this._assetContainer;
-            const gaussianSplatting = this._loadingOptions.gaussianSplattingMesh ?? new GaussianSplattingMesh("GaussianSplatting", null, scene, this._loadingOptions.keepInRam);
+            const gaussianSplatting =
+                this._loadingOptions.gaussianSplattingMesh ??
+                new GaussianSplattingMesh("GaussianSplatting", null, scene, this._loadingOptions.keepInRam, this._loadingOptions.needsRotationScaleTextures);
             gaussianSplatting._parentContainer = this._assetContainer;
             babylonMeshesArray.push(gaussianSplatting);
-            gaussianSplatting.updateData(parsedSOG.data, parsedSOG.sh, { flipY: false });
+            gaussianSplatting.updateData(parsedSOG.data, parsedSOG.sh, { flipY: false }, undefined, parsedSOG.shDegree);
             gaussianSplatting.scaling.y *= -1;
             gaussianSplatting.computeWorldMatrix(true);
             scene._blockEntityCollection = false;
@@ -263,10 +267,11 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
                     case Mode.Splat:
                         {
                             const gaussianSplatting =
-                                this._loadingOptions.gaussianSplattingMesh ?? new GaussianSplattingMesh("GaussianSplatting", null, scene, this._loadingOptions.keepInRam);
+                                this._loadingOptions.gaussianSplattingMesh ??
+                                new GaussianSplattingMesh("GaussianSplatting", null, scene, this._loadingOptions.keepInRam, this._loadingOptions.needsRotationScaleTextures);
                             gaussianSplatting._parentContainer = this._assetContainer;
                             babylonMeshesArray.push(gaussianSplatting);
-                            gaussianSplatting.updateData(parsedPLY.data, parsedPLY.sh, { flipY: false });
+                            gaussianSplatting.updateData(parsedPLY.data, parsedPLY.sh, { flipY: false }, undefined, parsedPLY.shDegree);
                             gaussianSplatting.scaling.y *= -1.0;
 
                             if (parsedPLY.chirality === "RightHanded") {
@@ -318,14 +323,50 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
             });
         };
 
-        // Check for gzip magic bytes (SPZ format) before attempting decompression
+        // Check for gzip magic bytes to detect SPZ format
         if (u8[0] !== 0x1f || u8[1] !== 0x8b) {
             return new Promise((resolve) => {
                 handlePLY(resolve);
             });
         }
 
-        // Use GZip DecompressionStream for SPZ files
+        const applyParsedSPZ = (parsedSPZ: IParsedSplat, resolve: (meshes: typeof babylonMeshesArray) => void) => {
+            scene._blockEntityCollection = !!this._assetContainer;
+            const gaussianSplatting =
+                this._loadingOptions.gaussianSplattingMesh ??
+                new GaussianSplattingMesh("GaussianSplatting", null, scene, this._loadingOptions.keepInRam, this._loadingOptions.needsRotationScaleTextures);
+            if (parsedSPZ.trainedWithAntialiasing) {
+                const gsMaterial = gaussianSplatting.material as GaussianSplattingMaterial;
+                gsMaterial.kernelSize = 0.1;
+                gsMaterial.compensation = true;
+            }
+            gaussianSplatting._parentContainer = this._assetContainer;
+            babylonMeshesArray.push(gaussianSplatting);
+            gaussianSplatting.updateData(parsedSPZ.data, parsedSPZ.sh, { flipY: false }, undefined, parsedSPZ.shDegree);
+            if (!this._loadingOptions.flipY) {
+                gaussianSplatting.scaling.y *= -1.0;
+                gaussianSplatting.computeWorldMatrix(true);
+            }
+            scene._blockEntityCollection = false;
+            this.applyAutoCameraLimits(parsedSPZ, scene);
+            resolve(babylonMeshesArray);
+        };
+
+        if (this._loadingOptions.spzLibraryUrl) {
+            // WASM path: load spz module from URL, pass raw gzip data directly
+            // eslint-disable-next-line github/no-then
+            return GetSpzModule(this._loadingOptions.spzLibraryUrl).then((spz) => {
+                const cloud = spz.loadSpzFromBuffer(new Uint8Array(data), { to: spz.CoordinateSystem.RUB });
+                // eslint-disable-next-line github/no-then
+                return ConvertSpzToSplatAsync(cloud, scene).then((parsedSPZ) => {
+                    return new Promise<AbstractMesh[]>((resolve) => {
+                        applyParsedSPZ(parsedSPZ, resolve);
+                    });
+                });
+            });
+        }
+
+        // Manual path: decompress gzip, then parse with the built-in SPZ parser
         const readableStream = new ReadableStream({
             start(controller) {
                 controller.enqueue(new Uint8Array(data));
@@ -342,24 +383,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
                 .then((buffer) => {
                     // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
                     ParseSpz(buffer, scene, this._loadingOptions).then((parsedSPZ) => {
-                        scene._blockEntityCollection = !!this._assetContainer;
-                        const gaussianSplatting =
-                            this._loadingOptions.gaussianSplattingMesh ?? new GaussianSplattingMesh("GaussianSplatting", null, scene, this._loadingOptions.keepInRam);
-                        if (parsedSPZ.trainedWithAntialiasing) {
-                            const gsMaterial = gaussianSplatting.material as GaussianSplattingMaterial;
-                            gsMaterial.kernelSize = 0.1;
-                            gsMaterial.compensation = true;
-                        }
-                        gaussianSplatting._parentContainer = this._assetContainer;
-                        babylonMeshesArray.push(gaussianSplatting);
-                        gaussianSplatting.updateData(parsedSPZ.data, parsedSPZ.sh, { flipY: false });
-                        if (!this._loadingOptions.flipY) {
-                            gaussianSplatting.scaling.y *= -1.0;
-                            gaussianSplatting.computeWorldMatrix(true);
-                        }
-                        scene._blockEntityCollection = false;
-                        this.applyAutoCameraLimits(parsedSPZ, scene);
-                        resolve(babylonMeshesArray);
+                        applyParsedSPZ(parsedSPZ, resolve);
                     });
                 })
                 // eslint-disable-next-line github/no-then
@@ -578,7 +602,16 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
             // early exit for chunked/quantized ply
             if (chunkCount) {
                 return await new Promise((resolve) => {
-                    resolve({ mode: Mode.Splat, data: splatsData.buffer, sh: splatsData.sh, faces: faces, hasVertexColors: false, compressed: true, rawSplat: false });
+                    resolve({
+                        mode: Mode.Splat,
+                        data: splatsData.buffer,
+                        sh: splatsData.sh,
+                        shDegree: splatsData.shDegree,
+                        faces: faces,
+                        hasVertexColors: false,
+                        compressed: true,
+                        rawSplat: false,
+                    });
                 });
             }
             // count available properties. if all necessary are present then it's a splat. Otherwise, it's a point cloud
@@ -605,6 +638,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
                     mode: currentMode,
                     data: splatsData.buffer,
                     sh: splatsData.sh,
+                    shDegree: splatsData.shDegree,
                     faces: faces,
                     hasVertexColors: !!propertyColorCount,
                     compressed: false,
