@@ -76,7 +76,11 @@ query {
 }' --jq '.data.repository.pullRequest.reviewThreads | {total: .totalCount, resolved: ([.nodes[] | select(.isResolved)] | length)}'
 ```
 
-Print the table to the main chat.
+Print the table to the main chat, prefixed with a header that includes
+the current **local** time (not UTC), e.g.
+`PR Status — 2026-04-17 05:17 PM PDT`. Get it from the OS's local clock
+(e.g. `date` in bash or `Get-Date` in pwsh) — do not hard-code or
+convert to UTC.
 
 ## Step 3: Distinguish real failures from flakes
 
