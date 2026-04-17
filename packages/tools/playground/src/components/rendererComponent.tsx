@@ -134,7 +134,7 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
         const inspectorV2Module: InspectorV2Module | undefined = (globalThis as any).INSPECTOR;
         if (inspectorV2Module?.MakeModularBridge) {
             this._bridgeToken = inspectorV2Module.MakeModularBridge({
-                autoEnable: false,
+                autoEnable: location.search.includes("inspectable"),
                 serviceDefinitions: [MakePlaygroundCommandServiceDefinition(this.props.globalState, inspectorV2Module)],
             });
         }
