@@ -92,8 +92,9 @@ Collect everything before starting the workflow so it doesn't stop midway.
    The `babylon-skills:merge-and-resolve` skill handles merging the
    upstream base into the feature branch.
 
-Remember `<push-remote>`, `<upstream-remote>`, and `<base-branch>` —
-they are reused in 0c, 0d, Step 1, and Step 2.
+Remember `<push-remote>`, `<upstream-remote>`, `<base-branch>`, and
+`<self-login>` (from `gh api user --jq ".login"`) — they are reused in
+0c, 0d, Step 1, and Step 2.
 
 ### 0b. Mode
 
@@ -293,6 +294,10 @@ Use `<push-remote>`, `<upstream-remote>`, and `<base-branch>` from 0a.
     > single-line title via `$(cat ...)` is fine; the multi-line body
     > must use `--body-file`.
 
+    > `--label` and `--reviewer` can each be repeated (or take a
+    > comma-separated list) — pass one flag per label/reviewer chosen
+    > in 0d/0e.
+
 ## Step 3: Self code review
 
 1. Invoke the code-review skill, passing through the mode:
@@ -351,7 +356,9 @@ from the `--pr` argument):
 /monitor-pr <pr-number>
 ```
 
-The mode is always `automatic` or `interactive` here (never `none`).
+monitor-pr does not accept a `--mode` argument — it just polls and prints
+status. The iteration loop below (Step 6) is what handles fixes in the
+mode chosen back in Step 0b.
 
 ## Step 6: Iteration loop
 
