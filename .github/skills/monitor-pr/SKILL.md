@@ -50,7 +50,8 @@ gh pr list --repo "BabylonJS/Babylon.js" --json "number,title,url"
 
 ## Step 2: Build and display the status table
 
-For each PR, gather:
+For each PR, gather the following data (this table **describes the
+columns** — it is not the output format):
 
 | Column   | Source                                                                                                                                     |
 | -------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -60,6 +61,18 @@ For each PR, gather:
 | Comments | GraphQL `reviewThreads` query — ✅ `all resolved` / ❌ `N/M resolved`                                                                      |
 | Approved | `gh pr view --json "reviewDecision"` — ✅ `N approvals` / ❌ `not approved`                                                                |
 | Ready    | ✅ `ready` if all checks pass AND approved AND all comments resolved, ❌ `not ready` otherwise                                             |
+
+### Output format
+
+Render the status as a **markdown table with one row per PR** and the
+columns above as the header (PR, Title, Checks, Comments, Approved,
+Ready — in that order). **Do not** transpose, pivot, or render one
+table per PR. Example (rendered inline):
+
+| PR                        | Title   | Checks                 | Comments              | Approved        | Ready        |
+| ------------------------- | ------- | ---------------------- | --------------------- | --------------- | ------------ |
+| [#1234](https://.../1234) | Fix foo | ⏳ 2 pending (ETA ~5m) | ✅ all resolved (4/4) | ❌ not approved | ❌ not ready |
+| [#5678](https://.../5678) | Add bar | ✅ all pass            | ✅ all resolved       | ✅ 1 approval   | ✅ ready     |
 
 Review threads require the GraphQL API since `gh pr view --json` does not
 expose them:
