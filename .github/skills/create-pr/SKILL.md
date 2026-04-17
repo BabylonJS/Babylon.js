@@ -358,8 +358,14 @@ Watch the monitor-pr output and react to actionable events.
 
 ### After making fixes
 
-**Automatic mode:** Commit (new commit, never amend), push, respond to
-comments, resolve threads. The monitor picks up new checks automatically.
+**Always run the Quality commands from `.github/copilot-instructions.md`
+before pushing**, plus any tests relevant to the changed code (e.g.
+integration/visualization tests for rendering changes). Iterate until
+they pass — do not push broken code.
+
+**Automatic mode:** After validation passes, commit (new commit, never
+amend), push, respond to comments, resolve threads. The monitor picks
+up new checks automatically.
 
 **Interactive mode:**
 
