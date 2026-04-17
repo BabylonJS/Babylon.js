@@ -61,6 +61,11 @@ or labels — those only apply when creating a new PR.
 > plain chat text. Provide multiple-choice options where possible (e.g.
 > yes/no, automatic/interactive, detected-remote/other). Ask one question
 > at a time and wait for the answer before proceeding.
+>
+> **If the user replies with freeform feedback** (e.g. "also add reviewer X",
+> "change the title to X"), apply the change and **re-ask the same
+> question** with the updated options. Only continue once the user
+> picks a final option without further changes.
 
 Collect everything before starting the workflow so it doesn't stop midway.
 
@@ -104,8 +109,9 @@ they are reused in 0c, 0d, Step 1, and Step 2.
    `<upstream-remote>/<base-branch>` (resolved in 0a):
 
     ```bash
-    # Branch commits not in upstream base
-    git --no-pager log --oneline <upstream-remote>/<base-branch>...HEAD
+    # Branch commits with full messages (not just --oneline) so you can
+    # read author intent, not just code deltas
+    git --no-pager log <upstream-remote>/<base-branch>...HEAD
 
     # Files changed by the branch only (excludes merged-in upstream changes)
     git --no-pager diff <upstream-remote>/<base-branch>...HEAD --stat
@@ -115,11 +121,14 @@ they are reused in 0c, 0d, Step 1, and Step 2.
     > either can include unrelated upstream commits or miss recent
     > upstream work, inflating the file count.
 
-2. Generate a proposed title and body. The body should start with:
+2. Generate a proposed title and body **using both the code diff and
+   the commit messages** — the messages often describe intent,
+   motivation, and linked issues that the diff alone doesn't convey.
+   The body should start with:
    `> 🤖 *This PR was created by the create-pr skill.*`
    Include a clear explanation of the changes, motivation, and any
    behavioral changes. Include links to related PRs or issues if
-   detectable from commit messages.
+   referenced in commit messages.
 3. Present to the user — they can accept, modify, or provide their own.
 
 ### 0d. Reviewers
@@ -158,7 +167,7 @@ whole pipeline non-interactively. Reuse `<upstream-remote>`,
       Fallback for user-owned repos:
       `gh api "/repos/<upstream-owner>/<upstream-repo>/collaborators/<login>" --silent`.
 
-   Stop after the first 1–2 survivors.
+    Stop after the first 1–2 survivors.
 
 5. **Present** the 1–2 candidates. Ask the user to confirm or change.
    If none survive, skip `--reviewer` on `gh pr create`.
