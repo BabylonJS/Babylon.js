@@ -190,6 +190,8 @@ describe("CameraMovement", () => {
             movement.computeCurrentFrameDeltas();
             const firstDelta = movement.panDeltaCurrentFrame.x;
 
+            // Reset velocity to isolate the speed multiplier effect from cross-frame accumulation
+            movement.resetPanVelocity();
             movement.panSpeed = 4;
             movement.panAccumulatedPixels.x = 10;
             movement.activeInput = true;

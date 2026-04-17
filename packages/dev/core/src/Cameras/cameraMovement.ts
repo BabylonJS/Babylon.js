@@ -2,7 +2,7 @@ import { type Scene } from "../scene";
 import { Vector3 } from "../Maths/math.vector";
 import { type InterpolatingBehavior } from "../Behaviors/Cameras/interpolatingBehavior";
 
-const FrameDurationAt60FPS = 1000 / 60;
+const DefaultReferenceFrameRate = 60;
 /**
  * Base class for camera movement systems that convert raw input into framerate-independent camera deltas.
  *
@@ -148,6 +148,14 @@ export class CameraMovement {
      */
     private _panVelocity: Vector3 = new Vector3();
     /**
+     * Framerate (Hz) at which inertia values are calibrated. Default 60 matches legacy camera feel
+     * at any actual refresh rate. Override to 120, 144, etc. only if your app was tuned on that
+     * specific refresh rate under the legacy (framerate-dependent) camera math and you want to
+     * preserve that exact decay characteristic. Most applications should leave this at 60.
+     */
+    public referenceFrameRate: number = DefaultReferenceFrameRate;
+
+    /**
      * Rotation velocity used for inertia calculations (movement / time)
      */
     private _rotationVelocity: Vector3 = new Vector3();
@@ -155,7 +163,7 @@ export class CameraMovement {
     /**
      * Used when calculating inertial decay. Default to 60fps
      */
-    private _prevFrameTimeMs: number = FrameDurationAt60FPS;
+    private _prevFrameTimeMs: number = 1000 / DefaultReferenceFrameRate;
 
     constructor(
         scene: Scene,
@@ -172,6 +180,35 @@ export class CameraMovement {
      */
     public computeCurrentFrameDeltas(): void {
         const deltaTimeMs = this._scene.getEngine().getDeltaTime();
+        // Use prevFrameTime as fallback when deltaTime is 0 (e.g. first render frame in tests or unusual conditions)
+        const effectiveDeltaMs = deltaTimeMs > 0 ? deltaTimeMs : this._prevFrameTimeMs;
+
+        // Fast-path: when nothing is moving (no accumulated input, all velocities zero), skip all work.
+        if (
+            this._zoomVelocity === 0 &&
+            this.zoomAccumulatedPixels === 0 &&
+            this._panVelocity.x === 0 &&
+            this._panVelocity.y === 0 &&
+            this._panVelocity.z === 0 &&
+            this.panAccumulatedPixels.x === 0 &&
+            this.panAccumulatedPixels.y === 0 &&
+            this.panAccumulatedPixels.z === 0 &&
+            this._rotationVelocity.x === 0 &&
+            this._rotationVelocity.y === 0 &&
+            this._rotationVelocity.z === 0 &&
+            this.rotationAccumulatedPixels.x === 0 &&
+            this.rotationAccumulatedPixels.y === 0 &&
+            this.rotationAccumulatedPixels.z === 0 &&
+            !this.activeInput
+        ) {
+            this.panDeltaCurrentFrame.setAll(0);
+            this.rotationDeltaCurrentFrame.setAll(0);
+            this.zoomDeltaCurrentFrame = 0;
+            if (deltaTimeMs > 0) {
+                this._prevFrameTimeMs = deltaTimeMs;
+            }
+            return;
+        }
 
         this.panDeltaCurrentFrame.setAll(0);
         this.rotationDeltaCurrentFrame.setAll(0);
@@ -188,7 +225,7 @@ export class CameraMovement {
             this._calculateCurrentVelocity(this._panVelocity.y, this.panAccumulatedPixels.y, this.panInertia),
             this._calculateCurrentVelocity(this._panVelocity.z, this.panAccumulatedPixels.z, this.panInertia)
         );
-        this._panVelocity.scaleToRef(this.speed * this.panSpeed * this._panSpeedMultiplier * deltaTimeMs, this.panDeltaCurrentFrame);
+        this._panVelocity.scaleToRef(this.speed * this.panSpeed * this._panSpeedMultiplier * effectiveDeltaMs, this.panDeltaCurrentFrame);
 
         this._rotationVelocity.copyFromFloats(
             this._calculateCurrentVelocity(this._rotationVelocity.x, this.rotationAccumulatedPixels.x, this.rotationInertia),
@@ -196,19 +233,47 @@ export class CameraMovement {
             this._calculateCurrentVelocity(this._rotationVelocity.z, this.rotationAccumulatedPixels.z, this.rotationInertia)
         );
         this.rotationDeltaCurrentFrame.copyFromFloats(
-            this._rotationVelocity.x * this.speed * this.rotationXSpeed * deltaTimeMs,
-            this._rotationVelocity.y * this.speed * this.rotationYSpeed * deltaTimeMs,
-            this._rotationVelocity.z * this.speed * this.rotationYSpeed * deltaTimeMs
+            this._rotationVelocity.x * this.speed * this.rotationXSpeed * effectiveDeltaMs,
+            this._rotationVelocity.y * this.speed * this.rotationYSpeed * effectiveDeltaMs,
+            this._rotationVelocity.z * this.speed * this.rotationYSpeed * effectiveDeltaMs
         );
 
         this._zoomVelocity = this._calculateCurrentVelocity(this._zoomVelocity, this.zoomAccumulatedPixels, this.zoomInertia);
-        this.zoomDeltaCurrentFrame = this._zoomVelocity * (this.speed * this.zoomSpeed * this._zoomSpeedMultiplier) * deltaTimeMs;
+        this.zoomDeltaCurrentFrame = this._zoomVelocity * (this.speed * this.zoomSpeed * this._zoomSpeedMultiplier) * effectiveDeltaMs;
 
-        this._prevFrameTimeMs = deltaTimeMs;
+        if (deltaTimeMs > 0) {
+            this._prevFrameTimeMs = deltaTimeMs;
+        }
         this.zoomAccumulatedPixels = 0;
         this.panAccumulatedPixels.setAll(0);
         this.rotationAccumulatedPixels.setAll(0);
         this.activeInput = false;
+    }
+
+    /**
+     * Resets the rotation velocity and accumulated pixels, stopping any in-progress rotation inertia.
+     * Called when inertialAlphaOffset or inertialBetaOffset are explicitly zeroed (backward compat).
+     */
+    public resetRotationVelocity(): void {
+        this._rotationVelocity.setAll(0);
+        this.rotationAccumulatedPixels.setAll(0);
+    }
+
+    /**
+     * Resets the pan velocity and accumulated pixels, stopping any in-progress pan inertia.
+     */
+    public resetPanVelocity(): void {
+        this._panVelocity.setAll(0);
+        this.panAccumulatedPixels.setAll(0);
+    }
+
+    /**
+     * Resets the zoom velocity and accumulated pixels, stopping any in-progress zoom inertia.
+     * Called when inertialRadiusOffset is explicitly zeroed out (backward compat).
+     */
+    public resetZoomVelocity(): void {
+        this._zoomVelocity = 0;
+        this.zoomAccumulatedPixels = 0;
     }
 
     /**
@@ -222,21 +287,32 @@ export class CameraMovement {
     private _calculateCurrentVelocity(velocityRef: number, pixelDelta: number, inertialDecayFactor: number): number {
         let inputVelocity = velocityRef;
         const deltaTimeMs = this._scene.getEngine().getDeltaTime();
+        // Use prevFrameTime as fallback when deltaTime is 0 (e.g. first render frame in tests or unusual conditions)
+        const effectiveDeltaMs = deltaTimeMs > 0 ? deltaTimeMs : this._prevFrameTimeMs;
 
-        if (deltaTimeMs === 0) {
+        if (effectiveDeltaMs === 0) {
             return inputVelocity;
         }
 
-        // If we are actively receiving input or have accumulated some pixel delta since last frame, calculate inputVelocity (inertia doesn't kick in yet)
+        // Apply inertial decay every frame — matches legacy's per-frame `offset *= inertia`.
+        // Framerate-independent via Math.pow(inertia, dt / referenceFrameDurationMs).
+        // At the reference framerate (default 60), the exponent is 1 and this equals `inertia`.
+        const referenceFrameDurationMs = 1000 / this.referenceFrameRate;
+        const frameIndependentDecay = Math.pow(inertialDecayFactor, this._prevFrameTimeMs / referenceFrameDurationMs);
+        inputVelocity *= frameIndependentDecay;
+
+        // When there's input this frame, add it on top of the decayed velocity — matches legacy's
+        // `offset += pointerDelta` accumulation. The `inputScale` factor keeps the sustained-drag
+        // steady-state identical to legacy at the reference framerate (`R/(1-inertia)`) at any
+        // actual framerate. Without this factor, `v_ss = R/(1-pow(k, dt/T))` blows up at high fps
+        // (2.3x at 144fps). When running at the reference framerate, inputScale = 1 (no-op).
         if (pixelDelta !== 0 || this.activeInput) {
-            inputVelocity = pixelDelta / deltaTimeMs;
-        } else if (!this.activeInput && inputVelocity !== 0) {
-            // If we are not receiving input and velocity isn't already zero, apply inertial decay to decelerate velocity
-            const frameIndependentDecay = Math.pow(inertialDecayFactor, this._prevFrameTimeMs / FrameDurationAt60FPS);
-            inputVelocity *= frameIndependentDecay;
-            if (Math.abs(inputVelocity) < 1e-6) {
-                inputVelocity = 0;
-            }
+            const oneMinusInertia = 1 - inertialDecayFactor;
+            const inputScale = oneMinusInertia > 0 ? (1 - frameIndependentDecay) / oneMinusInertia : 1;
+            inputVelocity += (pixelDelta / effectiveDeltaMs) * inputScale;
+        } else if (Math.abs(inputVelocity) < 1e-6) {
+            // Epsilon cutoff when gliding with no input
+            inputVelocity = 0;
         }
 
         return inputVelocity;

@@ -40,9 +40,6 @@ export class ArcRotateCameraMovement extends CameraMovement {
     constructor(scene: Scene, cameraPosition: Vector3, behavior?: InterpolatingBehavior<ArcRotateCamera>) {
         super(scene, cameraPosition, behavior);
 
-        // Scale global speed to match legacy ArcRotateCamera feel.
-        this.speed = 3.5;
-
         this.input = new InputMapper<ArcRotateHandlers>(
             {
                 pan: (deltaX, deltaY) => {

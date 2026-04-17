@@ -79,17 +79,34 @@ export class ArcRotateCameraKeyboardMoveInput implements ICameraInput<ArcRotateC
     public zoomingSensibility: number = 25.0;
 
     /**
-     * Defines whether maintaining the alt key down switch the movement mode from
-     * orientation to zoom.
-     */
-    @serialize()
-    public useAltToZoom: boolean = true;
-
-    /**
      * Rotation speed of the camera
      */
     @serialize()
     public angularSpeed = 0.01;
+
+    private _useAltToZoom: boolean = true;
+
+    /**
+     * Defines whether alt+arrows/wasd triggers zoom instead of rotation/pan.
+     * When disabled, alt+keyboard events are ignored by the zoom inputMap entry.
+     * Setting this updates the corresponding inputMap entry on the camera's movement system.
+     */
+    public get useAltToZoom(): boolean {
+        return this._useAltToZoom;
+    }
+
+    public set useAltToZoom(value: boolean) {
+        this._useAltToZoom = value;
+        if (this.camera?.movement) {
+            const inputMap = this.camera.movement.input.inputMap;
+            const idx = inputMap.findIndex((e) => e.source === "keyboard" && "modifiers" in e && e.modifiers?.alt === true && e.interaction === "zoom");
+            if (!value && idx !== -1) {
+                inputMap.splice(idx, 1);
+            } else if (value && idx === -1) {
+                this.camera.movement.input.addEntry({ source: "keyboard", modifiers: { alt: true }, interaction: "zoom" });
+            }
+        }
+    }
 
     private _keys = new Array<number>();
     private _ctrlPressed: boolean;
@@ -101,13 +118,6 @@ export class ArcRotateCameraKeyboardMoveInput implements ICameraInput<ArcRotateC
 
     /** Cached conditions object to avoid per-frame allocations in checkInputs */
     private _keyboardConditions: KeyboardConditions = { modifiers: { ctrl: false, alt: false } };
-
-    /** Default sensitivity for keyboard rotate when the inputMap entry omits sensitivity */
-    private _defaultRotateSensitivity = 0.01;
-    /** Default sensitivity for keyboard pan when the inputMap entry omits sensitivity */
-    private _defaultPanSensitivity = 0.02;
-    /** Default sensitivity for keyboard zoom when the inputMap entry omits sensitivity */
-    private _defaultZoomSensitivity = 0.04;
 
     /**
      * Attach the input controls to a specific dom element to get the input from.
@@ -208,95 +218,54 @@ export class ArcRotateCameraKeyboardMoveInput implements ICameraInput<ArcRotateC
     public checkInputs(): void {
         if (this._onKeyboardObserver) {
             const camera = this.camera;
+            const input = camera.movement.input;
 
-            if (camera.movement) {
-                const input = camera.movement.input;
-                // Update cached conditions (avoids per-frame allocations)
-                this._keyboardConditions.modifiers!.ctrl = this._ctrlPressed;
-                this._keyboardConditions.modifiers!.alt = this._altPressed;
+            this._keyboardConditions.modifiers!.ctrl = this._ctrlPressed;
+            this._keyboardConditions.modifiers!.alt = this._altPressed;
 
-                for (let index = 0; index < this._keys.length; index++) {
-                    const keyCode = this._keys[index];
+            for (let index = 0; index < this._keys.length; index++) {
+                const keyCode = this._keys[index];
 
-                    // Resolve per key — allows different keys to map to different interactions
-                    this._keyboardConditions.key = keyCode;
-                    const resolved = input.resolveInteraction("keyboard", this._keyboardConditions);
+                this._keyboardConditions.key = keyCode;
+                const resolved = input.resolveInteraction("keyboard", this._keyboardConditions);
 
-                    if (resolved) {
-                        if (resolved.interaction === "pan") {
-                            const sens = resolved.sensitivity ?? this._defaultPanSensitivity;
-                            if (this.keysLeft.indexOf(keyCode) !== -1) {
-                                input.handlers.pan(-sens, 0);
-                            } else if (this.keysRight.indexOf(keyCode) !== -1) {
-                                input.handlers.pan(sens, 0);
-                            } else if (this.keysUp.indexOf(keyCode) !== -1) {
-                                input.handlers.pan(0, sens);
-                            } else if (this.keysDown.indexOf(keyCode) !== -1) {
-                                input.handlers.pan(0, -sens);
-                            }
-                        } else if (resolved.interaction === "zoom") {
-                            const sens = resolved.sensitivity ?? this._defaultZoomSensitivity;
-                            if (this.keysUp.indexOf(keyCode) !== -1 || this.keysZoomIn.indexOf(keyCode) !== -1) {
-                                input.handlers.zoom(sens);
-                            } else if (this.keysDown.indexOf(keyCode) !== -1 || this.keysZoomOut.indexOf(keyCode) !== -1) {
-                                input.handlers.zoom(-sens);
-                            }
-                        } else if (resolved.interaction === "rotate") {
-                            const sens = resolved.sensitivity ?? this._defaultRotateSensitivity;
-                            if (this.keysLeft.indexOf(keyCode) !== -1) {
-                                input.handlers.rotate(-sens, 0);
-                            } else if (this.keysRight.indexOf(keyCode) !== -1) {
-                                input.handlers.rotate(sens, 0);
-                            } else if (this.keysUp.indexOf(keyCode) !== -1) {
-                                input.handlers.rotate(0, -sens);
-                            } else if (this.keysDown.indexOf(keyCode) !== -1) {
-                                input.handlers.rotate(0, sens);
-                            }
+                if (resolved) {
+                    const sens = resolved.sensitivity ?? 1;
+                    if (resolved.interaction === "pan") {
+                        const panSens = (1 / this.panningSensibility) * sens;
+                        if (this.keysLeft.indexOf(keyCode) !== -1) {
+                            input.handlers.pan(-panSens, 0);
+                        } else if (this.keysRight.indexOf(keyCode) !== -1) {
+                            input.handlers.pan(panSens, 0);
+                        } else if (this.keysUp.indexOf(keyCode) !== -1) {
+                            input.handlers.pan(0, panSens);
+                        } else if (this.keysDown.indexOf(keyCode) !== -1) {
+                            input.handlers.pan(0, -panSens);
                         }
-                    }
-
-                    if (this.keysReset.indexOf(keyCode) !== -1) {
-                        if (camera.useInputToRestoreState) {
-                            camera.restoreState();
+                    } else if (resolved.interaction === "zoom") {
+                        const zoomSens = (1 / this.zoomingSensibility) * sens;
+                        if (this.keysUp.indexOf(keyCode) !== -1 || this.keysZoomIn.indexOf(keyCode) !== -1) {
+                            input.handlers.zoom(zoomSens);
+                        } else if (this.keysDown.indexOf(keyCode) !== -1 || this.keysZoomOut.indexOf(keyCode) !== -1) {
+                            input.handlers.zoom(-zoomSens);
+                        }
+                    } else if (resolved.interaction === "rotate") {
+                        const rotateSens = this.angularSpeed * sens;
+                        if (this.keysLeft.indexOf(keyCode) !== -1) {
+                            input.handlers.rotate(-rotateSens, 0);
+                        } else if (this.keysRight.indexOf(keyCode) !== -1) {
+                            input.handlers.rotate(rotateSens, 0);
+                        } else if (this.keysUp.indexOf(keyCode) !== -1) {
+                            input.handlers.rotate(0, -rotateSens);
+                        } else if (this.keysDown.indexOf(keyCode) !== -1) {
+                            input.handlers.rotate(0, rotateSens);
                         }
                     }
                 }
-            } else {
-                // Legacy path
-                for (let index = 0; index < this._keys.length; index++) {
-                    const keyCode = this._keys[index];
-                    if (this.keysLeft.indexOf(keyCode) !== -1) {
-                        if (this._ctrlPressed && this.camera._useCtrlForPanning) {
-                            camera.inertialPanningX -= 1 / this.panningSensibility;
-                        } else {
-                            camera.inertialAlphaOffset -= this.angularSpeed;
-                        }
-                    } else if (this.keysUp.indexOf(keyCode) !== -1) {
-                        if (this._ctrlPressed && this.camera._useCtrlForPanning) {
-                            camera.inertialPanningY += 1 / this.panningSensibility;
-                        } else if (this._altPressed && this.useAltToZoom) {
-                            camera.inertialRadiusOffset += 1 / this.zoomingSensibility;
-                        } else {
-                            camera.inertialBetaOffset -= this.angularSpeed;
-                        }
-                    } else if (this.keysRight.indexOf(keyCode) !== -1) {
-                        if (this._ctrlPressed && this.camera._useCtrlForPanning) {
-                            camera.inertialPanningX += 1 / this.panningSensibility;
-                        } else {
-                            camera.inertialAlphaOffset += this.angularSpeed;
-                        }
-                    } else if (this.keysDown.indexOf(keyCode) !== -1) {
-                        if (this._ctrlPressed && this.camera._useCtrlForPanning) {
-                            camera.inertialPanningY -= 1 / this.panningSensibility;
-                        } else if (this._altPressed && this.useAltToZoom) {
-                            camera.inertialRadiusOffset -= 1 / this.zoomingSensibility;
-                        } else {
-                            camera.inertialBetaOffset += this.angularSpeed;
-                        }
-                    } else if (this.keysReset.indexOf(keyCode) !== -1) {
-                        if (camera.useInputToRestoreState) {
-                            camera.restoreState();
-                        }
+
+                if (this.keysReset.indexOf(keyCode) !== -1) {
+                    if (camera.useInputToRestoreState) {
+                        camera.restoreState();
                     }
                 }
             }
