@@ -10,7 +10,7 @@ import { type InspectorToken } from "inspector/inspector";
 import { type InspectableToken } from "inspector/inspectable";
 import { type ModularBridgeToken } from "inspector/index";
 
-import { Engine, EngineStore, WebGPUEngine, LastCreatedAudioEngine, Logger, type IDisposable, type Nullable, type Scene, type ThinEngine } from "@dev/core";
+import { Engine, EngineStore, WebGPUEngine, LastCreatedAudioEngine, Logger, type Nullable, type Scene, type ThinEngine } from "@dev/core";
 
 import { MakePlaygroundCommandServiceDefinition } from "../tools/playgroundCommandService";
 import "../scss/rendering.scss";

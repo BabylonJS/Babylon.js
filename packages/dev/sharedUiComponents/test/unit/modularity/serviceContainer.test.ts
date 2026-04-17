@@ -268,7 +268,7 @@ describe("ServiceContainer", () => {
             container.dispose();
         });
 
-        it("disposes services in reverse order via addServicesAsync handle", () => {
+        it("disposes services in reverse order via addServices handle", () => {
             const container = new ServiceContainer("test");
             const order: string[] = [];
 
@@ -324,7 +324,7 @@ describe("ServiceContainer", () => {
     // ---------------------------------------------------------------------------
 
     describe("factory errors", () => {
-        it("rolls back all services if a factory throws during addServicesAsync", () => {
+        it("rolls back all services if a factory throws during addServices", () => {
             const container = new ServiceContainer("test");
             const disposeSpy = vi.fn();
 
