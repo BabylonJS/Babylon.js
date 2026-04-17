@@ -62,18 +62,6 @@ columns** — it is not the output format):
 | Approved | `gh pr view --json "reviewDecision"` — ✅ `N approvals` / ❌ `not approved`                                                                |
 | Ready    | ✅ `ready` if all checks pass AND approved AND all comments resolved, ❌ `not ready` otherwise                                             |
 
-### Output format
-
-Render the status as a **markdown table with one row per PR** and the
-columns above as the header (PR, Title, Checks, Comments, Approved,
-Ready — in that order). **Do not** transpose, pivot, or render one
-table per PR. Example (rendered inline):
-
-| PR                        | Title   | Checks                 | Comments              | Approved        | Ready        |
-| ------------------------- | ------- | ---------------------- | --------------------- | --------------- | ------------ |
-| [#1234](https://.../1234) | Fix foo | ⏳ 2 pending (ETA ~5m) | ✅ all resolved (4/4) | ❌ not approved | ❌ not ready |
-| [#5678](https://.../5678) | Add bar | ✅ all pass            | ✅ all resolved       | ✅ 1 approval   | ✅ ready     |
-
 Review threads require the GraphQL API since `gh pr view --json` does not
 expose them:
 
@@ -91,16 +79,10 @@ query {
 }' --jq '.data.repository.pullRequest.reviewThreads | {total: .totalCount, resolved: ([.nodes[] | select(.isResolved)] | length)}'
 ```
 
-Print the table to the main chat, prefixed with a header that includes
-the current **local** time (not UTC), e.g.
-`PR Status — 2026-04-17 05:17 PM PDT`. Get it from the OS's local clock
-(e.g. `date` in bash or `Get-Date` in pwsh) — do not hard-code or
-convert to UTC.
-
 ### Checks ETA
 
-When any checks are still running, include a rough ETA in the Checks
-cell. Compute per PR:
+When any checks are still running, compute a rough ETA **before** rendering
+the table. The Checks cell is incomplete without it.
 
 1. For each **in-progress** check (`status != COMPLETED`):
     - `elapsed = now - startedAt` (from `statusCheckRollup`).
@@ -124,6 +106,24 @@ cell. Compute per PR:
 Cache historical durations per check name across PRs within a single
 poll iteration to avoid redundant `gh` calls. **Do not** cache across
 polls (stale data risk — see the polling rule below).
+
+### Output format
+
+Only render the table **after** all per-PR data (including ETA) is
+gathered. Every pending-checks cell MUST end with `(ETA ~Xm)` (or
+`~Xm+` / `<1m`) — no ETA means the data isn't ready yet.
+
+Render as a **markdown table, one row per PR**, with the columns above
+as headers in the same order. Do not transpose or split into per-PR
+tables. Prefix with a header line showing the OS's **local** time, e.g.
+`PR Status — 2026-04-17 05:17 PM PDT` (`date` or `Get-Date`).
+
+Example:
+
+| PR                        | Title   | Checks                 | Comments              | Approved        | Ready        |
+| ------------------------- | ------- | ---------------------- | --------------------- | --------------- | ------------ |
+| [#1234](https://.../1234) | Fix foo | ⏳ 2 pending (ETA ~5m) | ✅ all resolved (4/4) | ❌ not approved | ❌ not ready |
+| [#5678](https://.../5678) | Add bar | ✅ all pass            | ✅ all resolved       | ✅ 1 approval   | ✅ ready     |
 
 ## Step 3: Distinguish real failures from flakes
 
