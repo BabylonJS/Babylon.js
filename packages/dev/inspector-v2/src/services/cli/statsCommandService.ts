@@ -2,7 +2,7 @@ import { EngineInstrumentation } from "core/Instrumentation/engineInstrumentatio
 import { SceneInstrumentation } from "core/Instrumentation/sceneInstrumentation";
 import { type ServiceDefinition } from "shared-ui-components/modularTool/modularity/serviceDefinition";
 import { type ISceneContext, SceneContextIdentity } from "../sceneContext";
-import { type IInspectableCommandRegistry, InspectableCommandRegistryIdentity } from "./inspectableCommandRegistry";
+import { type IBridgeCommandRegistry, BridgeCommandRegistryIdentity } from "shared-ui-components/modularTool/services/cli/bridgeCommandRegistry";
 
 // Side-effect imports for engine query support (needed by EngineInstrumentation).
 import "core/Engines/AbstractEngine/abstractEngine.timeQuery";
@@ -11,9 +11,9 @@ import "core/Engines/Extensions/engine.query";
 /**
  * Service that registers CLI commands for querying scene and engine statistics.
  */
-export const StatsCommandServiceDefinition: ServiceDefinition<[], [IInspectableCommandRegistry, ISceneContext]> = {
+export const StatsCommandServiceDefinition: ServiceDefinition<[], [IBridgeCommandRegistry, ISceneContext]> = {
     friendlyName: "Stats Command Service",
-    consumes: [InspectableCommandRegistryIdentity, SceneContextIdentity],
+    consumes: [BridgeCommandRegistryIdentity, SceneContextIdentity],
     factory: (commandRegistry, sceneContext) => {
         let sceneInstrumentation: SceneInstrumentation | undefined;
         let engineInstrumentation: EngineInstrumentation | undefined;

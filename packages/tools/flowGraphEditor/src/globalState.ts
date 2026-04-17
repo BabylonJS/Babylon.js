@@ -248,8 +248,31 @@ export class GlobalState {
     private _isDebugMode: boolean = false;
     /** Observable triggered when debug mode changes */
     onDebugModeChanged = new Observable<boolean>();
+    /** Observable triggered when the selected context index changes */
+    onSelectedContextChanged = new Observable<number>();
     /** The index of the context to observe in debug mode (0 = first context) */
-    selectedContextIndex: number = 0;
+    private _selectedContextIndex: number = 0;
+
+    /** Get the currently selected execution context index */
+    public get selectedContextIndex(): number {
+        return this._selectedContextIndex;
+    }
+
+    /** Set the selected execution context index.
+     * Switches debug/breakpoint observers to the new context.
+     */
+    public set selectedContextIndex(value: number) {
+        if (value === this._selectedContextIndex) {
+            return;
+        }
+        this._selectedContextIndex = value;
+        // Re-attach debug observers to the new context if debug mode is active
+        if (this._isDebugMode && this._flowGraph?.state === FlowGraphState.Started) {
+            this._attachContextExecutionObserver();
+        }
+        this.onSelectedContextChanged.notifyObservers(value);
+    }
+
     /** Observer tracking node execution for debug highlighting */
     private _debugExecutionObserver: Nullable<Observer<FlowGraphBlock>> = null;
     /** Observer tracking graph state changes for debug re-subscription */
@@ -612,6 +635,89 @@ export class GlobalState {
         ctx?.stepExecution();
     }
 
+    // ── Execution Context Management ───────────────────────────────────
+    /** Observable triggered when a context is added or removed */
+    onContextListChanged = new Observable<void>();
+
+    /**
+     * Create a new execution context on the current flow graph.
+     * Assigns a default name like "Context N".
+     * @returns the index of the newly created context, or -1 if no graph
+     */
+    public createNewContext(): number {
+        if (!this._flowGraph) {
+            return -1;
+        }
+        const ctx = this._flowGraph.createContext();
+        const index = this._flowGraph.contextCount - 1;
+        ctx.name = `Context ${index}`;
+        // Copy the assets context from the scene if available
+        if (this.sceneContext?.scene) {
+            ctx.assetsContext = this.sceneContext.scene;
+        }
+        this.onContextListChanged.notifyObservers();
+        return index;
+    }
+
+    /**
+     * Remove an execution context by index.
+     * If the removed context was the selected one, selects the nearest remaining context.
+     * @param index - the index of the context to remove
+     * @returns true if removed successfully
+     */
+    public removeContextAt(index: number): boolean {
+        if (!this._flowGraph) {
+            return false;
+        }
+        // Don't allow removing the last context
+        if (this._flowGraph.contextCount <= 1) {
+            return false;
+        }
+        const removed = this._flowGraph.removeContext(index);
+        if (!removed) {
+            return false;
+        }
+        // Adjust selection
+        if (this._selectedContextIndex >= this._flowGraph.contextCount) {
+            this._selectedContextIndex = this._flowGraph.contextCount - 1;
+        }
+        if (this._isDebugMode && this._flowGraph.state === FlowGraphState.Started) {
+            this._attachContextExecutionObserver();
+        }
+        this.onContextListChanged.notifyObservers();
+        this.onSelectedContextChanged.notifyObservers(this._selectedContextIndex);
+        return true;
+    }
+
+    /**
+     * Rename an execution context.
+     * @param index - the index of the context
+     * @param name - the new name
+     */
+    public renameContext(index: number, name: string): void {
+        const ctx = this._flowGraph?.getContext(index);
+        if (ctx) {
+            ctx.name = name;
+            this.onContextListChanged.notifyObservers();
+        }
+    }
+
+    /**
+     * Get a summary of all execution contexts (index, uniqueId, name).
+     * @returns an array of context info objects
+     */
+    public getContextList(): Array<{ index: number; uniqueId: string; name: string }> {
+        const result: Array<{ index: number; uniqueId: string; name: string }> = [];
+        if (!this._flowGraph) {
+            return result;
+        }
+        for (let i = 0; i < this._flowGraph.contextCount; i++) {
+            const ctx = this._flowGraph.getContext(i);
+            result.push({ index: i, uniqueId: ctx.uniqueId, name: ctx.name || `Context ${i}` });
+        }
+        return result;
+    }
+
     /** The scene context populated when a Playground snippet is loaded */
     sceneContext: Nullable<SceneContext> = null;
     /** Observable triggered when the scene context changes (snippet loaded/disposed) */
@@ -649,6 +755,29 @@ export class GlobalState {
      * that has no incoming connection on its "b" input.
      */
     private _savedConnectionValues: { [key: string]: any } | null = null;
+
+    /**
+     * Serialized snapshots of ALL execution contexts, taken before stop()/setScene()
+     * clears them.  Used by SerializationTools.Serialize() to include context data
+     * (user variables, variable types, connection values) in the saved JSON even
+     * when the graph is stopped and has no live contexts.
+     */
+    private _savedContextSnapshots: any[] | null = null;
+
+    /**
+     * Runtime (non-serialized) copies of each execution context's data.
+     * Unlike _savedContextSnapshots (which holds serialized/JSON-safe values for
+     * injecting into saved files), these hold actual runtime objects (Vector3,
+     * Mesh references, etc.) so they can be restored directly into newly
+     * created contexts without needing to re-parse.
+     */
+    private _savedContextRuntimeData: Array<{
+        userVariables: { [key: string]: any };
+        connectionValues: { [key: string]: any };
+        variableTypes: { [key: string]: string };
+        name: string;
+        uniqueId: string;
+    }> | null = null;
 
     /**
      * Gets the current flow graph
@@ -732,6 +861,9 @@ export class GlobalState {
                 if (typeof flowGraph.setScene === "function") {
                     flowGraph.setScene(ctx.scene);
                 }
+                // Re-create contexts from snapshots so the editor UI has
+                // live contexts after setScene() clears them.
+                this._restoreContextsFromSnapshots(flowGraph);
             }
         });
 
@@ -741,22 +873,62 @@ export class GlobalState {
         const origCreate = this._originalCreateContext!;
         flowGraph.createContext = (): FlowGraphContext => {
             const ctx = origCreate();
+            // Assign a default name if the context doesn't have one
+            if (!ctx.name) {
+                ctx.name = `Context ${flowGraph.contextCount - 1}`;
+            }
             if (this.sceneContext) {
                 ctx.assetsContext = this.sceneContext.scene;
             }
-            // Restore user variables saved before setScene cleared contexts
-            if (this._savedUserVariables) {
-                for (const key in this._savedUserVariables) {
-                    ctx.setVariable(key, this._savedUserVariables[key]);
+            // Restore full context data from the runtime snapshot matching
+            // this context's index. This handles user variables, variable types,
+            // connection values, and names for ALL contexts (not just the first).
+            if (this._savedContextRuntimeData && this._savedContextRuntimeData.length > 0) {
+                const ctxIndex = flowGraph.contextCount - 1;
+                // Only restore from the exact matching index — do not fall back
+                // to snapshot[0] to avoid silently restoring the wrong data
+                // when contexts are removed or reordered.
+                const runtimeData = this._savedContextRuntimeData[ctxIndex];
+                if (runtimeData) {
+                    for (const key in runtimeData.userVariables) {
+                        ctx.setVariable(key, runtimeData.userVariables[key]);
+                    }
+                    const serializedSnapshot = this._savedContextSnapshots?.[ctxIndex];
+                    if (serializedSnapshot?._userVariables) {
+                        for (const key in serializedSnapshot._userVariables) {
+                            const serializedVal = serializedSnapshot._userVariables[key];
+                            if (serializedVal && typeof serializedVal === "object" && serializedVal.className && !ctx.userVariables[key]) {
+                                ctx.setVariable(key, serializedVal);
+                            }
+                        }
+                    }
+                    for (const key in runtimeData.variableTypes) {
+                        ctx.setVariableType(key, runtimeData.variableTypes[key]);
+                    }
+                    for (const key in runtimeData.connectionValues) {
+                        ctx._setConnectionValueByKey(key, runtimeData.connectionValues[key]);
+                    }
+                    if (runtimeData.name) {
+                        ctx.name = runtimeData.name;
+                    }
+                    if (runtimeData.uniqueId) {
+                        ctx.uniqueId = runtimeData.uniqueId;
+                    }
                 }
-                this._savedUserVariables = null;
-            }
-            // Restore connection values (unconnected input defaults like divide-by-2)
-            if (this._savedConnectionValues) {
-                for (const key in this._savedConnectionValues) {
-                    ctx._setConnectionValueByKey(key, this._savedConnectionValues[key]);
+            } else {
+                // Legacy path: restore from flat saved variables (first context only)
+                if (this._savedUserVariables) {
+                    for (const key in this._savedUserVariables) {
+                        ctx.setVariable(key, this._savedUserVariables[key]);
+                    }
+                    this._savedUserVariables = null;
                 }
-                this._savedConnectionValues = null;
+                if (this._savedConnectionValues) {
+                    for (const key in this._savedConnectionValues) {
+                        ctx._setConnectionValueByKey(key, this._savedConnectionValues[key]);
+                    }
+                    this._savedConnectionValues = null;
+                }
             }
             // Resolve raw descriptor objects (e.g. {className:"Mesh",id:"x"})
             // into actual scene objects.  _rebindContextUserVariables only
@@ -779,6 +951,9 @@ export class GlobalState {
             if (typeof flowGraph.setScene === "function") {
                 flowGraph.setScene(this.sceneContext.scene);
             }
+            // Re-create contexts from snapshots so the editor UI has live
+            // contexts to display (variables panel, context selector, etc.)
+            this._restoreContextsFromSnapshots(flowGraph);
         }
 
         // Re-subscribe debug observers if debug mode is active
@@ -1075,7 +1250,9 @@ export class GlobalState {
     }
 
     /**
-     * Snapshot all user variables from the first execution context of a flow graph.
+     * Snapshot user variables and connection values from the selected execution context of a flow graph,
+     * falling back to the first execution context when the selected one is unavailable.
+     * Also serializes ALL execution contexts so they survive stop()/setScene().
      * Called just before stop/setScene clears contexts so variables can be restored later.
      * @param graph - the flow graph to snapshot from (defaults to current graph)
      */
@@ -1084,7 +1261,8 @@ export class GlobalState {
         if (!fg) {
             return;
         }
-        const ctx = fg.getContext(0);
+        // Snapshot from the selected context (or context 0 as fallback)
+        const ctx = fg.getContext(this._selectedContextIndex) ?? fg.getContext(0);
         if (!ctx) {
             return;
         }
@@ -1096,6 +1274,30 @@ export class GlobalState {
         const connVals = (ctx as any)._connectionValues;
         if (connVals && Object.keys(connVals).length > 0) {
             this._savedConnectionValues = { ...connVals };
+        }
+
+        // Snapshot ALL contexts so they survive stop()/setScene().
+        // Two parallel snapshots:
+        //   _savedContextSnapshots  — serialized (JSON-safe) for file save injection
+        //   _savedContextRuntimeData — runtime objects for live context restoration
+        if (fg.contextCount > 0) {
+            this._savedContextSnapshots = [];
+            this._savedContextRuntimeData = [];
+            for (let i = 0; i < fg.contextCount; i++) {
+                const context = fg.getContext(i);
+                // Serialized snapshot for SerializationTools
+                const serialized: any = {};
+                context.serialize(serialized);
+                this._savedContextSnapshots.push(serialized);
+                // Runtime snapshot for createContext wrapper
+                this._savedContextRuntimeData.push({
+                    userVariables: { ...context.userVariables },
+                    connectionValues: { ...(context as any)._connectionValues },
+                    variableTypes: { ...context.variableTypes },
+                    name: context.name,
+                    uniqueId: context.uniqueId,
+                });
+            }
         }
     }
 
@@ -1112,6 +1314,36 @@ export class GlobalState {
      */
     public snapshotUserVariables(): void {
         this._snapshotUserVariablesFrom();
+    }
+
+    /**
+     * Returns the last serialized context snapshots (taken before stop()/setScene()).
+     * Used by SerializationTools to inject context data into the serialized output
+     * when the graph is stopped and has no live execution contexts.
+     * @returns array of serialized context objects, or null if none saved
+     */
+    public get savedContextSnapshots(): any[] | null {
+        return this._savedContextSnapshots;
+    }
+
+    /**
+     * Re-create execution contexts on the flow graph from `_savedContextSnapshots`.
+     * Called after setScene() clears live contexts so the editor UI (variables panel,
+     * context selector) has live contexts to display and serialize.
+     * @param fg - the flow graph to restore contexts on
+     */
+    private _restoreContextsFromSnapshots(fg: FlowGraph): void {
+        if (!this._savedContextSnapshots || this._savedContextSnapshots.length === 0) {
+            return;
+        }
+        if (fg.contextCount > 0) {
+            // Already has contexts (e.g. setScene was a no-op) — don't duplicate
+            return;
+        }
+        for (let i = 0; i < this._savedContextSnapshots.length; i++) {
+            // The wrapped createContext() picks up snapshot[i] automatically
+            fg.createContext();
+        }
     }
 
     /**

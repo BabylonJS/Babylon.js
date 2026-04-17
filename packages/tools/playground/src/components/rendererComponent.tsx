@@ -6,9 +6,11 @@ import { type GlobalState, RuntimeMode, type InspectorV2Module } from "../global
 import { Utilities } from "../tools/utilities";
 import { DownloadManager } from "../tools/downloadManager";
 import { AddFileRevision } from "../tools/localSession";
+import { type InspectorToken } from "inspector/inspector";
 import { type InspectableToken } from "inspector/inspectable";
+import { type ModularBridgeToken } from "inspector/index";
 
-import { Engine, EngineStore, WebGPUEngine, LastCreatedAudioEngine, Logger, type IDisposable, type Nullable, type Scene, type ThinEngine } from "@dev/core";
+import { Engine, EngineStore, WebGPUEngine, LastCreatedAudioEngine, Logger, type Nullable, type Scene, type ThinEngine } from "@dev/core";
 
 import { MakePlaygroundCommandServiceDefinition } from "../tools/playgroundCommandService";
 import "../scss/rendering.scss";
@@ -35,8 +37,9 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
     private _canvasRef: React.RefObject<HTMLCanvasElement>;
     private _downloadManager: DownloadManager;
     private _inspectorFallback: boolean = false;
-    private _inspectorV2Token: Nullable<IDisposable> = null;
+    private _inspectorV2Token: Nullable<InspectorToken> = null;
     private _inspectableToken: Nullable<InspectableToken> = null;
+    private _bridgeToken: Nullable<ModularBridgeToken> = null;
 
     /**
      * Create the rendering component.
@@ -68,7 +71,7 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
             this._downloadManager.downloadAsync();
         });
 
-        this.props.globalState.onInspectorRequiredObservable.add(async (action) => {
+        this.props.globalState.onInspectorRequiredObservable.add(async () => {
             if (!this._scene) {
                 return;
             }
@@ -93,7 +96,7 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
             await Promise.resolve();
 
             if (this._inspectorV2Token) {
-                this._inspectorV2Token.dispose();
+                void this._inspectorV2Token.dispose();
                 this._inspectorV2Token = null;
             } else if (this._scene.debugLayer.openedPanes !== 0) {
                 this._scene.debugLayer.hide();
@@ -108,7 +111,7 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
 
         this.props.globalState.onThemeChangedObservable.add(() => {
             if (this._inspectorV2Token) {
-                this._inspectorV2Token.dispose();
+                void this._inspectorV2Token.dispose();
                 this._showInspectorAsync();
             }
         });
@@ -124,6 +127,18 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
         window.addEventListener("error", this._saveError);
     }
 
+    private _ensureBridge() {
+        if (this._bridgeToken && !this._bridgeToken.isDisposed) {
+            return;
+        }
+        const inspectorV2Module: InspectorV2Module | undefined = (globalThis as any).INSPECTOR;
+        if (inspectorV2Module?.MakeModularBridge) {
+            this._bridgeToken = inspectorV2Module.MakeModularBridge({
+                serviceDefinitions: [MakePlaygroundCommandServiceDefinition(this.props.globalState, inspectorV2Module)],
+            });
+        }
+    }
+
     private _ensureInspectable() {
         if (this._inspectableToken && !this._inspectableToken.isDisposed) {
             return;
@@ -131,10 +146,14 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
         if (!this._scene) {
             return;
         }
+        this._ensureBridge();
+        if (!this._bridgeToken) {
+            return;
+        }
         const inspectorV2Module: InspectorV2Module | undefined = (globalThis as any).INSPECTOR;
         if (inspectorV2Module?.StartInspectable) {
             this._inspectableToken = inspectorV2Module.StartInspectable(this._scene, {
-                serviceDefinitions: [MakePlaygroundCommandServiceDefinition(this.props.globalState, inspectorV2Module)],
+                bridgeToken: this._bridgeToken,
             });
         }
     }
@@ -279,8 +298,10 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
         const webgpuPromise = WebGPUEngine ? WebGPUEngine.IsSupportedAsync : Promise.resolve(false);
         const webGPUSupported = await webgpuPromise;
 
-        this._inspectorV2Token?.dispose();
+        await this._inspectorV2Token?.dispose();
         this._inspectorV2Token = null;
+        this._inspectableToken?.dispose();
+        this._inspectableToken = null;
 
         let useWebGPU = location.search.indexOf("webgpu") !== -1 && webGPUSupported;
         let forceWebGL1 = false;
@@ -308,7 +329,6 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
         }
 
         this._engine = null;
-        this._inspectableToken = null;
 
         try {
             // Set up the global object ("window" and "this" for user code).

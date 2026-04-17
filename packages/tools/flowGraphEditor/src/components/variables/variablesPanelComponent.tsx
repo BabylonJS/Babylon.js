@@ -3,7 +3,24 @@ import { type GlobalState } from "../../globalState";
 import { type Nullable } from "core/types";
 import { type Observer } from "core/Misc/observable";
 import { FlowGraphState } from "core/FlowGraph/flowGraph";
-import { GatherVariables, RenameVariable, DeleteVariable, FormatVariableValue, type IVariableEntry } from "../../variableUtils";
+import { FlowGraphInteger } from "core/FlowGraph/CustomTypes/flowGraphInteger";
+import {
+    GatherVariables,
+    RenameVariable,
+    DeleteVariable,
+    FormatVariableValue,
+    ParseVariableValue,
+    VariableTypeGroups,
+    IsSceneObjectType,
+    IsVectorOrColorType,
+    GetComponentLabels,
+    GetComponents,
+    BuildFromComponents,
+    GetDefaultValueForType,
+    InferVariableType,
+    type IVariableEntry,
+    type VariableTypeName,
+} from "../../variableUtils";
 import "./variables.scss";
 
 interface IVariablesPanelProps {
@@ -12,25 +29,44 @@ interface IVariablesPanelProps {
 
 interface IVariablesPanelState {
     variables: IVariableEntry[];
-    editingIndex: number | null;
+    /** Index of the variable whose *name* is being edited (null = none). */
+    editingNameIndex: number | null;
     editingName: string;
+    /** Index of the variable whose *value* is being edited (null = none). */
+    editingValueIndex: number | null;
+    editingValue: string;
     isRunning: boolean;
     runtimeValues: Map<string, string>;
+    /** Per-variable declared type, keyed by variable name. */
+    variableTypes: Map<string, VariableTypeName>;
+    collapsed: boolean;
 }
 
 /**
- * Panel component that lists all flow graph variables (referenced by
- * GetVariable / SetVariable blocks) and supports add, rename, and delete.
+ * Compact variables strip that sits between the toolbar and the canvas.
+ * Shows variable names (shared across contexts) and per-context values
+ * with inline editing for both.
  */
 export class VariablesPanelComponent extends React.Component<IVariablesPanelProps, IVariablesPanelState> {
     private _builtObserver: Nullable<Observer<void>> = null;
     private _stateObserver: Nullable<Observer<FlowGraphState>> = null;
+    private _contextChangedObserver: Nullable<Observer<number>> = null;
     private _pollTimer: ReturnType<typeof setInterval> | null = null;
 
     /** @internal */
     constructor(props: IVariablesPanelProps) {
         super(props);
-        this.state = { variables: [], editingIndex: null, editingName: "", isRunning: false, runtimeValues: new Map() };
+        this.state = {
+            variables: [],
+            editingNameIndex: null,
+            editingName: "",
+            editingValueIndex: null,
+            editingValue: "",
+            isRunning: false,
+            runtimeValues: new Map(),
+            variableTypes: new Map(),
+            collapsed: false,
+        };
     }
 
     /** @internal */
@@ -38,6 +74,10 @@ export class VariablesPanelComponent extends React.Component<IVariablesPanelProp
         this._builtObserver = this.props.globalState.onBuiltObservable.add(() => {
             this._subscribeToFlowGraph();
             this._refreshVariables();
+        });
+        this._contextChangedObserver = this.props.globalState.onSelectedContextChanged.add(() => {
+            this._refreshVariables();
+            this._pollRuntimeValues();
         });
         this._subscribeToFlowGraph();
         this._refreshVariables();
@@ -49,6 +89,8 @@ export class VariablesPanelComponent extends React.Component<IVariablesPanelProp
         this._builtObserver = null;
         this._stateObserver?.remove();
         this._stateObserver = null;
+        this._contextChangedObserver?.remove();
+        this._contextChangedObserver = null;
         this._stopPolling();
     }
 
@@ -74,7 +116,6 @@ export class VariablesPanelComponent extends React.Component<IVariablesPanelProp
             if (isRunning) {
                 this._startPolling();
             } else {
-                // Do one final read so the panel shows the last values
                 this._pollRuntimeValues();
                 this._stopPolling();
             }
@@ -101,7 +142,7 @@ export class VariablesPanelComponent extends React.Component<IVariablesPanelProp
         }
 
         const values = new Map<string, string>();
-        const ctx = fg.getContext(0);
+        const ctx = fg.getContext(this.props.globalState.selectedContextIndex);
         if (ctx) {
             for (const [key, val] of Object.entries(ctx.userVariables)) {
                 values.set(key, FormatVariableValue(val));
@@ -110,25 +151,33 @@ export class VariablesPanelComponent extends React.Component<IVariablesPanelProp
         this.setState({ runtimeValues: values });
     }
 
-    /**
-     * Scan all blocks in the flow graph to build the variable list.
-     */
     private _refreshVariables() {
         const fg = this.props.globalState.flowGraph;
         if (!fg) {
-            this.setState({ variables: [] });
+            this.setState({ variables: [], variableTypes: new Map() });
             return;
         }
 
         const variables = GatherVariables(fg);
-        this.setState({ variables });
+
+        // Read type annotations from the selected context (or first available)
+        const ctx = fg.getContext(this.props.globalState.selectedContextIndex) ?? fg.getContext(0);
+        const variableTypes = new Map<string, VariableTypeName>();
+        if (ctx) {
+            for (const v of variables) {
+                const declared = ctx.getVariableType(v.name) as VariableTypeName | undefined;
+                if (declared) {
+                    variableTypes.set(v.name, declared);
+                } else {
+                    // Infer from current value
+                    const val = ctx.userVariables[v.name];
+                    variableTypes.set(v.name, InferVariableType(val));
+                }
+            }
+        }
+        this.setState({ variables, variableTypes });
     }
 
-    /**
-     * Rename a variable across all GetVariable and SetVariable blocks.
-     * @param oldName - the current name
-     * @param newName - the new name
-     */
     private _renameVariable(oldName: string, newName: string) {
         if (!newName || newName === oldName) {
             return;
@@ -141,15 +190,22 @@ export class VariablesPanelComponent extends React.Component<IVariablesPanelProp
 
         RenameVariable(fg, oldName, newName);
 
+        // Migrate variable type annotations across all contexts
+        for (let i = 0; i < fg.contextCount; i++) {
+            const ctx = fg.getContext(i);
+            if (ctx) {
+                const oldType = ctx.getVariableType(oldName);
+                if (oldType) {
+                    ctx.setVariableType(newName, oldType);
+                    delete ctx.variableTypes[oldName];
+                }
+            }
+        }
+
         this.props.globalState.stateManager.onRebuildRequiredObservable.notifyObservers();
         this._refreshVariables();
     }
 
-    /**
-     * Delete a variable by removing all GetVariable and SetVariable blocks that
-     * reference it, and removing it from all execution contexts.
-     * @param name - the variable name to delete
-     */
     private _deleteVariable(name: string) {
         const fg = this.props.globalState.flowGraph;
         if (!fg) {
@@ -158,15 +214,19 @@ export class VariablesPanelComponent extends React.Component<IVariablesPanelProp
 
         DeleteVariable(fg, name);
 
+        // Remove stored type annotations so deleted variables don't reappear after reload
+        for (let i = 0; i < fg.contextCount; i++) {
+            const ctx = fg.getContext(i);
+            if (ctx) {
+                delete ctx.variableTypes[name];
+            }
+        }
+
         this.props.globalState.stateManager.onRebuildRequiredObservable.notifyObservers();
         this._refreshVariables();
     }
 
-    /**
-     * Add a new variable by creating a GetVariable block with a default name.
-     */
     private _addVariable() {
-        // Find a unique name
         const existing = new Set(this.state.variables.map((v) => v.name));
         let idx = 1;
         let name = "newVariable";
@@ -174,108 +234,488 @@ export class VariablesPanelComponent extends React.Component<IVariablesPanelProp
             name = `newVariable${idx++}`;
         }
 
-        // Add a SetVariable block referencing this name so the variable is registered
         const fg = this.props.globalState.flowGraph;
         if (!fg) {
             return;
         }
 
-        // Set the variable on context 0 with a default empty value
-        let ctx = fg.getContext(0);
+        let ctx = fg.getContext(this.props.globalState.selectedContextIndex);
         if (!ctx) {
             ctx = fg.createContext();
         }
-        ctx.setVariable(name, undefined);
+        ctx.setVariable(name, 0);
+        ctx.setVariableType(name, "number");
+        // Also set on all other contexts
+        for (let i = 0; i < fg.contextCount; i++) {
+            const other = fg.getContext(i);
+            if (other && other !== ctx) {
+                if (!other.hasVariable(name)) {
+                    other.setVariable(name, 0);
+                }
+                other.setVariableType(name, "number");
+            }
+        }
 
-        // Gather the updated list and start editing the new variable
         const variables = GatherVariables(fg);
         const newIdx = variables.findIndex((v) => v.name === name);
-        this.setState({ variables, editingIndex: newIdx, editingName: name });
+        const variableTypes = new Map(this.state.variableTypes);
+        variableTypes.set(name, "number");
+        this.setState({ variables, variableTypes, editingNameIndex: newIdx, editingName: name, collapsed: false });
     }
 
-    private _startEditing(index: number) {
-        this.setState({ editingIndex: index, editingName: this.state.variables[index].name });
+    // --- Name editing ---
+
+    private _startNameEditing(index: number) {
+        this.setState({ editingNameIndex: index, editingName: this.state.variables[index].name });
     }
 
-    private _commitEditing() {
-        const { editingIndex, editingName, variables } = this.state;
-        if (editingIndex === null || editingIndex >= variables.length) {
-            this.setState({ editingIndex: null });
+    private _commitNameEditing() {
+        const { editingNameIndex, editingName, variables } = this.state;
+        if (editingNameIndex === null || editingNameIndex >= variables.length) {
+            this.setState({ editingNameIndex: null });
             return;
         }
-        const oldName = variables[editingIndex].name;
+        const oldName = variables[editingNameIndex].name;
         const newName = editingName.trim();
-        this.setState({ editingIndex: null });
+        this.setState({ editingNameIndex: null });
         if (newName && newName !== oldName) {
             this._renameVariable(oldName, newName);
         }
     }
 
+    // --- Value editing ---
+
+    private _startValueEditing(index: number) {
+        const name = this.state.variables[index].name;
+        const display = this.state.runtimeValues.get(name) ?? "undefined";
+        this.setState({ editingValueIndex: index, editingValue: display });
+    }
+
+    private _commitValueEditing() {
+        const { editingValueIndex, editingValue, variables } = this.state;
+        if (editingValueIndex === null || editingValueIndex >= variables.length) {
+            this.setState({ editingValueIndex: null });
+            return;
+        }
+        const name = variables[editingValueIndex].name;
+        this.setState({ editingValueIndex: null });
+
+        const fg = this.props.globalState.flowGraph;
+        if (!fg) {
+            return;
+        }
+
+        const ctx = fg.getContext(this.props.globalState.selectedContextIndex);
+        if (!ctx) {
+            return;
+        }
+
+        const currentValue = ctx.userVariables[name];
+        const parsed = ParseVariableValue(editingValue, currentValue);
+        ctx.setVariable(name, parsed);
+        this._pollRuntimeValues();
+    }
+
+    // --- Type changing ---
+
+    private _changeVariableType(varName: string, newType: VariableTypeName) {
+        const fg = this.props.globalState.flowGraph;
+        if (!fg) {
+            return;
+        }
+
+        const defaultValue = GetDefaultValueForType(newType);
+
+        // Update type annotation and set default value on all contexts
+        for (let i = 0; i < fg.contextCount; i++) {
+            const ctx = fg.getContext(i);
+            if (ctx) {
+                ctx.setVariableType(varName, newType);
+                ctx.setVariable(varName, defaultValue);
+            }
+        }
+
+        const variableTypes = new Map(this.state.variableTypes);
+        variableTypes.set(varName, newType);
+        this.setState({ variableTypes });
+        this._pollRuntimeValues();
+    }
+
+    // --- Scene object helpers ---
+
+    /** Cache: sceneUid → typeName → { lengths, options } */
+    private _sceneObjectCache = new Map<string, Map<string, { lengths: number[]; options: { name: string; uniqueId: number }[] }>>();
+
+    private _getSceneObjectsForType(typeName: VariableTypeName): { name: string; uniqueId: number }[] {
+        const fg = this.props.globalState.flowGraph;
+        if (!fg) {
+            return [];
+        }
+        const ctx = fg.getContext(this.props.globalState.selectedContextIndex);
+        if (!ctx) {
+            return [];
+        }
+        const scene = ctx.getScene();
+        const sceneUid = scene.uid ?? "0";
+
+        // Get or create per-scene cache
+        let typeCache = this._sceneObjectCache.get(sceneUid);
+        if (!typeCache) {
+            typeCache = new Map();
+            this._sceneObjectCache.set(sceneUid, typeCache);
+        }
+
+        // Determine source collections and current lengths for cache invalidation
+        const sources = this._getSceneCollections(scene, typeName);
+        const currentLengths = sources.map((s) => s.length);
+        const cached = typeCache.get(typeName);
+        if (cached && cached.lengths.length === currentLengths.length && cached.lengths.every((len, i) => len === currentLengths[i])) {
+            return cached.options;
+        }
+
+        // Rebuild
+        let options: { name: string; uniqueId: number }[];
+        if (typeName === "TransformNode") {
+            options = [...scene.transformNodes, ...scene.meshes].map((n) => ({ name: n.name, uniqueId: n.uniqueId }));
+        } else if (sources.length > 0) {
+            options = sources[0].map((item) => ({ name: item.name, uniqueId: item.uniqueId }));
+        } else {
+            options = [];
+        }
+
+        typeCache.set(typeName, { lengths: currentLengths, options });
+        return options;
+    }
+
+    private _getSceneCollections(
+        scene: { meshes: any[]; transformNodes: any[]; cameras: any[]; lights: any[]; materials: any[]; animationGroups: any[] },
+        typeName: VariableTypeName
+    ): any[][] {
+        switch (typeName) {
+            case "Mesh":
+                return [scene.meshes];
+            case "TransformNode":
+                return [scene.transformNodes, scene.meshes];
+            case "Camera":
+                return [scene.cameras];
+            case "Light":
+                return [scene.lights];
+            case "Material":
+                return [scene.materials];
+            case "AnimationGroup":
+                return [scene.animationGroups];
+            default:
+                return [];
+        }
+    }
+
+    private _setSceneObjectVariable(varName: string, typeName: VariableTypeName, uniqueId: number) {
+        const fg = this.props.globalState.flowGraph;
+        if (!fg) {
+            return;
+        }
+        const ctx = fg.getContext(this.props.globalState.selectedContextIndex);
+        if (!ctx) {
+            return;
+        }
+        const scene = ctx.getScene();
+        let obj: unknown = undefined;
+        switch (typeName) {
+            case "Mesh":
+                obj = scene.meshes.find((m) => m.uniqueId === uniqueId);
+                break;
+            case "TransformNode":
+                obj = scene.transformNodes.find((n) => n.uniqueId === uniqueId) ?? scene.meshes.find((m) => m.uniqueId === uniqueId);
+                break;
+            case "Camera":
+                obj = scene.cameras.find((c) => c.uniqueId === uniqueId);
+                break;
+            case "Light":
+                obj = scene.lights.find((l) => l.uniqueId === uniqueId);
+                break;
+            case "Material":
+                obj = scene.materials.find((m) => m.uniqueId === uniqueId);
+                break;
+            case "AnimationGroup":
+                obj = scene.animationGroups.find((ag) => ag.uniqueId === uniqueId);
+                break;
+        }
+        ctx.setVariable(varName, obj);
+        this._pollRuntimeValues();
+    }
+
+    // --- Component editing for Vector/Color ---
+
+    private _setVectorComponent(varName: string, typeName: VariableTypeName, componentIndex: number, value: number) {
+        const fg = this.props.globalState.flowGraph;
+        if (!fg) {
+            return;
+        }
+        const ctx = fg.getContext(this.props.globalState.selectedContextIndex);
+        if (!ctx) {
+            return;
+        }
+        const current = ctx.userVariables[varName];
+        const components = GetComponents(current, typeName);
+        components[componentIndex] = value;
+        const newValue = BuildFromComponents(components, typeName);
+        ctx.setVariable(varName, newValue);
+        this._pollRuntimeValues();
+    }
+
+    private _renderTypeSelector(varName: string, currentType: VariableTypeName) {
+        return (
+            <select
+                className="fge-var-cell-type-select"
+                value={currentType}
+                onChange={(e) => {
+                    this._changeVariableType(varName, e.target.value as VariableTypeName);
+                }}
+                title="Variable type"
+            >
+                {VariableTypeGroups.map((group) => (
+                    <optgroup key={group.label} label={group.label}>
+                        {group.types.map((t) => (
+                            <option key={t.name} value={t.name}>
+                                {t.label}
+                            </option>
+                        ))}
+                    </optgroup>
+                ))}
+            </select>
+        );
+    }
+
+    private _renderValueEditor(varName: string, typeName: VariableTypeName, idx: number) {
+        const { editingValueIndex, editingValue, runtimeValues } = this.state;
+
+        // --- Boolean: toggle ---
+        if (typeName === "boolean") {
+            const fg = this.props.globalState.flowGraph;
+            const ctx = fg?.getContext(this.props.globalState.selectedContextIndex);
+            const currentVal = ctx?.userVariables[varName];
+            return (
+                <label className="fge-var-cell-bool-toggle">
+                    <input
+                        type="checkbox"
+                        checked={!!currentVal}
+                        onChange={(e) => {
+                            ctx?.setVariable(varName, e.target.checked);
+                            this._pollRuntimeValues();
+                        }}
+                    />
+                    <span>{currentVal ? "true" : "false"}</span>
+                </label>
+            );
+        }
+
+        // --- Number / Integer: number input ---
+        if (typeName === "number" || typeName === "FlowGraphInteger") {
+            const fg = this.props.globalState.flowGraph;
+            const ctx = fg?.getContext(this.props.globalState.selectedContextIndex);
+            const raw = ctx?.userVariables[varName];
+            const numVal = typeName === "FlowGraphInteger" ? (raw?.value ?? 0) : typeof raw === "number" ? raw : 0;
+            return (
+                <input
+                    className="fge-var-cell-number-input"
+                    type="number"
+                    step={typeName === "FlowGraphInteger" ? 1 : "any"}
+                    value={numVal}
+                    onFocus={() => {
+                        this.props.globalState.lockObject.lock = true;
+                    }}
+                    onBlur={() => {
+                        this.props.globalState.lockObject.lock = false;
+                    }}
+                    onChange={(e) => {
+                        const n = typeName === "FlowGraphInteger" ? Math.round(Number(e.target.value)) : Number(e.target.value);
+                        if (!isNaN(n)) {
+                            if (typeName === "FlowGraphInteger") {
+                                ctx?.setVariable(varName, new FlowGraphInteger(n));
+                            } else {
+                                ctx?.setVariable(varName, n);
+                            }
+                            this._pollRuntimeValues();
+                        }
+                    }}
+                    onKeyDown={(e) => e.stopPropagation()}
+                />
+            );
+        }
+
+        // --- Vector / Color: component inputs ---
+        if (IsVectorOrColorType(typeName)) {
+            const fg = this.props.globalState.flowGraph;
+            const ctx = fg?.getContext(this.props.globalState.selectedContextIndex);
+            const current = ctx?.userVariables[varName];
+            const components = GetComponents(current, typeName);
+            const labels = GetComponentLabels(typeName);
+            return (
+                <div className="fge-var-cell-components">
+                    {labels.map((label, ci) => (
+                        <div key={label} className="fge-var-cell-component">
+                            <span className="fge-var-cell-component-label">{label}</span>
+                            <input
+                                className="fge-var-cell-component-input"
+                                type="number"
+                                step="any"
+                                value={components[ci]}
+                                onFocus={() => {
+                                    this.props.globalState.lockObject.lock = true;
+                                }}
+                                onBlur={() => {
+                                    this.props.globalState.lockObject.lock = false;
+                                }}
+                                onChange={(e) => {
+                                    const n = Number(e.target.value);
+                                    if (!isNaN(n)) {
+                                        this._setVectorComponent(varName, typeName, ci, n);
+                                    }
+                                }}
+                                onKeyDown={(e) => e.stopPropagation()}
+                            />
+                        </div>
+                    ))}
+                </div>
+            );
+        }
+
+        // --- Scene objects: dropdown picker ---
+        if (IsSceneObjectType(typeName)) {
+            const objects = this._getSceneObjectsForType(typeName);
+            const fg = this.props.globalState.flowGraph;
+            const ctx = fg?.getContext(this.props.globalState.selectedContextIndex);
+            const current = ctx?.userVariables[varName];
+            const currentUid = (current as { uniqueId?: number })?.uniqueId ?? -1;
+            return (
+                <select
+                    className="fge-var-cell-object-select"
+                    value={currentUid}
+                    onChange={(e) => {
+                        const uid = Number(e.target.value);
+                        if (uid === -1) {
+                            ctx?.setVariable(varName, undefined);
+                            this._pollRuntimeValues();
+                        } else {
+                            this._setSceneObjectVariable(varName, typeName, uid);
+                        }
+                    }}
+                >
+                    <option value={-1}>(none)</option>
+                    {objects.map((obj) => (
+                        <option key={obj.uniqueId} value={obj.uniqueId}>
+                            {obj.name || `[unnamed #${obj.uniqueId}]`}
+                        </option>
+                    ))}
+                </select>
+            );
+        }
+
+        // --- String / Any: text input ---
+        if (editingValueIndex === idx) {
+            return (
+                <input
+                    className="fge-var-cell-value-input"
+                    value={editingValue}
+                    onChange={(e) => this.setState({ editingValue: e.target.value })}
+                    onFocus={() => {
+                        this.props.globalState.lockObject.lock = true;
+                    }}
+                    onBlur={() => {
+                        this.props.globalState.lockObject.lock = false;
+                        this._commitValueEditing();
+                    }}
+                    onKeyDown={(e) => {
+                        e.stopPropagation();
+                        if (e.key === "Enter") {
+                            this._commitValueEditing();
+                        } else if (e.key === "Escape") {
+                            this.setState({ editingValueIndex: null });
+                        }
+                    }}
+                    autoFocus
+                />
+            );
+        }
+        return (
+            <span className="fge-var-cell-value" onClick={() => this._startValueEditing(idx)} title="Click to edit value">
+                {runtimeValues.get(varName) ?? "undefined"}
+            </span>
+        );
+    }
+
     /** @internal */
     override render() {
-        const { variables, editingIndex, editingName, isRunning, runtimeValues } = this.state;
+        const { variables, editingNameIndex, editingName, variableTypes, collapsed } = this.state;
+        const varCount = variables.length;
 
         return (
-            <div className="fge-variables-panel">
-                <div className="fge-variables-header">
-                    <h3>Variables</h3>
-                    {isRunning && <span className="fge-variables-running-badge">● Live</span>}
-                    <button className="fge-variables-add-btn" onClick={() => this._addVariable()} title="Add a new variable">
-                        + Add
+            <div className="fge-variables-strip">
+                <div className="fge-variables-strip-header">
+                    <button className="fge-variables-toggle" onClick={() => this.setState({ collapsed: !collapsed })} title={collapsed ? "Expand variables" : "Collapse variables"}>
+                        {collapsed ? "▶" : "▼"}
+                    </button>
+                    <span className="fge-variables-strip-title">Variables{varCount > 0 ? ` (${varCount})` : ""}</span>
+                    {this.state.isRunning && <span className="fge-variables-live-badge">● Live</span>}
+                    <button className="fge-variables-strip-add" onClick={() => this._addVariable()} title="Add a new variable">
+                        +
                     </button>
                 </div>
-                {variables.length === 0 && (
-                    <div className="fge-variables-empty">No variables defined. Use GetVariable / SetVariable blocks or click &quot;+ Add&quot; to create one.</div>
-                )}
-                {variables.map((v, idx) => (
-                    <div key={v.name} className="fge-variable-row">
-                        <div className="fge-variable-row-top">
-                            {editingIndex === idx ? (
-                                <input
-                                    className="fge-variable-name"
-                                    value={editingName}
-                                    onChange={(e) => this.setState({ editingName: e.target.value })}
-                                    onFocus={() => {
-                                        this.props.globalState.lockObject.lock = true;
-                                    }}
-                                    onBlur={() => {
-                                        this.props.globalState.lockObject.lock = false;
-                                        this._commitEditing();
-                                    }}
-                                    onKeyDown={(e) => {
-                                        e.stopPropagation();
-                                        if (e.key === "Enter") {
-                                            this._commitEditing();
-                                        } else if (e.key === "Escape") {
-                                            this.setState({ editingIndex: null });
-                                        }
-                                    }}
-                                    autoFocus
-                                />
-                            ) : (
-                                <span className="fge-variable-name" onDoubleClick={() => this._startEditing(idx)} title="Double-click to rename">
-                                    {v.name}
-                                </span>
-                            )}
-                            <span className="fge-variable-type" title={`${v.getCount} get, ${v.setCount} set`}>
-                                {v.getCount}G / {v.setCount}S
-                            </span>
-                            <button className="fge-variable-delete-btn" title="Delete variable and its blocks" onClick={() => this._deleteVariable(v.name)}>
-                                ✕
-                            </button>
-                        </div>
-                        {runtimeValues.size > 0 && (
-                            <div className="fge-variable-value" title={runtimeValues.get(v.name) ?? "undefined"}>
-                                = {runtimeValues.get(v.name) ?? "undefined"}
+                {!collapsed && (
+                    <div className="fge-variables-strip-body">
+                        {variables.length === 0 ? (
+                            <div className="fge-variables-strip-empty">No variables. Click + to add one, or use GetVariable/SetVariable blocks.</div>
+                        ) : (
+                            <div className="fge-variables-strip-table">
+                                {variables.map((v, idx) => {
+                                    const typeName = variableTypes.get(v.name) ?? "any";
+                                    return (
+                                        <div key={v.name} className="fge-var-cell">
+                                            <div className="fge-var-cell-name-row">
+                                                {editingNameIndex === idx ? (
+                                                    <input
+                                                        className="fge-var-cell-name-input"
+                                                        value={editingName}
+                                                        onChange={(e) => this.setState({ editingName: e.target.value })}
+                                                        onFocus={() => {
+                                                            this.props.globalState.lockObject.lock = true;
+                                                        }}
+                                                        onBlur={() => {
+                                                            this.props.globalState.lockObject.lock = false;
+                                                            this._commitNameEditing();
+                                                        }}
+                                                        onKeyDown={(e) => {
+                                                            e.stopPropagation();
+                                                            if (e.key === "Enter") {
+                                                                this._commitNameEditing();
+                                                            } else if (e.key === "Escape") {
+                                                                this.setState({ editingNameIndex: null });
+                                                            }
+                                                        }}
+                                                        autoFocus
+                                                    />
+                                                ) : (
+                                                    <span
+                                                        className="fge-var-cell-name"
+                                                        onDoubleClick={() => this._startNameEditing(idx)}
+                                                        title={`${v.name} (${v.getCount}G/${v.setCount}S) — double-click to rename`}
+                                                    >
+                                                        {v.name}
+                                                    </span>
+                                                )}
+                                                <button className="fge-var-cell-delete" title="Delete variable and its blocks" onClick={() => this._deleteVariable(v.name)}>
+                                                    ✕
+                                                </button>
+                                            </div>
+                                            <div className="fge-var-cell-type-row">{this._renderTypeSelector(v.name, typeName)}</div>
+                                            <div className="fge-var-cell-value-row">{this._renderValueEditor(v.name, typeName, idx)}</div>
+                                        </div>
+                                    );
+                                })}
                             </div>
                         )}
                     </div>
-                ))}
-                <div className="fge-variables-info">
-                    Double-click a name to rename. Renaming propagates to all Get/Set blocks.
-                    <br />
-                    Deleting a variable removes all GetVariable and SetVariable blocks that reference it.
-                </div>
+                )}
             </div>
         );
     }

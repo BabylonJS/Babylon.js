@@ -35,6 +35,12 @@ export type SPLATLoadingOptions = {
     gaussianSplattingMesh?: GaussianSplattingMesh;
 
     /**
+     * Generate rotation and scale matrix textures required for voxel-based IBL shadows.
+     * Required for IBL shadows to work if keepInRam is false.
+     */
+    needsRotationScaleTextures?: boolean;
+
+    /**
      * URL to load the spz WASM ES module from (e.g. the \@adobe/spz package).
      * When provided, the WASM-based SPZ loader is used, which supports extra features
      * such as antialiasing metadata, and vendor-specific extensions such as safe-orbit

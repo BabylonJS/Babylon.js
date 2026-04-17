@@ -184,6 +184,7 @@ export function ParseFlowGraphContext(serializationObject: ISerializedFlowGraphC
     result.treatDataAsRightHanded = rightHanded || false;
     const valueParseFunction = options.valueParseFunction ?? defaultValueParseFunction;
     result.uniqueId = serializationObject.uniqueId;
+    result.name = serializationObject.name ?? "";
     const scene = result.getScene();
     // check if assets context is available
     if (serializationObject._assetsContext) {
@@ -221,6 +222,12 @@ export function ParseFlowGraphContext(serializationObject: ISerializedFlowGraphC
     for (const key in serializationObject._userVariables) {
         const value = valueParseFunction(key, serializationObject._userVariables, result.assetsContext, scene);
         result.userVariables[key] = value;
+    }
+    // Restore variable type annotations
+    if (serializationObject._variableTypes) {
+        for (const key in serializationObject._variableTypes) {
+            result.setVariableType(key, serializationObject._variableTypes[key]);
+        }
     }
     for (const key in serializationObject._connectionValues) {
         const value = valueParseFunction(key, serializationObject._connectionValues, result.assetsContext, scene);
@@ -274,6 +281,17 @@ export function ParseFlowGraphBlockWithClassType(
         const dataInput = obj.getDataInput(serializationObject.dataInputs[i].name);
         if (dataInput) {
             dataInput.deserialize(serializationObject.dataInputs[i]);
+            // Restore _defaultValue if it was serialized.  Without this, the
+            // user-set inline value (e.g. "2" on an Add input, or "position"
+            // on a GetProperty's propertyName) is lost during round-trips.
+            if (serializationObject.dataInputs[i].defaultValue !== undefined) {
+                (dataInput as any)._defaultValue = valueParseFunction(
+                    "defaultValue",
+                    serializationObject.dataInputs[i],
+                    parseOptions.assetsContainer || parseOptions.scene,
+                    parseOptions.scene
+                );
+            }
         } else {
             throw new Error("Could not find data input with name " + serializationObject.dataInputs[i].name + " in block " + serializationObject.className);
         }

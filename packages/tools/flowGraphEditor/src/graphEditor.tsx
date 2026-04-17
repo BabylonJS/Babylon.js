@@ -25,6 +25,7 @@ import { Splitter } from "shared-ui-components/split/splitter";
 import { ControlledSize, SplitDirection } from "shared-ui-components/split/splitContext";
 import { ScenePreviewComponent } from "./components/preview/scenePreviewComponent";
 import { GraphControlsComponent } from "./components/graphControls/graphControlsComponent";
+import { VariablesPanelComponent } from "./components/variables/variablesPanelComponent";
 import { HistoryStack } from "shared-ui-components/historyStack";
 import { FlowGraphEventBlock } from "core/FlowGraph/flowGraphEventBlock";
 import { type IFlowGraphValidationResult, FlowGraphValidationSeverity } from "core/FlowGraph/flowGraphValidator";
@@ -162,8 +163,19 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
             try {
                 const fg = globalState.flowGraph;
                 SerializationTools.UpdateLocations(fg, globalState);
+                // Snapshot live contexts so undo/redo preserves user variables,
+                // variable types, and connection values even when the graph is stopped.
+                globalState.snapshotUserVariables();
                 const serializationObject: any = {};
                 fg.serialize(serializationObject);
+                // Inject saved context snapshots when the graph has no live contexts
+                if (
+                    (!serializationObject.executionContexts || serializationObject.executionContexts.length === 0) &&
+                    globalState.savedContextSnapshots &&
+                    globalState.savedContextSnapshots.length > 0
+                ) {
+                    serializationObject.executionContexts = globalState.savedContextSnapshots;
+                }
                 // Include editor layout so positions are restored on undo/redo
                 serializationObject.editorData = (fg as any)._editorData;
                 // Cache block class constructors for synchronous parsing in applyUpdate
@@ -1172,6 +1184,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                     >
                         <div className="diagram-canvas-pane" onContextMenu={this._onContextMenu}>
                             <GraphControlsComponent globalState={this.props.globalState} />
+                            <VariablesPanelComponent globalState={this.props.globalState} />
                             <GraphCanvasComponent
                                 ref={this._graphCanvasRef}
                                 stateManager={this.props.globalState.stateManager}

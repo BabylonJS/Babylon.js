@@ -15,9 +15,9 @@ import {
     type RawRectangleShape,
     type RawStrokeShape,
     type RawTextData,
-    type RawTextDocument,
 } from "./rawTypes";
 import { GetInitialScalarValue, GetInitialVectorValues, GetInitialBezierData } from "./rawPropertyHelpers";
+import { ApplyLottieTextContext, DrawLottieText, MeasureLottieText, ResolveLottieText } from "./textLayout";
 
 import { type BoundingBox, GetShapesBoundingBox, GetTextBoundingBox } from "../maths/boundingBox";
 
@@ -243,7 +243,7 @@ export class SpritePacker {
         const page = this._getPageWithRoom(this._spriteAtlasInfo.cellWidth, this._spriteAtlasInfo.cellHeight);
 
         // Draw the text in the canvas
-        this._drawText(textData, boundingBox, scalingFactor, page);
+        this._drawText(textData, scalingFactor, page);
         this._extrudeSpriteEdges(page, page.currentX, page.currentY, this._spriteAtlasInfo.cellWidth, this._spriteAtlasInfo.cellHeight);
         page.isDirty = true;
 
@@ -473,16 +473,13 @@ export class SpritePacker {
         page.context.restore();
     }
 
-    private _drawText(textData: RawTextData, boundingBox: BoundingBox, scalingFactor: IVector2Like, page: AtlasPage): void {
+    private _drawText(textData: RawTextData, scalingFactor: IVector2Like, page: AtlasPage): void {
         if (this._rawFonts === undefined) {
             return;
         }
 
-        const textInfo = textData.d.k[0].s as RawTextDocument;
-
-        const fontFamily = textInfo.f;
-        const finalFont = this._rawFonts.get(fontFamily);
-        if (!finalFont) {
+        const resolvedText = ResolveLottieText(textData, this._rawFonts, this._variables);
+        if (!resolvedText) {
             return;
         }
 
@@ -490,26 +487,15 @@ export class SpritePacker {
         page.context.translate(page.currentX, page.currentY);
         page.context.scale(scalingFactor.x, scalingFactor.y);
 
-        // Set up font (same setup as GetTextBoundingBox for measurement consistency)
-        const weight = finalFont.fWeight || "400";
-        page.context.font = `${weight} ${textInfo.s}px ${finalFont.fFamily}`;
-
-        if (textInfo.sc !== undefined && textInfo.sc.length >= 3 && textInfo.sw !== undefined && textInfo.sw > 0) {
-            page.context.lineWidth = textInfo.sw;
-        }
-
-        // Clip to cell bounds to prevent text overdraw into adjacent cells
-        page.context.beginPath();
-        page.context.rect(0, 0, boundingBox.width, boundingBox.height);
-        page.context.clip();
-
-        if (textInfo.fc !== undefined && textInfo.fc.length >= 3) {
-            const rawFillStyle = textInfo.fc;
+        // Resolve fill color. fc is either an RGB array or a variable name string; the two shapes need different guards
+        // (arrays need at least 3 components; strings just need a non-undefined variable lookup).
+        if (resolvedText.textInfo.fc !== undefined) {
+            const rawFillStyle = resolvedText.textInfo.fc;
             if (Array.isArray(rawFillStyle)) {
-                // If the fill style is an array, we assume it's a color array
-                page.context.fillStyle = this._lottieColorToCSSColor(rawFillStyle, 1);
+                if (rawFillStyle.length >= 3) {
+                    page.context.fillStyle = this._lottieColorToCSSColor(rawFillStyle, 1);
+                }
             } else {
-                // If it's a string, we need to get the value from the variables map
                 const variableFillStyle = this._variables.get(rawFillStyle);
                 if (variableFillStyle !== undefined) {
                     page.context.fillStyle = variableFillStyle;
@@ -517,22 +503,21 @@ export class SpritePacker {
             }
         }
 
-        if (textInfo.sc !== undefined && textInfo.sc.length >= 3 && textInfo.sw !== undefined && textInfo.sw > 0) {
-            page.context.strokeStyle = this._lottieColorToCSSColor(textInfo.sc, 1);
+        if (resolvedText.hasStroke) {
+            // ResolveLottieText only sets hasStroke when sc is present and well-formed, so the non-null assertion here is safe.
+            page.context.strokeStyle = this._lottieColorToCSSColor(resolvedText.textInfo.sc!, 1);
         }
 
-        // Text is supported as a possible variable (for localization for example)
-        // Check if the text is a variable and replace it if it is
-        let text = textInfo.t;
-        const variableText = this._variables.get(text);
-        if (variableText !== undefined) {
-            text = variableText;
-        }
+        ApplyLottieTextContext(page.context, resolvedText);
 
-        page.context.fillText(text, 0, boundingBox.actualBoundingBoxAscent!);
-        if (textInfo.sc !== undefined && textInfo.sc.length >= 3 && textInfo.sw !== undefined && textInfo.sw > 0 && textInfo.of === true) {
-            page.context.strokeText(text, 0, boundingBox.actualBoundingBoxAscent!);
-        }
+        const layout = MeasureLottieText(resolvedText, (text) => page.context.measureText(text));
+
+        // Clip to cell bounds to prevent text overdraw into adjacent cells
+        page.context.beginPath();
+        page.context.rect(0, 0, layout.width, layout.height);
+        page.context.clip();
+
+        DrawLottieText(page.context, resolvedText, layout);
 
         page.context.restore();
     }

@@ -49,6 +49,22 @@ export class SerializationTools {
     }
 
     /**
+     * Inject saved context snapshots into a serialization object when the graph
+     * has no live execution contexts (e.g. graph is stopped).
+     * @param serializationObject - the serialized flow graph data
+     * @param globalState - the editor's global state holding saved snapshots
+     */
+    public static InjectSavedContexts(serializationObject: any, globalState: GlobalState): void {
+        if (
+            (!serializationObject.executionContexts || serializationObject.executionContexts.length === 0) &&
+            globalState.savedContextSnapshots &&
+            globalState.savedContextSnapshots.length > 0
+        ) {
+            serializationObject.executionContexts = globalState.savedContextSnapshots;
+        }
+    }
+
+    /**
      * Serialize the flow graph to a JSON string.
      * @param flowGraph - the flow graph to serialize
      * @param globalState - the editor's global state
@@ -58,8 +74,20 @@ export class SerializationTools {
     public static Serialize(flowGraph: FlowGraph, globalState: GlobalState, frame?: Nullable<GraphFrame>) {
         this.UpdateLocations(flowGraph, globalState, frame);
 
+        // Snapshot live contexts before serialization so we capture the latest
+        // user variables, variable types, and connection values.  This is
+        // important because the graph may be stopped (contexts cleared) when
+        // the user clicks Save.
+        globalState.snapshotUserVariables();
+
         const serializationObject: any = {};
         flowGraph.serialize(serializationObject);
+
+        // When the graph is stopped, _executionContexts is empty so
+        // flowGraph.serialize() produces executionContexts: [].  Inject the
+        // editor's saved context snapshots to preserve user variables,
+        // variable type annotations, and connection values.
+        SerializationTools.InjectSavedContexts(serializationObject, globalState);
 
         // Include editor layout data (block positions, frames, zoom) so the
         // graph looks the same when loaded back
@@ -98,6 +126,14 @@ export class SerializationTools {
             // only exist in the preview scene loaded from a snippet.  Stash the
             // serialized names so _rebind*Reference can find them later.
             SerializationTools.PreserveUnresolvedNames(parsedGraph, serializationObject);
+
+            // Patch unresolved user-variable descriptors back onto parsed
+            // contexts.  When parsing runs against the editor's host scene
+            // (which has no meshes), Mesh/Light/Camera references resolve to
+            // undefined.  Restore the original {id, name, className} descriptor
+            // so _rebindContextUserVariables can resolve them later against the
+            // preview scene.
+            SerializationTools.PreserveUnresolvedVariables(parsedGraph, serializationObject);
 
             // Sync context connection values into _defaultValue for unconnected
             // inputs so the editor UI shows the correct value (e.g. "2" instead
@@ -204,6 +240,38 @@ export class SerializationTools {
     }
 
     /**
+     * Patch unresolved user-variable descriptors back onto parsed contexts.
+     * When parsing runs against the editor's host scene (which typically has
+     * no user meshes), Mesh/Light/Camera variable references resolve to
+     * `undefined`.  This method restores the original `{id, name, className}`
+     * descriptor from the serialized JSON so that `_rebindContextUserVariables`
+     * can resolve them later when the preview scene loads.
+     * @param parsedGraph - the parsed flow graph with potentially unresolved variables
+     * @param serializationObject - the original JSON with the full descriptors
+     */
+    public static PreserveUnresolvedVariables(parsedGraph: FlowGraph, serializationObject: any): void {
+        const serializedContexts: any[] = serializationObject.executionContexts;
+        if (!serializedContexts) {
+            return;
+        }
+        for (let i = 0; i < serializedContexts.length; i++) {
+            const serializedCtx = serializedContexts[i];
+            const parsedCtx = parsedGraph.getContext(i);
+            if (!parsedCtx || !serializedCtx?._userVariables) {
+                continue;
+            }
+            for (const key in serializedCtx._userVariables) {
+                const desc = serializedCtx._userVariables[key];
+                // Only patch back object descriptors (className present) when the
+                // parsed value is falsy (undefined/null — i.e. not resolved).
+                if (desc && typeof desc === "object" && desc.className && !parsedCtx.userVariables[key]) {
+                    parsedCtx.setVariable(key, desc);
+                }
+            }
+        }
+    }
+
+    /**
      * The custom extension name used to embed flow graph data in a glTF file.
      */
     public static readonly GLTF_EXTENSION_NAME = "BABYLON_flow_graph";
@@ -227,10 +295,13 @@ export class SerializationTools {
      */
     public static async ExportGlbAsync(flowGraph: FlowGraph, globalState: GlobalState, scene: Nullable<Scene>): Promise<void> {
         this.UpdateLocations(flowGraph, globalState);
+        globalState.snapshotUserVariables();
 
         // Serialize the flow graph to JSON
         const fgSerialized: any = {};
         flowGraph.serialize(fgSerialized);
+        // Inject saved context snapshots when the graph has no live contexts
+        SerializationTools.InjectSavedContexts(fgSerialized, globalState);
         fgSerialized.editorData = (flowGraph as any)._editorData;
         if (globalState.snippetId) {
             fgSerialized.sceneSnippetId = globalState.snippetId;

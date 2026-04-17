@@ -10,7 +10,10 @@
         "esModuleInterop": true,
         "skipLibCheck": true,
         "forceConsistentCasingInFileNames": true,
-        "resolveJsonModule": true
+        "resolveJsonModule": true,
+        "paths": {
+            "shared-ui-components/*": ["../../../dev/sharedUiComponents/dist/*"]
+        }
     },
     "include": ["../../../dev/inspector-v2/src/cli/**/*"]
 }

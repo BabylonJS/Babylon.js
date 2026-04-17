@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { NullEngine } from "core/Engines/nullEngine";
 import { Scene } from "core/scene";
 import { StartInspectable, _StartInspectable } from "../../src/inspectable";
-import { type WeaklyTypedServiceDefinition } from "../../src/modularity/serviceContainer";
+import { type WeaklyTypedServiceDefinition } from "shared-ui-components/modularTool/modularity/serviceContainer";
 
 const TestServiceIdentity = Symbol("TestService");
 const TestService2Identity = Symbol("TestService2");
@@ -74,7 +74,6 @@ describe("StartInspectable", () => {
 
         const token = StartInspectable(scene, { serviceDefinitions: [extraService] });
 
-        await new Promise((resolve) => setTimeout(resolve, 200));
         expect(serviceCreated).toBe(true);
 
         token.dispose();
@@ -95,8 +94,6 @@ describe("StartInspectable", () => {
 
         const token1 = StartInspectable(scene, { serviceDefinitions: [extraService] });
         const token2 = StartInspectable(scene);
-
-        await new Promise((resolve) => setTimeout(resolve, 200));
 
         token1.dispose();
         expect(serviceDisposed).toBe(true);
@@ -126,8 +123,6 @@ describe("StartInspectable", () => {
 
         const token1 = StartInspectable(scene, { serviceDefinitions: [extra1] });
         const token2 = StartInspectable(scene, { serviceDefinitions: [extra2] });
-
-        await new Promise((resolve) => setTimeout(resolve, 200));
 
         expect(service1Created).toBe(true);
         expect(service2Created).toBe(true);

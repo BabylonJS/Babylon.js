@@ -1,16 +1,20 @@
 import { type IDisposable } from "core/index";
-import { type IService } from "shared-ui-components/modularTool/modularity/serviceDefinition";
+import { type IService } from "../../modularity/serviceDefinition";
 
 /**
- * The type of an inspectable command argument, which determines how
+ * The type of a bridge command argument, which determines how
  * the CLI processes the value before sending it to the browser.
+ * @experimental
+ * @internal
  */
-export type InspectableCommandArgType = "string" | "file";
+export type BridgeCommandArgType = "string" | "file";
 
 /**
- * Describes an argument for an inspectable command.
+ * Describes an argument for a bridge command.
+ * @experimental
+ * @internal
  */
-export type InspectableCommandArg = {
+export type BridgeCommandArg = {
     /**
      * The name of the argument.
      */
@@ -31,13 +35,15 @@ export type InspectableCommandArg = {
      * When set to "file", the CLI reads the file at the given path
      * and passes its contents as the argument value.
      */
-    type?: InspectableCommandArgType;
+    type?: BridgeCommandArgType;
 };
 
 /**
- * Describes a command that can be invoked from the CLI.
+ * Describes a command that can be invoked from the bridge.
+ * @experimental
+ * @internal
  */
-export type InspectableCommandDescriptor = {
+export type BridgeCommandDescriptor = {
     /**
      * A unique identifier for the command.
      */
@@ -51,7 +57,7 @@ export type InspectableCommandDescriptor = {
     /**
      * The arguments that this command accepts.
      */
-    args?: InspectableCommandArg[];
+    args?: BridgeCommandArg[];
 
     /**
      * Executes the command with the given arguments and returns a result string.
@@ -62,19 +68,22 @@ export type InspectableCommandDescriptor = {
 };
 
 /**
- * The service identity for the inspectable command registry.
+ * The service identity for the bridge command registry.
+ * @experimental
+ * @internal
  */
-export const InspectableCommandRegistryIdentity = Symbol("InspectableCommandRegistry");
+export const BridgeCommandRegistryIdentity = Symbol("BridgeCommandRegistry");
 
 /**
- * A registry for commands that can be invoked from the Inspector CLI.
+ * A registry for commands that can be invoked from the bridge.
  * @experimental
+ * @internal
  */
-export interface IInspectableCommandRegistry extends IService<typeof InspectableCommandRegistryIdentity> {
+export interface IBridgeCommandRegistry extends IService<typeof BridgeCommandRegistryIdentity> {
     /**
-     * Registers a command that can be invoked from the Inspector CLI.
+     * Registers a command that can be invoked from the bridge.
      * @param descriptor The command descriptor.
      * @returns A disposable token that unregisters the command when disposed.
      */
-    addCommand(descriptor: InspectableCommandDescriptor): IDisposable;
+    addCommand(descriptor: BridgeCommandDescriptor): IDisposable;
 }

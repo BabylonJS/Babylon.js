@@ -10,7 +10,7 @@ import {
     type InfoResponse,
     type SessionsResponse,
     type StopResponse,
-} from "../../../src/cli/protocol";
+} from "shared-ui-components/modularTool/services/cli/protocol";
 
 function connect(port: number): Promise<WebSocket> {
     return new Promise((resolve, reject) => {
@@ -79,7 +79,7 @@ describe("Inspector Bridge", () => {
 
     beforeEach(async () => {
         vi.spyOn(console, "log").mockImplementation(() => {});
-        bridge = await StartBridge({ browserPort: 0, cliPort: 0, sessionWaitTimeoutMs: 200 });
+        bridge = await StartBridge({ browserPort: 0, cliPort: 0, sessionWaitTimeoutMs: 200, infoTimeoutMs: 200 });
     });
 
     afterEach(() => {
@@ -313,6 +313,43 @@ describe("Inspector Bridge", () => {
 
         const response = await sendAndReceive<SessionsResponse>(cli, { type: "sessions" });
         expect(response.sessions).toHaveLength(1);
+
+        await close(browser);
+        await close(cli);
+    });
+
+    it("removes session that does not respond to getInfo", async () => {
+        const browser = await connect(bridge.browserPort);
+        // Register but do NOT set up autoRespondGetInfo, so getInfo will time out.
+        browser.send(JSON.stringify({ type: "register", name: "Dead Session" }));
+        await tick();
+
+        const cli = await connect(bridge.cliPort);
+        const response = await sendAndReceive<SessionsResponse>(cli, { type: "sessions" });
+
+        expect(response.type).toBe("sessionsResponse");
+        expect(response.sessions).toHaveLength(0);
+
+        await close(browser);
+        await close(cli);
+    });
+
+    it("replaces session when same socket re-registers", async () => {
+        const browser = await connect(bridge.browserPort);
+        autoRespondGetInfo(browser, "Re-registered");
+
+        // Register twice on the same socket.
+        browser.send(JSON.stringify({ type: "register", name: "First" }));
+        await tick();
+        browser.send(JSON.stringify({ type: "register", name: "Re-registered" }));
+        await tick();
+
+        const cli = await connect(bridge.cliPort);
+        const response = await sendAndReceive<SessionsResponse>(cli, { type: "sessions" });
+
+        // Only one session should exist, not two.
+        expect(response.sessions).toHaveLength(1);
+        expect(response.sessions[0].name).toBe("Re-registered");
 
         await close(browser);
         await close(cli);
