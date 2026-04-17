@@ -50,14 +50,14 @@ gh pr list --repo "BabylonJS/Babylon.js" --json "number,title,url"
 
 For each PR, gather:
 
-| Column   | Source                                                                                       |
-| -------- | -------------------------------------------------------------------------------------------- |
-| PR       | `#<number>` linked to the PR URL                                                             |
-| Title    | `gh pr view --json "title"`                                                                  |
+| Column   | Source                                                                                            |
+| -------- | ------------------------------------------------------------------------------------------------- |
+| PR       | `#<number>` linked to the PR URL                                                                  |
+| Title    | `gh pr view --json "title"`                                                                       |
 | Checks   | `gh pr view --json "statusCheckRollup"` — ✅ `all pass` / ❌ `N fail, M pending` / ⏳ `N pending` |
-| Comments | GraphQL `reviewThreads` query — ✅ `all resolved` / ❌ `N/M resolved`                        |
-| Approved | `gh pr view --json "reviewDecision"` — ✅ `N approvals` / ❌ `not approved`                  |
-| Ready    | ✅ `ready` if all checks pass AND approved AND all comments resolved, ❌ `not ready` otherwise |
+| Comments | GraphQL `reviewThreads` query — ✅ `all resolved` / ❌ `N/M resolved`                             |
+| Approved | `gh pr view --json "reviewDecision"` — ✅ `N approvals` / ❌ `not approved`                       |
+| Ready    | ✅ `ready` if all checks pass AND approved AND all comments resolved, ❌ `not ready` otherwise    |
 
 Review threads require the GraphQL API since `gh pr view --json` does not
 expose them:
@@ -80,7 +80,30 @@ Print the table to the main chat.
 
 ## Step 3: Distinguish real failures from flakes
 
-When checks fail, read the CI logs (GitHub MCP `get_job_logs` or similar).
+When checks fail, read the CI logs. Source depends on which CI the
+check is on — look at `statusCheckRollup[].detailsUrl` to tell:
+
+- **GitHub Actions** (`detailsUrl` on `github.com`) — use GitHub MCP
+  `get_job_logs`, or `gh run view <run-id> --log-failed`.
+- **Azure DevOps Pipelines** (`detailsUrl` on `dev.azure.com`) — the
+  Babylon.js ADO org (`babylonjs`) allows **anonymous** API access;
+  no auth needed. The `detailsUrl` looks like
+  `https://dev.azure.com/<org>/<project-guid>/_build/results?buildId=<id>&view=logs&jobId=<job-guid>`.
+  Fetch the build timeline and then the failing record's log:
+
+    ```bash
+    # List all records (jobs/tasks) and their log URLs
+    curl -s "https://dev.azure.com/<org>/<project-guid>/_apis/build/builds/<buildId>/timeline?api-version=7.0"
+
+    # Fetch a specific record's log
+    curl -s "<record.log.url>"
+    ```
+
+    Filter `timeline.records` to the failing entries (`result == "failed"`)
+    and read each `.log.url`. If a `jobId` is present in `detailsUrl`,
+    scope directly to that record's children.
+
+Classification:
 
 - **Real failure** — caused by changes in the PR. Show ❌ with a brief
   error summary.
@@ -100,9 +123,9 @@ When checks fail, read the CI logs (GitHub MCP `get_job_logs` or similar).
 ### How to poll
 
 1. After printing the initial status table, sleep for 5 minutes:
-   ```bash
-   sleep 300
-   ```
+    ```bash
+    sleep 300
+    ```
 2. After sleeping, **re-fetch ALL PR data from scratch** using the same
    `gh` and GraphQL commands as Step 2. Every column — checks, comments,
    approval, state — must be queried fresh from the API. **Do not reuse
