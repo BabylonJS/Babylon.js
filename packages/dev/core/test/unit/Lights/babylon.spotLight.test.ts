@@ -35,32 +35,69 @@ describe("SpotLight", () => {
         engine.dispose();
     });
 
-    describe("projectionTexture readiness", () => {
-        // Regression test for https://github.com/BabylonJS/Babylon.js/pull/18255 — a
-        // material lit by a SpotLight whose projectionTexture is not ready must cause
-        // scene.isReady() (and therefore scene.executeWhenReady) to wait.
-        it("scene.isReady() must not return true while a spot light's projection texture is not ready", async () => {
+    describe("light texture readiness", () => {
+        // Regression tests for https://github.com/BabylonJS/Babylon.js/pull/18255.
+        //
+        // When a light owns texture resources that are not yet ready (a SpotLight's
+        // projectionTexture or iesProfileTexture being the current cases), material
+        // readiness must reflect that so that scene.isReady() returns false and
+        // scene.executeWhenReady() waits for the textures before firing. Callers such
+        // as the BN playground visual-test harness otherwise render frames before the
+        // projection effect is applied and produce intermittent visual-test regressions.
+        //
+        // Each test sets up a lit mesh with a StandardMaterial, pins some light-texture
+        // readiness signal to "not ready", and then polls scene.isReady(). Polling with
+        // a microtask yield lets the NullEngine's async shader compile settle, so that
+        // on master (no fix) the material reaches compiled state and scene.isReady()
+        // flips to true — reproducing the bug — while on the fix branch material
+        // readiness remains gated and scene.isReady() stays false.
+        async function pollSceneIsReady(scene: Scene): Promise<boolean> {
+            for (let i = 0; i < 20; i++) {
+                if (scene.isReady()) {
+                    return true;
+                }
+                await new Promise((resolve) => setTimeout(resolve, 0));
+            }
+            return false;
+        }
+
+        function createLitBoxScene(): SpotLight {
             const mesh = CreateBox("mesh", {}, scene);
             mesh.material = new StandardMaterial("mat", scene);
-            const light = new SpotLight("spot", new Vector3(0, 5, 0), new Vector3(0, -1, 0), Math.PI / 4, 2, scene);
+            return new SpotLight("spot", new Vector3(0, 5, 0), new Vector3(0, -1, 0), Math.PI / 4, 2, scene);
+        }
+
+        it("scene.isReady() must not return true while a light reports its textures are not ready", async () => {
+            const light = createLitBoxScene();
+
+            // Plumbing-level contract: material readiness must consult the Light's
+            // areLightTexturesReady() contract regardless of which texture(s) caused
+            // it to report not-ready. This ensures future light types that add their
+            // own textures (and override areLightTexturesReady) are gated automatically.
+            (light as any).areLightTexturesReady = () => false;
+
+            expect(await pollSceneIsReady(scene)).toBe(false);
+        });
+
+        it("scene.isReady() must not return true while a SpotLight's projectionTexture is not ready", async () => {
+            const light = createLitBoxScene();
 
             const tex = new Texture(null, scene);
             vi.spyOn(tex, "isReady").mockReturnValue(false);
             light.projectionTexture = tex;
 
-            // Poll scene.isReady(), yielding between polls so that async shader compiles
-            // in NullEngine can settle. Without the fix, the material compiles without a
-            // projection define and scene.isReady() flips to true despite the projection
-            // texture reporting not-ready. With the fix, scene.isReady() stays false.
-            let becameReady = false;
-            for (let i = 0; i < 20; i++) {
-                if (scene.isReady()) {
-                    becameReady = true;
-                    break;
-                }
-                await new Promise((resolve) => setTimeout(resolve, 0));
-            }
-            expect(becameReady).toBe(false);
+            expect(await pollSceneIsReady(scene)).toBe(false);
+        });
+
+        it("scene.isReady() must not return true while a SpotLight's iesProfileTexture is not ready", async () => {
+            const light = createLitBoxScene();
+
+            const tex = new Texture(null, scene);
+            vi.spyOn(tex, "isReady").mockReturnValue(false);
+            light.iesProfileTexture = tex;
+
+            expect(await pollSceneIsReady(scene)).toBe(false);
         });
     });
 });
+
