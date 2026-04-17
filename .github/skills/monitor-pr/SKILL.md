@@ -24,7 +24,9 @@ Parse `$ARGUMENTS`:
 | `mine`                                     | All open PRs authored by the current user |
 | `all`                                      | All open PRs in the repo                  |
 
-If `$ARGUMENTS` is empty, ask the user which PRs to monitor.
+If `$ARGUMENTS` is empty, use the `ask_user` tool (not plain chat text)
+to prompt the user with choices: `mine`, `all`, or a freeform list of PR
+numbers. Do not proceed until the user has answered.
 
 ## Prerequisites
 
@@ -50,14 +52,14 @@ gh pr list --repo "BabylonJS/Babylon.js" --json "number,title,url"
 
 For each PR, gather:
 
-| Column   | Source                                                                                            |
-| -------- | ------------------------------------------------------------------------------------------------- |
-| PR       | `#<number>` linked to the PR URL                                                                  |
-| Title    | `gh pr view --json "title"`                                                                       |
-| Checks   | `gh pr view --json "statusCheckRollup"` — ✅ `all pass` / ❌ `N fail, M pending` / ⏳ `N pending` |
-| Comments | GraphQL `reviewThreads` query — ✅ `all resolved` / ❌ `N/M resolved`                             |
-| Approved | `gh pr view --json "reviewDecision"` — ✅ `N approvals` / ❌ `not approved`                       |
-| Ready    | ✅ `ready` if all checks pass AND approved AND all comments resolved, ❌ `not ready` otherwise    |
+| Column   | Source                                                                                                                                     |
+| -------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| PR       | `#<number>` linked to the PR URL                                                                                                           |
+| Title    | `gh pr view --json "title"`                                                                                                                |
+| Checks   | `gh pr view --json "statusCheckRollup"` — ✅ `all pass` / ❌ `N fail, M pending (ETA ~Xm)` / ⏳ `N pending (ETA ~Xm)`. See ETA note below. |
+| Comments | GraphQL `reviewThreads` query — ✅ `all resolved` / ❌ `N/M resolved`                                                                      |
+| Approved | `gh pr view --json "reviewDecision"` — ✅ `N approvals` / ❌ `not approved`                                                                |
+| Ready    | ✅ `ready` if all checks pass AND approved AND all comments resolved, ❌ `not ready` otherwise                                             |
 
 Review threads require the GraphQL API since `gh pr view --json` does not
 expose them:
@@ -81,6 +83,34 @@ the current **local** time (not UTC), e.g.
 `PR Status — 2026-04-17 05:17 PM PDT`. Get it from the OS's local clock
 (e.g. `date` in bash or `Get-Date` in pwsh) — do not hard-code or
 convert to UTC.
+
+### Checks ETA
+
+When any checks are still running, include a rough ETA in the Checks
+cell. Compute per PR:
+
+1. For each **in-progress** check (`status != COMPLETED`):
+    - `elapsed = now - startedAt` (from `statusCheckRollup`).
+    - Look up a **historical duration** for the same check name from
+      the most recent merged PR that ran it:
+        ```bash
+        gh pr list --repo "<owner>/<repo>" -s merged -L 5 --json "number"
+        gh pr view <recent-pr> --repo "<owner>/<repo>" --json "statusCheckRollup" \
+          --jq '.statusCheckRollup[] | select(.name == "<name>" and .status == "COMPLETED") | {startedAt, completedAt}'
+        ```
+        `historical = completedAt - startedAt`.
+    - `remaining = max(historical - elapsed, 1m)`. If no history, use
+      `elapsed` as a lower bound and mark ETA as `~Xm+`.
+2. For each **queued / not-started** check (`status == QUEUED` or
+   missing `startedAt`): `remaining = historical` (full duration).
+3. Checks run in **parallel**, so the overall PR ETA is
+   `max(remaining)` across all pending checks — not the sum.
+4. Round to whole minutes. If the computed ETA is negative or < 1m,
+   show `<1m`.
+
+Cache historical durations per check name across PRs within a single
+poll iteration to avoid redundant `gh` calls. **Do not** cache across
+polls (stale data risk — see the polling rule below).
 
 ## Step 3: Distinguish real failures from flakes
 

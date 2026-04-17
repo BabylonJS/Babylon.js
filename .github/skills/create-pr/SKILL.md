@@ -57,6 +57,11 @@ or labels — those only apply when creating a new PR.
 > **If `--pr` was provided**, skip this entire step and Steps 1–4. Only
 > collect `--mode` (ask if not specified), then jump to Step 5.
 
+> **Every user prompt in this skill MUST use the `ask_user` tool** — not
+> plain chat text. Provide multiple-choice options where possible (e.g.
+> yes/no, automatic/interactive, detected-remote/other). Ask one question
+> at a time and wait for the answer before proceeding.
+
 Collect everything before starting the workflow so it doesn't stop midway.
 
 ### 0a. Remotes, base branch, and merge
