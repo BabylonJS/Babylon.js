@@ -10,9 +10,9 @@
         "@dev/build-tools": "^1.0.0",
         "@eslint/js": "^10.0.1",
         "@playwright/test": "1.57.0",
-        "@typescript-eslint/eslint-plugin": "^8.56.1",
-        "@typescript-eslint/parser": "^8.56.1",
-        "@typescript-eslint/utils": "^8.56.1",
+        "@typescript-eslint/eslint-plugin": "^8.58.2",
+        "@typescript-eslint/parser": "^8.58.2",
+        "@typescript-eslint/utils": "^8.58.2",
         "@vitest/coverage-v8": "^4.1.3",
         "@vitest/eslint-plugin": "^1.6.14",
         "ajv": "~8.18.0",
@@ -40,7 +40,7 @@
         "tslib": "^2.4.0",
         "typedoc": "^0.28.16",
         "typescript": "~6.0.2",
-        "typescript-eslint": "^8.56.1",
+        "typescript-eslint": "^8.58.2",
         "vite": "6.4.2",
         "vitest": "^4.1.3",
         "webpack": "^5.103.0",
@@ -130,33 +130,9 @@
         "@rollup/plugin-commonjs": {
             "glob": "^13.0.6"
         },
-        "@typescript-eslint/eslint-plugin": {
-            "typescript": "$typescript"
+        "eslint-plugin-tsdoc": {
+            "@typescript-eslint/utils": "^8.58.2"
         },
-        "@typescript-eslint/parser": {
-            "typescript": "$typescript"
-        },
-        "@typescript-eslint/typescript-estree": {
-            "typescript": "$typescript"
-        },
-        "@typescript-eslint/utils": {
-            "typescript": "$typescript"
-        },
-        "@typescript-eslint/type-utils": {
-            "typescript": "$typescript"
-        },
-        "@typescript-eslint/project-service": {
-            "typescript": "$typescript"
-        },
-        "@typescript-eslint/tsconfig-utils": {
-            "typescript": "$typescript"
-        },
-        "typedoc": {
-            "typescript": "$typescript"
-        },
-        "react-refresh-typescript": {
-            "typescript": "$typescript"
-        },
-        "dompurify": "3.3.3"
+        "dompurify": "3.4.0"
     }
 }

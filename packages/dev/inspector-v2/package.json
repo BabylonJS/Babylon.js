@@ -36,7 +36,7 @@
         "react": "^18.2.0",
         "react-dom": "^18.2.0",
         "react-refresh": "^0.17.0",
-        "react-refresh-typescript": "^2.0.10",
+        "react-refresh-typescript": "^2.0.12",
         "sharp": "^0.33.0",
         "webpack": "^5.103.0",
         "webpack-cli": "6.0.1"
