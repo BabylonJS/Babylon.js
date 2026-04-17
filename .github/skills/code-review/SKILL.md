@@ -74,17 +74,18 @@ Record the output of this pass in your response, not just in internal reasoning.
 For the branch as a whole, and then for each non-trivial new or changed function:
 
 1. **Identify the stated intent.** Read the commit messages, PR description, any task/issue reference, and the function's name and doc comment. Write down in one sentence what the code claims to do. If no commit message, PR description, or doc comment explains the intent, derive it from the function name and surrounding call sites, and **flag the missing context as a Warning** — a reviewer should not have to guess what the code is for.
-2. **Enumerate representative inputs.** List concrete input shapes the function must handle. Typical shapes to consider: empty, single element, two elements, boundary values at each end of a range, the symmetric counterpart of the obvious case (if the author handled A, did they handle not-A?), and any input that would take the code through a different branch or early return.
+2. **Enumerate representative inputs.** List concrete input shapes the function must handle. Typical shapes to consider: empty, single element, two elements, boundary values at each end of a range, the symmetric counterpart of the obvious case (if the author handled A, did they handle not-A?), and any input that would take the code through a different branch or early return. For union-typed inputs (e.g. `number[] | string`), walk through one concrete value per variant so every branch sees a realistic value — a single input that happens to satisfy a shared guard (like `.length`) will hide bugs where the guard means different things across variants.
 3. **Trace the output for each input.** Walk each input through the implementation and compare the result against the stated intent. If any input produces a result that doesn't match the intent, that is a Critical or Warning issue — even if the code compiles, lints, and every existing test passes.
 4. **Check test coverage against the enumerated inputs.** If a particular input shape matters to the stated intent and no test exercises it, flag that as a Warning. Passing tests only prove the cases the author thought to test.
 5. **For every branch, cache, or shortcut: state the precondition.** When the code takes a fast path, reads a cached value, or returns early for a subset of inputs, write down the precondition under which that path produces the same result as the general path, then check the surrounding code actually guarantees it. Common failure shapes: a cached value computed under different assumptions than when it is read; a memoization keyed on a subset of the real inputs; a length-based shortcut that skips a step the general path would have applied.
+6. **For every field or variable the PR assigns a new value to: re-read its declaration and doc comment.** If the new value no longer fits the declared name or documented semantics, that is a Warning — either rename the field, update the doc comment, or remove the field if nothing consumes it. Doc-comment drift is one of the most common refactor regressions, and values with no downstream readers are especially prone to it because nothing else forces them back into agreement.
 
 ### Step 4: Mechanical checklist
 
 Apply each item to every changed line that is not excluded under Step 2.
 
 1. **Repository conventions.** Apply every rule from the instruction files in [instructions/index.md](../../instructions/index.md) that matches the changed files — coding conventions, prohibited APIs, performance rules for render-loop code, side-effect imports, backward-compatibility rules, documentation standards, test patterns, and any domain-specific rules (Inspector, glTF extensions, playgrounds, etc.). If an instruction file's content is already in your system prompt context, apply it directly; only read from disk when it is not.
-2. **Correctness.** Logic errors, off-by-one, null/undefined access, race conditions, unhandled edge cases, incorrect operator precedence, wrong loop bounds. Verify that doc comments accurately describe the implementation's actual behavior.
+2. **Correctness.** Logic errors, off-by-one, null/undefined access, race conditions, unhandled edge cases, incorrect operator precedence, wrong loop bounds. Verify that doc comments accurately describe the implementation's actual behavior. When a refactor changes the value assigned to a named field or variable, verify its name and doc comment still describe the new value — renames are the most common regression vector in data-shape refactors.
 3. **Error handling.** When code detects an error or invalid state (exceeding limits, missing data, unsupported configuration), it must handle it appropriately — bail out, fall back to a safe alternative, or properly resolve the condition. Flag cases that merely log a warning or swallow the error while continuing as if nothing happened.
 4. **Security.** Prototype pollution, unsafe `eval` / `Function()`, unsafe deserialization of untrusted input (e.g. parsed scene files, glTF extensions, user-supplied JSON).
 5. **General quality.** Dead code, unreachable branches, duplicated logic, overly complex control flow, poor or misleading naming.
@@ -116,9 +117,9 @@ Capture any failures and include them as issues in the review. If a command does
 
 Compile every issue found into a single markdown table, sorted by severity (Critical → Warning → Nit). This is the table you will present in Step 8, so record issues in their final format now.
 
-| #   | File                             | Line(s) | Severity | Issue                                                 | Fix Applied                                          |
-| --- | -------------------------------- | ------- | -------- | ----------------------------------------------------- | ---------------------------------------------------- |
-| 1   | [path/file.ts](path/file.ts#L42) | 42      | Critical | Clear description of the problem and how to fix it    | Filled in during Step 7 ("Skipped" / "N/A" allowed)  |
+| #   | File                             | Line(s) | Severity | Issue                                              | Fix Applied                                         |
+| --- | -------------------------------- | ------- | -------- | -------------------------------------------------- | --------------------------------------------------- |
+| 1   | [path/file.ts](path/file.ts#L42) | 42      | Critical | Clear description of the problem and how to fix it | Filled in during Step 7 ("Skipped" / "N/A" allowed) |
 
 File paths should be markdown links. The **Fix Applied** column is left blank in Step 6 and filled in during Step 7 as each issue is resolved (or marked `Skipped` / `Needs confirmation` / `N/A`).
 

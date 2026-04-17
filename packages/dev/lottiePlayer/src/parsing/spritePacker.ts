@@ -487,11 +487,14 @@ export class SpritePacker {
         page.context.translate(page.currentX, page.currentY);
         page.context.scale(scalingFactor.x, scalingFactor.y);
 
-        // Resolve fill color, including the variable-name indirection (fc can be a string variable name).
-        if (resolvedText.textInfo.fc !== undefined && resolvedText.textInfo.fc.length >= 3) {
+        // Resolve fill color. fc is either an RGB array or a variable name string; the two shapes need different guards
+        // (arrays need at least 3 components; strings just need a non-undefined variable lookup).
+        if (resolvedText.textInfo.fc !== undefined) {
             const rawFillStyle = resolvedText.textInfo.fc;
             if (Array.isArray(rawFillStyle)) {
-                page.context.fillStyle = this._lottieColorToCSSColor(rawFillStyle, 1);
+                if (rawFillStyle.length >= 3) {
+                    page.context.fillStyle = this._lottieColorToCSSColor(rawFillStyle, 1);
+                }
             } else {
                 const variableFillStyle = this._variables.get(rawFillStyle);
                 if (variableFillStyle !== undefined) {

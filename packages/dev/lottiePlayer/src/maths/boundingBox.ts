@@ -20,10 +20,10 @@ export type BoundingBox = {
     offsetY: number;
     /** Inset for the stroke, if applicable. */
     strokeInset: number;
-    /** Optional: Canvas2D text metrics for precise vertical alignment */
-    actualBoundingBoxAscent?: number;
-    /** Optional: Canvas2D text metrics for precise vertical alignment */
-    actualBoundingBoxDescent?: number;
+    /** Optional: Distance from the top of the text texture to the first baseline. Only populated for text bounding boxes. */
+    baselineOffsetY?: number;
+    /** Optional: Descent (in pixels) of the last text line below its baseline. Only populated for text bounding boxes. */
+    descent?: number;
 };
 
 // Corners of the bounding box
@@ -127,8 +127,8 @@ export function GetTextBoundingBox(
         offsetX: layout.offsetX,
         offsetY: layout.offsetY,
         strokeInset: 0, // Text bounding box ignores stroke padding here
-        actualBoundingBoxAscent: layout.baselineOffsetY,
-        actualBoundingBoxDescent: layout.descent,
+        baselineOffsetY: layout.baselineOffsetY,
+        descent: layout.descent,
     };
 }
 

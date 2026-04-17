@@ -139,8 +139,8 @@ describe("GetTextBoundingBox", () => {
         expect(box?.width).toBe(25);
         expect(box?.height).toBe(104);
         expect(box?.offsetX).toBe(0);
-        expect(box?.actualBoundingBoxAscent).toBe(40);
-        expect(box?.actualBoundingBoxDescent).toBe(3);
+        expect(box?.baselineOffsetY).toBe(40);
+        expect(box?.descent).toBe(3);
         expect(context.measurements.map((measurement) => measurement.text)).toEqual(["AB", "C"]);
     });
 

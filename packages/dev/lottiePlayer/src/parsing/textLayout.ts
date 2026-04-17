@@ -452,7 +452,11 @@ export function DrawLottieText(context: TextRenderContextLike, resolvedText: Res
  */
 export function ApplyLottieTextContext(context: Pick<TextRenderContextLike, "font" | "lineWidth" | "fontKerning">, resolvedText: ResolvedLottieText): void {
     context.font = resolvedText.font;
-    context.fontKerning = "none";
+    // fontKerning is optional on the context type because some runtimes (older browsers, OffscreenCanvas
+    // implementations without the CanvasTextDrawingStyles update) may not expose it. Guard before writing.
+    if ("fontKerning" in context) {
+        context.fontKerning = "none";
+    }
 
     if (resolvedText.hasStroke) {
         context.lineWidth = resolvedText.textInfo.sw!;
