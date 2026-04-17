@@ -21,10 +21,10 @@ export type ModularBridgeOptions = {
     name?: string;
 
     /**
-     * Whether the bridge should automatically start trying to connect.
-     * Defaults to false.
+     * Whether the bridge should automatically enable trying to connect.
+     * Defaults to true.
      */
-    autoStart?: boolean;
+    autoEnable?: boolean;
 
     /**
      * Additional service definitions to register with the bridge container.
@@ -68,7 +68,7 @@ export function MakeModularBridge(options?: ModularBridgeOptions): ModularBridge
         get name() {
             return options?.name ?? (typeof document !== "undefined" ? document.title : "Babylon.js Scene");
         },
-        autoStart: options?.autoStart ?? false,
+        autoEnable: options?.autoEnable ?? true,
     });
 
     const allDefinitions: WeaklyTypedServiceDefinition[] = [bridgeDefinition];

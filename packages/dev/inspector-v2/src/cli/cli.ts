@@ -45,6 +45,12 @@ EXAMPLES
   babylon-inspector --command query-mesh --help
   babylon-inspector --command query-mesh --uniqueId 42
   babylon-inspector --session 2 --command query-mesh --uniqueId 42
+
+ADDITIONAL RESOURCES
+  Babylon.js Documentation:  https://doc.babylonjs.com
+  Babylon.js Forum:          https://forum.babylonjs.com
+  Babylon.js Source:         https://github.com/babylonjs/Babylon.js
+  Babylon Native Source:     https://github.com/babylonjs/BabylonNative
 `;
 
 const KnownOptions = new Set(["help", "stop", "session", "command", "bridge-script"]);

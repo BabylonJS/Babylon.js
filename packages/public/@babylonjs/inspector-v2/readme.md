@@ -46,5 +46,5 @@ While the Inspector UI is designed for humans, the Inspector CLI is designed for
 To get started:
 
 ```bash
-npx babylon-inspector --help
+npx @babylonjs/inspector --help
 ```

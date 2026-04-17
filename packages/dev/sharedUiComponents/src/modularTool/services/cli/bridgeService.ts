@@ -25,9 +25,9 @@ export type BridgeServiceOptions = {
     name: string;
 
     /**
-     * Whether to automatically start connecting when the service is created.
+     * Whether to automatically enable connecting when the service is created.
      */
-    autoStart: boolean;
+    autoEnable: boolean;
 };
 
 /**
@@ -46,7 +46,7 @@ export function MakeBridgeServiceDefinition(options: BridgeServiceOptions): Serv
             let ws: WebSocket | null = null;
             let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
             let disposed = false;
-            let enabled = options.autoStart;
+            let enabled = options.autoEnable;
             let connected = false;
             const onConnectionStatusChanged = new Observable<void>();
 

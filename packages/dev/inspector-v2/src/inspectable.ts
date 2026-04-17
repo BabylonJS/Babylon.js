@@ -1,9 +1,9 @@
 import { type IDisposable, type Nullable } from "core/index";
 import { Observable } from "core/Misc/observable";
 import { type Scene } from "core/scene";
-import { type WeaklyTypedServiceDefinition, ServiceContainer } from "shared-ui-components/modularTool/modularity/serviceContainer";
+import { ServiceContainer } from "shared-ui-components/modularTool/modularity/serviceContainer";
 import { type ServiceDefinition } from "shared-ui-components/modularTool/modularity/serviceDefinition";
-import { type ModularBridgeToken, MakeModularBridge } from "shared-ui-components/modularTool/modularBridge";
+import { type ModularBridgeOptions, type ModularBridgeToken, MakeModularBridge } from "shared-ui-components/modularTool/modularBridge";
 import { EntityQueryServiceDefinition } from "./services/cli/entityQueryService";
 import { PerfTraceCommandServiceDefinition } from "./services/cli/perfTraceCommandService";
 import { ScreenshotCommandServiceDefinition } from "./services/cli/screenshotCommandService";
@@ -16,15 +16,8 @@ const DefaultPort = 4400;
 /**
  * Options for making a scene inspectable via the Inspector CLI.
  */
-export type InspectableOptions = {
-    /**
-     * Additional service definitions to register with the inspectable container.
-     * These are added in a separate call from the built-in services and are removed
-     * when the returned token is disposed.
-     */
-    serviceDefinitions?: readonly WeaklyTypedServiceDefinition[];
-} & (
-    | {
+export type InspectableOptions =
+    | (Pick<ModularBridgeOptions, "serviceDefinitions"> & {
           /**
            * An existing modular bridge token whose ServiceContainer will be used as
            * the parent for the inspectable container. The bridge already exists
@@ -34,25 +27,11 @@ export type InspectableOptions = {
           bridgeToken: ModularBridgeToken;
           port?: never;
           name?: never;
-          autoStart?: never;
-      }
-    | {
+          autoEnable?: never;
+      })
+    | (ModularBridgeOptions & {
           bridgeToken?: never;
-          /**
-           * WebSocket port for the bridge's browser port. Defaults to 4400.
-           */
-          port?: number;
-          /**
-           * Session display name reported to the bridge. Defaults to `document.title`.
-           */
-          name?: string;
-          /**
-           * Whether the CLI bridge should automatically start trying to connect
-           * when the inspectable session is created. Defaults to false.
-           */
-          autoStart?: boolean;
-      }
-);
+      });
 
 /**
  * A token returned by {@link StartInspectable} that can be disposed to disconnect
@@ -107,7 +86,7 @@ export function _StartInspectable(scene: Scene, options?: Partial<InspectableOpt
             bridgeToken = MakeModularBridge({
                 port: options?.port ?? DefaultPort,
                 name: options?.name,
-                autoStart: options?.autoStart,
+                autoEnable: options?.autoEnable,
             });
             disposeActions.push(() => bridgeToken.dispose());
         }
