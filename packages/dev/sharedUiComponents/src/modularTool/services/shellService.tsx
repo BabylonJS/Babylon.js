@@ -1,4 +1,4 @@
-import { useResizeHandle } from "@fluentui-contrib/react-resize-handle";
+import { useResizeHandle, type UseResizeHandleParams } from "@fluentui-contrib/react-resize-handle";
 import {
     type MenuTriggerProps,
     Button,
@@ -1006,6 +1006,24 @@ function usePane(
         [createPaneTabList, bottomPanes, bottomSelectedTab]
     );
 
+    // Memoize the resize onChange handlers so the Fluent hook's element ref callbacks remain stable across renders.
+    // The contrib hook's returned elementRef callback transitively depends on onChange, so an inline arrow here would
+    // force the composed refs below to be recreated every render, defeating the ref-stability optimization.
+    const onPaneWidthChange = useCallback<NonNullable<UseResizeHandleParams["onChange"]>>(
+        (_event, data) => {
+            // Whenever the width is adjusted, store the value.
+            setPaneWidthSetting(data.value);
+        },
+        [setPaneWidthSetting]
+    );
+    const onPaneHeightChange = useCallback<NonNullable<UseResizeHandleParams["onChange"]>>(
+        (_event, data) => {
+            // Whenever the height is adjusted, store the value.
+            setPaneHeightSetting(data.value);
+        },
+        [setPaneHeightSetting]
+    );
+
     // This manages the CSS variable that controls the width of the side pane.
     const paneWidthAdjustCSSVar = "--pane-width-adjust";
     const {
@@ -1018,10 +1036,7 @@ function usePane(
         variableName: paneWidthAdjustCSSVar,
         variableTarget: "element",
         minValue: minWidth - defaultWidth,
-        onChange: (event, data) => {
-            // Whenever the width is adjusted, store the value.
-            setPaneWidthSetting(data.value);
-        },
+        onChange: onPaneWidthChange,
     });
 
     // This manages the CSS variable that controls the height of the bottom pane.
@@ -1035,10 +1050,7 @@ function usePane(
         relative: true,
         variableName: paneHeightAdjustCSSVar,
         variableTarget: "element",
-        onChange: (event, data) => {
-            // Whenever the height is adjusted, store the value.
-            setPaneHeightSetting(data.value);
-        },
+        onChange: onPaneHeightChange,
     });
 
     // Compose the Fluent hook's element ref callbacks with logic to apply stored settings when elements mount.
