@@ -6,7 +6,6 @@ description: |
     Shows a Windows dialog when a PR is ready to merge.
     Input: a comma-separated list of PR numbers, "mine", or "all".
 argument-hint: <pr-numbers | mine | all>
-allowed-tools: shell
 ---
 
 # Monitor PR

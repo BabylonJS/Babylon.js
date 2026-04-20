@@ -6,7 +6,6 @@ description: |
     Can also monitor and iterate on an existing PR.
     Input: [--push-remote <fork>] [--upstream-remote <remote>] [--base <branch>] [--merge] [--mode automatic|interactive] [--pr <number>]
 argument-hint: "[--push-remote <fork>] [--upstream-remote <remote>] [--base <branch>] [--merge] [--mode automatic|interactive] [--pr <number>]"
-allowed-tools: shell
 ---
 
 # Create PR
