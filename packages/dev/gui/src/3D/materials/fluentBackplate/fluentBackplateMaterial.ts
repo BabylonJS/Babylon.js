@@ -251,6 +251,10 @@ export class FluentBackplateMaterial extends PushMaterial {
             }
         }
 
+        if (!this._blobTexture.isReady() || !this._iridescentMap.isReady()) {
+            return false;
+        }
+
         if (!subMesh.materialDefines) {
             subMesh.materialDefines = new FluentBackplateMaterialDefines();
         }

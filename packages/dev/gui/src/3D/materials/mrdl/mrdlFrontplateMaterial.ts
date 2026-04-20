@@ -308,6 +308,10 @@ export class MRDLFrontplateMaterial extends PushMaterial {
         const defines = <MRDLFrontplateMaterialDefines>subMesh.materialDefines;
         const scene = this.getScene();
 
+        if (!this._blobTexture.isReady()) {
+            return false;
+        }
+
         if (this._isReadyForSubMesh(subMesh)) {
             return true;
         }

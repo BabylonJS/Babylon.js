@@ -557,15 +557,13 @@
         },
         {
             "title": "GUI Slate",
-            "renderCount": 60,
-            "playgroundId": "#2YZFA0#277",
+            "playgroundId": "#C6AIHQ#0",
             "referenceImage": "guiSlate.png",
             "excludedEngines": ["webgl1"]
         },
         {
             "title": "GUI Near Menu",
-            "renderCount": 60,
-            "playgroundId": "#2YZFA0#302",
+            "playgroundId": "#6F34Z9#0",
             "referenceImage": "guiNearMenu.png",
             "excludedEngines": ["webgl1"]
         },
@@ -636,8 +634,7 @@
         },
         {
             "title": "GUI3D SpherePanel",
-            "playgroundId": "#HB4C01#9",
-            "renderCount": 50,
+            "playgroundId": "#E59AB3#0",
             "referenceImage": "spherepanel.png"
         },
         {
@@ -1443,7 +1440,6 @@
         },
         {
             "title": "GUI",
-            "renderCount": 5,
             "scriptToRun": "/Demos/GUI/gui.js",
             "functionToCall": "createScene",
             "errorRatio": 4,
@@ -2734,8 +2730,7 @@
         },
         {
             "title": "FrameGraph nrge csm shadows with autoCalcDepthBounds",
-            "playgroundId": "#JWKDME#192",
-            "renderCount": 10
+            "playgroundId": "#DOFUT1#0"
         },
         {
             "title": "FrameGraph nrge custom rendering",

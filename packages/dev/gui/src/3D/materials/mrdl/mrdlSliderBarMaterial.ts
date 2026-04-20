@@ -523,6 +523,10 @@ export class MRDLSliderBarMaterial extends PushMaterial {
         const defines = <MRDLSliderBarMaterialDefines>subMesh.materialDefines;
         const scene = this.getScene();
 
+        if (!this._blueGradientTexture.isReady()) {
+            return false;
+        }
+
         if (this._isReadyForSubMesh(subMesh)) {
             return true;
         }
