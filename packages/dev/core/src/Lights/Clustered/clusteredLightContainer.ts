@@ -173,6 +173,11 @@ export class ClusteredLightContainer extends Light {
     private _sliceBias = 0;
     // List of vec2's that keep track of the min and max index per slice
     private _sliceRanges: Float32Array<ArrayBuffer>;
+    // Tracks the last lightIndex string passed to transferToEffect, or null if the cluster
+    // has not yet been bound. Used to refresh the camera-dependent UBO entries (vSliceData /
+    // vSliceRanges) every frame in cases where material binding is bypassed (e.g. WebGPU FAST
+    // snapshot rendering replays cached bundles and never re-runs Light._bindLight).
+    private _lastBoundLightIndex: Nullable<string> = null;
 
     private _depthSlices = DefaultDepthSlices;
     /**
@@ -194,6 +199,8 @@ export class ClusteredLightContainer extends Light {
         this._uniformBuffer.dispose();
         this._uniformBuffer = new UniformBuffer(this.getEngine(), undefined, undefined, this.name);
         this._buildUniformLayout();
+        // The UBO has been recreated so previous bindings are no longer valid; transferToEffect will repopulate it.
+        this._lastBoundLightIndex = null;
 
         // CLUSTLIGHT_SLICES is a shader define that sizes the vSliceRanges array in the UBO.
         // Materials must recompile when depthSlices changes so the shader layout matches the rebuilt UBO.
@@ -498,6 +505,18 @@ export class ClusteredLightContainer extends Light {
             engine.flushFramebuffer();
         }
         this._lightDataTexture.update(this._lightDataBuffer);
+
+        // Refresh camera-dependent UBO fields when running under FAST snapshot rendering, where
+        // ObjectRenderer.render bypasses the rendering manager and Light._bindLight is not
+        // re-invoked each frame. Without this, transferToEffect would never run again after the
+        // recording frame and the slice data would stay frozen, producing visibly stale lighting
+        // as the camera moves. STANDARD snapshot mode and non-snapshot rendering still go through
+        // material binding each frame, so transferToEffect already keeps the UBO up to date.
+        if (this._lastBoundLightIndex !== null && engine.snapshotRendering && engine.snapshotRenderingMode === Constants.SNAPSHOTRENDERING_FAST) {
+            this._uniformBuffer.updateFloat2("vSliceData", this._sliceScale, this._sliceBias, this._lastBoundLightIndex);
+            this._uniformBuffer.updateFloatArray("vSliceRanges", this._sliceRanges, this._lastBoundLightIndex);
+            this._uniformBuffer.update();
+        }
     }
 
     public override dispose(doNotRecurse?: boolean, disposeMaterialAndTextures?: boolean): void {
@@ -574,6 +593,7 @@ export class ClusteredLightContainer extends Light {
         this._uniformBuffer.updateFloat4("vLightData", hscale, vscale, this._verticalTiles, this._tileMaskBatches, lightIndex);
         this._uniformBuffer.updateFloat2("vSliceData", this._sliceScale, this._sliceBias, lightIndex);
         this._uniformBuffer.updateFloatArray("vSliceRanges", this._sliceRanges, lightIndex);
+        this._lastBoundLightIndex = lightIndex;
         return this;
     }
 
