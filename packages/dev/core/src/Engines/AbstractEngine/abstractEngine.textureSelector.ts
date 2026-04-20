@@ -1,7 +1,7 @@
 import { type Nullable } from "../../types";
 import { AbstractEngine } from "../abstractEngine";
 
-declare module "../../Engines/abstractEngine" {
+declare module "../abstractEngine" {
     // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface AbstractEngine {
         /** @internal */
