@@ -26,11 +26,11 @@ Parse `$ARGUMENTS`:
 | `--merge`                  | Merge upstream base into the feature branch before creating the PR. If omitted, prompt.                                     |
 | `--mode automatic`         | Fixes are applied, committed, pushed, and comments resolved automatically.                                                  |
 | `--mode interactive`       | Fixes are staged; skill pauses before commit/push/resolve so the user can review.                                           |
-| `--pr <number>`            | Monitor and iterate on an existing PR. Skips Steps 0–4 (no merge, no PR creation, no code review). Only `--mode` is needed. |
+| `--pr <number>`            | Monitor and iterate on an existing PR. Skips Steps 1–5 (no merge, no PR creation, no code review). Only `--mode` is needed. |
 
 If `--mode` is not specified, ask the user.
 
-If `--pr` is provided, skip directly to Step 5 (monitor) and Step 6
+If `--pr` is provided, skip directly to Step 6 (monitor) and Step 7
 (iteration loop). Do not prompt for remote, merge, title, body, reviewers,
 or labels — those only apply when creating a new PR.
 
@@ -40,10 +40,10 @@ or labels — those only apply when creating a new PR.
    link to https://github.com/cli/cli#installation and stop.
 2. Check if PowerShell is available for dialog notifications. If
    unavailable, fall back to text-only alerts.
-3. The merge step in Step 1 requires the `babylon-skills:merge-and-resolve`
+3. The merge step in Step 2 requires the `babylon-skills:merge-and-resolve`
    skill. Do **not** try to pre-check its availability — the agent's
    available skills list may be truncated, which causes false negatives.
-   Always offer the merge option in Step 0a; if invocation in Step 1
+   Always offer the merge option in Step 1a; if invocation in Step 2
    fails because the skill isn't installed, warn the user and skip.
 
 > ⚠️ **Always pass `--no-pager` to `git`** (e.g. `git --no-pager log`,
@@ -52,10 +52,10 @@ or labels — those only apply when creating a new PR.
 > applies to every `git` invocation in this skill, not just the examples
 > shown below.
 
-## Step 0: Gather all inputs up front
+## Step 1: Gather all inputs up front
 
-> **If `--pr` was provided**, skip this entire step and Steps 1–4. Only
-> collect `--mode` (ask if not specified), then jump to Step 5.
+> **If `--pr` was provided**, skip this entire step and Steps 2–5. Only
+> collect `--mode` (ask if not specified), then jump to Step 6.
 
 > **Every user prompt in this skill MUST use the `ask_user` tool** — not
 > plain chat text. Provide multiple-choice options where possible (e.g.
@@ -69,7 +69,7 @@ or labels — those only apply when creating a new PR.
 
 Collect everything before starting the workflow so it doesn't stop midway.
 
-### 0a. Remotes, base branch, and merge
+### 1a. Remotes, base branch, and merge
 
 1. Detect git remotes (`git remote -v`).
 2. **Push remote (user's fork)** — the remote whose URL contains the user's
@@ -94,9 +94,9 @@ Collect everything before starting the workflow so it doesn't stop midway.
 
 Remember `<push-remote>`, `<upstream-remote>`, `<base-branch>`, and
 `<self-login>` (from `gh api user --jq ".login"`) — they are reused in
-0c, 0d, Step 1, and Step 2.
+1c, 1d, Step 2, and Step 3.
 
-### 0b. Mode
+### 1b. Mode
 
 **If `--mode` not specified**, ask:
 
@@ -104,10 +104,10 @@ Remember `<push-remote>`, `<upstream-remote>`, `<base-branch>`, and
 - **Interactive** — pauses at key points so you can review before changes
   are committed/pushed.
 
-### 0c. PR title and body
+### 1c. PR title and body
 
 1. Analyze **only branch-specific changes** using three-dot diff against
-   `<upstream-remote>/<base-branch>` (resolved in 0a):
+   `<upstream-remote>/<base-branch>` (resolved in 1a):
 
     ```bash
     # Branch commits with full messages (not just --oneline) so you can
@@ -132,13 +132,13 @@ Remember `<push-remote>`, `<upstream-remote>`, `<base-branch>`, and
    referenced in commit messages.
 3. Present to the user — they can accept, modify, or provide their own.
 
-### 0d. Reviewers
+### 1d. Reviewers
 
 Suggest the top 1–2 upstream-org members who authored or reviewed
 previous PRs touching the files/folders changed by this PR. Do the
 whole pipeline non-interactively. Reuse `<upstream-remote>`,
 `<upstream-owner>`, `<upstream-repo>`, `<base-branch>`, and
-`<self-login>` from Step 0a.
+`<self-login>` from Step 1a.
 
 1. **Collect recent commit SHAs** on the base that touched the PR's
    changed files:
@@ -175,42 +175,14 @@ whole pipeline non-interactively. Reuse `<upstream-remote>`,
 
 Loop over commits explicitly — don't try to one-line the whole pipeline.
 
-### 0e. Labels
+### 1e. Labels
 
-Determine labels from the changed files using these rules:
-
-- Not under `packages/dev` or `packages/tools` → **"skip changelog"**
-- Accessibility improvements → **"accessibility"**
-- `packages/dev/inspector-v2/src/components/curveEditor` → **"ace"**
-- `packages/dev/core` + animation → **"animations"**
-- `packages/dev/core` + audio → **"audio"**
-- `packages/dev/core` + bones/skeletal → **"bones"**
-- Breaking public API changes (non-underscore-prefixed) → **"breaking change"**
-- Bug fixes → **"bug"**
-- Build scripts/pipelines → **"build"**
-- Documentation/doc comments only → **"documentation"**
-- Improvements to existing features → **"enhancement"**
-- `packages/dev/core/FrameGraph` → **"frame graph"**
-- `packages/dev/core` + gaussian splats → **"gaussian splats"**
-- `packages/tools/guiEditor` → **"gui editor"**
-- `packages/dev/inspector-v2` → **"inspector"**
-- `packages/dev/loaders` → **"loaders"**
-- `packages/dev/materials` → **"materials"**
-- `nativeEngine.ts` or `packages/dev/core/src/Engines/Native` → **"native"**
-- New features → **"new feature"**
-- `packages/tools/nodeGeometryEditor` → **"nge"**
-- `packages/tools/nodeEditor` → **"nme"**
-- `packages/tools/nodeRenderGraphEditor` → **"nrge"**
-- Performance optimizations → **"optimizations"**
-- Particles → **"particles"**
-- Physics → **"physics"**
-- `packages/tools/playground` → **"playground"**
-- `packages/tools/sandbox` → **"sandbox"**
-- `packages/tools/viewer` or `packages/tools/viewer-configurator` → **"viewer"**
+Determine labels from the changed files using the rules in
+[`.github/instructions/pr-labels.md`](../../instructions/pr-labels.md).
 
 Present suggested labels and ask the user to confirm or change.
 
-### 0f. Summary and plan
+### 1f. Summary and plan
 
 Present the summary and wait for confirmation:
 
@@ -235,10 +207,10 @@ Steps:
 Ready to proceed?
 ```
 
-## Step 1: Merge and resolve (optional)
+## Step 2: Merge and resolve (optional)
 
 If the user opted to merge, invoke as a sub-agent, passing the resolved
-base branch and upstream remote from Step 0a:
+base branch and upstream remote from Step 1a:
 
 ```
 /babylon-skills:merge-and-resolve <base-branch> <upstream-remote> --mode <automatic|interactive>
@@ -248,9 +220,9 @@ If invocation fails because the skill is not installed, warn the user
 _"The babylon-skills:merge-and-resolve skill was not found — skipping
 merge step."_ and continue.
 
-## Step 2: Create the draft PR
+## Step 3: Create the draft PR
 
-Use `<push-remote>`, `<upstream-remote>`, and `<base-branch>` from 0a.
+Use `<push-remote>`, `<upstream-remote>`, and `<base-branch>` from 1a.
 
 1. Push the branch:
 
@@ -297,13 +269,13 @@ Use `<push-remote>`, `<upstream-remote>`, and `<base-branch>` from 0a.
 
     > `--label` and `--reviewer` can each be repeated (or take a
     > comma-separated list) — pass one flag per label/reviewer chosen
-    > in 0d/0e.
+    > in 1d/1e.
 
 5. `gh pr create` prints the new PR's full URL on success — surface it
    prominently in the chat (e.g. _"Draft PR created: <url>"_) so the
    user can click through to review it.
 
-## Step 3: Self code review
+## Step 4: Self code review
 
 1. Invoke the code-review skill, passing through the mode:
 
@@ -324,7 +296,7 @@ Use `<push-remote>`, `<upstream-remote>`, and `<base-branch>` from 0a.
 
 4. Push: `git push <push-remote> HEAD`
 
-## Step 4: Mark PR as ready for review
+## Step 5: Mark PR as ready for review
 
 1. Mark ready:
 
@@ -354,9 +326,9 @@ Use `<push-remote>`, `<upstream-remote>`, and `<base-branch>` from 0a.
     > rm pr-comment.md
     > ```
 
-## Step 5: Monitor the PR
+## Step 6: Monitor the PR
 
-Invoke the monitor-pr skill with the PR number (either from Step 2 or
+Invoke the monitor-pr skill with the PR number (either from Step 3 or
 from the `--pr` argument):
 
 ```
@@ -364,10 +336,10 @@ from the `--pr` argument):
 ```
 
 monitor-pr does not accept a `--mode` argument — it just polls and prints
-status. The iteration loop below (Step 6) is what handles fixes in the
-mode chosen back in Step 0b.
+status. The iteration loop below (Step 7) is what handles fixes in the
+mode chosen back in Step 1b.
 
-## Step 6: Iteration loop
+## Step 7: Iteration loop
 
 Watch the monitor-pr output and react to actionable events.
 
@@ -475,7 +447,7 @@ review comment, not a top-level PR comment.** Do **not** use
 
 Use the parent `databaseId` and thread `id` persisted for this row in
 session-local storage (populated from the GraphQL query at the top of
-Step 6). Do **not** re-query — the IDs are already in hand. As a
+Step 7). Do **not** re-query — the IDs are already in hand. As a
 fallback, the parent `databaseId` is also encoded in the comment's URL
 as `#discussion_r<databaseId>`.
 
