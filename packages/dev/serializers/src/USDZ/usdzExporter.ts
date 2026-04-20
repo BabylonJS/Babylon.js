@@ -666,10 +666,6 @@ async function GetCachedImageAsync(babylonTexture: BaseTexture): Promise<Nullabl
     if (!internalTexture || internalTexture.source !== InternalTextureSource.Url) {
         return null;
     }
-    if (internalTexture.invertY) {
-        return null;
-    }
-
     const buffer = internalTexture._buffer;
 
     let data;
@@ -695,6 +691,11 @@ async function GetCachedImageAsync(babylonTexture: BaseTexture): Promise<Nullabl
         }
     } catch {
         return null;
+    }
+
+    if (data && !mimeType && internalTexture.url) {
+        const dataUriMatch = internalTexture.url.match(/^data:([^;,]+)/);
+        mimeType = dataUriMatch ? dataUriMatch[1] : GetMimeType(internalTexture.url);
     }
 
     if (data && mimeType) {

@@ -1,3 +1,4 @@
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { NullEngine } from "core/Engines/nullEngine";
 import { InternalTextureSource } from "core/Materials/Textures/internalTexture";
 import { Texture } from "core/Materials/Textures/texture";
