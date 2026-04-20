@@ -104,6 +104,7 @@ describe("USDZ Exporter - NullEngine / Node.js environment", () => {
         // NullEngine marks createTexture output as InternalTextureSource.Url, which
         // is what GetCachedImageAsync requires before reading the cached buffer.
         expect(internal.source).toBe(InternalTextureSource.Url);
+        internal.invertY = false;
         internal._buffer = OnePixelRedPng;
         (texture as any)._mimeType = "image/png";
 
@@ -125,6 +126,7 @@ describe("USDZ Exporter - NullEngine / Node.js environment", () => {
         const { texture } = buildTexturedBox();
 
         const internal = texture.getInternalTexture()!;
+        internal.invertY = false;
         internal._buffer = new Blob([OnePixelRedPng], { type: "image/png" });
 
         await USDZExportAsync(scene, {});
@@ -141,6 +143,7 @@ describe("USDZ Exporter - NullEngine / Node.js environment", () => {
         try {
             const { texture } = buildTexturedBox();
             const internal = texture.getInternalTexture()!;
+            internal.invertY = false;
             internal._buffer = null;
             internal.url = "/assets/red.png";
 

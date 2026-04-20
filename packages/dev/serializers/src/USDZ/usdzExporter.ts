@@ -264,7 +264,7 @@ function BuildXform(mesh: Mesh, matrix: Matrix) {
 `;
 }
 
-function BuildMaterials(materials: { [key: string]: Material }, textureToExports: { [key: string]: BaseTexture }, options: IUSDZExportOptions) {
+function BuildMaterials(materials: { [key: string]: Material }, textureToExports: { [key: string]: { texture: BaseTexture; ext: string } }, options: IUSDZExportOptions) {
     const array: string[] = [];
 
     for (const uuid in materials) {
@@ -311,12 +311,14 @@ function BuildTexture(
     material: Material,
     mapType: string,
     color: Nullable<Color3>,
-    textureToExports: { [key: string]: BaseTexture },
+    textureToExports: { [key: string]: { texture: BaseTexture; ext: string } },
     options: IUSDZExportOptions
 ) {
     const id = texture.getInternalTexture()!.uniqueId + "_" + texture.invertY;
+    const mimeType = texture.mimeType || GetMimeType(texture.getInternalTexture()?.url ?? "");
+    const ext = mimeType === "image/jpeg" ? "jpg" : "png";
 
-    textureToExports[id] = texture;
+    textureToExports[id] = { texture, ext };
 
     const uv = texture.coordinatesIndex > 0 ? "st" + texture.coordinatesIndex : "st";
     const repeat = new Vector2(texture.uScale, texture.vScale);
@@ -355,7 +357,7 @@ function BuildTexture(
     def Shader "Texture_${texture.uniqueId}_${mapType}"
     {
         uniform token info:id = "UsdUVTexture"
-        asset inputs:file = @textures/Texture_${id}.png@
+        asset inputs:file = @textures/Texture_${id}.${ext}@
         float2 inputs:st.connect = </Root/Materials/Material_${material.uniqueId}/Transform2d_${mapType}.outputs:result>
         ${color ? "float4 inputs:scale = " + BuildColor4(color) : ""}
         token inputs:sourceColorSpace = "${texture.gammaSpace ? "sRGB" : "raw"}"
@@ -437,7 +439,7 @@ function ExtractTextureInformations(material: Material) {
     return defaults;
 }
 
-function BuildMaterial(material: Material, textureToExports: { [key: string]: BaseTexture }, options: IUSDZExportOptions) {
+function BuildMaterial(material: Material, textureToExports: { [key: string]: { texture: BaseTexture; ext: string } }, options: IUSDZExportOptions) {
     // https://graphics.pixar.com/usd/docs/UsdPreviewSurface-Proposal.html
 
     const pad = "			";
@@ -657,18 +659,21 @@ function ExtractMeshInformations(mesh: Mesh) {
  * This allows texture export without requiring a WebGL or canvas rendering context,
  * enabling server-side (Node.js) export with NullEngine.
  * @param babylonTexture texture to check for cached image data
- * @returns PNG blob if found and directly usable; null otherwise
+ * @returns image data and mime type if found and directly usable; null otherwise
  */
-async function GetCachedImageAsync(babylonTexture: BaseTexture): Promise<Nullable<Blob>> {
+async function GetCachedImageAsync(babylonTexture: BaseTexture): Promise<Nullable<{ data: ArrayBuffer; mimeType: string }>> {
     const internalTexture = babylonTexture.getInternalTexture();
     if (!internalTexture || internalTexture.source !== InternalTextureSource.Url) {
+        return null;
+    }
+    if (internalTexture.invertY) {
         return null;
     }
 
     const buffer = internalTexture._buffer;
 
     let data;
-    let mimeType = (babylonTexture as Texture).mimeType || GetMimeType(internalTexture.url);
+    let mimeType = (babylonTexture as Texture).mimeType;
 
     try {
         if (!buffer) {
@@ -693,7 +698,7 @@ async function GetCachedImageAsync(babylonTexture: BaseTexture): Promise<Nullabl
     }
 
     if (data && mimeType) {
-        return new Blob([data], { type: mimeType });
+        return { data, mimeType };
     }
 
     return null;
@@ -781,7 +786,7 @@ export async function USDZExportAsync(scene: Scene, options: Partial<IUSDZExport
     output += BuildSceneEnd();
 
     // Materials
-    const textureToExports: { [key: string]: BaseTexture } = {};
+    const textureToExports: { [key: string]: { texture: BaseTexture; ext: string } } = {};
     output += BuildMaterials(materialToExports, textureToExports, localOptions);
 
     // Close root
@@ -792,15 +797,13 @@ export async function USDZExportAsync(scene: Scene, options: Partial<IUSDZExport
 
     // Textures
     for (const id in textureToExports) {
-        const texture = textureToExports[id];
+        const { texture, ext } = textureToExports[id];
 
         // Try to get the image directly from the internal texture buffer (works without WebGL/canvas)
         // eslint-disable-next-line no-await-in-loop
         const cachedImage = await GetCachedImageAsync(texture);
         if (cachedImage) {
-            // eslint-disable-next-line no-await-in-loop
-            const arrayBuffer = await cachedImage.arrayBuffer();
-            files[`textures/Texture_${id}.png`] = new Uint8Array(arrayBuffer);
+            files[`textures/Texture_${id}.${ext}`] = new Uint8Array(cachedImage.data);
         } else {
             // Fall back to GPU texture read + DumpTools (requires WebGL/canvas context)
             const size = texture.getSize();
@@ -810,7 +813,7 @@ export async function USDZExportAsync(scene: Scene, options: Partial<IUSDZExport
             // eslint-disable-next-line no-await-in-loop
             const fileContent = await DumpTools.DumpDataAsync(size.width, size.height, textureData, "image/png", undefined, false, true);
 
-            files[`textures/Texture_${id}.png`] = new Uint8Array(fileContent as ArrayBuffer).slice(); // This is to avoid getting a link and not a copy
+            files[`textures/Texture_${id}.${ext}`] = new Uint8Array(fileContent as ArrayBuffer).slice(); // This is to avoid getting a link and not a copy
         }
     }
 
