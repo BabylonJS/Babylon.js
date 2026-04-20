@@ -3562,7 +3562,7 @@
             "playgroundId": "#GRQHVV#247",
             "excludedEngines": ["webgl1"],
             "renderCount": 5,
-            "skip": true
+            "excludeFromAutomaticTesting": true
         },
         {
             "title": "OpenPBR Thin Walled Anisotropic Transmission - Analytic Lights",
