@@ -8,9 +8,13 @@ import {
     FlowGraphConsoleLogBlock,
     FlowGraphAddBlock,
     FlowGraphRandomBlock,
+    FlowGraphConstantBlock,
 } from "core/FlowGraph";
 import { Logger } from "core/Misc/logger";
 import { Scene } from "core/scene";
+import { Vector3 } from "core/Maths/math.vector";
+import { Color3 } from "core/Maths/math.color";
+import { FlowGraphInteger } from "core/FlowGraph/CustomTypes/flowGraphInteger";
 
 describe("Flow Graph Data Nodes", () => {
     let engine: Engine;
@@ -87,6 +91,112 @@ describe("Flow Graph Data Nodes", () => {
         expect(Logger.Log).toHaveBeenCalledWith(2); // 1 + 1
 
         random.mockRestore();
+    });
+
+    describe("Constant Block", () => {
+        it("outputs a number value when created with value: 0", () => {
+            const constant = new FlowGraphConstantBlock({ name: "const", value: 0 });
+            flowGraph.addBlock(constant);
+
+            expect(constant.config.value).toBe(0);
+            expect(constant.output.richType.typeName).toBe("number");
+
+            const log = new FlowGraphConsoleLogBlock({ name: "Log" });
+            log.message.connectTo(constant.output);
+
+            const sceneReady = new FlowGraphSceneReadyEventBlock({ name: "SceneReady" });
+            flowGraph.addEventBlock(sceneReady);
+            sceneReady.done.connectTo(log.in);
+
+            flowGraph.start();
+            expect(Logger.Log).toHaveBeenCalledWith(0);
+        });
+
+        it("outputs a string value", () => {
+            const constant = new FlowGraphConstantBlock({ name: "const", value: "hello" });
+            flowGraph.addBlock(constant);
+
+            expect(constant.output.richType.typeName).toBe("string");
+
+            const log = new FlowGraphConsoleLogBlock({ name: "Log" });
+            log.message.connectTo(constant.output);
+
+            const sceneReady = new FlowGraphSceneReadyEventBlock({ name: "SceneReady" });
+            flowGraph.addEventBlock(sceneReady);
+            sceneReady.done.connectTo(log.in);
+
+            flowGraph.start();
+            expect(Logger.Log).toHaveBeenCalledWith("hello");
+        });
+
+        it("outputs a boolean value", () => {
+            const constant = new FlowGraphConstantBlock({ name: "const", value: true });
+            flowGraph.addBlock(constant);
+
+            expect(constant.output.richType.typeName).toBe("boolean");
+        });
+
+        it("outputs a Vector3 value", () => {
+            const v = new Vector3(1, 2, 3);
+            const constant = new FlowGraphConstantBlock({ name: "const", value: v });
+            flowGraph.addBlock(constant);
+
+            expect(constant.output.richType.typeName).toBe("Vector3");
+        });
+
+        it("outputs a Color3 value", () => {
+            const c = new Color3(1, 0, 0);
+            const constant = new FlowGraphConstantBlock({ name: "const", value: c });
+            flowGraph.addBlock(constant);
+
+            expect(constant.output.richType.typeName).toBe("Color3");
+        });
+
+        it("outputs a FlowGraphInteger value", () => {
+            const constant = new FlowGraphConstantBlock({ name: "const", value: new FlowGraphInteger(42) });
+            flowGraph.addBlock(constant);
+
+            expect(constant.output.richType.typeName).toBe("FlowGraphInteger");
+        });
+
+        it("value can be updated after creation", () => {
+            const constant = new FlowGraphConstantBlock({ name: "const", value: 10 });
+            flowGraph.addBlock(constant);
+
+            constant.config.value = 99;
+
+            const log = new FlowGraphConsoleLogBlock({ name: "Log" });
+            log.message.connectTo(constant.output);
+
+            const sceneReady = new FlowGraphSceneReadyEventBlock({ name: "SceneReady" });
+            flowGraph.addEventBlock(sceneReady);
+            sceneReady.done.connectTo(log.in);
+
+            flowGraph.start();
+            expect(Logger.Log).toHaveBeenCalledWith(99);
+        });
+
+        it("serializes and round-trips a numeric constant", () => {
+            const constant = new FlowGraphConstantBlock({ name: "const", value: 42 });
+            flowGraph.addBlock(constant);
+
+            const serialized: any = {};
+            constant.serialize(serialized);
+
+            expect(serialized.config.value).toBe(42);
+            expect(serialized.className).toBe("FlowGraphConstantBlock");
+        });
+
+        it("serializes and round-trips a Vector3 constant", () => {
+            const v = new Vector3(1, 2, 3);
+            const constant = new FlowGraphConstantBlock({ name: "const", value: v });
+            flowGraph.addBlock(constant);
+
+            const serialized: any = {};
+            constant.serialize(serialized);
+
+            expect(serialized.config.value).toEqual({ value: [1, 2, 3], className: "Vector3" });
+        });
     });
 
     afterEach(() => {

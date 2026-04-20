@@ -24,24 +24,24 @@ describe("BridgeService", () => {
     });
     describe("service definition", () => {
         it("produces BridgeCommandRegistryIdentity", () => {
-            const definition = MakeBridgeServiceDefinition({ port: 4400, name: "test", autoStart: false });
+            const definition = MakeBridgeServiceDefinition({ port: 4400, name: "test", autoEnable: false });
             expect(definition.produces).toContain(BridgeCommandRegistryIdentity);
         });
 
         it("produces CliConnectionStatusIdentity", () => {
-            const definition = MakeBridgeServiceDefinition({ port: 4400, name: "test", autoStart: false });
+            const definition = MakeBridgeServiceDefinition({ port: 4400, name: "test", autoEnable: false });
             expect(definition.produces).toContain(CliConnectionStatusIdentity);
         });
 
         it("has a friendly name", () => {
-            const definition = MakeBridgeServiceDefinition({ port: 4400, name: "test", autoStart: false });
+            const definition = MakeBridgeServiceDefinition({ port: 4400, name: "test", autoEnable: false });
             expect(definition.friendlyName).toBe("CLI Bridge Service");
         });
     });
 
     describe("command registry", () => {
         it("can register and unregister a command", () => {
-            const definition = MakeBridgeServiceDefinition({ port: 0, name: "test", autoStart: false });
+            const definition = MakeBridgeServiceDefinition({ port: 0, name: "test", autoEnable: false });
             const registry = definition.factory();
 
             const disposal = registry.addCommand({
@@ -58,7 +58,7 @@ describe("BridgeService", () => {
         });
 
         it("throws when registering a duplicate command id", () => {
-            const definition = MakeBridgeServiceDefinition({ port: 0, name: "test", autoStart: false });
+            const definition = MakeBridgeServiceDefinition({ port: 0, name: "test", autoEnable: false });
             const registry = definition.factory();
 
             registry.addCommand({
@@ -79,7 +79,7 @@ describe("BridgeService", () => {
         });
 
         it("allows re-registration after disposal", () => {
-            const definition = MakeBridgeServiceDefinition({ port: 0, name: "test", autoStart: false });
+            const definition = MakeBridgeServiceDefinition({ port: 0, name: "test", autoEnable: false });
             const registry = definition.factory();
 
             const token = registry.addCommand({
@@ -104,7 +104,7 @@ describe("BridgeService", () => {
 
     describe("connection status", () => {
         it("starts disabled and disconnected", () => {
-            const definition = MakeBridgeServiceDefinition({ port: 0, name: "test", autoStart: false });
+            const definition = MakeBridgeServiceDefinition({ port: 0, name: "test", autoEnable: false });
             const registry = definition.factory();
 
             expect(registry.isEnabled).toBe(false);
@@ -113,8 +113,8 @@ describe("BridgeService", () => {
             registry.dispose?.();
         });
 
-        it("starts enabled when autoStart is true", () => {
-            const definition = MakeBridgeServiceDefinition({ port: 0, name: "test", autoStart: true });
+        it("starts enabled when autoEnable is true", () => {
+            const definition = MakeBridgeServiceDefinition({ port: 0, name: "test", autoEnable: true });
             const registry = definition.factory();
 
             expect(registry.isEnabled).toBe(true);
@@ -123,7 +123,7 @@ describe("BridgeService", () => {
         });
 
         it("exposes onConnectionStatusChanged observable", () => {
-            const definition = MakeBridgeServiceDefinition({ port: 0, name: "test", autoStart: false });
+            const definition = MakeBridgeServiceDefinition({ port: 0, name: "test", autoEnable: false });
             const registry = definition.factory();
 
             expect(registry.onConnectionStatusChanged).toBeDefined();
@@ -133,7 +133,7 @@ describe("BridgeService", () => {
         });
 
         it("notifies when isEnabled changes", () => {
-            const definition = MakeBridgeServiceDefinition({ port: 0, name: "test", autoStart: false });
+            const definition = MakeBridgeServiceDefinition({ port: 0, name: "test", autoEnable: false });
             const registry = definition.factory();
 
             let notified = false;

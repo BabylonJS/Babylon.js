@@ -646,6 +646,31 @@ export function PrepareDefinesForMisc(
 }
 
 /**
+ * Checks whether the texture resources used by the lights that will affect the given mesh are ready.
+ * This mirrors the light iteration performed by {@link PrepareDefinesForLights} and {@link BindLights}:
+ * it only considers lights that can affect the mesh (already filtered into `mesh.lightSources`)
+ * and respects the material's `maxSimultaneousLights` cap and the `disableLighting` flag.
+ * @param scene The scene the mesh belongs to
+ * @param mesh The mesh to check
+ * @param maxSimultaneousLights The material's max simultaneous lights cap
+ * @param disableLighting Whether lighting is disabled for the material
+ * @returns true if all affecting lights report their textures are ready
+ */
+export function AreLightsTexturesReady(scene: Scene, mesh: AbstractMesh, maxSimultaneousLights: number, disableLighting = false): boolean {
+    if (!scene.lightsEnabled || disableLighting) {
+        return true;
+    }
+    const lights = mesh.lightSources;
+    const count = Math.min(lights.length, maxSimultaneousLights);
+    for (let i = 0; i < count; i++) {
+        if (!lights[i].areLightTexturesReady()) {
+            return false;
+        }
+    }
+    return true;
+}
+
+/**
  * Prepares the defines related to the light information passed in parameter
  * @param scene The scene we are intending to draw
  * @param mesh The mesh the effect is compiling for

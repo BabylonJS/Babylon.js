@@ -8,8 +8,7 @@
         },
         {
             "title": "Gaussian Splatting modify",
-            "playgroundId": "#RKKCHG#15",
-            "renderCount": 15,
+            "playgroundId": "#O53CPP#0",
             "referenceImage": "gsplat-splat-modify.png"
         },
         {
@@ -20,91 +19,76 @@
         {
             "title": "Gaussian Splatting Bake Transforms",
             "playgroundId": "#GU7A98#0",
-            "renderCount": 15,
             "referenceImage": "gsplat-splat-bake-transforms.png"
         },
         {
             "title": "Gaussian Splatting Depth",
             "playgroundId": "#V80DRL#12",
-            "renderCount": 15,
             "referenceImage": "gsplat-depth.png"
         },
         {
             "title": "Gaussian Splatting Depth Alpha Blended",
             "playgroundId": "#V80DRL#19",
-            "renderCount": 15,
             "referenceImage": "gsplat-depth-alpha-blended.png"
         },
         {
             "title": "Gaussian Splatting Compressed ply SH",
             "playgroundId": "#U8O4EP#1",
-            "renderCount": 15,
             "referenceImage": "gsplat-compressedply-sh.png"
         },
         {
             "title": "Gaussian Splatting SPZ SH",
             "playgroundId": "#XSNFXP#2",
-            "renderCount": 15,
             "referenceImage": "gsplat-spz-sh.png"
         },
         {
             "title": "Gaussian Splatting SPZ SH No WASM",
             "playgroundId": "##XSNFXP#12",
-            "renderCount": 15,
             "referenceImage": "gsplat-spz-sh.png"
         },
         {
             "title": "Gaussian Splatting SPZ Extensions",
             "playgroundId": "#XSNFXP#8",
-            "renderCount": 15,
             "referenceImage": "gsplat-spz-extensions.png"
         },
         {
             "title": "Gaussian Splatting SPZ SH Order 4",
             "playgroundId": "#XSNFXP#5",
-            "renderCount": 15,
             "referenceImage": "gsplat-spz-sh-order-4.png"
         },
         {
             "title": "Gaussian Splatting SPZ SH Order 4 No WASM",
             "playgroundId": "#XSNFXP#13",
-            "renderCount": 15,
             "referenceImage": "gsplat-spz-sh-order-4.png"
         },
         {
             "title": "Gaussian Splatting SPZ Detailed Splat",
             "playgroundId": "#XSNFXP#6",
-            "renderCount": 15,
             "referenceImage": "gsplat-spz-detailed-splat.png"
         },
         {
             "title": "Gaussian Splatting SPZ Detailed Splat No WASM",
             "playgroundId": "#XSNFXP#14",
-            "renderCount": 15,
             "referenceImage": "gsplat-spz-detailed-splat.png"
         },
         {
             "title": "Gaussian Splatting PLY SH Order 4",
             "playgroundId": "#XSNFXP#7",
-            "renderCount": 15,
             "referenceImage": "gsplat-ply-sh-order-4.png"
         },
         {
             "title": "Gaussian Splatting Update Data",
             "playgroundId": "#Q0LBM8#2",
-            "renderCount": 15,
             "referenceImage": "gsplat-update-data.png"
         },
         {
             "title": "Gaussian Splatting viewports",
-            "playgroundId": "#CG8GO3#1",
-            "renderCount": 15,
+            "playgroundId": "#IMVJUY#0",
             "referenceImage": "gsplat-viewports.png"
         },
         {
             "title": "Gaussian Splatting Shadows",
-            "playgroundId": "#OE54M5#16",
-            "renderCount": 15,
+            "playgroundId": "#R6MGUZ#0",
             "referenceImage": "gsplat-shadows.png"
         },
         {
@@ -126,21 +110,18 @@
         {
             "title": "SOGS with SH",
             "playgroundId": "#QA2662#13",
-            "renderCount": 15,
             "errorRatio": 5,
             "referenceImage": "gsplat-sogs-sh.png"
         },
         {
             "title": "Gaussian Splatting Part Test",
             "playgroundId": "#BTS11N#0",
-            "renderCount": 15,
             "errorRatio": 5,
             "referenceImage": "gsplat-part-test.png"
         },
         {
             "title": "Gaussian Splatting Part Serialize Test",
             "playgroundId": "#XQZVOI#0",
-            "renderCount": 15,
             "errorRatio": 5,
             "referenceImage": "gsplat-part-test.png"
         },
@@ -249,8 +230,7 @@
         {
             "title": "Gaussian Splatting NME",
             "playgroundId": "#WXWJKN#4",
-            "referenceImage": "gsplat-nme.png",
-            "renderCount": 15
+            "referenceImage": "gsplat-nme.png"
         },
         {
             "title": "Lattice",
@@ -272,8 +252,7 @@
         {
             "title": "Gaussian Splatting Loading",
             "playgroundId": "#CID4NN#204",
-            "referenceImage": "gsplat-loading.png",
-            "renderCount": 15
+            "referenceImage": "gsplat-loading.png"
         },
         {
             "title": "EXR Loader",

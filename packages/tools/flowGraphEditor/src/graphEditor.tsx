@@ -5,6 +5,7 @@ import { PropertyTabComponent } from "./components/propertyTab/propertyTabCompon
 import { Portal } from "./portal";
 import { LogComponent, LogEntry } from "./components/log/logComponent";
 import { type Nullable } from "core/types";
+import { type Observer } from "core/Misc/observable";
 import { MessageDialog } from "shared-ui-components/components/MessageDialog";
 import { SerializationTools } from "./serializationTools";
 import { blockFactory } from "core/FlowGraph/Blocks/flowGraphBlockFactory";
@@ -67,6 +68,8 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
     private _mouseLocationY = 0;
     private _onWidgetKeyUpPointer: any;
     private _historyStack: HistoryStack;
+    private _helpObserver: Nullable<Observer<any>> = null;
+    private _howToUseObserver: Nullable<Observer<void>> = null;
     private _blockClassRegistry = new Map<string, typeof FlowGraphBlock>();
     /** Cache for O(1) block→GraphNode lookups (rebuilt on graph load) */
     private _blockToNodeMap = new Map<FlowGraphBlock, GraphNode>();
@@ -244,11 +247,11 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         this.build();
         this.props.globalState.onClearUndoStack.notifyObservers();
 
-        this.props.globalState.onHelpRequested.add((topicId) => {
+        this._helpObserver = this.props.globalState.onHelpRequested.add((topicId) => {
             this.setState({ helpTopicId: topicId ?? undefined });
         });
 
-        this.props.globalState.onHowToUseRequested.add(() => {
+        this._howToUseObserver = this.props.globalState.onHowToUseRequested.add(() => {
             this.setState({ showHowToUse: true });
         });
     }
@@ -272,6 +275,11 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
 
         globalState.onClearUndoStack.clear();
         globalState.cancelPendingValidation();
+
+        this._helpObserver?.remove();
+        this._helpObserver = null;
+        this._howToUseObserver?.remove();
+        this._howToUseObserver = null;
 
         if (this._historyStack) {
             this._historyStack.dispose();
@@ -1022,7 +1030,12 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
             // Use the FlowGraph block factory to create the block asynchronously
             const factory = blockFactory(blockType);
             const blockClass = await factory();
-            const block = new (blockClass as any)({ name: blockType }) as FlowGraphBlock;
+            // Constant blocks need a default value so their output port type is resolved correctly.
+            const config: any = { name: blockType };
+            if (blockType === "FlowGraphConstantBlock") {
+                config.value = 0;
+            }
+            const block = new (blockClass as any)(config) as FlowGraphBlock;
 
             // If this is an event block, register it with the flow graph.
             if (block instanceof FlowGraphEventBlock) {
