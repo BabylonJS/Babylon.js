@@ -193,7 +193,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
             let transmission_roughness: f32 = specular_roughness;
         #else
             // Transmission blurriness is affected by IOR so we scale the roughness accordingly
-            let transmission_roughness: f32 = clamp(specular_roughness * 3.0f * (specular_ior - 1.0f), 0.001f, 1.0f);
+            let transmission_roughness: f32 = specular_roughness * clamp(4.0f * (specular_ior - 1.0f), 0.001f, 1.0f);
         #endif
 
         #if (defined(TRANSMISSION_SLAB) || defined(SUBSURFACE_SLAB))
@@ -258,13 +258,13 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
             surface_translucency_weight = transmission_weight;
         #endif
 
-        let refractionAlphaG: f32 = transmission_roughness * transmission_roughness;
+        var transmission_roughness_alpha: f32 = transmission_roughness * transmission_roughness;
         
         #ifdef SCATTERING
             // Transmission Scattering
             #ifdef GEOMETRY_THIN_WALLED
                 var iso_scatter_density: vec3f = vec3f(1.0f);
-                var roughness_alpha_modified_for_scatter: f32 = 1.0f;
+                transmission_roughness_alpha = transmission_roughness;
             #else
 
                 #ifdef USE_IRRADIANCE_TEXTURE_FOR_SCATTERING
@@ -283,16 +283,12 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
                 var iso_scatter_density: vec3f = clamp(vec3f(1.0f) - iso_scatter_transmittance, vec3f(0.0f), vec3f(1.0f));
             
                 // Refraction roughness is modified by the density of the scattering and also by the anisotropy.
-                var roughness_alpha_modified_for_scatter: f32 = min(refractionAlphaG + (1.0f - abs(volumeParams.anisotropy)) * max3(iso_scatter_density * iso_scatter_density), 1.0f);
-                roughness_alpha_modified_for_scatter = pow(roughness_alpha_modified_for_scatter, 6.0f);
-                roughness_alpha_modified_for_scatter = clamp(roughness_alpha_modified_for_scatter, refractionAlphaG, 1.0f);
+                transmission_roughness_alpha = min(transmission_roughness_alpha + pow((1.0f - abs(volumeParams.anisotropy)) * max3(iso_scatter_density * iso_scatter_density), 3.0f), 1.0f);
             #endif
 
             // Blend the multi-scatter color towards single-scatter based on the scatter density
             // This is an empirical approximation to account for weaker scattering at low densities where scattering isn't strong enough to reach the multiple scattering colour.
             volumeParams.multi_scatter_color = mix(volumeParams.ss_albedo, volumeParams.multi_scatter_color, max3(iso_scatter_density));
-        #else
-            var roughness_alpha_modified_for_scatter: f32 = refractionAlphaG;
         #endif
 
         #if defined(TRANSMISSION_SLAB) && (!defined(TRANSMISSION_SLAB_VOLUME) || defined(GEOMETRY_THIN_WALLED))
@@ -300,29 +296,26 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
 
             // Apply surface tinting.
             transmission_tint *= transmission_color.rgb;
-            #ifndef GEOMETRY_THIN_WALLED
-                // If this material is volumetric (i.e. not thin-walled), we'll
-                // assume that the mesh is manifold and light enters and exits through the surface, leading to double-tinting.
-                transmission_tint *= transmission_color.rgb;
-            #endif
-
-            #ifdef SUBSURFACE_SLAB
-                // When subsurface is also present, we need to blend some values between transmission and subsurface slabs.
-                let unweighted_translucency: f32 = mix(subsurface_weight, 1.0f, transmission_weight);
-                transmission_tint = mix(vec3f(1.0f), transmission_tint, transmission_weight / unweighted_translucency);
-                // Roughness for transmission is just surface roughness while, for subsurface, transmission is fully diffuse.
-                roughness_alpha_modified_for_scatter = mix(1.0f, refractionAlphaG, transmission_weight / unweighted_translucency);
-            #endif
-
             #ifdef GEOMETRY_THIN_WALLED
                 var sin2: f32 = 1.0f - baseGeoInfo.NdotV * baseGeoInfo.NdotV;
-                // Divide by the square of the relative IOR (eta) of the incident medium and coat. This
-                // is just coat_ior since the incident medium is air (IOR = 1.0).
+                // Divide by the square of the relative IOR (eta) of the incident medium and surface. This
+                // is just specular_ior since the incident medium is air (IOR = 1.0).
                 sin2 = sin2 / (specular_ior * specular_ior);
                 let cos_t: f32 = sqrt(1.0f - sin2);
                 let pathLength: f32 = 1.0f / cos_t;
                 transmission_tint = pow(transmission_tint, vec3f(pathLength));
+            #else
+                // If this material is volumetric (i.e. not thin-walled), we'll
+                // assume that the mesh is manifold and light enters and exits through the surface, leading to double-tinting.
+                transmission_tint *= transmission_color.rgb;
             #endif
+        #endif
+        #if defined(SUBSURFACE_SLAB) && defined(GEOMETRY_THIN_WALLED)
+            // When subsurface is also present, we need to blend some values between transmission and subsurface slabs.
+            let unweighted_translucency: f32 = mix(subsurface_weight, 1.0f, transmission_weight);
+            transmission_tint = mix(vec3f(1.0f), transmission_tint, transmission_weight / unweighted_translucency);
+            // Roughness for transmission is just surface roughness while, for subsurface, transmission is fully diffuse.
+            transmission_roughness_alpha = mix(1.0f, transmission_roughness_alpha, transmission_weight / unweighted_translucency);
         #endif
 
     #endif
@@ -339,11 +332,11 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     // included in the environment lighting section above. However, if we don't
     // have IBL enabled, we still need to compute the refracted background here and
     // will split it between all the lights.
-    #ifdef REFLECTION
-        slab_translucent_background = vec4f(0.f, 0.f, 0.f, 1.f);
-    #else
-        slab_translucent_background /= f32(LIGHTCOUNT); // Average the background contribution over the number of lights
-    #endif
+    // #ifdef REFLECTION
+    //     slab_translucent_background = vec4f(0.f, 0.f, 0.f, 1.f);
+    // #else
+    //     slab_translucent_background /= f32(LIGHTCOUNT); // Average the background contribution over the number of lights
+    // #endif
     #if defined(LIGHT0)
         var aggShadow: f32 = 0.f;
         #include<openpbrDirectLightingInit>[0..maxSimultaneousLights]

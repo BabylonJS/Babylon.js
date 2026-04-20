@@ -70,7 +70,7 @@
             {
                 preLightingInfo preInfoTrans = preInfo{X};
                 #ifdef SCATTERING
-                    preInfoTrans.roughness = sqrt(sqrt(max(refractionAlphaG, 0.05)));
+                    preInfoTrans.roughness = sqrt(sqrt(max(transmission_roughness_alpha, 0.05)));
                 #else
                     preInfoTrans.roughness = transmission_roughness;
                 #endif
@@ -126,11 +126,11 @@
                 #if defined(ANISOTROPIC_BASE)
                     computeAnisotropicSpecularLighting(preInfoTrans, viewDirectionW, refractNormalW, 
                         baseGeoInfo.anisotropicTangent, baseGeoInfo.anisotropicBitangent, baseGeoInfo.anisotropy, 
-                        roughness_alpha_modified_for_scatter, lightColor{X}.rgb
+                        transmission_roughness_alpha, lightColor{X}.rgb
                 #else
                     // We're passing in vec3(1.0) for both F0 and F90 here because the actual Fresnel is computed below
                     // Also computeSpecularLighting does some legacy iridescence work using these values that we don't want.
-                    computeSpecularLighting(preInfoTrans, -refractNormalW, vec3(1.0), vec3(1.0), roughness_alpha_modified_for_scatter, lightColor{X}.rgb
+                    computeSpecularLighting(preInfoTrans, -refractNormalW, vec3(1.0), vec3(1.0), transmission_roughness_alpha, lightColor{X}.rgb
                 #endif
                 #if defined(DISPERSION) && !defined(GEOMETRY_THIN_WALLED)
                     )[i];
@@ -143,7 +143,7 @@
                 // As roughness increases, we add a small ambient term to simulate scattering of internal reflections
                 // This only makes sense for solid materials, so we skip it for thin-walled geometry.
                 #if !defined(GEOMETRY_THIN_WALLED)
-                    forwardScatteredLight = mix(forwardScatteredLight, 0.25 * preInfoTrans.attenuation * lightColor{X}.rgb, clamp(1.0 - pow(baseGeoInfo.NdotV, roughness_alpha_modified_for_scatter), 0.0, 1.0));
+                    forwardScatteredLight = mix(forwardScatteredLight, 0.25 * preInfoTrans.attenuation * lightColor{X}.rgb, clamp(1.0 - pow(baseGeoInfo.NdotV, transmission_roughness_alpha), 0.0, 1.0));
                 #endif
 
                 #ifdef REFRACTED_BACKGROUND
@@ -153,9 +153,9 @@
                     // At high blurriness, the refracted light will be coming from more directions
                     // and so we want to include more of this indirect lighting.
                     #ifdef GEOMETRY_THIN_WALLED
-                        forwardScatteredLight = mix(mix(forwardScatteredLight, slab_translucent_background.rgb, slab_translucent_background.a), forwardScatteredLight.rgb, 0.2 * roughness_alpha_modified_for_scatter);
+                        forwardScatteredLight = mix(vec3(0.0), forwardScatteredLight.rgb, 0.2 * transmission_roughness_alpha);
                     #else
-                        forwardScatteredLight = max(slab_translucent_background.rgb, mix(slab_translucent_background.rgb, forwardScatteredLight, roughness_alpha_modified_for_scatter));
+                        forwardScatteredLight = max(vec3(0.0), mix(vec3(0.0), forwardScatteredLight, transmission_roughness_alpha));
                     #endif
                 #endif
 
