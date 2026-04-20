@@ -174,11 +174,14 @@ export class SpritePacker {
      * Adds a vector shape that comes from lottie data to the sprite atlas.
      * @param rawElements The raw element that contains the paths and fills to add to the atlas.
      * @param scalingFactor The scaling factor to apply to the shape.
+     * @param debugName Optional human-readable identifier (e.g. owning layer name) included in oversize warnings.
      * @returns The information on how to find the sprite in the atlas.
      */
-    public addLottieShape(rawElements: RawElement[], scalingFactor: IVector2Like): SpriteAtlasInfo {
+    public addLottieShape(rawElements: RawElement[], scalingFactor: IVector2Like, debugName?: string): SpriteAtlasInfo {
         const boundingBox = GetShapesBoundingBox(rawElements);
 
+        const layerScaleX = scalingFactor.x;
+        const layerScaleY = scalingFactor.y;
         scalingFactor.x = scalingFactor.x * this._atlasScale * this._configuration.devicePixelRatio;
         scalingFactor.y = scalingFactor.y * this._atlasScale * this._configuration.devicePixelRatio;
 
@@ -186,6 +189,8 @@ export class SpritePacker {
         // This takes into account the scaling factor so in the call to _drawVectorShape the canvas will be scaled when rendering
         this._spriteAtlasInfo.cellWidth = this._getAtlasCellDimension(boundingBox.width * scalingFactor.x);
         this._spriteAtlasInfo.cellHeight = this._getAtlasCellDimension(boundingBox.height * scalingFactor.y);
+
+        this._warnIfOversized("shape", debugName, boundingBox, layerScaleX, layerScaleY, this._spriteAtlasInfo.cellWidth, this._spriteAtlasInfo.cellHeight);
 
         // Get (or create) the page that has room for this sprite
         const page = this._getPageWithRoom(this._spriteAtlasInfo.cellWidth, this._spriteAtlasInfo.cellHeight);
@@ -218,9 +223,10 @@ export class SpritePacker {
      * Adds a text element that comes from lottie data to the sprite atlas.
      * @param textData The raw text data to add to the atlas.
      * @param scalingFactor The scaling factor to apply to the text.
+     * @param debugName Optional human-readable identifier (e.g. owning layer name) included in oversize warnings.
      * @returns The information on how to find the sprite in the atlas.
      */
-    public addLottieText(textData: RawTextData, scalingFactor: IVector2Like): SpriteAtlasInfo | undefined {
+    public addLottieText(textData: RawTextData, scalingFactor: IVector2Like, debugName?: string): SpriteAtlasInfo | undefined {
         if (this._rawFonts === undefined) {
             return undefined;
         }
@@ -231,6 +237,8 @@ export class SpritePacker {
             return undefined;
         }
 
+        const layerScaleX = scalingFactor.x;
+        const layerScaleY = scalingFactor.y;
         scalingFactor.x = scalingFactor.x * this._atlasScale * this._configuration.devicePixelRatio;
         scalingFactor.y = scalingFactor.y * this._atlasScale * this._configuration.devicePixelRatio;
 
@@ -238,6 +246,8 @@ export class SpritePacker {
         // This takes into account the scaling factor so in the call to _drawText the canvas will be scaled when rendering
         this._spriteAtlasInfo.cellWidth = this._getAtlasCellDimension(boundingBox.width * scalingFactor.x);
         this._spriteAtlasInfo.cellHeight = this._getAtlasCellDimension(boundingBox.height * scalingFactor.y);
+
+        this._warnIfOversized("text", debugName, boundingBox, layerScaleX, layerScaleY, this._spriteAtlasInfo.cellWidth, this._spriteAtlasInfo.cellHeight);
 
         // Get (or create) the page that has room for this sprite
         const page = this._getPageWithRoom(this._spriteAtlasInfo.cellWidth, this._spriteAtlasInfo.cellHeight);
@@ -332,14 +342,11 @@ export class SpritePacker {
     private _getPageWithRoom(cellWidth: number, cellHeight: number): AtlasPage {
         let page = this._pages[this._pages.length - 1];
 
-        // Clamp oversized cells to fit within a single atlas page
+        // Clamp oversized cells to fit within a single atlas page. The oversize warning (with full
+        // identifying context) is emitted by the caller via _warnIfOversized before we get here.
         const maxCellWidth = this._configuration.spriteAtlasWidth - 2 * this._configuration.gapSize;
         const maxCellHeight = this._configuration.spriteAtlasHeight - 2 * this._configuration.gapSize;
         if (cellWidth > maxCellWidth || cellHeight > maxCellHeight) {
-            // eslint-disable-next-line no-console
-            console.warn(
-                `[SpritePacker] Sprite cell (${cellWidth}x${cellHeight}) exceeds atlas page (${this._configuration.spriteAtlasWidth}x${this._configuration.spriteAtlasHeight}). Clamping to fit.`
-            );
             this._spriteAtlasInfo.cellWidth = Math.min(cellWidth, maxCellWidth);
             this._spriteAtlasInfo.cellHeight = Math.min(cellHeight, maxCellHeight);
             cellWidth = this._spriteAtlasInfo.cellWidth;
@@ -366,6 +373,44 @@ export class SpritePacker {
 
     private _getAtlasCellDimension(size: number): number {
         return Math.max(1, Math.ceil(size));
+    }
+
+    /**
+     * Logs a detailed warning when a sprite cell exceeds the atlas page size, including
+     * the owning layer name, the raw lottie bounding box, and the scale factors that
+     * combine to produce the oversized cell. This makes it easy to identify which lottie
+     * element is responsible and why its rasterized footprint is so large.
+     */
+    private _warnIfOversized(
+        kind: "shape" | "text",
+        debugName: string | undefined,
+        boundingBox: BoundingBox,
+        layerScaleX: number,
+        layerScaleY: number,
+        cellWidth: number,
+        cellHeight: number
+    ): void {
+        const atlasW = this._configuration.spriteAtlasWidth;
+        const atlasH = this._configuration.spriteAtlasHeight;
+        const maxCellWidth = atlasW - 2 * this._configuration.gapSize;
+        const maxCellHeight = atlasH - 2 * this._configuration.gapSize;
+        if (cellWidth <= maxCellWidth && cellHeight <= maxCellHeight) {
+            return;
+        }
+
+        const dpr = this._configuration.devicePixelRatio;
+        const atlasScale = this._atlasScale;
+        const rawW = boundingBox.width.toFixed(2);
+        const rawH = boundingBox.height.toFixed(2);
+        const lsx = layerScaleX.toFixed(3);
+        const lsy = layerScaleY.toFixed(3);
+        const name = debugName ?? "<unknown>";
+        // eslint-disable-next-line no-console
+        console.warn(
+            `[SpritePacker] ${kind} sprite for layer "${name}" produces a ${cellWidth}x${cellHeight}px cell that exceeds the ${atlasW}x${atlasH}px atlas page. ` +
+                `Clamping to ${Math.min(cellWidth, maxCellWidth)}x${Math.min(cellHeight, maxCellHeight)}px (sprite will appear blurry). ` +
+                `Source bounding box: ${rawW}x${rawH}px at lottie scale ${lsx}x${lsy} \u00d7 atlasScale ${atlasScale} \u00d7 devicePixelRatio ${dpr}.`
+        );
     }
 
     private _extrudeSpriteEdges(page: AtlasPage, x: number, y: number, width: number, height: number): void {

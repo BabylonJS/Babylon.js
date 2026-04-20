@@ -80,6 +80,7 @@ export class Parser {
     private _rootNodes: Node[]; // Array of root-level nodes in the animation, in top-down z order
     private _parentNodes: Map<number, Node> = new Map<number, Node>(); // Map of nodes to build the scenegraph from the animation layers
     private _currentLayerOriginalIndex: number = 0; // Original array index of the layer currently being parsed, used for sprite z-ordering
+    private _currentLayerName: string | undefined = undefined; // Name of the layer currently being parsed, used for diagnostic messages
     private _layerOriginalIndices: Map<RawLottieLayer, number> = new Map<RawLottieLayer, number>(); // Maps layers to their original array index for z-ordering
     private _startFrame: number = 0;
 
@@ -130,6 +131,7 @@ export class Parser {
         const orderedLayers = this._reoderLayers(rawData.layers);
         for (let i = 0; i < orderedLayers.length; i++) {
             this._currentLayerOriginalIndex = this._layerOriginalIndices.get(orderedLayers[i]) ?? i;
+            this._currentLayerName = orderedLayers[i].nm;
             this._parseLayer(orderedLayers[i]);
         }
 
@@ -347,7 +349,7 @@ export class Parser {
         // Get the rasterization scale at the frame when the layer first becomes visible
         const rasterizationFrame = this._getRasterizationFrame(layer);
         const currentScale = this._getRasterizationScale(parent, rasterizationFrame);
-        const spriteInfo = this._packer.addLottieText(layer.t, currentScale);
+        const spriteInfo = this._packer.addLottieText(layer.t, currentScale, layer.nm);
 
         if (spriteInfo === undefined) {
             return undefined;
@@ -454,7 +456,7 @@ export class Parser {
     private _parseShapes(elements: RawElement[], parent: Node, rasterizationFrame: number): void {
         // Get the rasterization scale at the frame when the layer first becomes visible
         const currentScale = this._getRasterizationScale(parent, rasterizationFrame);
-        const spriteInfo = this._packer.addLottieShape(elements, currentScale);
+        const spriteInfo = this._packer.addLottieShape(elements, currentScale, this._currentLayerName);
 
         // Build the ThinSprite from the texture packer information
         const sprite = new ThinSprite();
