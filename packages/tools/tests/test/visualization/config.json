@@ -3409,6 +3409,11 @@
             "excludedEngines": ["webgl1"]
         },
         {
+            "title": "OpenPBR Transmission Roughness glTF - Combination Lights",
+            "playgroundId": "#GRQHVV#314",
+            "excludedEngines": ["webgl1"]
+        },
+        {
             "title": "OpenPBR Transmission Roughness vs IOR - Analytic Lights",
             "playgroundId": "#GRQHVV#134",
             "excludedEngines": ["webgl1"]
