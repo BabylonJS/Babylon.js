@@ -3,21 +3,18 @@
 # Converted from Azure DevOps Classic Pipeline (Definition ID: 14)
 #
 # IMPORTANT SETUP NOTES:
-# 1. Link the 'BabylonJS-CI-Infrastructure' variable group (see VARIABLE-GROUPS.md).
+# 1. Link variable groups (see VARIABLE-GROUPS.md):
+#    - BabylonJS-CI-Infrastructure
+#    - BabylonJS-BrowserStack (BROWSERSTACK_ACCESS_KEY, BROWSERSTACK_USERNAME)
+#    - BabylonJS-Deployment (BASIC_AUTH, DEPLOYMENT_SERVER)
 #
-# 2. Secret variables must be configured in the Azure DevOps pipeline UI:
-#    - BASIC_AUTH
-#    - BROWSERSTACK_ACCESS_KEY
-#    - BROWSERSTACK_USERNAME
-#    - DEPLOYMENT_SERVER
-#
-# 3. Fork build settings (allow secrets, require comments for non-team members)
+# 2. Fork build settings (allow secrets, require comments for non-team members)
 #    must be configured in the Azure DevOps pipeline settings UI.
 #
-# 4. Authorize the GitHub service connection (GITHUB_SERVICE_CONNECTION)
+# 3. Authorize the GitHub service connection (GITHUB_SERVICE_CONNECTION)
 #    for this pipeline.
 #
-# 5. Update the 'resources.pipelines' source names to match your actual
+# 4. Update the 'resources.pipelines' source names to match your actual
 #    pipeline names in Azure DevOps.
 # =============================================================================
 
@@ -62,6 +59,8 @@ resources:
 
 variables:
     - group: BabylonJS-CI-Infrastructure
+    - group: BabylonJS-BrowserStack
+    - group: BabylonJS-Deployment
     - name: BuildName
       value: $(Build.SourceBranch)
     - name: BROWSERSTACK_BROWSER
@@ -86,12 +85,12 @@ jobs:
             fetchDepth: 0
             fetchTags: false
 
-          - task: NodeTool@0
-            displayName: "Use Node 22.4.1"
+          - task: UseNode@1
+            displayName: "Use Node 22.x"
             continueOnError: true
             retryCountOnTaskFailure: 1
             inputs:
-                versionSpec: "22.4.1"
+                version: "22.x"
 
           - bash: |
                 git diff --name-status $(git rev-parse origin/master) $(git rev-parse HEAD) | grep -q "what's new.md" && echo "##vso[task.setvariable variable=WhatsNewChanged]true"
@@ -277,12 +276,12 @@ jobs:
             clean: true
             fetchTags: false
 
-          - task: NodeTool@0
-            displayName: "Use Node 22.4.1"
+          - task: UseNode@1
+            displayName: "Use Node 22.x"
             continueOnError: true
             retryCountOnTaskFailure: 1
             inputs:
-                versionSpec: "22.4.1"
+                version: "22.x"
 
           - script: npm install
             displayName: "npm install"
@@ -338,12 +337,12 @@ jobs:
             clean: true
             fetchTags: false
 
-          - task: NodeTool@0
-            displayName: "Use Node 22.17.1"
+          - task: UseNode@1
+            displayName: "Use Node 22.x"
             continueOnError: true
             retryCountOnTaskFailure: 1
             inputs:
-                versionSpec: "22.17.1"
+                version: "22.x"
 
           - script: npm install
             displayName: "npm install"
@@ -393,12 +392,12 @@ jobs:
             fetchDepth: 0
             fetchTags: false
 
-          - task: NodeTool@0
-            displayName: "Use Node 22.4.1"
+          - task: UseNode@1
+            displayName: "Use Node 22.x"
             continueOnError: true
             retryCountOnTaskFailure: 1
             inputs:
-                versionSpec: "22.4.1"
+                version: "22.x"
 
           - script: npm install
             displayName: "npm install"
@@ -438,12 +437,12 @@ jobs:
             clean: true
             fetchTags: false
 
-          - task: NodeTool@0
-            displayName: "Use Node 22.4.1"
+          - task: UseNode@1
+            displayName: "Use Node 22.x"
             continueOnError: true
             retryCountOnTaskFailure: 1
             inputs:
-                versionSpec: "22.4.1"
+                version: "22.x"
 
           - task: Npm@1
             displayName: "npm install"
@@ -502,12 +501,12 @@ jobs:
             clean: true
             fetchTags: false
 
-          - task: NodeTool@0
-            displayName: "Use Node 22.4.1"
+          - task: UseNode@1
+            displayName: "Use Node 22.x"
             continueOnError: true
             retryCountOnTaskFailure: 1
             inputs:
-                versionSpec: "22.4.1"
+                version: "22.x"
 
           - template: templates/check-snapshot-exists.yml
             parameters:
@@ -575,12 +574,12 @@ jobs:
             clean: true
             fetchTags: false
 
-          - task: NodeTool@0
-            displayName: "Use Node 22.4.1"
+          - task: UseNode@1
+            displayName: "Use Node 22.x"
             continueOnError: true
             retryCountOnTaskFailure: 1
             inputs:
-                versionSpec: "22.4.1"
+                version: "22.x"
 
           # ALL REMAINING STEPS DISABLED in classic pipeline:
           # - script: npm install
@@ -645,12 +644,12 @@ jobs:
             clean: true
             fetchTags: false
 
-          - task: NodeTool@0
+          - task: UseNode@1
             displayName: "Use Node 22.x"
             continueOnError: true
             retryCountOnTaskFailure: 1
             inputs:
-                versionSpec: "22.4.1"
+                version: "22.x"
 
           - template: templates/check-snapshot-exists.yml
             parameters:
@@ -721,12 +720,12 @@ jobs:
             clean: true
             fetchTags: false
 
-          - task: NodeTool@0
+          - task: UseNode@1
             displayName: "Use Node 22.x"
             continueOnError: true
             retryCountOnTaskFailure: 1
             inputs:
-                versionSpec: "22.4.1"
+                version: "22.x"
 
           - template: templates/check-snapshot-exists.yml
             parameters:
@@ -873,12 +872,12 @@ jobs:
             clean: true
             fetchTags: false
 
-          - task: NodeTool@0
-            displayName: "Use Node 22.4.1"
+          - task: UseNode@1
+            displayName: "Use Node 22.x"
             continueOnError: true
             retryCountOnTaskFailure: 1
             inputs:
-                versionSpec: "22.4.1"
+                version: "22.x"
 
           - script: npm install
             displayName: "npm install"
@@ -918,12 +917,12 @@ jobs:
             clean: true
             fetchTags: false
 
-          - task: NodeTool@0
-            displayName: "Use Node 22.4.1"
+          - task: UseNode@1
+            displayName: "Use Node 22.x"
             continueOnError: true
             retryCountOnTaskFailure: 1
             inputs:
-                versionSpec: "22.4.1"
+                version: "22.x"
 
           - task: Npm@1
             displayName: "npm install"
@@ -966,8 +965,8 @@ jobs:
             displayName: "Placeholder - all steps disabled"
 
           # DISABLED in classic pipeline - full step list:
-          # - task: NodeTool@0
-          #   displayName: 'Use Node 22.4.1'
+          # - task: UseNode@1
+          #   displayName: 'Use Node 22.x'
           #   continueOnError: true
           #   retryCountOnTaskFailure: 1
           #   inputs:
