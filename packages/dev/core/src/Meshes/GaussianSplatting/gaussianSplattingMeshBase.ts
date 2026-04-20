@@ -342,6 +342,7 @@ export class GaussianSplattingMeshBase extends Mesh {
     protected _canPostToWorker = true;
     private _readyToDisplay = false;
     private _sortRequestId = 0;
+    private _hasRenderedOnce = false;
     protected _covariancesATexture: Nullable<BaseTexture> = null;
     protected _covariancesBTexture: Nullable<BaseTexture> = null;
     protected _centersTexture: Nullable<BaseTexture> = null;
@@ -644,37 +645,45 @@ export class GaussianSplattingMeshBase extends Mesh {
             return false;
         }
 
-        const cameras = this._scene.activeCameras?.length ? this._scene.activeCameras : [this._scene.activeCamera!];
-        const worldMatrix = this.computeWorldMatrix(true);
-        let anyDirty = false;
-        for (const camera of cameras) {
-            if (!camera) {
-                continue;
+        // Before the first successful render, apply strict sort-state checks to ensure
+        // the first rendered frame uses correct splat ordering. Once the mesh has been
+        // rendered at least once, skip these checks — the render loop will continuously
+        // re-sort as the camera/world changes via _postToWorker() in render().
+        if (!this._hasRenderedOnce && !this._disableDepthSort) {
+            const cameras = this._scene.activeCameras?.length ? this._scene.activeCameras : [this._scene.activeCamera!];
+            const worldMatrix = this.computeWorldMatrix(true);
+            let anyDirty = false;
+            for (const camera of cameras) {
+                if (!camera) {
+                    continue;
+                }
+
+                const cameraViewInfo = this._cameraViewInfos.get(camera.uniqueId);
+                if (!cameraViewInfo || !cameraViewInfo.splatIndexBufferSet) {
+                    anyDirty = true;
+                    continue;
+                }
+
+                // Wait for the most recently requested sort to be applied so that the splat indices
+                // match the latest world/camera state.
+                if (cameraViewInfo.sortAppliedId !== cameraViewInfo.sortRequestId) {
+                    anyDirty = true;
+                    continue;
+                }
+
+                // Also detect drift: if the world or camera state has changed since the last post,
+                // mark dirty so the next render does not silently queue a new sort that completes
+                // after isReady has reported true.
+                if (this._isSortStateDirty(cameraViewInfo, worldMatrix, camera)) {
+                    anyDirty = true;
+                }
             }
 
-            const cameraViewInfo = this._cameraViewInfos.get(camera.uniqueId);
-            if (!cameraViewInfo || !cameraViewInfo.splatIndexBufferSet) {
-                anyDirty = true;
-                continue;
+            if (anyDirty) {
+                // Try to post any pending sort so subsequent polling iterations make progress.
+                this._postToWorker(true);
+                return false;
             }
-
-            // Wait for the most recently requested sort to be applied so that the splat indices match the latest world/camera state.
-            if (cameraViewInfo.sortAppliedId !== cameraViewInfo.sortRequestId) {
-                anyDirty = true;
-                continue;
-            }
-
-            // Also detect drift: if the world or camera state has changed since the last post,
-            // mark dirty so the next render does not silently queue a new sort that completes after isReady has reported true.
-            if (this._isSortStateDirty(cameraViewInfo, worldMatrix, camera)) {
-                anyDirty = true;
-            }
-        }
-
-        if (anyDirty) {
-            // Try to post any pending sort so subsequent polling iterations make progress.
-            this._postToWorker(true);
-            return false;
         }
 
         // Attach the splat geometry to the GS top mesh so that the shadow generator (which renders
@@ -913,6 +922,8 @@ export class GaussianSplattingMeshBase extends Mesh {
         }
 
         const ret = mesh.render(subMesh, enableAlphaMode, effectiveMeshReplacement);
+
+        this._hasRenderedOnce = true;
 
         // Clean up the temporary override to avoid affecting other render passes
         if (renderPassMaterial) {
@@ -1744,6 +1755,7 @@ export class GaussianSplattingMeshBase extends Mesh {
         newGS._modelViewProjectionMatrix = Matrix.Identity();
         newGS._splatPositions = this._splatPositions;
         newGS._readyToDisplay = false;
+        newGS._hasRenderedOnce = false;
         newGS._disableDepthSort = this._disableDepthSort;
         newGS._instantiateWorker();
 

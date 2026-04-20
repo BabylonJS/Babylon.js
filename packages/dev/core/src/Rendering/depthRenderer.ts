@@ -295,7 +295,7 @@ export class DepthRenderer {
                 const gsClassName = effectiveMesh.getClassName();
                 if (gsClassName === "GaussianSplattingMesh") {
                     const gsMaterial = this._ensureGaussianSplattingDepthMaterial(effectiveMesh, engine.currentRenderPassId);
-                    if (gsMaterial && !gsMaterial.isReady()) {
+                    if (gsMaterial && !gsMaterial.isReadyForSubMesh(effectiveMesh, subMesh, hardwareInstancedRendering)) {
                         return;
                     }
                     // Alpha blending for transparent materials

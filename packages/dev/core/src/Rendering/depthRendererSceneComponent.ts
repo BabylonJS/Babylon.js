@@ -158,7 +158,13 @@ export class DepthRendererSceneComponent implements ISceneComponent {
             }
             if (mesh.subMeshes) {
                 for (let i = 0; i < mesh.subMeshes.length; ++i) {
-                    if (!depthRenderer.isReady(mesh.subMeshes[i], hardwareInstancedRendering)) {
+                    const subMesh = mesh.subMeshes[i];
+                    const material = subMesh.getMaterial();
+                    // Skip submeshes that the depth renderer would never render
+                    if (!material || material.disableDepthWrite || subMesh.verticesCount === 0) {
+                        continue;
+                    }
+                    if (!depthRenderer.isReady(subMesh, hardwareInstancedRendering)) {
                         return false;
                     }
                 }
