@@ -668,7 +668,7 @@ async function GetCachedImageAsync(babylonTexture: BaseTexture): Promise<Nullabl
     const buffer = internalTexture._buffer;
 
     let data;
-    let mimeType = (babylonTexture as Texture).mimeType;
+    let mimeType = (babylonTexture as Texture).mimeType || GetMimeType(internalTexture.url);
 
     try {
         if (!buffer) {
