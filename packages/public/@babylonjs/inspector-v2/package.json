@@ -39,6 +39,7 @@
         "@babylonjs/loaders": "^9.0.0",
         "@babylonjs/materials": "^9.0.0",
         "@babylonjs/serializers": "^9.0.0",
+        "@fluentui-contrib/react-resize-handle": "^0.8.4",
         "@fluentui-contrib/react-virtualizer": "^1.0.0",
         "@fluentui/react-components": "^9.70.0",
         "@fluentui/react-icons": "^2.0.310",
