@@ -661,7 +661,7 @@ function ExtractMeshInformations(mesh: Mesh) {
  */
 async function GetCachedImageAsync(babylonTexture: BaseTexture): Promise<Nullable<Blob>> {
     const internalTexture = babylonTexture.getInternalTexture();
-    if (!internalTexture || internalTexture.source !== InternalTextureSource.Url || internalTexture.invertY) {
+    if (!internalTexture || internalTexture.source !== InternalTextureSource.Url) {
         return null;
     }
 
