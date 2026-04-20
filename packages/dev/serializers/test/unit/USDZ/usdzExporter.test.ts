@@ -97,7 +97,7 @@ describe("USDZ Exporter - NullEngine / Node.js environment", () => {
         return entry as Uint8Array;
     }
 
-    it("exports a textured PBR mesh using the cached ArrayBuffer on the internal texture", async () => {
+    it("exports a textured PBR mesh using a cached Uint8Array (ArrayBufferView) on the internal texture", async () => {
         const { texture } = buildTexturedBox();
 
         const internal = texture.getInternalTexture()!;
