@@ -53,16 +53,18 @@ jobs:
                 PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: "true"
                 PUPPETEER_SKIP_DOWNLOAD: "true"
 
-          - script: npm run test:playwright -w @tools/tests -- --project=webgl2
+          - script: npx browserstack-node-sdk playwright test --config ./playwright.browserstack.config.ts
             displayName: "Run tests (Webkit)"
             env:
                 CDN_BASE_URL: "https://cdn.babylonjs.com"
                 CI: "true"
-                BROWSER: "BrowserStack"
+                BSTACK_TEST_TYPE: "webgl2"
                 TIMEOUT: "20000"
                 BROWSERSTACK_USERNAME: $(BROWSERSTACK_USERNAME)
                 BROWSERSTACK_ACCESS_KEY: $(BROWSERSTACK_ACCESS_KEY)
-                BROWSERSTACK_BROWSER: "playwright-webkit@latest:OSX Sonoma"
+                BSTACK_BROWSER: "playwright-webkit"
+                BSTACK_OS: "OS X"
+                BSTACK_OS_VERSION: "Sonoma"
                 EXCLUDE_REGEX_ARRAY: "Picking Visual Test,GUI Input Test,Export GLTF Extension KHR_texture_transform,PBR refraction,Procedural textures playground,GLTF Serializer Morph Target Animation,GLTF Serializer KHR materials clearcoat,Motion Blur"
                 SCREENSHOT_MAX_PIXEL: "6"
                 SCREENSHOT_THRESHOLD: "0.05"
@@ -94,16 +96,18 @@ jobs:
                 PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: "true"
                 PUPPETEER_SKIP_DOWNLOAD: "true"
 
-          - script: npm run test:playwright -w @tools/tests -- --project=webgl2
+          - script: npx browserstack-node-sdk playwright test --config ./playwright.browserstack.config.ts
             displayName: "Run tests (Firefox)"
             env:
                 CDN_BASE_URL: "https://cdn.babylonjs.com"
                 CI: "true"
-                BROWSER: "BrowserStack"
+                BSTACK_TEST_TYPE: "webgl2"
                 TIMEOUT: "20000"
                 BROWSERSTACK_USERNAME: $(BROWSERSTACK_USERNAME)
                 BROWSERSTACK_ACCESS_KEY: $(BROWSERSTACK_ACCESS_KEY)
-                BROWSERSTACK_BROWSER: "playwright-firefox@latest:OSX Sonoma"
+                BSTACK_BROWSER: "playwright-firefox"
+                BSTACK_OS: "OS X"
+                BSTACK_OS_VERSION: "Sonoma"
                 EXCLUDE_REGEX_ARRAY: "Procedural textures playground,Normed 16 bits texture formats"
                 SCREENSHOT_THRESHOLD: "0.05"
                 SCREENSHOT_MAX_PIXEL: "5"

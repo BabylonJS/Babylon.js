@@ -1,0 +1,45 @@
+# =============================================================================
+# BrowserStack Automate SDK Configuration
+# Used by browserstack-node-sdk to run Playwright tests on BrowserStack.
+#
+# Credentials are provided via environment variables:
+#   BROWSERSTACK_USERNAME / BROWSERSTACK_ACCESS_KEY
+# (set in .env for local dev, in Azure DevOps variable groups for CI)
+# =============================================================================
+
+# Credentials (overridden by env vars BROWSERSTACK_USERNAME / BROWSERSTACK_ACCESS_KEY)
+userName: ${BROWSERSTACK_USERNAME}
+accessKey: ${BROWSERSTACK_ACCESS_KEY}
+
+# Reporting
+projectName: Babylon.js
+buildName: ${BSTACK_BUILD_NAME}
+buildIdentifier: "#${BUILD_NUMBER}"
+
+# Platform — single Chrome on macOS by default.
+# The CI pipeline can override via BROWSERSTACK_BROWSER env var for
+# nightly cross-browser runs (Firefox, Webkit).
+platforms:
+    - os: OS X
+      osVersion: Sonoma
+      browserName: chrome
+      browserVersion: latest
+
+# One parallel thread per platform — each worker gets its own browser session
+parallelsPerPlatform: 5
+
+# BrowserStack Local — set to true to test against localhost/private servers.
+# The SDK manages the tunnel automatically.
+browserstackLocal: false
+
+# Framework
+framework: playwright
+
+# Debugging
+debug: false
+networkLogs: false
+consoleLogs: errors
+
+# Test Observability — enables per-test reporting on the BrowserStack dashboard
+testObservability: true
+disableAutoCaptureLogs: true

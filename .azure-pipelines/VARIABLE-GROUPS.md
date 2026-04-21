@@ -72,6 +72,38 @@ BrowserStack credentials shared by pipelines that run browser tests.
 
 Linked by: ci-monorepo, ci-browser-testing.
 
+### BrowserStack Automate SDK
+
+Visualization tests run on BrowserStack infrastructure via the
+[browserstack-node-sdk](https://www.npmjs.com/package/browserstack-node-sdk).
+The SDK intercepts Playwright's `browser.launch()` and routes it to a remote
+BrowserStack browser session.
+
+**Config files:**
+
+- `browserstack.yml` — SDK platform config (browser, OS, parallelism)
+- `playwright.browserstack.config.ts` — Playwright config for SDK runs
+
+**CI invocation (in YAML pipelines):**
+
+```yaml
+- script: npx browserstack-node-sdk playwright test --config ./playwright.browserstack.config.ts
+  env:
+      BSTACK_TEST_TYPE: "webgl2" # or webgpu, performance, interaction
+      CDN_BASE_URL: "$(SNAPSHOT_CDN_URL)/$(BuildName)"
+      BROWSERSTACK_USERNAME: $(BROWSERSTACK_USERNAME)
+      BROWSERSTACK_ACCESS_KEY: $(BROWSERSTACK_ACCESS_KEY)
+```
+
+**Key environment variables for CI:**
+
+| Variable                          | Description                                                                                    |
+| --------------------------------- | ---------------------------------------------------------------------------------------------- |
+| `BSTACK_TEST_TYPE`                | Selects test suite and dashboard build name (`webgl2`, `webgpu`, `performance`, `interaction`) |
+| `BSTACK_BROWSER`                  | Override browser for cross-browser runs (e.g. `playwright-firefox`, `playwright-webkit`)       |
+| `BSTACK_OS` / `BSTACK_OS_VERSION` | Override OS/version (e.g. `OS X` / `Sonoma`)                                                   |
+| `CIWORKERS`                       | Number of parallel BrowserStack sessions (default: 5)                                          |
+
 ## Variable Group: `BabylonJS-Deployment`
 
 Deployment server credentials shared by pipelines that upload snapshots or

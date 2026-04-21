@@ -30,7 +30,8 @@
         "@types/react": "^18.0.0",
         "@types/react-dom": "^18.0.0",
         "sass": "^1.62.1",
-        "browserstack-local": "^1.5.5"
+        "browserstack-local": "^1.5.5",
+        "browserstack-node-sdk": "^1.52.0"
     },
     "sideEffects": false
 }
