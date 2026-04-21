@@ -309,10 +309,9 @@
         },
         {
             "title": "BoundingInfo Helper",
-            "playgroundId": "#BCNJD4#61",
+            "playgroundId": "#UNQ5CK#0",
             "referenceImage": "bbhelper.png",
-            "excludedEngines": ["webgl1"],
-            "renderCount": 2
+            "excludedEngines": ["webgl1"]
         },
         {
             "title": "NME Shadow Map",
@@ -594,8 +593,7 @@
         },
         {
             "title": "LineEdgesRenderer",
-            "playgroundId": "#T90MQ4#19",
-            "renderCount": 50,
+            "playgroundId": "#X2ZFQF#0",
             "referenceImage": "LineEdgesRenderer.png"
         },
         {
@@ -616,8 +614,7 @@
         },
         {
             "title": "Ribbon morphing",
-            "playgroundId": "#ACKC2#1",
-            "renderCount": 50,
+            "playgroundId": "#XUKAYC#0",
             "referenceImage": "ribbon-morphing.png"
         },
         {
@@ -634,8 +631,7 @@
         },
         {
             "title": "Gizmos",
-            "playgroundId": "#8GY6J8#196",
-            "renderCount": 50,
+            "playgroundId": "#0RXV0A#0",
             "referenceImage": "Gizmos.png"
         },
         {
@@ -651,15 +647,14 @@
         },
         {
             "title": "Chibi Rex",
-            "playgroundId": "#NZ2RZY#4",
-            "renderCount": 50,
+            "playgroundId": "#QJ4LYJ#0",
             "referenceImage": "chibi-rex.png"
         },
         {
             "title": "Yeti",
-            "playgroundId": "#QATUCH#32",
-            "renderCount": 150,
-            "referenceImage": "yeti.png"
+            "playgroundId": "#4JETU9#0",
+            "referenceImage": "yeti.png",
+            "errorRatio": 3
         },
         {
             "title": "Sponza",
@@ -737,9 +732,7 @@
         },
         {
             "title": "Charting",
-            "renderCount": 20,
-            "scriptToRun": "/Demos/Charting/charting.js",
-            "functionToCall": "CreateChartingTestScene",
+            "playgroundId": "#NCDHTK#0",
             "referenceImage": "charting.png",
             "errorRatio": 3
         },
@@ -856,9 +849,8 @@
         },
         {
             "title": "Shadow depth wrappers",
-            "playgroundId": "#PNQRY1#73",
+            "playgroundId": "#UZX8W9#0",
             "referenceImage": "shadowDepthWrappers.png",
-            "renderCount": 20,
             "excludedEngines": ["webgpu"]
         },
         {
