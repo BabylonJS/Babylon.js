@@ -33,15 +33,11 @@ export const OverrideCaptureServiceDefinition: ServiceDefinition<[], [ISceneCont
     consumes: [SceneContextIdentity, PropertiesServiceIdentity],
     factory: (sceneContext, propertiesService) => {
         const scene = sceneContext.currentScene;
-        // eslint-disable-next-line no-console
-        console.log("[OverrideCapture] factory called, scene:", !!scene);
         if (!scene) {
             return undefined;
         }
 
         const sam = SmartAssetManager.GetFromScene(scene);
-        // eslint-disable-next-line no-console
-        console.log("[OverrideCapture] SAM from scene:", !!sam, "metadata keys:", scene.metadata ? Object.keys(scene.metadata) : "none");
         if (!sam) {
             return undefined;
         }
@@ -110,16 +106,10 @@ export const OverrideCaptureServiceDefinition: ServiceDefinition<[], [ISceneCont
         const observer = propertiesService.onPropertyChanged.add((changeInfo) => {
             const { entity, propertyKey, newValue } = changeInfo;
 
-            // eslint-disable-next-line no-console
-            console.log("[OverrideCapture] change:", { entityType: (entity as any)?.getClassName?.() ?? typeof entity, propertyKey, newValue });
-
             let key = _findKeyForEntity(sam, entity, scene);
             let targetType = key !== null ? _classifyEntity(entity, scene) : null;
             let targetName: string;
             let propertyPath = String(propertyKey);
-
-            // eslint-disable-next-line no-console
-            console.log("[OverrideCapture] direct lookup:", { key, targetType });
 
             if (key !== null && targetType !== null) {
                 // Direct entity (scene, mesh, material, etc.)
@@ -127,8 +117,6 @@ export const OverrideCaptureServiceDefinition: ServiceDefinition<[], [ISceneCont
             } else {
                 // Sub-object: check if this is a property of a known parent
                 const parentInfo = _findParentEntity(entity, scene, sam);
-                // eslint-disable-next-line no-console
-                console.log("[OverrideCapture] parent lookup:", parentInfo);
                 if (!parentInfo) {
                     return;
                 }
@@ -139,8 +127,6 @@ export const OverrideCaptureServiceDefinition: ServiceDefinition<[], [ISceneCont
             }
 
             const serializedValue = _serializeValue(newValue, scene, sam);
-            // eslint-disable-next-line no-console
-            console.log("[OverrideCapture] serialized:", { key, targetType, targetName, propertyPath, serializedValue });
             if (serializedValue === undefined) {
                 return;
             }
