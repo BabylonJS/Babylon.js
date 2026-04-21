@@ -1,6 +1,6 @@
 {
     "name": "babylonjs-gui-editor",
-    "version": "9.3.2",
+    "version": "9.3.3",
     "main": "babylon.guiEditor.js",
     "types": "babylon.guiEditor.module.d.ts",
     "files": [
@@ -14,8 +14,8 @@
         "clean": "rimraf dist && rimraf babylon*.* -g"
     },
     "dependencies": {
-        "babylonjs": "9.3.2",
-        "babylonjs-gui": "9.3.2"
+        "babylonjs": "9.3.3",
+        "babylonjs-gui": "9.3.3"
     },
     "devDependencies": {
         "@dev/build-tools": "1.0.0",
