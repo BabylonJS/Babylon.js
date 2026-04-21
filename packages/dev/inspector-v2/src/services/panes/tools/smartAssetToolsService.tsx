@@ -6,8 +6,9 @@ import { OverrideManager } from "core/SmartAssets/overrideManager";
 import { serializeProject, loadProjectAsync } from "core/SmartAssets/projectSerializer";
 import { Tools } from "core/Misc/tools";
 
-import { type ServiceDefinition } from "../../../modularity/serviceDefinition";
+import { type ServiceDefinition } from "shared-ui-components/modularTool/modularity/serviceDefinition";
 import { type IToolsService, ToolsServiceIdentity } from "../toolsService";
+import { type ISceneContext, SceneContextIdentity } from "../../sceneContext";
 
 import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
 import { ArrowDownloadRegular, ArrowUploadRegular, DocumentTextRegular } from "@fluentui/react-icons";
@@ -17,10 +18,10 @@ import { ArrowDownloadRegular, ArrowUploadRegular, DocumentTextRegular } from "@
  * SmartAsset + Override system. Only shows when a SmartAssetManager is
  * present on the scene.
  */
-export const SmartAssetToolsServiceDefinition: ServiceDefinition<[], [IToolsService]> = {
+export const SmartAssetToolsServiceDefinition: ServiceDefinition<[], [IToolsService, ISceneContext]> = {
     friendlyName: "Smart Asset Tools",
-    consumes: [ToolsServiceIdentity],
-    factory: (toolsService) => {
+    consumes: [ToolsServiceIdentity, SceneContextIdentity],
+    factory: (toolsService, sceneContext) => {
         const contentRegistrations: IDisposable[] = [];
 
         contentRegistrations.push(
@@ -31,9 +32,42 @@ export const SmartAssetToolsServiceDefinition: ServiceDefinition<[], [IToolsServ
             })
         );
 
+        // Eagerly install the onAssetNotFound handler on any SmartAssetManager
+        // already present on the current scene.
+        const _installHandlerOnScene = (scene: Scene | null) => {
+            if (!scene) {
+                return;
+            }
+            const sam = SmartAssetManager.GetFromScene(scene);
+            if (sam && !sam.onAssetNotFound) {
+                sam.onAssetNotFound = _inspectorAssetNotFoundHandler;
+            }
+        };
+        _installHandlerOnScene(sceneContext.currentScene);
+
+        // Also install the handler on any SmartAssetManager created in the future
+        // (e.g. by user code after Inspector initializes).
+        const previousOnInstanceCreated = SmartAssetManager.OnInstanceCreated;
+        SmartAssetManager.OnInstanceCreated = (manager) => {
+            previousOnInstanceCreated?.(manager);
+            if (!manager.onAssetNotFound) {
+                manager.onAssetNotFound = _inspectorAssetNotFoundHandler;
+            }
+        };
+
+        // Watch for scene changes to cover scene reloads.
+        const sceneObserver = sceneContext.currentSceneObservable.add((scene) => {
+            _installHandlerOnScene(scene);
+        });
+
         return {
             dispose: () => {
                 contentRegistrations.forEach((r) => r.dispose());
+                sceneObserver.remove();
+                // Restore previous hook only if ours is still installed
+                if (SmartAssetManager.OnInstanceCreated !== null) {
+                    SmartAssetManager.OnInstanceCreated = previousOnInstanceCreated;
+                }
             },
         };
     },

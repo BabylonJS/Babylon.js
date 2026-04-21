@@ -11,7 +11,6 @@ import { type InspectableToken } from "inspector/inspectable";
 import { type ModularBridgeToken } from "inspector/index";
 
 import { Engine, EngineStore, WebGPUEngine, LastCreatedAudioEngine, Logger, type Nullable, type Scene, type ThinEngine } from "@dev/core";
-import { SmartAssetManager } from "@dev/core";
 
 import { MakePlaygroundCommandServiceDefinition } from "../tools/playgroundCommandService";
 import "../scss/rendering.scss";
@@ -190,34 +189,6 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
             message: message,
         });
         this._finishRun();
-    }
-
-    /**
-     * Installs a static creation hook on SmartAssetManager so that any instance
-     * created during user code execution automatically gets a Playground-specific
-     * onAssetNotFound handler that shows a file picker dialog.
-     */
-    private _installSmartAssetStaticHook() {
-        SmartAssetManager.OnInstanceCreated = (manager) => {
-            if (!manager.onAssetNotFound) {
-                manager.onAssetNotFound = (key: string, expectedUrl: string): Promise<string | File | null> => {
-                    return new Promise<string | File | null>((resolve) => {
-                        this.props.globalState.onAssetPromptRequiredObservable.notifyObservers({
-                            key,
-                            expectedUrl,
-                            resolve,
-                        });
-                    });
-                };
-            }
-        };
-    }
-
-    /**
-     * Removes the static creation hook.
-     */
-    private _removeSmartAssetStaticHook() {
-        SmartAssetManager.OnInstanceCreated = null;
     }
 
     private _failRun(error: unknown, fallbackMessage: string) {
@@ -476,10 +447,6 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
             let sceneResult: Scene | null = null;
             let createdEngine: ThinEngine | null = null;
 
-            // Install SmartAssetManager hook BEFORE user code runs so onAssetNotFound
-            // is available during createScene execution
-            this._installSmartAssetStaticHook();
-
             try {
                 [sceneResult, createdEngine] = await this._withTimeout(
                     runner.run(createEngineAsync, canvas),
@@ -488,7 +455,6 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
                 );
                 this._engine = createdEngine as Engine;
             } catch (err) {
-                this._removeSmartAssetStaticHook();
                 this._failRun(err, "The playground timed out while running the scene.");
                 return;
             }

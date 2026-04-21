@@ -11,6 +11,7 @@ import { FileToolsOptions } from "../Misc/fileTools";
 import { type ISmartAssetProvenance } from "./smartAssetProvenance";
 import { type ISmartAssetLoadedEvent, type ISmartAssetUrlChangedEvent, type ISmartAssetErrorEvent, type ISmartAssetUnloadedEvent } from "./smartAssetEvents";
 import { type ISerializedSmartAssetMap, serializeSmartAssetMap, deserializeSmartAssetMap, resolveAssetUrl, readJsonSource } from "./smartAssetSerializer";
+import { RegisterClass } from "../Misc/typeStore";
 
 const SMART_ASSET_MANAGER_KEY = Symbol.for("babylonjs:smartAssetManager");
 const ASSET_PROTOCOL = "asset://";
@@ -685,3 +686,5 @@ const _TEXTURE_EXTENSIONS = new Set([".png", ".jpg", ".jpeg", ".bmp", ".tga", ".
 function _isTextureExtension(url: string): boolean {
     return _TEXTURE_EXTENSIONS.has(_getExtension(url).toLowerCase());
 }
+
+RegisterClass("BABYLON.SmartAssetManager", SmartAssetManager);

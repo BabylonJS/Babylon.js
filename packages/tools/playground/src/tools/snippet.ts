@@ -40,19 +40,6 @@ export function GenerateV2Manifest(globalState: GlobalState): V2Manifest {
     const entry = globalState.entryFilePath || (globalState.language === "JS" ? "index.js" : "index.ts");
     const files = Object.keys(globalState.files || {}).length ? { ...globalState.files } : { [entry]: globalState.currentCode || "" };
 
-    // Serialize smart asset table if present on the scene
-    const scene = (typeof window !== "undefined" ? (window as any).scene : null) as any;
-    const SMART_ASSET_MANAGER_KEY = Symbol.for("babylonjs:smartAssetManager");
-    const manager = scene?.metadata?.[SMART_ASSET_MANAGER_KEY];
-    if (manager && typeof manager.serializeAssetMap === "function") {
-        try {
-            const assetMap = manager.serializeAssetMap();
-            files["_smartAssets.json"] = JSON.stringify(assetMap, null, 2);
-        } catch {
-            // Silently skip if serialization fails
-        }
-    }
-
     return {
         v: ManifestVersion,
         language: (globalState.language === "JS" ? "JS" : "TS") as "JS" | "TS",
