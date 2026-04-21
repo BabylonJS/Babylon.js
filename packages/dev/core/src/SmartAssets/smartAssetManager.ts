@@ -136,6 +136,13 @@ export class SmartAssetManager {
         if (this._containers.has(key)) {
             await this.unloadAsync(key);
         }
+        // Dispose standalone textures tracked under this key
+        for (const tex of [...this._scene.textures]) {
+            if (this._objectToKeyMap.get(tex) === key) {
+                this._objectToKeyMap.delete(tex);
+                tex.dispose();
+            }
+        }
         this._urls.delete(key);
         this._provenance.delete(key);
     }
@@ -281,16 +288,26 @@ export class SmartAssetManager {
             throw new Error(`SmartAssetManager: Key "${key}" is not registered. Provide a URL to auto-register.`);
         }
 
-        const ext = _getExtension(resolvedUrl).toLowerCase();
-        const isCube = ext === ".env" || ext === ".hdr" || ext === ".dds";
+        const texture = await this._createTexture(resolvedUrl);
 
-        let texture: BaseTexture;
-        if (isCube) {
-            const { CubeTexture } = await import("../Materials/Textures/cubeTexture");
-            texture = CubeTexture.CreateFromPrefilteredData(resolvedUrl, this._scene);
-        } else {
-            const { Texture } = await import("../Materials/Textures/texture");
-            texture = new Texture(resolvedUrl, this._scene);
+        // Wait for the texture to load or fail
+        const loaded = await this._waitForTextureLoad(texture);
+        if (!loaded && this.onAssetNotFound) {
+            // Texture failed to load — ask the user to locate it
+            texture.dispose();
+            const resolution = await this.onAssetNotFound(key, resolvedUrl);
+            if (resolution !== null && resolution !== undefined) {
+                let newUrl: string;
+                if (typeof resolution === "string") {
+                    newUrl = resolution;
+                } else {
+                    newUrl = URL.createObjectURL(resolution);
+                }
+                this.register(key, newUrl);
+                const retryTexture = await this._createTexture(newUrl);
+                this._objectToKeyMap.set(retryTexture, key);
+                return retryTexture;
+            }
         }
 
         this._objectToKeyMap.set(texture, key);
@@ -431,6 +448,49 @@ export class SmartAssetManager {
     }
 
     // ── Private ──
+
+    private async _createTexture(url: string): Promise<BaseTexture> {
+        const ext = _getExtension(url).toLowerCase();
+        const isCube = ext === ".env" || ext === ".hdr" || ext === ".dds";
+
+        if (isCube) {
+            const { CubeTexture } = await import("../Materials/Textures/cubeTexture");
+            return CubeTexture.CreateFromPrefilteredData(url, this._scene);
+        } else {
+            const { Texture } = await import("../Materials/Textures/texture");
+            return new Texture(url, this._scene);
+        }
+    }
+
+    private _waitForTextureLoad(texture: BaseTexture): Promise<boolean> {
+        return new Promise<boolean>((resolve) => {
+            if (texture.isReady()) {
+                resolve(true);
+                return;
+            }
+            if (texture.loadingError) {
+                resolve(false);
+                return;
+            }
+            let settled = false;
+            const settle = (result: boolean) => {
+                if (!settled) {
+                    settled = true;
+                    clearTimeout(timeout);
+                    clearInterval(poll);
+                    resolve(result);
+                }
+            };
+            const timeout = setTimeout(() => settle(!texture.loadingError), 5000);
+            texture.onLoadObservable.addOnce(() => settle(true));
+            // Poll for loadingError since there's no instance-level error observable
+            const poll = setInterval(() => {
+                if (texture.loadingError) {
+                    settle(false);
+                }
+            }, 100);
+        });
+    }
 
     private async _loadSceneFile(key: string, url: string): Promise<AssetContainer> {
         try {

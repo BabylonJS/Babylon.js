@@ -47,7 +47,7 @@ module.exports = (env) => {
             },
             {
                 static: ["public"],
-                port: process.env.TOOLS_PORT || 1338,
+                port: process.env.TOOLS_PORT || 1448,
                 showBuildProgress: true,
             }
         ),

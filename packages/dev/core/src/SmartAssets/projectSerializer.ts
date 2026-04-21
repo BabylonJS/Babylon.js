@@ -3,6 +3,7 @@ import { type OverrideManager } from "./overrideManager";
 import { type ISerializedSmartAssetMap, serializeSmartAssetMap, deserializeSmartAssetMap, resolveAssetUrl, readJsonSource } from "./smartAssetSerializer";
 import { type ISerializedOverrideEntry } from "./overrideEntry";
 import { type Scene } from "../scene";
+import { Logger } from "../Misc/logger";
 
 /**
  * A serialized inline object — a scene entity (material, light, camera, etc.)
@@ -135,11 +136,24 @@ export async function loadProjectAsync(
     const raw = await readJsonSource(source);
     const doc = deserializeProject(raw);
 
+    const scene = smartAssetManager.scene;
+
     // Clear existing state so we load fresh from the project file
     for (const [existingKey] of smartAssetManager.getAll()) {
         await smartAssetManager.remove(existingKey);
     }
     overrideManager.clearOverrides();
+
+    // Clear asset-loaded meshes and animation groups.
+    // Preserve cameras, lights, environment texture, and materials/textures —
+    // materials are recreated by inlineObjects and SAM overrides handle
+    // texture reassignment. Disposing materials can cascade-dispose textures.
+    for (const mesh of [...scene.meshes]) {
+        mesh.dispose();
+    }
+    for (const ag of [...scene.animationGroups]) {
+        ag.dispose();
+    }
 
     // Register and load all assets
     for (const [key, entry] of Object.entries(doc.assets)) {
@@ -149,10 +163,18 @@ export async function loadProjectAsync(
 
     await smartAssetManager.loadAllAsync();
 
+    // Log tracked textures for debugging
+    for (const tex of smartAssetManager.scene.textures) {
+        const trackedKey = smartAssetManager.findKeyForObject(tex);
+        Logger.Log(`loadProjectAsync: texture "${tex.name}" tracked as key="${trackedKey ?? "UNTRACKED"}" ready=${tex.isReady()} error=${tex.loadingError}`);
+    }
+
     // Recreate in-tool-created objects
     if (doc.inlineObjects) {
         await _recreateInlineObjects(doc.inlineObjects, smartAssetManager.scene, resolvedRootUrl);
     }
+
+    Logger.Log(`loadProjectAsync: applying ${doc.overrides.length} overrides`);
 
     // Apply overrides
     if (doc.overrides.length > 0) {

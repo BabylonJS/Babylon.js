@@ -209,6 +209,7 @@ export class OverrideManager {
     private _applyOverride(entry: IOverrideEntry): void {
         const target = this._resolveTarget(entry.key, entry.targetType, entry.targetName);
         if (!target) {
+            Logger.Warn(`OverrideManager._applyOverride: target not found for key="${entry.key}" type="${entry.targetType}" name="${entry.targetName}" prop="${entry.propertyPath}"`);
             return; // Target not loaded yet — override will be applied on next load
         }
 
@@ -223,6 +224,7 @@ export class OverrideManager {
 
         // Resolve and apply the value
         const resolvedValue = this._resolveValue(entry.value, entry.propertyPath, target);
+        Logger.Log(`OverrideManager._applyOverride: key="${entry.key}" target="${entry.targetName}" prop="${entry.propertyPath}" value=${entry.value} resolved=${resolvedValue != null ? "found" : "UNDEFINED"}`);
         _setNestedProperty(target, entry.propertyPath, resolvedValue);
     }
 
@@ -234,6 +236,11 @@ export class OverrideManager {
 
         if (!this._smartAssetManager) {
             return null;
+        }
+
+        // Empty key = in-tool-created object (not from a smart asset) — look up by name directly
+        if (key === "") {
+            return this._findObjectByName(targetType, targetName, key);
         }
 
         // Get the container for this key by querying provenance
@@ -332,10 +339,13 @@ export class OverrideManager {
         // First try: find a texture tracked by the smart asset manager
         if (this._smartAssetManager) {
             for (const tex of this._scene.textures) {
-                if (this._smartAssetManager.findKeyForObject(tex) === key) {
+                const trackedKey = this._smartAssetManager.findKeyForObject(tex);
+                if (trackedKey === key) {
+                    Logger.Log(`OverrideManager._resolveTextureReference: found "${key}" via SAM tracking (name="${tex.name}")`);
                     return tex;
                 }
             }
+            Logger.Warn(`OverrideManager._resolveTextureReference: no SAM-tracked texture for "${key}". Scene has ${this._scene.textures.length} textures. Tracked keys: ${this._scene.textures.map((t) => this._smartAssetManager!.findKeyForObject(t) ?? "untracked").join(", ")}`);
         }
         // Fallback: find by name in scene textures
         const tex = this._scene.textures.find((t) => t.name === key);
@@ -404,11 +414,15 @@ function _setNestedProperty(obj: object, path: string, value: unknown): void {
     const lastPart = parts[parts.length - 1];
     const existing = (current as Record<string, unknown>)[lastPart];
 
-    // If the existing value has copyFrom and the new value is an object, use copyFrom
-    // For Babylon math types (Vector3, Color3, etc.), set individual components
-    // since copyFrom reads private backing fields (_x, _y, etc.)
+    // For Babylon math types (Vector3, Color3, etc.), use copyFromFloats to set
+    // individual components since direct assignment of a plain {x,y,z} object
+    // would replace the live math instance with an inert plain object.
+    // For scene entities (textures, materials), do a direct property replacement.
     if (existing && typeof existing === "object" && typeof value === "object" && value !== null) {
-        if ("copyFromFloats" in (existing as object) && typeof (existing as any).copyFromFloats === "function") {
+        const isValueSceneEntity =
+            typeof (value as any).getClassName === "function" &&
+            /Texture|Material|Light|Camera|Mesh/i.test((value as any).getClassName());
+        if (!isValueSceneEntity && "copyFromFloats" in (existing as object) && typeof (existing as any).copyFromFloats === "function") {
             const v = value as Record<string, number>;
             if ("r" in v) {
                 (existing as any).copyFromFloats(v.r, v.g, v.b, v.a);
@@ -419,8 +433,6 @@ function _setNestedProperty(obj: object, path: string, value: unknown): void {
             } else {
                 (existing as any).copyFromFloats(v.x, v.y);
             }
-        } else if ("copyFrom" in (existing as object) && typeof (existing as any).copyFrom === "function") {
-            (existing as any).copyFrom(value);
         } else {
             (current as Record<string, unknown>)[lastPart] = value;
         }
@@ -430,7 +442,12 @@ function _setNestedProperty(obj: object, path: string, value: unknown): void {
 }
 
 /**
- * Creates a shallow clone of a value for original-value snapshots.
+ * Snapshots a value for original-value tracking.
+ *
+ * Scene entities (textures, materials, meshes, etc.) are stored by reference
+ * because cloning them would register unwanted duplicates in the scene.
+ * Plain math types (Vector3, Color3, etc.) are cloned so mutations to the
+ * live object don't corrupt the saved original.
  */
 function _cloneValue(value: unknown): unknown {
     if (value === null || value === undefined) {
@@ -439,7 +456,12 @@ function _cloneValue(value: unknown): unknown {
     if (typeof value !== "object") {
         return value;
     }
-    // Clone Color3/Color4/Vector3-like objects
+    // Scene entities (textures, materials, meshes, etc.) — store the reference,
+    // never clone, because cloning registers duplicates in the scene.
+    if (typeof (value as any).getScene === "function") {
+        return value;
+    }
+    // Clone plain math types (Color3, Vector3, Quaternion, etc.)
     if ("clone" in (value as object) && typeof (value as any).clone === "function") {
         return (value as any).clone();
     }

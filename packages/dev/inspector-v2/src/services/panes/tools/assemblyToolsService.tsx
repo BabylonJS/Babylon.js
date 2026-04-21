@@ -9,8 +9,11 @@ import { LoadAssetContainerAsync } from "core/Loading/sceneLoader";
 
 import { type ServiceDefinition } from "../../../modularity/serviceDefinition";
 import { type IToolsService, ToolsServiceIdentity } from "../toolsService";
+import { type ISelectionService, SelectionServiceIdentity } from "../../selectionService";
 
-import { useObservableState } from "../../../hooks/observableHooks";
+import { useObservableState } from "shared-ui-components/modularTool/hooks/observableHooks";
+import { LinkToEntity } from "../../../components/properties/linkToEntityPropertyLine";
+import { Link } from "shared-ui-components/fluent/primitives/link";
 
 import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
 import { makeStyles, tokens } from "@fluentui/react-components";
@@ -21,17 +24,17 @@ import { AddRegular, DeleteRegular, ArrowSyncRegular, LinkRegular, CubeRegular, 
  * scenes from smart assets. Allows adding/removing/swapping assets, assigning
  * materials to meshes, and viewing the override summary — all without code.
  */
-export const AssemblyToolsServiceDefinition: ServiceDefinition<[], [IToolsService]> = {
+export const AssemblyToolsServiceDefinition: ServiceDefinition<[], [IToolsService, ISelectionService]> = {
     friendlyName: "Assembly Tools",
-    consumes: [ToolsServiceIdentity],
-    factory: (toolsService) => {
+    consumes: [ToolsServiceIdentity, SelectionServiceIdentity],
+    factory: (toolsService, selectionService) => {
         const contentRegistrations: IDisposable[] = [];
 
         contentRegistrations.push(
             toolsService.addSectionContent({
                 key: "Smart Assets",
                 section: "Smart Assets",
-                component: (props: { context: Scene }) => <SmartAssetList scene={props.context} />,
+                component: (props: { context: Scene }) => <SmartAssetList scene={props.context} selectionService={selectionService} />,
             })
         );
 
@@ -155,11 +158,12 @@ const useStyles = makeStyles({
 
 // ── Smart Asset List ──
 
-const SmartAssetList: FunctionComponent<{ scene: Scene }> = (props: { scene: Scene }) => {
-    const { scene } = props;
+const SmartAssetList: FunctionComponent<{ scene: Scene; selectionService: ISelectionService }> = (props) => {
+    const { scene, selectionService } = props;
     const styles = useStyles();
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [status, setStatus] = useState("");
+    const [, forceUpdate] = useState(0);
 
     // Find the SAM, with cross-module fallback
     const sam = _findSam(scene);
@@ -194,37 +198,41 @@ const SmartAssetList: FunctionComponent<{ scene: Scene }> = (props: { scene: Sce
 
             const { sam } = _getOrCreateManagers(scene);
 
-            // Suppress the missing-asset prompt during add — we already have the files
-            const savedHandler = sam.onAssetNotFound;
-            sam.onAssetNotFound = null;
-
             for (let i = 0; i < files.length; i++) {
                 const file = files[i];
                 const key = file.name.replace(/\.[^/.]+$/, "");
+                const ext = _getExtension(file.name).toLowerCase();
+                const isTexture = [".png", ".jpg", ".jpeg", ".env", ".hdr", ".dds", ".ktx", ".ktx2"].includes(ext);
 
-                // Load directly from the picked file via blob URL
                 const blobUrl = URL.createObjectURL(file);
-                sam.register(key, file.name);
+                sam.register(key, blobUrl);
+
                 try {
-                    // eslint-disable-next-line no-await-in-loop
-                    const container = await LoadAssetContainerAsync(blobUrl, scene, {
-                        pluginExtension: _getExtension(file.name) || undefined,
-                    });
-                    container.addAllToScene();
-                    // Notify observers so the asset list re-renders
-                    sam.onAssetLoadedObservable.notifyObservers({ key, container });
+                    if (isTexture) {
+                        // eslint-disable-next-line no-await-in-loop
+                        await sam.loadTextureAsync(key);
+                    } else {
+                        // Temporarily set onAssetNotFound to return the File so SAM's
+                        // retry path can use the extension hint and build provenance.
+                        const savedHandler = sam.onAssetNotFound;
+                        sam.onAssetNotFound = async () => file;
+                        try {
+                            // eslint-disable-next-line no-await-in-loop
+                            await sam.loadAsync(key);
+                        } finally {
+                            sam.onAssetNotFound = savedHandler;
+                        }
+                    }
                     setStatus(`Added: ${key}`);
                 } catch {
                     setStatus(`Failed to load: ${key}`);
                 }
             }
 
-            // Restore the handler
-            sam.onAssetNotFound = savedHandler;
-
             if (fileInputRef.current) {
                 fileInputRef.current.value = "";
             }
+            forceUpdate((n) => n + 1);
         },
         [scene]
     );
@@ -251,26 +259,73 @@ const SmartAssetList: FunctionComponent<{ scene: Scene }> = (props: { scene: Sce
         (key: string) => {
             const input = document.createElement("input");
             input.type = "file";
-            input.accept = ".glb,.gltf,.babylon,.obj";
+            input.accept = ".glb,.gltf,.babylon,.obj,.png,.jpg,.env,.hdr";
             input.onchange = async () => {
                 const file = input.files?.[0];
                 if (!file) {
                     return;
                 }
-                const { sam } = _getOrCreateManagers(scene);
-                // Register filename, load via blob URL
-                sam.register(key, file.name);
+                const { sam, overrides } = _getOrCreateManagers(scene);
+                const oldUrl = sam.resolve(key) ?? "";
                 const blobUrl = URL.createObjectURL(file);
-                try {
-                    await sam.reloadAsync(key);
-                } catch {
-                    // Reload will fail on the filename — load directly via blob
-                    const container = await LoadAssetContainerAsync(blobUrl, scene, {
-                        pluginExtension: _getExtension(file.name) || undefined,
-                    });
-                    container.addAllToScene();
+                const ext = _getExtension(file.name).toLowerCase();
+                const isTexture = [".png", ".jpg", ".jpeg", ".env", ".hdr", ".dds", ".ktx", ".ktx2"].includes(ext);
+
+                if (isTexture) {
+                    // Find the old texture tracked by this key
+                    let oldTex: import("core/Materials/Textures/baseTexture").BaseTexture | undefined;
+                    for (const tex of scene.textures) {
+                        if (sam.findKeyForObject(tex) === key) {
+                            oldTex = tex;
+                            break;
+                        }
+                    }
+
+                    // Load the new texture via SAM so it's tracked for override resolution.
+                    // Temporarily swap URL to blob for loading, then restore filename for serialization.
+                    sam.register(key, blobUrl);
+                    const newTex = await sam.loadTextureAsync(key);
+                    sam.register(key, file.name);
+
+                    // Replace references on all materials that used the old texture
+                    if (oldTex) {
+                        const texSlots = ["albedoTexture", "bumpTexture", "metallicTexture", "emissiveTexture", "ambientTexture", "reflectivityTexture", "opacityTexture"] as const;
+                        for (const mat of scene.materials) {
+                            for (const slot of texSlots) {
+                                if ((mat as any)[slot] === oldTex) {
+                                    (mat as any)[slot] = newTex;
+                                }
+                            }
+                        }
+                        oldTex.dispose();
+                    }
+
+                    // Re-apply overrides that reference this texture key
+                    overrides.applyAllOverrides();
+                } else {
+                    // Scene file swap (GLB, glTF, etc.)
+                    await sam.unloadAsync(key);
+                    sam.register(key, file.name);
+
+                    // Use onAssetNotFound to provide the File so SAM builds provenance
+                    const savedHandler = sam.onAssetNotFound;
+                    sam.onAssetNotFound = async () => file;
+                    try {
+                        await sam.loadAsync(key);
+                    } finally {
+                        sam.onAssetNotFound = savedHandler;
+                    }
+
+                    // Re-apply overrides for the reloaded asset
+                    overrides.applyOverridesForKey(key);
                 }
+
+                // Notify after everything is loaded and tracked so the UI re-renders
+                // with the correct provEntity links
+                sam.onUrlChangedObservable.notifyObservers({ key, oldUrl, newUrl: file.name });
+
                 setStatus(`Swapped: ${key}`);
+                forceUpdate((n) => n + 1);
             };
             input.click();
         },
@@ -280,20 +335,34 @@ const SmartAssetList: FunctionComponent<{ scene: Scene }> = (props: { scene: Sce
     return (
         <>
             {assets.length === 0 && <div className={styles.emptyMessage}>No smart assets registered. Add assets to begin.</div>}
-            {assets.map((a) => (
-                <div key={a.key} className={styles.assetRow}>
-                    <CubeRegular fontSize={14} />
-                    <span className={styles.assetKey}>{a.key}</span>
-                    <span className={styles.assetUrl} title={a.url}>
-                        {_shortenUrl(a.url)}
-                    </span>
-                    <span className={styles.assetActions}>
-                        <LinkRegular fontSize={14} className={styles.iconButton} title="Swap URL" onClick={() => onSwapAsset(a.key)} />
-                        <ArrowSyncRegular fontSize={14} className={styles.iconButton} title="Reload" onClick={async () => await onReloadAsset(a.key)} />
-                        <DeleteRegular fontSize={14} className={styles.iconButton} title="Remove" onClick={async () => await onRemoveAsset(a.key)} />
-                    </span>
-                </div>
-            ))}
+            {assets.map((a) => {
+                // Find the first mesh produced by this key for click-to-select
+                const provEntity = sam ? _findFirstEntityForKey(a.key, scene, sam) : null;
+                if (!provEntity && sam) {
+                    // eslint-disable-next-line no-console
+                    console.log(`[SmartAssetList] provEntity null for "${a.key}". scene.textures=${scene.textures.length}, tracked=${scene.textures.map((t) => sam!.findKeyForObject(t) ?? "none").join(",")}`);
+                }
+                return (
+                    <div key={a.key} className={styles.assetRow}>
+                        <CubeRegular fontSize={14} />
+                        {provEntity ? (
+                            <span className={styles.assetKey}>
+                                <Link value={a.key} onLink={() => (selectionService.selectedEntity = provEntity)} />
+                            </span>
+                        ) : (
+                            <span className={styles.assetKey}>{a.key}</span>
+                        )}
+                        <span className={styles.assetUrl} title={a.url}>
+                            {_shortenUrl(a.url)}
+                        </span>
+                        <span className={styles.assetActions}>
+                            <LinkRegular fontSize={14} className={styles.iconButton} title="Swap URL" onClick={() => onSwapAsset(a.key)} />
+                            <ArrowSyncRegular fontSize={14} className={styles.iconButton} title="Reload" onClick={async () => await onReloadAsset(a.key)} />
+                            <DeleteRegular fontSize={14} className={styles.iconButton} title="Remove" onClick={async () => await onRemoveAsset(a.key)} />
+                        </span>
+                    </div>
+                );
+            })}
             <ButtonLine label="Add Asset" icon={AddRegular} onClick={onAddAsset} />
             <input ref={fileInputRef} type="file" accept=".glb,.gltf,.babylon,.obj,.png,.jpg,.env,.hdr" multiple style={{ display: "none" }} onChange={onFileSelected} />
             {status && <div className={styles.statusMessage}>{status}</div>}
@@ -455,6 +524,58 @@ function _findSam(scene: Scene): SmartAssetManager | null {
         sam = (scene.metadata["babylonjs:smartAssetManager:str"] as SmartAssetManager | undefined) ?? null;
     }
     return sam ?? null;
+}
+
+/**
+ * Finds the first scene entity produced by a smart asset key, for click-to-select.
+ * Prefers non-root meshes, then materials, then textures.
+ */
+// eslint-disable-next-line @typescript-eslint/naming-convention
+function _findFirstEntityForKey(key: string, scene: Scene, sam: SmartAssetManager): { name: string } | null {
+    const prov = sam.getProvenance(key);
+    if (prov) {
+        for (const meshName of prov.meshNames) {
+            if (meshName === "__root__") {
+                continue;
+            }
+            const mesh = scene.meshes.find((m) => m.name === meshName);
+            if (mesh) {
+                return mesh;
+            }
+        }
+        for (const matName of prov.materialNames) {
+            const mat = scene.materials.find((m) => m.name === matName);
+            if (mat) {
+                return mat;
+            }
+        }
+        for (const texName of prov.textureNames) {
+            const tex = scene.textures.find((t) => t.name === texName);
+            if (tex) {
+                return tex;
+            }
+        }
+    }
+
+    // For standalone textures (no provenance), search by key tracking
+    for (const tex of scene.textures) {
+        const trackedKey = sam.findKeyForObject(tex);
+        if (trackedKey === key) {
+            return tex;
+        }
+    }
+
+    // Fallback: if the texture was loaded but _objectToKeyMap lost track
+    // (e.g. after swap), try matching by the registered URL
+    const registeredUrl = sam.resolve(key);
+    if (registeredUrl) {
+        const tex = scene.textures.find((t) => t.name === registeredUrl || t.name === key);
+        if (tex) {
+            return tex;
+        }
+    }
+
+    return null;
 }
 
 /**

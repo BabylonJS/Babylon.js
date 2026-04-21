@@ -146,6 +146,12 @@ export const createScene = async function (engine: Engine, canvas: HTMLCanvasEle
     // ═══════════════════════════════════════════════════════════════
     const overrides = new OverrideManager(scene);
     overrides.linkSmartAssetManager(sam);
+    Object.defineProperty(scene.metadata, "babylonjs:overrideManager", {
+        value: overrides,
+        enumerable: false,
+        configurable: true,
+        writable: true,
+    });
 
     // Override mesh transform
     if (boomboxMesh) {
@@ -258,20 +264,19 @@ export const createScene = async function (engine: Engine, canvas: HTMLCanvasEle
     // ═══════════════════════════════════════════════════════════════
     // Step 8: Swap a texture — verify the material updates
     // ═══════════════════════════════════════════════════════════════
-    const newAlbedoTex = new Texture("https://playground.babylonjs.com/textures/grass.png", scene);
-    await new Promise<void>((resolve) => {
-        if (newAlbedoTex.isReady()) {
-            resolve();
-        } else {
-            newAlbedoTex.onLoadObservable.addOnce(() => resolve());
-        }
-    });
-    customMat.albedoTexture = newAlbedoTex;
-    log("Step 8", `Swapped albedo texture to ${newAlbedoTex.name}`);
-
-    if (customMat.albedoTexture === newAlbedoTex) {
-        pass("Step 8: Texture hot-swap works on in-tool material");
-    }
+    // Step 8 disabled — keep albedo-tex on the material so Inspector
+    // texture swaps are visually apparent.
+    // const newAlbedoTex = new Texture("https://playground.babylonjs.com/textures/grass.png", scene);
+    // await new Promise<void>((resolve) => {
+    //     if (newAlbedoTex.isReady()) {
+    //         resolve();
+    //     } else {
+    //         newAlbedoTex.onLoadObservable.addOnce(() => resolve());
+    //     }
+    // });
+    // customMat.albedoTexture = newAlbedoTex;
+    log("Step 8", "Skipped — albedo-tex stays on material for visual swap testing");
+    pass("Step 8: Skipped (albedo-tex stays active)");
 
     // ═══════════════════════════════════════════════════════════════
     // Step 9: Export to .babylon — verify clean output
