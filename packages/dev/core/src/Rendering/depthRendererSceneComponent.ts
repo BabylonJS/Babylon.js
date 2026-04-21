@@ -6,6 +6,7 @@ import { type Camera } from "../Cameras/camera";
 import { Constants } from "../Engines/constants";
 import { type ISceneComponent, SceneComponentConstants } from "../sceneComponent";
 import { type RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
+import { type AbstractMesh } from "../Meshes/abstractMesh";
 
 declare module "../scene" {
     // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -114,6 +115,7 @@ export class DepthRendererSceneComponent implements ISceneComponent {
             this,
             this._gatherActiveCameraRenderTargets
         );
+        this.scene._isReadyForMeshStage.registerStep(SceneComponentConstants.STEP_ISREADYFORMESH_DEPTHRENDERER, this, this._isReadyForMesh);
     }
 
     /**
@@ -142,6 +144,34 @@ export class DepthRendererSceneComponent implements ISceneComponent {
                 }
             }
         }
+    }
+
+    private _isReadyForMesh(mesh: AbstractMesh, hardwareInstancedRendering: boolean): boolean {
+        if (!this.scene._depthRenderer) {
+            return true;
+        }
+
+        for (const key in this.scene._depthRenderer) {
+            const depthRenderer = this.scene._depthRenderer[key];
+            if (!depthRenderer.enabled) {
+                continue;
+            }
+            if (mesh.subMeshes) {
+                for (let i = 0; i < mesh.subMeshes.length; ++i) {
+                    const subMesh = mesh.subMeshes[i];
+                    const material = subMesh.getMaterial();
+                    // Skip submeshes that the depth renderer would never render
+                    if (!material || material.disableDepthWrite || subMesh.verticesCount === 0) {
+                        continue;
+                    }
+                    if (!depthRenderer.isReady(subMesh, hardwareInstancedRendering)) {
+                        return false;
+                    }
+                }
+            }
+        }
+
+        return true;
     }
 
     private _gatherActiveCameraRenderTargets(renderTargets: SmartArrayNoDuplicate<RenderTargetTexture>): void {

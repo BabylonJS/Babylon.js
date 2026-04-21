@@ -24,7 +24,7 @@ import {
 import { UniqueIdGenerator } from "core/Misc/uniqueIdGenerator";
 import { type ServiceDefinition } from "shared-ui-components/modularTool/modularity/serviceDefinition";
 import { type ISceneContext, SceneContextIdentity } from "../sceneContext";
-import { type IInspectableCommandRegistry, type InspectableCommandDescriptor, InspectableCommandRegistryIdentity } from "./inspectableCommandRegistry";
+import { type IBridgeCommandRegistry, type BridgeCommandDescriptor, BridgeCommandRegistryIdentity } from "shared-ui-components/modularTool/services/cli/bridgeCommandRegistry";
 
 const UniqueIdArg = {
     name: "uniqueId",
@@ -96,7 +96,7 @@ function MinimalSummary(entity: { uniqueId: number; name?: string }): IEntitySum
     };
 }
 
-function MakeQueryCommand<T>(collection: IEntityCollection<T>, sceneContext: ISceneContext): InspectableCommandDescriptor {
+function MakeQueryCommand<T>(collection: IEntityCollection<T>, sceneContext: ISceneContext): BridgeCommandDescriptor {
     return {
         id: collection.id,
         description: collection.description,
@@ -139,9 +139,9 @@ function MakeQueryCommand<T>(collection: IEntityCollection<T>, sceneContext: ISc
  * Service that registers CLI commands for querying scene entities by uniqueId.
  * When uniqueId is omitted, returns a summary list of all entities of that type.
  */
-export const EntityQueryServiceDefinition: ServiceDefinition<[], [IInspectableCommandRegistry, ISceneContext]> = {
+export const EntityQueryServiceDefinition: ServiceDefinition<[], [IBridgeCommandRegistry, ISceneContext]> = {
     friendlyName: "Entity Query Service",
-    consumes: [InspectableCommandRegistryIdentity, SceneContextIdentity],
+    consumes: [BridgeCommandRegistryIdentity, SceneContextIdentity],
     factory: (commandRegistry, sceneContext) => {
         const collections = [
             {

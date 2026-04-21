@@ -2,7 +2,7 @@
 import { fileURLToPath } from "url";
 import { type WebSocket, WebSocketServer } from "./webSocket.js";
 import { LoadConfig } from "./config.js";
-import { type BrowserRequest, type BrowserResponse, type CliRequest, type CliResponse, type SessionInfo } from "./protocol.js";
+import { type BrowserRequest, type BrowserResponse, type CliRequest, type CliResponse, type SessionInfo } from "shared-ui-components/modularTool/services/cli/protocol";
 
 interface ISession extends SessionInfo {
     /** The WebSocket connection for this session. */
@@ -19,6 +19,8 @@ export interface IBridgeConfig {
     cliPort: number;
     /** Timeout in ms for waiting for an initial session on a sessions request. Defaults to 5000. */
     sessionWaitTimeoutMs?: number;
+    /** Timeout in ms for waiting for a session to respond to an info request. Defaults to 5000. */
+    infoTimeoutMs?: number;
 }
 
 /**
@@ -50,6 +52,7 @@ export async function StartBridge(config: IBridgeConfig): Promise<IBridgeHandle>
     }
 
     const sessionWaitTimeout = config.sessionWaitTimeoutMs ?? 5000;
+    const infoTimeout = config.infoTimeoutMs ?? 5000;
 
     async function waitForSession(): Promise<void> {
         if (sessions.size > 0) {
@@ -109,6 +112,11 @@ export async function StartBridge(config: IBridgeConfig): Promise<IBridgeHandle>
 
             switch (message.type) {
                 case "register": {
+                    // If this socket already has a session, remove the old one
+                    // to prevent leaked entries in the sessions map.
+                    if (session) {
+                        sessions.delete(session.id);
+                    }
                     const id = nextSessionId++;
                     session = {
                         id,
@@ -173,13 +181,16 @@ export async function StartBridge(config: IBridgeConfig): Promise<IBridgeHandle>
                         const requestId = generateRequestId();
                         sendBrowserRequest(s, { type: "getInfo", requestId });
                         try {
-                            const raw = await waitForBrowserResponse(requestId, 5000);
+                            const raw = await waitForBrowserResponse(requestId, infoTimeout);
                             const info = JSON.parse(raw);
                             if (info.type === "infoResponse" && typeof info.name === "string") {
                                 updatedNames.set(s.id, info.name);
                             }
                         } catch {
-                            // Keep the existing name if the session doesn't respond.
+                            // Session didn't respond — assume it's dead and remove it.
+                            console.log(`Session ${s.id} did not respond to info request, removing: "${s.name}"`);
+                            sessions.delete(s.id);
+                            s.ws.close();
                         }
                     });
                     await Promise.all(infoPromises);

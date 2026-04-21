@@ -20,6 +20,10 @@ interface IGraphControlsState {
     validationResult: Nullable<IFlowGraphValidationResult>;
     breakpointPaused: boolean;
     timeScale: number;
+    contextList: Array<{ index: number; uniqueId: string; name: string }>;
+    selectedContextIndex: number;
+    editingContextIndex: number | null;
+    editingContextName: string;
 }
 
 /**
@@ -33,6 +37,8 @@ export class GraphControlsComponent extends React.Component<IGraphControlsProps,
     private _validationResultObserver: Nullable<Observer<Nullable<IFlowGraphValidationResult>>> = null;
     private _breakpointHitObserver: Nullable<Observer<IFlowGraphPendingActivation>> = null;
     private _timeScaleObserver: Nullable<Observer<number>> = null;
+    private _contextListObserver: Nullable<Observer<void>> = null;
+    private _selectedContextObserver: Nullable<Observer<number>> = null;
 
     constructor(props: IGraphControlsProps) {
         super(props);
@@ -43,6 +49,10 @@ export class GraphControlsComponent extends React.Component<IGraphControlsProps,
             validationResult: props.globalState.validationResult,
             breakpointPaused: false,
             timeScale: props.globalState.timeScale,
+            contextList: props.globalState.getContextList(),
+            selectedContextIndex: props.globalState.selectedContextIndex,
+            editingContextIndex: null,
+            editingContextName: "",
         };
     }
 
@@ -53,6 +63,7 @@ export class GraphControlsComponent extends React.Component<IGraphControlsProps,
         // globalState is replaced.  Re-subscribe so we track the *new* graph's state.
         this._builtObserver = this.props.globalState.onBuiltObservable.add(() => {
             this._subscribeToFlowGraph();
+            this.setState({ contextList: this.props.globalState.getContextList(), selectedContextIndex: this.props.globalState.selectedContextIndex });
         });
 
         this._debugModeObserver = this.props.globalState.onDebugModeChanged.add((debugMode) => {
@@ -77,6 +88,14 @@ export class GraphControlsComponent extends React.Component<IGraphControlsProps,
         this._timeScaleObserver = this.props.globalState.onTimeScaleChanged.add((timeScale) => {
             this.setState({ timeScale });
         });
+
+        this._contextListObserver = this.props.globalState.onContextListChanged.add(() => {
+            this.setState({ contextList: this.props.globalState.getContextList() });
+        });
+
+        this._selectedContextObserver = this.props.globalState.onSelectedContextChanged.add((index) => {
+            this.setState({ selectedContextIndex: index });
+        });
     }
 
     override componentWillUnmount() {
@@ -94,6 +113,10 @@ export class GraphControlsComponent extends React.Component<IGraphControlsProps,
         this._breakpointHitObserver = null;
         this._timeScaleObserver?.remove();
         this._timeScaleObserver = null;
+        this._contextListObserver?.remove();
+        this._contextListObserver = null;
+        this._selectedContextObserver?.remove();
+        this._selectedContextObserver = null;
     }
 
     /**
@@ -113,9 +136,9 @@ export class GraphControlsComponent extends React.Component<IGraphControlsProps,
         this._stateObserver = flowGraph.onStateChangedObservable.add((newState) => {
             // When the graph stops or is paused externally, clear the breakpoint-paused state
             if (newState === FlowGraphState.Stopped || newState === FlowGraphState.Paused) {
-                this.setState({ graphState: newState, breakpointPaused: false });
+                this.setState({ graphState: newState, breakpointPaused: false, contextList: this.props.globalState.getContextList() });
             } else {
-                this.setState({ graphState: newState });
+                this.setState({ graphState: newState, contextList: this.props.globalState.getContextList() });
             }
         });
 
@@ -244,6 +267,97 @@ export class GraphControlsComponent extends React.Component<IGraphControlsProps,
         }
     }
 
+    private _commitContextRename() {
+        const { editingContextIndex, editingContextName } = this.state;
+        if (editingContextIndex === null) {
+            return;
+        }
+        const trimmed = editingContextName.trim();
+        if (trimmed) {
+            this.props.globalState.renameContext(editingContextIndex, trimmed);
+        }
+        this.setState({ editingContextIndex: null, editingContextName: "" });
+    }
+
+    private _renderContextSelector(): React.ReactNode {
+        const { contextList, selectedContextIndex, editingContextIndex, editingContextName } = this.state;
+
+        return (
+            <div className="fge-context-selector">
+                <span className="fge-context-label">Ctx</span>
+                <select
+                    className="fge-context-dropdown"
+                    value={selectedContextIndex}
+                    onChange={(e) => {
+                        this.props.globalState.selectedContextIndex = parseInt(e.target.value, 10);
+                    }}
+                >
+                    {contextList.map((ctx) => (
+                        <option key={ctx.uniqueId} value={ctx.index}>
+                            {ctx.name}
+                        </option>
+                    ))}
+                </select>
+                <button
+                    className="fge-ctrl-btn fge-ctx-add"
+                    title="Add execution context"
+                    onClick={() => {
+                        const idx = this.props.globalState.createNewContext();
+                        if (idx >= 0) {
+                            this.props.globalState.selectedContextIndex = idx;
+                            this._log(`Created context ${idx}.`);
+                        }
+                    }}
+                >
+                    +
+                </button>
+                <button
+                    className="fge-ctrl-btn fge-ctx-remove"
+                    title="Remove selected context"
+                    disabled={contextList.length <= 1}
+                    onClick={() => {
+                        if (this.props.globalState.removeContextAt(selectedContextIndex)) {
+                            this._log(`Removed context ${selectedContextIndex}.`);
+                        }
+                    }}
+                >
+                    −
+                </button>
+                {editingContextIndex !== null ? (
+                    <input
+                        className="fge-ctx-rename-input"
+                        type="text"
+                        value={editingContextName}
+                        autoFocus
+                        onChange={(e) => this.setState({ editingContextName: e.target.value })}
+                        onKeyDown={(e) => {
+                            e.stopPropagation();
+                            if (e.key === "Enter") {
+                                this._commitContextRename();
+                            } else if (e.key === "Escape") {
+                                this.setState({ editingContextIndex: null, editingContextName: "" });
+                            }
+                        }}
+                        onBlur={() => this._commitContextRename()}
+                    />
+                ) : (
+                    <button
+                        className="fge-ctrl-btn fge-ctx-rename"
+                        title="Rename selected context"
+                        onClick={() => {
+                            const ctx = contextList.find((c) => c.index === selectedContextIndex);
+                            if (ctx) {
+                                this.setState({ editingContextIndex: selectedContextIndex, editingContextName: ctx.name });
+                            }
+                        }}
+                    >
+                        ✎
+                    </button>
+                )}
+            </div>
+        );
+    }
+
     private _renderValidationSummary(): React.ReactNode {
         const result = this.state.validationResult;
         if (!result || result.issues.length === 0) {
@@ -319,6 +433,8 @@ export class GraphControlsComponent extends React.Component<IGraphControlsProps,
                     ▶|
                 </button>
                 <span className={`fge-ctrl-state ${stateCls}`}>{stateLabel}</span>
+                <span className="fge-ctrl-separator" />
+                {this._renderContextSelector()}
                 <span className="fge-ctrl-separator" />
                 <button
                     className={`fge-ctrl-btn fge-ctrl-debug ${this.state.debugMode ? "active" : ""}`}

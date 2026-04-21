@@ -248,3 +248,128 @@ describe("ControlNode out-frame exclusivity", () => {
         expect(control.opacity).toBe(0);
     });
 });
+
+describe("decomposeWorldMatrixAtFrame", () => {
+    it("returns interpolated scale at mid-frame", () => {
+        const scale = makePositionProperty(1, 1, [
+            { time: 0, x: 1, y: 1 },
+            { time: 30, x: 2, y: 2 },
+        ]);
+
+        const node = new Node("test", undefined, undefined, scale);
+        const outScale = { x: 0, y: 0 };
+        const outTranslation = { x: 0, y: 0 };
+        node.decomposeWorldMatrixAtFrame(15, outScale, outTranslation);
+
+        expect(outScale.x).toBeCloseTo(1.5, 1);
+        expect(outScale.y).toBeCloseTo(1.5, 1);
+    });
+
+    it("returns start values when no keyframes", () => {
+        const node = new Node("test");
+        const outScale = { x: 0, y: 0 };
+        const outTranslation = { x: 0, y: 0 };
+        node.decomposeWorldMatrixAtFrame(10, outScale, outTranslation);
+
+        expect(outScale.x).toBeCloseTo(1, 5);
+        expect(outScale.y).toBeCloseTo(1, 5);
+        expect(outTranslation.x).toBeCloseTo(0, 5);
+        expect(outTranslation.y).toBeCloseTo(0, 5);
+    });
+
+    it("returns last keyframe values at frame beyond last keyframe", () => {
+        const scale = makePositionProperty(1, 1, [
+            { time: 0, x: 1, y: 1 },
+            { time: 30, x: 3, y: 3 },
+        ]);
+
+        const node = new Node("test", undefined, undefined, scale);
+        const outScale = { x: 0, y: 0 };
+        const outTranslation = { x: 0, y: 0 };
+        node.decomposeWorldMatrixAtFrame(50, outScale, outTranslation);
+
+        expect(outScale.x).toBeCloseTo(3, 1);
+        expect(outScale.y).toBeCloseTo(3, 1);
+    });
+
+    it("composes parent and child transforms", () => {
+        const parentScale = makePositionProperty(2, 2, [
+            { time: 0, x: 2, y: 2 },
+            { time: 30, x: 4, y: 4 },
+        ]);
+
+        const parent = new Node("parent", undefined, undefined, parentScale);
+        const child = new Node("child", undefined, undefined, undefined, undefined, parent);
+
+        const outScale = { x: 0, y: 0 };
+        const outTranslation = { x: 0, y: 0 };
+        child.decomposeWorldMatrixAtFrame(15, outScale, outTranslation);
+
+        // Parent scale at frame 15 = interpolated 3,3 → child inherits parent scale
+        expect(outScale.x).toBeCloseTo(3, 1);
+        expect(outScale.y).toBeCloseTo(3, 1);
+    });
+
+    it("matches worldMatrix.decompose for static non-zero rotation (no keyframes)", () => {
+        const rotation: ScalarProperty = { startValue: -Math.PI / 4, currentValue: -Math.PI / 4, currentKeyframeIndex: 0 };
+
+        const node = new Node("test", undefined, rotation);
+
+        // Get expected rotation from worldMatrix.decompose (the constructor path)
+        const wmScale = { x: 0, y: 0 };
+        const wmTranslation = { x: 0, y: 0 };
+        const wmRotation = node.worldMatrix.decompose(wmScale, wmTranslation);
+
+        // decomposeWorldMatrixAtFrame should produce the same rotation
+        const outScale = { x: 0, y: 0 };
+        const outTranslation = { x: 0, y: 0 };
+        const outRotation = node.decomposeWorldMatrixAtFrame(10, outScale, outTranslation);
+
+        expect(outRotation).toBeCloseTo(wmRotation, 5);
+    });
+
+    it("does not mutate node state", () => {
+        const position = makePositionProperty(0, 0, [
+            { time: 0, x: 0, y: 0 },
+            { time: 30, x: 100, y: 200 },
+        ]);
+
+        const node = new Node("test", position);
+        const outScale = { x: 0, y: 0 };
+        const outTranslation = { x: 0, y: 0 };
+
+        // Call decomposeWorldMatrixAtFrame — should NOT change currentValue
+        node.decomposeWorldMatrixAtFrame(15, outScale, outTranslation);
+
+        expect(node.positionCurrent.x).toBe(0);
+        expect(node.positionCurrent.y).toBe(0);
+    });
+
+    it("applies negation consistently for animated rotation keyframes", () => {
+        // Rotation keyframes are stored without negation; negation is applied at interpolation time.
+        // startValue is pre-negated by the parser. This test covers the keyframe interpolation path
+        // to guard against regressions in the sign convention.
+        const rotation = makeScalarProperty(0, [
+            { time: 0, value: 0 },
+            { time: 30, value: Math.PI / 2 },
+        ]);
+
+        const node = new Node("test", undefined, rotation);
+
+        // Drive the legacy update path to get the "ground truth" rotation at frame 15.
+        node.isVisible = true;
+        node.update(15);
+        const expectedScale = { x: 0, y: 0 };
+        const expectedTranslation = { x: 0, y: 0 };
+        const expectedRotation = node.worldMatrix.decompose(expectedScale, expectedTranslation);
+
+        // Reset and verify the at-frame path produces the same rotation without mutating state.
+        node.reset();
+        const outScale = { x: 0, y: 0 };
+        const outTranslation = { x: 0, y: 0 };
+        const outRotation = node.decomposeWorldMatrixAtFrame(15, outScale, outTranslation);
+
+        expect(outRotation).toBeCloseTo(expectedRotation, 5);
+        expect(node.rotationCurrent).toBeCloseTo(0, 5); // reset restored startValue; decomposeWorldMatrixAtFrame did not mutate
+    });
+});

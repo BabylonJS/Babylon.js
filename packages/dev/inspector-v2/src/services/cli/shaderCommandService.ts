@@ -1,13 +1,13 @@
 import { type ServiceDefinition } from "shared-ui-components/modularTool/modularity/serviceDefinition";
 import { type ISceneContext, SceneContextIdentity } from "../sceneContext";
-import { type IInspectableCommandRegistry, InspectableCommandRegistryIdentity } from "./inspectableCommandRegistry";
+import { type IBridgeCommandRegistry, BridgeCommandRegistryIdentity } from "shared-ui-components/modularTool/services/cli/bridgeCommandRegistry";
 
 /**
  * Service that registers a CLI command for retrieving compiled shader code from a material.
  */
-export const ShaderCommandServiceDefinition: ServiceDefinition<[], [IInspectableCommandRegistry, ISceneContext]> = {
+export const ShaderCommandServiceDefinition: ServiceDefinition<[], [IBridgeCommandRegistry, ISceneContext]> = {
     friendlyName: "Shader Command Service",
-    consumes: [InspectableCommandRegistryIdentity, SceneContextIdentity],
+    consumes: [BridgeCommandRegistryIdentity, SceneContextIdentity],
     factory: (commandRegistry, sceneContext) => {
         const registration = commandRegistry.addCommand({
             id: "get-shader-code",

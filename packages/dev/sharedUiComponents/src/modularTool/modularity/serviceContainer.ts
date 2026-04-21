@@ -55,20 +55,15 @@ export class ServiceContainer implements IDisposable {
     }
 
     /**
-     * Adds a set of service definitions in the service container.
+     * Adds a set of service definitions to the service container.
      * The services are sorted based on their dependencies.
-     * @param args The service definitions to register, and optionally an abort signal.
-     * @returns A disposable that will remove the service definition from the service container.
+     * @param serviceDefinitions The service definitions to register.
+     * @returns A disposable that will remove the service definitions from the service container.
      */
-    public async addServicesAsync(
-        ...args: WeaklyTypedServiceDefinition[] | [...serviceDefinitions: WeaklyTypedServiceDefinition[], abortSignal: AbortSignal]
-    ): Promise<IDisposable> {
+    public addServices(...serviceDefinitions: WeaklyTypedServiceDefinition[]): IDisposable {
         if (this._isDisposed) {
             throw new Error("ServiceContainer is disposed.");
         }
-
-        const abortSignal = args[args.length - 1] instanceof AbortSignal ? (args.pop() as AbortSignal) : undefined;
-        const serviceDefinitions = args as WeaklyTypedServiceDefinition[];
 
         const sortedServiceDefinitions = SortServiceDefinitions(serviceDefinitions);
 
@@ -80,9 +75,7 @@ export class ServiceContainer implements IDisposable {
 
         try {
             for (const serviceDefinition of sortedServiceDefinitions) {
-                // We could possibly optimize this by allowing some parallel initialization of services, but this would be way more complex, so let's wait and see if it's needed.
-                // eslint-disable-next-line no-await-in-loop
-                await this._addServiceAsync(serviceDefinition, abortSignal);
+                this._addService(serviceDefinition);
             }
         } catch (error: unknown) {
             dispose();
@@ -97,21 +90,13 @@ export class ServiceContainer implements IDisposable {
     /**
      * Registers a service definition in the service container.
      * @param serviceDefinition The service definition to register.
-     * @param abortSignal An optional abort signal.
      * @returns A disposable that will remove the service definition from the service container.
      */
-    public async addServiceAsync<Produces extends IService<symbol>[] = [], Consumes extends IService<symbol>[] = []>(
-        serviceDefinition: ServiceDefinition<Produces, Consumes>,
-        abortSignal?: AbortSignal
-    ): Promise<IDisposable> {
-        if (abortSignal) {
-            return await this.addServicesAsync(serviceDefinition, abortSignal);
-        } else {
-            return await this.addServicesAsync(serviceDefinition);
-        }
+    public addService<Produces extends IService<symbol>[] = [], Consumes extends IService<symbol>[] = []>(serviceDefinition: ServiceDefinition<Produces, Consumes>): IDisposable {
+        return this.addServices(serviceDefinition);
     }
 
-    private async _addServiceAsync(service: WeaklyTypedServiceDefinition, abortSignal?: AbortSignal) {
+    private _addService(service: WeaklyTypedServiceDefinition) {
         if (this._isDisposed) {
             throw new Error(`'${this._friendlyName}' container is disposed.`);
         }
@@ -128,7 +113,7 @@ export class ServiceContainer implements IDisposable {
 
         const dependencies = service.consumes?.map((contract) => this._resolveDependency(contract, service)) ?? [];
 
-        this._serviceInstances.set(service, await service.factory(...dependencies, abortSignal));
+        this._serviceInstances.set(service, service.factory(...dependencies));
     }
 
     /**
@@ -142,16 +127,17 @@ export class ServiceContainer implements IDisposable {
     private _resolveDependency(contract: symbol, consumer: WeaklyTypedServiceDefinition): IService<symbol> & Partial<IDisposable> {
         const definition = this._serviceDefinitions.get(contract);
         if (definition) {
+            const instance = this._serviceInstances.get(definition);
+            if (!instance) {
+                throw new Error(`Service '${contract.toString()}' has not been instantiated in the '${this._friendlyName}' container.`);
+            }
+
             let dependentDefinitions = this._serviceDependents.get(definition);
             if (!dependentDefinitions) {
                 this._serviceDependents.set(definition, (dependentDefinitions = new Set()));
             }
             dependentDefinitions.add(consumer);
 
-            const instance = this._serviceInstances.get(definition);
-            if (!instance) {
-                throw new Error(`Service '${contract.toString()}' has not been instantiated in the '${this._friendlyName}' container.`);
-            }
             return instance;
         }
 

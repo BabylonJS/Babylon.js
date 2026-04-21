@@ -1,6 +1,7 @@
 import { type GlobalState, type InspectorV2Module } from "../globalState";
 import { type WeaklyTypedServiceDefinition } from "shared-ui-components/modularTool/modularity/serviceContainer";
-import { type IInspectableCommandRegistry } from "inspector/services/cli/inspectableCommandRegistry";
+import { type IBridgeCommandRegistry } from "shared-ui-components/modularTool/services/cli/bridgeCommandRegistry";
+import { Utilities } from "./utilities";
 
 /**
  * Creates a service definition that registers Playground-specific CLI commands.
@@ -11,8 +12,8 @@ import { type IInspectableCommandRegistry } from "inspector/services/cli/inspect
 export function MakePlaygroundCommandServiceDefinition(globalState: GlobalState, inspectorModule: InspectorV2Module): WeaklyTypedServiceDefinition {
     return {
         friendlyName: "Playground Command Service",
-        consumes: [inspectorModule.InspectableCommandRegistryIdentity],
-        factory: (commandRegistry: IInspectableCommandRegistry) => {
+        consumes: [inspectorModule.BridgeCommandRegistryIdentity],
+        factory: (commandRegistry: IBridgeCommandRegistry) => {
             // Track the last error from the Playground for the get-errors command.
             let lastError: { message: string; lineNumber?: number; columnNumber?: number } | null = null;
             const errorTracker = globalState.onErrorObservable.add((error) => {
@@ -240,6 +241,35 @@ export function MakePlaygroundCommandServiceDefinition(globalState: GlobalState,
                 },
             });
 
+            const getLanguageReg = commandRegistry.addCommand({
+                id: "get-language",
+                description: "Get the current Playground language (js or ts).",
+                executeAsync: async () => {
+                    return globalState.language === "TS" ? "ts" : "js";
+                },
+            });
+
+            const setLanguageReg = commandRegistry.addCommand({
+                id: "set-language",
+                description: "Set the Playground language. This will clear the current code.",
+                args: [
+                    {
+                        name: "language",
+                        description: 'The language to set: "js" or "ts".',
+                        required: true,
+                    },
+                ],
+                executeAsync: async (args: Record<string, string>) => {
+                    const lang = args.language?.toLowerCase();
+                    if (lang !== "js" && lang !== "ts") {
+                        throw new Error(`Invalid language "${args.language}". Must be "js" or "ts".`);
+                    }
+                    const storeValue = lang === "ts" ? "TS" : "JS";
+                    Utilities.SwitchLanguage(storeValue, globalState, true);
+                    return `Language set to ${lang}.`;
+                },
+            });
+
             return {
                 dispose: () => {
                     errorTracker.remove();
@@ -252,6 +282,8 @@ export function MakePlaygroundCommandServiceDefinition(globalState: GlobalState,
                     savePlaygroundReg.dispose();
                     runPlaygroundReg.dispose();
                     getErrorsReg.dispose();
+                    getLanguageReg.dispose();
+                    setLanguageReg.dispose();
                 },
             };
         },

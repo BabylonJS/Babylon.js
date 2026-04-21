@@ -1,5 +1,90 @@
 # Changelog
 
+## 9.3.4
+
+### Core
+
+- Fix CreateGroundFromHeightMap so scene.isReady waits for heightmap image load - [_Bug Fix_] by [bghgary](https://github.com/bghgary) ([#18355](https://github.com/BabylonJS/Babylon.js/pull/18355))
+- Fix DepthRenderer.isReady corrupting current pass draw wrapper - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#18356](https://github.com/BabylonJS/Babylon.js/pull/18356))
+- ray: use matrixData for thin instance picking - by [kzhsw](https://github.com/kzhsw) ([#18341](https://github.com/BabylonJS/Babylon.js/pull/18341))
+- test(xr): use jsdom env for WebXRBodyTracking tests (Node 20 fix) - by [RaananW](https://github.com/RaananW) ([#18349](https://github.com/BabylonJS/Babylon.js/pull/18349))
+
+### GUI
+
+- GUI 2D: Fix Rectangle cornerRadius to respect adaptive scaling - by [AmoebaChant](https://github.com/AmoebaChant) ([#18354](https://github.com/BabylonJS/Babylon.js/pull/18354))
+
+### Inspector
+
+- Inspector: Switch back to @fluentui-contrib/react-resize-handle - [_Bug Fix_] by [ryantrem](https://github.com/ryantrem) ([#18352](https://github.com/BabylonJS/Babylon.js/pull/18352))
+
+## 9.3.3
+
+### Core
+
+- Flow Graph Editor: multi-graph editing support - by [RaananW](https://github.com/RaananW) ([#18348](https://github.com/BabylonJS/Babylon.js/pull/18348))
+- Add `GPUParticleSystem.fromParticleSystem` helper - by [VicenteCartas](https://github.com/VicenteCartas) ([#18330](https://github.com/BabylonJS/Babylon.js/pull/18330))
+- fix: restore setTextureFormatToUse on WebGPU/Native engines - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#18347](https://github.com/BabylonJS/Babylon.js/pull/18347))
+
+### Serializers
+
+- USDZ: allow texture export under NullEngine - by [arek-3d](https://github.com/arek-3d) ([#18296](https://github.com/BabylonJS/Babylon.js/pull/18296))
+
+## 9.3.2
+
+### Core
+
+- Flow Graph Editor: fix constant block initial state and add scene object support - by [RaananW](https://github.com/RaananW) ([#18329](https://github.com/BabylonJS/Babylon.js/pull/18329))
+- WebGPU: Fix clustered lights in FAST snapshot rendering mode - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#18342](https://github.com/BabylonJS/Babylon.js/pull/18342))
+- fix(gaussianSplatting): ensure correct first-frame rendering by tracking sort state - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#18345](https://github.com/BabylonJS/Babylon.js/pull/18345))
+- feat(xr): add WebXR Body Tracking feature - by [RaananW](https://github.com/RaananW) ([#18343](https://github.com/BabylonJS/Babylon.js/pull/18343))
+- Fix material readiness to gate on light texture readiness - by [bghgary](https://github.com/bghgary) ([#18255](https://github.com/BabylonJS/Babylon.js/pull/18255))
+
+### Inspector
+
+- Inspector CLI: Require explicit session ID and rename autoStart to autoEnable - by [ryantrem](https://github.com/ryantrem) ([#18337](https://github.com/BabylonJS/Babylon.js/pull/18337))
+- chore: remove 8 unnecessary npm overrides - by [RaananW](https://github.com/RaananW) ([#18335](https://github.com/BabylonJS/Babylon.js/pull/18335))
+
+### Lottie Player
+
+- Lottie text layer: anchor-node parenting + layout-derived positioning - by [VicenteCartas](https://github.com/VicenteCartas) ([#18339](https://github.com/BabylonJS/Babylon.js/pull/18339))
+
+### Playground
+
+- Inspector CLI: Require explicit session ID and rename autoStart to autoEnable - by [ryantrem](https://github.com/ryantrem) ([#18337](https://github.com/BabylonJS/Babylon.js/pull/18337))
+- chore: remove 8 unnecessary npm overrides - by [RaananW](https://github.com/RaananW) ([#18335](https://github.com/BabylonJS/Babylon.js/pull/18335))
+
+### Sandbox
+
+- chore: remove 8 unnecessary npm overrides - by [RaananW](https://github.com/RaananW) ([#18335](https://github.com/BabylonJS/Babylon.js/pull/18335))
+
+## 9.3.1
+
+### Core
+
+- Flow Graph Editor: multi-context support with save/load round-trip - by [RaananW](https://github.com/RaananW) ([#18328](https://github.com/BabylonJS/Babylon.js/pull/18328))
+- feat(Gsplat): IBL shadows support for Gaussian Splats - by [raymondyfei](https://github.com/raymondyfei) ([#18331](https://github.com/BabylonJS/Babylon.js/pull/18331))
+- Fix WebGPU type conflicts with TypeScript 6.0 - by [RaananW](https://github.com/RaananW) ([#18327](https://github.com/BabylonJS/Babylon.js/pull/18327))
+- GPU Particle System: Mesh Emitter Support + Emitter Factory Consolidation - by [VicenteCartas](https://github.com/VicenteCartas) ([#18317](https://github.com/BabylonJS/Babylon.js/pull/18317))
+- SelectionOutlineLayer: Fix outline disappearing on instances during LOD transition - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#18324](https://github.com/BabylonJS/Babylon.js/pull/18324))
+- Fix flickering when shadow generator has refreshRate under snapshot rendering - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#18325](https://github.com/BabylonJS/Babylon.js/pull/18325))
+
+### Inspector
+
+- Inspector: Move CLI bridge infrastructure to shared ModularTool framework - by [ryantrem](https://github.com/ryantrem) ([#18332](https://github.com/BabylonJS/Babylon.js/pull/18332))
+
+### Loaders
+
+- feat(Gsplat): IBL shadows support for Gaussian Splats - by [raymondyfei](https://github.com/raymondyfei) ([#18331](https://github.com/BabylonJS/Babylon.js/pull/18331))
+
+### Lottie Player
+
+- Extract Lottie text layout module and align rendering with Lottie spec - by [VicenteCartas](https://github.com/VicenteCartas) ([#18333](https://github.com/BabylonJS/Babylon.js/pull/18333))
+- Refactor node interpolation into reusable static methods and add decomposeWorldMatrixAtFrame - by [VicenteCartas](https://github.com/VicenteCartas) ([#18322](https://github.com/BabylonJS/Babylon.js/pull/18322))
+
+### Playground
+
+- Inspector: Move CLI bridge infrastructure to shared ModularTool framework - by [ryantrem](https://github.com/ryantrem) ([#18332](https://github.com/BabylonJS/Babylon.js/pull/18332))
+
 ## 9.3.0
 
 ### Inspector

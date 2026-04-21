@@ -25,6 +25,11 @@ struct Splat {
 #if IS_COMPOUND
     partIndex: u32,
 #endif
+#if defined(IS_FOR_VOXELIZATION)
+    rotationA: vec4f,
+    rotationB: vec4f,
+    rotationScale: vec4f,
+#endif
 };
 
 fn getSplatIndex(localIndex: i32, splatIndex0: vec4f, splatIndex1: vec4f, splatIndex2: vec4f, splatIndex3: vec4f) -> f32 {
@@ -124,8 +129,10 @@ fn readSplat(splatIndex: f32, dataTextureSize: vec2f) -> Splat {
     let splatUVi32 = vec2<i32>(i32(splatUV.x), i32(splatUV.y));
     splat.center = textureLoad(centersTexture, splatUVi32, 0);
     splat.color = textureLoad(colorsTexture, splatUVi32, 0);
+#if !defined(IS_FOR_VOXELIZATION)
     splat.covA = textureLoad(covariancesATexture, splatUVi32, 0) * splat.center.w;
     splat.covB = textureLoad(covariancesBTexture, splatUVi32, 0) * splat.center.w;
+#endif
 #if SH_DEGREE > 0
     splat.sh0 = textureLoad(shTexture0, splatUVi32, 0);
 #endif
@@ -141,6 +148,11 @@ fn readSplat(splatIndex: f32, dataTextureSize: vec2f) -> Splat {
 #endif
 #if IS_COMPOUND
     splat.partIndex = u32(textureLoad(partIndicesTexture, splatUVi32, 0).r * 255.0 + 0.5);
+#endif
+#if defined(IS_FOR_VOXELIZATION)
+    splat.rotationA = textureLoad(rotationsATexture, splatUVi32, 0);
+    splat.rotationB = textureLoad(rotationsBTexture, splatUVi32, 0);
+    splat.rotationScale = textureLoad(rotationScaleTexture, splatUVi32, 0);
 #endif
     return splat;
 }
@@ -406,5 +418,34 @@ fn gaussianSplatting(
 #if IS_COMPOUND
 fn getPartWorld(partIndex: u32) -> mat4x4<f32> {
     return uniforms.partWorld[partIndex];
+}
+#endif
+
+#if defined(IS_FOR_VOXELIZATION)
+fn computeVoxelSplatWorldPos(rotationA: vec4f, rotationB: vec4f, rotationScale: vec4f, center: vec3f, splatWorld: mat4x4f, viewMatrix: mat4x4f, invWorldScale: mat4x4f, quadPos: vec2f) -> vec4f {
+    let splatRotation = mat3x3f(
+        rotationA.xyz,
+        vec3f(rotationA.w, rotationB.x, rotationB.y),
+        vec3f(rotationB.z, rotationB.w, rotationScale.x)
+    );
+    let splatScale = rotationScale.yzw;
+
+    let view3x3 = mat3x3f(viewMatrix[0].xyz, viewMatrix[1].xyz, viewMatrix[2].xyz);
+    let invWorldScale3x3 = mat3x3f(invWorldScale[0].xyz, invWorldScale[1].xyz, invWorldScale[2].xyz);
+    let splatWorld3x3 = mat3x3f(splatWorld[0].xyz, splatWorld[1].xyz, splatWorld[2].xyz);
+    let rotToView = view3x3 * invWorldScale3x3 * splatWorld3x3 * splatRotation;
+    let axisLengthInViewZ = abs(vec3f(rotToView[0][2], rotToView[1][2], rotToView[2][2]));
+
+    let gaussianSplatCutoffStddev: f32 = 0.7071067812; // sqrt(2)/2
+    var offsetSplatSpace: vec3f;
+    if (axisLengthInViewZ.x > axisLengthInViewZ.y && axisLengthInViewZ.x > axisLengthInViewZ.z) {
+        offsetSplatSpace = vec3f(0.0, quadPos.x, quadPos.y) * splatScale * gaussianSplatCutoffStddev;
+    } else if (axisLengthInViewZ.y > axisLengthInViewZ.z) {
+        offsetSplatSpace = vec3f(quadPos.x, 0.0, quadPos.y) * splatScale * gaussianSplatCutoffStddev;
+    } else {
+        offsetSplatSpace = vec3f(quadPos.x, quadPos.y, 0.0) * splatScale * gaussianSplatCutoffStddev;
+    }
+    let vertexObjectSpace = center + splatRotation * offsetSplatSpace;
+    return splatWorld * vec4f(vertexObjectSpace, 1.0);
 }
 #endif

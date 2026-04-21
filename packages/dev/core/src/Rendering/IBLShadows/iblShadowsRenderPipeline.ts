@@ -2,6 +2,7 @@ import { Constants } from "../../Engines/constants";
 import { EngineStore } from "../../Engines/engineStore";
 import { Matrix, Vector3, Vector4, Quaternion } from "../../Maths/math.vector";
 import { type Mesh } from "../../Meshes/mesh";
+import { type GaussianSplattingMesh } from "../../Meshes/GaussianSplatting/gaussianSplattingMesh";
 import { type Scene } from "../../scene";
 import { Texture } from "../../Materials/Textures/texture";
 import { Logger } from "../../Misc/logger";
@@ -511,11 +512,17 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
             for (const m of mesh) {
                 if (m && this._shadowCastingMeshes.indexOf(m) === -1) {
                     this._shadowCastingMeshes.push(m);
+                    if (m.getClassName() === "GaussianSplattingMesh") {
+                        (m as GaussianSplattingMesh).needsRotationScaleTextures = true;
+                    }
                 }
             }
         } else {
             if (mesh && this._shadowCastingMeshes.indexOf(mesh) === -1) {
                 this._shadowCastingMeshes.push(mesh);
+                if (mesh.getClassName() === "GaussianSplattingMesh") {
+                    (mesh as GaussianSplattingMesh).needsRotationScaleTextures = true;
+                }
             }
         }
     }
@@ -531,12 +538,18 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
                 const index = this._shadowCastingMeshes.indexOf(m);
                 if (index !== -1) {
                     this._shadowCastingMeshes.splice(index, 1);
+                    if (m.getClassName() === "GaussianSplattingMesh") {
+                        (m as GaussianSplattingMesh).needsRotationScaleTextures = false;
+                    }
                 }
             }
         } else {
             const index = this._shadowCastingMeshes.indexOf(mesh);
             if (index !== -1) {
                 this._shadowCastingMeshes.splice(index, 1);
+                if (mesh.getClassName() === "GaussianSplattingMesh") {
+                    (mesh as GaussianSplattingMesh).needsRotationScaleTextures = false;
+                }
             }
         }
     }
@@ -545,6 +558,11 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
      * Clear the list of shadow-casting meshes. This will remove all meshes from the list
      */
     public clearShadowCastingMeshes(): void {
+        for (const m of this._shadowCastingMeshes) {
+            if (m.getClassName() === "GaussianSplattingMesh") {
+                (m as GaussianSplattingMesh).needsRotationScaleTextures = false;
+            }
+        }
         this._shadowCastingMeshes.length = 0;
     }
 

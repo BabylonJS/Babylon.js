@@ -876,22 +876,26 @@ function InternalPick(
                     // the user only asked for a bounding info check so we can return
                     return result;
                 }
-                const tmpMatrix = TmpVectors.Matrix[1];
-                const thinMatrices = (mesh as Mesh).thinInstanceGetWorldMatrices();
-                for (let index = 0; index < thinMatrices.length; index++) {
-                    if (predicate && !predicate(mesh, index)) {
-                        continue;
-                    }
-                    const thinMatrix = thinMatrices[index];
-                    thinMatrix.multiplyToRef(world, tmpMatrix);
-                    const result = picker(pickingInfo, rayFunction, mesh, tmpMatrix, fastCheck, onlyBoundingInfo, trianglePredicate, true);
+                const thinMatrixData = (mesh as Mesh)._thinInstanceDataStorage.matrixData;
+                if (thinMatrixData) {
+                    const thinMatrix = TmpVectors.Matrix[0];
+                    const combinedWorld = TmpVectors.Matrix[1];
+                    const instancesCount = Math.min((mesh as Mesh).thinInstanceCount, thinMatrixData.length >> 4);
+                    for (let index = 0; index < instancesCount; index++) {
+                        if (predicate && !predicate(mesh, index)) {
+                            continue;
+                        }
+                        Matrix.FromArrayToRef(thinMatrixData, index << 4, thinMatrix);
+                        thinMatrix.multiplyToRef(world, combinedWorld);
+                        const result = picker(pickingInfo, rayFunction, mesh, combinedWorld, fastCheck, onlyBoundingInfo, trianglePredicate, true);
 
-                    if (result) {
-                        pickingInfo = result;
-                        pickingInfo.thinInstanceIndex = index;
+                        if (result) {
+                            pickingInfo = result;
+                            pickingInfo.thinInstanceIndex = index;
 
-                        if (fastCheck) {
-                            return pickingInfo;
+                            if (fastCheck) {
+                                return pickingInfo;
+                            }
                         }
                     }
                 }
@@ -943,19 +947,23 @@ function InternalMultiPick(
         if (mesh.hasThinInstances && (mesh as Mesh).thinInstanceEnablePicking) {
             const result = picker(null, rayFunction, mesh, world, true, true, trianglePredicate);
             if (result) {
-                const tmpMatrix = TmpVectors.Matrix[1];
-                const thinMatrices = (mesh as Mesh).thinInstanceGetWorldMatrices();
-                for (let index = 0; index < thinMatrices.length; index++) {
-                    if (predicate && !predicate(mesh, index)) {
-                        continue;
-                    }
-                    const thinMatrix = thinMatrices[index];
-                    thinMatrix.multiplyToRef(world, tmpMatrix);
-                    const result = picker(null, rayFunction, mesh, tmpMatrix, false, false, trianglePredicate, true);
+                const thinMatrixData = (mesh as Mesh)._thinInstanceDataStorage.matrixData;
+                if (thinMatrixData) {
+                    const thinMatrix = TmpVectors.Matrix[0];
+                    const combinedWorld = TmpVectors.Matrix[1];
+                    const instancesCount = Math.min((mesh as Mesh).thinInstanceCount, thinMatrixData.length >> 4);
+                    for (let index = 0; index < instancesCount; index++) {
+                        if (predicate && !predicate(mesh, index)) {
+                            continue;
+                        }
+                        Matrix.FromArrayToRef(thinMatrixData, index << 4, thinMatrix);
+                        thinMatrix.multiplyToRef(world, combinedWorld);
+                        const result = picker(null, rayFunction, mesh, combinedWorld, false, false, trianglePredicate, true);
 
-                    if (result) {
-                        result.thinInstanceIndex = index;
-                        pickingInfos.push(result);
+                        if (result) {
+                            result.thinInstanceIndex = index;
+                            pickingInfos.push(result);
+                        }
                     }
                 }
             }

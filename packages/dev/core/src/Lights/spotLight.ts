@@ -511,6 +511,17 @@ export class SpotLight extends ShadowLight {
         return engine.useReverseDepthBuffer && engine.isNDCHalfZRange ? 0 : maxZ;
     }
 
+    /** @override */
+    public override areLightTexturesReady(): boolean {
+        if (this._projectionTexture && !this._projectionTexture.isReadyOrNotBlocking()) {
+            return false;
+        }
+        if (this._iesProfileTexture && !this._iesProfileTexture.isReadyOrNotBlocking()) {
+            return false;
+        }
+        return true;
+    }
+
     /**
      * Prepares the list of defines specific to the light type.
      * @param defines the list of defines

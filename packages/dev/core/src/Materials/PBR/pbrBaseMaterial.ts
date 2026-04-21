@@ -66,6 +66,7 @@ import {
     PrepareUniformsAndSamplersList,
     PrepareUniformsAndSamplersForIBL,
     PrepareUniformLayoutForIBL,
+    AreLightsTexturesReady,
 } from "../materialHelper.functions";
 import { ShaderLanguage } from "../shaderLanguage";
 import { MaterialHelperGeometryRendering } from "../materialHelper.geometryrendering";
@@ -1188,6 +1189,10 @@ export abstract class PBRBaseMaterial extends PBRBaseMaterialBase {
         if (!engine.getCaps().standardDerivatives && !mesh.isVerticesDataPresent(VertexBuffer.NormalKind)) {
             mesh.createNormals(true);
             Logger.Warn("PBRMaterial: Normals have been created for the mesh: " + mesh.name);
+        }
+
+        if (!AreLightsTexturesReady(scene, mesh, this._maxSimultaneousLights, this._disableLighting)) {
+            return false;
         }
 
         const previousEffect = subMesh.effect;

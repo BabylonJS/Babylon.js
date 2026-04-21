@@ -110,6 +110,11 @@ interface ICompressedPLYChunk {
 interface ICameraViewInfo {
     camera: Camera;
     cameraDirection: Vector3;
+    sortWorldMatrix: Matrix;
+    sortCameraForward: Vector3;
+    sortCameraPosition: Vector3;
+    sortRequestId: number;
+    sortAppliedId: number;
     mesh: Mesh;
     frameIdLastUpdate: number;
     splatIndexBufferSet: boolean;
@@ -336,10 +341,19 @@ export class GaussianSplattingMeshBase extends Mesh {
     private _depthMix: BigInt64Array;
     protected _canPostToWorker = true;
     private _readyToDisplay = false;
+    private _sortRequestId = 0;
+    private _hasRenderedOnce = false;
     protected _covariancesATexture: Nullable<BaseTexture> = null;
     protected _covariancesBTexture: Nullable<BaseTexture> = null;
     protected _centersTexture: Nullable<BaseTexture> = null;
     protected _colorsTexture: Nullable<BaseTexture> = null;
+    protected _rotationsATexture: Nullable<BaseTexture> = null;
+    protected _rotationsBTexture: Nullable<BaseTexture> = null;
+    protected _rotationScaleTexture: Nullable<BaseTexture> = null;
+    private _rotationDataA: Nullable<Uint16Array> = null;
+    private _rotationDataB: Nullable<Uint16Array> = null;
+    private _rotationScaleData: Nullable<Uint16Array> = null;
+    protected _needsRotationScaleTextures: boolean = false;
     protected _splatPositions: Nullable<Float32Array> = null;
     private _splatIndex: Nullable<Float32Array> = null;
     protected _shTextures: Nullable<BaseTexture[]> = null;
@@ -494,6 +508,51 @@ export class GaussianSplattingMeshBase extends Mesh {
     }
 
     /**
+     * Gets the rotation matrix A texture (rotation elements m[0],m[1],m[2],m[4])
+     */
+    public get rotationsATexture() {
+        return this._rotationsATexture;
+    }
+
+    /**
+     * Gets the rotation matrix B texture (rotation elements m[5],m[6],m[8],m[9])
+     */
+    public get rotationsBTexture() {
+        return this._rotationsBTexture;
+    }
+
+    /**
+     * Gets the rotation scale texture (rotation element m[10] followed by scale diagonal sx,sy,sz)
+     */
+    public get rotationScaleTexture() {
+        return this._rotationScaleTexture;
+    }
+
+    /**
+     * Enables or disables generation of rotation and scale matrix textures, required for voxel-based IBL shadows.
+     */
+    public get needsRotationScaleTextures() {
+        return this._needsRotationScaleTextures;
+    }
+
+    public set needsRotationScaleTextures(value: boolean) {
+        if (this._needsRotationScaleTextures === value) {
+            return;
+        }
+        this._needsRotationScaleTextures = value;
+        if (value && this._covariancesATexture) {
+            if (this._splatsData) {
+                this.updateData(this._splatsData, this._shData ?? undefined, { flipY: false });
+            } else {
+                Logger.Error(
+                    "GaussianSplattingMeshBase: needsRotationScaleTextures was enabled after the mesh was already loaded, but the splat data is not kept in RAM. " +
+                        "The rotation and scale matrix textures cannot be initialized. Please reload the mesh data via updateData() or construct with keepInRam=true."
+                );
+            }
+        }
+    }
+
+    /**
      * Gets the SH textures
      */
     public get shTextures() {
@@ -638,6 +697,73 @@ export class GaussianSplattingMeshBase extends Mesh {
             return false;
         }
 
+        // Before the first successful render, apply strict sort-state checks to ensure
+        // the first rendered frame uses correct splat ordering. Once the mesh has been
+        // rendered at least once, skip these checks — the render loop will continuously
+        // re-sort as the camera/world changes via _postToWorker() in render().
+        if (!this._hasRenderedOnce && !this._disableDepthSort) {
+            const cameras = this._scene.activeCameras?.length ? this._scene.activeCameras : [this._scene.activeCamera!];
+            const worldMatrix = this.computeWorldMatrix(true);
+            let anyDirty = false;
+            for (const camera of cameras) {
+                if (!camera) {
+                    continue;
+                }
+
+                const cameraViewInfo = this._cameraViewInfos.get(camera.uniqueId);
+                if (!cameraViewInfo || !cameraViewInfo.splatIndexBufferSet) {
+                    anyDirty = true;
+                    continue;
+                }
+
+                // Wait for the most recently requested sort to be applied so that the splat indices
+                // match the latest world/camera state.
+                if (cameraViewInfo.sortAppliedId !== cameraViewInfo.sortRequestId) {
+                    anyDirty = true;
+                    continue;
+                }
+
+                // Also detect drift: if the world or camera state has changed since the last post,
+                // mark dirty so the next render does not silently queue a new sort that completes
+                // after isReady has reported true.
+                if (this._isSortStateDirty(cameraViewInfo, worldMatrix, camera)) {
+                    anyDirty = true;
+                }
+            }
+
+            if (anyDirty) {
+                // Try to post any pending sort so subsequent polling iterations make progress.
+                this._postToWorker(true);
+                return false;
+            }
+        }
+
+        // Attach the splat geometry to the GS top mesh so that the shadow generator (which renders
+        // shadow casters via the top mesh's subMeshes, NOT through this mesh's render() override)
+        // has valid geometry on the very first shadow pass. Without this, the first shadow render
+        // happens before render() is called and the GS produces no shadow caster output.
+        if (!this._geometry && this._cameraViewInfos.size) {
+            this._geometry = this._cameraViewInfos.values().next().value!.mesh.geometry;
+        }
+
+        // If the material declares a shadow depth wrapper, make sure its effect is compiled for
+        // each subMesh against the scene's shadow generators. Otherwise the first shadow pass
+        // would be skipped (ShadowGenerator.isReady would return false) and we'd miss the shadow
+        // on a renderCount=1 capture.
+        if (this.material && this.material.shadowDepthWrapper) {
+            for (const light of this._scene.lights) {
+                const shadowGenerator = light.getShadowGenerator();
+                if (!shadowGenerator) {
+                    continue;
+                }
+                for (const subMesh of this.subMeshes) {
+                    if (!shadowGenerator.isReady(subMesh, true, false)) {
+                        return false;
+                    }
+                }
+            }
+        }
+
         return true;
     }
 
@@ -647,7 +773,7 @@ export class GaussianSplattingMeshBase extends Mesh {
         const cameraViewProjectionMatrix = TmpVectors.Matrix[0];
         cameraViewMatrix.multiplyToRef(cameraProjectionMatrix, cameraViewProjectionMatrix);
 
-        const modelMatrix = this.getWorldMatrix();
+        const modelMatrix = this.computeWorldMatrix(true);
         const modelViewMatrix = TmpVectors.Matrix[1];
         modelMatrix.multiplyToRef(cameraViewMatrix, modelViewMatrix);
         modelMatrix.multiplyToRef(cameraViewProjectionMatrix, this._modelViewProjectionMatrix);
@@ -658,6 +784,32 @@ export class GaussianSplattingMeshBase extends Mesh {
         localDirection.normalize();
 
         return localDirection;
+    }
+
+    private _isSortStateDirty(cameraViewInfo: ICameraViewInfo, worldMatrix: Matrix, camera: Camera): boolean {
+        const world = worldMatrix.m;
+        const previousWorld = cameraViewInfo.sortWorldMatrix.m;
+        for (let i = 0; i < previousWorld.length; i++) {
+            if (!Scalar.WithinEpsilon(previousWorld[i], world[i], this.viewUpdateThreshold)) {
+                return true;
+            }
+        }
+
+        const cameraViewMatrix = camera.getViewMatrix();
+        if (
+            !Scalar.WithinEpsilon(cameraViewInfo.sortCameraForward.x, cameraViewMatrix.m[2], this.viewUpdateThreshold) ||
+            !Scalar.WithinEpsilon(cameraViewInfo.sortCameraForward.y, cameraViewMatrix.m[6], this.viewUpdateThreshold) ||
+            !Scalar.WithinEpsilon(cameraViewInfo.sortCameraForward.z, cameraViewMatrix.m[10], this.viewUpdateThreshold)
+        ) {
+            return true;
+        }
+
+        const cameraPosition = camera.globalPosition;
+        return (
+            !Scalar.WithinEpsilon(cameraViewInfo.sortCameraPosition.x, cameraPosition.x, this.viewUpdateThreshold) ||
+            !Scalar.WithinEpsilon(cameraViewInfo.sortCameraPosition.y, cameraPosition.y, this.viewUpdateThreshold) ||
+            !Scalar.WithinEpsilon(cameraViewInfo.sortCameraPosition.z, cameraPosition.z, this.viewUpdateThreshold)
+        );
     }
 
     /** @internal */
@@ -708,6 +860,11 @@ export class GaussianSplattingMeshBase extends Mesh {
                 const newViewInfos: ICameraViewInfo = {
                     camera: camera,
                     cameraDirection: new Vector3(0, 0, 0),
+                    sortWorldMatrix: Matrix.Identity(),
+                    sortCameraForward: new Vector3(0, 0, 0),
+                    sortCameraPosition: new Vector3(0, 0, 0),
+                    sortRequestId: 0,
+                    sortAppliedId: 0,
                     mesh: cameraMesh,
                     frameIdLastUpdate: frameId,
                     splatIndexBufferSet: false,
@@ -716,31 +873,41 @@ export class GaussianSplattingMeshBase extends Mesh {
                 this._cameraViewInfos.set(cameraId, newViewInfos);
             }
         });
-        // sort view infos by last updated frame id: first item is the least recently updated
-        activeViewInfos.sort((a, b) => a.frameIdLastUpdate - b.frameIdLastUpdate);
+        // sort view infos: cameras without an initial splat-index buffer come first so they don't get starved
+        // by a `forced` re-sort of an already-initialized camera (which would consume `_canPostToWorker`).
+        // Among initialized cameras, the least recently updated comes first.
+        activeViewInfos.sort((a, b) => {
+            if (a.splatIndexBufferSet !== b.splatIndexBufferSet) {
+                return a.splatIndexBufferSet ? 1 : -1;
+            }
+            return a.frameIdLastUpdate - b.frameIdLastUpdate;
+        });
 
         const hasSortFunction = this._worker || Native?.sortSplats || this._disableDepthSort;
         if ((forced || outdated) && hasSortFunction && (this._scene.activeCameras?.length || this._scene.activeCamera) && this._canPostToWorker) {
+            const worldMatrix = this.computeWorldMatrix(true);
             // view infos sorted by least recent updated frame id
             activeViewInfos.forEach((cameraViewInfos) => {
                 const camera = cameraViewInfos.camera;
                 const cameraDirection = this._getCameraDirection(camera);
-
-                const previousCameraDirection = cameraViewInfos.cameraDirection;
-                const dot = Vector3.Dot(cameraDirection, previousCameraDirection);
-                if ((forced || Math.abs(dot - 1) >= this.viewUpdateThreshold) && this._canPostToWorker) {
+                if ((forced || this._isSortStateDirty(cameraViewInfos, worldMatrix, camera)) && this._canPostToWorker) {
+                    const cameraViewMatrix = camera.getViewMatrix();
                     cameraViewInfos.cameraDirection.copyFrom(cameraDirection);
+                    cameraViewInfos.sortWorldMatrix.copyFrom(worldMatrix);
+                    cameraViewInfos.sortCameraForward.set(cameraViewMatrix.m[2], cameraViewMatrix.m[6], cameraViewMatrix.m[10]);
+                    cameraViewInfos.sortCameraPosition.copyFrom(camera.globalPosition);
+                    cameraViewInfos.sortRequestId = ++this._sortRequestId;
                     cameraViewInfos.frameIdLastUpdate = frameId;
                     this._canPostToWorker = false;
                     if (this._worker) {
-                        const cameraViewMatrix = camera.getViewMatrix();
                         this._worker.postMessage(
                             {
-                                worldMatrix: this.getWorldMatrix().m,
+                                worldMatrix: worldMatrix.m,
                                 cameraForward: [cameraViewMatrix.m[2], cameraViewMatrix.m[6], cameraViewMatrix.m[10]],
                                 cameraPosition: [camera.globalPosition.x, camera.globalPosition.y, camera.globalPosition.z],
                                 depthMix: this._depthMix,
                                 cameraId: camera.uniqueId,
+                                sortRequestId: cameraViewInfos.sortRequestId,
                             },
                             [this._depthMix.buffer]
                         );
@@ -752,6 +919,7 @@ export class GaussianSplattingMeshBase extends Mesh {
                             cameraViewInfos.mesh.thinInstanceSetBuffer("splatIndex", this._splatIndex, 16, false);
                             cameraViewInfos.splatIndexBufferSet = true;
                         }
+                        cameraViewInfos.sortAppliedId = cameraViewInfos.sortRequestId;
                         this._canPostToWorker = true;
                         this._readyToDisplay = true;
                     }
@@ -806,6 +974,8 @@ export class GaussianSplattingMeshBase extends Mesh {
         }
 
         const ret = mesh.render(subMesh, enableAlphaMode, effectiveMeshReplacement);
+
+        this._hasRenderedOnce = true;
 
         // Clean up the temporary override to avoid affecting other render passes
         if (renderPassMaterial) {
@@ -1588,6 +1758,15 @@ export class GaussianSplattingMeshBase extends Mesh {
             }
         }
 
+        this._rotationsATexture?.dispose();
+        this._rotationsBTexture?.dispose();
+        this._rotationScaleTexture?.dispose();
+        this._rotationsATexture = null;
+        this._rotationsBTexture = null;
+        this._rotationScaleTexture = null;
+        this._rotationDataA = null;
+        this._rotationDataB = null;
+        this._rotationScaleData = null;
         this._covariancesATexture = null;
         this._covariancesBTexture = null;
         this._centersTexture = null;
@@ -1621,6 +1800,11 @@ export class GaussianSplattingMeshBase extends Mesh {
                 this._shTextures?.push(shTexture.clone()!);
             }
         }
+        if (source._rotationsATexture) {
+            this._rotationsATexture = source._rotationsATexture.clone()!;
+            this._rotationsBTexture = source._rotationsBTexture?.clone()!;
+            this._rotationScaleTexture = source._rotationScaleTexture?.clone()!;
+        }
     }
 
     /**
@@ -1637,6 +1821,7 @@ export class GaussianSplattingMeshBase extends Mesh {
         newGS._modelViewProjectionMatrix = Matrix.Identity();
         newGS._splatPositions = this._splatPositions;
         newGS._readyToDisplay = false;
+        newGS._hasRenderedOnce = false;
         newGS._disableDepthSort = this._disableDepthSort;
         newGS._instantiateWorker();
 
@@ -1672,6 +1857,7 @@ export class GaussianSplattingMeshBase extends Mesh {
             // update on view changed
             else {
                 const cameraId = e.data.cameraId;
+                const sortRequestId = e.data.sortRequestId;
                 const globalWorldMatrix = e.data.worldMatrix;
                 const cameraForward = e.data.cameraForward;
                 const cameraPosition = e.data.cameraPosition;
@@ -1680,7 +1866,7 @@ export class GaussianSplattingMeshBase extends Mesh {
 
                 if (!positions || !cameraForward) {
                     // Sort request arrived before positions were initialized — return the buffer unchanged so the main thread can unlock _canPostToWorker.
-                    self.postMessage({ depthMix, cameraId }, [depthMix.buffer]);
+                    self.postMessage({ depthMix, cameraId, sortRequestId }, [depthMix.buffer]);
                     return;
                 }
 
@@ -1740,7 +1926,7 @@ export class GaussianSplattingMeshBase extends Mesh {
                     console.error("Gaussian splat sort worker encountered an error (will retry next frame):", sortError);
                 }
 
-                self.postMessage({ depthMix, cameraId }, [depthMix.buffer]);
+                self.postMessage({ depthMix, cameraId, sortRequestId }, [depthMix.buffer]);
             }
         };
     };
@@ -1813,6 +1999,31 @@ export class GaussianSplattingMeshBase extends Mesh {
         quaternion.toRotationMatrix(matrixRotation);
 
         Matrix.ScalingToRef(fBuffer[8 * srcIndex + 3 + 0] * 2, fBuffer[8 * srcIndex + 3 + 1] * 2, fBuffer[8 * srcIndex + 3 + 2] * 2, matrixScale);
+
+        if (this._needsRotationScaleTextures) {
+            if (!this._rotationDataA || this._rotationDataA.length < covA.length) {
+                this._rotationDataA = new Uint16Array(covA.length);
+                this._rotationDataB = new Uint16Array(covA.length);
+                this._rotationScaleData = new Uint16Array(covA.length);
+            }
+            const rotDataA = this._rotationDataA;
+            const rotDataB = this._rotationDataB!;
+            const rotScaleData = this._rotationScaleData!;
+            const rm = matrixRotation.m;
+            const sm = matrixScale.m;
+            rotDataA[dstIndex * 4 + 0] = ToHalfFloat(rm[0]);
+            rotDataA[dstIndex * 4 + 1] = ToHalfFloat(rm[1]);
+            rotDataA[dstIndex * 4 + 2] = ToHalfFloat(rm[2]);
+            rotDataA[dstIndex * 4 + 3] = ToHalfFloat(rm[4]);
+            rotDataB[dstIndex * 4 + 0] = ToHalfFloat(rm[5]);
+            rotDataB[dstIndex * 4 + 1] = ToHalfFloat(rm[6]);
+            rotDataB[dstIndex * 4 + 2] = ToHalfFloat(rm[8]);
+            rotDataB[dstIndex * 4 + 3] = ToHalfFloat(rm[9]);
+            rotScaleData[dstIndex * 4 + 0] = ToHalfFloat(rm[10]);
+            rotScaleData[dstIndex * 4 + 1] = ToHalfFloat(sm[0]);
+            rotScaleData[dstIndex * 4 + 2] = ToHalfFloat(sm[5]);
+            rotScaleData[dstIndex * 4 + 3] = ToHalfFloat(sm[10]);
+        }
 
         const m = matrixRotation.multiplyToRef(matrixScale, TmpVectors.Matrix[0]).m;
 
@@ -1924,6 +2135,25 @@ export class GaussianSplattingMeshBase extends Mesh {
                 }
             }
 
+            if (this._needsRotationScaleTextures && this._rotationDataA) {
+                if (this._rotationsATexture) {
+                    this._updateTextureFromData(this._rotationsATexture, this._rotationDataA, textureSize.x, 0, textureSize.y);
+                    this._updateTextureFromData(this._rotationsBTexture!, this._rotationDataB!, textureSize.x, 0, textureSize.y);
+                    this._updateTextureFromData(this._rotationScaleTexture!, this._rotationScaleData!, textureSize.x, 0, textureSize.y);
+                } else {
+                    // Rotation textures not yet created (needsRotationScaleTextures was enabled after initial load).
+                    this._rotationsATexture = createTextureFromDataF16(this._rotationDataA, textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA);
+                    this._rotationsBTexture = createTextureFromDataF16(this._rotationDataB!, textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA);
+                    this._rotationScaleTexture = createTextureFromDataF16(this._rotationScaleData!, textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA);
+                    this._rotationsATexture.wrapU = Constants.TEXTURE_CLAMP_ADDRESSMODE;
+                    this._rotationsATexture.wrapV = Constants.TEXTURE_CLAMP_ADDRESSMODE;
+                    this._rotationsBTexture.wrapU = Constants.TEXTURE_CLAMP_ADDRESSMODE;
+                    this._rotationsBTexture.wrapV = Constants.TEXTURE_CLAMP_ADDRESSMODE;
+                    this._rotationScaleTexture.wrapU = Constants.TEXTURE_CLAMP_ADDRESSMODE;
+                    this._rotationScaleTexture.wrapV = Constants.TEXTURE_CLAMP_ADDRESSMODE;
+                }
+            }
+
             this._onUpdateTextures(textureSize);
 
             this._postToWorker(true);
@@ -1948,6 +2178,24 @@ export class GaussianSplattingMeshBase extends Mesh {
                     shTexture.wrapV = Constants.TEXTURE_CLAMP_ADDRESSMODE;
                     this._shTextures!.push(shTexture);
                 }
+            }
+
+            if (this._needsRotationScaleTextures) {
+                const rotDataA = this._rotationDataA ?? new Uint16Array(covA.length);
+                const rotDataB = this._rotationDataB ?? new Uint16Array(covA.length);
+                const rotScaleData = this._rotationScaleData ?? new Uint16Array(covA.length);
+                this._rotationsATexture?.dispose();
+                this._rotationsBTexture?.dispose();
+                this._rotationScaleTexture?.dispose();
+                this._rotationsATexture = createTextureFromDataF16(rotDataA, textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA);
+                this._rotationsBTexture = createTextureFromDataF16(rotDataB, textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA);
+                this._rotationScaleTexture = createTextureFromDataF16(rotScaleData, textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA);
+                this._rotationsATexture.wrapU = Constants.TEXTURE_CLAMP_ADDRESSMODE;
+                this._rotationsATexture.wrapV = Constants.TEXTURE_CLAMP_ADDRESSMODE;
+                this._rotationsBTexture.wrapU = Constants.TEXTURE_CLAMP_ADDRESSMODE;
+                this._rotationsBTexture.wrapV = Constants.TEXTURE_CLAMP_ADDRESSMODE;
+                this._rotationScaleTexture.wrapU = Constants.TEXTURE_CLAMP_ADDRESSMODE;
+                this._rotationScaleTexture.wrapV = Constants.TEXTURE_CLAMP_ADDRESSMODE;
             }
 
             this._onUpdateTextures(textureSize);
@@ -2227,6 +2475,14 @@ export class GaussianSplattingMeshBase extends Mesh {
         this._updateTextureFromData(this._covariancesBTexture!, covBView, textureSize.x, lineStart, lineCount);
         this._updateTextureFromData(this._centersTexture!, centersView, textureSize.x, lineStart, lineCount);
         this._updateTextureFromData(this._colorsTexture!, colorsView, textureSize.x, lineStart, lineCount);
+        if (this._rotationsATexture && this._rotationDataA) {
+            const rotAView = new Uint16Array(this._rotationDataA.buffer, texelStart * 4 * Uint16Array.BYTES_PER_ELEMENT, texelCount * 4);
+            const rotBView = new Uint16Array(this._rotationDataB!.buffer, texelStart * 4 * Uint16Array.BYTES_PER_ELEMENT, texelCount * 4);
+            const rotScaleView = new Uint16Array(this._rotationScaleData!.buffer, texelStart * 4 * Uint16Array.BYTES_PER_ELEMENT, texelCount * 4);
+            this._updateTextureFromData(this._rotationsATexture, rotAView, textureSize.x, lineStart, lineCount);
+            this._updateTextureFromData(this._rotationsBTexture!, rotBView, textureSize.x, lineStart, lineCount);
+            this._updateTextureFromData(this._rotationScaleTexture!, rotScaleView, textureSize.x, lineStart, lineCount);
+        }
         if (sh) {
             for (let i = 0; i < sh.length; i++) {
                 const componentCount = 4;
@@ -2288,6 +2544,7 @@ export class GaussianSplattingMeshBase extends Mesh {
 
             this._depthMix = e.data.depthMix;
             const cameraId = e.data.cameraId;
+            const sortRequestId = e.data.sortRequestId;
 
             const indexMix = new Uint32Array(e.data.depthMix.buffer);
             if (this._splatIndex) {
@@ -2318,6 +2575,7 @@ export class GaussianSplattingMeshBase extends Mesh {
                     cameraViewInfos.mesh.thinInstanceSetBuffer("splatIndex", this._splatIndex, 16, false);
                     cameraViewInfos.splatIndexBufferSet = true;
                 }
+                cameraViewInfos.sortAppliedId = sortRequestId;
             }
             this._canPostToWorker = true;
             this._readyToDisplay = true;
