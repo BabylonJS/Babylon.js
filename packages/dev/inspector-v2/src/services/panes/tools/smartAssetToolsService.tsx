@@ -112,8 +112,6 @@ const SmartAssetProjectTools: FunctionComponent<{ scene: Scene }> = (props: { sc
     const onShowProjectJson = useCallback(() => {
         const { sam, overrides } = getOrCreateManagers();
         const project = serializeProject(sam, overrides);
-        console.log("=== Project JSON ===");
-        console.log(JSON.stringify(project, null, 2));
         setStatusMessage("Project JSON logged to console");
     }, [getOrCreateManagers]);
 

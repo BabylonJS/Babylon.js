@@ -306,11 +306,13 @@ export class SmartAssetManager {
                 this.register(key, newUrl);
                 const retryTexture = await this._createTexture(newUrl);
                 this._objectToKeyMap.set(retryTexture, key);
+                this.onAssetLoadedObservable.notifyObservers({ key });
                 return retryTexture;
             }
         }
 
         this._objectToKeyMap.set(texture, key);
+        this.onAssetLoadedObservable.notifyObservers({ key });
         return texture;
     }
 

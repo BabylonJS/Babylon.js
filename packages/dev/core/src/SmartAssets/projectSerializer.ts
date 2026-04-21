@@ -3,7 +3,6 @@ import { type OverrideManager } from "./overrideManager";
 import { type ISerializedSmartAssetMap, serializeSmartAssetMap, deserializeSmartAssetMap, resolveAssetUrl, readJsonSource } from "./smartAssetSerializer";
 import { type ISerializedOverrideEntry } from "./overrideEntry";
 import { type Scene } from "../scene";
-import { Logger } from "../Misc/logger";
 
 /**
  * A serialized inline object — a scene entity (material, light, camera, etc.)
@@ -163,18 +162,10 @@ export async function loadProjectAsync(
 
     await smartAssetManager.loadAllAsync();
 
-    // Log tracked textures for debugging
-    for (const tex of smartAssetManager.scene.textures) {
-        const trackedKey = smartAssetManager.findKeyForObject(tex);
-        Logger.Log(`loadProjectAsync: texture "${tex.name}" tracked as key="${trackedKey ?? "UNTRACKED"}" ready=${tex.isReady()} error=${tex.loadingError}`);
-    }
-
     // Recreate in-tool-created objects
     if (doc.inlineObjects) {
         await _recreateInlineObjects(doc.inlineObjects, smartAssetManager.scene, resolvedRootUrl);
     }
-
-    Logger.Log(`loadProjectAsync: applying ${doc.overrides.length} overrides`);
 
     // Apply overrides
     if (doc.overrides.length > 0) {
@@ -259,7 +250,17 @@ async function _recreateInlineObjects(inlineObjects: Record<string, ISerializedI
         const className = entry.className;
 
         if (className.includes("Material") || className.includes("material")) {
-            Material.Parse(data, scene, rootUrl);
+            // Strip embedded texture data — texture assignments are managed
+            // separately by the override system (texture:key references).
+            // Parsing them here would create duplicate texture instances.
+            const strippedData: Record<string, unknown> = {};
+            for (const [key, value] of Object.entries(data)) {
+                if (key.endsWith("Texture") && typeof value === "object" && value !== null) {
+                    continue;
+                }
+                strippedData[key] = value;
+            }
+            Material.Parse(strippedData, scene, rootUrl);
         } else if (className.includes("Light") || className.includes("light")) {
             Light.Parse(data, scene);
         } else if (className.includes("Camera") || className.includes("camera")) {

@@ -7,8 +7,8 @@ export interface ISmartAssetLoadedEvent {
     /** The key of the loaded asset. */
     readonly key: string;
 
-    /** The asset container produced by loading. */
-    readonly container: AssetContainer;
+    /** The asset container produced by loading, or undefined for standalone textures. */
+    readonly container?: AssetContainer;
 }
 
 /**

@@ -163,7 +163,6 @@ const SmartAssetList: FunctionComponent<{ scene: Scene; selectionService: ISelec
     const styles = useStyles();
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [status, setStatus] = useState("");
-    const [, forceUpdate] = useState(0);
 
     // Find the SAM, with cross-module fallback
     const sam = _findSam(scene);
@@ -232,7 +231,6 @@ const SmartAssetList: FunctionComponent<{ scene: Scene; selectionService: ISelec
             if (fileInputRef.current) {
                 fileInputRef.current.value = "";
             }
-            forceUpdate((n) => n + 1);
         },
         [scene]
     );
@@ -325,7 +323,6 @@ const SmartAssetList: FunctionComponent<{ scene: Scene; selectionService: ISelec
                 sam.onUrlChangedObservable.notifyObservers({ key, oldUrl, newUrl: file.name });
 
                 setStatus(`Swapped: ${key}`);
-                forceUpdate((n) => n + 1);
             };
             input.click();
         },
@@ -338,10 +335,7 @@ const SmartAssetList: FunctionComponent<{ scene: Scene; selectionService: ISelec
             {assets.map((a) => {
                 // Find the first mesh produced by this key for click-to-select
                 const provEntity = sam ? _findFirstEntityForKey(a.key, scene, sam) : null;
-                if (!provEntity && sam) {
-                    // eslint-disable-next-line no-console
-                    console.log(`[SmartAssetList] provEntity null for "${a.key}". scene.textures=${scene.textures.length}, tracked=${scene.textures.map((t) => sam!.findKeyForObject(t) ?? "none").join(",")}`);
-                }
+
                 return (
                     <div key={a.key} className={styles.assetRow}>
                         <CubeRegular fontSize={14} />

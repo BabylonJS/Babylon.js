@@ -209,7 +209,9 @@ export class OverrideManager {
     private _applyOverride(entry: IOverrideEntry): void {
         const target = this._resolveTarget(entry.key, entry.targetType, entry.targetName);
         if (!target) {
-            Logger.Warn(`OverrideManager._applyOverride: target not found for key="${entry.key}" type="${entry.targetType}" name="${entry.targetName}" prop="${entry.propertyPath}"`);
+            Logger.Warn(
+                `OverrideManager._applyOverride: target not found for key="${entry.key}" type="${entry.targetType}" name="${entry.targetName}" prop="${entry.propertyPath}"`
+            );
             return; // Target not loaded yet — override will be applied on next load
         }
 
@@ -224,7 +226,6 @@ export class OverrideManager {
 
         // Resolve and apply the value
         const resolvedValue = this._resolveValue(entry.value, entry.propertyPath, target);
-        Logger.Log(`OverrideManager._applyOverride: key="${entry.key}" target="${entry.targetName}" prop="${entry.propertyPath}" value=${entry.value} resolved=${resolvedValue != null ? "found" : "UNDEFINED"}`);
         _setNestedProperty(target, entry.propertyPath, resolvedValue);
     }
 
@@ -341,11 +342,9 @@ export class OverrideManager {
             for (const tex of this._scene.textures) {
                 const trackedKey = this._smartAssetManager.findKeyForObject(tex);
                 if (trackedKey === key) {
-                    Logger.Log(`OverrideManager._resolveTextureReference: found "${key}" via SAM tracking (name="${tex.name}")`);
                     return tex;
                 }
             }
-            Logger.Warn(`OverrideManager._resolveTextureReference: no SAM-tracked texture for "${key}". Scene has ${this._scene.textures.length} textures. Tracked keys: ${this._scene.textures.map((t) => this._smartAssetManager!.findKeyForObject(t) ?? "untracked").join(", ")}`);
         }
         // Fallback: find by name in scene textures
         const tex = this._scene.textures.find((t) => t.name === key);
@@ -419,9 +418,7 @@ function _setNestedProperty(obj: object, path: string, value: unknown): void {
     // would replace the live math instance with an inert plain object.
     // For scene entities (textures, materials), do a direct property replacement.
     if (existing && typeof existing === "object" && typeof value === "object" && value !== null) {
-        const isValueSceneEntity =
-            typeof (value as any).getClassName === "function" &&
-            /Texture|Material|Light|Camera|Mesh/i.test((value as any).getClassName());
+        const isValueSceneEntity = typeof (value as any).getClassName === "function" && /Texture|Material|Light|Camera|Mesh/i.test((value as any).getClassName());
         if (!isValueSceneEntity && "copyFromFloats" in (existing as object) && typeof (existing as any).copyFromFloats === "function") {
             const v = value as Record<string, number>;
             if ("r" in v) {
