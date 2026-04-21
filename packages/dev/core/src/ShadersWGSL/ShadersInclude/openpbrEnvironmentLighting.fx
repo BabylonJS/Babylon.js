@@ -224,8 +224,6 @@
         conductorIblFresnel = mix(conductorIblFresnel, thinFilmConductorFresnel, thin_film_weight * thin_film_ior_scale);
     #endif
 
-    
-
     var slab_diffuse_ibl: vec3f = vec3f(0., 0., 0.);
     var slab_glossy_ibl: vec3f = vec3f(0., 0., 0.);
     var slab_metal_ibl: vec3f = vec3f(0., 0., 0.);

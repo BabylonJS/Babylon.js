@@ -293,6 +293,11 @@ void main(void) {
                     // This allows us to capture higher order scattering effects that aren't possible with just a single scatter sample.
                     vec3 mfp = vec3(100.0) / volumeParams.extinction_coeff;
                     vec3 scattered_light_from_irradiance_texture = sss_convolve(sceneIrradianceSampler, sceneDepthSampler, renderTargetSize, mfp, projection, inverseProjection, 16, noise.xy);
+                    float numLights = float(LIGHTCOUNT);
+                    #ifdef REFLECTION
+                        numLights += 1.0;
+                    #endif
+                    scattered_light_from_irradiance_texture /= numLights;
                 #else
                     vec3 scattered_light_from_irradiance_texture = vec3(0.0);
                 #endif
@@ -348,15 +353,7 @@ void main(void) {
 
     // __________________________ Direct Lighting ____________________________
     vec3 material_surface_direct = vec3(0., 0., 0.);
-    // The refracted background is basically an environment contribution so it's
-    // included in the environment lighting section above. However, if we don't
-    // have IBL enabled, we still need to compute the refracted background here and
-    // will split it between all the lights.
-    // #ifdef REFLECTION
-    //     slab_translucent_background = vec4(0., 0., 0., 1.);
-    // #else
-    //     slab_translucent_background /= float(LIGHTCOUNT); // Average the background contribution over the number of lights
-    // #endif
+    
     #if defined(LIGHT0)
         float aggShadow = 0.;
         #include<openpbrDirectLightingInit>[0..maxSimultaneousLights]

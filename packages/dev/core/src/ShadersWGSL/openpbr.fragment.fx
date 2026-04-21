@@ -271,7 +271,12 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
                     // If we have a precomputed multi-scatter texture, we can use the scatter vector to sample it and get a more accurate scattered environment light.
                     // This allows us to capture higher order scattering effects that aren't possible with just a single scatter sample.
                     let mfp: vec3f = vec3f(100.0f) / volumeParams.extinction_coeff;
-                    let scattered_light_from_irradiance_texture: vec3f = sss_convolve(sceneIrradianceSampler, sceneDepthSampler, uniforms.renderTargetSize, mfp, scene.projection, scene.inverseProjection, 16, noise.xy);
+                    var scattered_light_from_irradiance_texture: vec3f = sss_convolve(sceneIrradianceSampler, sceneDepthSampler, uniforms.renderTargetSize, mfp, scene.projection, scene.inverseProjection, 16, noise.xy);
+                    var numLights = f32(LIGHTCOUNT);
+                    #ifdef REFLECTION
+                        numLights += 1.0f;
+                    #endif
+                    scattered_light_from_irradiance_texture /= vec3f(numLights);
                 #else
                     let scattered_light_from_irradiance_texture: vec3f = vec3f(0.0f);
                 #endif
@@ -328,15 +333,6 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
 
     // __________________________ Direct Lighting ____________________________
     var material_surface_direct: vec3f = vec3f(0.f, 0.f, 0.f);
-    // The refracted background is basically an environment contribution so it's
-    // included in the environment lighting section above. However, if we don't
-    // have IBL enabled, we still need to compute the refracted background here and
-    // will split it between all the lights.
-    // #ifdef REFLECTION
-    //     slab_translucent_background = vec4f(0.f, 0.f, 0.f, 1.f);
-    // #else
-    //     slab_translucent_background /= f32(LIGHTCOUNT); // Average the background contribution over the number of lights
-    // #endif
     #if defined(LIGHT0)
         var aggShadow: f32 = 0.f;
         #include<openpbrDirectLightingInit>[0..maxSimultaneousLights]
