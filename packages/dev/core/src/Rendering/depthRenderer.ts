@@ -561,13 +561,20 @@ export class DepthRenderer {
         PrepareStringDefinesForClipPlanes(material, scene, defines);
 
         // Get correct effect
-        // Use the depth map's render pass ID to look up / create the draw wrapper. isReady can be
-        // called outside of the depth renderer's render pass (e.g. from the RTT's
-        // customIsReadyFunction during scene.isReady()), in which case engine.currentRenderPassId
-        // would be the main render pass. Using it here would corrupt that pass's draw wrapper with
-        // the depth effect, which is especially harmful for frozen materials that won't restore the
-        // correct effect on their next isReady call (forum bug 63230).
-        const drawWrapper = subMesh._getDrawWrapper(this._depthMap.renderPassId, true)!;
+        // Determine which render pass id to use for the draw wrapper. isReady can be called from
+        // contexts where engine.currentRenderPassId is *not* one of the depth map's render pass ids
+        // (e.g. from EffectLayer / scene readiness checks). In that case, using
+        // engine.currentRenderPassId would stamp the depth effect onto the main pass's draw wrapper,
+        // which is especially harmful for frozen materials that won't restore the correct effect on
+        // their next isReady call (forum bug 63230).
+        // When engine.currentRenderPassId already belongs to this depth map (the normal in-pass
+        // case, including multi-pass render targets like cube/array depth textures), keep using it
+        // so each pass keeps its own draw wrapper. Otherwise fall back to the depth map's primary
+        // render pass id.
+        const currentPassId = engine.currentRenderPassId;
+        const depthPassIds = this._depthMap.renderPassIds;
+        const passId = depthPassIds.includes(currentPassId) ? currentPassId : this._depthMap.renderPassId;
+        const drawWrapper = subMesh._getDrawWrapper(passId, true)!;
         const cachedDefines = drawWrapper.defines;
         const join = defines.join("\n");
         if (cachedDefines !== join) {
