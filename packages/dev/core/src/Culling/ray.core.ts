@@ -876,11 +876,11 @@ function InternalPick(
                     // the user only asked for a bounding info check so we can return
                     return result;
                 }
-                const thinMatrixData = (mesh as Mesh)._thinInstanceDataStorage?.matrixData;
+                const thinMatrixData = (mesh as Mesh)._thinInstanceDataStorage.matrixData;
                 if (thinMatrixData) {
                     const thinMatrix = TmpVectors.Matrix[0];
                     const combinedWorld = TmpVectors.Matrix[1];
-                    const instancesCount = (mesh as Mesh).thinInstanceCount;
+                    const instancesCount = Math.min((mesh as Mesh).thinInstanceCount, thinMatrixData.length >> 4);
                     for (let index = 0; index < instancesCount; index++) {
                         if (predicate && !predicate(mesh, index)) {
                             continue;
@@ -947,11 +947,11 @@ function InternalMultiPick(
         if (mesh.hasThinInstances && (mesh as Mesh).thinInstanceEnablePicking) {
             const result = picker(null, rayFunction, mesh, world, true, true, trianglePredicate);
             if (result) {
-                const thinMatrixData = (mesh as Mesh)._thinInstanceDataStorage?.matrixData;
+                const thinMatrixData = (mesh as Mesh)._thinInstanceDataStorage.matrixData;
                 if (thinMatrixData) {
                     const thinMatrix = TmpVectors.Matrix[0];
                     const combinedWorld = TmpVectors.Matrix[1];
-                    const instancesCount = (mesh as Mesh).thinInstanceCount;
+                    const instancesCount = Math.min((mesh as Mesh).thinInstanceCount, thinMatrixData.length >> 4);
                     for (let index = 0; index < instancesCount; index++) {
                         if (predicate && !predicate(mesh, index)) {
                             continue;
