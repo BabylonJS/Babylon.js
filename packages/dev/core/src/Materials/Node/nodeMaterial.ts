@@ -62,7 +62,7 @@ import { type PrePassOutputBlock } from "./Blocks/Fragment/prePassOutputBlock";
 import { type NodeMaterialTeleportOutBlock } from "./Blocks/Teleport/teleportOutBlock";
 import { type NodeMaterialTeleportInBlock } from "./Blocks/Teleport/teleportInBlock";
 import { Logger } from "core/Misc/logger";
-import { PrepareDefinesForCamera, PrepareDefinesForPrePass } from "../materialHelper.functions";
+import { PrepareDefinesForCamera, PrepareDefinesForPrePass, AreLightsTexturesReady } from "../materialHelper.functions";
 import { ImageProcessingDefinesMixin } from "../imageProcessingConfiguration.defines";
 import { ShaderLanguage } from "../shaderLanguage";
 import { AbstractEngine } from "../../Engines/abstractEngine";
@@ -1660,6 +1660,10 @@ export class NodeMaterial extends NodeMaterialBase {
 
         // Check if blocks are ready
         if (this._sharedData.blockingBlocks.some((b) => !b.isReady(mesh, this, defines, useInstances))) {
+            return false;
+        }
+
+        if (!AreLightsTexturesReady(scene, mesh, this.maxSimultaneousLights)) {
             return false;
         }
 

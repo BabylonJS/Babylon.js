@@ -7,7 +7,7 @@ import { useToast } from "shared-ui-components/fluent/primitives/toast";
 import { Tooltip } from "shared-ui-components/fluent/primitives/tooltip";
 import { useObservableState } from "shared-ui-components/modularTool/hooks/observableHooks";
 import { type ServiceDefinition } from "shared-ui-components/modularTool/modularity/serviceDefinition";
-import { type ICliConnectionStatus, CliConnectionStatusIdentity } from "./cli/cliConnectionStatus";
+import { type ICliConnectionStatus, CliConnectionStatusIdentity } from "shared-ui-components/modularTool/services/cli/bridgeConnectionStatus";
 import { DefaultToolbarItemOrder } from "./defaultToolbarMetadata";
 import { type IShellService, ShellServiceIdentity } from "shared-ui-components/modularTool/services/shellService";
 

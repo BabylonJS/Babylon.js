@@ -8,7 +8,6 @@ import { Tools } from "core/Misc/tools";
 import { SerializationTools } from "../../serializationTools";
 import { CheckBoxLineComponent } from "../../sharedComponents/checkBoxLineComponent";
 import { DataStorage } from "core/Misc/dataStorage";
-import { VariablesPanelComponent } from "../variables/variablesPanelComponent";
 import { Engine } from "core/Engines/engine";
 import { FramePropertyTabComponent } from "../../graphSystem/properties/framePropertyComponent";
 import { FrameNodePortPropertyTabComponent } from "../../graphSystem/properties/frameNodePortPropertyComponent";
@@ -372,9 +371,6 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                         )}
                         <ButtonLineComponent label="Load from snippet server" onClick={async () => await this.loadFromSnippetAsync()} />
                         <ButtonLineComponent label="Save to snippet server" onClick={async () => await this.saveToSnippetServerAsync()} />
-                    </LineContainerComponent>
-                    <LineContainerComponent title="VARIABLES">
-                        <VariablesPanelComponent globalState={this.props.globalState} />
                     </LineContainerComponent>
                 </div>
             </div>

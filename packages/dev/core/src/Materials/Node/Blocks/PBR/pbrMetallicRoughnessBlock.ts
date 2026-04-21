@@ -889,6 +889,10 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
             }
         }
 
+        if (this.light && !this.light.areLightTexturesReady()) {
+            return false;
+        }
+
         return true;
     }
 

@@ -254,6 +254,20 @@ export class LightBlock extends NodeMaterialBlock {
     }
 
     /**
+     * Checks if the block is ready
+     * @param mesh - the mesh to check
+     * @param nodeMaterial - the node material
+     * @param defines - the list of defines
+     * @returns true if ready
+     */
+    public override isReady(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
+        if (this.light && !this.light.areLightTexturesReady()) {
+            return false;
+        }
+        return true;
+    }
+
+    /**
      * Update the uniforms and samples
      * @param state - the build state
      * @param nodeMaterial - the node material
@@ -401,6 +415,9 @@ export class LightBlock extends NodeMaterialBlock {
         const accessor = isWGSL ? "fragmentInputs." : "";
         state.sharedData.forcedBindableBlocks.push(this);
         state.sharedData.blocksWithDefines.push(this);
+        if (this.light) {
+            state.sharedData.blockingBlocks.push(this);
+        }
         const worldPos = this.worldPosition;
 
         let worldPosVariableName = worldPos.associatedVariableName;

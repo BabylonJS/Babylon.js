@@ -7,9 +7,8 @@
 #
 # Schedule: 1:00 AM PST daily (09:00 UTC)
 #
-# Secret variables (configure in pipeline UI):
-#   - ACCESS_KEY (BrowserStack)
-#   - USERNAME (BrowserStack)
+# Variable groups:
+#   - BabylonJS-BrowserStack (BROWSERSTACK_ACCESS_KEY, BROWSERSTACK_USERNAME)
 # =============================================================================
 
 trigger: none
@@ -25,7 +24,9 @@ schedules:
       always: false
 
 variables:
-    system.debug: false
+    - group: BabylonJS-BrowserStack
+    - name: system.debug
+      value: false
 
 pool:
     vmImage: ubuntu-latest
@@ -41,10 +42,10 @@ jobs:
             clean: true
             fetchTags: false
 
-          - task: NodeTool@0
-            displayName: "Use Node 22.4.1"
+          - task: UseNode@1
+            displayName: "Use Node 22.x"
             inputs:
-                versionSpec: "22.4.1"
+                version: "22.x"
 
           - script: npm install
             displayName: "NPM install"
@@ -59,8 +60,8 @@ jobs:
                 CI: "true"
                 BROWSER: "BrowserStack"
                 TIMEOUT: "20000"
-                BROWSERSTACK_USERNAME: $(USERNAME)
-                BROWSERSTACK_ACCESS_KEY: $(ACCESS_KEY)
+                BROWSERSTACK_USERNAME: $(BROWSERSTACK_USERNAME)
+                BROWSERSTACK_ACCESS_KEY: $(BROWSERSTACK_ACCESS_KEY)
                 BROWSERSTACK_BROWSER: "playwright-webkit@latest:OSX Sonoma"
                 EXCLUDE_REGEX_ARRAY: "Picking Visual Test,GUI Input Test,Export GLTF Extension KHR_texture_transform,PBR refraction,Procedural textures playground,GLTF Serializer Morph Target Animation,GLTF Serializer KHR materials clearcoat,Motion Blur"
                 SCREENSHOT_MAX_PIXEL: "6"
@@ -82,10 +83,10 @@ jobs:
             clean: true
             fetchTags: false
 
-          - task: NodeTool@0
-            displayName: "Use Node 22.4.1"
+          - task: UseNode@1
+            displayName: "Use Node 22.x"
             inputs:
-                versionSpec: "22.4.1"
+                version: "22.x"
 
           - script: npm install
             displayName: "NPM install"
@@ -100,8 +101,8 @@ jobs:
                 CI: "true"
                 BROWSER: "BrowserStack"
                 TIMEOUT: "20000"
-                BROWSERSTACK_USERNAME: $(USERNAME)
-                BROWSERSTACK_ACCESS_KEY: $(ACCESS_KEY)
+                BROWSERSTACK_USERNAME: $(BROWSERSTACK_USERNAME)
+                BROWSERSTACK_ACCESS_KEY: $(BROWSERSTACK_ACCESS_KEY)
                 BROWSERSTACK_BROWSER: "playwright-firefox@latest:OSX Sonoma"
                 EXCLUDE_REGEX_ARRAY: "Procedural textures playground,Normed 16 bits texture formats"
                 SCREENSHOT_THRESHOLD: "0.05"
@@ -124,10 +125,10 @@ jobs:
             clean: true
             fetchTags: false
 
-          - task: NodeTool@0
-            displayName: "Use Node 22.4.1"
+          - task: UseNode@1
+            displayName: "Use Node 22.x"
             inputs:
-                versionSpec: "22.4.1"
+                version: "22.x"
 
           - task: JavaToolInstaller@0
             displayName: "Use Java 21"

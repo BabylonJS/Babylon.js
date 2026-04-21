@@ -2,7 +2,7 @@ import { PerformanceViewerCollector } from "core/Misc/PerformanceViewer/performa
 import { DefaultPerfStrategies } from "../../misc/defaultPerfStrategies";
 import { type ServiceDefinition } from "shared-ui-components/modularTool/modularity/serviceDefinition";
 import { type ISceneContext, SceneContextIdentity } from "../sceneContext";
-import { type IInspectableCommandRegistry, InspectableCommandRegistryIdentity } from "./inspectableCommandRegistry";
+import { type IBridgeCommandRegistry, BridgeCommandRegistryIdentity } from "shared-ui-components/modularTool/services/cli/bridgeCommandRegistry";
 
 import "core/Misc/PerformanceViewer/performanceViewerSceneExtension";
 
@@ -10,9 +10,9 @@ import "core/Misc/PerformanceViewer/performanceViewerSceneExtension";
  * Service that registers CLI commands for performance tracing using the PerformanceViewerCollector.
  * start-perf-trace begins collecting data, stop-perf-trace stops and returns the collected data as JSON.
  */
-export const PerfTraceCommandServiceDefinition: ServiceDefinition<[], [IInspectableCommandRegistry, ISceneContext]> = {
+export const PerfTraceCommandServiceDefinition: ServiceDefinition<[], [IBridgeCommandRegistry, ISceneContext]> = {
     friendlyName: "Perf Trace Command Service",
-    consumes: [InspectableCommandRegistryIdentity, SceneContextIdentity],
+    consumes: [BridgeCommandRegistryIdentity, SceneContextIdentity],
     factory: (commandRegistry, sceneContext) => {
         let perfCollector: PerformanceViewerCollector | undefined;
 

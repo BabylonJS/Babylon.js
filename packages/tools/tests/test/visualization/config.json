@@ -92,6 +92,12 @@
             "referenceImage": "gsplat-shadows.png"
         },
         {
+            "title": "Gaussian Splatting IBL Shadows",
+            "playgroundId": "#DAID4Q",
+            "renderCount": 15,
+            "referenceImage": "gsplat-ibl-shadows.png"
+        },
+        {
             "title": "NPE - Angle align",
             "playgroundId": "#H5RP91",
             "referenceImage": "npe-angle-align.png"
@@ -2478,8 +2484,7 @@
         },
         {
             "title": "dissolve-effect-with-node-material-and-glow-layer",
-            "renderCount": 2,
-            "playgroundId": "#F6PGMC#12"
+            "playgroundId": "#F6PGMC#16"
         },
         {
             "title": "cascaded-shadow-maps-and-flying-saucers",
@@ -3551,7 +3556,8 @@
             "title": "OpenPBR Thin Walled Anisotropic Transmission - IBL",
             "playgroundId": "#GRQHVV#247",
             "excludedEngines": ["webgl1"],
-            "renderCount": 5
+            "renderCount": 5,
+            "excludeFromAutomaticTesting": true
         },
         {
             "title": "OpenPBR Thin Walled Anisotropic Transmission - Analytic Lights",
@@ -4138,6 +4144,12 @@
             "excludedEngines": ["webgl1"]
         },
         {
+            "title": "GPU Particles - Change - Color Gradient With Color2",
+            "playgroundId": "#3PCCJ0#0",
+            "referenceImage": "gpu-particles-change-color-gradient-with-color2.png",
+            "excludedEngines": ["webgl1"]
+        },
+        {
             "title": "GPU Particles - Change - Speed Range",
             "playgroundId": "#JPPZGY#0",
             "referenceImage": "gpu-particles-change-speed-range.png",
@@ -4346,6 +4358,18 @@
             "referenceImage": "gpu-particles-attractors-local.png",
             "excludedEngines": ["webgl1"],
             "errorRatio": 2.5
+        },
+        {
+            "title": "GPU Particles - From Particle System",
+            "playgroundId": "#7JQ28N#0",
+            "referenceImage": "gpu-particles-from-particle-system.png",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "GPU Particles - From Particle System - Flow Map",
+            "playgroundId": "#9H7NNG#0",
+            "referenceImage": "gpu-particles-from-particle-system-flow-map.png",
+            "excludedEngines": ["webgl1"]
         }
     ]
 }

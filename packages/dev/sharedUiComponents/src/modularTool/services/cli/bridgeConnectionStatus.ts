@@ -1,13 +1,17 @@
 import { type IReadonlyObservable } from "core/index";
-import { type IService } from "shared-ui-components/modularTool/modularity/serviceDefinition";
+import { type IService } from "../../modularity/serviceDefinition";
 
 /**
  * The service identity for the CLI connection status.
+ * @experimental
+ * @internal
  */
 export const CliConnectionStatusIdentity = Symbol("CliConnectionStatus");
 
 /**
- * Provides the connection status and enable/disable control for the Inspector CLI bridge.
+ * Provides the connection status and enable/disable control for the CLI bridge.
+ * @experimental
+ * @internal
  */
 export interface ICliConnectionStatus extends IService<typeof CliConnectionStatusIdentity> {
     /**

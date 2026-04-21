@@ -72,6 +72,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
     private static readonly _DefaultLoadingOptions = {
         keepInRam: false,
         flipY: false,
+        needsRotationScaleTextures: false,
         spzLibraryUrl: typeof WebAssembly === "object" ? "https://unpkg.com/@adobe/spz@0.2.0/dist/spz.js" : undefined,
     } as const satisfies SPLATLoadingOptions;
 
@@ -209,7 +210,9 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
 
         const makeGSFromParsedSOG = (parsedSOG: IParsedSplat) => {
             scene._blockEntityCollection = !!this._assetContainer;
-            const gaussianSplatting = this._loadingOptions.gaussianSplattingMesh ?? new GaussianSplattingMesh("GaussianSplatting", null, scene, this._loadingOptions.keepInRam);
+            const gaussianSplatting =
+                this._loadingOptions.gaussianSplattingMesh ??
+                new GaussianSplattingMesh("GaussianSplatting", null, scene, this._loadingOptions.keepInRam, this._loadingOptions.needsRotationScaleTextures);
             gaussianSplatting._parentContainer = this._assetContainer;
             babylonMeshesArray.push(gaussianSplatting);
             gaussianSplatting.updateData(parsedSOG.data, parsedSOG.sh, { flipY: false }, undefined, parsedSOG.shDegree);
@@ -264,7 +267,8 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
                     case Mode.Splat:
                         {
                             const gaussianSplatting =
-                                this._loadingOptions.gaussianSplattingMesh ?? new GaussianSplattingMesh("GaussianSplatting", null, scene, this._loadingOptions.keepInRam);
+                                this._loadingOptions.gaussianSplattingMesh ??
+                                new GaussianSplattingMesh("GaussianSplatting", null, scene, this._loadingOptions.keepInRam, this._loadingOptions.needsRotationScaleTextures);
                             gaussianSplatting._parentContainer = this._assetContainer;
                             babylonMeshesArray.push(gaussianSplatting);
                             gaussianSplatting.updateData(parsedPLY.data, parsedPLY.sh, { flipY: false }, undefined, parsedPLY.shDegree);
@@ -328,7 +332,9 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
 
         const applyParsedSPZ = (parsedSPZ: IParsedSplat, resolve: (meshes: typeof babylonMeshesArray) => void) => {
             scene._blockEntityCollection = !!this._assetContainer;
-            const gaussianSplatting = this._loadingOptions.gaussianSplattingMesh ?? new GaussianSplattingMesh("GaussianSplatting", null, scene, this._loadingOptions.keepInRam);
+            const gaussianSplatting =
+                this._loadingOptions.gaussianSplattingMesh ??
+                new GaussianSplattingMesh("GaussianSplatting", null, scene, this._loadingOptions.keepInRam, this._loadingOptions.needsRotationScaleTextures);
             if (parsedSPZ.trainedWithAntialiasing) {
                 const gsMaterial = gaussianSplatting.material as GaussianSplattingMaterial;
                 gsMaterial.kernelSize = 0.1;

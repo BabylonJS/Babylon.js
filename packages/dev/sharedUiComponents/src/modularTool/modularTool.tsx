@@ -12,7 +12,6 @@ import {
     useState,
 } from "react";
 
-import { type IDisposable } from "core/index";
 import { type IExtensionFeed } from "./extensibility/extensionFeed";
 import { type IExtension, type InstallFailedInfo, ExtensionManager } from "./extensibility/extensionManager";
 import { type WeaklyTypedServiceDefinition, ServiceContainer } from "./modularity/serviceContainer";
@@ -133,7 +132,7 @@ export type ModularToolOptions = {
  * @param options The options for the tool.
  * @returns A token that can be used to dispose of the tool.
  */
-export function MakeModularTool(options: ModularToolOptions): IDisposable {
+export function MakeModularTool(options: ModularToolOptions) {
     const { namespace, containerElement, serviceDefinitions, themeMode, showThemeSelector = true, extensionFeeds = [], parentContainer } = options;
 
     // Create the settings store immediately as it will be exposed to services and through React context.
@@ -143,6 +142,9 @@ export function MakeModularTool(options: ModularToolOptions): IDisposable {
     if (themeMode) {
         settingsStore.writeSetting(ThemeModeSettingDescriptor, themeMode);
     }
+
+    // This deferred resolves once the React effect cleanup (which disposes the ServiceContainer) is complete.
+    const disposeDeferred = new Deferred<void>();
 
     const modularToolRootComponent: FunctionComponent = () => {
         const classes = useStyles();
@@ -182,14 +184,14 @@ export function MakeModularTool(options: ModularToolOptions): IDisposable {
                 const serviceContainer = new ServiceContainer("ModularToolContainer", parentContainer);
 
                 // Expose the settings store as a service so other services can read/write settings.
-                await serviceContainer.addServiceAsync<[ISettingsStore], []>({
+                serviceContainer.addService<[ISettingsStore], []>({
                     friendlyName: "Settings Store",
                     produces: [SettingsStoreIdentity],
                     factory: () => settingsStore,
                 });
 
                 // Expose the react context service so other services can add React context providers.
-                await serviceContainer.addServiceAsync<[IReactContextService], []>({
+                serviceContainer.addService<[IReactContextService], []>({
                     friendlyName: "React Context Service",
                     produces: [ReactContextServiceIdentity],
                     factory: (): IReactContextService => ({
@@ -209,7 +211,7 @@ export function MakeModularTool(options: ModularToolOptions): IDisposable {
                 });
 
                 // Expose the toast service so non-React code (e.g. Observable callbacks) can show toasts.
-                await serviceContainer.addServiceAsync<[IToastService], []>({
+                serviceContainer.addService<[IToastService], []>({
                     friendlyName: "Toast Service",
                     produces: [ToastServiceIdentity],
                     factory: (): IToastService => ({
@@ -220,10 +222,10 @@ export function MakeModularTool(options: ModularToolOptions): IDisposable {
                 });
 
                 // Register the shell service (top level toolbar/side pane UI layout).
-                await serviceContainer.addServiceAsync(MakeShellServiceDefinition(options));
+                serviceContainer.addService(MakeShellServiceDefinition(options));
 
                 // Register a service that simply consumes the services we need before first render.
-                await serviceContainer.addServiceAsync<[], [IRootComponentService]>({
+                serviceContainer.addService<[], [IRootComponentService]>({
                     friendlyName: "Service Bootstrapper",
                     consumes: [RootComponentServiceIdentity],
                     factory: (rootComponent) => {
@@ -236,21 +238,21 @@ export function MakeModularTool(options: ModularToolOptions): IDisposable {
                 });
 
                 // Register the theme service (exposes the current theme to other services).
-                await serviceContainer.addServiceAsync(ThemeServiceDefinition);
+                serviceContainer.addService(ThemeServiceDefinition);
 
                 // Register the theme selector service (for selecting the theme) if theming is configured.
                 if (showThemeSelector) {
-                    await serviceContainer.addServiceAsync(ThemeSelectorServiceDefinition);
+                    serviceContainer.addService(ThemeSelectorServiceDefinition);
                 }
 
                 // Register the extension list service (for browsing/installing extensions) if extension feeds are provided.
                 if (extensionFeeds.length > 0) {
                     const { ExtensionListServiceDefinition } = await import("./services/extensionsListService");
-                    await serviceContainer.addServiceAsync(ExtensionListServiceDefinition);
+                    serviceContainer.addService(ExtensionListServiceDefinition);
                 }
 
                 // Register all external services (that make up a unique tool).
-                await serviceContainer.addServicesAsync(...serviceDefinitions);
+                serviceContainer.addServices(...serviceDefinitions);
 
                 // Create the extension manager, passing along the registry for runtime changes to the registered services.
                 const extensionManager = await ExtensionManager.CreateAsync(namespace, serviceContainer, extensionFeeds, setExtensionInstallError);
@@ -305,7 +307,8 @@ export function MakeModularTool(options: ModularToolOptions): IDisposable {
                     // eslint-disable-next-line github/no-then
                     .catch((error) => {
                         Logger.Error(`Failed to dispose of the modular tool: ${error}`);
-                    });
+                    })
+                    .finally(() => disposeDeferred.resolve());
             };
         }, []);
 
@@ -418,6 +421,7 @@ export function MakeModularTool(options: ModularToolOptions): IDisposable {
 
     let disposed = false;
     return {
+        // eslint-disable-next-line @typescript-eslint/promise-function-async
         dispose: () => {
             // Unmount and restore the original container element display.
             if (!disposed) {
@@ -425,6 +429,9 @@ export function MakeModularTool(options: ModularToolOptions): IDisposable {
                 reactRoot.unmount();
                 containerElement.style.display = originalContainerElementDisplay;
             }
+            // The promise resolves once the React effect cleanup
+            // (which disposes the ServiceContainer) has completed.
+            return disposeDeferred.promise;
         },
     };
 }

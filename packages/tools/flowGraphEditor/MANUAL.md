@@ -145,6 +145,23 @@ The **Speed** buttons in the toolbar let you slow down or speed up scene executi
 
 The time scale affects **everything**: scene animations, FlowGraph delta time, interpolation blocks, async waits, and timer-based logic. The active speed button is highlighted in orange. The selected speed persists when the scene is reloaded via Reset.
 
+### Execution Contexts
+
+A `FlowGraph` can have multiple **execution contexts**, each representing an independent execution of the same graph logic with its own variable state. This enables patterns like running the same "click to animate" behavior on 10 different meshes, each with its own score, health, or animation state.
+
+The **Ctx** dropdown in the toolbar shows all execution contexts. By default, there is one context ("Context 0") created when the graph starts.
+
+| Control          | Description                                                                                                             |
+| ---------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| **Ctx dropdown** | Select which context is active — debug highlighting, breakpoints, and the Variables panel reflect the selected context. |
+| **+**            | Create a new execution context. Each new context starts with independent variable state.                                |
+| **−**            | Remove the selected context. Disabled when only one context remains.                                                    |
+| **✎**            | Rename the selected context. Press Enter to confirm, Escape to cancel.                                                  |
+
+**Per-context variables:** Each context maintains its own set of user variables. When you switch contexts, the Variables panel shows the values for the selected context. Adding a variable via the Variables panel sets it on the currently selected context.
+
+**Serialization:** Context names and per-context variables are preserved when saving and loading flow graphs.
+
 ---
 
 ## Debug Mode
@@ -490,24 +507,24 @@ Right-click on the canvas, a node, a link, or a frame to open a context menu wit
 
 ### Canvas (Background)
 
-| Action              | Shortcut    | Description                                       |
-| ------------------- | ----------- | ------------------------------------------------- |
-| **Add Block...**    | Space       | Opens the block search box to add a new block     |
-| **Paste**           | Ctrl+V      | Pastes previously copied blocks                   |
-| **Create Sticky Note** | Ctrl+M  | Adds a sticky note at the click position          |
-| **Select All**      | Ctrl+A      | Selects all nodes and frames                      |
-| **Zoom to Fit**     | —           | Zooms to fit the entire graph                     |
-| **Reorganize**      | —           | Auto-layouts the graph                            |
+| Action                 | Shortcut | Description                                   |
+| ---------------------- | -------- | --------------------------------------------- |
+| **Add Block...**       | Space    | Opens the block search box to add a new block |
+| **Paste**              | Ctrl+V   | Pastes previously copied blocks               |
+| **Create Sticky Note** | Ctrl+M   | Adds a sticky note at the click position      |
+| **Select All**         | Ctrl+A   | Selects all nodes and frames                  |
+| **Zoom to Fit**        | —        | Zooms to fit the entire graph                 |
+| **Reorganize**         | —        | Auto-layouts the graph                        |
 
 ### Node(s)
 
-| Action                   | Shortcut    | Description                                               |
-| ------------------------ | ----------- | --------------------------------------------------------- |
-| **Delete**               | Del         | Deletes the selected node(s)                              |
-| **Duplicate**            | Ctrl+C/V    | Copies and pastes the selected node(s)                    |
-| **Add/Remove Breakpoint** | F9         | Toggles a breakpoint (single execution block only)        |
-| **Create Smart Group**   | Ctrl+G      | Groups 2+ selected blocks into a frame (when applicable)  |
-| **Disconnect All Ports** | —           | Disconnects all input and output ports from the selection |
+| Action                    | Shortcut | Description                                               |
+| ------------------------- | -------- | --------------------------------------------------------- |
+| **Delete**                | Del      | Deletes the selected node(s)                              |
+| **Duplicate**             | Ctrl+C/V | Copies and pastes the selected node(s)                    |
+| **Add/Remove Breakpoint** | F9       | Toggles a breakpoint (single execution block only)        |
+| **Create Smart Group**    | Ctrl+G   | Groups 2+ selected blocks into a frame (when applicable)  |
+| **Disconnect All Ports**  | —        | Disconnects all input and output ports from the selection |
 
 ### Link
 
@@ -517,10 +534,10 @@ Right-click on the canvas, a node, a link, or a frame to open a context menu wit
 
 ### Frame
 
-| Action           | Shortcut | Description                                |
-| ---------------- | -------- | ------------------------------------------ |
-| **Delete Frame** | Del      | Removes the frame (keeps contained blocks) |
-| **Collapse/Expand** | —     | Toggles the frame between collapsed and expanded states |
+| Action              | Shortcut | Description                                             |
+| ------------------- | -------- | ------------------------------------------------------- |
+| **Delete Frame**    | Del      | Removes the frame (keeps contained blocks)              |
+| **Collapse/Expand** | —        | Toggles the frame between collapsed and expanded states |
 
 ---
 
@@ -542,14 +559,14 @@ Brief notifications appear in the bottom-right corner of the editor for key oper
 
 ### Operations That Trigger Toasts
 
-| Event                          | Severity | Message                                   |
-| ------------------------------ | -------- | ----------------------------------------- |
-| File load success              | Success  | "Flow graph loaded from file"             |
-| File save                      | Success  | "Flow graph saved to file"                |
-| Snippet save                   | Success  | "Graph saved — ID: ... (copied to clipboard)" |
-| Snippet load success           | Success  | "Flow graph loaded from snippet ..."      |
-| Snippet save/load failure      | Error    | Error description                         |
-| Disconnect all ports           | Info     | "Disconnected all ports"                  |
+| Event                     | Severity | Message                                       |
+| ------------------------- | -------- | --------------------------------------------- |
+| File load success         | Success  | "Flow graph loaded from file"                 |
+| File save                 | Success  | "Flow graph saved to file"                    |
+| Snippet save              | Success  | "Graph saved — ID: ... (copied to clipboard)" |
+| Snippet load success      | Success  | "Flow graph loaded from snippet ..."          |
+| Snippet save/load failure | Error    | Error description                             |
+| Disconnect all ports      | Info     | "Disconnected all ports"                      |
 
 All toast messages are also logged to the Log panel for reference.
 

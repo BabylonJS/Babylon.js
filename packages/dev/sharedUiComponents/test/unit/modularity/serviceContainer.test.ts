@@ -41,39 +41,39 @@ describe("ServiceContainer", () => {
             container.dispose();
         });
 
-        it("can add and dispose a service with no contracts", async () => {
+        it("can add and dispose a service with no contracts", () => {
             const container = new ServiceContainer("test");
-            const factory = vi.fn(async () => ({}));
+            const factory = vi.fn(() => ({}));
             const def: ServiceDefinition<[]> = { friendlyName: "svc", factory };
-            const handle = await container.addServiceAsync(def);
+            const handle = container.addService(def);
 
             expect(factory).toHaveBeenCalledOnce();
             handle.dispose();
             container.dispose();
         });
 
-        it("calls dispose on service instance when removed", async () => {
+        it("calls dispose on service instance when removed", () => {
             const container = new ServiceContainer("test");
             const disposeSpy = vi.fn();
             const def: ServiceDefinition<[IContractA]> = {
                 friendlyName: "svc",
                 produces: [ContractA],
-                factory: async () => ({ value: "a", dispose: disposeSpy }),
+                factory: () => ({ value: "a", dispose: disposeSpy }),
             };
 
-            const handle = await container.addServiceAsync(def);
+            const handle = container.addService(def);
             handle.dispose();
 
             expect(disposeSpy).toHaveBeenCalledOnce();
             container.dispose();
         });
 
-        it("handles service factory returning void", async () => {
+        it("handles service factory returning void", () => {
             const container = new ServiceContainer("test");
-            const factory = vi.fn(async () => {});
+            const factory = vi.fn(() => {});
             const def: ServiceDefinition<[]> = { friendlyName: "svc", factory };
 
-            const handle = await container.addServiceAsync(def);
+            const handle = container.addService(def);
             expect(factory).toHaveBeenCalledOnce();
             handle.dispose();
             container.dispose();
@@ -85,37 +85,37 @@ describe("ServiceContainer", () => {
     // ---------------------------------------------------------------------------
 
     describe("dependency resolution", () => {
-        it("passes produced services as arguments to consuming factories", async () => {
+        it("passes produced services as arguments to consuming factories", () => {
             const container = new ServiceContainer("test");
             const serviceA: IContractA & Partial<IDisposable> = { value: "hello" };
 
             const defA: ServiceDefinition<[IContractA]> = {
                 friendlyName: "A",
                 produces: [ContractA],
-                factory: async () => serviceA,
+                factory: () => serviceA,
             };
 
-            const consumerFactory = vi.fn(async () => ({}));
+            const consumerFactory = vi.fn(() => ({}));
             const defConsumer: ServiceDefinition<[], [IContractA]> = {
                 friendlyName: "Consumer",
                 consumes: [ContractA],
                 factory: consumerFactory,
             };
 
-            await container.addServicesAsync(defA, defConsumer);
-            expect(consumerFactory).toHaveBeenCalledWith(serviceA, undefined);
+            container.addServices(defA, defConsumer);
+            expect(consumerFactory).toHaveBeenCalledWith(serviceA);
 
             container.dispose();
         });
 
-        it("sorts services by dependency order regardless of registration order", async () => {
+        it("sorts services by dependency order regardless of registration order", () => {
             const container = new ServiceContainer("test");
             const order: string[] = [];
 
             const defA: ServiceDefinition<[IContractA]> = {
                 friendlyName: "A",
                 produces: [ContractA],
-                factory: async () => {
+                factory: () => {
                     order.push("A");
                     return { value: "a" };
                 },
@@ -124,26 +124,26 @@ describe("ServiceContainer", () => {
             const defB: ServiceDefinition<[], [IContractA]> = {
                 friendlyName: "B",
                 consumes: [ContractA],
-                factory: async () => {
+                factory: () => {
                     order.push("B");
                 },
             };
 
             // Register consumer before producer.
-            await container.addServicesAsync(defB, defA);
+            container.addServices(defB, defA);
             expect(order).toEqual(["A", "B"]);
 
             container.dispose();
         });
 
-        it("supports a chain of dependencies (A → B → C)", async () => {
+        it("supports a chain of dependencies (A → B → C)", () => {
             const container = new ServiceContainer("test");
             const order: string[] = [];
 
             const defA: ServiceDefinition<[IContractA]> = {
                 friendlyName: "A",
                 produces: [ContractA],
-                factory: async () => {
+                factory: () => {
                     order.push("A");
                     return { value: "a" };
                 },
@@ -153,7 +153,7 @@ describe("ServiceContainer", () => {
                 friendlyName: "B",
                 produces: [ContractB],
                 consumes: [ContractA],
-                factory: async () => {
+                factory: () => {
                     order.push("B");
                     return { value: "b" };
                 },
@@ -162,12 +162,12 @@ describe("ServiceContainer", () => {
             const defC: ServiceDefinition<[], [IContractB]> = {
                 friendlyName: "C",
                 consumes: [ContractB],
-                factory: async () => {
+                factory: () => {
                     order.push("C");
                 },
             };
 
-            await container.addServicesAsync(defC, defB, defA);
+            container.addServices(defC, defB, defA);
             expect(order).toEqual(["A", "B", "C"]);
 
             container.dispose();
@@ -179,23 +179,23 @@ describe("ServiceContainer", () => {
     // ---------------------------------------------------------------------------
 
     describe("duplicate contracts", () => {
-        it("throws when adding two services that produce the same contract", async () => {
+        it("throws when adding two services that produce the same contract", () => {
             const container = new ServiceContainer("test");
             const def1: ServiceDefinition<[IContractA]> = {
                 friendlyName: "First",
                 produces: [ContractA],
-                factory: async () => ({ value: "1" }),
+                factory: () => ({ value: "1" }),
             };
 
-            await container.addServiceAsync(def1);
+            container.addService(def1);
 
             const def2: ServiceDefinition<[IContractA]> = {
                 friendlyName: "Second",
                 produces: [ContractA],
-                factory: async () => ({ value: "2" }),
+                factory: () => ({ value: "2" }),
             };
 
-            await expect(container.addServiceAsync(def2)).rejects.toThrow(/already been added/);
+            expect(() => container.addService(def2)).toThrow(/already been added/);
             container.dispose();
         });
     });
@@ -205,15 +205,15 @@ describe("ServiceContainer", () => {
     // ---------------------------------------------------------------------------
 
     describe("missing dependencies", () => {
-        it("throws when a consumed contract is not registered", async () => {
+        it("throws when a consumed contract is not registered", () => {
             const container = new ServiceContainer("test");
             const def: ServiceDefinition<[], [IContractA]> = {
                 friendlyName: "Consumer",
                 consumes: [ContractA],
-                factory: async () => {},
+                factory: () => {},
             };
 
-            await expect(container.addServiceAsync(def)).rejects.toThrow(/has not been registered/);
+            expect(() => container.addService(def)).toThrow(/has not been registered/);
             container.dispose();
         });
     });
@@ -223,59 +223,59 @@ describe("ServiceContainer", () => {
     // ---------------------------------------------------------------------------
 
     describe("service removal", () => {
-        it("throws when removing a service that still has dependents", async () => {
+        it("throws when removing a service that still has dependents", () => {
             const container = new ServiceContainer("test");
 
             const defA: ServiceDefinition<[IContractA]> = {
                 friendlyName: "A",
                 produces: [ContractA],
-                factory: async () => ({ value: "a" }),
+                factory: () => ({ value: "a" }),
             };
 
             const defConsumer: ServiceDefinition<[], [IContractA]> = {
                 friendlyName: "Consumer",
                 consumes: [ContractA],
-                factory: async () => {},
+                factory: () => {},
             };
 
-            const handleA = await container.addServiceAsync(defA);
-            await container.addServiceAsync(defConsumer);
+            const handleA = container.addService(defA);
+            container.addService(defConsumer);
 
             expect(() => handleA.dispose()).toThrow(/has dependents.*Consumer/);
             container.dispose();
         });
 
-        it("allows removal after dependent is removed first", async () => {
+        it("allows removal after dependent is removed first", () => {
             const container = new ServiceContainer("test");
 
             const defA: ServiceDefinition<[IContractA]> = {
                 friendlyName: "A",
                 produces: [ContractA],
-                factory: async () => ({ value: "a" }),
+                factory: () => ({ value: "a" }),
             };
 
             const defConsumer: ServiceDefinition<[], [IContractA]> = {
                 friendlyName: "Consumer",
                 consumes: [ContractA],
-                factory: async () => {},
+                factory: () => {},
             };
 
-            const handleA = await container.addServiceAsync(defA);
-            const handleConsumer = await container.addServiceAsync(defConsumer);
+            const handleA = container.addService(defA);
+            const handleConsumer = container.addService(defConsumer);
 
             handleConsumer.dispose();
             expect(() => handleA.dispose()).not.toThrow();
             container.dispose();
         });
 
-        it("disposes services in reverse order via addServicesAsync handle", async () => {
+        it("disposes services in reverse order via addServices handle", () => {
             const container = new ServiceContainer("test");
             const order: string[] = [];
 
             const defA: ServiceDefinition<[IContractA]> = {
                 friendlyName: "A",
                 produces: [ContractA],
-                factory: async () => ({
+                factory: () => ({
                     value: "a",
                     dispose: () => order.push("A disposed"),
                 }),
@@ -284,12 +284,12 @@ describe("ServiceContainer", () => {
             const defConsumer: ServiceDefinition<[], [IContractA]> = {
                 friendlyName: "Consumer",
                 consumes: [ContractA],
-                factory: async () => ({
+                factory: () => ({
                     dispose: () => order.push("Consumer disposed"),
                 }),
             };
 
-            const handle = await container.addServicesAsync(defA, defConsumer);
+            const handle = container.addServices(defA, defConsumer);
             handle.dispose();
 
             expect(order).toEqual(["Consumer disposed", "A disposed"]);
@@ -302,61 +302,20 @@ describe("ServiceContainer", () => {
     // ---------------------------------------------------------------------------
 
     describe("disposed container", () => {
-        it("throws when adding to a disposed container", async () => {
+        it("throws when adding to a disposed container", () => {
             const container = new ServiceContainer("test");
             container.dispose();
 
-            const def: ServiceDefinition<[]> = { friendlyName: "svc", factory: async () => {} };
-            await expect(container.addServiceAsync(def)).rejects.toThrow(/disposed/);
+            const def: ServiceDefinition<[]> = { friendlyName: "svc", factory: () => {} };
+            expect(() => container.addService(def)).toThrow(/disposed/);
         });
 
-        it("throws when adding services to a disposed container via addServicesAsync", async () => {
+        it("throws when adding services to a disposed container via addServices", () => {
             const container = new ServiceContainer("test");
             container.dispose();
 
-            const def: ServiceDefinition<[]> = { friendlyName: "svc", factory: async () => {} };
-            await expect(container.addServicesAsync(def)).rejects.toThrow(/disposed/);
-        });
-    });
-
-    // ---------------------------------------------------------------------------
-    // Abort signal
-    // ---------------------------------------------------------------------------
-
-    describe("abort signal", () => {
-        it("passes abort signal to service factory", async () => {
-            const container = new ServiceContainer("test");
-            const factory = vi.fn(async () => {});
-            const controller = new AbortController();
-
-            await container.addServiceAsync({ friendlyName: "svc", factory }, controller.signal);
-            expect(factory).toHaveBeenCalledWith(controller.signal);
-
-            container.dispose();
-        });
-
-        it("passes abort signal as last arg after dependencies", async () => {
-            const container = new ServiceContainer("test");
-            const serviceA: IContractA & Partial<IDisposable> = { value: "hello" };
-
-            const defA: ServiceDefinition<[IContractA]> = {
-                friendlyName: "A",
-                produces: [ContractA],
-                factory: async () => serviceA,
-            };
-
-            const consumerFactory = vi.fn(async () => {});
-            const defConsumer: ServiceDefinition<[], [IContractA]> = {
-                friendlyName: "Consumer",
-                consumes: [ContractA],
-                factory: consumerFactory,
-            };
-
-            const controller = new AbortController();
-            await container.addServicesAsync(defA, defConsumer, controller.signal);
-            expect(consumerFactory).toHaveBeenCalledWith(serviceA, controller.signal);
-
-            container.dispose();
+            const def: ServiceDefinition<[]> = { friendlyName: "svc", factory: () => {} };
+            expect(() => container.addServices(def)).toThrow(/disposed/);
         });
     });
 
@@ -365,25 +324,25 @@ describe("ServiceContainer", () => {
     // ---------------------------------------------------------------------------
 
     describe("factory errors", () => {
-        it("rolls back all services if a factory throws during addServicesAsync", async () => {
+        it("rolls back all services if a factory throws during addServices", () => {
             const container = new ServiceContainer("test");
             const disposeSpy = vi.fn();
 
             const defA: ServiceDefinition<[IContractA]> = {
                 friendlyName: "A",
                 produces: [ContractA],
-                factory: async () => ({ value: "a", dispose: disposeSpy }),
+                factory: () => ({ value: "a", dispose: disposeSpy }),
             };
 
             const defFailing: ServiceDefinition<[], [IContractA]> = {
                 friendlyName: "Failing",
                 consumes: [ContractA],
-                factory: async () => {
+                factory: () => {
                     throw new Error("Factory failed");
                 },
             };
 
-            await expect(container.addServicesAsync(defA, defFailing)).rejects.toThrow("Factory failed");
+            expect(() => container.addServices(defA, defFailing)).toThrow("Factory failed");
 
             // A should have been cleaned up.
             expect(disposeSpy).toHaveBeenCalledOnce();
@@ -392,9 +351,9 @@ describe("ServiceContainer", () => {
             const defB: ServiceDefinition<[IContractA]> = {
                 friendlyName: "B",
                 produces: [ContractA],
-                factory: async () => ({ value: "b" }),
+                factory: () => ({ value: "b" }),
             };
-            const handle = await container.addServiceAsync(defB);
+            const handle = container.addService(defB);
             handle.dispose();
             container.dispose();
         });
@@ -405,54 +364,54 @@ describe("ServiceContainer", () => {
     // ---------------------------------------------------------------------------
 
     describe("parent-child containers", () => {
-        it("resolves dependencies from parent container", async () => {
+        it("resolves dependencies from parent container", () => {
             const parent = new ServiceContainer("parent");
             const serviceA: IContractA & Partial<IDisposable> = { value: "from parent" };
 
-            await parent.addServiceAsync({
+            parent.addService({
                 friendlyName: "A",
                 produces: [ContractA],
-                factory: async () => serviceA,
-            } satisfies ServiceDefinition<[IContractA]>);
+                factory: () => serviceA,
+            });
 
             const child = new ServiceContainer("child", parent);
-            const consumerFactory = vi.fn(async () => {});
-            await child.addServiceAsync({
+            const consumerFactory = vi.fn(() => {});
+            child.addService<[], [IContractA]>({
                 friendlyName: "Consumer",
                 consumes: [ContractA],
                 factory: consumerFactory,
-            } satisfies ServiceDefinition<[], [IContractA]>);
+            });
 
-            expect(consumerFactory).toHaveBeenCalledWith(serviceA, undefined);
+            expect(consumerFactory).toHaveBeenCalledWith(serviceA);
 
             child.dispose();
             parent.dispose();
         });
 
-        it("prefers local services over parent services", async () => {
+        it("prefers local services over parent services", () => {
             const parent = new ServiceContainer("parent");
-            await parent.addServiceAsync({
+            parent.addService({
                 friendlyName: "ParentA",
                 produces: [ContractA],
-                factory: async () => contractA("parent"),
-            } satisfies ServiceDefinition<[IContractA]>);
+                factory: () => contractA("parent"),
+            });
 
             const child = new ServiceContainer("child", parent);
             const childA: IContractA & Partial<IDisposable> = { value: "child" };
-            await child.addServiceAsync({
+            child.addService({
                 friendlyName: "ChildA",
                 produces: [ContractA],
-                factory: async () => childA,
-            } satisfies ServiceDefinition<[IContractA]>);
+                factory: () => childA,
+            });
 
-            const consumerFactory = vi.fn(async () => {});
-            await child.addServiceAsync({
+            const consumerFactory = vi.fn(() => {});
+            child.addService<[], [IContractA]>({
                 friendlyName: "Consumer",
                 consumes: [ContractA],
                 factory: consumerFactory,
-            } satisfies ServiceDefinition<[], [IContractA]>);
+            });
 
-            expect(consumerFactory).toHaveBeenCalledWith(childA, undefined);
+            expect(consumerFactory).toHaveBeenCalledWith(childA);
 
             child.dispose();
             parent.dispose();
@@ -476,20 +435,20 @@ describe("ServiceContainer", () => {
             expect(() => parent.dispose()).not.toThrow();
         });
 
-        it("tracks parent dependency as dependent for removal checks", async () => {
+        it("tracks parent dependency as dependent for removal checks", () => {
             const parent = new ServiceContainer("parent");
-            const handleA = await parent.addServiceAsync({
+            const handleA = parent.addService({
                 friendlyName: "A",
                 produces: [ContractA],
-                factory: async () => contractA("a"),
-            } satisfies ServiceDefinition<[IContractA]>);
+                factory: () => contractA("a"),
+            });
 
             const child = new ServiceContainer("child", parent);
-            await child.addServiceAsync({
+            child.addService<[], [IContractA]>({
                 friendlyName: "Consumer",
                 consumes: [ContractA],
-                factory: async () => {},
-            } satisfies ServiceDefinition<[], [IContractA]>);
+                factory: () => {},
+            });
 
             expect(() => handleA.dispose()).toThrow(/has dependents/);
 
@@ -498,20 +457,20 @@ describe("ServiceContainer", () => {
             parent.dispose();
         });
 
-        it("cleans up parent dependent tracking when child service is removed", async () => {
+        it("cleans up parent dependent tracking when child service is removed", () => {
             const parent = new ServiceContainer("parent");
-            const handleA = await parent.addServiceAsync({
+            const handleA = parent.addService({
                 friendlyName: "A",
                 produces: [ContractA],
-                factory: async () => contractA("a"),
-            } satisfies ServiceDefinition<[IContractA]>);
+                factory: () => contractA("a"),
+            });
 
             const child = new ServiceContainer("child", parent);
-            const handleConsumer = await child.addServiceAsync({
+            const handleConsumer = child.addService<[], [IContractA]>({
                 friendlyName: "Consumer",
                 consumes: [ContractA],
-                factory: async () => {},
-            } satisfies ServiceDefinition<[], [IContractA]>);
+                factory: () => {},
+            });
 
             handleConsumer.dispose();
             expect(() => handleA.dispose()).not.toThrow();
@@ -526,39 +485,39 @@ describe("ServiceContainer", () => {
     // ---------------------------------------------------------------------------
 
     describe("dispose", () => {
-        it("disposes all services in reverse order", async () => {
+        it("disposes all services in reverse order", () => {
             const container = new ServiceContainer("test");
             const order: string[] = [];
 
-            await container.addServiceAsync({
+            container.addService({
                 friendlyName: "First",
                 produces: [ContractA],
-                factory: async () => ({ value: "a", dispose: () => order.push("First") }),
-            } satisfies ServiceDefinition<[IContractA]>);
+                factory: () => ({ value: "a", dispose: () => order.push("First") }),
+            });
 
-            await container.addServiceAsync({
+            container.addService<[], [IContractA]>({
                 friendlyName: "Second",
                 consumes: [ContractA],
-                factory: async () => ({ dispose: () => order.push("Second") }),
-            } satisfies ServiceDefinition<[], [IContractA]>);
+                factory: () => ({ dispose: () => order.push("Second") }),
+            });
 
             container.dispose();
             expect(order).toEqual(["Second", "First"]);
         });
 
-        it("clears all internal state on dispose", async () => {
+        it("clears all internal state on dispose", () => {
             const container = new ServiceContainer("test");
 
-            await container.addServiceAsync({
+            container.addService({
                 friendlyName: "A",
                 produces: [ContractA],
-                factory: async () => contractA("a"),
-            } satisfies ServiceDefinition<[IContractA]>);
+                factory: () => contractA("a"),
+            });
 
             container.dispose();
 
-            const def: ServiceDefinition<[]> = { friendlyName: "B", factory: async () => {} };
-            await expect(container.addServiceAsync(def)).rejects.toThrow(/disposed/);
+            const def: ServiceDefinition<[]> = { friendlyName: "B", factory: () => {} };
+            expect(() => container.addService(def)).toThrow(/disposed/);
         });
     });
 
@@ -567,43 +526,43 @@ describe("ServiceContainer", () => {
     // ---------------------------------------------------------------------------
 
     describe("multiple contracts", () => {
-        it("allows a single service to produce multiple contracts", async () => {
+        it("allows a single service to produce multiple contracts", () => {
             const container = new ServiceContainer("test");
             const multiService = contractAB("multi");
 
-            await container.addServiceAsync({
+            container.addService({
                 friendlyName: "Multi",
                 produces: [ContractA, ContractB],
-                factory: async () => multiService,
-            } satisfies ServiceDefinition<[IContractA, IContractB]>);
+                factory: () => multiService,
+            });
 
-            const consumerFactory = vi.fn(async () => {});
-            await container.addServiceAsync({
+            const consumerFactory = vi.fn(() => {});
+            container.addService<[], [IContractA]>({
                 friendlyName: "ConsumerA",
                 consumes: [ContractA],
                 factory: consumerFactory,
-            } satisfies ServiceDefinition<[], [IContractA]>);
+            });
 
-            expect(consumerFactory).toHaveBeenCalledWith(multiService, undefined);
+            expect(consumerFactory).toHaveBeenCalledWith(multiService);
 
             container.dispose();
         });
 
-        it("tracks dependents per contract for multi-contract services", async () => {
+        it("tracks dependents per contract for multi-contract services", () => {
             const container = new ServiceContainer("test");
             const multiService = contractAB("multi");
 
-            const handleMulti = await container.addServiceAsync({
+            const handleMulti = container.addService({
                 friendlyName: "Multi",
                 produces: [ContractA, ContractB],
-                factory: async () => multiService,
-            } satisfies ServiceDefinition<[IContractA, IContractB]>);
+                factory: () => multiService,
+            });
 
-            const handleConsumer = await container.addServiceAsync({
+            const handleConsumer = container.addService<[], [IContractA]>({
                 friendlyName: "Consumer",
                 consumes: [ContractA],
-                factory: async () => {},
-            } satisfies ServiceDefinition<[], [IContractA]>);
+                factory: () => {},
+            });
 
             expect(() => handleMulti.dispose()).toThrow(/has dependents/);
 
@@ -619,26 +578,92 @@ describe("ServiceContainer", () => {
     // ---------------------------------------------------------------------------
 
     describe("synchronous factory", () => {
-        it("works with a synchronous factory function", async () => {
+        it("works with a synchronous factory function", () => {
             const container = new ServiceContainer("test");
 
-            await container.addServiceAsync({
+            container.addService({
                 friendlyName: "SyncService",
                 produces: [ContractA],
                 factory: () => contractA("sync"),
-            } satisfies ServiceDefinition<[IContractA]>);
+            });
 
-            const consumerFactory = vi.fn(async () => {});
-            const handleConsumer = await container.addServiceAsync({
+            const consumerFactory = vi.fn(() => {});
+            const handleConsumer = container.addService<[], [IContractA]>({
                 friendlyName: "Consumer",
                 consumes: [ContractA],
                 factory: consumerFactory,
-            } satisfies ServiceDefinition<[], [IContractA]>);
+            });
 
             expect((consumerFactory.mock.calls[0] as unknown[])[0]).toHaveProperty("value", "sync");
 
             handleConsumer.dispose();
             container.dispose();
+        });
+    });
+
+    // ---------------------------------------------------------------------------
+    // Cross-container dependency resolution
+    // ---------------------------------------------------------------------------
+
+    describe("cross-container dependency resolution", () => {
+        it("child resolves dependency from parent immediately", () => {
+            const parent = new ServiceContainer("parent");
+            const parentService = contractA("ready");
+
+            parent.addServices({
+                friendlyName: "ParentService",
+                produces: [ContractA],
+                factory: () => parentService,
+            });
+
+            const child = new ServiceContainer("child", parent);
+            const consumerFactory = vi.fn(() => {});
+            child.addServices({
+                friendlyName: "ChildConsumer",
+                consumes: [ContractA],
+                factory: consumerFactory,
+            });
+
+            expect(consumerFactory).toHaveBeenCalledWith(parentService);
+
+            child.dispose();
+            parent.dispose();
+        });
+
+        it("multiple children resolve the same parent service", () => {
+            const parent = new ServiceContainer("parent");
+            const parentService = contractA("shared");
+
+            parent.addServices({
+                friendlyName: "ParentService",
+                produces: [ContractA],
+                factory: () => parentService,
+            });
+
+            const child1 = new ServiceContainer("child1", parent);
+            const child2 = new ServiceContainer("child2", parent);
+
+            const consumer1 = vi.fn(() => {});
+            const consumer2 = vi.fn(() => {});
+
+            child1.addServices({
+                friendlyName: "Consumer1",
+                consumes: [ContractA],
+                factory: consumer1,
+            });
+
+            child2.addServices({
+                friendlyName: "Consumer2",
+                consumes: [ContractA],
+                factory: consumer2,
+            });
+
+            expect(consumer1).toHaveBeenCalledWith(parentService);
+            expect(consumer2).toHaveBeenCalledWith(parentService);
+
+            child1.dispose();
+            child2.dispose();
+            parent.dispose();
         });
     });
 });
