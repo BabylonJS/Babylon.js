@@ -124,7 +124,7 @@ export class PickingInfo {
 
         const transformNormalToWorld = (pickedMesh: AbstractMesh, n: Vector3) => {
             if (this.thinInstanceIndex !== -1) {
-                const thinMatrixData = (pickedMesh as Mesh)._thinInstanceDataStorage?.matrixData;
+                const thinMatrixData = (pickedMesh as Mesh)._thinInstanceDataStorage.matrixData;
                 const index = this.thinInstanceIndex << 4;
 
                 if (thinMatrixData && thinMatrixData.length > index) {
