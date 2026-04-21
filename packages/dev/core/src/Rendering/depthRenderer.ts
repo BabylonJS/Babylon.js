@@ -561,7 +561,13 @@ export class DepthRenderer {
         PrepareStringDefinesForClipPlanes(material, scene, defines);
 
         // Get correct effect
-        const drawWrapper = subMesh._getDrawWrapper(undefined, true)!;
+        // Use the depth map's render pass ID to look up / create the draw wrapper. isReady can be
+        // called outside of the depth renderer's render pass (e.g. from the RTT's
+        // customIsReadyFunction during scene.isReady()), in which case engine.currentRenderPassId
+        // would be the main render pass. Using it here would corrupt that pass's draw wrapper with
+        // the depth effect, which is especially harmful for frozen materials that won't restore the
+        // correct effect on their next isReady call (forum bug 63230).
+        const drawWrapper = subMesh._getDrawWrapper(this._depthMap.renderPassId, true)!;
         const cachedDefines = drawWrapper.defines;
         const join = defines.join("\n");
         if (cachedDefines !== join) {
