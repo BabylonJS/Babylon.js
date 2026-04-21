@@ -737,7 +737,9 @@ export class GaussianSplattingMaterial extends PushMaterial {
         shaderMaterial.backFaceCulling = false;
         shaderMaterial.onBindObservable.add((mesh: AbstractMesh) => {
             const gsMaterial = mesh.material as GaussianSplattingMaterial;
-            const gsMesh = mesh as GaussianSplattingMesh;
+            // Use the source mesh from the material for GS-specific properties (textures, etc.),
+            // since the bound mesh may be a camera mesh proxy without those properties.
+            const gsMesh = (gsMaterial?.getSourceMesh() ?? mesh) as GaussianSplattingMesh;
             GaussianSplattingMaterial._BindEffectUniforms(gsMesh, gsMaterial, shaderMaterial, scene);
         });
         return shaderMaterial;
@@ -768,7 +770,9 @@ export class GaussianSplattingMaterial extends PushMaterial {
 
         shaderMaterial.onBindObservable.add((mesh: AbstractMesh) => {
             const gsMaterial = mesh.material as GaussianSplattingMaterial;
-            const gsMesh = mesh as GaussianSplattingMesh;
+            // Use the source mesh from the material for GS-specific properties (textures, etc.),
+            // since the bound mesh may be a camera mesh proxy without those properties.
+            const gsMesh = (gsMaterial?.getSourceMesh() ?? mesh) as GaussianSplattingMesh;
 
             GaussianSplattingMaterial._BindEffectUniforms(gsMesh, gsMaterial, shaderMaterial, scene);
         });

@@ -353,6 +353,11 @@ export class Parser {
             return undefined;
         }
 
+        // Create the anchor node so text layers have the same scene graph structure as shape layers:
+        // ControlNode (TRS) -> Node (Anchor) -> SpriteNode. Positioning then mirrors _parseShapes,
+        // using the layout-derived center returned by addLottieText.
+        const anchorNode = this._parseNullLayer(layer, transform, parent);
+
         // Build the ThinSprite from the texture packer information
         const sprite = new ThinSprite();
 
@@ -369,36 +374,26 @@ export class Parser {
 
         this._renderingManager.addSprite(sprite, this._currentLayerOriginalIndex, spriteInfo.atlasIndex);
 
+        // The text layout (justification, baseline, paragraph box) is already baked into
+        // spriteInfo.centerX/centerY (boundingBox.offsetX/offsetY). Y is negated because Lottie's
+        // Y axis points down while Babylon's sprite system has Y pointing up. Same pattern as _parseShapes.
         const positionProperty: Vector2Property = {
-            startValue: { x: transform.anchorPoint.startValue.x, y: transform.anchorPoint.startValue.y },
-            currentValue: { x: transform.anchorPoint.currentValue.x, y: transform.anchorPoint.currentValue.y },
+            startValue: { x: spriteInfo.centerX || 0, y: -spriteInfo.centerY || 0 },
+            currentValue: { x: spriteInfo.centerX || 0, y: -spriteInfo.centerY || 0 },
             currentKeyframeIndex: 0,
         };
 
-        let textAlignment = 0;
-        if (layer.t.d && layer.t.d.k && layer.t.d.k.length > 0) {
-            textAlignment = layer.t.d.k[0].s.j;
-        }
-
-        // The X offset of the text depends on the alignment of the text: 0=left, 1=right, 2=centered
-        // Sprites are centered by default, so that is why the offset is 0 for centered text
-        const xAlignmentOffset = textAlignment === 0 ? spriteInfo.widthPx / 2 : textAlignment === 1 ? -spriteInfo.widthPx / 2 : 0;
-        positionProperty.startValue.x += xAlignmentOffset;
-        positionProperty.currentValue.x += xAlignmentOffset;
-
-        // For text, its Y position is at the baseline, so we need to offset it by half the height of the text upwards
-        positionProperty.startValue.y += spriteInfo.heightPx / 2;
-        positionProperty.currentValue.y += spriteInfo.heightPx / 2;
-
-        return new SpriteNode(
+        new SpriteNode(
             "Sprite",
             sprite,
             positionProperty,
             undefined, // Rotation is not used for sprites final transform
             undefined, // Scale is not used for sprites final transform
             undefined, // Opacity is not used for sprites final transform
-            parent
+            anchorNode
         );
+
+        return anchorNode;
     }
 
     private _parseElements(elements: RawElement[] | undefined, parent: Node, rasterizationFrame: number): void {

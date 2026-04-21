@@ -45,6 +45,7 @@ import {
     PrepareUniformsAndSamplersList,
     PrepareUniformsAndSamplersForIBL,
     PrepareUniformLayoutForIBL,
+    AreLightsTexturesReady,
 } from "../materialHelper.functions";
 import { Constants } from "../../Engines/constants";
 import { VertexBuffer } from "../../Buffers/buffer";
@@ -2274,6 +2275,10 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
         if (!engine.getCaps().standardDerivatives && !mesh.isVerticesDataPresent(VertexBuffer.NormalKind)) {
             mesh.createNormals(true);
             Logger.Warn("OpenPBRMaterial: Normals have been created for the mesh: " + mesh.name);
+        }
+
+        if (!AreLightsTexturesReady(scene, mesh, this._maxSimultaneousLights, this._disableLighting)) {
+            return false;
         }
 
         const previousEffect = subMesh.effect;

@@ -62,7 +62,18 @@ export class FlowGraphEditor {
 
         const scene = options.hostScene || options.flowGraph.scene;
         const globalState = new GlobalState(scene);
-        globalState.flowGraph = options.flowGraph;
+        // If the flow graph belongs to a coordinator, use it for multi-graph support.
+        // Otherwise the flowGraph setter will handle single-graph mode.
+        const existingCoordinator = options.flowGraph.coordinator;
+        if (existingCoordinator) {
+            globalState.coordinator = existingCoordinator;
+            const activeIndex = existingCoordinator.flowGraphs.indexOf(options.flowGraph);
+            if (activeIndex >= 0) {
+                globalState.activeGraphIndex = activeIndex;
+            }
+        } else {
+            globalState.flowGraph = options.flowGraph;
+        }
         globalState.hostElement = hostElement;
         globalState.hostDocument = hostElement.ownerDocument!;
         globalState.hostScene = options.hostScene;
