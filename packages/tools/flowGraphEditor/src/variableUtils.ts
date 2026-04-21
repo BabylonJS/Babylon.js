@@ -416,12 +416,13 @@ export function RenameVariable(fg: FlowGraph, oldName: string, newName: string):
             }
         } else if (className === FlowGraphBlockNames.SetVariable) {
             if (config?.variables) {
-                const idx = config.variables.indexOf(oldName);
-                if (idx !== -1) {
-                    config.variables[idx] = newName;
-                    const dataInput = block.getDataInput(oldName);
-                    if (dataInput) {
-                        dataInput.name = newName;
+                for (let i = 0; i < config.variables.length; i++) {
+                    if (config.variables[i] === oldName) {
+                        config.variables[i] = newName;
+                        const dataInput = block.getDataInput(oldName);
+                        if (dataInput) {
+                            dataInput.name = newName;
+                        }
                     }
                 }
             } else if (config?.variable === oldName) {
@@ -436,7 +437,7 @@ export function RenameVariable(fg: FlowGraph, oldName: string, newName: string):
         if (ctx.hasVariable(oldName)) {
             const value = ctx.getVariable(oldName);
             ctx.setVariable(newName, value);
-            delete (ctx as any)._userVariables[oldName];
+            delete ctx.userVariables[oldName];
         }
         ctxIndex++;
         ctx = fg.getContext(ctxIndex);
@@ -459,8 +460,8 @@ export function DeleteVariable(fg: FlowGraph, name: string): void {
             blocksToRemove.push(block);
         } else if (className === FlowGraphBlockNames.SetVariable) {
             if (config?.variables) {
-                const idx = config.variables.indexOf(name);
-                if (idx !== -1) {
+                let idx = config.variables.indexOf(name);
+                while (idx !== -1) {
                     // Remove the corresponding data input port
                     const dataInput = block.getDataInput(name);
                     if (dataInput) {
@@ -471,9 +472,10 @@ export function DeleteVariable(fg: FlowGraph, name: string): void {
                         }
                     }
                     config.variables.splice(idx, 1);
-                    if (config.variables.length === 0) {
-                        blocksToRemove.push(block);
-                    }
+                    idx = config.variables.indexOf(name);
+                }
+                if (config.variables.length === 0) {
+                    blocksToRemove.push(block);
                 }
             } else if (config?.variable === name) {
                 blocksToRemove.push(block);
@@ -489,7 +491,7 @@ export function DeleteVariable(fg: FlowGraph, name: string): void {
     let ctx = fg.getContext(ctxIndex);
     while (ctx) {
         if (ctx.hasVariable(name)) {
-            delete (ctx as any)._userVariables[name];
+            delete ctx.userVariables[name];
         }
         ctxIndex++;
         ctx = fg.getContext(ctxIndex);

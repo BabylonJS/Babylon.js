@@ -137,6 +137,27 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
     }
 
     /**
+     * Is this node ready to be used/rendered.
+     * Force-syncs every part proxy's world matrix into `_partMatrices` BEFORE delegating to
+     * the base readiness check. This guarantees that any pending proxy transform changes
+     * (for example a user-set `proxy.position`) are reflected in the next sort post, so the
+     * base `isReady` will only return true once `sortAppliedId === sortRequestId` for that
+     * up-to-date state. Without this, the proxy's `onAfterWorldMatrixUpdateObservable` would
+     * fire during the first render and queue a fresh sort AFTER readiness was reported,
+     * leaving the rendered frame with stale splat order on `renderCount=1` runs.
+     * @param completeCheck defines if a complete check (including materials and lights) has to be done (false by default)
+     * @returns true when ready
+     */
+    public override isReady(completeCheck = false): boolean {
+        for (const proxy of this._partProxies) {
+            if (proxy) {
+                proxy.computeWorldMatrix(true);
+            }
+        }
+        return super.isReady(completeCheck);
+    }
+
+    /**
      * Disposes proxy meshes and clears part data in addition to the base class GPU resources.
      * @param doNotRecurse Set to true to not recurse into each children
      */
@@ -283,6 +304,12 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
                 this._partMatrices.push(defaultMatrix.clone());
                 this._partVisibility.push(1.0);
             }
+        }
+        // Skip the post / sort if the matrix is unchanged. Babylon recomputes the proxy mesh's world matrix every frame
+        // and fires onAfterWorldMatrixUpdateObservable, so without this guard a stable scene would queue a forced sort
+        // every frame and `isReady()` would never settle (sortRequestId would keep advancing past sortAppliedId).
+        if (this._partMatrices[partIndex].equals(worldMatrix)) {
+            return;
         }
         this._partMatrices[partIndex].copyFrom(worldMatrix);
         // During a batch rebuild suppress intermediate posts — the final correct set is posted

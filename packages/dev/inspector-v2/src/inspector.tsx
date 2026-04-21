@@ -239,7 +239,7 @@ export function ShowInspector(scene: Scene, options: Partial<InspectorOptions> =
         // Ensure the inspectable bridge is running for this scene. The inspector's
         // ServiceContainer will use the inspectable container as a parent, inheriting
         // services like ISceneContext and IBridgeCommandRegistry.
-        const inspectableToken = _StartInspectable(scene);
+        const inspectableToken = _StartInspectable(scene, { autoEnable: false });
         disposeActions.push(() => inspectableToken.dispose());
 
         // Create a container element for the inspector UI.

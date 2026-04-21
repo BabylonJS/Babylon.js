@@ -206,6 +206,38 @@ describe("Flow Graph Serialization", () => {
         expect(Logger.Log).toHaveBeenCalledWith(42);
     });
 
+    it("Preserves name and uniqueId across serialize/parse roundtrip", async () => {
+        const coordinator = new FlowGraphCoordinator({ scene });
+        const graph = coordinator.createGraph("My Custom Graph");
+        const originalUniqueId = graph.uniqueId;
+
+        // Verify defaults
+        expect(graph.name).toBe("My Custom Graph");
+        expect(graph.uniqueId).toBeDefined();
+
+        const serialized: any = {};
+        graph.serialize(serialized);
+        expect(serialized.name).toBe("My Custom Graph");
+        expect(serialized.uniqueId).toBe(originalUniqueId);
+
+        // Parse back
+        const coordinator2 = new FlowGraphCoordinator({ scene });
+        const parsed = ParseFlowGraph(serialized, { coordinator: coordinator2 }, []);
+        expect(parsed.name).toBe("My Custom Graph");
+        expect(parsed.uniqueId).toBe(originalUniqueId);
+    });
+
+    it("Uses default name and generates uniqueId when absent in serialized data", () => {
+        const coordinator = new FlowGraphCoordinator({ scene });
+        // Simulate legacy data with no name/uniqueId fields
+        const legacyData: any = { allBlocks: [], executionContexts: [] };
+        const parsed = ParseFlowGraph(legacyData, { coordinator }, []);
+        // Should have a default name and a generated uniqueId
+        expect(parsed.name).toBeDefined();
+        expect(parsed.uniqueId).toBeDefined();
+        expect(parsed.uniqueId.length).toBeGreaterThan(0);
+    });
+
     it("Serializes and parses a graph with vector and mesh references", () => {
         const coordinator = new FlowGraphCoordinator({ scene });
         const graph = coordinator.createGraph();

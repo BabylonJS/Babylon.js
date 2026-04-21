@@ -21,6 +21,7 @@ import { type SceneContext } from "./sceneContext";
 import { FlowGraphInteger } from "core/FlowGraph/CustomTypes/flowGraphInteger";
 import { type IFlowGraphValidationResult, ValidateFlowGraphWithBlockList } from "core/FlowGraph/flowGraphValidator";
 import { type HelpTopicId } from "./components/help/helpContent";
+import { FlowGraphCoordinator } from "core/FlowGraph/flowGraphCoordinator";
 
 /**
  * Class used to hold the global state of the flow graph editor
@@ -143,6 +144,149 @@ export class GlobalState {
 
     /** Optional custom save handler */
     customSave?: { label: string; action: (data: string) => Promise<void> };
+
+    // ── Multi-Graph / Coordinator ──────────────────────────────────────
+    /** The coordinator that owns all graphs in this editor session. */
+    private _coordinator: Nullable<FlowGraphCoordinator> = null;
+
+    /** Index of the currently active (displayed) graph within the coordinator. */
+    private _activeGraphIndex: number = 0;
+
+    /** Observable triggered when the active graph changes (graph switch, add, remove). */
+    onActiveGraphChanged = new Observable<FlowGraph>();
+
+    /** Observable triggered *before* the active graph changes, with the outgoing graph. */
+    onBeforeActiveGraphChanged = new Observable<FlowGraph>();
+
+    /** Observable triggered when the graph list changes (add, remove, rename). */
+    onGraphListChanged = new Observable<void>();
+
+    /**
+     * Gets the coordinator that owns all graphs.
+     */
+    public get coordinator(): Nullable<FlowGraphCoordinator> {
+        return this._coordinator;
+    }
+
+    /**
+     * Sets the coordinator and activates its first graph.
+     * This is the primary entry point when loading a new set of graphs.
+     */
+    public set coordinator(coordinator: Nullable<FlowGraphCoordinator>) {
+        this._coordinator = coordinator;
+        if (coordinator && coordinator.flowGraphs.length > 0) {
+            this._activeGraphIndex = 0;
+            this._activateGraph(coordinator.flowGraphs[0]);
+        }
+    }
+
+    /**
+     * Gets the index of the currently active graph.
+     */
+    public get activeGraphIndex(): number {
+        return this._activeGraphIndex;
+    }
+
+    /**
+     * Sets the active graph index, switching the editor to display that graph.
+     */
+    public set activeGraphIndex(index: number) {
+        if (!this._coordinator) {
+            return;
+        }
+        const graphs = this._coordinator.flowGraphs;
+        if (index < 0 || index >= graphs.length) {
+            return;
+        }
+        if (index === this._activeGraphIndex && this._flowGraph === graphs[index]) {
+            return;
+        }
+        this._activeGraphIndex = index;
+        this._activateGraph(graphs[index]);
+    }
+
+    /**
+     * Adds a new empty graph to the coordinator and switches to it.
+     * @returns the newly created FlowGraph
+     */
+    public addGraph(): FlowGraph {
+        if (!this._coordinator) {
+            this._coordinator = new FlowGraphCoordinator({ scene: this.scene });
+        }
+        const graph = this._coordinator.createGraph();
+        this._activeGraphIndex = this._coordinator.flowGraphs.indexOf(graph);
+        this._activateGraph(graph);
+        this.onGraphListChanged.notifyObservers();
+        return graph;
+    }
+
+    /**
+     * Removes a graph from the coordinator by index.
+     * If the active graph is removed, switches to the nearest remaining graph.
+     * The last graph cannot be removed.
+     * @param index - the index of the graph to remove
+     * @returns true if the graph was removed
+     */
+    public removeGraph(index: number): boolean {
+        if (!this._coordinator) {
+            return false;
+        }
+        const graphs = this._coordinator.flowGraphs;
+        if (graphs.length <= 1 || index < 0 || index >= graphs.length) {
+            return false;
+        }
+        const graph = graphs[index];
+        this._coordinator.removeGraph(graph);
+        // Adjust active index to keep the same graph selected when possible
+        if (index < this._activeGraphIndex) {
+            // Removed a graph before the active one — shift index down
+            this._activeGraphIndex--;
+        } else if (index === this._activeGraphIndex) {
+            // Removed the active graph — select the nearest remaining
+            if (this._activeGraphIndex >= graphs.length) {
+                this._activeGraphIndex = graphs.length - 1;
+            }
+            this._activateGraph(graphs[this._activeGraphIndex]);
+        }
+        // If index > _activeGraphIndex, no adjustment needed (active graph unchanged)
+        this.onGraphListChanged.notifyObservers();
+        return true;
+    }
+
+    /**
+     * Renames a graph.
+     * @param index - the index of the graph to rename
+     * @param name - the new name
+     */
+    public renameGraph(index: number, name: string): void {
+        if (!this._coordinator) {
+            return;
+        }
+        const graphs = this._coordinator.flowGraphs;
+        if (index < 0 || index >= graphs.length) {
+            return;
+        }
+        graphs[index].name = name;
+        this.onGraphListChanged.notifyObservers();
+    }
+
+    /**
+     * Internal: activate a graph — wire scene context, stop old graph, notify observers.
+     * This contains the same wiring logic that was previously in the `flowGraph` setter.
+     * @param graph - the graph to activate
+     */
+    private _activateGraph(graph: FlowGraph): void {
+        // Let observers (e.g. graphEditor) persist canvas state before the switch
+        if (this._flowGraph) {
+            // Snapshot user variables/contexts for the outgoing graph so they
+            // survive the stop() that the flowGraph setter triggers.
+            this._snapshotUserVariablesFrom(this._flowGraph);
+            this.onBeforeActiveGraphChanged.notifyObservers(this._flowGraph);
+        }
+        // Use the existing setter which does all the wiring
+        this.flowGraph = graph;
+        this.onActiveGraphChanged.notifyObservers(graph);
+    }
 
     // ── Validation ─────────────────────────────────────────────────────
     /** Whether live validation is enabled (re-validates on graph changes). */
@@ -765,6 +909,12 @@ export class GlobalState {
     private _savedContextSnapshots: any[] | null = null;
 
     /**
+     * Per-graph serialized context snapshots, keyed by FlowGraph.uniqueId.
+     * Used to preserve context data for inactive graphs during multi-graph serialization.
+     */
+    private _perGraphContextSnapshots = new Map<string, any[]>();
+
+    /**
      * Runtime (non-serialized) copies of each execution context's data.
      * Unlike _savedContextSnapshots (which holds serialized/JSON-safe values for
      * injecting into saved files), these hold actual runtime objects (Vector3,
@@ -1298,6 +1448,8 @@ export class GlobalState {
                     uniqueId: context.uniqueId,
                 });
             }
+            // Store per-graph snapshots for multi-graph serialization
+            this._perGraphContextSnapshots.set(fg.uniqueId, [...this._savedContextSnapshots!]);
         }
     }
 
@@ -1324,6 +1476,16 @@ export class GlobalState {
      */
     public get savedContextSnapshots(): any[] | null {
         return this._savedContextSnapshots;
+    }
+
+    /**
+     * Returns saved context snapshots for a specific graph by uniqueId.
+     * Used by SerializationTools to inject context data for inactive graphs.
+     * @param graphUniqueId - the uniqueId of the graph
+     * @returns array of serialized context objects, or null if none saved
+     */
+    public getContextSnapshotsForGraph(graphUniqueId: string): any[] | null {
+        return this._perGraphContextSnapshots.get(graphUniqueId) ?? null;
     }
 
     /**
