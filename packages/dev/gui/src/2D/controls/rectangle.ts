@@ -202,8 +202,10 @@ export class Rectangle extends Container {
         const width = this._currentMeasure.width - offset * 2;
         const height = this._currentMeasure.height - offset * 2;
 
+        // Scale cornerRadius using idealRatio (same pattern as shadowOffset/spacing)
+        const idealRatio = this._host.idealRatio;
         for (let index = 0; index < this._cornerRadius.length; index++) {
-            this._cachedRadius[index] = Math.abs(Math.min(height / 2, Math.min(width / 2, this._cornerRadius[index])));
+            this._cachedRadius[index] = Math.abs(Math.min(height / 2, Math.min(width / 2, this._cornerRadius[index] * idealRatio)));
         }
 
         context.beginPath();
