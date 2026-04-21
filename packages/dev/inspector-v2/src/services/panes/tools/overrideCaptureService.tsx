@@ -43,19 +43,10 @@ export const OverrideCaptureServiceDefinition: ServiceDefinition<[], [ISceneCont
         }
 
         // Get or create OverrideManager
-        let overrides = scene.metadata?.["babylonjs:overrideManager"] as OverrideManager | undefined;
+        let overrides = OverrideManager.GetFromScene(scene);
         if (!overrides) {
             overrides = new OverrideManager(scene);
             overrides.linkSmartAssetManager(sam);
-            if (!scene.metadata) {
-                scene.metadata = {};
-            }
-            Object.defineProperty(scene.metadata, "babylonjs:overrideManager", {
-                value: overrides,
-                enumerable: false,
-                configurable: true,
-                writable: true,
-            });
         }
 
         // Install Inspector's file-picker-based onAssetNotFound handler

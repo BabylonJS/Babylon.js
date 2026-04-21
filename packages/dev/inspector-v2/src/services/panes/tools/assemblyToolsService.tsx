@@ -72,10 +72,6 @@ export const AssemblyToolsServiceDefinition: ServiceDefinition<[], [IToolsServic
 // eslint-disable-next-line @typescript-eslint/naming-convention
 function _getOrCreateManagers(scene: Scene): { sam: SmartAssetManager; overrides: OverrideManager } {
     let sam = SmartAssetManager.GetFromScene(scene);
-    // Fallback: string key for cross-module-boundary access
-    if (!sam && scene.metadata) {
-        sam = (scene.metadata["babylonjs:smartAssetManager:str"] as SmartAssetManager | undefined) ?? null;
-    }
     if (!sam) {
         sam = new SmartAssetManager(scene);
     }
@@ -83,19 +79,10 @@ function _getOrCreateManagers(scene: Scene): { sam: SmartAssetManager; overrides
     // Install Inspector's file picker handler for missing assets
     sam.onAssetNotFound = _assemblyAssetNotFoundHandler;
 
-    let overrides = scene.metadata?.["babylonjs:overrideManager"] as OverrideManager | undefined;
+    let overrides = OverrideManager.GetFromScene(scene);
     if (!overrides) {
         overrides = new OverrideManager(scene);
         overrides.linkSmartAssetManager(sam);
-        if (!scene.metadata) {
-            scene.metadata = {};
-        }
-        Object.defineProperty(scene.metadata, "babylonjs:overrideManager", {
-            value: overrides,
-            enumerable: false,
-            configurable: true,
-            writable: true,
-        });
     }
 
     return { sam, overrides };
@@ -497,7 +484,7 @@ const OverrideSummary: FunctionComponent<{ scene: Scene }> = (props: { scene: Sc
     const [overrideList, setOverrideList] = useState<Array<{ key: string; target: string; prop: string; value: string }>>([]);
 
     const refresh = useCallback(() => {
-        const overrides = scene.metadata?.["babylonjs:overrideManager"] as OverrideManager | undefined;
+        const overrides = OverrideManager.GetFromScene(scene);
         if (!overrides) {
             setOverrideList([]);
             return;
@@ -551,11 +538,7 @@ const OverrideSummary: FunctionComponent<{ scene: Scene }> = (props: { scene: Sc
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 function _findSam(scene: Scene): SmartAssetManager | null {
-    let sam = SmartAssetManager.GetFromScene(scene);
-    if (!sam && scene.metadata) {
-        sam = (scene.metadata["babylonjs:smartAssetManager:str"] as SmartAssetManager | undefined) ?? null;
-    }
-    return sam ?? null;
+    return SmartAssetManager.GetFromScene(scene) ?? null;
 }
 
 /**

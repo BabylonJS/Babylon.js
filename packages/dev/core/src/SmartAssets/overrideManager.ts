@@ -3,6 +3,8 @@ import { type SmartAssetManager } from "./smartAssetManager";
 import { type IOverrideEntry, type ISerializedOverrideEntry, type OverrideTargetType, type OverrideValue } from "./overrideEntry";
 import { Logger } from "../Misc/logger";
 
+const OVERRIDE_MANAGER_KEY = Symbol.for("babylonjs:overrideManager");
+
 /**
  * Manages property overrides for smart assets and scene objects.
  *
@@ -35,11 +37,15 @@ export class OverrideManager {
     private _originalValues: Map<string, unknown> = new Map();
 
     /**
-     * Creates a new OverrideManager.
+     * Creates a new OverrideManager and attaches it to the scene.
      * @param scene - The scene this manager operates on.
      */
     constructor(scene: Scene) {
         this._scene = scene;
+        if (!scene.metadata) {
+            scene.metadata = {};
+        }
+        scene.metadata[OVERRIDE_MANAGER_KEY] = this;
     }
 
     /**
@@ -47,6 +53,15 @@ export class OverrideManager {
      */
     public get scene(): Scene {
         return this._scene;
+    }
+
+    /**
+     * Returns the OverrideManager attached to a scene, or undefined if none exists.
+     * @param scene - The scene to look up.
+     * @returns The OverrideManager, or undefined.
+     */
+    public static GetFromScene(scene: Scene): OverrideManager | undefined {
+        return scene.metadata?.[OVERRIDE_MANAGER_KEY] as OverrideManager | undefined;
     }
 
     /**
@@ -202,6 +217,9 @@ export class OverrideManager {
         this._overrides.length = 0;
         this._originalValues.clear();
         this._smartAssetManager = null;
+        if (this._scene.metadata) {
+            delete this._scene.metadata[OVERRIDE_MANAGER_KEY];
+        }
     }
 
     // ── Private ──

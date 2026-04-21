@@ -168,7 +168,8 @@ async function _exportGlb(scene: Scene, fileName: string): Promise<IProjectExpor
 function _stripSmartAssetMetadata(serialized: Record<string, unknown>): void {
     if (serialized.metadata && typeof serialized.metadata === "object") {
         const metadata = serialized.metadata as Record<string, unknown>;
-        // Remove string-key authoring metadata that may have leaked into serialization
+        // Remove any string-key authoring metadata that may have leaked into serialization.
+        // Symbol-keyed properties (SAM, OverrideManager) are automatically excluded by JSON.stringify.
         delete metadata["babylonjs:smartAssetManager"];
         delete metadata["babylonjs:smartAssetManager:str"];
         delete metadata["babylonjs:overrideManager"];
@@ -178,28 +179,30 @@ function _stripSmartAssetMetadata(serialized: Record<string, unknown>): void {
 /** Saved references from scene.metadata, removed during export to avoid circular refs. */
 interface _SavedAuthoringRefs {
     symbolSam: unknown;
-    strSam: unknown;
-    overrides: unknown;
+    symbolOverrides: unknown;
 }
 
 /**
  * Removes authoring system objects from scene.metadata before serialization.
  * Returns the removed references so they can be restored afterward.
+ * Symbol-keyed properties are invisible to JSON.stringify, but scene.serialize()
+ * may iterate metadata differently, so we remove and restore them to be safe.
  * @param metadata - The scene metadata object to clean.
  * @returns The saved references for later restoration.
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 function _removeAuthoringMetadata(metadata: Record<string | symbol, unknown> | null): _SavedAuthoringRefs {
-    const saved: _SavedAuthoringRefs = { symbolSam: undefined, strSam: undefined, overrides: undefined };
+    const saved: _SavedAuthoringRefs = { symbolSam: undefined, symbolOverrides: undefined };
     if (!metadata) {
         return saved;
     }
-    const symbolKey = Symbol.for("babylonjs:smartAssetManager");
-    saved.symbolSam = metadata[symbolKey];
-    saved.strSam = (metadata as Record<string, unknown>)["babylonjs:smartAssetManager:str"];
-    saved.overrides = (metadata as Record<string, unknown>)["babylonjs:overrideManager"];
-    delete metadata[symbolKey];
+    const samKey = Symbol.for("babylonjs:smartAssetManager");
+    const overridesKey = Symbol.for("babylonjs:overrideManager");
+    saved.symbolSam = metadata[samKey];
+    saved.symbolOverrides = metadata[overridesKey];
+    delete metadata[samKey];
     delete (metadata as Record<string, unknown>)["babylonjs:smartAssetManager:str"];
+    delete metadata[overridesKey];
     delete (metadata as Record<string, unknown>)["babylonjs:overrideManager"];
     return saved;
 }
@@ -214,14 +217,12 @@ function _restoreAuthoringMetadata(metadata: Record<string | symbol, unknown> | 
     if (!metadata) {
         return;
     }
-    const symbolKey = Symbol.for("babylonjs:smartAssetManager");
+    const samKey = Symbol.for("babylonjs:smartAssetManager");
+    const overridesKey = Symbol.for("babylonjs:overrideManager");
     if (saved.symbolSam !== undefined) {
-        metadata[symbolKey] = saved.symbolSam;
+        metadata[samKey] = saved.symbolSam;
     }
-    if (saved.strSam !== undefined) {
-        (metadata as Record<string, unknown>)["babylonjs:smartAssetManager:str"] = saved.strSam;
-    }
-    if (saved.overrides !== undefined) {
-        (metadata as Record<string, unknown>)["babylonjs:overrideManager"] = saved.overrides;
+    if (saved.symbolOverrides !== undefined) {
+        metadata[overridesKey] = saved.symbolOverrides;
     }
 }

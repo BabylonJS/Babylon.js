@@ -73,14 +73,6 @@ export const createScene = async function (engine: Engine, canvas: HTMLCanvasEle
     // Step 1: Load a mesh GLB as a smart asset
     // ═══════════════════════════════════════════════════════════════
     const sam = new SmartAssetManager(scene);
-    // Store with a non-enumerable string key so Inspector services can find it
-    // across module boundaries without polluting metadata serialization
-    Object.defineProperty(scene.metadata, "babylonjs:smartAssetManager:str", {
-        value: sam,
-        enumerable: false,
-        configurable: true,
-        writable: true,
-    });
     sam.onAssetNotFound = async (key, url) => {
         log("MISSING", `Asset "${key}" not found at "${url}" — skipping`);
         return null;
@@ -146,12 +138,6 @@ export const createScene = async function (engine: Engine, canvas: HTMLCanvasEle
     // ═══════════════════════════════════════════════════════════════
     const overrides = new OverrideManager(scene);
     overrides.linkSmartAssetManager(sam);
-    Object.defineProperty(scene.metadata, "babylonjs:overrideManager", {
-        value: overrides,
-        enumerable: false,
-        configurable: true,
-        writable: true,
-    });
 
     // Override mesh transform
     if (boomboxMesh) {
