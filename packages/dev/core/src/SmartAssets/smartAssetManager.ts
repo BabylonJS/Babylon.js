@@ -33,7 +33,10 @@ export class SmartAssetManager {
     private _containers: Map<string, AssetContainer> = new Map();
     private _provenance: Map<string, ISmartAssetProvenance> = new Map();
     private _objectToKeyMap: WeakMap<object, string> = new WeakMap();
+    private _textureKeys: Set<string> = new Set();
+    private _refreshCallbacks: Map<string, () => Promise<File>> = new Map();
     private _applyOverridesForKey: ((key: string) => void) | null = null;
+    private _applyAllOverrides: (() => void) | null = null;
     private _originalPreprocessUrl: ((url: string) => string) | null = null;
 
     /**
@@ -108,6 +111,25 @@ export class SmartAssetManager {
     }
 
     /**
+     * Returns true if the given key was loaded as a standalone texture.
+     * @param key - The key to check.
+     * @returns True if this key is a texture key.
+     */
+    public isTextureKey(key: string): boolean {
+        return this._textureKeys.has(key);
+    }
+
+    /**
+     * Marks a key as a standalone texture so that reload and loadAll
+     * route it through `loadTextureAsync` even when the URL has no
+     * recognizable file extension (e.g. blob URLs).
+     * @param key - The key to mark.
+     */
+    public markAsTextureKey(key: string): void {
+        this._textureKeys.add(key);
+    }
+
+    /**
      * Returns the SmartAssetManager attached to a scene, or undefined if none exists.
      * @param scene - The scene to look up.
      * @returns The SmartAssetManager, or undefined.
@@ -129,6 +151,21 @@ export class SmartAssetManager {
     }
 
     /**
+     * Sets a callback that provides fresh file contents for a key on reload.
+     * Use this when an asset was loaded from a local file and should pick up
+     * on-disk changes when reloaded (e.g. via a FileSystemFileHandle).
+     * @param key - The smart asset key.
+     * @param callback - A function that returns a fresh File, or null to clear.
+     */
+    public setRefreshCallback(key: string, callback: (() => Promise<File>) | null): void {
+        if (callback) {
+            this._refreshCallbacks.set(key, callback);
+        } else {
+            this._refreshCallbacks.delete(key);
+        }
+    }
+
+    /**
      * Removes a key from the registry. If the asset is loaded, it is unloaded first.
      * @param key - The key to remove.
      */
@@ -144,6 +181,8 @@ export class SmartAssetManager {
             }
         }
         this._urls.delete(key);
+        this._textureKeys.delete(key);
+        this._refreshCallbacks.delete(key);
         this._provenance.delete(key);
     }
 
@@ -234,7 +273,7 @@ export class SmartAssetManager {
             if (this._containers.has(key)) {
                 continue;
             }
-            if (_isTextureExtension(url)) {
+            if (this._textureKeys.has(key) || _isTextureExtension(url)) {
                 texturePromises.push(
                     this.loadTextureAsync(key)
                         .then(() => {})
@@ -283,6 +322,8 @@ export class SmartAssetManager {
             this.register(key, url);
         }
 
+        this._textureKeys.add(key);
+
         const resolvedUrl = this._urls.get(key);
         if (!resolvedUrl) {
             throw new Error(`SmartAssetManager: Key "${key}" is not registered. Provide a URL to auto-register.`);
@@ -305,6 +346,7 @@ export class SmartAssetManager {
                 }
                 this.register(key, newUrl);
                 const retryTexture = await this._createTexture(newUrl);
+                await this._waitForTextureLoad(retryTexture);
                 this._objectToKeyMap.set(retryTexture, key);
                 this.onAssetLoadedObservable.notifyObservers({ key });
                 return retryTexture;
@@ -319,35 +361,69 @@ export class SmartAssetManager {
     // ── Unload / Reload ──
 
     /**
-     * Unloads a loaded asset, removing it from the scene and disposing its container.
-     * The key remains registered and can be loaded again.
+     * Unloads a loaded asset, removing it from the scene and disposing its container
+     * or standalone texture. The key remains registered and can be loaded again.
      * @param key - The key to unload.
      */
     public async unloadAsync(key: string): Promise<void> {
         const container = this._containers.get(key);
-        if (!container) {
+        if (container) {
+            container.removeAllFromScene();
+            container.dispose();
+            this._containers.delete(key);
+            this._provenance.delete(key);
+            this.onAssetUnloadedObservable.notifyObservers({ key });
             return;
         }
-        container.removeAllFromScene();
-        container.dispose();
-        this._containers.delete(key);
-        this._provenance.delete(key);
+
+        // Dispose standalone textures tracked under this key
+        for (const tex of [...this._scene.textures]) {
+            if (this._objectToKeyMap.get(tex) === key) {
+                this._objectToKeyMap.delete(tex);
+                tex.dispose();
+            }
+        }
         this.onAssetUnloadedObservable.notifyObservers({ key });
     }
 
     /**
-     * Unloads and re-loads an asset. If an OverrideManager is linked,
-     * overrides for this key are automatically reapplied after loading.
+     * Unloads and re-loads an asset. Automatically detects whether the key
+     * points to a standalone texture or a scene file and uses the appropriate
+     * loader. If an OverrideManager is linked, overrides are reapplied after loading.
      * @param key - The key to reload.
-     * @returns A promise resolving to the newly loaded AssetContainer.
+     * @returns A promise resolving to the newly loaded AssetContainer or BaseTexture.
      */
-    public async reloadAsync(key: string): Promise<AssetContainer> {
-        await this.unloadAsync(key);
-        const container = await this.loadAsync(key);
-        if (this._applyOverridesForKey) {
-            this._applyOverridesForKey(key);
+    public async reloadAsync(key: string): Promise<AssetContainer | BaseTexture> {
+        // If a refresh callback exists, get fresh file contents and update the URL
+        const refreshCallback = this._refreshCallbacks.get(key);
+        if (refreshCallback) {
+            try {
+                const freshFile = await refreshCallback();
+                const blobUrl = URL.createObjectURL(freshFile);
+                this.register(key, blobUrl);
+            } catch (e) {
+                Logger.Warn(`SmartAssetManager: Refresh callback failed for "${key}": ${e}`);
+            }
         }
-        return container;
+
+        await this.unloadAsync(key);
+
+        let result: AssetContainer | BaseTexture;
+        if (this._textureKeys.has(key)) {
+            result = await this.loadTextureAsync(key);
+            // Texture references appear in override values (e.g. "texture:key"),
+            // not in override keys, so re-apply all overrides to update materials.
+            if (this._applyAllOverrides) {
+                this._applyAllOverrides();
+            }
+        } else {
+            result = await this.loadAsync(key);
+            if (this._applyOverridesForKey) {
+                this._applyOverridesForKey(key);
+            }
+        }
+
+        return result;
     }
 
     // ── Provenance ──
@@ -412,8 +488,9 @@ export class SmartAssetManager {
      * Links an OverrideManager so overrides are reapplied after smart asset reload.
      * @param overrideManager - The override manager to link.
      */
-    public linkOverrideManager(overrideManager: { applyOverridesForKey(key: string): void }): void {
+    public linkOverrideManager(overrideManager: { applyOverridesForKey(key: string): void; applyAllOverrides(): void }): void {
         this._applyOverridesForKey = (key: string) => overrideManager.applyOverridesForKey(key);
+        this._applyAllOverrides = () => overrideManager.applyAllOverrides();
     }
 
     // ── Lifecycle ──
@@ -430,6 +507,8 @@ export class SmartAssetManager {
             }
         }
         this._urls.clear();
+        this._textureKeys.clear();
+        this._refreshCallbacks.clear();
         this._containers.clear();
         this._provenance.clear();
         this._objectToKeyMap = new WeakMap();
@@ -485,6 +564,12 @@ export class SmartAssetManager {
             };
             const timeout = setTimeout(() => settle(!texture.loadingError), 5000);
             texture.onLoadObservable.addOnce(() => settle(true));
+            // Re-check after subscribing to catch loads that completed between
+            // the initial isReady() check and the observable subscription.
+            if (texture.isReady()) {
+                settle(true);
+                return;
+            }
             // Poll for loadingError since there's no instance-level error observable
             const poll = setInterval(() => {
                 if (texture.loadingError) {

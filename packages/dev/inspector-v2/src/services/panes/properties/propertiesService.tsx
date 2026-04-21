@@ -137,7 +137,7 @@ export const PropertiesServiceDefinition: ServiceDefinition<[IPropertiesService]
                 }, [pendingHighlight]);
 
                 return (
-                    <PropertyContext.Provider value={{ onPropertyChanged }}>
+                    <PropertyContext.Provider value={{ onPropertyChanged, entity }}>
                         <PropertiesPane
                             uniqueId="Properties"
                             sections={sections}

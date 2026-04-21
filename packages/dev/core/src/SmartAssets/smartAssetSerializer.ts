@@ -53,7 +53,7 @@ export function serializeSmartAssetMap(manager: SmartAssetManager, baseUrl?: str
             url = _makeRelative(url, baseUrl);
         }
 
-        assets[key] = { url };
+        assets[key] = { url, ...(manager.isTextureKey(key) ? { type: "texture" } : {}) };
 
         const prov = manager.getProvenance(key);
         if (prov) {

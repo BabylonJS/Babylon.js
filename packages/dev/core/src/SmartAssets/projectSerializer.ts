@@ -158,6 +158,11 @@ export async function loadProjectAsync(
     for (const [key, entry] of Object.entries(doc.assets)) {
         const resolved = resolvedRootUrl ? resolveAssetUrl(entry.url, resolvedRootUrl) : entry.url;
         smartAssetManager.register(key, resolved);
+        // Pre-mark texture keys so loadAllAsync routes them correctly
+        // even when the URL is a blob (which has no file extension).
+        if (entry.type === "texture") {
+            smartAssetManager.markAsTextureKey(key);
+        }
     }
 
     await smartAssetManager.loadAllAsync();
@@ -250,17 +255,7 @@ async function _recreateInlineObjects(inlineObjects: Record<string, ISerializedI
         const className = entry.className;
 
         if (className.includes("Material") || className.includes("material")) {
-            // Strip embedded texture data — texture assignments are managed
-            // separately by the override system (texture:key references).
-            // Parsing them here would create duplicate texture instances.
-            const strippedData: Record<string, unknown> = {};
-            for (const [key, value] of Object.entries(data)) {
-                if (key.endsWith("Texture") && typeof value === "object" && value !== null) {
-                    continue;
-                }
-                strippedData[key] = value;
-            }
-            Material.Parse(strippedData, scene, rootUrl);
+            Material.Parse(data, scene, rootUrl);
         } else if (className.includes("Light") || className.includes("light")) {
             Light.Parse(data, scene);
         } else if (className.includes("Camera") || className.includes("camera")) {

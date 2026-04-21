@@ -22,6 +22,8 @@ export type PropertyChangeInfo = {
 export type PropertyContext = {
     /** An observable that fires whenever a property is changed through the inspector UI. */
     readonly onPropertyChanged: Observable<PropertyChangeInfo>;
+    /** The entity currently being edited in the properties panel. */
+    readonly entity: unknown;
 };
 
 /**

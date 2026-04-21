@@ -255,14 +255,7 @@ const SmartAssetList: FunctionComponent<{ scene: Scene; selectionService: ISelec
 
     const onSwapAsset = useCallback(
         (key: string) => {
-            const input = document.createElement("input");
-            input.type = "file";
-            input.accept = ".glb,.gltf,.babylon,.obj,.png,.jpg,.env,.hdr";
-            input.onchange = async () => {
-                const file = input.files?.[0];
-                if (!file) {
-                    return;
-                }
+            const doSwap = async (file: File, fileHandle?: FileSystemFileHandle) => {
                 const { sam, overrides } = _getOrCreateManagers(scene);
                 const oldUrl = sam.resolve(key) ?? "";
                 const blobUrl = URL.createObjectURL(file);
@@ -280,10 +273,13 @@ const SmartAssetList: FunctionComponent<{ scene: Scene; selectionService: ISelec
                     }
 
                     // Load the new texture via SAM so it's tracked for override resolution.
-                    // Temporarily swap URL to blob for loading, then restore filename for serialization.
                     sam.register(key, blobUrl);
                     const newTex = await sam.loadTextureAsync(key);
-                    sam.register(key, file.name);
+
+                    // Register a refresh callback so Reload can re-read the file from disk
+                    if (fileHandle) {
+                        sam.setRefreshCallback(key, async () => fileHandle.getFile());
+                    }
 
                     // Replace references on all materials that used the old texture
                     if (oldTex) {
@@ -303,7 +299,12 @@ const SmartAssetList: FunctionComponent<{ scene: Scene; selectionService: ISelec
                 } else {
                     // Scene file swap (GLB, glTF, etc.)
                     await sam.unloadAsync(key);
-                    sam.register(key, file.name);
+                    sam.register(key, blobUrl);
+
+                    // Register a refresh callback so Reload can re-read the file from disk
+                    if (fileHandle) {
+                        sam.setRefreshCallback(key, async () => fileHandle.getFile());
+                    }
 
                     // Use onAssetNotFound to provide the File so SAM builds provenance
                     const savedHandler = sam.onAssetNotFound;
@@ -320,11 +321,48 @@ const SmartAssetList: FunctionComponent<{ scene: Scene; selectionService: ISelec
 
                 // Notify after everything is loaded and tracked so the UI re-renders
                 // with the correct provEntity links
-                sam.onUrlChangedObservable.notifyObservers({ key, oldUrl, newUrl: file.name });
+                sam.onUrlChangedObservable.notifyObservers({ key, oldUrl, newUrl: blobUrl });
 
                 setStatus(`Swapped: ${key}`);
             };
-            input.click();
+
+            // Prefer showOpenFilePicker (File System Access API) so we get a
+            // FileSystemFileHandle that lets Reload re-read fresh contents from disk.
+            const windowWithPicker = window as Window & { showOpenFilePicker?: (options?: any) => Promise<FileSystemFileHandle[]> };
+            if (typeof windowWithPicker.showOpenFilePicker === "function") {
+                windowWithPicker
+                    .showOpenFilePicker({
+                        types: [
+                            {
+                                description: "Assets",
+                                accept: {
+                                    "model/*": [".glb", ".gltf", ".babylon", ".obj"],
+                                    "image/*": [".png", ".jpg", ".jpeg", ".env", ".hdr", ".dds", ".ktx", ".ktx2"],
+                                },
+                            },
+                        ],
+                    })
+                    .then(async ([handle]) => {
+                        const file = await handle.getFile();
+                        await doSwap(file, handle);
+                    })
+                    .catch(() => {
+                        // User cancelled the picker
+                    });
+            } else {
+                // Fallback for browsers without File System Access API
+                const input = document.createElement("input");
+                input.type = "file";
+                input.accept = ".glb,.gltf,.babylon,.obj,.png,.jpg,.env,.hdr";
+                input.onchange = async () => {
+                    const file = input.files?.[0];
+                    if (!file) {
+                        return;
+                    }
+                    await doSwap(file);
+                };
+                input.click();
+            }
         },
         [scene]
     );
