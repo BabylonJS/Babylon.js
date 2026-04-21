@@ -1,4 +1,4 @@
-﻿{
+{
     "root": "https://cdn.babylonjs.com",
     "tests": [
         {
@@ -562,13 +562,13 @@
         },
         {
             "title": "GUI Slate",
-            "playgroundId": "#C6AIHQ#0",
+            "playgroundId": "#UDLHJ3#0",
             "referenceImage": "guiSlate.png",
             "excludedEngines": ["webgl1"]
         },
         {
             "title": "GUI Near Menu",
-            "playgroundId": "#6F34Z9#0",
+            "playgroundId": "#DZPGOB#0",
             "referenceImage": "guiNearMenu.png",
             "excludedEngines": ["webgl1"]
         },
@@ -593,7 +593,7 @@
         },
         {
             "title": "LineEdgesRenderer",
-            "playgroundId": "#X2ZFQF#0",
+            "playgroundId": "#FF1HHK#0",
             "referenceImage": "LineEdgesRenderer.png"
         },
         {
@@ -631,12 +631,12 @@
         },
         {
             "title": "Gizmos",
-            "playgroundId": "#0RXV0A#0",
+            "playgroundId": "#SWSUXS#0",
             "referenceImage": "Gizmos.png"
         },
         {
             "title": "GUI3D SpherePanel",
-            "playgroundId": "#E59AB3#0",
+            "playgroundId": "#AMM2WB#0",
             "referenceImage": "spherepanel.png"
         },
         {
@@ -647,12 +647,12 @@
         },
         {
             "title": "Chibi Rex",
-            "playgroundId": "#QJ4LYJ#0",
+            "playgroundId": "#SYM1EP#0",
             "referenceImage": "chibi-rex.png"
         },
         {
             "title": "Yeti",
-            "playgroundId": "#4JETU9#0",
+            "playgroundId": "#8ZNZFY#0",
             "referenceImage": "yeti.png",
             "errorRatio": 3
         },
@@ -732,7 +732,7 @@
         },
         {
             "title": "Charting",
-            "playgroundId": "#NCDHTK#0",
+            "playgroundId": "#FX57Z1#0",
             "referenceImage": "charting.png",
             "errorRatio": 3
         },
@@ -849,7 +849,7 @@
         },
         {
             "title": "Shadow depth wrappers",
-            "playgroundId": "#UZX8W9#0",
+            "playgroundId": "#7JTUT9#0",
             "referenceImage": "shadowDepthWrappers.png",
             "excludedEngines": ["webgpu"]
         },
@@ -907,29 +907,25 @@
         },
         {
             "title": "GLTF Animation Node",
-            "renderCount": 2,
-            "playgroundId": "#DS8AA7#27",
+            "playgroundId": "#0GGYCY#0",
             "replace": "__folder__, Animation_Node, __page__, 0, __disableSRGBBuffers__, 0",
             "referenceImage": "gltfAnimationNode.png"
         },
         {
             "title": "GLTF Animation Node Misc",
-            "renderCount": 2,
-            "playgroundId": "#DS8AA7#27",
+            "playgroundId": "#0GGYCY#0",
             "replace": "__folder__, Animation_NodeMisc, __page__, 0, __disableSRGBBuffers__, 1",
             "referenceImage": "gltfAnimationNodeMisc.png"
         },
         {
             "title": "GLTF Animation Skin (0)",
-            "renderCount": 2,
-            "playgroundId": "#DS8AA7#27",
+            "playgroundId": "#0GGYCY#0",
             "replace": "__folder__, Animation_Skin, __page__, 0, __disableSRGBBuffers__, 0",
             "referenceImage": "gltfAnimationSkin0.png"
         },
         {
             "title": "GLTF Animation Skin (1)",
-            "renderCount": 2,
-            "playgroundId": "#DS8AA7#27",
+            "playgroundId": "#0GGYCY#0",
             "replace": "__folder__, Animation_Skin, __page__, 1, __disableSRGBBuffers__, 0",
             "referenceImage": "gltfAnimationSkin1.png"
         },
@@ -1027,8 +1023,7 @@
         },
         {
             "title": "GLTF Mesh Primitive Vertex Color",
-            "renderCount": 5,
-            "playgroundId": "#DS8AA7#27",
+            "playgroundId": "#0GGYCY#0",
             "replace": "__folder__, Mesh_PrimitiveVertexColor, __page__, 0, __disableSRGBBuffers__, 0",
             "referenceImage": "gltfMeshPrimitiveVertexColor.png"
         },
@@ -1148,7 +1143,6 @@
         },
         {
             "title": "GLTF Serializer Morph Target Animation",
-            "renderCount": 2,
             "playgroundId": "#84M2SR#107",
             "referenceImage": "gltfSerializerMorphTargetAnimation.png",
             "excludedEngines": ["webgpu"]
@@ -1280,21 +1274,18 @@
         {
             "title": "GLTF Extension KHR_materials_volume",
             "playgroundId": "#YG3BBF#16",
-            "referenceImage": "gltfExtensionKhrMaterialsVolume.png",
-            "renderCount": 5
+            "referenceImage": "gltfExtensionKhrMaterialsVolume.png"
         },
         {
             "title": "GLTF Extension KHR_materials_volume with analytic light",
             "playgroundId": "#YG3BBF#48",
-            "referenceImage": "gltfExtensionKhrMaterialsVolumeHemiLight.png",
-            "renderCount": 5
+            "referenceImage": "gltfExtensionKhrMaterialsVolumeHemiLight.png"
         },
         {
             "title": "GLTF Extension KHR_materials_volume with attenuation",
             "playgroundId": "#YG3BBF#18",
             "referenceImage": "gltfExtensionKhrMaterialsVolumeAttenuation.png",
-            "errorRatio": 3,
-            "renderCount": 5
+            "errorRatio": 3
         },
         {
             "title": "GLTF Extension KHR_materials_specular",
@@ -1561,7 +1552,6 @@
         {
             "title": "GLTF Extension EXT_mesh_gpu_instancing",
             "playgroundId": "#QFIGLW#9",
-            "renderCount": 10,
             "referenceImage": "gltfExtensionExtMeshGpuInstancingTest.png"
         },
         {
@@ -2609,29 +2599,25 @@
             "title": "computeMaxExtents (BrainStem)",
             "playgroundId": "#M2H33B",
             "replace": "//options//, modelIndex = 2;",
-            "referenceImage": "computeMaxExtents-BoxAnimated.png",
-            "renderCount": 2
+            "referenceImage": "computeMaxExtents-BoxAnimated.png"
         },
         {
             "title": "computeMaxExtents (Fox 0)",
             "playgroundId": "#M2H33B",
             "replace": "//options//, modelIndex = 4; animationIndex = 0;",
-            "referenceImage": "computeMaxExtents-Fox0.png",
-            "renderCount": 2
+            "referenceImage": "computeMaxExtents-Fox0.png"
         },
         {
             "title": "computeMaxExtents (Fox 1)",
             "playgroundId": "#M2H33B",
             "replace": "//options//, modelIndex = 4; animationIndex = 1;",
-            "referenceImage": "computeMaxExtents-Fox1.png",
-            "renderCount": 2
+            "referenceImage": "computeMaxExtents-Fox1.png"
         },
         {
             "title": "computeMaxExtents (MorphStressTest)",
             "playgroundId": "#M2H33B",
             "replace": "//options//, modelIndex = 5;",
-            "referenceImage": "computeMaxExtents-MorphStressTest.png",
-            "renderCount": 2
+            "referenceImage": "computeMaxExtents-MorphStressTest.png"
         },
         {
             "title": "Read-write storage texture compute",
