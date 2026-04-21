@@ -3579,7 +3579,7 @@
         },
         {
             "title": "OpenPBR Thin Walled Anisotropic Transmission - IBL",
-            "playgroundId": "#GRQHVV#247",
+            "playgroundId": "#GRQHVV#315",
             "excludedEngines": ["webgl1"],
             "renderCount": 5
         },
@@ -3590,7 +3590,7 @@
         },
         {
             "title": "OpenPBR Thin Walled Subsurface Anisotropy - IBL",
-            "playgroundId": "#GRQHVV#309",
+            "playgroundId": "#GRQHVV#316",
             "excludedEngines": ["webgl1"],
             "renderCount": 5
         },
