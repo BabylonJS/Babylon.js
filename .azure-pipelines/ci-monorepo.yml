@@ -80,10 +80,9 @@ jobs:
     - job: Build
       displayName: "Build job"
       steps:
-          - checkout: self
-            clean: true
-            fetchDepth: 0
-            fetchTags: false
+          - template: templates/checkout-with-tag-override.yml
+            parameters:
+                fetchDepth: 0
 
           - task: UseNode@1
             displayName: "Use Node 22.x"
@@ -272,9 +271,7 @@ jobs:
     - job: ES6
       displayName: "ES6"
       steps:
-          - checkout: self
-            clean: true
-            fetchTags: false
+          - template: templates/checkout-with-tag-override.yml
 
           - task: UseNode@1
             displayName: "Use Node 22.x"
@@ -333,9 +330,7 @@ jobs:
     - job: FormatLint
       displayName: "Format, Lint, and more"
       steps:
-          - checkout: self
-            clean: true
-            fetchTags: false
+          - template: templates/checkout-with-tag-override.yml
 
           - task: UseNode@1
             displayName: "Use Node 22.x"
@@ -370,10 +365,9 @@ jobs:
       displayName: "TypeDoc check"
       condition: ne(variables['Build.SourceBranch'], 'refs/heads/master')
       steps:
-          - checkout: self
-            clean: true
-            fetchDepth: 0
-            fetchTags: false
+          - template: templates/checkout-with-tag-override.yml
+            parameters:
+                fetchDepth: 0
 
           - task: UseNode@1
             displayName: "Use Node 22.x"
@@ -416,9 +410,7 @@ jobs:
       displayName: "Unit tests"
       dependsOn: Build
       steps:
-          - checkout: self
-            clean: true
-            fetchTags: false
+          - template: templates/checkout-with-tag-override.yml
 
           - task: UseNode@1
             displayName: "Use Node 22.x"
@@ -480,9 +472,7 @@ jobs:
       displayName: "Interaction tests"
       dependsOn: Build
       steps:
-          - checkout: self
-            clean: true
-            fetchTags: false
+          - template: templates/checkout-with-tag-override.yml
 
           - task: UseNode@1
             displayName: "Use Node 22.x"
@@ -551,9 +541,7 @@ jobs:
       displayName: "Visualization tests - WebGL 2"
       dependsOn: Build
       steps:
-          - checkout: self
-            clean: true
-            fetchTags: false
+          - template: templates/checkout-with-tag-override.yml
 
           - task: UseNode@1
             displayName: "Use Node 22.x"
@@ -627,9 +615,7 @@ jobs:
       displayName: "Visualization tests - WebGPU"
       dependsOn: Build
       steps:
-          - checkout: self
-            clean: true
-            fetchTags: false
+          - template: templates/checkout-with-tag-override.yml
 
           - task: UseNode@1
             displayName: "Use Node 22.x"
@@ -707,9 +693,7 @@ jobs:
       pool:
           vmImage: windows-latest
       steps:
-          - checkout: self
-            clean: true
-            fetchTags: false
+          - template: templates/checkout-with-tag-override.yml
 
           - task: DownloadPipelineArtifact@2
             displayName: "Download Pipeline Artifact"
@@ -824,9 +808,7 @@ jobs:
     - job: ViewerTests
       displayName: "Viewer tests"
       steps:
-          - checkout: self
-            clean: true
-            fetchTags: false
+          - template: templates/checkout-with-tag-override.yml
 
           - task: UseNode@1
             displayName: "Use Node 22.x"
@@ -998,9 +980,7 @@ jobs:
             )
           )
       steps:
-          - checkout: self
-            clean: true
-            fetchTags: false
+          - template: templates/checkout-with-tag-override.yml
 
           - bash: mkdir download
             displayName: "Prepare download directory"

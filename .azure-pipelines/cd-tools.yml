@@ -49,10 +49,7 @@ jobs:
     - job: BuildTools
       displayName: "Build tools"
       steps:
-          - checkout: self
-            clean: true
-            fetchDepth: 1
-            fetchTags: true
+          - template: templates/checkout-with-tag-override.yml
 
           - task: UseNode@1
             displayName: "Use Node 22.x"

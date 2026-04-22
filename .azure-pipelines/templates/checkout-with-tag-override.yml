@@ -1,0 +1,44 @@
+# =============================================================================
+# Checkout Template with Version Tag Override
+#
+# Wraps `checkout: self` and, when triggered by a build-completion/resource
+# trigger (Build.Reason == ResourceTrigger), checks out the latest version
+# tag on origin/master. This ensures pipelines triggered after a Publish
+# build use the exact commit that was published, not the stale commit the
+# Publish pipeline originally started from.
+#
+# For all other triggers (PR, Manual, Schedule, IndividualCI) the default
+# checkout behavior is preserved.
+# =============================================================================
+
+parameters:
+    - name: clean
+      type: boolean
+      default: true
+    - name: fetchDepth
+      type: number
+      default: 0
+    - name: fetchTags
+      type: boolean
+      default: true
+    - name: triggeringPipeline
+      type: string
+      default: "Publish pipeline"
+
+steps:
+    - checkout: self
+      clean: ${{ parameters.clean }}
+      fetchDepth: ${{ parameters.fetchDepth }}
+      fetchTags: ${{ parameters.fetchTags }}
+
+    - bash: |
+          git fetch origin --tags
+          LATEST_TAG=$(git describe --tags --abbrev=0 origin/master)
+          echo "Checking out version tag: $LATEST_TAG"
+          git checkout "$LATEST_TAG"
+      displayName: "Override checkout to latest version tag"
+      condition: >-
+          and(
+            or(eq(variables['Build.Reason'], 'ResourceTrigger'), eq(variables['Build.Reason'], 'BuildCompletion')),
+            eq(variables['Build.TriggeredBy.DefinitionName'], '${{ parameters.triggeringPipeline }}')
+          )
