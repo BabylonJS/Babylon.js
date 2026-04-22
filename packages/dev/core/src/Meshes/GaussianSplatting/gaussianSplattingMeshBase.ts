@@ -394,6 +394,34 @@ export class GaussianSplattingMeshBase extends Mesh {
     protected static readonly _DefaultViewUpdateThreshold = 1e-4;
 
     /**
+     * Returns a byte-accurate view for retained splat data, preserving any non-zero byte offset.
+     * @param data The retained splat source bytes.
+     * @returns A Uint8Array covering the exact source byte range.
+     * @internal
+     */
+    protected static _GetSplatDataBytes(data: ArrayBuffer | ArrayBufferView): Uint8Array {
+        return ArrayBuffer.isView(data) ? new Uint8Array(data.buffer, data.byteOffset, data.byteLength) : new Uint8Array(data);
+    }
+
+    /**
+     * Returns a Float32 reinterpretation for retained splat data, copying only when alignment requires it.
+     * @param data The retained splat source bytes.
+     * @returns A Float32Array over the exact source byte range.
+     * @internal
+     */
+    protected static _GetSplatDataFloats(data: ArrayBuffer | ArrayBufferView): Float32Array {
+        const bytes = GaussianSplattingMeshBase._GetSplatDataBytes(data);
+
+        if (bytes.byteOffset % Float32Array.BYTES_PER_ELEMENT !== 0 || bytes.byteLength % Float32Array.BYTES_PER_ELEMENT !== 0) {
+            const copy = new Uint8Array(bytes.byteLength);
+            copy.set(bytes);
+            return new Float32Array(copy.buffer);
+        }
+
+        return new Float32Array(bytes.buffer, bytes.byteOffset, bytes.byteLength / Float32Array.BYTES_PER_ELEMENT);
+    }
+
+    /**
      * Cosine value of the angle threshold to update view dependent splat sorting. Default is 0.0001.
      */
     public viewUpdateThreshold: number = GaussianSplattingMeshBase._DefaultViewUpdateThreshold;
@@ -2657,12 +2685,8 @@ export class GaussianSplattingMeshBase extends Mesh {
         if (!srcRaw || srcCount === 0) {
             return;
         }
-        // _splatsData is typed as ArrayBuffer but callers may have stored a TypedArray before this
-        // guard was added. Extract the underlying ArrayBuffer so Float32Array reinterprets bytes
-        // correctly instead of value-converting each element.
-        const srcBuffer: ArrayBuffer = srcRaw instanceof ArrayBuffer ? srcRaw : ((srcRaw as unknown as ArrayBufferView).buffer as ArrayBuffer);
-        const uBuffer = new Uint8Array(srcBuffer);
-        const fBuffer = new Float32Array(srcBuffer);
+        const uBuffer = GaussianSplattingMeshBase._GetSplatDataBytes(srcRaw);
+        const fBuffer = GaussianSplattingMeshBase._GetSplatDataFloats(srcRaw);
 
         for (let i = 0; i < srcCount; i++) {
             this._makeSplat(dstOffset + i, fBuffer, uBuffer, covA, covB, colorArray, minimum, maximum, false, i);
