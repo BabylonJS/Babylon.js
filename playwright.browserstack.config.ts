@@ -129,7 +129,9 @@ if (!activeConfig) {
 
 // Include the performance summary reporter when running performance tests
 const isPerformanceRun = testType === "performance";
-const baseReporters: any[] = [["line"], ["junit", { outputFile: "junit.xml" }], ["html", { open: "never" }]];
+// Use 'dot' reporter for minimal console output — only errors and a summary.
+// JUnit and HTML reporters capture full details for CI artifacts.
+const baseReporters: any[] = [["dot"], ["junit", { outputFile: "junit.xml" }], ["html", { open: "never" }]];
 if (isPerformanceRun) {
     baseReporters.push(["./packages/tools/tests/performanceSummaryReporter.ts"]);
 }
@@ -140,7 +142,7 @@ export default defineConfig({
     // Performance tests get 1 retry to handle transient BrowserStack issues
     // (socket idle, tunnel drops). Other test types get 2 retries.
     retries: isPerformanceRun ? 2 : 2,
-    workers: process.env.CIWORKERS && +process.env.CIWORKERS ? +process.env.CIWORKERS : 5,
+    workers: process.env.CIWORKERS && +process.env.CIWORKERS ? +process.env.CIWORKERS : 2,
     // Performance tests need a long timeout (each test runs multiple interleaved
     // passes of baseline + candidate, ~120s per test).
     timeout: isPerformanceRun ? 300_000 : undefined,

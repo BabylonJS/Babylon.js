@@ -29,7 +29,7 @@ platforms:
 # Override at runtime via the BROWSERSTACK_PARALLELS env var — the Playwright
 # config patches this value dynamically (shell-style ${VAR:-default} is NOT
 # supported by the BrowserStack SDK, so the override is done in JS).
-parallelsPerPlatform: 10
+parallelsPerPlatform: 5
 
 # BrowserStack Local — set to true to test against localhost/private servers.
 # The SDK manages the tunnel automatically.
@@ -38,7 +38,8 @@ browserstackLocal: false
 # Framework
 framework: playwright
 
-# Debugging
+# Debugging — keep SDK output minimal to avoid 100k+ line CI logs.
+# Only errors are captured; debug, network, and verbose console logs are off.
 debug: false
 networkLogs: false
 consoleLogs: errors
@@ -47,6 +48,9 @@ consoleLogs: errors
 # activity; increase idle timeout to prevent premature disconnects.
 idleTimeout: 300
 
-# Test Observability — enables per-test reporting on the BrowserStack dashboard
+# Test Observability — enables per-test reporting on the BrowserStack dashboard.
+# Auto-capture logs are disabled to reduce log volume.
 testObservability: true
-disableAutoCaptureLogs: true
+testObservabilityOptions:
+    setSessionStatus: true
+    autoLog: false
