@@ -859,6 +859,63 @@ jobs:
                 testRunTitle: "Performance Tests"
 
     # ============================================================================
+    # MEMORY LEAK TESTS
+    # Depends on: Build
+    # Runs memlab (Puppeteer/Chromium) on the CI agent — heap snapshots require
+    # local Chrome DevTools Protocol access, so BrowserStack is not viable here.
+    # Non-blocking: failures do not fail the overall pipeline.
+    # ============================================================================
+    - job: MemoryLeakTests
+      displayName: "Memory leak tests"
+      dependsOn: Build
+      continueOnError: true
+      timeoutInMinutes: 45
+      steps:
+          - checkout: self
+            clean: true
+            fetchTags: false
+
+          - task: UseNode@1
+            displayName: "Use Node 22.x"
+            continueOnError: true
+            retryCountOnTaskFailure: 1
+            inputs:
+                version: "22.x"
+
+          - script: npm install
+            displayName: "npm install"
+            retryCountOnTaskFailure: 1
+
+          - script: npm run test:memory-leaks:all
+            displayName: "Run memory leak tests (all suites)"
+            continueOnError: true
+            env:
+                CDN_BASE_URL: "$(SNAPSHOT_CDN_URL)/$(BuildName)"
+                MEMLEAK_COMMENT_FILE: "$(Build.ArtifactStagingDirectory)/memleak-comment.md"
+
+          - bash: |
+                if [ -f "$(Build.ArtifactStagingDirectory)/memleak-comment.md" ]; then
+                    COMMENT=$(cat "$(Build.ArtifactStagingDirectory)/memleak-comment.md")
+                    echo "##vso[task.setvariable variable=MEMLEAK_COMMENT]$COMMENT"
+                    echo "##vso[task.setvariable variable=HAS_MEMLEAK_COMMENT]true"
+                else
+                    echo "No memory leak comment file found"
+                    echo "##vso[task.setvariable variable=HAS_MEMLEAK_COMMENT]false"
+                fi
+            displayName: "Read memory leak comment"
+            condition: succeededOrFailed()
+
+          - task: GitHubComment@0
+            displayName: "Post memory leak results"
+            condition: and(succeededOrFailed(), eq(variables['HAS_MEMLEAK_COMMENT'], 'true'))
+            continueOnError: true
+            inputs:
+                gitHubConnection: "$(GITHUB_SERVICE_CONNECTION)"
+                repositoryName: "$(Build.Repository.Name)"
+                comment: |
+                    $(MEMLEAK_COMMENT)
+
+    # ============================================================================
     # VIEWER TESTS
     # No dependencies - runs immediately
     # ============================================================================
