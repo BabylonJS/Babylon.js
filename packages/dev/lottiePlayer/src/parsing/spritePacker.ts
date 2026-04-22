@@ -11,12 +11,13 @@ import {
     type RawFillShape,
     type RawFont,
     type RawGradientFillShape,
+    type RawGradientStrokeShape,
     type RawPathShape,
     type RawRectangleShape,
     type RawStrokeShape,
     type RawTextData,
 } from "./rawTypes";
-import { GetInitialScalarValue, GetInitialVectorValues, GetInitialBezierData } from "./rawPropertyHelpers";
+import { GetInitialColorValue, GetInitialScalarValue, GetInitialVectorValues, GetInitialBezierData } from "./rawPropertyHelpers";
 import { ApplyLottieTextContext, DrawLottieText, MeasureLottieText, ResolveLottieText } from "./textLayout";
 
 import { type BoundingBox, GetShapesBoundingBox, GetTextBoundingBox } from "../maths/boundingBox";
@@ -124,12 +125,26 @@ export class SpritePacker {
     // Variable to avoid allocations
     private _spriteAtlasInfo: SpriteAtlasInfo;
 
+    // Tracks unsupported shape types encountered while drawing into the atlas. Deduplicated by `ty`
+    // so a single unknown type doesn't spam the log once per sprite/element. Surfaced via the public
+    // getter so the parser can include these entries in its debug() output.
+    private readonly _unsupportedFeatures: string[] = [];
+    private readonly _seenUnsupportedShapeTypes: Set<string> = new Set<string>();
+
     /**
      * Gets the textures for all atlas pages.
      * @returns An array of textures, one per atlas page.
      */
     public get textures(): ThinTexture[] {
         return this._pages.map((p) => p.texture);
+    }
+
+    /**
+     * Gets the list of unsupported features encountered while rasterizing shapes into the atlas.
+     * Each unknown shape type is reported only once.
+     */
+    public get unsupportedFeatures(): readonly string[] {
+        return this._unsupportedFeatures;
     }
 
     /**
@@ -510,8 +525,20 @@ export class SpritePacker {
                 case "gf":
                     this._drawGradientFill(shape as RawGradientFillShape, boundingBox, page.context);
                     break;
+                case "gs":
+                    this._drawGradientStroke(shape as RawGradientStrokeShape, boundingBox, page.context);
+                    break;
                 case "tr":
                     break; // Nothing needed with transforms
+                default:
+                    // Record once per unknown `ty` so we get observability into shape types that fall
+                    // through the rasterizer (e.g. `gs`, modifiers like `tm`/`rp`, etc.) instead of
+                    // silently producing an empty sprite.
+                    if (!this._seenUnsupportedShapeTypes.has(shape.ty)) {
+                        this._seenUnsupportedShapeTypes.add(shape.ty);
+                        this._unsupportedFeatures.push(`Unsupported shape type in vector shape: ${shape.ty}`);
+                    }
+                    break;
             }
         }
 
@@ -651,20 +678,38 @@ export class SpritePacker {
     }
 
     private _drawFill(fill: RawFillShape, ctx: DrawingContext): void {
-        const color = this._lottieColorToCSSColor(fill.c.k as number[], (fill.o.k as number) / 100);
+        // Read initial (first-frame) values so animated fills (a===1) render their starting state into the atlas
+        // instead of feeding a keyframe array through `as number[]` / `as number` casts.
+        const colorRgb = GetInitialColorValue(fill.c);
+        const opacity = GetInitialScalarValue(fill.o, 100);
+        const color = this._lottieColorToCSSColor(colorRgb, opacity / 100);
         ctx.fillStyle = color;
 
         ctx.fill();
     }
 
     private _drawStroke(stroke: RawStrokeShape, ctx: DrawingContext): void {
-        // Color and opacity
-        const opacity = (stroke.o?.k as number) ?? 100;
-        const color = this._lottieColorToCSSColor((stroke.c?.k as number[]) ?? [0, 0, 0], opacity / 100);
+        // Color and opacity. Use initial-value helpers so animated stroke color/opacity render their first-frame
+        // value into the atlas instead of producing NaN / malformed CSS via `as number[]` / `as number` casts.
+        const opacity = stroke.o ? GetInitialScalarValue(stroke.o, 100) : 100;
+        const colorRgb = stroke.c ? GetInitialColorValue(stroke.c) : [0, 0, 0];
+        const color = this._lottieColorToCSSColor(colorRgb, opacity / 100);
         ctx.strokeStyle = color;
 
+        this._applyStrokeStyle(stroke, ctx);
+
+        ctx.stroke();
+    }
+
+    /**
+     * Apply the geometric stroke styling (width, line cap, line join, miter limit, dash pattern) to the
+     * drawing context. Shared by `_drawStroke` (solid-color strokes, `ty:"st"`) and `_drawGradientStroke`
+     * (gradient strokes, `ty:"gs"`) — both have identical width/cap/join/miter/dash semantics; they only
+     * differ in how `strokeStyle` is built (CSS color vs CanvasGradient).
+     */
+    private _applyStrokeStyle(stroke: RawStrokeShape | RawGradientStrokeShape, ctx: DrawingContext): void {
         // Width
-        const width = (stroke.w?.k as number) ?? 1;
+        const width = stroke.w ? GetInitialScalarValue(stroke.w, 1) : 1;
         ctx.lineWidth = width;
 
         // Line cap
@@ -710,12 +755,50 @@ export class SpritePacker {
             const lineDashes: number[] = [];
             for (let i = 0; i < dashes.length; i++) {
                 if (dashes[i].n === "d") {
-                    lineDashes.push(dashes[i].v.k as number);
+                    // Dash length may be animated (a === 1), in which case `v.k` is a keyframe array.
+                    // Use GetInitialScalarValue so the first-frame length is rasterized instead of NaN.
+                    lineDashes.push(GetInitialScalarValue(dashes[i].v));
                 }
             }
 
             ctx.setLineDash(lineDashes);
         }
+    }
+
+    private _drawGradientStroke(stroke: RawGradientStrokeShape, boundingBox: BoundingBox, ctx: DrawingContext): void {
+        // Build the gradient that will be used as `strokeStyle`. Mirrors `_drawGradientFill` dispatch on `t`
+        // (1 = linear, 2 = radial) and reuses the same translation into the bounding box's local space.
+        const xTranslate = boundingBox.centerX;
+        const yTranslate = boundingBox.centerY;
+        const startPoint = stroke.s.k as number[];
+        const endPoint = stroke.e.k as number[];
+
+        let gradient: CanvasGradient | undefined;
+        switch (stroke.t) {
+            case 1:
+                gradient = ctx.createLinearGradient(startPoint[0] + xTranslate, startPoint[1] + yTranslate, endPoint[0] + xTranslate, endPoint[1] + yTranslate);
+                break;
+            case 2: {
+                const centerX = startPoint[0] + xTranslate;
+                const centerY = startPoint[1] + yTranslate;
+                const outerRadius = Math.hypot(endPoint[0] - startPoint[0], endPoint[1] - startPoint[1]);
+                gradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, outerRadius);
+                break;
+            }
+        }
+
+        if (gradient === undefined) {
+            return;
+        }
+
+        // Reuse the existing color-stop builder. `_addColorStops` only reads `g`, which is shared between
+        // gradient fills and gradient strokes. Stroke `o` (overall opacity) is intentionally not applied
+        // here to match the existing `_drawGradientFill` behavior; if that ever gains opacity support, this
+        // method should follow.
+        this._addColorStops(gradient, stroke);
+
+        ctx.strokeStyle = gradient;
+        this._applyStrokeStyle(stroke, ctx);
 
         ctx.stroke();
     }
@@ -769,7 +852,7 @@ export class SpritePacker {
         ctx.fill();
     }
 
-    private _addColorStops(gradient: CanvasGradient, fill: RawGradientFillShape): void {
+    private _addColorStops(gradient: CanvasGradient, fill: RawGradientFillShape | RawGradientStrokeShape): void {
         const stops = fill.g.p;
         const rawColors = fill.g.k.k;
 

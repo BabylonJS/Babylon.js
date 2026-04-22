@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { GetShapesBoundingBox } from "../../src/maths/boundingBox";
-import type { RawBezier, RawElement, RawEllipseShape, RawPathShape, RawRectangleShape } from "../../src/parsing/rawTypes";
+import type { RawBezier, RawElement, RawEllipseShape, RawGradientStrokeShape, RawPathShape, RawRectangleShape, RawStrokeShape } from "../../src/parsing/rawTypes";
 
 function makeStaticRect(position: number[], size: number[]): RawRectangleShape {
     return {
@@ -44,10 +44,13 @@ describe("GetShapesBoundingBox - rectangles", () => {
     });
 
     it("uses initial keyframe for animated rectangle size", () => {
-        const rect = makeAnimatedSizeRect([0, 0], [
-            { t: 0, s: [10, 10] },
-            { t: 30, s: [50, 50] },
-        ]);
+        const rect = makeAnimatedSizeRect(
+            [0, 0],
+            [
+                { t: 0, s: [10, 10] },
+                { t: 30, s: [50, 50] },
+            ]
+        );
         const box = GetShapesBoundingBox([rect as unknown as RawElement]);
 
         // Uses first keyframe size (animated shape properties are not played back at runtime)
@@ -172,5 +175,48 @@ describe("GetShapesBoundingBox - ellipses", () => {
         expect(box.height).toBe(60);
         expect(box.offsetX).toBe(0);
         expect(box.offsetY).toBe(0);
+    });
+});
+
+function makeSolidStroke(width: number): RawStrokeShape {
+    return {
+        ty: "st",
+        lc: 2,
+        lj: 2,
+        c: { a: 0, k: [0, 0, 0] },
+        o: { a: 0, k: 100 },
+        w: { a: 0, k: width },
+    } as RawStrokeShape;
+}
+
+function makeGradientStroke(width: number): RawGradientStrokeShape {
+    return {
+        ty: "gs",
+        lc: 2,
+        lj: 2,
+        o: { a: 0, k: 100 },
+        w: { a: 0, k: width },
+        s: { a: 0, k: [0, 0], l: 2 },
+        e: { a: 0, k: [1, 0], l: 2 },
+        t: 1,
+        g: {
+            p: 2,
+            k: { a: 0, k: [0, 1, 0, 0, 1, 0, 0, 1] },
+        },
+    } as RawGradientStrokeShape;
+}
+
+describe("GetShapesBoundingBox - gradient strokes (I-03)", () => {
+    it("gradient stroke (gs) inflates the bounding box by its width just like a solid stroke (st)", () => {
+        // Regression for I-03: before `gs` support, only `st` contributed to strokeInset in GetShapesBoundingBox,
+        // so a rect clipped by a gradient-stroked group got its stroke chopped off against the atlas cell edge.
+        const rect = makeStaticRect([0, 0], [100, 60]);
+
+        const withSolid = GetShapesBoundingBox([rect as unknown as RawElement, makeSolidStroke(10) as unknown as RawElement]);
+        const withGradient = GetShapesBoundingBox([rect as unknown as RawElement, makeGradientStroke(10) as unknown as RawElement]);
+
+        expect(withGradient.width).toBe(withSolid.width);
+        expect(withGradient.height).toBe(withSolid.height);
+        expect(withGradient.width).toBeGreaterThan(100);
     });
 });

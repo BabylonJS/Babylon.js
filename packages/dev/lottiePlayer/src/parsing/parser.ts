@@ -76,6 +76,7 @@ export class Parser {
 
     private _rawFonts: Map<string, RawFont> = new Map<string, RawFont>(); // Map of font names to raw font data
     private _unsupportedFeatures: string[];
+    private _seenUnsupportedMessages: Set<string> = new Set<string>(); // Dedup guard so spammy per-property warnings only surface once.
 
     private _rootNodes: Node[]; // Array of root-level nodes in the animation, in top-down z order
     private _parentNodes: Map<number, Node> = new Map<number, Node>(); // Map of nodes to build the scenegraph from the animation layers
@@ -121,8 +122,21 @@ export class Parser {
         }
     }
 
+    /**
+     * Pushes a message to the unsupported features list only if it has not been seen before during this parse.
+     * Used for warnings that would otherwise be repeated for every property/layer matching the same case.
+     */
+    private _pushUnsupportedOnce(message: string): void {
+        if (this._seenUnsupportedMessages.has(message)) {
+            return;
+        }
+        this._seenUnsupportedMessages.add(message);
+        this._unsupportedFeatures.push(message);
+    }
+
     private _loadFromData(rawData: RawLottieAnimation): AnimationInfo {
         this._unsupportedFeatures.length = 0; // Clear previous errors
+        this._seenUnsupportedMessages.clear();
         this._startFrame = rawData.ip;
 
         this._parseFonts(rawData);
@@ -143,6 +157,13 @@ export class Parser {
 
         // Reorder the sprites from back to front and set the final atlas textures
         this._renderingManager.ready(this._packer.textures);
+
+        // Drain any unsupported-feature reports from the packer before we drop the reference to it,
+        // so debug() can surface them after construction.
+        const packerUnsupported = this._packer.unsupportedFeatures;
+        for (let i = 0; i < packerUnsupported.length; i++) {
+            this._unsupportedFeatures.push(packerUnsupported[i]);
+        }
 
         // Release the canvas to avoid memory leaks
         this._packer.releaseCanvas();
@@ -665,6 +686,19 @@ export class Parser {
                 currentValue: defaultValue,
                 currentKeyframeIndex: 0,
             };
+        }
+
+        // The Lottie spec says `l` is optional and defaults to the array length, but in practice
+        // some exporters omit it on `[x, y, 0]` triples (e.g. After Effects emits 3D-style transforms
+        // even on 2D layers). We silently treat those as 2D using indices 0/1, but flag the case so
+        // we don't keep accepting unexpected component counts unnoticed.
+        if (property.l === undefined) {
+            const sampleLength = property.a === 0 ? (property.k as number[]).length : ((property.k as RawVectorKeyframe[])[0]?.s?.length ?? 2);
+            if (sampleLength !== 2) {
+                this._pushUnsupportedOnce(
+                    `Vector2 missing 'l' with ${sampleLength}-component value (expected 2) - Layer: ${this._currentLayerName ?? "<unknown>"} - VectorType: ${vectorType}. Using x/y components.`
+                );
+            }
         }
 
         if (property.a === 0) {

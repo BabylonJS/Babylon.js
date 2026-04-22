@@ -2,6 +2,8 @@ import {
     type RawBezier,
     type RawBezierShapeKeyframe,
     type RawBezierShapeProperty,
+    type RawColorKeyframe,
+    type RawColorProperty,
     type RawPositionProperty,
     type RawScalarProperty,
     type RawVectorKeyframe,
@@ -37,6 +39,22 @@ export function GetInitialVectorValues(property: RawVectorProperty | RawPosition
     }
 
     return (property.k as RawVectorKeyframe[])[0]?.s ?? [0, 0];
+}
+
+/**
+ * Gets the initial (first keyframe or static) color values from a Lottie color property.
+ * For static properties (a === 0), returns the value directly.
+ * For animated properties (a === 1), returns the first keyframe's start value.
+ * @param property The raw color property from the Lottie data.
+ * @param defaultValue The default color to return if no valid data is available.
+ * @returns The initial color values as a number array (typically [r, g, b] in 0-1 range).
+ */
+export function GetInitialColorValue(property: RawColorProperty, defaultValue: number[] = [0, 0, 0]): number[] {
+    if (property.a === 0) {
+        return property.k as number[];
+    }
+
+    return (property.k as RawColorKeyframe[])[0]?.s ?? defaultValue;
 }
 
 /**
