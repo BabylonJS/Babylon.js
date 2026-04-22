@@ -3,12 +3,17 @@
 # browserstack-wait.sh — Wait for BrowserStack sessions, then run a command.
 #
 # Polls the BrowserStack Automate REST API to check how many parallel sessions
-# are available. Once enough are free, runs the given command. If the command
-# fails because another build grabbed the sessions in the gap (race condition),
-# waits again and retries.
+# are available. Tries to grab BSTACK_SESSIONS_REQUIRED (default 2) first;
+# if only fewer are available (but at least 1), starts with what's available.
+# Exports CIWORKERS and BROWSERSTACK_PARALLELS so the Playwright config
+# adjusts workers and the SDK patches parallelsPerPlatform accordingly.
+#
+# If the command fails because another build grabbed the sessions in the gap
+# (race condition), waits and retries.
 #
 # Environment variables:
-#   BSTACK_SESSIONS_REQUIRED  — Sessions this job needs (default: 1)
+#   BSTACK_SESSIONS_REQUIRED  — Preferred session count (default: 2)
+#   BSTACK_SESSIONS_MIN       — Minimum acceptable sessions (default: 1)
 #   BROWSERSTACK_USERNAME     — BrowserStack username (required)
 #   BROWSERSTACK_ACCESS_KEY   — BrowserStack access key (required)
 #   BSTACK_WAIT_TIMEOUT       — Max seconds to wait per attempt (default: 900)
@@ -21,20 +26,24 @@
 # ---------------------------------------------------------------------------
 set -uo pipefail
 
-REQUIRED="${BSTACK_SESSIONS_REQUIRED:-1}"
-TIMEOUT="${BSTACK_WAIT_TIMEOUT:-900}"
+PREFERRED="${BSTACK_SESSIONS_REQUIRED:-2}"
+MINIMUM="${BSTACK_SESSIONS_MIN:-1}"
+WAIT_TIMEOUT="${BSTACK_WAIT_TIMEOUT:-900}"
 INTERVAL="${BSTACK_POLL_INTERVAL:-30}"
 MAX_RETRIES="${BSTACK_MAX_RETRIES:-3}"
 
 API_URL="https://api.browserstack.com/automate/plan.json"
 
+# Stores how many sessions we actually got (set by wait_for_sessions)
+GRANTED=0
+
 # --- Helpers ----------------------------------------------------------------
 
 wait_for_sessions() {
     local elapsed=0
-    echo "[browserstack-wait] Waiting for ${REQUIRED} session(s) to become available (timeout: ${TIMEOUT}s)..."
+    echo "[browserstack-wait] Looking for ${PREFERRED} session(s) (minimum: ${MINIMUM}) — timeout: ${WAIT_TIMEOUT}s"
 
-    while [ "$elapsed" -lt "$TIMEOUT" ]; do
+    while [ "$elapsed" -lt "$WAIT_TIMEOUT" ]; do
         local response
         response=$(curl -sf -u "${BROWSERSTACK_USERNAME}:${BROWSERSTACK_ACCESS_KEY}" "$API_URL" 2>/dev/null) || {
             echo "[browserstack-wait]   API request failed — retrying in ${INTERVAL}s"
@@ -55,20 +64,30 @@ wait_for_sessions() {
             continue
         }
 
-        if [ "$available" -ge "$REQUIRED" ]; then
-            echo "[browserstack-wait] ${available} session(s) available — launching."
+        # Try preferred count first, fall back to minimum
+        if [ "$available" -ge "$PREFERRED" ]; then
+            GRANTED="$PREFERRED"
+            echo "[browserstack-wait] ${available} session(s) available — using ${GRANTED}."
+            return 0
+        elif [ "$available" -ge "$MINIMUM" ]; then
+            GRANTED="$available"
+            # Cap at preferred (don't grab more than we asked for)
+            if [ "$GRANTED" -gt "$PREFERRED" ]; then
+                GRANTED="$PREFERRED"
+            fi
+            echo "[browserstack-wait] ${available} session(s) available (wanted ${PREFERRED}) — using ${GRANTED}."
             return 0
         fi
 
         local running max_allowed
         running=$(node -e "console.log(JSON.parse(process.argv[1]).parallel_sessions_running)" "$response" 2>/dev/null || echo "?")
         max_allowed=$(node -e "console.log(JSON.parse(process.argv[1]).parallel_sessions_max_allowed)" "$response" 2>/dev/null || echo "?")
-        echo "[browserstack-wait]   ${running}/${max_allowed} sessions in use, need ${REQUIRED} free. Waiting ${INTERVAL}s... (${elapsed}s/${TIMEOUT}s)"
+        echo "[browserstack-wait]   ${running}/${max_allowed} sessions in use, need at least ${MINIMUM}. Waiting ${INTERVAL}s... (${elapsed}s/${WAIT_TIMEOUT}s)"
         sleep "$INTERVAL"
         elapsed=$((elapsed + INTERVAL))
     done
 
-    echo "[browserstack-wait] Timed out after ${TIMEOUT}s waiting for ${REQUIRED} session(s)."
+    echo "[browserstack-wait] Timed out after ${WAIT_TIMEOUT}s waiting for sessions."
     return 1
 }
 
@@ -82,6 +101,11 @@ while [ "$retry" -le "$MAX_RETRIES" ]; do
     fi
 
     wait_for_sessions || exit 1
+
+    # Export so Playwright config picks up the granted count
+    export CIWORKERS="$GRANTED"
+    export BROWSERSTACK_PARALLELS="$GRANTED"
+    echo "[browserstack-wait] Set CIWORKERS=${GRANTED}, BROWSERSTACK_PARALLELS=${GRANTED}"
 
     # Run the actual command; capture exit code without exiting on failure
     set +e

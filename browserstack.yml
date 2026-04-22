@@ -26,10 +26,10 @@ platforms:
       browserVersion: latest
 
 # Parallel sessions per platform (account-level cap per build).
-# Override at runtime via the BROWSERSTACK_PARALLELS env var — the Playwright
-# config patches this value dynamically (shell-style ${VAR:-default} is NOT
-# supported by the BrowserStack SDK, so the override is done in JS).
-parallelsPerPlatform: 5
+# Default to 1 as a safe baseline — browserstack-wait.sh sets
+# BROWSERSTACK_PARALLELS based on actual session availability, and the
+# Playwright config patches this value dynamically.
+parallelsPerPlatform: 1
 
 # BrowserStack Local — set to true to test against localhost/private servers.
 # The SDK manages the tunnel automatically.

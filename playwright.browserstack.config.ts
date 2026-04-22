@@ -137,9 +137,9 @@ if (!activeConfig) {
 
 // Include the performance summary reporter when running performance tests
 const isPerformanceRun = testType === "performance";
-// Use 'dot' reporter for minimal console output — only errors and a summary.
+// Use 'line' reporter for a single updating line showing the current test.
 // JUnit and HTML reporters capture full details for CI artifacts.
-const baseReporters: any[] = [["dot"], ["junit", { outputFile: "junit.xml" }], ["html", { open: "never" }]];
+const baseReporters: any[] = [["line"], ["junit", { outputFile: "junit.xml" }], ["html", { open: "never" }]];
 if (isPerformanceRun) {
     baseReporters.push(["./packages/tools/tests/performanceSummaryReporter.ts"]);
 }
