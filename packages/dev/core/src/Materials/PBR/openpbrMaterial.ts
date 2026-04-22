@@ -2514,7 +2514,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
                     // reads them inside the same #ifdef block, so the UBO bytes can stay
                     // stale. The full update will happen on the next bind once the
                     // define becomes active again.
-                    if (uniform.requiredDefine !== undefined && !(defines as any)[uniform.requiredDefine]) {
+                    if (uniform.requiredDefine !== undefined && !defines[uniform.requiredDefine]) {
                         continue;
                     }
                     // If the property actually defines a uniform, update it.
