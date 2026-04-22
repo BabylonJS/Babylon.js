@@ -29,7 +29,7 @@ platforms:
 # Override at runtime via the BROWSERSTACK_PARALLELS env var — the Playwright
 # config patches this value dynamically (shell-style ${VAR:-default} is NOT
 # supported by the BrowserStack SDK, so the override is done in JS).
-parallelsPerPlatform: 5
+parallelsPerPlatform: 2
 
 # BrowserStack Local — set to true to test against localhost/private servers.
 # The SDK manages the tunnel automatically.
