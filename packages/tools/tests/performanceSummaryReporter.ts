@@ -46,7 +46,14 @@ class PerformanceSummaryReporter implements Reporter {
     }
 
     onEnd(_result: FullResult) {
-        if (this.entries.length === 0 && this.failedTests.length === 0) return;
+        if (this.entries.length === 0 && this.failedTests.length === 0) {
+            // No perf entries and no failures — write an all-passed message if requested.
+            const commentFile = process.env.PERF_COMMENT_FILE;
+            if (commentFile) {
+                fs.writeFileSync(commentFile, "## ⚡ Performance Test Results\n\n🟢 All performance tests passed — no regressions detected.\n", "utf-8");
+            }
+            return;
+        }
 
         const conclusive = this.entries.filter((e) => !e.inconclusive);
         const inconclusiveEntries = this.entries.filter((e) => e.inconclusive);

@@ -74,6 +74,11 @@ function GenerateMarkdownSummary(results: IMemoryLeakScenarioResult[], hasError:
     lines.push(`**${passed.length}** passed, **${leaked.length}** leaked out of **${results.length}** scenarios`);
     lines.push("");
 
+    if (results.length > 0 && leaked.length === 0 && !hasError) {
+        lines.push("🟢 All memory leak tests passed — no leaks detected.");
+        lines.push("");
+    }
+
     if (leaked.length > 0) {
         lines.push("### Leaked Scenarios");
         lines.push("");

@@ -822,6 +822,9 @@ jobs:
           - bash: |
                 if [ -f "$(Build.ArtifactStagingDirectory)/perf-comment.md" ]; then
                     COMMENT=$(cat "$(Build.ArtifactStagingDirectory)/perf-comment.md")
+                    COMMENT="${COMMENT//'%'/'%AZP25'}"
+                    COMMENT="${COMMENT//$'\n'/'%0A'}"
+                    COMMENT="${COMMENT//$'\r'/'%0D'}"
                     echo "##vso[task.setvariable variable=PERF_COMMENT]$COMMENT"
                     echo "##vso[task.setvariable variable=HAS_PERF_COMMENT]true"
                 else
@@ -894,6 +897,9 @@ jobs:
           - bash: |
                 if [ -f "$(Build.ArtifactStagingDirectory)/memleak-comment.md" ]; then
                     COMMENT=$(cat "$(Build.ArtifactStagingDirectory)/memleak-comment.md")
+                    COMMENT="${COMMENT//'%'/'%AZP25'}"
+                    COMMENT="${COMMENT//$'\n'/'%0A'}"
+                    COMMENT="${COMMENT//$'\r'/'%0D'}"
                     echo "##vso[task.setvariable variable=MEMLEAK_COMMENT]$COMMENT"
                     echo "##vso[task.setvariable variable=HAS_MEMLEAK_COMMENT]true"
                 else
