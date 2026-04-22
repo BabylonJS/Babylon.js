@@ -1707,8 +1707,7 @@
             "title": "Realtime Filtering",
             "playgroundId": "#FEEK7G#118",
             "renderCount": 5,
-            "referenceImage": "realtimeFiltering.png",
-            "performanceTest": true
+            "referenceImage": "realtimeFiltering.png"
         },
         {
             "title": "Realtime Filtering Irradiance",
