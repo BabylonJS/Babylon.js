@@ -166,9 +166,9 @@ BSTACK_TEST_TYPE=performance \
 
 ### Config Flags (config.json)
 
-| Flag                       | Description                                                                                  |
-| -------------------------- | -------------------------------------------------------------------------------------------- |
-| `"performanceTest": true`  | Includes this test in performance runs (used when `VISUALIZATION_PERF_ALL` is not set)       |
+| Flag                             | Description                                                                              |
+| -------------------------------- | ---------------------------------------------------------------------------------------- |
+| `"performanceTest": true`        | Includes this test in performance runs (used when `VISUALIZATION_PERF_ALL` is not set)   |
 | `"excludeFromPerformance": true` | Permanently excludes this test from performance runs, even with `VISUALIZATION_PERF_ALL` |
 
 ### Tuning Parallelism
