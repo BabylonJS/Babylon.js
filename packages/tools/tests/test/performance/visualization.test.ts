@@ -14,6 +14,9 @@ import * as fs from "fs";
  * Set VISUALIZATION_PERF_ALL=true to run ALL visualization tests as performance tests:
  *   VISUALIZATION_PERF=true VISUALIZATION_PERF_ALL=true npx playwright test --project performance
  *
+ * To permanently exclude a test from performance runs (even with VISUALIZATION_PERF_ALL),
+ * add "excludeFromPerformance": true to its entry in config.json.
+ *
  * You can filter to a specific engine:
  *   VISUALIZATION_PERF=true npx playwright test --project performance -g "webgpu"
  *
@@ -41,6 +44,7 @@ interface VisualizationTest {
     excludedEngines?: string[];
     renderCount?: number;
     performanceTest?: boolean;
+    excludeFromPerformance?: boolean;
 }
 
 const allTests: VisualizationTest[] = configData.tests;
@@ -48,7 +52,9 @@ const allTests: VisualizationTest[] = configData.tests;
 // Only playground-based tests can be run through evaluatePrepareScene reliably.
 // sceneFolder/scriptToRun tests also work through evaluatePrepareScene.
 // When runAll is false, only tests with "performanceTest": true are included.
+// Tests with "excludeFromPerformance": true are always excluded regardless of flags.
 const runnableTests = allTests.filter((t) => {
+    if (t.excludeFromPerformance) return false;
     const hasScene = t.playgroundId || t.sceneFolder || t.scriptToRun;
     if (!hasScene) return false;
     return runAll || t.performanceTest === true;
