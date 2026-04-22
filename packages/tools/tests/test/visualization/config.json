@@ -1957,8 +1957,7 @@
         },
         {
             "title": "Thin instances + dynamic buffer resize",
-            "renderCount": 10,
-            "playgroundId": "#217750#217",
+            "playgroundId": "#10G61O#0",
             "excludedEngines": ["webgl1"],
             "referenceImage": "thin-instances-buffer-resize.png"
         },
@@ -2011,14 +2010,12 @@
         },
         {
             "title": "Multi cameras and output render target",
-            "renderCount": 2,
-            "playgroundId": "#BCYE7J#46",
+            "playgroundId": "#3VPD1J#0",
             "referenceImage": "multiCamerasOutputRenderTarget.png"
         },
         {
             "title": "Multi cameras and output render target with depth texture (D24)",
-            "renderCount": 2,
-            "playgroundId": "#BCYE7J#36",
+            "playgroundId": "#XASY5D#0",
             "excludedEngines": ["webgl1"],
             "referenceImage": "multiCamerasOutputRenderTarget.png"
         },
@@ -2373,8 +2370,7 @@
         },
         {
             "title": "cube-reflection-with-probe-and-mirrors",
-            "renderCount": 20,
-            "playgroundId": "#X3V1NN#7"
+            "playgroundId": "#3DJPE6#0"
         },
         {
             "title": "sphere-with-custom-shader-to-display-wireframe-using-glow-layer",
@@ -2421,8 +2417,7 @@
         },
         {
             "title": "apply-all-post-processes",
-            "renderCount": 10,
-            "playgroundId": "#MJ59Y8#18"
+            "playgroundId": "#QEILPW#0"
         },
         {
             "title": "simple-custom-shader",
@@ -2454,7 +2449,7 @@
         },
         {
             "title": "dissolve-effect-with-node-material-and-glow-layer",
-            "playgroundId": "#F6PGMC#16"
+            "playgroundId": "#84JLNC#0"
         },
         {
             "title": "cascaded-shadow-maps-and-flying-saucers",
@@ -2509,8 +2504,7 @@
         },
         {
             "title": "change-texture-of-material",
-            "renderCount": 10,
-            "playgroundId": "#7PN9PH#2",
+            "playgroundId": "#91XVF7#0",
             "excludedEngines": ["webgl1"]
         },
         {
@@ -2557,10 +2551,9 @@
         },
         {
             "title": "Interleaved buffers test (updateUVs = true, updateAfterRender = true)",
-            "playgroundId": "#AVFNTW#5",
+            "playgroundId": "#VF9GO4#0",
             "replace": "//options//, updateUVs = true; updateAfterRender = true;",
-            "referenceImage": "interleaved-buffers-4.png",
-            "renderCount": 2
+            "referenceImage": "interleaved-buffers-4.png"
         },
         {
             "title": "CesiumMan from Khronos Sample Assets",
