@@ -949,115 +949,9 @@ jobs:
                 BROWSER: "Chrome"
 
     # ============================================================================
-    # VISUALIZATION TESTS - DEVHOST (EXPERIMENTAL)
-    # Depends on: Build, ES6
-    # NOTE: ALL STEPS are DISABLED in the classic pipeline.
-    # The job is kept as a placeholder since Deploy depends on it.
-    # ============================================================================
-    - job: VisualizationDevhost
-      displayName: "Visualization tests - Devhost (experimental)"
-      dependsOn:
-          - Build
-          - ES6
-      steps:
-          - script: echo "All steps in this job are disabled in the classic pipeline"
-            displayName: "Placeholder - all steps disabled"
-
-          # DISABLED in classic pipeline - full step list:
-          # - task: UseNode@1
-          #   displayName: 'Use Node 22.x'
-          #   continueOnError: true
-          #   retryCountOnTaskFailure: 1
-          #   inputs:
-          #     versionSpec: '22.4.1'
-
-          # - script: |
-          #     curl "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_SNAPSHOT_CHECK)?buildNumber=$(BuildName)/testResults/devhostplaywright" -o ./tmp.json -H "Authorization: $(BASIC_AUTH)"
-          #     if grep "true" ./tmp.json
-          #     then
-          #        echo "##vso[task.setvariable variable=SnapshotExists]true"
-          #     else
-          #        echo "##vso[task.setvariable variable=SnapshotExists]false"
-          #     fi
-          #   displayName: 'Check if snapshot exists'
-
-          # - script: |
-          #     npm install
-          #     npx playwright install
-          #   displayName: 'npm install && playwright install'
-          #   retryCountOnTaskFailure: 1
-          #   env:
-          #     PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: 'true'
-          #     PUPPETEER_SKIP_DOWNLOAD: 'true'
-
-          # - task: Npm@1
-          #   displayName: 'npm build dev'
-          #   inputs:
-          #     command: custom
-          #     customCommand: 'run build:dev'
-
-          # - script: npm run test:visualization:devhost
-          #   displayName: 'run visual tests'
-          #   continueOnError: true
-          #   retryCountOnTaskFailure: 1
-          #   env:
-          #     CDN_BASE_URL: '$(SNAPSHOT_CDN_URL)/$(BuildName)'
-          #     CI: 'true'
-          #     BROWSER: 'Chrome'
-          #     TIMEOUT: '27500'
-          #     BROWSERSTACK_USERNAME: $(BROWSERSTACK_USERNAME)
-          #     BROWSERSTACK_ACCESS_KEY: $(BROWSERSTACK_ACCESS_KEY)
-          #     CIWORKERS: '1'
-
-          # - script: |
-          #     curl "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_DELETE)?path=$(BuildName)/testResults/devhostplaywright" -X POST -H "Authorization: $(BASIC_AUTH)"
-          #   displayName: 'Delete test results'
-          #   continueOnError: true
-          #   condition: eq(variables['SNAPSHOTEXISTS'], 'true')
-
-          # - script: |
-          #     DIR="packages/tools/tests/playwright-report"
-          #     if test -d "$DIR"; then
-          #       cd packages/tools/tests/playwright-report
-          #       zip -r ../../../../file.zip *
-          #       cd ../../../..
-          #     else
-          #       cd playwright-report
-          #       zip -r ../file.zip *
-          #       cd ..
-          #     fi
-          #     curl $(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_UPLOAD) -i -X POST \
-          #       -H "Content-Type: multipart/form-data" \
-          #       -H "Authorization: $(BASIC_AUTH)" \
-          #       -F "path=$(BuildName)/testResults/devhostplaywright" \
-          #       -F "storageAccount=$(SNAPSHOTS_STORAGE_ACCOUNT)" \
-          #       -F "zip=@file.zip"
-          #   displayName: 'Upload test results'
-          #   continueOnError: true
-          #   condition: succeededOrFailed()
-
-          # - task: GitHubComment@0
-          #   displayName: 'Writing Devhost comment'
-          #   condition: eq(variables['SNAPSHOTEXISTS'], 'false')
-          #   inputs:
-          #     gitHubConnection: '$(GITHUB_SERVICE_CONNECTION)'
-          #     repositoryName: '$(Build.Repository.Name)'
-          #     comment: |
-          #       Devhost visualization test reporter:
-          #
-          #       $(SNAPSHOT_CDN_URL)/$(BuildName)/testResults/devhostplaywright/index.html
-
-          # - task: PublishTestResults@2
-          #   displayName: 'Publish Devhost test results'
-          #   condition: succeededOrFailed()
-          #   inputs:
-          #     testResultsFormat: JUnit
-          #     testResultsFiles: './packages/tools/tests/junit.xml'
-
-    # ============================================================================
     # DEPLOY
     # Depends on: Build, UnitTests, VisualizationWebGL2, ES6,
-    #             VisualizationWebGPU, InteractionTests, VisualizationDevhost
+    #             VisualizationWebGPU, InteractionTests
     # Only runs on master/preview branch for Manual/ResourceTrigger/Schedule/
     # BuildCompletion builds
     # ============================================================================
@@ -1070,7 +964,6 @@ jobs:
           - ES6
           - VisualizationWebGPU
           - InteractionTests
-          - VisualizationDevhost
       condition: >-
           and(
             succeeded(),
