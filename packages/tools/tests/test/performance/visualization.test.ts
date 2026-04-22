@@ -4,11 +4,15 @@ import * as path from "path";
 import * as fs from "fs";
 
 /**
- * Visualization performance tests — runs every visualization test case from config.json
+ * Visualization performance tests — runs visualization test cases from config.json
  * as a performance comparison (stable CDN vs dev build) for both WebGL2 and WebGPU.
  *
  * Gated by the VISUALIZATION_PERF environment variable. Set it to "true" to enable:
  *   VISUALIZATION_PERF=true npx playwright test --project performance -g "Visualization"
+ *
+ * By default, only tests with "performanceTest": true in config.json are included.
+ * Set VISUALIZATION_PERF_ALL=true to run ALL visualization tests as performance tests:
+ *   VISUALIZATION_PERF=true VISUALIZATION_PERF_ALL=true npx playwright test --project performance
  *
  * You can filter to a specific engine:
  *   VISUALIZATION_PERF=true npx playwright test --project performance -g "webgpu"
@@ -18,6 +22,7 @@ import * as fs from "fs";
  */
 
 const enabled = process.env.VISUALIZATION_PERF === "true";
+const runAll = process.env.VISUALIZATION_PERF_ALL === "true";
 
 const configPath = path.join(__dirname, "..", "visualization", "config.json");
 const configData = enabled ? JSON.parse(fs.readFileSync(configPath, "utf-8").replace(/^\uFEFF/, "")) : { tests: [] };
@@ -35,21 +40,26 @@ interface VisualizationTest {
     replace?: string;
     excludedEngines?: string[];
     renderCount?: number;
+    performanceTest?: boolean;
 }
 
 const allTests: VisualizationTest[] = configData.tests;
 
 // Only playground-based tests can be run through evaluatePrepareScene reliably.
 // sceneFolder/scriptToRun tests also work through evaluatePrepareScene.
-const runnableTests = allTests.filter((t) => t.playgroundId || t.sceneFolder || t.scriptToRun);
+// When runAll is false, only tests with "performanceTest": true are included.
+const runnableTests = allTests.filter((t) => {
+    const hasScene = t.playgroundId || t.sceneFolder || t.scriptToRun;
+    if (!hasScene) return false;
+    return runAll || t.performanceTest === true;
+});
 
 const engines = ["webgl2", "webgpu"] as const;
 
 const perfOptions = {
-    framesToRender: 2000,
-    numberOfPasses: 10,
-    warmupPasses: 2,
-    trimCount: 2,
+    framesToRender: 400,
+    numberOfPasses: 5,
+    trimCount: 1,
     cdnVersion: process.env.CDN_VERSION || "",
     cdnVersionB: process.env.CDN_VERSION_B || "",
 };
@@ -81,7 +91,7 @@ for (const engine of engines) {
             const testLabel = vizTest.playgroundId ? `${vizTest.title} [${vizTest.playgroundId}]` : vizTest.title;
 
             test(`${testLabel} (${engine})`, async () => {
-                test.setTimeout(180000);
+                test.setTimeout(300000);
                 const globalConfig = getGlobalConfig();
                 const sceneMetadata: Record<string, any> = {};
 

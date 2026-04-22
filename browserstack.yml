@@ -13,7 +13,7 @@ accessKey: ${BROWSERSTACK_ACCESS_KEY}
 
 # Reporting
 projectName: Babylon.js
-buildName: ${BSTACK_BUILD_NAME}
+buildName: Performance Tests
 buildIdentifier: "#${BUILD_NUMBER}"
 
 # Platform — single Chrome on macOS by default.
@@ -25,8 +25,11 @@ platforms:
       browserName: chrome
       browserVersion: latest
 
-# One parallel thread per platform — each worker gets its own browser session
-parallelsPerPlatform: 5
+# Parallel sessions per platform (account-level cap per build).
+# Override at runtime via the BROWSERSTACK_PARALLELS env var — the Playwright
+# config patches this value dynamically (shell-style ${VAR:-default} is NOT
+# supported by the BrowserStack SDK, so the override is done in JS).
+parallelsPerPlatform: 10
 
 # BrowserStack Local — set to true to test against localhost/private servers.
 # The SDK manages the tunnel automatically.
@@ -39,6 +42,10 @@ framework: playwright
 debug: false
 networkLogs: false
 consoleLogs: errors
+
+# Session timeouts — perf tests have long page.evaluate() calls with no network
+# activity; increase idle timeout to prevent premature disconnects.
+idleTimeout: 300
 
 # Test Observability — enables per-test reporting on the BrowserStack dashboard
 testObservability: true

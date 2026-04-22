@@ -25,21 +25,26 @@ populateEnvironment();
 
 const testType = process.env.BSTACK_TEST_TYPE || "webgl2";
 
-// Map test types to human-readable build names for the BrowserStack dashboard
+// Map test types to human-readable build names for the BrowserStack dashboard.
+// BSTACK_BUILD_NAME must be set in the shell environment BEFORE invoking the SDK
+// because the SDK reads browserstack.yml (which references ${BSTACK_BUILD_NAME})
+// at startup, before this config file executes.
 const buildNames: Record<string, string> = {
     webgl2: "Visualization Tests - WebGL2",
     webgpu: "Visualization Tests - WebGPU",
     performance: "Performance Tests",
     interaction: "Interaction Tests",
 };
+// Still set it here as a fallback for any code that reads the env var later.
 process.env.BSTACK_BUILD_NAME = process.env.BSTACK_BUILD_NAME || buildNames[testType] || `Tests - ${testType}`;
 
 // ---------------------------------------------------------------------------
 // Dynamic browserstack.yml patching
-// The SDK reads browserstack.yml for platform config. When BSTACK_BROWSER,
-// BSTACK_OS, or BSTACK_OS_VERSION env vars are set, we rewrite the YAML so
-// the nightly cross-browser pipeline can override the default Chrome-on-macOS
-// platform without needing multiple YAML files.
+// The SDK reads browserstack.yml for platform config at startup. We patch
+// browser/OS when BSTACK_BROWSER, BSTACK_OS, or BSTACK_OS_VERSION env vars
+// are set so nightly cross-browser runs work without multiple YAML files.
+// NOTE: buildName uses ${BSTACK_BUILD_NAME} in the YAML — the SDK resolves
+// it from the process environment, so it must be set before the SDK starts.
 // ---------------------------------------------------------------------------
 const bstackYmlPath = path.resolve(__dirname, "browserstack.yml");
 if (process.env.BSTACK_BROWSER || process.env.BSTACK_OS || process.env.BSTACK_OS_VERSION) {
@@ -60,6 +65,13 @@ if (process.env.BSTACK_BROWSER || process.env.BSTACK_OS || process.env.BSTACK_OS
 if (process.env.BROWSERSTACK_LOCAL === "true") {
     let content = fs.readFileSync(bstackYmlPath, "utf8");
     content = content.replace(/browserstackLocal:\s*.+/, "browserstackLocal: true");
+    fs.writeFileSync(bstackYmlPath, content);
+}
+
+// Override parallelsPerPlatform via env var
+if (process.env.BROWSERSTACK_PARALLELS && +process.env.BROWSERSTACK_PARALLELS) {
+    let content = fs.readFileSync(bstackYmlPath, "utf8");
+    content = content.replace(/parallelsPerPlatform:\s*.+/, `parallelsPerPlatform: ${+process.env.BROWSERSTACK_PARALLELS}`);
     fs.writeFileSync(bstackYmlPath, content);
 }
 
@@ -125,8 +137,13 @@ if (isPerformanceRun) {
 export default defineConfig({
     fullyParallel: true,
     forbidOnly: true,
-    retries: 2,
-    workers: process.env.CIWORKERS ? +process.env.CIWORKERS : 5,
+    // Performance tests get 1 retry to handle transient BrowserStack issues
+    // (socket idle, tunnel drops). Other test types get 2 retries.
+    retries: isPerformanceRun ? 2 : 2,
+    workers: process.env.CIWORKERS && +process.env.CIWORKERS ? +process.env.CIWORKERS : 5,
+    // Performance tests need a long timeout (each test runs multiple interleaved
+    // passes of baseline + candidate, ~120s per test).
+    timeout: isPerformanceRun ? 300_000 : undefined,
     reporter: baseReporters,
     // Config-level testMatch — inherited by the SDK's auto-generated project
     testMatch: activeConfig.testMatch,

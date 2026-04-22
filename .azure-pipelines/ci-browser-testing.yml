@@ -59,6 +59,7 @@ jobs:
                 CDN_BASE_URL: "https://cdn.babylonjs.com"
                 CI: "true"
                 BSTACK_TEST_TYPE: "webgl2"
+                BSTACK_BUILD_NAME: "Visualization Tests - Webkit"
                 TIMEOUT: "20000"
                 BROWSERSTACK_USERNAME: $(BROWSERSTACK_USERNAME)
                 BROWSERSTACK_ACCESS_KEY: $(BROWSERSTACK_ACCESS_KEY)
@@ -102,6 +103,7 @@ jobs:
                 CDN_BASE_URL: "https://cdn.babylonjs.com"
                 CI: "true"
                 BSTACK_TEST_TYPE: "webgl2"
+                BSTACK_BUILD_NAME: "Visualization Tests - Firefox"
                 TIMEOUT: "20000"
                 BROWSERSTACK_USERNAME: $(BROWSERSTACK_USERNAME)
                 BROWSERSTACK_ACCESS_KEY: $(BROWSERSTACK_ACCESS_KEY)

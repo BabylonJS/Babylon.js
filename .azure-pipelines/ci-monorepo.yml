@@ -585,6 +585,7 @@ jobs:
                 CI: "true"
                 EXCLUDE_REGEX_ARRAY: "Procedural textures playground"
                 BSTACK_TEST_TYPE: "webgl2"
+                BSTACK_BUILD_NAME: "Visualization Tests - WebGL2"
                 TIMEOUT: "27500"
                 BROWSERSTACK_USERNAME: $(BROWSERSTACK_USERNAME)
                 BROWSERSTACK_ACCESS_KEY: $(BROWSERSTACK_ACCESS_KEY)
@@ -668,6 +669,7 @@ jobs:
                 CI: "true"
                 EXCLUDE_REGEX_ARRAY: "Sample depth texture,Render to 3D RT,apply-all-post-processes"
                 BSTACK_TEST_TYPE: "webgpu"
+                BSTACK_BUILD_NAME: "Visualization Tests - WebGPU"
                 TIMEOUT: "27500"
                 BROWSERSTACK_USERNAME: $(BROWSERSTACK_USERNAME)
                 BROWSERSTACK_ACCESS_KEY: $(BROWSERSTACK_ACCESS_KEY)
@@ -779,52 +781,82 @@ jobs:
             retryCountOnTaskFailure: 3
 
     # ============================================================================
-    # PERFORMANCE TESTS (DISABLED)
+    # PERFORMANCE TESTS
     # Depends on: Build
-    # Uses statistical comparison (Welch's t-test + ratio check) with
-    # confirmation passes to reduce flakiness.
+    # Runs on BrowserStack — each test runs baseline + candidate interleaved
+    # on the same remote machine to ensure consistent comparison.
+    # Non-blocking: failures do not fail the overall pipeline.
     # ============================================================================
-    # - job: PerformanceTests
-    #   displayName: "Performance tests"
-    #   dependsOn: Build
-    #   steps:
-    #       - checkout: self
-    #         clean: true
-    #         fetchTags: false
+    - job: PerformanceTests
+      displayName: "Performance tests"
+      dependsOn: Build
+      continueOnError: true
+      steps:
+          - checkout: self
+            clean: true
+            fetchTags: false
 
-    #       - task: UseNode@1
-    #         displayName: "Use Node 22.x"
-    #         continueOnError: true
-    #         retryCountOnTaskFailure: 1
-    #         inputs:
-    #             version: "22.x"
+          - task: UseNode@1
+            displayName: "Use Node 22.x"
+            continueOnError: true
+            retryCountOnTaskFailure: 1
+            inputs:
+                version: "22.x"
 
-    #       - script: npm install
-    #         displayName: "npm install"
-    #         retryCountOnTaskFailure: 1
-    #         env:
-    #             PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: "true"
-    #             PUPPETEER_SKIP_DOWNLOAD: "true"
+          - script: npm install
+            displayName: "npm install"
+            retryCountOnTaskFailure: 1
+            env:
+                PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: "true"
+                PUPPETEER_SKIP_DOWNLOAD: "true"
 
-    #       - script: npx playwright install --with-deps
-    #         displayName: "Install Playwright browsers"
-    #         retryCountOnTaskFailure: 1
+          - script: npx browserstack-node-sdk playwright test --config ./playwright.browserstack.config.ts
+            displayName: "Run performance tests (BStack)"
+            continueOnError: true
+            env:
+                CDN_BASE_URL: "$(SNAPSHOT_CDN_URL)/$(BuildName)"
+                CI: "true"
+                BSTACK_TEST_TYPE: "performance"
+                BSTACK_BUILD_NAME: "Performance Tests - $(BuildName)"
+                VISUALIZATION_PERF: "true"
+                VISUALIZATION_PERF_ALL: "true"
+                CDN_VERSION: "$(CDN_VERSION)"
+                CDN_VERSION_B: "$(CDN_VERSION_B)"
+                CIWORKERS: "$(CIWORKERS)"
+                TIMEOUT: "300000"
+                PERF_COMMENT_FILE: "$(Build.ArtifactStagingDirectory)/perf-comment.md"
+                BROWSERSTACK_USERNAME: $(BROWSERSTACK_USERNAME)
+                BROWSERSTACK_ACCESS_KEY: $(BROWSERSTACK_ACCESS_KEY)
 
-    #       - script: npm run test:performance
-    #         displayName: "Run performance tests"
-    #         continueOnError: true
-    #         env:
-    #             CDN_BASE_URL: "$(SNAPSHOT_CDN_URL)/$(BuildName)"
-    #             CI: "true"
-    #             TIMEOUT: "200000"
+          - bash: |
+                if [ -f "$(Build.ArtifactStagingDirectory)/perf-comment.md" ]; then
+                    COMMENT=$(cat "$(Build.ArtifactStagingDirectory)/perf-comment.md")
+                    echo "##vso[task.setvariable variable=PERF_COMMENT]$COMMENT"
+                    echo "##vso[task.setvariable variable=HAS_PERF_COMMENT]true"
+                else
+                    echo "No performance comment file found"
+                    echo "##vso[task.setvariable variable=HAS_PERF_COMMENT]false"
+                fi
+            displayName: "Read performance comment"
+            condition: succeededOrFailed()
 
-    #       - task: PublishTestResults@2
-    #         displayName: "Publish performance test results"
-    #         condition: always()
-    #         inputs:
-    #             testResultsFormat: "JUnit"
-    #             testResultsFiles: "junit.xml"
-    #             testRunTitle: "Performance Tests"
+          - task: GitHubComment@0
+            displayName: "Post performance results"
+            condition: and(succeededOrFailed(), eq(variables['HAS_PERF_COMMENT'], 'true'))
+            continueOnError: true
+            inputs:
+                gitHubConnection: "$(GITHUB_SERVICE_CONNECTION)"
+                repositoryName: "$(Build.Repository.Name)"
+                comment: |
+                    $(PERF_COMMENT)
+
+          - task: PublishTestResults@2
+            displayName: "Publish performance test results"
+            condition: succeededOrFailed()
+            inputs:
+                testResultsFormat: "JUnit"
+                testResultsFiles: "junit.xml"
+                testRunTitle: "Performance Tests"
 
     # ============================================================================
     # VIEWER TESTS
