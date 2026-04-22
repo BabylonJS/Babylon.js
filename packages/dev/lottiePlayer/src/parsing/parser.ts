@@ -125,6 +125,7 @@ export class Parser {
     /**
      * Pushes a message to the unsupported features list only if it has not been seen before during this parse.
      * Used for warnings that would otherwise be repeated for every property/layer matching the same case.
+     * @param message The message to push, used as the dedup key.
      */
     private _pushUnsupportedOnce(message: string): void {
         if (this._seenUnsupportedMessages.has(message)) {

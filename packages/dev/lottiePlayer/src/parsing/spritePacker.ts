@@ -395,6 +395,13 @@ export class SpritePacker {
      * the owning layer name, the raw lottie bounding box, and the scale factors that
      * combine to produce the oversized cell. This makes it easy to identify which lottie
      * element is responsible and why its rasterized footprint is so large.
+     * @param kind Whether the oversized sprite is a vector shape or a text element.
+     * @param debugName Optional human-readable identifier (typically the owning layer name).
+     * @param boundingBox Source bounding box in lottie coordinates, before any scaling.
+     * @param layerScaleX Lottie-side scale factor on X (excluding atlas scale and DPR).
+     * @param layerScaleY Lottie-side scale factor on Y (excluding atlas scale and DPR).
+     * @param cellWidth Computed cell width in pixels (after all scale factors applied).
+     * @param cellHeight Computed cell height in pixels (after all scale factors applied).
      */
     private _warnIfOversized(
         kind: "shape" | "text",
@@ -706,6 +713,8 @@ export class SpritePacker {
      * drawing context. Shared by `_drawStroke` (solid-color strokes, `ty:"st"`) and `_drawGradientStroke`
      * (gradient strokes, `ty:"gs"`) — both have identical width/cap/join/miter/dash semantics; they only
      * differ in how `strokeStyle` is built (CSS color vs CanvasGradient).
+     * @param stroke The raw solid or gradient stroke shape to read styling from.
+     * @param ctx The drawing context to mutate (`lineWidth`, `lineCap`, `lineJoin`, `miterLimit`, dash).
      */
     private _applyStrokeStyle(stroke: RawStrokeShape | RawGradientStrokeShape, ctx: DrawingContext): void {
         // Width
@@ -770,8 +779,10 @@ export class SpritePacker {
         // (1 = linear, 2 = radial) and reuses the same translation into the bounding box's local space.
         const xTranslate = boundingBox.centerX;
         const yTranslate = boundingBox.centerY;
-        const startPoint = stroke.s.k as number[];
-        const endPoint = stroke.e.k as number[];
+        // Read initial-frame endpoints so animated gradient endpoints (a===1) build a valid gradient instead
+        // of feeding a keyframe array through `as number[]` casts.
+        const startPoint = GetInitialVectorValues(stroke.s);
+        const endPoint = GetInitialVectorValues(stroke.e);
 
         let gradient: CanvasGradient | undefined;
         switch (stroke.t) {
@@ -821,9 +832,10 @@ export class SpritePacker {
         const xTranslate = boundingBox.centerX;
         const yTranslate = boundingBox.centerY;
 
-        // Create the gradient
-        const startPoint = fill.s.k as number[];
-        const endPoint = fill.e.k as number[];
+        // Create the gradient. Use initial-value helpers so animated endpoints (a===1) render their
+        // first-frame value into the atlas instead of feeding a keyframe array through `as number[]`.
+        const startPoint = GetInitialVectorValues(fill.s);
+        const endPoint = GetInitialVectorValues(fill.e);
         const gradient = ctx.createLinearGradient(startPoint[0] + xTranslate, startPoint[1] + yTranslate, endPoint[0] + xTranslate, endPoint[1] + yTranslate);
 
         this._addColorStops(gradient, fill);
@@ -837,9 +849,10 @@ export class SpritePacker {
         const xTranslate = boundingBox.centerX;
         const yTranslate = boundingBox.centerY;
 
-        // Create the gradient
-        const startPoint = fill.s.k as number[];
-        const endPoint = fill.e.k as number[];
+        // Create the gradient. Use initial-value helpers so animated endpoints (a===1) render their
+        // first-frame value into the atlas instead of feeding a keyframe array through `as number[]`.
+        const startPoint = GetInitialVectorValues(fill.s);
+        const endPoint = GetInitialVectorValues(fill.e);
 
         const centerX = startPoint[0] + xTranslate;
         const centerY = startPoint[1] + yTranslate;
