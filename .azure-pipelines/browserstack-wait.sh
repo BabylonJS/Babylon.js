@@ -107,12 +107,29 @@ while [ "$retry" -le "$MAX_RETRIES" ]; do
     export BROWSERSTACK_PARALLELS="$GRANTED"
     echo "[browserstack-wait] Set CIWORKERS=${GRANTED}, BROWSERSTACK_PARALLELS=${GRANTED}"
 
+    # Ensure the SDK log directory exists so it doesn't emit ENOENT errors
+    mkdir -p log/.obs_test_details
+
+    # Patch browserstack.yml buildName BEFORE the SDK reads it.
+    # The SDK parses the YAML at startup (before Playwright config runs),
+    # so the config-level patching is too late.
+    BSTACK_YML_PATCHED=false
+    if [ -n "${BSTACK_BUILD_NAME:-}" ]; then
+        sed -i.bak "s/^buildName:.*/buildName: ${BSTACK_BUILD_NAME}/" browserstack.yml
+        BSTACK_YML_PATCHED=true
+    fi
+
     # Run the actual command; capture exit code without exiting on failure
     set +e
     OUTPUT_LOG=$(mktemp)
     "$@" 2>&1 | tee "$OUTPUT_LOG"
     exit_code=${PIPESTATUS[0]}
     set -e
+
+    # Restore browserstack.yml to avoid dirty git state
+    if [ "$BSTACK_YML_PATCHED" = true ] && [ -f browserstack.yml.bak ]; then
+        mv browserstack.yml.bak browserstack.yml
+    fi
 
     # If it failed due to queue exhaustion (race condition), retry
     if [ "$exit_code" -ne 0 ] && grep -qi "QUEUE_SIZE_EXCEEDED\|BROWSERSTACK_QUEUE_SIZE_EXCEEDED\|queue.*exceeded\|parallel.*limit.*exceeded" "$OUTPUT_LOG" 2>/dev/null; then

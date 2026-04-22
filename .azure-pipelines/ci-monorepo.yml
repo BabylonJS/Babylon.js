@@ -584,6 +584,7 @@ jobs:
                 TIMEOUT: "27500"
                 BSTACK_SESSIONS_REQUIRED: "2"
                 BROWSERSTACK_TEST_OBSERVABILITY: "false"
+                BROWSERSTACK_LOG_LEVEL: "warn"
                 BROWSERSTACK_USERNAME: $(BROWSERSTACK_USERNAME)
                 BROWSERSTACK_ACCESS_KEY: $(BROWSERSTACK_ACCESS_KEY)
                 AFFECTED_TAGS: $(AFFECTED_TAGS)
@@ -666,6 +667,7 @@ jobs:
                 TIMEOUT: "27500"
                 BSTACK_SESSIONS_REQUIRED: "2"
                 BROWSERSTACK_TEST_OBSERVABILITY: "false"
+                BROWSERSTACK_LOG_LEVEL: "warn"
                 BROWSERSTACK_USERNAME: $(BROWSERSTACK_USERNAME)
                 BROWSERSTACK_ACCESS_KEY: $(BROWSERSTACK_ACCESS_KEY)
                 AFFECTED_TAGS: $(AFFECTED_TAGS)
@@ -813,12 +815,12 @@ jobs:
                 BSTACK_TEST_TYPE: "performance"
                 BSTACK_BUILD_NAME: "Performance Tests - $(BuildName)"
                 VISUALIZATION_PERF: "true"
-                CDN_VERSION: "$(CDN_VERSION)"
-                CDN_VERSION_B: "$(CDN_VERSION_B)"
+                CDN_VERSION: "latest"
                 CIWORKERS: "$(CIWORKERS)"
                 TIMEOUT: "300000"
                 BSTACK_SESSIONS_REQUIRED: "2"
                 BROWSERSTACK_TEST_OBSERVABILITY: "false"
+                BROWSERSTACK_LOG_LEVEL: "warn"
                 PERF_COMMENT_FILE: "$(Build.ArtifactStagingDirectory)/perf-comment.md"
                 BROWSERSTACK_USERNAME: $(BROWSERSTACK_USERNAME)
                 BROWSERSTACK_ACCESS_KEY: $(BROWSERSTACK_ACCESS_KEY)
@@ -881,8 +883,15 @@ jobs:
             displayName: "npm install"
             retryCountOnTaskFailure: 1
 
-          - script: npm run test:memory-leaks:all
-            displayName: "Run memory leak tests (all suites)"
+          - script: npm run test:memory-leaks -- --no-fail-fast
+            displayName: "Run memory leak tests (ci suite)"
+            continueOnError: true
+            env:
+                CDN_BASE_URL: "$(SNAPSHOT_CDN_URL)/$(BuildName)"
+                MEMLEAK_COMMENT_FILE: "$(Build.ArtifactStagingDirectory)/memleak-comment.md"
+
+          - script: npm run test:memory-leaks:packages -- --no-fail-fast
+            displayName: "Run memory leak tests (packages suite)"
             continueOnError: true
             env:
                 CDN_BASE_URL: "$(SNAPSHOT_CDN_URL)/$(BuildName)"
