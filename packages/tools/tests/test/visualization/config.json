@@ -1,4 +1,4 @@
-﻿{
+{
     "root": "https://cdn.babylonjs.com",
     "tests": [
         {
@@ -309,10 +309,9 @@
         },
         {
             "title": "BoundingInfo Helper",
-            "playgroundId": "#BCNJD4#61",
+            "playgroundId": "#UNQ5CK#0",
             "referenceImage": "bbhelper.png",
-            "excludedEngines": ["webgl1"],
-            "renderCount": 2
+            "excludedEngines": ["webgl1"]
         },
         {
             "title": "NME Shadow Map",
@@ -563,15 +562,13 @@
         },
         {
             "title": "GUI Slate",
-            "renderCount": 60,
-            "playgroundId": "#2YZFA0#277",
+            "playgroundId": "#UDLHJ3#0",
             "referenceImage": "guiSlate.png",
             "excludedEngines": ["webgl1"]
         },
         {
             "title": "GUI Near Menu",
-            "renderCount": 60,
-            "playgroundId": "#2YZFA0#302",
+            "playgroundId": "#DZPGOB#0",
             "referenceImage": "guiNearMenu.png",
             "excludedEngines": ["webgl1"]
         },
@@ -596,8 +593,7 @@
         },
         {
             "title": "LineEdgesRenderer",
-            "playgroundId": "#T90MQ4#19",
-            "renderCount": 50,
+            "playgroundId": "#FF1HHK#0",
             "referenceImage": "LineEdgesRenderer.png"
         },
         {
@@ -618,8 +614,7 @@
         },
         {
             "title": "Ribbon morphing",
-            "playgroundId": "#ACKC2#1",
-            "renderCount": 50,
+            "playgroundId": "#XUKAYC#0",
             "referenceImage": "ribbon-morphing.png"
         },
         {
@@ -636,14 +631,12 @@
         },
         {
             "title": "Gizmos",
-            "playgroundId": "#8GY6J8#196",
-            "renderCount": 50,
+            "playgroundId": "#SWSUXS#0",
             "referenceImage": "Gizmos.png"
         },
         {
             "title": "GUI3D SpherePanel",
-            "playgroundId": "#HB4C01#9",
-            "renderCount": 50,
+            "playgroundId": "#AMM2WB#0",
             "referenceImage": "spherepanel.png"
         },
         {
@@ -654,15 +647,14 @@
         },
         {
             "title": "Chibi Rex",
-            "playgroundId": "#NZ2RZY#4",
-            "renderCount": 50,
+            "playgroundId": "#SYM1EP#0",
             "referenceImage": "chibi-rex.png"
         },
         {
             "title": "Yeti",
-            "playgroundId": "#QATUCH#32",
-            "renderCount": 150,
-            "referenceImage": "yeti.png"
+            "playgroundId": "#8ZNZFY#0",
+            "referenceImage": "yeti.png",
+            "errorRatio": 3
         },
         {
             "title": "Sponza",
@@ -740,9 +732,7 @@
         },
         {
             "title": "Charting",
-            "renderCount": 20,
-            "scriptToRun": "/Demos/Charting/charting.js",
-            "functionToCall": "CreateChartingTestScene",
+            "playgroundId": "#FX57Z1#0",
             "referenceImage": "charting.png",
             "errorRatio": 3
         },
@@ -859,9 +849,8 @@
         },
         {
             "title": "Shadow depth wrappers",
-            "playgroundId": "#PNQRY1#73",
+            "playgroundId": "#7JTUT9#0",
             "referenceImage": "shadowDepthWrappers.png",
-            "renderCount": 20,
             "excludedEngines": ["webgpu"]
         },
         {
@@ -918,29 +907,25 @@
         },
         {
             "title": "GLTF Animation Node",
-            "renderCount": 2,
-            "playgroundId": "#DS8AA7#27",
+            "playgroundId": "#0GGYCY#0",
             "replace": "__folder__, Animation_Node, __page__, 0, __disableSRGBBuffers__, 0",
             "referenceImage": "gltfAnimationNode.png"
         },
         {
             "title": "GLTF Animation Node Misc",
-            "renderCount": 2,
-            "playgroundId": "#DS8AA7#27",
+            "playgroundId": "#0GGYCY#0",
             "replace": "__folder__, Animation_NodeMisc, __page__, 0, __disableSRGBBuffers__, 1",
             "referenceImage": "gltfAnimationNodeMisc.png"
         },
         {
             "title": "GLTF Animation Skin (0)",
-            "renderCount": 2,
-            "playgroundId": "#DS8AA7#27",
+            "playgroundId": "#0GGYCY#0",
             "replace": "__folder__, Animation_Skin, __page__, 0, __disableSRGBBuffers__, 0",
             "referenceImage": "gltfAnimationSkin0.png"
         },
         {
             "title": "GLTF Animation Skin (1)",
-            "renderCount": 2,
-            "playgroundId": "#DS8AA7#27",
+            "playgroundId": "#0GGYCY#0",
             "replace": "__folder__, Animation_Skin, __page__, 1, __disableSRGBBuffers__, 0",
             "referenceImage": "gltfAnimationSkin1.png"
         },
@@ -1038,8 +1023,7 @@
         },
         {
             "title": "GLTF Mesh Primitive Vertex Color",
-            "renderCount": 5,
-            "playgroundId": "#DS8AA7#27",
+            "playgroundId": "#0GGYCY#0",
             "replace": "__folder__, Mesh_PrimitiveVertexColor, __page__, 0, __disableSRGBBuffers__, 0",
             "referenceImage": "gltfMeshPrimitiveVertexColor.png"
         },
@@ -1159,7 +1143,6 @@
         },
         {
             "title": "GLTF Serializer Morph Target Animation",
-            "renderCount": 2,
             "playgroundId": "#84M2SR#107",
             "referenceImage": "gltfSerializerMorphTargetAnimation.png",
             "excludedEngines": ["webgpu"]
@@ -1291,21 +1274,18 @@
         {
             "title": "GLTF Extension KHR_materials_volume",
             "playgroundId": "#YG3BBF#16",
-            "referenceImage": "gltfExtensionKhrMaterialsVolume.png",
-            "renderCount": 5
+            "referenceImage": "gltfExtensionKhrMaterialsVolume.png"
         },
         {
             "title": "GLTF Extension KHR_materials_volume with analytic light",
             "playgroundId": "#YG3BBF#48",
-            "referenceImage": "gltfExtensionKhrMaterialsVolumeHemiLight.png",
-            "renderCount": 5
+            "referenceImage": "gltfExtensionKhrMaterialsVolumeHemiLight.png"
         },
         {
             "title": "GLTF Extension KHR_materials_volume with attenuation",
             "playgroundId": "#YG3BBF#18",
             "referenceImage": "gltfExtensionKhrMaterialsVolumeAttenuation.png",
-            "errorRatio": 3,
-            "renderCount": 5
+            "errorRatio": 3
         },
         {
             "title": "GLTF Extension KHR_materials_specular",
@@ -1449,7 +1429,6 @@
         },
         {
             "title": "GUI",
-            "renderCount": 5,
             "scriptToRun": "/Demos/GUI/gui.js",
             "functionToCall": "createScene",
             "errorRatio": 4,
@@ -1573,7 +1552,6 @@
         {
             "title": "GLTF Extension EXT_mesh_gpu_instancing",
             "playgroundId": "#QFIGLW#9",
-            "renderCount": 10,
             "referenceImage": "gltfExtensionExtMeshGpuInstancingTest.png"
         },
         {
@@ -2621,29 +2599,25 @@
             "title": "computeMaxExtents (BrainStem)",
             "playgroundId": "#M2H33B",
             "replace": "//options//, modelIndex = 2;",
-            "referenceImage": "computeMaxExtents-BoxAnimated.png",
-            "renderCount": 2
+            "referenceImage": "computeMaxExtents-BoxAnimated.png"
         },
         {
             "title": "computeMaxExtents (Fox 0)",
             "playgroundId": "#M2H33B",
             "replace": "//options//, modelIndex = 4; animationIndex = 0;",
-            "referenceImage": "computeMaxExtents-Fox0.png",
-            "renderCount": 2
+            "referenceImage": "computeMaxExtents-Fox0.png"
         },
         {
             "title": "computeMaxExtents (Fox 1)",
             "playgroundId": "#M2H33B",
             "replace": "//options//, modelIndex = 4; animationIndex = 1;",
-            "referenceImage": "computeMaxExtents-Fox1.png",
-            "renderCount": 2
+            "referenceImage": "computeMaxExtents-Fox1.png"
         },
         {
             "title": "computeMaxExtents (MorphStressTest)",
             "playgroundId": "#M2H33B",
             "replace": "//options//, modelIndex = 5;",
-            "referenceImage": "computeMaxExtents-MorphStressTest.png",
-            "renderCount": 2
+            "referenceImage": "computeMaxExtents-MorphStressTest.png"
         },
         {
             "title": "Read-write storage texture compute",
@@ -2739,8 +2713,7 @@
         },
         {
             "title": "FrameGraph nrge csm shadows with autoCalcDepthBounds",
-            "playgroundId": "#JWKDME#192",
-            "renderCount": 10
+            "playgroundId": "#DOFUT1#0"
         },
         {
             "title": "FrameGraph nrge custom rendering",
@@ -3561,7 +3534,8 @@
             "title": "OpenPBR Thin Walled Anisotropic Transmission - IBL",
             "playgroundId": "#GRQHVV#247",
             "excludedEngines": ["webgl1"],
-            "renderCount": 5
+            "renderCount": 5,
+            "excludeFromAutomaticTesting": true
         },
         {
             "title": "OpenPBR Thin Walled Anisotropic Transmission - Analytic Lights",
@@ -4148,6 +4122,12 @@
             "excludedEngines": ["webgl1"]
         },
         {
+            "title": "GPU Particles - Change - Color Gradient With Color2",
+            "playgroundId": "#3PCCJ0#0",
+            "referenceImage": "gpu-particles-change-color-gradient-with-color2.png",
+            "excludedEngines": ["webgl1"]
+        },
+        {
             "title": "GPU Particles - Change - Speed Range",
             "playgroundId": "#JPPZGY#0",
             "referenceImage": "gpu-particles-change-speed-range.png",
@@ -4356,6 +4336,18 @@
             "referenceImage": "gpu-particles-attractors-local.png",
             "excludedEngines": ["webgl1"],
             "errorRatio": 2.5
+        },
+        {
+            "title": "GPU Particles - From Particle System",
+            "playgroundId": "#7JQ28N#0",
+            "referenceImage": "gpu-particles-from-particle-system.png",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "GPU Particles - From Particle System - Flow Map",
+            "playgroundId": "#9H7NNG#0",
+            "referenceImage": "gpu-particles-from-particle-system-flow-map.png",
+            "excludedEngines": ["webgl1"]
         }
     ]
 }

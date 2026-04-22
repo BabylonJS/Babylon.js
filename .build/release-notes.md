@@ -1,26 +1,15 @@
 
 ### Core
 
-- Flow Graph Editor: multi-context support with save/load round-trip - by [RaananW](https://github.com/RaananW) ([#18328](https://github.com/BabylonJS/Babylon.js/pull/18328))
-- feat(Gsplat): IBL shadows support for Gaussian Splats - by [raymondyfei](https://github.com/raymondyfei) ([#18331](https://github.com/BabylonJS/Babylon.js/pull/18331))
-- Fix WebGPU type conflicts with TypeScript 6.0 - by [RaananW](https://github.com/RaananW) ([#18327](https://github.com/BabylonJS/Babylon.js/pull/18327))
-- GPU Particle System: Mesh Emitter Support + Emitter Factory Consolidation - by [VicenteCartas](https://github.com/VicenteCartas) ([#18317](https://github.com/BabylonJS/Babylon.js/pull/18317))
-- SelectionOutlineLayer: Fix outline disappearing on instances during LOD transition - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#18324](https://github.com/BabylonJS/Babylon.js/pull/18324))
-- Fix flickering when shadow generator has refreshRate under snapshot rendering - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#18325](https://github.com/BabylonJS/Babylon.js/pull/18325))
+- Fix CreateGroundFromHeightMap so scene.isReady waits for heightmap image load - [_Bug Fix_] by [bghgary](https://github.com/bghgary) ([#18355](https://github.com/BabylonJS/Babylon.js/pull/18355))
+- Fix DepthRenderer.isReady corrupting current pass draw wrapper - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#18356](https://github.com/BabylonJS/Babylon.js/pull/18356))
+- ray: use matrixData for thin instance picking - by [kzhsw](https://github.com/kzhsw) ([#18341](https://github.com/BabylonJS/Babylon.js/pull/18341))
+- test(xr): use jsdom env for WebXRBodyTracking tests (Node 20 fix) - by [RaananW](https://github.com/RaananW) ([#18349](https://github.com/BabylonJS/Babylon.js/pull/18349))
+
+### GUI
+
+- GUI 2D: Fix Rectangle cornerRadius to respect adaptive scaling - by [AmoebaChant](https://github.com/AmoebaChant) ([#18354](https://github.com/BabylonJS/Babylon.js/pull/18354))
 
 ### Inspector
 
-- Inspector: Move CLI bridge infrastructure to shared ModularTool framework - by [ryantrem](https://github.com/ryantrem) ([#18332](https://github.com/BabylonJS/Babylon.js/pull/18332))
-
-### Loaders
-
-- feat(Gsplat): IBL shadows support for Gaussian Splats - by [raymondyfei](https://github.com/raymondyfei) ([#18331](https://github.com/BabylonJS/Babylon.js/pull/18331))
-
-### Lottie Player
-
-- Extract Lottie text layout module and align rendering with Lottie spec - by [VicenteCartas](https://github.com/VicenteCartas) ([#18333](https://github.com/BabylonJS/Babylon.js/pull/18333))
-- Refactor node interpolation into reusable static methods and add decomposeWorldMatrixAtFrame - by [VicenteCartas](https://github.com/VicenteCartas) ([#18322](https://github.com/BabylonJS/Babylon.js/pull/18322))
-
-### Playground
-
-- Inspector: Move CLI bridge infrastructure to shared ModularTool framework - by [ryantrem](https://github.com/ryantrem) ([#18332](https://github.com/BabylonJS/Babylon.js/pull/18332))
+- Inspector: Switch back to @fluentui-contrib/react-resize-handle - [_Bug Fix_] by [ryantrem](https://github.com/ryantrem) ([#18352](https://github.com/BabylonJS/Babylon.js/pull/18352))

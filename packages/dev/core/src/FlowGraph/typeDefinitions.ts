@@ -179,6 +179,14 @@ export interface ISerializedFlowGraphBlock {
  */
 export interface ISerializedFlowGraph {
     /**
+     * Optional human-readable name for the graph
+     */
+    name?: string;
+    /**
+     * Optional unique identifier for the graph
+     */
+    uniqueId?: string;
+    /**
      * Contexts belonging to the flow graph
      */
     executionContexts: ISerializedFlowGraphContext[];

@@ -309,6 +309,10 @@ export class FluentButtonMaterial extends PushMaterial {
         const defines = <FluentButtonMaterialDefines>subMesh.materialDefines;
         const scene = this.getScene();
 
+        if (!this._blobTexture.isReady()) {
+            return false;
+        }
+
         if (this._isReadyForSubMesh(subMesh)) {
             return true;
         }

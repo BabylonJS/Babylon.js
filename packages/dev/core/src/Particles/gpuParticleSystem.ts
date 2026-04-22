@@ -71,6 +71,9 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
     private _sourceBuffer: Buffer;
     private _targetBuffer: Buffer;
 
+    /** Set to true when any entry in `_colorGradients` has a `color2` (per-particle random color range). */
+    private _hasColorGradientColor2 = false;
+
     private _currentRenderId = -1;
     private _currentRenderingCameraUniqueId = -1;
     private _started = false;
@@ -519,14 +522,15 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
      * Adds a new color gradient
      * @param gradient defines the gradient to use (between 0 and 1)
      * @param color1 defines the color to affect to the specified gradient
+     * @param color2 defines an optional second color to be used to produce a random color per particle at the gradient (lerped with color1 using a per-particle random value)
      * @returns the current particle system
      */
-    public addColorGradient(gradient: number, color1: Color4): GPUParticleSystem {
+    public addColorGradient(gradient: number, color1: Color4, color2?: Color4): GPUParticleSystem {
         if (!this._colorGradients) {
             this._colorGradients = [];
         }
 
-        const colorGradient = new ColorGradient(gradient, color1);
+        const colorGradient = new ColorGradient(gradient, color1, color2);
         this._colorGradients.push(colorGradient);
 
         this._refreshColorGradient(true);
@@ -550,10 +554,23 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
                 });
             }
 
+            // Recompute whether any stop uses a color2 range. Done here (not inside _createColorGradientTexture)
+            // so the flag is available to both define generation (fillDefines) and render vertex buffer layout
+            // (_createVertexBuffers), which can run before the texture is recreated.
+            this._hasColorGradientColor2 = false;
+            for (const g of this._colorGradients) {
+                if (g.color2) {
+                    this._hasColorGradientColor2 = true;
+                    break;
+                }
+            }
+
             if (this._colorGradientsTexture) {
                 this._colorGradientsTexture.dispose();
                 (<any>this._colorGradientsTexture) = null;
             }
+        } else {
+            this._hasColorGradientColor2 = false;
         }
     }
 
@@ -577,6 +594,9 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
     public removeColorGradient(gradient: number): GPUParticleSystem {
         this._removeGradientAndTexture(gradient, this._colorGradients, this._colorGradientsTexture);
         (<any>this._colorGradientsTexture) = null;
+
+        // The set of remaining gradients may no longer contain a color2; recompute the flag.
+        this._refreshColorGradient();
 
         return this;
     }
@@ -1072,6 +1092,11 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         offset += 3;
         renderVertexBuffers["life"] = renderBuffer.createVertexBuffer("life", offset, 1, this._attributesStrideSize, true);
         offset += 1;
+        if (this._hasColorGradientColor2) {
+            // Expose `seed` to the render shader so it can pick a stable per-particle mix factor between
+            // the color1 and color2 rows of the color gradient texture.
+            renderVertexBuffers["seed"] = renderBuffer.createVertexBuffer("seed", offset, 4, this._attributesStrideSize, true);
+        }
         offset += 4; // seed
         if (this.billboardMode === ParticleSystem.BILLBOARDMODE_STRETCHED || this.billboardMode === ParticleSystem.BILLBOARDMODE_STRETCHED_LOCAL) {
             renderVertexBuffers["direction"] = renderBuffer.createVertexBuffer("direction", offset, 3, this._attributesStrideSize, true);
@@ -1485,12 +1510,17 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         isAnimationSheetEnabled = false,
         isBillboardBased = false,
         isBillboardStretched = false,
-        isBillboardStretchedLocal = false
+        isBillboardStretchedLocal = false,
+        hasColorGradientColor2 = false
     ): string[] {
         const attributeNamesOrOptions = [VertexBuffer.PositionKind, "age", "life", "size", "angle"];
 
         if (!hasColorGradients) {
             attributeNamesOrOptions.push(VertexBuffer.ColorKind);
+        } else if (hasColorGradientColor2) {
+            // When packing a color1/color2 range into the gradient texture, the render shader needs the
+            // particle's persistent random seed to pick a stable per-particle mix factor.
+            attributeNamesOrOptions.push("seed");
         }
 
         if (isAnimationSheetEnabled) {
@@ -1582,6 +1612,9 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
 
         if (this._colorGradientsTexture) {
             defines.push("#define COLORGRADIENTS");
+            if (this._hasColorGradientColor2) {
+                defines.push("#define COLORGRADIENTS_COLOR2");
+            }
         }
 
         if (this.isAnimationSheetEnabled) {
@@ -1611,7 +1644,8 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
                 this._isAnimationSheetEnabled,
                 this._isBillboardBased,
                 this._isBillboardBased && (this.billboardMode === ParticleSystem.BILLBOARDMODE_STRETCHED || this.billboardMode === ParticleSystem.BILLBOARDMODE_STRETCHED_LOCAL),
-                this.billboardMode === ParticleSystem.BILLBOARDMODE_STRETCHED_LOCAL
+                this.billboardMode === ParticleSystem.BILLBOARDMODE_STRETCHED_LOCAL,
+                this._hasColorGradientColor2
             )
         );
 
@@ -1841,7 +1875,11 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
             return;
         }
 
-        const data = new Uint8Array(this._rawTextureWidth * 4);
+        // When any stop has a color2, pack color1 into row 0 and color2 into row 1. The render shader
+        // samples both rows and lerps using the particle's persistent seed.x for per-particle randomness.
+        const hasColor2 = this._hasColorGradientColor2;
+        const height = hasColor2 ? 2 : 1;
+        const data = new Uint8Array(this._rawTextureWidth * 4 * height);
         const tmpColor = TmpColors.Color4[0];
 
         for (let x = 0; x < this._rawTextureWidth; x++) {
@@ -1856,7 +1894,25 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
             });
         }
 
-        this._colorGradientsTexture = RawTexture.CreateRGBATexture(data, this._rawTextureWidth, 1, this._scene, false, false, Constants.TEXTURE_NEAREST_SAMPLINGMODE);
+        if (hasColor2) {
+            const rowOffset = this._rawTextureWidth * 4;
+            for (let x = 0; x < this._rawTextureWidth; x++) {
+                const ratio = x / this._rawTextureWidth;
+
+                GradientHelper.GetCurrentGradient(ratio, this._colorGradients, (currentGradient, nextGradient, scale) => {
+                    const cg = currentGradient as ColorGradient;
+                    const ng = nextGradient as ColorGradient;
+                    // Fall back to color1 for stops without a color2 so the row stays continuous.
+                    Color4.LerpToRef(cg.color2 ?? cg.color1, ng.color2 ?? ng.color1, scale, tmpColor);
+                    data[rowOffset + x * 4] = tmpColor.r * 255;
+                    data[rowOffset + x * 4 + 1] = tmpColor.g * 255;
+                    data[rowOffset + x * 4 + 2] = tmpColor.b * 255;
+                    data[rowOffset + x * 4 + 3] = tmpColor.a * 255;
+                });
+            }
+        }
+
+        this._colorGradientsTexture = RawTexture.CreateRGBATexture(data, this._rawTextureWidth, height, this._scene, false, false, Constants.TEXTURE_NEAREST_SAMPLINGMODE);
         this._colorGradientsTexture.name = "colorGradients";
     }
 
@@ -2378,6 +2434,11 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
             this.noiseTexture = null;
         }
 
+        if (disposeTexture && this._flowMap) {
+            this._flowMap.dispose();
+            this._flowMap = null;
+        }
+
         // Callback
         this.onStoppedObservable.clear();
         this.onDisposeObservable.notifyObservers(this);
@@ -2428,6 +2489,266 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         result.emitter = newEmitter;
 
         return result;
+    }
+
+    /**
+     * Creates a new GPUParticleSystem from an existing CPU ParticleSystem, copying all shared properties.
+     * Features that are not supported on the GPU (sub-emitters, custom `startDirectionFunction` /
+     * `startPositionFunction`, `customShader`, ramp/remap gradients) are logged as warnings and skipped.
+     * Flow maps are converted: the CPU `FlowMap` image data is uploaded to a new `RawTexture` which is
+     * assigned to the result.
+     *
+     * Note: a custom `updateFunction` on the source cannot be detected (the property is always assigned
+     * to a default) and has no equivalent on the GPU path, so any custom per-frame update logic will be
+     * silently dropped.
+     *
+     * Textures (particleTexture, noiseTexture) are shared by reference between the source and the result.
+     * All other mutable state (colors, vectors, emitter type, gradients, attractors) is cloned so that
+     * the two systems can be modified independently after the call.
+     *
+     * Note: unlike the GPUParticleSystem constructor, `emitRateControl` defaults to `true` here so that
+     * changes to `emitRate` on the converted system behave the same as on the CPU source. Pass
+     * `{ emitRateControl: false }` explicitly to opt out.
+     * @param source The CPU ParticleSystem to convert
+     * @param sceneOrEngine The scene or engine the new GPU particle system belongs to
+     * @param options Optional options forwarded to the new GPU particle system (capacity, randomTextureSize, emitRateControl, maxAttractors). `capacity` defaults to the source capacity and `emitRateControl` defaults to `true`.
+     * @returns A new GPUParticleSystem with shared properties copied from the source
+     */
+    public static fromParticleSystem(
+        source: ParticleSystem,
+        sceneOrEngine: Scene | AbstractEngine,
+        options?: Partial<{
+            capacity: number;
+            randomTextureSize: number;
+            emitRateControl: boolean;
+            maxAttractors: number;
+        }>
+    ): GPUParticleSystem {
+        // Warn on features that cannot be represented on a GPU particle system.
+        if (source.subEmitters && source.subEmitters.length > 0) {
+            Logger.Warn("GPUParticleSystem.fromParticleSystem: 'subEmitters' is not supported on GPUParticleSystem and will be skipped.");
+        }
+        if (source.startDirectionFunction) {
+            Logger.Warn("GPUParticleSystem.fromParticleSystem: 'startDirectionFunction' is not supported on GPUParticleSystem and will be skipped.");
+        }
+        if (source.startPositionFunction) {
+            Logger.Warn("GPUParticleSystem.fromParticleSystem: 'startPositionFunction' is not supported on GPUParticleSystem and will be skipped.");
+        }
+        if (source.customShader) {
+            Logger.Warn("GPUParticleSystem.fromParticleSystem: 'customShader' is not supported on GPUParticleSystem and will be skipped.");
+        }
+        const sourceRampGradients = source.getRampGradients();
+        if (sourceRampGradients && sourceRampGradients.length > 0) {
+            Logger.Warn("GPUParticleSystem.fromParticleSystem: 'rampGradients' are not supported on GPUParticleSystem and will be skipped.");
+        }
+        const sourceColorRemapGradients = source.getColorRemapGradients();
+        if (sourceColorRemapGradients && sourceColorRemapGradients.length > 0) {
+            Logger.Warn("GPUParticleSystem.fromParticleSystem: 'colorRemapGradients' are not supported on GPUParticleSystem and will be skipped.");
+        }
+        const sourceAlphaRemapGradients = source.getAlphaRemapGradients();
+        if (sourceAlphaRemapGradients && sourceAlphaRemapGradients.length > 0) {
+            Logger.Warn("GPUParticleSystem.fromParticleSystem: 'alphaRemapGradients' are not supported on GPUParticleSystem and will be skipped.");
+        }
+
+        const capacity = options?.capacity ?? source.getCapacity();
+        const gpuOptions: Partial<{ capacity: number; randomTextureSize: number; emitRateControl: boolean; maxAttractors: number }> = { capacity };
+        if (options?.randomTextureSize !== undefined) {
+            gpuOptions.randomTextureSize = options.randomTextureSize;
+        }
+        // Default emitRateControl to true here: on a freshly constructed GPUParticleSystem the default is
+        // false for backwards compatibility, but when converting an existing CPU system users expect
+        // changes to emitRate to take effect — matching CPU behavior.
+        gpuOptions.emitRateControl = options?.emitRateControl ?? true;
+        if (options?.maxAttractors !== undefined) {
+            gpuOptions.maxAttractors = options.maxAttractors;
+        }
+
+        const gpu = new GPUParticleSystem(source.name + " (GPU)", gpuOptions, sceneOrEngine, null, source.isAnimationSheetEnabled);
+
+        gpu.id = source.id;
+
+        // Emitter (shared by reference: mesh or Vector3 — users expect both systems to follow the same source).
+        gpu.emitter = source.emitter;
+
+        // Emitter type — cloned for independence.
+        if (source.particleEmitterType) {
+            gpu.particleEmitterType = source.particleEmitterType.clone();
+        }
+
+        // Textures — shared by reference.
+        gpu.particleTexture = source.particleTexture;
+        if (source.noiseTexture) {
+            gpu.noiseTexture = source.noiseTexture;
+        }
+
+        // Colors.
+        gpu.color1 = source.color1.clone();
+        gpu.color2 = source.color2.clone();
+        gpu.colorDead = source.colorDead.clone();
+        gpu.textureMask = source.textureMask.clone();
+
+        // Sizes.
+        gpu.minSize = source.minSize;
+        gpu.maxSize = source.maxSize;
+        gpu.minScaleX = source.minScaleX;
+        gpu.maxScaleX = source.maxScaleX;
+        gpu.minScaleY = source.minScaleY;
+        gpu.maxScaleY = source.maxScaleY;
+
+        // Speeds / rotation.
+        gpu.minEmitPower = source.minEmitPower;
+        gpu.maxEmitPower = source.maxEmitPower;
+        gpu.minAngularSpeed = source.minAngularSpeed;
+        gpu.maxAngularSpeed = source.maxAngularSpeed;
+        gpu.minInitialRotation = source.minInitialRotation;
+        gpu.maxInitialRotation = source.maxInitialRotation;
+
+        // Lifetime.
+        gpu.minLifeTime = source.minLifeTime;
+        gpu.maxLifeTime = source.maxLifeTime;
+
+        // Emission.
+        gpu.emitRate = source.emitRate;
+        gpu.manualEmitCount = source.manualEmitCount;
+
+        // Physics.
+        gpu.gravity = source.gravity.clone();
+        gpu.limitVelocityDamping = source.limitVelocityDamping;
+
+        // Rendering.
+        gpu.blendMode = source.blendMode;
+        gpu.billboardMode = source.billboardMode;
+        gpu.isBillboardBased = source.isBillboardBased;
+        gpu.forceDepthWrite = source.forceDepthWrite;
+        gpu.useLogarithmicDepth = source.useLogarithmicDepth;
+        gpu.renderingGroupId = source.renderingGroupId;
+        gpu.layerMask = source.layerMask;
+
+        // Animation sheet.
+        gpu.startSpriteCellID = source.startSpriteCellID;
+        gpu.endSpriteCellID = source.endSpriteCellID;
+        gpu.spriteCellWidth = source.spriteCellWidth;
+        gpu.spriteCellHeight = source.spriteCellHeight;
+        gpu.spriteCellChangeSpeed = source.spriteCellChangeSpeed;
+        gpu.spriteCellLoop = source.spriteCellLoop;
+        gpu.spriteRandomStartCell = source.spriteRandomStartCell;
+
+        // Space.
+        gpu.isLocal = source.isLocal;
+        gpu.worldOffset = source.worldOffset.clone();
+        gpu.translationPivot = source.translationPivot.clone();
+
+        // Lifecycle.
+        gpu.targetStopDuration = source.targetStopDuration;
+        gpu.disposeOnStop = source.disposeOnStop;
+        gpu.startDelay = source.startDelay;
+        gpu.preWarmCycles = source.preWarmCycles;
+        gpu.preWarmStepOffset = source.preWarmStepOffset;
+        gpu.updateSpeed = source.updateSpeed;
+        gpu.preventAutoStart = source.preventAutoStart;
+
+        // Animations (shared by reference, matching the rest of the scene-graph convention).
+        gpu.animations = source.animations;
+        gpu.beginAnimationOnStart = source.beginAnimationOnStart;
+        gpu.beginAnimationFrom = source.beginAnimationFrom;
+        gpu.beginAnimationTo = source.beginAnimationTo;
+        gpu.beginAnimationLoop = source.beginAnimationLoop;
+
+        // Noise.
+        gpu.noiseStrength = source.noiseStrength.clone();
+
+        // Flow map — convert the CPU FlowMap (JS-side image data) into a RawTexture for GPU sampling.
+        // The CPU FlowMap stores image data top-left origin and flips V in its sampler; to get the
+        // same orientation under the GPU shader's non-flipped sampling, the uploaded texture needs invertY=true.
+        if (source.flowMap) {
+            const sourceFlowMap = source.flowMap;
+            const flowTexture = new RawTexture(
+                new Uint8Array(sourceFlowMap.data.buffer, sourceFlowMap.data.byteOffset, sourceFlowMap.data.byteLength),
+                sourceFlowMap.width,
+                sourceFlowMap.height,
+                Constants.TEXTUREFORMAT_RGBA,
+                sceneOrEngine,
+                false,
+                true,
+                Constants.TEXTURE_BILINEAR_SAMPLINGMODE
+            );
+            gpu.flowMap = flowTexture;
+            gpu.flowMapStrength = source.flowMapStrength;
+        }
+
+        // Gradients.
+        const colorGradients = source.getColorGradients();
+        if (colorGradients) {
+            for (const g of colorGradients) {
+                gpu.addColorGradient(g.gradient, g.color1.clone(), g.color2?.clone());
+            }
+        }
+
+        const sizeGradients = source.getSizeGradients();
+        if (sizeGradients) {
+            for (const g of sizeGradients) {
+                gpu.addSizeGradient(g.gradient, g.factor1, g.factor2);
+            }
+        }
+
+        const angularSpeedGradients = source.getAngularSpeedGradients();
+        if (angularSpeedGradients) {
+            for (const g of angularSpeedGradients) {
+                gpu.addAngularSpeedGradient(g.gradient, g.factor1, g.factor2);
+            }
+        }
+
+        const velocityGradients = source.getVelocityGradients();
+        if (velocityGradients) {
+            for (const g of velocityGradients) {
+                gpu.addVelocityGradient(g.gradient, g.factor1, g.factor2);
+            }
+        }
+
+        const limitVelocityGradients = source.getLimitVelocityGradients();
+        if (limitVelocityGradients) {
+            for (const g of limitVelocityGradients) {
+                gpu.addLimitVelocityGradient(g.gradient, g.factor1, g.factor2);
+            }
+        }
+
+        const dragGradients = source.getDragGradients();
+        if (dragGradients) {
+            for (const g of dragGradients) {
+                gpu.addDragGradient(g.gradient, g.factor1, g.factor2);
+            }
+        }
+
+        const emitRateGradients = source.getEmitRateGradients();
+        if (emitRateGradients) {
+            for (const g of emitRateGradients) {
+                gpu.addEmitRateGradient(g.gradient, g.factor1, g.factor2);
+            }
+        }
+
+        const startSizeGradients = source.getStartSizeGradients();
+        if (startSizeGradients) {
+            for (const g of startSizeGradients) {
+                gpu.addStartSizeGradient(g.gradient, g.factor1, g.factor2);
+            }
+        }
+
+        const lifeTimeGradients = source.getLifeTimeGradients();
+        if (lifeTimeGradients) {
+            for (const g of lifeTimeGradients) {
+                gpu.addLifeTimeGradient(g.gradient, g.factor1, g.factor2);
+            }
+        }
+
+        // Attractors — cloned.
+        for (const attractor of source.attractors) {
+            const newAttractor = new Attractor();
+            newAttractor.position = attractor.position.clone();
+            newAttractor.strength = attractor.strength;
+            gpu.addAttractor(newAttractor);
+        }
+
+        return gpu;
     }
 
     /**

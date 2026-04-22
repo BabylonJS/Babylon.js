@@ -110,6 +110,13 @@ export async function ParseFlowGraphAsync(serializationObject: ISerializedFlowGr
  */
 export function ParseFlowGraph(serializationObject: ISerializedFlowGraph, options: IFlowGraphParseOptions, resolvedClasses: (typeof FlowGraphBlock)[]) {
     const graph = options.coordinator.createGraph();
+    // Restore graph identity from serialized data
+    if (serializationObject.name) {
+        graph.name = serializationObject.name;
+    }
+    if (serializationObject.uniqueId) {
+        graph.uniqueId = serializationObject.uniqueId;
+    }
     const blocks: FlowGraphBlock[] = [];
     const valueParseFunction = options.valueParseFunction ?? defaultValueParseFunction;
     // Parse all blocks
