@@ -75,6 +75,14 @@ if (process.env.BROWSERSTACK_PARALLELS && +process.env.BROWSERSTACK_PARALLELS) {
     fs.writeFileSync(bstackYmlPath, content);
 }
 
+// Patch buildName so each job is identifiable in the BrowserStack dashboard.
+// The SDK reads buildName from the YAML at startup (no shell interpolation).
+if (process.env.BSTACK_BUILD_NAME) {
+    let content = fs.readFileSync(bstackYmlPath, "utf8");
+    content = content.replace(/buildName:\s*.+/, `buildName: ${process.env.BSTACK_BUILD_NAME}`);
+    fs.writeFileSync(bstackYmlPath, content);
+}
+
 // Override testObservability via env var (default is off in the YAML to avoid
 // gRPC serialization errors on large payloads like perf tests).
 if (process.env.BROWSERSTACK_TEST_OBSERVABILITY === "true") {
@@ -121,7 +129,7 @@ const testConfigs: Record<string, TestTypeConfig> = {
         },
     },
     performance: {
-        testMatch: ["**/test/performance/**/*.test.ts", "**/test/playwright/performance.test.ts"],
+        testMatch: "**/test/performance/**/*.test.ts",
         use: {
             ...devices["Desktop Chrome"],
             headless: true,

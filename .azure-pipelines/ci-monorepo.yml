@@ -583,6 +583,7 @@ jobs:
                 BSTACK_BUILD_NAME: "Visualization Tests - WebGL2"
                 TIMEOUT: "27500"
                 BSTACK_SESSIONS_REQUIRED: "2"
+                BROWSERSTACK_TEST_OBSERVABILITY: "false"
                 BROWSERSTACK_USERNAME: $(BROWSERSTACK_USERNAME)
                 BROWSERSTACK_ACCESS_KEY: $(BROWSERSTACK_ACCESS_KEY)
                 AFFECTED_TAGS: $(AFFECTED_TAGS)
@@ -664,6 +665,7 @@ jobs:
                 BSTACK_BUILD_NAME: "Visualization Tests - WebGPU"
                 TIMEOUT: "27500"
                 BSTACK_SESSIONS_REQUIRED: "2"
+                BROWSERSTACK_TEST_OBSERVABILITY: "false"
                 BROWSERSTACK_USERNAME: $(BROWSERSTACK_USERNAME)
                 BROWSERSTACK_ACCESS_KEY: $(BROWSERSTACK_ACCESS_KEY)
                 AFFECTED_TAGS: $(AFFECTED_TAGS)
@@ -816,6 +818,7 @@ jobs:
                 CIWORKERS: "$(CIWORKERS)"
                 TIMEOUT: "300000"
                 BSTACK_SESSIONS_REQUIRED: "2"
+                BROWSERSTACK_TEST_OBSERVABILITY: "false"
                 PERF_COMMENT_FILE: "$(Build.ArtifactStagingDirectory)/perf-comment.md"
                 BROWSERSTACK_USERNAME: $(BROWSERSTACK_USERNAME)
                 BROWSERSTACK_ACCESS_KEY: $(BROWSERSTACK_ACCESS_KEY)
