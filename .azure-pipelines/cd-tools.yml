@@ -50,6 +50,8 @@ jobs:
       displayName: "Build tools"
       steps:
           - template: templates/checkout-with-tag-override.yml
+            parameters:
+                fetchTags: true
 
           - task: UseNode@1
             displayName: "Use Node 22.x"

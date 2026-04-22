@@ -17,10 +17,10 @@ parameters:
       default: true
     - name: fetchDepth
       type: number
-      default: 0
+      default: 1
     - name: fetchTags
       type: boolean
-      default: true
+      default: false
     - name: triggeringPipeline
       type: string
       default: "Publish pipeline"
@@ -32,7 +32,7 @@ steps:
       fetchTags: ${{ parameters.fetchTags }}
 
     - bash: |
-          git fetch origin --tags
+          git fetch origin --tags master:refs/remotes/origin/master
           LATEST_TAG=$(git describe --tags --abbrev=0 origin/master)
           echo "Checking out version tag: $LATEST_TAG"
           git checkout "$LATEST_TAG"
