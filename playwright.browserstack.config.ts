@@ -75,6 +75,14 @@ if (process.env.BROWSERSTACK_PARALLELS && +process.env.BROWSERSTACK_PARALLELS) {
     fs.writeFileSync(bstackYmlPath, content);
 }
 
+// Override testObservability via env var (default is off in the YAML to avoid
+// gRPC serialization errors on large payloads like perf tests).
+if (process.env.BROWSERSTACK_TEST_OBSERVABILITY === "true") {
+    let content = fs.readFileSync(bstackYmlPath, "utf8");
+    content = content.replace(/testObservability:\s*.+/, "testObservability: true");
+    fs.writeFileSync(bstackYmlPath, content);
+}
+
 // ---------------------------------------------------------------------------
 // Per-test-type settings: testMatch patterns and browser use options
 // ---------------------------------------------------------------------------

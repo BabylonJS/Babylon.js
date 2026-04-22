@@ -48,9 +48,9 @@ consoleLogs: errors
 # activity; increase idle timeout to prevent premature disconnects.
 idleTimeout: 300
 
-# Test Observability — enables per-test reporting on the BrowserStack dashboard.
-# Auto-capture logs are disabled to reduce log volume.
-testObservability: true
-testObservabilityOptions:
-    setSessionStatus: true
-    autoLog: false
+# Test Observability — DISABLED.
+# The SDK's gRPC telemetry module hits serialization errors on large test payloads
+# (perf tests) causing "13 INTERNAL: Request message serialization failure" and
+# preventing tests from running.  It also generates substantial log output.
+# Re-enable per-run via BROWSERSTACK_TEST_OBSERVABILITY=true env var if needed.
+testObservability: false
