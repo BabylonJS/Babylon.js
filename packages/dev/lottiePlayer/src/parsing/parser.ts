@@ -696,8 +696,10 @@ export class Parser {
         if (property.l === undefined) {
             const sampleLength = property.a === 0 ? (property.k as number[]).length : ((property.k as RawVectorKeyframe[])[0]?.s?.length ?? 2);
             if (sampleLength !== 2) {
+                // Include the original layer index in the dedup key so two layers that happen to share `nm`
+                // each get their own warning instead of collapsing to a single message.
                 this._pushUnsupportedOnce(
-                    `Vector2 missing 'l' with ${sampleLength}-component value (expected 2) - Layer: ${this._currentLayerName ?? "<unknown>"} - VectorType: ${vectorType}. Using x/y components.`
+                    `Vector2 missing 'l' with ${sampleLength}-component value (expected 2) - Layer: ${this._currentLayerName ?? "<unknown>"} - LayerIdx: ${this._currentLayerOriginalIndex} - VectorType: ${vectorType}. Using x/y components.`
                 );
             }
         }

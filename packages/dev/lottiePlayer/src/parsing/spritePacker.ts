@@ -771,6 +771,11 @@ export class SpritePacker {
             }
 
             ctx.setLineDash(lineDashes);
+        } else {
+            // Canvas line-dash state persists across strokes within the same `_drawVectorShape` save/restore
+            // pair. Without this reset, a dashed stroke drawn earlier in the shape would leak its dash
+            // pattern onto subsequent strokes that don't declare `d`.
+            ctx.setLineDash([]);
         }
     }
 
