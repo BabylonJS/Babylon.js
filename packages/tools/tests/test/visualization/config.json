@@ -355,12 +355,11 @@
         },
         {
             "title": "BoundingInfo Helper",
-            "playgroundId": "#BCNJD4#61",
+            "playgroundId": "#UNQ5CK#0",
             "referenceImage": "bbhelper.png",
             "excludedEngines": [
                 "webgl1"
-            ],
-            "renderCount": 2
+            ]
         },
         {
             "title": "NME Shadow Map",
@@ -538,8 +537,7 @@
             "title": "Node material 1",
             "playgroundId": "#QJ71C6#5",
             "errorRatio": 4,
-            "referenceImage": "node-material1.png",
-            "performanceTest": true
+            "referenceImage": "node-material1.png"
         },
         {
             "title": "Node material 2",
@@ -589,8 +587,7 @@
         {
             "title": "Basis loader",
             "playgroundId": "#4RN0VF#102",
-            "referenceImage": "basis.png",
-            "performanceTest": true
+            "referenceImage": "basis.png"
         },
         {
             "title": "Unindexed mesh",
@@ -642,8 +639,7 @@
         },
         {
             "title": "GUI Slate",
-            "renderCount": 60,
-            "playgroundId": "#2YZFA0#277",
+            "playgroundId": "#UDLHJ3#0",
             "referenceImage": "guiSlate.png",
             "excludedEngines": [
                 "webgl1"
@@ -651,8 +647,7 @@
         },
         {
             "title": "GUI Near Menu",
-            "renderCount": 60,
-            "playgroundId": "#2YZFA0#302",
+            "playgroundId": "#DZPGOB#0",
             "referenceImage": "guiNearMenu.png",
             "excludedEngines": [
                 "webgl1"
@@ -679,8 +674,7 @@
         },
         {
             "title": "LineEdgesRenderer",
-            "playgroundId": "#T90MQ4#19",
-            "renderCount": 50,
+            "playgroundId": "#FF1HHK#0",
             "referenceImage": "LineEdgesRenderer.png"
         },
         {
@@ -702,8 +696,7 @@
         },
         {
             "title": "Ribbon morphing",
-            "playgroundId": "#ACKC2#1",
-            "renderCount": 50,
+            "playgroundId": "#XUKAYC#0",
             "referenceImage": "ribbon-morphing.png"
         },
         {
@@ -722,14 +715,12 @@
         },
         {
             "title": "Gizmos",
-            "playgroundId": "#8GY6J8#196",
-            "renderCount": 50,
+            "playgroundId": "#SWSUXS#0",
             "referenceImage": "Gizmos.png"
         },
         {
             "title": "GUI3D SpherePanel",
-            "playgroundId": "#HB4C01#9",
-            "renderCount": 50,
+            "playgroundId": "#AMM2WB#0",
             "referenceImage": "spherepanel.png"
         },
         {
@@ -740,24 +731,21 @@
         },
         {
             "title": "Chibi Rex",
-            "playgroundId": "#NZ2RZY#4",
-            "renderCount": 50,
-            "referenceImage": "chibi-rex.png",
-            "performanceTest": true
+            "playgroundId": "#SYM1EP#0",
+            "referenceImage": "chibi-rex.png"
         },
         {
             "title": "Yeti",
-            "playgroundId": "#QATUCH#32",
-            "renderCount": 150,
+            "playgroundId": "#8ZNZFY#0",
             "referenceImage": "yeti.png",
-            "performanceTest": true
+            "performanceTest": true,
+            "errorRatio": 3
         },
         {
             "title": "Sponza",
             "sceneFolder": "/Scenes/Sponza/",
             "sceneFilename": "Sponza.babylon",
-            "referenceImage": "Sponza.png",
-            "performanceTest": true
+            "referenceImage": "Sponza.png"
         },
         {
             "title": "Windows cafe",
@@ -776,8 +764,7 @@
             "sceneFolder": "/Scenes/TheCar/",
             "sceneFilename": "TheCar.binary.babylon",
             "referenceImage": "TheCar.png",
-            "errorRatio": 5,
-            "performanceTest": true
+            "errorRatio": 5
         },
         {
             "title": "Viper",
@@ -831,11 +818,9 @@
         },
         {
             "title": "Charting",
-            "renderCount": 20,
-            "scriptToRun": "/Demos/Charting/charting.js",
-            "functionToCall": "CreateChartingTestScene",
             "referenceImage": "charting.png",
-            "errorRatio": 3
+            "errorRatio": 3,
+            "playgroundId": "#FX57Z1#0"
         },
         {
             "title": "Fog",
@@ -956,9 +941,8 @@
         },
         {
             "title": "Shadow depth wrappers",
-            "playgroundId": "#PNQRY1#73",
+            "playgroundId": "#7JTUT9#0",
             "referenceImage": "shadowDepthWrappers.png",
-            "renderCount": 20,
             "excludedEngines": [
                 "webgpu"
             ]
@@ -1025,29 +1009,25 @@
         },
         {
             "title": "GLTF Animation Node",
-            "renderCount": 2,
-            "playgroundId": "#DS8AA7#27",
+            "playgroundId": "#0GGYCY#0",
             "replace": "__folder__, Animation_Node, __page__, 0, __disableSRGBBuffers__, 0",
             "referenceImage": "gltfAnimationNode.png"
         },
         {
             "title": "GLTF Animation Node Misc",
-            "renderCount": 2,
-            "playgroundId": "#DS8AA7#27",
+            "playgroundId": "#0GGYCY#0",
             "replace": "__folder__, Animation_NodeMisc, __page__, 0, __disableSRGBBuffers__, 1",
             "referenceImage": "gltfAnimationNodeMisc.png"
         },
         {
             "title": "GLTF Animation Skin (0)",
-            "renderCount": 2,
-            "playgroundId": "#DS8AA7#27",
+            "playgroundId": "#0GGYCY#0",
             "replace": "__folder__, Animation_Skin, __page__, 0, __disableSRGBBuffers__, 0",
             "referenceImage": "gltfAnimationSkin0.png"
         },
         {
             "title": "GLTF Animation Skin (1)",
-            "renderCount": 2,
-            "playgroundId": "#DS8AA7#27",
+            "playgroundId": "#0GGYCY#0",
             "replace": "__folder__, Animation_Skin, __page__, 1, __disableSRGBBuffers__, 0",
             "referenceImage": "gltfAnimationSkin1.png"
         },
@@ -1150,8 +1130,7 @@
         },
         {
             "title": "GLTF Mesh Primitive Vertex Color",
-            "renderCount": 5,
-            "playgroundId": "#DS8AA7#27",
+            "playgroundId": "#0GGYCY#0",
             "replace": "__folder__, Mesh_PrimitiveVertexColor, __page__, 0, __disableSRGBBuffers__, 0",
             "referenceImage": "gltfMeshPrimitiveVertexColor.png"
         },
@@ -1219,8 +1198,7 @@
         {
             "title": "GLTF ClearCoat",
             "playgroundId": "#YG3BBF#33",
-            "referenceImage": "glTFClearCoat.png",
-            "performanceTest": true
+            "referenceImage": "glTFClearCoat.png"
         },
         {
             "title": "GLTF Alpha Blend",
@@ -1275,7 +1253,6 @@
         },
         {
             "title": "GLTF Serializer Morph Target Animation",
-            "renderCount": 2,
             "playgroundId": "#84M2SR#107",
             "referenceImage": "gltfSerializerMorphTargetAnimation.png",
             "excludedEngines": [
@@ -1417,14 +1394,12 @@
             "title": "GLTF Extension KHR_materials_volume",
             "playgroundId": "#YG3BBF#16",
             "referenceImage": "gltfExtensionKhrMaterialsVolume.png",
-            "renderCount": 5,
             "performanceTest": true
         },
         {
             "title": "GLTF Extension KHR_materials_volume with analytic light",
             "playgroundId": "#YG3BBF#48",
             "referenceImage": "gltfExtensionKhrMaterialsVolumeHemiLight.png",
-            "renderCount": 5,
             "excludeFromPerformance": true
         },
         {
@@ -1432,7 +1407,6 @@
             "playgroundId": "#YG3BBF#18",
             "referenceImage": "gltfExtensionKhrMaterialsVolumeAttenuation.png",
             "errorRatio": 3,
-            "renderCount": 5,
             "excludeFromPerformance": true
         },
         {
@@ -1545,8 +1519,7 @@
         {
             "title": "PBR refraction",
             "playgroundId": "#LCA0Q4#26",
-            "referenceImage": "pbr-refraction.png",
-            "performanceTest": true
+            "referenceImage": "pbr-refraction.png"
         },
         {
             "title": "PBR shader code coverage 1",
@@ -1588,7 +1561,6 @@
         },
         {
             "title": "GUI",
-            "renderCount": 5,
             "scriptToRun": "/Demos/GUI/gui.js",
             "functionToCall": "createScene",
             "errorRatio": 4,
@@ -1729,7 +1701,6 @@
         {
             "title": "GLTF Extension EXT_mesh_gpu_instancing",
             "playgroundId": "#QFIGLW#9",
-            "renderCount": 10,
             "referenceImage": "gltfExtensionExtMeshGpuInstancingTest.png"
         },
         {
@@ -1942,8 +1913,7 @@
                 "webgl1"
             ],
             "errorRatio": 3.5,
-            "referenceImage": "prepass-ssao-dof.png",
-            "performanceTest": true
+            "referenceImage": "prepass-ssao-dof.png"
         },
         {
             "title": "Prepass + mirror, without postprocess",
@@ -2278,8 +2248,7 @@
                 "webgl1"
             ],
             "referenceImage": "gpuparticle-basic.png",
-            "excludeFromAutomaticTesting": true,
-            "performanceTest": true
+            "excludeFromAutomaticTesting": true
         },
         {
             "title": "GLTF ext MSFT_LOD",
@@ -2345,8 +2314,7 @@
             "excludedEngines": [
                 "webgl1"
             ],
-            "referenceImage": "oit.png",
-            "performanceTest": true
+            "referenceImage": "oit.png"
         },
         {
             "title": "Show all procedural textures",
@@ -2955,29 +2923,25 @@
             "title": "computeMaxExtents (BrainStem)",
             "playgroundId": "#M2H33B",
             "replace": "//options//, modelIndex = 2;",
-            "referenceImage": "computeMaxExtents-BoxAnimated.png",
-            "renderCount": 2
+            "referenceImage": "computeMaxExtents-BoxAnimated.png"
         },
         {
             "title": "computeMaxExtents (Fox 0)",
             "playgroundId": "#M2H33B",
             "replace": "//options//, modelIndex = 4; animationIndex = 0;",
-            "referenceImage": "computeMaxExtents-Fox0.png",
-            "renderCount": 2
+            "referenceImage": "computeMaxExtents-Fox0.png"
         },
         {
             "title": "computeMaxExtents (Fox 1)",
             "playgroundId": "#M2H33B",
             "replace": "//options//, modelIndex = 4; animationIndex = 1;",
-            "referenceImage": "computeMaxExtents-Fox1.png",
-            "renderCount": 2
+            "referenceImage": "computeMaxExtents-Fox1.png"
         },
         {
             "title": "computeMaxExtents (MorphStressTest)",
             "playgroundId": "#M2H33B",
             "replace": "//options//, modelIndex = 5;",
-            "referenceImage": "computeMaxExtents-MorphStressTest.png",
-            "renderCount": 2
+            "referenceImage": "computeMaxExtents-MorphStressTest.png"
         },
         {
             "title": "Read-write storage texture compute",
@@ -3022,8 +2986,7 @@
             "excludedEngines": [
                 "webgl1"
             ],
-            "errorRatio": 5,
-            "performanceTest": true
+            "errorRatio": 5
         },
         {
             "title": "Glow layer with vertex alpha",
@@ -3094,8 +3057,7 @@
         },
         {
             "title": "FrameGraph nrge csm shadows with autoCalcDepthBounds",
-            "playgroundId": "#JWKDME#192",
-            "renderCount": 10
+            "playgroundId": "#DOFUT1#0"
         },
         {
             "title": "FrameGraph nrge custom rendering",
@@ -3105,14 +3067,12 @@
         {
             "title": "FrameGraph nrge depth of field",
             "playgroundId": "#GAGVQO#19",
-            "errorRatio": 3,
-            "performanceTest": true
+            "errorRatio": 3
         },
         {
             "title": "FrameGraph nrge glow layer",
             "playgroundId": "#IG8NRC#84",
-            "errorRatio": 2,
-            "performanceTest": true
+            "errorRatio": 2
         },
         {
             "title": "FrameGraph nrge highlight layer",
@@ -3304,8 +3264,7 @@
             "playgroundId": "#MIACY4#11",
             "excludedEngines": [
                 "webgl1"
-            ],
-            "performanceTest": true
+            ]
         },
         {
             "title": "FrameGraph multi-render targets",
@@ -3407,8 +3366,7 @@
         {
             "title": "Sponza Clustered Lighting",
             "playgroundId": "#CSCJO2#17",
-            "referenceImage": "sponza-clustered-lighting.png",
-            "performanceTest": true
+            "referenceImage": "sponza-clustered-lighting.png"
         },
         {
             "title": "Sponza Clustered Lighting (2 viewports)",

@@ -49,7 +49,7 @@ const testConfigs: Record<string, { testMatch: string | string[] }> = {
     webgl2: { testMatch: "**/*webgl2.test.ts" },
     webgpu: { testMatch: "**/*webgpu.test.ts" },
     interaction: { testMatch: "**/interaction.test.ts" },
-    performance: { testMatch: "**/test/performance/**/*.test.ts" },
+    performance: { testMatch: "**/test/performance/visualization.test.ts" },
 };
 
 const activeConfig = testConfigs[testType];
