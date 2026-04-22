@@ -1334,8 +1334,7 @@
         },
         {
             "title": "Default pipeline",
-            "playgroundId": "#NAW8EA#6",
-            "renderCount": 20,
+            "playgroundId": "#3054SF#0",
             "referenceImage": "defaultPipeline.png"
         },
         {
@@ -1366,9 +1365,7 @@
         },
         {
             "title": "Reflection probes",
-            "renderCount": 20,
-            "scriptToRun": "/Demos/RefProbe/reflectionProbe.js",
-            "functionToCall": "CreateReflectionProbeTestScene ",
+            "playgroundId": "#JHGNUU#0",
             "referenceImage": "refprobe.png"
         },
         {
@@ -1557,20 +1554,17 @@
         {
             "title": "Realtime Filtering",
             "playgroundId": "#FEEK7G#118",
-            "renderCount": 5,
             "referenceImage": "realtimeFiltering.png"
         },
         {
             "title": "Realtime Filtering Irradiance",
             "playgroundId": "#FEEK7G#1089",
-            "renderCount": 5,
             "referenceImage": "realtimeFilteringIrradiance.png",
             "excludedEngines": ["webgl1"]
         },
         {
             "title": "Realtime Filtering Irradiance with CDF",
-            "playgroundId": "#FEEK7G#1087",
-            "renderCount": 5,
+            "playgroundId": "#F6JODO#0",
             "referenceImage": "realtimeFilteringIrradianceCDF.png",
             "excludedEngines": ["webgl1"]
         },
@@ -2051,8 +2045,7 @@
         },
         {
             "title": "Custom material with depth renderer",
-            "renderCount": 5,
-            "playgroundId": "#6GFJNR#152",
+            "playgroundId": "#9LECW0#0",
             "referenceImage": "customMatDepthRenderer.png"
         },
         {
@@ -2062,14 +2055,12 @@
         },
         {
             "title": "Baked Vertex Animation with Depth Of Field",
-            "renderCount": 20,
-            "playgroundId": "#JWO4R0#8",
+            "playgroundId": "#B50RGD#0",
             "referenceImage": "bakedVertexAnimationDOF.png"
         },
         {
             "title": "Baked Vertex Animation with Volumetric Light Scattering Post Process",
-            "renderCount": 20,
-            "playgroundId": "#1LF9GK#3",
+            "playgroundId": "#0PIQHX#0",
             "referenceImage": "bakedVertexAnimationVLS.png",
             "excludedEngines": ["webgl1"]
         },
@@ -2105,14 +2096,12 @@
         },
         {
             "title": "Picking Visual Test",
-            "renderCount": 2,
-            "playgroundId": "#4J7Y7V#1",
+            "playgroundId": "#0GTR7S#0",
             "referenceImage": "pickingVisualTest.png"
         },
         {
             "title": "GUI Input Test",
-            "renderCount": 2,
-            "playgroundId": "#UB4F3B#8",
+            "playgroundId": "#A3RC6I#0",
             "errorRatio": 4,
             "referenceImage": "guiInputTest.png"
         },
@@ -2380,8 +2369,7 @@
         },
         {
             "title": "show-bounding-box",
-            "renderCount": 5,
-            "playgroundId": "#0LN1JD#9"
+            "playgroundId": "#Y2TD10#0"
         },
         {
             "title": "cube-reflection-with-probe-and-mirrors",
