@@ -177,8 +177,7 @@
         },
         {
             "title": "OpenPBR Base Diffuse Roughness Realtime IBL",
-            "playgroundId": "#MXACV7#29",
-            "renderCount": 15,
+            "playgroundId": "#76D28X#0",
             "referenceImage": "openpbr_base_diffuse_roughness_realtime_ibl.png"
         },
         {
@@ -1715,14 +1714,12 @@
         },
         {
             "title": "Prepass SSAO + instanced bones",
-            "renderCount": 50,
             "playgroundId": "#0K8EYN#197",
             "excludedEngines": ["webgl1"],
             "referenceImage": "prepass-ssao-instanced-bones.png"
         },
         {
             "title": "Prepass SSAO + depth of field",
-            "renderCount": 10,
             "playgroundId": "#8F5HYV#72",
             "excludedEngines": ["webgl1"],
             "errorRatio": 3.5,
@@ -1730,70 +1727,60 @@
         },
         {
             "title": "Prepass + mirror, without postprocess",
-            "renderCount": 10,
-            "playgroundId": "#PIZ1GK#1084",
+            "playgroundId": "#9A4QF8#0",
             "excludedEngines": ["webgl1"],
             "referenceImage": "prepass-mirror-without-pp.png"
         },
         {
             "title": "Prepass + mirror, with postprocesses",
-            "renderCount": 10,
-            "playgroundId": "#PIZ1GK#1085",
+            "playgroundId": "#E4QF68#0",
             "excludedEngines": ["webgl1"],
             "referenceImage": "prepass-mirror-with-pp.png"
         },
         {
             "title": "Prepass SSAO + sprites",
-            "renderCount": 10,
             "playgroundId": "#9RI8CG#187",
             "excludedEngines": ["webgl1"],
             "referenceImage": "prepass-ssao-sprites.png"
         },
         {
             "title": "Prepass SSAO + glow layer",
-            "renderCount": 30,
-            "playgroundId": "#LRFB2D#263",
+            "playgroundId": "#7HMTCH#0",
             "excludedEngines": ["webgl1"],
             "referenceImage": "prepass-ssao-glow-layer.png"
         },
         {
             "title": "Prepass SSAO + bounding box renderer",
-            "renderCount": 10,
             "playgroundId": "#4F33I3#35",
             "excludedEngines": ["webgl1"],
             "referenceImage": "prepass-ssao-bbr.png"
         },
         {
             "title": "Prepass SSAO + line edges renderer",
-            "renderCount": 10,
             "playgroundId": "#T90MQ4#3",
             "excludedEngines": ["webgl1"],
             "referenceImage": "prepass-ssao-line-edges.png"
         },
         {
             "title": "Prepass SSAO + B&W post process",
-            "renderCount": 10,
             "playgroundId": "#N55Q2M#8",
             "excludedEngines": ["webgl1"],
             "referenceImage": "prepass-ssao-b-and-w.png"
         },
         {
             "title": "Prepass SSAO + clip planes",
-            "renderCount": 10,
             "playgroundId": "#Y6W087#71",
             "excludedEngines": ["webgl1"],
             "referenceImage": "prepass-ssao-clip-planes.png"
         },
         {
             "title": "Prepass SSAO + GUI",
-            "renderCount": 10,
             "playgroundId": "#LLVZ90#4",
             "excludedEngines": ["webgl1"],
             "referenceImage": "prepass-ssao-gui.png"
         },
         {
             "title": "Prepass SSAO + LOD",
-            "renderCount": 10,
             "playgroundId": "#FFMFW5#29",
             "excludedEngines": ["webgl1"],
             "errorRatio": 6,
@@ -1801,35 +1788,30 @@
         },
         {
             "title": "Prepass SSAO + shadow only",
-            "renderCount": 10,
             "playgroundId": "#1KF7V1#55",
             "excludedEngines": ["webgl1", "webgpu"],
             "referenceImage": "prepass-ssao-shadow-only.png"
         },
         {
             "title": "Prepass SSAO + highlight layer",
-            "renderCount": 10,
-            "playgroundId": "#1KUJ0A#416",
+            "playgroundId": "#79439I#0",
             "excludedEngines": ["webgl1"],
             "referenceImage": "prepass-ssao-highlight-layer.png"
         },
         {
             "title": "Prepass SSAO + point light",
-            "renderCount": 10,
-            "playgroundId": "#XDNVAY#6",
+            "playgroundId": "#WW5UB5#0",
             "excludedEngines": ["webgl1"],
             "referenceImage": "prepass-ssao-point-light.png"
         },
         {
             "title": "Prepass SSAO + on/off post-process",
-            "renderCount": 10,
             "playgroundId": "#1VI6WV#20",
             "excludedEngines": ["webgl1"],
             "referenceImage": "prepass-ssao-on-off-pp.png"
         },
         {
             "title": "Prepass SSAO + thin instances",
-            "renderCount": 10,
             "playgroundId": "#V1JE4Z#25",
             "excludedEngines": ["webgl1"],
             "errorRatio": 3,
@@ -1837,22 +1819,19 @@
         },
         {
             "title": "Prepass SSAO + depth renderer",
-            "renderCount": 10,
             "playgroundId": "#3HPMAA#1",
             "excludedEngines": ["webgl1"],
             "referenceImage": "prepass-ssao-depth-renderer.png"
         },
         {
             "title": "Prepass SSAO + visibility",
-            "renderCount": 30,
             "playgroundId": "#PXC9CF#7",
             "excludedEngines": ["webgl1"],
             "referenceImage": "prepass-ssao-visibility.png"
         },
         {
             "title": "Prepass SSAO + default pipeline",
-            "renderCount": 10,
-            "playgroundId": "#NAW8EA#7",
+            "playgroundId": "#IIMFWT#0",
             "excludedEngines": ["webgl1"],
             "referenceImage": "prepass-ssao-default-pipeline.png"
         },
@@ -1865,8 +1844,7 @@
         },
         {
             "title": "Prepass SSAO + MSAA",
-            "renderCount": 10,
-            "playgroundId": "#12MKMN#7",
+            "playgroundId": "#LSTDFU#0",
             "excludedEngines": ["webgl1"],
             "referenceImage": "prepass-ssao-msaa.png"
         },
@@ -2911,9 +2889,8 @@
         },
         {
             "title": "Flow Graph multiple contexts",
-            "playgroundId": "#FQWPBI#11",
-            "referenceImage": "Flow-Graph-multiple-contexts.png",
-            "renderCount": 30
+            "playgroundId": "#O0F8LH#0",
+            "referenceImage": "Flow-Graph-multiple-contexts.png"
         },
         {
             "title": "KHR diffuse transmission",
@@ -2921,8 +2898,7 @@
         },
         {
             "title": "SubSurface Scattering",
-            "playgroundId": "#5H0H89#129",
-            "renderCount": 10,
+            "playgroundId": "#FR639I#0",
             "excludedEngines": ["webgl1"]
         },
         {
@@ -3550,9 +3526,8 @@
         },
         {
             "title": "Havok FloatingOrigin Multi-Region",
-            "playgroundId": "#BEDCVY",
-            "useLargeWorldRendering": true,
-            "renderCount": 180
+            "playgroundId": "#GRP5E9#0",
+            "useLargeWorldRendering": true
         },
         {
             "title": "NME Particles with PositionW",
