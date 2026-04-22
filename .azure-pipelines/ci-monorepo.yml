@@ -573,7 +573,7 @@ jobs:
                 PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: "true"
                 PUPPETEER_SKIP_DOWNLOAD: "true"
 
-          - script: npx browserstack-node-sdk playwright test --config ./playwright.browserstack.config.ts
+          - bash: .azure-pipelines/browserstack-wait.sh npx browserstack-node-sdk playwright test --config ./playwright.browserstack.config.ts
             displayName: "WebGL2 BStack"
             env:
                 CDN_BASE_URL: "$(SNAPSHOT_CDN_URL)/$(BuildName)"
@@ -582,6 +582,7 @@ jobs:
                 BSTACK_TEST_TYPE: "webgl2"
                 BSTACK_BUILD_NAME: "Visualization Tests - WebGL2"
                 TIMEOUT: "27500"
+                BSTACK_SESSIONS_REQUIRED: "1"
                 BROWSERSTACK_USERNAME: $(BROWSERSTACK_USERNAME)
                 BROWSERSTACK_ACCESS_KEY: $(BROWSERSTACK_ACCESS_KEY)
                 AFFECTED_TAGS: $(AFFECTED_TAGS)
@@ -652,7 +653,7 @@ jobs:
                 PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: "true"
                 PUPPETEER_SKIP_DOWNLOAD: "true"
 
-          - script: npx browserstack-node-sdk playwright test --config ./playwright.browserstack.config.ts
+          - bash: .azure-pipelines/browserstack-wait.sh npx browserstack-node-sdk playwright test --config ./playwright.browserstack.config.ts
             displayName: "WebGPU BStack"
             retryCountOnTaskFailure: 1
             env:
@@ -662,6 +663,7 @@ jobs:
                 BSTACK_TEST_TYPE: "webgpu"
                 BSTACK_BUILD_NAME: "Visualization Tests - WebGPU"
                 TIMEOUT: "27500"
+                BSTACK_SESSIONS_REQUIRED: "1"
                 BROWSERSTACK_USERNAME: $(BROWSERSTACK_USERNAME)
                 BROWSERSTACK_ACCESS_KEY: $(BROWSERSTACK_ACCESS_KEY)
                 AFFECTED_TAGS: $(AFFECTED_TAGS)
@@ -800,7 +802,7 @@ jobs:
                 PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: "true"
                 PUPPETEER_SKIP_DOWNLOAD: "true"
 
-          - script: npx browserstack-node-sdk playwright test --config ./playwright.browserstack.config.ts
+          - bash: .azure-pipelines/browserstack-wait.sh npx browserstack-node-sdk playwright test --config ./playwright.browserstack.config.ts
             displayName: "Run performance tests (BStack)"
             continueOnError: true
             env:
@@ -814,6 +816,7 @@ jobs:
                 CDN_VERSION_B: "$(CDN_VERSION_B)"
                 CIWORKERS: "$(CIWORKERS)"
                 TIMEOUT: "300000"
+                BSTACK_SESSIONS_REQUIRED: "1"
                 PERF_COMMENT_FILE: "$(Build.ArtifactStagingDirectory)/perf-comment.md"
                 BROWSERSTACK_USERNAME: $(BROWSERSTACK_USERNAME)
                 BROWSERSTACK_ACCESS_KEY: $(BROWSERSTACK_ACCESS_KEY)
