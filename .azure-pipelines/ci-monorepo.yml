@@ -582,8 +582,6 @@ jobs:
                 BSTACK_TEST_TYPE: "webgl2"
                 BSTACK_BUILD_NAME: "Visualization Tests - WebGL2"
                 TIMEOUT: "27500"
-                CIWORKERS: "2"
-                BROWSERSTACK_TEST_OBSERVABILITY: "false"
                 BROWSERSTACK_USERNAME: $(BROWSERSTACK_USERNAME)
                 BROWSERSTACK_ACCESS_KEY: $(BROWSERSTACK_ACCESS_KEY)
                 AFFECTED_TAGS: $(AFFECTED_TAGS)
@@ -621,8 +619,7 @@ jobs:
 
     # ============================================================================
     # VISUALIZATION TESTS - WEBGPU
-    # Depends on: VisualizationWebGL2 (chained to avoid BrowserStack session
-    # contention — account has 5 parallel sessions shared across all PR builds)
+    # Depends on: Build
     # Runs on BrowserStack
     # ============================================================================
     - job: VisualizationWebGPU
@@ -665,8 +662,6 @@ jobs:
                 BSTACK_TEST_TYPE: "webgpu"
                 BSTACK_BUILD_NAME: "Visualization Tests - WebGPU"
                 TIMEOUT: "27500"
-                CIWORKERS: "2"
-                BROWSERSTACK_TEST_OBSERVABILITY: "false"
                 BROWSERSTACK_USERNAME: $(BROWSERSTACK_USERNAME)
                 BROWSERSTACK_ACCESS_KEY: $(BROWSERSTACK_ACCESS_KEY)
                 AFFECTED_TAGS: $(AFFECTED_TAGS)
@@ -777,18 +772,14 @@ jobs:
 
     # ============================================================================
     # PERFORMANCE TESTS
-    # Depends on: VisualizationWebGL2, VisualizationWebGPU
+    # Depends on: Build
     # Runs on BrowserStack — each test runs baseline + candidate interleaved
     # on the same remote machine to ensure consistent comparison.
-    # Runs AFTER vis tests to avoid BrowserStack session contention (5 max).
     # Non-blocking: failures do not fail the overall pipeline.
     # ============================================================================
     - job: PerformanceTests
       displayName: "Performance tests"
-      dependsOn:
-          - VisualizationWebGL2
-          - VisualizationWebGPU
-      condition: succeededOrFailed()
+      dependsOn: Build
       continueOnError: true
       steps:
           - checkout: self
@@ -821,10 +812,9 @@ jobs:
                 VISUALIZATION_PERF_ALL: "true"
                 CDN_VERSION: "$(CDN_VERSION)"
                 CDN_VERSION_B: "$(CDN_VERSION_B)"
-                CIWORKERS: "2"
+                CIWORKERS: "$(CIWORKERS)"
                 TIMEOUT: "300000"
                 PERF_COMMENT_FILE: "$(Build.ArtifactStagingDirectory)/perf-comment.md"
-                BROWSERSTACK_TEST_OBSERVABILITY: "false"
                 BROWSERSTACK_USERNAME: $(BROWSERSTACK_USERNAME)
                 BROWSERSTACK_ACCESS_KEY: $(BROWSERSTACK_ACCESS_KEY)
 
