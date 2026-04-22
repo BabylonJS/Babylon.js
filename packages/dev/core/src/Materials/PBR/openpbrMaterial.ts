@@ -309,6 +309,12 @@ export class OpenPBRMaterialDefines extends ImageProcessingDefinesMixin(OpenPBRM
     public USE_IRRADIANCE_TEXTURE_FOR_SCATTERING = false;
 
     /**
+     * Indicates that the irradiance texture is from the legacy GeometryBufferRenderer.
+     * We use this to handle direct lights which don't render in the legacy GBuffer irradiance.
+     */
+    public USE_IRRADIANCE_TEXTURE_FOR_SCATTERING_GBUFFER = false;
+
+    /**
      * Enables transmission slab
      */
     public TRANSMISSION_SLAB = false;
@@ -3180,17 +3186,23 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
         // Determine whether we should use the prepass irradiance texture for scattering.
         // If this IS a prepass, we don't want to use the irradiance texture as it won't be available yet.
         if (!defines.PREPASS && (defines.SUBSURFACE_SLAB || defines.TRANSMISSION_SLAB_VOLUME)) {
+            let usingGBuffer = false;
             if (!this.sssIrradianceTexture && scene.geometryBufferRenderer) {
                 const irradianceTextureIndex = scene.geometryBufferRenderer.getTextureIndex(GeometryBufferRenderer.IRRADIANCE_TEXTURE_TYPE);
                 this.sssIrradianceTexture = scene.geometryBufferRenderer.getGBuffer().textures[irradianceTextureIndex];
+                usingGBuffer = true;
             }
 
             if (!this.sssDepthTexture && scene.geometryBufferRenderer) {
                 const depthIndex = scene.geometryBufferRenderer.getTextureIndex(GeometryBufferRenderer.SCREENSPACE_DEPTH_TEXTURE_TYPE);
                 this.sssDepthTexture = scene.geometryBufferRenderer.getGBuffer().textures[depthIndex];
+                usingGBuffer = true;
             }
             if (this.sssIrradianceTexture && this.sssDepthTexture) {
                 defines.USE_IRRADIANCE_TEXTURE_FOR_SCATTERING = true;
+                if (usingGBuffer) {
+                    defines.USE_IRRADIANCE_TEXTURE_FOR_SCATTERING_GBUFFER = true;
+                }
             }
         }
         defines.FUZZ = this.fuzzWeight > 0 && MaterialFlags.ReflectionTextureEnabled;

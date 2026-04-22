@@ -163,7 +163,7 @@
 
                 #ifdef SCATTERING
                 
-                    #if !defined(USE_IRRADIANCE_TEXTURE_FOR_SCATTERING)
+                    #if !defined(USE_IRRADIANCE_TEXTURE_FOR_SCATTERING) || defined(USE_IRRADIANCE_TEXTURE_FOR_SCATTERING_GBUFFER)
                         // Compute forward-scattered light that has been completely diffused. This will be used when
                         // scattering is very strong.
                         preInfoTrans.roughness = 1.0f;
@@ -195,7 +195,7 @@
                         // Back Scattering
                         let back_scattering: vec3f = mix(forward_scattered_light, forward_scattered_light + back_scattered_light * backscatter_color, iso_scatter_density);
                         // Iso Scattering
-                        #ifdef USE_IRRADIANCE_TEXTURE_FOR_SCATTERING
+                        #if defined(USE_IRRADIANCE_TEXTURE_FOR_SCATTERING) && !defined(USE_IRRADIANCE_TEXTURE_FOR_SCATTERING_GBUFFER)
                             let iso_scattering: vec3f = mix(forward_scattered_light, scattered_light_from_irradiance_texture * volumeParams.multi_scatter_color, iso_scatter_density);
                         #else
                             let iso_scattering: vec3f = mix(forward_scattered_light, (diffused_forward_scattered_light + iso_scattered_light) * volumeParams.multi_scatter_color, iso_scatter_density);
