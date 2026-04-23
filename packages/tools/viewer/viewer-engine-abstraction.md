@@ -1,27 +1,54 @@
-# Viewer Engine Abstraction — Exploration & Plan
+# Viewer + Babylon Lite — Exploration & Plan
 
 ## Problem Statement
 
-The Viewer currently depends directly on `@babylonjs/core` (`AbstractEngine`, `Scene`, `ArcRotateCamera`, `PBRMaterial`, `LoadAssetContainerAsync`, `Observable`, shadow generators, post-processing pipelines, etc.). We want the Viewer to also work with Babylon Lite — a lightweight, WebGPU-only engine with a different API surface. The goal is to introduce an abstraction layer so the Viewer's core logic can run against either backend.
+The Viewer currently depends directly on `@babylonjs/core` (`AbstractEngine`, `Scene`, `ArcRotateCamera`, `PBRMaterial`, `LoadAssetContainerAsync`, `Observable`, shadow generators, post-processing pipelines, etc.). We want the Viewer to also work with Babylon Lite — a lightweight, WebGPU-only engine with a different API surface.
 
-## High-Level Approach
+## Architecture Decision: IViewer + Separate Implementations
 
-Introduce a **`ViewerEngine`** interface (working name) that exposes the capabilities the Viewer needs, expressed in engine-agnostic terms. The Viewer constructor gains an overload that accepts a `ViewerEngine`. The existing `AbstractEngine` constructor overload creates a `ViewerEngine` implementation backed by full Babylon.js. A second implementation wraps Babylon Lite.
+Two approaches were considered:
+
+### ❌ Approach A: ViewerEngine Abstraction (Rejected)
+
+A single `Viewer` class parameterized by a `ViewerEngine` interface that abstracts ~100+ internal Babylon.js APIs. Rejected because:
+
+- **Massive abstraction surface.** The Viewer uses ~100+ internal APIs (engine, scene, camera, loading, animation, shadows, environment, picking, math). Abstracting all of them produces a thick adapter layer.
+- **Architecturally incompatible backends.** The two backends differ fundamentally: scene graph vs. flat struct, `Observable` vs. version tracking, `runRenderLoop` vs. `engine.start()`, CPU picking vs. GPU picking. The "abstraction" would end up re-implementing Viewer orchestration logic per-backend anyway — the same duplication as Approach B, but hidden in adapters.
+- **Feature asymmetry friction.** ~40% of Viewer code is advanced features Lite won't support (IBL shadows, SSAO, snapshot rendering, scene optimizer, material variants). That's a lot of `if (capabilities.X)` guards scattered through a single class.
+- **Lowest common denominator.** Any new Babylon.js feature requires extending the abstraction, constraining what the full Viewer can do.
+
+### ✅ Approach B: IViewer Interface + Separate Implementations (Recommended)
 
 ```
-┌──────────────┐      ┌──────────────────┐
-│   Viewer     │─────▶│  ViewerEngine    │  (interface)
-└──────────────┘      └────────┬─────────┘
-                               │
-              ┌────────────────┼────────────────┐
-              ▼                                  ▼
-┌─────────────────────────┐       ┌──────────────────────────┐
-│ BabylonViewerEngine     │       │ LiteViewerEngine         │
-│ (wraps AbstractEngine,  │       │ (wraps Lite Engine,      │
-│  Scene, ArcRotateCamera,│       │  SceneContext,            │
-│  loaders, shadows, etc.)│       │  ArcRotateCamera, etc.)  │
-└─────────────────────────┘       └──────────────────────────┘
+                        ┌──────────────────┐
+                        │     IViewer      │  (public interface, ~30-40 members)
+                        └────────┬─────────┘
+                                 │
+                ┌────────────────┼────────────────┐
+                ▼                                  ▼
+┌───────────────────────────┐       ┌───────────────────────────┐
+│  Viewer                   │       │  ViewerLite               │
+│  (full Babylon.js,        │       │  (Babylon Lite,           │
+│   unchanged existing code)│       │   WebGPU-only, subset)    │
+└───────────────────────────┘       └───────────────────────────┘
+                │                                  │
+                └──────────┐      ┌────────────────┘
+                           ▼      ▼
+                   ┌──────────────────┐
+                   │  viewerUtils.ts  │  (shared pure functions:
+                   │                  │   camera math, bounding
+                   │                  │   box, color parsing, etc.)
+                   └──────────────────┘
 ```
+
+**Why this wins:**
+
+- **Public API ≪ internal surface.** `IViewer` is ~30-40 properties/methods (`loadModel`, `cameraOrbit`, `toneMapping`, etc.). Much less to keep in sync than abstracting ~100+ internal APIs.
+- **Each implementation stays idiomatic.** `Viewer` uses Babylon.js APIs directly. `ViewerLite` uses Lite APIs directly. No indirection, no leaky abstractions.
+- **Feature asymmetry is natural.** `ViewerLite` simply doesn't implement code paths for unsupported features (IBL shadows, SSAO, snapshot rendering, etc.).
+- **Zero regression risk.** The existing `Viewer` class stays untouched.
+- **Shared code is pure functions.** Camera orbit math, bounding box computation, auto-rotation logic, color parsing — factored into `viewerUtils.ts`.
+- **Easier to add a third backend later.** Each implementation evolves independently.
 
 ## Viewer's Babylon.js API Usage — Categorized
 
@@ -80,272 +107,202 @@ Below is the complete inventory of Babylon.js APIs the Viewer uses, grouped into
 | Math               | `Vector3`, `Matrix`, `Color3`, `Color4` (class-based)             | `Vec3`, `Mat4`, `Color3` (plain objects / `Float32Array`)            |
 | Environment        | `CubeTexture` / `HDRCubeTexture` + `environmentTexture` on Scene  | `loadEnvironment()` / `loadHdrEnvironment()` → `EnvironmentTextures` |
 
-## Proposed `ViewerEngine` Interface Design
+## Proposed IViewer Interface
 
-Rather than one monolithic interface, I'd recommend a **small set of focused interfaces** that map to the Viewer's functional needs. This keeps each piece testable and avoids a god-interface.
-
-### Option A: Composite Interface (Recommended)
+The `IViewer` interface captures the Viewer's **public API surface** — the contract that `viewerElement.ts`, `viewerFactory.ts`, and external consumers depend on. Both `Viewer` and `ViewerLite` implement it.
 
 ```typescript
 /**
- * The top-level abstraction the Viewer depends on.
- * Each sub-interface covers a distinct concern.
+ * Public interface for the Viewer. Both the full Babylon.js Viewer
+ * and ViewerLite implement this contract.
  */
-interface ViewerEngine extends IDisposable {
-    // ── Rendering ──────────────────────────────────────
-    readonly rendering: ViewerRendering;
+export interface IViewer extends IDisposable {
+    // ── Events (Observable from core, both impls can use it) ──
+    readonly onEnvironmentChanged: Observable<void>;
+    readonly onEnvironmentConfigurationChanged: Observable<void>;
+    readonly onEnvironmentError: Observable<unknown>;
+    readonly onShadowsConfigurationChanged: Observable<void>;
+    readonly onPostProcessingChanged: Observable<void>;
+    readonly onModelChanged: Observable<Nullable<string | File | ArrayBufferView>>;
+    readonly onModelError: Observable<unknown>;
+    readonly onLoadingProgressChanged: Observable<void>;
+    readonly onCameraAutoOrbitChanged: Observable<void>;
+    readonly onSelectedAnimationChanged: Observable<void>;
+    readonly onAnimationSpeedChanged: Observable<void>;
+    readonly onIsAnimationPlayingChanged: Observable<void>;
+    readonly onAnimationProgressChanged: Observable<void>;
+    readonly onSelectedMaterialVariantChanged: Observable<void>;
+    readonly onHotSpotsChanged: Observable<void>;
+    readonly onCamerasAsHotSpotsChanged: Observable<void>;
 
-    // ── Scene ──────────────────────────────────────────
-    readonly scene: ViewerScene;
+    // ── Camera ──
+    cameraAutoOrbit: Readonly<CameraAutoOrbit>;
+    cameraOrbit: CameraOrbit;
+    cameraTarget: CameraTarget;
+    resetCamera(interpolate?: boolean): void;
 
-    // ── Camera ─────────────────────────────────────────
-    readonly camera: ViewerCamera;
+    // ── Model Loading ──
+    loadModel(source: string | File | ArrayBufferView, options?: LoadModelOptions, abortSignal?: AbortSignal): Promise<void>;
+    resetModel(abortSignal?: AbortSignal): Promise<void>;
 
-    // ── Loading ────────────────────────────────────────
-    readonly loader: ViewerLoader;
+    // ── Environment ──
+    loadEnvironment(url: string, options?: LoadEnvironmentOptions): Promise<void>;
+    resetEnvironment(options?: EnvironmentOptions): Promise<void>;
+    environmentIntensity: number;
+    environmentRotation: number;
+    skyboxBlur: number;
 
-    // ── Environment / IBL ──────────────────────────────
-    readonly environment: ViewerEnvironment;
+    // ── Animation ──
+    readonly animationNames: readonly string[];
+    selectedAnimation: number;
+    animationSpeed: number;
+    readonly isAnimationPlaying: boolean;
+    animationProgress: number;
+    playAnimation(): void;
+    pauseAnimation(): void;
 
-    // ── Capabilities (what's supported) ────────────────
-    readonly capabilities: ViewerCapabilities;
-}
-```
+    // ── Post Processing ──
+    toneMapping: ToneMapping;
+    contrast: number;
+    exposure: number;
 
-### Sub-Interfaces (Sketches)
+    // ── Material Variants ──
+    readonly materialVariants: readonly string[];
+    selectedMaterialVariant: Nullable<string>;
 
-```typescript
-interface ViewerRendering {
-    runRenderLoop(renderFunction: () => void): void;
-    stopRenderLoop(renderFunction: () => void): void;
-    beginFrame(): void;
-    endFrame(): void;
-    render(): void;
-    resize(): void;
-    isReady(): boolean;
+    // ── Shadows ──
+    shadowQuality: ShadowQuality;
 
-    readonly renderWidth: number;
-    readonly renderHeight: number;
+    // ── Hot Spots ──
+    hotSpots: Record<string, HotSpot>;
+    getHotSpotToRef(name: string, result: ViewerHotSpotResult): boolean;
 
-    hardwareScalingLevel: number;
-    readonly defaultHardwareScalingLevel: number;
-}
+    // ── Loading progress ──
+    readonly loadingProgress: Nullable<number>;
 
-interface ViewerScene {
-    clearColor: [r: number, g: number, b: number, a: number];
-    useRightHandedSystem: boolean;
+    // ── Scene ──
+    clearColor: readonly [r: number, g: number, b: number, a: number];
 
-    // Image processing (tone mapping, contrast, exposure)
-    imageProcessing: {
-        toneMappingEnabled: boolean;
-        toneMappingType: number; // or an enum
-        contrast: number;
-        exposure: number;
-        isEnabled: boolean;
-        onUpdateParameters: IObservableLike<void>;
-    };
-
-    // Entity access
-    readonly meshes: ReadonlyArray<ViewerMesh>;
-    readonly materials: ReadonlyArray<unknown>;
-    readonly cameras: ReadonlyArray<unknown>;
-    readonly animationGroups: ReadonlyArray<ViewerAnimationGroup>;
-
-    // Observables
-    onBeforeRender: IObservableLike<void>;
-    onAfterRender: IObservableLike<void>;
-    onAfterAnimations: IObservableLike<void>;
-
+    // ── Dispose ──
     dispose(): void;
 }
+```
 
-interface ViewerCamera {
-    alpha: number;
-    beta: number;
-    radius: number;
-    target: [x: number, y: number, z: number];
-    position: readonly [x: number, y: number, z: number];
+### What `viewerElement.ts` and `viewerFactory.ts` need to change
 
-    minZ: number;
-    maxZ: number;
-    lowerRadiusLimit: number;
-    upperRadiusLimit: number;
+- **`viewerElement.ts`**: Currently types its internal viewer as `Viewer`. Change to `IViewer`. All property bindings and method calls already go through the public API, so this is mostly a type change.
+- **`viewerFactory.ts`**: `CreateViewerForCanvas` currently creates a `Viewer` directly. Add a `"lite"` engine option that creates a `ViewerLite` instead. Return type becomes `Promise<IViewer>`.
 
-    // Smooth animation
-    interpolateTo(alpha?: number, beta?: number, radius?: number, target?: [number, number, number]): void;
-    stopInterpolation(): void;
+```typescript
+// viewerFactory.ts — sketch
+export type CanvasViewerOptions = ViewerOptions & {
+    onFaulted?: (error: Error) => void;
+} & (
+    | ({ engine?: undefined } & AbstractEngineOptions)
+    | ({ engine: "WebGL" } & EngineOptions)
+    | ({ engine: "WebGPU" } & WebGPUEngineOptions)
+    | { engine: "lite" }
+);
 
-    // Auto-rotation
-    autoRotation: {
-        enabled: boolean;
-        speed: number;
-        delay: number;
-        resetLastInteractionTime(): void;
-    };
-
-    // Input
-    attachControl(): void;
-    panningSensibility: number;
-    speed: number;
-    wheelDeltaPercentage: number;
-
-    onViewMatrixChanged: IObservableLike<void>;
-    update(): void;
-}
-
-interface ViewerLoader {
-    loadModel(
-        source: string | File | ArrayBufferView,
-        options?: ViewerLoadModelOptions,
-        abortSignal?: AbortSignal
-    ): Promise<ViewerModel>;
-}
-
-interface ViewerModel extends IDisposable {
-    readonly meshes: ReadonlyArray<ViewerMesh>;
-    readonly animationGroups: ReadonlyArray<ViewerAnimationGroup>;
-    readonly materialVariants: string[] | null;
-    selectedMaterialVariant: string | null;
-    addAllToScene(): void;
-}
-
-interface ViewerAnimationGroup {
-    readonly name: string;
-    readonly isPlaying: boolean;
-    readonly duration: number;
-    currentFrame: number;
-    speedRatio: number;
-    play(): void;
-    pause(): void;
-    stop(): void;
-    goToFrame(frame: number): void;
-    start(loop: boolean, speedRatio: number): void;
-    onPlay: IObservableLike<void>;
-    onPause: IObservableLike<void>;
-    onEnd: IObservableLike<void>;
-}
-
-interface ViewerEnvironment {
-    loadLighting(url: string, options?: { extension?: string }): Promise<void>;
-    loadSkybox(url: string, options?: { blur?: number; extension?: string }): Promise<void>;
-    setLightingIntensity(intensity: number): void;
-    setLightingRotation(rotation: number): void;
-    setSkyboxBlur(blur: number): void;
-    clearLighting(): void;
-    clearSkybox(): void;
-}
-
-interface ViewerCapabilities {
-    readonly supportsWebGPU: boolean;
-    readonly supportsShadows: boolean;
-    readonly supportsSSAO: boolean;
-    readonly supportsIBLShadows: boolean;
-    readonly supportsSnapshotRendering: boolean;
-    readonly supportsPicking: boolean;
-}
-
-/** Minimal observable-like contract the Viewer needs. */
-interface IObservableLike<T> {
-    add(callback: (data: T) => void): IObserverLike;
-    addOnce(callback: (data: T) => void): IObserverLike;
-    notifyObservers(data: T): void;
-    clear(): void;
-}
-
-interface IObserverLike {
-    remove(): void;
+export async function CreateViewerForCanvas(
+    canvas: HTMLCanvasElement,
+    options?: CanvasViewerOptions
+): Promise<IViewer> {
+    if (options?.engine === "lite") {
+        // Dynamic import to keep Lite out of the main bundle
+        const { createLiteViewer } = await import("./viewerLite");
+        return createLiteViewer(canvas, options);
+    }
+    // ... existing Babylon.js engine creation logic ...
 }
 ```
 
-### Option B: Thinner, "Adapter" Approach
+## Shared Utility Code (`viewerUtils.ts`)
 
-Instead of fine-grained sub-interfaces, provide a single `ViewerEngineAdapter` with methods that map 1:1 to the Viewer's operations. The Viewer calls adapter methods like `adapter.loadModel(...)`, `adapter.createEnvironment(...)`, etc. This is simpler but less composable and harder to test in isolation.
+The following logic is currently embedded in `viewer.ts` and should be extracted into pure functions that both implementations can share:
 
-**Recommendation**: Option A. It mirrors the natural capability groupings and allows incremental porting (e.g., start with `ViewerRendering` + `ViewerCamera`, then add `ViewerLoader`, etc.).
+| Utility                                          | Current Location       | Description                                         |
+| ------------------------------------------------ | ---------------------- | --------------------------------------------------- |
+| `computeModelsMaxExtents`                        | viewer.ts:301-305      | Compute bounding extents across models + animations |
+| `reduceMeshesExtendsToBoundingInfo`              | viewer.ts:307-325      | Reduce extents to min/max/size/center               |
+| `adjustLightTargetDirection`                     | viewer.ts:332-349      | Ensure shadow light direction points down           |
+| Camera orbit math (alpha/beta/radius ↔ position) | viewer.ts:~3097-3190   | Camera framing, radius limits, minZ/maxZ            |
+| `parseColor`                                     | viewerElement.ts:45-64 | CSS color string → `[r, g, b, a]`                   |
+| `WhenNext`                                       | viewer.ts:79-97        | Promise wrapper for observable + abort signal       |
+| `observePromise`                                 | viewer.ts:363-374      | Fire-and-forget async with error logging            |
+| Auto-rotation state machine                      | viewer.ts:1100-1130    | Enable/disable/speed/delay logic                    |
+| Animation progress math                          | viewer.ts:~1520-1540   | Frame ↔ progress normalization                      |
+
+These are pure functions or small state machines with no Babylon.js or Lite dependencies — they operate on plain numbers, arrays, and tuples.
 
 ## Feature Gap Analysis for Lite Backend
 
-Features the Viewer uses that Babylon Lite **does not currently support**:
+Features the full Viewer supports that Babylon Lite does not currently have. In the IViewer approach, `ViewerLite` simply omits or no-ops these features rather than needing capability flags.
 
-| Feature                                       | Viewer Usage                                                                 | Lite Status                                                                                                                                                                                                                                                                                                                                                                                                                                        | Strategy                                                                                                                                                                                                                                                         |
-| --------------------------------------------- | ---------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **SSAO**                                      | Optional post-processing                                                     | ❌ Not supported                                                                                                                                                                                                                                                                                                                                                                                                                                    | `capabilities.supportsSSAO = false`, Viewer skips                                                                                                                                                                                                                |
-| **IBL Shadows (high)**                        | Optional shadow pipeline                                                     | ❌ Not supported                                                                                                                                                                                                                                                                                                                                                                                                                                    | `capabilities.supportsIBLShadows = false`, Viewer skips                                                                                                                                                                                                          |
-| **Normal shadows**                            | Standard shadow maps                                                         | ✅ Supported (basic `createShadowGenerator`)                                                                                                                                                                                                                                                                                                                                                                                                        | Implement in `LiteViewerEngine`                                                                                                                                                                                                                                  |
-| **Snapshot rendering**                        | WebGPU optimization                                                          | ❌ Not applicable                                                                                                                                                                                                                                                                                                                                                                                                                                   | `capabilities.supportsSnapshotRendering = false`                                                                                                                                                                                                                 |
-| **Scene optimizer**                           | Auto quality scaling                                                         | ❌ Not supported                                                                                                                                                                                                                                                                                                                                                                                                                                    | Implementation detail of `BabylonViewerEngine` — not part of the `ViewerEngine` interface. The optimizer only touches `Scene` and hardware scaling internally, so it belongs inside the Babylon implementation's rendering adapter. Lite simply doesn't need it. |
-| **CPU picking**                               | Double-tap reframing, hot spots                                              | ❌ (GPU picking only)                                                                                                                                                                                                                                                                                                                                                                                                                               | Either use GPU picker or mark `supportsPicking = false`                                                                                                                                                                                                          |
-| **`Observable`**                              | Viewer's own event system + subscriptions to engine/scene/camera observables | ✅ Not a gap for Viewer's own observables — they're `new Observable()` from `core/Misc/observable` and don't depend on the engine backend. **However**, the Viewer subscribes to ~10 observables on engine/scene/camera/animation objects (see below). The `ViewerEngine` sub-interfaces must expose equivalent callback hooks; Babylon wraps real observables, Lite synthesizes them from version tracking / setter interception / explicit calls. |
-| AnimationGroup `onPlay` / `onPause` / `onEnd` | AnimationGroup                                                               | No equivalent — Lite groups have no callbacks                                                                                                                                                                                                                                                                                                                                                                                                      |
-| **ImageProcessingConfiguration**              | Tone mapping, contrast, exposure                                             | ✅ Partial (`toneMappingEnabled`, `exposure`, `contrast`)                                                                                                                                                                                                                                                                                                                                                                                           | Implement adapter                                                                                                                                                                                                                                                |
-| **BackgroundMaterial / skybox**               | Skybox rendering                                                             | ✅ `loadSkybox()` in Lite                                                                                                                                                                                                                                                                                                                                                                                                                           | Implement in `LiteViewerEngine.environment`                                                                                                                                                                                                                      |
-| **CubeTexture / HDRCubeTexture**              | Environment loading                                                          | ✅ `loadEnvironment()` / `loadHdrEnvironment()` in Lite                                                                                                                                                                                                                                                                                                                                                                                             | Implement adapter                                                                                                                                                                                                                                                |
-| **Auto-rotation behavior**                    | Camera auto-orbit                                                            | ❌ No behavior system                                                                                                                                                                                                                                                                                                                                                                                                                               | Implement in Lite camera adapter (inertia offsets exist)                                                                                                                                                                                                         |
-| **Camera interpolation**                      | Smooth camera animation                                                      | ❌ No `interpolateTo`                                                                                                                                                                                                                                                                                                                                                                                                                               | Implement in adapter or Viewer layer                                                                                                                                                                                                                             |
-| **Material variants**                         | `KHR_materials_variants`                                                     | ❌ Not in Lite loaders                                                                                                                                                                                                                                                                                                                                                                                                                              | Mark as unsupported initially                                                                                                                                                                                                                                    |
+| Feature                  | Viewer Usage                     | Lite Status                                                              | ViewerLite Strategy                                                                                       |
+| ------------------------ | -------------------------------- | ------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------- |
+| **SSAO**                 | Optional post-processing         | ❌ Not supported                                                          | `ViewerLite` ignores SSAO settings (no-op setters)                                                        |
+| **IBL Shadows (high)**   | Voxelization shadow pipeline     | ❌ Not supported                                                          | `ViewerLite` only supports "none" and "normal" shadow quality                                             |
+| **Normal shadows**       | Standard shadow maps             | ✅ `createShadowGenerator`                                                | Implement in `ViewerLite`                                                                                 |
+| **Snapshot rendering**   | WebGPU optimization              | ❌ Not applicable                                                         | N/A — internal to `Viewer`                                                                                |
+| **Scene optimizer**      | Auto quality scaling             | ❌ Not supported                                                          | N/A — internal to `Viewer`                                                                                |
+| **CPU picking**          | Double-tap reframing, hot spots  | ❌ (GPU picking only)                                                     | Use Lite's GPU picker, or skip hot spot features initially                                                |
+| **Image processing**     | Tone mapping, contrast, exposure | ✅ Partial (`toneMappingEnabled`, `exposure`, `contrast`)                 | Implement — tone mapping type selection may be limited                                                    |
+| **Skybox**               | Environment background           | ✅ `loadSkybox()`                                                         | Implement in `ViewerLite`                                                                                 |
+| **Environment IBL**      | Environment lighting             | ✅ `loadEnvironment()` / `loadHdrEnvironment()`                           | Implement in `ViewerLite`                                                                                 |
+| **Auto-rotation**        | Camera auto-orbit                | ❌ No behavior system                                                     | Implement in `ViewerLite` using shared auto-rotation logic from `viewerUtils.ts` + Lite's inertia offsets |
+| **Camera interpolation** | Smooth camera transitions        | ❌ No `interpolateTo`                                                     | Implement in `ViewerLite` using shared interpolation math                                                 |
+| **Material variants**    | `KHR_materials_variants`         | ❌ Not in Lite loaders                                                    | `ViewerLite.materialVariants` returns empty array initially                                               |
+| **Observable**           | Viewer's own event system        | ✅ Not a gap — both impls import `Observable` from `core/Misc/observable` |
 
-**External observables the Viewer subscribes to (must be abstracted as callback hooks):**
+### Note on Observable
 
-| Observable                                                       | Source | Lite Equivalent                                            |
-| ---------------------------------------------------------------- | ------ | ---------------------------------------------------------- |
-| `scene.imageProcessingConfiguration.onUpdateParameters`          | Scene  | Lite has `imageProcessing` but no callback — needs adapter |
-| `camera.onViewMatrixChangedObservable`                           | Camera | Lite uses dirty version tracking — needs polling or hook   |
-| `scene.onClearColorChangedObservable`                            | Scene  | No equivalent — adapter uses setter interception           |
-| `scene.onPointerObservable`                                      | Scene  | No equivalent — adapter wraps canvas pointer events        |
-| `scene.onNewCameraAddedObservable` / `onCameraRemovedObservable` | Scene  | No equivalent — Lite has flat `scene.camera`               |
-| `scene.onBeforeRenderObservable` / `onAfterRenderObservable`     | Scene  | Lite has `onBeforeRender(cb)` — partial match              |
-| `scene.onAfterAnimationsObservable`                              | Scene  | No equivalent — adapter fires after animation tick         |
-| `engine.onResizeObservable`                                      | Engine | No equivalent — adapter hooks canvas resize                |
-| `engine.onContextLostObservable`                                 | Engine | Not applicable (WebGPU device lost)                        |
+The Viewer's own `Observable` instances (`onModelChanged`, `onEnvironmentChanged`, etc.) are created by the Viewer itself and can import `Observable` from `core/Misc/observable` in both implementations. This is not a gap.
+
+The full `Viewer` also subscribes to observables on engine/scene/camera objects (e.g. `scene.onPointerObservable`, `camera.onViewMatrixChangedObservable`). Since `ViewerLite` is a separate implementation, it handles the equivalent behavior using whatever mechanism Lite provides (version tracking, canvas events, render loop hooks, etc.) — no abstraction layer needed.
 
 ## Migration Strategy
 
-### Phase 1: Define Interfaces + Babylon Implementation
+### Phase 1: Extract IViewer + Shared Utilities
 
-1. Define the `ViewerEngine` interface hierarchy in `packages/tools/viewer/src/viewerEngine.ts`.
-2. Build `BabylonViewerEngine` that wraps the existing Babylon.js APIs.
-3. Refactor `Viewer` constructor to accept `ViewerEngine`.
-4. Keep the existing `new Viewer(engine: AbstractEngine, options)` overload as sugar that internally creates `BabylonViewerEngine`.
-5. **All existing tests and behavior must continue to pass unchanged.**
+1. Define `IViewer` interface in `packages/tools/viewer/src/viewerInterface.ts` capturing the public API surface.
+2. Extract shared utility functions into `packages/tools/viewer/src/viewerUtils.ts` (bounding box math, camera orbit math, color parsing, animation progress, auto-rotation state machine).
+3. Make existing `Viewer` class implement `IViewer`.
+4. **All existing tests and behavior must continue to pass unchanged.**
 
-### Phase 2: Refactor Viewer Internals
+### Phase 2: Update viewerElement + viewerFactory
 
-Incrementally change the Viewer's private methods to use `ViewerEngine` sub-interfaces instead of direct Babylon.js types. Start with:
-- Render loop (`_beginRendering`) → `ViewerRendering`
-- Camera setup/update → `ViewerCamera`
-- Scene basics (clear color, right-handed, image processing) → `ViewerScene`
-- Model loading (`_loadModel`) → `ViewerLoader`
-- Environment (`_loadEnvironmentLighting`, `_loadEnvironmentSkybox`) → `ViewerEnvironment`
+1. Change `viewerElement.ts` to work against `IViewer` instead of `Viewer`.
+2. Update `viewerFactory.ts` to return `IViewer` and add an `engine: "lite"` option that dynamically imports `ViewerLite`.
+3. Existing code paths remain unchanged — `Viewer` is still the default.
 
-### Phase 3: Lite Implementation
+### Phase 3: Build ViewerLite
 
-1. Build `LiteViewerEngine` that wraps Babylon Lite.
-2. Implement supported capabilities, return `false` for unsupported ones.
-3. The Viewer guards advanced features with `capabilities.*` checks.
-4. Test with a Lite-backed Viewer loading a glTF model.
+1. Create `packages/tools/viewer/src/viewerLite.ts` implementing `IViewer` using Babylon Lite APIs.
+2. Start with core subset: render loop, camera (arc-rotate), model loading (glTF), environment (IBL + skybox).
+3. Use shared utilities from `viewerUtils.ts` for camera math, bounding boxes, auto-rotation, etc.
+4. Implement camera interpolation and auto-rotation using shared logic + Lite's inertia system.
+5. No-op or return defaults for unsupported features (SSAO, IBL shadows, material variants).
 
-### Phase 4: ViewerElement / Factory Integration
+### Phase 4: Test + Polish
 
-1. Update `viewerFactory.ts` to support a Lite engine option.
-2. Update `viewerElement.ts` to support a `engine="lite"` attribute.
+1. Add tests for `ViewerLite` loading a glTF model, environment, basic camera interaction.
+2. Test `viewerElement` with `engine="lite"` attribute.
+3. Verify bundle size difference between Viewer and ViewerLite.
 
 ## Open Questions
 
-1. **Where should `ViewerEngine` live?** In `packages/tools/viewer/src/` or in a shared package? If Lite is in a separate repo, the interface needs to be in a shared dependency or duplicated.
-2. **Observable pattern**: The Viewer uses `Observable<T>` from core heavily for its own events. These are independent of the engine backend. Should the `ViewerEngine` sub-interfaces use a minimal `IObservableLike` contract, or should we ship a tiny standalone Observable?
-3. **Math types**: The Viewer uses Babylon's `Vector3`, `Matrix`, `Color3` etc. extensively. Lite uses plain objects/`Float32Array`. The abstraction needs a math bridge — either the interface uses plain arrays/tuples (which the Viewer already does for its public API surface), or we define minimal math contracts.
-4. **Render loop ownership**: Full Babylon.js lets the Viewer own the render loop (`engine.runRenderLoop`). Lite's `engine.start(scene)` owns it internally. The adapter needs to reconcile this — likely by having `LiteViewerEngine.rendering` use its own `requestAnimationFrame` loop to match the Viewer's expectations.
-5. **Feature degradation UX**: When capabilities are missing (SSAO, IBL shadows, etc.), should the Viewer silently skip them, or should `viewerElement` reflect the limitation to users?
-6. **Scope of first milestone**: Should Phase 1 aim for the full interface, or a minimal "model loading + camera + render loop" subset?
+1. **Where does `ViewerLite` live?** In `packages/tools/viewer/src/viewerLite.ts` alongside `Viewer`, or in its own package? If Babylon Lite is in a separate repo, we need to decide on the dependency graph.
+2. **Feature degradation UX**: When `ViewerLite` doesn't support a feature (e.g. SSAO, IBL shadows), should `viewerElement` reflect this to users (e.g. ignore the attribute silently, log a warning, etc.)?
+3. **Scope of first milestone**: Should Phase 3 aim for the full `IViewer` contract, or a minimal "model loading + camera + environment" subset with no-op stubs for the rest?
 
 ## Todos
 
-- [ ] Finalize `ViewerEngine` interface hierarchy
-- [ ] Build `BabylonViewerEngine` implementation
-- [ ] Refactor `Viewer` constructor to accept `ViewerEngine`
-- [ ] Preserve backward-compatible `new Viewer(AbstractEngine, ...)` overload
-- [ ] Incrementally port Viewer internals to use `ViewerEngine`
-- [ ] Build `LiteViewerEngine` implementation
-- [ ] Add capability guards in Viewer for optional features
-- [ ] Update `viewerFactory.ts` and `viewerElement.ts`
-- [ ] Add tests for both backends
+- [ ] Define `IViewer` interface in `viewerInterface.ts`
+- [ ] Extract shared utility functions into `viewerUtils.ts`
+- [ ] Make `Viewer` implement `IViewer`
+- [ ] Update `viewerElement.ts` to use `IViewer`
+- [ ] Update `viewerFactory.ts` to support `engine: "lite"` option
+- [ ] Build `ViewerLite` implementing `IViewer` with Babylon Lite
+- [ ] Add tests for `ViewerLite`
+- [ ] Test `viewerElement` with both backends
