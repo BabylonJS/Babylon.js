@@ -333,10 +333,13 @@
     fn computeConductorIblFresnel(reflectance: ReflectanceParams, NdotV: f32, roughness: f32, environmentBrdf: vec3f) -> vec3f
     {
         #if (CONDUCTOR_SPECULAR_MODEL == CONDUCTOR_SPECULAR_MODEL_OPENPBR)
-            // This is an empirical hack to modify the F0 albedo based on roughness. It's not based on any paper
-            // or anything. Just trying to match results of rough metals in a pathtracer.
-            let albedoF0: vec3f = mix(reflectance.coloredF0, pow(reflectance.coloredF0, vec3f(1.4f)), roughness);
-            return getF82Specular(NdotV, albedoF0, reflectance.coloredF90, roughness);
+            // environmentBrdf comes from the OpenPBR BRDF LUT. Undo the BRDF_Z_SCALE on the z channel.
+            let openPBRBrdf: vec3f = vec3f(environmentBrdf.xy, environmentBrdf.z / BRDF_Z_SCALE);
+            let b: vec3f     = getF82B(reflectance.coloredF0, reflectance.coloredF90);
+            let E_F82: vec3f = getF82DirectionalAlbedo(reflectance.coloredF0, reflectance.coloredF90, b, openPBRBrdf);
+            let F_avg: vec3f = getF82AverageFresnel(reflectance.coloredF0, b);
+            let ECF: vec3f   = vec3f(1.0) + F_avg * (vec3f(1.0) / openPBRBrdf.y - vec3f(1.0));
+            return clamp(E_F82 * ECF, vec3f(0.0), vec3f(1.0));
         #else
             return getReflectanceFromBRDFLookup(reflectance.coloredF0, reflectance.coloredF90, environmentBrdf);
         #endif
