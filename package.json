@@ -158,5 +158,8 @@
             "typescript": "$typescript"
         },
         "dompurify": "3.3.3"
+    },
+    "dependencies": {
+        "@babylonjs/inspector": "^9.3.1"
     }
 }

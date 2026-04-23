@@ -7,8 +7,11 @@ export type InputSource = "pointer" | "wheel" | "touch" | "keyboard";
  * Modifier key state, shared across input sources that support modifiers.
  */
 export type InputModifiers = {
+    /** Ctrl key pressed */
     ctrl?: boolean;
+    /** Shift key pressed */
     shift?: boolean;
+    /** Alt key pressed */
     alt?: boolean;
 };
 
@@ -55,6 +58,7 @@ export type KeyboardConditions = {
 /**
  * Mapping rule for pointer (mouse button) inputs.
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export type PointerInputMapEntry<TInteraction extends string = string> = {
     source: "pointer";
     interaction: TInteraction;
@@ -65,6 +69,7 @@ export type PointerInputMapEntry<TInteraction extends string = string> = {
 /**
  * Mapping rule for mouse wheel inputs.
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export type WheelInputMapEntry<TInteraction extends string = string> = {
     source: "wheel";
     interaction: TInteraction;
@@ -75,6 +80,7 @@ export type WheelInputMapEntry<TInteraction extends string = string> = {
 /**
  * Mapping rule for touch inputs.
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export type TouchInputMapEntry<TInteraction extends string = string> = {
     source: "touch";
     interaction: TInteraction;
@@ -87,8 +93,11 @@ export type TouchInputMapEntry<TInteraction extends string = string> = {
  * The `key` field on the entry supports a single key code or an array of key codes for matching.
  * When resolving, the condition's `key` is checked against the entry's `key` value(s).
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export type KeyboardInputMapEntry<TInteraction extends string = string> = {
+    /** Discriminator: keyboard input source */
     source: "keyboard";
+    /** Interaction type to dispatch when this entry matches */
     interaction: TInteraction;
     /** Multiplier applied to input deltas before passing to the handler. Default is 1. */
     sensitivity?: number;
@@ -105,6 +114,7 @@ export type KeyboardInputMapEntry<TInteraction extends string = string> = {
  *
  * Discriminated union by `source` — only fields relevant to that source are available.
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export type InputMapEntry<TInteraction extends string = string> =
     | PointerInputMapEntry<TInteraction>
     | WheelInputMapEntry<TInteraction>
@@ -132,6 +142,7 @@ export type InputConditions = {
  * Extracts the string-typed interaction names from a handlers object type.
  * Equivalent to `keyof THandlers & string` — filters out symbol/number keys.
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export type InteractionName<THandlers> = keyof THandlers & string;
 
 /**
@@ -150,6 +161,7 @@ export type InteractionName<THandlers> = keyof THandlers & string;
  *   are the handler functions/objects for each interaction (e.g. `ArcRotateHandlers`).
  *   Interaction types are derived as `InteractionName<THandlers>`.
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export class InputMapper<THandlers extends Record<string, unknown>> {
     /**
      * Ordered list of input-to-interaction mapping rules. First matching entry wins.

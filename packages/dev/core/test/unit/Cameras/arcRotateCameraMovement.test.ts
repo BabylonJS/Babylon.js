@@ -34,8 +34,8 @@ describe("ArcRotateCameraMovement", () => {
     });
 
     describe("default inputMap", () => {
-        it("should have exactly 7 entries", () => {
-            expect(camera.movement.input.inputMap).toHaveLength(7);
+        it("should have exactly 8 entries", () => {
+            expect(camera.movement.input.inputMap).toHaveLength(8);
         });
 
         it("should map left-click to rotate", () => {
@@ -44,6 +44,14 @@ describe("ArcRotateCameraMovement", () => {
 
         it("should map right-click to pan", () => {
             expect(camera.movement.input.resolveInteraction("pointer", { button: 2 })?.interaction).toBe("pan");
+        });
+
+        it("should map ctrl+left-drag to pan (legacy useCtrlForPanning behavior)", () => {
+            expect(camera.movement.input.resolveInteraction("pointer", { button: 0, modifiers: { ctrl: true } })?.interaction).toBe("pan");
+        });
+
+        it("should still map plain left-drag to rotate when ctrl is not held", () => {
+            expect(camera.movement.input.resolveInteraction("pointer", { button: 0, modifiers: { ctrl: false } })?.interaction).toBe("rotate");
         });
 
         it("should map wheel to zoom", () => {
@@ -106,7 +114,7 @@ describe("ArcRotateCameraMovement", () => {
             expect(camera.movement.input.inputMap).toHaveLength(0);
 
             camera.movement.input.resetInputMap();
-            expect(camera.movement.input.inputMap).toHaveLength(7);
+            expect(camera.movement.input.inputMap).toHaveLength(8);
 
             expect(camera.movement.input.resolveInteraction("pointer", { button: 0 })?.interaction).toBe("rotate");
             expect(camera.movement.input.resolveInteraction("pointer", { button: 2 })?.interaction).toBe("pan");

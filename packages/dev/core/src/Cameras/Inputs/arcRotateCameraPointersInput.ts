@@ -139,11 +139,14 @@ export class ArcRotateCameraPointersInput extends OrbitCameraPointersInput {
         // This matches legacy behavior where pointer-lock mouse deltas always drove rotation.
         const entry = this._activeEntry ?? (this.camera.getEngine().isPointerLock ? this.camera.movement.input.resolveInteraction("pointer", { button: 0, modifiers: {} }) : null);
         if (entry) {
-            this.camera.movement.activeInput = true;
             if (entry.interaction === "pan") {
-                this.camera.movement.panAccumulatedPixels.x += -offsetX / this.panningSensibility;
-                this.camera.movement.panAccumulatedPixels.y += offsetY / this.panningSensibility;
+                if (this.panningSensibility !== 0) {
+                    this.camera.movement.activeInput = true;
+                    this.camera.movement.panAccumulatedPixels.x += -offsetX / this.panningSensibility;
+                    this.camera.movement.panAccumulatedPixels.y += offsetY / this.panningSensibility;
+                }
             } else if (entry.interaction === "rotate") {
+                this.camera.movement.activeInput = true;
                 this.camera.movement.rotationAccumulatedPixels.x += -offsetX / this.angularSensibilityX;
                 this.camera.movement.rotationAccumulatedPixels.y += -offsetY / this.angularSensibilityY;
             }

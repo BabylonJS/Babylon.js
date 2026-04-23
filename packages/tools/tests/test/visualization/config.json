@@ -4377,6 +4377,54 @@
             "referenceImage": "gpu-particles-attractors-local.png",
             "excludedEngines": ["webgl1"],
             "errorRatio": 2.5
+        },
+        {
+            "title": "ArcRotate legacy inertia 0.9 alpha glide",
+            "playgroundId": "#C7KCTE#0",
+            "renderCount": 30,
+            "referenceImage": "arc-legacy-inertia-default-alpha.png"
+        },
+        {
+            "title": "ArcRotate legacy inertia 0.5 alpha glide",
+            "playgroundId": "#OPHBRC#0",
+            "renderCount": 30,
+            "referenceImage": "arc-legacy-inertia-low-alpha.png"
+        },
+        {
+            "title": "ArcRotate legacy inertia 0 alpha snap",
+            "playgroundId": "#HF2DLH#0",
+            "renderCount": 5,
+            "referenceImage": "arc-legacy-inertia-zero-snap.png"
+        },
+        {
+            "title": "ArcRotate legacy panningInertia glide",
+            "playgroundId": "#8S8H0S#0",
+            "renderCount": 30,
+            "referenceImage": "arc-legacy-panning-inertia.png"
+        },
+        {
+            "title": "ArcRotate legacy inertialRadiusOffset glide",
+            "playgroundId": "#98108I#0",
+            "renderCount": 30,
+            "referenceImage": "arc-legacy-radius-glide.png"
+        },
+        {
+            "title": "ArcRotate legacy beta limits clamp glide",
+            "playgroundId": "#FBLW1J#0",
+            "renderCount": 30,
+            "referenceImage": "arc-legacy-beta-limits.png"
+        },
+        {
+            "title": "ArcRotate legacy radius limits clamp glide",
+            "playgroundId": "#QWTJH9#0",
+            "renderCount": 30,
+            "referenceImage": "arc-legacy-radius-limits.png"
+        },
+        {
+            "title": "ArcRotate legacy combined axis glide",
+            "playgroundId": "#SJJRY4#0",
+            "renderCount": 30,
+            "referenceImage": "arc-legacy-combined-glide.png"
         }
     ]
 }

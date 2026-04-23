@@ -184,12 +184,20 @@ export class ArcRotateCamera extends TargetCamera {
     /**
      * Current inertia value on the longitudinal axis.
      * The bigger this number the longer it will take for the camera to stop.
-     * Reading this value also reflects pending rotation input from the movement system (backward compat).
+     * Reading this value also reflects the rotation delta the movement system will apply this frame
+     * (decays toward 0 over the inertia tail), preserving legacy semantics for "is the camera still animating?" checks.
      * Setting this to 0 also stops the movement system's rotation velocity for backward compatibility.
      */
     @serialize()
     public get inertialAlphaOffset(): number {
-        return this._inertialAlphaOffset !== 0 ? this._inertialAlphaOffset : this.movement.rotationAccumulatedPixels.x;
+        if (this._inertialAlphaOffset !== 0) {
+            return this._inertialAlphaOffset;
+        }
+        if (this.movement.rotationAccumulatedPixels.x !== 0) {
+            return this.movement.rotationAccumulatedPixels.x;
+        }
+        const delta = this.movement.rotationDeltaCurrentFrame.x;
+        return Math.abs(delta) < this._rotationEpsilon ? 0 : delta;
     }
 
     public set inertialAlphaOffset(value: number) {
@@ -204,12 +212,20 @@ export class ArcRotateCamera extends TargetCamera {
     /**
      * Current inertia value on the latitudinal axis.
      * The bigger this number the longer it will take for the camera to stop.
-     * Reading this value also reflects pending rotation input from the movement system (backward compat).
+     * Reading this value also reflects the rotation delta the movement system will apply this frame
+     * (decays toward 0 over the inertia tail), preserving legacy semantics for "is the camera still animating?" checks.
      * Setting this to 0 also stops the movement system's rotation velocity for backward compatibility.
      */
     @serialize()
     public get inertialBetaOffset(): number {
-        return this._inertialBetaOffset !== 0 ? this._inertialBetaOffset : this.movement.rotationAccumulatedPixels.y;
+        if (this._inertialBetaOffset !== 0) {
+            return this._inertialBetaOffset;
+        }
+        if (this.movement.rotationAccumulatedPixels.y !== 0) {
+            return this.movement.rotationAccumulatedPixels.y;
+        }
+        const delta = this.movement.rotationDeltaCurrentFrame.y;
+        return Math.abs(delta) < this._rotationEpsilon ? 0 : delta;
     }
 
     public set inertialBetaOffset(value: number) {
@@ -224,11 +240,20 @@ export class ArcRotateCamera extends TargetCamera {
     /**
      * Current inertia value on the radius axis.
      * The bigger this number the longer it will take for the camera to stop.
+     * Reading this value also reflects the zoom delta the movement system will apply this frame
+     * (decays toward 0 over the inertia tail), preserving legacy semantics for "is the camera still animating?" checks.
      * Setting this to 0 also stops the movement system's zoom velocity for backward compatibility.
      */
     @serialize()
     public get inertialRadiusOffset(): number {
-        return this._inertialRadiusOffset;
+        if (this._inertialRadiusOffset !== 0) {
+            return this._inertialRadiusOffset;
+        }
+        if (this.movement.zoomAccumulatedPixels !== 0) {
+            return this.movement.zoomAccumulatedPixels;
+        }
+        const delta = this.movement.zoomDeltaCurrentFrame;
+        return Math.abs(delta) < this.speed * this._rotationEpsilon ? 0 : delta;
     }
 
     public set inertialRadiusOffset(value: number) {
@@ -341,6 +366,25 @@ export class ArcRotateCamera extends TargetCamera {
     }
 
     private _panningInertia = 0.9;
+
+    private _inertia = 0.9;
+
+    /**
+     * Defines the rotation/zoom inertia (decay coefficient applied per reference frame at 60fps).
+     * Override of {@link Camera.inertia} that automatically syncs to the movement system
+     * (rotation and zoom). Panning inertia is controlled separately via {@link panningInertia}.
+     */
+    public override get inertia(): number {
+        return this._inertia;
+    }
+
+    public override set inertia(value: number) {
+        this._inertia = value;
+        if (this.movement) {
+            this.movement.rotationInertia = value;
+            this.movement.zoomInertia = value;
+        }
+    }
 
     //-- begin properties for backward compatibility for inputs
 
@@ -671,11 +715,22 @@ export class ArcRotateCamera extends TargetCamera {
 
     public set _useCtrlForPanning(value: boolean) {
         this._useCtrlForPanningInternal = value;
-        const idx = this.movement.input.inputMap.findIndex((e) => e.source === "keyboard" && "modifiers" in e && e.modifiers?.ctrl === true && e.interaction === "pan");
-        if (!value && idx !== -1) {
-            this.movement.input.inputMap.splice(idx, 1);
-        } else if (value && idx === -1) {
+        const map = this.movement.input.inputMap;
+
+        // Manage keyboard ctrl → pan entry
+        const kbIdx = map.findIndex((e) => e.source === "keyboard" && "modifiers" in e && e.modifiers?.ctrl === true && e.interaction === "pan");
+        if (!value && kbIdx !== -1) {
+            map.splice(kbIdx, 1);
+        } else if (value && kbIdx === -1) {
             this.movement.input.addEntry({ source: "keyboard", modifiers: { ctrl: true }, interaction: "pan" });
+        }
+
+        // Manage pointer ctrl+left-drag → pan entry (matches legacy ArcRotateCameraPointersInput behavior)
+        const ptrIdx = map.findIndex((e) => e.source === "pointer" && "modifiers" in e && e.modifiers?.ctrl === true && e.interaction === "pan");
+        if (!value && ptrIdx !== -1) {
+            map.splice(ptrIdx, 1);
+        } else if (value && ptrIdx === -1) {
+            this.movement.input.addEntry({ source: "pointer", button: 0, modifiers: { ctrl: true }, interaction: "pan", sensitivity: 0.001 });
         }
     }
 
@@ -690,7 +745,8 @@ export class ArcRotateCamera extends TargetCamera {
 
     public set _panningMouseButton(value: number) {
         this._panningMouseButtonInternal = value;
-        const entry = this.movement.input.inputMap.find((e) => e.source === "pointer" && e.interaction === "pan");
+        // Find the bare pointer→pan entry (ignore the ctrl-modified one used for ctrl+drag panning)
+        const entry = this.movement.input.inputMap.find((e) => e.source === "pointer" && e.interaction === "pan" && !("modifiers" in e && e.modifiers));
         if (entry && entry.source === "pointer") {
             entry.button = value;
         }
@@ -894,6 +950,11 @@ export class ArcRotateCamera extends TargetCamera {
         this.inputs = new ArcRotateCameraInputsManager(this);
         this.inputs.addKeyboard().addMouseWheel().addPointers();
         this.movement = new ArcRotateCameraMovement(this.getScene(), this._position);
+        // Seed movement-system inertia from the values set during base/subclass construction.
+        // After this point, the inertia/panningInertia setters on this class push directly to movement.
+        this.movement.rotationInertia = this._inertia;
+        this.movement.zoomInertia = this._inertia;
+        this.movement.panInertia = this._panningInertia;
     }
 
     // Cache
@@ -1217,13 +1278,6 @@ export class ArcRotateCamera extends TargetCamera {
         this.inputs.checkInputs();
         let hasUserInteractions = false;
 
-        // Sync legacy camera-level inertia into the movement system so that runtime writes
-        // to `camera.inertia` (inherited from base Camera as a plain field) continue to affect
-        // rotation and zoom decay exactly as in legacy. Panning inertia has its own setter on
-        // ArcRotateCamera that already performs this sync. Cheap enough to run every frame.
-        this.movement.rotationInertia = this.inertia;
-        this.movement.zoomInertia = this.inertia;
-
         this.movement.computeCurrentFrameDeltas();
 
         const rotDelta = this.movement.rotationDeltaCurrentFrame;
@@ -1242,19 +1296,22 @@ export class ArcRotateCamera extends TargetCamera {
         // Legacy inertial offsets — backward compat path. Handles direct writes to inertialAlphaOffset
         // etc. (including zoomToMouseLocation which writes to inertialRadiusOffset).
         // Only activates when these values are nonzero, so it is free when unused.
-        if (this.inertialAlphaOffset !== 0 || this.inertialBetaOffset !== 0 || this.inertialRadiusOffset !== 0) {
-            this._applyRotationAndZoomDelta(this.inertialAlphaOffset, this.inertialBetaOffset, this.inertialRadiusOffset);
-            this.inertialAlphaOffset *= this.inertia;
-            this.inertialBetaOffset *= this.inertia;
-            this.inertialRadiusOffset *= this.inertia;
-            if (Math.abs(this.inertialAlphaOffset) < Epsilon) {
-                this.inertialAlphaOffset = 0;
+        // We check the private fields here instead of the public getters because the getters fall back
+        // to the movement system's current-frame deltas (for back-compat polling), which would cause
+        // double-application of the rotation/zoom that movement.computeCurrentFrameDeltas just produced.
+        if (this._inertialAlphaOffset !== 0 || this._inertialBetaOffset !== 0 || this._inertialRadiusOffset !== 0) {
+            this._applyRotationAndZoomDelta(this._inertialAlphaOffset, this._inertialBetaOffset, this._inertialRadiusOffset);
+            this._inertialAlphaOffset *= this.inertia;
+            this._inertialBetaOffset *= this.inertia;
+            this._inertialRadiusOffset *= this.inertia;
+            if (Math.abs(this._inertialAlphaOffset) < this._rotationEpsilon) {
+                this._inertialAlphaOffset = 0;
             }
-            if (Math.abs(this.inertialBetaOffset) < Epsilon) {
-                this.inertialBetaOffset = 0;
+            if (Math.abs(this._inertialBetaOffset) < this._rotationEpsilon) {
+                this._inertialBetaOffset = 0;
             }
-            if (Math.abs(this.inertialRadiusOffset) < Epsilon) {
-                this.inertialRadiusOffset = 0;
+            if (Math.abs(this._inertialRadiusOffset) < this.speed * this._rotationEpsilon) {
+                this._inertialRadiusOffset = 0;
             }
             hasUserInteractions = true;
         }
@@ -1263,10 +1320,11 @@ export class ArcRotateCamera extends TargetCamera {
             this._applyPanDelta(this.inertialPanningX, this.inertialPanningY);
             this.inertialPanningX *= this.panningInertia;
             this.inertialPanningY *= this.panningInertia;
-            if (Math.abs(this.inertialPanningX) < Epsilon) {
+            const inertialPanningLimit = this.speed * this._panningEpsilon;
+            if (Math.abs(this.inertialPanningX) < inertialPanningLimit) {
                 this.inertialPanningX = 0;
             }
-            if (Math.abs(this.inertialPanningY) < Epsilon) {
+            if (Math.abs(this.inertialPanningY) < inertialPanningLimit) {
                 this.inertialPanningY = 0;
             }
             hasUserInteractions = true;

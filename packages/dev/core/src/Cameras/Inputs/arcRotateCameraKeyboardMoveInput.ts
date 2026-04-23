@@ -91,6 +91,7 @@ export class ArcRotateCameraKeyboardMoveInput implements ICameraInput<ArcRotateC
      * When disabled, alt+keyboard events are ignored by the zoom inputMap entry.
      * Setting this updates the corresponding inputMap entry on the camera's movement system.
      */
+    @serialize()
     public get useAltToZoom(): boolean {
         return this._useAltToZoom;
     }

@@ -60,6 +60,8 @@ export class ArcRotateCameraMovement extends CameraMovement {
 
     private _createDefaultInputMap(): InputMapEntry<ArcRotateInteraction>[] {
         return [
+            // ctrl+left-drag → pan (more specific than the bare rotate entry below; must come first so first-match-wins picks it).
+            { source: "pointer", button: 0, modifiers: { ctrl: true }, interaction: "pan", sensitivity: 0.001 },
             { source: "pointer", button: 0, interaction: "rotate", sensitivity: 0.001 },
             { source: "pointer", button: 2, interaction: "pan", sensitivity: 0.001 },
             { source: "wheel", interaction: "zoom" },

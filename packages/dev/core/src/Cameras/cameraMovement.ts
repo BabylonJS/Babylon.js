@@ -78,17 +78,25 @@ export class CameraMovement {
      */
     /**
      * Inertia applied to the zoom velocity when there is no user input.
-     * Higher inertia === slower decay, velocity retains more of its value each frame
+     * Higher inertia === slower decay, velocity retains more of its value each frame.
+     *
+     * Note: ArcRotateCamera syncs this from `camera.inertia` via an accessor on the camera class.
+     * To tune independently, override inside `scene.onBeforeRenderObservable` after `camera.inertia` is read.
      */
     public zoomInertia: number = 0.9;
     /**
      * Inertia applied to the panning velocity when there is no user input.
-     * Higher inertia === slower decay, velocity retains more of its value each frame
+     * Higher inertia === slower decay, velocity retains more of its value each frame.
+     *
+     * Note: ArcRotateCamera overrides this from `camera.panningInertia` (which defaults to `camera.inertia`).
      */
     public panInertia: number = 0.9;
     /**
      * Inertia applied to the rotation velocity when there is no user input.
-     * Higher inertia === slower decay, velocity retains more of its value each frame
+     * Higher inertia === slower decay, velocity retains more of its value each frame.
+     *
+     * Note: ArcRotateCamera syncs this from `camera.inertia` via an accessor on the camera class.
+     * To tune independently, override inside `scene.onBeforeRenderObservable` after `camera.inertia` is read.
      */
     public rotationInertia: number = 0.9;
 
@@ -284,6 +292,38 @@ export class CameraMovement {
         return !!this._behavior?.isInterpolating;
     }
 
+    /**
+     * Returns the per-frame decay factor for a given inertia, adjusted to this frame's `dt`.
+     * At the reference frame rate, returns `inertia` unchanged (matches legacy per-frame `*= inertia`).
+     * Use this when implementing custom decaying accumulators (e.g. zoom-to-cursor coupled pan)
+     * that need framerate-independent glide duration.
+     * @param inertia - The inertia value (0-1) whose per-frame decay factor is needed.
+     * @returns The decay factor to multiply a value by this frame.
+     */
+    public getFrameIndependentDecay(inertia: number): number {
+        const dt = this._scene.getEngine().getDeltaTime();
+        const effectiveDt = dt > 0 ? dt : this._prevFrameTimeMs;
+        const referenceFrameDurationMs = 1000 / this.referenceFrameRate;
+        return Math.pow(inertia, effectiveDt / referenceFrameDurationMs);
+    }
+
+    /**
+     * Returns the input-scale factor to apply to an impulse injected into a decaying accumulator
+     * so that the integrated total is framerate-independent and matches legacy at 60fps.
+     * At the reference frame rate, returns 1 (no-op). At high fps, scales the impulse down so
+     * the sum over the decay tail stays equal to `impulse / (1 - inertia)` — the legacy total.
+     * @param inertia - The inertia value (0-1) used by the accumulator.
+     * @returns The scaling factor to multiply an impulse by before adding it to the accumulator.
+     */
+    public getFrameIndependentInputScale(inertia: number): number {
+        const oneMinusInertia = 1 - inertia;
+        if (oneMinusInertia <= 0) {
+            return 1;
+        }
+        const decay = this.getFrameIndependentDecay(inertia);
+        return (1 - decay) / oneMinusInertia;
+    }
+
     private _calculateCurrentVelocity(velocityRef: number, pixelDelta: number, inertialDecayFactor: number): number {
         let inputVelocity = velocityRef;
         const deltaTimeMs = this._scene.getEngine().getDeltaTime();
@@ -294,11 +334,8 @@ export class CameraMovement {
             return inputVelocity;
         }
 
-        // Apply inertial decay every frame — matches legacy's per-frame `offset *= inertia`.
-        // Framerate-independent via Math.pow(inertia, dt / referenceFrameDurationMs).
-        // At the reference framerate (default 60), the exponent is 1 and this equals `inertia`.
-        const referenceFrameDurationMs = 1000 / this.referenceFrameRate;
-        const frameIndependentDecay = Math.pow(inertialDecayFactor, this._prevFrameTimeMs / referenceFrameDurationMs);
+        // Apply inertial decay every frame
+        const frameIndependentDecay = this.getFrameIndependentDecay(inertialDecayFactor);
         inputVelocity *= frameIndependentDecay;
 
         // When there's input this frame, add it on top of the decayed velocity — matches legacy's
