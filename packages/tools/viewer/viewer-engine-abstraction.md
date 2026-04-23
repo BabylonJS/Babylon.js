@@ -246,10 +246,11 @@ Pure functions extracted from `viewer.ts` that both implementations can share:
 
 ### Phase 3: Build ViewerLite + Lite Entry Point
 
-1. Create `viewerLite.ts` implementing `IViewer` with Babylon Lite. Install Babylon Lite as npm dependency (local package for dev).
-2. Create `viewerElementLite.ts`: `ViewerElementLite extends ViewerElementBase` + `HTML3DElement` (`<babylon-viewer>`, same tag name — mutually exclusive with full viewer). Includes `viewer` property returning the `ViewerLite` instance.
-3. Create `lite/index.ts` entry point. Add `"./lite"` to package.json `exports`.
-4. Log warnings for unimplemented features. Implement everything possible with current Lite state.
+1. Install Babylon Lite as a local dependency: `npm install --save ../../../../Babylon-Lite-1/packages/babylon-lite -w @tools/viewer`. Babylon Lite's package.json points `main`/`exports` at TypeScript source (`./src/index.ts`), so Vite/Rollup compile it directly — no build step needed on the Lite side.
+2. Create `viewerLite.ts` implementing `IViewer` with Babylon Lite.
+3. Create `viewerElementLite.ts`: `ViewerElementLite extends ViewerElementBase` + `HTML3DElement` (`<babylon-viewer>`, same tag name — mutually exclusive with full viewer). Includes `viewer` property returning the `ViewerLite` instance.
+4. Create `lite/index.ts` entry point. Add `"./lite"` to package.json `exports`.
+5. Log warnings for unimplemented features. Implement everything possible with current Lite state.
 
 ### Phase 4: Test + Polish
 
