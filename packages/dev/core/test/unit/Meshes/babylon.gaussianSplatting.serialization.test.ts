@@ -9,7 +9,7 @@ import { Mesh } from "core/Meshes/mesh";
 import { TransformNode } from "core/Meshes/transformNode";
 import { SceneSerializer } from "core/Misc/sceneSerializer";
 import { Scene } from "core/scene";
-import { describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 const createTestSplatData = (position: [number, number, number], color: [number, number, number, number]): ArrayBuffer => {
     const data = new ArrayBuffer(32);
@@ -47,11 +47,21 @@ const createTestShData = (seed: number): Uint8Array[] => {
 };
 
 describe("GaussianSplatting serialization", () => {
-    it("creates retained part sources as shared views into merged splat and SH buffers", () => {
-        const engine = new NullEngine();
-        (engine.getCaps() as { maxVertexUniformVectors: number }).maxVertexUniformVectors = 256;
-        const scene = new Scene(engine);
+    let engine: NullEngine;
+    let scene: Scene;
 
+    beforeEach(() => {
+        engine = new NullEngine();
+        (engine.getCaps() as { maxVertexUniformVectors: number }).maxVertexUniformVectors = 256;
+        scene = new Scene(engine);
+    });
+
+    afterEach(() => {
+        scene.dispose();
+        engine.dispose();
+    });
+
+    it("creates retained part sources as shared views into merged splat and SH buffers", () => {
         const sourceASplat = createTestSplatData([1, 2, 3], [255, 0, 0, 255]);
         const sourceBSplat = createTestSplatData([4, 5, 6], [0, 255, 0, 255]);
         const sourceASh = createTestShData(11);
@@ -87,10 +97,6 @@ describe("GaussianSplatting serialization", () => {
     });
 
     it("round-trips compound meshes and keeps part metadata valid after removePart", () => {
-        const engine = new NullEngine();
-        (engine.getCaps() as { maxVertexUniformVectors: number }).maxVertexUniformVectors = 256;
-        const scene = new Scene(engine);
-
         const sourceASplat = createTestSplatData([1, 2, 3], [255, 0, 0, 255]);
         const sourceBSplat = createTestSplatData([4, 5, 6], [0, 255, 0, 255]);
         const sourceASh = createTestShData(11);
@@ -156,13 +162,11 @@ describe("GaussianSplatting serialization", () => {
         expect(reparsedSerialized.partProxies[0].vertexCount).toBe(1);
         expect(reparsedSerialized.partProxies[0].splatsDataOffset).toBe(0);
         expect(reparsedSerialized.partProxies[0].shDataOffset).toBe(0);
+
+        parsedScene.dispose();
     });
 
     it("reconnects nodes parented to part proxies through the scene loader", async () => {
-        const engine = new NullEngine();
-        (engine.getCaps() as { maxVertexUniformVectors: number }).maxVertexUniformVectors = 256;
-        const scene = new Scene(engine);
-
         const sourceA = new GaussianSplattingMesh("sourceA", null, scene);
         sourceA.disableDepthSort = true;
         sourceA.updateData(createTestSplatData([1, 2, 3], [255, 0, 0, 255]));
@@ -187,5 +191,7 @@ describe("GaussianSplatting serialization", () => {
         expect(loadedChild).toBeTruthy();
         expect(loadedChild!.parent).toBeTruthy();
         expect(loadedChild!.parent!.getClassName()).toBe("GaussianSplattingPartProxyMesh");
+
+        loadedScene.dispose();
     });
 });
