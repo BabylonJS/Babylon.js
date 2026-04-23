@@ -39,14 +39,47 @@ A single `Viewer` class parameterized by a `ViewerEngine` interface that abstrac
                    │                  │   camera math, bounding
                    │                  │   box, color parsing, etc.)
                    └──────────────────┘
+
+─────────────────── Element Layer ───────────────────
+
+                  ┌─────────────────────────┐
+                  │  ViewerElementBase      │  (abstract, Lit-based,
+                  │  (viewerElementBase.ts) │   only depends on IViewer,
+                  │                         │   NO Babylon.js core imports)
+                  └────────────┬────────────┘
+                               │
+              ┌────────────────┼────────────────┐
+              ▼                                  ▼
+┌───────────────────────────┐       ┌───────────────────────────┐
+│  ViewerElement            │       │  ViewerElementLite        │
+│  (viewerElement.ts)       │       │  (viewerElementLite.ts)   │
+│  + clearColor: Color4     │       │  + clearColor: IColor4Like│
+│  + viewerDetails          │       │  (no viewerDetails)       │
+└─────────┬─────────────────┘       └─────────┬─────────────────┘
+          ▼                                    ▼
+┌───────────────────────────┐       ┌───────────────────────────┐
+│  HTML3DElement            │       │  HTML3DLiteElement         │
+│  <babylon-viewer>         │       │  <babylon-viewer-lite>     │
+│  @customElement(...)      │       │  @customElement(...)       │
+└───────────────────────────┘       └───────────────────────────┘
+
+─────────────────── Entry Points ───────────────────
+
+  @babylonjs/viewer           @babylonjs/viewer/lite
+  (index.ts)                  (lite/index.ts)
+  └─ HTML3DElement            └─ HTML3DLiteElement
+  └─ Viewer                   └─ ViewerLite
+  └─ full Babylon.js          └─ Babylon Lite only
 ```
 
 **Why this wins:**
 
-- **Public API ≪ internal surface.** `IViewer` is ~30-40 properties/methods (`loadModel`, `cameraOrbit`, `toneMapping`, etc.). Much less to keep in sync than abstracting ~100+ internal APIs.
+- **Public API ≪ internal surface.** `IViewer` is ~30-40 properties/methods. Much less to keep in sync than abstracting ~100+ internal APIs.
 - **Each implementation stays idiomatic.** `Viewer` uses Babylon.js APIs directly. `ViewerLite` uses Lite APIs directly. No indirection, no leaky abstractions.
 - **Feature asymmetry is natural.** `ViewerLite` simply doesn't implement code paths for unsupported features (IBL shadows, SSAO, snapshot rendering, etc.).
-- **Zero regression risk.** The existing `Viewer` class stays untouched.
+- **Zero regression risk.** The existing `Viewer` class, `ViewerElement`, and `HTML3DElement` stay untouched.
+- **Complete bundle isolation.** `@babylonjs/viewer/lite` never imports `Viewer`, `ViewerElement`, or anything from `@babylonjs/core` beyond lightweight utilities.
+- **No breaking changes.** `ViewerElement.clearColor` stays as `Color4`. `viewerDetails` stays on `ViewerElement`. `ViewerElementBase` uses `IColor4Like` internally; each subclass wraps as needed.
 - **Shared code is pure functions.** Camera orbit math, bounding box computation, auto-rotation logic, color parsing — factored into `viewerUtils.ts`.
 - **Easier to add a third backend later.** Each implementation evolves independently.
 
@@ -213,75 +246,72 @@ These exist on `Viewer` but are not called anywhere in `viewerElement.ts`:
 
 These are small additions to `Viewer` that wrap existing Scene internals — no behavioral change.
 
-### Breaking change: `ViewerElement.clearColor` type
+### clearColor — No Breaking Change
 
-**Current:** `public clearColor: Nullable<Color4>` — depends on `Color4` from `core/Maths/math.color`.
+With the `ViewerElementBase` / `ViewerElement` split, clearColor is handled cleanly at each layer:
 
-**New:** `public clearColor: Nullable<IColor4Like>` — uses `IColor4Like` from `core/Maths/math.like` (`{ r: number, g: number, b: number, a: number }`).
+- **`ViewerElementBase`**: Uses `IColor4Like` (`{ r, g, b, a }`) internally for the property binding to IViewer. The `parseColor()` helper returns a plain `{ r, g, b, a }` object.
+- **`ViewerElement`** (extends `ViewerElementBase`): Overrides `clearColor` as `Nullable<Color4>` — **no breaking change**. Wraps `Color4` ↔ `IColor4Like` at the boundary.
+- **`ViewerElementLite`** (extends `ViewerElementBase`): Uses `Nullable<IColor4Like>` directly. No `Color4` import.
 
-This is a **breaking change**: code that calls `Color4`-specific methods on the result (e.g. `element.clearColor.toHexString()`) will break. However, the common read patterns (`element.clearColor.r`, `.g`, `.b`, `.a`) and write patterns (`element.clearColor = new Color4(...)` or `= { r, g, b, a }`) are preserved since `Color4` structurally satisfies `IColor4Like`.
+### ViewerDetails — On ViewerElement Only
 
-Internally, `parseColor()` returns a plain `{ r, g, b, a }` object instead of `new Color4(...)`. The `toAttribute` converter produces a hex string from the plain object. The `Color4` import is removed from `viewerElement.ts`.
+`viewerDetails` stays on `ViewerElement` (not `ViewerElementBase`). It exposes the full `ViewerDetails` type (`scene`, `camera`, `model`, `suspendRendering`, `markSceneMutated`, `pick`, `isIdle`).
 
-### ViewerDetails — Skipped for Lite (Deferred)
+`ViewerElementLite` does not have a `viewerDetails` property. ViewerDetail-like APIs can be added to the Lite IViewer implementation later as needed.
 
-`ViewerDetails` is not part of IViewer. `ViewerElement.viewerDetails` returns `undefined` when `engine="lite"`. Each ViewerDetails member (scene, camera, model, suspendRendering, markSceneMutated, pick, isIdle) maps conceptually to Lite APIs, so ViewerDetail-like functionality can be added to the Lite IViewer implementation later as needed.
+For ViewerElementBase's one internal use of `details.model != null` (line 1058 — toolbar visibility), this check moves to `viewer.isModelLoaded` on the IViewer API.
 
-For ViewerElement's one internal use of `details.model != null` (line 1058 — toolbar visibility), this check moves to `viewer.isModelLoaded` on the IViewer API.
+### ViewerElementBase — What It Contains
 
-### Changes to `viewerElement.ts` to remove direct core dependencies
+`ViewerElementBase` is the abstract Lit-based base class containing all shared UI logic. It depends only on IViewer and lightweight utilities — no Babylon.js core imports (except `Observable`, `Nullable` as types, and pure utilities like `AsyncLock`, `Deferred`, `AbortError`, `Logger`).
 
-| Current core usage                                            | Change needed                                                                                                                                                             |
-| ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `import { Color4 } from "core/..."` and `parseColor()` helper | Change `parseColor()` to return `{ r, g, b, a }`. Remove `Color4` import. Use `IColor4Like` for the property type.                                                       |
-| `details.scene.clearColor = new Color4(...)`                  | `details.viewer.clearColor = { r, g, b, a }`                                                                                                                             |
-| `details.scene.onClearColorChangedObservable`                 | `details.viewer.onClearColorChanged`                                                                                                                                      |
-| `details.scene.onAfterRenderCameraObservable`                 | `details.viewer.onAfterRenderObservable`                                                                                                                                  |
-| `AsyncLock`, `Deferred`, `AbortError`, `Logger`               | These are pure utilities with no backend coupling — fine to keep importing from core for now. Could be replaced later if the Lite package doesn't want a core dependency. |
-| `Observable`, `Nullable` (type-only)                          | Keep as-is.                                                                                                                                                               |
+It contains:
+- All Lit HTML template rendering (toolbar, animation controls, progress bar, etc.)
+- All `@property` declarations that map to IViewer (everything except `clearColor`, `viewerDetails`, and `engine`)
+- All property bindings (`_createPropertyBinding` infrastructure)
+- All IViewer event subscriptions
+- The `_createViewer` abstract method (each subclass provides its own factory)
+- CSS styles
 
-### One justified deviation: `LoadModelOptions`
+It does **not** contain:
+- `clearColor` property (each subclass declares its own with appropriate type)
+- `viewerDetails` property (ViewerElement-only)
+- `engine` property (ViewerElement-only — chooses WebGL vs WebGPU; ViewerElementLite always uses Lite's WebGPU-only engine)
+- Any direct `Scene` / `Camera` / `Color4` imports
 
-The existing `LoadModelOptions` is aliased to `LoadAssetContainerOptions` from `@babylonjs/core`, which exposes Babylon.js-specific types (`ISceneLoaderProgressEvent`, glTF extension options, etc.) that Lite cannot accept.
+### Changes to `viewerElement.ts`
 
-For IViewer, `loadModel` uses a new `ViewerLoadModelOptions` type that captures only the backend-agnostic subset (e.g. `pluginExtension`). The full `Viewer` class can accept the wider `LoadAssetContainerOptions` since its concrete method signature is a compatible superset. `ViewerLite` implements only the narrower type.
+The existing `viewerElement.ts` is refactored into:
 
-Note: `viewerElement.ts` currently only passes `{ pluginExtension }` to `loadModel`, so the narrower type already covers its actual usage.
+1. **`viewerElementBase.ts`** (new): The abstract `ViewerElementBase` class with all shared UI logic. Imports only `IViewer`, viewer-defined types, and lightweight core utilities.
+2. **`viewerElement.ts`** (existing, slimmed): `ViewerElement extends ViewerElementBase`. Adds `clearColor: Nullable<Color4>`, `viewerDetails`, and the `_createViewer` implementation that uses `CreateViewerForCanvas`. `HTML3DElement` and `ConfigureCustomViewerElement` stay here.
+3. **`viewerElementLite.ts`** (new): `ViewerElementLite extends ViewerElementBase`. Adds `clearColor: Nullable<IColor4Like>`, and the `_createViewer` implementation for Lite. `HTML3DLiteElement` with `@customElement("babylon-viewer-lite")` lives here.
 
-### Types that stay unchanged
+### Entry Points / Bundle Isolation
 
-All other viewer-defined types — `CameraAutoOrbit`, `EnvironmentParams`, `ShadowParams`, `PostProcessing`, `EnvironmentOptions`, `LoadEnvironmentOptions`, `HotSpot` — are plain data types with no Babylon.js core dependencies. Both implementations can use them as-is.
+Two separate entry points ensure complete bundle isolation:
 
-### What `viewerElement.ts` and `viewerFactory.ts` need to change
+| Entry point | Custom element | Viewer class | Dependencies |
+|---|---|---|---|
+| `@babylonjs/viewer` (`index.ts`) | `<babylon-viewer>` via `HTML3DElement` | `Viewer` | Full `@babylonjs/core` |
+| `@babylonjs/viewer/lite` (`lite/index.ts`) | `<babylon-viewer-lite>` via `HTML3DLiteElement` | `ViewerLite` | Babylon Lite only |
 
-- **`viewerElement.ts`**: Currently has `ViewerElement<ViewerClass extends Viewer = Viewer>`. This becomes `ViewerElement<ViewerClass extends IViewer = Viewer>`. The `_viewerDetails` type changes from `ViewerDetails & { viewer }` to just `{ viewer: ViewerClass }`, since ViewerElement should no longer reach through to `scene`/`camera` directly. The `clearColor` property changes from `Nullable<Color4>` to `Nullable<IColor4Like>` (**breaking change**). The property binding switches from `details.scene.clearColor` to `details.viewer.clearColor`. The `onAfterRenderCameraObservable` binding switches to `details.viewer.onAfterRenderObservable`.
-- **`viewerDetails`**: Already nullable. Returns `undefined` for `engine="lite"`. No type change needed — just documented as unavailable for Lite.
-- **`ViewerDetails` / `onInitialized`**: The existing `ViewerDetails` type exposes `scene: Scene`, `camera: ArcRotateCamera`, etc. These are Babylon.js-specific escape hatches for advanced customization. They remain as `Viewer`-only extras, not part of IViewer. For Lite, `onInitialized` either doesn't fire or provides a Lite-specific details object.
-- **`viewerFactory.ts`**: `CreateViewerForCanvas` currently creates a `Viewer` directly. Add a `"lite"` engine option that creates a `ViewerLite` instead. Return type becomes `Promise<IViewer>`.
+The `@customElement` decorator triggers `customElements.define()` as a module-level side effect. By placing each in a separate entry point, loading `@babylonjs/viewer/lite` never pulls in `Viewer` or `@babylonjs/core`.
 
-```typescript
-// viewerFactory.ts — sketch
-export type CanvasViewerOptions = ViewerOptions & {
-    onFaulted?: (error: Error) => void;
-} & (
-    | ({ engine?: undefined } & AbstractEngineOptions)
-    | ({ engine: "WebGL" } & EngineOptions)
-    | ({ engine: "WebGPU" } & WebGPUEngineOptions)
-    | { engine: "lite" }
-);
-
-export async function CreateViewerForCanvas(
-    canvas: HTMLCanvasElement,
-    options?: CanvasViewerOptions
-): Promise<IViewer> {
-    if (options?.engine === "lite") {
-        // Dynamic import to keep Lite out of the main bundle
-        const { createLiteViewer } = await import("./viewerLite");
-        return createLiteViewer(canvas, options);
-    }
-    // ... existing Babylon.js engine creation logic ...
+The package.json `exports` field:
+```json
+{
+  "exports": {
+    ".": "./src/index.ts",
+    "./lite": "./src/lite/index.ts"
+  }
 }
 ```
+
+### `viewerFactory.ts` — Unchanged for Lite
+
+Since Lite has its own entry point and element, `viewerFactory.ts` does not need an `engine: "lite"` option. `CreateViewerForCanvas` stays as-is, creating only full Babylon.js viewers. A separate `CreateViewerLiteForCanvas` factory (or equivalent) lives in the Lite entry point.
 
 ## Shared Utility Code (`viewerUtils.ts`)
 
@@ -331,44 +361,62 @@ The full `Viewer` also subscribes to observables on engine/scene/camera objects 
 
 ### Phase 1: Extract IViewer + Shared Utilities
 
-1. Define `IViewer` interface in `packages/tools/viewer/src/viewerInterface.ts` capturing the public API surface.
-2. Extract shared utility functions into `packages/tools/viewer/src/viewerUtils.ts` (bounding box math, camera orbit math, color parsing, animation progress, auto-rotation state machine).
-3. Make existing `Viewer` class implement `IViewer`.
-4. **All existing tests and behavior must continue to pass unchanged.**
+1. Define `IViewer` interface in `packages/tools/viewer/src/viewerInterface.ts` capturing the ViewerElement-facing API surface.
+2. Define `ViewerLoadModelOptions` (backend-agnostic subset of `LoadModelOptions`).
+3. Add new IViewer members to `Viewer`: `clearColor` (as `IColor4Like`, wrapping `scene.clearColor`), `onClearColorChanged`, `onAfterRenderObservable`, `isModelLoaded`.
+4. Make existing `Viewer` class implement `IViewer`.
+5. Extract shared utility functions into `packages/tools/viewer/src/viewerUtils.ts` (bounding box math, camera orbit math, color parsing, animation progress, auto-rotation state machine).
+6. **All existing tests and behavior must continue to pass unchanged.**
 
-### Phase 2: Update viewerElement + viewerFactory
+### Phase 2: Factor out ViewerElementBase
 
-1. Change `viewerElement.ts` to work against `IViewer` instead of `Viewer`.
-2. Update `viewerFactory.ts` to return `IViewer` and add an `engine: "lite"` option that dynamically imports `ViewerLite`.
-3. Existing code paths remain unchanged — `Viewer` is still the default.
+1. Create `viewerElementBase.ts` with the abstract `ViewerElementBase` class — all shared Lit UI logic, property bindings, toolbar, animation controls, etc.
+2. `ViewerElementBase` depends only on `IViewer`, viewer-defined types, and lightweight core utilities (`AsyncLock`, `Deferred`, `AbortError`, `Logger`, `Observable`, `Nullable`).
+3. `ViewerElementBase` uses `IColor4Like` internally for `clearColor` binding.
+4. `ViewerElementBase` uses `viewer.isModelLoaded` instead of `details.model != null`.
+5. `ViewerElementBase` uses `viewer.onAfterRenderObservable` instead of `details.scene.onAfterRenderCameraObservable`.
+6. `ViewerElementBase` uses `viewer.clearColor` / `viewer.onClearColorChanged` instead of `details.scene.clearColor` / `details.scene.onClearColorChangedObservable`.
+7. Slim down `viewerElement.ts`: `ViewerElement extends ViewerElementBase`, adds `clearColor: Nullable<Color4>` (wrapping base's `IColor4Like`), `viewerDetails`, and `_createViewer` using `CreateViewerForCanvas`. `HTML3DElement` and `ConfigureCustomViewerElement` stay here.
+8. **All existing tests and behavior must continue to pass unchanged.**
 
-### Phase 3: Build ViewerLite
+### Phase 3: Build ViewerLite + Lite Entry Point
 
 1. Create `packages/tools/viewer/src/viewerLite.ts` implementing `IViewer` using Babylon Lite APIs.
 2. Start with core subset: render loop, camera (arc-rotate), model loading (glTF), environment (IBL + skybox).
 3. Use shared utilities from `viewerUtils.ts` for camera math, bounding boxes, auto-rotation, etc.
 4. Implement camera interpolation and auto-rotation using shared logic + Lite's inertia system.
 5. No-op or return defaults for unsupported features (SSAO, IBL shadows, material variants).
+6. Create `viewerElementLite.ts`: `ViewerElementLite extends ViewerElementBase`, adds `clearColor: Nullable<IColor4Like>`, `_createViewer` for Lite. `HTML3DLiteElement` with `@customElement("babylon-viewer-lite")`.
+7. Create `lite/index.ts` entry point exporting `HTML3DLiteElement`, `ViewerLite`, etc.
+8. Add `"./lite"` to package.json `exports`.
 
 ### Phase 4: Test + Polish
 
 1. Add tests for `ViewerLite` loading a glTF model, environment, basic camera interaction.
-2. Test `viewerElement` with `engine="lite"` attribute.
-3. Verify bundle size difference between Viewer and ViewerLite.
+2. Test `<babylon-viewer-lite>` element end-to-end.
+3. Verify bundle size difference between `@babylonjs/viewer` and `@babylonjs/viewer/lite`.
+4. Verify `@babylonjs/viewer` has zero regressions.
 
 ## Open Questions
 
 1. **Where does `ViewerLite` live?** In `packages/tools/viewer/src/viewerLite.ts` alongside `Viewer`, or in its own package? If Babylon Lite is in a separate repo, we need to decide on the dependency graph.
-2. **Feature degradation UX**: When `ViewerLite` doesn't support a feature (e.g. SSAO, IBL shadows), should `viewerElement` reflect this to users (e.g. ignore the attribute silently, log a warning, etc.)?
+2. **Feature degradation UX**: When `ViewerLite` doesn't support a feature (e.g. SSAO, IBL shadows), should the element reflect this to users (e.g. ignore the attribute silently, log a warning, etc.)?
 3. **Scope of first milestone**: Should Phase 3 aim for the full `IViewer` contract, or a minimal "model loading + camera + environment" subset with no-op stubs for the rest?
+4. **`LoadModelOptions`**: The existing `LoadModelOptions` is aliased to `LoadAssetContainerOptions` from `@babylonjs/core`. IViewer uses a narrower `ViewerLoadModelOptions` (e.g. just `{ pluginExtension }`) that both backends can accept. ViewerElementBase only passes `{ pluginExtension }` today, so this covers its actual usage.
 
 ## Todos
 
 - [ ] Define `IViewer` interface in `viewerInterface.ts`
-- [ ] Extract shared utility functions into `viewerUtils.ts`
+- [ ] Define `ViewerLoadModelOptions` type
+- [ ] Add `clearColor`, `onClearColorChanged`, `onAfterRenderObservable`, `isModelLoaded` to `Viewer`
 - [ ] Make `Viewer` implement `IViewer`
-- [ ] Update `viewerElement.ts` to use `IViewer`
-- [ ] Update `viewerFactory.ts` to support `engine: "lite"` option
+- [ ] Extract shared utility functions into `viewerUtils.ts`
+- [ ] Create `viewerElementBase.ts` with shared UI logic
+- [ ] Refactor `viewerElement.ts` to extend `ViewerElementBase`
+- [ ] Create `viewerElementLite.ts` with `HTML3DLiteElement`
 - [ ] Build `ViewerLite` implementing `IViewer` with Babylon Lite
+- [ ] Create `lite/index.ts` entry point
+- [ ] Add `"./lite"` export to package.json
 - [ ] Add tests for `ViewerLite`
-- [ ] Test `viewerElement` with both backends
+- [ ] Test `<babylon-viewer-lite>` end-to-end
+- [ ] Verify bundle isolation (no cross-contamination between entry points)
