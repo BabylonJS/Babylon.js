@@ -138,7 +138,7 @@ export interface IViewer extends IDisposable {
     readonly onClearColorChanged: Observable<void>;            // NEW — see below
 
     // ── Clear Color (NEW — moved from Scene to IViewer) ──
-    clearColor: [r: number, g: number, b: number, a: number];
+    clearColor: IColor4Like;
 
     // ── Camera ──
     cameraAutoOrbit: Partial<Readonly<CameraAutoOrbit>>;
@@ -204,20 +204,38 @@ These exist on `Viewer` but are not called anywhere in `viewerElement.ts`:
 
 `viewerElement.ts` currently reaches through `ViewerDetails` to access the Babylon.js `Scene` directly for two things. These need to become first-class IViewer members:
 
-| viewerElement usage today                     | Proposed IViewer member                              | Notes                                                                           |
-| --------------------------------------------- | ---------------------------------------------------- | ------------------------------------------------------------------------------- |
-| `details.scene.clearColor` (get/set `Color4`) | `clearColor: [r, g, b, a]`                           | Tuple avoids `Color4` dependency. Viewer wraps the tuple ↔ `Color4` internally. |
-| `details.scene.onClearColorChangedObservable` | `readonly onClearColorChanged: Observable<void>`     | Viewer forwards from `scene.onClearColorChangedObservable`.                     |
-| `details.scene.onAfterRenderCameraObservable` | `readonly onAfterRenderObservable: Observable<void>` | Used to fire `"viewerrender"` custom events.                                    |
+| viewerElement usage today                     | Proposed IViewer member                              | Notes                                                                             |
+| --------------------------------------------- | ---------------------------------------------------- | --------------------------------------------------------------------------------- |
+| `details.scene.clearColor` (get/set `Color4`) | `clearColor: IColor4Like`                            | Uses `IColor4Like` (`{ r, g, b, a }`). Viewer wraps ↔ `Color4` internally.       |
+| `details.scene.onClearColorChangedObservable`  | `readonly onClearColorChanged: Observable<void>`     | Viewer forwards from `scene.onClearColorChangedObservable`.                       |
+| `details.scene.onAfterRenderCameraObservable`  | `readonly onAfterRenderObservable: Observable<void>` | Used to fire `"viewerrender"` custom events.                                      |
 
 These are small additions to `Viewer` that wrap existing Scene internals — no behavioral change.
+
+### Breaking change: `ViewerElement.clearColor` type
+
+**Current:** `public clearColor: Nullable<Color4>` — depends on `Color4` from `core/Maths/math.color`.
+
+**New:** `public clearColor: Nullable<IColor4Like>` — uses `IColor4Like` from `core/Maths/math.like` (`{ r: number, g: number, b: number, a: number }`).
+
+This is a **breaking change**: code that calls `Color4`-specific methods on the result (e.g. `element.clearColor.toHexString()`) will break. However, the common read patterns (`element.clearColor.r`, `.g`, `.b`, `.a`) and write patterns (`element.clearColor = new Color4(...)` or `= { r, g, b, a }`) are preserved since `Color4` structurally satisfies `IColor4Like`.
+
+Internally, `parseColor()` returns a plain `{ r, g, b, a }` object instead of `new Color4(...)`. The `toAttribute` converter produces a hex string from the plain object. The `Color4` import is removed from `viewerElement.ts`.
+
+### `viewerDetails` for Lite
+
+`viewerDetails` returns `Readonly<ViewerDetails & { viewer }>` where `ViewerDetails` exposes `scene: Scene`, `camera: ArcRotateCamera`, etc. These are Babylon.js-specific and have no Lite equivalent.
+
+**Approach:** `viewerDetails` already returns `undefined` when the viewer isn't loaded. For `engine="lite"`, it will also be `undefined` — documented as unavailable for the Lite backend. The `onInitialized` callback in `ViewerOptions` similarly will not fire for Lite (or will provide a Lite-specific details object without scene/camera). Consumers who need `viewerDetails` shouldn't use `engine="lite"`.
+
+This avoids a type change — the property is already nullable. We just document the Lite limitation.
 
 ### Changes to `viewerElement.ts` to remove direct core dependencies
 
 | Current core usage                                            | Change needed                                                                                                                                                             |
 | ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `import { Color4 } from "core/..."` and `parseColor()` helper | Keep `parseColor()` but have it return a `[r,g,b,a]` tuple. Remove `Color4` import.                                                                                       |
-| `details.scene.clearColor = new Color4(...)`                  | `details.viewer.clearColor = [r, g, b, a]`                                                                                                                                |
+| `import { Color4 } from "core/..."` and `parseColor()` helper | Change `parseColor()` to return `{ r, g, b, a }`. Remove `Color4` import. Use `IColor4Like` for the property type.                                                       |
+| `details.scene.clearColor = new Color4(...)`                  | `details.viewer.clearColor = { r, g, b, a }`                                                                                                                             |
 | `details.scene.onClearColorChangedObservable`                 | `details.viewer.onClearColorChanged`                                                                                                                                      |
 | `details.scene.onAfterRenderCameraObservable`                 | `details.viewer.onAfterRenderObservable`                                                                                                                                  |
 | `AsyncLock`, `Deferred`, `AbortError`, `Logger`               | These are pure utilities with no backend coupling — fine to keep importing from core for now. Could be replaced later if the Lite package doesn't want a core dependency. |
@@ -237,8 +255,9 @@ All other viewer-defined types — `CameraAutoOrbit`, `EnvironmentParams`, `Shad
 
 ### What `viewerElement.ts` and `viewerFactory.ts` need to change
 
-- **`viewerElement.ts`**: Currently has `ViewerElement<ViewerClass extends Viewer = Viewer>`. This becomes `ViewerElement<ViewerClass extends IViewer = Viewer>`. The `_viewerDetails` type changes from `ViewerDetails & { viewer }` to just `{ viewer: ViewerClass }`, since ViewerElement should no longer reach through to `scene`/`camera` directly. The `clearColor` property binding switches from `details.scene.clearColor` to `details.viewer.clearColor` (using `[r,g,b,a]` tuples instead of `Color4`). The `onAfterRenderCameraObservable` binding switches to `details.viewer.onAfterRenderObservable`.
-- **`ViewerDetails` / `onInitialized`**: The existing `ViewerDetails` type exposes `scene: Scene`, `camera: ArcRotateCamera`, etc. These are Babylon.js-specific escape hatches for advanced customization. They remain as `Viewer`-only extras, not part of IViewer. `ViewerLite` would either omit `onInitialized` or provide its own Lite-specific details type.
+- **`viewerElement.ts`**: Currently has `ViewerElement<ViewerClass extends Viewer = Viewer>`. This becomes `ViewerElement<ViewerClass extends IViewer = Viewer>`. The `_viewerDetails` type changes from `ViewerDetails & { viewer }` to just `{ viewer: ViewerClass }`, since ViewerElement should no longer reach through to `scene`/`camera` directly. The `clearColor` property changes from `Nullable<Color4>` to `Nullable<IColor4Like>` (**breaking change**). The property binding switches from `details.scene.clearColor` to `details.viewer.clearColor`. The `onAfterRenderCameraObservable` binding switches to `details.viewer.onAfterRenderObservable`.
+- **`viewerDetails`**: Already nullable. Returns `undefined` for `engine="lite"`. No type change needed — just documented as unavailable for Lite.
+- **`ViewerDetails` / `onInitialized`**: The existing `ViewerDetails` type exposes `scene: Scene`, `camera: ArcRotateCamera`, etc. These are Babylon.js-specific escape hatches for advanced customization. They remain as `Viewer`-only extras, not part of IViewer. For Lite, `onInitialized` either doesn't fire or provides a Lite-specific details object.
 - **`viewerFactory.ts`**: `CreateViewerForCanvas` currently creates a `Viewer` directly. Add a `"lite"` engine option that creates a `ViewerLite` instead. Return type becomes `Promise<IViewer>`.
 
 ```typescript
