@@ -165,6 +165,8 @@ Abstract Lit-based base class with all shared UI logic. Depends only on IViewer 
 
 **Does NOT contain:** `clearColor` (subclass-specific type), `viewerDetails` (ViewerElement-only), `engine` property (ViewerElement-only — WebGL/WebGPU choice), any Scene/Camera/Color4 imports.
 
+All shared types (`ViewerHotSpotResult`, `HotSpot`, `ShadowQuality`, `ToneMapping`, `CameraAutoOrbit`, `EnvironmentParams`, `ShadowParams`, `PostProcessing`, `ResetFlag`, validators like `IsShadowQuality`/`IsToneMapping`, etc.) live in `viewerInterface.ts` alongside `IViewer`. This keeps the Babylon-free type boundary in one file.
+
 ### clearColor handling
 
 - **ViewerElementBase**: Declares `clearColor: Nullable<IColor4Like>` as a Lit `@property`.
@@ -252,11 +254,21 @@ Pure functions extracted from `viewer.ts` that both implementations can share:
 ### Phase 4: Test + Polish
 
 1. Tests for `ViewerLite` (model loading, environment, camera).
-2. Tests for `<babylon-viewer-lite>` end-to-end.
+2. Tests for `<babylon-viewer>` with Lite backend end-to-end.
 3. Verify bundle isolation (no Babylon.js core in Lite bundle).
 4. Verify zero regressions on `@babylonjs/viewer`.
 
-## Resolved Questions
+## Bundle Size Goal
+
+The goal is not zero `@babylonjs/core` — it's a Viewer that is **much smaller** than the full Viewer built on core engines. Small core utilities like `Observable`, `AsyncLock`, `Deferred`, `AbortError`, `Logger`, `IColor4Like`, `Nullable`, and `IDisposable` are acceptable dependencies. The bulk of the size savings comes from not pulling in the full engine, scene graph, loaders, materials, post-processing, etc.
+
+Peer deps on `@babylonjs/core` in the package will cause the package to be downloaded but unused code won't be bundled or used at runtime when using the Lite entry point.
+
+## Notes
+
+- Adding `"exports"` to package.json is needed for the `"./lite"` subpath. There are no supported deep imports — just the main bundle and unstable chunks not intended for direct import — so no permissive fallback is needed.
+
+
 
 - **Where does ViewerLite live?** Same package (`packages/tools/viewer/src/viewerLite.ts`). Babylon Lite is brought in as an npm dependency. For local dev, use `npm install` with the local package source directory or `npm link`.
 - **Feature degradation UX**: Log a warning for all unimplemented features.
@@ -278,5 +290,5 @@ Pure functions extracted from `viewer.ts` that both implementations can share:
 - [ ] Create `lite/index.ts` entry point
 - [ ] Add `"./lite"` export to package.json
 - [ ] Tests for `ViewerLite`
-- [ ] Tests for `<babylon-viewer-lite>` end-to-end
+- [ ] Tests for `<babylon-viewer>` with Lite backend end-to-end
 - [ ] Verify bundle isolation
