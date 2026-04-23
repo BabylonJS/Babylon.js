@@ -41,12 +41,12 @@ Make the Viewer work with both the full Babylon.js API and Babylon Lite (a light
   └─────────┬────────────┘          └─────────┬────────────┘
             ▼                                  ▼
   ┌─────────────────────┐          ┌─────────────────────┐
-  │  HTML3DElement       │          │  HTML3DLiteElement   │
-  │  <babylon-viewer>    │          │  <babylon-viewer-    │
-  │  @customElement      │          │   lite>              │
+  │  HTML3DElement       │          │  HTML3DElement       │
+  │  <babylon-viewer>    │          │  <babylon-viewer>    │
+  │  @customElement      │          │  @customElement      │
   └─────────────────────┘          └─────────────────────┘
 
-─────────────────── Entry Points ───────────────────
+─────────────────── Entry Points (mutually exclusive) ───
 
   @babylonjs/viewer           @babylonjs/viewer/lite
   (index.ts)                  (lite/index.ts)
@@ -58,6 +58,7 @@ Make the Viewer work with both the full Babylon.js API and Babylon Lite (a light
 - Each implementation uses its native APIs directly — no leaky abstractions.
 - `ViewerElementBase` contains all shared Lit UI logic. Subclasses add backend-specific concerns (`clearColor` type, `viewerDetails`, `engine` selection).
 - Separate entry points ensure `@babylonjs/viewer/lite` never pulls in `Viewer` or `@babylonjs/core` (the `@customElement` decorator triggers `customElements.define()` at module load time, so bundle isolation requires separate entry points).
+- Both entry points register `<babylon-viewer>` as `HTML3DElement` — they are mutually exclusive. For side-by-side use, consumers manually call `customElements.define` or `ConfigureCustomViewerElement` with distinct tag names.
 - Zero breaking changes — existing `Viewer`, `ViewerElement`, and `HTML3DElement` are unchanged.
 
 ## IViewer Interface
@@ -244,7 +245,7 @@ Pure functions extracted from `viewer.ts` that both implementations can share:
 ### Phase 3: Build ViewerLite + Lite Entry Point
 
 1. Create `viewerLite.ts` implementing `IViewer` with Babylon Lite. Install Babylon Lite as npm dependency (local package for dev).
-2. Create `viewerElementLite.ts`: `ViewerElementLite extends ViewerElementBase` + `HTML3DLiteElement` (`<babylon-viewer-lite>`). Includes `viewer` property returning the `ViewerLite` instance.
+2. Create `viewerElementLite.ts`: `ViewerElementLite extends ViewerElementBase` + `HTML3DElement` (`<babylon-viewer>`, same tag name — mutually exclusive with full viewer). Includes `viewer` property returning the `ViewerLite` instance.
 3. Create `lite/index.ts` entry point. Add `"./lite"` to package.json `exports`.
 4. Log warnings for unimplemented features. Implement everything possible with current Lite state.
 
@@ -273,7 +274,7 @@ Pure functions extracted from `viewer.ts` that both implementations can share:
 - [ ] Update `viewerAnnotationElement.ts` to use `ViewerElementBase` for `instanceof` check
 - [ ] Install Babylon Lite as npm dependency
 - [ ] Build `ViewerLite` implementing `IViewer`
-- [ ] Create `viewerElementLite.ts` with `HTML3DLiteElement` and `viewer` property
+- [ ] Create `viewerElementLite.ts` with `HTML3DElement` (same tag, mutually exclusive) and `viewer` property
 - [ ] Create `lite/index.ts` entry point
 - [ ] Add `"./lite"` export to package.json
 - [ ] Tests for `ViewerLite`
