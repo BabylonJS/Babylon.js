@@ -254,8 +254,60 @@ export class Constants {
     public static readonly TEXTUREFORMAT_COMPRESSED_SRGB_S3TC_DXT1_EXT = 35916;
     /** Compressed ASTC 4x4 */
     public static readonly TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_4x4 = 37808;
+    /** Compressed ASTC 5x4 */
+    public static readonly TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_5x4 = 37809;
+    /** Compressed ASTC 5x5 */
+    public static readonly TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_5x5 = 37810;
+    /** Compressed ASTC 6x5 */
+    public static readonly TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_6x5 = 37811;
+    /** Compressed ASTC 6x6 */
+    public static readonly TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_6x6 = 37812;
+    /** Compressed ASTC 8x5 */
+    public static readonly TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_8x5 = 37813;
+    /** Compressed ASTC 8x6 */
+    public static readonly TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_8x6 = 37814;
+    /** Compressed ASTC 8x8 */
+    public static readonly TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_8x8 = 37815;
+    /** Compressed ASTC 10x5 */
+    public static readonly TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_10x5 = 37816;
+    /** Compressed ASTC 10x6 */
+    public static readonly TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_10x6 = 37817;
+    /** Compressed ASTC 10x8 */
+    public static readonly TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_10x8 = 37818;
+    /** Compressed ASTC 10x10 */
+    public static readonly TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_10x10 = 37819;
+    /** Compressed ASTC 12x10 */
+    public static readonly TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_12x10 = 37820;
+    /** Compressed ASTC 12x12 */
+    public static readonly TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_12x12 = 37821;
     /** Compressed ASTC 4x4 (SRGB+A) */
     public static readonly TEXTUREFORMAT_COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR = 37840;
+    /** Compressed ASTC 5x4 (SRGB+A) */
+    public static readonly TEXTUREFORMAT_COMPRESSED_SRGB8_ALPHA8_ASTC_5x4_KHR = 37841;
+    /** Compressed ASTC 5x5 (SRGB+A) */
+    public static readonly TEXTUREFORMAT_COMPRESSED_SRGB8_ALPHA8_ASTC_5x5_KHR = 37842;
+    /** Compressed ASTC 6x5 (SRGB+A) */
+    public static readonly TEXTUREFORMAT_COMPRESSED_SRGB8_ALPHA8_ASTC_6x5_KHR = 37843;
+    /** Compressed ASTC 6x6 (SRGB+A) */
+    public static readonly TEXTUREFORMAT_COMPRESSED_SRGB8_ALPHA8_ASTC_6x6_KHR = 37844;
+    /** Compressed ASTC 8x5 (SRGB+A) */
+    public static readonly TEXTUREFORMAT_COMPRESSED_SRGB8_ALPHA8_ASTC_8x5_KHR = 37845;
+    /** Compressed ASTC 8x6 (SRGB+A) */
+    public static readonly TEXTUREFORMAT_COMPRESSED_SRGB8_ALPHA8_ASTC_8x6_KHR = 37846;
+    /** Compressed ASTC 8x8 (SRGB+A) */
+    public static readonly TEXTUREFORMAT_COMPRESSED_SRGB8_ALPHA8_ASTC_8x8_KHR = 37847;
+    /** Compressed ASTC 10x5 (SRGB+A) */
+    public static readonly TEXTUREFORMAT_COMPRESSED_SRGB8_ALPHA8_ASTC_10x5_KHR = 37848;
+    /** Compressed ASTC 10x6 (SRGB+A) */
+    public static readonly TEXTUREFORMAT_COMPRESSED_SRGB8_ALPHA8_ASTC_10x6_KHR = 37849;
+    /** Compressed ASTC 10x8 (SRGB+A) */
+    public static readonly TEXTUREFORMAT_COMPRESSED_SRGB8_ALPHA8_ASTC_10x8_KHR = 37850;
+    /** Compressed ASTC 10x10 (SRGB+A) */
+    public static readonly TEXTUREFORMAT_COMPRESSED_SRGB8_ALPHA8_ASTC_10x10_KHR = 37851;
+    /** Compressed ASTC 12x10 (SRGB+A) */
+    public static readonly TEXTUREFORMAT_COMPRESSED_SRGB8_ALPHA8_ASTC_12x10_KHR = 37852;
+    /** Compressed ASTC 12x12 (SRGB+A) */
+    public static readonly TEXTUREFORMAT_COMPRESSED_SRGB8_ALPHA8_ASTC_12x12_KHR = 37853;
     /** Compressed ETC1 (RGB) */
     public static readonly TEXTUREFORMAT_COMPRESSED_RGB_ETC1_WEBGL = 36196;
     /** Compressed ETC2 (RGB) */
