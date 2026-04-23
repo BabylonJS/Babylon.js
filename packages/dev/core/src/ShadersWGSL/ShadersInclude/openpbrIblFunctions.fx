@@ -320,7 +320,17 @@
     }
 #endif
     #ifdef ENVIRONMENTBRDF
-    fn conductorIblFresnel(reflectance: ReflectanceParams, NdotV: f32, roughness: f32, environmentBrdf: vec3f) -> vec3f
+    fn computeDielectricIblFresnel(reflectance: ReflectanceParams, environmentBrdf: vec3f) -> f32
+    {
+        let dielectricIblFresnel: f32 = getReflectanceFromBRDFWithEnvLookup(vec3f(reflectance.F0), vec3f(reflectance.F90), environmentBrdf).r;
+        // environmentBrdf.y is E_ss (the F0-weighted hemisphere integral).
+        // Boost by the Fdez-Agüera factor so multiscattered light stays in the
+        // specular slab rather than leaking into the (potentially dark) irradiance.
+        let dielectricECF: f32 = 1.0 + reflectance.F0 * (1.0 / environmentBrdf.y - 1.0);
+        return clamp(dielectricIblFresnel * dielectricECF, 0.0, 1.0);
+    }
+
+    fn computeConductorIblFresnel(reflectance: ReflectanceParams, NdotV: f32, roughness: f32, environmentBrdf: vec3f) -> vec3f
     {
         #if (CONDUCTOR_SPECULAR_MODEL == CONDUCTOR_SPECULAR_MODEL_OPENPBR)
             // This is an empirical hack to modify the F0 albedo based on roughness. It's not based on any paper

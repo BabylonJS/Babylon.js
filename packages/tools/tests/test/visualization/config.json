@@ -1,4 +1,4 @@
-{
+﻿{
     "root": "https://cdn.babylonjs.com",
     "tests": [
         {
@@ -3109,6 +3109,11 @@
         {
             "title": "OpenPBR IBL Furnace Test for Metal-Rough",
             "playgroundId": "#KQYNYS#47",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR IBL Furnace Test for Dielectric Energy Compensation",
+            "playgroundId": "#KQYNYS#61",
             "excludedEngines": ["webgl1"]
         },
         {
