@@ -1,4 +1,4 @@
-import type { AssetContainer } from "../assetContainer";
+import { type AssetContainer } from "../assetContainer";
 
 /**
  * Event data fired when a smart asset finishes loading successfully.

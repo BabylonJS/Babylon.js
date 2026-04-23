@@ -5,18 +5,19 @@ import { SmartAssetManager } from "core/SmartAssets/smartAssetManager";
 import { OverrideManager } from "core/SmartAssets/overrideManager";
 import { type AbstractMesh } from "core/Meshes/abstractMesh";
 import { type Material } from "core/Materials/material";
-import { LoadAssetContainerAsync } from "core/Loading/sceneLoader";
 
-import { type ServiceDefinition } from "../../../modularity/serviceDefinition";
+import { type ServiceDefinition } from "shared-ui-components/modularTool/modularity/serviceDefinition";
 import { type IToolsService, ToolsServiceIdentity } from "../toolsService";
 import { type ISelectionService, SelectionServiceIdentity } from "../../selectionService";
 
 import { useObservableState } from "shared-ui-components/modularTool/hooks/observableHooks";
-import { LinkToEntity } from "../../../components/properties/linkToEntityPropertyLine";
 import { Link } from "shared-ui-components/fluent/primitives/link";
+import { Dialog } from "shared-ui-components/fluent/primitives/dialog";
+
+import { getOrCreateManagers } from "../../smartAssetHandler";
 
 import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
-import { makeStyles, tokens } from "@fluentui/react-components";
+import { Body1, Caption1, makeStyles, tokens } from "@fluentui/react-components";
 import { AddRegular, DeleteRegular, ArrowSyncRegular, LinkRegular, CubeRegular, DocumentTextRegular } from "@fluentui/react-icons";
 
 /**
@@ -61,32 +62,6 @@ export const AssemblyToolsServiceDefinition: ServiceDefinition<[], [IToolsServic
         };
     },
 };
-
-// ── Shared helpers ──
-
-/**
- * Gets or lazily creates the SmartAssetManager and OverrideManager for a scene.
- * @param scene - The scene to get/create managers for.
- * @returns An object containing the SmartAssetManager and OverrideManager.
- */
-// eslint-disable-next-line @typescript-eslint/naming-convention
-function _getOrCreateManagers(scene: Scene): { sam: SmartAssetManager; overrides: OverrideManager } {
-    let sam = SmartAssetManager.GetFromScene(scene);
-    if (!sam) {
-        sam = new SmartAssetManager(scene);
-    }
-
-    // Install Inspector's file picker handler for missing assets
-    sam.onAssetNotFound = _assemblyAssetNotFoundHandler;
-
-    let overrides = OverrideManager.GetFromScene(scene);
-    if (!overrides) {
-        overrides = new OverrideManager(scene);
-        overrides.linkSmartAssetManager(sam);
-    }
-
-    return { sam, overrides };
-}
 
 // ── Styles ──
 
@@ -141,6 +116,21 @@ const useStyles = makeStyles({
             opacity: 1,
         },
     },
+    materialSelect: {
+        flex: 1,
+        fontSize: "11px",
+        padding: "2px 4px",
+        backgroundColor: tokens.colorNeutralBackground3,
+        color: tokens.colorNeutralForeground1,
+        border: `1px solid ${tokens.colorNeutralStroke1}`,
+        borderRadius: tokens.borderRadiusMedium,
+    },
+    dimSeparator: {
+        opacity: 0.5,
+    },
+    overrideValue: {
+        color: tokens.colorPaletteGreenForeground1,
+    },
 });
 
 // ── Smart Asset List ──
@@ -149,10 +139,32 @@ const SmartAssetList: FunctionComponent<{ scene: Scene; selectionService: ISelec
     const { scene, selectionService } = props;
     const styles = useStyles();
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const notFoundFileRef = useRef<HTMLInputElement>(null);
     const [status, setStatus] = useState("");
+    const [pendingNotFound, setPendingNotFound] = useState<{
+        key: string;
+        url: string;
+        resolve: (value: string | File | null) => void;
+    } | null>(null);
 
-    // Find the SAM, with cross-module fallback
-    const sam = _findSam(scene);
+    // Find the SAM
+    const sam = SmartAssetManager.GetFromScene(scene) ?? null;
+
+    // Install a React-state-based onAssetNotFound handler so the Fluent Dialog
+    // is used instead of imperative DOM overlays.
+    const pendingNotFoundRef = useRef(pendingNotFound);
+    pendingNotFoundRef.current = pendingNotFound;
+
+    useEffect(() => {
+        if (!sam) {
+            return;
+        }
+        sam.onAssetNotFound = async (key: string, expectedUrl: string) => {
+            return await new Promise<string | File | null>((resolve) => {
+                setPendingNotFound({ key, url: expectedUrl, resolve });
+            });
+        };
+    }, [sam]);
 
     // Reactively read assets — re-renders when any SAM observable fires
     const assets = useObservableState(
@@ -182,7 +194,7 @@ const SmartAssetList: FunctionComponent<{ scene: Scene; selectionService: ISelec
                 return;
             }
 
-            const { sam } = _getOrCreateManagers(scene);
+            const { sam } = getOrCreateManagers(scene);
 
             for (let i = 0; i < files.length; i++) {
                 const file = files[i];
@@ -224,7 +236,7 @@ const SmartAssetList: FunctionComponent<{ scene: Scene; selectionService: ISelec
 
     const onRemoveAsset = useCallback(
         async (key: string) => {
-            const { sam } = _getOrCreateManagers(scene);
+            const { sam } = getOrCreateManagers(scene);
             await sam.remove(key);
             setStatus(`Removed: ${key}`);
         },
@@ -233,7 +245,7 @@ const SmartAssetList: FunctionComponent<{ scene: Scene; selectionService: ISelec
 
     const onReloadAsset = useCallback(
         async (key: string) => {
-            const { sam } = _getOrCreateManagers(scene);
+            const { sam } = getOrCreateManagers(scene);
             await sam.reloadAsync(key);
             setStatus(`Reloaded: ${key}`);
         },
@@ -242,8 +254,8 @@ const SmartAssetList: FunctionComponent<{ scene: Scene; selectionService: ISelec
 
     const onSwapAsset = useCallback(
         (key: string) => {
-            const doSwap = async (file: File, fileHandle?: FileSystemFileHandle) => {
-                const { sam, overrides } = _getOrCreateManagers(scene);
+            const doSwapAsync = async (file: File, fileHandle?: FileSystemFileHandle) => {
+                const { sam, overrides } = getOrCreateManagers(scene);
                 const oldUrl = sam.resolve(key) ?? "";
                 const blobUrl = URL.createObjectURL(file);
                 const ext = _getExtension(file.name).toLowerCase();
@@ -265,7 +277,7 @@ const SmartAssetList: FunctionComponent<{ scene: Scene; selectionService: ISelec
 
                     // Register a refresh callback so Reload can re-read the file from disk
                     if (fileHandle) {
-                        sam.setRefreshCallback(key, async () => fileHandle.getFile());
+                        sam.setRefreshCallback(key, async () => await fileHandle.getFile());
                     }
 
                     // Replace references on all materials that used the old texture
@@ -290,7 +302,7 @@ const SmartAssetList: FunctionComponent<{ scene: Scene; selectionService: ISelec
 
                     // Register a refresh callback so Reload can re-read the file from disk
                     if (fileHandle) {
-                        sam.setRefreshCallback(key, async () => fileHandle.getFile());
+                        sam.setRefreshCallback(key, async () => await fileHandle.getFile());
                     }
 
                     // Use onAssetNotFound to provide the File so SAM builds provenance
@@ -317,25 +329,28 @@ const SmartAssetList: FunctionComponent<{ scene: Scene; selectionService: ISelec
             // FileSystemFileHandle that lets Reload re-read fresh contents from disk.
             const windowWithPicker = window as Window & { showOpenFilePicker?: (options?: any) => Promise<FileSystemFileHandle[]> };
             if (typeof windowWithPicker.showOpenFilePicker === "function") {
-                windowWithPicker
-                    .showOpenFilePicker({
-                        types: [
-                            {
-                                description: "Assets",
-                                accept: {
-                                    "model/*": [".glb", ".gltf", ".babylon", ".obj"],
-                                    "image/*": [".png", ".jpg", ".jpeg", ".env", ".hdr", ".dds", ".ktx", ".ktx2"],
+                const pickerAsync = async () => {
+                    try {
+                        const [handle] = await windowWithPicker.showOpenFilePicker!({
+                            types: [
+                                {
+                                    description: "Assets",
+                                    accept: {
+                                        // eslint-disable-next-line @typescript-eslint/naming-convention
+                                        "model/*": [".glb", ".gltf", ".babylon", ".obj"],
+                                        // eslint-disable-next-line @typescript-eslint/naming-convention
+                                        "image/*": [".png", ".jpg", ".jpeg", ".env", ".hdr", ".dds", ".ktx", ".ktx2"],
+                                    },
                                 },
-                            },
-                        ],
-                    })
-                    .then(async ([handle]) => {
+                            ],
+                        });
                         const file = await handle.getFile();
-                        await doSwap(file, handle);
-                    })
-                    .catch(() => {
+                        await doSwapAsync(file, handle);
+                    } catch {
                         // User cancelled the picker
-                    });
+                    }
+                };
+                void pickerAsync();
             } else {
                 // Fallback for browsers without File System Access API
                 const input = document.createElement("input");
@@ -346,12 +361,33 @@ const SmartAssetList: FunctionComponent<{ scene: Scene; selectionService: ISelec
                     if (!file) {
                         return;
                     }
-                    await doSwap(file);
+                    await doSwapAsync(file);
                 };
                 input.click();
             }
         },
         [scene]
+    );
+
+    const handleNotFoundSkip = useCallback(() => {
+        pendingNotFound?.resolve(null);
+        setPendingNotFound(null);
+    }, [pendingNotFound]);
+
+    const handleNotFoundLocate = useCallback(() => {
+        notFoundFileRef.current?.click();
+    }, []);
+
+    const handleNotFoundFileSelected = useCallback(
+        (e: React.ChangeEvent<HTMLInputElement>) => {
+            const file = e.target.files?.[0] ?? null;
+            pendingNotFound?.resolve(file);
+            setPendingNotFound(null);
+            if (notFoundFileRef.current) {
+                notFoundFileRef.current.value = "";
+            }
+        },
+        [pendingNotFound]
     );
 
     return (
@@ -385,6 +421,30 @@ const SmartAssetList: FunctionComponent<{ scene: Scene; selectionService: ISelec
             <ButtonLine label="Add Asset" icon={AddRegular} onClick={onAddAsset} />
             <input ref={fileInputRef} type="file" accept=".glb,.gltf,.babylon,.obj,.png,.jpg,.env,.hdr" multiple style={{ display: "none" }} onChange={onFileSelected} />
             {status && <div className={styles.statusMessage}>{status}</div>}
+
+            {/* Asset-not-found dialog using Fluent Dialog */}
+            <Dialog
+                open={!!pendingNotFound}
+                title="Asset not found"
+                onDismiss={handleNotFoundSkip}
+                actions={[
+                    { label: "Skip", onClick: handleNotFoundSkip },
+                    { label: "Locate File…", appearance: "primary", onClick: handleNotFoundLocate },
+                ]}
+            >
+                <Body1>
+                    Key: <b>{pendingNotFound?.key}</b>
+                </Body1>
+                <Caption1>{_shortenUrl(pendingNotFound?.url ?? "")}</Caption1>
+                <Body1>Locate the file or click Skip to continue without it.</Body1>
+            </Dialog>
+            <input
+                ref={notFoundFileRef}
+                type="file"
+                accept=".glb,.gltf,.babylon,.obj,.png,.jpg,.jpeg,.env,.hdr,.dds,.ktx,.ktx2"
+                style={{ display: "none" }}
+                onChange={handleNotFoundFileSelected}
+            />
         </>
     );
 };
@@ -418,7 +478,7 @@ const MaterialAssignment: FunctionComponent<{ scene: Scene }> = (props: { scene:
             mesh.material = mat;
 
             // Persist as an override
-            const { sam, overrides } = _getOrCreateManagers(scene);
+            const { sam, overrides } = getOrCreateManagers(scene);
             const key = sam.findKeyForObject(mesh) ?? "";
             overrides.addOverride({
                 key,
@@ -451,15 +511,7 @@ const MaterialAssignment: FunctionComponent<{ scene: Scene }> = (props: { scene:
                                 onAssignMaterial(mesh.name, e.target.value);
                             }
                         }}
-                        style={{
-                            flex: 1,
-                            fontSize: "11px",
-                            padding: "2px 4px",
-                            background: "var(--colorNeutralBackground3, #333)",
-                            color: "var(--colorNeutralForeground1, #eee)",
-                            border: "1px solid var(--colorNeutralStroke1, #555)",
-                            borderRadius: "4px",
-                        }}
+                        className={styles.materialSelect}
                     >
                         <option value="">(none)</option>
                         {materials.map((m, idx) => (
@@ -516,12 +568,12 @@ const OverrideSummary: FunctionComponent<{ scene: Scene }> = (props: { scene: Sc
             {overrideList.map((o, i) => (
                 <div key={i} className={styles.overrideRow}>
                     <span>{o.key}</span>
-                    <span style={{ opacity: 0.5 }}>→</span>
+                    <span className={styles.dimSeparator}>→</span>
                     <span>
                         {o.target}.{o.prop}
                     </span>
-                    <span style={{ opacity: 0.5 }}>=</span>
-                    <span style={{ color: tokens.colorPaletteGreenForeground1 }}>{_shortenValue(o.value)}</span>
+                    <span className={styles.dimSeparator}>=</span>
+                    <span className={styles.overrideValue}>{_shortenValue(o.value)}</span>
                 </div>
             ))}
             <ButtonLine label="Refresh" icon={DocumentTextRegular} onClick={refresh} />
@@ -532,18 +584,12 @@ const OverrideSummary: FunctionComponent<{ scene: Scene }> = (props: { scene: Sc
 // ── Utilities ──
 
 /**
- * Finds the SmartAssetManager attached to a scene, with cross-module fallback.
- * @param scene - The scene to search.
- * @returns The SmartAssetManager, or null if not found.
- */
-// eslint-disable-next-line @typescript-eslint/naming-convention
-function _findSam(scene: Scene): SmartAssetManager | null {
-    return SmartAssetManager.GetFromScene(scene) ?? null;
-}
-
-/**
  * Finds the first scene entity produced by a smart asset key, for click-to-select.
  * Prefers non-root meshes, then materials, then textures.
+ * @param key - The smart asset key.
+ * @param scene - The scene to search.
+ * @param sam - The SmartAssetManager instance.
+ * @returns The first matching entity, or null if not found.
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 function _findFirstEntityForKey(key: string, scene: Scene, sam: SmartAssetManager): { name: string } | null {
@@ -636,64 +682,4 @@ function _getExtension(url: string): string {
         return clean.substring(lastDot);
     }
     return "";
-}
-
-/**
- * Default handler for missing assets — shows an overlay dialog with
- * "Locate File" and "Skip" buttons.
- * @param key - The smart asset key that was not found.
- * @param expectedUrl - The URL that failed to load.
- * @returns A promise resolving to a new URL, File, or null to skip.
- */
-// eslint-disable-next-line @typescript-eslint/naming-convention
-async function _assemblyAssetNotFoundHandler(key: string, expectedUrl: string): Promise<string | File | null> {
-    return await new Promise<string | File | null>((resolve) => {
-        const shortUrl = expectedUrl.length > 60 ? "…" + expectedUrl.slice(-50) : expectedUrl;
-
-        const overlay = document.createElement("div");
-        overlay.style.cssText =
-            "position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);" + "display:flex;align-items:center;justify-content:center;z-index:10000;";
-
-        const dialog = document.createElement("div");
-        dialog.style.cssText =
-            "background:#2d2d2d;color:#eee;padding:24px 32px;border-radius:8px;" + "font:14px sans-serif;max-width:500px;text-align:center;box-shadow:0 4px 24px rgba(0,0,0,0.6);";
-        dialog.innerHTML =
-            `<div style="font-size:16px;font-weight:bold;margin-bottom:8px;">Asset not found</div>` +
-            `<div style="margin-bottom:4px;">Key: <b>${key}</b></div>` +
-            `<div style="margin-bottom:16px;opacity:0.6;font-size:12px;word-break:break-all;">${shortUrl}</div>` +
-            `<div style="margin-bottom:16px;">Locate the file or click Skip to continue without it.</div>`;
-
-        const btnRow = document.createElement("div");
-        btnRow.style.cssText = "display:flex;gap:12px;justify-content:center;";
-
-        const locateBtn = document.createElement("button");
-        locateBtn.textContent = "Locate File…";
-        locateBtn.style.cssText = "padding:8px 20px;background:#0078d4;color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:13px;";
-
-        const skipBtn = document.createElement("button");
-        skipBtn.textContent = "Skip";
-        skipBtn.style.cssText = "padding:8px 20px;background:#444;color:#ccc;border:none;border-radius:4px;cursor:pointer;font-size:13px;";
-
-        const input = document.createElement("input");
-        input.type = "file";
-        input.accept = ".glb,.gltf,.babylon,.obj,.png,.jpg,.jpeg,.env,.hdr,.dds,.ktx,.ktx2";
-        input.style.display = "none";
-
-        locateBtn.onclick = () => input.click();
-        skipBtn.onclick = () => {
-            document.body.removeChild(overlay);
-            resolve(null);
-        };
-
-        input.onchange = () => {
-            document.body.removeChild(overlay);
-            resolve(input.files?.[0] ?? null);
-        };
-
-        btnRow.appendChild(locateBtn);
-        btnRow.appendChild(skipBtn);
-        dialog.appendChild(btnRow);
-        overlay.appendChild(dialog);
-        document.body.appendChild(overlay);
-    });
 }

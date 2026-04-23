@@ -1,6 +1,6 @@
 import { type Scene } from "../scene";
 import { type SmartAssetManager } from "./smartAssetManager";
-import { type IOverrideEntry, type ISerializedOverrideEntry, type OverrideTargetType, type OverrideValue } from "./overrideEntry";
+import { type IOverrideEntry, type OverrideTargetType, type OverrideValue } from "./overrideEntry";
 import { Logger } from "../Misc/logger";
 
 const OVERRIDE_MANAGER_KEY = Symbol.for("babylonjs:overrideManager");
@@ -178,23 +178,18 @@ export class OverrideManager {
 
     /**
      * Serializes all overrides to a JSON-compatible array.
-     * @returns An array of serialized override entries.
+     * The on-disk shape is identical to the in-memory `IOverrideEntry`.
+     * @returns An array of override entries (shallow copies).
      */
-    public serialize(): ISerializedOverrideEntry[] {
-        return this._overrides.map((o) => ({
-            key: o.key,
-            targetType: o.targetType,
-            targetName: o.targetName,
-            propertyPath: o.propertyPath,
-            value: o.value,
-        }));
+    public serialize(): IOverrideEntry[] {
+        return this._overrides.map((o) => ({ ...o }));
     }
 
     /**
      * Loads overrides from a serialized array and applies them.
-     * @param data - Array of serialized override entries.
+     * @param data - Array of override entries.
      */
-    public deserializeAndApply(data: ISerializedOverrideEntry[]): void {
+    public deserializeAndApply(data: IOverrideEntry[]): void {
         if (!Array.isArray(data)) {
             throw new Error("OverrideManager: Expected an array of override entries.");
         }
@@ -304,33 +299,17 @@ export class OverrideManager {
             }
         }
 
-        // Number arrays → attempt to create Color3, Color4, Vector3, etc.
-        if (Array.isArray(value)) {
-            if (value.length === 3) {
-                // Could be Color3 or Vector3 — try to match the existing property type
-                const existing = _getNestedProperty(_target, _propertyPath);
-                if (existing && typeof existing === "object" && "r" in (existing as object)) {
-                    // It's a Color3-like
-                    return { r: value[0], g: value[1], b: value[2] };
-                }
-                // Default to treating as {x, y, z}
-                return { x: value[0], y: value[1], z: value[2] };
-            }
-            if (value.length === 4) {
-                const existing = _getNestedProperty(_target, _propertyPath);
-                if (existing && typeof existing === "object" && "r" in (existing as object)) {
-                    return { r: value[0], g: value[1], b: value[2], a: value[3] };
-                }
-                return { x: value[0], y: value[1], z: value[2], w: value[3] };
-            }
-        }
-
+        // Number arrays are passed through as-is. _setNestedProperty will use
+        // the live target's `fromArray` method (Vector3, Color3, etc.) to push
+        // values in-place, preserving the math instance identity.
         return value;
     }
 
     /**
      * Resolves a "ref:name" value by looking up a material, light, or camera
      * in the scene by name.
+     * @param name - The name of the object to look up.
+     * @returns The resolved object, or undefined if not found.
      */
     private _resolveObjectReference(name: string): unknown {
         const mat = this._scene.materials.find((m) => m.name === name);
@@ -353,6 +332,8 @@ export class OverrideManager {
      * Resolves a "texture:key" value by finding a texture loaded by the
      * SmartAssetManager under that key. Falls back to searching scene
      * textures by name.
+     * @param key - The smart asset key for the texture.
+     * @returns The resolved texture, or undefined if not found.
      */
     private _resolveTextureReference(key: string): unknown {
         // First try: find a texture tracked by the smart asset manager
@@ -387,14 +368,24 @@ export class OverrideManager {
 
 /**
  * Creates a unique key for storing original values.
+ * @param key - The smart asset key.
+ * @param targetType - The target type.
+ * @param targetName - The target object name.
+ * @param propertyPath - The property path.
+ * @returns A unique string key.
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 function _makeOriginalValueKey(key: string, targetType: OverrideTargetType, targetName: string, propertyPath: string): string {
     return `${key}::${targetType}::${targetName}::${propertyPath}`;
 }
 
 /**
  * Gets a nested property from an object using a dot-separated path.
+ * @param obj - The object to read from.
+ * @param path - Dot-separated property path (e.g. "albedoColor.r").
+ * @returns The value at the path, or undefined if not found.
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 function _getNestedProperty(obj: object, path: string): unknown {
     const parts = path.split(".");
     let current: unknown = obj;
@@ -411,8 +402,17 @@ function _getNestedProperty(obj: object, path: string): unknown {
 
 /**
  * Sets a nested property on an object using a dot-separated path.
- * If the target property has a copyFrom method (like Vector3, Color3), uses it.
+ *
+ * When the value is a number array and the existing property is a Babylon
+ * math type (Vector*, Quaternion, Color3/4, Matrix), uses the math type's
+ * `fromArray` method to mutate it in place — preserving the live instance
+ * identity that consumers may already hold references to. Otherwise falls
+ * back to direct property replacement.
+ * @param obj - The object to write to.
+ * @param path - Dot-separated property path (e.g. "albedoColor").
+ * @param value - The value to set.
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 function _setNestedProperty(obj: object, path: string, value: unknown): void {
     const parts = path.split(".");
     let current: unknown = obj;
@@ -431,29 +431,14 @@ function _setNestedProperty(obj: object, path: string, value: unknown): void {
     const lastPart = parts[parts.length - 1];
     const existing = (current as Record<string, unknown>)[lastPart];
 
-    // For Babylon math types (Vector3, Color3, etc.), use copyFromFloats to set
-    // individual components since direct assignment of a plain {x,y,z} object
-    // would replace the live math instance with an inert plain object.
-    // For scene entities (textures, materials), do a direct property replacement.
-    if (existing && typeof existing === "object" && typeof value === "object" && value !== null) {
-        const isValueSceneEntity = typeof (value as any).getClassName === "function" && /Texture|Material|Light|Camera|Mesh/i.test((value as any).getClassName());
-        if (!isValueSceneEntity && "copyFromFloats" in (existing as object) && typeof (existing as any).copyFromFloats === "function") {
-            const v = value as Record<string, number>;
-            if ("r" in v) {
-                (existing as any).copyFromFloats(v.r, v.g, v.b, v.a);
-            } else if ("w" in v) {
-                (existing as any).copyFromFloats(v.x, v.y, v.z, v.w);
-            } else if ("z" in v) {
-                (existing as any).copyFromFloats(v.x, v.y, v.z);
-            } else {
-                (existing as any).copyFromFloats(v.x, v.y);
-            }
-        } else {
-            (current as Record<string, unknown>)[lastPart] = value;
-        }
-    } else {
-        (current as Record<string, unknown>)[lastPart] = value;
+    // If both sides look like Babylon math types, mutate in place via fromArray
+    // so the live instance identity is preserved.
+    if (Array.isArray(value) && existing && typeof existing === "object" && typeof (existing as any).fromArray === "function") {
+        (existing as any).fromArray(value);
+        return;
     }
+
+    (current as Record<string, unknown>)[lastPart] = value;
 }
 
 /**
@@ -463,7 +448,10 @@ function _setNestedProperty(obj: object, path: string, value: unknown): void {
  * because cloning them would register unwanted duplicates in the scene.
  * Plain math types (Vector3, Color3, etc.) are cloned so mutations to the
  * live object don't corrupt the saved original.
+ * @param value - The value to snapshot.
+ * @returns A clone for math types, or the original reference for scene entities.
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 function _cloneValue(value: unknown): unknown {
     if (value === null || value === undefined) {
         return value;

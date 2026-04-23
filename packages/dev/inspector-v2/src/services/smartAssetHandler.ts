@@ -1,4 +1,5 @@
 import { SmartAssetManager } from "core/SmartAssets/smartAssetManager";
+import { OverrideManager } from "core/SmartAssets/overrideManager";
 import { type Scene } from "core/scene";
 
 /**
@@ -8,6 +9,7 @@ import { type Scene } from "core/scene";
  * @param expectedUrl - The URL that failed to load.
  * @returns A promise resolving to a new URL, File, or null to skip.
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export async function inspectorAssetNotFoundHandler(key: string, expectedUrl: string): Promise<string | File | null> {
     return await new Promise<string | File | null>((resolve) => {
         const shortUrl = expectedUrl.length > 60 ? "…" + expectedUrl.slice(-50) : expectedUrl;
@@ -64,7 +66,9 @@ export async function inspectorAssetNotFoundHandler(key: string, expectedUrl: st
 /**
  * Installs the Inspector's `onAssetNotFound` handler on a SmartAssetManager
  * if no handler is already set.
+ * @param sam - The SmartAssetManager to install the handler on.
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export function installAssetNotFoundHandler(sam: SmartAssetManager): void {
     if (!sam.onAssetNotFound) {
         sam.onAssetNotFound = inspectorAssetNotFoundHandler;
@@ -75,7 +79,10 @@ export function installAssetNotFoundHandler(sam: SmartAssetManager): void {
  * Installs the `onAssetNotFound` handler eagerly: on any existing
  * SmartAssetManager on the scene, and via `OnInstanceCreated` for
  * any future instances. Returns a dispose function to clean up.
+ * @param scene - The scene to install hooks on.
+ * @returns A dispose function that restores the previous hooks.
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export function installSmartAssetHooks(scene: Scene): () => void {
     // Retroactively install on existing manager
     const existing = SmartAssetManager.GetFromScene(scene);
@@ -96,4 +103,28 @@ export function installSmartAssetHooks(scene: Scene): () => void {
             SmartAssetManager.OnInstanceCreated = previousOnInstanceCreated;
         }
     };
+}
+
+/**
+ * Gets or lazily creates the SmartAssetManager and OverrideManager for a scene.
+ * Installs the Inspector's asset-not-found handler as a fallback.
+ * @param scene - The scene to get/create managers for.
+ * @returns An object containing the SmartAssetManager and OverrideManager.
+ */
+// eslint-disable-next-line @typescript-eslint/naming-convention
+export function getOrCreateManagers(scene: Scene): { sam: SmartAssetManager; overrides: OverrideManager } {
+    let sam = SmartAssetManager.GetFromScene(scene);
+    if (!sam) {
+        sam = new SmartAssetManager(scene);
+    }
+
+    installAssetNotFoundHandler(sam);
+
+    let overrides = OverrideManager.GetFromScene(scene);
+    if (!overrides) {
+        overrides = new OverrideManager(scene);
+        overrides.linkSmartAssetManager(sam);
+    }
+
+    return { sam, overrides };
 }

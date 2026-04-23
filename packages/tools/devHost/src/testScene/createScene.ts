@@ -5,15 +5,15 @@ import { HemisphericLight } from "core/Lights/hemisphericLight";
 import { DirectionalLight } from "core/Lights/directionalLight";
 import { Vector3 } from "core/Maths/math.vector";
 import { Color3, Color4 } from "core/Maths/math.color";
+import { Logger } from "core/Misc/logger";
 import { SmartAssetManager } from "core/SmartAssets/smartAssetManager";
 import { OverrideManager } from "core/SmartAssets/overrideManager";
-import { serializeProject, loadProjectAsync } from "core/SmartAssets/projectSerializer";
-import { exportProjectAsync } from "core/SmartAssets/projectExporter";
+import { SerializeProject } from "core/SmartAssets/projectSerializer";
+import { SceneSerializer } from "core/Misc/sceneSerializer";
 import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
-import { Texture } from "core/Materials/Textures/texture";
+import { type Texture } from "core/Materials/Textures/texture";
 import { CubeTexture } from "core/Materials/Textures/cubeTexture";
 import { registerBuiltInLoaders } from "loaders/dynamic";
-import { ShowInspector } from "inspector-v2";
 
 registerBuiltInLoaders();
 
@@ -34,6 +34,10 @@ registerBuiltInLoaders();
  *
  * This prototype intentionally pushes beyond what the current project
  * serializer supports to surface gaps for the assembly milestone (M7).
+ *
+ * @param engine - The Babylon engine to create the scene on.
+ * @param canvas - The HTML canvas element for camera attachment.
+ * @returns A promise resolving to the created scene.
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention, no-restricted-syntax
 export const createScene = async function (engine: Engine, canvas: HTMLCanvasElement): Promise<Scene> {
@@ -53,8 +57,8 @@ export const createScene = async function (engine: Engine, canvas: HTMLCanvasEle
         "https://playground.babylonjs.com/textures/environment.env", scene
     );
 
-    const log = (label: string, msg: string) => console.log(`[Assembly Prototype] ${label}: ${msg}`);
-    const warn = (label: string, msg: string) => console.warn(`[Assembly Prototype] ${label}: ${msg}`);
+    const log = (label: string, msg: string) => Logger.Log(`[Assembly Prototype] ${label}: ${msg}`);
+    const warn = (label: string, msg: string) => Logger.Warn(`[Assembly Prototype] ${label}: ${msg}`);
     const results: string[] = [];
     const pass = (test: string) => {
         log("PASS", test);
@@ -63,10 +67,6 @@ export const createScene = async function (engine: Engine, canvas: HTMLCanvasEle
     const fail = (test: string, reason: string) => {
         warn("FAIL", `${test}: ${reason}`);
         results.push(`❌ ${test}: ${reason}`);
-    };
-    const gap = (test: string, detail: string) => {
-        warn("GAP", `${test}: ${detail}`);
-        results.push(`⚠️ GAP: ${test}: ${detail}`);
     };
 
     // ═══════════════════════════════════════════════════════════════
@@ -204,11 +204,13 @@ export const createScene = async function (engine: Engine, canvas: HTMLCanvasEle
     // ═══════════════════════════════════════════════════════════════
     // Step 7: Serialize the project — test what survives
     // ═══════════════════════════════════════════════════════════════
-    const projectData = serializeProject(sam, overrides);
+    const projectData = SerializeProject(sam, overrides);
     const seen = new WeakSet();
     const projectJson = JSON.stringify(projectData, (_key, value) => {
         if (typeof value === "object" && value !== null) {
-            if (seen.has(value)) return undefined;
+            if (seen.has(value)) {
+                return undefined;
+            }
             seen.add(value);
         }
         return value;
@@ -268,18 +270,16 @@ export const createScene = async function (engine: Engine, canvas: HTMLCanvasEle
     // Step 9: Export to .babylon — verify clean output
     // ═══════════════════════════════════════════════════════════════
     try {
-        const exportResult = await exportProjectAsync(scene, sam, overrides, {
-            format: "babylon",
-            fileName: "assembly-test",
-        });
-        const exportedScene = JSON.parse(exportResult.data as string);
+        overrides.applyAllOverrides();
+        const exportedScene = SceneSerializer.Serialize(scene);
+        const exportJson = JSON.stringify(exportedScene);
         const exportHasCustomMat = (exportedScene.materials as any[])?.some(
             (m: any) => m.name === "custom-assembly-mat"
         );
         const exportHasTextures = (exportedScene.materials as any[])?.some(
             (m: any) => m.name === "custom-assembly-mat" && m.albedoTexture != null
         );
-        log("Step 9", `Exported ${exportResult.fileName}: ${(exportResult.data as string).length} bytes`);
+        log("Step 9", `Exported assembly-test.babylon: ${exportJson.length} bytes`);
         log("Step 9", `Export has custom material: ${exportHasCustomMat}`);
         log("Step 9", `Export has texture assignments: ${exportHasTextures}`);
 
@@ -310,8 +310,12 @@ export const createScene = async function (engine: Engine, canvas: HTMLCanvasEle
         "<b style='color:#0f0'>Assembly Prototype — Patrick's Workflow</b>",
         "",
         ...results.map((r) => {
-            if (r.startsWith("✅")) return `<span style="color:#4f4">${r}</span>`;
-            if (r.startsWith("❌")) return `<span style="color:#f44">${r}</span>`;
+            if (r.startsWith("✅")) {
+                return `<span style="color:#4f4">${r}</span>`;
+            }
+            if (r.startsWith("❌")) {
+                return `<span style="color:#f44">${r}</span>`;
+            }
             return `<span style="color:#fa0">${r}</span>`;
         }),
         "",
@@ -320,6 +324,8 @@ export const createScene = async function (engine: Engine, canvas: HTMLCanvasEle
     document.body.appendChild(statusDiv);
 
     // Open Inspector so the scene can be interacted with
+    // @ts-expect-error inspector-v2 is resolved at runtime by devHost's webpack config
+    const { ShowInspector } = await import("inspector-v2");
     ShowInspector(scene);
 
     return scene;

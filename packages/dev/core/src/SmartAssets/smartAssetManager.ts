@@ -3,16 +3,20 @@ import { type AssetContainer } from "../assetContainer";
 import { type Node } from "../node";
 import { type Material } from "../Materials/material";
 import { type BaseTexture } from "../Materials/Textures/baseTexture";
+import { Texture } from "../Materials/Textures/texture";
+import { CubeTexture } from "../Materials/Textures/cubeTexture";
 import { type AnimationGroup } from "../Animations/animationGroup";
 import { Observable } from "../Misc/observable";
 import { Logger } from "../Misc/logger";
 import { LoadAssetContainerAsync } from "../Loading/sceneLoader";
 import { FileToolsOptions } from "../Misc/fileTools";
+import { GetExtensionFromUrl } from "../Misc/urlTools";
 import { type ISmartAssetProvenance } from "./smartAssetProvenance";
 import { type ISmartAssetLoadedEvent, type ISmartAssetUrlChangedEvent, type ISmartAssetErrorEvent, type ISmartAssetUnloadedEvent } from "./smartAssetEvents";
-import { type ISerializedSmartAssetMap, serializeSmartAssetMap, deserializeSmartAssetMap, resolveAssetUrl, readJsonSource } from "./smartAssetSerializer";
+import { type ISerializedSmartAssetMap, SerializeSmartAssetMap, DeserializeSmartAssetMap, ResolveAssetUrl, ReadJsonSourceAsync } from "./smartAssetSerializer";
 import { RegisterClass } from "../Misc/typeStore";
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const SMART_ASSET_MANAGER_KEY = Symbol.for("babylonjs:smartAssetManager");
 const ASSET_PROTOCOL = "asset://";
 
@@ -170,6 +174,7 @@ export class SmartAssetManager {
      * Removes a key from the registry. If the asset is loaded, it is unloaded first.
      * @param key - The key to remove.
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public async remove(key: string): Promise<void> {
         if (this._containers.has(key)) {
             await this.unloadAsync(key);
@@ -209,6 +214,7 @@ export class SmartAssetManager {
      * @param key - The key to update.
      * @param newUrl - The new URL.
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public async setUrl(key: string, newUrl: string): Promise<void> {
         const oldUrl = this._urls.get(key);
         this._urls.set(key, newUrl);
@@ -257,7 +263,7 @@ export class SmartAssetManager {
             return existing;
         }
 
-        return await this._loadSceneFile(key, resolvedUrl);
+        return await this._loadSceneFileAsync(key, resolvedUrl);
     }
 
     /**
@@ -270,26 +276,29 @@ export class SmartAssetManager {
         const scenePromises: Promise<AssetContainer | null>[] = [];
         const texturePromises: Promise<void>[] = [];
 
-        for (const [key, url] of this._urls) {
+        for (const [key, url] of Array.from(this._urls)) {
             if (this._containers.has(key)) {
                 continue;
             }
-            if (this._textureKeys.has(key) || _isTextureExtension(url)) {
-                texturePromises.push(
-                    this.loadTextureAsync(key)
-                        .then(() => {})
-                        .catch(() => {
-                            Logger.Warn(`SmartAssetManager: Texture "${key}" could not be loaded — skipping.`);
-                        })
-                );
+            if (this._textureKeys.has(key) || IsTextureUrl(url)) {
+                const textureLoadAsync = async () => {
+                    try {
+                        await this.loadTextureAsync(key);
+                    } catch {
+                        Logger.Warn(`SmartAssetManager: Texture "${key}" could not be loaded — skipping.`);
+                    }
+                };
+                texturePromises.push(textureLoadAsync());
             } else {
-                scenePromises.push(
-                    this.loadAsync(key).catch(() => {
-                        // Asset failed to load (and onAssetNotFound didn't resolve it) — skip it
+                const sceneLoadAsync = async () => {
+                    try {
+                        return await this.loadAsync(key);
+                    } catch {
                         Logger.Warn(`SmartAssetManager: Asset "${key}" could not be loaded — skipping.`);
                         return null;
-                    })
-                );
+                    }
+                };
+                scenePromises.push(sceneLoadAsync());
             }
         }
 
@@ -330,28 +339,16 @@ export class SmartAssetManager {
             throw new Error(`SmartAssetManager: Key "${key}" is not registered. Provide a URL to auto-register.`);
         }
 
-        const texture = await this._createTexture(resolvedUrl);
-
-        // Wait for the texture to load or fail
-        const loaded = await this._waitForTextureLoad(texture);
-        if (!loaded && this.onAssetNotFound) {
-            // Texture failed to load — ask the user to locate it
-            texture.dispose();
-            const resolution = await this.onAssetNotFound(key, resolvedUrl);
-            if (resolution !== null && resolution !== undefined) {
-                let newUrl: string;
-                if (typeof resolution === "string") {
-                    newUrl = resolution;
-                } else {
-                    newUrl = URL.createObjectURL(resolution);
-                }
-                this.register(key, newUrl);
-                const retryTexture = await this._createTexture(newUrl);
-                await this._waitForTextureLoad(retryTexture);
-                this._objectToKeyMap.set(retryTexture, key);
-                this.onAssetLoadedObservable.notifyObservers({ key });
-                return retryTexture;
+        let texture: BaseTexture;
+        try {
+            texture = await this._createAndLoadTextureAsync(resolvedUrl);
+        } catch (error) {
+            this.onAssetErrorObservable.notifyObservers({ key, url: resolvedUrl, error });
+            const fallback = await this._resolveNotFoundAsync(key, resolvedUrl);
+            if (!fallback) {
+                throw error;
             }
+            texture = await this._createAndLoadTextureAsync(fallback.url);
         }
 
         this._objectToKeyMap.set(texture, key);
@@ -455,7 +452,7 @@ export class SmartAssetManager {
      * @returns A serialized asset map document.
      */
     public serializeAssetMap(baseUrl?: string): ISerializedSmartAssetMap {
-        return serializeSmartAssetMap(this, baseUrl);
+        return SerializeSmartAssetMap(this, baseUrl);
     }
 
     /**
@@ -472,11 +469,11 @@ export class SmartAssetManager {
             resolvedRootUrl = Tools.GetFolderPath(source);
         }
 
-        const raw = await readJsonSource(source);
-        const doc = deserializeSmartAssetMap(raw);
+        const raw = await ReadJsonSourceAsync(source);
+        const doc = DeserializeSmartAssetMap(raw);
 
         for (const [key, entry] of Object.entries(doc.assets)) {
-            const resolved = resolvedRootUrl ? resolveAssetUrl(entry.url, resolvedRootUrl) : entry.url;
+            const resolved = resolvedRootUrl ? ResolveAssetUrl(entry.url, resolvedRootUrl) : entry.url;
             this.register(key, resolved);
         }
 
@@ -500,7 +497,7 @@ export class SmartAssetManager {
      * Disposes the manager, unloading all assets and restoring the original PreprocessUrl.
      */
     public dispose(): void {
-        for (const [key] of this._containers) {
+        for (const [key] of Array.from(this._containers)) {
             const container = this._containers.get(key);
             if (container) {
                 container.removeAllFromScene();
@@ -531,95 +528,77 @@ export class SmartAssetManager {
 
     // ── Private ──
 
-    private async _createTexture(url: string): Promise<BaseTexture> {
-        const ext = _getExtension(url).toLowerCase();
-        const isCube = ext === ".env" || ext === ".hdr" || ext === ".dds";
-
-        if (isCube) {
-            const { CubeTexture } = await import("../Materials/Textures/cubeTexture");
-            return CubeTexture.CreateFromPrefilteredData(url, this._scene);
-        } else {
-            const { Texture } = await import("../Materials/Textures/texture");
-            return new Texture(url, this._scene);
-        }
-    }
-
-    private _waitForTextureLoad(texture: BaseTexture): Promise<boolean> {
-        return new Promise<boolean>((resolve) => {
-            if (texture.isReady()) {
-                resolve(true);
-                return;
-            }
-            if (texture.loadingError) {
-                resolve(false);
-                return;
-            }
-            let settled = false;
-            const settle = (result: boolean) => {
-                if (!settled) {
-                    settled = true;
-                    clearTimeout(timeout);
-                    clearInterval(poll);
-                    resolve(result);
-                }
+    /**
+     * Creates a texture and resolves once it is loaded, or rejects on load error.
+     * Uses Babylon's built-in onLoad/onError constructor callbacks — no polling.
+     * @param url - The texture URL.
+     * @returns A promise resolving to the loaded texture.
+     */
+    private async _createAndLoadTextureAsync(url: string): Promise<BaseTexture> {
+        return await new Promise<BaseTexture>((resolve, reject) => {
+            const ext = GetExtensionFromUrl(url);
+            const isCube = ext === ".env" || ext === ".hdr" || ext === ".dds";
+            const onError = (message?: string, exception?: any) => {
+                const err = exception instanceof Error ? exception : new Error(message ?? `SmartAssetManager: failed to load texture from "${url}".`);
+                reject(err);
             };
-            const timeout = setTimeout(() => settle(!texture.loadingError), 5000);
-            texture.onLoadObservable.addOnce(() => settle(true));
-            // Re-check after subscribing to catch loads that completed between
-            // the initial isReady() check and the observable subscription.
-            if (texture.isReady()) {
-                settle(true);
-                return;
+            let texture: BaseTexture;
+            const onLoad = () => resolve(texture);
+            if (isCube) {
+                // CubeTexture(url, scene, extensions, noMipmap, files, onLoad, onError, format, prefiltered)
+                texture = new CubeTexture(url, this._scene, null, false, null, onLoad, onError, undefined, true);
+            } else {
+                // Texture(url, scene, noMipmap, invertY, samplingMode, onLoad, onError)
+                texture = new Texture(url, this._scene, undefined, undefined, undefined, onLoad, onError);
             }
-            // Poll for loadingError since there's no instance-level error observable
-            const poll = setInterval(() => {
-                if (texture.loadingError) {
-                    settle(false);
-                }
-            }, 100);
         });
     }
 
-    private async _loadSceneFile(key: string, url: string): Promise<AssetContainer> {
-        try {
-            const container = await LoadAssetContainerAsync(url, this._scene);
+    /**
+     * Invokes the onAssetNotFound callback (if any) and registers the resolved URL.
+     * @param key - The asset key that failed to load.
+     * @param expectedUrl - The URL that failed.
+     * @returns The new URL (and optional extension hint for File resolutions), or null if unresolved.
+     */
+    private async _resolveNotFoundAsync(key: string, expectedUrl: string): Promise<{ url: string; extensionHint?: string } | null> {
+        if (!this.onAssetNotFound) {
+            return null;
+        }
+        const resolution = await this.onAssetNotFound(key, expectedUrl);
+        if (resolution === null || resolution === undefined) {
+            return null;
+        }
+        if (typeof resolution === "string") {
+            this.register(key, resolution);
+            return { url: resolution };
+        }
+        const blobUrl = URL.createObjectURL(resolution);
+        this.register(key, blobUrl);
+        return { url: blobUrl, extensionHint: GetExtensionFromUrl(resolution.name) || undefined };
+    }
+
+    private async _loadSceneFileAsync(key: string, url: string): Promise<AssetContainer> {
+        const loadAsync = async (loadUrl: string, extensionHint?: string) => {
+            const container = await LoadAssetContainerAsync(loadUrl, this._scene, { pluginExtension: extensionHint });
             container.addAllToScene();
             this._containers.set(key, container);
             this._buildProvenance(key, container);
             this.onAssetLoadedObservable.notifyObservers({ key, container });
             return container;
+        };
+
+        try {
+            return await loadAsync(url);
         } catch (error) {
             this.onAssetErrorObservable.notifyObservers({ key, url, error });
-
-            if (this.onAssetNotFound) {
-                const resolution = await this.onAssetNotFound(key, url);
-                if (resolution !== null && resolution !== undefined) {
-                    let newUrl: string;
-                    let extensionHint: string | undefined;
-                    if (typeof resolution === "string") {
-                        newUrl = resolution;
-                    } else {
-                        newUrl = URL.createObjectURL(resolution);
-                        // Extract extension from the File name for loader selection
-                        extensionHint = _getExtension(resolution.name) || undefined;
-                    }
-                    // Always update the registry so the URL map reflects the new location
-                    this.register(key, newUrl);
-                    try {
-                        const container = await LoadAssetContainerAsync(newUrl, this._scene, {
-                            pluginExtension: extensionHint,
-                        });
-                        container.addAllToScene();
-                        this._containers.set(key, container);
-                        this._buildProvenance(key, container);
-                        this.onAssetLoadedObservable.notifyObservers({ key, container });
-                        return container;
-                    } catch (retryError) {
-                        this.onAssetErrorObservable.notifyObservers({ key, url: newUrl, error: retryError });
-                    }
+            const fallback = await this._resolveNotFoundAsync(key, url);
+            if (fallback) {
+                try {
+                    return await loadAsync(fallback.url, fallback.extensionHint);
+                } catch (retryError) {
+                    this.onAssetErrorObservable.notifyObservers({ key, url: fallback.url, error: retryError });
                 }
             }
-
             Logger.Warn(`SmartAssetManager: Asset "${key}" could not be loaded from "${url}".`);
             throw error;
         }
@@ -637,44 +616,15 @@ export class SmartAssetManager {
         };
         this._provenance.set(key, provenance);
 
-        for (const mesh of container.meshes) {
-            this._objectToKeyMap.set(mesh, key);
-        }
-        for (const mat of container.materials) {
-            this._objectToKeyMap.set(mat, key);
-        }
-        for (const tex of container.textures) {
-            this._objectToKeyMap.set(tex, key);
-        }
-        for (const ag of container.animationGroups) {
-            this._objectToKeyMap.set(ag, key);
-        }
-        for (const light of container.lights) {
-            this._objectToKeyMap.set(light, key);
-        }
-        for (const cam of container.cameras) {
-            this._objectToKeyMap.set(cam, key);
+        for (const collection of [container.meshes, container.materials, container.textures, container.animationGroups, container.lights, container.cameras]) {
+            for (const obj of collection) {
+                this._objectToKeyMap.set(obj, key);
+            }
         }
     }
 }
 
-/**
- * Returns the file extension from a URL string, including the leading dot.
- * @param url - The URL to extract the extension from.
- * @returns The file extension including the dot, or an empty string if none found.
- */
-// eslint-disable-next-line @typescript-eslint/naming-convention
-function _getExtension(url: string): string {
-    const cleanUrl = url.split("?")[0].split("#")[0];
-    const lastDot = cleanUrl.lastIndexOf(".");
-    const lastSlash = Math.max(cleanUrl.lastIndexOf("/"), cleanUrl.lastIndexOf("\\"));
-    if (lastDot > lastSlash && lastDot >= 0) {
-        return cleanUrl.substring(lastDot);
-    }
-    return "";
-}
-
-const _TEXTURE_EXTENSIONS = new Set([".png", ".jpg", ".jpeg", ".bmp", ".tga", ".gif", ".webp", ".env", ".hdr", ".dds", ".ktx", ".ktx2", ".basis"]);
+const TextureExtensions = new Set([".png", ".jpg", ".jpeg", ".bmp", ".tga", ".gif", ".webp", ".env", ".hdr", ".dds", ".ktx", ".ktx2", ".basis"]);
 
 /**
  * Returns true if the URL points to a standalone texture file
@@ -682,9 +632,8 @@ const _TEXTURE_EXTENSIONS = new Set([".png", ".jpg", ".jpeg", ".bmp", ".tga", ".
  * @param url - The URL to check.
  * @returns True if the URL has a texture file extension.
  */
-// eslint-disable-next-line @typescript-eslint/naming-convention
-function _isTextureExtension(url: string): boolean {
-    return _TEXTURE_EXTENSIONS.has(_getExtension(url).toLowerCase());
+function IsTextureUrl(url: string): boolean {
+    return TextureExtensions.has(GetExtensionFromUrl(url));
 }
 
 RegisterClass("BABYLON.SmartAssetManager", SmartAssetManager);

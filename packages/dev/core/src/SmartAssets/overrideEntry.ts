@@ -33,23 +33,3 @@ export type OverrideTargetType = "meshes" | "materials" | "textures" | "lights" 
  * - number[]: array property mapped to Vector3, Color3, Color4, etc.
  */
 export type OverrideValue = number | string | boolean | number[];
-
-/**
- * A serialized override entry for persistence in JSON files.
- */
-export interface ISerializedOverrideEntry {
-    /** Smart asset key (empty string for scene-level). */
-    readonly key: string;
-
-    /** Target object type. */
-    readonly targetType: OverrideTargetType;
-
-    /** Target object name. */
-    readonly targetName: string;
-
-    /** Dot-separated property path. */
-    readonly propertyPath: string;
-
-    /** The override value. */
-    readonly value: OverrideValue;
-}

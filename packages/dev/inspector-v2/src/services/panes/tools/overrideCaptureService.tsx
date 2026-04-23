@@ -1,4 +1,4 @@
-import { type ServiceDefinition } from "../../../modularity/serviceDefinition";
+import { type ServiceDefinition } from "shared-ui-components/modularTool/modularity/serviceDefinition";
 import { type ISceneContext, SceneContextIdentity } from "../../sceneContext";
 import { type IPropertiesService, PropertiesServiceIdentity } from "../properties/propertiesService";
 
@@ -12,7 +12,8 @@ import { type BaseTexture } from "core/Materials/Textures/baseTexture";
 import { type Light } from "core/Lights/light";
 import { type Camera } from "core/Cameras/camera";
 import { type AnimationGroup } from "core/Animations/animationGroup";
-import { Logger } from "core/Misc/logger";
+
+import { installAssetNotFoundHandler } from "../../smartAssetHandler";
 
 /**
  * Inspector service that captures property edits on SmartAsset-loaded objects
@@ -51,47 +52,7 @@ export const OverrideCaptureServiceDefinition: ServiceDefinition<[], [ISceneCont
 
         // Install Inspector's file-picker-based onAssetNotFound handler
         // if no handler is already installed by user code
-        if (!sam.onAssetNotFound) {
-            sam.onAssetNotFound = async (key, expectedUrl) => {
-                return await new Promise<string | File | null>((resolve) => {
-                    const shortUrl = expectedUrl.length > 60 ? "…" + expectedUrl.slice(-50) : expectedUrl;
-                    Logger.Warn(`SmartAssetManager: Asset "${key}" not found at "${shortUrl}" — prompting user to locate it.`);
-
-                    const input = document.createElement("input");
-                    input.type = "file";
-                    input.accept = ".glb,.gltf,.babylon,.obj,.png,.jpg,.jpeg,.env,.hdr,.dds,.ktx,.ktx2";
-
-                    // Show a brief message so the user knows why a file picker appeared
-                    const msg = document.createElement("div");
-                    msg.textContent = `Locate asset "${key}"`;
-                    msg.style.cssText =
-                        "position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);" +
-                        "background:#333;color:#fff;padding:16px 24px;border-radius:8px;z-index:10000;" +
-                        "font:14px sans-serif;box-shadow:0 4px 16px rgba(0,0,0,0.5);";
-                    document.body.appendChild(msg);
-
-                    input.onchange = () => {
-                        document.body.removeChild(msg);
-                        resolve(input.files?.[0] ?? null);
-                    };
-                    input.oncancel = () => {
-                        document.body.removeChild(msg);
-                        resolve(null);
-                    };
-                    // Fallback: if the dialog is dismissed without oncancel firing
-                    window.addEventListener("focus", function onFocus() {
-                        window.removeEventListener("focus", onFocus);
-                        setTimeout(() => {
-                            if (msg.parentNode) {
-                                document.body.removeChild(msg);
-                                resolve(null);
-                            }
-                        }, 300);
-                    });
-                    input.click();
-                });
-            };
-        }
+        installAssetNotFoundHandler(sam);
 
         // Subscribe to Inspector property changes
         const observer = propertiesService.onPropertyChanged.add((changeInfo) => {

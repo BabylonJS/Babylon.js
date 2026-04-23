@@ -1,7 +1,7 @@
 import { NullEngine } from "core/Engines/nullEngine";
 import { Scene } from "core/scene";
 import { SmartAssetManager, OverrideManager } from "core/SmartAssets/index";
-import { serializeProject, deserializeProject, loadProjectAsync } from "core/SmartAssets/projectSerializer";
+import { SerializeProject, DeserializeProject, LoadProjectAsync } from "core/SmartAssets/projectSerializer";
 
 // Store scene reference for mock containers to populate
 let _currentScene: Scene | null = null;
@@ -88,7 +88,7 @@ describe("ProjectSerializer", () => {
                 value: 0.2,
             });
 
-            const project = serializeProject(sam, overrides);
+            const project = SerializeProject(sam, overrides);
 
             expect(project.version).toBe(1);
             expect(project.assets["chair"].url).toBe("models/chair.glb");
@@ -100,13 +100,13 @@ describe("ProjectSerializer", () => {
         it("should produce empty overrides array when no overrides exist", () => {
             sam.register("chair", "chair.glb");
 
-            const project = serializeProject(sam, overrides);
+            const project = SerializeProject(sam, overrides);
 
             expect(project.overrides).toEqual([]);
         });
 
         it("should produce empty assets when no assets registered", () => {
-            const project = serializeProject(sam, overrides);
+            const project = SerializeProject(sam, overrides);
 
             expect(Object.keys(project.assets).length).toBe(0);
             expect(project.overrides).toEqual([]);
@@ -133,22 +133,22 @@ describe("ProjectSerializer", () => {
                 ],
             };
 
-            const result = deserializeProject(doc);
+            const result = DeserializeProject(doc);
             expect(result.version).toBe(1);
             expect(result.assets["chair"].url).toBe("chair.glb");
             expect(result.overrides.length).toBe(1);
         });
 
         it("should throw on invalid version", () => {
-            expect(() => deserializeProject({ version: 99, assets: {}, overrides: [] })).toThrow(/Unsupported project version/);
+            expect(() => DeserializeProject({ version: 99, assets: {}, overrides: [] })).toThrow(/Unsupported project version/);
         });
 
         it("should throw when overrides is not an array", () => {
-            expect(() => deserializeProject({ version: 1, assets: {}, overrides: "bad" })).toThrow(/must be an array/);
+            expect(() => DeserializeProject({ version: 1, assets: {}, overrides: "bad" })).toThrow(/must be an array/);
         });
 
         it("should throw on null input", () => {
-            expect(() => deserializeProject(null)).toThrow(/expected an object/);
+            expect(() => DeserializeProject(null)).toThrow(/expected an object/);
         });
     });
 
@@ -175,10 +175,10 @@ describe("ProjectSerializer", () => {
                 value: 0.1,
             });
 
-            const serialized1 = serializeProject(sam, overrides);
+            const serialized1 = SerializeProject(sam, overrides);
             const json = JSON.stringify(serialized1);
             const parsed = JSON.parse(json);
-            const deserialized = deserializeProject(parsed);
+            const deserialized = DeserializeProject(parsed);
 
             // Verify structure survived round-trip
             expect(deserialized.version).toBe(1);
@@ -209,7 +209,7 @@ describe("ProjectSerializer", () => {
                 ],
             };
 
-            await loadProjectAsync(projectDoc, sam, overrides);
+            await LoadProjectAsync(projectDoc, sam, overrides);
 
             // Asset should be registered and loaded
             expect(sam.resolve("chair")).toBe("chair.glb");
@@ -229,7 +229,7 @@ describe("ProjectSerializer", () => {
                 overrides: [],
             };
 
-            await loadProjectAsync(projectDoc, sam, overrides);
+            await LoadProjectAsync(projectDoc, sam, overrides);
 
             expect(sam.resolve("table")).toBe("table.glb");
             expect(overrides.getOverrides().length).toBe(0);

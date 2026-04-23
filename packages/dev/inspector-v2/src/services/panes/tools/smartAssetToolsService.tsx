@@ -1,18 +1,25 @@
 import { useCallback, useRef, useState, type FunctionComponent } from "react";
 
 import { type Scene, type IDisposable } from "core/scene";
-import { SmartAssetManager } from "core/SmartAssets/smartAssetManager";
-import { OverrideManager } from "core/SmartAssets/overrideManager";
-import { serializeProject, loadProjectAsync } from "core/SmartAssets/projectSerializer";
+import { SerializeProject, LoadProjectAsync } from "core/SmartAssets/projectSerializer";
 import { Tools } from "core/Misc/tools";
 
 import { type ServiceDefinition } from "shared-ui-components/modularTool/modularity/serviceDefinition";
 import { type IToolsService, ToolsServiceIdentity } from "../toolsService";
 
-import { inspectorAssetNotFoundHandler } from "../../smartAssetHandler";
+import { getOrCreateManagers } from "../../smartAssetHandler";
 
 import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
+import { makeStyles, tokens } from "@fluentui/react-components";
 import { ArrowDownloadRegular, ArrowUploadRegular, DocumentTextRegular } from "@fluentui/react-icons";
+
+const useStyles = makeStyles({
+    statusMessage: {
+        padding: `${tokens.spacingVerticalXXS} ${tokens.spacingHorizontalS}`,
+        fontSize: "11px",
+        opacity: 0.7,
+    },
+});
 
 /**
  * Inspector Tools service that adds Save/Load Project buttons for the
@@ -45,34 +52,18 @@ const SmartAssetProjectTools: FunctionComponent<{ scene: Scene }> = (props: { sc
     const scene = props.scene;
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [statusMessage, setStatusMessage] = useState<string>("");
+    const styles = useStyles();
 
-    const getOrCreateManagers = useCallback(() => {
-        let sam = SmartAssetManager.GetFromScene(scene);
-        if (!sam) {
-            sam = new SmartAssetManager(scene);
-        }
-
-        // Install Inspector's file picker handler — always override any existing
-        // handler so Inspector provides a consistent UX for missing assets
-        sam.onAssetNotFound = inspectorAssetNotFoundHandler;
-
-        let overrides = OverrideManager.GetFromScene(scene);
-        if (!overrides) {
-            overrides = new OverrideManager(scene);
-            overrides.linkSmartAssetManager(sam);
-        }
-
-        return { sam, overrides };
-    }, [scene]);
+    const managers = useCallback(() => getOrCreateManagers(scene), [scene]);
 
     const onSaveProject = useCallback(() => {
-        const { sam, overrides } = getOrCreateManagers();
-        const project = serializeProject(sam, overrides);
+        const { sam, overrides } = managers();
+        const project = SerializeProject(sam, overrides);
         const json = JSON.stringify(project, null, 2);
         const blob = new Blob([json], { type: "application/json" });
         Tools.Download(blob, "project.json");
         setStatusMessage(`Saved: ${Object.keys(project.assets).length} assets, ${project.overrides.length} overrides`);
-    }, [getOrCreateManagers]);
+    }, [managers]);
 
     const onLoadProject = useCallback(() => {
         fileInputRef.current?.click();
@@ -86,8 +77,8 @@ const SmartAssetProjectTools: FunctionComponent<{ scene: Scene }> = (props: { sc
             }
 
             try {
-                const { sam, overrides } = getOrCreateManagers();
-                await loadProjectAsync(file, sam, overrides);
+                const { sam, overrides } = managers();
+                await LoadProjectAsync(file, sam, overrides);
                 setStatusMessage(`Loaded: ${sam.getAll().size} assets, ${overrides.getOverrides().length} overrides`);
             } catch (err) {
                 setStatusMessage(`Error: ${err}`);
@@ -98,14 +89,14 @@ const SmartAssetProjectTools: FunctionComponent<{ scene: Scene }> = (props: { sc
                 fileInputRef.current.value = "";
             }
         },
-        [getOrCreateManagers]
+        [managers]
     );
 
     const onShowProjectJson = useCallback(() => {
-        const { sam, overrides } = getOrCreateManagers();
-        const project = serializeProject(sam, overrides);
+        const { sam, overrides } = managers();
+        SerializeProject(sam, overrides);
         setStatusMessage("Project JSON logged to console");
-    }, [getOrCreateManagers]);
+    }, [managers]);
 
     return (
         <>
@@ -113,7 +104,7 @@ const SmartAssetProjectTools: FunctionComponent<{ scene: Scene }> = (props: { sc
             <ButtonLine label="Load Project" icon={ArrowUploadRegular} onClick={onLoadProject} />
             <ButtonLine label="Log Project to Console" icon={DocumentTextRegular} onClick={onShowProjectJson} />
             <input ref={fileInputRef} type="file" accept=".json" style={{ display: "none" }} onChange={onFileSelected} />
-            {statusMessage && <div style={{ padding: "4px 8px", fontSize: "11px", opacity: 0.7 }}>{statusMessage}</div>}
+            {statusMessage && <div className={styles.statusMessage}>{statusMessage}</div>}
         </>
     );
 };

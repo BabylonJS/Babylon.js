@@ -1,8 +1,10 @@
 import { type SmartAssetManager } from "./smartAssetManager";
 import { type OverrideManager } from "./overrideManager";
-import { type ISerializedSmartAssetMap, serializeSmartAssetMap, deserializeSmartAssetMap, resolveAssetUrl, readJsonSource } from "./smartAssetSerializer";
-import { type ISerializedOverrideEntry } from "./overrideEntry";
+import { type ISerializedSmartAssetMap, SerializeSmartAssetMap, DeserializeSmartAssetMap, ResolveAssetUrl, ReadJsonSourceAsync } from "./smartAssetSerializer";
+import { type IOverrideEntry } from "./overrideEntry";
 import { type Scene } from "../scene";
+import { GetClass } from "../Misc/typeStore";
+import { Logger } from "../Misc/logger";
 
 /**
  * A serialized inline object — a scene entity (material, light, camera, etc.)
@@ -27,11 +29,8 @@ export interface ISerializedProject {
     /** Smart asset key→URL mappings (from SmartAssetManager). */
     readonly assets: ISerializedSmartAssetMap["assets"];
 
-    /** Optional provenance snapshot. */
-    readonly provenance?: ISerializedSmartAssetMap["provenance"];
-
     /** Property overrides (from OverrideManager). */
-    readonly overrides: ISerializedOverrideEntry[];
+    readonly overrides: IOverrideEntry[];
 
     /**
      * Objects created in-tool (not from a smart asset) that must survive
@@ -51,8 +50,8 @@ export interface ISerializedProject {
  * @param baseUrl - Optional base URL for making asset paths relative.
  * @returns A serialized project document.
  */
-export function serializeProject(smartAssetManager: SmartAssetManager, overrideManager: OverrideManager, baseUrl?: string): ISerializedProject {
-    const assetMap = serializeSmartAssetMap(smartAssetManager, baseUrl);
+export function SerializeProject(smartAssetManager: SmartAssetManager, overrideManager: OverrideManager, baseUrl?: string): ISerializedProject {
+    const assetMap = SerializeSmartAssetMap(smartAssetManager, baseUrl);
     const overrides = overrideManager.serialize();
     const scene = smartAssetManager.scene;
 
@@ -63,48 +62,27 @@ export function serializeProject(smartAssetManager: SmartAssetManager, overrideM
     for (const mat of scene.materials) {
         if (!smartAssetManager.findKeyForObject(mat) && mat.name !== "default material") {
             const serialized = mat.serialize();
-            if (serialized) {
-                inlineObjects[mat.name] = {
-                    className: mat.getClassName(),
-                    data: serialized,
-                };
-                hasInlineObjects = true;
-            }
+            hasInlineObjects = CollectInlineObject(mat.name, serialized, mat.getClassName(), inlineObjects) || hasInlineObjects;
         }
     }
 
     for (const light of scene.lights) {
         if (!smartAssetManager.findKeyForObject(light)) {
-            const serialized = light.serialize();
-            if (serialized) {
-                inlineObjects[light.name] = {
-                    className: light.getClassName(),
-                    data: serialized,
-                };
-                hasInlineObjects = true;
-            }
+            hasInlineObjects = CollectInlineObject(light.name, light.serialize(), light.getClassName(), inlineObjects) || hasInlineObjects;
         }
     }
 
     for (const camera of scene.cameras) {
         if (!smartAssetManager.findKeyForObject(camera)) {
-            const serialized = camera.serialize();
-            if (serialized) {
-                inlineObjects[camera.name] = {
-                    className: camera.getClassName(),
-                    data: serialized,
-                };
-                hasInlineObjects = true;
-            }
+            hasInlineObjects = CollectInlineObject(camera.name, camera.serialize(), camera.getClassName(), inlineObjects) || hasInlineObjects;
         }
     }
 
     return {
         version: 1,
         assets: assetMap.assets,
-        ...(assetMap.provenance ? { provenance: assetMap.provenance } : {}),
         overrides,
-        ...(hasInlineObjects ? { inlineObjects: _sanitizeInlineObjects(inlineObjects) } : {}),
+        ...(hasInlineObjects ? { inlineObjects: SanitizeInlineObjects(inlineObjects) } : {}),
     };
 }
 
@@ -119,7 +97,7 @@ export function serializeProject(smartAssetManager: SmartAssetManager, overrideM
  * @param overrideManager - The override manager to populate.
  * @param rootUrl - Optional root URL for resolving relative asset paths.
  */
-export async function loadProjectAsync(
+export async function LoadProjectAsync(
     source: string | File | ISerializedProject,
     smartAssetManager: SmartAssetManager,
     overrideManager: OverrideManager,
@@ -132,13 +110,14 @@ export async function loadProjectAsync(
         resolvedRootUrl = Tools.GetFolderPath(source);
     }
 
-    const raw = await readJsonSource(source);
-    const doc = deserializeProject(raw);
+    const raw = await ReadJsonSourceAsync(source);
+    const doc = DeserializeProject(raw);
 
     const scene = smartAssetManager.scene;
 
     // Clear existing state so we load fresh from the project file
-    for (const [existingKey] of smartAssetManager.getAll()) {
+    for (const existingKey of Array.from(smartAssetManager.getAll().keys())) {
+        // eslint-disable-next-line no-await-in-loop
         await smartAssetManager.remove(existingKey);
     }
     overrideManager.clearOverrides();
@@ -156,7 +135,7 @@ export async function loadProjectAsync(
 
     // Register and load all assets
     for (const [key, entry] of Object.entries(doc.assets)) {
-        const resolved = resolvedRootUrl ? resolveAssetUrl(entry.url, resolvedRootUrl) : entry.url;
+        const resolved = resolvedRootUrl ? ResolveAssetUrl(entry.url, resolvedRootUrl) : entry.url;
         smartAssetManager.register(key, resolved);
         // Pre-mark texture keys so loadAllAsync routes them correctly
         // even when the URL is a blob (which has no file extension).
@@ -167,9 +146,12 @@ export async function loadProjectAsync(
 
     await smartAssetManager.loadAllAsync();
 
-    // Recreate in-tool-created objects
+    // Recreate in-tool-created objects, then rebind their texture slots to
+    // the canonical SAM-tracked textures (Material.Parse may have created
+    // duplicates from inlined texture data).
     if (doc.inlineObjects) {
-        await _recreateInlineObjects(doc.inlineObjects, smartAssetManager.scene, resolvedRootUrl);
+        RecreateInlineObjects(doc.inlineObjects, smartAssetManager.scene, resolvedRootUrl);
+        RebindMaterialTexturesToSam(smartAssetManager);
     }
 
     // Apply overrides
@@ -184,7 +166,7 @@ export async function loadProjectAsync(
  * @returns The validated project document.
  * @throws If the data does not conform to the expected schema.
  */
-export function deserializeProject(data: unknown): ISerializedProject {
+export function DeserializeProject(data: unknown): ISerializedProject {
     if (!data || typeof data !== "object") {
         throw new Error("ProjectSerializer: Invalid project file — expected an object.");
     }
@@ -196,7 +178,7 @@ export function deserializeProject(data: unknown): ISerializedProject {
     }
 
     // Validate the asset map portion
-    deserializeSmartAssetMap({ version: 1, assets: doc.assets });
+    DeserializeSmartAssetMap({ version: 1, assets: doc.assets });
 
     // Validate overrides array
     if (!Array.isArray(doc.overrides)) {
@@ -207,13 +189,31 @@ export function deserializeProject(data: unknown): ISerializedProject {
 }
 
 /**
+ * Adds a serialized object to the inlineObjects record.
+ * @param name - The object's name (used as the key in inlineObjects).
+ * @param serialized - The serialized data, or null/undefined if serialization failed.
+ * @param className - The class name for deserialization.
+ * @param inlineObjects - The record to add the serialized object to.
+ * @returns True if an object was collected, false otherwise.
+ */
+function CollectInlineObject(name: string, serialized: any, className: string, inlineObjects: Record<string, ISerializedInlineObject>): boolean {
+    if (!serialized) {
+        return false;
+    }
+    inlineObjects[name] = {
+        className,
+        data: serialized,
+    };
+    return true;
+}
+
+/**
  * Sanitizes inline object data by stripping circular references
  * that some serialize() methods produce (e.g., cameras referencing the scene).
  * @param inlineObjects - The inline objects to sanitize.
  * @returns A sanitized copy with circular references removed.
  */
-// eslint-disable-next-line @typescript-eslint/naming-convention
-function _sanitizeInlineObjects(inlineObjects: Record<string, ISerializedInlineObject>): Record<string, ISerializedInlineObject> {
+function SanitizeInlineObjects(inlineObjects: Record<string, ISerializedInlineObject>): Record<string, ISerializedInlineObject> {
     const seen = new WeakSet();
     const sanitized = JSON.parse(
         JSON.stringify(inlineObjects, (_key, value) => {
@@ -230,19 +230,15 @@ function _sanitizeInlineObjects(inlineObjects: Record<string, ISerializedInlineO
 }
 
 /**
- * Recreates in-tool-created objects from the inlineObjects section
- * of a project file using the Babylon material/light/camera Parse methods.
+ * Recreates in-tool-created objects from the inlineObjects section of a
+ * project file. Dispatch uses Babylon's `GetClass` registry — the same
+ * mechanism every `*.Parse` method already relies on — instead of brittle
+ * substring matching on the class name.
  * @param inlineObjects - The serialized inline objects to recreate.
  * @param scene - The scene to add recreated objects to.
  * @param rootUrl - The root URL for resolving relative asset paths.
- * @returns A promise that resolves when all objects have been recreated.
  */
-// eslint-disable-next-line @typescript-eslint/naming-convention
-async function _recreateInlineObjects(inlineObjects: Record<string, ISerializedInlineObject>, scene: Scene, rootUrl: string): Promise<void> {
-    const { Material } = await import("../Materials/material");
-    const { Light } = await import("../Lights/light");
-    const { Camera } = await import("../Cameras/camera");
-
+function RecreateInlineObjects(inlineObjects: Record<string, ISerializedInlineObject>, scene: Scene, rootUrl: string): void {
     for (const [name, entry] of Object.entries(inlineObjects)) {
         const data = entry.data as Record<string, unknown>;
 
@@ -251,15 +247,66 @@ async function _recreateInlineObjects(inlineObjects: Record<string, ISerializedI
             continue;
         }
 
-        // Determine the category from className and use the appropriate Parse
-        const className = entry.className;
-
-        if (className.includes("Material") || className.includes("material")) {
-            Material.Parse(data, scene, rootUrl);
-        } else if (className.includes("Light") || className.includes("light")) {
-            Light.Parse(data, scene);
-        } else if (className.includes("Camera") || className.includes("camera")) {
-            Camera.Parse(data, scene);
+        const ctor = GetClass(entry.className);
+        if (!ctor || typeof ctor.Parse !== "function") {
+            Logger.Warn(`ProjectSerializer: No Parse method registered for class "${entry.className}"; skipping inline object "${name}".`);
+            continue;
         }
+
+        try {
+            ctor.Parse(data, scene, rootUrl);
+        } catch (e) {
+            Logger.Warn(`ProjectSerializer: Failed to parse inline object "${name}" of class "${entry.className}": ${e}`);
+        }
+    }
+}
+
+/**
+ * After `Material.Parse` runs, materials may hold duplicate texture instances
+ * created from the inlined texture data in the serialized material. Walk every
+ * material's texture slots and rebind any texture whose name matches a
+ * SAM-tracked texture to the canonical SAM instance, disposing the duplicate.
+ * @param sam - The SmartAssetManager with the canonical textures.
+ */
+function RebindMaterialTexturesToSam(sam: SmartAssetManager): void {
+    const scene = sam.scene;
+
+    // Build a name → SAM texture map (skip non-tracked textures).
+    const samTexByName = new Map<string, import("../Materials/Textures/baseTexture").BaseTexture>();
+    for (const tex of scene.textures) {
+        if (sam.findKeyForObject(tex)) {
+            samTexByName.set(tex.name, tex);
+            const url = (tex as any).url;
+            if (typeof url === "string" && url !== tex.name) {
+                samTexByName.set(url, tex);
+            }
+        }
+    }
+
+    if (samTexByName.size === 0) {
+        return;
+    }
+
+    const toDispose = new Set<import("../Materials/Textures/baseTexture").BaseTexture>();
+
+    for (const mat of scene.materials) {
+        for (const propName of Object.keys(mat)) {
+            if (!propName.endsWith("Texture")) {
+                continue;
+            }
+            const current = (mat as any)[propName] as import("../Materials/Textures/baseTexture").BaseTexture | null | undefined;
+            if (!current || sam.findKeyForObject(current)) {
+                continue;
+            }
+            const canonical = samTexByName.get(current.name) ?? samTexByName.get((current as any).url);
+            if (canonical && canonical !== current) {
+                (mat as any)[propName] = canonical;
+                toDispose.add(current);
+            }
+        }
+    }
+
+    for (const tex of Array.from(toDispose)) {
+        tex.dispose();
     }
 }
