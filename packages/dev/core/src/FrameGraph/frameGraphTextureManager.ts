@@ -1158,6 +1158,32 @@ export class FrameGraphTextureManager {
                 return { width: 4, height: 4, length: 8 };
             case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_4x4:
                 return { width: 4, height: 4, length: 16 };
+            case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_5x4:
+                return { width: 5, height: 4, length: 16 };
+            case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_5x5:
+                return { width: 5, height: 5, length: 16 };
+            case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_6x5:
+                return { width: 6, height: 5, length: 16 };
+            case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_6x6:
+                return { width: 6, height: 6, length: 16 };
+            case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_8x5:
+                return { width: 8, height: 5, length: 16 };
+            case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_8x6:
+                return { width: 8, height: 6, length: 16 };
+            case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_8x8:
+                return { width: 8, height: 8, length: 16 };
+            case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_10x5:
+                return { width: 10, height: 5, length: 16 };
+            case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_10x6:
+                return { width: 10, height: 6, length: 16 };
+            case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_10x8:
+                return { width: 10, height: 8, length: 16 };
+            case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_10x10:
+                return { width: 10, height: 10, length: 16 };
+            case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_12x10:
+                return { width: 12, height: 10, length: 16 };
+            case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_12x12:
+                return { width: 12, height: 12, length: 16 };
             case Constants.TEXTUREFORMAT_COMPRESSED_RGB_ETC1_WEBGL:
             case Constants.TEXTUREFORMAT_COMPRESSED_RGB8_ETC2:
                 return { width: 4, height: 4, length: 8 };
