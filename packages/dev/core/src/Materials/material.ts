@@ -1119,7 +1119,17 @@ export class Material implements IAnimatable, IClipPlanesHolder {
     }
 
     /**
-     * Locks updates for the material
+     * Locks updates for the material.
+     *
+     * Note: while a material is frozen, per-frame uniform binding is skipped on
+     * subsequent frames (only the first frame after `freeze()` uploads them).
+     * This includes per-mesh morph target influences. If the same frozen
+     * material is shared across several meshes that each have different
+     * per-mesh morph influences, only the influences that were bound last stay
+     * live in the uniform, so every mesh ends up rendering with those values.
+     * For that scenario either keep the material unfrozen, clone the material
+     * per mesh and freeze each clone, or `unfreeze()` before changing
+     * influences and `freeze()` again afterwards.
      */
     public freeze(): void {
         this.markDirty();
