@@ -43,14 +43,19 @@
         return clamp(F0 + offset_from_F0, vec3f(0.0f), vec3f(1.0f));
     }
 
+    // Compute the b coefficient (F82 dip strength) from F0 and edge tint.
     fn getF82B(F0: vec3f, edgeTint: vec3f) -> vec3f {
         return (F0 + (vec3f(1.0) - F0) * F82_ONE_MINUS_CTM_POW5) * (vec3f(1.0) - edgeTint) * F82_B_DENOMINATOR_RECIP;
     }
 
+    // F82 directional albedo:  E_F82 = (F90-F0)*brdf.x + F0*brdf.y - b*brdf.z
     fn getF82DirectionalAlbedo(F0: vec3f, F90: vec3f, b: vec3f, environmentBrdf: vec3f) -> vec3f {
         return (F90 - F0) * environmentBrdf.x + F0 * environmentBrdf.y - b * environmentBrdf.z;
     }
 
+    // Cosine-weighted hemisphere average of F82 Fresnel (closed form).
+    //   F_avg = 2*∫₀¹ F82(t)·t dt = F0 + (1-F0)/21 - b/126
+    //   The b/126 comes from 2·Beta(3,7) = 2·Γ(3)Γ(7)/Γ(10) = 2/252 = 1/126.
     fn getF82AverageFresnel(F0: vec3f, b: vec3f) -> vec3f {
         return F0 + (vec3f(1.0) - F0) / 21.0 - b / 126.0;
     }

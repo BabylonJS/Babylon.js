@@ -108,8 +108,6 @@ export const GetOpenPBREnvironmentBRDFTexture = (scene: Scene): BaseTexture => {
     return loadBRDFTexture(scene, _openPBREnvironmentBRDFBase64Texture, "openPBREnvironmentBRDFTexture", "OpenPBREnvironmentBRDFTexture");
 };
 
-
-
 /**
  * Class used to host texture specific utilities
  */
