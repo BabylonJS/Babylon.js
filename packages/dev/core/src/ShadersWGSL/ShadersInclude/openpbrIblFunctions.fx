@@ -319,7 +319,8 @@
         return environmentRadiance.rgb;
     }
 #endif
-    #ifdef ENVIRONMENTBRDF
+#endif
+#ifdef ENVIRONMENTBRDF
     fn computeDielectricIblFresnel(reflectance: ReflectanceParams, environmentBrdf: vec3f) -> f32
     {
         let dielectricIblFresnel: f32 = getReflectanceFromBRDFWithEnvLookup(vec3f(reflectance.F0), vec3f(reflectance.F90), environmentBrdf).r;
@@ -336,7 +337,7 @@
             // environmentBrdf comes from the OpenPBR BRDF LUT. Undo the BRDF_Z_SCALE on the z channel.
             let openPBRBrdf: vec3f = vec3f(environmentBrdf.xy, environmentBrdf.z / BRDF_Z_SCALE);
             let b: vec3f     = getF82B(reflectance.coloredF0, reflectance.coloredF90);
-            let E_F82: vec3f = getF82DirectionalAlbedo(reflectance.coloredF0, reflectance.coloredF90, b, openPBRBrdf);
+            let E_F82: vec3f = getF82DirectionalAlbedo(reflectance.coloredF0, vec3f(1.0), b, openPBRBrdf);
             let F_avg: vec3f = getF82AverageFresnel(reflectance.coloredF0, b);
             let ECF: vec3f   = vec3f(1.0) + F_avg * (vec3f(1.0) / openPBRBrdf.y - vec3f(1.0));
             return clamp(E_F82 * ECF, vec3f(0.0), vec3f(1.0));
@@ -344,5 +345,4 @@
             return getReflectanceFromBRDFLookup(reflectance.coloredF0, reflectance.coloredF90, environmentBrdf);
         #endif
     }
-    #endif
 #endif

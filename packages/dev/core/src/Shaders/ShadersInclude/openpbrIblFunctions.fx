@@ -320,7 +320,8 @@
         return environmentRadiance.rgb;
     }
 #endif
-    #ifdef ENVIRONMENTBRDF
+#endif
+#if defined(ENVIRONMENTBRDF)
     #define pbr_inline
     float computeDielectricIblFresnel(in ReflectanceParams reflectance, in vec3 environmentBrdf)
     {
@@ -340,7 +341,7 @@
             // The z channel was stored * BRDF_Z_SCALE to use the full 8-bit range — undo that here.
             vec3 openPBRBrdf = vec3(environmentBrdf.xy, environmentBrdf.z / BRDF_Z_SCALE);
             vec3 b     = getF82B(reflectance.coloredF0, reflectance.coloredF90);
-            vec3 E_F82 = getF82DirectionalAlbedo(reflectance.coloredF0, reflectance.coloredF90, b, openPBRBrdf);
+            vec3 E_F82 = getF82DirectionalAlbedo(reflectance.coloredF0, vec3(1.0), b, openPBRBrdf);
             vec3 F_avg = getF82AverageFresnel(reflectance.coloredF0, b);
             vec3 ECF   = vec3(1.0) + F_avg * (vec3(1.0) / openPBRBrdf.y - vec3(1.0));
             return clamp(E_F82 * ECF, vec3(0.0), vec3(1.0));
@@ -348,5 +349,4 @@
             return getReflectanceFromBRDFLookup(reflectance.coloredF0, reflectance.coloredF90, environmentBrdf);
         #endif
     }
-    #endif
 #endif
