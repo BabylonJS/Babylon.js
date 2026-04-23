@@ -117,6 +117,21 @@ export type RawGradientFillShape = RawElement & {
     r: RawFillRule; // fill rule
 };
 
+export type RawGradientStrokeShape = RawElement & {
+    o: RawScalarProperty; // Opacity, 100 means fully opaque
+    g: RawGradientsProperty; // Gradient colors
+    s: RawPositionProperty; // Starting point of the gradient
+    e: RawPositionProperty; // End point of the gradient
+    t: RawGradientType; // type of the gradient
+    h?: RawScalarProperty; // highlight length as a percentage between s and e (radial gradients)
+    a?: RawScalarProperty; // highlight angle in clockwise degrees, relative to the direction from s to e (radial gradients)
+    lc: RawStrokeLineCap; // Line Cap (1: butt, 2: round, 3: square)
+    lj: RawStrokeLineJoin; // Line Join (1: miter, 2: round, 3: bevel)
+    ml?: number; // Miter Limit
+    w: RawScalarProperty; // Width of the stroke
+    d?: RawStrokeDash[]; // Dashes array
+};
+
 export type RawTransformShape = RawElement & {
     a: RawPositionProperty; // anchor point
     p: RawPositionProperty; // position/translation
@@ -143,7 +158,7 @@ export type RawScalarProperty = {
 export type RawVectorProperty = {
     a: RawNumberBoolean; // Animated (0: false, 1: true)
     k: number[] | RawVectorKeyframe[]; // When it's not animated, k will contain the value directly. When animated, k will be an array of keyframes.
-    l: number; // Number of components in the value arrays. If present values will be truncated or expanded to match this length when accessed from expressions
+    l?: number; // Number of components in the value arrays. If present values will be truncated or expanded to match this length when accessed from expressions. Often omitted by exporters that emit `[x, y, 0]` triples.
 };
 
 export type RawVectorKeyframe = {
@@ -157,7 +172,7 @@ export type RawVectorKeyframe = {
 export type RawPositionProperty = {
     a: RawNumberBoolean; // Animated (0: false, 1: true)
     k: number[] | RawPositionKeyframe[]; // When it's not animated, k will contain the value directly. When animated, k will be an array of keyframes.
-    l: number; // Number of components in the value arrays. If present values will be truncated or expanded to match this length when accessed from expressions
+    l?: number; // Number of components in the value arrays. If present values will be truncated or expanded to match this length when accessed from expressions. Often omitted by exporters that emit `[x, y, 0]` triples.
 };
 
 export type RawPositionKeyframe = {
@@ -275,7 +290,7 @@ export type RawTextDocument = {
 
 export type RawNumberBoolean = 0 | 1; // 0: false, 1: true;
 export type RawLayerType = 0 | 1 | 2 | 3 | 4 | 5 | 6; // Layer type (0: precomposition, 1: solid, 2: image, 3: null, 4: shape, 5: text, 6: audio)
-export type RawShapeType = "fl" | "st" | "gf" | "gr" | "tr" | "sh" | "rc" | "el"; // Shape type (fl: fill, st: stroke, gf: gradient fill, gr: group, tr: transform, sh: path, rc: rectangle, el: ellipse)
+export type RawShapeType = "fl" | "st" | "gf" | "gs" | "gr" | "tr" | "sh" | "rc" | "el"; // Shape type (fl: fill, st: stroke, gf: gradient fill, gs: gradient stroke, gr: group, tr: transform, sh: path, rc: rectangle, el: ellipse)
 export type RawShapeDirection = 1 | 3; // 1: clockwise, 3: counter-clockwise
 export type RawFillRule = 1 | 2; // Fill rule (1: non-zero, everything is colored (You can think of this as an OR), 2: even-odd, colored based on intersections and path direction, can be used to create "holes")
 export type RawStrokeLineCap = 1 | 2 | 3; // Stroke line cap (1: butt, 2: round, 3: square)

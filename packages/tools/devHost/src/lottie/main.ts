@@ -50,10 +50,16 @@ export async function Main(searchParams: URLSearchParams): Promise<void> {
         animationData = JSON.parse(data) as RawLottieAnimation;
     }
 
+    // Whether the parser should log unsupported lottie features to the console after parsing.
+    // Defaults to true in devhost so issues with the loaded animation are visible without extra setup.
+    const debugParam = searchParams.get("debug");
+    const debug = debugParam !== "false";
+
     // This is the configuration for the player, you can pass as much or as little as you want, the rest will be defaulted
     const configuration: Partial<AnimationConfiguration> = {
         backgroundColor: { r: 255 / 255, g: 255 / 255, b: 255 / 255, a: 1 }, // Background color for the animation canvas, visual tests use white
         stopAtFrame: stopAtFrame, // If set, the animation will stop at this frame (used by visual tests)
+        debug: debug, // Log unsupported lottie features after parsing
     };
 
     // Signal that the first frame has been rendered (used by visual tests for deterministic screenshots)

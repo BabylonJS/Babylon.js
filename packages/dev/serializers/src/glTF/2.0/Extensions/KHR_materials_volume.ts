@@ -122,7 +122,7 @@ export class KHR_materials_volume implements IGLTFExporterExtensionV2 {
                 node.extensions = node.extensions || {};
                 node.extensions[NAME] = volumeInfo;
             } else if (babylonMaterial instanceof OpenPBRMaterial) {
-                const transmissionVolume = babylonMaterial.transmissionWeight > 0 && !babylonMaterial.geometryThinWalled && babylonMaterial.transmissionDepth > 0;
+                const transmissionVolume = babylonMaterial.transmissionWeight > 0 && !babylonMaterial.geometryThinWalled;
                 const subsurfaceVolume = babylonMaterial.subsurfaceWeight > 0 && !babylonMaterial.geometryThinWalled;
                 if (transmissionVolume || subsurfaceVolume) {
                     this._wasUsed = true;
@@ -132,9 +132,9 @@ export class KHR_materials_volume implements IGLTFExporterExtensionV2 {
                     if (thicknessTexture) {
                         this._exporter._materialNeedsUVsSet.add(babylonMaterial);
                     }
-                    let transmissionAttenuationDistance = 1;
+                    let transmissionAttenuationDistance;
                     const transmissionAttenuationColor = Color3.White().asArray();
-                    if (transmissionVolume) {
+                    if (transmissionVolume && babylonMaterial.transmissionDepth > 0) {
                         const invDepth = 1.0 / babylonMaterial.transmissionDepth;
                         let transmissionExtinctionCoefficient = new Vector3(
                             -Math.log(babylonMaterial.transmissionColor.r) * invDepth,
@@ -159,6 +159,12 @@ export class KHR_materials_volume implements IGLTFExporterExtensionV2 {
                         transmissionAttenuationColor[0] = Math.exp(-transmissionExtinctionCoefficient.x * transmissionAttenuationDistance);
                         transmissionAttenuationColor[1] = Math.exp(-transmissionExtinctionCoefficient.y * transmissionAttenuationDistance);
                         transmissionAttenuationColor[2] = Math.exp(-transmissionExtinctionCoefficient.z * transmissionAttenuationDistance);
+                    } else {
+                        // transmissionDepth == 0
+                        transmissionAttenuationDistance = Number.MAX_VALUE;
+                        transmissionAttenuationColor[0] = 1.0;
+                        transmissionAttenuationColor[1] = 1.0;
+                        transmissionAttenuationColor[2] = 1.0;
                     }
                     let subsurfaceAttenuationDistance = 1;
                     const subsurfaceAttenuationColor = Color3.White().asArray();

@@ -169,6 +169,7 @@ export abstract class AbstractSound extends AbstractSoundSource {
         }
 
         this._state = SoundState.Paused;
+        this.engine._onSoundPlaybackStateChanged();
     }
 
     /**
@@ -185,6 +186,7 @@ export abstract class AbstractSound extends AbstractSoundSource {
         }
 
         this._state = SoundState.Started;
+        this.engine._onSoundPlaybackStateChanged();
     }
 
     /**
@@ -200,12 +202,14 @@ export abstract class AbstractSound extends AbstractSoundSource {
         }
 
         instance.onEndedObservable.addOnce(this._onInstanceEnded);
+        instance.onStateChangedObservable.add(this._onInstanceStateChanged);
         this._privateInstances.add(instance);
         this._newestInstance = instance;
     }
 
     protected _afterPlay(instance: _AbstractSoundInstance): void {
         this._state = instance.state;
+        this.engine._onSoundPlaybackStateChanged();
     }
 
     protected _getNewestInstance(): Nullable<_AbstractSoundInstance> {
@@ -245,6 +249,7 @@ export abstract class AbstractSound extends AbstractSoundSource {
             this._newestInstance = null;
         }
 
+        instance.onStateChangedObservable.removeCallback(this._onInstanceStateChanged);
         this._privateInstances.delete(instance);
 
         if (this._instances.size === 0) {
@@ -253,5 +258,11 @@ export abstract class AbstractSound extends AbstractSoundSource {
         }
 
         instance.dispose();
+
+        this.engine._onSoundPlaybackStateChanged();
+    };
+
+    private _onInstanceStateChanged: (instance: _AbstractSoundInstance) => void = (_instance) => {
+        this.engine._onSoundPlaybackStateChanged();
     };
 }
