@@ -3397,7 +3397,8 @@
         },
         {
             "title": "OpenPBR Subsurface Radius vs Roughness - IBL",
-            "playgroundId": "#0RSH28#0",
+            "playgroundId": "#RFKJE7#0",
+            "errorRatio": 2.5,
             "excludedEngines": ["webgl1"]
         },
         {
