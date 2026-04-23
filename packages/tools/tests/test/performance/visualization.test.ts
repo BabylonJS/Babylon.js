@@ -63,9 +63,9 @@ const runnableTests = allTests.filter((t) => {
 const engines = ["webgl2", "webgpu"] as const;
 
 const perfOptions = {
-    framesToRender: 400,
-    numberOfPasses: 5,
-    trimCount: 1,
+    framesToRender: 200,
+    numberOfPasses: 10,
+    trimCount: 2,
     cdnVersion: process.env.CDN_VERSION || "",
     cdnVersionB: process.env.CDN_VERSION_B || "",
 };

@@ -20,11 +20,12 @@ interface PerfEntry {
     diffPercent: number;
     direction: "faster" | "slower";
     inconclusive: boolean;
+    pValue: number;
 }
 
 // Matches the structured part of a [PERF] log line:
-// [PERF] <name>: <baselineLabel>: <time>ms, <candidateLabel>: <time>ms, <candidateLabel> is <pct>% faster|slower, ...
-const PERF_LINE_REGEX = /\[PERF\]\s+(.+?):\s+(\S+):\s+([\d.]+)ms,\s+(\S+):\s+([\d.]+)ms,\s+\S+ is ([\d.]+)% (faster|slower)/;
+// [PERF] <name>: <baselineLabel>: <time>ms, <candidateLabel>: <time>ms, <candidateLabel> is <pct>% faster|slower, p-value: <p>
+const PERF_LINE_REGEX = /\[PERF\]\s+(.+?):\s+(\S+):\s+([\d.]+)ms,\s+(\S+):\s+([\d.]+)ms,\s+\S+ is ([\d.]+)% (faster|slower),\s+p-value:\s+([\d.]+)/;
 
 class PerformanceSummaryReporter implements Reporter {
     private entries: PerfEntry[] = [];
@@ -58,9 +59,6 @@ class PerformanceSummaryReporter implements Reporter {
         const conclusive = this.entries.filter((e) => !e.inconclusive);
         const inconclusiveEntries = this.entries.filter((e) => e.inconclusive);
         const inconclusiveCount = inconclusiveEntries.length;
-
-        // Regressions = conclusive entries where candidate is slower
-        const regressions = conclusive.filter((e) => e.direction === "slower");
 
         const formatDiff = (val: number): string => {
             const abs = Math.abs(val).toFixed(1);
@@ -131,28 +129,54 @@ class PerformanceSummaryReporter implements Reporter {
             md.push("");
         }
 
-        // Regressions table
-        if (regressions.length > 0) {
-            // Sort worst first
-            const sorted = [...regressions].sort((a, b) => b.diffPercent - a.diffPercent);
-            md.push(`### 🔻 Regressions (${regressions.length})\n`);
-            md.push(`| Test | Baseline | Candidate | Diff |`);
-            md.push(`| --- | ---: | ---: | ---: |`);
+        // Classify by statistical significance (p < 0.05) AND direction
+        const significantRegressions = conclusive.filter((e) => e.direction === "slower" && e.pValue < 0.05);
+        const significantImprovements = conclusive.filter((e) => e.direction === "faster" && e.pValue < 0.05);
+        const insignificant = conclusive.filter((e) => e.pValue >= 0.05);
+
+        const confidenceLabel = (p: number): string => {
+            if (p < 0.01) return "High";
+            if (p < 0.05) return "Medium";
+            return "Low";
+        };
+
+        // Significant regressions table
+        if (significantRegressions.length > 0) {
+            const sorted = [...significantRegressions].sort((a, b) => b.diffPercent - a.diffPercent);
+            md.push(`### 🔻 Significant Regressions (${significantRegressions.length})\n`);
+            md.push(`| Test | Baseline | Candidate | Diff | p-value | Confidence |`);
+            md.push(`| --- | ---: | ---: | ---: | ---: | :---: |`);
             for (const e of sorted) {
-                md.push(`| ${e.testName} | ${e.baselineMs.toFixed(1)}ms | ${e.candidateMs.toFixed(1)}ms | **${e.diffPercent.toFixed(1)}% slower** |`);
+                md.push(
+                    `| ${e.testName} | ${e.baselineMs.toFixed(1)}ms | ${e.candidateMs.toFixed(1)}ms | **${e.diffPercent.toFixed(1)}% slower** | ${e.pValue.toFixed(4)} | ${confidenceLabel(e.pValue)} |`
+                );
             }
             md.push("");
         }
 
-        // Improvements table
-        const improvements = conclusive.filter((e) => e.direction === "faster");
-        if (improvements.length > 0) {
-            const sorted = [...improvements].sort((a, b) => b.diffPercent - a.diffPercent);
-            md.push(`<details><summary>🔺 Improvements (${improvements.length})</summary>\n`);
-            md.push(`| Test | Baseline | Candidate | Diff |`);
-            md.push(`| --- | ---: | ---: | ---: |`);
+        // Significant improvements table
+        if (significantImprovements.length > 0) {
+            const sorted = [...significantImprovements].sort((a, b) => b.diffPercent - a.diffPercent);
+            md.push(`<details><summary>🔺 Significant Improvements (${significantImprovements.length})</summary>\n`);
+            md.push(`| Test | Baseline | Candidate | Diff | p-value | Confidence |`);
+            md.push(`| --- | ---: | ---: | ---: | ---: | :---: |`);
             for (const e of sorted) {
-                md.push(`| ${e.testName} | ${e.baselineMs.toFixed(1)}ms | ${e.candidateMs.toFixed(1)}ms | ${e.diffPercent.toFixed(1)}% faster |`);
+                md.push(
+                    `| ${e.testName} | ${e.baselineMs.toFixed(1)}ms | ${e.candidateMs.toFixed(1)}ms | ${e.diffPercent.toFixed(1)}% faster | ${e.pValue.toFixed(4)} | ${confidenceLabel(e.pValue)} |`
+                );
+            }
+            md.push(`\n</details>\n`);
+        }
+
+        // Not statistically significant (noise)
+        if (insignificant.length > 0) {
+            md.push(`<details><summary>🔘 Not Significant — p ≥ 0.05 (${insignificant.length})</summary>\n`);
+            md.push(`| Test | Baseline | Candidate | Diff | p-value |`);
+            md.push(`| --- | ---: | ---: | ---: | ---: |`);
+            const sorted = [...insignificant].sort((a, b) => a.pValue - b.pValue);
+            for (const e of sorted) {
+                const diffLabel = e.direction === "slower" ? `${e.diffPercent.toFixed(1)}% slower` : `${e.diffPercent.toFixed(1)}% faster`;
+                md.push(`| ${e.testName} | ${e.baselineMs.toFixed(1)}ms | ${e.candidateMs.toFixed(1)}ms | ${diffLabel} | ${e.pValue.toFixed(4)} |`);
             }
             md.push(`\n</details>\n`);
         }
@@ -193,6 +217,7 @@ class PerformanceSummaryReporter implements Reporter {
             diffPercent: parseFloat(match[6]),
             direction: match[7] as "faster" | "slower",
             inconclusive: line.includes("[INCONCLUSIVE"),
+            pValue: parseFloat(match[8]),
         };
     }
 }

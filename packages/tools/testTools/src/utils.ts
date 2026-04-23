@@ -8,7 +8,7 @@ interface Page {
     evaluate: (...args: any[]) => Promise<any>;
     goto: (...args: any[]) => Promise<any>;
     waitForSelector: (...args: any[]) => Promise<any>;
-    waitForLoadState?: (state: string, options?: { timeout?: number }) => Promise<void>;
+    waitForLoadState?: (state?: "load" | "domcontentloaded" | "networkidle", options?: { timeout?: number }) => Promise<void>;
     on: (...args: any[]) => any;
 }
 
