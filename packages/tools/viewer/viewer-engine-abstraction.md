@@ -109,15 +109,15 @@ Below is the complete inventory of Babylon.js APIs the Viewer uses, grouped into
 
 ## Proposed IViewer Interface
 
-The `IViewer` interface captures the Viewer's **public API surface** — the contract that `viewerElement.ts`, `viewerFactory.ts`, and external consumers depend on. Both `Viewer` and `ViewerLite` implement it.
+The `IViewer` interface is scoped to **exactly the Viewer API subset that `viewerElement.ts` uses**. It uses the same names and signatures as the existing `Viewer` class wherever possible, so `Viewer implements IViewer` requires minimal code changes. Members that `viewerElement.ts` never touches (`showDebugLogs`, `getHotSpotToRef`, `shadowConfig`) are **not** on the interface — they remain as `Viewer`-only API.
 
 ```typescript
 /**
- * Public interface for the Viewer. Both the full Babylon.js Viewer
- * and ViewerLite implement this contract.
+ * The subset of the Viewer API that ViewerElement depends on.
+ * Both the full Babylon.js Viewer and ViewerLite implement this contract.
  */
 export interface IViewer extends IDisposable {
-    // ── Events (Observable from core, both impls can use it) ──
+    // ── Events (Observable from core, both impls can import it) ──
     readonly onEnvironmentChanged: Observable<void>;
     readonly onEnvironmentConfigurationChanged: Observable<void>;
     readonly onEnvironmentError: Observable<unknown>;
@@ -134,63 +134,111 @@ export interface IViewer extends IDisposable {
     readonly onSelectedMaterialVariantChanged: Observable<void>;
     readonly onHotSpotsChanged: Observable<void>;
     readonly onCamerasAsHotSpotsChanged: Observable<void>;
+    readonly onAfterRenderObservable: Observable<void>;        // NEW — see below
+    readonly onClearColorChanged: Observable<void>;            // NEW — see below
+
+    // ── Clear Color (NEW — moved from Scene to IViewer) ──
+    clearColor: [r: number, g: number, b: number, a: number];
 
     // ── Camera ──
-    cameraAutoOrbit: Readonly<CameraAutoOrbit>;
-    cameraOrbit: CameraOrbit;
-    cameraTarget: CameraTarget;
-    resetCamera(interpolate?: boolean): void;
-
-    // ── Model Loading ──
-    loadModel(source: string | File | ArrayBufferView, options?: LoadModelOptions, abortSignal?: AbortSignal): Promise<void>;
-    resetModel(abortSignal?: AbortSignal): Promise<void>;
+    cameraAutoOrbit: Partial<Readonly<CameraAutoOrbit>>;
+    resetCamera(reframe?: boolean): void;
+    updateCamera(pose: { alpha?: number; beta?: number; radius?: number;
+                         targetX?: number; targetY?: number; targetZ?: number }): void;
 
     // ── Environment ──
-    loadEnvironment(url: string, options?: LoadEnvironmentOptions): Promise<void>;
-    resetEnvironment(options?: EnvironmentOptions): Promise<void>;
-    environmentIntensity: number;
-    environmentRotation: number;
-    skyboxBlur: number;
+    environmentConfig: Partial<Readonly<EnvironmentParams>>;
+    loadEnvironment(url: string, options?: LoadEnvironmentOptions, abortSignal?: AbortSignal): Promise<void>;
+    resetEnvironment(options?: EnvironmentOptions, abortSignal?: AbortSignal): Promise<void>;
+
+    // ── Post Processing ──
+    postProcessing: Partial<Readonly<PostProcessing>>;
+
+    // ── Shadows ──
+    readonly shadowConfig: Readonly<ShadowParams>;
+    updateShadows(value: Partial<Readonly<ShadowParams>>): Promise<void>;
+
+    // ── Model Loading ──
+    loadModel(source: string | File | ArrayBufferView, options?: ViewerLoadModelOptions, abortSignal?: AbortSignal): Promise<void>;
+    resetModel(abortSignal?: AbortSignal): Promise<void>;
 
     // ── Animation ──
-    readonly animationNames: readonly string[];
+    readonly animations: readonly string[];
     selectedAnimation: number;
     animationSpeed: number;
     readonly isAnimationPlaying: boolean;
     animationProgress: number;
+    toggleAnimation(): void;
     playAnimation(): void;
-    pauseAnimation(): void;
-
-    // ── Post Processing ──
-    toneMapping: ToneMapping;
-    contrast: number;
-    exposure: number;
+    pauseAnimation(): Promise<void>;
 
     // ── Material Variants ──
     readonly materialVariants: readonly string[];
     selectedMaterialVariant: Nullable<string>;
 
-    // ── Shadows ──
-    shadowQuality: ShadowQuality;
-
     // ── Hot Spots ──
     hotSpots: Record<string, HotSpot>;
-    getHotSpotToRef(name: string, result: ViewerHotSpotResult): boolean;
+    camerasAsHotSpots: boolean;
+    queryHotSpot(name: string, result: ViewerHotSpotResult): boolean;
+    focusHotSpot(name: string): boolean;
 
     // ── Loading progress ──
-    readonly loadingProgress: Nullable<number>;
+    readonly loadingProgress: boolean | number;
 
-    // ── Scene ──
-    clearColor: readonly [r: number, g: number, b: number, a: number];
+    // ── Reset ──
+    reset(...flags: ResetFlag[]): void;
 
     // ── Dispose ──
     dispose(): void;
 }
 ```
 
+### Members NOT used by ViewerElement (Viewer-only API)
+
+These exist on `Viewer` but are not called anywhere in `viewerElement.ts`:
+
+- `showDebugLogs`
+- `getHotSpotToRef` (ViewerElement uses `queryHotSpot` and `focusHotSpot` instead)
+
+### New members needed on IViewer (not currently on Viewer)
+
+`viewerElement.ts` currently reaches through `ViewerDetails` to access the Babylon.js `Scene` directly for two things. These need to become first-class IViewer members:
+
+| viewerElement usage today                     | Proposed IViewer member                              | Notes                                                                           |
+| --------------------------------------------- | ---------------------------------------------------- | ------------------------------------------------------------------------------- |
+| `details.scene.clearColor` (get/set `Color4`) | `clearColor: [r, g, b, a]`                           | Tuple avoids `Color4` dependency. Viewer wraps the tuple ↔ `Color4` internally. |
+| `details.scene.onClearColorChangedObservable` | `readonly onClearColorChanged: Observable<void>`     | Viewer forwards from `scene.onClearColorChangedObservable`.                     |
+| `details.scene.onAfterRenderCameraObservable` | `readonly onAfterRenderObservable: Observable<void>` | Used to fire `"viewerrender"` custom events.                                    |
+
+These are small additions to `Viewer` that wrap existing Scene internals — no behavioral change.
+
+### Changes to `viewerElement.ts` to remove direct core dependencies
+
+| Current core usage                                            | Change needed                                                                                                                                                             |
+| ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `import { Color4 } from "core/..."` and `parseColor()` helper | Keep `parseColor()` but have it return a `[r,g,b,a]` tuple. Remove `Color4` import.                                                                                       |
+| `details.scene.clearColor = new Color4(...)`                  | `details.viewer.clearColor = [r, g, b, a]`                                                                                                                                |
+| `details.scene.onClearColorChangedObservable`                 | `details.viewer.onClearColorChanged`                                                                                                                                      |
+| `details.scene.onAfterRenderCameraObservable`                 | `details.viewer.onAfterRenderObservable`                                                                                                                                  |
+| `AsyncLock`, `Deferred`, `AbortError`, `Logger`               | These are pure utilities with no backend coupling — fine to keep importing from core for now. Could be replaced later if the Lite package doesn't want a core dependency. |
+| `Observable`, `Nullable` (type-only)                          | Keep as-is.                                                                                                                                                               |
+
+### One justified deviation: `LoadModelOptions`
+
+The existing `LoadModelOptions` is aliased to `LoadAssetContainerOptions` from `@babylonjs/core`, which exposes Babylon.js-specific types (`ISceneLoaderProgressEvent`, glTF extension options, etc.) that Lite cannot accept.
+
+For IViewer, `loadModel` uses a new `ViewerLoadModelOptions` type that captures only the backend-agnostic subset (e.g. `pluginExtension`). The full `Viewer` class can accept the wider `LoadAssetContainerOptions` since its concrete method signature is a compatible superset. `ViewerLite` implements only the narrower type.
+
+Note: `viewerElement.ts` currently only passes `{ pluginExtension }` to `loadModel`, so the narrower type already covers its actual usage.
+
+### Types that stay unchanged
+
+All other viewer-defined types — `CameraAutoOrbit`, `EnvironmentParams`, `ShadowParams`, `PostProcessing`, `EnvironmentOptions`, `LoadEnvironmentOptions`, `HotSpot` — are plain data types with no Babylon.js core dependencies. Both implementations can use them as-is.
+
 ### What `viewerElement.ts` and `viewerFactory.ts` need to change
 
-- **`viewerElement.ts`**: Currently types its internal viewer as `Viewer`. Change to `IViewer`. All property bindings and method calls already go through the public API, so this is mostly a type change.
+- **`viewerElement.ts`**: Currently has `ViewerElement<ViewerClass extends Viewer = Viewer>`. This becomes `ViewerElement<ViewerClass extends IViewer = Viewer>`. The `_viewerDetails` type changes from `ViewerDetails & { viewer }` to just `{ viewer: ViewerClass }`, since ViewerElement should no longer reach through to `scene`/`camera` directly. The `clearColor` property binding switches from `details.scene.clearColor` to `details.viewer.clearColor` (using `[r,g,b,a]` tuples instead of `Color4`). The `onAfterRenderCameraObservable` binding switches to `details.viewer.onAfterRenderObservable`.
+- **`ViewerDetails` / `onInitialized`**: The existing `ViewerDetails` type exposes `scene: Scene`, `camera: ArcRotateCamera`, etc. These are Babylon.js-specific escape hatches for advanced customization. They remain as `Viewer`-only extras, not part of IViewer. `ViewerLite` would either omit `onInitialized` or provide its own Lite-specific details type.
 - **`viewerFactory.ts`**: `CreateViewerForCanvas` currently creates a `Viewer` directly. Add a `"lite"` engine option that creates a `ViewerLite` instead. Return type becomes `Promise<IViewer>`.
 
 ```typescript
