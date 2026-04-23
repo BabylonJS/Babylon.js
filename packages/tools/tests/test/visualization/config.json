@@ -309,8 +309,7 @@
         {
             "title": "Detail map",
             "playgroundId": "#F8FDYT#2",
-            "referenceImage": "detail-map.png",
-            "performanceTest": true
+            "referenceImage": "detail-map.png"
         },
         {
             "title": "needDepthPrePass",
@@ -345,8 +344,7 @@
         {
             "title": "Color correction",
             "playgroundId": "#FBH4J7#278",
-            "referenceImage": "color-correction.png",
-            "performanceTest": true
+            "referenceImage": "color-correction.png"
         },
         {
             "title": "NME Multi Build",
@@ -372,8 +370,7 @@
         {
             "title": "NMEGLTF",
             "playgroundId": "#WGZLGJ#10320",
-            "referenceImage": "nmegltf.png",
-            "performanceTest": true
+            "referenceImage": "nmegltf.png"
         },
         {
             "title": "GPUPicker",
@@ -404,8 +401,7 @@
         {
             "title": "Ground Projection",
             "playgroundId": "#XG08YC#0",
-            "referenceImage": "groundProjection.png",
-            "performanceTest": true
+            "referenceImage": "groundProjection.png"
         },
         {
             "title": "Node geometry",
@@ -430,8 +426,7 @@
         {
             "title": "GreasedLine - basic",
             "playgroundId": "#H1LRZ3#103",
-            "referenceImage": "greased-line-basic.png",
-            "performanceTest": true
+            "referenceImage": "greased-line-basic.png"
         },
         {
             "title": "GreasedLine - simple material",
@@ -612,14 +607,12 @@
         {
             "title": "Anisotropic",
             "playgroundId": "#MAXCNU#1",
-            "referenceImage": "anisotropic.png",
-            "performanceTest": true
+            "referenceImage": "anisotropic.png"
         },
         {
             "title": "Clear Coat",
             "playgroundId": "#YACNQS#2",
-            "referenceImage": "clearCoat.png",
-            "performanceTest": true
+            "referenceImage": "clearCoat.png"
         },
         {
             "title": "Dynamic Texture context clip",
@@ -629,8 +622,7 @@
         {
             "title": "GUI Transform StackPanel",
             "playgroundId": "#BS60AB#0",
-            "referenceImage": "TransformStackPanel.png",
-            "performanceTest": true
+            "referenceImage": "TransformStackPanel.png"
         },
         {
             "title": "GUI StackPanel",
@@ -848,8 +840,7 @@
         {
             "title": "Fresnel",
             "playgroundId": "#603JUZ#3",
-            "referenceImage": "fresnel.png",
-            "performanceTest": true
+            "referenceImage": "fresnel.png"
         },
         {
             "title": "Highlights",
@@ -950,8 +941,7 @@
         {
             "title": "Displacement map",
             "playgroundId": "#WZ8JL4#0",
-            "referenceImage": "displacementMap.png",
-            "performanceTest": true
+            "referenceImage": "displacementMap.png"
         },
         {
             "title": "Normals",
@@ -966,8 +956,7 @@
         {
             "title": "Draco Mesh Compression (decodeMeshAsync, numWorkers = 1)",
             "playgroundId": "#22MFU2#77",
-            "referenceImage": "draco.png",
-            "performanceTest": true
+            "referenceImage": "draco.png"
         },
         {
             "title": "Draco Mesh Compression (decodeMeshToGeometryAsync, numWorkers = 0)",
@@ -1192,8 +1181,7 @@
         {
             "title": "GLTF Sheen",
             "playgroundId": "#YG3BBF#2",
-            "referenceImage": "glTFSheen.png",
-            "performanceTest": true
+            "referenceImage": "glTFSheen.png"
         },
         {
             "title": "GLTF ClearCoat",
@@ -1440,8 +1428,7 @@
             "title": "Sharpen",
             "playgroundId": "#NAW8EA#1",
             "renderCount": 20,
-            "referenceImage": "sharpen.png",
-            "performanceTest": true
+            "referenceImage": "sharpen.png"
         },
         {
             "title": "Depth of field",
@@ -1478,8 +1465,7 @@
         {
             "title": "PBR glossy",
             "playgroundId": "#DFQKIR#0",
-            "referenceImage": "pbrglossy.png",
-            "performanceTest": true
+            "referenceImage": "pbrglossy.png"
         },
         {
             "title": "PBR rough",
@@ -1540,8 +1526,7 @@
             "title": "MultiSample render targets",
             "renderCount": 20,
             "playgroundId": "#12MKMN#0",
-            "referenceImage": "MultiSample-render-targets.png",
-            "performanceTest": true
+            "referenceImage": "MultiSample-render-targets.png"
         },
         {
             "title": "Default rendering pipeline",
@@ -1613,8 +1598,7 @@
         {
             "title": "Light Projection Texture",
             "playgroundId": "#CQNGRK#0",
-            "referenceImage": "LightProjectionTexture.png",
-            "performanceTest": true
+            "referenceImage": "LightProjectionTexture.png"
         },
         {
             "title": "GlowLayer",
@@ -1627,8 +1611,7 @@
             "title": "Local cubemaps",
             "renderCount": 2,
             "playgroundId": "#RNASML#4",
-            "referenceImage": "local-cubemaps.png",
-            "performanceTest": true
+            "referenceImage": "local-cubemaps.png"
         },
         {
             "title": "TGA",
@@ -1649,8 +1632,7 @@
         {
             "title": "LightFalloff spots",
             "playgroundId": "#20OAV9#6653",
-            "referenceImage": "lightFalloffSpots.png",
-            "performanceTest": true
+            "referenceImage": "lightFalloffSpots.png"
         },
         {
             "title": "LightFalloff point lights",
@@ -1695,8 +1677,7 @@
         {
             "title": "Visibility",
             "playgroundId": "#PXC9CF#6",
-            "referenceImage": "visibility.png",
-            "performanceTest": true
+            "referenceImage": "visibility.png"
         },
         {
             "title": "GLTF Extension EXT_mesh_gpu_instancing",
@@ -1748,8 +1729,7 @@
         {
             "title": "OBJ loader test (legacy)",
             "playgroundId": "#SYQW69#1213",
-            "referenceImage": "objTestLoaderLegacy.png",
-            "performanceTest": true
+            "referenceImage": "objTestLoaderLegacy.png"
         },
         {
             "title": "OBJ loader test",
@@ -2698,8 +2678,7 @@
         {
             "title": "blur-cube-with-the-effect-renderer",
             "renderCount": 20,
-            "playgroundId": "#4C900K#2",
-            "performanceTest": true
+            "playgroundId": "#4C900K#2"
         },
         {
             "title": "simple-render-target-with-blue-spheres",
@@ -4141,8 +4120,7 @@
         },
         {
             "title": "Background material blur",
-            "playgroundId": "#UU7RQ#4458",
-            "performanceTest": true
+            "playgroundId": "#UU7RQ#4458"
         },
         {
             "title": "Lighting Volume",
