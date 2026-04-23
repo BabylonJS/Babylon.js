@@ -21,11 +21,16 @@ interface PerfEntry {
     direction: "faster" | "slower";
     inconclusive: boolean;
     pValue: number;
+    /** GPU time per frame in ms for baseline. -1 if not available. */
+    baselineGpuMs: number;
+    /** GPU time per frame in ms for candidate. -1 if not available. */
+    candidateGpuMs: number;
 }
 
 // Matches the structured part of a [PERF] log line:
-// [PERF] <name>: <baselineLabel>: <time>ms, <candidateLabel>: <time>ms, <candidateLabel> is <pct>% faster|slower, p-value: <p>
+// [PERF] <name>: <baselineLabel>: <time>ms, <candidateLabel>: <time>ms, <candidateLabel> is <pct>% faster|slower, p-value: <p>[, gpu/frame: ...]
 const PERF_LINE_REGEX = /\[PERF\]\s+(.+?):\s+(\S+):\s+([\d.]+)ms,\s+(\S+):\s+([\d.]+)ms,\s+\S+ is ([\d.]+)% (faster|slower),\s+p-value:\s+([\d.]+)/;
+const GPU_TIME_REGEX = /gpu\/frame:\s+\S+\s+([\d.]+)ms\s*\/\s*\S+\s+([\d.]+)ms/;
 
 class PerformanceSummaryReporter implements Reporter {
     private entries: PerfEntry[] = [];
@@ -146,15 +151,25 @@ class PerformanceSummaryReporter implements Reporter {
             return "Low";
         };
 
+        // Helper: check if any entries in a list have GPU data
+        const hasGpu = (entries: PerfEntry[]) => entries.some((e) => e.baselineGpuMs >= 0 || e.candidateGpuMs >= 0);
+        const gpuCell = (e: PerfEntry) => {
+            if (e.baselineGpuMs >= 0 && e.candidateGpuMs >= 0) {
+                return ` ${e.baselineGpuMs.toFixed(2)} / ${e.candidateGpuMs.toFixed(2)} |`;
+            }
+            return " — |";
+        };
+
         // Significant regressions table
         if (significantRegressions.length > 0) {
             const sorted = [...significantRegressions].sort((a, b) => b.diffPercent - a.diffPercent);
+            const showGpu = hasGpu(sorted);
             md.push(`### 🔻 Significant Regressions (${significantRegressions.length})\n`);
-            md.push(`| Test | Baseline | Candidate | Diff | p-value | Confidence |`);
-            md.push(`| --- | ---: | ---: | ---: | ---: | :---: |`);
+            md.push(`| Test | Baseline | Candidate | Diff | p-value | Confidence |${showGpu ? " GPU/frame (B/C) |" : ""}`);
+            md.push(`| --- | ---: | ---: | ---: | ---: | :---: |${showGpu ? " ---: |" : ""}`);
             for (const e of sorted) {
                 md.push(
-                    `| ${e.testName} | ${e.baselineMs.toFixed(1)}ms | ${e.candidateMs.toFixed(1)}ms | **${e.diffPercent.toFixed(1)}% slower** | ${e.pValue.toFixed(4)} | ${confidenceLabel(e.pValue)} |`
+                    `| ${e.testName} | ${e.baselineMs.toFixed(1)}ms | ${e.candidateMs.toFixed(1)}ms | **${e.diffPercent.toFixed(1)}% slower** | ${e.pValue.toFixed(4)} | ${confidenceLabel(e.pValue)} |${showGpu ? gpuCell(e) : ""}`
                 );
             }
             md.push("");
@@ -163,12 +178,13 @@ class PerformanceSummaryReporter implements Reporter {
         // Significant improvements table
         if (significantImprovements.length > 0) {
             const sorted = [...significantImprovements].sort((a, b) => b.diffPercent - a.diffPercent);
+            const showGpu = hasGpu(sorted);
             md.push(`<details><summary>🔺 Significant Improvements (${significantImprovements.length})</summary>\n`);
-            md.push(`| Test | Baseline | Candidate | Diff | p-value | Confidence |`);
-            md.push(`| --- | ---: | ---: | ---: | ---: | :---: |`);
+            md.push(`| Test | Baseline | Candidate | Diff | p-value | Confidence |${showGpu ? " GPU/frame (B/C) |" : ""}`);
+            md.push(`| --- | ---: | ---: | ---: | ---: | :---: |${showGpu ? " ---: |" : ""}`);
             for (const e of sorted) {
                 md.push(
-                    `| ${e.testName} | ${e.baselineMs.toFixed(1)}ms | ${e.candidateMs.toFixed(1)}ms | ${e.diffPercent.toFixed(1)}% faster | ${e.pValue.toFixed(4)} | ${confidenceLabel(e.pValue)} |`
+                    `| ${e.testName} | ${e.baselineMs.toFixed(1)}ms | ${e.candidateMs.toFixed(1)}ms | ${e.diffPercent.toFixed(1)}% faster | ${e.pValue.toFixed(4)} | ${confidenceLabel(e.pValue)} |${showGpu ? gpuCell(e) : ""}`
                 );
             }
             md.push(`\n</details>\n`);
@@ -176,13 +192,14 @@ class PerformanceSummaryReporter implements Reporter {
 
         // Not statistically significant (noise)
         if (insignificant.length > 0) {
-            md.push(`<details><summary>🔘 Not Significant — p ≥ 0.05 (${insignificant.length})</summary>\n`);
-            md.push(`| Test | Baseline | Candidate | Diff | p-value |`);
-            md.push(`| --- | ---: | ---: | ---: | ---: |`);
             const sorted = [...insignificant].sort((a, b) => a.pValue - b.pValue);
+            const showGpu = hasGpu(sorted);
+            md.push(`<details><summary>🔘 Not Significant — p ≥ 0.05 (${insignificant.length})</summary>\n`);
+            md.push(`| Test | Baseline | Candidate | Diff | p-value |${showGpu ? " GPU/frame (B/C) |" : ""}`);
+            md.push(`| --- | ---: | ---: | ---: | ---: |${showGpu ? " ---: |" : ""}`);
             for (const e of sorted) {
                 const diffLabel = e.direction === "slower" ? `${e.diffPercent.toFixed(1)}% slower` : `${e.diffPercent.toFixed(1)}% faster`;
-                md.push(`| ${e.testName} | ${e.baselineMs.toFixed(1)}ms | ${e.candidateMs.toFixed(1)}ms | ${diffLabel} | ${e.pValue.toFixed(4)} |`);
+                md.push(`| ${e.testName} | ${e.baselineMs.toFixed(1)}ms | ${e.candidateMs.toFixed(1)}ms | ${diffLabel} | ${e.pValue.toFixed(4)} |${showGpu ? gpuCell(e) : ""}`);
             }
             md.push(`\n</details>\n`);
         }
@@ -214,6 +231,7 @@ class PerformanceSummaryReporter implements Reporter {
     private parsePerfLine(line: string): PerfEntry | null {
         const match = line.match(PERF_LINE_REGEX);
         if (!match) return null;
+        const gpuMatch = line.match(GPU_TIME_REGEX);
         return {
             testName: match[1],
             baselineLabel: match[2],
@@ -224,6 +242,8 @@ class PerformanceSummaryReporter implements Reporter {
             direction: match[7] as "faster" | "slower",
             inconclusive: line.includes("[INCONCLUSIVE"),
             pValue: parseFloat(match[8]),
+            baselineGpuMs: gpuMatch ? parseFloat(gpuMatch[1]) : -1,
+            candidateGpuMs: gpuMatch ? parseFloat(gpuMatch[2]) : -1,
         };
     }
 }

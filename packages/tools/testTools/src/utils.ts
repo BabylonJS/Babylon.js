@@ -65,7 +65,15 @@ export const evaluateCreateScene = async () => {
 };
 
 // eslint-disable-next-line no-restricted-syntax
-export const evaluateRenderScene = async ({ renderCount, warmupFrames }: { renderCount: number; warmupFrames?: number }) => {
+export const evaluateRenderScene = async ({
+    renderCount,
+    warmupFrames,
+    measureGpuTime,
+}: {
+    renderCount: number;
+    warmupFrames?: number;
+    measureGpuTime?: boolean;
+}): Promise<{ wallTime: number; gpuTimePerFrame: number }> => {
     if (window.scene && window.engine) {
         await window.scene.whenReadyAsync();
         if (warmupFrames) {
@@ -77,7 +85,44 @@ export const evaluateRenderScene = async ({ renderCount, warmupFrames }: { rende
         for (let i = 0; i < renderCount; i++) {
             window.scene.render();
         }
-        return performance.now() - now;
+        const wallTime = performance.now() - now;
+
+        // GPU timing phase (WebGPU only) — measures GPU execution time using
+        // device.queue.onSubmittedWorkDone(), which works on all platforms
+        // (including macOS Metal where timestamp queries return 0).
+        // Renders a batch of frames with beginFrame/endFrame (required to
+        // submit command buffers) and measures time from submission to GPU
+        // completion via onSubmittedWorkDone().
+        let gpuTimePerFrame = -1;
+        const device = (window.engine as any)._device as GPUDevice | undefined;
+        if (measureGpuTime && device?.queue) {
+            try {
+                // Reset the engine's timestamp index which accumulated during the
+                // tight render loop (scene.render() without beginFrame/endFrame).
+                window.engine.beginFrame();
+                window.engine.endFrame();
+
+                const gpuFrames = 20;
+                let totalGpuMs = 0;
+                let measured = 0;
+                for (let i = 0; i < gpuFrames; i++) {
+                    window.engine.beginFrame();
+                    window.scene.render();
+                    window.engine.endFrame(); // submits command buffers to GPU queue
+                    const submitTime = performance.now();
+                    await device.queue.onSubmittedWorkDone();
+                    totalGpuMs += performance.now() - submitTime;
+                    measured++;
+                }
+                if (measured > 0) {
+                    gpuTimePerFrame = totalGpuMs / measured;
+                }
+            } catch {
+                // GPU timing not available — leave as -1
+            }
+        }
+
+        return { wallTime, gpuTimePerFrame };
     } else {
         throw new Error("no scene found");
     }
@@ -424,6 +469,8 @@ export interface PerformanceResult {
     trimmed: number[];
     /** Coefficient of variation of trimmed measurements */
     cov: number;
+    /** Average GPU time per frame in ms. -1 if not available. */
+    gpuTimePerFrame?: number;
     /** If true, the scene could not be created (e.g. missing API in this CDN version) */
     skipped?: string;
 }
@@ -534,6 +581,13 @@ function resolvePageUrl(type: PerformanceTestType, baseUrl: string, opts: Requir
     }
 }
 
+/** Result of a single measurement pass. */
+interface MeasurementPassResult {
+    wallTime: number;
+    /** Average GPU time per frame in ms. -1 if not available. */
+    gpuTimePerFrame: number;
+}
+
 /**
  * Run a single measurement pass on an already-loaded page (no navigation).
  * Creates the engine and scene, renders warmup + measured frames, then
@@ -544,7 +598,7 @@ function resolvePageUrl(type: PerformanceTestType, baseUrl: string, opts: Requir
  * @param opts - Performance test options.
  * @param evaluateArg - A single serializable argument passed to `page.evaluate(createSceneFunction, evaluateArg)`.
  *   Playwright requires exactly one argument. Callers must bundle whatever the scene function needs into this object.
- * @returns The render time in milliseconds, or an object with a skip reason if the scene couldn't be created.
+ * @returns The measurement result, or an object with a skip reason if the scene couldn't be created.
  */
 async function runMeasurementOnLoadedPage(
     page: Page,
@@ -552,7 +606,7 @@ async function runMeasurementOnLoadedPage(
     createSceneFunction: (...args: any[]) => Promise<void>,
     opts: Required<PerformanceTestOptions>,
     evaluateArg?: any
-): Promise<number | { skipped: string }> {
+): Promise<MeasurementPassResult | { skipped: string }> {
     try {
         await page.evaluate(evaluateInitEngine, { engineName: opts.engineName, baseUrl });
         if (evaluateArg !== undefined) {
@@ -569,10 +623,14 @@ async function runMeasurementOnLoadedPage(
                 /* timeout — continue measurement */
             }
         }
-        const time = await page.evaluate(evaluateRenderScene, { renderCount: opts.framesToRender, warmupFrames: opts.warmupFrames });
+        const result = await page.evaluate(evaluateRenderScene, {
+            renderCount: opts.framesToRender,
+            warmupFrames: opts.warmupFrames,
+            measureGpuTime: opts.engineName === "webgpu",
+        });
         await page.evaluate(evaluateDisposeScene);
         await page.evaluate(evaluateDisposeEngine);
-        return time;
+        return result;
     } catch (e: any) {
         const msg = e?.message || String(e);
         // Best-effort cleanup
@@ -702,10 +760,10 @@ export const collectPerformanceSamples = async (
             break;
         }
         const wResult = await runMeasurementOnLoadedPage(page, baseUrl, createSceneFunction, opts, evaluateArg);
-        if (typeof wResult !== "number") {
+        if ("skipped" in wResult) {
             return { mean: 0, raw: [], trimmed: [], cov: 0, skipped: wResult.skipped };
         }
-        warmupValues.push(wResult);
+        warmupValues.push(wResult.wallTime);
         if (isWarmupSettled(warmupValues)) {
             break;
         }
@@ -714,15 +772,19 @@ export const collectPerformanceSamples = async (
     // Measured passes
     const minSamples = opts.trimCount * 2 + 1;
     const raw: number[] = [];
+    const gpuTimes: number[] = [];
     for (let i = 0; i < opts.numberOfPasses; i++) {
         if (Date.now() > deadline && raw.length >= minSamples) {
             break;
         }
         const result = await runMeasurementOnLoadedPage(page, baseUrl, createSceneFunction, opts, evaluateArg);
-        if (typeof result !== "number") {
+        if ("skipped" in result) {
             return { mean: 0, raw: [], trimmed: [], cov: 0, skipped: result.skipped };
         }
-        raw.push(result);
+        raw.push(result.wallTime);
+        if (result.gpuTimePerFrame >= 0) {
+            gpuTimes.push(result.gpuTimePerFrame);
+        }
     }
 
     if (raw.length < minSamples) {
@@ -736,6 +798,7 @@ export const collectPerformanceSamples = async (
         raw,
         trimmed,
         cov: performanceStats.coefficientOfVariation(trimmed),
+        gpuTimePerFrame: gpuTimes.length > 0 ? performanceStats.mean(gpuTimes) : undefined,
     };
 };
 
@@ -758,9 +821,17 @@ interface InterleavedSamplesResult {
  * @param stableRaw - Raw render times from the stable (baseline) build.
  * @param devRaw - Raw render times from the dev (candidate) build.
  * @param opts - Performance test options.
+ * @param stableGpuTimes - GPU time per frame measurements for the stable build.
+ * @param devGpuTimes - GPU time per frame measurements for the dev build.
  * @returns The interleaved samples result with trimmed statistics.
  */
-function buildInterleavedResult(stableRaw: number[], devRaw: number[], opts: Required<PerformanceTestOptions>): InterleavedSamplesResult {
+function buildInterleavedResult(
+    stableRaw: number[],
+    devRaw: number[],
+    opts: Required<PerformanceTestOptions>,
+    stableGpuTimes?: number[],
+    devGpuTimes?: number[]
+): InterleavedSamplesResult {
     const rounds = stableRaw.map((s, i) => ({ stable: s, dev: devRaw[i], diff: devRaw[i] - s }));
     const sortedRounds = [...rounds].sort((a, b) => a.diff - b.diff);
     const trimmedRounds = sortedRounds.slice(opts.trimCount, sortedRounds.length - opts.trimCount);
@@ -775,12 +846,14 @@ function buildInterleavedResult(stableRaw: number[], devRaw: number[], opts: Req
             raw: stableRaw,
             trimmed: stableTrimmed,
             cov: performanceStats.coefficientOfVariation(stableTrimmed),
+            gpuTimePerFrame: stableGpuTimes && stableGpuTimes.length > 0 ? performanceStats.mean(stableGpuTimes) : undefined,
         },
         dev: {
             mean: performanceStats.mean(devTrimmed),
             raw: devRaw,
             trimmed: devTrimmed,
             cov: performanceStats.coefficientOfVariation(devTrimmed),
+            gpuTimePerFrame: devGpuTimes && devGpuTimes.length > 0 ? performanceStats.mean(devGpuTimes) : undefined,
         },
         pairedDifferences,
     };
@@ -850,22 +923,22 @@ const collectInterleavedSamples = async (
         const devWarmup: number[] = [];
         for (let w = 0; w < opts.warmupPasses; w++) {
             const sW = await runMeasurementOnLoadedPage(stablePage, baseUrl, createSceneFunction, opts, evaluateArg);
-            if (typeof sW !== "number") {
+            if ("skipped" in sW) {
                 await (devPage as any).close?.();
                 await devContext?.close?.();
-                return sW as { skipped: string };
+                return sW;
             }
             const dW = await runMeasurementOnLoadedPage(devPage, baseUrl, createSceneFunction, opts, evaluateArg);
-            if (typeof dW !== "number") {
+            if ("skipped" in dW) {
                 await (devPage as any).close?.();
                 await devContext?.close?.();
-                return dW as { skipped: string };
+                return dW;
             }
-            stableWarmup.push(sW);
-            devWarmup.push(dW);
+            stableWarmup.push(sW.wallTime);
+            devWarmup.push(dW.wallTime);
             // Calibrate frame count after first warmup pass using the slower build
             if (w === 0 && opts.targetPassTimeMs > 0) {
-                const slowest = Math.max(sW, dW);
+                const slowest = Math.max(sW.wallTime, dW.wallTime);
                 opts.framesToRender = calibrateFrameCount(slowest, opts.framesToRender, opts.targetPassTimeMs);
             }
             // Stop warming up once both builds have settled
@@ -877,24 +950,32 @@ const collectInterleavedSamples = async (
         // ── Measured passes ──
         const stableRaw: number[] = [];
         const devRaw: number[] = [];
+        const stableGpuTimes: number[] = [];
+        const devGpuTimes: number[] = [];
 
         for (let i = 0; i < opts.numberOfPasses; i++) {
             const sResult = await runMeasurementOnLoadedPage(stablePage, baseUrl, createSceneFunction, opts, evaluateArg);
-            if (typeof sResult !== "number") {
+            if ("skipped" in sResult) {
                 await (devPage as any).close?.();
                 await devContext?.close?.();
-                return sResult as { skipped: string };
+                return sResult;
             }
 
             const dResult = await runMeasurementOnLoadedPage(devPage, baseUrl, createSceneFunction, opts, evaluateArg);
-            if (typeof dResult !== "number") {
+            if ("skipped" in dResult) {
                 await (devPage as any).close?.();
                 await devContext?.close?.();
-                return dResult as { skipped: string };
+                return dResult;
             }
 
-            stableRaw.push(sResult);
-            devRaw.push(dResult);
+            stableRaw.push(sResult.wallTime);
+            devRaw.push(dResult.wallTime);
+            if (sResult.gpuTimePerFrame >= 0) {
+                stableGpuTimes.push(sResult.gpuTimePerFrame);
+            }
+            if (dResult.gpuTimePerFrame >= 0) {
+                devGpuTimes.push(dResult.gpuTimePerFrame);
+            }
 
             // Check time budget — bail out early if we're running long.
             // We need at least trimCount*2+1 measured samples for meaningful stats.
@@ -911,7 +992,7 @@ const collectInterleavedSamples = async (
             return { skipped: `Not enough samples (${stableRaw.length}) within time budget` };
         }
 
-        return buildInterleavedResult(stableRaw, devRaw, opts);
+        return buildInterleavedResult(stableRaw, devRaw, opts, stableGpuTimes, devGpuTimes);
     }
 
     // ── Fallback: sequential collection (single page) ────────────
@@ -944,7 +1025,7 @@ const collectSequentialSamples = async (
     deadline = Infinity
 ): Promise<InterleavedSamplesResult | { skipped: string }> => {
     // eslint-disable-next-line no-restricted-syntax
-    const collectSamples = async (url: string, _label: string): Promise<number[] | { skipped: string }> => {
+    const collectSamples = async (url: string, _label: string): Promise<{ raw: number[]; gpuTimes: number[] } | { skipped: string }> => {
         await navigateToPage(page, url);
         // Adaptive warmup
         const warmupValues: number[] = [];
@@ -953,10 +1034,10 @@ const collectSequentialSamples = async (
                 break;
             }
             const wResult = await runMeasurementOnLoadedPage(page, baseUrl, createSceneFunction, opts, evaluateArg);
-            if (typeof wResult !== "number") {
+            if ("skipped" in wResult) {
                 return wResult;
             }
-            warmupValues.push(wResult);
+            warmupValues.push(wResult.wallTime);
             if (isWarmupSettled(warmupValues)) {
                 break;
             }
@@ -964,17 +1045,21 @@ const collectSequentialSamples = async (
         // Measured passes
         const minSamples = opts.trimCount * 2 + 1;
         const raw: number[] = [];
+        const gpuTimes: number[] = [];
         for (let i = 0; i < opts.numberOfPasses; i++) {
             if (Date.now() > deadline && raw.length >= minSamples) {
                 break;
             }
             const result = await runMeasurementOnLoadedPage(page, baseUrl, createSceneFunction, opts, evaluateArg);
-            if (typeof result !== "number") {
+            if ("skipped" in result) {
                 return result;
             }
-            raw.push(result);
+            raw.push(result.wallTime);
+            if (result.gpuTimePerFrame >= 0) {
+                gpuTimes.push(result.gpuTimePerFrame);
+            }
         }
-        return raw;
+        return { raw, gpuTimes };
     };
 
     // Randomize batch order to prevent systematic ordering bias
@@ -989,33 +1074,35 @@ const collectSequentialSamples = async (
     if (opts.targetPassTimeMs > 0) {
         await navigateToPage(page, firstUrl);
         const probe = await runMeasurementOnLoadedPage(page, baseUrl, createSceneFunction, opts, evaluateArg);
-        if (typeof probe === "number") {
-            opts.framesToRender = calibrateFrameCount(probe, opts.framesToRender, opts.targetPassTimeMs);
+        if (!("skipped" in probe)) {
+            opts.framesToRender = calibrateFrameCount(probe.wallTime, opts.framesToRender, opts.targetPassTimeMs);
         }
         opts.targetPassTimeMs = 0;
     }
 
     const minSamples = opts.trimCount * 2 + 1;
 
-    const firstRaw = await collectSamples(firstUrl, firstLabel);
-    if (!Array.isArray(firstRaw)) {
-        return firstRaw;
+    const firstResult = await collectSamples(firstUrl, firstLabel);
+    if ("skipped" in firstResult) {
+        return firstResult;
     }
-    if (firstRaw.length < minSamples) {
-        return { skipped: `Not enough ${firstLabel} samples (${firstRaw.length}) within time budget` };
+    if (firstResult.raw.length < minSamples) {
+        return { skipped: `Not enough ${firstLabel} samples (${firstResult.raw.length}) within time budget` };
     }
-    const secondRaw = await collectSamples(secondUrl, secondLabel);
-    if (!Array.isArray(secondRaw)) {
-        return secondRaw;
+    const secondResult = await collectSamples(secondUrl, secondLabel);
+    if ("skipped" in secondResult) {
+        return secondResult;
     }
-    if (secondRaw.length < minSamples) {
-        return { skipped: `Not enough ${secondLabel} samples (${secondRaw.length}) within time budget` };
+    if (secondResult.raw.length < minSamples) {
+        return { skipped: `Not enough ${secondLabel} samples (${secondResult.raw.length}) within time budget` };
     }
 
-    const stableRaw = stableFirst ? firstRaw : secondRaw;
-    const devRaw = stableFirst ? secondRaw : firstRaw;
+    const stableRaw = stableFirst ? firstResult.raw : secondResult.raw;
+    const devRaw = stableFirst ? secondResult.raw : firstResult.raw;
+    const stableGpuTimes = stableFirst ? firstResult.gpuTimes : secondResult.gpuTimes;
+    const devGpuTimes = stableFirst ? secondResult.gpuTimes : firstResult.gpuTimes;
 
-    return buildInterleavedResult(stableRaw, devRaw, opts);
+    return buildInterleavedResult(stableRaw, devRaw, opts, stableGpuTimes, devGpuTimes);
 };
 
 /**
@@ -1079,8 +1166,8 @@ export const comparePerformance = async (
             const probeUrl = resolvePageUrl("stable", baseUrl, opts);
             await navigateToPage(page, probeUrl);
             const probeResult = await runMeasurementOnLoadedPage(page, baseUrl, createSceneFunction, opts, evaluateArg);
-            if (typeof probeResult === "number") {
-                opts.framesToRender = calibrateFrameCount(probeResult, opts.framesToRender, opts.targetPassTimeMs);
+            if (!("skipped" in probeResult)) {
+                opts.framesToRender = calibrateFrameCount(probeResult.wallTime, opts.framesToRender, opts.targetPassTimeMs);
             }
             opts.targetPassTimeMs = 0; // Prevent re-calibration inside collection functions
         }
@@ -1133,6 +1220,15 @@ export const comparePerformance = async (
             `${baselineLabel}: ${stableRes.mean.toFixed(1)}ms, ` +
             `${candidateLabel}: ${devRes.mean.toFixed(1)}ms, ` +
             `${candidateLabel} is ${diffLabel}, p-value: ${pValue.toFixed(4)}`;
+
+        // Append GPU time breakdown when available
+        const sGpu = stableRes.gpuTimePerFrame;
+        const dGpu = devRes.gpuTimePerFrame;
+        if (sGpu != null && sGpu >= 0 && dGpu != null && dGpu >= 0) {
+            summary += `, gpu/frame: ${baselineLabel} ${sGpu.toFixed(2)}ms / ${candidateLabel} ${dGpu.toFixed(2)}ms`;
+        } else if (dGpu != null && dGpu >= 0) {
+            summary += `, gpu/frame: ${dGpu.toFixed(2)}ms`;
+        }
 
         if (noisy) {
             summary += ` [INCONCLUSIVE: Mean estimate too uncertain - ${noisyStable ? "stable" : ""}${noisyStable && noisyDev ? " & " : ""}${noisyDev ? "dev" : ""} SEM/mean > ${(opts.maxCov * 100).toFixed(0)}%]`;
@@ -1306,7 +1402,8 @@ export const checkPerformanceOfScene = async (
         } else {
             await page.evaluate(createSceneFunction);
         }
-        time.push(await page.evaluate(evaluateRenderScene, { renderCount: framesToRender }));
+        const result = await page.evaluate(evaluateRenderScene, { renderCount: framesToRender });
+        time.push(result.wallTime);
         await page.evaluate(evaluateDisposeScene);
         await page.evaluate(evaluateDisposeEngine);
     }
