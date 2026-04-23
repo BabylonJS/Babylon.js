@@ -129,4 +129,47 @@ describe("OpenPBRMaterial", () => {
             expect(readyCallback).not.toHaveBeenCalled();
         });
     });
+
+    describe("Per-frame uniform gating", () => {
+        // The 5 subsurface-scattering uniforms are only read by the shader inside
+        // `#ifdef SUBSURFACE_SLAB`, so the per-frame UBO update loop in
+        // `bindForSubMesh` skips them when SSS is inactive. The skip is wired by
+        // the `requiredDefine` field on the cached `_uniformsArray` entries; this
+        // test asserts the wiring is in place. The actual per-frame skip is then
+        // a plain inline check in `bindForSubMesh`:
+        //   `if (uniform.requiredDefine !== undefined && !defines[uniform.requiredDefine]) continue;`
+        // Driving that loop end-to-end from a unit test would require a real GPU
+        // pipeline context, so we cover its runtime behavior via the playground
+        // perf benchmark documented in the PR instead.
+        it("tags SSS uniforms with requiredDefine = 'SUBSURFACE_SLAB' and leaves other uniforms ungated", () => {
+            const material = new OpenPBRMaterial("mat", scene);
+            const uniformsArray: { name: string; requiredDefine?: string }[] = (material as any)._uniformsArray;
+
+            expect(uniformsArray.length).toBeGreaterThan(0);
+
+            const sssUniformNames = ["vSubsurfaceWeight", "vSubsurfaceColor", "vSubsurfaceRadius", "vSubsurfaceRadiusScale", "vSubsurfaceScatterAnisotropy"];
+            for (const name of sssUniformNames) {
+                const uniform = uniformsArray.find((u) => u.name === name);
+                expect(uniform, `expected uniform ${name} to be present`).toBeDefined();
+                expect(uniform!.requiredDefine, `expected ${name} to be gated by SUBSURFACE_SLAB`).toBe("SUBSURFACE_SLAB");
+            }
+
+            // A representative non-SSS uniform must not be gated, otherwise we'd silently
+            // stop pushing base-layer values to the UBO.
+            const baseWeight = uniformsArray.find((u) => u.name === "vBaseWeight");
+            expect(baseWeight, "expected vBaseWeight to be present").toBeDefined();
+            expect(baseWeight!.requiredDefine).toBeUndefined();
+        });
+
+        it("caches firstLinkedKey on each Uniform so the per-frame loop avoids Object.keys allocation", () => {
+            const material = new OpenPBRMaterial("mat", scene);
+            const uniformsArray: { name: string; firstLinkedKey: string; linkedProperties: Record<string, unknown> }[] = (material as any)._uniformsArray;
+
+            expect(uniformsArray.length).toBeGreaterThan(0);
+            for (const uniform of uniformsArray) {
+                expect(uniform.firstLinkedKey, `expected ${uniform.name} to have a cached firstLinkedKey`).not.toBe("");
+                expect(uniform.linkedProperties[uniform.firstLinkedKey], `cached firstLinkedKey on ${uniform.name} must point to a real linked property`).toBeDefined();
+            }
+        });
+    });
 });
