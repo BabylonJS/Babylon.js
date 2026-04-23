@@ -32,10 +32,16 @@ class PerformanceSummaryReporter implements Reporter {
     private failedTests: { title: string; error: string }[] = [];
 
     onTestEnd(test: TestCase, result: TestResult) {
-        if (result.status === "failed" || result.status === "timedOut") {
+        // Only record failures from the final attempt — earlier retries that
+        // failed but were subsequently retried should not appear as failures.
+        const isFinalAttempt = result.retry >= test.retries;
+        if ((result.status === "failed" || result.status === "timedOut") && isFinalAttempt) {
             const error = result.errors.map((e) => e.message || "").join("\n") || result.status;
             this.failedTests.push({ title: test.title, error });
         }
+        // Only collect [PERF] entries from the final attempt to avoid duplicates
+        // when a test fails on an earlier retry and then passes.
+        if (!isFinalAttempt) return;
         for (const output of result.stdout) {
             const line = typeof output === "string" ? output : output.toString();
             if (!line.includes("[PERF]")) continue;
