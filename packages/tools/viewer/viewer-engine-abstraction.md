@@ -183,6 +183,7 @@ export interface IViewer extends IDisposable {
     focusHotSpot(name: string): boolean;
 
     // ── Loading progress ──
+    readonly isModelLoaded: boolean;
     readonly loadingProgress: boolean | number;
 
     // ── Reset ──
@@ -222,13 +223,11 @@ This is a **breaking change**: code that calls `Color4`-specific methods on the 
 
 Internally, `parseColor()` returns a plain `{ r, g, b, a }` object instead of `new Color4(...)`. The `toAttribute` converter produces a hex string from the plain object. The `Color4` import is removed from `viewerElement.ts`.
 
-### `viewerDetails` for Lite
+### ViewerDetails — Skipped for Lite (Deferred)
 
-`viewerDetails` returns `Readonly<ViewerDetails & { viewer }>` where `ViewerDetails` exposes `scene: Scene`, `camera: ArcRotateCamera`, etc. These are Babylon.js-specific and have no Lite equivalent.
+`ViewerDetails` is not part of IViewer. `ViewerElement.viewerDetails` returns `undefined` when `engine="lite"`. Each ViewerDetails member (scene, camera, model, suspendRendering, markSceneMutated, pick, isIdle) maps conceptually to Lite APIs, so ViewerDetail-like functionality can be added to the Lite IViewer implementation later as needed.
 
-**Approach:** `viewerDetails` already returns `undefined` when the viewer isn't loaded. For `engine="lite"`, it will also be `undefined` — documented as unavailable for the Lite backend. The `onInitialized` callback in `ViewerOptions` similarly will not fire for Lite (or will provide a Lite-specific details object without scene/camera). Consumers who need `viewerDetails` shouldn't use `engine="lite"`.
-
-This avoids a type change — the property is already nullable. We just document the Lite limitation.
+For ViewerElement's one internal use of `details.model != null` (line 1058 — toolbar visibility), this check moves to `viewer.isModelLoaded` on the IViewer API.
 
 ### Changes to `viewerElement.ts` to remove direct core dependencies
 
