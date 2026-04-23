@@ -423,7 +423,12 @@ export class SpritePacker {
         // Auto-fit: if the projected cell exceeds an atlas page on either axis, scale uniformly
         // down by the worst-axis ratio so the sprite still fits at the highest resolution we can
         // afford. Uniform scaling preserves the sprite's aspect ratio in the atlas.
-        const fitScale = Math.min(1, projectedWidth > 0 ? maxCellWidth / projectedWidth : 1, projectedHeight > 0 ? maxCellHeight / projectedHeight : 1);
+        // Use the ceiled projected dimensions so that after the caller re-applies Math.ceil to
+        // size the cell, the result is provably <= maxCellWidth/maxCellHeight and the defensive
+        // clamp in _getPageWithRoom is not triggered by sub-pixel rounding.
+        const ceiledProjectedWidth = projectedWidth > 0 ? Math.ceil(projectedWidth) : 0;
+        const ceiledProjectedHeight = projectedHeight > 0 ? Math.ceil(projectedHeight) : 0;
+        const fitScale = Math.min(1, ceiledProjectedWidth > 0 ? maxCellWidth / ceiledProjectedWidth : 1, ceiledProjectedHeight > 0 ? maxCellHeight / ceiledProjectedHeight : 1);
 
         if (fitScale < 1) {
             effectiveScaleX *= fitScale;
@@ -438,9 +443,11 @@ export class SpritePacker {
             const name = debugName ?? "<unknown>";
             const finalW = Math.max(1, Math.ceil(boundingBox.width * effectiveScaleX));
             const finalH = Math.max(1, Math.ceil(boundingBox.height * effectiveScaleY));
+            const gap = this._configuration.gapSize;
             // eslint-disable-next-line no-console
             console.warn(
-                `[SpritePacker] ${kind} sprite for layer "${name}" would produce a ${Math.ceil(projectedWidth)}x${Math.ceil(projectedHeight)}px cell that exceeds the ${atlasW}x${atlasH}px atlas page. ` +
+                `[SpritePacker] ${kind} sprite for layer "${name}" would produce a ${ceiledProjectedWidth}x${ceiledProjectedHeight}px cell that exceeds the usable ${maxCellWidth}x${maxCellHeight}px atlas area ` +
+                    `(within a ${atlasW}x${atlasH}px page with ${gap}px reserved on each side). ` +
                     `Auto-downscaled by ${fitScale.toFixed(3)} to ${finalW}x${finalH}px (on-screen size unchanged; sprite will appear softer than the rest of the atlas). ` +
                     `Source bounding box: ${rawW}x${rawH}px at lottie scale ${lsx}x${lsy} \u00d7 atlasScale ${atlasScale} \u00d7 devicePixelRatio ${dpr}.`
             );
