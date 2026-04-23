@@ -411,14 +411,19 @@ export class GaussianSplattingMeshBase extends Mesh {
      */
     protected static _GetSplatDataFloats(data: ArrayBuffer | ArrayBufferView): Float32Array {
         const bytes = GaussianSplattingMeshBase._GetSplatDataBytes(data);
+        const floatSize = Float32Array.BYTES_PER_ELEMENT;
 
-        if (bytes.byteOffset % Float32Array.BYTES_PER_ELEMENT !== 0 || bytes.byteLength % Float32Array.BYTES_PER_ELEMENT !== 0) {
-            const copy = new Uint8Array(bytes.byteLength);
-            copy.set(bytes);
-            return new Float32Array(copy.buffer);
+        if (bytes.byteLength % floatSize !== 0) {
+            throw new Error(`Gaussian splat data byte length (${bytes.byteLength}) is not divisible by ${floatSize} and cannot be reinterpreted as Float32 data.`);
         }
 
-        return new Float32Array(bytes.buffer, bytes.byteOffset, bytes.byteLength / Float32Array.BYTES_PER_ELEMENT);
+        if (bytes.byteOffset % floatSize !== 0) {
+            const copy = new Uint8Array(bytes.byteLength);
+            copy.set(bytes);
+            return new Float32Array(copy.buffer, 0, bytes.byteLength / floatSize);
+        }
+
+        return new Float32Array(bytes.buffer, bytes.byteOffset, bytes.byteLength / floatSize);
     }
 
     /**
