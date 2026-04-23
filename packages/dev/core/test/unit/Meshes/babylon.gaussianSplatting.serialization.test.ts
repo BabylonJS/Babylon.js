@@ -1,6 +1,6 @@
 import { NullEngine } from "core/Engines/nullEngine";
-import "core/Loading/Plugins/babylonFileLoader";
 import { AppendSceneAsync } from "core/Loading/sceneLoader";
+import { LoadAssetContainerFromSerializedScene } from "core/Loading/Plugins/babylonFileLoader";
 import { Vector3 } from "core/Maths/math.vector";
 import "core/Materials/standardMaterial";
 import { GaussianSplattingCompoundMesh } from "core/Meshes/GaussianSplatting/gaussianSplattingCompoundMesh";
@@ -44,6 +44,17 @@ const createTestShData = (seed: number): Uint8Array[] => {
     }
 
     return [texture];
+};
+
+const createMultiTextureShData = (seed: number, textureCount: number): Uint8Array[] => {
+    return Array.from({ length: textureCount }, (_, textureIndex) => {
+        const texture = new Uint8Array(16);
+        for (let i = 0; i < texture.length; i++) {
+            texture[i] = (seed + textureIndex * 17 + i) & 0xff;
+        }
+
+        return texture;
+    });
 };
 
 describe("GaussianSplatting serialization", () => {
@@ -191,6 +202,100 @@ describe("GaussianSplatting serialization", () => {
         expect(loadedChild).toBeTruthy();
         expect(loadedChild!.parent).toBeTruthy();
         expect(loadedChild!.parent!.getClassName()).toBe("GaussianSplattingPartProxyMesh");
+
+        loadedScene.dispose();
+    });
+
+    it("rebuilds retained SH data as the exact concatenation of surviving parts after removePart", () => {
+        const sourceASplat = createTestSplatData([1, 2, 3], [255, 0, 0, 255]);
+        const sourceBSplat = createTestSplatData([4, 5, 6], [0, 255, 0, 255]);
+        const sourceCSplat = createTestSplatData([7, 8, 9], [0, 0, 255, 255]);
+        const sourceASh = createMultiTextureShData(11, 3);
+        const sourceBSh = createMultiTextureShData(67, 3);
+        const sourceCSh = createMultiTextureShData(123, 3);
+
+        const sourceA = new GaussianSplattingMesh("sourceA", null, scene);
+        sourceA.disableDepthSort = true;
+        sourceA.updateData(sourceASplat, sourceASh, undefined, undefined, 3);
+
+        const sourceB = new GaussianSplattingMesh("sourceB", null, scene);
+        sourceB.disableDepthSort = true;
+        sourceB.updateData(sourceBSplat, sourceBSh, undefined, undefined, 3);
+
+        const sourceC = new GaussianSplattingMesh("sourceC", null, scene);
+        sourceC.disableDepthSort = true;
+        sourceC.updateData(sourceCSplat, sourceCSh, undefined, undefined, 3);
+
+        const compound = new GaussianSplattingCompoundMesh("compound", null, scene, true);
+        compound.disableDepthSort = true;
+        compound.addParts([sourceA, sourceB, sourceC], false);
+
+        compound.removePart(1);
+
+        const rebuiltSh = compound.shData;
+        expect(rebuiltSh).toBeTruthy();
+        expect(rebuiltSh).toHaveLength(3);
+
+        for (let textureIndex = 0; textureIndex < 3; textureIndex++) {
+            const expected = new Uint8Array(32);
+            expected.set(sourceASh[textureIndex], 0);
+            expected.set(sourceCSh[textureIndex], 16);
+
+            expect(Array.from(rebuiltSh![textureIndex])).toEqual(Array.from(expected));
+        }
+
+        const rebuiltPartIndices = (compound as any)._partIndices as Uint8Array;
+        expect(Array.from(rebuiltPartIndices.subarray(0, 2))).toEqual([0, 1]);
+    });
+
+    it("round-trips serialized multi-texture SH compounds through LoadAssetContainerFromSerializedScene", () => {
+        const compound = new GaussianSplattingCompoundMesh("renderMesh", null, scene, true);
+        compound.disableDepthSort = true;
+
+        const sourceShData: Uint8Array[][] = [];
+        const sources: GaussianSplattingMesh[] = [];
+
+        for (let i = 0; i < 5; i++) {
+            const source = new GaussianSplattingMesh(`source${i}`, null, scene, true);
+            source.disableDepthSort = true;
+            const shData = createMultiTextureShData(31 + i * 23, 3);
+            sourceShData.push(shData);
+            source.updateData(createTestSplatData([i + 1, i + 2, i + 3], [255 - i * 20, 32 + i * 10, 64 + i * 15, 255]), shData, undefined, undefined, 3);
+            sources.push(source);
+        }
+
+        const proxies = compound.addParts(sources);
+        proxies.forEach((part, i) => {
+            part.name = `Part ${i}`;
+            part.visibility = 0.5 - i * 0.12;
+            part.position.set(i * 2 - 3, -2, 0);
+            part.computeWorldMatrix(true);
+        });
+
+        compound.removePart(1);
+
+        const serializedScene = SceneSerializer.Serialize(scene);
+
+        const loadedScene = new Scene(engine);
+        const container = LoadAssetContainerFromSerializedScene(loadedScene, serializedScene, "");
+
+        const loadedCompound = container.meshes.find((mesh) => mesh.getClassName() === "GaussianSplattingMesh" && mesh.name === "renderMesh") as GaussianSplattingMesh | undefined;
+        expect(loadedCompound).toBeTruthy();
+
+        const expectedSurvivorIndices = [0, 2, 3, 4];
+        const expectedSh = Array.from({ length: 3 }, (_, textureIndex) => {
+            const merged = new Uint8Array(expectedSurvivorIndices.length * 16);
+            expectedSurvivorIndices.forEach((sourceIndex, survivorIndex) => {
+                merged.set(sourceShData[sourceIndex][textureIndex], survivorIndex * 16);
+            });
+            return merged;
+        });
+        const loadedSh = (loadedCompound as any)._shData as Uint8Array[];
+        expect(loadedSh).toBeTruthy();
+        expect(loadedSh).toHaveLength(3);
+        for (let textureIndex = 0; textureIndex < 3; textureIndex++) {
+            expect(Array.from(loadedSh[textureIndex])).toEqual(Array.from(expectedSh[textureIndex]));
+        }
 
         loadedScene.dispose();
     });
