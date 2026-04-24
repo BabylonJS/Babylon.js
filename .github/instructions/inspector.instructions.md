@@ -38,7 +38,7 @@ function MyComponent() {
 
 ### Dynamically loaded extensions
 
-Extensions that are loaded dynamically via the extension manager dialog must live in `packages/dev/inspector-v2/src/extensions/`. Each extension should be a separate subfolder within that directory.
+New extensions that are loaded dynamically via the extension manager dialog should live in `packages/dev/inspector-v2/src/extensions/`, with each extension in its own subfolder. Some existing extensions (e.g. Reflector) may reside elsewhere in the source tree.
 
 ### Service definitions
 
