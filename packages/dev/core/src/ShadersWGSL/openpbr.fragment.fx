@@ -190,10 +190,10 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
             #endif
         #endif
         #ifdef GEOMETRY_THIN_WALLED
-            let transmission_roughness: f32 = specular_roughness;
+            var transmission_roughness: f32 = specular_roughness;
         #else
             // Transmission blurriness is affected by IOR so we scale the roughness accordingly
-            let transmission_roughness: f32 = specular_roughness * clamp(4.0f * (specular_ior - 1.0f), 0.001f, 1.0f);
+            var transmission_roughness: f32 = specular_roughness * clamp(4.0f * (specular_ior - 1.0f), 0.001f, 1.0f);
         #endif
 
         #if (defined(TRANSMISSION_SLAB) || defined(SUBSURFACE_SLAB))
@@ -319,8 +319,8 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
             // Roughness for transmission is just surface roughness while, for subsurface, transmission is fully diffuse.
             transmission_roughness = mix(1.0f, transmission_roughness, transmission_weight / unweighted_translucency);
         #endif
-        
-        var transmission_roughness_alpha: f32 = transmission_roughness * transmission_roughness;
+
+        let transmission_roughness_alpha: f32 = transmission_roughness * transmission_roughness;
     #endif
     // __________________ Transmitted Light From Background Refraction ___________________________
     #include<openpbrBackgroundTransmission>
