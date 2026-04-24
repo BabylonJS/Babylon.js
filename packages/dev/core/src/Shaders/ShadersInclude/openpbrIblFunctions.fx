@@ -334,7 +334,7 @@
     }
 
     #define pbr_inline
-    vec3 computeConductorIblFresnel(in ReflectanceParams reflectance, in float NdotV, in float roughness, in vec3 environmentBrdf)
+    vec3 computeConductorIblFresnel(in ReflectanceParams reflectance, in vec3 environmentBrdf)
     {
         #if (CONDUCTOR_SPECULAR_MODEL == CONDUCTOR_SPECULAR_MODEL_OPENPBR) && defined(ENVIRONMENTBRDF)
             // environmentBrdf comes from the OpenPBR BRDF LUT (replaces the standard LUT for this material).

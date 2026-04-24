@@ -331,7 +331,7 @@
         return clamp(dielectricIblFresnel * dielectricECF, 0.0, 1.0);
     }
 
-    fn computeConductorIblFresnel(reflectance: ReflectanceParams, NdotV: f32, roughness: f32, environmentBrdf: vec3f) -> vec3f
+    fn computeConductorIblFresnel(reflectance: ReflectanceParams, environmentBrdf: vec3f) -> vec3f
     {
         #if (CONDUCTOR_SPECULAR_MODEL == CONDUCTOR_SPECULAR_MODEL_OPENPBR)
             // environmentBrdf comes from the OpenPBR BRDF LUT. Undo the BRDF_Z_SCALE on the z channel.
