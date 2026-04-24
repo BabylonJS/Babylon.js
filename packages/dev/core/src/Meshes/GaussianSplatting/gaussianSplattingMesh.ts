@@ -21,7 +21,7 @@ const _GaussianSplattingBytesPerShTexel = 16;
 interface IGaussianSplattingPartSource {
     name: string;
     _vertexCount: number;
-    _splatsData: Nullable<ArrayBuffer>;
+    _splatsData: Nullable<ArrayBuffer | ArrayBufferView>;
     _shData: Nullable<Uint8Array[]>;
     _shDegree: number;
     isCompound: boolean;
@@ -134,6 +134,27 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
      */
     public override getClassName(): string {
         return "GaussianSplattingMesh";
+    }
+
+    /**
+     * Is this node ready to be used/rendered.
+     * Force-syncs every part proxy's world matrix into `_partMatrices` BEFORE delegating to
+     * the base readiness check. This guarantees that any pending proxy transform changes
+     * (for example a user-set `proxy.position`) are reflected in the next sort post, so the
+     * base `isReady` will only return true once `sortAppliedId === sortRequestId` for that
+     * up-to-date state. Without this, the proxy's `onAfterWorldMatrixUpdateObservable` would
+     * fire during the first render and queue a fresh sort AFTER readiness was reported,
+     * leaving the rendered frame with stale splat order on `renderCount=1` runs.
+     * @param completeCheck defines if a complete check (including materials and lights) has to be done (false by default)
+     * @returns true when ready
+     */
+    public override isReady(completeCheck = false): boolean {
+        for (const proxy of this._partProxies) {
+            if (proxy) {
+                proxy.computeWorldMatrix(true);
+            }
+        }
+        return super.isReady(completeCheck);
     }
 
     /**
@@ -283,6 +304,12 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
                 this._partMatrices.push(defaultMatrix.clone());
                 this._partVisibility.push(1.0);
             }
+        }
+        // Skip the post / sort if the matrix is unchanged. Babylon recomputes the proxy mesh's world matrix every frame
+        // and fires onAfterWorldMatrixUpdateObservable, so without this guard a stable scene would queue a forced sort
+        // every frame and `isReady()` would never settle (sortRequestId would keep advancing past sortAppliedId).
+        if (this._partMatrices[partIndex].equals(worldMatrix)) {
+            return;
         }
         this._partMatrices[partIndex].copyFrom(worldMatrix);
         // During a batch rebuild suppress intermediate posts — the final correct set is posted
@@ -437,12 +464,13 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
         const splatByteLength = proxy._vertexCount * _GaussianSplattingBytesPerSplat;
         const shByteOffset = proxy._shDataOffset * _GaussianSplattingBytesPerShTexel;
         const shByteLength = proxy._vertexCount * _GaussianSplattingBytesPerShTexel;
+        const splatBytes = GaussianSplattingMeshBase._GetSplatDataBytes(this._splatsData);
 
         return {
             name: proxy.name,
             _vertexCount: proxy._vertexCount,
-            _splatsData: this._splatsData.slice(splatByteOffset, splatByteOffset + splatByteLength),
-            _shData: this._shData?.map((texture) => texture.slice(shByteOffset, shByteOffset + shByteLength)) ?? null,
+            _splatsData: splatBytes.subarray(splatByteOffset, splatByteOffset + splatByteLength),
+            _shData: this._shData?.map((texture) => texture.subarray(shByteOffset, shByteOffset + shByteLength)) ?? null,
             _shDegree: this._shData?.length ?? 0,
             isCompound: false,
             getWorldMatrix: () => proxy.getWorldMatrix(),
@@ -458,15 +486,14 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
             return;
         }
 
-        const getSourceBuffer = (data: ArrayBuffer): ArrayBuffer => {
-            return data instanceof ArrayBuffer ? data : ((data as unknown as ArrayBufferView).buffer as ArrayBuffer);
-        };
-
         const mergedSplatsData = new Uint8Array(totalCount * _GaussianSplattingBytesPerSplat);
         let splatByteOffset = 0;
 
         if (this._splatsData && existingVertexCount > 0) {
-            mergedSplatsData.set(new Uint8Array(getSourceBuffer(this._splatsData), 0, existingVertexCount * _GaussianSplattingBytesPerSplat), splatByteOffset);
+            mergedSplatsData.set(
+                GaussianSplattingMeshBase._GetSplatDataBytes(this._splatsData).subarray(0, existingVertexCount * _GaussianSplattingBytesPerSplat),
+                splatByteOffset
+            );
             splatByteOffset += existingVertexCount * _GaussianSplattingBytesPerSplat;
         }
 
@@ -476,7 +503,7 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
             }
 
             const splatByteLength = other._vertexCount * _GaussianSplattingBytesPerSplat;
-            mergedSplatsData.set(new Uint8Array(getSourceBuffer(other._splatsData), 0, splatByteLength), splatByteOffset);
+            mergedSplatsData.set(GaussianSplattingMeshBase._GetSplatDataBytes(other._splatsData).subarray(0, splatByteLength), splatByteOffset);
             splatByteOffset += splatByteLength;
         }
 
@@ -556,7 +583,7 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
         const colorArray = new Uint8Array(textureLength * 4);
 
         // Determine merged SH degree
-        const hasSH = this._shData !== null && others.every((o) => o._shData !== null);
+        const hasSH = (splatCountA === 0 || this._shData !== null) && others.every((o) => o._shData !== null);
         const shDegreeNew = hasSH ? Math.max(this._shDegree, ...others.map((o) => o._shDegree)) : 0;
         let sh: Uint8Array[] | undefined = undefined;
         if (hasSH && shDegreeNew > 0) {
@@ -640,8 +667,8 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
                         const proxyVertexCount = this._partProxies.reduce((sum, proxy) => sum + (proxy ? proxy._vertexCount : 0), 0);
                         const part0Count = splatCountA - proxyVertexCount;
                         if (part0Count > 0) {
-                            const uBufA = new Uint8Array(this._splatsData);
-                            const fBufA = new Float32Array(this._splatsData);
+                            const uBufA = GaussianSplattingMeshBase._GetSplatDataBytes(this._splatsData);
+                            const fBufA = GaussianSplattingMeshBase._GetSplatDataFloats(this._splatsData);
                             for (let i = 0; i < part0Count; i++) {
                                 this._makeSplat(i, fBufA, uBufA, covA, covB, colorArray, minimum, maximum, false);
                             }
@@ -678,8 +705,8 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
                     // In the preferred scenario B (empty composer) splatCountA is 0 and this
                     // entire branch is skipped by the outer `if (splatCountA > 0)` guard.
                     if (this._splatsData) {
-                        const uBufA = new Uint8Array(this._splatsData);
-                        const fBufA = new Float32Array(this._splatsData);
+                        const uBufA = GaussianSplattingMeshBase._GetSplatDataBytes(this._splatsData);
+                        const fBufA = GaussianSplattingMeshBase._GetSplatDataFloats(this._splatsData);
                         for (let i = 0; i < splatCountA; i++) {
                             this._makeSplat(i, fBufA, uBufA, covA, covB, colorArray, minimum, maximum, false);
                         }
@@ -708,8 +735,8 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
                     // addPart call (scenario A legacy path). Re-process the partial boundary
                     // row so it is not clobbered by stale zeros during the sub-texture upload.
                     if (this._splatsData) {
-                        const uBufA = new Uint8Array(this._splatsData);
-                        const fBufA = new Float32Array(this._splatsData);
+                        const uBufA = GaussianSplattingMeshBase._GetSplatDataBytes(this._splatsData);
+                        const fBufA = GaussianSplattingMeshBase._GetSplatDataFloats(this._splatsData);
                         for (let i = firstNewTexel; i < splatCountA; i++) {
                             this._makeSplat(i, fBufA, uBufA, covA, covB, colorArray, minimum, maximum, false, i);
                         }
@@ -728,8 +755,8 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
                     const partStarts: number[] = new Array(this._partProxies.length).fill(0);
                     // Legacy scenario A: part 0 is the mesh's own loaded data.
                     if (!this._partProxies[0] && this._splatsData && part0Count > 0) {
-                        srcUBufs[0] = new Uint8Array(this._splatsData);
-                        srcFBufs[0] = new Float32Array(this._splatsData);
+                        srcUBufs[0] = GaussianSplattingMeshBase._GetSplatDataBytes(this._splatsData);
+                        srcFBufs[0] = GaussianSplattingMeshBase._GetSplatDataFloats(this._splatsData);
                         partStarts[0] = 0;
                     }
                     // All proxied parts — start from pi=0 to cover preferred scenario B.
@@ -743,8 +770,8 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
                         if (!source || !source._splatsData) {
                             throw new Error(`Cannot rebuild compound part "${proxy.name}": the retained compound source data is not available.`);
                         }
-                        srcUBufs[pi] = new Uint8Array(source._splatsData);
-                        srcFBufs[pi] = new Float32Array(source._splatsData);
+                        srcUBufs[pi] = GaussianSplattingMeshBase._GetSplatDataBytes(source._splatsData);
+                        srcFBufs[pi] = GaussianSplattingMeshBase._GetSplatDataFloats(source._splatsData);
                         partStarts[pi] = cumOffset;
                         cumOffset += source._vertexCount;
                     }

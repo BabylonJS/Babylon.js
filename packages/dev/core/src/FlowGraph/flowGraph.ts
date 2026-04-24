@@ -15,6 +15,7 @@ import { type IFlowGraphEventTrigger, FlowGraphSceneEventCoordinator } from "./f
 import { type FlowGraphMeshPickEventBlock } from "./Blocks/Event/flowGraphMeshPickEventBlock";
 import { _IsDescendantOf } from "./utils";
 import { type IFlowGraphValidationResult, ValidateFlowGraphWithBlockList } from "./flowGraphValidator";
+import { RandomGUID } from "../Misc/guid";
 
 export const enum FlowGraphState {
     /**
@@ -43,6 +44,16 @@ export interface IFlowGraphParams {
      * The event coordinator used by the flow graph.
      */
     coordinator: FlowGraphCoordinator;
+    /**
+     * Optional human-readable name for the graph.
+     * Defaults to "Graph" if not provided.
+     */
+    name?: string;
+    /**
+     * Optional unique identifier for the graph.
+     * If not provided, a random UUID is generated.
+     */
+    uniqueId?: string;
 }
 
 /**
@@ -75,6 +86,16 @@ export interface IFlowGraphParseOptions {
  * @experimental FlowGraph is still in development and is subject to change.
  */
 export class FlowGraph {
+    /**
+     * A human-readable name for this graph.
+     */
+    public name: string;
+
+    /**
+     * A unique identifier for this graph. Auto-generated if not provided.
+     */
+    public uniqueId: string;
+
     /**
      * An observable that is triggered when the state of the graph changes.
      */
@@ -111,6 +132,13 @@ export class FlowGraph {
         return this._scene;
     }
     private _coordinator: FlowGraphCoordinator;
+
+    /**
+     * The coordinator that owns this flow graph.
+     */
+    public get coordinator(): FlowGraphCoordinator {
+        return this._coordinator;
+    }
     private _executionContexts: FlowGraphContext[] = [];
     private _sceneEventCoordinator: FlowGraphSceneEventCoordinator;
     private _eventObserver: Nullable<Observer<IFlowGraphEventTrigger>>;
@@ -143,6 +171,8 @@ export class FlowGraph {
         this._scene = params.scene;
         this._sceneEventCoordinator = new FlowGraphSceneEventCoordinator(this._scene);
         this._coordinator = params.coordinator;
+        this.name = params.name ?? "Graph";
+        this.uniqueId = params.uniqueId ?? RandomGUID();
     }
 
     private _attachEventObserver() {
@@ -541,6 +571,8 @@ export class FlowGraph {
      * @param valueSerializeFunction a function to serialize complex values
      */
     public serialize(serializationObject: any = {}, valueSerializeFunction?: (key: string, value: any, serializationObject: any) => void) {
+        serializationObject.name = this.name;
+        serializationObject.uniqueId = this.uniqueId;
         serializationObject.allBlocks = [];
         // Collect all blocks: traversal-reachable ones plus any registered
         // orphans in _allBlocks (e.g. disconnected blocks in the editor).

@@ -301,7 +301,7 @@
         vec3 radiance(float alphaG, samplerCube inputTexture, vec3 inputN, vec2 filteringInfo)
         {
             vec3 n = normalize(inputN);
-            vec3 c = textureCube(inputTexture, n).rgb; // Don't put it in the "if (alphaG == 0.)" branch for uniformity (analysis) reasons!
+            vec3 c = textureCubeLodEXT(inputTexture, n, 0.).rgb; // Don't put it in the "if (alphaG == 0.)" branch for uniformity (analysis) reasons!
 
             if (alphaG == 0.) {
                 #if GAMMA_INPUT

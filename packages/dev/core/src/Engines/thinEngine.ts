@@ -646,6 +646,19 @@ export class ThinEngine extends AbstractEngine {
         // Compressed formats
         if (this._caps.astc) {
             this._gl.COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR = this._caps.astc.COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR;
+            this._gl.COMPRESSED_SRGB8_ALPHA8_ASTC_5x4_KHR = this._caps.astc.COMPRESSED_SRGB8_ALPHA8_ASTC_5x4_KHR;
+            this._gl.COMPRESSED_SRGB8_ALPHA8_ASTC_5x5_KHR = this._caps.astc.COMPRESSED_SRGB8_ALPHA8_ASTC_5x5_KHR;
+            this._gl.COMPRESSED_SRGB8_ALPHA8_ASTC_6x5_KHR = this._caps.astc.COMPRESSED_SRGB8_ALPHA8_ASTC_6x5_KHR;
+            this._gl.COMPRESSED_SRGB8_ALPHA8_ASTC_6x6_KHR = this._caps.astc.COMPRESSED_SRGB8_ALPHA8_ASTC_6x6_KHR;
+            this._gl.COMPRESSED_SRGB8_ALPHA8_ASTC_8x5_KHR = this._caps.astc.COMPRESSED_SRGB8_ALPHA8_ASTC_8x5_KHR;
+            this._gl.COMPRESSED_SRGB8_ALPHA8_ASTC_8x6_KHR = this._caps.astc.COMPRESSED_SRGB8_ALPHA8_ASTC_8x6_KHR;
+            this._gl.COMPRESSED_SRGB8_ALPHA8_ASTC_8x8_KHR = this._caps.astc.COMPRESSED_SRGB8_ALPHA8_ASTC_8x8_KHR;
+            this._gl.COMPRESSED_SRGB8_ALPHA8_ASTC_10x5_KHR = this._caps.astc.COMPRESSED_SRGB8_ALPHA8_ASTC_10x5_KHR;
+            this._gl.COMPRESSED_SRGB8_ALPHA8_ASTC_10x6_KHR = this._caps.astc.COMPRESSED_SRGB8_ALPHA8_ASTC_10x6_KHR;
+            this._gl.COMPRESSED_SRGB8_ALPHA8_ASTC_10x8_KHR = this._caps.astc.COMPRESSED_SRGB8_ALPHA8_ASTC_10x8_KHR;
+            this._gl.COMPRESSED_SRGB8_ALPHA8_ASTC_10x10_KHR = this._caps.astc.COMPRESSED_SRGB8_ALPHA8_ASTC_10x10_KHR;
+            this._gl.COMPRESSED_SRGB8_ALPHA8_ASTC_12x10_KHR = this._caps.astc.COMPRESSED_SRGB8_ALPHA8_ASTC_12x10_KHR;
+            this._gl.COMPRESSED_SRGB8_ALPHA8_ASTC_12x12_KHR = this._caps.astc.COMPRESSED_SRGB8_ALPHA8_ASTC_12x12_KHR;
         }
         if (this._caps.bptc) {
             this._gl.COMPRESSED_SRGB_ALPHA_BPTC_UNORM_EXT = this._caps.bptc.COMPRESSED_SRGB_ALPHA_BPTC_UNORM_EXT;
@@ -3388,6 +3401,45 @@ export class ThinEngine extends AbstractEngine {
                     break;
                 case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_4x4:
                     internalFormat = gl.COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR;
+                    break;
+                case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_5x4:
+                    internalFormat = gl.COMPRESSED_SRGB8_ALPHA8_ASTC_5x4_KHR;
+                    break;
+                case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_5x5:
+                    internalFormat = gl.COMPRESSED_SRGB8_ALPHA8_ASTC_5x5_KHR;
+                    break;
+                case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_6x5:
+                    internalFormat = gl.COMPRESSED_SRGB8_ALPHA8_ASTC_6x5_KHR;
+                    break;
+                case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_6x6:
+                    internalFormat = gl.COMPRESSED_SRGB8_ALPHA8_ASTC_6x6_KHR;
+                    break;
+                case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_8x5:
+                    internalFormat = gl.COMPRESSED_SRGB8_ALPHA8_ASTC_8x5_KHR;
+                    break;
+                case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_8x6:
+                    internalFormat = gl.COMPRESSED_SRGB8_ALPHA8_ASTC_8x6_KHR;
+                    break;
+                case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_8x8:
+                    internalFormat = gl.COMPRESSED_SRGB8_ALPHA8_ASTC_8x8_KHR;
+                    break;
+                case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_10x5:
+                    internalFormat = gl.COMPRESSED_SRGB8_ALPHA8_ASTC_10x5_KHR;
+                    break;
+                case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_10x6:
+                    internalFormat = gl.COMPRESSED_SRGB8_ALPHA8_ASTC_10x6_KHR;
+                    break;
+                case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_10x8:
+                    internalFormat = gl.COMPRESSED_SRGB8_ALPHA8_ASTC_10x8_KHR;
+                    break;
+                case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_10x10:
+                    internalFormat = gl.COMPRESSED_SRGB8_ALPHA8_ASTC_10x10_KHR;
+                    break;
+                case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_12x10:
+                    internalFormat = gl.COMPRESSED_SRGB8_ALPHA8_ASTC_12x10_KHR;
+                    break;
+                case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_12x12:
+                    internalFormat = gl.COMPRESSED_SRGB8_ALPHA8_ASTC_12x12_KHR;
                     break;
                 case Constants.TEXTUREFORMAT_COMPRESSED_RGB_S3TC_DXT1:
                     if (this._caps.s3tc_srgb) {

@@ -11,12 +11,13 @@ import {
     type RawFillShape,
     type RawFont,
     type RawGradientFillShape,
+    type RawGradientStrokeShape,
     type RawPathShape,
     type RawRectangleShape,
     type RawStrokeShape,
     type RawTextData,
 } from "./rawTypes";
-import { GetInitialScalarValue, GetInitialVectorValues, GetInitialBezierData } from "./rawPropertyHelpers";
+import { GetInitialColorValue, GetInitialScalarValue, GetInitialVectorValues, GetInitialBezierData } from "./rawPropertyHelpers";
 import { ApplyLottieTextContext, DrawLottieText, MeasureLottieText, ResolveLottieText } from "./textLayout";
 
 import { type BoundingBox, GetShapesBoundingBox, GetTextBoundingBox } from "../maths/boundingBox";
@@ -124,12 +125,26 @@ export class SpritePacker {
     // Variable to avoid allocations
     private _spriteAtlasInfo: SpriteAtlasInfo;
 
+    // Tracks unsupported shape types encountered while drawing into the atlas. Deduplicated by `ty`
+    // so a single unknown type doesn't spam the log once per sprite/element. Surfaced via the public
+    // getter so the parser can include these entries in its debug() output.
+    private readonly _unsupportedFeatures: string[] = [];
+    private readonly _seenUnsupportedShapeTypes: Set<string> = new Set<string>();
+
     /**
      * Gets the textures for all atlas pages.
      * @returns An array of textures, one per atlas page.
      */
     public get textures(): ThinTexture[] {
         return this._pages.map((p) => p.texture);
+    }
+
+    /**
+     * Gets the list of unsupported features encountered while rasterizing shapes into the atlas.
+     * Each unknown shape type is reported only once.
+     */
+    public get unsupportedFeatures(): readonly string[] {
+        return this._unsupportedFeatures;
     }
 
     /**
@@ -174,11 +189,14 @@ export class SpritePacker {
      * Adds a vector shape that comes from lottie data to the sprite atlas.
      * @param rawElements The raw element that contains the paths and fills to add to the atlas.
      * @param scalingFactor The scaling factor to apply to the shape.
+     * @param debugName Optional human-readable identifier (e.g. owning layer name) included in oversize warnings.
      * @returns The information on how to find the sprite in the atlas.
      */
-    public addLottieShape(rawElements: RawElement[], scalingFactor: IVector2Like): SpriteAtlasInfo {
+    public addLottieShape(rawElements: RawElement[], scalingFactor: IVector2Like, debugName?: string): SpriteAtlasInfo {
         const boundingBox = GetShapesBoundingBox(rawElements);
 
+        const layerScaleX = scalingFactor.x;
+        const layerScaleY = scalingFactor.y;
         scalingFactor.x = scalingFactor.x * this._atlasScale * this._configuration.devicePixelRatio;
         scalingFactor.y = scalingFactor.y * this._atlasScale * this._configuration.devicePixelRatio;
 
@@ -186,6 +204,8 @@ export class SpritePacker {
         // This takes into account the scaling factor so in the call to _drawVectorShape the canvas will be scaled when rendering
         this._spriteAtlasInfo.cellWidth = this._getAtlasCellDimension(boundingBox.width * scalingFactor.x);
         this._spriteAtlasInfo.cellHeight = this._getAtlasCellDimension(boundingBox.height * scalingFactor.y);
+
+        this._warnIfOversized("shape", debugName, boundingBox, layerScaleX, layerScaleY, this._spriteAtlasInfo.cellWidth, this._spriteAtlasInfo.cellHeight);
 
         // Get (or create) the page that has room for this sprite
         const page = this._getPageWithRoom(this._spriteAtlasInfo.cellWidth, this._spriteAtlasInfo.cellHeight);
@@ -218,9 +238,10 @@ export class SpritePacker {
      * Adds a text element that comes from lottie data to the sprite atlas.
      * @param textData The raw text data to add to the atlas.
      * @param scalingFactor The scaling factor to apply to the text.
+     * @param debugName Optional human-readable identifier (e.g. owning layer name) included in oversize warnings.
      * @returns The information on how to find the sprite in the atlas.
      */
-    public addLottieText(textData: RawTextData, scalingFactor: IVector2Like): SpriteAtlasInfo | undefined {
+    public addLottieText(textData: RawTextData, scalingFactor: IVector2Like, debugName?: string): SpriteAtlasInfo | undefined {
         if (this._rawFonts === undefined) {
             return undefined;
         }
@@ -231,6 +252,8 @@ export class SpritePacker {
             return undefined;
         }
 
+        const layerScaleX = scalingFactor.x;
+        const layerScaleY = scalingFactor.y;
         scalingFactor.x = scalingFactor.x * this._atlasScale * this._configuration.devicePixelRatio;
         scalingFactor.y = scalingFactor.y * this._atlasScale * this._configuration.devicePixelRatio;
 
@@ -238,6 +261,8 @@ export class SpritePacker {
         // This takes into account the scaling factor so in the call to _drawText the canvas will be scaled when rendering
         this._spriteAtlasInfo.cellWidth = this._getAtlasCellDimension(boundingBox.width * scalingFactor.x);
         this._spriteAtlasInfo.cellHeight = this._getAtlasCellDimension(boundingBox.height * scalingFactor.y);
+
+        this._warnIfOversized("text", debugName, boundingBox, layerScaleX, layerScaleY, this._spriteAtlasInfo.cellWidth, this._spriteAtlasInfo.cellHeight);
 
         // Get (or create) the page that has room for this sprite
         const page = this._getPageWithRoom(this._spriteAtlasInfo.cellWidth, this._spriteAtlasInfo.cellHeight);
@@ -332,14 +357,11 @@ export class SpritePacker {
     private _getPageWithRoom(cellWidth: number, cellHeight: number): AtlasPage {
         let page = this._pages[this._pages.length - 1];
 
-        // Clamp oversized cells to fit within a single atlas page
+        // Clamp oversized cells to fit within a single atlas page. The oversize warning (with full
+        // identifying context) is emitted by the caller via _warnIfOversized before we get here.
         const maxCellWidth = this._configuration.spriteAtlasWidth - 2 * this._configuration.gapSize;
         const maxCellHeight = this._configuration.spriteAtlasHeight - 2 * this._configuration.gapSize;
         if (cellWidth > maxCellWidth || cellHeight > maxCellHeight) {
-            // eslint-disable-next-line no-console
-            console.warn(
-                `[SpritePacker] Sprite cell (${cellWidth}x${cellHeight}) exceeds atlas page (${this._configuration.spriteAtlasWidth}x${this._configuration.spriteAtlasHeight}). Clamping to fit.`
-            );
             this._spriteAtlasInfo.cellWidth = Math.min(cellWidth, maxCellWidth);
             this._spriteAtlasInfo.cellHeight = Math.min(cellHeight, maxCellHeight);
             cellWidth = this._spriteAtlasInfo.cellWidth;
@@ -366,6 +388,51 @@ export class SpritePacker {
 
     private _getAtlasCellDimension(size: number): number {
         return Math.max(1, Math.ceil(size));
+    }
+
+    /**
+     * Logs a detailed warning when a sprite cell exceeds the atlas page size, including
+     * the owning layer name, the raw lottie bounding box, and the scale factors that
+     * combine to produce the oversized cell. This makes it easy to identify which lottie
+     * element is responsible and why its rasterized footprint is so large.
+     * @param kind Whether the oversized sprite is a vector shape or a text element.
+     * @param debugName Optional human-readable identifier (typically the owning layer name).
+     * @param boundingBox Source bounding box in lottie coordinates, before any scaling.
+     * @param layerScaleX Lottie-side scale factor on X (excluding atlas scale and DPR).
+     * @param layerScaleY Lottie-side scale factor on Y (excluding atlas scale and DPR).
+     * @param cellWidth Computed cell width in pixels (after all scale factors applied).
+     * @param cellHeight Computed cell height in pixels (after all scale factors applied).
+     */
+    private _warnIfOversized(
+        kind: "shape" | "text",
+        debugName: string | undefined,
+        boundingBox: BoundingBox,
+        layerScaleX: number,
+        layerScaleY: number,
+        cellWidth: number,
+        cellHeight: number
+    ): void {
+        const atlasW = this._configuration.spriteAtlasWidth;
+        const atlasH = this._configuration.spriteAtlasHeight;
+        const maxCellWidth = atlasW - 2 * this._configuration.gapSize;
+        const maxCellHeight = atlasH - 2 * this._configuration.gapSize;
+        if (cellWidth <= maxCellWidth && cellHeight <= maxCellHeight) {
+            return;
+        }
+
+        const dpr = this._configuration.devicePixelRatio;
+        const atlasScale = this._atlasScale;
+        const rawW = boundingBox.width.toFixed(2);
+        const rawH = boundingBox.height.toFixed(2);
+        const lsx = layerScaleX.toFixed(3);
+        const lsy = layerScaleY.toFixed(3);
+        const name = debugName ?? "<unknown>";
+        // eslint-disable-next-line no-console
+        console.warn(
+            `[SpritePacker] ${kind} sprite for layer "${name}" produces a ${cellWidth}x${cellHeight}px cell that exceeds the ${atlasW}x${atlasH}px atlas page. ` +
+                `Clamping to ${Math.min(cellWidth, maxCellWidth)}x${Math.min(cellHeight, maxCellHeight)}px (sprite will appear blurry). ` +
+                `Source bounding box: ${rawW}x${rawH}px at lottie scale ${lsx}x${lsy} \u00d7 atlasScale ${atlasScale} \u00d7 devicePixelRatio ${dpr}.`
+        );
     }
 
     private _extrudeSpriteEdges(page: AtlasPage, x: number, y: number, width: number, height: number): void {
@@ -465,8 +532,20 @@ export class SpritePacker {
                 case "gf":
                     this._drawGradientFill(shape as RawGradientFillShape, boundingBox, page.context);
                     break;
+                case "gs":
+                    this._drawGradientStroke(shape as RawGradientStrokeShape, boundingBox, page.context);
+                    break;
                 case "tr":
                     break; // Nothing needed with transforms
+                default:
+                    // Record once per unknown `ty` so we get observability into shape types that fall
+                    // through the rasterizer (e.g. `gs`, modifiers like `tm`/`rp`, etc.) instead of
+                    // silently producing an empty sprite.
+                    if (!this._seenUnsupportedShapeTypes.has(shape.ty)) {
+                        this._seenUnsupportedShapeTypes.add(shape.ty);
+                        this._unsupportedFeatures.push(`Unsupported shape type in vector shape: ${shape.ty}`);
+                    }
+                    break;
             }
         }
 
@@ -606,20 +685,40 @@ export class SpritePacker {
     }
 
     private _drawFill(fill: RawFillShape, ctx: DrawingContext): void {
-        const color = this._lottieColorToCSSColor(fill.c.k as number[], (fill.o.k as number) / 100);
+        // Read initial (first-frame) values so animated fills (a===1) render their starting state into the atlas
+        // instead of feeding a keyframe array through `as number[]` / `as number` casts.
+        const colorRgb = GetInitialColorValue(fill.c);
+        const opacity = GetInitialScalarValue(fill.o, 100);
+        const color = this._lottieColorToCSSColor(colorRgb, opacity / 100);
         ctx.fillStyle = color;
 
         ctx.fill();
     }
 
     private _drawStroke(stroke: RawStrokeShape, ctx: DrawingContext): void {
-        // Color and opacity
-        const opacity = (stroke.o?.k as number) ?? 100;
-        const color = this._lottieColorToCSSColor((stroke.c?.k as number[]) ?? [0, 0, 0], opacity / 100);
+        // Color and opacity. Use initial-value helpers so animated stroke color/opacity render their first-frame
+        // value into the atlas instead of producing NaN / malformed CSS via `as number[]` / `as number` casts.
+        const opacity = stroke.o ? GetInitialScalarValue(stroke.o, 100) : 100;
+        const colorRgb = stroke.c ? GetInitialColorValue(stroke.c) : [0, 0, 0];
+        const color = this._lottieColorToCSSColor(colorRgb, opacity / 100);
         ctx.strokeStyle = color;
 
+        this._applyStrokeStyle(stroke, ctx);
+
+        ctx.stroke();
+    }
+
+    /**
+     * Apply the geometric stroke styling (width, line cap, line join, miter limit, dash pattern) to the
+     * drawing context. Shared by `_drawStroke` (solid-color strokes, `ty:"st"`) and `_drawGradientStroke`
+     * (gradient strokes, `ty:"gs"`) — both have identical width/cap/join/miter/dash semantics; they only
+     * differ in how `strokeStyle` is built (CSS color vs CanvasGradient).
+     * @param stroke The raw solid or gradient stroke shape to read styling from.
+     * @param ctx The drawing context to mutate (`lineWidth`, `lineCap`, `lineJoin`, `miterLimit`, dash).
+     */
+    private _applyStrokeStyle(stroke: RawStrokeShape | RawGradientStrokeShape, ctx: DrawingContext): void {
         // Width
-        const width = (stroke.w?.k as number) ?? 1;
+        const width = stroke.w ? GetInitialScalarValue(stroke.w, 1) : 1;
         ctx.lineWidth = width;
 
         // Line cap
@@ -665,12 +764,57 @@ export class SpritePacker {
             const lineDashes: number[] = [];
             for (let i = 0; i < dashes.length; i++) {
                 if (dashes[i].n === "d") {
-                    lineDashes.push(dashes[i].v.k as number);
+                    // Dash length may be animated (a === 1), in which case `v.k` is a keyframe array.
+                    // Use GetInitialScalarValue so the first-frame length is rasterized instead of NaN.
+                    lineDashes.push(GetInitialScalarValue(dashes[i].v));
                 }
             }
 
             ctx.setLineDash(lineDashes);
+        } else {
+            // Canvas line-dash state persists across strokes within the same `_drawVectorShape` save/restore
+            // pair. Without this reset, a dashed stroke drawn earlier in the shape would leak its dash
+            // pattern onto subsequent strokes that don't declare `d`.
+            ctx.setLineDash([]);
         }
+    }
+
+    private _drawGradientStroke(stroke: RawGradientStrokeShape, boundingBox: BoundingBox, ctx: DrawingContext): void {
+        // Build the gradient that will be used as `strokeStyle`. Mirrors `_drawGradientFill` dispatch on `t`
+        // (1 = linear, 2 = radial) and reuses the same translation into the bounding box's local space.
+        const xTranslate = boundingBox.centerX;
+        const yTranslate = boundingBox.centerY;
+        // Read initial-frame endpoints so animated gradient endpoints (a===1) build a valid gradient instead
+        // of feeding a keyframe array through `as number[]` casts.
+        const startPoint = GetInitialVectorValues(stroke.s);
+        const endPoint = GetInitialVectorValues(stroke.e);
+
+        let gradient: CanvasGradient | undefined;
+        switch (stroke.t) {
+            case 1:
+                gradient = ctx.createLinearGradient(startPoint[0] + xTranslate, startPoint[1] + yTranslate, endPoint[0] + xTranslate, endPoint[1] + yTranslate);
+                break;
+            case 2: {
+                const centerX = startPoint[0] + xTranslate;
+                const centerY = startPoint[1] + yTranslate;
+                const outerRadius = Math.hypot(endPoint[0] - startPoint[0], endPoint[1] - startPoint[1]);
+                gradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, outerRadius);
+                break;
+            }
+        }
+
+        if (gradient === undefined) {
+            return;
+        }
+
+        // Reuse the existing color-stop builder. `_addColorStops` only reads `g`, which is shared between
+        // gradient fills and gradient strokes. Stroke `o` (overall opacity) is intentionally not applied
+        // here to match the existing `_drawGradientFill` behavior; if that ever gains opacity support, this
+        // method should follow.
+        this._addColorStops(gradient, stroke);
+
+        ctx.strokeStyle = gradient;
+        this._applyStrokeStyle(stroke, ctx);
 
         ctx.stroke();
     }
@@ -693,9 +837,10 @@ export class SpritePacker {
         const xTranslate = boundingBox.centerX;
         const yTranslate = boundingBox.centerY;
 
-        // Create the gradient
-        const startPoint = fill.s.k as number[];
-        const endPoint = fill.e.k as number[];
+        // Create the gradient. Use initial-value helpers so animated endpoints (a===1) render their
+        // first-frame value into the atlas instead of feeding a keyframe array through `as number[]`.
+        const startPoint = GetInitialVectorValues(fill.s);
+        const endPoint = GetInitialVectorValues(fill.e);
         const gradient = ctx.createLinearGradient(startPoint[0] + xTranslate, startPoint[1] + yTranslate, endPoint[0] + xTranslate, endPoint[1] + yTranslate);
 
         this._addColorStops(gradient, fill);
@@ -709,9 +854,10 @@ export class SpritePacker {
         const xTranslate = boundingBox.centerX;
         const yTranslate = boundingBox.centerY;
 
-        // Create the gradient
-        const startPoint = fill.s.k as number[];
-        const endPoint = fill.e.k as number[];
+        // Create the gradient. Use initial-value helpers so animated endpoints (a===1) render their
+        // first-frame value into the atlas instead of feeding a keyframe array through `as number[]`.
+        const startPoint = GetInitialVectorValues(fill.s);
+        const endPoint = GetInitialVectorValues(fill.e);
 
         const centerX = startPoint[0] + xTranslate;
         const centerY = startPoint[1] + yTranslate;
@@ -724,7 +870,7 @@ export class SpritePacker {
         ctx.fill();
     }
 
-    private _addColorStops(gradient: CanvasGradient, fill: RawGradientFillShape): void {
+    private _addColorStops(gradient: CanvasGradient, fill: RawGradientFillShape | RawGradientStrokeShape): void {
         const stops = fill.g.p;
         const rawColors = fill.g.k.k;
 

@@ -40,7 +40,7 @@
         "html-webpack-plugin": "^5.4.0",
         "mini-css-extract-plugin": "^2.4.3",
         "react-refresh": "^0.17.0",
-        "react-refresh-typescript": "^2.0.10",
+        "react-refresh-typescript": "^2.0.12",
         "sass-loader": "^16.0.0",
         "style-loader": "^3.3.0",
         "url-loader": "^4.1.1",

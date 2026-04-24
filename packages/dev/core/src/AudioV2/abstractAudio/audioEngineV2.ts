@@ -300,6 +300,15 @@ export abstract class AudioEngineV2 {
         this._removeNode(sound);
     }
 
+    /**
+     * Called when any sound's playback state changes (started, stopped, paused, resumed).
+     * Override in platform-specific implementations to react to sound playback state changes.
+     * @internal
+     */
+    public _onSoundPlaybackStateChanged(): void {
+        // No-op base implementation.
+    }
+
     private _disposeSoundsArray(): void {
         if (this._soundsArray) {
             this._soundsArray.length = 0;

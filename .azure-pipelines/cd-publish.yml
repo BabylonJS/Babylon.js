@@ -6,9 +6,11 @@
 # Handles versioning, building, publishing to npm, creating GitHub releases,
 # and pushing tags.
 #
+# Variable groups:
+#   - BabylonJS-CI-Infrastructure
+#   - BabylonJS-Deployment (BASIC_AUTH, DEPLOYMENT_SERVER)
+#
 # Secret variables (configure in pipeline UI):
-#   - BASIC_AUTH
-#   - DEPLOYMENT_SERVER
 #   - GitHubPAT
 #   - NPM_TOKEN
 # =============================================================================
@@ -26,6 +28,7 @@ pr: none
 
 variables:
     - group: BabylonJS-CI-Infrastructure
+    - group: BabylonJS-Deployment
 
 pool:
     vmImage: ubuntu-latest
@@ -39,10 +42,10 @@ jobs:
             fetchDepth: 0
             fetchTags: true
 
-          - task: NodeTool@0
-            displayName: "Use Node 20.x"
+          - task: UseNode@1
+            displayName: "Use Node 22.x"
             inputs:
-                versionSpec: "20.x"
+                version: "22.x"
 
           - bash: |
                 git config --global user.email "$(BOT_EMAIL)"

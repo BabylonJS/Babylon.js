@@ -1,0 +1,124 @@
+.fge-graph-tab-bar {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    background: #1e1e1e;
+    border-bottom: 1px solid #555;
+    flex-shrink: 0;
+    height: 32px;
+    box-sizing: border-box;
+    overflow: hidden;
+
+    .fge-tab-scroll-area {
+        display: flex;
+        flex-direction: row;
+        align-items: stretch;
+        overflow-x: auto;
+        flex: 1;
+        scrollbar-width: none; /* Firefox */
+
+        &::-webkit-scrollbar {
+            display: none; /* Chrome/Safari */
+        }
+    }
+
+    .fge-tab {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 0 12px;
+        height: 32px;
+        background: #2a2a2a;
+        color: #aaa;
+        border: none;
+        border-right: 1px solid #1e1e1e;
+        cursor: pointer;
+        font-size: 12px;
+        white-space: nowrap;
+        flex-shrink: 0;
+        transition:
+            background 0.15s,
+            color 0.15s;
+
+        &:hover {
+            background: #333;
+            color: #ddd;
+        }
+
+        &.fge-tab-active {
+            background: #3a3a3a;
+            color: white;
+            border-bottom: 2px solid #569cd6;
+        }
+
+        .fge-tab-name {
+            pointer-events: none;
+        }
+
+        .fge-tab-name-input {
+            background: #1e1e1e;
+            color: white;
+            border: 1px solid #569cd6;
+            border-radius: 2px;
+            font-size: 12px;
+            padding: 1px 4px;
+            width: 80px;
+            outline: none;
+        }
+
+        .fge-tab-close {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 16px;
+            height: 16px;
+            border: none;
+            background: transparent;
+            color: #888;
+            cursor: pointer;
+            font-size: 12px;
+            border-radius: 2px;
+            padding: 0;
+            line-height: 1;
+            opacity: 0;
+            transition:
+                opacity 0.15s,
+                background 0.15s,
+                color 0.15s;
+
+            &:hover {
+                background: rgba(255, 255, 255, 0.1);
+                color: #fff;
+            }
+        }
+
+        &:hover .fge-tab-close,
+        &.fge-tab-active .fge-tab-close {
+            opacity: 1;
+        }
+    }
+
+    .fge-tab-add {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 28px;
+        height: 28px;
+        background: transparent;
+        color: #888;
+        border: none;
+        cursor: pointer;
+        font-size: 16px;
+        flex-shrink: 0;
+        border-radius: 4px;
+        margin: 0 4px;
+        transition:
+            background 0.15s,
+            color 0.15s;
+
+        &:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #ccc;
+        }
+    }
+}

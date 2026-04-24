@@ -249,6 +249,10 @@ export class MRDLBackplateMaterial extends PushMaterial {
         const defines = <MRDLBackplateMaterialDefines>subMesh.materialDefines;
         const scene = this.getScene();
 
+        if (!this._iridescentMapTexture.isReady()) {
+            return false;
+        }
+
         if (this._isReadyForSubMesh(subMesh)) {
             return true;
         }

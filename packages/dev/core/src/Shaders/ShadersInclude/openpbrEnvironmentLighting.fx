@@ -1,3 +1,45 @@
+#if defined(REFLECTION) || defined(REFRACTED_BACKGROUND)
+
+    // _____________________________ Coat Layer IBL _____________________________
+    // We will use this absorption value to darken the underlying layers. It includes both the
+    // abosorption of the coat layer and the darkening due to internal reflections.
+    vec3 coatAbsorption = vec3(1.0);
+
+    // Coat IBL Fresnel
+    float coatIblFresnel = 0.0;
+    if (coat_weight > 0.0) {
+        coatIblFresnel = getReflectanceFromBRDFLookup(vec3(coatReflectance.F0), vec3(coatReflectance.F90), coatGeoInfo.environmentBrdf).r;
+    
+        // __________ Coat Darkening _____________
+        // Hemisphere-averaged Fresnel (empirical approximation)
+        float hemisphere_avg_fresnel = coatReflectance.F0 + 0.5 * (1.0 - coatReflectance.F0);
+        float averageReflectance = (coatIblFresnel + hemisphere_avg_fresnel) * 0.5;
+        
+        // Account for roughness - rougher surfaces have more diffuse internal reflections
+        // This reduces the darkening effect as roughness increases
+        float roughnessFactor = 1.0 - coat_roughness * 0.5;
+        averageReflectance *= roughnessFactor;
+
+        // Calculate transmission through multiple internal reflections
+        // This uses the geometric series for infinite reflections:
+        // T = (1-R) / (1 + R + R² + R³ + ...) = (1-R) / (1/(1-R)) = (1-R)²
+        float darkened_transmission = (1.0 - averageReflectance) * (1.0 - averageReflectance);
+        darkened_transmission = mix(1.0, darkened_transmission, coat_darkening);
+
+        // View-dependent coat absorption.
+        // At normal incidence, coat absorption is simply the coat_color.
+        // At grazing angles, there is increased darkening and saturation.
+        float sin2 = 1.0 - coatGeoInfo.NdotV * coatGeoInfo.NdotV;
+        // Divide by the square of the relative IOR (eta) of the incident medium and coat. This
+        // is just coat_ior since the incident medium is air (IOR = 1.0).
+        sin2 = sin2 / (coat_ior * coat_ior);
+        float cos_t = sqrt(1.0 - sin2);
+        float coatPathLength = 1.0 / cos_t;
+
+        vec3 colored_transmission = pow(coat_color, vec3(coatPathLength));
+        coatAbsorption = mix(vec3(1.0), colored_transmission * darkened_transmission, coat_weight);
+    }
+#endif
 // _____________________________ Base Diffuse Layer IBL _______________________________________
 #ifdef REFLECTION
 
@@ -174,11 +216,7 @@
         conductorIblFresnel = mix(conductorIblFresnel, thinFilmConductorFresnel, thin_film_weight * thin_film_ior_scale);
     #endif
 
-    // Coat IBL Fresnel
-    float coatIblFresnel = 0.0;
-    if (coat_weight > 0.0) {
-        coatIblFresnel = getReflectanceFromBRDFLookup(vec3(coatReflectance.F0), vec3(coatReflectance.F90), coatGeoInfo.environmentBrdf).r;
-    }
+    
 
     vec3 slab_diffuse_ibl = vec3(0., 0., 0.);
     vec3 slab_glossy_ibl = vec3(0., 0., 0.);
@@ -198,43 +236,12 @@
     slab_metal_ibl = baseSpecularEnvironmentLight * conductorIblFresnel * vLightingIntensity.z;
 
     // _____________________________ Coat Layer IBL _____________________________
-    // We will use this absorption value to darken the underlying layers. It includes both the
-    // abosorption of the coat layer and the darkening due to internal reflections.
-    vec3 coatAbsorption = vec3(1.0);
     if (coat_weight > 0.0) {
         slab_coat_ibl = coatEnvironmentLight * vLightingIntensity.z;
 
         #ifdef AMBIENT_OCCLUSION
             coat_specular_ambient_occlusion = compute_specular_occlusion(coatGeoInfo.NdotV, 0.0, ambient_occlusion.x, coat_roughness);
         #endif
-        
-        // __________ Coat Darkening _____________
-        // Hemisphere-averaged Fresnel (empirical approximation)
-        float hemisphere_avg_fresnel = coatReflectance.F0 + 0.5 * (1.0 - coatReflectance.F0);
-        float averageReflectance = (coatIblFresnel + hemisphere_avg_fresnel) * 0.5;
-        
-        // Account for roughness - rougher surfaces have more diffuse internal reflections
-        // This reduces the darkening effect as roughness increases
-        float roughnessFactor = 1.0 - coat_roughness * 0.5;
-        averageReflectance *= roughnessFactor;
-
-        // Calculate transmission through multiple internal reflections
-        // This uses the geometric series for infinite reflections:
-        // T = (1-R) / (1 + R + R² + R³ + ...) = (1-R) / (1/(1-R)) = (1-R)²
-        float darkened_transmission = (1.0 - averageReflectance) * (1.0 - averageReflectance);
-        darkened_transmission = mix(1.0, darkened_transmission, coat_darkening);
-
-        // View-dependent coat absorption.
-        // At normal incidence, coat absorption is simply the coat_color.
-        // At grazing angles, there is increased darkening and saturation.
-        float sin2 = 1.0 - coatGeoInfo.NdotV * coatGeoInfo.NdotV;
-        // Divide by the square of the relative IOR (eta) of the incident medium and coat. This
-        // is just coat_ior since the incident medium is air (IOR = 1.0).
-        sin2 = sin2 / (coat_ior * coat_ior);
-        float cos_t = sqrt(1.0 - sin2);
-        float coatPathLength = 1.0 / cos_t;
-        vec3 colored_transmission = pow(coat_color, vec3(coatPathLength));
-        coatAbsorption = mix(vec3(1.0), colored_transmission * darkened_transmission, coat_weight);
     }
 
     #if defined(FUZZ) &&defined(FUZZENVIRONMENTBRDF)
@@ -248,7 +255,7 @@
         // First, sample the refracted environment lighting. This is the pure forward-scattered light.
         // i.e. the light goes through the volume without changing direction due to scattering.
         #ifdef ANISOTROPIC_BASE
-            vec3 forwardScatteredEnvironmentLight = sampleRadianceAnisotropic(roughness_alpha_modified_for_scatter, vReflectionMicrosurfaceInfos.rgb, vReflectionInfos
+            vec3 forwardScatteredEnvironmentLight = sampleRadianceAnisotropic(transmission_roughness_alpha, vReflectionMicrosurfaceInfos.rgb, vReflectionInfos
                 , baseGeoInfo
                 #ifdef GEOMETRY_THIN_WALLED
                 , viewDirectionW
@@ -286,7 +293,7 @@
 
             iblRefractionCoords = vec3(reflectionMatrix * vec4(iblRefractionCoords, 0));
             #ifdef DISPERSION
-                forwardScatteredEnvironmentLight[i] = sampleRadiance(roughness_alpha_modified_for_scatter, vReflectionMicrosurfaceInfos.rgb, vReflectionInfos
+                forwardScatteredEnvironmentLight[i] = sampleRadiance(transmission_roughness_alpha, vReflectionMicrosurfaceInfos.rgb, vReflectionInfos
                     , baseGeoInfo
                     , reflectionSampler
                     , iblRefractionCoords
@@ -295,7 +302,7 @@
                     #endif
                 )[i];
             #else
-                forwardScatteredEnvironmentLight = sampleRadiance(roughness_alpha_modified_for_scatter, vReflectionMicrosurfaceInfos.rgb, vReflectionInfos
+                forwardScatteredEnvironmentLight = sampleRadiance(transmission_roughness_alpha, vReflectionMicrosurfaceInfos.rgb, vReflectionInfos
                     , baseGeoInfo
                     , reflectionSampler
                     , iblRefractionCoords
@@ -313,28 +320,32 @@
             // At low blurriness the transmitted light is mostly coming from the background geometry which is in front of the IBL.
             // At high blurriness, the refraction from the environment will be coming from more directions
             // and so we want to include more of this indirect lighting.
-            forwardScatteredEnvironmentLight = max(slab_translucent_background.rgb, mix(slab_translucent_background.rgb, forwardScatteredEnvironmentLight, roughness_alpha_modified_for_scatter));
+            #ifdef GEOMETRY_THIN_WALLED
+                forwardScatteredEnvironmentLight = mix(slab_translucent_background.rgb, forwardScatteredEnvironmentLight.rgb, 0.2 * transmission_roughness_alpha);
+            #else
+                forwardScatteredEnvironmentLight = max(slab_translucent_background.rgb, mix(slab_translucent_background.rgb, forwardScatteredEnvironmentLight, transmission_roughness_alpha));
+            #endif
         #endif
 
         #ifdef SCATTERING
-            #ifdef USE_IRRADIANCE_TEXTURE_FOR_SCATTERING
+            #ifdef GEOMETRY_THIN_WALLED
+                vec3 scatterVector = normalW;
+            #else
+                // Handle isotropic and backscattering components
+                // We'll approximate scattering as a diffuse lobe. If we have a dominant lighting direction,
+                // we can bias the lobe towards that direction as the scatter density gets thinner.
+                #if defined(USEIRRADIANCEMAP) && defined(USE_IRRADIANCE_DOMINANT_DIRECTION)
+                    vec3 scatterVector = mix(vReflectionDominantDirection, normalW, max3(iso_scatter_density));
+                #else
+                    vec3 scatterVector = normalW;
+                #endif
+
+                // We'll then bend the sample direction towards the view direction based on the anisotropy to approximate backscattering.
+                scatterVector = mix(viewDirectionW, scatterVector, back_to_iso_scattering_blend);
+            #endif
+            #if defined(USE_IRRADIANCE_TEXTURE_FOR_SCATTERING) && !defined(GEOMETRY_THIN_WALLED)
                 vec3 scatteredEnvironmentLight = scattered_light_from_irradiance_texture;
             #else
-                #ifdef GEOMETRY_THIN_WALLED
-                    vec3 scatterVector = normalW;
-                #else
-                    // Handle isotropic and backscattering components
-                    // We'll approximate scattering as a diffuse lobe. If we have a dominant lighting direction,
-                    // we can bias the lobe towards that direction as the scatter density gets thinner.
-                    #if defined(USEIRRADIANCEMAP) && defined(USE_IRRADIANCE_DOMINANT_DIRECTION)
-                        vec3 scatterVector = mix(vReflectionDominantDirection, normalW, max3(iso_scatter_density));
-                    #else
-                        vec3 scatterVector = normalW;
-                    #endif
-
-                    // We'll then bend the sample direction towards the view direction based on the anisotropy to approximate backscattering.
-                    scatterVector = mix(viewDirectionW, scatterVector, back_to_iso_scattering_blend);
-                #endif
                 vec3 scatteredEnvironmentLight = sampleIrradiance(
                     scatterVector
                     #if defined(NORMAL) && defined(USESPHERICALINVERTEX)
@@ -369,7 +380,7 @@
 
             #ifdef GEOMETRY_THIN_WALLED
                 // Direct Transmission (aka forward-scattered light from back side)
-                vec3 forward_scattered_light = forwardScatteredEnvironmentLight * transmission_tint * volumeParams.multi_scatter_color * volumeParams.multi_scatter_color;
+                vec3 forward_scattered_light = forwardScatteredEnvironmentLight * transmission_tint * volumeParams.multi_scatter_color;
                 // Back Scattering
                 vec3 back_scattered_light = scatteredEnvironmentLight * volumeParams.multi_scatter_color;
                 // Lerp between the back and forward scattering.
@@ -409,5 +420,42 @@
     #else
         material_surface_ibl = material_coated_base_ibl;
     #endif
+#elif defined(REFRACTED_BACKGROUND)
+    vec3 black = vec3(0.0);
+    vec3 slab_translucent_base_ibl = vec3(0.0);
+    #ifdef GEOMETRY_THIN_WALLED
+        #ifdef SCATTERING
+            // Direct Transmission (aka forward-scattered light from back side)
+            vec3 forward_scattered_light = slab_translucent_background.rgb * transmission_tint * volumeParams.multi_scatter_color;
+            // Lerp between the back and forward scattering.
+            slab_translucent_base_ibl = mix(black, forward_scattered_light, 0.5 + 0.5 * volumeParams.anisotropy);
+        #else
+            slab_translucent_base_ibl = slab_translucent_background.rgb * transmission_tint;
+        #endif
+    #else
+        #ifdef SCATTERING
+            // Direct Transmission (aka forward-scattered light from back side)
+            vec3 forward_scattered_light = slab_translucent_background.rgb * volume_absorption;
+            // Iso Scattering
+            vec3 iso_scattered_light = (1.0 - iso_scatter_density) * forward_scattered_light;
+
+            // Lerp between the three based on the anisotropy
+            slab_translucent_base_ibl = mix(black, iso_scattered_light, back_to_iso_scattering_blend);
+            slab_translucent_base_ibl = mix(slab_translucent_base_ibl, forward_scattered_light, iso_to_forward_scattering_blend) * transmission_tint;
+        #else
+            slab_translucent_base_ibl = slab_translucent_background.rgb * volume_absorption * transmission_tint;
+        #endif
+    #endif
     
+    vec3 material_dielectric_base_ibl = mix(black, slab_translucent_base_ibl.rgb, surface_translucency_weight);
+    vec3 material_dielectric_gloss_ibl = material_dielectric_base_ibl * (baseGeoInfo.NdotV);
+    vec3 material_base_substrate_ibl = mix(material_dielectric_gloss_ibl, black, base_metalness);
+    vec3 material_coated_base_ibl = layer(material_base_substrate_ibl, black, coatIblFresnel, coatAbsorption, vec3(1.0));
+    // #if defined(FUZZ) && defined(FUZZENVIRONMENTBRDF)
+    //     slab_fuzz_ibl *= min(vec3(specular_ambient_occlusion), ambient_occlusion);
+    //     material_surface_ibl = layer(material_coated_base_ibl, slab_fuzz_ibl, fuzzIblFresnel * fuzz_weight, vec3(1.0), fuzz_color);
+    // #else
+    //     material_surface_ibl = material_coated_base_ibl;
+    // #endif
+    material_surface_ibl = material_coated_base_ibl;
 #endif

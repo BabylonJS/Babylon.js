@@ -3,15 +3,15 @@
 # Converted from Azure DevOps Classic Pipeline
 #
 # Builds and deploys all tools (Playground, Sandbox, NME, NGE, NRGE,
-# GUI Editor, NPE) to production storage after a successful publish.
+# GUI Editor, NPE, FGE) to production storage after a successful publish.
 #
 # Triggers:
 #   - Schedule: midnight PST on Tue/Wed/Fri/Sat (daysToBuild: 22)
 #   - Build completion from Publish pipeline (ID: 15)
 #
-# Secret variables (configure in pipeline UI):
-#   - BASIC_AUTH
-#   - DEPLOYMENT_SERVER
+# Variable groups:
+#   - BabylonJS-CI-Infrastructure
+#   - BabylonJS-Deployment (BASIC_AUTH, DEPLOYMENT_SERVER)
 # =============================================================================
 
 trigger: none
@@ -40,6 +40,7 @@ resources:
 
 variables:
     - group: BabylonJS-CI-Infrastructure
+    - group: BabylonJS-Deployment
 
 pool:
     vmImage: ubuntu-latest
@@ -48,15 +49,14 @@ jobs:
     - job: BuildTools
       displayName: "Build tools"
       steps:
-          - checkout: self
-            clean: true
-            fetchDepth: 1
-            fetchTags: true
+          - template: templates/checkout-with-tag-override.yml
+            parameters:
+                fetchTags: true
 
-          - task: NodeTool@0
-            displayName: "Use Node 22.4.1"
+          - task: UseNode@1
+            displayName: "Use Node 22.x"
             inputs:
-                versionSpec: "22.4.1"
+                version: "22.x"
 
           - task: Npm@1
             displayName: "npm install"
@@ -126,6 +126,12 @@ jobs:
                 command: custom
                 customCommand: "run build:deployment -w @tools/node-particle-editor"
 
+          - task: Npm@1
+            displayName: "build flow graph editor"
+            inputs:
+                command: custom
+                customCommand: "run build:deployment -w @tools/flow-graph-editor"
+
           # DISABLED in classic pipeline:
           # - task: Npm@1
           #   displayName: 'build smart filters editor'
@@ -194,6 +200,15 @@ jobs:
                 storageAccount: "$(TOOLS_STORAGE_ACCOUNT)"
                 displayName: "NPE deployment"
                 purgeEndpoint: "$(CDN_ENDPOINT_NPE)"
+                purgeProfile: "$(CDN_PROFILE_TOOLS)"
+
+          - template: templates/deploy-tool.yml
+            parameters:
+                toolPackageDir: "packages/tools/flowGraphEditor"
+                deployPath: "flowGraphEditor"
+                storageAccount: "$(TOOLS_STORAGE_ACCOUNT)"
+                displayName: "FGE deployment"
+                purgeEndpoint: "$(CDN_ENDPOINT_FGE)"
                 purgeProfile: "$(CDN_PROFILE_TOOLS)"
 
           # DISABLED in classic pipeline:

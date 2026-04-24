@@ -3,6 +3,7 @@ import { type IGLTFExporterExtensionV2 } from "../glTFExporterExtension";
 import { GLTFExporter } from "../glTFExporter";
 import { type Material } from "core/Materials/material";
 import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
+import { OpenPBRMaterial } from "core/Materials/PBR/openpbrMaterial";
 
 const NAME = "KHR_materials_ior";
 
@@ -55,6 +56,14 @@ export class KHR_materials_ior implements IGLTFExporterExtensionV2 {
 
                 const iorInfo: IKHRMaterialsIor = {
                     ior: babylonMaterial.indexOfRefraction,
+                };
+                node.extensions = node.extensions || {};
+                node.extensions[NAME] = iorInfo;
+            } else if (babylonMaterial instanceof OpenPBRMaterial) {
+                this._wasUsed = true;
+
+                const iorInfo: IKHRMaterialsIor = {
+                    ior: babylonMaterial.specularIor,
                 };
                 node.extensions = node.extensions || {};
                 node.extensions[NAME] = iorInfo;

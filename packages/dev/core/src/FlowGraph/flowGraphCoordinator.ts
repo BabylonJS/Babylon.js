@@ -118,10 +118,12 @@ export class FlowGraphCoordinator {
 
     /**
      * Creates a new flow graph and adds it to the list of existing flow graphs
+     * @param name - optional name for the new graph. If not provided, an auto-generated name is used.
      * @returns a new flow graph
      */
-    public createGraph(): FlowGraph {
-        const graph = new FlowGraph({ scene: this.config.scene, coordinator: this });
+    public createGraph(name?: string): FlowGraph {
+        const graphName = name ?? `Graph ${this._flowGraphs.length + 1}`;
+        const graph = new FlowGraph({ scene: this.config.scene, coordinator: this, name: graphName });
         this._flowGraphs.push(graph);
         return graph;
     }

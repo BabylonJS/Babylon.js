@@ -709,6 +709,13 @@ const LoadAssetContainer = (scene: Scene, data: string | object, rootUrl: string
         }
 
         // freeze world matrix application
+        for (index = 0, cache = scene.transformNodes.length; index < cache; index++) {
+            const currentTransformNode = scene.transformNodes[index];
+            if (currentTransformNode._waitingFreezeWorldMatrix) {
+                currentTransformNode.freezeWorldMatrix();
+                currentTransformNode._waitingFreezeWorldMatrix = null;
+            }
+        }
         for (index = 0, cache = scene.meshes.length; index < cache; index++) {
             const currentMesh = scene.meshes[index];
             if (currentMesh._waitingData.freezeWorldMatrix) {
@@ -1147,6 +1154,13 @@ RegisterSceneLoaderPlugin({
                 }
 
                 // freeze and compute world matrix application
+                for (let index = 0, cache = scene.transformNodes.length; index < cache; index++) {
+                    const currentTransformNode = scene.transformNodes[index];
+                    if (currentTransformNode._waitingFreezeWorldMatrix) {
+                        currentTransformNode.freezeWorldMatrix();
+                        currentTransformNode._waitingFreezeWorldMatrix = null;
+                    }
+                }
                 for (let index = 0, cache = scene.meshes.length; index < cache; index++) {
                     currentMesh = scene.meshes[index];
                     if (currentMesh._waitingData.freezeWorldMatrix) {

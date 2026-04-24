@@ -33,6 +33,32 @@ export function getNativeTextureFormat(format: number, type: number): number {
             return _native.Engine.TEXTURE_FORMAT_BC1;
         case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_4x4:
             return _native.Engine.TEXTURE_FORMAT_ASTC4x4;
+        case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_5x4:
+            return _native.Engine.TEXTURE_FORMAT_ASTC5x4;
+        case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_5x5:
+            return _native.Engine.TEXTURE_FORMAT_ASTC5x5;
+        case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_6x5:
+            return _native.Engine.TEXTURE_FORMAT_ASTC6x5;
+        case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_6x6:
+            return _native.Engine.TEXTURE_FORMAT_ASTC6x6;
+        case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_8x5:
+            return _native.Engine.TEXTURE_FORMAT_ASTC8x5;
+        case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_8x6:
+            return _native.Engine.TEXTURE_FORMAT_ASTC8x6;
+        case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_8x8:
+            return _native.Engine.TEXTURE_FORMAT_ASTC8x8;
+        case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_10x5:
+            return _native.Engine.TEXTURE_FORMAT_ASTC10x5;
+        case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_10x6:
+            return _native.Engine.TEXTURE_FORMAT_ASTC10x6;
+        case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_10x8:
+            return _native.Engine.TEXTURE_FORMAT_ASTC10x8;
+        case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_10x10:
+            return _native.Engine.TEXTURE_FORMAT_ASTC10x10;
+        case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_12x10:
+            return _native.Engine.TEXTURE_FORMAT_ASTC12x10;
+        case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_12x12:
+            return _native.Engine.TEXTURE_FORMAT_ASTC12x12;
         case Constants.TEXTUREFORMAT_COMPRESSED_RGB_ETC1_WEBGL:
             return _native.Engine.TEXTURE_FORMAT_ETC1;
         case Constants.TEXTUREFORMAT_COMPRESSED_RGB8_ETC2:
