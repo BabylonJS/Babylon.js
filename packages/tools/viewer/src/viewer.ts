@@ -11,9 +11,9 @@ import {
     type CubeTexture,
     type Engine,
     type HDRCubeTexture,
-    type HotSpotQuery,
     type IblCdfGenerator,
     type IblShadowsRenderPipeline,
+    type IColor4Like,
     type IDisposable,
     type IMeshDataCache,
     type ISceneLoaderProgressEvent,
@@ -60,6 +60,25 @@ import { GetExtensionFromUrl } from "core/Misc/urlTools";
 import { Scene } from "core/scene";
 import { registerBuiltInLoaders } from "loaders/dynamic";
 
+import {
+    type CameraAutoOrbit,
+    type EnvironmentOptions,
+    type EnvironmentParams,
+    type HotSpot,
+    type IViewer,
+    type LoadEnvironmentOptions,
+    type PostProcessing,
+    type ResetFlag,
+    type ShadowParams,
+    type ShadowQuality,
+    type SSAOOptions,
+    type ToneMapping,
+    type ViewerBaseOptions,
+    type ViewerBoundingInfo,
+    type ViewerHotSpotQuery,
+    ViewerHotSpotResult,
+} from "./viewerInterface";
+
 // eslint-disable-next-line @typescript-eslint/promise-function-async
 const LazySSAODependenciesPromise = new Lazy(() =>
     Promise.all([
@@ -96,89 +115,12 @@ async function WhenNext<T>(observable: Observable<T>, abortSignal: AbortSignal):
     });
 }
 
-export type ResetFlag = "source" | "environment" | "camera" | "animation" | "post-processing" | "material-variant" | "shadow";
-
-const shadowQualityOptions = ["none", "normal", "high"] as const;
-export type ShadowQuality = (typeof shadowQualityOptions)[number];
-
-const toneMappingOptions = ["none", "standard", "aces", "neutral"] as const;
-export type ToneMapping = (typeof toneMappingOptions)[number];
-
-const ssaoOptions = ["enabled", "disabled", "auto"] as const;
-export type SSAOOptions = (typeof ssaoOptions)[number];
-
 const environmentMode = ["none", "auto", "url"] as const;
 type EnvironmentMode = (typeof environmentMode)[number];
 
 type ActivateModelOptions = Partial<{ source: string | File | ArrayBufferView }>;
 
 export type LoadModelOptions = LoadAssetContainerOptions;
-
-export type CameraOrbit = [alpha: number, beta: number, radius: number];
-export type CameraTarget = [x: number, y: number, z: number];
-
-export type CameraAutoOrbit = {
-    /**
-     * Whether the camera should automatically orbit around the model when idle.
-     */
-    enabled: boolean;
-
-    /**
-     * The speed at which the camera orbits around the model when idle.
-     */
-    speed: number;
-
-    /**
-     * The delay in milliseconds before the camera starts orbiting around the model when idle.
-     */
-    delay: number;
-};
-
-export type EnvironmentParams = {
-    /**
-     * The intensity of the environment lighting.
-     */
-    intensity: number;
-
-    /**
-     * The blur applied to the environment lighting.
-     */
-    blur: number;
-
-    /**
-     * The rotation of the environment lighting in radians.
-     */
-    rotation: number;
-};
-
-export type ShadowParams = {
-    /**
-     * The quality of shadow being used
-     */
-    quality: ShadowQuality;
-};
-
-export type PostProcessing = {
-    /**
-     * The tone mapping to use for rendering the scene.
-     */
-    toneMapping: ToneMapping;
-
-    /**
-     * The contrast applied to the scene.
-     */
-    contrast: number;
-
-    /**
-     * The exposure applied to the scene.
-     */
-    exposure: number;
-
-    /**
-     * Whether to enable screen space ambient occlusion (SSAO).
-     */
-    ssao: SSAOOptions;
-};
 
 type ShadowState = {
     normal?: {
@@ -205,39 +147,6 @@ type ShadowState = {
     };
 };
 
-/**
- * Checks if the given value is a valid tone mapping option.
- * @param value The value to check.
- * @returns True if the value is a valid tone mapping option, otherwise false.
- */
-export function IsToneMapping(value: string): value is ToneMapping {
-    return toneMappingOptions.includes(value as ToneMapping);
-}
-
-/**
- * Checks if the given value is a valid shadow quality option.
- * @param value The value to check.
- * @returns True if the value is a valid shadow quality option, otherwise false.
- */
-export function IsShadowQuality(value: string): value is ShadowQuality {
-    return shadowQualityOptions.includes(value as ShadowQuality);
-}
-
-/**
- * Checks if the given value is a valid SSAO option.
- * @param value The value to check.
- * @returns True if the value is a valid SSAO option, otherwise false.
- */
-export function IsSSAOOptions(value: string): value is SSAOOptions {
-    return ssaoOptions.includes(value as SSAOOptions);
-}
-
-/**
- * Checks if the given mesh is a Gaussian Splatting mesh by inspecting its class name.
- * This avoids importing the GaussianSplattingMesh class directly.
- * @param mesh The mesh to check.
- * @returns True if the mesh is a Gaussian Splatting mesh (including compound splat part proxies), otherwise false.
- */
 function IsGaussianSplattingMesh(mesh: AbstractMesh): boolean {
     const className = mesh.getClassName();
     return className === "GaussianSplattingMesh" || className === "GaussianSplattingPartProxyMesh";
@@ -468,106 +377,13 @@ export type ViewerDetails = {
 /**
  * The options for the Viewer.
  */
-export type ViewerOptions = Partial<{
-    /**
-     * Called once when the viewer is initialized and provides viewer details that can be used for advanced customization.
-     */
-    onInitialized: (details: Readonly<ViewerDetails>) => void;
-
-    /**
-     * The default clear color of the scene.
-     */
-    clearColor: [r: number, g: number, b: number, a?: number];
-
-    /**
-     * When enabled, rendering will be suspended when no scene state driven by the Viewer has changed.
-     * This can reduce resource CPU/GPU pressure when the scene is static.
-     * Enabled by default.
-     */
-    autoSuspendRendering: boolean;
-
-    /**
-     * The default source model to load into the viewer.
-     */
-    source: string;
-
-    /**
-     * The default environment to load into the viewer for lighting (IBL).
-     */
-    environmentLighting: string;
-
-    /**
-     * The default environment to load into the viewer for the skybox.
-     */
-    environmentSkybox: string;
-
-    /**
-     * The default environment configuration.
-     */
-    environmentConfig: Partial<EnvironmentParams>;
-
-    /**
-     * The default camera orbit.
-     * @remarks The default camera orbit is restored when a new model is loaded.
-     */
-    cameraOrbit: Partial<CameraOrbit>;
-
-    /**
-     * The default camera target.
-     * @remarks The default camera target is restored when a new model is loaded.
-     */
-    cameraTarget: Partial<CameraTarget>;
-
-    /**
-     * Automatically rotates a 3D model or scene without requiring user interaction.
-     * @remarks The default camera auto orbit is restored when a new model is loaded.
-     */
-    cameraAutoOrbit: Partial<CameraAutoOrbit>;
-
-    /**
-     * Whether to play the default animation immediately after loading.
-     * @remarks The default animation auto play is restored when a new model is loaded.
-     */
-    animationAutoPlay: boolean;
-
-    /**
-     * The default speed of the animation.
-     * @remarks The default animation speed is restored when a new model is loaded.
-     */
-    animationSpeed: number;
-
-    /**
-     * The default selected animation.
-     * @remarks The default selected animation is restored when a new model is loaded.
-     */
-    selectedAnimation: number;
-
-    /**
-     * The default post processing configuration.
-     */
-    postProcessing: Partial<PostProcessing>;
-
-    /**
-     * Shadow configuration.
-     */
-    shadowConfig: Partial<ShadowParams>;
-
-    /**
-     * The default selected material variant.
-     * @remarks The default material variant is restored when a new model is loaded.
-     */
-    selectedMaterialVariant: string;
-
-    /**
-     * The default hotspots.
-     */
-    hotSpots: Record<string, HotSpot>;
-
-    /**
-     * Boolean indicating if the scene must use right-handed coordinates system.
-     */
-    useRightHandedSystem: boolean;
-}>;
+export type ViewerOptions = ViewerBaseOptions &
+    Partial<{
+        /**
+         * Called once when the viewer is initialized and provides viewer details that can be used for advanced customization.
+         */
+        onInitialized: (details: Readonly<ViewerDetails>) => void;
+    }>;
 
 /**
  * The default options for the Viewer.
@@ -601,118 +417,10 @@ export const DefaultViewerOptions = {
     useRightHandedSystem: false,
 } as const satisfies ViewerOptions;
 
-export type EnvironmentOptions = Partial<
-    Readonly<{
-        /**
-         * Whether to use the environment for lighting (e.g. IBL).
-         */
-        lighting: boolean;
-
-        /**
-         * Whether to use the environment for the skybox.
-         */
-        skybox: boolean;
-    }>
->;
-
-export type LoadEnvironmentOptions = EnvironmentOptions &
-    Partial<
-        Readonly<{
-            /**
-             * Specifies the extension of the environment texture to load.
-             * This must be specified when the extension cannot be determined from the url.
-             */
-            extension: string;
-        }>
-    >;
-
 const defaultLoadEnvironmentOptions = {
     lighting: true,
     skybox: true,
 } as const satisfies EnvironmentOptions;
-
-export type ViewerHotSpotQuery =
-    | ({
-          /**
-           * The type of the hot spot.
-           */
-          type: "surface";
-
-          /**
-           * The index of the mesh within the loaded model.
-           */
-          meshIndex: number;
-      } & HotSpotQuery)
-    | {
-          /**
-           * The type of the hot spot.
-           */
-          type: "world";
-
-          /**
-           * The fixed world space position of the hot spot.
-           */
-          position: [x: number, y: number, z: number];
-
-          /**
-           * The fixed world space normal of the hot spot.
-           */
-          normal: [x: number, y: number, z: number];
-      };
-
-export type HotSpot = ViewerHotSpotQuery & {
-    /**
-     * An optional camera pose to associate with the hotspot.
-     */
-    cameraOrbit?: CameraOrbit;
-};
-
-/**
- * Provides the result of a hot spot query.
- */
-export class ViewerHotSpotResult {
-    /**
-     * 2D canvas position in pixels
-     */
-    public readonly screenPosition: [x: number, y: number] = [NaN, NaN];
-
-    /**
-     * 3D world coordinates
-     */
-    public readonly worldPosition: [x: number, y: number, z: number] = [NaN, NaN, NaN];
-
-    /**
-     * visibility range is [-1..1]. A value of 0 means camera eye is on the plane.
-     */
-    public visibility: number = NaN;
-}
-
-export type ViewerBoundingInfo = {
-    /**
-     * The minimum and maximum extents of the model.
-     */
-    extents: Readonly<{
-        /**
-         * The minimum extent of the model.
-         */
-        readonly min: readonly [x: number, y: number, z: number];
-
-        /**
-         * The maximum extent of the model.
-         */
-        readonly max: readonly [x: number, y: number, z: number];
-    }>;
-
-    /**
-     * The size of the model.
-     */
-    readonly size: readonly [x: number, y: number, z: number];
-
-    /**
-     * The center of the model.
-     */
-    readonly center: readonly [x: number, y: number, z: number];
-};
 
 export type ViewerCameraConfig = {
     /**
@@ -800,7 +508,7 @@ type ModelInternal = Model & {
  * @remarks
  * The Viewer is not tied to a specific UI framework and can be used with Babylon.js in a browser or with Babylon Native.
  */
-export class Viewer implements IDisposable {
+export class Viewer implements IDisposable, IViewer {
     static {
         registerBuiltInLoaders();
     }
@@ -891,6 +599,37 @@ export class Viewer implements IDisposable {
      * Fired when the cameras as hot spots property changes.
      */
     public readonly onCamerasAsHotSpotsChanged = new Observable<void>();
+
+    /**
+     * Fired after each frame is rendered.
+     */
+    public readonly onAfterRenderObservable = new Observable<void>();
+
+    /**
+     * Fired when the clear color changes.
+     */
+    public readonly onClearColorChanged = new Observable<void>();
+
+    /**
+     * Gets or sets the clear color (background color) of the viewer.
+     */
+    public get clearColor(): IColor4Like {
+        return this._scene.clearColor;
+    }
+
+    public set clearColor(value: IColor4Like) {
+        this._scene.clearColor.r = value.r;
+        this._scene.clearColor.g = value.g;
+        this._scene.clearColor.b = value.b;
+        this._scene.clearColor.a = value.a;
+    }
+
+    /**
+     * True if a model is currently loaded.
+     */
+    public get isModelLoaded(): boolean {
+        return this._activeModelBacking !== null;
+    }
 
     protected readonly _scene: Scene;
     protected readonly _camera: ArcRotateCamera;
@@ -1025,6 +764,7 @@ export class Viewer implements IDisposable {
 
             scene.onClearColorChangedObservable.add(() => {
                 this._markSceneMutated();
+                this.onClearColorChanged.notifyObservers();
             });
 
             scene.onPointerObservable.add(async (pointerInfo) => {
@@ -1068,6 +808,11 @@ export class Viewer implements IDisposable {
         }
         this._camera.attachControl();
         this._autoRotationBehavior = this._camera.getBehaviorByName("AutoRotation") as AutoRotationBehavior;
+
+        this._scene.onAfterRenderCameraObservable.add(() => {
+            this.onAfterRenderObservable.notifyObservers();
+        });
+
         this._reset(false, "camera");
 
         // Load a default light, but ignore errors as the user might be immediately loading their own environment.
@@ -2792,6 +2537,8 @@ export class Viewer implements IDisposable {
         this.onHotSpotsChanged.clear();
         this.onCamerasAsHotSpotsChanged.clear();
         this.onLoadingProgressChanged.clear();
+        this.onAfterRenderObservable.clear();
+        this.onClearColorChanged.clear();
 
         this._imageProcessingConfigurationObserver.remove();
         this._beforeRenderObserver?.remove();
