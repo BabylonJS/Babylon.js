@@ -6,6 +6,16 @@
     "module": "lib/index.js",
     "esnext": "lib/index.js",
     "types": "lib/index.d.ts",
+    "exports": {
+        ".": {
+            "import": "./lib/index.js",
+            "types": "./lib/index.d.ts"
+        },
+        "./lite": {
+            "import": "./lib/lite/index.js",
+            "types": "./lib/lite/index.d.ts"
+        }
+    },
     "files": [
         "lib/**/*.js",
         "lib/**/*.d.ts",
@@ -34,10 +44,20 @@
     },
     "peerDependencies": {
         "@babylonjs/core": "^9.0.0",
+        "@babylonjs/lite": "^0.1.0",
         "@babylonjs/loaders": "^9.0.0"
+    },
+    "peerDependenciesMeta": {
+        "@babylonjs/lite": {
+            "optional": true
+        },
+        "@babylonjs/loaders": {
+            "optional": true
+        }
     },
     "devDependencies": {
         "@babylonjs/core": "9.4.1",
+        "@babylonjs/lite": "file:../../../../../Babylon-Lite-1/packages/babylon-lite/dist",
         "@babylonjs/loaders": "9.4.1",
         "@dev/build-tools": "^1.0.0",
         "@rollup/plugin-alias": "^5.1.0",
@@ -50,8 +70,8 @@
         "rollup": "^4.59.0",
         "rollup-plugin-dts": "^6.1.1",
         "rollup-plugin-minify-template-literals": "^1.1.7",
-        "sonda": "^0.11.1",
         "serve": "^14.2.4",
+        "sonda": "^0.11.1",
         "vite": "6.4.2"
     },
     "keywords": [
