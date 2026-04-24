@@ -3122,6 +3122,11 @@
             "excludedEngines": ["webgl1"]
         },
         {
+            "title": "OpenPBR IBL Furnace Test for Thin Film Transparency",
+            "playgroundId": "#GRQHVV#320",
+            "excludedEngines": ["webgl1"]
+        },
+        {
             "title": "OpenPBR IBL Specular IOR vs Coat IOR",
             "playgroundId": "#GRQHVV#39",
             "excludedEngines": ["webgl1"]

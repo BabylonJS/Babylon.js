@@ -2730,7 +2730,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
     public override dispose(forceDisposeEffect?: boolean, forceDisposeTextures?: boolean): void {
         this._breakShaderLoadedCheck = true;
         if (forceDisposeTextures) {
-            if (this._environmentBRDFTexture && this.getScene().environmentBRDFTexture !== this._environmentBRDFTexture) {
+            if (this._environmentBRDFTexture && (this.getScene() as any).openPBREnvironmentBRDFTexture !== this._environmentBRDFTexture) {
                 this._environmentBRDFTexture.dispose();
             }
             if (this._environmentFuzzBRDFTexture && this.getScene().environmentFuzzBRDFTexture !== this._environmentFuzzBRDFTexture) {
