@@ -244,15 +244,13 @@ export class Viewer implements IViewer {
         this._engine.canvas.addEventListener("pointermove", onPointerActivity);
         this._engine.canvas.addEventListener("wheel", onPointerActivity);
 
-        // Clear color
-        if (_options?.clearColor) {
-            this._scene.clearColor = {
-                r: _options.clearColor[0],
-                g: _options.clearColor[1],
-                b: _options.clearColor[2],
-                a: _options.clearColor[3] ?? 1,
-            };
-        }
+        // Clear color — default to transparent black (matching full Viewer)
+        this._scene.clearColor = {
+            r: _options?.clearColor?.[0] ?? 0,
+            g: _options?.clearColor?.[1] ?? 0,
+            b: _options?.clearColor?.[2] ?? 0,
+            a: _options?.clearColor?.[3] ?? 0,
+        };
 
         // Auto-orbit
         if (_options?.cameraAutoOrbit) {
@@ -479,6 +477,7 @@ export class Viewer implements IViewer {
                     brdfUrl: (await import("./defaultBRDF")).default,
                     skyboxUrl: options?.skybox !== false ? effectiveUrl : undefined,
                     skipSkybox: options?.skybox === false,
+                    skipGround: true,
                     skyboxSize: 20,
                 });
             }
