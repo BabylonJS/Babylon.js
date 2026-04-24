@@ -19,6 +19,7 @@
     ],
     "scripts": {
         "start": "npm run serve -- --open test/apps/web/index.html",
+        "start:prod": "serve . --listen 1343",
         "serve": "vite",
         "build": "npm run clean && npm run bundle",
         "clean": "rimraf lib && rimraf dist && rimraf *.tsbuildinfo -g",
@@ -44,11 +45,13 @@
         "@rollup/plugin-node-resolve": "^15.2.3",
         "@rollup/plugin-terser": "^1.0.0",
         "@rollup/plugin-typescript": "^11.1.6",
+        "@webgpu/types": "^0.1.69",
         "chalk": "^5.3.0",
         "rollup": "^4.59.0",
         "rollup-plugin-dts": "^6.1.1",
         "rollup-plugin-minify-template-literals": "^1.1.7",
         "sonda": "^0.11.1",
+        "serve": "^14.2.4",
         "vite": "6.4.2"
     },
     "keywords": [

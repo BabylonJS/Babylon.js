@@ -177,7 +177,7 @@
                 </select>
             </div>
         </div>
-        <script type="module" src="/packages/tools/viewer/src/index.ts"></script>
+        <script type="module" src="/packages/tools/viewer/src/lite/index.ts"></script>
         <script type="module">
             const viewerElement = document.querySelector("babylon-viewer");
             const lines = document.querySelectorAll("line");
@@ -193,17 +193,18 @@
                 // viewerElement.selectedAnimation = 1;
             }, 3000);
 
-            let viewerDetails = viewerElement.viewerDetails;
-            viewerElement.addEventListener("viewerready", (event) => {
-                viewerDetails = viewerElement.viewerDetails;
-                viewerDetails.viewer.showDebugLogs = true;
+            // let viewerDetails = viewerElement.viewerDetails;
+            // viewerElement.addEventListener("viewerready", (event) => {
+            //     viewerDetails = viewerElement.viewerDetails;
+            //     viewerDetails.viewer.showDebugLogs = true;
 
-                document.querySelector("#engine-button").innerText = `Switch to ${viewerElement.engine === "WebGL" ? "WebGPU" : "WebGL"} engine`;
+            //     document.querySelector("#engine-button").innerText = `Switch to ${viewerElement.engine === "WebGL" ? "WebGPU" : "WebGL"} engine`;
 
-                console.log(`Viewer ready.`, viewerDetails);
-            });
+            //     console.log(`Viewer ready.`, viewerDetails);
+            // });
             viewerElement.addEventListener("modelchange", (event) => {
-                console.log(`Model changed.`, viewerDetails);
+                //console.log(`Model changed.`, viewerDetails);
+                console.log(`Model changed.`);
             });
             let isViewerConnected = true;
             let hotspotVisible = false;

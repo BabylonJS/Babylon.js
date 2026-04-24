@@ -5,14 +5,6 @@ import { Logger } from "core/Misc/logger";
 import { Observable } from "core/Misc/observable";
 
 import {
-    type ArcRotateCamera,
-    type AssetContainer,
-    type EngineContext,
-    type SceneContext,
-    type AnimationGroup as LiteAnimationGroup,
-    type DirectionalLight,
-    type ShadowGenerator as LiteShadowGenerator,
-    type EnvironmentTextures,
     addToScene,
     attachControl,
     createArcRotateCamera,
@@ -25,18 +17,27 @@ import {
     getVariantNames,
     goToFrame,
     loadEnvironment as liteLoadEnvironment,
+    pauseAnimation as litePauseAnimation,
+    playAnimation as litePlayAnimation,
     loadGltf,
     loadHdrEnvironment,
     onBeforeRender,
-    pauseAnimation as litePauseAnimation,
-    playAnimation as litePlayAnimation,
     registerScene,
     resetVariant,
     selectVariant,
     startEngine,
     stopEngine,
     unregisterScene,
-} from "babylon-lite";
+    type ArcRotateCamera,
+    type AssetContainer,
+    type DirectionalLight,
+    type EngineContext,
+    type EnvironmentTextures,
+    type AnimationGroup as LiteAnimationGroup,
+    type ShadowGenerator as LiteShadowGenerator,
+    type Mesh,
+    type SceneContext,
+} from "@babylonjs/lite";
 
 import {
     type CameraAutoOrbit,
@@ -51,8 +52,8 @@ import {
     type ShadowQuality,
     type ToneMapping,
     type ViewerBaseOptions,
-    type ViewerLoadModelOptions,
     type ViewerHotSpotResult,
+    type ViewerLoadModelOptions,
 } from "./viewerInterface";
 
 // ── Defaults ──
@@ -589,7 +590,7 @@ export class Viewer implements IViewer {
         this._shadowLight = light;
 
         // Collect caster meshes from the container
-        const casterMeshes = this._container.entities.filter((e): e is import("babylon-lite").Mesh => "vertices" in e);
+        const casterMeshes = this._container.entities.filter((e): e is Mesh => "vertices" in e);
 
         if (casterMeshes.length > 0) {
             this._shadowGenerator = createShadowGenerator(this._engine, light, casterMeshes);

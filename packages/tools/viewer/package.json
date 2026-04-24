@@ -23,9 +23,9 @@
         "test": "echo \"Error: no test specified\" && exit 1"
     },
     "dependencies": {
+        "@babylonjs/lite": "file:../../../../Babylon-Lite-1/packages/babylon-lite/dist",
         "@dev/core": "1.0.0",
         "@dev/loaders": "1.0.0",
-        "babylon-lite": "file:../../../../Babylon-Lite-1/packages/babylon-lite",
         "lit": "^3.2.0"
     },
     "devDependencies": {
@@ -34,6 +34,7 @@
         "@rollup/plugin-node-resolve": "^15.2.3",
         "@rollup/plugin-terser": "^1.0.0",
         "@rollup/plugin-typescript": "^11.1.6",
+        "@webgpu/types": "^0.1.69",
         "chalk": "^5.3.0",
         "cross-env": "^7.0.3",
         "nyc": "^17.0.0",
