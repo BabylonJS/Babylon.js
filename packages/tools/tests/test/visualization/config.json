@@ -3117,6 +3117,11 @@
             "excludedEngines": ["webgl1"]
         },
         {
+            "title": "OpenPBR IBL Furnace Test for Metal Energy Compensation",
+            "playgroundId": "#KQYNYS#62",
+            "excludedEngines": ["webgl1"]
+        },
+        {
             "title": "OpenPBR IBL Specular IOR vs Coat IOR",
             "playgroundId": "#GRQHVV#39",
             "excludedEngines": ["webgl1"]
