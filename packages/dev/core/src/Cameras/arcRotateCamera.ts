@@ -730,7 +730,7 @@ export class ArcRotateCamera extends TargetCamera {
         if (!value && ptrIdx !== -1) {
             map.splice(ptrIdx, 1);
         } else if (value && ptrIdx === -1) {
-            this.movement.input.addEntry({ source: "pointer", button: 0, modifiers: { ctrl: true }, interaction: "pan", sensitivity: 0.001 });
+            this.movement.input.addEntry({ source: "pointer", button: 0, modifiers: { ctrl: true }, interaction: "pan" });
         }
     }
 

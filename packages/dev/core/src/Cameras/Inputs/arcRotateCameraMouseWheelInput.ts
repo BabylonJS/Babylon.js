@@ -120,7 +120,11 @@ export class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCam
                         delta = this._computeDeltaFromMouseWheelLegacyEvent(wheelDelta, estimatedTargetRadius);
                     }
                 } else {
-                    delta = wheelDelta / (this.wheelPrecision * 40);
+                    // The inputMap entry's `sensitivity` takes precedence so consumers can tune
+                    // wheel zoom feel declaratively; fall back to the legacy `wheelPrecision`.
+                    const wheelEntry = this.camera.movement.input.getEntry("wheel", "zoom");
+                    const wheelScale = wheelEntry?.sensitivity ?? 1 / (this.wheelPrecision * 40);
+                    delta = wheelDelta * wheelScale;
                 }
             }
 

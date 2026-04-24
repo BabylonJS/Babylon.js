@@ -98,10 +98,15 @@ export class ArcRotateCameraPointersInput extends OrbitCameraPointersInput {
         if (previousMultiTouchPanPosition && multiTouchPanPosition) {
             const moveDeltaX = multiTouchPanPosition.x - previousMultiTouchPanPosition.x;
             const moveDeltaY = multiTouchPanPosition.y - previousMultiTouchPanPosition.y;
-            if (this.panningSensibility !== 0) {
+            // Multi-touch pan is a gesture (no button), so consult the default pointer→pan entry for an
+            // explicit `sensitivity` override. When unset, fall back to the legacy `panningSensibility`
+            // (treating panningSensibility=0 as "panning disabled" for backward compatibility).
+            const panEntry = this.camera.movement.input.getEntry("pointer", "pan");
+            const panScale = panEntry?.sensitivity ?? (this.panningSensibility !== 0 ? 1 / this.panningSensibility : 0);
+            if (panScale !== 0) {
                 this.camera.movement.activeInput = true;
-                this.camera.movement.panAccumulatedPixels.x += -moveDeltaX / this.panningSensibility;
-                this.camera.movement.panAccumulatedPixels.y += moveDeltaY / this.panningSensibility;
+                this.camera.movement.panAccumulatedPixels.x += -moveDeltaX * panScale;
+                this.camera.movement.panAccumulatedPixels.y += moveDeltaY * panScale;
             }
         }
     }
@@ -139,16 +144,24 @@ export class ArcRotateCameraPointersInput extends OrbitCameraPointersInput {
         // This matches legacy behavior where pointer-lock mouse deltas always drove rotation.
         const entry = this._activeEntry ?? (this.camera.getEngine().isPointerLock ? this.camera.movement.input.resolveInteraction("pointer", { button: 0, modifiers: {} }) : null);
         if (entry) {
+            // Per-pixel scale. The inputMap entry's `sensitivity` takes precedence so consumers can
+            // tune feel declaratively (and so we can phase out the legacy sensibility properties).
+            // When `sensitivity` is unset, fall back to the legacy properties for backward compat.
+            // For rotate, a single `sensitivity` value applies to both axes; the legacy fallback
+            // preserves separate X/Y tuning via `angularSensibilityX/Y`.
             if (entry.interaction === "pan") {
-                if (this.panningSensibility !== 0) {
+                const panScale = entry.sensitivity ?? (this.panningSensibility !== 0 ? 1 / this.panningSensibility : 0);
+                if (panScale !== 0) {
                     this.camera.movement.activeInput = true;
-                    this.camera.movement.panAccumulatedPixels.x += -offsetX / this.panningSensibility;
-                    this.camera.movement.panAccumulatedPixels.y += offsetY / this.panningSensibility;
+                    this.camera.movement.panAccumulatedPixels.x += -offsetX * panScale;
+                    this.camera.movement.panAccumulatedPixels.y += offsetY * panScale;
                 }
             } else if (entry.interaction === "rotate") {
+                const rotateScaleX = entry.sensitivity ?? 1 / this.angularSensibilityX;
+                const rotateScaleY = entry.sensitivity ?? 1 / this.angularSensibilityY;
                 this.camera.movement.activeInput = true;
-                this.camera.movement.rotationAccumulatedPixels.x += -offsetX / this.angularSensibilityX;
-                this.camera.movement.rotationAccumulatedPixels.y += -offsetY / this.angularSensibilityY;
+                this.camera.movement.rotationAccumulatedPixels.x += -offsetX * rotateScaleX;
+                this.camera.movement.rotationAccumulatedPixels.y += -offsetY * rotateScaleY;
             }
         }
     }

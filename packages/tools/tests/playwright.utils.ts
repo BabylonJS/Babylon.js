@@ -46,7 +46,7 @@ export function getBabylonServerTestsList() {
         },
         {
             name: "interaction",
-            testMatch: "**/interaction.test.ts",
+            testMatch: "**/*interaction.test.ts",
             use: getUseDefinition("Interaction", "Safari", true),
         },
         {

@@ -59,16 +59,20 @@ export class ArcRotateCameraMovement extends CameraMovement {
     }
 
     private _createDefaultInputMap(): InputMapEntry<ArcRotateInteraction>[] {
+        // Default entries leave `sensitivity` unset so each input class falls back to its legacy
+        // sensibility properties (`angularSensibilityX/Y`, `panningSensibility`, `wheelPrecision`,
+        // `angularSpeed`, `zoomingSensibility`) for backward compatibility. Setting `sensitivity`
+        // on an entry overrides those properties — the long-term path for phasing them out.
         return [
             // ctrl+left-drag → pan (more specific than the bare rotate entry below; must come first so first-match-wins picks it).
-            { source: "pointer", button: 0, modifiers: { ctrl: true }, interaction: "pan", sensitivity: 0.001 },
-            { source: "pointer", button: 0, interaction: "rotate", sensitivity: 0.001 },
-            { source: "pointer", button: 2, interaction: "pan", sensitivity: 0.001 },
+            { source: "pointer", button: 0, modifiers: { ctrl: true }, interaction: "pan" },
+            { source: "pointer", button: 0, interaction: "rotate" },
+            { source: "pointer", button: 2, interaction: "pan" },
             { source: "wheel", interaction: "zoom" },
-            { source: "keyboard", key: [187, 107, 189, 109], interaction: "zoom", sensitivity: 0.04 }, // +/-/numpad+/numpad-
-            { source: "keyboard", modifiers: { ctrl: true }, interaction: "pan", sensitivity: 0.02 },
-            { source: "keyboard", modifiers: { alt: true }, interaction: "zoom", sensitivity: 0.04 },
-            { source: "keyboard", interaction: "rotate", sensitivity: 0.01 },
+            { source: "keyboard", key: [187, 107, 189, 109], interaction: "zoom" }, // +/-/numpad+/numpad-
+            { source: "keyboard", modifiers: { ctrl: true }, interaction: "pan" },
+            { source: "keyboard", modifiers: { alt: true }, interaction: "zoom" },
+            { source: "keyboard", interaction: "rotate" },
         ];
     }
 }

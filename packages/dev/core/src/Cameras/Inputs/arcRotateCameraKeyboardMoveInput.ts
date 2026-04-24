@@ -231,9 +231,12 @@ export class ArcRotateCameraKeyboardMoveInput implements ICameraInput<ArcRotateC
                 const resolved = input.resolveInteraction("keyboard", this._keyboardConditions);
 
                 if (resolved) {
-                    const sens = resolved.sensitivity ?? 1;
+                    // Per-frame impulse magnitude. The inputMap entry's `sensitivity` takes precedence
+                    // when set so consumers can tune feel declaratively (and so we can phase out the
+                    // legacy sensibility/angularSpeed properties over time). When `sensitivity` is
+                    // undefined, fall back to the legacy properties for backward compatibility.
                     if (resolved.interaction === "pan") {
-                        const panSens = (1 / this.panningSensibility) * sens;
+                        const panSens = resolved.sensitivity ?? 1 / this.panningSensibility;
                         if (this.keysLeft.indexOf(keyCode) !== -1) {
                             input.handlers.pan(-panSens, 0);
                         } else if (this.keysRight.indexOf(keyCode) !== -1) {
@@ -244,14 +247,14 @@ export class ArcRotateCameraKeyboardMoveInput implements ICameraInput<ArcRotateC
                             input.handlers.pan(0, -panSens);
                         }
                     } else if (resolved.interaction === "zoom") {
-                        const zoomSens = (1 / this.zoomingSensibility) * sens;
+                        const zoomSens = resolved.sensitivity ?? 1 / this.zoomingSensibility;
                         if (this.keysUp.indexOf(keyCode) !== -1 || this.keysZoomIn.indexOf(keyCode) !== -1) {
                             input.handlers.zoom(zoomSens);
                         } else if (this.keysDown.indexOf(keyCode) !== -1 || this.keysZoomOut.indexOf(keyCode) !== -1) {
                             input.handlers.zoom(-zoomSens);
                         }
                     } else if (resolved.interaction === "rotate") {
-                        const rotateSens = this.angularSpeed * sens;
+                        const rotateSens = resolved.sensitivity ?? this.angularSpeed;
                         if (this.keysLeft.indexOf(keyCode) !== -1) {
                             input.handlers.rotate(-rotateSens, 0);
                         } else if (this.keysRight.indexOf(keyCode) !== -1) {
