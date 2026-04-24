@@ -36,6 +36,10 @@ function MyComponent() {
 
 ## Extension Architecture
 
+### Dynamically loaded extensions
+
+Extensions that are loaded dynamically via the extension manager dialog must live in `packages/dev/inspector-v2/src/extensions/`. Each extension should be a separate subfolder within that directory.
+
 ### Service definitions
 
 Extensions expose functionality through `ServiceDefinition` objects that declare their dependencies (`consumes`) and what they provide (`produces`). Export a default object with a `serviceDefinitions` array:
