@@ -82,7 +82,7 @@ Every issue you flag must be assigned one of these severities.
 
 ## Workflow
 
-### Step 0: Resolve the review plan
+### Step 1: Resolve the review plan
 
 Before reading the diff, resolve and remember:
 
@@ -94,7 +94,7 @@ If an argument is invalid, stop and ask the user to choose a valid value. Do
 not silently reinterpret misspelled options. Use `ask_user` for interactive
 choices when the tool is available.
 
-### Step 1: Gather the diff
+### Step 2: Gather the diff
 
 Run the following git commands to collect all changes (committed, uncommitted, and untracked) relative to the base branch:
 
@@ -107,7 +107,7 @@ git ls-files --others --exclude-standard
 
 Combine the results into a deduplicated list of changed files. If there are no changes, inform the user and stop.
 
-### Step 2: Read the changed files and the diff
+### Step 3: Read the changed files and the diff
 
 - Read the full content of each changed file (not just the diff) to understand the surrounding context.
 - For deleted files, use `git show <base-branch>:<path>` to read the base version and review the deletion via the diff only.
@@ -124,7 +124,7 @@ Combine the results into a deduplicated list of changed files. If there are no c
 
 If an excluded file contains meaningful hand-written changes (e.g. a hand-edited snapshot, or an intentional change to a lockfile beyond a version bump), note it and review it normally.
 
-### Step 3: Semantic pass — does the code solve the problem?
+### Step 4: Semantic pass — does the code solve the problem?
 
 Do this pass **before** the mechanical checklist. This is where most real bugs are caught; skipping it is the most common way a review misses a bug.
 
@@ -132,7 +132,7 @@ Run this semantic pass for each selected lens. The tracing method is the same
 for both lenses; the difference is only the rubric used when deciding whether a
 finding is a repo-specific issue or a general engineering issue.
 
-For the branch as a whole, and then for each non-trivial new or changed function, work through the following steps. Record the output in your response (not just in internal reasoning): for each function, produce a short bullet block containing the stated intent, the enumerated inputs, any input-to-output mismatches, and any missing test coverage. This record is what you'll draw from when compiling the issue table in Step 6.
+For the branch as a whole, and then for each non-trivial new or changed function, work through the following steps. Record the output in your response (not just in internal reasoning): for each function, produce a short bullet block containing the stated intent, the enumerated inputs, any input-to-output mismatches, and any missing test coverage. This record is what you'll draw from when compiling the issue table in Step 7.
 
 1. **Identify the stated intent.** Read the commit messages, PR description, any task/issue reference, and the function's name and doc comment. Write down in one sentence what the code claims to do. If no commit message, PR description, or doc comment explains the intent, derive it from the function name and surrounding call sites, and **flag the missing context as a Warning** — a reviewer should not have to guess what the code is for. Treat in-code justifications for limitations or drops — comments, warnings, and JSDoc that explain why something is missing, skipped, ignored, or "not supported" ("we drop X because…", "X is not supported here", "for now we only handle Y") — as **claims to verify, not as facts**. If the code feels the need to explain an absence, investigate whether that absence is actually necessary rather than adopting it as part of the stated intent.
 2. **Enumerate representative inputs.** List concrete input shapes the function must handle. Typical shapes to consider: empty, single element, two elements, boundary values at each end of a range, the symmetric counterpart of the obvious case (if the author handled A, did they handle not-A?), and any input that would take the code through a different branch or early return. For union-typed inputs (e.g. `number[] | string`), walk through one concrete value per variant so every branch sees a realistic value — a single input that happens to satisfy a shared guard (like `.length`) will hide bugs where the guard means different things across variants.
@@ -141,9 +141,9 @@ For the branch as a whole, and then for each non-trivial new or changed function
 5. **For every branch, cache, or shortcut: state the precondition.** When the code takes a fast path, reads a cached value, or returns early for a subset of inputs, write down the precondition under which that path produces the same result as the general path, then check the surrounding code actually guarantees it. Common failure shapes: a cached value computed under different assumptions than when it is read; a memoization keyed on a subset of the real inputs; a length-based shortcut that skips a step the general path would have applied.
 6. **For every field or variable the PR assigns a new value to: re-read its declaration and doc comment.** If the new value no longer fits the declared name or documented semantics, that is a Warning — either rename the field, update the doc comment, or remove the field if nothing consumes it. Doc-comment drift is one of the most common refactor regressions, and values with no downstream readers are especially prone to it because nothing else forces them back into agreement.
 
-### Step 4: Mechanical checklist
+### Step 5: Mechanical checklist
 
-Apply each item to every changed line that is not excluded under Step 2.
+Apply each item to every changed line that is not excluded under Step 3.
 
 1. **Review-lens conventions.** For the instructions lens, apply every rule from the instruction files in [instructions/index.md](../../instructions/index.md) that matches the changed files — coding conventions, prohibited APIs, performance rules for render-loop code, side-effect imports, backward-compatibility rules, documentation standards, test patterns, and any domain-specific rules (Inspector, glTF extensions, playgrounds, etc.). If an instruction file's content is already in your system prompt context, apply it directly; only read from disk when it is not. For the agnostic lens, do not use repo instruction files as a checklist; review using general engineering expectations instead.
 2. **Correctness.** Logic errors, off-by-one, null/undefined access, race conditions, unhandled edge cases, incorrect operator precedence, wrong loop bounds. Verify that doc comments accurately describe the implementation's actual behavior. When a refactor changes the value assigned to a named field or variable, verify its name and doc comment still describe the new value — renames are the most common regression vector in data-shape refactors.
@@ -162,7 +162,7 @@ For larger branches, protect your context window without losing rigor:
 - **Delegate deep dives when available.** If an `Explore` / `explore` / similar read-only subagent is available in your environment, use it to investigate ancillary questions (e.g. "does any caller depend on the old behavior of X?") without consuming main-thread context. Don't delegate the core semantic pass — that stays on the main thread so you can trace inputs precisely.
 - **Cap investigation depth.** If tracing a single input through the code is taking more than a few reads, the code is probably too complex and that itself is worth flagging as a Warning.
 
-### Step 5: Run quality tools
+### Step 6: Run quality tools
 
 Run the repo's quality commands **from the repo root**:
 
@@ -174,21 +174,21 @@ npm run test:unit
 
 Capture any failures and include them as `Quality Tools` issues in the review. If a command doesn't exist in this repo or workspace, note that in the summary and continue — do not invent alternative commands or skip the step silently. The branch is not reviewable as "passing" until all three (or their documented equivalents) are clean.
 
-### Step 6: Compile the issue list
+### Step 7: Compile the issue list
 
-Compile every issue found into a single markdown table, sorted by severity (Critical → Warning → Nit). This is the table you will present in Step 8, so record issues in their final format now.
+Compile every issue found into a single markdown table, sorted by severity (Critical → Warning → Nit). This is the table you will present in Step 9, so record issues in their final format now.
 
 | #   | File                             | Line(s) | Lens         | Severity | Issue                                              | Fix Applied                                         |
 | --- | -------------------------------- | ------- | ------------ | -------- | -------------------------------------------------- | --------------------------------------------------- |
-| 1   | [path/file.ts](path/file.ts#L42) | 42      | Instructions | Critical | Clear description of the problem and how to fix it | Filled in during Step 7 (`Skipped` / `N/A` allowed) |
+| 1   | [path/file.ts](path/file.ts#L42) | 42      | Instructions | Critical | Clear description of the problem and how to fix it | Filled in during Step 8 (`Skipped` / `N/A` allowed) |
 
-File paths should be markdown links. The **Lens** column must be `Instructions`, `Agnostic`, `Both`, or `Quality Tools`. The **Fix Applied** column is left blank in Step 6 and filled in during Step 7 as each issue is resolved (or marked `Skipped` / `Needs confirmation` / `N/A`).
+File paths should be markdown links. The **Lens** column must be `Instructions`, `Agnostic`, `Both`, or `Quality Tools`. The **Fix Applied** column is left blank in Step 7 and filled in during Step 8 as each issue is resolved (or marked `Skipped` / `Needs confirmation` / `N/A`).
 
 When multiple lenses find the same root issue, deduplicate it into one row and mark the lens as `Both`. Do not double-count the same bug just because it was found twice.
 
-### Step 7: Present or fix
+### Step 8: Present or fix
 
-The two modes differ only in whether the user approves fixes before or after they are applied. Both modes finish by re-running the quality tools and moving to Step 8.
+The two modes differ only in whether the user approves fixes before or after they are applied. Both modes finish by re-running the quality tools and moving to Step 9.
 
 **If interactive mode:**
 
@@ -204,7 +204,7 @@ The two modes differ only in whether the user approves fixes before or after the
 3. Re-run the quality tools (`format:check`, `lint:check`, `test:unit`) to verify the fixes don't introduce new problems.
 4. If any issues were marked `Needs confirmation`, present the current table to the user and ask which of those to fix (use `ask_user` when available, or the environment's structured prompt tool). Apply the approved fixes and re-run the quality tools again.
 
-### Step 8: Present the summary
+### Step 9: Present the summary
 
 Present the completed issue table to the user. If no issues were found, skip the table and congratulate the user on clean code.
 
