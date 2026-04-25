@@ -25,7 +25,7 @@ Parse `$ARGUMENTS`:
 | `--merge`                  | Merge upstream base into the feature branch before creating the PR. If omitted, prompt.                                     |
 | `--mode automatic`         | Fixes are applied, committed, pushed, and comments resolved automatically.                                                  |
 | `--mode interactive`       | Fixes are staged; skill pauses before commit/push/resolve so the user can review.                                           |
-| `--review-lens <lens>`     | Self code review lens passed to `code-review`: `instructions`, `agnostic`, or `both`. If omitted, use `instructions`.       |
+| `--review-lens <lens>`     | Self code review lens passed to `code-review`: `instructions`, `agnostic`, or `both`. If omitted, use `both`. |
 | `--pr <number>`            | Monitor and iterate on an existing PR. Skips Steps 1–5 (no merge, no PR creation, no code review). Only `--mode` is needed. |
 
 If `--mode` is not specified, ask the user.
@@ -110,7 +110,7 @@ Remember `<push-remote>`, `<upstream-remote>`, `<base-branch>`, and
 Resolve the self code review lens without prompting unless the user supplied an
 invalid value:
 
-- `<review-lens>` from `--review-lens`, defaulting to `instructions`.
+- `<review-lens>` from `--review-lens`, defaulting to `both`.
 
 ### 1c. PR title and body
 

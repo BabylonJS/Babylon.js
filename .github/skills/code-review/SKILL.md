@@ -28,13 +28,13 @@ Parse `$ARGUMENTS`:
 | `--base <branch>`     | Base branch to review against. If omitted, use `master` unless the user clearly specified another base in plain language.                                                   |
 | `--mode automatic`    | Find all issues, fix Critical/Warning issues automatically, then present the summary table. This is the default.                                                            |
 | `--mode interactive`  | Find all issues, present them to the user first, wait for the user to confirm which to fix, then fix the approved issues and present the summary table.                     |
-| `--lens instructions` | Review using Babylon.js repo instructions and matching instruction files. This is the default.                                                                              |
+| `--lens instructions` | Review using Babylon.js repo instructions and matching instruction files. |
 | `--lens agnostic`     | Review without using repo instruction files as the rubric. Use general engineering review judgment, correctness, maintainability, security, and test coverage expectations. |
-| `--lens both`         | Run both the agnostic and instructions lenses independently, then combine and deduplicate findings.                                                                         |
+| `--lens both`         | Run both the agnostic and instructions lenses independently, then combine and deduplicate findings. This is the default. |
 
 If the user says "interactive", "review first", "show me the issues first", or similar, use `--mode interactive`. Otherwise, default to `--mode automatic`.
 
-If the user says "agnostic", "without instructions", "general review", or similar, use `--lens agnostic`. If they ask for both styles, two passes, or comparison against and without repo rules, use `--lens both`. Otherwise, default to `--lens instructions`.
+If the user says "instructions", "repo instructions only", or similar, use `--lens instructions`. If they say "agnostic", "without instructions", "general review", or similar, use `--lens agnostic`. Otherwise, default to `--lens both`.
 
 Use the term **lens** in user-facing text rather than "passes". A lens is the review rubric; `both` means two independent review passes.
 
@@ -88,7 +88,7 @@ Before reading the diff, resolve and remember:
 
 - `<base-branch>` from `--base` or the default `master`.
 - `<mode>` as `automatic` or `interactive`.
-- `<selected-lenses>` as one of `[instructions]`, `[agnostic]`, or `[agnostic, instructions]` for `--lens both`.
+- `<selected-lenses>` from `--lens`, defaulting to `[agnostic, instructions]` (`--lens both`).
 
 If an argument is invalid, stop and ask the user to choose a valid value. Do
 not silently reinterpret misspelled options. Use `vscode_askQuestions` for
