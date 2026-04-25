@@ -4,7 +4,7 @@ description: |
     Orchestrates the full PR lifecycle: merge upstream, create draft PR,
     self code review, mark ready, monitor, and iterate on fixes.
     Can also monitor and iterate on an existing PR.
-      Input: [--push-remote <fork>] [--upstream-remote <remote>] [--base <branch>] [--merge] [--mode automatic|interactive] [--review-lens instructions|agnostic|both] [--pr <number>]
+    Input: [--push-remote <fork>] [--upstream-remote <remote>] [--base <branch>] [--merge] [--mode automatic|interactive] [--review-lens instructions|agnostic|both] [--pr <number>]
 argument-hint: "[--push-remote <fork>] [--upstream-remote <remote>] [--base <branch>] [--merge] [--mode automatic|interactive] [--review-lens instructions|agnostic|both] [--pr <number>]"
 ---
 
