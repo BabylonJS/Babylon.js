@@ -17,16 +17,16 @@ invokes other skills as sub-agents and does its own work between them.
 
 Parse `$ARGUMENTS`:
 
-| Argument                   | Description                                                                                                                 |
-| -------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
-| `--push-remote <fork>`     | Git remote (user's fork) to push the branch to. If omitted, detect and prompt.                                              |
-| `--upstream-remote <name>` | Git remote pointing at the PR target repo (e.g. `upstream`, `origin`). If omitted, detect and prompt.                       |
-| `--base <branch>`          | Base branch the PR merges into (e.g. `master`). If omitted, use the upstream's default branch and prompt to confirm.        |
-| `--merge`                  | Merge upstream base into the feature branch before creating the PR. If omitted, prompt.                                     |
-| `--mode automatic`         | Fixes are applied, committed, pushed, and comments resolved automatically.                                                  |
-| `--mode interactive`       | Fixes are staged; skill pauses before commit/push/resolve so the user can review.                                           |
-| `--review-lens <lens>`     | Self code review lens passed to `code-review`: `instructions`, `agnostic`, or `both`. If omitted, use `both`. |
-| `--pr <number>`            | Monitor and iterate on an existing PR. Skips Steps 1–5 (no merge, no PR creation, no code review). Only `--mode` is needed. |
+| Argument                   | Description                                                                                                                                                |
+| -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--push-remote <fork>`     | Git remote (user's fork) to push the branch to. If omitted, detect and prompt.                                                                             |
+| `--upstream-remote <name>` | Git remote pointing at the PR target repo (e.g. `upstream`, `origin`). If omitted, detect and prompt.                                                      |
+| `--base <branch>`          | Base branch the PR merges into (e.g. `master`). If omitted, use the upstream's default branch and prompt to confirm.                                       |
+| `--merge`                  | Merge upstream base into the feature branch before creating the PR. If omitted, prompt.                                                                    |
+| `--mode automatic`         | Fixes are applied, committed, pushed, and comments resolved automatically.                                                                                 |
+| `--mode interactive`       | Fixes are staged; skill pauses before commit/push/resolve so the user can review.                                                                          |
+| `--review-lens <lens>`     | Self code review lens passed to `code-review`: `instructions`, `agnostic`, or `both`. If omitted, use `both`.                                              |
+| `--pr <number>`            | Monitor and iterate on an existing PR. Skips Steps 1–5 (no merge, no PR creation, no self code review). Only `--mode` applies; `--review-lens` is ignored. |
 
 If `--mode` is not specified, ask the user.
 
@@ -35,7 +35,8 @@ Do not silently reinterpret misspelled options.
 
 If `--pr` is provided, skip directly to Step 6 (monitor) and Step 7
 (iteration loop). Do not prompt for remote, merge, title, body, reviewers,
-labels, or self code review options — those only apply when creating a new PR.
+labels, or self code review options; `--review-lens` has no effect because
+self code review only runs when creating a new PR.
 
 ## Prerequisites
 

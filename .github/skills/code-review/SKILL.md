@@ -28,9 +28,9 @@ Parse `$ARGUMENTS`:
 | `--base <branch>`     | Base branch to review against. If omitted, use `master` unless the user clearly specified another base in plain language.                                                   |
 | `--mode automatic`    | Find all issues, fix Critical/Warning issues automatically, then present the summary table. This is the default.                                                            |
 | `--mode interactive`  | Find all issues, present them to the user first, wait for the user to confirm which to fix, then fix the approved issues and present the summary table.                     |
-| `--lens instructions` | Review using Babylon.js repo instructions and matching instruction files. |
+| `--lens instructions` | Review using Babylon.js repo instructions and matching instruction files.                                                                                                   |
 | `--lens agnostic`     | Review without using repo instruction files as the rubric. Use general engineering review judgment, correctness, maintainability, security, and test coverage expectations. |
-| `--lens both`         | Run both the agnostic and instructions lenses independently, then combine and deduplicate findings. This is the default. |
+| `--lens both`         | Run both the agnostic and instructions lenses independently, then combine and deduplicate findings. This is the default.                                                    |
 
 If the user says "interactive", "review first", "show me the issues first", or similar, use `--mode interactive`. Otherwise, default to `--mode automatic`.
 
@@ -91,15 +91,15 @@ Before reading the diff, resolve and remember:
 - `<selected-lenses>` from `--lens`, defaulting to `[agnostic, instructions]` (`--lens both`).
 
 If an argument is invalid, stop and ask the user to choose a valid value. Do
-not silently reinterpret misspelled options. Use `vscode_askQuestions` for
-interactive choices when the tool is available.
+not silently reinterpret misspelled options. Use `ask_user` for interactive
+choices when the tool is available.
 
 ### Step 1: Gather the diff
 
 Run the following git commands to collect all changes (committed, uncommitted, and untracked) relative to the base branch:
 
 ```
-git diff <base>...HEAD --name-only
+git diff <base-branch>...HEAD --name-only
 git diff --name-only
 git diff --name-only --cached
 git ls-files --others --exclude-standard
@@ -110,9 +110,9 @@ Combine the results into a deduplicated list of changed files. If there are no c
 ### Step 2: Read the changed files and the diff
 
 - Read the full content of each changed file (not just the diff) to understand the surrounding context.
-- For deleted files, use `git show <base>:<path>` to read the base version and review the deletion via the diff only.
-- For renamed files, review both the old and new paths — read the new file from disk and the old file via `git show <base>:<old-path>`.
-- Also get the actual diff hunks (`git diff <base>...HEAD` and `git diff`) to know exactly what changed.
+- For deleted files, use `git show <base-branch>:<path>` to read the base version and review the deletion via the diff only.
+- For renamed files, review both the old and new paths — read the new file from disk and the old file via `git show <base-branch>:<old-path>`.
+- Also get the actual diff hunks (`git diff <base-branch>...HEAD` and `git diff`) to know exactly what changed.
 
 **Files to exclude from review** (note them in the summary but do not apply the checklist to them):
 
@@ -193,7 +193,7 @@ The two modes differ only in whether the user approves fixes before or after the
 **If interactive mode:**
 
 1. Present the issue table (with the **Fix Applied** column blank) to the user.
-2. Ask the user which issues to fix (all, specific numbers, or skip). Use your environment's structured question mechanism (for VS Code, `vscode_askQuestions`) if available, so the user can reply with choices rather than free-form text.
+2. Ask the user which issues to fix (all, specific numbers, or skip). Use `ask_user` when available, or the environment's structured prompt tool, so the user can reply with choices rather than free-form text.
 3. Fix the approved issues, filling in the **Fix Applied** column as you go.
 4. Re-run the quality tools (`format:check`, `lint:check`, `test:unit`) to verify the fixes don't introduce new problems.
 
@@ -202,7 +202,7 @@ The two modes differ only in whether the user approves fixes before or after the
 1. Fix all Critical and Warning issues. Fix Nit issues as well unless they are purely subjective.
 2. **Exception — design-impacting fixes**: If fixing a Warning or Nit would change the architectural approach or design intent of the code (e.g., restructuring data flow, changing when allocations happen, altering the public API shape), do NOT auto-fix. Mark those issues as `Needs confirmation` in the **Fix Applied** column and skip them during the fix pass.
 3. Re-run the quality tools (`format:check`, `lint:check`, `test:unit`) to verify the fixes don't introduce new problems.
-4. If any issues were marked `Needs confirmation`, present the current table to the user and ask which of those to fix (use a structured question mechanism like `vscode_askQuestions` if available). Apply the approved fixes and re-run the quality tools again.
+4. If any issues were marked `Needs confirmation`, present the current table to the user and ask which of those to fix (use `ask_user` when available, or the environment's structured prompt tool). Apply the approved fixes and re-run the quality tools again.
 
 ### Step 8: Present the summary
 
