@@ -1,15 +1,13 @@
-Gui Editor es6
+# Babylon.js GUI Editor
 
-# Babylon.js Gui Editor
+The GUI Editor is a visual tool for creating and modifying GUI layouts for Babylon.js scenes.
 
-An extension to easily allow users to create and modify GUI for scenes.
+## Installation
 
-## Usage
-Currently available for local development by selecting "Launch GUI Editor (Chrome)"
+To install using npm:
 
-## Current Supported Features
+```bash
+npm install @babylonjs/gui-editor
+```
 
-- Launch GUI editor in local dev mode.
-- Drag and drop GUI elements onto a canvas.
-- Select and move individual GUI elements.
-- Modify properties of selected GUI elements.
+For more information, see the [GUI Editor documentation](https://doc.babylonjs.com/toolsAndResources/guiEditor/).

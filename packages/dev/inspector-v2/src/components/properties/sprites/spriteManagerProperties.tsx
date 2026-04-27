@@ -1,8 +1,6 @@
-import type { FunctionComponent } from "react";
+import { type FunctionComponent, useCallback } from "react";
 
-import type { ISelectionService } from "../../../services/selectionService";
-
-import { useCallback } from "react";
+import { type ISelectionService } from "../../../services/selectionService";
 
 import { Constants } from "core/Engines/constants";
 import { RenderingManager } from "core/Rendering/renderingManager";

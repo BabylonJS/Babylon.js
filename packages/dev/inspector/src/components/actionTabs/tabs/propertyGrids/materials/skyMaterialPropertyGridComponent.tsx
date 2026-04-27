@@ -1,15 +1,15 @@
 import * as React from "react";
 
-import type { Observable } from "core/Misc/observable";
-import type { SkyMaterial } from "materials/sky/skyMaterial";
+import { type Observable } from "core/Misc/observable";
+import { type SkyMaterial } from "materials/sky/skyMaterial";
 
-import type { PropertyChangedEvent } from "../../../../propertyChangedEvent";
+import { type PropertyChangedEvent } from "../../../../propertyChangedEvent";
 import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
 import { CheckBoxLineComponent } from "shared-ui-components/lines/checkBoxLineComponent";
 import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent";
 import { CommonMaterialPropertyGridComponent } from "./commonMaterialPropertyGridComponent";
-import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
-import type { GlobalState } from "../../../../globalState";
+import { type LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
+import { type GlobalState } from "../../../../globalState";
 import { Vector3LineComponent } from "shared-ui-components/lines/vector3LineComponent";
 
 interface ISkyMaterialPropertyGridComponentProps {

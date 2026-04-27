@@ -3,10 +3,10 @@
  * the visual graph system.
  */
 
-import type { Observer } from "core/Misc/observable";
-import type { Nullable } from "core/types";
+import { type Observer } from "core/Misc/observable";
+import { type Nullable } from "core/types";
 import { useEffect, useMemo, useState } from "react";
-import type { State } from "../stateMachine/State";
+import { type State } from "../stateMachine/State";
 import { NodeRenderer } from "../../../../dev/sharedUiComponents/src/components/reactGraphSystem/NodeRenderer";
 import { useSelectedAction } from "./tools/useSelectedAction";
 import { useSelectedState } from "./tools/useSelectedState";

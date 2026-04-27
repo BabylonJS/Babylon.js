@@ -1,9 +1,9 @@
-import type { GlobalState } from "../globalState";
-import type { INodeContainer } from "shared-ui-components/nodeGraphSystem/interfaces/nodeContainer";
-import type { IPortData } from "shared-ui-components/nodeGraphSystem/interfaces/portData";
-import type { StateManager } from "shared-ui-components/nodeGraphSystem/stateManager";
+import { type GlobalState } from "../globalState";
+import { type INodeContainer } from "shared-ui-components/nodeGraphSystem/interfaces/nodeContainer";
+import { type IPortData } from "shared-ui-components/nodeGraphSystem/interfaces/portData";
+import { type StateManager } from "shared-ui-components/nodeGraphSystem/stateManager";
 import { BlockNodeData } from "./blockNodeData";
-import type { NodeGeometryConnectionPoint } from "core/Meshes/Node/nodeGeometryBlockConnectionPoint";
+import { type NodeGeometryConnectionPoint } from "core/Meshes/Node/nodeGeometryBlockConnectionPoint";
 import { NodeGeometryBlockConnectionPointTypes } from "core/Meshes/Node/Enums/nodeGeometryConnectionPointTypes";
 import { GeometryInputBlock } from "core/Meshes/Node/Blocks/geometryInputBlock";
 

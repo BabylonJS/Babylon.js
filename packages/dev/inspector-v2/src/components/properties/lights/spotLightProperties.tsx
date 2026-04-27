@@ -1,5 +1,5 @@
-import type { SpotLight } from "core/index";
-import type { FunctionComponent } from "react";
+import { type SpotLight } from "core/index";
+import { type FunctionComponent } from "react";
 
 import { Tools } from "core/Misc/tools";
 import { Color3PropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/colorPropertyLine";

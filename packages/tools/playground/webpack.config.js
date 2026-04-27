@@ -85,7 +85,7 @@ module.exports = (env) => {
             }),
         },
     };
-    const plugins = (commonConfig.plugins || []).filter((p) => !(p && p.constructor && p.constructor.name === "ReactRefreshWebpackPlugin"));
+    const plugins = (commonConfig.plugins || []).filter((p) => !(p && p.constructor && p.constructor.name === "ReactRefreshPlugin"));
     return {
         ...commonConfig,
         output: {

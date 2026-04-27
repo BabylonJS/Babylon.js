@@ -1,8 +1,7 @@
-import type { Scene } from "core/scene";
-import type { IParsedSplat } from "./splatDefs";
-import { Mode } from "./splatDefs";
+import { type Scene } from "core/scene";
+import { type IParsedSplat, Mode } from "./splatDefs";
 import { Scalar } from "core/Maths/math.scalar";
-import type { AbstractEngine } from "core/Engines";
+import { type AbstractEngine } from "core/Engines";
 
 /**
  * Definition of a SOG data file
@@ -290,8 +289,8 @@ async function ParseSogDatas(data: SOGRootData, imageDataArrays: IWebPImage[], s
 
     // --- SH
     if (data.shN) {
-        const coeffCounts = [0, 3, 8, 15];
-        const coeffs = data.shN.bands ? coeffCounts[data.shN.bands] : data.shN.shape[1] / 3; // 3 components per coeff
+        const coeffs = data.shN.bands ? (data.shN.bands + 1) ** 2 - 1 : data.shN.shape[1] / 3; // 3 components per coeff
+        const shDegree = data.shN.bands !== undefined && data.shN.bands !== null ? data.shN.bands : Math.round(Math.sqrt(coeffs + 1) - 1);
         const shCentroids = imageDataArrays[5].bits;
         const shLabelsData = imageDataArrays[6].bits;
         const shCentroidsWidth = imageDataArrays[5].width;
@@ -359,7 +358,7 @@ async function ParseSogDatas(data: SOGRootData, imageDataArrays: IWebPImage[], s
             }
         }
         return await new Promise((resolve) => {
-            resolve({ mode: Mode.Splat, data: buffer, hasVertexColors: false, sh: sh });
+            resolve({ mode: Mode.Splat, data: buffer, hasVertexColors: false, sh: sh, shDegree: shDegree });
         });
     }
 

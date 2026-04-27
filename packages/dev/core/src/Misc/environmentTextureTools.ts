@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import type { Nullable } from "../types";
+import { type Nullable } from "../types";
 import { Tools } from "./tools";
 import { Vector3 } from "../Maths/math.vector";
 import { ILog2 } from "../Maths/math.scalar.functions";
@@ -14,8 +14,8 @@ import { RGBDTextureTools } from "./rgbdTextureTools";
 import { DumpDataAsync } from "../Misc/dumpTools";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
-import type { RenderTargetWrapper } from "../Engines/renderTargetWrapper";
-import type { Engine, WebGPUEngine } from "core/Engines";
+import { type RenderTargetWrapper } from "../Engines/renderTargetWrapper";
+import { type Engine, type WebGPUEngine } from "core/Engines";
 
 import "../Materials/Textures/baseTexture.polynomial";
 import { GetBlobBufferSource } from "../Buffers/bufferUtils";
@@ -201,7 +201,7 @@ export function GetEnvInfo(data: ArrayBufferView): Nullable<EnvironmentTextureIn
 
     // Read json manifest - collect characters up to null terminator
     let manifestString = "";
-    let charCode = 0x00;
+    let charCode: number;
     while ((charCode = dataView.getUint8(pos++))) {
         manifestString += String.fromCharCode(charCode);
     }

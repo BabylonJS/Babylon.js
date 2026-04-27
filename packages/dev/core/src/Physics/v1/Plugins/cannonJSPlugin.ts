@@ -1,17 +1,15 @@
 /* eslint-disable @typescript-eslint/no-unsafe-return */
 /* eslint-disable @typescript-eslint/naming-convention */
-import type { Nullable, FloatArray } from "../../../types";
+import { type Nullable, type FloatArray } from "../../../types";
 import { Logger } from "../../../Misc/logger";
 import { Vector3, Matrix, Quaternion } from "../../../Maths/math.vector";
 import { VertexBuffer } from "../../../Buffers/buffer";
-import type { AbstractMesh } from "../../../Meshes/abstractMesh";
-import type { IPhysicsEnginePlugin, PhysicsImpostorJoint } from "../IPhysicsEnginePlugin";
-import type { IPhysicsEnabledObject } from "../physicsImpostor";
-import { PhysicsImpostor } from "../physicsImpostor";
-import type { IMotorEnabledJoint, DistanceJointData, SpringJointData } from "../physicsJoint";
-import { PhysicsJoint } from "../physicsJoint";
+import { type AbstractMesh } from "../../../Meshes/abstractMesh";
+import { type IPhysicsEnginePlugin, type PhysicsImpostorJoint } from "../IPhysicsEnginePlugin";
+import { type IPhysicsEnabledObject, PhysicsImpostor } from "../physicsImpostor";
+import { type IMotorEnabledJoint, type DistanceJointData, type SpringJointData, PhysicsJoint } from "../physicsJoint";
 import { PhysicsRaycastResult } from "../../physicsRaycastResult";
-import type { TransformNode } from "../../../Meshes/transformNode";
+import { type TransformNode } from "../../../Meshes/transformNode";
 import { PhysicsEngine } from "../physicsEngine";
 import { Epsilon } from "../../../Maths/math.constants";
 

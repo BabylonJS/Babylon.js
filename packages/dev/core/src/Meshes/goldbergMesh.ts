@@ -1,11 +1,10 @@
-import type { Scene } from "../scene";
-import type { Vector2 } from "../Maths/math.vector";
-import { Vector3 } from "../Maths/math.vector";
+import { type Scene } from "../scene";
+import { type Vector2, Vector3 } from "../Maths/math.vector";
 import { VertexBuffer } from "../Buffers/buffer";
 import { Mesh } from "../Meshes/mesh";
 import { Color4 } from "../Maths/math.color";
 import { Logger } from "../Misc/logger";
-import type { FloatArray } from "../types";
+import { type FloatArray } from "../types";
 
 Mesh._GoldbergMeshParser = (parsedMesh: any, scene: Scene): GoldbergMesh => {
     return GoldbergMesh.Parse(parsedMesh, scene);

@@ -1,11 +1,11 @@
 /* eslint-disable github/no-then */
-import type { Nullable } from "core/types";
-import type { Material } from "core/Materials/material";
-import type { BaseTexture } from "core/Materials/Textures/baseTexture";
-import type { IMaterial, ITextureInfo } from "../glTFLoaderInterfaces";
-import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
+import { type Nullable } from "core/types";
+import { type Material } from "core/Materials/material";
+import { type BaseTexture } from "core/Materials/Textures/baseTexture";
+import { type IMaterial, type ITextureInfo } from "../glTFLoaderInterfaces";
+import { type IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader } from "../glTFLoader";
-import type { IKHRMaterialsDiffuseTransmission } from "babylonjs-gltf2interface";
+import { type IKHRMaterialsDiffuseTransmission } from "babylonjs-gltf2interface";
 import { Color3 } from "core/Maths/math.color";
 import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
 
@@ -79,7 +79,8 @@ export class KHR_materials_diffuse_transmission implements IGLTFLoaderExtension 
         const adapter = this._loader._getOrCreateMaterialAdapter(babylonMaterial);
         adapter.configureSubsurface();
         adapter.subsurfaceWeight = extension.diffuseTransmissionFactor ?? 0;
-        adapter.subsurfaceConstantTint = extension.diffuseTransmissionColorFactor !== undefined ? Color3.FromArray(extension.diffuseTransmissionColorFactor) : Color3.White();
+
+        adapter.diffuseTransmissionTint = extension.diffuseTransmissionColorFactor !== undefined ? Color3.FromArray(extension.diffuseTransmissionColorFactor) : Color3.White();
 
         const promises = new Array<Promise<any>>();
 
@@ -97,7 +98,7 @@ export class KHR_materials_diffuse_transmission implements IGLTFLoaderExtension 
             promises.push(
                 this._loader.loadTextureInfoAsync(`${context}/diffuseTransmissionColorTexture`, extension.diffuseTransmissionColorTexture).then((texture: BaseTexture) => {
                     texture.name = `${babylonMaterial.name} (Diffuse Transmission Color)`;
-                    adapter.subsurfaceConstantTintTexture = texture;
+                    adapter.diffuseTransmissionTintTexture = texture;
                 })
             );
         }

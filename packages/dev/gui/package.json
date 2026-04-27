@@ -11,7 +11,7 @@
     ],
     "scripts": {
         "build": "npm run compile",
-        "test": "jest -c ../../../jest.config.ts",
+        "test": "vitest run",
         "clean": "rimraf dist && rimraf *.tsbuildinfo -g",
         "precompile": "npm run compile:assets",
         "compile": "npm run compile:source",

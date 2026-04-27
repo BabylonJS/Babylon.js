@@ -1,11 +1,10 @@
-import type { Nullable } from "core/types";
-import type { GraphNode } from "shared-ui-components/nodeGraphSystem/graphNode";
-import type { INodeContainer } from "shared-ui-components/nodeGraphSystem/interfaces/nodeContainer";
-import type { IPortData } from "shared-ui-components/nodeGraphSystem/interfaces/portData";
+import { type Nullable } from "core/types";
+import { type GraphNode } from "shared-ui-components/nodeGraphSystem/graphNode";
+import { type INodeContainer } from "shared-ui-components/nodeGraphSystem/interfaces/nodeContainer";
+import { type IPortData } from "shared-ui-components/nodeGraphSystem/interfaces/portData";
 import { PortDataDirection } from "shared-ui-components/nodeGraphSystem/interfaces/portData.js";
 import { TypeLedger } from "shared-ui-components/nodeGraphSystem/typeLedger.js";
-import type { ConnectionPoint } from "smart-filters";
-import { getCompatibilityIssueMessage, ConnectionPointDirection } from "smart-filters";
+import { type ConnectionPoint, getCompatibilityIssueMessage, ConnectionPointDirection } from "smart-filters";
 
 export class ConnectionPointPortData implements IPortData {
     private _connectedPort: Nullable<IPortData> = null;

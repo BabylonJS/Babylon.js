@@ -1,0 +1,27 @@
+# =============================================================================
+# Template: Check if a snapshot exists on the deployment server
+#
+# Queries the deployment server for a snapshot path and sets a pipeline
+# variable (default: SnapshotExists) to 'true' or 'false'.
+# =============================================================================
+
+parameters:
+    - name: snapshotPath
+      type: string
+    - name: variableName
+      type: string
+      default: "SnapshotExists"
+    - name: displayName
+      type: string
+      default: "Check if snapshot exists"
+
+steps:
+    - script: |
+          curl "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_SNAPSHOT_CHECK)?buildNumber=${{ parameters.snapshotPath }}" -o ./tmp.json -H "Authorization: $(BASIC_AUTH)"
+          if grep "true" ./tmp.json
+          then
+             echo "##vso[task.setvariable variable=${{ parameters.variableName }}]true"
+          else
+             echo "##vso[task.setvariable variable=${{ parameters.variableName }}]false"
+          fi
+      displayName: "${{ parameters.displayName }}"

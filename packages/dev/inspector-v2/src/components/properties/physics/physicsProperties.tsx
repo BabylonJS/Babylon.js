@@ -1,9 +1,8 @@
-import type { FunctionComponent } from "react";
+import { type FunctionComponent, useCallback } from "react";
 
-import type { PhysicsBody, TransformNode } from "core/index";
-import type { DropdownOption } from "shared-ui-components/fluent/primitives/dropdown";
+import { type PhysicsBody, type TransformNode } from "core/index";
+import { type DropdownOption } from "shared-ui-components/fluent/primitives/dropdown";
 
-import { useCallback } from "react";
 import { MessageBar } from "shared-ui-components/fluent/primitives/messageBar";
 
 import { Vector3 } from "core/Maths/math.vector";
@@ -14,7 +13,7 @@ import { TextPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/
 import { Vector3PropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/vectorPropertyLine";
 import { useProperty, useVector3Property } from "../../../hooks/compoundPropertyHooks";
 import { useInterceptObservable } from "../../../hooks/instrumentationHooks";
-import { useObservableState } from "../../../hooks/observableHooks";
+import { useObservableState } from "shared-ui-components/modularTool/hooks/observableHooks";
 
 import "core/Physics/v2/physicsEngineComponent";
 import { BoundProperty } from "../boundProperty";

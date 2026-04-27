@@ -1,10 +1,9 @@
-import type { Nullable } from "../../../types";
-import type { AudioEngineV2 } from "../../abstractAudio/audioEngineV2";
+import { type Nullable } from "../../../types";
+import { type AudioEngineV2 } from "../../abstractAudio/audioEngineV2";
 import { _AbstractAudioSubNode } from "../../abstractAudio/subNodes/abstractAudioSubNode";
 import { AudioSubNode } from "../../abstractAudio/subNodes/audioSubNode";
-import type { IStereoAudioOptions } from "../../abstractAudio/subProperties/abstractStereoAudio";
-import { _StereoAudioDefaults } from "../../abstractAudio/subProperties/abstractStereoAudio";
-import type { _AbstractAudioSubGraph } from "./abstractAudioSubGraph";
+import { type IStereoAudioOptions, _StereoAudioDefaults } from "../../abstractAudio/subProperties/abstractStereoAudio";
+import { type _AbstractAudioSubGraph } from "./abstractAudioSubGraph";
 
 /** @internal */
 export abstract class _StereoAudioSubNode extends _AbstractAudioSubNode {

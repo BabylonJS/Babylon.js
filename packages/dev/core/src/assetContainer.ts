@@ -1,37 +1,37 @@
-import type { Scene } from "./scene";
+import { type Scene } from "./scene";
 import { Mesh } from "./Meshes/mesh";
 import { TransformNode } from "./Meshes/transformNode";
-import type { Skeleton } from "./Bones/skeleton";
-import type { AnimationGroup } from "./Animations/animationGroup";
+import { type Skeleton } from "./Bones/skeleton";
+import { type AnimationGroup } from "./Animations/animationGroup";
 import { type Animatable } from "./Animations/animatable.core";
 import { AbstractMesh } from "./Meshes/abstractMesh";
-import type { MultiMaterial } from "./Materials/multiMaterial";
-import type { Material } from "./Materials/material";
+import { type MultiMaterial } from "./Materials/multiMaterial";
+import { type Material } from "./Materials/material";
 import { Logger } from "./Misc/logger";
 import { EngineStore } from "./Engines/engineStore";
-import type { Nullable } from "./types";
-import type { Node } from "./node";
-import type { Observer } from "./Misc/observable";
-import type { AbstractEngine } from "./Engines/abstractEngine";
+import { type Nullable } from "./types";
+import { type Node } from "./node";
+import { type Observer } from "./Misc/observable";
+import { type AbstractEngine } from "./Engines/abstractEngine";
 import { InstancedMesh } from "./Meshes/instancedMesh";
 import { Light } from "./Lights/light";
 import { Camera } from "./Cameras/camera";
 import { Tools } from "./Misc/tools";
-import type { IParticleSystem } from "./Particles/IParticleSystem";
-import type { IAssetContainer } from "./IAssetContainer";
-import type { Animation } from "./Animations/animation";
-import type { MorphTargetManager } from "./Morph/morphTargetManager";
-import type { Geometry } from "./Meshes/geometry";
-import type { AbstractActionManager } from "./Actions/abstractActionManager";
-import type { BaseTexture } from "./Materials/Textures/baseTexture";
-import type { PostProcess } from "./PostProcesses/postProcess";
-import type { Sound } from "./Audio/sound";
-import type { Layer } from "./Layers/layer";
-import type { EffectLayer } from "./Layers/effectLayer";
-import type { ReflectionProbe } from "./Probes/reflectionProbe";
-import type { LensFlareSystem } from "./LensFlares/lensFlareSystem";
-import type { ProceduralTexture } from "./Materials/Textures/Procedurals/proceduralTexture";
-import type { SpriteManager } from "./Sprites/spriteManager";
+import { type IParticleSystem } from "./Particles/IParticleSystem";
+import { type IAssetContainer } from "./IAssetContainer";
+import { type Animation } from "./Animations/animation";
+import { type MorphTargetManager } from "./Morph/morphTargetManager";
+import { type Geometry } from "./Meshes/geometry";
+import { type AbstractActionManager } from "./Actions/abstractActionManager";
+import { type BaseTexture } from "./Materials/Textures/baseTexture";
+import { type PostProcess } from "./PostProcesses/postProcess";
+import { type Sound } from "./Audio/sound";
+import { type Layer } from "./Layers/layer";
+import { type EffectLayer } from "./Layers/effectLayer";
+import { type ReflectionProbe } from "./Probes/reflectionProbe";
+import { type LensFlareSystem } from "./LensFlares/lensFlareSystem";
+import { type ProceduralTexture } from "./Materials/Textures/Procedurals/proceduralTexture";
+import { type SpriteManager } from "./Sprites/spriteManager";
 import { Tags } from "./Misc/tags";
 
 /**
@@ -1177,7 +1177,7 @@ export class AssetContainer extends AbstractAssetContainer {
         const _targetConverter = targetConverter
             ? targetConverter
             : (target: any) => {
-                  let node = null;
+                  let node: any;
 
                   const targetProperty = target.animations.length ? target.animations[0].targetProperty : "";
                   /*
@@ -1213,7 +1213,7 @@ export class AssetContainer extends AbstractAssetContainer {
                 // Remove old animations with same target property as a new one
                 for (const animationInAC of nodeInAC.animations) {
                     // Doing treatment on an array for safety measure
-                    const animationsWithSameProperty = nodeInScene.animations.filter((animationInScene) => {
+                    const animationsWithSameProperty = nodeInScene.animations.filter((animationInScene: Animation) => {
                         return animationInScene.targetProperty === animationInAC.targetProperty;
                     });
                     for (const animationWithSameProperty of animationsWithSameProperty) {

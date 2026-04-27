@@ -1,14 +1,14 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
-import type { Camera } from "core/Cameras/camera";
+import { type Camera } from "core/Cameras/camera";
 import { Constants } from "core/Engines/constants";
-import type { AbstractEngine } from "core/Engines/abstractEngine";
-import type { RenderTargetWrapper } from "core/Engines/renderTargetWrapper";
+import { type AbstractEngine } from "core/Engines/abstractEngine";
+import { type RenderTargetWrapper } from "core/Engines/renderTargetWrapper";
 import { Texture } from "core/Materials/Textures/texture";
-import type { ThinTexture } from "core/Materials/Textures/thinTexture";
+import { type ThinTexture } from "core/Materials/Textures/thinTexture";
 import { Vector2 } from "core/Maths/math.vector";
 import { PostProcess } from "core/PostProcesses/postProcess";
-import type { Scene } from "core/scene";
-import type { Nullable } from "core/types";
+import { type Scene } from "core/scene";
+import { type Nullable } from "core/types";
 import { Observable } from "core/Misc/observable";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 

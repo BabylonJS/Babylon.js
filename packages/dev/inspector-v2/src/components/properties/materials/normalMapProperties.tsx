@@ -1,4 +1,4 @@
-import type { FunctionComponent } from "react";
+import { type FunctionComponent } from "react";
 
 import { BoundProperty } from "../boundProperty";
 import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";

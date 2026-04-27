@@ -1,5 +1,5 @@
 import * as monaco from "monaco-editor/esm/vs/editor/editor.api";
-import type { FilesManager } from "../files/filesManager";
+import { type FilesManager } from "../files/filesManager";
 import { ImportIndexService } from "./importIndexService";
 
 /**

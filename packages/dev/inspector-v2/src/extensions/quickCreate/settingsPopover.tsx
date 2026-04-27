@@ -1,4 +1,4 @@
-import type { FunctionComponent, PropsWithChildren } from "react";
+import { type FunctionComponent, type PropsWithChildren } from "react";
 import { Popover } from "shared-ui-components/fluent/primitives/popover";
 import { SettingsRegular } from "@fluentui/react-icons";
 

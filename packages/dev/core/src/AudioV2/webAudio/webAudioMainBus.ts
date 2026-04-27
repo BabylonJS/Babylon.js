@@ -1,10 +1,9 @@
-import type { Nullable } from "../../types";
-import type { AbstractAudioNode } from "../abstractAudio/abstractAudioNode";
-import type { IMainAudioBusOptions } from "../abstractAudio/mainAudioBus";
-import { MainAudioBus } from "../abstractAudio/mainAudioBus";
+import { type Nullable } from "../../types";
+import { type AbstractAudioNode } from "../abstractAudio/abstractAudioNode";
+import { type IMainAudioBusOptions, MainAudioBus } from "../abstractAudio/mainAudioBus";
 import { _WebAudioBaseSubGraph } from "./subNodes/webAudioBaseSubGraph";
-import type { _WebAudioEngine } from "./webAudioEngine";
-import type { IWebAudioInNode, IWebAudioSuperNode } from "./webAudioNode";
+import { type _WebAudioEngine } from "./webAudioEngine";
+import { type IWebAudioInNode, type IWebAudioSuperNode } from "./webAudioNode";
 
 /** @internal */
 export class _WebAudioMainBus extends MainAudioBus implements IWebAudioSuperNode {

@@ -1,14 +1,14 @@
-import type { Nullable } from "core/types";
+import { type Nullable } from "core/types";
 
 import { Container } from "./container";
 import { ValueAndUnit } from "../valueAndUnit";
 import { Control } from "./control";
-import type { Measure } from "../measure";
+import { type Measure } from "../measure";
 import { Tools } from "core/Misc/tools";
 import { RegisterClass } from "core/Misc/typeStore";
-import type { ICanvasRenderingContext } from "core/Engines/ICanvas";
-import type { AdvancedDynamicTexture } from "../advancedDynamicTexture";
-import type { Observer } from "core/Misc/observable";
+import { type ICanvasRenderingContext } from "core/Engines/ICanvas";
+import { type AdvancedDynamicTexture } from "../advancedDynamicTexture";
+import { type Observer } from "core/Misc/observable";
 import { serialize } from "core/Misc/decorators";
 
 /**

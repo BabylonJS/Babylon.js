@@ -1,4 +1,4 @@
-import type { Scene, Camera, FrameGraph, FrameGraphObjectList } from "core/index";
+import { type Scene, type Camera, type FrameGraph, type FrameGraphObjectList } from "core/index";
 import { FrameGraphTask } from "../../frameGraphTask";
 
 /**

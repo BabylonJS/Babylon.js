@@ -1,6 +1,6 @@
-import type { FC } from "react";
+import { type FC } from "react";
 import { useDrag } from "react-dnd";
-import type { ElementTypes, TabDrag } from "./types";
+import { type ElementTypes, type TabDrag } from "./types";
 
 /**
  * Arguments for the DraggableIcon component.

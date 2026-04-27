@@ -1,9 +1,9 @@
-import type { FunctionComponent } from "react";
+import { type FunctionComponent } from "react";
 
 import { SyncedSliderPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/syncedSliderPropertyLine";
 import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
 import { BoundProperty } from "./boundProperty";
-import type { Atmosphere } from "addons/atmosphere/atmosphere";
+import { type Atmosphere } from "addons/atmosphere/atmosphere";
 import { Vector3PropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/vectorPropertyLine";
 import { Color3PropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/colorPropertyLine";
 import { PropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/propertyLine";

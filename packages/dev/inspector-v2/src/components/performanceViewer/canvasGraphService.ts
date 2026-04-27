@@ -1,22 +1,22 @@
-import type {
-    CanvasGraphServiceSettings,
-    PerfMinMax,
-    GraphDrawableArea,
-    PerfMousePanningPosition,
-    PerfIndexBounds,
-    PerfTooltip,
-    PerfTextMeasureCache,
-    PerfLayoutSize,
-    PerfTicker,
-    TooltipPreprocessedInformation,
-    PerfTooltipHoverPosition,
-    VisibleRangeChangedObservableProps,
+import {
+    type CanvasGraphServiceSettings,
+    type PerfMinMax,
+    type GraphDrawableArea,
+    type PerfMousePanningPosition,
+    type PerfIndexBounds,
+    type PerfTooltip,
+    type PerfTextMeasureCache,
+    type PerfLayoutSize,
+    type PerfTicker,
+    type TooltipPreprocessedInformation,
+    type PerfTooltipHoverPosition,
+    type VisibleRangeChangedObservableProps,
+    TimestampUnit,
 } from "./graphSupportingTypes";
-import { TimestampUnit } from "./graphSupportingTypes";
-import type { IPerfDatasets, IPerfMetadata } from "core/Misc/interfaces/iPerfViewer";
+import { type IPerfDatasets, type IPerfMetadata } from "core/Misc/interfaces/iPerfViewer";
 import { Scalar } from "core/Maths/math.scalar";
 import { PerformanceViewerCollector } from "core/Misc/PerformanceViewer/performanceViewerCollector";
-import type { Observable } from "core/Misc/observable";
+import { type Observable } from "core/Misc/observable";
 
 const DefaultColor = "#000";
 const AxisColor = "#c0c4c8";
@@ -475,12 +475,9 @@ export class CanvasGraphService {
         ctx.textBaseline = "middle";
         ctx.textAlign = "left";
 
-        let width: number;
         // if the lengths are the same the estimate should be good enough given the padding.
-        if (this._tickerTextCache.text.length === longestText.length) {
-            width = this._tickerTextCache.width;
-        } else {
-            width = ctx.measureText(longestText).width + 2 * TickerHorizontalPadding;
+        if (this._tickerTextCache.text.length !== longestText.length) {
+            const width = ctx.measureText(longestText).width + 2 * TickerHorizontalPadding;
             this._tickerTextCache.text = longestText;
             this._tickerTextCache.width = width;
         }
@@ -825,10 +822,10 @@ export class CanvasGraphService {
         }
 
         // next we want to handle the case where our point is beyond the y position of our line
-        let topX = 0;
-        let topY = 0;
-        let bottomX = 0;
-        let bottomY = 0;
+        let topX: number;
+        let topY: number;
+        let bottomX: number;
+        let bottomY: number;
         if (y1 >= y2) {
             topX = x1;
             topY = y1;

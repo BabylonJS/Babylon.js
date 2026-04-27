@@ -3,14 +3,14 @@ import { createRoot } from "react-dom/client";
 import { GlobalState } from "./globalState";
 import { GraphEditor } from "./graphEditor";
 import { SerializationTools } from "./serializationTools";
-import type { Observable } from "core/Misc/observable";
+import { type Observable } from "core/Misc/observable";
 import { RegisterToDisplayManagers } from "./graphSystem/registerToDisplayLedger";
 import { RegisterToPropertyTabManagers } from "./graphSystem/registerToPropertyLedger";
 import { RegisterTypeLedger } from "./graphSystem/registerToTypeLedger";
-import type { Color4 } from "core/Maths/math.color";
-import type { Scene } from "core/scene";
+import { type Color4 } from "core/Maths/math.color";
+import { type Scene } from "core/scene";
 import { CreatePopup } from "shared-ui-components/popupHelper";
-import type { NodeParticleSystemSet } from "core/Particles/Node/nodeParticleSystemSet";
+import { type NodeParticleSystemSet } from "core/Particles/Node/nodeParticleSystemSet";
 
 /**
  * Interface used to specify creation options for the node editor

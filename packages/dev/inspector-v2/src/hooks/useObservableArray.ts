@@ -1,6 +1,6 @@
 import { useCallback } from "react";
 import { useInterceptObservable } from "./instrumentationHooks";
-import { useObservableState } from "./observableHooks";
+import { useObservableState } from "shared-ui-components/modularTool/hooks/observableHooks";
 
 /**
  * Return a copied array and re-render when array mutators run.

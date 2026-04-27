@@ -40,6 +40,10 @@ var shTexture1: texture_2d<u32>;
 #if SH_DEGREE > 2
 var shTexture2: texture_2d<u32>;
 #endif
+#if SH_DEGREE > 3
+var shTexture3: texture_2d<u32>;
+var shTexture4: texture_2d<u32>;
+#endif
 #if IS_COMPOUND
 var partIndicesTexture: texture_2d<f32>;
 #endif
@@ -55,7 +59,7 @@ varying vPosition: vec2f;
 fn main(input : VertexInputs) -> FragmentInputs {
 #define CUSTOM_VERTEX_MAIN_BEGIN
 
-    let splatIndex: f32 = getSplatIndex(i32(input.position.z + 0.5), input.splatIndex0, input.splatIndex1, input.splatIndex2, input.splatIndex3);
+    let splatIndex: f32 = getSplatIndex(i32(vertexInputs.position.z + 0.5), vertexInputs.splatIndex0, vertexInputs.splatIndex1, vertexInputs.splatIndex2, vertexInputs.splatIndex3);
 
     var splat: Splat = readSplat(splatIndex, uniforms.dataTextureSize);
     var covA: vec3f = splat.covA.xyz;
@@ -70,7 +74,7 @@ fn main(input : VertexInputs) -> FragmentInputs {
 
     let worldPos: vec4f = splatWorld * vec4f(splat.center.xyz, 1.0);
 
-    vertexOutputs.vPosition = input.position.xy;
+    vertexOutputs.vPosition = vertexInputs.position.xy;
 
 #if SH_DEGREE > 0
     let worldRot: mat3x3f =  mat3x3f(splatWorld[0].xyz, splatWorld[1].xyz, splatWorld[2].xyz);
@@ -91,7 +95,7 @@ fn main(input : VertexInputs) -> FragmentInputs {
 
 #define CUSTOM_VERTEX_UPDATE
 
-    vertexOutputs.position = gaussianSplatting(input.position.xy, worldPos.xyz, scale, covA, covB, splatWorld, scene.view, scene.projection, uniforms.focal, uniforms.invViewport, uniforms.kernelSize);
+    vertexOutputs.position = gaussianSplatting(vertexInputs.position.xy, worldPos.xyz, scale, covA, covB, splatWorld, scene.view, scene.projection, uniforms.focal, uniforms.invViewport, uniforms.kernelSize);
 
 #include<clipPlaneVertex>
 #include<fogVertex>

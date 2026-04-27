@@ -1,6 +1,6 @@
-import type { Nullable } from "../../types";
-import type { Scene } from "../../scene";
-import type { Vector4 } from "../../Maths/math.vector";
+import { type Nullable } from "../../types";
+import { type Scene } from "../../scene";
+import { type Vector4 } from "../../Maths/math.vector";
 import { Mesh } from "../mesh";
 import { VertexData } from "../mesh.vertexData";
 
@@ -144,7 +144,7 @@ export function CreateTiledPlaneVertexData(options: {
         const partialTopRow: boolean = offsetY > 0 && (alignV === Mesh.CENTER || alignV === Mesh.BOTTOM);
         const partialLeftCol: boolean = offsetX > 0 && (alignH === Mesh.CENTER || alignH === Mesh.RIGHT);
         const partialRightCol: boolean = offsetX > 0 && (alignH === Mesh.CENTER || alignH === Mesh.LEFT);
-        let uvPart: Array<number> = [];
+        let uvPart: Array<number>;
         let a, b, c, d: number;
 
         //corners

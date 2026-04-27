@@ -1,21 +1,16 @@
-import type { Nullable } from "../../../types";
-import type { AbstractAudioNode } from "../../abstractAudio/abstractAudioNode";
-import type { _AbstractAudioSubNode } from "../../abstractAudio/subNodes/abstractAudioSubNode";
+import { type Nullable } from "../../../types";
+import { type AbstractAudioNode } from "../../abstractAudio/abstractAudioNode";
+import { type _AbstractAudioSubNode } from "../../abstractAudio/subNodes/abstractAudioSubNode";
 import { AudioSubNode } from "../../abstractAudio/subNodes/audioSubNode";
 import { _GetSpatialAudioSubNode } from "../../abstractAudio/subNodes/spatialAudioSubNode";
 import { _GetStereoAudioSubNode } from "../../abstractAudio/subNodes/stereoAudioSubNode";
-import type { IVolumeAudioOptions } from "../../abstractAudio/subNodes/volumeAudioSubNode";
-import { _GetVolumeAudioSubNode } from "../../abstractAudio/subNodes/volumeAudioSubNode";
-import type { ISpatialAudioOptions } from "../../abstractAudio/subProperties/abstractSpatialAudio";
-import { _HasSpatialAudioOptions } from "../../abstractAudio/subProperties/abstractSpatialAudio";
-import type { IStereoAudioOptions } from "../../abstractAudio/subProperties/abstractStereoAudio";
-import { _HasStereoAudioOptions } from "../../abstractAudio/subProperties/abstractStereoAudio";
-import type { IWebAudioOutNode, IWebAudioSubNode } from "../webAudioNode";
-import type { _SpatialWebAudioSubNode } from "./spatialWebAudioSubNode";
-import { _CreateSpatialAudioSubNodeAsync } from "./spatialWebAudioSubNode";
-import type { _StereoWebAudioSubNode } from "./stereoWebAudioSubNode";
-import { _CreateStereoAudioSubNodeAsync } from "./stereoWebAudioSubNode";
-import type { _VolumeWebAudioSubNode } from "./volumeWebAudioSubNode";
+import { type IVolumeAudioOptions, _GetVolumeAudioSubNode } from "../../abstractAudio/subNodes/volumeAudioSubNode";
+import { type ISpatialAudioOptions, _HasSpatialAudioOptions } from "../../abstractAudio/subProperties/abstractSpatialAudio";
+import { type IStereoAudioOptions, _HasStereoAudioOptions } from "../../abstractAudio/subProperties/abstractStereoAudio";
+import { type IWebAudioOutNode, type IWebAudioSubNode } from "../webAudioNode";
+import { type _SpatialWebAudioSubNode, _CreateSpatialAudioSubNodeAsync } from "./spatialWebAudioSubNode";
+import { type _StereoWebAudioSubNode, _CreateStereoAudioSubNodeAsync } from "./stereoWebAudioSubNode";
+import { type _VolumeWebAudioSubNode } from "./volumeWebAudioSubNode";
 import { _WebAudioBaseSubGraph } from "./webAudioBaseSubGraph";
 
 /** @internal */
@@ -32,8 +27,8 @@ export abstract class _WebAudioBusAndSoundSubGraph extends _WebAudioBaseSubGraph
     public override async initAsync(options: Partial<IWebAudioBusAndSoundSubGraphOptions>): Promise<void> {
         await super.initAsync(options);
 
-        let hasSpatialOptions = false;
-        let hasStereoOptions = false;
+        let hasSpatialOptions: boolean;
+        let hasStereoOptions: boolean;
 
         if ((hasSpatialOptions = _HasSpatialAudioOptions(options))) {
             await this.createAndAddSubNodeAsync(AudioSubNode.SPATIAL);
@@ -119,7 +114,7 @@ export abstract class _WebAudioBusAndSoundSubGraph extends _WebAudioBaseSubGraph
 
         let inSubNode: Nullable<IWebAudioSubNode> = null;
 
-        let inNode: Nullable<AudioNode> = null;
+        let inNode: Nullable<AudioNode>;
 
         if (this._rootNode) {
             inNode = this._rootNode;

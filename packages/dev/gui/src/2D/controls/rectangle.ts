@@ -1,8 +1,8 @@
 import { Container } from "./container";
-import type { Measure } from "../measure";
+import { type Measure } from "../measure";
 import { RegisterClass } from "core/Misc/typeStore";
 import { serialize } from "core/Misc/decorators";
-import type { ICanvasRenderingContext } from "core/Engines/ICanvas";
+import { type ICanvasRenderingContext } from "core/Engines/ICanvas";
 
 /** Class used to create rectangle container */
 export class Rectangle extends Container {
@@ -202,8 +202,10 @@ export class Rectangle extends Container {
         const width = this._currentMeasure.width - offset * 2;
         const height = this._currentMeasure.height - offset * 2;
 
+        // Scale cornerRadius using idealRatio (same pattern as shadowOffset/spacing)
+        const idealRatio = this._host.idealRatio;
         for (let index = 0; index < this._cornerRadius.length; index++) {
-            this._cachedRadius[index] = Math.abs(Math.min(height / 2, Math.min(width / 2, this._cornerRadius[index])));
+            this._cachedRadius[index] = Math.abs(Math.min(height / 2, Math.min(width / 2, this._cornerRadius[index] * idealRatio)));
         }
 
         context.beginPath();

@@ -1,11 +1,11 @@
-import type { Nullable } from "core/types";
-import type { ISize } from "core/Maths/math.size";
-import type { ProceduralTexture } from "core/Materials/Textures/Procedurals/proceduralTexture";
-import type { Particle } from "core/Particles/particle";
-import type { ThinParticleSystem } from "core/Particles/thinParticleSystem";
-import type { NodeParticleConnectionPoint } from "core/Particles/Node/nodeParticleBlockConnectionPoint";
-import type { NodeParticleBuildState } from "core/Particles/Node/nodeParticleBuildState";
-import type { ParticleTextureSourceBlock } from "core/Particles/Node/Blocks/particleSourceTextureBlock";
+import { type Nullable } from "core/types";
+import { type ISize } from "core/Maths/math.size";
+import { type ProceduralTexture } from "core/Materials/Textures/Procedurals/proceduralTexture";
+import { type Particle } from "core/Particles/particle";
+import { type ThinParticleSystem } from "core/Particles/thinParticleSystem";
+import { type NodeParticleConnectionPoint } from "core/Particles/Node/nodeParticleBlockConnectionPoint";
+import { type NodeParticleBuildState } from "core/Particles/Node/nodeParticleBuildState";
+import { type ParticleTextureSourceBlock } from "core/Particles/Node/Blocks/particleSourceTextureBlock";
 
 import { TmpVectors, Vector3 } from "core/Maths/math.vector";
 import { RegisterClass } from "core/Misc/typeStore";
@@ -91,7 +91,7 @@ export class UpdateNoiseBlock extends NodeParticleBlock {
         const processNoise = (particle: Particle) => {
             // Get the texture directly from the block's stored value to support procedural textures
             // (as the block caches the texture data)
-            const texture = noiseTextureBlock.texture._storedValue as ProceduralTexture;
+            const texture = noiseTextureBlock.textureOutput._storedValue as ProceduralTexture;
             if (!texture || !texture.isReady()) {
                 return;
             }

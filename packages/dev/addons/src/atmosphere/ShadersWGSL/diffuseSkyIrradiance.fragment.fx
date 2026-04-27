@@ -1,8 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-const DiffuseSkyIrradianceLutSampleCount = 32;
-
 #include<atmosphereUboDeclaration>
 
 var transmittanceLutSampler: sampler;
@@ -26,7 +24,7 @@ fn integrateForIrradiance(directionToLightParam: vec3f, rayDirection: vec3f, ray
         rayDirection.xzy,
         directionToLightParam.xzy,
         100000000.,
-        DiffuseSkyIrradianceLutSampleCount,
+        atmosphere.diffuseSkyIrradianceLutSampleCount,
         -1., // No planet hit.
         &transmittance);
     return radiance;
@@ -55,9 +53,9 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
         vec3f(1.));
 
     // Apply desaturation factor.
-    let averageIrradiance = getLuminance(irradianceResult);
+    let averageIrradiance = getLuminanceUnclamped(irradianceResult);
     let newIrradiance = mix(irradianceResult, vec3f(averageIrradiance), atmosphere.diffuseSkyIrradianceDesaturationFactor);
-    let newIrradianceScale = getLuminance(newIrradiance);
+    let newIrradianceScale = getLuminanceUnclamped(newIrradiance);
     let rescaling = averageIrradiance / max(0.000001, newIrradianceScale);
     irradianceResult = newIrradiance * rescaling;
 

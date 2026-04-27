@@ -1,17 +1,15 @@
-import type { ServiceDefinition } from "../../../modularity/serviceDefinition";
-import type { ISceneContext } from "../../sceneContext";
-import type { IWatcherService } from "../../watcherService";
-import type { ISceneExplorerService } from "./sceneExplorerService";
+import { type ServiceDefinition } from "shared-ui-components/modularTool/modularity/serviceDefinition";
+import { type ISceneContext, SceneContextIdentity } from "../../sceneContext";
+import { type IWatcherService, WatcherServiceIdentity } from "../../watcherService";
+import { type ISceneExplorerService, SceneExplorerServiceIdentity } from "./sceneExplorerService";
 
+import { tokens } from "@fluentui/react-components";
 import { DropRegular, EditRegular } from "@fluentui/react-icons";
 
 import { Observable } from "core/Misc/observable";
 import { ParticleSystem } from "core/Particles/particleSystem";
 import { EditParticleSystem } from "../../../misc/nodeParticleEditor";
-import { SceneContextIdentity } from "../../sceneContext";
-import { WatcherServiceIdentity } from "../../watcherService";
 import { DefaultCommandsOrder, DefaultSectionsOrder } from "./defaultSectionsMetadata";
-import { SceneExplorerServiceIdentity } from "./sceneExplorerService";
 
 export const ParticleSystemExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplorerService, ISceneContext, IWatcherService]> = {
     friendlyName: "Particle System Explorer",
@@ -33,7 +31,7 @@ export const ParticleSystemExplorerServiceDefinition: ServiceDefinition<[], [ISc
 
                 return {
                     get name() {
-                        return particleSystem.name;
+                        return particleSystem.name || `Unnamed ${particleSystem.getClassName()}`;
                     },
                     onChange: onChangeObservable,
                     dispose: () => {
@@ -42,7 +40,7 @@ export const ParticleSystemExplorerServiceDefinition: ServiceDefinition<[], [ISc
                     },
                 };
             },
-            entityIcon: () => <DropRegular />,
+            entityIcon: () => <DropRegular color={tokens.colorPaletteCranberryForeground2} />,
             getEntityAddedObservables: () => [scene.onNewParticleSystemAddedObservable],
             getEntityRemovedObservables: () => [scene.onParticleSystemRemovedObservable],
         });

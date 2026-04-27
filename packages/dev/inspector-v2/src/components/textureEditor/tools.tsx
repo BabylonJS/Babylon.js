@@ -1,8 +1,7 @@
-import type { ComponentType, FunctionComponent } from "react";
-import type { IMetadata } from "./textureEditor";
+import { type ComponentType, type FunctionComponent, useCallback } from "react";
+import { type IMetadata } from "./textureEditor";
 
 import { Divider, makeStyles, ToggleButton, tokens, Tooltip } from "@fluentui/react-components";
-import { useCallback } from "react";
 
 import { Color3, Color4 } from "core/Maths/math.color";
 import { ColorPickerPopup } from "shared-ui-components/fluent/primitives/colorPicker";

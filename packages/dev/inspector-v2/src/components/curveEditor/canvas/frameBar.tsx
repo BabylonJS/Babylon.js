@@ -1,7 +1,6 @@
-import type { FunctionComponent } from "react";
+import { type FunctionComponent, useCallback, useEffect, useRef, useState } from "react";
 
 import { makeStyles, tokens } from "@fluentui/react-components";
-import { useCallback, useEffect, useRef, useState } from "react";
 
 import { useCurveEditor } from "../curveEditorContext";
 
@@ -78,7 +77,7 @@ export const FrameBar: FunctionComponent<FrameBarProps> = ({ width }) => {
         }
 
         // Determine tick spacing based on zoom level
-        let tickSpacing = 10;
+        let tickSpacing: number;
         if (range > 500) {
             tickSpacing = 100;
         } else if (range > 200) {

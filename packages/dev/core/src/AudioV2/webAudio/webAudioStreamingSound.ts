@@ -1,19 +1,19 @@
 import { Logger } from "../../Misc/logger";
 import { Tools } from "../../Misc/tools";
-import type { Nullable } from "../../types";
-import type { AbstractAudioNode } from "../abstractAudio/abstractAudioNode";
+import { type Nullable } from "../../types";
+import { type AbstractAudioNode } from "../abstractAudio/abstractAudioNode";
 import type {} from "../abstractAudio/abstractSound";
-import type { IStreamingSoundOptions, IStreamingSoundPlayOptions, IStreamingSoundStoredOptions } from "../abstractAudio/streamingSound";
-import { StreamingSound } from "../abstractAudio/streamingSound";
+import { type IStreamingSoundOptions, type IStreamingSoundPlayOptions, type IStreamingSoundStoredOptions, StreamingSound } from "../abstractAudio/streamingSound";
 import { _StreamingSoundInstance } from "../abstractAudio/streamingSoundInstance";
 import { _HasSpatialAudioOptions, type AbstractSpatialAudio } from "../abstractAudio/subProperties/abstractSpatialAudio";
 import { _StereoAudio } from "../abstractAudio/subProperties/stereoAudio";
-import { _CleanUrl } from "../audioUtils";
+import { _CleanUrl, _GetUrlForStreaming } from "../audioUtils";
+import { WebRequest } from "../../Misc/webRequest";
 import { SoundState } from "../soundState";
 import { _WebAudioBusAndSoundSubGraph } from "./subNodes/webAudioBusAndSoundSubGraph";
 import { _SpatialWebAudio } from "./subProperties/spatialWebAudio";
-import type { _WebAudioEngine } from "./webAudioEngine";
-import type { IWebAudioInNode, IWebAudioOutNode, IWebAudioSuperNode } from "./webAudioNode";
+import { type _WebAudioEngine } from "./webAudioEngine";
+import { type IWebAudioInNode, type IWebAudioOutNode, type IWebAudioSuperNode } from "./webAudioNode";
 
 type StreamingSoundSourceType = HTMLMediaElement | string | string[];
 
@@ -383,16 +383,22 @@ class _WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements
     }
 
     private _initFromUrl(url: string): void {
-        const audio = new Audio(_CleanUrl(url));
+        // Apply any WebRequest URL modifiers (but do NOT download the content — the <audio> element streams natively).
+        // Custom headers cannot be forwarded to HTMLMediaElement; _GetUrlForStreaming logs a warning if any are present.
+        const resolvedUrl = WebRequest.IsCustomRequestAvailable ? _GetUrlForStreaming(_CleanUrl(url)) : _CleanUrl(url);
+        const audio = new Audio(resolvedUrl);
         this._initFromMediaElement(audio);
     }
 
     private _initFromUrls(urls: string[]): void {
         const audio = new Audio();
 
+        // Apply any WebRequest URL modifiers to each candidate URL (but do NOT download the content —
+        // the <audio> element picks the first compatible format and streams natively).
+        // Custom headers cannot be forwarded to HTMLMediaElement; _GetUrlForStreaming logs a warning if any are present.
         for (const url of urls) {
             const source = document.createElement("source");
-            source.src = _CleanUrl(url);
+            source.src = WebRequest.IsCustomRequestAvailable ? _GetUrlForStreaming(_CleanUrl(url)) : _CleanUrl(url);
             audio.appendChild(source);
         }
 

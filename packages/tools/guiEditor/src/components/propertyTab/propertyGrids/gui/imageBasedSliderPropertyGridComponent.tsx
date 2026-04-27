@@ -1,9 +1,9 @@
 import * as React from "react";
-import type { Observable } from "core/Misc/observable";
-import type { PropertyChangedEvent } from "shared-ui-components/propertyChangedEvent";
+import { type Observable } from "core/Misc/observable";
+import { type PropertyChangedEvent } from "shared-ui-components/propertyChangedEvent";
 import { CommonControlPropertyGridComponent } from "../gui/commonControlPropertyGridComponent";
-import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
-import type { ImageBasedSlider } from "gui/2D/controls/sliders/imageBasedSlider";
+import { type LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
+import { type ImageBasedSlider } from "gui/2D/controls/sliders/imageBasedSlider";
 import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
 import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
 import { SliderPropertyGridComponent } from "./sliderPropertyGridComponent";
@@ -13,7 +13,7 @@ import thumbImageLinkIcon from "shared-ui-components/imgs/thumbImageLinkIcon.svg
 import valueBarImageLinkIcon from "shared-ui-components/imgs/valueBarImageLinkIcon.svg";
 import sliderBackgroundImageIcon from "shared-ui-components/imgs/sliderBackgroundImageIcon.svg";
 import { IconComponent } from "shared-ui-components/lines/iconComponent";
-import type { GlobalState } from "../../../../globalState";
+import { type GlobalState } from "../../../../globalState";
 
 interface IImageBasedSliderPropertyGridComponentProps {
     imageBasedSliders: ImageBasedSlider[];

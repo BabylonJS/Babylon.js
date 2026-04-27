@@ -1,13 +1,10 @@
-import type { ScrollToInterface } from "@fluentui-contrib/react-virtualizer";
-import type { MenuCheckedValueChangeData, MenuCheckedValueChangeEvent, TreeItemValue, TreeOpenChangeData, TreeOpenChangeEvent } from "@fluentui/react-components";
-import type { FluentIcon } from "@fluentui/react-icons";
-import type { ComponentType, FunctionComponent, KeyboardEvent } from "react";
-
-import type { IDisposable, IReadonlyObservable, Nullable, Scene } from "core/index";
-import type { DragDropProps, DropProps } from "./sceneExplorerDragDrop";
-
-import { VirtualizerScrollView } from "@fluentui-contrib/react-virtualizer";
+import { type ScrollToInterface, VirtualizerScrollView } from "@fluentui-contrib/react-virtualizer";
 import {
+    type MenuCheckedValueChangeData,
+    type MenuCheckedValueChangeEvent,
+    type TreeItemValue,
+    type TreeOpenChangeData,
+    type TreeOpenChangeEvent,
     Body1,
     Body1Strong,
     Button,
@@ -28,18 +25,29 @@ import {
     TreeItemLayout,
     treeItemLevelToken,
 } from "@fluentui/react-components";
-import { ArrowCollapseAllRegular, ArrowExpandAllRegular, createFluentIcon, FilterRegular, GlobeRegular, TextSortAscendingRegular } from "@fluentui/react-icons";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+    type FluentIcon,
+    ArrowCollapseAllRegular,
+    ArrowExpandAllRegular,
+    createFluentIcon,
+    FilterRegular,
+    GlobeRegular,
+    TextSortAscendingRegular,
+    WarningRegular,
+} from "@fluentui/react-icons";
+import { type ComponentType, type FunctionComponent, type KeyboardEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
+
+import { type IDisposable, type IReadonlyObservable, type Nullable, type Scene } from "core/index";
+import { type DragDropProps, type DropProps, useSceneExplorerDragDrop } from "./sceneExplorerDragDrop";
 
 import { UniqueIdGenerator } from "core/Misc/uniqueIdGenerator";
 import { ToggleButton } from "shared-ui-components/fluent/primitives/toggleButton";
 import { CustomTokens } from "shared-ui-components/fluent/primitives/utils";
-import { useObservableState } from "../../hooks/observableHooks";
-import { useResource } from "../../hooks/resourceHooks";
-import { useSetting } from "../../hooks/settingsHooks";
-import { TraverseGraph } from "../../misc/graphUtils";
+import { useObservableState } from "shared-ui-components/modularTool/hooks/observableHooks";
+import { useResource } from "shared-ui-components/modularTool/hooks/resourceHooks";
+import { useSetting } from "shared-ui-components/modularTool/hooks/settingsHooks";
+import { TraverseGraph } from "shared-ui-components/modularTool/misc/graphUtils";
 import { CompactModeSettingDescriptor } from "../../services/globalSettings";
-import { useSceneExplorerDragDrop } from "./sceneExplorerDragDrop";
 
 const SyntheticUniqueIds = new WeakMap<object, number>();
 function GetEntityId(entity: object): number {
@@ -64,6 +72,9 @@ function IsEntityHidden(entity: object) {
     );
 }
 
+/**
+ * Information about how to display an entity in the Scene Explorer tree.
+ */
 export type EntityDisplayInfo = Partial<IDisposable> &
     Readonly<{
         /**
@@ -75,6 +86,12 @@ export type EntityDisplayInfo = Partial<IDisposable> &
          * An observable that notifies when the display info (such as the name) changes.
          */
         onChange?: IReadonlyObservable<void>;
+
+        /**
+         * An optional validation error message for this entity. When present, the entity's
+         * icon is replaced with a warning icon whose tooltip displays this message.
+         */
+        validationError?: string;
     }>;
 
 /**
@@ -104,6 +121,9 @@ export type SceneExplorerDragDropConfig<T> = Readonly<{
     onDrop: (draggedEntity: T, targetEntity: T | null) => void;
 }>;
 
+/**
+ * Describes a section in the Scene Explorer (e.g. "Nodes", "Materials", etc.).
+ */
 export type SceneExplorerSection<T extends object> = Readonly<{
     /**
      * The display name of the section (e.g. "Nodes", "Materials", etc.).
@@ -206,6 +226,9 @@ type ToggleCommand = {
 
 type CommandType = (ActionCommand | ToggleCommand)["type"];
 
+/**
+ * Describes a command that can be executed on entities or sections in the Scene Explorer.
+ */
 export type SceneExplorerCommand<ModeT extends CommandMode = CommandMode, TypeT extends CommandType = CommandType> = Partial<IDisposable> &
     Readonly<{
         /**
@@ -232,6 +255,9 @@ export type SceneExplorerCommand<ModeT extends CommandMode = CommandMode, TypeT 
     (ModeT extends "inline" ? InlineCommand : ContextMenuCommand) &
     (TypeT extends "action" ? ActionCommand : ToggleCommand);
 
+/**
+ * Provides a command for a specific entity or section context in the Scene Explorer.
+ */
 export type SceneExplorerCommandProvider<ContextT, ModeT extends CommandMode = CommandMode, TypeT extends CommandType = CommandType> = Readonly<{
     /**
      * An optional order for the section, relative to other commands.
@@ -792,7 +818,15 @@ const EntityTreeItem: FunctionComponent<
                     {...dragProps}
                 >
                     <TreeItemLayout
-                        iconBefore={entityItem.icon ? <entityItem.icon entity={entityItem.entity} /> : null}
+                        iconBefore={
+                            displayInfo.validationError ? (
+                                <Tooltip content={displayInfo.validationError} relationship="description">
+                                    <WarningRegular />
+                                </Tooltip>
+                            ) : entityItem.icon ? (
+                                <entityItem.icon entity={entityItem.entity} />
+                            ) : null
+                        }
                         className={mergeClasses(
                             hasChildren ? classes.treeItemLayoutBranch : classes.treeItemLayoutLeaf,
                             compactMode ? classes.treeItemLayoutCompact : undefined,
@@ -810,9 +844,11 @@ const EntityTreeItem: FunctionComponent<
                             className: classes.treeItemLayoutMain,
                         }}
                     >
-                        <Body1 wrap={false} truncate>
-                            {name}
-                        </Body1>
+                        <Tooltip content={name} relationship="description">
+                            <Body1 wrap={false} truncate>
+                                {name}
+                            </Body1>
+                        </Tooltip>
                     </TreeItemLayout>
                 </FlatTreeItem>
             </MenuTrigger>

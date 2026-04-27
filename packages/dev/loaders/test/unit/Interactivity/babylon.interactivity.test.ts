@@ -4,7 +4,7 @@ import { loggerExample, mathExample, worldPointerExample, doNExample, intMathExa
 import { FlowGraphCoordinator } from "core/FlowGraph/flowGraphCoordinator";
 import { Vector3, Vector4 } from "core/Maths";
 import { Mesh } from "core/Meshes";
-import { ArcRotateCamera } from "core/Cameras";
+import { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
 import { Logger } from "core/Misc";
 import { FlowGraphInteger } from "core/FlowGraph/CustomTypes/flowGraphInteger";
 import { ParseFlowGraphAsync } from "core/FlowGraph";
@@ -14,7 +14,7 @@ import { GetPathToObjectConverter } from "loaders/glTF/2.0/Extensions/objectMode
 describe("Babylon Interactivity", () => {
     let engine;
     let scene: Scene;
-    const log: jest.SpyInstance = jest.spyOn(Logger, "Log");
+    const log: ReturnType<typeof vi.spyOn> = vi.spyOn(Logger, "Log");
     let mockGltf: any;
     const pathConverter = GetPathToObjectConverter(mockGltf);
 

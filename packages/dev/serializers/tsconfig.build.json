@@ -6,8 +6,8 @@
         "outDir": "./dist",
         "rootDir": "./src",
         "paths": {
-            "core/*": ["dev/core/dist/*"],
-            "serializers/*": ["dev/serializers/src/*"]
+            "core/*": ["../../dev/core/dist/*"],
+            "serializers/*": ["../../dev/serializers/src/*"]
         }
     },
 

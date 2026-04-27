@@ -1,8 +1,8 @@
 import { VertexBuffer } from "core/Buffers/buffer";
 import { Constants } from "core/Engines/constants";
 import { EffectWrapper } from "core/Materials/effectRenderer";
-import type { Scene } from "core/scene";
-import type { FloatArray, Nullable } from "core/types";
+import { type Scene } from "core/scene";
+import { type FloatArray, type Nullable } from "core/types";
 
 import { FluidRenderingObject } from "./fluidRenderingObject";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";

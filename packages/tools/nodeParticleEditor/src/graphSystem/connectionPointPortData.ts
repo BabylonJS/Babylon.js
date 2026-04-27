@@ -1,17 +1,16 @@
 import { NodeParticleBlockConnectionPointTypes } from "core/Particles/Node/Enums/nodeParticleBlockConnectionPointTypes";
-import type { NodeParticleBlock } from "core/Particles/Node/nodeParticleBlock";
+import { type NodeParticleBlock } from "core/Particles/Node/nodeParticleBlock";
 import {
     NodeParticleConnectionPointCompatibilityStates,
     NodeParticleConnectionPointDirection,
     type NodeParticleConnectionPoint,
 } from "core/Particles/Node/nodeParticleBlockConnectionPoint";
-import type { Nullable } from "core/types";
-import type { GlobalState } from "../globalState";
-import type { GraphCanvasComponent } from "shared-ui-components/nodeGraphSystem/graphCanvas";
-import type { GraphNode } from "shared-ui-components/nodeGraphSystem/graphNode";
-import type { INodeContainer } from "shared-ui-components/nodeGraphSystem/interfaces/nodeContainer";
-import type { IPortData } from "shared-ui-components/nodeGraphSystem/interfaces/portData";
-import { PortDataDirection, PortDirectValueTypes } from "shared-ui-components/nodeGraphSystem/interfaces/portData";
+import { type Nullable } from "core/types";
+import { type GlobalState } from "../globalState";
+import { type GraphCanvasComponent } from "shared-ui-components/nodeGraphSystem/graphCanvas";
+import { type GraphNode } from "shared-ui-components/nodeGraphSystem/graphNode";
+import { type INodeContainer } from "shared-ui-components/nodeGraphSystem/interfaces/nodeContainer";
+import { type IPortData, PortDataDirection, PortDirectValueTypes } from "shared-ui-components/nodeGraphSystem/interfaces/portData";
 import { GetConnectionErrorMessage } from "shared-ui-components/nodeGraphSystem/tools";
 import { TypeLedger } from "shared-ui-components/nodeGraphSystem/typeLedger";
 

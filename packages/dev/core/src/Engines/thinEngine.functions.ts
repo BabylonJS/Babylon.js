@@ -1,10 +1,9 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import type { Nullable } from "../types";
-import type { IPipelineContext } from "./IPipelineContext";
-import type { _IShaderProcessingContext } from "./Processors/shaderProcessingOptions";
+import { type Nullable } from "../types";
+import { type IPipelineContext } from "./IPipelineContext";
+import { type _IShaderProcessingContext } from "./Processors/shaderProcessingOptions";
 import { WebGLPipelineContext } from "./WebGL/webGLPipelineContext";
-import type { _LoadFile } from "./abstractEngine.functions";
-import { _ConcatenateShader } from "./abstractEngine.functions";
+import { type _LoadFile, _ConcatenateShader } from "./abstractEngine.functions";
 
 /**
  * @internal
@@ -331,7 +330,7 @@ function CompileRawShader(source: string, type: string, gl: WebGLContext, _conte
 
     if (!shader) {
         let error: GLenum = gl.NO_ERROR;
-        let tempError: GLenum = gl.NO_ERROR;
+        let tempError: GLenum;
         while ((tempError = gl.getError()) !== gl.NO_ERROR) {
             error = tempError;
         }

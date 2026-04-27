@@ -1,14 +1,13 @@
-import type { IGLTFExporterExtensionV2 } from "../glTFExporterExtension";
+import { type IGLTFExporterExtensionV2 } from "../glTFExporterExtension";
 import { GLTFExporter } from "../glTFExporter";
-import { MeshPrimitiveMode } from "babylonjs-gltf2interface";
-import type { IAccessor, IBufferView, IKHRDracoMeshCompression, IMeshPrimitive } from "babylonjs-gltf2interface";
-import type { BufferManager } from "../bufferManager";
+import { MeshPrimitiveMode, type IAccessor, type IBufferView, type IKHRDracoMeshCompression, type IMeshPrimitive } from "babylonjs-gltf2interface";
+import { type BufferManager } from "../bufferManager";
 import { DracoEncoder } from "core/Meshes/Compression/dracoEncoder";
 import { GetTypedArrayData, GetTypeByteLength } from "core/Buffers/bufferUtils";
 import { GetAccessorElementCount } from "../glTFUtilities";
-import type { DracoAttributeName, IDracoAttributeData, IDracoEncoderOptions } from "core/Meshes/Compression/dracoEncoder.types";
+import { type DracoAttributeName, type IDracoAttributeData, type IDracoEncoderOptions } from "core/Meshes/Compression/dracoEncoder.types";
 import { Logger } from "core/Misc/logger";
-import type { Nullable } from "core/types";
+import { type Nullable } from "core/types";
 
 const NAME = "KHR_draco_mesh_compression";
 

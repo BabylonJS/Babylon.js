@@ -1,34 +1,32 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import type { Nullable } from "core/types";
-import type { Observer } from "core/Misc/observable";
-import { Observable } from "core/Misc/observable";
+import { type Nullable } from "core/types";
+import { type Observer, Observable } from "core/Misc/observable";
 import { Vector2, Vector3, Matrix } from "core/Maths/math.vector";
-import type { PointerInfoBase } from "core/Events/pointerEvents";
-import { PointerEventTypes } from "core/Events/pointerEvents";
+import { type PointerInfoBase, PointerEventTypes } from "core/Events/pointerEvents";
 import { Logger } from "core/Misc/logger";
 import { Tools } from "core/Misc/tools";
-import type { TransformNode } from "core/Meshes/transformNode";
-import type { Scene } from "core/scene";
+import { type TransformNode } from "core/Meshes/transformNode";
+import { type Scene } from "core/scene";
 
-import type { Container } from "./container";
-import type { AdvancedDynamicTexture } from "../advancedDynamicTexture";
+import { type Container } from "./container";
+import { type AdvancedDynamicTexture } from "../advancedDynamicTexture";
 import { ValueAndUnit } from "../valueAndUnit";
 import { Measure } from "../measure";
-import type { Style } from "../style";
+import { type Style } from "../style";
 import { Matrix2D, Vector2WithInfo } from "../math2D";
 import { GetClass, RegisterClass } from "core/Misc/typeStore";
 import { serialize } from "core/Misc/decorators";
 import { SerializationHelper } from "core/Misc/decorators.serialization";
-import type { ICanvasGradient, ICanvasRenderingContext } from "core/Engines/ICanvas";
+import { type ICanvasGradient, type ICanvasRenderingContext } from "core/Engines/ICanvas";
 import { EngineStore } from "core/Engines/engineStore";
-import type { IAccessibilityTag } from "core/IAccessibilityTag";
-import type { IKeyboardEvent, IPointerEvent } from "core/Events/deviceInputEvents";
-import type { IAnimatable } from "core/Animations/animatable.interface";
-import type { Animation } from "core/Animations/animation";
-import type { BaseGradient } from "./gradient/BaseGradient";
-import type { AbstractEngine } from "core/Engines/abstractEngine";
-import type { IFocusableControl } from "./focusableControl";
+import { type IAccessibilityTag } from "core/IAccessibilityTag";
+import { type IKeyboardEvent, type IPointerEvent } from "core/Events/deviceInputEvents";
+import { type IAnimatable } from "core/Animations/animatable.interface";
+import { type Animation } from "core/Animations/animation";
+import { type BaseGradient } from "./gradient/BaseGradient";
+import { type AbstractEngine } from "core/Engines/abstractEngine";
+import { type IFocusableControl } from "./focusableControl";
 
 /**
  * Root class used for all 2D controls

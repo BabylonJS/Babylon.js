@@ -1,35 +1,28 @@
 /* eslint-disable jsdoc/require-returns-check */
-import type { Observer } from "../Misc/observable";
-import { Observable } from "../Misc/observable";
+import { type Observer, Observable } from "../Misc/observable";
 import { Tools, AsyncLoop } from "../Misc/tools";
-import type { IAnimatable } from "../Animations/animatable.interface";
+import { type IAnimatable } from "../Animations/animatable.interface";
 import { DeepCopier } from "../Misc/deepCopier";
 import { Tags } from "../Misc/tags";
-import type { Coroutine } from "../Misc/coroutine";
-import { runCoroutineSync, runCoroutineAsync, createYieldingScheduler } from "../Misc/coroutine";
-import type { Nullable, FloatArray, IndicesArray, DeepImmutable } from "../types";
+import { type Coroutine, runCoroutineSync, runCoroutineAsync, createYieldingScheduler } from "../Misc/coroutine";
+import { type Nullable, type FloatArray, type IndicesArray, type DeepImmutable } from "../types";
 import { Camera } from "../Cameras/camera";
-import type { Scene } from "../scene";
-import { ScenePerformancePriority } from "../scene";
-import type { Vector4 } from "../Maths/math.vector";
-import { Quaternion, Matrix, Vector3, Vector2 } from "../Maths/math.vector";
-import type { Color4 } from "../Maths/math.color";
-import { Color3 } from "../Maths/math.color";
+import { type Scene, ScenePerformancePriority } from "../scene";
+import { type Vector4, Quaternion, Matrix, Vector3, Vector2 } from "../Maths/math.vector";
+import { type Color4, Color3 } from "../Maths/math.color";
 import { Node } from "../node";
 import { VertexBuffer, Buffer } from "../Buffers/buffer";
-import type { IGetSetVerticesData } from "./mesh.vertexData";
-import { VertexData } from "./mesh.vertexData";
+import { type IGetSetVerticesData, VertexData } from "./mesh.vertexData";
 
 import { Geometry } from "./geometry";
-import type { IMeshDataOptions } from "./abstractMesh";
-import { AbstractMesh } from "./abstractMesh";
+import { type IMeshDataOptions, AbstractMesh } from "./abstractMesh";
 import { SubMesh } from "./subMesh";
-import type { BoundingSphere } from "../Culling/boundingSphere";
-import type { Effect } from "../Materials/effect";
+import { type BoundingSphere } from "../Culling/boundingSphere";
+import { type Effect } from "../Materials/effect";
 import { Material } from "../Materials/material";
 import { MultiMaterial } from "../Materials/multiMaterial";
 import { SceneLoaderFlags } from "../Loading/sceneLoaderFlags";
-import type { Skeleton } from "../Bones/skeleton";
+import { type Skeleton } from "../Bones/skeleton";
 import { Constants } from "../Engines/constants";
 import { SerializationHelper } from "../Misc/decorators.serialization";
 import { Logger } from "../Misc/logger";
@@ -37,20 +30,20 @@ import { GetClass, RegisterClass } from "../Misc/typeStore";
 import { _WarnImport } from "../Misc/devTools";
 import { SceneComponentConstants } from "../sceneComponent";
 import { MeshLODLevel } from "./meshLODLevel";
-import type { Path3D } from "../Maths/math.path";
-import type { Plane } from "../Maths/math.plane";
-import type { TransformNode } from "./transformNode";
-import type { DrawWrapper } from "../Materials/drawWrapper";
-import type { PhysicsEngine as PhysicsEngineV1 } from "../Physics/v1/physicsEngine";
+import { type Path3D } from "../Maths/math.path";
+import { type Plane } from "../Maths/math.plane";
+import { type TransformNode } from "./transformNode";
+import { type DrawWrapper } from "../Materials/drawWrapper";
+import { type PhysicsEngine as PhysicsEngineV1 } from "../Physics/v1/physicsEngine";
 
-import type { GoldbergMesh } from "./goldbergMesh";
-import type { InstancedMesh } from "./instancedMesh";
-import type { IPhysicsEnabledObject, PhysicsImpostor } from "../Physics/v1/physicsImpostor";
-import type { ICreateCapsuleOptions } from "./Builders/capsuleBuilder";
-import type { LinesMesh } from "./linesMesh";
-import type { GroundMesh } from "./groundMesh";
-import type { DataBuffer } from "core/Buffers/dataBuffer";
-import type { AbstractEngine } from "core/Engines/abstractEngine";
+import { type GoldbergMesh } from "./goldbergMesh";
+import { type InstancedMesh } from "./instancedMesh";
+import { type IPhysicsEnabledObject, type PhysicsImpostor } from "../Physics/v1/physicsImpostor";
+import { type ICreateCapsuleOptions } from "./Builders/capsuleBuilder";
+import { type LinesMesh } from "./linesMesh";
+import { type GroundMesh } from "./groundMesh";
+import { type DataBuffer } from "core/Buffers/dataBuffer";
+import { type AbstractEngine } from "core/Engines/abstractEngine";
 
 /**
  * @internal
@@ -953,7 +946,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             }
         };
 
-        let parent: Nullable<Node> = null;
+        let parent: Nullable<Node>;
         let cloneThinInstances = false;
 
         if (parentOrOptions && (parentOrOptions as Node)._addToSceneRootNodes === undefined) {
@@ -1663,8 +1656,8 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
 
         if (!instanceDataStorage.visibleInstances[renderId]) {
-            if (instanceDataStorage.previousRenderId !== undefined && this._instanceDataStorage.isFrozen) {
-                instanceDataStorage.visibleInstances[instanceDataStorage.previousRenderId] = null;
+            if (instanceDataStorage.previousRenderId !== undefined && (!this._instanceDataStorage.useMonoDataStorageRenderPass || this._instanceDataStorage.isFrozen)) {
+                delete instanceDataStorage.visibleInstances[instanceDataStorage.previousRenderId];
             }
             instanceDataStorage.previousRenderId = renderId;
             instanceDataStorage.visibleInstances[renderId] = new Array<InstancedMesh>();
@@ -1790,7 +1783,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 break;
             }
 
-            SubMesh.CreateFromIndices(0, offset, index === count - 1 ? totalIndices - offset : subdivisionSize, this, undefined, false);
+            SubMesh.CreateFromIndices(0, offset, offset + subdivisionSize >= totalIndices ? totalIndices - offset : subdivisionSize, this, undefined, false);
 
             offset += subdivisionSize;
         }
@@ -2275,10 +2268,12 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 }
                 world.copyToArray(instanceStorage.instancesData, offset);
 
-                // Apply floatingOriginOffset to underlying data sent to buffer
-                instanceStorage.instancesData[offset + 12] -= floatingOriginOffset.x;
-                instanceStorage.instancesData[offset + 13] -= floatingOriginOffset.y;
-                instanceStorage.instancesData[offset + 14] -= floatingOriginOffset.z;
+                // Apply floatingOriginOffset to underlying data sent to buffer.
+                // Subtract from Float64 source to preserve precision at large coordinates.
+                const worldM = world.asArray();
+                instanceStorage.instancesData[offset + 12] = worldM[12] - floatingOriginOffset.x;
+                instanceStorage.instancesData[offset + 13] = worldM[13] - floatingOriginOffset.y;
+                instanceStorage.instancesData[offset + 14] = worldM[14] - floatingOriginOffset.z;
 
                 offset += 16;
                 instancesCount++;
@@ -2310,10 +2305,12 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                         }
                     }
 
-                    // Apply floatingOriginOffset to underlying data sent to buffer
-                    instanceStorage.instancesData[offset + 12] -= floatingOriginOffset.x;
-                    instanceStorage.instancesData[offset + 13] -= floatingOriginOffset.y;
-                    instanceStorage.instancesData[offset + 14] -= floatingOriginOffset.z;
+                    // Apply floatingOriginOffset to underlying data sent to buffer.
+                    // Subtract from Float64 source to preserve precision at large coordinates.
+                    const matrixM = matrix.asArray();
+                    instanceStorage.instancesData[offset + 12] = matrixM[12] - floatingOriginOffset.x;
+                    instanceStorage.instancesData[offset + 13] = matrixM[13] - floatingOriginOffset.y;
+                    instanceStorage.instancesData[offset + 14] = matrixM[14] - floatingOriginOffset.z;
 
                     offset += 16;
                     instancesCount++;
@@ -2552,6 +2549,12 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             }
             dataStorage.instancesBuffer = null;
         }
+        if (dataStorage?.instancesPreviousBuffer) {
+            if (dispose) {
+                dataStorage.instancesPreviousBuffer.dispose();
+            }
+            dataStorage.instancesPreviousBuffer = null;
+        }
     }
 
     /**
@@ -2580,6 +2583,24 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
         this._internalMeshDataInfo._effectiveMaterial = null;
         super._rebuild(dispose);
+    }
+
+    /** @internal */
+    public override _releaseRenderPassId(id: number): void {
+        const renderPassStorage = this._instanceDataStorage.renderPasses[id];
+        if (renderPassStorage) {
+            this._disposeInstanceDataStorageRenderPass(renderPassStorage, true);
+            delete this._instanceDataStorage.renderPasses[id];
+        }
+        if (this._userInstancedBuffersStorage?.renderPasses) {
+            const passVBOs = this._userInstancedBuffersStorage.renderPasses[id];
+            if (passVBOs) {
+                for (const kind in passVBOs) {
+                    passVBOs[kind]?.dispose();
+                }
+            }
+            delete this._userInstancedBuffersStorage.renderPasses[id];
+        }
     }
 
     /** @internal */
@@ -2672,6 +2693,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      */
     public render(subMesh: SubMesh, enableAlphaMode: boolean, effectiveMeshReplacement?: AbstractMesh): Mesh {
         const scene = this.getScene();
+        const engine = scene.getEngine();
 
         if (this._internalAbstractMeshDataInfo._isActiveIntermediate) {
             this._internalAbstractMeshDataInfo._isActiveIntermediate = false;
@@ -2681,8 +2703,12 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         const numActiveCameras = scene.activeCameras?.length ?? 0;
         const canCheckOcclusionQuery = (numActiveCameras > 1 && scene.activeCamera === scene.activeCameras![0]) || numActiveCameras <= 1;
+        const occlusionCheckOnly =
+            this._occlusionDataStorage &&
+            this._occlusionDataStorage.occlusionForRenderPassId !== -1 &&
+            this._occlusionDataStorage.occlusionForRenderPassId !== engine.currentRenderPassId;
 
-        if (canCheckOcclusionQuery && this._checkOcclusionQuery() && !this._occlusionDataStorage.forceRenderingWhenOccluded) {
+        if (canCheckOcclusionQuery && this._checkOcclusionQuery(occlusionCheckOnly) && !this._occlusionDataStorage.forceRenderingWhenOccluded) {
             return this;
         }
 
@@ -2698,7 +2724,6 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             return this;
         }
 
-        const engine = scene.getEngine();
         let oldCameraMaxZ = 0;
         let oldCamera: Nullable<Camera> = null;
         if (this.ignoreCameraMaxZ && scene.activeCamera && !scene._isInIntermediateRendering()) {
@@ -2810,8 +2835,6 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 sideOrientation = sideOrientation === Material.ClockWiseSideOrientation ? Material.CounterClockWiseSideOrientation : Material.ClockWiseSideOrientation;
             }
             this._internalMeshDataInfo._effectiveSideOrientation = sideOrientation!;
-        } else {
-            sideOrientation = this._internalMeshDataInfo._effectiveSideOrientation;
         }
 
         const reverse = this._internalMeshDataInfo._effectiveMaterial._preBind(drawWrapper, this._internalMeshDataInfo._effectiveSideOrientation);
@@ -3472,8 +3495,8 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             Vector2.FromArrayToRef(uvs, (index / 3) * 2, uv);
 
             // Compute height
-            const u = (Math.abs(uv.x * uvScale.x + (uvOffset.x % 1)) * (heightMapWidth - 1)) % heightMapWidth | 0;
-            const v = (Math.abs(uv.y * uvScale.y + (uvOffset.y % 1)) * (heightMapHeight - 1)) % heightMapHeight | 0;
+            const u = ((Math.abs(uv.x * uvScale.x + (uvOffset.x % 1)) * (heightMapWidth - 1)) % heightMapWidth) | 0;
+            const v = ((Math.abs(uv.y * uvScale.y + (uvOffset.y % 1)) * (heightMapHeight - 1)) % heightMapHeight) | 0;
 
             const pos = (u + v * heightMapWidth) * 4;
             const r = buffer[pos] / 255.0;
@@ -3865,7 +3888,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             const matrixWeights: Array<number> = [];
             const matrixIndicesExtra: Array<number> = [];
             const matrixWeightsExtra: Array<number> = [];
-            let pstring: Array<string> = []; //lists facet vertex positions (a,b,c) as string "a|b|c"
+            let pstring: Array<string>; //lists facet vertex positions (a,b,c) as string "a|b|c"
 
             let indexPtr: number = 0; // pointer to next available index value
             const uniquePositions: { [key: string]: number } = {}; // unique vertex positions
@@ -4111,6 +4134,10 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         serializationObject.isBlocker = this.isBlocker;
         serializationObject.sideOrientation = this.sideOrientation;
 
+        if (this._isWorldMatrixFrozen) {
+            serializationObject.freezeWorldMatrix = true;
+        }
+
         // Parent
         if (this.parent) {
             this.parent._serializeAsParent(serializationObject);
@@ -4165,7 +4192,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         // Physics
         //TODO implement correct serialization for physics impostors.
         if (this.getScene()._getComponent(SceneComponentConstants.NAME_PHYSICSENGINE)) {
-            const impostor = this.getPhysicsImpostor();
+            const impostor = this.getPhysicsImpostor?.();
             if (impostor) {
                 serializationObject.physicsMass = impostor.getParam("mass");
                 serializationObject.physicsFriction = impostor.getParam("friction");
@@ -4211,7 +4238,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             // Physics
             //TODO implement correct serialization for physics impostors.
             if (this.getScene()._getComponent(SceneComponentConstants.NAME_PHYSICSENGINE)) {
-                const impostor = instance.getPhysicsImpostor();
+                const impostor = instance.getPhysicsImpostor?.();
                 if (impostor) {
                     serializationInstance.physicsMass = impostor.getParam("mass");
                     serializationInstance.physicsFriction = impostor.getParam("friction");
@@ -4423,6 +4450,33 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     };
 
     /**
+     * Holder function for GaussianSplattingMesh Parser, should be GaussianSplattingMesh.Parse after imported
+     * @internal
+     */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    public static _GaussianSplattingMeshParser = (parsedMesh: any, scene: Scene): Mesh => {
+        throw _WarnImport("GaussianSplattingMesh");
+    };
+
+    /**
+     * Holder function for GaussianSplattingPartProxyMesh Parser, should be GaussianSplattingPartProxyMesh.Parse after imported
+     * @internal
+     */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    public static _GaussianSplattingPartProxyMeshParser = (parsedMesh: any, scene: Scene): Mesh => {
+        throw _WarnImport("GaussianSplattingPartProxyMesh");
+    };
+
+    /**
+     * Holder function for GaussianSplattingCompoundMesh Parser, should be GaussianSplattingCompoundMesh.Parse after imported
+     * @internal
+     */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    public static _GaussianSplattingCompoundMeshParser = (parsedMesh: any, scene: Scene): Mesh => {
+        throw _WarnImport("GaussianSplattingCompoundMesh");
+    };
+
+    /**
      * Returns a new Mesh object parsed from the source provided.
      * @param parsedMesh is the source
      * @param scene defines the hosting scene
@@ -4431,6 +4485,8 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      */
     public static override Parse(parsedMesh: any, scene: Scene, rootUrl: string): Mesh {
         let mesh: Mesh;
+        // Should not import Geometry for GaussianSplattingMesh and GaussianSplattingPartProxyMesh
+        let skipImportGeometry = false;
 
         if (parsedMesh.type && parsedMesh.type === "LinesMesh") {
             mesh = Mesh._LinesMeshParser(parsedMesh, scene);
@@ -4442,6 +4498,16 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             mesh = Mesh._GreasedLineMeshParser(parsedMesh, scene);
         } else if (parsedMesh.type && parsedMesh.type === "TrailMesh") {
             mesh = Mesh._TrailMeshParser(parsedMesh, scene);
+        } else if (parsedMesh.type && parsedMesh.type === "GaussianSplattingMesh") {
+            if (parsedMesh._isCompound) {
+                mesh = Mesh._GaussianSplattingCompoundMeshParser(parsedMesh, scene);
+            } else {
+                mesh = Mesh._GaussianSplattingMeshParser(parsedMesh, scene);
+            }
+            skipImportGeometry = true;
+        } else if (parsedMesh.type && parsedMesh.type === "GaussianSplattingPartProxyMesh") {
+            mesh = Mesh._GaussianSplattingPartProxyMeshParser(parsedMesh, scene);
+            skipImportGeometry = true;
         } else {
             mesh = new Mesh(parsedMesh.name, scene);
         }
@@ -4615,7 +4681,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             if (SceneLoaderFlags.ForceFullSceneLoadingForIncremental) {
                 mesh._checkDelayState();
             }
-        } else {
+        } else if (!skipImportGeometry) {
             Geometry._ImportGeometry(parsedMesh, mesh);
         }
 
@@ -5112,8 +5178,15 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 }
             }
         }
+        // Preserve the caller's first mesh for naming and property copying,
+        // since sorting below may reorder the array.
+        const source = meshes[0];
+
         if (multiMultiMaterials) {
             subdivideWithSubMeshes = false;
+            // Sort meshes by material so that meshes sharing the same material are adjacent.
+            // This produces contiguous index ranges per material, enabling submesh consolidation below.
+            meshes.sort((a, b) => (a.material?.uniqueId ?? -1) - (b.material?.uniqueId ?? -1));
         }
         const materialArray: Array<Material> = new Array<Material>();
         const materialIndexArray: Array<number> = new Array<number>();
@@ -5172,7 +5245,27 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             }
         }
 
-        const source = meshes[0];
+        // Consolidate consecutive submesh entries that share the same material and
+        // have contiguous index ranges. Same-material entries are not guaranteed to
+        // be gap-free, so only merge when the next range starts exactly where the
+        // current one ends.
+        if (multiMultiMaterials && indiceArray.length > 1) {
+            let writeIdx = 0;
+            for (let readIdx = 1; readIdx < indiceArray.length; readIdx++) {
+                const previousIndice = indiceArray[writeIdx];
+                const currentIndice = indiceArray[readIdx];
+                if (materialIndexArray[readIdx] === materialIndexArray[writeIdx] && previousIndice.start + previousIndice.count === currentIndice.start) {
+                    // Extend the previous entry only when this range is contiguous
+                    previousIndice.count += currentIndice.count;
+                } else {
+                    writeIdx++;
+                    indiceArray[writeIdx] = currentIndice;
+                    materialIndexArray[writeIdx] = materialIndexArray[readIdx];
+                }
+            }
+            indiceArray.length = writeIdx + 1;
+            materialIndexArray.length = writeIdx + 1;
+        }
 
         const getVertexDataFromMesh = (mesh: Mesh) => {
             const wm = mesh.computeWorldMatrix(true);
@@ -5180,7 +5273,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             return { vertexData, transform: wm };
         };
 
-        const { vertexData: sourceVertexData, transform: sourceTransform } = getVertexDataFromMesh(source);
+        const { vertexData: sourceVertexData, transform: sourceTransform } = getVertexDataFromMesh(meshes[0]);
         if (isAsync) {
             yield;
         }

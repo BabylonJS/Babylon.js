@@ -1,22 +1,20 @@
 import { GeospatialCameraInputsManager } from "./geospatialCameraInputsManager";
-import { Vector3, Matrix, TmpVectors } from "../Maths/math.vector";
-import type { Vector2 } from "../Maths/math.vector";
+import { Vector3, Matrix, TmpVectors, type Vector2 } from "../Maths/math.vector";
 import { Epsilon } from "../Maths/math.constants";
 import { Camera } from "./camera";
 import { serialize, serializeAsVector3 } from "../Misc/decorators";
-import type { Scene } from "../scene";
-import type { MeshPredicate } from "../Culling/ray.core";
-import type { DeepImmutable } from "../types";
+import { type Scene } from "../scene";
+import { type MeshPredicate } from "../Culling/ray.core";
+import { type DeepImmutable } from "../types";
 import { GeospatialLimits } from "./Limits/geospatialLimits";
 import { ClampCenterFromPolesInPlace, ComputeLocalBasisToRefs, GeospatialCameraMovement } from "./geospatialCameraMovement";
-import type { IVector3Like } from "../Maths/math.like";
+import { type IVector3Like } from "../Maths/math.like";
 import { Vector3CopyToRef, Vector3Distance, Vector3Dot, Vector3SubtractToRef } from "../Maths/math.vector.functions";
 import { Clamp, NormalizeRadians } from "../Maths/math.scalar.functions";
-import type { AllowedAnimValue } from "../Behaviors/Cameras/interpolatingBehavior";
-import { InterpolatingBehavior } from "../Behaviors/Cameras/interpolatingBehavior";
-import type { Collider } from "../Collisions/collider";
-import type { EasingFunction } from "../Animations/easing";
-import type { Animation } from "../Animations/animation";
+import { type AllowedAnimValue, InterpolatingBehavior } from "../Behaviors/Cameras/interpolatingBehavior";
+import { type Collider } from "../Collisions/collider";
+import { type EasingFunction } from "../Animations/easing";
+import { type Animation } from "../Animations/animation";
 import { RegisterClass } from "../Misc/typeStore";
 
 export type GeospatialCameraOptions = {
@@ -132,6 +130,9 @@ export class GeospatialCamera extends Camera {
 
     @serialize()
     private _radius: number = 0;
+    /**
+     * Gets the camera's distance from the current center point. This is distinct from planetRadius supplied at construction.
+     */
     public get radius(): number {
         return this._radius;
     }
@@ -170,10 +171,10 @@ export class GeospatialCamera extends Camera {
         this._checkLimits();
 
         // Refresh local basis at center (treat these as read-only for the whole call)
-        ComputeLocalBasisToRefs(this._center, this._tempEast, this._tempNorth, this._tempUp, this._scene.useRightHandedSystem, this.movement.calculateUpVectorFromPoint);
+        ComputeLocalBasisToRefs(this._center, this._tempEast, this._tempNorth, this._tempUp, this._scene.useRightHandedSystem, this.movement.calculateUpVectorFromPointToRef);
 
         // Compute lookAt from yaw/pitch
-        ComputeLookAtFromYawPitchToRef(this._yaw, this._pitch, this._center, this._scene.useRightHandedSystem, this._lookAtVector, this.movement.calculateUpVectorFromPoint);
+        ComputeLookAtFromYawPitchToRef(this._yaw, this._pitch, this._center, this._scene.useRightHandedSystem, this._lookAtVector, this.movement.calculateUpVectorFromPointToRef);
 
         // Build an orthonormal up aligned with geocentric Up
         // When looking straight down (pitch ≈ 0), lookAt is parallel to Up, so use the horizontal direction as the camera's up.
@@ -310,6 +311,9 @@ export class GeospatialCamera extends Camera {
     }
 
     private _limits: GeospatialLimits;
+    /**
+     * Gets the limits for this camera
+     */
     public get limits(): GeospatialLimits {
         return this._limits;
     }
@@ -448,12 +452,21 @@ export class GeospatialCamera extends Camera {
         return this.limits.clampZoomDistance(zoomDelta, this._radius, distanceToTarget);
     }
 
+    /**
+     * Zoom towards a specific point on the globe
+     * @param targetPoint The point to zoom towards
+     * @param distance The distance to move
+     */
     public zoomToPoint(targetPoint: DeepImmutable<IVector3Like>, distance: number) {
         const newRadius = this._getCenterAndRadiusFromZoomToPoint(targetPoint, distance, this._tempCenter);
         // Apply the new orientation
         this._setOrientation(this._yaw, this._pitch, newRadius, this._tempCenter);
     }
 
+    /**
+     * Zoom along the camera's lookAt direction
+     * @param distance The distance to zoom
+     */
     public zoomAlongLookAt(distance: number) {
         // Clamp radius to limits
         const requestedRadius = this._radius - distance;
@@ -463,6 +476,7 @@ export class GeospatialCamera extends Camera {
         this._setOrientation(this._yaw, this._pitch, newRadius, this._center);
     }
 
+    /** @internal */
     override _checkInputs(): void {
         this.inputs.checkInputs();
         this.perFrameCollisionOffset.setAll(0);
@@ -523,7 +537,7 @@ export class GeospatialCamera extends Camera {
                             this._scene.useRightHandedSystem,
                             this._yaw,
                             yawPitch,
-                            this.movement.calculateUpVectorFromPoint
+                            this.movement.calculateUpVectorFromPointToRef
                         );
 
                         // Call _setOrientation with the computed yaw/pitch and new center
@@ -567,10 +581,12 @@ export class GeospatialCamera extends Camera {
         return collisionOffset;
     }
 
+    /** @internal */
     override attachControl(noPreventDefault?: boolean): void {
         this.inputs.attachElement(noPreventDefault);
     }
 
+    /** @internal */
     override detachControl(): void {
         this.inputs.detachElement();
     }
@@ -595,7 +611,7 @@ RegisterClass("BABYLON.GeospatialCamera", GeospatialCamera);
  * @param center - The center point on the globe
  * @param useRightHandedSystem - Whether the scene uses a right-handed coordinate system
  * @param result - The vector to store the result in
- * @param calculateUpVectorFromPoint - Optional function to calculate the up vector from a point, allowing for non-spherical planets. If not supplied, a perfect sphere is assumed and the up vector is just the normalized center point.
+ * @param calculateUpVectorFromPointToRef - Optional function to calculate the up vector from a point, allowing for non-spherical planets. If not supplied, a perfect sphere is assumed and the up vector is just the normalized center point.
  * @returns The normalized lookAt direction vector (same as result)
  */
 export function ComputeLookAtFromYawPitchToRef(
@@ -604,12 +620,12 @@ export function ComputeLookAtFromYawPitchToRef(
     center: Vector3,
     useRightHandedSystem: boolean,
     result: Vector3,
-    calculateUpVectorFromPoint?: (point: Vector3, result: Vector3) => Vector3
+    calculateUpVectorFromPointToRef?: (point: Vector3, result: Vector3) => Vector3
 ): Vector3 {
     const east = TmpVectors.Vector3[0];
     const north = TmpVectors.Vector3[1];
     const up = TmpVectors.Vector3[2];
-    ComputeLocalBasisToRefs(center, east, north, up, useRightHandedSystem, calculateUpVectorFromPoint);
+    ComputeLocalBasisToRefs(center, east, north, up, useRightHandedSystem, calculateUpVectorFromPointToRef);
     const sinPitch = Math.sin(pitch);
     const cosPitch = Math.cos(pitch);
 
@@ -636,7 +652,7 @@ export function ComputeLookAtFromYawPitchToRef(
  * @param useRightHandedSystem - Whether the scene uses a right-handed coordinate system
  * @param currentYaw - The current yaw value to use as fallback when pitch is near 0 (looking straight down/up)
  * @param result - The Vector2 to store the result in (x = yaw, y = pitch)
- * @param calculateUpVectorFromPoint - Optional function to calculate the up vector from a point. If supplied, this function will be used instead of assuming a spherical geocentric normal, allowing support for non-spherical planets or custom up vector logic.
+ * @param calculateUpVectorFromPointToRef - Optional function to calculate the up vector from a point. If supplied, this function will be used instead of assuming a spherical geocentric normal, allowing support for non-spherical planets or custom up vector logic.
  * @returns The result Vector2
  */
 export function ComputeYawPitchFromLookAtToRef(
@@ -645,13 +661,13 @@ export function ComputeYawPitchFromLookAtToRef(
     useRightHandedSystem: boolean,
     currentYaw: number,
     result: Vector2,
-    calculateUpVectorFromPoint?: (point: Vector3, result: Vector3) => Vector3
+    calculateUpVectorFromPointToRef?: (point: Vector3, result: Vector3) => Vector3
 ): Vector2 {
     // Compute local basis at center
     const east = TmpVectors.Vector3[6];
     const north = TmpVectors.Vector3[7];
     const up = TmpVectors.Vector3[8];
-    ComputeLocalBasisToRefs(center, east, north, up, useRightHandedSystem, calculateUpVectorFromPoint);
+    ComputeLocalBasisToRefs(center, east, north, up, useRightHandedSystem, calculateUpVectorFromPointToRef);
 
     // lookAt = horiz*sinPitch - up*cosPitch
     // where horiz = north*cos(yaw) + east*sin(yaw)

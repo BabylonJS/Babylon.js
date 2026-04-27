@@ -1,6 +1,6 @@
 import * as fs from "fs";
-import { Logger } from "core/Misc/logger.js";
 import { ParseFragmentShader, type FragmentShaderInfo } from "./shaderConverter.js";
+import { log } from "./buildToolsLogger.js";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const TYPE_IMPORT_PATH = "@TYPE_IMPORT_PATH@";
@@ -115,7 +115,7 @@ export function ExtractShaderProgramFromGlsl(
         vertexShader = fs.readFileSync(vertexShaderPath, "utf8");
     }
     if (vertexShader) {
-        Logger.Log("Found vertex shader");
+        log("Found vertex shader");
     }
 
     // Read the fragment shader

@@ -1,22 +1,20 @@
-import type { Observer } from "../Misc/observable";
-import { Observable } from "../Misc/observable";
-import type { Nullable } from "../types";
-import type { PointerInfo } from "../Events/pointerEvents";
+import { type Observer, Observable } from "../Misc/observable";
+import { type Nullable } from "../types";
+import { type PointerInfo } from "../Events/pointerEvents";
 import { Vector3, Matrix, TmpVectors } from "../Maths/math.vector";
-import type { AbstractMesh } from "../Meshes/abstractMesh";
-import type { Node } from "../node";
+import { type AbstractMesh } from "../Meshes/abstractMesh";
+import { type Node } from "../node";
 import { Mesh } from "../Meshes/mesh";
-import type { LinesMesh } from "../Meshes/linesMesh";
+import { type LinesMesh } from "../Meshes/linesMesh";
 import { CreateBox } from "../Meshes/Builders/boxBuilder";
 import { CreateCylinder } from "../Meshes/Builders/cylinderBuilder";
 import { StandardMaterial } from "../Materials/standardMaterial";
 import { PointerDragBehavior } from "../Behaviors/Meshes/pointerDragBehavior";
-import type { GizmoAxisCache, IGizmo } from "./gizmo";
-import { Gizmo } from "./gizmo";
+import { type GizmoAxisCache, type IGizmo, Gizmo } from "./gizmo";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
-import type { ScaleGizmo } from "./scaleGizmo";
+import { type ScaleGizmo } from "./scaleGizmo";
 import { Color3 } from "../Maths/math.color";
-import type { TransformNode } from "../Meshes/transformNode";
+import { type TransformNode } from "../Meshes/transformNode";
 import { Epsilon } from "../Maths/math.constants";
 
 /**
@@ -235,10 +233,10 @@ export class AxisScaleGizmo extends Gizmo implements IAxisScaleGizmo {
                 if (Math.abs(this.snapDistance) > 0 && this.incrementalSnap) {
                     // get current scaling
                     this.attachedNode.getWorldMatrix().decompose(undefined, TmpVectors.Quaternion[0], TmpVectors.Vector3[2], Gizmo.PreserveScaling ? transformNode : undefined);
-                    // apply incrementaly, without taking care of current scaling value
+                    // apply incrementally, without taking care of current scaling value
                     tmpVector.addInPlace(this._incrementalStartupValue);
                     tmpVector.addInPlaceFromFloats(-1, -1, -1);
-                    // keep same sign or stretching close to 0 will change orientation at each drag and scaling will oscilate around 0
+                    // keep same sign or stretching close to 0 will change orientation at each drag and scaling will oscillate around 0
                     tmpVector.x = Math.abs(tmpVector.x) * (this._incrementalStartupValue.x > 0 ? 1 : -1);
                     tmpVector.y = Math.abs(tmpVector.y) * (this._incrementalStartupValue.y > 0 ? 1 : -1);
                     tmpVector.z = Math.abs(tmpVector.z) * (this._incrementalStartupValue.z > 0 ? 1 : -1);

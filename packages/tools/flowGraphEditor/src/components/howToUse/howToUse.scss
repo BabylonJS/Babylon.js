@@ -1,0 +1,119 @@
+.fge-howto-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 9000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.fge-howto-dialog {
+    background: #2a2a2a;
+    border: 1px solid #555;
+    border-radius: 8px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+    width: 600px;
+    max-width: 90vw;
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+    font:
+        14px "acumin-pro",
+        sans-serif;
+    color: #ccc;
+
+    .fge-howto-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 16px 20px 12px;
+        border-bottom: 1px solid #444;
+
+        h2 {
+            margin: 0;
+            font-size: 16px;
+            font-weight: 600;
+            color: #eee;
+        }
+
+        .fge-howto-close {
+            background: none;
+            border: none;
+            color: #888;
+            cursor: pointer;
+            font-size: 18px;
+            padding: 0;
+            line-height: 1;
+            &:hover {
+                color: #fff;
+            }
+        }
+    }
+
+    .fge-howto-body {
+        padding: 16px 20px;
+        overflow-y: auto;
+        flex: 1;
+
+        .fge-howto-section {
+            margin-bottom: 20px;
+
+            h3 {
+                margin: 0 0 8px;
+                font-size: 14px;
+                font-weight: 600;
+                color: #ddd;
+            }
+
+            p {
+                margin: 0 0 8px;
+                font-size: 13px;
+                line-height: 1.5;
+                color: #aaa;
+            }
+        }
+
+        .fge-howto-code-block {
+            position: relative;
+            background: #1e1e1e;
+            border: 1px solid #444;
+            border-radius: 4px;
+            padding: 12px 40px 12px 12px;
+            font:
+                12px "Consolas",
+                "Courier New",
+                monospace;
+            color: #d4d4d4;
+            white-space: pre-wrap;
+            word-break: break-all;
+            line-height: 1.5;
+            overflow-x: auto;
+
+            .fge-howto-copy-btn {
+                position: absolute;
+                top: 6px;
+                right: 6px;
+                background: #464646;
+                border: 1px solid #666;
+                border-radius: 3px;
+                color: #ccc;
+                cursor: pointer;
+                font-size: 11px;
+                padding: 2px 8px;
+                &:hover {
+                    background: #555;
+                    color: #fff;
+                }
+                &.copied {
+                    background: #2d7a3a;
+                    color: #fff;
+                    border-color: #2d7a3a;
+                }
+            }
+        }
+    }
+}

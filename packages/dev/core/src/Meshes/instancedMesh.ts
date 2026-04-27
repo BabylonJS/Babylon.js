@@ -1,22 +1,20 @@
-import type { Nullable, FloatArray, IndicesArray } from "../types";
-import type { Vector3 } from "../Maths/math.vector";
-import { Matrix, TmpVectors } from "../Maths/math.vector";
+import { type Nullable, type FloatArray, type IndicesArray } from "../types";
+import { type Vector3, Matrix, TmpVectors } from "../Maths/math.vector";
 import { Logger } from "../Misc/logger";
-import type { Camera } from "../Cameras/camera";
-import type { Node } from "../node";
-import type { IMeshDataOptions } from "../Meshes/abstractMesh";
-import { AbstractMesh } from "../Meshes/abstractMesh";
+import { type Camera } from "../Cameras/camera";
+import { type Node } from "../node";
+import { type IMeshDataOptions, AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
-import type { Material } from "../Materials/material";
-import type { Skeleton } from "../Bones/skeleton";
+import { type Material } from "../Materials/material";
+import { type Skeleton } from "../Bones/skeleton";
 import { DeepCopier } from "../Misc/deepCopier";
 import { TransformNode } from "./transformNode";
-import type { Light } from "../Lights/light";
+import { type Light } from "../Lights/light";
 import { VertexBuffer } from "../Buffers/buffer";
 import { Tools } from "../Misc/tools";
-import type { ThinEngine } from "../Engines/thinEngine";
+import { type ThinEngine } from "../Engines/thinEngine";
 import { RegisterClass } from "../Misc/typeStore";
-import type { Geometry } from "./geometry";
+import { type Geometry } from "./geometry";
 
 Mesh._instancedMeshFactory = (name: string, mesh: Mesh): InstancedMesh => {
     const instance = new InstancedMesh(name, mesh);
@@ -719,8 +717,17 @@ declare module "./abstractMesh" {
 }
 
 Mesh.prototype.registerInstancedBuffer = function (kind: string, stride: number): void {
-    // Remove existing one
+    // Remove existing one (shared VBO)
     this._userInstancedBuffersStorage?.vertexBuffers[kind]?.dispose();
+
+    // Remove existing per-pass VBOs (WebGPU)
+    if (this._userInstancedBuffersStorage?.renderPasses) {
+        for (const passId in this._userInstancedBuffersStorage.renderPasses) {
+            const passVBOs = this._userInstancedBuffersStorage.renderPasses[passId];
+            passVBOs[kind]?.dispose();
+            delete passVBOs[kind];
+        }
+    }
 
     // Creates the instancedBuffer field if not present
     if (!this.instancedBuffers) {
@@ -747,7 +754,10 @@ Mesh.prototype.registerInstancedBuffer = function (kind: string, stride: number)
     this._userInstancedBuffersStorage.strides[kind] = stride;
     this._userInstancedBuffersStorage.sizes[kind] = stride * 32; // Initial size
     this._userInstancedBuffersStorage.data[kind] = new Float32Array(this._userInstancedBuffersStorage.sizes[kind]);
-    this._userInstancedBuffersStorage.vertexBuffers[kind] = new VertexBuffer(this.getEngine(), this._userInstancedBuffersStorage.data[kind], kind, true, false, stride, true);
+    // In WebGPU, per-pass VBOs are used instead of a shared one (created on demand in _processInstancedBuffers)
+    this._userInstancedBuffersStorage.vertexBuffers[kind] = this._instanceDataStorage.useMonoDataStorageRenderPass
+        ? new VertexBuffer(this.getEngine(), this._userInstancedBuffersStorage.data[kind], kind, true, false, stride, true)
+        : null;
 
     for (const instance of this.instances) {
         instance.instancedBuffers[kind] = null;
@@ -760,6 +770,22 @@ Mesh.prototype.registerInstancedBuffer = function (kind: string, stride: number)
 
 Mesh.prototype._processInstancedBuffers = function (visibleInstances: Nullable<InstancedMesh[]>, renderSelf: boolean) {
     const instanceCount = visibleInstances ? visibleInstances.length : 0;
+
+    // In WebGPU, queue.writeBuffer() writes are all applied before the command buffer executes,
+    // so a shared VBO written by multiple render passes (e.g. effect layer + main scene) will
+    // only reflect the last write for ALL passes. Use per-render-pass VBOs instead.
+    const usePerPassStorage = !this._instanceDataStorage.useMonoDataStorageRenderPass;
+    let perPassVertexBuffers: { [kind: string]: Nullable<VertexBuffer> } | undefined;
+    if (usePerPassStorage) {
+        const currentRenderPassId = this._instanceDataStorage.engine.currentRenderPassId;
+        if (!this._userInstancedBuffersStorage.renderPasses) {
+            this._userInstancedBuffersStorage.renderPasses = {};
+        }
+        if (!this._userInstancedBuffersStorage.renderPasses[currentRenderPassId]) {
+            this._userInstancedBuffersStorage.renderPasses[currentRenderPassId] = {};
+        }
+        perPassVertexBuffers = this._userInstancedBuffersStorage.renderPasses[currentRenderPassId];
+    }
 
     for (const kind in this.instancedBuffers) {
         let size = this._userInstancedBuffersStorage.sizes[kind];
@@ -775,7 +801,12 @@ Mesh.prototype._processInstancedBuffers = function (visibleInstances: Nullable<I
         if (this._userInstancedBuffersStorage.data[kind].length != size) {
             this._userInstancedBuffersStorage.data[kind] = new Float32Array(size);
             this._userInstancedBuffersStorage.sizes[kind] = size;
-            if (this._userInstancedBuffersStorage.vertexBuffers[kind]) {
+            if (usePerPassStorage) {
+                if (perPassVertexBuffers![kind]) {
+                    perPassVertexBuffers![kind]!.dispose();
+                    perPassVertexBuffers![kind] = null;
+                }
+            } else if (this._userInstancedBuffersStorage.vertexBuffers[kind]) {
                 this._userInstancedBuffersStorage.vertexBuffers[kind].dispose();
                 this._userInstancedBuffersStorage.vertexBuffers[kind] = null;
             }
@@ -815,20 +846,29 @@ Mesh.prototype._processInstancedBuffers = function (visibleInstances: Nullable<I
             offset += stride;
         }
 
-        // Update vertex buffer
-        if (!this._userInstancedBuffersStorage.vertexBuffers[kind]) {
-            this._userInstancedBuffersStorage.vertexBuffers[kind] = new VertexBuffer(
-                this.getEngine(),
-                this._userInstancedBuffersStorage.data[kind],
-                kind,
-                true,
-                false,
-                stride,
-                true
-            );
-            this._invalidateInstanceVertexArrayObject();
+        // Update vertex buffer (per-pass in WebGPU, shared in WebGL)
+        if (usePerPassStorage) {
+            if (!perPassVertexBuffers![kind]) {
+                perPassVertexBuffers![kind] = new VertexBuffer(this.getEngine(), this._userInstancedBuffersStorage.data[kind], kind, true, false, stride, true);
+                this._invalidateInstanceVertexArrayObject();
+            } else {
+                perPassVertexBuffers![kind]!.updateDirectly(data, 0);
+            }
         } else {
-            this._userInstancedBuffersStorage.vertexBuffers[kind].updateDirectly(data, 0);
+            if (!this._userInstancedBuffersStorage.vertexBuffers[kind]) {
+                this._userInstancedBuffersStorage.vertexBuffers[kind] = new VertexBuffer(
+                    this.getEngine(),
+                    this._userInstancedBuffersStorage.data[kind],
+                    kind,
+                    true,
+                    false,
+                    stride,
+                    true
+                );
+                this._invalidateInstanceVertexArrayObject();
+            } else {
+                this._userInstancedBuffersStorage.vertexBuffers[kind].updateDirectly(data, 0);
+            }
         }
     }
 };

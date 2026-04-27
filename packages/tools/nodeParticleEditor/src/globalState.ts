@@ -1,20 +1,20 @@
 import { Observable } from "core/Misc/observable";
-import type { LogEntry } from "./components/log/logComponent";
+import { type LogEntry } from "./components/log/logComponent";
 import { DataStorage } from "core/Misc/dataStorage";
 import { Color4 } from "core/Maths/math.color";
 import { RegisterElbowSupport } from "./graphSystem/registerElbowSupport";
 import { RegisterNodePortDesign } from "./graphSystem/registerNodePortDesign";
-import type { GraphNode } from "shared-ui-components/nodeGraphSystem/graphNode";
-import type { GraphFrame } from "shared-ui-components/nodeGraphSystem/graphFrame";
-import type { Nullable } from "core/types";
+import { type GraphNode } from "shared-ui-components/nodeGraphSystem/graphNode";
+import { type GraphFrame } from "shared-ui-components/nodeGraphSystem/graphFrame";
+import { type Nullable } from "core/types";
 import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 import { StateManager } from "shared-ui-components/nodeGraphSystem/stateManager";
 import { RegisterDefaultInput } from "./graphSystem/registerDefaultInput";
 import { RegisterExportData } from "./graphSystem/registerExportData";
 import { RegisterDebugSupport } from "./graphSystem/registerDebugSupport";
-import type { NodeParticleSystemSet } from "core/Particles/Node/nodeParticleSystemSet";
-import type { NodeParticleBlock } from "core/Particles/Node/nodeParticleBlock";
-import type { Scene } from "core/scene";
+import { type NodeParticleSystemSet } from "core/Particles/Node/nodeParticleSystemSet";
+import { type NodeParticleBlock } from "core/Particles/Node/nodeParticleBlock";
+import { type Scene } from "core/scene";
 
 export class GlobalState {
     nodeParticleSet: NodeParticleSystemSet;

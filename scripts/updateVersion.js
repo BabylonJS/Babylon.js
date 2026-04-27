@@ -25,6 +25,30 @@ const updateEngineVersion = async (version) => {
     fs.writeFileSync(abstractEngineFile, newAbstractEngineData);
 };
 
+const updateCdnVersion = (version) => {
+    // Update Tools._CdnVersion in core so CDN URLs are versioned at runtime
+    const toolsFile = path.join(baseDirectory, "packages", "dev", "core", "src", "Misc", "tools.ts");
+    const toolsData = fs.readFileSync(toolsFile, "utf-8");
+    const newToolsData = toolsData.replace(/static _CdnVersion = "(.*)"/, `static _CdnVersion = "${version}"`);
+    if (newToolsData === toolsData) {
+        console.warn("Warning: Could not find Tools._CdnVersion to update");
+    } else {
+        fs.writeFileSync(toolsFile, newToolsData);
+        console.log(`Updated Tools._CdnVersion to "${version}"`);
+    }
+
+    // Update Transcoder.CdnVersion in ktx2Decoder so CDN URLs are versioned at runtime
+    const transcoderFile = path.join(baseDirectory, "packages", "tools", "ktx2Decoder", "src", "transcoder.ts");
+    const transcoderData = fs.readFileSync(transcoderFile, "utf-8");
+    const newTranscoderData = transcoderData.replace(/static CdnVersion = "(.*)"/, `static CdnVersion = "${version}"`);
+    if (newTranscoderData === transcoderData) {
+        console.warn("Warning: Could not find Transcoder.CdnVersion to update");
+    } else {
+        fs.writeFileSync(transcoderFile, newTranscoderData);
+        console.log(`Updated Transcoder.CdnVersion to "${version}"`);
+    }
+};
+
 const updateSinceTag = (version) => {
     // get all typescript files in the dev folder
     const files = glob.globSync(path.join(baseDirectory, "packages", "dev", "**", "*.ts").replace(/\\/g, "/"));
@@ -115,22 +139,24 @@ const updatePackages = (version) => {
     // get all package.json files in the public folder
     const files = glob.globSync(path.join(baseDirectory, "packages", "public", "**", "package.json").replace(/\\/g, "/"));
     files.forEach((file) => {
+        if (file.indexOf("node_modules") !== -1) {
+            return;
+        }
         try {
             // get the package.json as js objects
             const data = fs.readFileSync(file, "utf-8").replace(/\r/gm, "");
             const packageJson = JSON.parse(data);
 
             const name = packageJson.name;
-            if (name.startsWith("babylonjs") || name.startsWith("@babylonjs")) {
+            if (name.startsWith("babylonjs") || name.startsWith("@babylonjs") || name.startsWith("create-babylonjs")) {
                 // if not private bump the revision.
                 packageJson.version = version;
+                console.log(`Updating Babylon package json version in ${file} to ${version}`);
             }
 
             // And lets update the devDependencies/dependencies
             updateDependencies(version, packageJson.devDependencies);
             updateDependencies(version, packageJson.dependencies);
-
-            console.log(`Updating Babylon package json version in ${file} to ${version}`);
 
             // write file
             fs.writeFileSync(file, JSON.stringify(packageJson, null, 4));
@@ -164,8 +190,15 @@ async function main() {
     updatePackages(version);
     // update engine version
     await updateEngineVersion(version);
+    // update CDN version in Tools and ktx2Decoder
+    updateCdnVersion(version);
     // generate changelog
-    await generateChangelog(version);
+    const latestVersionMarkdown = await generateChangelog(version);
+    // write release notes for the GitHub Release task
+    if (latestVersionMarkdown) {
+        fs.writeFileSync(path.resolve(__dirname, "../.build/release-notes.md"), latestVersionMarkdown);
+        console.log("Release notes written to .build/release-notes.md");
+    }
     // update since tags
     updateSinceTag(version);
     // if major, update peer dependencies

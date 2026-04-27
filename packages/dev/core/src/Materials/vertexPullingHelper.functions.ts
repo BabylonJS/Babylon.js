@@ -1,6 +1,6 @@
-import type { Effect } from "./effect";
-import type { Nullable } from "../types";
-import type { Geometry } from "../Meshes/geometry";
+import { type Effect } from "./effect";
+import { type Nullable } from "../types";
+import { type Geometry } from "../Meshes/geometry";
 
 /**
  * Interface representing metadata for vertex pulling

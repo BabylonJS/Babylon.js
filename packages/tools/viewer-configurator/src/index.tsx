@@ -1,5 +1,14 @@
-import { createRoot } from "react-dom/client";
-import { App } from "./App";
+import { MakeModularTool } from "shared-ui-components/modularTool/modularTool";
 
-const Root = createRoot(document.getElementById("root") as HTMLCanvasElement);
-Root.render(<App />);
+import { ViewerServiceDefinition } from "./viewerService";
+import { ConfiguratorServiceDefinition } from "./configuratorService";
+
+MakeModularTool({
+    namespace: "ViewerConfigurator",
+    containerElement: document.getElementById("root")!,
+    serviceDefinitions: [ViewerServiceDefinition, ConfiguratorServiceDefinition],
+    toolbarMode: "compact",
+    showThemeSelector: true,
+    rightPaneDefaultWidth: 400,
+    rightPaneMinWidth: 300,
+});

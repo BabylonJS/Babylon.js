@@ -1,7 +1,7 @@
-import type { ThinEngine } from "core/Engines/thinEngine";
+import { type ThinEngine } from "core/Engines/thinEngine";
 import { Logger, type SmartFilter, type SmartFilterDeserializer } from "smart-filters";
 import { CreateDefaultSmartFilter } from "../defaultSmartFilter";
-import type { Nullable } from "core/types";
+import { type Nullable } from "core/types";
 import { GetSnippet, SetSnippet } from "./hashFunctions";
 import { LoadSmartFilterFromSnippetServer } from "./loadSmartFilterFromSnippetServer";
 

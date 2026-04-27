@@ -1,6 +1,6 @@
-import type { ThinEngine } from "core/Engines/thinEngine";
+import { type ThinEngine } from "core/Engines/thinEngine";
 import { ReadFile } from "core/Misc/fileTools";
-import type { SmartFilter, SmartFilterDeserializer } from "smart-filters";
+import { type SmartFilter, type SmartFilterDeserializer } from "smart-filters";
 
 /**
  * Loads a Smart Filter from the provided file.

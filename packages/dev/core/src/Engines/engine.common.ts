@@ -1,7 +1,6 @@
 import { IsDocumentAvailable } from "../Misc/domManagement";
-import type { Nullable } from "../types";
-import { AbstractEngine } from "./abstractEngine";
-import type { AbstractEngineOptions } from "./abstractEngine";
+import { type Nullable } from "../types";
+import { AbstractEngine, type AbstractEngineOptions } from "./abstractEngine";
 import { EngineStore } from "./engineStore";
 
 /** @internal */
@@ -161,8 +160,8 @@ export function GetFontOffset(font: string): { ascent: number; height: number; d
 
     document.body.appendChild(div);
 
-    let fontAscent = 0;
-    let fontHeight = 0;
+    let fontAscent: number;
+    let fontHeight: number;
     try {
         fontHeight = block.getBoundingClientRect().top - text.getBoundingClientRect().top;
         block.style.verticalAlign = "baseline";
@@ -221,7 +220,7 @@ export function RequestFullscreen(element: HTMLElement): void {
     if (!requestFunction) {
         return;
     }
-    requestFunction.call(element);
+    void requestFunction.call(element);
 }
 
 /**

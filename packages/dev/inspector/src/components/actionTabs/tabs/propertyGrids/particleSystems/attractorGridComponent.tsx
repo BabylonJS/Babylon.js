@@ -1,10 +1,10 @@
 import * as React from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowsAlt, faEye, faTrash } from "@fortawesome/free-solid-svg-icons";
-import type { GlobalState } from "../../../../globalState";
-import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
-import type { IParticleSystem } from "core/Particles/IParticleSystem";
-import type { Attractor } from "core/Particles/attractor";
+import { type GlobalState } from "../../../../globalState";
+import { type LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
+import { type IParticleSystem } from "core/Particles/IParticleSystem";
+import { type Attractor } from "core/Particles/attractor";
 
 interface IAttractorGridComponent {
     globalState: GlobalState;

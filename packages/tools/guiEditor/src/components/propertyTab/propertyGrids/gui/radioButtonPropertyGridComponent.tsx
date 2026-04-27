@@ -1,9 +1,9 @@
 import * as React from "react";
-import type { Observable } from "core/Misc/observable";
-import type { PropertyChangedEvent } from "shared-ui-components/propertyChangedEvent";
+import { type Observable } from "core/Misc/observable";
+import { type PropertyChangedEvent } from "shared-ui-components/propertyChangedEvent";
 import { CommonControlPropertyGridComponent } from "../gui/commonControlPropertyGridComponent";
-import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
-import type { RadioButton } from "gui/2D/controls/radioButton";
+import { type LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
+import { type RadioButton } from "gui/2D/controls/radioButton";
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
 import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
 import { CheckBoxLineComponent } from "shared-ui-components/lines/checkBoxLineComponent";
@@ -15,7 +15,7 @@ import checkboxIcon from "shared-ui-components/imgs/checkboxIconDark.svg";
 import scaleIcon from "shared-ui-components/imgs/scaleIcon.svg";
 import { IconComponent } from "shared-ui-components/lines/iconComponent";
 import { UnitButton } from "shared-ui-components/lines/unitButton";
-import type { GlobalState } from "../../../../globalState";
+import { type GlobalState } from "../../../../globalState";
 
 interface IRadioButtonPropertyGridComponentProps {
     radioButtons: RadioButton[];

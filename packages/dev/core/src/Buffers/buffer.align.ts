@@ -1,5 +1,5 @@
-import type { Nullable } from "core/types";
-import type { DataBuffer } from "./dataBuffer";
+import { type Nullable } from "core/types";
+import { type DataBuffer } from "./dataBuffer";
 import { Buffer, VertexBuffer } from "./buffer";
 import { GetTypeByteLength } from "./bufferUtils";
 

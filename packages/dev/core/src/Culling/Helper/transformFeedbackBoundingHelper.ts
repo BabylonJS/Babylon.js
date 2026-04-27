@@ -1,18 +1,18 @@
-import type { Effect } from "core/Materials/effect";
-import type { ThinEngine } from "core/Engines/thinEngine";
+import { type Effect } from "core/Materials/effect";
+import { type ThinEngine } from "core/Engines/thinEngine";
 import { VertexBuffer, Buffer } from "core/Buffers/buffer";
-import type { Engine } from "core/Engines/engine";
+import { type Engine } from "core/Engines/engine";
 import { Constants } from "core/Engines/constants";
-import type { Nullable } from "core/types";
-import type { AbstractMesh } from "core/Meshes/abstractMesh";
+import { type Nullable } from "core/types";
+import { type AbstractMesh } from "core/Meshes/abstractMesh";
 import {
     BindBonesParameters,
     BindMorphTargetParameters,
     PrepareAttributesForBakedVertexAnimation,
     PrepareDefinesAndAttributesForMorphTargets,
 } from "core/Materials/materialHelper.functions";
-import type { Mesh } from "core/Meshes/mesh";
-import type { IBoundingInfoHelperPlatform } from "./IBoundingInfoHelperPlatform";
+import { type Mesh } from "core/Meshes/mesh";
+import { type IBoundingInfoHelperPlatform } from "./IBoundingInfoHelperPlatform";
 import { extractMinAndMax } from "core/Maths/math.functions";
 import { Vector3 } from "core/Maths/math.vector";
 
@@ -111,7 +111,7 @@ export class TransformFeedbackBoundingHelper implements IBoundingInfoHelperPlatf
             const join = defines.join("\n");
             if (!this._effects[join]) {
                 const uniforms = [
-                    "boneTextureWidth",
+                    "boneTextureInfo",
                     "mBones",
                     "morphTargetInfluences",
                     "morphTargetCount",

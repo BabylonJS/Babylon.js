@@ -21,3 +21,4 @@ export * from "./WebXRLayers";
 export * from "./WebXRDepthSensing";
 export * from "./WebXRSpaceWarp";
 export * from "./WebXRRawCameraAccess";
+export * from "./WebXRBodyTracking";

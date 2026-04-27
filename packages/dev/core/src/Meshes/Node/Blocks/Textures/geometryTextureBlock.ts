@@ -1,10 +1,10 @@
-import type { Nullable } from "core/types";
+import { type Nullable } from "core/types";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import { NodeGeometryBlockConnectionPointTypes } from "../../Enums/nodeGeometryConnectionPointTypes";
-import type { INodeGeometryTextureData } from "../../Interfaces/nodeGeometryTextureData";
+import { type INodeGeometryTextureData } from "../../Interfaces/nodeGeometryTextureData";
 import { NodeGeometryBlock } from "../../nodeGeometryBlock";
-import type { NodeGeometryConnectionPoint } from "../../nodeGeometryBlockConnectionPoint";
-import type { Texture } from "core/Materials/Textures/texture";
+import { type NodeGeometryConnectionPoint } from "../../nodeGeometryBlockConnectionPoint";
+import { type Texture } from "core/Materials/Textures/texture";
 import { TextureTools } from "core/Misc/textureTools";
 /**
  * Block used to load texture data

@@ -1,14 +1,14 @@
 import * as React from "react";
 import { LineContainerComponent } from "../../sharedComponents/lineContainerComponent";
-import type { GlobalState } from "../../globalState";
-import type { Nullable } from "core/types";
-import type { Observer } from "core/Misc/observable";
+import { type GlobalState } from "../../globalState";
+import { type Nullable } from "core/types";
+import { type Observer } from "core/Misc/observable";
 import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
-import type { GraphFrame } from "shared-ui-components/nodeGraphSystem/graphFrame";
+import { type GraphFrame } from "shared-ui-components/nodeGraphSystem/graphFrame";
 import { Color3LineComponent } from "shared-ui-components/lines/color3LineComponent";
 import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineComponent";
-import type { NodeRenderGraphInputBlock } from "core/FrameGraph/Node/Blocks/inputBlock";
-import type { NodeRenderGraphBlock } from "core/FrameGraph/Node/nodeRenderGraphBlock";
+import { type NodeRenderGraphInputBlock } from "core/FrameGraph/Node/Blocks/inputBlock";
+import { type NodeRenderGraphBlock } from "core/FrameGraph/Node/nodeRenderGraphBlock";
 
 export interface IFramePropertyTabComponentProps {
     globalState: GlobalState;
@@ -34,7 +34,7 @@ export class FramePropertyTabComponent extends React.Component<IFramePropertyTab
     }
 
     override render() {
-        let configurableInputBlocks: NodeRenderGraphInputBlock[] = [];
+        const configurableInputBlocks: NodeRenderGraphInputBlock[] = [];
         for (const node of this.props.frame.nodes) {
             const block = node.content.data as NodeRenderGraphBlock;
             if (block.isInput && block.visibleOnFrame) {
@@ -42,7 +42,7 @@ export class FramePropertyTabComponent extends React.Component<IFramePropertyTab
             }
         }
 
-        configurableInputBlocks = configurableInputBlocks.sort((a, b) => {
+        configurableInputBlocks.sort((a, b) => {
             return a.name.localeCompare(b.name);
         });
 

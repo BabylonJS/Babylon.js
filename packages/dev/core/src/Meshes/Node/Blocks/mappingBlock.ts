@@ -1,8 +1,8 @@
 import { NodeGeometryBlock } from "../nodeGeometryBlock";
-import type { NodeGeometryConnectionPoint } from "../nodeGeometryBlockConnectionPoint";
+import { type NodeGeometryConnectionPoint } from "../nodeGeometryBlockConnectionPoint";
 import { RegisterClass } from "../../../Misc/typeStore";
 import { NodeGeometryBlockConnectionPointTypes } from "../Enums/nodeGeometryConnectionPointTypes";
-import type { NodeGeometryBuildState } from "../nodeGeometryBuildState";
+import { type NodeGeometryBuildState } from "../nodeGeometryBuildState";
 import { PropertyTypeForEdition, editableInPropertyPage } from "../../../Decorators/nodeDecorator";
 import { Vector2, Vector3 } from "../../../Maths/math.vector";
 
@@ -127,8 +127,7 @@ export class MappingBlock extends NodeGeometryBlock {
                     const absZ = Math.abs(normal.z);
                     const maxDim = Math.max(Math.abs(position.x), Math.abs(position.y), Math.abs(position.z));
 
-                    let u = 0,
-                        v = 0;
+                    let u: number, v: number;
 
                     if (absX >= absY && absX >= absZ) {
                         u = position.y / maxDim - center.y;

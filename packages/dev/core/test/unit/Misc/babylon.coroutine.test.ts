@@ -4,7 +4,7 @@ import { runCoroutineSync, makeSyncFunction, runCoroutineAsync, inlineScheduler,
  * Describes the test suite.
  */
 describe("Coroutine", function () {
-    jest.setTimeout(10000);
+    vi.setConfig({ testTimeout: 10000 });
 
     describe("#synchronous coroutines", () => {
         it("should be able to run a void returning coroutine synchronously", () => {

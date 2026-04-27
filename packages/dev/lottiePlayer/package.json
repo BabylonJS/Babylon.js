@@ -12,7 +12,7 @@
     ],
     "scripts": {
         "build": "npm run compile",
-        "test": "jest -c ../../../jest.config.ts",
+        "test": "vitest run",
         "clean": "rimraf dist && rimraf *.tsbuildinfo -g",
         "precompile": "",
         "compile": "npm run compile:source",

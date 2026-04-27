@@ -1,7 +1,6 @@
 import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
-import { useState, useCallback, useRef } from "react";
-import type { FunctionComponent } from "react";
-import type { Scene } from "core/scene";
+import { useState, useCallback, useRef, type FunctionComponent } from "react";
+import { type Scene } from "core/scene";
 import { TextInputPropertyLine, NumberInputPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/inputPropertyLine";
 import { Reflector } from "core/Misc/reflector";
 import { PlugConnectedRegular } from "@fluentui/react-icons";

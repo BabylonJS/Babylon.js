@@ -1,5 +1,5 @@
-import type { Nullable } from "../../types";
-import type { Scene } from "../../scene";
+import { type Nullable } from "../../types";
+import { type Scene } from "../../scene";
 import { Matrix, Vector3, Vector4 } from "../../Maths/math.vector";
 import { Color4 } from "../../Maths/math.color";
 import { Mesh } from "../mesh";
@@ -135,7 +135,7 @@ export function CreateTiledBoxVertexData(options: {
     const faceNormals: Array<Array<Vector3>> = [];
 
     const newFaceUV: Array<Array<number>> = [];
-    let lu: number = 0;
+    let lu: number;
 
     let li: number = 0;
 

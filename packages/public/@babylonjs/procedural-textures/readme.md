@@ -1,34 +1,27 @@
-Babylon.js Procedural Textures Library
-=====================
+# Babylon.js Procedural Textures Library
 
-For usage documentation please visit https://doc.babylonjs.com/extensions and choose "procedural textures library".
+For usage documentation please visit the [procedural textures library documentation](https://doc.babylonjs.com/toolsAndResources/assetLibraries/proceduralTexturesLibrary/).
 
-# Installation instructions
+## Installation
 
-To install using npm :
+To install using npm:
 
-```
-npm install --save @babylonjs/core @babylonjs/procedural-textures
-```
-
-# How to use
-
-Afterwards it can be imported to your project using:
-
-```
-import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
-import { FireProceduralTexture } from '@babylonjs/procedural-textures/fireProceduralTexture';
+```bash
+npm install @babylonjs/core @babylonjs/procedural-textures
 ```
 
-And used as usual:
+## Usage
 
-```
-// Some awesome code
-var fireMaterial = new StandardMaterial("fontainSculptur2", scene);
-var fireTexture = new FireProceduralTexture("fire", 256, scene);
+Import and use in your project:
+
+```javascript
+import { StandardMaterial } from "@babylonjs/core/Materials/standardMaterial";
+import { FireProceduralTexture } from "@babylonjs/procedural-textures/fireProceduralTexture";
+
+const fireMaterial = new StandardMaterial("fireMaterial", scene);
+const fireTexture = new FireProceduralTexture("fire", 256, scene);
 fireMaterial.diffuseTexture = fireTexture;
 fireMaterial.opacityTexture = fireTexture;
-// Some more awesome code
 ```
 
-For more information you can have a look at our [ES6 dedicated documentation](https://doc.babylonjs.com/features/es6_support).
+For more information, see the [ES6 support documentation](https://doc.babylonjs.com/setup/frameworkPackages/es6Support/).

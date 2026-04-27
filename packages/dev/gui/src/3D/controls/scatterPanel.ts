@@ -1,9 +1,9 @@
 import { Tools } from "core/Misc/tools";
 import { TmpVectors, Vector3 } from "core/Maths/math.vector";
-import type { float } from "core/types";
+import { type float } from "core/types";
 
 import { VolumeBasedPanel } from "./volumeBasedPanel";
-import type { Control3D } from "./control3D";
+import { type Control3D } from "./control3D";
 import { Container3D } from "./container3D";
 
 /**

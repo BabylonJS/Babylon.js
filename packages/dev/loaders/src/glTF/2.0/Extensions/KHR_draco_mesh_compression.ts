@@ -1,14 +1,13 @@
 /* eslint-disable github/no-then */
 import { DracoDecoder } from "core/Meshes/Compression/dracoDecoder";
-import type { Nullable } from "core/types";
+import { type Nullable } from "core/types";
 import { VertexBuffer } from "core/Buffers/buffer";
-import type { Geometry } from "core/Meshes/geometry";
-import type { Mesh } from "core/Meshes/mesh";
+import { type Geometry } from "core/Meshes/geometry";
+import { type Mesh } from "core/Meshes/mesh";
 
-import { MeshPrimitiveMode } from "babylonjs-gltf2interface";
-import type { IKHRDracoMeshCompression } from "babylonjs-gltf2interface";
-import type { IMeshPrimitive, IBufferView } from "../glTFLoaderInterfaces";
-import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
+import { MeshPrimitiveMode, type IKHRDracoMeshCompression } from "babylonjs-gltf2interface";
+import { type IMeshPrimitive, type IBufferView } from "../glTFLoaderInterfaces";
+import { type IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader, ArrayItem, LoadBoundingInfoFromPositionAccessor } from "../glTFLoader";
 import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
 

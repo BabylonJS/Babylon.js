@@ -1,9 +1,9 @@
-import type { Nullable } from "../../types";
-import type { Observer } from "../../Misc/observable";
-import type { Vector3 } from "../../Maths/math.vector";
+import { type Nullable } from "../../types";
+import { type Observer } from "../../Misc/observable";
+import { type Vector3 } from "../../Maths/math.vector";
 import { TransformNode } from "../../Meshes/transformNode";
-import type { Node } from "../../node";
-import type { PhysicsBody } from "./physicsBody";
+import { type Node } from "../../node";
+import { type PhysicsBody } from "./physicsBody";
 
 import "../joinedPhysicsEngineComponent";
 
@@ -14,7 +14,7 @@ declare module "../../Meshes/transformNode" {
         _physicsBody: Nullable<PhysicsBody>;
 
         /**
-         * @see
+         * Gets or sets the physics body associated with this node.
          */
         physicsBody: Nullable<PhysicsBody>;
 

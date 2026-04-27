@@ -1,21 +1,20 @@
-import type { Observer } from "../Misc/observable";
-import type { Nullable } from "../types";
-import type { Scene, IDisposable } from "../scene";
+import { type Observer } from "../Misc/observable";
+import { type Nullable } from "../types";
+import { type Scene, type IDisposable } from "../scene";
 import { Quaternion, Vector3, Matrix, TmpVectors } from "../Maths/math.vector";
-import type { AbstractMesh } from "../Meshes/abstractMesh";
+import { type AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
 import { Camera } from "../Cameras/camera";
-import type { TargetCamera } from "../Cameras/targetCamera";
-import type { Node } from "../node";
-import type { Bone } from "../Bones/bone";
+import { type TargetCamera } from "../Cameras/targetCamera";
+import { type Node } from "../node";
+import { type Bone } from "../Bones/bone";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
-import type { TransformNode } from "../Meshes/transformNode";
-import type { StandardMaterial } from "../Materials/standardMaterial";
-import type { PointerInfo } from "../Events/pointerEvents";
-import { PointerEventTypes } from "../Events/pointerEvents";
-import type { LinesMesh } from "../Meshes/linesMesh";
-import type { PointerDragBehavior } from "../Behaviors/Meshes/pointerDragBehavior";
-import type { ShadowLight } from "../Lights/shadowLight";
+import { type TransformNode } from "../Meshes/transformNode";
+import { type StandardMaterial } from "../Materials/standardMaterial";
+import { type PointerInfo, PointerEventTypes } from "../Events/pointerEvents";
+import { type LinesMesh } from "../Meshes/linesMesh";
+import { type PointerDragBehavior } from "../Behaviors/Meshes/pointerDragBehavior";
+import { type ShadowLight } from "../Lights/shadowLight";
 import { Light } from "../Lights/light";
 
 /**
@@ -45,7 +44,7 @@ export interface GizmoAxisCache {
 export const enum GizmoAnchorPoint {
     /** The origin of the attached node */
     Origin,
-    /** The pivot point of the attached node*/
+    /** The pivot point of the attached node */
     Pivot,
 }
 
@@ -103,7 +102,7 @@ export interface IGizmo extends IDisposable {
      */
     updateScale: boolean;
     /**
-     * posture that the gizmo will be display
+     * Orientation that the gizmo will be displayed with.
      * When set null, default value will be used (Quaternion(0, 0, 0, 1))
      */
     customRotationQuaternion: Nullable<Quaternion>;
@@ -143,7 +142,7 @@ export class Gizmo implements IGizmo {
     protected _isHovered = false;
 
     /**
-     * When enabled, any gizmo operation will perserve scaling sign. Default is off.
+     * When enabled, any gizmo operation will preserve scaling sign. Default is off.
      * Only valid for TransformNode derived classes (Mesh, AbstractMesh, ...)
      */
     public static PreserveScaling = false;
@@ -323,7 +322,7 @@ export class Gizmo implements IGizmo {
     }
 
     /**
-     * posture that the gizmo will be display
+     * Orientation that the gizmo will be displayed with.
      * When set null, default value will be used (Quaternion(0, 0, 0, 1))
      */
     public get customRotationQuaternion(): Nullable<Quaternion> {
@@ -341,7 +340,7 @@ export class Gizmo implements IGizmo {
         if (this.attachedNode) {
             let effectiveNode = this.attachedNode;
             if (this.attachedMesh) {
-                effectiveNode = this.attachedMesh || this.attachedNode;
+                effectiveNode = this.attachedMesh;
             }
 
             // Position
@@ -511,7 +510,7 @@ export class Gizmo implements IGizmo {
                     const scaleMatrix = TmpVectors.Matrix[2];
                     Matrix.ScalingToRef(transform.scaling.x, transform.scaling.y, transform.scaling.z, scaleMatrix);
 
-                    const rotationMatrix = TmpVectors.Matrix[2];
+                    const rotationMatrix = TmpVectors.Matrix[7];
                     r.toRotationMatrix(rotationMatrix);
 
                     const pivotMatrix = transform.getPivotMatrix();

@@ -1,17 +1,16 @@
 import * as React from "react";
-import type { Observable } from "core/Misc/observable";
-import type { PropertyChangedEvent } from "shared-ui-components/propertyChangedEvent";
+import { type Observable } from "core/Misc/observable";
+import { type PropertyChangedEvent } from "shared-ui-components/propertyChangedEvent";
 import { CommonControlPropertyGridComponent } from "../gui/commonControlPropertyGridComponent";
-import type { TextBlock } from "gui/2D/controls/textBlock";
-import { TextWrapping } from "gui/2D/controls/textBlock";
+import { type TextBlock, TextWrapping } from "gui/2D/controls/textBlock";
 import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
-import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
+import { type LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 import { OptionsLine } from "shared-ui-components/lines/optionsLineComponent";
 import { CheckBoxLineComponent } from "shared-ui-components/lines/checkBoxLineComponent";
 import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
 import { ColorLine } from "shared-ui-components/lines/colorLineComponent";
 import { makeTargetsProxy } from "shared-ui-components/lines/targetsProxy";
-import type { GlobalState } from "../../../../globalState";
+import { type GlobalState } from "../../../../globalState";
 
 interface ITextBlockPropertyGridComponentProps {
     textBlocks: TextBlock[];

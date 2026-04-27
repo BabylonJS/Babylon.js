@@ -167,10 +167,16 @@ vec3 double_refract(vec3 I, vec3 N, float eta) {
   return refract(Tfront, -Nback, eta);
 }
 
+// Assumes input color is linear encoded, not gamma-corrected.
+float getLuminanceUnclamped(vec3 color)
+{
+    return dot(color, LuminanceEncodeApprox);
+}
+
 // Returns the saturated luminance. Assumes input color is linear encoded, not gamma-corrected.
 float getLuminance(vec3 color)
 {
-    return saturate(dot(color, LuminanceEncodeApprox));
+    return saturate(getLuminanceUnclamped(color));
 }
 
 // https://stackoverflow.com/questions/4200224/random-noise-functions-for-glsl
@@ -261,12 +267,31 @@ vec3 singleScatterToMultiScatterAlbedo(vec3 rho_ss) {
   return (vec3(1.0) - s) * (vec3(1.0) - vec3(0.139) * s) / (vec3(1.0) + vec3(1.17) * s);
 }
 
+vec3 multiScatterToSingleScatterAlbedo(vec3 rho_ms) {
+    vec3 s = 4.09712 + 4.20863 * rho_ms - sqrt(9.59217 + 41.6808 * rho_ms + 17.7126 * rho_ms * rho_ms);
+    return 1.0 - s * s;
+}
+
+vec3 multiScatterToSingleScatterAlbedo(vec3 rho_ms, float aniso) {
+    vec3 s = 4.09712 + 4.20863 * rho_ms - sqrt(9.59217 + 41.6808 * rho_ms + 17.7126 * rho_ms * rho_ms);
+    return (1.0 - s * s) / maxEps(1.0 - aniso * s * s);
+}
+
 float min3(vec3 v) {
     return min(v.x, min(v.y, v.z));
 }
 
 float max3(vec3 v) {
     return max(v.x, max(v.y, v.z));
+}
+
+float uint2float(uint i) {
+  return uintBitsToFloat(0x3F800000u | (i >> 9u)) - 1.0;
+}
+
+vec2 plasticSequence(const uint rstate) {
+  return vec2(uint2float(rstate * 3242174889u),
+              uint2float(rstate * 2447445414u));
 }
 
 #endif

@@ -1,5 +1,5 @@
 /* eslint-disable jsdoc/require-jsdoc */
-import type { BMFont } from "./bmFont";
+import { type BMFont } from "./bmFont";
 
 export type SdfFontDistanceField = {
     fieldType: "sdf" | "msdf";

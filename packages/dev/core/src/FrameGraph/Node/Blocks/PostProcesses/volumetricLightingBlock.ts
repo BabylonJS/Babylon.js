@@ -1,12 +1,12 @@
-import type {
-    Camera,
-    DirectionalLight,
-    FrameGraph,
-    FrameGraphObjectList,
-    FrameGraphTextureHandle,
-    NodeRenderGraphBuildState,
-    NodeRenderGraphConnectionPoint,
-    Scene,
+import {
+    type Camera,
+    type DirectionalLight,
+    type FrameGraph,
+    type FrameGraphObjectList,
+    type FrameGraphTextureHandle,
+    type NodeRenderGraphBuildState,
+    type NodeRenderGraphConnectionPoint,
+    type Scene,
 } from "core/index";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";

@@ -1,11 +1,10 @@
 /* eslint-disable babylonjs/available */
-import type { PointerInfo } from "core/Events/pointerEvents";
-import type { Observer } from "core/Misc/observable";
-import type { Nullable } from "core/types";
-import type { TextureEditorToolProvider } from "../../../components/textureEditor/textureEditor";
+import { type PointerInfo, PointerEventTypes } from "core/Events/pointerEvents";
+import { type Observer } from "core/Misc/observable";
+import { type Nullable } from "core/types";
+import { type TextureEditorToolProvider } from "../../../components/textureEditor/textureEditor";
 
 import { SelectObjectRegular } from "@fluentui/react-icons";
-import { PointerEventTypes } from "core/Events/pointerEvents";
 
 /**
  * Rectangle selection tool for selecting regions of the texture

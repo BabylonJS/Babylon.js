@@ -1,5 +1,5 @@
-import type { Nullable } from "../../types";
-import type { Scene } from "../../scene";
+import { type Nullable } from "../../types";
+import { type Scene } from "../../scene";
 import { Matrix, Vector3 } from "../../Maths/math.vector";
 import { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { Texture } from "../../Materials/Textures/texture";
@@ -8,12 +8,12 @@ import { CubeMapToSphericalPolynomialTools } from "../../Misc/HighDynamicRange/c
 import { Observable } from "../../Misc/observable";
 import { Tools } from "../../Misc/tools";
 import { ToGammaSpace } from "../../Maths/math.constants";
-import type { AbstractEngine } from "../../Engines/abstractEngine";
+import { type AbstractEngine } from "../../Engines/abstractEngine";
 import { HDRFiltering } from "../../Materials/Textures/Filtering/hdrFiltering";
 import { HDRIrradianceFiltering } from "../../Materials/Textures/Filtering/hdrIrradianceFiltering";
 import { ToHalfFloat } from "../../Misc/textureTools";
 import "../../Materials/Textures/baseTexture.polynomial";
-import type { CubeMapInfo } from "../../Misc/HighDynamicRange/panoramaToCubemap";
+import { type CubeMapInfo } from "../../Misc/HighDynamicRange/panoramaToCubemap";
 import { SphericalPolynomial } from "../../Maths/sphericalPolynomial";
 
 /**
@@ -116,6 +116,7 @@ export abstract class EnvCubeTexture extends BaseTexture {
      * @param supersample Defines if texture must be supersampled (default: false)
      * @param prefilterIrradianceOnLoad Prefilters texture to allow use of this texture for irradiance lighting.
      * @param prefilterUsingCdf Defines if the prefiltering should be done using a CDF instead of the default approach.
+     * @param sphericalPolynomialTargetSize Target face size for spherical polynomial computation. 0 = full resolution (default).
      */
     constructor(
         url: string,
@@ -129,7 +130,8 @@ export abstract class EnvCubeTexture extends BaseTexture {
         onError: Nullable<(message?: string, exception?: any) => void> = null,
         supersample = false,
         prefilterIrradianceOnLoad = false,
-        prefilterUsingCdf = false
+        prefilterUsingCdf = false,
+        sphericalPolynomialTargetSize = 0
     ) {
         super(sceneOrEngine);
 
@@ -163,6 +165,7 @@ export abstract class EnvCubeTexture extends BaseTexture {
         // mitigates this.
         this._supersample = supersample || prefilterUsingCdf;
         this._generateHarmonics = generateHarmonics;
+        this._sphericalPolynomialTargetSize = sphericalPolynomialTargetSize;
 
         this._texture = this._getFromCache(url, this._noMipmap, undefined, undefined, undefined, this.isCube);
 
@@ -222,7 +225,7 @@ export abstract class EnvCubeTexture extends BaseTexture {
 
             // Generate harmonics if needed.
             if (this._generateHarmonics) {
-                const sphericalPolynomial = CubeMapToSphericalPolynomialTools.ConvertCubeMapToSphericalPolynomial(data);
+                const sphericalPolynomial = CubeMapToSphericalPolynomialTools.ConvertCubeMapToSphericalPolynomial(data, this._sphericalPolynomialTargetSize);
                 this.sphericalPolynomial = sphericalPolynomial;
             }
 
@@ -298,18 +301,16 @@ export abstract class EnvCubeTexture extends BaseTexture {
             const previousOnLoad = this._onLoad;
             const hdrFiltering = new HDRFiltering(engine);
             this._onLoad = () => {
-                let irradiancePromise: Promise<Nullable<BaseTexture>> = Promise.resolve(null);
-                let radiancePromise: Promise<void> = Promise.resolve();
-                if (this._prefilterIrradianceOnLoad) {
-                    const hdrIrradianceFiltering = new HDRIrradianceFiltering(engine, { useCdf: this._prefilterUsingCdf });
-                    irradiancePromise = hdrIrradianceFiltering.prefilter(this);
-                }
-                if (this._prefilterOnLoad) {
-                    radiancePromise = hdrFiltering.prefilter(this);
-                }
-                // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
-                Promise.all([irradiancePromise, radiancePromise]).then((results) => {
-                    const irradianceTexture = results[0];
+                void (async () => {
+                    let irradianceTexture: Nullable<BaseTexture> = null;
+                    if (this._prefilterIrradianceOnLoad) {
+                        const hdrIrradianceFiltering = new HDRIrradianceFiltering(engine, { useCdf: this._prefilterUsingCdf });
+                        irradianceTexture = await hdrIrradianceFiltering.prefilter(this);
+                    }
+
+                    // Run irradiance prefiltering first because it samples the current source texture.
+                    // Radiance prefiltering mutates/swaps the source internal texture, so running both
+                    // concurrently can lead to stale/destroyed texture references on WebGPU.
                     if (this._prefilterIrradianceOnLoad && irradianceTexture) {
                         this.irradianceTexture = irradianceTexture;
                         const scene = this.getScene();
@@ -317,10 +318,15 @@ export abstract class EnvCubeTexture extends BaseTexture {
                             scene.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
                         }
                     }
+
+                    if (this._prefilterOnLoad) {
+                        await hdrFiltering.prefilter(this);
+                    }
+
                     if (previousOnLoad) {
                         previousOnLoad();
                     }
-                });
+                })();
             };
         }
 

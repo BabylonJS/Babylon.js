@@ -1,4 +1,4 @@
-import type { FrameGraph } from "core/FrameGraph/frameGraph";
+import { type FrameGraph } from "core/FrameGraph/frameGraph";
 import { ThinTonemapPostProcess } from "core/PostProcesses/thinTonemapPostProcess";
 import { FrameGraphPostProcessTask } from "./postProcessTask";
 

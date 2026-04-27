@@ -1,13 +1,13 @@
-import type { Nullable } from "core/types";
-import type { Camera } from "core/Cameras/camera";
-import type { IExplorerExtensibilityGroup } from "core/Debug/debugLayer";
+import { type Nullable } from "core/types";
+import { type Camera } from "core/Cameras/camera";
+import { type IExplorerExtensibilityGroup } from "core/Debug/debugLayer";
 
 import { TreeItemSpecializedComponent } from "./treeItemSpecializedComponent";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMinus, faPlus } from "@fortawesome/free-solid-svg-icons";
 import { Tools } from "../../tools";
 import * as React from "react";
-import type { GlobalState } from "../globalState";
+import { type GlobalState } from "../globalState";
 
 import { setDebugNode } from "./treeNodeDebugger";
 

@@ -5,7 +5,7 @@
 // Animation groups: http://localhost:1338/?inspectorv2#FMAYKS
 // Inspector v1 extensibility API: https://localhost:1338/#10HGIN#7
 
-import type { Nullable } from "core/types";
+import { type Nullable } from "core/types";
 
 import { Engine } from "core/Engines/engine";
 import { ImportMeshAsync, LoadAssetContainerAsync } from "core/Loading/sceneLoader";
@@ -28,7 +28,9 @@ import { Texture } from "core/Materials/Textures/texture";
 import { AdvancedDynamicTexture } from "gui/2D/advancedDynamicTexture";
 import { Button } from "gui/2D/controls/button";
 import { Sound } from "core/Audio/sound";
-import { AssetContainer } from "core/assetContainer";
+import { PointLight } from "core/Lights/pointLight";
+import { SpotLight } from "core/Lights/spotLight";
+import { ClusteredLightContainer } from "core/Lights/Clustered/clusteredLightContainer";
 import { ShowInspector } from "../../src/inspector";
 // import "../../src/legacy/legacy";
 
@@ -133,6 +135,16 @@ function createTestBoxes() {
     box.material = redMat;
     const boxInstance = box.createInstance("boxInstance");
     boxInstance.position = new Vector3(0, 0, -0.5);
+
+    const level1Torus = MeshBuilder.CreateTorus("level1Torus", {}, scene);
+    const level2Torus = MeshBuilder.CreateTorus("level2Torus", {}, scene);
+    level2Torus.position = new Vector3(0.5, 0, 0);
+    level2Torus.parent = level1Torus;
+    const level3Torus = MeshBuilder.CreateTorus("level3Torus", {}, scene);
+    level3Torus.parent = level2Torus;
+    level3Torus.position = new Vector3(0.5, 0, 0);
+    scene.removeMesh(level1Torus);
+    scene.removeMesh(level2Torus);
 }
 
 function createTestMetadata() {
@@ -142,6 +154,7 @@ function createTestMetadata() {
         test: "test string",
         description: "Material JSON metadata.",
         someNumber: 73,
+        doSomething: () => {},
     };
 
     const defaultMeta = MeshBuilder.CreateBox("default.metadata", { size: 0.15 }, scene);
@@ -208,6 +221,14 @@ async function createSound() {
     });
 }
 
+async function createClusteredLight() {
+    await import("core/Lights/Clustered/clusteredLightingSceneComponent");
+    const pointLight1 = new PointLight("clusteredPoint1", new Vector3(1, 1, 0), scene);
+    const pointLight2 = new PointLight("clusteredPoint2", new Vector3(-1, 1, 0), scene);
+    const spotLight1 = new SpotLight("clusteredSpot1", new Vector3(0, 2, 0), Vector3.Down(), Math.PI / 4, 2, scene);
+    new ClusteredLightContainer("clusteredLights", [pointLight1, pointLight2, spotLight1], scene);
+}
+
 (async () => {
     let assetContainer = await loadModelAsync();
     createCamera();
@@ -230,6 +251,8 @@ async function createSound() {
     createGui();
 
     createSound();
+
+    await createClusteredLight();
 
     engine.runRenderLoop(() => {
         scene.render();

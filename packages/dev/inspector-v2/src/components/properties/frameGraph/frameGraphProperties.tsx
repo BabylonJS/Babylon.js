@@ -1,6 +1,6 @@
-import type { FrameGraph } from "core/index";
+import { type FrameGraph } from "core/index";
 
-import type { FunctionComponent } from "react";
+import { type FunctionComponent } from "react";
 
 import { EditRegular, PlayRegular } from "@fluentui/react-icons";
 

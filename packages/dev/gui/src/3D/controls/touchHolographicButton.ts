@@ -1,5 +1,5 @@
-import type { Nullable } from "core/types";
-import type { Observer } from "core/Misc/observable";
+import { type Nullable } from "core/types";
+import { type Observer } from "core/Misc/observable";
 import { Vector3 } from "core/Maths/math.vector";
 import { StandardMaterial } from "core/Materials/standardMaterial";
 import { TransformNode } from "core/Meshes/transformNode";
@@ -7,17 +7,17 @@ import { Mesh } from "core/Meshes/mesh";
 import { CreatePlane } from "core/Meshes/Builders/planeBuilder";
 import { CreateBox } from "core/Meshes/Builders/boxBuilder";
 import { FadeInOutBehavior } from "core/Behaviors/Meshes/fadeInOutBehavior";
-import type { Scene } from "core/scene";
+import { type Scene } from "core/scene";
 import { FluentMaterial } from "../materials/fluent/fluentMaterial";
 import { FluentButtonMaterial } from "../materials/fluentButton/fluentButtonMaterial";
 import { StackPanel } from "../../2D/controls/stackPanel";
 import { Image } from "../../2D/controls/image";
 import { TextBlock } from "../../2D/controls/textBlock";
 import { AdvancedDynamicTexture } from "../../2D/advancedDynamicTexture";
-import type { Control3D } from "./control3D";
+import { type Control3D } from "./control3D";
 import { Color3 } from "core/Maths/math.color";
 import { TouchButton3D } from "./touchButton3D";
-import type { AbstractMesh } from "core/Meshes/abstractMesh";
+import { type AbstractMesh } from "core/Meshes/abstractMesh";
 import { SceneLoader } from "core/Loading/sceneLoader";
 import { IsDocumentAvailable } from "core/Misc/domManagement";
 import { Scalar } from "core/Maths/math.scalar";
@@ -342,7 +342,7 @@ export class TouchHolographicButton extends TouchButton3D {
         // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
         SceneLoader.ImportMeshAsync(undefined, baseUrl, TouchHolographicButton.MODEL_FILENAME, scene).then((result) => {
             const alphaMesh = CreateBox(
-                "${this.name}_alphaMesh",
+                `${this.name}_alphaMesh`,
                 {
                     width: 1.0,
                     height: 1.0,
@@ -351,7 +351,7 @@ export class TouchHolographicButton extends TouchButton3D {
                 scene
             );
             alphaMesh.isPickable = false;
-            alphaMesh.material = new StandardMaterial("${this.name}_alphaMesh_material", scene);
+            alphaMesh.material = new StandardMaterial(`${this.name}_alphaMesh_material`, scene);
             alphaMesh.material.alpha = 0.15;
 
             const importedFrontPlate = result.meshes[1];
@@ -387,7 +387,7 @@ export class TouchHolographicButton extends TouchButton3D {
         this._backPlate.addChild(collisionMesh);
         this._backPlate.addChild(this._textPlate);
 
-        const tn = new TransformNode(`{this.name}_root`, scene);
+        const tn = new TransformNode(`${this.name}_root`, scene);
         this._backPlate.setParent(tn);
 
         this.collisionMesh = collisionMesh;

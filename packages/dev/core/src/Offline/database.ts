@@ -1,8 +1,8 @@
-import type { Nullable } from "../types";
+import { type Nullable } from "../types";
 import { Tools } from "../Misc/tools";
 import { Logger } from "../Misc/logger";
 import { GetTGAHeader } from "../Misc/tga";
-import type { IOfflineProvider } from "./IOfflineProvider";
+import { type IOfflineProvider } from "./IOfflineProvider";
 import { WebRequest } from "../Misc/webRequest";
 import { AbstractEngine } from "core/Engines/abstractEngine";
 

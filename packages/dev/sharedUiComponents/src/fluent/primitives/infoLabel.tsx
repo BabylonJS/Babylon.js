@@ -1,5 +1,4 @@
-import type { FunctionComponent, MouseEvent, MouseEventHandler } from "react";
-import { useCallback } from "react";
+import { type FunctionComponent, type MouseEvent, type MouseEventHandler, useCallback } from "react";
 import { Body1Strong, InfoLabel as FluentInfoLabel, makeStyles, mergeClasses } from "@fluentui/react-components";
 import { useKeyState } from "../hooks/keyboardHooks";
 
@@ -73,8 +72,8 @@ export const InfoLabel: FunctionComponent<InfoLabelProps> = (props) => {
             <Body1Strong className={classes.labelText}>{props.label}</Body1Strong>
         </FluentInfoLabel>
     ) : (
-        <Body1Strong className={mergeClasses(props.className, showCopyCursor ? classes.copyable : undefined)} onContextMenu={props.onContextMenu} onClick={handleClick}>
-            {props.label}
-        </Body1Strong>
+        <div className={mergeClasses(props.className, showCopyCursor ? classes.copyable : undefined)} onContextMenu={props.onContextMenu} onClick={handleClick}>
+            <Body1Strong className={classes.labelText}>{props.label}</Body1Strong>
+        </div>
     );
 };

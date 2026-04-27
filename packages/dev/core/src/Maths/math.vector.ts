@@ -1,15 +1,15 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { Epsilon } from "./math.constants";
-import type { Viewport } from "./math.viewport";
-import type { DeepImmutable, Nullable, FloatArray, float, Tuple } from "../types";
+import { type Viewport } from "./math.viewport";
+import { type DeepImmutable, type Nullable, type FloatArray, type float, type Tuple } from "../types";
 import { BuildTuple } from "../Misc/arrayTools";
 import { RegisterClass } from "../Misc/typeStore";
-import type { Plane } from "./math.plane";
+import { type Plane } from "./math.plane";
 import { PerformanceConfigurator } from "../Engines/performanceConfigurator";
 import { EngineStore } from "../Engines/engineStore";
-import type { TransformNode } from "../Meshes/transformNode";
-import type { Dimension, Tensor, TensorLike, TensorStatic } from "./tensor";
-import type { IVector2Like, IVector3Like, IVector4Like, IQuaternionLike, IMatrixLike, IPlaneLike, IVector3LikeInternal } from "./math.like";
+import { type TransformNode } from "../Meshes/transformNode";
+import { type Dimension, type Tensor, type TensorLike, type TensorStatic } from "./tensor";
+import { type IVector2Like, type IVector3Like, type IVector4Like, type IQuaternionLike, type IMatrixLike, type IPlaneLike, type IVector3LikeInternal } from "./math.like";
 import { Clamp, Lerp, NormalizeRadians, RandomRange, WithinEpsilon } from "./math.scalar.functions";
 import { CopyMatrixToArray, InvertMatrixToArray, MatrixManagement, MultiplyMatricesToArray } from "./ThinMaths/thinMath.matrix.functions";
 
@@ -5314,7 +5314,7 @@ export class Quaternion implements Tensor<Tuple<number, 4>, Quaternion>, IQuater
      * @returns the angle in radians
      */
     public toAxisAngleToRef<T extends Vector3>(axis: T): number {
-        let angle = 0;
+        let angle: number;
         const sinHalfAngle = Math.sqrt(this._x * this._x + this._y * this._y + this._z * this._z);
         const cosHalfAngle = this._w;
 

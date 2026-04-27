@@ -1,4 +1,4 @@
-import type { I3mfModel } from "./3mf.interfaces";
+import { type I3mfModel } from "./3mf.interfaces";
 
 export const OpenXmlContentTypesNamespace = "http://schemas.openxmlformats.org/package/2006/content-types";
 export const OpenXmlRelationshipsNamespace = "http://schemas.openxmlformats.org/package/2006/relationships";

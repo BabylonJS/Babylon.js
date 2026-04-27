@@ -11,7 +11,7 @@ export class ExecuteCodeAction extends BaseAction {
         this._code = code;
     }
 
-    public execute(): void {
+    public override execute(): void {
         this._code();
     }
 }

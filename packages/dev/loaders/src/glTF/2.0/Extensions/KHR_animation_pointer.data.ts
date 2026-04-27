@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 
 import { Animation } from "core/Animations/animation";
-import type { ICamera, IKHRLightsPunctual_Light, IMaterial, INode } from "../glTFLoaderInterfaces";
-import type { IAnimatable } from "core/Animations/animatable.interface";
+import { type ICamera, type IKHRLightsPunctual_Light, type IMaterial, type INode } from "../glTFLoaderInterfaces";
+import { type IAnimatable } from "core/Animations/animatable.interface";
 import { AnimationPropertyInfo } from "../glTFLoaderAnimation";
 import { Color3 } from "core/Maths/math.color";
 import { SetInterpolationForKey } from "./objectModelMapping";

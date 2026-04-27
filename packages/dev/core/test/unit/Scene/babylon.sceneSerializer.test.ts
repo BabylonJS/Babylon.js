@@ -1,8 +1,8 @@
 import { ActionManager, IncrementValueAction } from "core/Actions";
-import { FreeCamera } from "core/Cameras";
-import type { Engine } from "core/Engines";
-import { NullEngine } from "core/Engines";
+import { FreeCamera } from "core/Cameras/freeCamera";
+import { type Engine, NullEngine } from "core/Engines";
 import { HemisphericLight } from "core/Lights";
+import { LoadAssetContainerFromSerializedScene } from "core/Loading/Plugins/babylonFileLoader";
 import { Vector2, Vector3 } from "core/Maths";
 import { TransformNode } from "core/Meshes";
 import { MeshBuilder } from "core/Meshes/meshBuilder";
@@ -161,6 +161,64 @@ describe("Babylon scene serializer", () => {
             expect(resultWithoutParentAndChild).toBeTruthy();
             expect(resultWithoutParentAndChild.meshes.length).toBe(1);
             expect(resultWithoutParentAndChild.transformNodes.length).toBe(0);
+        });
+    });
+
+    describe("#freezeWorldMatrix round-trip", () => {
+        it("should serialize freezeWorldMatrix for frozen Mesh and TransformNode and skip it for unfrozen ones", () => {
+            const frozenMesh = MeshBuilder.CreateBox("frozenMesh", { size: 1 }, scene);
+            frozenMesh.position.set(1, 2, 3);
+            frozenMesh.freezeWorldMatrix();
+
+            MeshBuilder.CreateBox("unfrozenMesh", { size: 1 }, scene);
+
+            const frozenTransformNode = new TransformNode("frozenTransformNode", scene);
+            frozenTransformNode.position.set(4, 5, 6);
+            frozenTransformNode.freezeWorldMatrix();
+
+            new TransformNode("unfrozenTransformNode", scene);
+
+            const result = SceneSerializer.Serialize(scene);
+
+            const meshById = new Map<string, any>(result.meshes.map((m: any) => [m.name, m]));
+            expect(meshById.get("frozenMesh").freezeWorldMatrix).toBe(true);
+            expect(meshById.get("unfrozenMesh").freezeWorldMatrix).toBeUndefined();
+
+            const tnById = new Map<string, any>(result.transformNodes.map((t: any) => [t.name, t]));
+            expect(tnById.get("frozenTransformNode").freezeWorldMatrix).toBe(true);
+            expect(tnById.get("unfrozenTransformNode").freezeWorldMatrix).toBeUndefined();
+        });
+
+        it("should preserve frozen state for Mesh and TransformNode through a serialize/parse round-trip", () => {
+            const sourceMesh = MeshBuilder.CreateBox("box", { size: 1 }, scene);
+            sourceMesh.position.set(1, 2, 3);
+            sourceMesh.freezeWorldMatrix();
+
+            const sourceTransformNode = new TransformNode("tn", scene);
+            sourceTransformNode.position.set(4, 5, 6);
+            sourceTransformNode.freezeWorldMatrix();
+
+            const serialized = SceneSerializer.Serialize(scene);
+
+            const targetEngine = new NullEngine({
+                renderHeight: 256,
+                renderWidth: 256,
+                textureSize: 256,
+                deterministicLockstep: false,
+                lockstepMaxSteps: 1,
+            });
+            const targetScene = new Scene(targetEngine);
+            const container = LoadAssetContainerFromSerializedScene(targetScene, serialized, "");
+
+            const loadedMesh = container.meshes.find((m) => m.name === "box");
+            expect(loadedMesh).toBeDefined();
+            expect(loadedMesh!.isWorldMatrixFrozen).toBe(true);
+
+            const loadedTransformNode = container.transformNodes.find((t) => t.name === "tn");
+            expect(loadedTransformNode).toBeDefined();
+            expect(loadedTransformNode!.isWorldMatrixFrozen).toBe(true);
+
+            targetEngine.dispose();
         });
     });
 });

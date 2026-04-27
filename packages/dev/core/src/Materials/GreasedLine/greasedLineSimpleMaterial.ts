@@ -1,14 +1,13 @@
-import type { Scene } from "../../scene";
+import { type Scene } from "../../scene";
 import { RawTexture } from "../Textures/rawTexture";
 import { ShaderMaterial } from "../shaderMaterial";
-import type { Nullable } from "../../types";
+import { type Nullable } from "../../types";
 import { Color3 } from "../../Maths/math.color";
 import { Vector2 } from "../../Maths/math.vector";
 import { ShaderLanguage } from "../shaderLanguage";
 import { TextureSampler } from "../Textures/textureSampler";
 
-import type { GreasedLineMaterialOptions, IGreasedLineMaterial } from "./greasedLineMaterialInterfaces";
-import { GreasedLineMeshColorDistributionType, GreasedLineMeshColorMode } from "./greasedLineMaterialInterfaces";
+import { type GreasedLineMaterialOptions, type IGreasedLineMaterial, GreasedLineMeshColorDistributionType, GreasedLineMeshColorMode } from "./greasedLineMaterialInterfaces";
 import { GreasedLineTools } from "../../Misc/greasedLineTools";
 import { GreasedLineMaterialDefaults } from "./greasedLineMaterialDefaults";
 
@@ -168,7 +167,9 @@ export class GreasedLineSimpleMaterial extends ShaderMaterial implements IGrease
      * Disposes the plugin material.
      */
     public override dispose(): void {
-        this._colorsTexture?.dispose();
+        if (this._colorsTexture && this._colorsTexture !== GreasedLineMaterialDefaults.EmptyColorsTexture) {
+            this._colorsTexture.dispose();
+        }
         super.dispose();
     }
 
@@ -211,7 +212,13 @@ export class GreasedLineSimpleMaterial extends ShaderMaterial implements IGrease
         this._colors = colors;
 
         if (colors === null || colors.length === 0) {
-            this._colorsTexture?.dispose();
+            if (this._colorsTexture && this._colorsTexture !== GreasedLineMaterialDefaults.EmptyColorsTexture) {
+                this._colorsTexture.dispose();
+            }
+            const scene = this.getScene();
+            if (scene) {
+                this.colorsTexture = GreasedLineTools.PrepareEmptyColorsTexture(scene);
+            }
             return;
         }
 
@@ -223,7 +230,9 @@ export class GreasedLineSimpleMaterial extends ShaderMaterial implements IGrease
             const colorArray = GreasedLineTools.Color3toRGBAUint8(colors);
             this._colorsTexture.update(colorArray);
         } else {
-            this._colorsTexture?.dispose();
+            if (this._colorsTexture && this._colorsTexture !== GreasedLineMaterialDefaults.EmptyColorsTexture) {
+                this._colorsTexture.dispose();
+            }
             this.colorsTexture = GreasedLineTools.CreateColorsTexture(`${this.name}-colors-texture`, colors, this.colorsSampling, this.getScene());
         }
     }

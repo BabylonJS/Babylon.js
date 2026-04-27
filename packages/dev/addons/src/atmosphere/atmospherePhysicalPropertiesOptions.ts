@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-import type { Vector3 } from "core/Maths/math.vector";
+import { type Vector3 } from "core/Maths/math.vector";
 
 /**
  * The options for the {@link AtmospherePhysicalProperties} that describe the planet, the atmosphere, and scattering.

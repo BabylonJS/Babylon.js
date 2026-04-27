@@ -1,12 +1,12 @@
-import type { IMaterial, IKHRMaterialsFuzz } from "babylonjs-gltf2interface";
-import type { IGLTFExporterExtensionV2 } from "../glTFExporterExtension";
+import { type IMaterial, type IKHRMaterialsFuzz } from "babylonjs-gltf2interface";
+import { type IGLTFExporterExtensionV2 } from "../glTFExporterExtension";
 import { GLTFExporter } from "../glTFExporter";
-import type { Material } from "core/Materials/material";
+import { type Material } from "core/Materials/material";
 import { OpenPBRMaterial } from "core/Materials/PBR/openpbrMaterial";
 import { MergeTexturesAsync, CreateRGBAConfiguration, CreateTextureInput, CreateConstantInput } from "core/Materials/Textures/textureMerger";
-import type { BaseTexture } from "core/Materials/Textures/baseTexture";
-import type { Nullable } from "core/types";
-import type { InternalTexture } from "core/Materials/Textures/internalTexture";
+import { type BaseTexture } from "core/Materials/Textures/baseTexture";
+import { type Nullable } from "core/types";
+import { type InternalTexture } from "core/Materials/Textures/internalTexture";
 import { Texture } from "core/Materials/Textures/texture";
 
 const NAME = "KHR_materials_fuzz";
@@ -202,7 +202,7 @@ export class KHR_materials_fuzz implements IGLTFExporterExtensionV2 {
                     fuzzInfo.fuzzTexture = this._exporter._materialExporter.getTextureInfo(babylonMaterial.fuzzWeightTexture) ?? undefined;
                 }
 
-                let fuzzColorTexture: Nullable<BaseTexture> = null;
+                let fuzzColorTexture: Nullable<BaseTexture>;
                 if (babylonMaterial.fuzzColorTexture) {
                     if (this._mergedTexturesMap[babylonMaterial.fuzzColorTexture.uniqueId]) {
                         fuzzColorTexture = this._mergedTexturesMap[babylonMaterial.fuzzColorTexture.uniqueId];
@@ -212,7 +212,7 @@ export class KHR_materials_fuzz implements IGLTFExporterExtensionV2 {
                     fuzzInfo.fuzzColorTexture = this._exporter._materialExporter.getTextureInfo(fuzzColorTexture) ?? undefined;
                 }
 
-                let fuzzRoughnessTexture: Nullable<BaseTexture> = null;
+                let fuzzRoughnessTexture: Nullable<BaseTexture>;
                 if (babylonMaterial.fuzzRoughnessTexture) {
                     if (this._mergedTexturesMap[babylonMaterial.fuzzRoughnessTexture.uniqueId]) {
                         fuzzRoughnessTexture = this._mergedTexturesMap[babylonMaterial.fuzzRoughnessTexture.uniqueId];

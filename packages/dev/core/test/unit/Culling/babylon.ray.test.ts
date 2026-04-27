@@ -11,7 +11,7 @@ import "core/Materials/standardMaterial";
 describe("Babylon Ray", function () {
     let subject: Engine;
 
-    jest.setTimeout(10000);
+    vi.setConfig({ testTimeout: 10000 });
 
     /**
      * Create a new engine subject before each test.

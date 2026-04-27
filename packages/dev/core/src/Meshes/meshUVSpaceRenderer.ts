@@ -1,11 +1,10 @@
-import type { Texture } from "core/Materials/Textures/texture";
-import type { Vector3 } from "core/Maths/math.vector";
-import type { Scene } from "core/scene";
-import type { AbstractMesh } from "./abstractMesh";
-import type { ThinTexture } from "core/Materials/Textures/thinTexture";
-import type { BaseTexture } from "core/Materials/Textures/baseTexture";
-import type { Nullable } from "core/types";
-import { Matrix } from "core/Maths/math.vector";
+import { type Texture } from "core/Materials/Textures/texture";
+import { type Vector3, Matrix } from "core/Maths/math.vector";
+import { type Scene } from "core/scene";
+import { type AbstractMesh } from "./abstractMesh";
+import { type ThinTexture } from "core/Materials/Textures/thinTexture";
+import { type BaseTexture } from "core/Materials/Textures/baseTexture";
+import { type Nullable } from "core/types";
 import { Constants } from "core/Engines/constants";
 import { ShaderMaterial } from "core/Materials/shaderMaterial";
 import { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";

@@ -1,10 +1,10 @@
-import type { NodeMaterial } from "core/Materials/Node/nodeMaterial";
-import type { GlobalState } from "./globalState";
+import { type NodeMaterial } from "core/Materials/Node/nodeMaterial";
+import { type GlobalState } from "./globalState";
 import { Texture } from "core/Materials/Textures/texture";
 import { DataStorage } from "core/Misc/dataStorage";
-import type { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
-import type { Nullable } from "core/types";
-import type { GraphFrame } from "shared-ui-components/nodeGraphSystem/graphFrame";
+import { type NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
+import { type Nullable } from "core/types";
+import { type GraphFrame } from "shared-ui-components/nodeGraphSystem/graphFrame";
 
 export class SerializationTools {
     public static UpdateLocations(material: NodeMaterial, globalState: GlobalState, frame?: Nullable<GraphFrame>) {

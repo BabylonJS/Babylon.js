@@ -1,18 +1,17 @@
-import type { Nullable } from "core/types";
-import type { AnimationInput } from "./types";
-import type {
-    AnimationSizeMessagePayload,
-    AnimationUrlMessage,
-    ContainerResizeMessage,
-    DisposeMessage,
-    Message,
-    StartAnimationMessage,
-    PreWarmMessage,
-    WorkerLoadedMessagePayload,
+import { type Nullable } from "core/types";
+import { type AnimationInput } from "./types";
+import {
+    type AnimationSizeMessagePayload,
+    type AnimationUrlMessage,
+    type ContainerResizeMessage,
+    type DisposeMessage,
+    type Message,
+    type StartAnimationMessage,
+    type PreWarmMessage,
+    type WorkerLoadedMessagePayload,
 } from "./messageTypes";
-import type { RawLottieAnimation } from "./parsing/rawTypes";
-import { CalculateScaleFactors } from "./rendering/calculateScaleFactor";
-import type { ScaleFactors } from "./rendering/calculateScaleFactor";
+import { type RawLottieAnimation } from "./parsing/rawTypes";
+import { CalculateScaleFactors, type ScaleFactors } from "./rendering/calculateScaleFactor";
 import { BlobWorkerWrapper as Worker } from "./blobWorkerWrapper";
 
 /**
@@ -273,6 +272,10 @@ export class Player {
                 this._preWarmResolve = null;
                 this._preWarmReject = null;
                 this._preWarmPromise = null;
+                break;
+            }
+            case "firstRender": {
+                this._input?.onFirstRender?.();
                 break;
             }
         }

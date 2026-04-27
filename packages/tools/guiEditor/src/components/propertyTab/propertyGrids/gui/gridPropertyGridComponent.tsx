@@ -1,11 +1,11 @@
 import * as React from "react";
-import type { Observable } from "core/Misc/observable";
-import type { PropertyChangedEvent } from "shared-ui-components/propertyChangedEvent";
+import { type Observable } from "core/Misc/observable";
+import { type PropertyChangedEvent } from "shared-ui-components/propertyChangedEvent";
 import { CommonControlPropertyGridComponent } from "../gui/commonControlPropertyGridComponent";
-import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
-import type { Grid } from "gui/2D/controls/grid";
+import { type LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
+import { type Grid } from "gui/2D/controls/grid";
 import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
-import type { Nullable } from "core/types";
+import { type Nullable } from "core/types";
 import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
 import { CommandButtonComponent } from "../../../commandButtonComponent";
 
@@ -17,7 +17,7 @@ import addGridElementDark from "shared-ui-components/imgs/addGridElementDark.svg
 import cancelGridElementDark from "shared-ui-components/imgs/cancelGridElementDark.svg";
 import valueChangedGridDark from "shared-ui-components/imgs/valueChangedGridDark.svg";
 import deleteGridElementDark from "shared-ui-components/imgs/deleteGridElementDark.svg";
-import type { GlobalState } from "../../../../globalState";
+import { type GlobalState } from "../../../../globalState";
 import { MathTools } from "gui/2D/math2D";
 
 interface IGridPropertyGridComponentProps {

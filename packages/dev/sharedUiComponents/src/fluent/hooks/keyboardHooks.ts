@@ -1,8 +1,6 @@
-import type { WindowOptions } from "./eventHooks";
+import { type WindowOptions, useEventListener } from "./eventHooks";
 
 import { useCallback, useState } from "react";
-
-import { useEventListener } from "./eventHooks";
 
 type KeyCallbacks = {
     onKeyDown?: (e: KeyboardEvent) => void;

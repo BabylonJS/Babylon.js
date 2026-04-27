@@ -1,6 +1,6 @@
 {
     "name": "@babylonjs/smart-filters",
-    "version": "8.53.0",
+    "version": "9.4.1",
     "description": "Babylon.js Smart Filter core",
     "keywords": [
         "video",
@@ -36,17 +36,18 @@
     ],
     "scripts": {
         "build": "npm run clean && npm run copySrc && npm run compile",
-        "clean": "rimraf dist && rimraf src && rimraf *.tsbuildinfo -g && rimraf \"./**/*.!(cmd|md|json|build.json|lts.json|tasks.json|cjs)\" -g",
+        "clean": "rimraf dist && rimraf src && rimraf *.tsbuildinfo -g && rimraf \"./**/*.!(cmd|md|json|build.json|tasks.json|cjs)\" -g",
         "copySrc": "node -e \"require('fs').cpSync('../../../dev/smartFilters/src', './src', { recursive: true })\"",
-        "compile": "node src/utils/buildTools/recordVersionNumber.js && tsc -b tsconfig.build.json",
+        "compile": "node src/utils/buildTools/recordVersionNumber.js && tsc -b tsconfig.build.json && build-tools -c tp --outDir ./dist --buildType es6 --basePackage @babylonjs/smart-filters --appendJS",
         "postcompile": "build-tools -c add-js-to-es6"
     },
     "devDependencies": {
         "@dev/build-tools": "^1.0.0",
         "@dev/core": "^1.0.0",
+        "@dev/smart-filters": "^1.0.0",
         "@dev/shared-ui-components": "1.0.0"
     },
     "peerDependencies": {
-        "@babylonjs/core": "^7.47.3 || ^8.0.1"
+        "@babylonjs/core": "^7.47.3 || ^8.0.1 || ^9.0.0"
     }
 }

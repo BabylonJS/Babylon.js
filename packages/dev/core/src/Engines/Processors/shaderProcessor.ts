@@ -8,16 +8,16 @@ import { ShaderDefineOrOperator } from "./Expressions/Operators/shaderDefineOrOp
 import { ShaderDefineAndOperator } from "./Expressions/Operators/shaderDefineAndOperator";
 import { ShaderDefineExpression } from "./Expressions/shaderDefineExpression";
 import { ShaderDefineArithmeticOperator } from "./Expressions/Operators/shaderDefineArithmeticOperator";
-import type { _IProcessingOptions } from "./shaderProcessingOptions";
+import { type _IProcessingOptions } from "./shaderProcessingOptions";
 import { _WarnImport } from "../../Misc/devTools";
 import { ShaderLanguage } from "../../Materials/shaderLanguage";
 
-import type { WebRequest } from "../../Misc/webRequest";
-import type { LoadFileError } from "../../Misc/fileTools";
-import type { IOfflineProvider } from "../../Offline/IOfflineProvider";
-import type { IFileRequest } from "../../Misc/fileRequest";
+import { type WebRequest } from "../../Misc/webRequest";
+import { type LoadFileError } from "../../Misc/fileTools";
+import { type IOfflineProvider } from "../../Offline/IOfflineProvider";
+import { type IFileRequest } from "../../Misc/fileRequest";
 import { _GetGlobalDefines } from "../abstractEngine.functions";
-import type { AbstractEngine } from "../abstractEngine";
+import { type AbstractEngine } from "../abstractEngine";
 
 const RegexSe = /defined\s*?\((.+?)\)/g;
 const RegexSeRevert = /defined\s*?\[(.+?)\]/g;
@@ -190,7 +190,7 @@ function BuildExpression(line: string, start: number): ShaderCodeTestNode {
 }
 
 function MoveCursorWithinIf(cursor: ShaderCodeCursor, rootNode: ShaderCodeConditionNode, ifNode: ShaderCodeNode, preProcessorsFromCode: { [key: string]: string }) {
-    let line = cursor.currentLine;
+    let line: string;
     while (MoveCursor(cursor, ifNode, preProcessorsFromCode)) {
         line = cursor.currentLine;
         const first5 = line.substring(0, 5).toLowerCase();
@@ -418,7 +418,6 @@ export function ProcessIncludes(sourceCode: string, options: _IProcessingOptions
         ReusableMatches.push(match);
     }
 
-    let returnValue = String(sourceCode);
     let parts = [sourceCode];
 
     let keepProcessing = false;
@@ -509,7 +508,7 @@ export function ProcessIncludes(sourceCode: string, options: _IProcessingOptions
     }
     ReusableMatches.length = 0;
 
-    returnValue = parts.join("");
+    const returnValue = parts.join("");
 
     if (keepProcessing) {
         ProcessIncludes(returnValue.toString(), options, callback);

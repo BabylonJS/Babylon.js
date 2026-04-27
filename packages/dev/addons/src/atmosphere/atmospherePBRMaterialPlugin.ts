@@ -1,13 +1,13 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-import type { Atmosphere } from "./atmosphere";
-import type { BaseTexture } from "core/Materials/Textures/baseTexture";
-import type { Material } from "core/Materials/material";
+import { type Atmosphere } from "./atmosphere";
+import { type BaseTexture } from "core/Materials/Textures/baseTexture";
+import { type Material } from "core/Materials/material";
 import { MaterialDefines } from "core/Materials/materialDefines";
 import { MaterialPluginBase } from "core/Materials/materialPluginBase";
-import type { Nullable } from "core/types";
-import type { UniformBuffer } from "core/Materials/uniformBuffer";
+import { type Nullable } from "core/types";
+import { type UniformBuffer } from "core/Materials/uniformBuffer";
 import { Vector3FromFloatsToRef, Vector3ScaleToRef } from "core/Maths/math.vector.functions";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import "./ShadersWGSL/ShadersInclude/atmosphereFunctions";
@@ -116,15 +116,20 @@ export class AtmospherePBRMaterialPlugin extends MaterialPluginBase {
      * @override
      */
     public override isReadyForSubMesh(): boolean {
-        let isReady = true;
         const atmosphere = this._atmosphere;
+
+        if (!atmosphere.transmittanceLut?.hasLutData || (atmosphere.diffuseSkyIrradianceLut && !atmosphere.diffuseSkyIrradianceLut.hasLutData)) {
+            return false;
+        }
+
         if (this._isAerialPerspectiveEnabled && atmosphere.isAerialPerspectiveLutEnabled) {
             const aerialPerspectiveLutRenderTarget = atmosphere.aerialPerspectiveLutRenderTarget;
-            isReady = isReady && !!aerialPerspectiveLutRenderTarget?.isReady();
+            if (!aerialPerspectiveLutRenderTarget?.isReady()) {
+                return false;
+            }
         }
-        const transmittanceLutRenderTarget = atmosphere.transmittanceLut?.renderTarget ?? null;
-        isReady = isReady && !!transmittanceLutRenderTarget?.isReady();
-        return isReady;
+
+        return true;
     }
 
     /**
@@ -232,6 +237,8 @@ export class AtmospherePBRMaterialPlugin extends MaterialPluginBase {
                     this._isAerialPerspectiveEnabled && this._atmosphere.isAerialPerspectiveLutEnabled
                         ? `uniform sampler2D transmittanceLut;\r\nprecision highp sampler2DArray;\r\nuniform sampler2DArray aerialPerspectiveLut;\r\n${atmosphereImportSnippet}\r\n#include<atmosphereFunctions>`
                         : `uniform sampler2D transmittanceLut;\r\n${atmosphereImportSnippet}\r\n#include<atmosphereFunctions>`,
+
+                // Provides the direct light contribution, accounting for transmittance.
                 CUSTOM_LIGHT0_COLOR: `
             {
                 vec3 positionGlobal = 0.001 * vPositionW + ${OriginOffsetUniformName};
@@ -242,6 +249,10 @@ export class AtmospherePBRMaterialPlugin extends MaterialPluginBase {
                 diffuse0 = lightIntensity * sampleTransmittanceLut(transmittanceLut, positionRadius, cosAngleLightToZenith);
             }
 `,
+
+                // Approximates the environment contribution from the atmosphere.
+                // Note there are some tuned constants used below to modify the environment intensity.
+                // A more physically accurate approach could be considered, and/or uniforms added to customize.
                 CUSTOM_REFLECTION: `
             {
                 vec3 positionGlobal =  0.001 * vPositionW + ${OriginOffsetUniformName};
@@ -258,7 +269,7 @@ export class AtmospherePBRMaterialPlugin extends MaterialPluginBase {
 
                 // Add a contribution here to estimate indirect lighting.
                 const float r = 0.2;
-                float indirect = getLuminance(environmentIrradiance) / max(0.00001, 1. - r);
+                float indirect = getLuminanceUnclamped(environmentIrradiance) / max(0.00001, 1. - r);
                 environmentIrradiance *= irradianceScale;
                 environmentIrradiance += indirect;
 
@@ -298,6 +309,8 @@ export class AtmospherePBRMaterialPlugin extends MaterialPluginBase {
                     this._isAerialPerspectiveEnabled && this._atmosphere.isAerialPerspectiveLutEnabled
                         ? `var transmittanceLutSampler: sampler;\r\nvar transmittanceLut: texture_2d<f32>;\r\nvar aerialPerspectiveLutSampler: sampler;\r\nvar aerialPerspectiveLut: texture_2d_array<f32>;\r\n${atmosphereImportSnippet}\r\n#include<atmosphereFunctions>`
                         : `var transmittanceLutSampler: sampler;\r\nvar transmittanceLut: texture_2d<f32>;\r\n${atmosphereImportSnippet}\r\n#include<atmosphereFunctions>`,
+
+                // Provides the direct light contribution, accounting for transmittance.
                 CUSTOM_LIGHT0_COLOR: `
             {
                 var positionGlobal = 0.001 * fragmentInputs.vPositionW + uniforms.${OriginOffsetUniformName};
@@ -308,6 +321,10 @@ export class AtmospherePBRMaterialPlugin extends MaterialPluginBase {
                 diffuse0 = atmosphere.lightIntensity * sampleTransmittanceLut(transmittanceLut, positionRadius, cosAngleLightToZenith);
             }
 `,
+
+                // Approximates the environment contribution from the atmosphere.
+                // Note there are some tuned constants used below to modify the environment intensity.
+                // A more physically accurate approach could be considered, and/or uniforms added to customize.
                 CUSTOM_REFLECTION: `
             {
                 var positionGlobal =  0.001 * fragmentInputs.vPositionW + uniforms.${OriginOffsetUniformName};
@@ -324,7 +341,7 @@ export class AtmospherePBRMaterialPlugin extends MaterialPluginBase {
 
                 // Add a contribution here to estimate indirect lighting.
                 const r = 0.2;
-                var indirect = getLuminance(environmentIrradiance) / max(0.00001, 1.0 - r);
+                var indirect = getLuminanceUnclamped(environmentIrradiance) / max(0.00001, 1.0 - r);
                 environmentIrradiance *= irradianceScale;
                 environmentIrradiance += indirect;
 

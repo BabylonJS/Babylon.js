@@ -1,4 +1,4 @@
-import type { IDisposable, IReadonlyObservable, Nullable } from "core/index";
+import { type IDisposable, type IReadonlyObservable, type Nullable } from "core/index";
 
 import { useEffect, useMemo } from "react";
 

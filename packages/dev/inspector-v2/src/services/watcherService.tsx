@@ -1,9 +1,10 @@
-import type { IDisposable, Nullable } from "core/index";
-import type { DropdownOption } from "shared-ui-components/fluent/primitives/dropdown";
-import type { IService, ServiceDefinition } from "../modularity/serviceDefinition";
-import type { ISettingsService } from "./panes/settingsService";
-import type { ISettingsStore, SettingDescriptor } from "./settingsStore";
-import type { IShellService } from "./shellService";
+import { type IDisposable, type Nullable } from "core/index";
+import { type DropdownOption } from "shared-ui-components/fluent/primitives/dropdown";
+import { type IService, type ServiceDefinition } from "shared-ui-components/modularTool/modularity/serviceDefinition";
+import { type ISettingsService, SettingsServiceIdentity } from "shared-ui-components/modularTool/services/settingsService";
+import { type ISettingsStore, type SettingDescriptor, SettingsStoreIdentity } from "shared-ui-components/modularTool/services/settingsStore";
+import { type IShellService, ShellServiceIdentity } from "shared-ui-components/modularTool/services/shellService";
+import { type IReactContextService, type ReactContextHandle, ReactContextServiceIdentity } from "shared-ui-components/modularTool/services/reactContextService";
 
 import { ArrowClockwiseRegular } from "@fluentui/react-icons";
 
@@ -12,12 +13,10 @@ import { DropdownPropertyLine } from "shared-ui-components/fluent/hoc/propertyLi
 import { SyncedSliderPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/syncedSliderPropertyLine";
 import { Button } from "shared-ui-components/fluent/primitives/button";
 import { Collapse } from "shared-ui-components/fluent/primitives/collapse";
-import { useSetting } from "../hooks/settingsHooks";
+import { WatcherContext } from "../contexts/watcherContext";
+import { useSetting } from "shared-ui-components/modularTool/hooks/settingsHooks";
 import { InterceptProperty } from "../instrumentation/propertyInstrumentation";
 import { DefaultToolbarItemOrder } from "./defaultToolbarMetadata";
-import { SettingsServiceIdentity } from "./panes/settingsService";
-import { SettingsStoreIdentity } from "./settingsStore";
-import { ShellServiceIdentity } from "./shellService";
 
 type InterceptSettings = {
     mode: "intercept";
@@ -41,25 +40,48 @@ const WatcherSettingDescriptor: SettingDescriptor<WatcherSettings> = {
     },
 };
 
+/**
+ * The unique identity symbol for the watcher service.
+ */
 export const WatcherServiceIdentity = Symbol("WatcherService");
 
+/**
+ * Watches for property changes on objects, using either interception, polling, or manual refresh.
+ */
 export interface IWatcherService extends IService<typeof WatcherServiceIdentity> {
+    /**
+     * Watches a property on an object and calls the callback whenever it changes.
+     * @param target The object containing the property to watch.
+     * @param propertyKey The key of the property to watch.
+     * @param onChanged A callback that is called with the new value when the property changes.
+     * @returns A disposable that stops watching when disposed.
+     */
     watchProperty<T extends object, K extends keyof T>(
         target: T,
         propertyKey: string extends K ? never : number extends K ? never : symbol extends K ? never : K,
         onChanged: (value: NonNullable<T[K]>) => void
     ): IDisposable;
 
+    /**
+     * Watches a property on an object and calls the callback whenever it changes.
+     * @param target The object containing the property to watch.
+     * @param propertyKey The key of the property to watch.
+     * @param onChanged A callback that is called with the new value when the property changes.
+     * @returns A disposable that stops watching when disposed.
+     */
     watchProperty<T extends object>(target: T, propertyKey: keyof T, onChanged: (value: unknown) => void): IDisposable;
 
+    /**
+     * Manually triggers a refresh of all watched properties.
+     */
     refresh(): void;
 }
 
-export const WatcherServiceDefinition: ServiceDefinition<[IWatcherService], [ISettingsStore]> = {
+export const WatcherServiceDefinition: ServiceDefinition<[IWatcherService], [ISettingsStore, IReactContextService]> = {
     friendlyName: "Watcher Service",
     produces: [WatcherServiceIdentity],
-    consumes: [SettingsStoreIdentity],
-    factory: (settingsStore) => {
+    consumes: [SettingsStoreIdentity, ReactContextServiceIdentity],
+    factory: (settingsStore, reactContextService) => {
         let refreshObservable: Nullable<Observable<void>> = null;
         let pollingHandle: Nullable<number> = null;
 
@@ -95,7 +117,7 @@ export const WatcherServiceDefinition: ServiceDefinition<[IWatcherService], [ISe
 
         applySettings();
 
-        return {
+        const watcherService: IWatcherService & Partial<IDisposable> = {
             watchProperty<T extends object>(target: T, propertyKey: keyof T, onChanged: (value: unknown) => void): IDisposable {
                 if (refreshObservable) {
                     let previousValue = target[propertyKey];
@@ -120,6 +142,8 @@ export const WatcherServiceDefinition: ServiceDefinition<[IWatcherService], [ISe
                 refreshObservable?.notifyObservers();
             },
             dispose: () => {
+                contextHandle.dispose();
+
                 if (pollingHandle !== null) {
                     clearInterval(pollingHandle);
                     pollingHandle = null;
@@ -130,6 +154,11 @@ export const WatcherServiceDefinition: ServiceDefinition<[IWatcherService], [ISe
                 settingsStoreObserver.remove();
             },
         };
+
+        // Register the WatcherContext provider so React components can access the watcher service.
+        const contextHandle: ReactContextHandle<IWatcherService> = reactContextService.addContext(WatcherContext.Provider, watcherService);
+
+        return watcherService;
     },
 };
 

@@ -1,6 +1,6 @@
-import type { Nullable } from "core/types";
-import type { InternalTexture } from "../internalTexture";
-import type { IInternalTextureLoader } from "./internalTextureLoader";
+import { type Nullable } from "core/types";
+import { type InternalTexture } from "../internalTexture";
+import { type IInternalTextureLoader } from "./internalTextureLoader";
 import { GetExrHeader } from "./EXR/exrLoader.header";
 import { CreateDecoderAsync, ScanData } from "./EXR/exrLoader.decoder";
 import { ExrLoaderGlobalConfiguration, EXROutputType } from "./EXR/exrLoader.configuration";

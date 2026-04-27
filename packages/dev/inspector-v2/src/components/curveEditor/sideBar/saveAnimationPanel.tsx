@@ -1,10 +1,8 @@
-import type { FunctionComponent } from "react";
-import type { Animation } from "core/Animations/animation";
-import type { TargetedAnimation } from "core/Animations/animationGroup";
+import { type FunctionComponent, useCallback, useState } from "react";
+import { type Animation, Animation as AnimationClass } from "core/Animations/animation";
+import { type TargetedAnimation } from "core/Animations/animationGroup";
 
 import { makeStyles, tokens, Checkbox } from "@fluentui/react-components";
-import { useCallback, useState } from "react";
-import { Animation as AnimationClass } from "core/Animations/animation";
 import { StringTools } from "shared-ui-components/stringTools";
 
 import { Button } from "shared-ui-components/fluent/primitives/button";

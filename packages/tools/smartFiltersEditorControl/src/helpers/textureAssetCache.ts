@@ -1,7 +1,7 @@
-import type { ThinEngine } from "core/Engines/thinEngine";
-import type { ThinTexture } from "core/Materials/Textures/thinTexture";
-import type { ConnectionPointType, InputBlock, InputBlockEditorData } from "smart-filters";
-import type { Observable } from "core/Misc/observable";
+import { type ThinEngine } from "core/Engines/thinEngine";
+import { type ThinTexture } from "core/Materials/Textures/thinTexture";
+import { type ConnectionPointType, type InputBlock, type InputBlockEditorData } from "smart-filters";
+import { type Observable } from "core/Misc/observable";
 import { LoadTextureInputBlockAsset } from "./editorTextureLoaders.js";
 
 /**

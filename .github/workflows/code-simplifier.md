@@ -27,7 +27,9 @@ tools:
     toolsets:
     - default
 tracker-id: code-simplifier
-engine: copilot
+engine:
+  id: copilot
+  model: claude-opus-4.6
 ---
 
 <!-- This prompt will be imported in the agentic workflow .github/workflows/code-simplifier.md at runtime. -->

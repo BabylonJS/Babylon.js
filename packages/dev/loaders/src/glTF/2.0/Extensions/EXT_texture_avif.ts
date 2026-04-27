@@ -1,9 +1,9 @@
-import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
+import { type IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader, ArrayItem } from "../glTFLoader";
-import type { ITexture } from "../glTFLoaderInterfaces";
-import type { BaseTexture } from "core/Materials/Textures/baseTexture";
-import type { Nullable } from "core/types";
-import type { IEXTTextureAVIF } from "babylonjs-gltf2interface";
+import { type ITexture } from "../glTFLoaderInterfaces";
+import { type BaseTexture } from "core/Materials/Textures/baseTexture";
+import { type Nullable } from "core/types";
+import { type IEXTTextureAVIF } from "babylonjs-gltf2interface";
 import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
 
 const NAME = "EXT_texture_avif";

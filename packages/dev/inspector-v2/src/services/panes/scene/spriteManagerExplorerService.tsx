@@ -1,20 +1,18 @@
-import type { ISpriteManager } from "core/index";
-import type { ServiceDefinition } from "../../../modularity/serviceDefinition";
-import type { ISceneContext } from "../../sceneContext";
-import type { IWatcherService } from "../../watcherService";
-import type { ISceneExplorerService } from "./sceneExplorerService";
+import { type ISpriteManager } from "core/index";
+import { type ServiceDefinition } from "shared-ui-components/modularTool/modularity/serviceDefinition";
+import { type ISceneContext, SceneContextIdentity } from "../../sceneContext";
+import { type IWatcherService, WatcherServiceIdentity } from "../../watcherService";
+import { type ISceneExplorerService, SceneExplorerServiceIdentity } from "./sceneExplorerService";
 
+import { tokens } from "@fluentui/react-components";
 import { LayerDiagonalPersonRegular, PersonSquareRegular, PlayFilled, StopFilled } from "@fluentui/react-icons";
 
 import { Observable } from "core/Misc/observable";
 import { Sprite } from "core/Sprites/sprite";
-import { SceneContextIdentity } from "../../sceneContext";
-import { WatcherServiceIdentity } from "../../watcherService";
+import { InterceptFunction } from "../../../instrumentation/functionInstrumentation";
 import { DefaultCommandsOrder, DefaultSectionsOrder } from "./defaultSectionsMetadata";
-import { SceneExplorerServiceIdentity } from "./sceneExplorerService";
 
 import "core/Sprites/spriteSceneComponent";
-import { InterceptFunction } from "../../../instrumentation/functionInstrumentation";
 
 export const SpriteManagerExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplorerService, ISceneContext, IWatcherService]> = {
     friendlyName: "Sprite Manager Explorer",
@@ -37,7 +35,7 @@ export const SpriteManagerExplorerServiceDefinition: ServiceDefinition<[], [ISce
 
                 return {
                     get name() {
-                        return spriteEntity.name;
+                        return spriteEntity.name || `Unnamed ${spriteEntity instanceof Sprite ? spriteEntity.getClassName() : "SpriteManager"}`;
                     },
                     onChange: onChangeObservable,
                     dispose: () => {
@@ -46,7 +44,12 @@ export const SpriteManagerExplorerServiceDefinition: ServiceDefinition<[], [ISce
                     },
                 };
             },
-            entityIcon: ({ entity: spriteEntity }) => (spriteEntity instanceof Sprite ? <PersonSquareRegular /> : <LayerDiagonalPersonRegular />),
+            entityIcon: ({ entity: spriteEntity }) =>
+                spriteEntity instanceof Sprite ? (
+                    <PersonSquareRegular color={tokens.colorPalettePeachForeground2} />
+                ) : (
+                    <LayerDiagonalPersonRegular color={tokens.colorPalettePeachForeground2} />
+                ),
             getEntityAddedObservables: () => [scene.onNewSpriteManagerAddedObservable],
             getEntityRemovedObservables: () => [scene.onSpriteManagerRemovedObservable],
         });

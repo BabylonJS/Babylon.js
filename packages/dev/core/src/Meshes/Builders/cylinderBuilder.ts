@@ -3,7 +3,7 @@ import { Color4 } from "../../Maths/math.color";
 import { Mesh } from "../mesh";
 import { VertexData } from "../mesh.vertexData";
 import { Scene } from "../../scene";
-import type { Nullable } from "../../types";
+import { type Nullable } from "../../types";
 import { Axis } from "../../Maths/math.axis";
 import { useOpenGLOrientationForUV } from "../../Compat/compatibilityOptions";
 
@@ -96,10 +96,10 @@ export function CreateCylinderVertexData(options: {
     let i: number;
     let j: number;
     let r: number;
-    let ringIdx: number = 1;
+    let ringIdx: number;
     let s: number = 1; // surface index
     let cs: number = 0;
-    let v: number = 0;
+    let v: number;
 
     for (i = 0; i <= subdivisions; i++) {
         h = i / subdivisions;

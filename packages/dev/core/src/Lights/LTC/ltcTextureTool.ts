@@ -1,6 +1,6 @@
-import type { BaseTexture } from "core/Materials/Textures/baseTexture";
+import { type BaseTexture } from "core/Materials/Textures/baseTexture";
 import { Tools } from "core/Misc/tools";
-import type { Tuple } from "core/types";
+import { type Tuple } from "core/types";
 
 /**
  * Linearly transformed cosine textures that are used in the Area Lights shaders.

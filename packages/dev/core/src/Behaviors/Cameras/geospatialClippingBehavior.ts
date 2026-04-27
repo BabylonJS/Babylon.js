@@ -1,8 +1,8 @@
-import type { Behavior } from "../../Behaviors/behavior";
-import type { GeospatialCamera } from "../../Cameras/geospatialCamera";
-import type { Nullable } from "../../types";
-import type { Observer } from "../../Misc/observable";
-import type { Scene } from "../../scene";
+import { type Behavior } from "../../Behaviors/behavior";
+import { type GeospatialCamera } from "../../Cameras/geospatialCamera";
+import { type Nullable } from "../../types";
+import { type Observer } from "../../Misc/observable";
+import { type Scene } from "../../scene";
 
 /**
  * The GeospatialClippingBehavior automatically adjusts the near and far clip planes of a GeospatialCamera

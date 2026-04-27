@@ -1,4 +1,4 @@
-import type { IXmlWriter } from "./xml.builder";
+import { type IXmlWriter } from "./xml.builder";
 
 /** */
 export type ByteSink = {

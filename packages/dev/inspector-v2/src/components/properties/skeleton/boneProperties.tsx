@@ -1,8 +1,8 @@
-import type { Bone } from "core/index";
+import { type Bone } from "core/index";
 
-import type { FunctionComponent } from "react";
+import { type FunctionComponent } from "react";
 import { LinkToEntityPropertyLine } from "../linkToEntityPropertyLine";
-import type { ISelectionService } from "../../../services/selectionService";
+import { type ISelectionService } from "../../../services/selectionService";
 
 export const BoneGeneralProperties: FunctionComponent<{ bone: Bone; selectionService: ISelectionService }> = (props) => {
     const { bone } = props;

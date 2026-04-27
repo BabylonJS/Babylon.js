@@ -1,8 +1,18 @@
 /* eslint-disable @typescript-eslint/no-floating-promises */
 /* eslint-disable @typescript-eslint/naming-convention */
-import type { BaseTexture, CubeTexture, InternalTexture, ISize, IWheelEvent, Mesh, Nullable, PointerInfo, RawCubeTexture } from "core/index";
-import type { Channel } from "./channels";
-import type { IMetadata } from "./textureEditor";
+import {
+    type BaseTexture,
+    type CubeTexture,
+    type InternalTexture,
+    type ISize,
+    type IWheelEvent,
+    type Mesh,
+    type Nullable,
+    type PointerInfo,
+    type RawCubeTexture,
+} from "core/index";
+import { type Channel } from "./channels";
+import { type IMetadata } from "./textureEditor";
 
 import { Camera } from "core/Cameras/camera";
 import { FreeCamera } from "core/Cameras/freeCamera";

@@ -1,0 +1,66 @@
+.fge-autocomplete {
+    padding: 2px 0;
+
+    .fge-autocomplete-row {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 0 10px;
+    }
+
+    .fge-autocomplete-label {
+        color: #888;
+        font-size: 11px;
+        white-space: nowrap;
+        min-width: 60px;
+    }
+
+    .fge-autocomplete-input {
+        flex: 1;
+        background: #1e1e1e;
+        border: 1px solid #444;
+        border-radius: 3px;
+        color: #d4d4d4;
+        font:
+            12px "Consolas",
+            "Courier New",
+            monospace;
+        padding: 3px 6px;
+        outline: none;
+        min-width: 0;
+
+        &:focus {
+            border-color: #4a90d9;
+        }
+    }
+
+    .fge-autocomplete-dropdown {
+        position: absolute;
+        left: 10px;
+        right: 10px;
+        top: 100%;
+        z-index: 100;
+        background: #2d2d2d;
+        border: 1px solid #555;
+        border-radius: 3px;
+        max-height: 150px;
+        overflow-y: auto;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+    }
+
+    .fge-autocomplete-option {
+        padding: 4px 8px;
+        font:
+            12px "Consolas",
+            "Courier New",
+            monospace;
+        color: #ccc;
+        cursor: pointer;
+
+        &:hover,
+        &.fge-autocomplete-option-active {
+            background: #094771;
+            color: #fff;
+        }
+    }
+}

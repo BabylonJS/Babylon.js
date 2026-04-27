@@ -1,6 +1,6 @@
 /* eslint-disable babylonjs/available */
-import type { Nullable, PointerInfo } from "core/index";
-import type { TextureEditorToolProvider } from "../../../components/textureEditor/textureEditor";
+import { type Nullable, type PointerInfo } from "core/index";
+import { type TextureEditorToolProvider } from "../../../components/textureEditor/textureEditor";
 
 import { Label, makeStyles, Slider, tokens } from "@fluentui/react-components";
 import { InkStrokeRegular } from "@fluentui/react-icons";
@@ -10,7 +10,7 @@ import { PointerEventTypes } from "core/Events/pointerEvents";
 import { Color3 } from "core/Maths/math.color";
 import { Vector2 } from "core/Maths/math.vector";
 import { Observable, type Observer } from "core/Misc/observable";
-import { useObservableState } from "../../../hooks/observableHooks";
+import { useObservableState } from "shared-ui-components/modularTool/hooks/observableHooks";
 
 const useStyles = makeStyles({
     settingsContainer: {

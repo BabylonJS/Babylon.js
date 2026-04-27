@@ -1,4 +1,4 @@
-import type { IDisposable, Nullable } from "core/index";
+import { type IDisposable, type Nullable } from "core/index";
 
 /**
  * Gets the property descriptor for a property on an object, including inherited properties.
@@ -33,6 +33,9 @@ export function IsPropertyReadonly(propertyDescriptor: PropertyDescriptor): bool
     return propertyDescriptor.writable === false || (propertyDescriptor.writable === undefined && !propertyDescriptor.set);
 }
 
+/**
+ * Hooks that can be registered on a property to intercept its setter.
+ */
 export type PropertyHooks<T = unknown> = {
     /**
      * This function will be called after the hooked property is set.

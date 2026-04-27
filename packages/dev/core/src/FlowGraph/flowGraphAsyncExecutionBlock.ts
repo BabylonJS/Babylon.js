@@ -1,7 +1,7 @@
-import type { IFlowGraphBlockConfiguration } from "./flowGraphBlock";
-import type { FlowGraphContext } from "./flowGraphContext";
+import { type IFlowGraphBlockConfiguration } from "./flowGraphBlock";
+import { type FlowGraphContext } from "./flowGraphContext";
 import { FlowGraphExecutionBlockWithOutSignal } from "./flowGraphExecutionBlockWithOutSignal";
-import type { FlowGraphSignalConnection } from "./flowGraphSignalConnection";
+import { type FlowGraphSignalConnection } from "./flowGraphSignalConnection";
 
 /**
  * An async execution block can start tasks that will be executed asynchronously.

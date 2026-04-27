@@ -1,4 +1,4 @@
-import type { Engine } from "core/Engines/engine";
+import { type Engine } from "core/Engines/engine";
 import { Scene } from "core/scene";
 import { FreeCamera } from "core/Cameras/freeCamera";
 import { HemisphericLight } from "core/Lights/hemisphericLight";

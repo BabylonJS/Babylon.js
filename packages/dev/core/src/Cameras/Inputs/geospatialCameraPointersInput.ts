@@ -1,16 +1,13 @@
-import type { GeospatialCamera } from "../../Cameras/geospatialCamera";
-import type { IPointerEvent } from "../../Events/deviceInputEvents";
-import type { PointerTouch } from "../../Events/pointerEvents";
-import type { Nullable } from "../../types";
+import { type GeospatialCamera } from "../../Cameras/geospatialCamera";
+import { type IPointerEvent } from "../../Events/deviceInputEvents";
+import { type PointerTouch } from "../../Events/pointerEvents";
+import { type Nullable } from "../../types";
 import { OrbitCameraPointersInput } from "./orbitCameraPointersInput";
+import { Vector3Distance } from "../../Maths/math.vector.functions";
 
 /**
- * @experimental
  * Geospatial camera inputs can simulate dragging the globe around or tilting the camera around some point on the globe
  * This class will update the GeospatialCameraMovement class's movementDeltaCurrentFrame, and the camera is responsible for using these updates to calculate viewMatrix appropriately
- *
- * As of right now, the camera correction logic (to keep the camera geospatially oriented around the globe) is happening within the camera class when calculating viewmatrix
- * As this is experimental, it is possible we move that correction step to live within the input class (to enable non-corrected translations in the future), say if we want to allow the camera to move outside of the globe's orbit
  *
  * Left mouse button: drag globe
  * Middle mouse button: tilt globe
@@ -80,6 +77,8 @@ export class GeospatialCameraPointersInput extends OrbitCameraPointersInput {
      * @param pinchSquaredDistance
      */
     protected override _computePinchZoom(previousPinchSquaredDistance: number, pinchSquaredDistance: number): void {
+        const camera = this.camera;
+
         // Calculate zoom distance based on pinch delta
         const previousDistance = Math.sqrt(previousPinchSquaredDistance);
         const currentDistance = Math.sqrt(pinchSquaredDistance);
@@ -87,7 +86,7 @@ export class GeospatialCameraPointersInput extends OrbitCameraPointersInput {
 
         // Try to zoom towards centroid if we have it
         if (this._pinchCentroid) {
-            const scene = this.camera.getScene();
+            const scene = camera.getScene();
             const engine = scene.getEngine();
             const canvasRect = engine.getInputElementClientRect();
 
@@ -97,22 +96,22 @@ export class GeospatialCameraPointersInput extends OrbitCameraPointersInput {
                 const canvasY = this._pinchCentroid.y - canvasRect.top;
 
                 // Pick at centroid
-                const pickResult = scene.pick(canvasX, canvasY, this.camera.movement.pickPredicate);
+                const pickResult = scene.pick(canvasX, canvasY, camera.movement.pickPredicate);
                 if (pickResult?.pickedPoint) {
                     // Scale zoom by distance to picked point
-                    const distanceToPoint = this.camera.position.subtract(pickResult.pickedPoint).length();
+                    const distanceToPoint = Vector3Distance(pickResult.pickedPoint, camera.position);
                     const zoomDistance = pinchDelta * distanceToPoint * 0.005;
-                    const clampedZoom = this.camera.limits.clampZoomDistance(zoomDistance, this.camera.radius, distanceToPoint);
-                    this.camera.zoomToPoint(pickResult.pickedPoint, clampedZoom);
+                    const clampedZoom = camera.limits.clampZoomDistance(zoomDistance, camera.radius, distanceToPoint);
+                    camera.zoomToPoint(pickResult.pickedPoint, clampedZoom);
                     return;
                 }
             }
         }
 
         // Fallback: scale zoom by camera radius along lookat vector
-        const zoomDistance = pinchDelta * this.camera.radius * 0.005;
-        const clampedZoom = this.camera.limits.clampZoomDistance(zoomDistance, this.camera.radius);
-        this.camera.zoomAlongLookAt(clampedZoom);
+        const zoomDistance = pinchDelta * camera.radius * 0.005;
+        const clampedZoom = camera.limits.clampZoomDistance(zoomDistance, camera.radius);
+        camera.zoomAlongLookAt(clampedZoom);
     }
 
     /**
@@ -182,7 +181,7 @@ export class GeospatialCameraPointersInput extends OrbitCameraPointersInput {
     }
 
     private _handleTilt(deltaX: number, deltaY: number): void {
-        this.camera.movement.rotationAccumulatedPixels.y -= deltaX * this.yawSensitivity; // yaw - looking side to side
+        this.camera.movement.rotationAccumulatedPixels.y += deltaX * this.yawSensitivity; // yaw - looking side to side
         this.camera.movement.rotationAccumulatedPixels.x -= deltaY * this.pitchSensitivity; // pitch - look up towards sky / down towards ground
     }
 }

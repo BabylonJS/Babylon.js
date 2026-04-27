@@ -1,11 +1,10 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import type { Scene, IDisposable } from "../scene";
+import { type Scene, type IDisposable } from "../scene";
 import { EngineStore } from "../Engines/engineStore";
-import type { AbstractMesh } from "../Meshes/abstractMesh";
+import { type AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
-import type { Nullable } from "../types";
-import type { Observer } from "./observable";
-import { Observable } from "./observable";
+import { type Nullable } from "../types";
+import { type Observer, Observable } from "./observable";
 
 /**
  * Defines the root class used to create scene optimization to use with SceneOptimizer

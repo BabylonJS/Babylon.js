@@ -1,10 +1,10 @@
-import type { AbstractMesh } from "core/Meshes/abstractMesh";
-import type { Control3D } from "../control3D";
-import type { Mesh } from "core/Meshes/mesh";
-import type { Nullable } from "core/types";
-import type { Observer } from "core/Misc/observable";
-import type { Scene } from "core/scene";
-import type { Vector3WithInfo } from "../../vector3WithInfo";
+import { type AbstractMesh } from "core/Meshes/abstractMesh";
+import { type Control3D } from "../control3D";
+import { type Mesh } from "core/Meshes/mesh";
+import { type Nullable } from "core/types";
+import { type Observer } from "core/Misc/observable";
+import { type Scene } from "core/scene";
+import { type Vector3WithInfo } from "../../vector3WithInfo";
 
 import { AdvancedDynamicTexture } from "../../../2D/advancedDynamicTexture";
 import { Animation } from "core/Animations/animation";

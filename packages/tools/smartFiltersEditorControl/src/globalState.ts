@@ -1,21 +1,21 @@
 /* eslint-disable babylonjs/available */
 /* eslint-disable jsdoc/require-jsdoc */
 import { Observable } from "core/Misc/observable.js";
-import type { ThinEngine } from "core/Engines/thinEngine";
-import type { Nullable } from "core/types";
+import { type ThinEngine } from "core/Engines/thinEngine";
+import { type Nullable } from "core/types";
 import { StateManager } from "shared-ui-components/nodeGraphSystem/stateManager.js";
 import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject.js";
 import { type BaseBlock, type ConnectionPoint, type OptimizerDebugMode, SmartFilter } from "smart-filters";
-import type { IBlockRegistration } from "smart-filters-blocks";
+import { type IBlockRegistration } from "smart-filters-blocks";
 import { RegisterDefaultInput } from "./graphSystem/registerDefaultInput.js";
 import { RegisterElbowSupport } from "./graphSystem/registerElbowSupport.js";
 import { RegisterNodePortDesign } from "./graphSystem/registerNodePortDesign.js";
-import type { LogEntry } from "./components/log/logComponent";
-import type { GraphNode } from "shared-ui-components/nodeGraphSystem/graphNode.js";
-import type { BlockEditorRegistration } from "./configuration/blockEditorRegistration.js";
-import type { IPortData } from "shared-ui-components/nodeGraphSystem/interfaces/portData.js";
+import { type LogEntry } from "./components/log/logComponent";
+import { type GraphNode } from "shared-ui-components/nodeGraphSystem/graphNode.js";
+import { type BlockEditorRegistration } from "./configuration/blockEditorRegistration.js";
+import { type IPortData } from "shared-ui-components/nodeGraphSystem/interfaces/portData.js";
 import { BlockTools } from "./blockTools.js";
-import type { ObservableProperty } from "./helpers/observableProperty.js";
+import { type ObservableProperty } from "./helpers/observableProperty.js";
 import { PreviewSizeManager } from "./previewSizeManager.js";
 
 export type TexturePreset = {

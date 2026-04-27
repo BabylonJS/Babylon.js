@@ -16,8 +16,7 @@
         "watch:assets": "build-tools -c build-shaders --package core --watch",
         "watch:source": "tsc -b tsconfig.build.json -w",
         "watch": "npx nx run-many --targets watch:assets watch:source --projects @dev/materials --parallel 2 --skipNxCache true --outputStyle stream",
-        "watch:dev": "npm run watch",
-        "watch:lts": "npm run watch:shaders"
+        "watch:dev": "npm run watch"
     },
     "devDependencies": {
         "@dev/core": "^1.0.0",

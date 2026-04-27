@@ -1,5 +1,5 @@
-import type { IMatrixLike, IVector2Like } from "core/Maths/math.like";
-import type { Tuple } from "core/types";
+import { type IMatrixLike, type IVector2Like } from "core/Maths/math.like";
+import { type Tuple } from "core/types";
 
 /**
  * Represents a Babylon.js thin version of a Matrix

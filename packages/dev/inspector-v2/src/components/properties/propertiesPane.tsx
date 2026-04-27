@@ -1,6 +1,6 @@
 import { Body1Strong, makeStyles, tokens } from "@fluentui/react-components";
 
-import { ExtensibleAccordion } from "../extensibleAccordion";
+import { ExtensibleAccordion } from "shared-ui-components/modularTool/components/extensibleAccordion";
 
 const useStyles = makeStyles({
     placeholderDiv: {

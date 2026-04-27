@@ -1,9 +1,9 @@
 /* eslint-disable babylonjs/available */
 /* eslint-disable jsdoc/require-jsdoc */
-import type { Nullable } from "core/types";
-import type { IShaderProcessor } from "../Processors/iShaderProcessor";
-import type { NativeShaderProcessingContext } from "./nativeShaderProcessingContext";
-import type { _IShaderProcessingContext } from "../Processors/shaderProcessingOptions";
+import { type Nullable } from "core/types";
+import { type IShaderProcessor } from "../Processors/iShaderProcessor";
+import { type NativeShaderProcessingContext } from "./nativeShaderProcessingContext";
+import { type _IShaderProcessingContext } from "../Processors/shaderProcessingOptions";
 import { ShaderLanguage } from "../../Materials/shaderLanguage";
 import { InjectStartingAndEndingCode } from "../../Misc/codeStringParsingTools";
 

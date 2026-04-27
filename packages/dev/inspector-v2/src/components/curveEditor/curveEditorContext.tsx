@@ -1,11 +1,11 @@
-import type { Dispatch, FunctionComponent, PropsWithChildren, SetStateAction } from "react";
-import type { Nullable } from "core/types";
-import type { Animation } from "core/Animations/animation";
-import type { TargetedAnimation, AnimationGroup } from "core/Animations/animationGroup";
-import type { Scene } from "core/scene";
-import type { IAnimatable } from "core/Animations/animatable.interface";
-import type { AnimationKeyInterpolation } from "core/Animations/animationKey";
-import type { CurveData } from "./canvas/curveData";
+import { type Dispatch, type FunctionComponent, type PropsWithChildren, type SetStateAction, createContext, useCallback, useContext, useMemo, useRef, useState } from "react";
+import { type Nullable } from "core/types";
+import { type Animation } from "core/Animations/animation";
+import { type TargetedAnimation, type AnimationGroup } from "core/Animations/animationGroup";
+import { type Scene } from "core/scene";
+import { type IAnimatable } from "core/Animations/animatable.interface";
+import { type AnimationKeyInterpolation } from "core/Animations/animationKey";
+import { type CurveData } from "./canvas/curveData";
 
 /**
  * Represents a key point on a curve
@@ -31,7 +31,6 @@ export type MainKeyPointPosition = {
     y: number;
 };
 
-import { createContext, useCallback, useContext, useMemo, useRef, useState } from "react";
 import { Observable } from "core/Misc/observable";
 
 /**

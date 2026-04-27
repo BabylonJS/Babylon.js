@@ -1,14 +1,14 @@
-import type { TileCacheMeshProcess, NavMesh, QueryFilter, TileCache, NavMeshQuery } from "@recast-navigation/core";
+import { type TileCacheMeshProcess, type NavMesh, type QueryFilter, type TileCache, type NavMeshQuery } from "@recast-navigation/core";
 
-import type { ICrowd, INavigationEnginePlugin, IObstacle } from "core/Navigation/INavigationEngine";
+import { type ICrowd, type INavigationEnginePlugin, type IObstacle } from "core/Navigation/INavigationEngine";
 import { Logger } from "core/Misc/logger";
-import type { Mesh } from "core/Meshes/mesh";
-import type { Scene } from "core/scene";
+import { type Mesh } from "core/Meshes/mesh";
+import { type Scene } from "core/scene";
 import { TmpVectors, Vector3 } from "core/Maths/math";
-import type { IVector3Like } from "core/Maths/math.like";
-import type { Nullable } from "core/types";
+import { type IVector3Like } from "core/Maths/math.like";
+import { type Nullable } from "core/types";
 
-import type { CreateNavMeshResult, GeneratorIntermediates, INavMeshParametersV2, RecastInjection } from "../types";
+import { type CreateNavMeshResult, type GeneratorIntermediates, type INavMeshParametersV2, type RecastInjection } from "../types";
 import { RecastJSCrowd } from "./RecastJSCrowd";
 import { ConvertNavPathPoints } from "../common/convert";
 import { ComputeSmoothPath } from "../common/smooth-path";
@@ -72,7 +72,7 @@ export class RecastNavigationJSPluginV2 implements INavigationEnginePlugin {
     /**
      * Intermediates generated during the navmesh creation
      * @remarks This is used for debugging and visualization purposes.
-     * @remarks You have access to vertices, indices and vertex colors to visusalize the navmesh creation process.
+     * @remarks You have access to vertices, indices and vertex colors to visualize the navmesh creation process.
      * @remarks This is only available if the `keepIntermediates` parameter is set
      * @remarks to true during navmesh generation.
      */
@@ -411,9 +411,10 @@ export class RecastNavigationJSPluginV2 implements INavigationEnginePlugin {
     }
 
     /**
-     * Creates a navigation mesh - will be injected by the factory
-     * @param start the start position of the navmesh
-     * @param end the end position of the navmesh
+     * Compute a navigation path from start to end. Returns an empty array if no path can be computed.
+     * Path follows navigation mesh geometry.
+     * @param start world position
+     * @param end world position
      * @param options options to configure the path computation
      * @returns array containing world position composing the path
      */
@@ -617,7 +618,7 @@ export class RecastNavigationJSPluginV2 implements INavigationEnginePlugin {
         this.bjsRECAST.setRandomSeed(seed);
     }
 
-    // New funccntions beyond the INavigationEnginePlugin interface
+    // New functions beyond the INavigationEnginePlugin interface
 
     /**
      * Perform a raycast on the navmesh
@@ -651,9 +652,9 @@ export class RecastNavigationJSPluginV2 implements INavigationEnginePlugin {
 
     /**
      * Compute the final position from a segment made of destination-position, and return the height of the polygon
-     * This is a more sophisiticated version of moveAlong that will use the height of the polygon at the end position
+     * This is a more sophisticated version of moveAlong that will use the height of the polygon at the end position
      * @param position world position to start from
-     * @param velocity wvelocity of the movement
+     * @param velocity velocity of the movement
      * @param options options for the function
      * @returns the resulting point along the navmesh, the polygon reference id and the height of the polygon
      */

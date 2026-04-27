@@ -1,4 +1,4 @@
-import type { IDecodedData } from "core/Materials/Textures/ktx2decoderTypes";
+import { type IDecodedData } from "core/Materials/Textures/ktx2decoderTypes";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 export type AllowedKeys =

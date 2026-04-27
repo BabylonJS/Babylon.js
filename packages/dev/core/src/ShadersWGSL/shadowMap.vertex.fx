@@ -46,15 +46,15 @@ attribute uv2: vec2f;
 @vertex
 fn main(input : VertexInputs) -> FragmentInputs {
 
-var positionUpdated: vec3f = input.position;
+var positionUpdated: vec3f = vertexInputs.position;
 #ifdef UV1
-    var uvUpdated: vec2f = input.uv;
+    var uvUpdated: vec2f = vertexInputs.uv;
 #endif
 #ifdef UV2
-    var uv2Updated: vec2f = input.uv2;
+    var uv2Updated: vec2f = vertexInputs.uv2;
 #endif
 #ifdef NORMAL
-	var normalUpdated: vec3f = input.normal;
+	var normalUpdated: vec3f = vertexInputs.normal;
 #endif
 
 #include<morphTargetsVertexGlobal>

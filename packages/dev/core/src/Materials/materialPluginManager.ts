@@ -1,28 +1,28 @@
-import type { _IProcessingOptions, ShaderCustomProcessingFunction } from "../Engines/Processors/shaderProcessingOptions";
-import type { Nullable } from "../types";
+import { type _IProcessingOptions, type ShaderCustomProcessingFunction } from "../Engines/Processors/shaderProcessingOptions";
+import { type Nullable } from "../types";
 import { Material } from "./material";
-import type {
-    MaterialPluginPrepareEffect,
-    MaterialPluginBindForSubMesh,
-    MaterialPluginDisposed,
-    MaterialPluginGetActiveTextures,
-    MaterialPluginGetAnimatables,
-    MaterialPluginGetDefineNames,
-    MaterialPluginHasTexture,
-    MaterialPluginIsReadyForSubMesh,
-    MaterialPluginPrepareDefines,
-    MaterialPluginPrepareUniformBuffer,
-    MaterialPluginHardBindForSubMesh,
-    MaterialPluginHasRenderTargetTextures,
-    MaterialPluginFillRenderTargetTextures,
+import {
+    type MaterialPluginPrepareEffect,
+    type MaterialPluginBindForSubMesh,
+    type MaterialPluginDisposed,
+    type MaterialPluginGetActiveTextures,
+    type MaterialPluginGetAnimatables,
+    type MaterialPluginGetDefineNames,
+    type MaterialPluginHasTexture,
+    type MaterialPluginIsReadyForSubMesh,
+    type MaterialPluginPrepareDefines,
+    type MaterialPluginPrepareUniformBuffer,
+    type MaterialPluginHardBindForSubMesh,
+    type MaterialPluginHasRenderTargetTextures,
+    type MaterialPluginFillRenderTargetTextures,
+    MaterialPluginEvent,
 } from "./materialPluginEvent";
-import { MaterialPluginEvent } from "./materialPluginEvent";
-import type { Observer } from "core/Misc/observable";
+import { type Observer } from "core/Misc/observable";
 import { EngineStore } from "../Engines/engineStore";
 
-import type { Scene } from "../scene";
-import type { AbstractEngine } from "../Engines/abstractEngine";
-import type { MaterialPluginBase } from "./materialPluginBase";
+import { type Scene } from "../scene";
+import { type AbstractEngine } from "../Engines/abstractEngine";
+import { type MaterialPluginBase } from "./materialPluginBase";
 import { ProcessIncludes } from "../Engines/Processors/shaderProcessor";
 import { ShaderLanguage } from "./shaderLanguage";
 import { ShaderStore } from "../Engines/shaderStore";

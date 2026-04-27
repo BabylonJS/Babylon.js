@@ -1,12 +1,9 @@
-import type { FunctionComponent } from "react";
-
-import { useMemo } from "react";
+import { type FunctionComponent, useMemo } from "react";
 
 import { List } from "../primitives/list";
 import { Color3GradientComponent, Color4GradientComponent, FactorGradientComponent } from "../primitives/gradient";
-import { Color3Gradient, ColorGradient as Color4Gradient, FactorGradient } from "core/Misc/gradients";
-import type { IValueGradient } from "core/Misc/gradients";
-import type { Nullable } from "core/types";
+import { Color3Gradient, ColorGradient as Color4Gradient, FactorGradient, type IValueGradient } from "core/Misc/gradients";
+import { type Nullable } from "core/types";
 import { Color3, Color4 } from "core/Maths/math.color";
 
 type GradientListProps<T extends FactorGradient | Color3Gradient | Color4Gradient> = {

@@ -1,14 +1,14 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-import type { Atmosphere } from "./atmosphere";
-import type { AtmospherePhysicalProperties } from "./atmospherePhysicalProperties";
+import { type Atmosphere } from "./atmosphere";
+import { type AtmospherePhysicalProperties } from "./atmospherePhysicalProperties";
 import { Clamp } from "core/Maths/math.scalar.functions";
 import { Constants } from "core/Engines/constants";
 import { EffectRenderer, EffectWrapper } from "core/Materials/effectRenderer";
 import { FromHalfFloat } from "core/Misc/textureTools";
-import type { IColor3Like, IColor4Like, IVector2Like, IVector3Like } from "core/Maths/math.like";
-import type { Nullable } from "core/types";
+import { type IColor3Like, type IColor4Like, type IVector2Like, type IVector3Like } from "core/Maths/math.like";
+import { type Nullable } from "core/types";
 import { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
 import { Sample2DRgbaToRef } from "./sampling";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
@@ -40,7 +40,8 @@ export class DiffuseSkyIrradianceLut {
     private _effectRenderer: Nullable<EffectRenderer> = null;
     private _isDirty = true;
     private _isDisposed = false;
-    private _lutData: Uint8Array | Uint16Array = new Uint16Array(0);
+    private _needsReadPixels = false;
+    private _lutData: Float32Array = new Float32Array(0);
 
     /**
      * True if the LUT needs to be rendered.
@@ -186,7 +187,7 @@ export class DiffuseSkyIrradianceLut {
 
         const cosAngleLightToZenith = Vector3Dot(directionToLight, cameraGeocentricNormal);
         ComputeLutUVToRef(properties, radius, cosAngleLightToZenith, UvTemp);
-        Sample2DRgbaToRef(UvTemp.x, UvTemp.y, LutWidthPx, LutHeightPx, this._lutData, Color4Temp, FromHalfFloat);
+        Sample2DRgbaToRef(UvTemp.x, UvTemp.y, LutWidthPx, LutHeightPx, this._lutData, Color4Temp, null);
 
         const intensity = atmosphere.diffuseSkyIrradianceIntensity;
         result.r = intensity * (lightIrradiance * Color4Temp.r + additionalDiffuseSkyIrradiance.r);
@@ -232,16 +233,40 @@ export class DiffuseSkyIrradianceLut {
         engine.restoreDefaultFramebuffer();
 
         this._isDirty = false;
+        this._needsReadPixels = true;
 
-        // eslint-disable-next-line github/no-then
-        void this.renderTarget.readPixels(0, 0, undefined, undefined, true /* noDataConversion */)?.then((value: ArrayBufferView) => {
-            if (this._isDisposed) {
-                return;
-            }
-            this._lutData = value as Uint8Array | Uint16Array;
+        // Defer readPixels to the end of the frame.
+        this._atmosphere.scene.onAfterRenderObservable.addOnce(async () => {
+            await this.readPixelsAsync();
         });
 
         return true;
+    }
+
+    /**
+     * Reads back the LUT data from the GPU if a readback is pending.
+     * @internal
+     */
+    public async readPixelsAsync(): Promise<void> {
+        if (!this._needsReadPixels || this._isDisposed) {
+            return;
+        }
+        this._needsReadPixels = false;
+
+        const value = await this.renderTarget.readPixels(0, 0, undefined, true, true /* noDataConversion */);
+        if (value && !this._isDisposed) {
+            const rawLutData = value as Uint8Array | Uint16Array;
+            const lutData = (this._lutData = new Float32Array(rawLutData.length));
+            if (rawLutData instanceof Uint16Array) {
+                for (let i = 0; i < rawLutData.length; i++) {
+                    lutData[i] = FromHalfFloat(rawLutData[i]);
+                }
+            } else {
+                for (let i = 0; i < rawLutData.length; i++) {
+                    lutData[i] = rawLutData[i] / 255.0;
+                }
+            }
+        }
     }
 
     /**

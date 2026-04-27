@@ -1,5 +1,5 @@
 import { Constants } from "core/Engines/constants";
-import type { Nullable } from "../types";
+import { type Nullable } from "../types";
 
 /**
  * @internal

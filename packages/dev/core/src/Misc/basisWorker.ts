@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import type { Nullable } from "core/types";
+import { type Nullable } from "core/types";
 import { Tools } from "./tools";
-import type { BasisFileInfo, BasisTranscodeConfiguration } from "./basis";
+import { type BasisFileInfo, type BasisTranscodeConfiguration } from "./basis";
 
 // WorkerGlobalScope
 declare function importScripts(...urls: string[]): void;
@@ -226,7 +226,7 @@ export function workerFunction(): void {
                     dst[dstI++] = c[m & 0x3];
                     dst[dstI++] = c[(m >> 2) & 0x3];
                     dst[dstI++] = c[(m >> 4) & 0x3];
-                    dst[dstI++] = c[(m >> 6) & 0x3];
+                    dst[dstI] = c[(m >> 6) & 0x3];
                 }
             }
         }

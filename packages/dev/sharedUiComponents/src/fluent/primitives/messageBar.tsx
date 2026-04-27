@@ -1,5 +1,5 @@
 import { MessageBar as FluentMessageBar, MessageBarTitle, MessageBarBody, makeStyles, tokens } from "@fluentui/react-components";
-import type { FunctionComponent } from "react";
+import { type FunctionComponent } from "react";
 import { Link } from "./link";
 import { AccordionSectionItem } from "./accordion";
 

@@ -1,11 +1,11 @@
-import type { Scene } from "../../scene";
-import type { Engine } from "../../Engines/engine";
+import { type Scene } from "../../scene";
+import { type Engine } from "../../Engines/engine";
 import { Texture } from "../../Materials/Textures/texture";
 import { RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture";
 import { Constants } from "../../Engines/constants";
 
 import "../../Engines/Extensions/engine.multiRender";
-import type { InternalTexture } from "./internalTexture";
+import { type InternalTexture } from "./internalTexture";
 
 /**
  * Creation options of the multi render target texture.
@@ -439,7 +439,7 @@ export class MultiRenderTarget extends RenderTargetTexture {
             this._multiRenderTargetOptions.useSRGBBuffers[index] = texture._useSRGBBuffer;
         }
         if (this._multiRenderTargetOptions.targetTypes && this._multiRenderTargetOptions.targetTypes[index] !== -1) {
-            let target: number = 0;
+            let target: number;
             if (texture.is2DArray) {
                 target = Constants.TEXTURE_2D_ARRAY;
             } else if (texture.isCube) {

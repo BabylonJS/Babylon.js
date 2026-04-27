@@ -1,7 +1,7 @@
-import type { Observable } from "../../Misc/observable";
-import type { IDisposable } from "../../scene";
-import type { Nullable } from "../../types";
-import type { Analyser } from "../analyser";
+import { type Observable } from "../../Misc/observable";
+import { type IDisposable } from "../../scene";
+import { type Nullable } from "../../types";
+import { type Analyser } from "../analyser";
 
 /**
  * This represents an audio engine and it is responsible

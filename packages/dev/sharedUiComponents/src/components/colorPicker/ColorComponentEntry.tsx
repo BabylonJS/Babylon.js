@@ -1,5 +1,5 @@
 import * as React from "react";
-import type { LockObject } from "../../tabs/propertyGrids/lockObject";
+import { type LockObject } from "../../tabs/propertyGrids/lockObject";
 import * as style from "./ColorComponentEntry.module.scss";
 
 export interface IColorComponentEntryProps {

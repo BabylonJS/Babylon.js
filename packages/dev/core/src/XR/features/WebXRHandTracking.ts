@@ -1,34 +1,32 @@
 import { WebXRAbstractFeature } from "./WebXRAbstractFeature";
-import type { WebXRSessionManager } from "../webXRSessionManager";
+import { type WebXRSessionManager } from "../webXRSessionManager";
 import { WebXRFeatureName, WebXRFeaturesManager } from "../webXRFeaturesManager";
-import type { AbstractMesh } from "../../Meshes/abstractMesh";
+import { type AbstractMesh } from "../../Meshes/abstractMesh";
 import { Mesh } from "../../Meshes/mesh";
-import type { WebXRInput } from "../webXRInput";
-import type { WebXRInputSource } from "../webXRInputSource";
+import { type WebXRInput } from "../webXRInput";
+import { type WebXRInputSource } from "../webXRInputSource";
 import { Matrix, Quaternion } from "../../Maths/math.vector";
-import type { Nullable } from "../../types";
+import { type Nullable } from "../../types";
 import { PhysicsImpostor } from "../../Physics/v1/physicsImpostor";
 import { PhysicsAggregate } from "../../Physics/v2/physicsAggregate";
 import { PhysicsMotionType, PhysicsShapeType } from "../../Physics/v2/IPhysicsEnginePlugin";
 
-import type { IDisposable, Scene } from "../../scene";
-import type { Observer } from "../../Misc/observable";
-import { Observable } from "../../Misc/observable";
-import type { InstancedMesh } from "../../Meshes/instancedMesh";
-import type { ISceneLoaderAsyncResult } from "../../Loading/sceneLoader";
-import { SceneLoader } from "../../Loading/sceneLoader";
+import { type IDisposable, type Scene } from "../../scene";
+import { type Observer, Observable } from "../../Misc/observable";
+import { type InstancedMesh } from "../../Meshes/instancedMesh";
+import { type ISceneLoaderAsyncResult, SceneLoader } from "../../Loading/sceneLoader";
 import { Color3 } from "../../Maths/math.color";
 import { NodeMaterial } from "../../Materials/Node/nodeMaterial";
-import type { InputBlock } from "../../Materials/Node/Blocks/Input/inputBlock";
+import { type InputBlock } from "../../Materials/Node/Blocks/Input/inputBlock";
 import { Material } from "../../Materials/material";
 import { CreateIcoSphere } from "../../Meshes/Builders/icoSphereBuilder";
 import { TransformNode } from "../../Meshes/transformNode";
 import { Axis } from "../../Maths/math.axis";
 import { Constants } from "../../Engines/constants";
-import type { WebXRCompositionLayerWrapper } from "./Layers/WebXRCompositionLayer";
+import { type WebXRCompositionLayerWrapper } from "./Layers/WebXRCompositionLayer";
 import { Tools } from "core/Misc/tools";
-import type { WebXRCamera } from "../webXRCamera";
-import type { Node } from "../../node";
+import { type WebXRCamera } from "../webXRCamera";
+import { type Node } from "../../node";
 
 import "../../Physics/joinedPhysicsEngineComponent";
 
@@ -385,9 +383,8 @@ export class WebXRHand implements IDisposable {
             // Set the rotation quaternion so we can use it later for tracking.
             if (!_jointMeshes[jointIdx].rotationQuaternion) {
                 _jointMeshes[jointIdx].rotationQuaternion = new Quaternion();
-            } else {
-                _jointMeshes[jointIdx].rotationQuaternion!.set(0, 0, 0, 1);
             }
+            _jointMeshes[jointIdx].rotationQuaternion!.set(0, 0, 0, 1);
         }
 
         if (_handMesh) {
@@ -586,6 +583,7 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
     private static _GenerateTrackedJointMeshes(options: IWebXRHandTrackingOptions, originalMesh: AbstractMesh): { left: AbstractMesh[]; right: AbstractMesh[] } {
         const meshes: { left: AbstractMesh[]; right: AbstractMesh[] } = { left: [], right: [] };
 
+        originalMesh.isVisible = !!options.jointMeshes?.keepOriginalVisible;
         for (const handedness of ["left", "right"] as const) {
             const h = handedness as "left" | "right";
             const trackedMeshes: AbstractMesh[] = [];
@@ -618,7 +616,7 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
                     if (physicsVersion === 2) {
                         // V2 physics
                         const impostorType = props?.impostorType !== undefined ? props.impostorType : PhysicsImpostor.SphereImpostor;
-                        let shapeType = PhysicsShapeType.SPHERE;
+                        let shapeType: PhysicsShapeType;
 
                         // Map v1 impostor types to v2 shape types
                         switch (impostorType) {
@@ -653,9 +651,7 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
                         newInstance.physicsImpostor = new PhysicsImpostor(newInstance, type, props ? { mass: 0, ...props } : { mass: 0 });
                     }
                 }
-                if (options.jointMeshes?.invisible) {
-                    newInstance.isVisible = false;
-                }
+                newInstance.isVisible = false;
                 newInstance.rotationQuaternion = new Quaternion();
                 trackedMeshes.push(newInstance);
             }

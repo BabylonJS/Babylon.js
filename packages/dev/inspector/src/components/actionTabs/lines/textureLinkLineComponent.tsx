@@ -1,9 +1,9 @@
 import * as React from "react";
 
-import type { Nullable } from "core/types";
-import type { Observable, Observer } from "core/Misc/observable";
-import type { BaseTexture } from "core/Materials/Textures/baseTexture";
-import type { Material } from "core/Materials/material";
+import { type Nullable } from "core/types";
+import { type Observable, type Observer } from "core/Misc/observable";
+import { type BaseTexture } from "core/Materials/Textures/baseTexture";
+import { type Material } from "core/Materials/material";
 import { StandardMaterial } from "core/Materials/standardMaterial";
 
 import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
@@ -12,7 +12,7 @@ import { faWrench, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { Texture } from "core/Materials/Textures/texture";
 import { TextureButtonLine } from "shared-ui-components/lines/textureButtonLineComponent";
 import { Tools } from "core/Misc/tools";
-import type { Scene } from "core/scene";
+import { type Scene } from "core/scene";
 import { CubeTexture } from "core/Materials/Textures/cubeTexture";
 
 export interface ITextureLinkLineComponentProps {

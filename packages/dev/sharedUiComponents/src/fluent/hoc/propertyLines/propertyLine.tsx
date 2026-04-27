@@ -7,14 +7,24 @@ import {
     CopyRegular,
     Copy16Regular,
 } from "@fluentui/react-icons";
-import type { FunctionComponent, HTMLProps, PropsWithChildren, MouseEvent } from "react";
-import type { AccordionSectionItemProps } from "../../primitives/accordion";
-import { AccordionSectionItem } from "../../primitives/accordion";
-import { useContext, useState, forwardRef, cloneElement, isValidElement, useRef, useCallback } from "react";
+import {
+    type FunctionComponent,
+    type HTMLProps,
+    type PropsWithChildren,
+    type MouseEvent,
+    useContext,
+    useState,
+    forwardRef,
+    cloneElement,
+    isValidElement,
+    useRef,
+    useCallback,
+} from "react";
+import { type AccordionSectionItemProps, AccordionSectionItem } from "../../primitives/accordion";
 import { Collapse } from "../../primitives/collapse";
 import { copyCommandToClipboard } from "../../../copyCommandToClipboard";
 import { ToolContext } from "../fluentToolWrapper";
-import type { PrimitiveProps } from "../../primitives/primitive";
+import { type PrimitiveProps } from "../../primitives/primitive";
 import { Link } from "../../primitives/link";
 import { ToggleButton } from "../../primitives/toggleButton";
 import { Button } from "../../primitives/button";
@@ -34,6 +44,7 @@ const usePropertyLineStyles = makeStyles({
         display: "flex",
         flex: "1 1 0", // grow=1, shrink =1, basis = 0 initial size before
         minWidth: CustomTokens.labelMinWidth,
+        overflow: "hidden",
         textAlign: "left",
     },
     rightContent: {

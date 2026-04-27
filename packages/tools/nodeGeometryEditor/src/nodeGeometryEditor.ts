@@ -2,15 +2,15 @@ import * as React from "react";
 import { createRoot } from "react-dom/client";
 import { GlobalState } from "./globalState";
 import { GraphEditor } from "./graphEditor";
-import type { NodeGeometry } from "core/Meshes/Node/nodeGeometry";
+import { type NodeGeometry } from "core/Meshes/Node/nodeGeometry";
 import { SerializationTools } from "./serializationTools";
-import type { Observable } from "core/Misc/observable";
+import { type Observable } from "core/Misc/observable";
 import { RegisterToDisplayManagers } from "./graphSystem/registerToDisplayLedger";
 import { RegisterToPropertyTabManagers } from "./graphSystem/registerToPropertyLedger";
 import { RegisterTypeLedger } from "./graphSystem/registerToTypeLedger";
-import type { Color4 } from "core/Maths/math.color";
-import type { Scene } from "core/scene";
-import type { Mesh } from "core/Meshes/mesh";
+import { type Color4 } from "core/Maths/math.color";
+import { type Scene } from "core/scene";
+import { type Mesh } from "core/Meshes/mesh";
 import { CreatePopup } from "shared-ui-components/popupHelper";
 
 /**

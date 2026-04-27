@@ -1,7 +1,7 @@
 import * as React from "react";
-import type { GlobalState } from "../../globalState";
-import type { Observer } from "core/Misc/observable";
-import type { Nullable } from "core/types";
+import { type GlobalState } from "../../globalState";
+import { type Observer } from "core/Misc/observable";
+import { type Nullable } from "core/types";
 import wireframe from "./svgs/wireframe.svg";
 import matCap from "./svgs/matCap.svg";
 import texture from "./svgs/textureIcon.svg";

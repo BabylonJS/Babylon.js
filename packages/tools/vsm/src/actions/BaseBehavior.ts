@@ -1,5 +1,5 @@
-import type { BaseAction } from "./actions/BaseAction";
-import type { BaseTrigger } from "./triggers/BaseTrigger";
+import { type BaseAction } from "./actions/BaseAction";
+import { type BaseTrigger } from "./triggers/BaseTrigger";
 
 /**
  * A Behavior connects a trigger and an action. It waits for the trigger to be

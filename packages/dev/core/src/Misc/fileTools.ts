@@ -2,9 +2,9 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { WebRequest } from "./webRequest";
 import { IsWindowObjectExist } from "./domManagement";
-import type { Nullable } from "../types";
-import type { IOfflineProvider } from "../Offline/IOfflineProvider";
-import type { IFileRequest } from "./fileRequest";
+import { type Nullable } from "../types";
+import { type IOfflineProvider } from "../Offline/IOfflineProvider";
+import { type IFileRequest } from "./fileRequest";
 import { Observable } from "./observable";
 import { FilesInputStore } from "./filesInputStore";
 import { RetryStrategy } from "./retryStrategy";

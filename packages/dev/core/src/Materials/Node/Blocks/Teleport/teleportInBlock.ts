@@ -2,9 +2,9 @@ import { RegisterClass } from "../../../../Misc/typeStore";
 import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import { NodeMaterialBlock } from "../../nodeMaterialBlock";
-import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
-import type { InputBlock } from "../Input/inputBlock";
-import type { NodeMaterialTeleportOutBlock } from "./teleportOutBlock";
+import { type NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
+import { type InputBlock } from "../Input/inputBlock";
+import { type NodeMaterialTeleportOutBlock } from "./teleportOutBlock";
 
 /**
  * Defines a block used to teleport a value to an endpoint

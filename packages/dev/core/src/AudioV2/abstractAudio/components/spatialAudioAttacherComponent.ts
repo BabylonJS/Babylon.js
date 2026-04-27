@@ -1,10 +1,10 @@
 import { Quaternion, Vector3 } from "../../../Maths/math.vector";
-import type { AbstractMesh } from "../../../Meshes/abstractMesh";
-import type { Node } from "../../../node";
-import type { Nullable } from "../../../types";
+import { type AbstractMesh } from "../../../Meshes/abstractMesh";
+import { type Node } from "../../../node";
+import { type Nullable } from "../../../types";
 import { SpatialAudioAttachmentType } from "../../spatialAudioAttachmentType";
-import type { _SpatialAudioSubNode } from "../subNodes/spatialAudioSubNode";
-import type { _SpatialAudioListener } from "../subProperties/spatialAudioListener";
+import { type _SpatialAudioSubNode } from "../subNodes/spatialAudioSubNode";
+import { type _SpatialAudioListener } from "../subProperties/spatialAudioListener";
 
 /**
  * Provides a common interface for attaching an audio listener or source to a specific entity, ensuring only one entity

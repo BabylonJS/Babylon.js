@@ -1,13 +1,12 @@
 import * as React from "react";
-import type { GlobalState } from "../globalState";
-import type { IScalePoint } from "./gizmoScalePoint";
-import { GizmoScalePoint, ScalePointPosition } from "./gizmoScalePoint";
+import { type GlobalState } from "../globalState";
+import { type IScalePoint, GizmoScalePoint, ScalePointPosition } from "./gizmoScalePoint";
 import { Vector2 } from "core/Maths/math";
-import type { Line } from "gui/2D/controls/line";
+import { type Line } from "gui/2D/controls/line";
 import { CoordinateHelper } from "./coordinateHelper";
 import { Matrix2D, MathTools } from "gui/2D/math2D";
-import type { ValueAndUnit } from "gui/2D/valueAndUnit";
-import type { AdvancedDynamicTexture } from "gui/2D/advancedDynamicTexture";
+import { type ValueAndUnit } from "gui/2D/valueAndUnit";
+import { type AdvancedDynamicTexture } from "gui/2D/advancedDynamicTexture";
 
 interface IGizmoLineProps {
     globalState: GlobalState;

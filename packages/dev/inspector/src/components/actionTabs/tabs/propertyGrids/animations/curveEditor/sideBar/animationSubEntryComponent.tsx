@@ -1,9 +1,9 @@
 import * as React from "react";
-import type { GlobalState } from "../../../../../../globalState";
-import type { Context, IActiveAnimationChangedOptions } from "../context";
-import type { Animation } from "core/Animations/animation";
-import type { Nullable } from "core/types";
-import type { Observer } from "core/Misc/observable";
+import { type GlobalState } from "../../../../../../globalState";
+import { type Context, type IActiveAnimationChangedOptions } from "../context";
+import { type Animation } from "core/Animations/animation";
+import { type Nullable } from "core/types";
+import { type Observer } from "core/Misc/observable";
 import { SelectionState } from "../graph/keyPoint";
 
 import selectedIcon from "../assets/keySelectedIcon.svg";

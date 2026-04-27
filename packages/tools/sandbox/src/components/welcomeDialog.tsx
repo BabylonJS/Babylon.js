@@ -1,5 +1,4 @@
-import type { FunctionComponent } from "react";
-import { useState } from "react";
+import { type FunctionComponent, useState } from "react";
 import logo from "../img/logo-fullscreen.svg";
 import { LocalStorageHelper } from "../tools/localStorageHelper";
 

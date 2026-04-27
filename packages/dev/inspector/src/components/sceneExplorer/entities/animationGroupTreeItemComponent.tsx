@@ -1,5 +1,5 @@
-import type { AnimationGroup } from "core/Animations/animationGroup";
-import type { IExplorerExtensibilityGroup } from "core/Debug/debugLayer";
+import { type AnimationGroup } from "core/Animations/animationGroup";
+import { type IExplorerExtensibilityGroup } from "core/Debug/debugLayer";
 
 import { faLayerGroup } from "@fortawesome/free-solid-svg-icons";
 import { TreeItemLabelComponent } from "../treeItemLabelComponent";

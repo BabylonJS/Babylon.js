@@ -1,4 +1,4 @@
-import type { IEasingFunction } from "./easing";
+import { type IEasingFunction } from "./easing";
 
 /**
  * Defines an interface which represents an animation key frame

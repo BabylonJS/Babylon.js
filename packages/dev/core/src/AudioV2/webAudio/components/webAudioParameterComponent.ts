@@ -1,9 +1,8 @@
 import { Logger } from "../../../Misc/logger";
-import type { Nullable } from "../../../types";
-import type { IAudioParameterRampOptions } from "../../audioParameter";
-import { AudioParameterRampShape } from "../../audioParameter";
+import { type Nullable } from "../../../types";
+import { type IAudioParameterRampOptions, AudioParameterRampShape } from "../../audioParameter";
 import { _GetAudioParamCurveValues } from "../../audioUtils";
-import type { _WebAudioEngine } from "../webAudioEngine";
+import { type _WebAudioEngine } from "../webAudioEngine";
 
 /**
  * Minimum duration in seconds for a ramp to be considered valid.

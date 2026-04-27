@@ -1,8 +1,7 @@
-import type { FunctionComponent } from "react";
-import type { Animation } from "core/Animations/animation";
+import { type FunctionComponent, useCallback, useEffect, useState } from "react";
+import { type Animation } from "core/Animations/animation";
 
 import { makeStyles, tokens, Input, Label, Dropdown, Option } from "@fluentui/react-components";
-import { useCallback, useEffect, useState } from "react";
 
 import { Button } from "shared-ui-components/fluent/primitives/button";
 import { useCurveEditor } from "../curveEditorContext";

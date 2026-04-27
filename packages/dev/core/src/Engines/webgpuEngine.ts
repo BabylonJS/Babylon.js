@@ -1,68 +1,65 @@
 /* eslint-disable babylonjs/available */
 import { Logger } from "../Misc/logger";
 import { ThinWebGPUEngine } from "./thinWebGPUEngine";
-import type { Nullable, DataArray, IndicesArray, Immutable, FloatArray } from "../types";
+import { type Nullable, type DataArray, type IndicesArray, type Immutable, type FloatArray } from "../types";
 import { Color4 } from "../Maths/math";
 import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
-import type { IEffectCreationOptions, IShaderPath } from "../Materials/effect";
-import { Effect } from "../Materials/effect";
-import type { EffectFallbacks } from "../Materials/effectFallbacks";
+import { type IEffectCreationOptions, type IShaderPath, Effect } from "../Materials/effect";
+import { type EffectFallbacks } from "../Materials/effectFallbacks";
 import { Constants } from "./constants";
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import * as WebGPUConstants from "./WebGPU/webgpuConstants";
 import { VertexBuffer } from "../Buffers/buffer";
-import type { IWebGPURenderPipelineStageDescriptor } from "./WebGPU/webgpuPipelineContext";
-import { WebGPUPipelineContext } from "./WebGPU/webgpuPipelineContext";
-import type { IPipelineContext } from "./IPipelineContext";
-import type { DataBuffer } from "../Buffers/dataBuffer";
-import type { BaseTexture } from "../Materials/Textures/baseTexture";
-import type { IShaderProcessor } from "./Processors/iShaderProcessor";
+import { type IWebGPURenderPipelineStageDescriptor, WebGPUPipelineContext } from "./WebGPU/webgpuPipelineContext";
+import { type IPipelineContext } from "./IPipelineContext";
+import { type DataBuffer } from "../Buffers/dataBuffer";
+import { type BaseTexture } from "../Materials/Textures/baseTexture";
+import { type IShaderProcessor } from "./Processors/iShaderProcessor";
 import { WebGPUShaderProcessorGLSL } from "./WebGPU/webgpuShaderProcessorsGLSL";
 import { WebGPUShaderProcessorWGSL } from "./WebGPU/webgpuShaderProcessorsWGSL";
-import type { _IShaderProcessingContext } from "./Processors/shaderProcessingOptions";
+import { type _IShaderProcessingContext } from "./Processors/shaderProcessingOptions";
 import { WebGPUShaderProcessingContext } from "./WebGPU/webgpuShaderProcessingContext";
 import { Tools } from "../Misc/tools";
 import { WebGPUTextureHelper } from "./WebGPU/webgpuTextureHelper";
 import { WebGPUTextureManager } from "./WebGPU/webgpuTextureManager";
-import { AbstractEngine } from "./abstractEngine";
-import type { ISceneLike, AbstractEngineOptions } from "./abstractEngine";
+import { AbstractEngine, type ISceneLike, type AbstractEngineOptions } from "./abstractEngine";
 import { WebGPUBufferManager } from "./WebGPU/webgpuBufferManager";
-import type { IHardwareTextureWrapper } from "../Materials/Textures/hardwareTextureWrapper";
+import { type IHardwareTextureWrapper } from "../Materials/Textures/hardwareTextureWrapper";
 import { WebGPUHardwareTexture } from "./WebGPU/webgpuHardwareTexture";
-import type { IColor4Like } from "../Maths/math.like";
-import { UniformBuffer } from "../Materials/uniformBuffer";
+import { type IColor4Like } from "../Maths/math.like";
+import { type UniformBuffer } from "../Materials/uniformBuffer";
 import { WebGPUCacheSampler } from "./WebGPU/webgpuCacheSampler";
 import { WebGPUCacheRenderPipelineTree } from "./WebGPU/webgpuCacheRenderPipelineTree";
 import { WebGPUStencilStateComposer } from "./WebGPU/webgpuStencilStateComposer";
 import { WebGPUDepthCullingState } from "./WebGPU/webgpuDepthCullingState";
-import type { DrawWrapper } from "../Materials/drawWrapper";
+import { type DrawWrapper } from "../Materials/drawWrapper";
 import { WebGPUMaterialContext } from "./WebGPU/webgpuMaterialContext";
 import { WebGPUDrawContext } from "./WebGPU/webgpuDrawContext";
 import { WebGPUCacheBindGroups } from "./WebGPU/webgpuCacheBindGroups";
 import { WebGPUClearQuad } from "./WebGPU/webgpuClearQuad";
-import type { IStencilState } from "../States/IStencilState";
+import { type IStencilState } from "../States/IStencilState";
 import { WebGPURenderItemBlendColor, WebGPURenderItemScissor, WebGPURenderItemStencilRef, WebGPURenderItemViewport, WebGPUBundleList } from "./WebGPU/webgpuBundleList";
 import { WebGPUTimestampQuery } from "./WebGPU/webgpuTimestampQuery";
-import type { ComputeEffect } from "../Compute/computeEffect";
+import { type ComputeEffect } from "../Compute/computeEffect";
 import { WebGPUOcclusionQuery } from "./WebGPU/webgpuOcclusionQuery";
 import { ShaderCodeInliner } from "./Processors/shaderCodeInliner";
-import type { TwgslOptions } from "./WebGPU/webgpuTintWASM";
-import { WebGPUTintWASM } from "./WebGPU/webgpuTintWASM";
-import type { ExternalTexture } from "../Materials/Textures/externalTexture";
+import { type TwgslOptions, WebGPUTintWASM } from "./WebGPU/webgpuTintWASM";
+import { type ExternalTexture } from "../Materials/Textures/externalTexture";
 import { WebGPUShaderProcessor } from "./WebGPU/webgpuShaderProcessor";
 import { ShaderLanguage } from "../Materials/shaderLanguage";
-import type { InternalTextureCreationOptions, TextureSize } from "../Materials/Textures/textureCreationOptions";
+import { type InternalTextureCreationOptions, type TextureSize } from "../Materials/Textures/textureCreationOptions";
 import { WebGPUSnapshotRendering } from "./WebGPU/webgpuSnapshotRendering";
-import type { WebGPUDataBuffer } from "../Meshes/WebGPU/webgpuDataBuffer";
-import type { WebGPURenderTargetWrapper } from "./WebGPU/webgpuRenderTargetWrapper";
+import { type WebGPUDataBuffer } from "../Meshes/WebGPU/webgpuDataBuffer";
+import { type WebGPURenderTargetWrapper } from "./WebGPU/webgpuRenderTargetWrapper";
 import { AlphaState } from "../States/alphaCullingState";
 
 import "../Buffers/buffer.align";
 
-import type { VideoTexture } from "../Materials/Textures/videoTexture";
-import type { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
-import type { RenderTargetWrapper } from "./renderTargetWrapper";
-import type { Scene } from "../scene";
+import { type VideoTexture } from "../Materials/Textures/videoTexture";
+import { type RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
+import { type RenderTargetWrapper } from "./renderTargetWrapper";
+import { type Scene } from "../scene";
+import { type AbstractMesh } from "../Meshes/abstractMesh";
 
 import { SphericalPolynomial } from "../Maths/sphericalPolynomial";
 import { PerformanceMonitor } from "../Misc/performanceMonitor";
@@ -90,8 +87,8 @@ import "../Audio/audioEngine";
 import { resetCachedPipeline } from "../Materials/effect.functions";
 
 import { WebGPUExternalTexture } from "./WebGPU/webgpuExternalTexture";
-import type { TextureSampler } from "../Materials/Textures/textureSampler";
-import type { StorageBuffer } from "../Buffers/storageBuffer";
+import { type TextureSampler } from "../Materials/Textures/textureSampler";
+import { type StorageBuffer } from "../Buffers/storageBuffer";
 import "./WebGPU/Extensions/engine.alpha";
 import "./WebGPU/Extensions/engine.rawTexture";
 import "./WebGPU/Extensions/engine.readTexture";
@@ -206,6 +203,74 @@ export interface WebGPUEngineOptions extends AbstractEngineOptions, GPURequestAd
      * Options to load the associated Twgsl library
      */
     twgslOptions?: TwgslOptions;
+}
+
+/**
+ * Options for pre-warming a render pipeline asynchronously.
+ * All render state properties are optional and default to the most common opaque rendering state.
+ */
+export interface IWebGPURenderPipelineAsyncCreationOptions {
+    /**
+     * The compiled effect (shader stages) for the pipeline.
+     */
+    effect: Effect;
+    /**
+     * The mesh whose vertex buffer layout to use.
+     */
+    mesh: AbstractMesh;
+    /**
+     * The fill mode / primitive topology. Defaults to Constants.MATERIAL_TriangleFillMode.
+     */
+    fillMode?: number;
+    /**
+     * The MSAA sample count. Defaults to the engine's current sample count.
+     */
+    sampleCount?: number;
+    /**
+     * The color render target format. Defaults to the engine's current canvas color format.
+     */
+    colorFormat?: GPUTextureFormat;
+    /**
+     * The depth-stencil render target format. Defaults to the engine's current depth format.
+     */
+    depthStencilFormat?: GPUTextureFormat;
+    /**
+     * The alpha blending mode (e.g. Constants.ALPHA_DISABLE, Constants.ALPHA_COMBINE).
+     * Defaults to Constants.ALPHA_DISABLE.
+     */
+    alphaMode?: number;
+    /**
+     * Whether depth writing is enabled. Defaults to true.
+     */
+    depthWrite?: boolean;
+    /**
+     * Whether depth testing is enabled. Defaults to true.
+     */
+    depthTest?: boolean;
+    /**
+     * The depth comparison function (e.g. Constants.LEQUAL). Defaults to Constants.LEQUAL.
+     */
+    depthCompare?: number;
+    /**
+     * Whether back-face culling is enabled. Defaults to true.
+     */
+    cullEnabled?: boolean;
+    /**
+     * Which face to cull (1 = back, 2 = front). Defaults to 1 (back).
+     */
+    cullFace?: number;
+    /**
+     * Front face winding order (1 = CCW, 2 = CW). Defaults to 2 (CW).
+     */
+    frontFace?: number;
+    /**
+     * Color channel write mask (bitmask of RGBA channels). Defaults to 0xF (all channels).
+     */
+    writeMask?: number;
+    /**
+     * Whether stencil testing is enabled. Defaults to false.
+     */
+    stencilEnabled?: boolean;
 }
 
 /**
@@ -358,6 +423,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
     private _dummyIndexBuffer: WebGPUDataBuffer;
     private _colorWriteLocal = true;
     private _forceEnableEffect = false;
+    private _internalFrameCounter = 0;
 
     /**
      * Gets or sets the snapshot rendering mode
@@ -456,7 +522,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
                   .requestAdapter()
                   // eslint-disable-next-line github/no-then
                   .then(
-                      (adapter: GPUAdapter | undefined) => !!adapter,
+                      (adapter: GPUAdapter | null | undefined) => !!adapter,
                       () => false
                   )
                   // eslint-disable-next-line github/no-then
@@ -656,15 +722,15 @@ export class WebGPUEngine extends ThinWebGPUEngine {
             navigator
                 .gpu!.requestAdapter(this._options)
                 // eslint-disable-next-line github/no-then
-                .then(async (adapter: GPUAdapter | undefined) => {
+                .then(async (adapter: GPUAdapter | null | undefined) => {
                     if (!adapter) {
                         // eslint-disable-next-line no-throw-literal
-                        throw "Could not retrieve a WebGPU adapter (adapter is null).";
+                        throw "Could not retrieve a WebGPU adapter (adapter is null or undefined).";
                     } else {
                         this._adapter = adapter!;
                         this._adapterSupportedExtensions = [];
                         this._adapter.features?.forEach((feature) => {
-                            this._adapterSupportedExtensions.push(feature as WebGPUConstants.FeatureName);
+                            this._adapterSupportedExtensions.push(feature as GPUFeatureName);
                         });
                         this._adapterSupportedLimits = this._adapter.limits;
                         this._adapterInfo = this._adapter.info;
@@ -706,7 +772,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
                     this._device = device;
                     this._deviceEnabledExtensions = [];
                     this._device.features?.forEach((feature) => {
-                        this._deviceEnabledExtensions.push(feature as WebGPUConstants.FeatureName);
+                        this._deviceEnabledExtensions.push(feature as GPUFeatureName);
                     });
                     this._deviceLimits = device.limits;
 
@@ -778,12 +844,10 @@ export class WebGPUEngine extends ThinWebGPUEngine {
                         "UBDontInvertY"
                     );
 
-                    if (this.dbgVerboseLogsForFirstFrames) {
-                        if ((this as any)._count === undefined) {
-                            (this as any)._count = 0;
-                            Logger.Log(["%c frame #" + (this as any)._count + " - begin", "background: #ffff00"]);
-                        }
-                    }
+                    const frameCounter = this._internalFrameCounter++;
+
+                    this._uploadEncoderDescriptor.label = `[${this.frameId}|${frameCounter}] - UploadEncoder`;
+                    this._renderEncoderDescriptor.label = `[${this.frameId}|${frameCounter}] - RenderEncoder`;
 
                     this._uploadEncoder = this._device.createCommandEncoder(this._uploadEncoderDescriptor);
                     this._renderEncoder = this._device.createCommandEncoder(this._renderEncoderDescriptor);
@@ -920,7 +984,8 @@ export class WebGPUEngine extends ThinWebGPUEngine {
             disableMorphTargetTexture: false,
             textureNorm16: textureFormatsTier1,
             blendParametersPerTarget: true,
-            dualSourceBlending: true,
+            dualSourceBlending: this._deviceEnabledExtensions.includes(WebGPUConstants.FeatureName.DualSourceBlending),
+            supportReadWriteStorageTextures: typeof navigator !== "undefined" && navigator.gpu?.wgslLanguageFeatures?.has("readonly_and_readwrite_storage_textures") === true,
         };
 
         this._features = {
@@ -950,7 +1015,6 @@ export class WebGPUEngine extends ThinWebGPUEngine {
             supportSpriteInstancing: true,
             forceVertexBufferStrideAndOffsetMultiple4Bytes: true,
             _checkNonFloatVertexBuffersDontRecreatePipelineContext: true,
-            _collectUbosUpdatedInFrame: false,
         };
 
         this._alphaState = new AlphaState(this._caps.blendParametersPerTarget);
@@ -1066,8 +1130,10 @@ export class WebGPUEngine extends ThinWebGPUEngine {
             stencilStoreOp: !this.isStencilEnable ? undefined : WebGPUConstants.StoreOp.Store,
         };
 
+        const frameCounter = this._internalFrameCounter++;
+
         this._mainRenderPassWrapper.renderPassDescriptor = {
-            label: "MainRenderPass",
+            label: `[${this.frameId}|${frameCounter}] - MainRenderPass`,
             colorAttachments: mainColorAttachments,
             depthStencilAttachment: mainDepthAttachment,
         };
@@ -1075,8 +1141,8 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         this.beginFrame();
         this._startMainRenderPass(true, null, true, false);
         this._endCurrentRenderPass();
-        this.endFrame();
         this._frameId--; // We don't want to count the frame as a real frame, because it was only used to initialize the depth texture
+        this.endFrame();
     }
 
     /**
@@ -1231,15 +1297,6 @@ export class WebGPUEngine extends ThinWebGPUEngine {
             return false;
         }
 
-        if (this.dbgVerboseLogsForFirstFrames) {
-            if ((this as any)._count === undefined) {
-                (this as any)._count = 0;
-            }
-            if (!(this as any)._count || (this as any)._count < this.dbgVerboseLogsNumFrames) {
-                Logger.Log(["frame #" + (this as any)._count + " - setSize -", width, height]);
-            }
-        }
-
         this._initializeMainAttachments();
 
         if (this.snapshotRendering) {
@@ -1389,22 +1446,6 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         } else {
             this._getCurrentRenderPass().setViewport(x, y, w, h, 0, 1);
         }
-
-        if (this.dbgVerboseLogsForFirstFrames) {
-            if ((this as any)._count === undefined) {
-                (this as any)._count = 0;
-            }
-            if (!(this as any)._count || (this as any)._count < this.dbgVerboseLogsNumFrames) {
-                Logger.Log([
-                    "frame #" + (this as any)._count + " - viewport applied - (",
-                    this._viewportCached.x,
-                    this._viewportCached.y,
-                    this._viewportCached.z,
-                    this._viewportCached.w,
-                    ") current pass is main pass=" + this._currentPassIsMainPass(),
-                ]);
-            }
-        }
     }
 
     /**
@@ -1445,22 +1486,6 @@ export class WebGPUEngine extends ThinWebGPUEngine {
             bundleList.addItem(new WebGPURenderItemScissor(this._scissorCached.x, y, this._scissorCached.z, this._scissorCached.w));
         } else {
             this._getCurrentRenderPass().setScissorRect(this._scissorCached.x, y, this._scissorCached.z, this._scissorCached.w);
-        }
-
-        if (this.dbgVerboseLogsForFirstFrames) {
-            if ((this as any)._count === undefined) {
-                (this as any)._count = 0;
-            }
-            if (!(this as any)._count || (this as any)._count < this.dbgVerboseLogsNumFrames) {
-                Logger.Log([
-                    "frame #" + (this as any)._count + " - scissor applied - (",
-                    this._scissorCached.x,
-                    this._scissorCached.y,
-                    this._scissorCached.z,
-                    this._scissorCached.w,
-                    ") current pass is main pass=" + this._currentPassIsMainPass(),
-                ]);
-            }
         }
     }
 
@@ -1553,15 +1578,6 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         }
 
         const hasScissor = this._scissorIsActive();
-
-        if (this.dbgVerboseLogsForFirstFrames) {
-            if ((this as any)._count === undefined) {
-                (this as any)._count = 0;
-            }
-            if (!(this as any)._count || (this as any)._count < this.dbgVerboseLogsNumFrames) {
-                Logger.Log(["frame #" + (this as any)._count + " - clear - backBuffer=", backBuffer, " depth=", depth, " stencil=", stencil, " scissor is active=", hasScissor]);
-            }
-        }
 
         // We need to recreate the render pass so that the new parameters for clear color / depth / stencil are taken into account
         if (this._currentRenderTarget) {
@@ -2027,14 +2043,14 @@ export class WebGPUEngine extends ThinWebGPUEngine {
             vertexStage: {
                 module: this._device.createShaderModule({
                     label: "vertex",
-                    code: vertexShader,
+                    code: vertexShader as string,
                 }),
                 entryPoint: "main",
             },
             fragmentStage: {
                 module: this._device.createShaderModule({
                     label: "fragment",
-                    code: fragmentShader,
+                    code: fragmentShader as string,
                 }),
                 entryPoint: "main",
             },
@@ -2763,7 +2779,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
                 return false;
             }
 
-            let internalTexture: Nullable<InternalTexture> = null;
+            let internalTexture: Nullable<InternalTexture>;
             if (depthStencilTexture) {
                 internalTexture = (<RenderTargetTexture>texture).depthStencilTexture!;
             } else if (texture.isReady()) {
@@ -2801,15 +2817,6 @@ export class WebGPUEngine extends ThinWebGPUEngine {
             }
 
             this._setInternalTexture(name, internalTexture, baseName);
-        } else {
-            if (this.dbgVerboseLogsForFirstFrames) {
-                if ((this as any)._count === undefined) {
-                    (this as any)._count = 0;
-                }
-                if (!(this as any)._count || (this as any)._count < this.dbgVerboseLogsNumFrames) {
-                    Logger.Log(["frame #" + (this as any)._count + " - _setTexture called with a null _currentEffect! texture=", texture]);
-                }
-            }
         }
 
         return true;
@@ -3031,27 +3038,12 @@ export class WebGPUEngine extends ThinWebGPUEngine {
 
         this._timestampQuery.endFrame(this._renderEncoder);
         this._timestampIndex = 0;
+        this._internalFrameCounter = 0;
 
-        this.flushFramebuffer();
+        this.flushFramebuffer(true);
 
         this._textureHelper.destroyDeferredTextures();
         this._bufferManager.destroyDeferredBuffers();
-
-        if (this._features._collectUbosUpdatedInFrame) {
-            if (this.dbgVerboseLogsForFirstFrames) {
-                if ((this as any)._count === undefined) {
-                    (this as any)._count = 0;
-                }
-                if (!(this as any)._count || (this as any)._count < this.dbgVerboseLogsNumFrames) {
-                    const list: Array<string> = [];
-                    for (const name in UniformBuffer._UpdatedUbosInFrame) {
-                        list.push(name + ":" + UniformBuffer._UpdatedUbosInFrame[name]);
-                    }
-                    Logger.Log(["frame #" + (this as any)._count + " - updated ubos -", list.join(", ")]);
-                }
-            }
-            UniformBuffer._UpdatedUbosInFrame = {};
-        }
 
         this.countersLastFrame.numEnableEffects = this._counters.numEnableEffects;
         this.countersLastFrame.numEnableDrawWrapper = this._counters.numEnableDrawWrapper;
@@ -3065,21 +3057,6 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         this._cacheRenderPipeline.endFrame();
         this._cacheBindGroups.endFrame();
 
-        if (this.dbgVerboseLogsForFirstFrames) {
-            if ((this as any)._count === undefined) {
-                (this as any)._count = 0;
-            }
-            if ((this as any)._count < this.dbgVerboseLogsNumFrames) {
-                Logger.Log(["%c frame #" + (this as any)._count + " - end", "background: #ffff00"]);
-            }
-            if ((this as any)._count < this.dbgVerboseLogsNumFrames) {
-                (this as any)._count++;
-                if ((this as any)._count !== this.dbgVerboseLogsNumFrames) {
-                    Logger.Log(["%c frame #" + (this as any)._count + " - begin", "background: #ffff00"]);
-                }
-            }
-        }
-
         super.endFrame();
     }
 
@@ -3090,18 +3067,34 @@ export class WebGPUEngine extends ThinWebGPUEngine {
 
     /**
      * Force a WebGPU flush (ie. a flush of all waiting commands)
+     * @internal @param _fromEndFrame defines whether the flush is triggered from endFrame or not (default: false)
      */
-    public flushFramebuffer(): void {
+    public flushFramebuffer(_fromEndFrame = false): void {
         // we need to end the current render pass (main or rtt) if any as we are not allowed to submit the command buffers when being in a pass
         this._endCurrentRenderPass();
+
+        this._debugPopBeforeEndOfEncoder();
 
         this._commandBuffers[0] = this._uploadEncoder.finish();
         this._commandBuffers[1] = this._renderEncoder.finish();
 
         this._device.queue.submit(this._commandBuffers);
 
+        const frameCounter = this._internalFrameCounter++;
+
+        // If flushFramebuffer is called from endFrame, it means the encoders are created for the next frame, but because frameId is not yet incremented at the time of the call, we use frameId + 1
+        this._uploadEncoderDescriptor.label = `[${_fromEndFrame ? this.frameId + 1 : this.frameId}|${frameCounter}] - UploadEncoder`;
+        this._renderEncoderDescriptor.label = `[${_fromEndFrame ? this.frameId + 1 : this.frameId}|${frameCounter}] - RenderEncoder`;
+
         this._uploadEncoder = this._device.createCommandEncoder(this._uploadEncoderDescriptor);
         this._renderEncoder = this._device.createCommandEncoder(this._renderEncoderDescriptor);
+
+        if (_fromEndFrame) {
+            this._debugMarkersEncoderGroups.length = 0;
+            this._debugMarkersPassGroups.length = 0;
+        } else {
+            this._debugPushAfterStartOfEncoder();
+        }
 
         this._timestampQuery.startFrame(this._uploadEncoder);
 
@@ -3256,8 +3249,10 @@ export class WebGPUEngine extends ThinWebGPUEngine {
             }
         }
 
+        const frameCounter = this._internalFrameCounter++;
+
         this._rttRenderPassWrapper.renderPassDescriptor = {
-            label: (renderTargetWrapper.label ?? "RTT") + " - RenderPass",
+            label: `[${this.frameId}|${frameCounter}] - ` + (renderTargetWrapper.label ?? "RTT") + " - RenderPass",
             colorAttachments,
             depthStencilAttachment:
                 depthStencilTexture && gpuDepthStencilTexture
@@ -3283,30 +3278,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         this._timestampQuery.startPass(this._rttRenderPassWrapper.renderPassDescriptor, this._timestampIndex);
         this._currentRenderPass = this._renderEncoder.beginRenderPass(this._rttRenderPassWrapper.renderPassDescriptor);
 
-        if (this.dbgVerboseLogsForFirstFrames) {
-            if ((this as any)._count === undefined) {
-                (this as any)._count = 0;
-            }
-            if (!(this as any)._count || (this as any)._count < this.dbgVerboseLogsNumFrames) {
-                const internalTexture = rtWrapper.texture!;
-                Logger.Log([
-                    "frame #" +
-                        (this as any)._count +
-                        " - render target begin pass - rtt name=" +
-                        renderTargetWrapper.label +
-                        ", internalTexture.uniqueId=" +
-                        internalTexture.uniqueId +
-                        ", width=" +
-                        internalTexture.width +
-                        ", height=" +
-                        internalTexture.height +
-                        ", setClearStates=" +
-                        setClearStates,
-                    "renderPassDescriptor=",
-                    this._rttRenderPassWrapper.renderPassDescriptor,
-                ]);
-            }
-        }
+        this._debugPushAfterStartOfEncoder();
 
         this._resetRenderPassStates();
 
@@ -3326,6 +3298,9 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         const mustClearDepth = setClearStates && clearDepth;
         const mustClearStencil = setClearStates && clearStencil;
 
+        const frameCounter = this._internalFrameCounter++;
+
+        this._mainRenderPassWrapper.renderPassDescriptor!.label = `[${this.frameId}|${frameCounter}] - MainRenderPass`;
         this._mainRenderPassWrapper.renderPassDescriptor!.colorAttachments[0]!.clearValue = mustClearColor ? clearColor : undefined;
         this._mainRenderPassWrapper.renderPassDescriptor!.colorAttachments[0]!.loadOp = mustClearColor ? WebGPUConstants.LoadOp.Clear : WebGPUConstants.LoadOp.Load;
         this._mainRenderPassWrapper.renderPassDescriptor!.depthStencilAttachment!.depthClearValue = mustClearDepth
@@ -3354,22 +3329,10 @@ export class WebGPUEngine extends ThinWebGPUEngine {
             this._mainRenderPassWrapper.renderPassDescriptor!.colorAttachments[0]!.view = swapChainTexture.createView(ViewDescriptorSwapChain);
         }
 
-        if (this.dbgVerboseLogsForFirstFrames) {
-            if ((this as any)._count === undefined) {
-                (this as any)._count = 0;
-            }
-            if (!(this as any)._count || (this as any)._count < this.dbgVerboseLogsNumFrames) {
-                Logger.Log([
-                    "frame #" + (this as any)._count + " - main begin pass - texture width=" + (this._mainTextureExtends as any).width,
-                    " height=" + (this._mainTextureExtends as any).height + ", setClearStates=" + setClearStates,
-                    "renderPassDescriptor=",
-                    this._mainRenderPassWrapper.renderPassDescriptor,
-                ]);
-            }
-        }
-
         this._timestampQuery.startPass(this._mainRenderPassWrapper.renderPassDescriptor!, this._timestampIndex);
         this._currentRenderPass = this._renderEncoder.beginRenderPass(this._mainRenderPassWrapper.renderPassDescriptor!);
+
+        this._debugPushAfterStartOfEncoder();
 
         this._setDepthTextureFormat(this._mainRenderPassWrapper);
         this._setColorFormat(this._mainRenderPassWrapper);
@@ -3439,32 +3402,6 @@ export class WebGPUEngine extends ThinWebGPUEngine {
             aspect: WebGPUConstants.TextureAspect.All,
         };
 
-        if (this.dbgVerboseLogsForFirstFrames) {
-            if ((this as any)._count === undefined) {
-                (this as any)._count = 0;
-            }
-            if (!(this as any)._count || (this as any)._count < this.dbgVerboseLogsNumFrames) {
-                Logger.Log([
-                    "frame #" +
-                        (this as any)._count +
-                        " - bindFramebuffer - rtt name=" +
-                        texture.label +
-                        ", internalTexture.uniqueId=" +
-                        texture.texture?.uniqueId +
-                        ", face=" +
-                        faceIndex +
-                        ", lodLevel=" +
-                        lodLevel +
-                        ", layer=" +
-                        layer,
-                    "colorAttachmentViewDescriptor=",
-                    this._rttRenderPassWrapper.colorAttachmentViewDescriptor,
-                    "depthAttachmentViewDescriptor=",
-                    this._rttRenderPassWrapper.depthAttachmentViewDescriptor,
-                ]);
-            }
-        }
-
         // We don't create the render pass just now, we do a lazy creation of the render pass, hoping the render pass will be created by a call to clear()...
         // However, if snapshot rendering is enabled, we need to create the render pass immediately, to be sure currentRenderPass is not null when _endCurrentRenderPass() is called.
         // (as in snapshot rendering mode, we may not have a call to clear() before _endCurrentRenderPass(), so lazy creation would not work)
@@ -3516,15 +3453,6 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         this._resolveAndGenerateMipMapsFramebuffer(texture, disableGenerateMipMaps);
 
         this._currentRenderTarget = null;
-
-        if (this.dbgVerboseLogsForFirstFrames) {
-            if ((this as any)._count === undefined) {
-                (this as any)._count = 0;
-            }
-            if (!(this as any)._count || (this as any)._count < this.dbgVerboseLogsNumFrames) {
-                Logger.Log("frame #" + (this as any)._count + " - unBindFramebuffer - rtt name=" + texture.label + ", internalTexture.uniqueId=", texture.texture?.uniqueId);
-            }
-        }
 
         this._mrtAttachments = [];
         this._cacheRenderPipeline.setMRT([]);
@@ -3886,6 +3814,109 @@ export class WebGPUEngine extends ThinWebGPUEngine {
     }
 
     //------------------------------------------------------------------------------
+    //                        Async Pipeline Pre-Warming
+    //------------------------------------------------------------------------------
+
+    /**
+     * Asynchronously pre-creates one or more render pipelines so they are cached and ready
+     * to use without any compilation hitch when first rendered.
+     *
+     * Call this for effects and meshes that are not yet rendering but will be soon
+     * (e.g. streaming content, predicted material changes, pre-loading the next level).
+     *
+     * When passing an array, cache state is set once per entry and restored only at the end,
+     * making batch pre-warming efficient.
+     *
+     * @param options - a single options object, an array of options objects,
+     *                  or a raw GPURenderPipelineDescriptor for complete control
+     * @returns an array of Promises for the pipelines that had cache misses (empty if all were cached).
+     *          When a raw GPURenderPipelineDescriptor is provided, always returns a single-element array.
+     */
+    // eslint-disable-next-line no-restricted-syntax
+    public createRenderPipelineAsync(
+        options: IWebGPURenderPipelineAsyncCreationOptions | IWebGPURenderPipelineAsyncCreationOptions[] | GPURenderPipelineDescriptor
+    ): Promise<GPURenderPipeline>[] {
+        // Raw GPURenderPipelineDescriptor: bypass the cache and create directly
+        if ("vertex" in options) {
+            return [this._device.createRenderPipelineAsync(options as GPURenderPipelineDescriptor)];
+        }
+
+        const entries = Array.isArray(options) ? options : [options];
+        const promises: Promise<GPURenderPipeline>[] = [];
+        const cache = this._cacheRenderPipeline;
+
+        for (const entry of entries) {
+            // Render target formats
+            cache.setColorFormat(entry.colorFormat ?? this._colorFormat);
+            cache.setDepthStencilFormat(entry.depthStencilFormat ?? this._depthTextureFormat);
+
+            // Vertex / index buffers from mesh
+            const geometry = entry.mesh.geometry;
+            if (!geometry) {
+                throw new Error("WebGPUEngine.createRenderPipelineAsync: mesh has no geometry to derive vertex/index buffers from.");
+            }
+            cache.setBuffers(geometry.getVertexBuffers(), geometry.getIndexBuffer(), null);
+
+            // Alpha / blend state
+            const alphaMode = entry.alphaMode ?? Constants.ALPHA_DISABLE;
+            if (alphaMode === Constants.ALPHA_DISABLE) {
+                cache.setAlphaBlendEnabled([false], 0);
+            } else {
+                const prevAlphaMode = this._alphaMode[0];
+                this.setAlphaMode(alphaMode);
+                cache.setAlphaBlendEnabled(this._alphaState._alphaBlend, this._alphaState._numTargetEnabled);
+                cache.setAlphaBlendFactors(this._alphaState._blendFunctionParameters, this._alphaState._blendEquationParameters);
+                this.setAlphaMode(prevAlphaMode);
+            }
+
+            // Depth / stencil state
+            cache.setDepthWriteEnabled(entry.depthWrite ?? true);
+            cache.setDepthTestEnabled(entry.depthTest ?? true);
+            cache.setDepthCompare(entry.depthCompare ?? Constants.LEQUAL);
+
+            // Rasterization state
+            cache.setCullEnabled(entry.cullEnabled ?? true);
+            cache.setCullFace(entry.cullFace ?? 1);
+            cache.setFrontFace(entry.frontFace ?? 2);
+
+            // Write mask
+            cache.setWriteMask(entry.writeMask ?? 0xf);
+
+            // Stencil
+            cache.setStencilEnabled(entry.stencilEnabled ?? false);
+
+            const fillMode = entry.fillMode ?? Constants.MATERIAL_TriangleFillMode;
+            const sampleCount = entry.sampleCount ?? this.currentSampleCount;
+
+            const promise = cache.preWarmPipeline(fillMode, entry.effect, sampleCount, 0);
+            if (promise) {
+                promises.push(promise);
+            }
+        }
+
+        // Restore the cache state to the engine's current tracked state once after the entire batch
+        cache.setColorFormat(this._colorFormat);
+        cache.setDepthStencilFormat(this._depthTextureFormat);
+        cache.setBuffers(this._currentVertexBuffers ?? null, this._currentIndexBuffer, this._currentOverrideVertexBuffers ?? null);
+        cache.setDepthCullingState(
+            this._depthCullingState.cull ?? false,
+            this._depthCullingState.frontFace ?? 2,
+            this._depthCullingState.cullFace ?? 1,
+            this._depthCullingState.zOffset,
+            this._depthCullingState.zOffsetUnits,
+            this._depthCullingState.depthTest ?? true,
+            this._depthCullingState.depthMask ?? true,
+            this._depthCullingState.depthFunc
+        );
+        cache.setAlphaBlendEnabled(this._alphaState._alphaBlend, this._alphaState._numTargetEnabled);
+        cache.setAlphaBlendFactors(this._alphaState._blendFunctionParameters, this._alphaState._blendEquationParameters);
+        cache.setStencilEnabled(this._stencilStateComposer.enabled ?? false);
+        cache.setWriteMask(this._colorWrite ? 0xf : 0);
+
+        return promises;
+    }
+
+    //------------------------------------------------------------------------------
     //                              Dispose
     //------------------------------------------------------------------------------
 
@@ -4012,6 +4043,8 @@ export class WebGPUEngine extends ThinWebGPUEngine {
      * @param byteLength the byte length to clear (optional)
      */
     public clearStorageBuffer(storageBuffer: DataBuffer, byteOffset?: number, byteLength?: number): void {
+        // clearBuffer is a command encoder operation and cannot be recorded while a render pass is open on the same encoder.
+        this._endCurrentRenderPass();
         this._renderEncoder.clearBuffer(storageBuffer.underlyingResource, byteOffset, byteLength);
     }
 

@@ -1,7 +1,6 @@
-import type { Nullable } from "../types";
+import { type Nullable } from "../types";
 import { Scene } from "../scene";
-import type { ISceneSerializableComponent } from "../sceneComponent";
-import { SceneComponentConstants } from "../sceneComponent";
+import { type ISceneSerializableComponent, SceneComponentConstants } from "../sceneComponent";
 import { SubSurfaceConfiguration } from "./subSurfaceConfiguration";
 import { Color3 } from "../Maths/math.color";
 import { AddParser } from "core/Loading/Plugins/babylonFileParser.function";

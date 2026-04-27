@@ -1,9 +1,9 @@
 /* eslint-disable jsdoc/require-jsdoc */
 /* eslint-disable no-await-in-loop */
 
-import type { GlobalState } from "../globalState";
+import { type GlobalState } from "../globalState";
 import { Logger } from "@dev/core";
-import type { V2Manifest } from "./snippet";
+import { type V2Manifest } from "./snippet";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 declare let JSZip: any;
@@ -33,7 +33,7 @@ export class DownloadManager {
                 throw new Error("esbuild not found in imported module");
             }
         } catch (error) {
-            throw new Error(`Could not load esbuild: ${error}`);
+            throw new Error(`Could not load esbuild: ${error}`, { cause: error });
         }
         if (!(esbuild as any).__pgInit) {
             await esbuild.initialize({

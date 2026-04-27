@@ -1,9 +1,9 @@
 import * as React from "react";
-import type { Observable } from "core/Misc/observable";
-import type { PropertyChangedEvent } from "shared-ui-components/propertyChangedEvent";
+import { type Observable } from "core/Misc/observable";
+import { type PropertyChangedEvent } from "shared-ui-components/propertyChangedEvent";
 import { CommonControlPropertyGridComponent } from "../gui/commonControlPropertyGridComponent";
-import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
-import type { Rectangle } from "gui/2D/controls/rectangle";
+import { type LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
+import { type Rectangle } from "gui/2D/controls/rectangle";
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
 import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
 import { UnitButton } from "shared-ui-components/lines/unitButton";
@@ -16,7 +16,7 @@ import strokeWeightIcon from "shared-ui-components/imgs/strokeWeightIcon.svg";
 import addImageButtonIcon from "shared-ui-components/imgs/addImageButtonIcon.svg";
 import addTextButtonIcon from "shared-ui-components/imgs/addTextButtonIcon.svg";
 import { IconComponent } from "shared-ui-components/lines/iconComponent";
-import type { GlobalState } from "../../../../globalState";
+import { type GlobalState } from "../../../../globalState";
 
 interface IButtonPropertyGridComponentProps {
     rectangles: Rectangle[];

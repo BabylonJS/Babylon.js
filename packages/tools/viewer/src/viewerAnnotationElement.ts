@@ -1,7 +1,6 @@
-import type { IDisposable, Nullable } from "core/index";
-import type { PropertyValues } from "lit";
+import { type IDisposable, type Nullable } from "core/index";
+import { type PropertyValues, LitElement, css, html } from "lit";
 
-import { LitElement, css, html } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import { ViewerElement } from "./viewerElement";
 import { ViewerHotSpotResult } from "./viewer";

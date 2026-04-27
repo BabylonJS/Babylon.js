@@ -1,7 +1,7 @@
-import type { Nullable, DataArray, FloatArray } from "../types";
-import type { AbstractEngine } from "../Engines/abstractEngine";
+import { type Nullable, type DataArray, type FloatArray } from "../types";
+import { type AbstractEngine } from "../Engines/abstractEngine";
 import { DataBuffer } from "./dataBuffer";
-import type { Mesh } from "../Meshes/mesh";
+import { type Mesh } from "../Meshes/mesh";
 import { Logger } from "../Misc/logger";
 import { Constants } from "../Engines/constants";
 import { EnumerateFloatValues, GetFloatData, GetTypeByteLength } from "./bufferUtils";
@@ -528,7 +528,7 @@ export class VertexBuffer {
         divisor = 1,
         takeBufferOwnership = false
     ) {
-        let updatable = false;
+        let updatable: boolean;
 
         this.engine = engine;
 

@@ -1,10 +1,10 @@
 import * as React from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTrash } from "@fortawesome/free-solid-svg-icons";
-import type { GlobalState } from "../../../../globalState";
-import type { FactorGradient } from "core/Misc/gradients";
-import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
-import type { IParticleSystem } from "core/Particles/IParticleSystem";
+import { type GlobalState } from "../../../../globalState";
+import { type FactorGradient } from "core/Misc/gradients";
+import { type LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
+import { type IParticleSystem } from "core/Particles/IParticleSystem";
 import { ParticleSystem } from "core/Particles/particleSystem";
 
 interface IFactorGradientStepGridComponent {

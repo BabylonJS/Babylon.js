@@ -1,10 +1,9 @@
 import { Constants } from "../Engines/constants";
 import { Scene } from "../scene";
-import type { ISceneComponent } from "../sceneComponent";
-import { SceneComponentConstants } from "../sceneComponent";
-import type { Nullable } from "../types";
+import { type ISceneComponent, SceneComponentConstants } from "../sceneComponent";
+import { type Nullable } from "../types";
 import { DepthPeelingRenderer } from "./depthPeelingRenderer";
-import type { ThinDepthPeelingRenderer } from "./thinDepthPeelingRenderer";
+import { type ThinDepthPeelingRenderer } from "./thinDepthPeelingRenderer";
 
 declare module "../scene" {
     // eslint-disable-next-line @typescript-eslint/naming-convention

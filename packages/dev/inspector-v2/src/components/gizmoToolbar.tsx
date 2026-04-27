@@ -1,19 +1,29 @@
-import type { MenuButtonProps, MenuCheckedValueChangeData, MenuCheckedValueChangeEvent } from "@fluentui/react-components";
-import type { FunctionComponent } from "react";
+import {
+    type MenuButtonProps,
+    type MenuCheckedValueChangeData,
+    type MenuCheckedValueChangeEvent,
+    makeStyles,
+    Menu,
+    MenuItemRadio,
+    MenuList,
+    MenuPopover,
+    MenuTrigger,
+    SplitButton,
+    tokens,
+    Tooltip,
+} from "@fluentui/react-components";
+import { type FunctionComponent, useCallback } from "react";
 
-import type { IGizmoService } from "../services/gizmoService";
-import type { GizmoMode } from "../services/gizmoService";
+import { type IGizmoService, type GizmoMode } from "../services/gizmoService";
 
-import { makeStyles, Menu, MenuItemRadio, MenuList, MenuPopover, MenuTrigger, SplitButton, tokens, Tooltip } from "@fluentui/react-components";
 import { ArrowExpandRegular, ArrowRotateClockwiseRegular, CameraRegular, CubeRegular, GlobeRegular, SelectObjectRegular } from "@fluentui/react-icons";
-import { useCallback } from "react";
 
 import { GizmoCoordinatesMode } from "core/Gizmos/gizmo";
 import { TranslateIcon } from "shared-ui-components/fluent/icons";
 import { Collapse } from "shared-ui-components/fluent/primitives/collapse";
 import { ToggleButton } from "shared-ui-components/fluent/primitives/toggleButton";
-import { useObservableState } from "../hooks/observableHooks";
-import type { ISceneContext } from "../services/sceneContext";
+import { useObservableState } from "shared-ui-components/modularTool/hooks/observableHooks";
+import { type ISceneContext } from "../services/sceneContext";
 
 const useStyles = makeStyles({
     coordinatesModeButton: {
@@ -67,7 +77,7 @@ export const GizmoToolbar: FunctionComponent<{ gizmoService: IGizmoService; scen
             const value = data.checkedItems[0];
             gizmoService.gizmoCamera = value === "-1" ? null : (cameras.find((camera) => camera.uniqueId.toString() === value) ?? null);
         },
-        [gizmoService]
+        [gizmoService, cameras]
     );
 
     return (
@@ -109,7 +119,7 @@ export const GizmoToolbar: FunctionComponent<{ gizmoService: IGizmoService; scen
                     </MenuPopover>
                 </Menu>
             </Collapse>
-            <Collapse visible={!!gizmoMode} orientation="horizontal">
+            <Collapse visible={!!gizmoMode && !!cameras && cameras.length > 1} orientation="horizontal">
                 <Menu positioning="below-end" checkedValues={{ cameraGizmo: [cameraGizmo?.uniqueId.toString() ?? "-1"] }} onCheckedValueChange={onCameraGizmoChange}>
                     <MenuTrigger disableButtonEnhancement={true}>
                         {(triggerProps: MenuButtonProps) => (
@@ -131,12 +141,11 @@ export const GizmoToolbar: FunctionComponent<{ gizmoService: IGizmoService; scen
                             <MenuItemRadio name="cameraGizmo" value={"-1"}>
                                 Automatic
                             </MenuItemRadio>
-                            {sceneContext.currentScene &&
-                                sceneContext.currentScene.activeCameras?.map((camera, index) => (
-                                    <MenuItemRadio key={camera.uniqueId} name="cameraGizmo" value={camera.uniqueId.toString()}>
-                                        {camera.name}
-                                    </MenuItemRadio>
-                                ))}
+                            {cameras?.map((camera) => (
+                                <MenuItemRadio key={camera.uniqueId} name="cameraGizmo" value={camera.uniqueId.toString()}>
+                                    {camera.name}
+                                </MenuItemRadio>
+                            ))}
                         </MenuList>
                     </MenuPopover>
                 </Menu>

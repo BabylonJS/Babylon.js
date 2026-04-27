@@ -1,6 +1,6 @@
-import type { IObjectInfo, IPathToObjectConverter } from "core/ObjectModel/objectModelInterfaces";
-import type { IGLTF } from "../glTFLoaderInterfaces";
-import type { IObjectAccessor } from "core/FlowGraph/typeDefinitions";
+import { type IObjectInfo, type IPathToObjectConverter } from "core/ObjectModel/objectModelInterfaces";
+import { type IGLTF } from "../glTFLoaderInterfaces";
+import { type IObjectAccessor } from "core/FlowGraph/typeDefinitions";
 
 /**
  * Adding an exception here will break traversing through the glTF object tree.

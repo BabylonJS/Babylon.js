@@ -1,14 +1,20 @@
-import type { Scene } from "../../scene";
+import { type Scene } from "../../scene";
 import { Quaternion, TmpVectors, Vector3 } from "../../Maths/math.vector";
 import { Mesh } from "../mesh";
 import { Buffer } from "../../Buffers/buffer";
-import type { Nullable } from "../../types";
-import type { Node } from "../../node";
+import { type Nullable } from "../../types";
+import { type Node } from "../../node";
 import { DeepCopier } from "../../Misc/deepCopier";
 import { GreasedLineTools } from "../../Misc/greasedLineTools";
-import type { GreasedLineMeshOptions, GreasedLineRibbonOptions } from "./greasedLineBaseMesh";
-import { GreasedLineBaseMesh, GreasedLineRibbonAutoDirectionMode, GreasedLineRibbonFacesMode, GreasedLineRibbonPointsMode } from "./greasedLineBaseMesh";
-import type { VertexData } from "../mesh.vertexData";
+import {
+    type GreasedLineMeshOptions,
+    type GreasedLineRibbonOptions,
+    GreasedLineBaseMesh,
+    GreasedLineRibbonAutoDirectionMode,
+    GreasedLineRibbonFacesMode,
+    GreasedLineRibbonPointsMode,
+} from "./greasedLineBaseMesh";
+import { type VertexData } from "../mesh.vertexData";
 
 Mesh._GreasedLineRibbonMeshParser = (parsedMesh: any, scene: Scene): Mesh => {
     return GreasedLineRibbonMesh.Parse(parsedMesh, scene);
@@ -498,7 +504,7 @@ export class GreasedLineRibbonMesh extends GreasedLineBaseMesh {
         const pathArrayLength = pathArray.length;
         this._vSegmentLengths = new Array(pathArrayLength);
         this._vTotalLengths = new Array(pathArrayLength);
-        let length = 0;
+        let length: number;
         for (let pi = 0; pi < pathArrayLength; pi++) {
             const points = pathArray[pi];
             this._vSegmentLengths[pi] = [0]; // first point has 0 distance

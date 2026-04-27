@@ -1,4 +1,4 @@
-import type { IFormatter } from "./xml.interfaces";
+import { type IFormatter } from "./xml.interfaces";
 
 /**
  *

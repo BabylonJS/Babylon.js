@@ -1,4 +1,13 @@
-import type { FrameGraphTextureHandle, Scene, FrameGraph, AbstractMesh, ObjectRendererOptions, FrameGraphRenderContext, FrameGraphRenderPass, ObjectRenderer } from "core/index";
+import {
+    type FrameGraphTextureHandle,
+    type Scene,
+    type FrameGraph,
+    type AbstractMesh,
+    type ObjectRendererOptions,
+    type FrameGraphRenderContext,
+    type FrameGraphRenderPass,
+    type ObjectRenderer,
+} from "core/index";
 import { Color4 } from "core/Maths/math.color";
 import { MaterialHelperGeometryRendering, GeometryRenderingTextureClearType } from "core/Materials/materialHelper.geometryrendering";
 import { Constants } from "core/Engines/constants";
@@ -88,6 +97,11 @@ export class FrameGraphGeometryRendererTask extends FrameGraphObjectRendererTask
      * The list of texture descriptions used by the geometry renderer task.
      */
     public textureDescriptions: IFrameGraphGeometryRendererTextureDescription[] = [];
+
+    /**
+     * The irradiance output texture. Will point to a valid texture only if that texture has been requested in textureDescriptions!
+     */
+    public readonly geometryIrradianceTexture: FrameGraphTextureHandle;
 
     /**
      * The depth (in view space) output texture. Will point to a valid texture only if that texture has been requested in textureDescriptions!
@@ -196,6 +210,7 @@ export class FrameGraphGeometryRendererTask extends FrameGraphObjectRendererTask
         this._clearAttachmentsLayout = new Map();
         this._allAttachmentsLayout = [];
 
+        this.geometryIrradianceTexture = this._frameGraph.textureManager.createDanglingHandle();
         this.geometryViewDepthTexture = this._frameGraph.textureManager.createDanglingHandle();
         this.geometryNormViewDepthTexture = this._frameGraph.textureManager.createDanglingHandle();
         this.geometryScreenDepthTexture = this._frameGraph.textureManager.createDanglingHandle();
@@ -267,6 +282,9 @@ export class FrameGraphGeometryRendererTask extends FrameGraphObjectRendererTask
             const geometryDescription = MaterialHelperGeometryRendering.GeometryTextureDescriptions[index];
 
             switch (geometryDescription.type) {
+                case Constants.PREPASS_IRRADIANCE_TEXTURE_TYPE:
+                    this._frameGraph.textureManager.resolveDanglingHandle(this.geometryIrradianceTexture, handle);
+                    break;
                 case Constants.PREPASS_DEPTH_TEXTURE_TYPE:
                     this._frameGraph.textureManager.resolveDanglingHandle(this.geometryViewDepthTexture, handle);
                     break;

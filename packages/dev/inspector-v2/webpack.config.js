@@ -6,6 +6,10 @@ module.exports = (env) => {
     return {
         entry: "./test/app/index.tsx",
 
+        snapshot: {
+            managedPaths: [/^(.+?[\\/]node_modules[\\/](?!(@fluentui-contrib[\\/]react-virtualizer)))/],
+        },
+
         ...webpackTools.commonDevWebpackConfiguration(
             {
                 ...env,
@@ -50,7 +54,7 @@ module.exports = (env) => {
                 ],
                 enableFastRefresh: !production,
                 tsOptions: {
-                    configFile: "tsconfig.build.json",
+                    configFile: "tsconfig.webpack.json",
                     transpileOnly: true,
                 },
             }),

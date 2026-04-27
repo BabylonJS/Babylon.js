@@ -1,12 +1,12 @@
 import * as React from "react";
-import type { GlobalState } from "./globalState";
+import { type GlobalState } from "./globalState";
 
 import { NodeListComponent } from "./components/nodeList/nodeListComponent";
 import { PropertyTabComponent } from "./components/propertyTab/propertyTabComponent";
 import { Portal } from "./portal";
 import { LogComponent, LogEntry } from "./components/log/logComponent";
 import { DataStorage } from "core/Misc/dataStorage";
-import type { Nullable } from "core/types";
+import { type Nullable } from "core/types";
 import { MessageDialog } from "shared-ui-components/components/MessageDialog";
 import { BlockTools } from "./blockTools";
 import { PreviewManager } from "./components/preview/previewManager";
@@ -14,18 +14,18 @@ import { PreviewMeshControlComponent } from "./components/preview/previewMeshCon
 import { PreviewAreaComponent } from "./components/preview/previewAreaComponent";
 import { SerializationTools } from "./serializationTools";
 import { createRoot } from "react-dom/client";
-import type { IInspectorOptions } from "core/Debug/debugLayer";
+import { type IInspectorOptions } from "core/Debug/debugLayer";
 import { CreatePopup } from "shared-ui-components/popupHelper";
 
 import "./main.scss";
 import { GraphCanvasComponent } from "shared-ui-components/nodeGraphSystem/graphCanvas";
-import type { GraphNode } from "shared-ui-components/nodeGraphSystem/graphNode";
+import { type GraphNode } from "shared-ui-components/nodeGraphSystem/graphNode";
 import { TypeLedger } from "shared-ui-components/nodeGraphSystem/typeLedger";
-import type { IEditorData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeLocationInfo";
-import type { INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
+import { type IEditorData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeLocationInfo";
+import { type INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
 import { NodeGeometryBlock } from "core/Meshes/Node/nodeGeometryBlock";
 import { GeometryOutputBlock } from "core/Meshes/Node/Blocks/geometryOutputBlock";
-import type { NodeGeometryBlockConnectionPointTypes } from "core/Meshes/Node/Enums/nodeGeometryConnectionPointTypes";
+import { type NodeGeometryBlockConnectionPointTypes } from "core/Meshes/Node/Enums/nodeGeometryConnectionPointTypes";
 import { GeometryInputBlock } from "core/Meshes/Node/Blocks/geometryInputBlock";
 import { HistoryStack } from "shared-ui-components/historyStack";
 import { SplitContainer } from "shared-ui-components/split/splitContainer";

@@ -1,6 +1,6 @@
-import type { ShaderLanguage } from "../../Materials/shaderLanguage";
-import type { Nullable } from "../../types";
-import type { _IShaderProcessingContext } from "./shaderProcessingOptions";
+import { type ShaderLanguage } from "../../Materials/shaderLanguage";
+import { type Nullable } from "../../types";
+import { type _IShaderProcessingContext } from "./shaderProcessingOptions";
 
 /** @internal */
 export interface IShaderProcessor {

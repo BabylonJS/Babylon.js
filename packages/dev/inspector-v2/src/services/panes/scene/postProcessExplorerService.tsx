@@ -1,15 +1,13 @@
-import type { ServiceDefinition } from "../../../modularity/serviceDefinition";
-import type { ISceneContext } from "../../sceneContext";
-import type { IWatcherService } from "../../watcherService";
-import type { ISceneExplorerService } from "./sceneExplorerService";
+import { type ServiceDefinition } from "shared-ui-components/modularTool/modularity/serviceDefinition";
+import { type ISceneContext, SceneContextIdentity } from "../../sceneContext";
+import { type IWatcherService, WatcherServiceIdentity } from "../../watcherService";
+import { type ISceneExplorerService, SceneExplorerServiceIdentity } from "./sceneExplorerService";
 
+import { tokens } from "@fluentui/react-components";
 import { BlurRegular } from "@fluentui/react-icons";
 
 import { Observable } from "core/Misc/observable";
-import { SceneContextIdentity } from "../../sceneContext";
-import { WatcherServiceIdentity } from "../../watcherService";
 import { DefaultSectionsOrder } from "./defaultSectionsMetadata";
-import { SceneExplorerServiceIdentity } from "./sceneExplorerService";
 
 export const PostProcessExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplorerService, ISceneContext, IWatcherService]> = {
     friendlyName: "Post Process Explorer",
@@ -31,7 +29,7 @@ export const PostProcessExplorerServiceDefinition: ServiceDefinition<[], [IScene
 
                 return {
                     get name() {
-                        return postProcess.name;
+                        return postProcess.name || `Unnamed ${postProcess.getClassName()}`;
                     },
                     onChange: onChangeObservable,
                     dispose: () => {
@@ -40,7 +38,7 @@ export const PostProcessExplorerServiceDefinition: ServiceDefinition<[], [IScene
                     },
                 };
             },
-            entityIcon: () => <BlurRegular />,
+            entityIcon: () => <BlurRegular color={tokens.colorPaletteRedForeground2} />,
             getEntityAddedObservables: () => [scene.onNewPostProcessAddedObservable],
             getEntityRemovedObservables: () => [scene.onPostProcessRemovedObservable],
         });

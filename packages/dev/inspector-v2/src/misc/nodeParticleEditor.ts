@@ -1,4 +1,4 @@
-import type { ParticleSystem } from "core/index";
+import { type ParticleSystem } from "core/index";
 
 import { ConvertToNodeParticleSystemSetAsync } from "core/Particles/Node/nodeParticleSystemSet.helper";
 

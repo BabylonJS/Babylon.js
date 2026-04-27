@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import type { DeepImmutable } from "../types";
+import { type DeepImmutable } from "../types";
 import { Vector2, Vector3 } from "./math.vector";
 
 /**

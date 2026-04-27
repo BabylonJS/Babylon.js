@@ -1,14 +1,14 @@
-import type { VertexBuffer } from "core/Buffers/buffer";
-import type { DataBuffer } from "core/Buffers/dataBuffer";
+import { type VertexBuffer } from "core/Buffers/buffer";
+import { type DataBuffer } from "core/Buffers/dataBuffer";
 import { Constants } from "core/Engines/constants";
-import type { Effect } from "core/Materials/effect";
-import type { Observer } from "core/Misc/observable";
-import type { IParticleSystem } from "core/Particles/IParticleSystem";
-import type { Scene } from "core/scene";
-import type { Nullable } from "core/types";
+import { type Effect } from "core/Materials/effect";
+import { type Observer } from "core/Misc/observable";
+import { type IParticleSystem } from "core/Particles/IParticleSystem";
+import { type Scene } from "core/scene";
+import { type Nullable } from "core/types";
 
 import { FluidRenderingObject } from "./fluidRenderingObject";
-import type { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { type ShaderLanguage } from "core/Materials/shaderLanguage";
 
 /**
  * Defines a rendering object based on a particle system

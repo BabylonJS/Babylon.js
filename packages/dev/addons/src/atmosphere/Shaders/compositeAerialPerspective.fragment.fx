@@ -91,7 +91,7 @@ void main() {
             rayDirection,
             directionToLight,
             100000000.,
-            SkyViewLutSampleCount,
+            skyViewLutSampleCount,
             distanceToSurface,
             transmittance);
 

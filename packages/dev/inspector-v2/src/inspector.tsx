@@ -1,17 +1,17 @@
-import type { IDisposable, IReadonlyObservable, Nullable, Scene } from "core/index";
-import type { WeaklyTypedServiceDefinition } from "./modularity/serviceContainer";
-import type { ServiceDefinition } from "./modularity/serviceDefinition";
-import type { ModularToolOptions } from "./modularTool";
-import type { ISceneContext } from "./services/sceneContext";
-import type { IShellService } from "./services/shellService";
+import { type IReadonlyObservable, type Scene } from "core/index";
+import { type WeaklyTypedServiceDefinition } from "shared-ui-components/modularTool/modularity/serviceContainer";
+import { type ServiceDefinition } from "shared-ui-components/modularTool/modularity/serviceDefinition";
+import { type ModularToolOptions, MakeModularTool } from "shared-ui-components/modularTool/modularTool";
+import { type IShellService, ShellServiceIdentity } from "shared-ui-components/modularTool/services/shellService";
 
 import { AsyncLock } from "core/Misc/asyncLock";
 import { Logger } from "core/Misc/logger";
 import { Observable } from "core/Misc/observable";
 import { useEffect, useRef } from "react";
 import { DefaultInspectorExtensionFeed } from "./extensibility/defaultInspectorExtensionFeed";
+import { _StartInspectable } from "./inspectable";
 import { LegacyInspectableObjectPropertiesServiceDefinition } from "./legacy/inspectableCustomPropertiesService";
-import { MakeModularTool } from "./modularTool";
+import { CliConnectionStatusServiceDefinition } from "./services/cliConnectionStatusService";
 import { GizmoServiceDefinition } from "./services/gizmoService";
 import { GizmoToolbarServiceDefinition } from "./services/gizmoToolbarService";
 import { HighlightServiceDefinition } from "./services/highlightService";
@@ -55,7 +55,7 @@ import { SkeletonExplorerServiceDefinition } from "./services/panes/scene/skelet
 import { SoundExplorerServiceDefinition } from "./services/panes/scene/soundExplorerService";
 import { SpriteManagerExplorerServiceDefinition } from "./services/panes/scene/spriteManagerExplorerService";
 import { TextureExplorerServiceDefinition } from "./services/panes/scene/texturesExplorerService";
-import { SettingsServiceDefinition } from "./services/panes/settingsService";
+import { SettingsServiceDefinition } from "shared-ui-components/modularTool/services/settingsService";
 import { StatsServiceDefinition } from "./services/panes/statsService";
 import { CaptureToolsDefinition } from "./services/panes/tools/captureService";
 import { ExportServiceDefinition } from "./services/panes/tools/exportService";
@@ -64,38 +64,73 @@ import { GLTFLoaderOptionsServiceDefinition } from "./services/panes/tools/impor
 import { GLTFValidationServiceDefinition } from "./services/panes/tools/import/gltfValidationService";
 import { ToolsServiceDefinition } from "./services/panes/toolsService";
 import { PickingServiceDefinition } from "./services/pickingService";
-import { SceneContextIdentity } from "./services/sceneContext";
 import { SelectionServiceDefinition } from "./services/selectionService";
-import { ShellServiceIdentity } from "./services/shellService";
-import { ShellSettingsServiceDefinition } from "./services/shellSettingsService";
+import { ShellSettingsServiceDefinition } from "shared-ui-components/modularTool/services/shellSettingsService";
+import { InspectorSettingsServiceDefinition } from "./services/inspectorSettingsService";
 import { TextureEditorServiceDefinition } from "./services/textureEditor/textureEditorService";
 import { UserFeedbackServiceDefinition } from "./services/userFeedbackService";
-import { WatcherRefreshToolbarServiceDefinition, WatcherSettingsServiceDefinition } from "./services/watcherService";
+import { WatcherRefreshToolbarServiceDefinition, WatcherServiceDefinition, WatcherSettingsServiceDefinition } from "./services/watcherService";
 
 type LayoutMode = "inline" | "overlay";
 
-export type InspectorOptions = Omit<ModularToolOptions, "toolbarMode"> & {
+/**
+ * Options for configuring the inspector.
+ */
+export type InspectorOptions = Omit<ModularToolOptions, "namespace" | "toolbarMode"> & {
+    /**
+     * Whether to automatically resize the engine when the inspector layout changes. Defaults to true.
+     */
     autoResizeEngine?: boolean;
+
+    /**
+     * The layout mode for the inspector.
+     * - "inline": The inspector is embedded within the same container as the rendering canvas, and re-hosts the canvas.
+     * - "overlay": The inspector is rendered as an overlay on top of the rendering canvas.
+     * Defaults to "overlay".
+     */
     layoutMode?: LayoutMode;
 };
 
-export type InspectorToken = IDisposable & {
+/**
+ * A token returned by {@link ShowInspector} that can be used to dispose the inspector
+ * and observe its disposal.
+ */
+export type InspectorToken = {
+    /**
+     * Disposes the inspector. The returned promise resolves once all cleanup
+     * (including asynchronous React unmount and ServiceContainer disposal) is complete.
+     */
+    dispose(): Promise<void>;
+
+    /**
+     * Whether the inspector has been disposed.
+     */
     readonly isDisposed: boolean;
+
+    /**
+     * An observable that fires when the inspector is disposed.
+     */
     readonly onDisposed: IReadonlyObservable<void>;
 };
 
 // TODO: The key should probably be the Canvas, because we only want to show one inspector instance per canvas.
 //       If it is called for a different scene that is rendering to the same canvas, then we should probably
 //       switch the inspector instance to that scene (once this is supported).
-const InspectorTokens = new WeakMap<Scene, IDisposable>();
+const InspectorTokens = new WeakMap<Scene, InspectorToken>();
 
 // This async lock is used to sequentialize all calls to ShowInspector and dispose of existing inspectors.
 // This is needed because each time Inspector is shown or hidden, it is potentially mutating the same DOM element.
 const InspectorLock = new AsyncLock();
 
+/**
+ * Shows the inspector for the specified scene.
+ * @param scene The scene to inspect.
+ * @param options Optional configuration for the inspector.
+ * @returns An {@link InspectorToken} that can be disposed to hide the inspector.
+ */
 export function ShowInspector(scene: Scene, options: Partial<InspectorOptions> = {}): InspectorToken {
     // Dispose of any existing inspector for this scene.
-    InspectorTokens.get(scene)?.dispose();
+    void InspectorTokens.get(scene)?.dispose();
 
     // Default the dispose logic to a no-op until we know that we are actually going
     // to show the Inspector and there will be cleanup work to do.
@@ -106,9 +141,9 @@ export function ShowInspector(scene: Scene, options: Partial<InspectorOptions> =
     let isDisposed = false;
     const onDisposed = new Observable<void>();
     const inspectorToken = {
-        dispose() {
-            // eslint-disable-next-line @typescript-eslint/no-floating-promises
-            InspectorLock.lockAsync(async () => {
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        async dispose(): Promise<void> {
+            await InspectorLock.lockAsync(async () => {
                 await disposeAsync();
                 isDisposed = true;
                 onDisposed.notifyObservers();
@@ -133,9 +168,9 @@ export function ShowInspector(scene: Scene, options: Partial<InspectorOptions> =
         ...options,
     };
 
-    // Sequentialize showing the inspector (e.g. don't start showing until after a previous hide (for example) is finished).
+    // Sequentialize showing the inspector (e.g. don't start showing until after a previous hide is finished).
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    InspectorLock.lockAsync(async () => {
+    InspectorLock.lockAsync(() => {
         let parentElement = options.containerElement ?? null;
         // If a container element was not found, find an appropriate one above the engine's rendering canvas.
         if (!parentElement) {
@@ -201,6 +236,12 @@ export function ShowInspector(scene: Scene, options: Partial<InspectorOptions> =
         // This array will contain all the default Inspector service definitions.
         const serviceDefinitions: WeaklyTypedServiceDefinition[] = [];
 
+        // Ensure the inspectable bridge is running for this scene. The inspector's
+        // ServiceContainer will use the inspectable container as a parent, inheriting
+        // services like ISceneContext and IBridgeCommandRegistry.
+        const inspectableToken = _StartInspectable(scene, { autoEnable: false });
+        disposeActions.push(() => inspectableToken.dispose());
+
         // Create a container element for the inspector UI.
         // This element will become the root React node, so it must be a new empty node
         // since React will completely take over its contents.
@@ -258,25 +299,15 @@ export function ShowInspector(scene: Scene, options: Partial<InspectorOptions> =
             parentElement.removeChild(containerElement);
         });
 
-        // This service exposes the scene that was passed into Inspector through ISceneContext, which is used by other services that may be used in other contexts outside of Inspector.
-        const sceneContextServiceDefinition: ServiceDefinition<[ISceneContext], []> = {
-            friendlyName: "Inspector Scene Context",
-            produces: [SceneContextIdentity],
-            factory: () => {
-                return {
-                    currentScene: scene,
-                    currentSceneObservable: new Observable<Nullable<Scene>>(),
-                };
-            },
-        };
-        serviceDefinitions.push(sceneContextServiceDefinition);
-
         if (options.autoResizeEngine) {
             const observer = scene.onBeforeRenderObservable.add(() => scene.getEngine().resize());
             disposeActions.push(() => observer.remove());
         }
 
         serviceDefinitions.push(
+            // Watcher service for observing property changes.
+            WatcherServiceDefinition,
+
             // Helps with managing gizmos and a shared utility layer.
             GizmoServiceDefinition,
 
@@ -341,6 +372,7 @@ export function ShowInspector(scene: Scene, options: Partial<InspectorOptions> =
 
             // Settings pane tab and related services.
             SettingsServiceDefinition,
+            InspectorSettingsServiceDefinition,
             WatcherSettingsServiceDefinition,
             ShellSettingsServiceDefinition,
 
@@ -362,6 +394,9 @@ export function ShowInspector(scene: Scene, options: Partial<InspectorOptions> =
             // Adds entry points for user feedback on Inspector v2 (probably eventually will be removed).
             UserFeedbackServiceDefinition,
 
+            // Shows CLI bridge connection status in the toolbar.
+            CliConnectionStatusServiceDefinition,
+
             // Adds always present "mini stats" (like fps) to the toolbar, etc.
             MiniStatsServiceDefinition,
 
@@ -372,6 +407,7 @@ export function ShowInspector(scene: Scene, options: Partial<InspectorOptions> =
         const modularTool = MakeModularTool({
             namespace: "Inspector",
             containerElement,
+            parentContainer: inspectableToken.serviceContainer,
             serviceDefinitions: [
                 // Default Inspector services.
                 ...serviceDefinitions,
@@ -387,11 +423,19 @@ export function ShowInspector(scene: Scene, options: Partial<InspectorOptions> =
             leftPaneDefaultCollapsed: options.leftPaneDefaultCollapsed,
             rightPaneDefaultCollapsed: options.rightPaneDefaultCollapsed,
         });
-        disposeActions.push(() => modularTool.dispose());
+        disposeActions.push(async () => await modularTool.dispose());
 
-        const sceneDisposedObserver = scene.onDisposeObservable.addOnce(() => {
-            inspectorToken.dispose();
-        });
+        // Use insertFirst so this fires before StartInspectable's scene-dispose
+        // callback, ensuring the UI child container is torn down first.
+        const sceneDisposedObserver = scene.onDisposeObservable.add(
+            () => {
+                void inspectorToken.dispose();
+            },
+            undefined,
+            true,
+            undefined,
+            true
+        );
 
         disposeActions.push(() => sceneDisposedObserver.remove());
 

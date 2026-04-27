@@ -18,7 +18,7 @@ module.exports = (env) => {
         ),
 
         resolve: {
-            extensions: [".js", ".ts", ".tsx", ".scss"],
+            extensions: [".js", ".ts", ".tsx"],
             alias: {
                 core: path.resolve("../../dev/core/dist"),
                 loaders: path.resolve("../../dev/loaders/dist"), // "src" results in unknown babylonjs-gltf2interface
@@ -31,7 +31,7 @@ module.exports = (env) => {
         module: {
             rules: webpackTools.getRules({
                 includeAssets: true,
-                includeCSS: true,
+                includeCSS: false,
                 sideEffects: true,
                 tsOptions: {
                     transpileOnly: true,

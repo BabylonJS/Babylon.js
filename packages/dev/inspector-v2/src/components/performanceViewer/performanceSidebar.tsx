@@ -1,15 +1,13 @@
-import type { FunctionComponent } from "react";
+import { type FunctionComponent, useEffect, useState } from "react";
 
-import type { Color4 } from "core/Maths/math.color";
-import type { IPerfMetadata } from "core/Misc/interfaces/iPerfViewer";
-import type { Observable } from "core/Misc/observable";
-import type { PerformanceViewerCollector } from "core/Misc/PerformanceViewer/performanceViewerCollector";
-import type { PerfMinMax, VisibleRangeChangedObservableProps } from "./graphSupportingTypes";
+import { type Color4, Color3 } from "core/Maths/math.color";
+import { type IPerfMetadata } from "core/Misc/interfaces/iPerfViewer";
+import { type Observable } from "core/Misc/observable";
+import { type PerformanceViewerCollector } from "core/Misc/PerformanceViewer/performanceViewerCollector";
+import { type PerfMinMax, type VisibleRangeChangedObservableProps } from "./graphSupportingTypes";
 
 import { Body1, makeStyles, mergeClasses, Subtitle2Stronger, tokens } from "@fluentui/react-components";
-import { useEffect, useState } from "react";
 
-import { Color3 } from "core/Maths/math.color";
 import { ColorPickerPopup } from "shared-ui-components/fluent/primitives/colorPicker";
 import { Switch } from "shared-ui-components/fluent/primitives/switch";
 

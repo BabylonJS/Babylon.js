@@ -1,12 +1,12 @@
-import type { Nullable, FloatArray } from "../types";
-import { Vector3, Vector2, TmpVectors } from "../Maths/math.vector";
-import type { AbstractMesh } from "../Meshes/abstractMesh";
-import type { TransformNode } from "../Meshes/transformNode";
+import { type Nullable, type FloatArray } from "../types";
+import { Matrix, Vector3, Vector2, TmpVectors } from "../Maths/math.vector";
+import { type AbstractMesh } from "../Meshes/abstractMesh";
+import { type TransformNode } from "../Meshes/transformNode";
 import { VertexBuffer } from "../Buffers/buffer";
-import type { Sprite } from "../Sprites/sprite";
-import type { Mesh } from "../Meshes/mesh";
+import { type Sprite } from "../Sprites/sprite";
+import { type Mesh } from "../Meshes/mesh";
 
-import type { Ray } from "../Culling/ray";
+import { type Ray } from "../Culling/ray";
 
 /**
  * Information about the result of picking within a scene
@@ -124,9 +124,12 @@ export class PickingInfo {
 
         const transformNormalToWorld = (pickedMesh: AbstractMesh, n: Vector3) => {
             if (this.thinInstanceIndex !== -1) {
-                const tm = (pickedMesh as Mesh).thinInstanceGetWorldMatrices()[this.thinInstanceIndex];
+                const thinMatrixData = (pickedMesh as Mesh)._thinInstanceDataStorage.matrixData;
+                const index = this.thinInstanceIndex << 4;
 
-                if (tm) {
+                if (thinMatrixData && thinMatrixData.length > index) {
+                    const tm = TmpVectors.Matrix[0];
+                    Matrix.FromArrayToRef(thinMatrixData, index, tm);
                     Vector3.TransformNormalToRef(n, tm, n);
                 }
             }

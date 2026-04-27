@@ -1,12 +1,12 @@
-import type { Nullable } from "../types";
-import type { InternalTexture } from "../Materials/Textures/internalTexture";
-import type { PostProcess } from "./postProcess";
+import { type Nullable } from "../types";
+import { type InternalTexture } from "../Materials/Textures/internalTexture";
+import { type PostProcess } from "./postProcess";
 import { VertexBuffer } from "../Buffers/buffer";
 import { Constants } from "../Engines/constants";
-import type { DataBuffer } from "../Buffers/dataBuffer";
-import type { RenderTargetWrapper } from "../Engines/renderTargetWrapper";
+import { type DataBuffer } from "../Buffers/dataBuffer";
+import { type RenderTargetWrapper } from "../Engines/renderTargetWrapper";
 import { Observable } from "../Misc/observable";
-import type { Scene } from "../scene";
+import { type Scene } from "../scene";
 
 /**
  * PostProcessManager is used to manage one or more post processes or post process pipelines

@@ -1,5 +1,5 @@
-import type { SerializedShaderBlockDefinition } from "./serializedShaderBlockDefinition.js";
-import type { SerializedSmartFilter } from "./serializedSmartFilter.js";
+import { type SerializedShaderBlockDefinition } from "./serializedShaderBlockDefinition.js";
+import { type SerializedSmartFilter } from "./serializedSmartFilter.js";
 
 /**
  * Type that represents any type of serialized block definition - shader or aggregate.

@@ -1,8 +1,8 @@
-import type { NodeParticleSystemSet } from "core/Particles/Node/nodeParticleSystemSet";
-import type { GlobalState } from "./globalState";
-import type { Nullable } from "core/types";
-import type { GraphFrame } from "shared-ui-components/nodeGraphSystem/graphFrame";
-import type { NodeParticleBlock } from "core/Particles/Node/nodeParticleBlock";
+import { type NodeParticleSystemSet } from "core/Particles/Node/nodeParticleSystemSet";
+import { type GlobalState } from "./globalState";
+import { type Nullable } from "core/types";
+import { type GraphFrame } from "shared-ui-components/nodeGraphSystem/graphFrame";
+import { type NodeParticleBlock } from "core/Particles/Node/nodeParticleBlock";
 
 export class SerializationTools {
     public static UpdateLocations(particleSet: NodeParticleSystemSet, globalState: GlobalState, frame?: Nullable<GraphFrame>) {

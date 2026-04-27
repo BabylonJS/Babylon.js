@@ -1,10 +1,10 @@
 import * as React from "react";
 
-import type { Observable } from "core/Misc/observable";
+import { type Observable } from "core/Misc/observable";
 
-import type { PropertyChangedEvent } from "../../../propertyChangedEvent";
-import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
-import type { GlobalState } from "../../../globalState";
+import { type PropertyChangedEvent } from "../../../propertyChangedEvent";
+import { type LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
+import { type GlobalState } from "../../../globalState";
 import { CustomPropertyGridComponent } from "./customPropertyGridComponent";
 
 interface IEmptyPropertyGridComponentProps {

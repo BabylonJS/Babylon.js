@@ -47,7 +47,7 @@ export function GenerateCopyString(value: unknown): string {
                 return `new ${babylonNamespace}Quaternion(${obj.x}, ${obj.y}, ${obj.z}, ${obj.w})`;
             }
 
-            // Color3, Color4
+            // Color3, Color4 — HEX is a direct 0-1→0-255 conversion of the stored values (property-space)
             if (className === "Color3") {
                 const hexString = ColorToHex(obj.r as number, obj.g as number, obj.b as number, 1);
                 return `new ${babylonNamespace}Color3(${obj.r}, ${obj.g}, ${obj.b}) // (HEX: ${hexString})`;
@@ -85,22 +85,19 @@ export function GenerateCopyString(value: unknown): string {
 }
 
 /**
- * Converts linear color values (0-1) to a hex string with alpha.
- * @param r - Red component (0-1, linear)
- * @param g - Green component (0-1, linear)
- * @param b - Blue component (0-1, linear)
+ * Converts color component values (0-1) directly to a hex string.
+ * No gamma correction is applied — the hex represents the property's stored color space.
+ * @param r - Red component (0-1)
+ * @param g - Green component (0-1)
+ * @param b - Blue component (0-1)
  * @param a - Alpha component (0-1)
  * @returns Hex string in format #RRGGBBAA
  */
 function ColorToHex(r: number, g: number, b: number, a: number): string {
-    // Convert linear to sRGB and then to 0-255 range
-    const toSRGB = (c: number) => Math.round(Math.min(255, Math.max(0, Math.pow(c, 1 / 2.2) * 255)));
-    const rHex = toSRGB(r).toString(16).padStart(2, "0").toUpperCase();
-    const gHex = toSRGB(g).toString(16).padStart(2, "0").toUpperCase();
-    const bHex = toSRGB(b).toString(16).padStart(2, "0").toUpperCase();
-    const aHex = Math.round(Math.min(255, Math.max(0, a * 255)))
-        .toString(16)
-        .padStart(2, "0")
-        .toUpperCase();
+    const toByte = (c: number) => Math.round(Math.min(255, Math.max(0, c * 255)));
+    const rHex = toByte(r).toString(16).padStart(2, "0").toUpperCase();
+    const gHex = toByte(g).toString(16).padStart(2, "0").toUpperCase();
+    const bHex = toByte(b).toString(16).padStart(2, "0").toUpperCase();
+    const aHex = toByte(a).toString(16).padStart(2, "0").toUpperCase();
     return `#${rHex}${gHex}${bHex}${aHex}`;
 }

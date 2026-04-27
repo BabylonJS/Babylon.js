@@ -1,31 +1,32 @@
-Babylon.js GUI module
-=====================
+# Babylon.js GUI Module
 
-For usage documentation please visit https://doc.babylonjs.com/overviews/gui
+For usage documentation please visit the [GUI documentation](https://doc.babylonjs.com/features/featuresDeepDive/gui/).
 
-# Installation instructions
+## Installation
 
-To install using npm :
+To install using npm:
 
-```
-npm install --save @babylonjs/core @babylonjs/gui
-```
-
-# How to use
-
-Afterwards it can be imported to your project using:
-
-```
-import { AdvancedDynamicTexture } from '@babylonjs/gui/2D';
+```bash
+npm install @babylonjs/core @babylonjs/gui
 ```
 
-And used as usual:
+## Usage
 
-```
-// Some awesome code
-// Creates the post process
-let postProcess = new AdvancedDynamicTexture("adt", 128, 128, scene);
-// Some more awesome code
+Import and use in your project:
+
+```javascript
+import { AdvancedDynamicTexture } from "@babylonjs/gui/2D";
+import { TextBlock } from "@babylonjs/gui/2D/controls/textBlock";
+
+// Create a fullscreen UI
+const ui = AdvancedDynamicTexture.CreateFullscreenUI("ui");
+
+// Add a text block
+const text = new TextBlock();
+text.text = "Hello Babylon.js!";
+text.color = "white";
+text.fontSize = 24;
+ui.addControl(text);
 ```
 
-For more information you can have a look at our [ES6 dedicated documentation](https://doc.babylonjs.com/features/es6_support).
+For more information, see the [ES6 support documentation](https://doc.babylonjs.com/setup/frameworkPackages/es6Support/).

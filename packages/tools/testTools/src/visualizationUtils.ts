@@ -60,7 +60,10 @@ export const evaluateInitEngineForVisualization = async (engineName: string, use
     };
 };
 
-export const evaluatePrepareScene = async (
+export const evaluatePrepareScene = async ({
+    sceneMetadata,
+    globalConfig,
+}: {
     sceneMetadata: {
         sceneFolder?: string;
         sceneFilename?: string;
@@ -71,9 +74,9 @@ export const evaluatePrepareScene = async (
         functionToCall?: string;
         replace?: string;
         playgroundId?: string;
-    },
-    globalConfig: { root: string; snippetUrl: any; pgRoot: string }
-) => {
+    };
+    globalConfig: { root: string; snippetUrl: any; pgRoot: string };
+}) => {
     window.seed = 1;
     window.Math.random = function () {
         const x = Math.sin(window.seed++) * 10000;
@@ -98,7 +101,7 @@ export const evaluatePrepareScene = async (
             const snippet = await data.json();
 
             const payload = JSON.parse(snippet.jsonPayload);
-            let code = "";
+            let code: string;
             // Definitely v2 manifest
             if (Object.prototype.hasOwnProperty.call(payload, "version")) {
                 const v2Manifest = JSON.parse(payload.code);

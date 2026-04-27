@@ -1,7 +1,8 @@
-import type { AccordionPanelProps, AccordionToggleData, AccordionToggleEvent, AccordionProps as FluentAccordionProps } from "@fluentui/react-components";
-import type { ForwardRefExoticComponent, FunctionComponent, PropsWithChildren, RefAttributes } from "react";
-
 import {
+    type AccordionPanelProps,
+    type AccordionToggleData,
+    type AccordionToggleEvent,
+    type AccordionProps as FluentAccordionProps,
     AccordionHeader,
     AccordionItem,
     AccordionPanel,
@@ -15,8 +16,24 @@ import {
     makeStyles,
     tokens,
 } from "@fluentui/react-components";
+import {
+    type ForwardRefExoticComponent,
+    type FunctionComponent,
+    type PropsWithChildren,
+    type RefAttributes,
+    Children,
+    forwardRef,
+    isValidElement,
+    useCallback,
+    useContext,
+    useEffect,
+    useLayoutEffect,
+    useMemo,
+    useRef,
+    useState,
+} from "react";
+
 import { ArrowCircleUpRegular, CheckmarkFilled, EditRegular, EyeFilled, EyeOffRegular, FilterRegular, PinFilled, PinRegular } from "@fluentui/react-icons";
-import { Children, forwardRef, isValidElement, useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 
 import { ToolContext } from "../hoc/fluentToolWrapper";
 import { useKeyState } from "../hooks/keyboardHooks";
@@ -76,6 +93,7 @@ const useStyles = makeStyles({
     },
     menuBar: {
         display: "flex",
+        padding: `0 ${tokens.spacingHorizontalM}`,
     },
     menuBarControls: {
         display: "flex",
@@ -110,6 +128,9 @@ const useStyles = makeStyles({
     searchBox: {
         width: "100%",
         maxWidth: "none",
+    },
+    sectionBlockEmpty: {
+        display: "none",
     },
 });
 
@@ -181,13 +202,19 @@ export type AccordionSectionBlockProps = {
 const AccordionSectionBlock: FunctionComponent<PropsWithChildren<AccordionSectionBlockProps>> = (props) => {
     AccordionSectionBlock.displayName = "AccordionSectionBlock";
     const { children, sectionId } = props;
+    const classes = useStyles();
     const accordionCtx = useContext(AccordionContext);
     const { context: sectionContext, isEmpty } = useAccordionSectionBlockContext(props);
 
     if (accordionCtx) {
         return (
             <AccordionSectionBlockContext.Provider value={sectionContext}>
-                {!isEmpty && <AccordionItem value={sectionId}>{children}</AccordionItem>}
+                {/* Always render children so items stay registered in registeredItemIds;
+                    hiding via CSS prevents the oscillation that occurs when unmounting
+                    causes items to unregister, making the section appear non-empty again. */}
+                <AccordionItem value={sectionId} className={isEmpty ? classes.sectionBlockEmpty : undefined}>
+                    {children}
+                </AccordionItem>
             </AccordionSectionBlockContext.Provider>
         );
     }

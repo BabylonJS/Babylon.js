@@ -1,7 +1,6 @@
-import { useState } from "react";
-import type { FunctionComponent } from "react";
-import type { Scene } from "core/scene";
-import type { DropdownOption } from "shared-ui-components/fluent/primitives/dropdown";
+import { useState, type FunctionComponent } from "react";
+import { type Scene } from "core/scene";
+import { type DropdownOption } from "shared-ui-components/fluent/primitives/dropdown";
 import { ImportAnimationsAsync, SceneLoaderAnimationGroupLoadingMode } from "core/Loading/sceneLoader";
 import { FilesInput } from "core/Misc/filesInput";
 import { Logger } from "core/Misc/logger";

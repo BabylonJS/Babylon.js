@@ -1,22 +1,24 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { VertexBuffer } from "core/Buffers/buffer";
-import type { Camera } from "core/Cameras/camera";
+import { type Camera } from "core/Cameras/camera";
 import { Constants } from "core/Engines/constants";
 import { Material } from "core/Materials/material";
 import { PBRBaseMaterial } from "core/Materials/PBR/pbrBaseMaterial";
 import { StandardMaterial } from "core/Materials/standardMaterial";
-import type { BaseTexture } from "core/Materials/Textures/baseTexture";
-import type { Texture } from "core/Materials/Textures/texture";
+import { type BaseTexture } from "core/Materials/Textures/baseTexture";
+import { type Texture } from "core/Materials/Textures/texture";
 import { Color3 } from "core/Maths/math.color";
 import { Matrix, Vector2 } from "core/Maths/math.vector";
-import type { Geometry } from "core/Meshes/geometry";
-import type { Mesh } from "core/Meshes/mesh";
+import { type Geometry } from "core/Meshes/geometry";
+import { type Mesh } from "core/Meshes/mesh";
 import { DumpTools } from "core/Misc/dumpTools";
+import { GetMimeType } from "core/Misc/fileTools";
 import { Tools } from "core/Misc/tools";
-import type { Scene } from "core/scene";
-import type { FloatArray, Nullable } from "core/types";
+import { type Scene } from "core/scene";
+import { type FloatArray, type Nullable } from "core/types";
 import { IsNoopNode } from "../exportUtils";
 import { GetTextureDataAsync } from "core/Misc/textureTools";
+import { InternalTextureSource } from "core/Materials/Textures/internalTexture";
 
 /**
  * Ported from https://github.com/mrdoob/three.js/blob/master/examples/jsm/exporters/USDZExporter.js
@@ -262,7 +264,7 @@ function BuildXform(mesh: Mesh, matrix: Matrix) {
 `;
 }
 
-function BuildMaterials(materials: { [key: string]: Material }, textureToExports: { [key: string]: BaseTexture }, options: IUSDZExportOptions) {
+function BuildMaterials(materials: { [key: string]: Material }, textureToExports: { [key: string]: { texture: BaseTexture; ext: string } }, options: IUSDZExportOptions) {
     const array: string[] = [];
 
     for (const uuid in materials) {
@@ -309,12 +311,14 @@ function BuildTexture(
     material: Material,
     mapType: string,
     color: Nullable<Color3>,
-    textureToExports: { [key: string]: BaseTexture },
+    textureToExports: { [key: string]: { texture: BaseTexture; ext: string } },
     options: IUSDZExportOptions
 ) {
     const id = texture.getInternalTexture()!.uniqueId + "_" + texture.invertY;
+    const mimeType = texture.mimeType || GetMimeType(texture.getInternalTexture()?.url ?? "");
+    const ext = mimeType === "image/jpeg" ? "jpg" : "png";
 
-    textureToExports[id] = texture;
+    textureToExports[id] = { texture, ext };
 
     const uv = texture.coordinatesIndex > 0 ? "st" + texture.coordinatesIndex : "st";
     const repeat = new Vector2(texture.uScale, texture.vScale);
@@ -353,7 +357,7 @@ function BuildTexture(
     def Shader "Texture_${texture.uniqueId}_${mapType}"
     {
         uniform token info:id = "UsdUVTexture"
-        asset inputs:file = @textures/Texture_${id}.png@
+        asset inputs:file = @textures/Texture_${id}.${ext}@
         float2 inputs:st.connect = </Root/Materials/Material_${material.uniqueId}/Transform2d_${mapType}.outputs:result>
         ${color ? "float4 inputs:scale = " + BuildColor4(color) : ""}
         token inputs:sourceColorSpace = "${texture.gammaSpace ? "sRGB" : "raw"}"
@@ -435,7 +439,7 @@ function ExtractTextureInformations(material: Material) {
     return defaults;
 }
 
-function BuildMaterial(material: Material, textureToExports: { [key: string]: BaseTexture }, options: IUSDZExportOptions) {
+function BuildMaterial(material: Material, textureToExports: { [key: string]: { texture: BaseTexture; ext: string } }, options: IUSDZExportOptions) {
     // https://graphics.pixar.com/usd/docs/UsdPreviewSurface-Proposal.html
 
     const pad = "			";
@@ -651,6 +655,57 @@ function ExtractMeshInformations(mesh: Mesh) {
 }
 
 /**
+ * Gets cached image data from a texture's internal buffer, if available.
+ * This allows texture export without requiring a WebGL or canvas rendering context,
+ * enabling server-side (Node.js) export with NullEngine.
+ * @param babylonTexture texture to check for cached image data
+ * @returns image data and mime type if found and directly usable; null otherwise
+ */
+async function GetCachedImageAsync(babylonTexture: BaseTexture): Promise<Nullable<{ data: ArrayBuffer; mimeType: string }>> {
+    const internalTexture = babylonTexture.getInternalTexture();
+    if (!internalTexture || internalTexture.source !== InternalTextureSource.Url) {
+        return null;
+    }
+    const buffer = internalTexture._buffer;
+
+    let data;
+    let mimeType = (babylonTexture as Texture).mimeType;
+
+    try {
+        if (!buffer) {
+            data = await Tools.LoadFileAsync(internalTexture.url);
+            mimeType = GetMimeType(internalTexture.url) || mimeType;
+        } else if (ArrayBuffer.isView(buffer)) {
+            data = buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength) as ArrayBuffer;
+        } else if (buffer instanceof ArrayBuffer) {
+            data = buffer;
+        } else if (buffer instanceof Blob) {
+            data = await buffer.arrayBuffer();
+            mimeType = buffer.type || mimeType;
+        } else if (typeof buffer === "string") {
+            data = await Tools.LoadFileAsync(buffer);
+            mimeType = GetMimeType(buffer) || mimeType;
+        } else if (typeof HTMLImageElement !== "undefined" && buffer instanceof HTMLImageElement) {
+            data = await Tools.LoadFileAsync(buffer.src);
+            mimeType = GetMimeType(buffer.src) || mimeType;
+        }
+    } catch {
+        return null;
+    }
+
+    if (data && !mimeType && internalTexture.url) {
+        const dataUriMatch = internalTexture.url.match(/^data:([^;,]+)/);
+        mimeType = dataUriMatch ? dataUriMatch[1] : GetMimeType(internalTexture.url);
+    }
+
+    if (data && mimeType) {
+        return { data, mimeType };
+    }
+
+    return null;
+}
+
+/**
  *
  * @param scene scene to export
  * @param options options to configure the export
@@ -732,7 +787,7 @@ export async function USDZExportAsync(scene: Scene, options: Partial<IUSDZExport
     output += BuildSceneEnd();
 
     // Materials
-    const textureToExports: { [key: string]: BaseTexture } = {};
+    const textureToExports: { [key: string]: { texture: BaseTexture; ext: string } } = {};
     output += BuildMaterials(materialToExports, textureToExports, localOptions);
 
     // Close root
@@ -743,16 +798,24 @@ export async function USDZExportAsync(scene: Scene, options: Partial<IUSDZExport
 
     // Textures
     for (const id in textureToExports) {
-        const texture = textureToExports[id];
+        const { texture, ext } = textureToExports[id];
 
-        const size = texture.getSize();
+        // Try to get the image directly from the internal texture buffer (works without WebGL/canvas)
         // eslint-disable-next-line no-await-in-loop
-        const textureData = await GetTextureDataAsync(texture);
+        const cachedImage = await GetCachedImageAsync(texture);
+        if (cachedImage) {
+            files[`textures/Texture_${id}.${ext}`] = new Uint8Array(cachedImage.data);
+        } else {
+            // Fall back to GPU texture read + DumpTools (requires WebGL/canvas context)
+            const size = texture.getSize();
+            // eslint-disable-next-line no-await-in-loop
+            const textureData = await GetTextureDataAsync(texture);
 
-        // eslint-disable-next-line no-await-in-loop
-        const fileContent = await DumpTools.DumpDataAsync(size.width, size.height, textureData, "image/png", undefined, false, true);
+            // eslint-disable-next-line no-await-in-loop
+            const fileContent = await DumpTools.DumpDataAsync(size.width, size.height, textureData, "image/png", undefined, false, true);
 
-        files[`textures/Texture_${id}.png`] = new Uint8Array(fileContent as ArrayBuffer).slice(); // This is to avoid getting a link and not a copy
+            files[`textures/Texture_${id}.${ext}`] = new Uint8Array(fileContent as ArrayBuffer).slice(); // This is to avoid getting a link and not a copy
+        }
     }
 
     // 64 byte alignment

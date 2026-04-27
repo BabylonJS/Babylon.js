@@ -49,4 +49,10 @@ uniform Atmosphere {
     float cameraNearPlane;
     float originHeight;
     float sinCameraAtmosphereHorizonAngleFromNadir;
+    float transmittanceSampleCount;
+    float skyViewLutSampleCount;
+    float multiScatteringLutSampleCount;
+    float multiScatteringAzimuthSampleCount;
+    float multiScatteringInclinationSampleCount;
+    float diffuseSkyIrradianceLutSampleCount;
 };

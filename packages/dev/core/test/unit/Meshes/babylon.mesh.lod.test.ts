@@ -1,10 +1,12 @@
-import { ArcRotateCamera, Camera } from "core/Cameras";
-import { BoundingSphere } from "core/Culling";
-import type { Engine } from "core/Engines";
-import { Constants, NullEngine } from "core/Engines";
-import { Vector3 } from "core/Maths";
-import type { Mesh } from "core/Meshes";
-import { MeshBuilder } from "core/Meshes";
+import { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
+import { Camera } from "core/Cameras/camera";
+import { BoundingSphere } from "core/Culling/boundingSphere";
+import { type Engine } from "core/Engines/engine";
+import { Constants } from "core/Engines/constants";
+import { NullEngine } from "core/Engines/nullEngine";
+import { Vector3 } from "core/Maths/math.vector";
+import { type Mesh } from "core/Meshes/mesh";
+import { MeshBuilder } from "core/Meshes/meshBuilder";
 import { Scene } from "core/scene";
 
 describe("Babylon Mesh Levels of Details", () => {
@@ -62,6 +64,10 @@ describe("Babylon Mesh Levels of Details", () => {
             },
             scene
         );
+    });
+
+    afterEach(() => {
+        subject.dispose();
     });
 
     describe("getLOD method", () => {
@@ -180,26 +186,26 @@ describe("Babylon Mesh Levels of Details", () => {
                     return null;
                 };
 
-                const registerSpy = jest.spyOn(knot0, "onLODLevelSelection");
+                const registerSpy = vi.spyOn(knot0, "onLODLevelSelection");
 
-                expect(registerSpy).toBeCalledTimes(0);
+                expect(registerSpy).toHaveBeenCalledTimes(0);
 
                 scene.render();
-                expect(registerSpy).toBeCalledTimes(1);
+                expect(registerSpy).toHaveBeenCalledTimes(1);
                 expect(onLODLevelSelectionArgs.distance).toBeCloseTo(5.23, 2);
                 expect(onLODLevelSelectionArgs.meshName).toEqual("Knot0");
                 expect(onLODLevelSelectionArgs.selectedLevel).toEqual("Knot0");
 
                 cameraArc.radius = 15;
                 scene.render();
-                expect(registerSpy).toBeCalledTimes(2);
+                expect(registerSpy).toHaveBeenCalledTimes(2);
                 expect(onLODLevelSelectionArgs.distance).toBeCloseTo(15.07, 2);
                 expect(onLODLevelSelectionArgs.meshName).toEqual("Knot0");
                 expect(onLODLevelSelectionArgs.selectedLevel).toEqual("Knot1");
 
                 cameraArc.radius = 25;
                 scene.render();
-                expect(registerSpy).toBeCalledTimes(3);
+                expect(registerSpy).toHaveBeenCalledTimes(3);
                 expect(onLODLevelSelectionArgs.distance).toBeCloseTo(25.03, 2);
                 expect(onLODLevelSelectionArgs.meshName).toEqual("Knot0");
                 expect(onLODLevelSelectionArgs.selectedLevel).toEqual("Knot2");

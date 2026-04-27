@@ -1,12 +1,12 @@
-import type { Nullable } from "core/types";
+import { type Nullable } from "core/types";
 import { Observable } from "core/Misc/observable";
 import { Tools } from "core/Misc/tools";
 
 import { Control } from "./control";
-import type { Measure } from "../measure";
+import { type Measure } from "../measure";
 import { RegisterClass } from "core/Misc/typeStore";
 import { serialize } from "core/Misc/decorators";
-import type { ICanvas, ICanvasRenderingContext, IImage } from "core/Engines/ICanvas";
+import { type ICanvas, type ICanvasRenderingContext, type IImage } from "core/Engines/ICanvas";
 import { EngineStore } from "core/Engines/engineStore";
 
 /**
@@ -751,8 +751,9 @@ export class Image extends Control {
                 let elemMatrixD = 1;
                 let elemMatrixE = 0;
                 let elemMatrixF = 0;
-                const mainMatrix = elem.transform.baseVal.consolidate()!.matrix;
-                if (elem.transform && elem.transform.baseVal.consolidate()) {
+                const consolidatedTransform = elem.transform?.baseVal.consolidate();
+                if (consolidatedTransform) {
+                    const mainMatrix = consolidatedTransform.matrix;
                     elemMatrixA = mainMatrix.a;
                     elemMatrixD = mainMatrix.d;
                     elemMatrixE = mainMatrix.e;

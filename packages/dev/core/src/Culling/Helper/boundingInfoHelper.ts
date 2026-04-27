@@ -1,7 +1,7 @@
-import type { AbstractMesh } from "core/Meshes/abstractMesh";
-import type { AbstractEngine } from "core/Engines/abstractEngine";
-import type { IBoundingInfoHelperPlatform } from "./IBoundingInfoHelperPlatform";
-import type { ThinEngine } from "core/Engines";
+import { type AbstractMesh } from "core/Meshes/abstractMesh";
+import { type AbstractEngine } from "core/Engines/abstractEngine";
+import { type IBoundingInfoHelperPlatform } from "./IBoundingInfoHelperPlatform";
+import { type ThinEngine } from "core/Engines";
 import { Logger } from "core/Misc/logger";
 
 /**

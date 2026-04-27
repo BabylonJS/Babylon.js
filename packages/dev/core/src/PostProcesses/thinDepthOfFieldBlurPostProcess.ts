@@ -1,4 +1,4 @@
-import type { Nullable, AbstractEngine, EffectWrapperCreationOptions, Vector2 } from "core/index";
+import { type Nullable, type AbstractEngine, type EffectWrapperCreationOptions, type Vector2 } from "core/index";
 import { ThinBlurPostProcess } from "./thinBlurPostProcess";
 
 /**

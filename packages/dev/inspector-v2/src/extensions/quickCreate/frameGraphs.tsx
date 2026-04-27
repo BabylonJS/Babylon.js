@@ -1,9 +1,8 @@
-import type { Scene } from "core/scene";
-import { useState } from "react";
-import type { FunctionComponent } from "react";
+import { type Scene } from "core/scene";
+import { useState, type FunctionComponent } from "react";
 import { TextInputPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/inputPropertyLine";
 import { QuickCreateSection, QuickCreateItem } from "./quickCreateLayout";
-import type { ISelectionService } from "../../services/selectionService";
+import { type ISelectionService } from "../../services/selectionService";
 import { NodeRenderGraph } from "core/FrameGraph/Node/nodeRenderGraph";
 
 type FrameGraphsContentProps = {

@@ -1,13 +1,13 @@
-import type {
-    FrameGraph,
-    FrameGraphTextureHandle,
-    DrawWrapper,
-    FrameGraphRenderPass,
-    FrameGraphRenderContext,
-    EffectWrapper,
-    IViewportLike,
-    Nullable,
-    IStencilStateProperties,
+import {
+    type FrameGraph,
+    type FrameGraphTextureHandle,
+    type DrawWrapper,
+    type FrameGraphRenderPass,
+    type FrameGraphRenderContext,
+    type EffectWrapper,
+    type IViewportLike,
+    type Nullable,
+    type IStencilStateProperties,
 } from "core/index";
 import { Constants } from "core/Engines/constants";
 import { FrameGraphTask } from "../../frameGraphTask";

@@ -1,10 +1,9 @@
-import type { Observer } from "core/Misc/observable";
-import { Observable } from "core/Misc/observable";
-import type { Scene } from "../scene";
+import { type Observer, Observable } from "core/Misc/observable";
+import { type Scene } from "../scene";
 import { FlowGraph } from "./flowGraph";
-import type { IPathToObjectConverter } from "../ObjectModel/objectModelInterfaces";
-import type { IObjectAccessor } from "./typeDefinitions";
-import type { IAssetContainer } from "core/IAssetContainer";
+import { type IPathToObjectConverter } from "../ObjectModel/objectModelInterfaces";
+import { type IObjectAccessor } from "./typeDefinitions";
+import { type IAssetContainer } from "core/IAssetContainer";
 import { Logger } from "core/Misc/logger";
 
 /**
@@ -25,6 +24,7 @@ export interface IFlowGraphCoordinatorParseOptions {
      * A function that will be called to parse the value of a property.
      * @param key the key of the property
      * @param serializationObject the serialization object where the property is located
+     * @param assetsContainer the assets container
      * @param scene the scene that the block is being parsed in
      */
     valueParseFunction?: (key: string, serializationObject: any, assetsContainer: IAssetContainer, scene: Scene) => any;
@@ -108,16 +108,22 @@ export class FlowGraphCoordinator {
         });
 
         // Add itself to the SceneCoordinators list for the Inspector.
-        const coordinators = FlowGraphCoordinator.SceneCoordinators.get(this.config.scene) ?? [];
+        let coordinators = FlowGraphCoordinator.SceneCoordinators.get(this.config.scene);
+        if (!coordinators) {
+            coordinators = [];
+            FlowGraphCoordinator.SceneCoordinators.set(this.config.scene, coordinators);
+        }
         coordinators.push(this);
     }
 
     /**
      * Creates a new flow graph and adds it to the list of existing flow graphs
+     * @param name - optional name for the new graph. If not provided, an auto-generated name is used.
      * @returns a new flow graph
      */
-    public createGraph(): FlowGraph {
-        const graph = new FlowGraph({ scene: this.config.scene, coordinator: this });
+    public createGraph(name?: string): FlowGraph {
+        const graphName = name ?? `Graph ${this._flowGraphs.length + 1}`;
+        const graph = new FlowGraph({ scene: this.config.scene, coordinator: this, name: graphName });
         this._flowGraphs.push(graph);
         return graph;
     }

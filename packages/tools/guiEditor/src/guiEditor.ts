@@ -3,8 +3,8 @@ import { createRoot } from "react-dom/client";
 import { GlobalState } from "./globalState";
 import { WorkbenchEditor } from "./workbenchEditor";
 import { CreatePopup } from "shared-ui-components/popupHelper";
-import type { Observable } from "core/Misc/observable";
-import type { AdvancedDynamicTexture } from "gui/2D/advancedDynamicTexture";
+import { type Observable } from "core/Misc/observable";
+import { type AdvancedDynamicTexture } from "gui/2D/advancedDynamicTexture";
 
 /**
  * Interface used to specify creation options for the gui editor

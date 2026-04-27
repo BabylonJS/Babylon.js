@@ -1,16 +1,15 @@
 import { NodeMaterialBlock } from "../../nodeMaterialBlock";
 import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
-import type { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
-import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
-import { NodeMaterialConnectionPointDirection } from "../../nodeMaterialBlockConnectionPoint";
+import { type NodeMaterialBuildState } from "../../nodeMaterialBuildState";
+import { type NodeMaterialConnectionPoint, NodeMaterialConnectionPointDirection } from "../../nodeMaterialBlockConnectionPoint";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import { RegisterClass } from "../../../../Misc/typeStore";
-import type { Nullable } from "../../../../types";
+import { type Nullable } from "../../../../types";
 import { Texture } from "../../../Textures/texture";
 import { Constants } from "../../../../Engines/constants";
-import type { Effect } from "../../../effect";
+import { type Effect } from "../../../effect";
 import { NodeMaterial } from "../../nodeMaterial";
-import type { Scene } from "../../../../scene";
+import { type Scene } from "../../../../scene";
 import { NodeMaterialConnectionPointCustomObject } from "../../nodeMaterialConnectionPointCustomObject";
 import { EngineStore } from "../../../../Engines/engineStore";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
@@ -133,7 +132,7 @@ export class ImageSourceBlock extends NodeMaterialBlock {
         }
 
         if (this.dimensions.isConnected) {
-            let affect: string = "";
+            let affect: string;
             if (state.shaderLanguage === ShaderLanguage.WGSL) {
                 affect = `vec2f(textureDimensions(${this._samplerName}, 0).xy)`;
             } else {

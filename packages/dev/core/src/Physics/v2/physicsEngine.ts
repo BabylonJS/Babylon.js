@@ -1,11 +1,10 @@
-import type { Nullable } from "../../types";
+import { type Nullable } from "../../types";
 import { Vector3 } from "../../Maths/math.vector";
-import type { IPhysicsEngine } from "../IPhysicsEngine";
-import type { IPhysicsEnginePluginV2 } from "./IPhysicsEnginePlugin";
-import type { IRaycastQuery } from "../physicsRaycastResult";
-import { PhysicsRaycastResult } from "../physicsRaycastResult";
+import { type IPhysicsEngine } from "../IPhysicsEngine";
+import { type IPhysicsEnginePluginV2 } from "./IPhysicsEnginePlugin";
+import { type IRaycastQuery, PhysicsRaycastResult } from "../physicsRaycastResult";
 import { _WarnImport } from "../../Misc/devTools";
-import type { PhysicsBody } from "./physicsBody";
+import { type PhysicsBody } from "./physicsBody";
 
 /**
  * Class used to control physics engine
@@ -135,12 +134,6 @@ export class PhysicsEngine implements IPhysicsEngine {
     getMaxAngularVelocity(): number {
         return this._physicsPlugin.getMaxAngularVelocity();
     }
-
-    /**
-     * Adding a new impostor for the impostor tracking.
-     * This will be done by the impostor itself.
-     * @param impostor the impostor to add
-     */
 
     /**
      * Called by the scene. No need to call it.

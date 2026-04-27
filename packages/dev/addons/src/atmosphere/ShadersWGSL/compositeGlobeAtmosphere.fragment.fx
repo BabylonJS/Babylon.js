@@ -114,7 +114,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
             rayDirection,
             atmosphere.directionToLight,
             100000000.,
-            SkyViewLutSampleCount,
+            atmosphere.skyViewLutSampleCount,
             distanceToSurface,
             &transmittance);
 

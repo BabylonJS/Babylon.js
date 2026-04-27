@@ -1,7 +1,6 @@
-import { makeStyles, tokens } from "@fluentui/react-components";
-import type { GriffelStyle } from "@fluentui/react-components";
+import { makeStyles, tokens, type GriffelStyle } from "@fluentui/react-components";
 
-import type { KeyboardEvent, FocusEvent } from "react";
+import { type KeyboardEvent, type FocusEvent } from "react";
 
 export const TokenMap = {
     px2: tokens.borderRadiusSmall,
@@ -21,7 +20,7 @@ export const TokenMap = {
 };
 
 export const CustomTokens = {
-    inputWidth: "150px",
+    valueWidth: "150px",
     lineHeight: TokenMap.px36,
     lineHeightSmall: TokenMap.px28,
     dividerGap: TokenMap.px10,
@@ -32,9 +31,8 @@ export const CustomTokens = {
     rightAlignOffset: `-${TokenMap.px8}`,
 };
 
-export const UniformWidthStyling: GriffelStyle = { width: CustomTokens.inputWidth, boxSizing: "border-box" };
+export const UniformWidthStyling: GriffelStyle = { width: CustomTokens.valueWidth, boxSizing: "border-box" };
 export const useInputStyles = makeStyles({
-    input: UniformWidthStyling,
     inputSlot: { textAlign: "right" },
     invalid: { backgroundColor: tokens.colorPaletteRedBackground2 },
     container: {
@@ -42,6 +40,10 @@ export const useInputStyles = makeStyles({
         flexDirection: "column",
         justifyContent: "center", // align items vertically
         minWidth: 0, // Allow shrinking
+    },
+    inputFill: {
+        width: "100%",
+        minWidth: 0,
     },
 });
 

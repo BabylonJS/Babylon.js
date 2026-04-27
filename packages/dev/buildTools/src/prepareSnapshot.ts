@@ -1,8 +1,7 @@
 import * as fs from "fs";
 import { globSync } from "glob";
 import * as path from "path";
-import type { UMDPackageName } from "./packageMapping.js";
-import { umdPackageMapping } from "./packageMapping.js";
+import { type UMDPackageName, umdPackageMapping } from "./packageMapping.js";
 import { copyFile, findRootDirectory } from "./utils.js";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention

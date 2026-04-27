@@ -1,4 +1,4 @@
-import type { FrameGraph, Scene, IThinSelectionOutlineLayerOptions, FrameGraphTextureHandle, Effect, FrameGraphRenderContext } from "core/index";
+import { type FrameGraph, type Scene, type IThinSelectionOutlineLayerOptions, type FrameGraphTextureHandle, type Effect, type FrameGraphRenderContext } from "core/index";
 import { ThinSelectionOutlineLayer } from "core/Layers/thinSelectionOutlineLayer";
 import { FrameGraphBaseLayerTask, FrameGraphBaseLayerBlurType } from "./baseLayerTask";
 

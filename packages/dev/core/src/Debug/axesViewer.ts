@@ -1,7 +1,7 @@
 import { Vector3 } from "../Maths/math.vector";
-import type { Nullable } from "../types";
-import type { Scene } from "../scene";
-import type { TransformNode } from "../Meshes/transformNode";
+import { type Nullable } from "../types";
+import { type Scene } from "../scene";
+import { type TransformNode } from "../Meshes/transformNode";
 import { StandardMaterial } from "../Materials/standardMaterial";
 import { AxisDragGizmo } from "../Gizmos/axisDragGizmo";
 import { Color3 } from "../Maths/math.color";

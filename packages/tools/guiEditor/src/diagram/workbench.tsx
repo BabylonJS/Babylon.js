@@ -1,8 +1,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import * as React from "react";
-import type { GlobalState } from "../globalState";
-import { DragOverLocation, GUIEditorTool } from "../globalState";
-import type { Nullable } from "core/types";
+import { type GlobalState, DragOverLocation, GUIEditorTool } from "../globalState";
+import { type Nullable } from "core/types";
 import { Control } from "gui/2D/controls/control";
 import { AdvancedDynamicTexture } from "gui/2D/advancedDynamicTexture";
 import { Vector2, Vector3 } from "core/Maths/math.vector";
@@ -14,24 +13,22 @@ import { HemisphericLight } from "core/Lights/hemisphericLight";
 import { Axis } from "core/Maths/math.axis";
 import { Epsilon } from "core/Maths/math.constants";
 import { Container } from "gui/2D/controls/container";
-import type { KeyboardInfo } from "core/Events/keyboardEvents";
-import { KeyboardEventTypes } from "core/Events/keyboardEvents";
-import type { Line } from "gui/2D/controls/line";
-import type { Grid } from "gui/2D/controls/grid";
+import { type KeyboardInfo, KeyboardEventTypes } from "core/Events/keyboardEvents";
+import { type Line } from "gui/2D/controls/line";
+import { type Grid } from "gui/2D/controls/grid";
 import { Tools } from "../tools";
-import type { Observable, Observer } from "core/Misc/observable";
-import type { ISize } from "core/Maths/math";
+import { type Observable, type Observer } from "core/Misc/observable";
+import { type ISize } from "core/Maths/math";
 import { Texture } from "core/Materials/Textures/texture";
-import type { DimensionProperties } from "./coordinateHelper";
-import { CoordinateHelper } from "./coordinateHelper";
+import { type DimensionProperties, CoordinateHelper } from "./coordinateHelper";
 import { Logger } from "core/Misc/logger";
 import "./workbenchCanvas.scss";
 import { ValueAndUnit } from "gui/2D/valueAndUnit";
-import type { StackPanel } from "gui/2D/controls/stackPanel";
-import type { TransformNode } from "core/Meshes/transformNode";
+import { type StackPanel } from "gui/2D/controls/stackPanel";
+import { type TransformNode } from "core/Meshes/transformNode";
 import { RandomGUID } from "core/Misc/guid";
 import { DataStorage } from "core/Misc/dataStorage";
-import type { Vector2WithInfo } from "gui/2D/math2D";
+import { type Vector2WithInfo } from "gui/2D/math2D";
 
 export interface IWorkbenchComponentProps {
     globalState: GlobalState;

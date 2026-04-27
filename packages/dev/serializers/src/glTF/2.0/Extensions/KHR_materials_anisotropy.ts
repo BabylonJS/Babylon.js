@@ -1,12 +1,12 @@
-import type { IMaterial, IKHRMaterialsAnisotropy } from "babylonjs-gltf2interface";
-import type { IGLTFExporterExtensionV2 } from "../glTFExporterExtension";
+import { type IMaterial, type IKHRMaterialsAnisotropy } from "babylonjs-gltf2interface";
+import { type IGLTFExporterExtensionV2 } from "../glTFExporterExtension";
 import { GLTFExporter } from "../glTFExporter";
-import type { Material } from "core/Materials/material";
-import type { Nullable } from "core/types";
+import { type Material } from "core/Materials/material";
+import { type Nullable } from "core/types";
 import { PBRBaseMaterial } from "core/Materials/PBR/pbrBaseMaterial";
-import type { BaseTexture } from "core/Materials/Textures/baseTexture";
+import { type BaseTexture } from "core/Materials/Textures/baseTexture";
 import { OpenPBRMaterial } from "core/Materials/PBR/openpbrMaterial";
-import type { ProceduralTexture } from "core/Materials/Textures/Procedurals/proceduralTexture";
+import { type ProceduralTexture } from "core/Materials/Textures/Procedurals/proceduralTexture";
 import { MergeTexturesAsync, CreateRGBAConfiguration, CreateTextureInput, CreateConstantInput } from "core/Materials/Textures/textureMerger";
 
 const NAME = "KHR_materials_anisotropy";

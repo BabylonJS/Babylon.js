@@ -1,4 +1,4 @@
-import type { FrameGraph, FrameGraphTextureHandle, IViewportLike, Nullable } from "core/index";
+import { type FrameGraph, type FrameGraphTextureHandle, type IViewportLike, type Nullable } from "core/index";
 import { FrameGraphTask } from "../../frameGraphTask";
 import { Constants } from "core/Engines/constants";
 import { IsDepthTexture } from "../../../Materials/Textures/textureHelper.functions";

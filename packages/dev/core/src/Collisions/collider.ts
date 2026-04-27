@@ -1,6 +1,6 @@
-import type { Nullable, IndicesArray } from "../types";
+import { type Nullable, type IndicesArray } from "../types";
 import { Vector3 } from "../Maths/math.vector";
-import type { AbstractMesh } from "../Meshes/abstractMesh";
+import { type AbstractMesh } from "../Meshes/abstractMesh";
 import { Plane } from "../Maths/math.plane";
 
 const IntersectBoxAaSphere = (boxMin: Vector3, boxMax: Vector3, sphereCenter: Vector3, sphereRadius: number): boolean => {
@@ -436,7 +436,7 @@ export class Collider {
                         continue;
                     }
                     // Handles strip faces one on two is reversed
-                    if ((invertTriangles ? 1 : 0) ^ i % 2) {
+                    if ((invertTriangles ? 1 : 0) ^ (i % 2)) {
                         this._testTriangle(i, trianglePlaneArray, p1, p2, p3, hasMaterial, hostMesh);
                     } else {
                         this._testTriangle(i, trianglePlaneArray, p2, p1, p3, hasMaterial, hostMesh);
@@ -463,7 +463,7 @@ export class Collider {
                     }
 
                     // Handles strip faces one on two is reversed
-                    if ((invertTriangles ? 1 : 0) ^ i % 2) {
+                    if ((invertTriangles ? 1 : 0) ^ (i % 2)) {
                         this._testTriangle(i, trianglePlaneArray, p1, p2, p3, hasMaterial, hostMesh);
                     } else {
                         this._testTriangle(i, trianglePlaneArray, p2, p1, p3, hasMaterial, hostMesh);

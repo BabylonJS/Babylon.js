@@ -1,14 +1,12 @@
-import type { PerformanceViewerCollector } from "core/Misc/PerformanceViewer/performanceViewerCollector";
-import type { Observable } from "core/Misc/observable";
-import type { Scene } from "core/scene";
-import type { FunctionComponent } from "react";
-import type { PerfLayoutSize, VisibleRangeChangedObservableProps } from "./graphSupportingTypes";
-import type { Vector2 } from "core/Maths/math.vector";
+import { type PerformanceViewerCollector } from "core/Misc/PerformanceViewer/performanceViewerCollector";
+import { type Observable, Observable as BabylonObservable } from "core/Misc/observable";
+import { type Scene } from "core/scene";
+import { type FunctionComponent, useState } from "react";
+import { type PerfLayoutSize, type VisibleRangeChangedObservableProps } from "./graphSupportingTypes";
+import { type Vector2 } from "core/Maths/math.vector";
 
 import { makeStyles, tokens } from "@fluentui/react-components";
-import { useState } from "react";
 
-import { Observable as BabylonObservable } from "core/Misc/observable";
 import { Button } from "shared-ui-components/fluent/primitives/button";
 import { CanvasGraph } from "./canvasGraph";
 import { PerformanceSidebar } from "./performanceSidebar";

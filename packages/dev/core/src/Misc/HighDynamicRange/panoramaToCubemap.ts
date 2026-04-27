@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import type { Nullable } from "../../types";
+import { type Nullable } from "../../types";
 import { Vector3 } from "../../Maths/math.vector";
 import { Constants } from "../../Engines/constants";
 
@@ -98,7 +98,7 @@ export class PanoramaToCubeMapTools {
             throw "ConvertPanoramaToCubemap: input cannot be null";
         }
 
-        let stride = 0;
+        let stride: number;
         if (float32Array.length != inputWidth * inputHeight * 3) {
             if (float32Array.length != inputWidth * inputHeight * 4) {
                 // eslint-disable-next-line no-throw-literal

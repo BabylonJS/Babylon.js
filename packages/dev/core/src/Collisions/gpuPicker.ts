@@ -1,24 +1,23 @@
-import type { AbstractEngine } from "core/Engines/abstractEngine";
+import { type AbstractEngine } from "core/Engines/abstractEngine";
 import { Constants } from "core/Engines/constants";
-import type { Engine } from "core/Engines/engine";
-import type { WebGPUEngine } from "core/Engines/webgpuEngine";
+import { type Engine } from "core/Engines/engine";
+import { type WebGPUEngine } from "core/Engines/webgpuEngine";
 import { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
-import type { Material } from "core/Materials/material";
+import { type Material } from "core/Materials/material";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
-import type { IShaderMaterialOptions } from "core/Materials/shaderMaterial";
-import { ShaderMaterial } from "core/Materials/shaderMaterial";
+import { type IShaderMaterialOptions, ShaderMaterial } from "core/Materials/shaderMaterial";
 import { GaussianSplattingMaterial } from "core/Materials/GaussianSplatting/gaussianSplattingMaterial";
 import { GaussianSplattingGpuPickingMaterialPlugin } from "core/Materials/GaussianSplatting/gaussianSplattingGpuPickingMaterialPlugin";
 import { Color4 } from "core/Maths/math.color";
-import type { IVector2Like } from "core/Maths/math.like";
-import type { AbstractMesh } from "core/Meshes/abstractMesh";
+import { type IVector2Like } from "core/Maths/math.like";
+import { type AbstractMesh } from "core/Meshes/abstractMesh";
 import { VertexBuffer } from "core/Meshes/buffer";
-import type { Mesh } from "core/Meshes/mesh";
-import type { InstancedMesh } from "core/Meshes/instancedMesh";
+import { type Mesh } from "core/Meshes/mesh";
+import { type InstancedMesh } from "core/Meshes/instancedMesh";
 import { Logger } from "core/Misc/logger";
-import type { Scene } from "core/scene";
-import type { Nullable } from "core/types";
-import type { Observer } from "core/Misc/observable";
+import { type Scene } from "core/scene";
+import { type Nullable } from "core/types";
+import { type Observer } from "core/Misc/observable";
 
 /**
  * Class used to store the result of a GPU picking operation
@@ -252,7 +251,7 @@ export class GPUPicker {
                     continue;
                 }
 
-                // Skip thin instance cleanup for GaussianSplattingMesh (their thin instances are for batching, not picking)
+                // Skip thin instance cleanup for GaussianSplattingMesh (thin instances are for batching, not picking)
                 if (className !== "GaussianSplattingMesh") {
                     if (mesh.hasInstances) {
                         (mesh as Mesh).removeVerticesData(GPUPicker._AttributeName);
@@ -400,6 +399,10 @@ export class GPUPicker {
                 this._meshUniqueIdToPickerId[mesh.uniqueId] = pickId;
                 nextFreeId++;
 
+                if (!mesh.isPickable || !mesh.isVisible) {
+                    continue;
+                }
+
                 // Create a GaussianSplattingMaterial with picking plugin for GPU picking
                 const gsPickingMaterial = this._createGaussianSplattingPickingMaterial(scene, mesh);
                 const plugin = gsPickingMaterial.pluginManager!.getPlugin<GaussianSplattingGpuPickingMaterialPlugin>("GaussianSplatGpuPicking")!;
@@ -497,6 +500,11 @@ export class GPUPicker {
             const plugin = gsPickingMaterial.pluginManager!.getPlugin<GaussianSplattingGpuPickingMaterialPlugin>("GaussianSplatGpuPicking")!;
             plugin.isCompound = true;
             plugin.partMeshIds = partMeshIds;
+            // Only active (included, visible, and pickable) parts should contribute to the depth buffer.
+            const activeParts = group.partEntries
+                .filter((e) => (e.proxy as AbstractMesh).isPickable && (e.proxy as AbstractMesh).isVisible)
+                .map((e) => (e.proxy as any).partIndex as number);
+            plugin.setPartActive(activeParts);
 
             gsPickingMaterial.onBindObservable.add(() => {
                 this._meshRenderingCount++;

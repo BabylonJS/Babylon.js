@@ -1,5 +1,5 @@
-import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
-import type { GLTFLoader } from "../glTFLoader";
+import { type IGLTFLoaderExtension } from "../glTFLoaderExtension";
+import { type GLTFLoader } from "../glTFLoader";
 import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
 
 const NAME = "KHR_mesh_quantization";

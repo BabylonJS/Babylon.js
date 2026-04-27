@@ -1,4 +1,4 @@
-import type { Camera } from "core/Cameras/camera";
+import { type Camera } from "core/Cameras/camera";
 import { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
 import { UniversalCamera } from "core/Cameras/universalCamera";
 import { FreeCamera } from "core/Cameras/freeCamera";
@@ -6,15 +6,14 @@ import { FollowCamera } from "core/Cameras/followCamera";
 import { FlyCamera } from "core/Cameras/flyCamera";
 import { GeospatialCamera } from "core/Cameras/geospatialCamera";
 import { Vector3 } from "core/Maths/math.vector";
-import type { Scene } from "core/scene";
-import { useState } from "react";
-import type { FunctionComponent } from "react";
+import { type Scene } from "core/scene";
+import { useState, type FunctionComponent } from "react";
 import { TextInputPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/inputPropertyLine";
 import { SpinButtonPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/spinButtonPropertyLine";
 import { Vector3PropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/vectorPropertyLine";
 import { CheckboxPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/checkboxPropertyLine";
 import { QuickCreateSection, QuickCreateItem } from "./quickCreateLayout";
-import type { ISelectionService } from "../../services/selectionService";
+import { type ISelectionService } from "../../services/selectionService";
 
 type CamerasContentProps = {
     scene: Scene;

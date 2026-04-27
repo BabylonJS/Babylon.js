@@ -1,17 +1,16 @@
 import { NodeGeometryBlockConnectionPointTypes } from "core/Meshes";
-import type { NodeGeometryBlock } from "core/Meshes/Node/nodeGeometryBlock";
+import { type NodeGeometryBlock } from "core/Meshes/Node/nodeGeometryBlock";
 import {
     NodeGeometryConnectionPointDirection,
     type NodeGeometryConnectionPoint,
     NodeGeometryConnectionPointCompatibilityStates,
 } from "core/Meshes/Node/nodeGeometryBlockConnectionPoint";
-import type { Nullable } from "core/types";
-import type { GlobalState } from "node-geometry-editor/globalState";
-import type { GraphCanvasComponent } from "shared-ui-components/nodeGraphSystem/graphCanvas";
-import type { GraphNode } from "shared-ui-components/nodeGraphSystem/graphNode";
-import type { INodeContainer } from "shared-ui-components/nodeGraphSystem/interfaces/nodeContainer";
-import type { IPortData } from "shared-ui-components/nodeGraphSystem/interfaces/portData";
-import { PortDataDirection, PortDirectValueTypes } from "shared-ui-components/nodeGraphSystem/interfaces/portData";
+import { type Nullable } from "core/types";
+import { type GlobalState } from "node-geometry-editor/globalState";
+import { type GraphCanvasComponent } from "shared-ui-components/nodeGraphSystem/graphCanvas";
+import { type GraphNode } from "shared-ui-components/nodeGraphSystem/graphNode";
+import { type INodeContainer } from "shared-ui-components/nodeGraphSystem/interfaces/nodeContainer";
+import { type IPortData, PortDataDirection, PortDirectValueTypes } from "shared-ui-components/nodeGraphSystem/interfaces/portData";
 import { GetConnectionErrorMessage } from "shared-ui-components/nodeGraphSystem/tools";
 import { TypeLedger } from "shared-ui-components/nodeGraphSystem/typeLedger";
 

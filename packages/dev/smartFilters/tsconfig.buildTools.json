@@ -1,0 +1,16 @@
+{
+    "extends": "../../../tsconfig.build.json",
+
+    "compilerOptions": {
+        "composite": false,
+        "declaration": false,
+        "declarationMap": false,
+        "sourceMap": false,
+        "inlineSources": false,
+        "outDir": "./dist",
+        "rootDir": "./src"
+    },
+
+    "include": ["./src/utils/buildTools/**/*.ts", "./src/connection/connectionPointType.ts", "./src/blockFoundation/blockDisableStrategy.ts", "./src/utils/shaderCodeUtils.ts"],
+    "exclude": ["**/node_modules", "**/dist"]
+}

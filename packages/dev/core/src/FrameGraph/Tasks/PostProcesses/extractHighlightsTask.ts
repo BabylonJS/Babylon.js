@@ -1,4 +1,4 @@
-import type { FrameGraph } from "core/index";
+import { type FrameGraph } from "core/index";
 import { ThinExtractHighlightsPostProcess } from "core/PostProcesses/thinExtractHighlightsPostProcess";
 import { FrameGraphPostProcessTask } from "./postProcessTask";
 

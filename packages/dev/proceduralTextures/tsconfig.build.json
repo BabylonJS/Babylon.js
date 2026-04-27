@@ -6,8 +6,8 @@
         "outDir": "./dist",
         "rootDir": "./src",
         "paths": {
-            "core/*": ["dev/core/dist/*"],
-            "procedural-textures/*": ["dev/proceduralTextures/src/*"]
+            "core/*": ["../../dev/core/dist/*"],
+            "procedural-textures/*": ["../../dev/proceduralTextures/src/*"]
         }
     },
 

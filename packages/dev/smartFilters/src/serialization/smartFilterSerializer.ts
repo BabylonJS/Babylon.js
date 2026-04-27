@@ -1,10 +1,16 @@
-import type { SmartFilter } from "../smartFilter.js";
-import type { BaseBlock } from "../blockFoundation/baseBlock.js";
+import { type SmartFilter } from "../smartFilter.js";
+import { type BaseBlock } from "../blockFoundation/baseBlock.js";
 import { InputBlockSerializer } from "../blockFoundation/inputBlock.serializer.js";
-import type { ConnectionPoint } from "../connection/connectionPoint.js";
+import { type ConnectionPoint } from "../connection/connectionPoint.js";
 import { DefaultBlockSerializer } from "./v1/defaultBlockSerializer.js";
 import { OutputBlock } from "../blockFoundation/outputBlock.js";
-import type { IBlockSerializerV1, ISerializedBlockV1, ISerializedConnectionV1, SerializeBlockV1, SerializedSmartFilterV1 } from "./v1/smartFilterSerialization.types.js";
+import {
+    type IBlockSerializerV1,
+    type ISerializedBlockV1,
+    type ISerializedConnectionV1,
+    type SerializeBlockV1,
+    type SerializedSmartFilterV1,
+} from "./v1/smartFilterSerialization.types.js";
 import { CustomShaderBlock } from "../blockFoundation/customShaderBlock.js";
 import { CustomAggregateBlock } from "../blockFoundation/customAggregateBlock.js";
 import { CustomShaderBlockSerializer } from "../blockFoundation/customShaderBlock.serializer.js";

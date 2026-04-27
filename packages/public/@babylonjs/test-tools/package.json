@@ -1,7 +1,7 @@
 {
     "name": "@babylonjs/test-tools",
     "private": true,
-    "version": "8.53.0",
+    "version": "9.4.1",
     "main": "dist/index.js",
     "module": "dist/index.js",
     "types": "dist/index.d.ts",
@@ -15,20 +15,10 @@
         "clean": "rimraf dist && rimraf *.tsbuildinfo -g",
         "compile": "tsc -b tsconfig.build.json --verbose"
     },
-    "devDependencies": {
-        "puppeteer": "^22.1.0",
-        "@alex_neo/jest-expect-message": "~1.0.5"
-    },
-    "dependencies": {
-        "jest": "^29.7.0",
-        "jest-puppeteer": "^10.0.1"
-    },
-    "peerDependencies": {
-        "puppeteer": ">20.0.0"
-    },
-    "optionalDependencies": {
-        "@alex_neo/jest-expect-message": "~1.0.5"
-    },
+    "devDependencies": {},
+    "dependencies": {},
+    "peerDependencies": {},
+    "optionalDependencies": {},
     "keywords": [
         "3D",
         "javascript",

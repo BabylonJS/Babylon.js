@@ -1,6 +1,5 @@
 import * as React from "react";
-import type { GlobalState } from "./globalState";
-import { GUIEditorTool } from "./globalState";
+import { type GlobalState, GUIEditorTool } from "./globalState";
 import { PropertyTabComponent } from "./components/propertyTab/propertyTabComponent";
 import { Portal } from "./portal";
 import { LogComponent } from "./components/log/logComponent";
@@ -11,9 +10,9 @@ import { MessageDialog } from "shared-ui-components/components/MessageDialog";
 import { SceneExplorerComponent } from "./components/sceneExplorer/sceneExplorerComponent";
 import { CommandBarComponent } from "./components/commandBarComponent";
 import { GizmoWrapper } from "./diagram/gizmoWrapper";
-import type { Nullable } from "core/types";
+import { type Nullable } from "core/types";
 import { ArtBoardComponent } from "./diagram/artBoard";
-import type { Control } from "gui/2D/controls/control";
+import { type Control } from "gui/2D/controls/control";
 import { ControlTypes } from "./controlTypes";
 
 import "./main.scss";
@@ -21,7 +20,7 @@ import "./scss/header.scss";
 
 import toolbarExpandIcon from "./imgs/toolbarExpandIcon.svg";
 import toolbarCollapseIcon from "./imgs/toolbarCollapseIcon.svg";
-import type { Observer } from "core/Misc/observable";
+import { type Observer } from "core/Misc/observable";
 
 interface IGraphEditorProps {
     globalState: GlobalState;

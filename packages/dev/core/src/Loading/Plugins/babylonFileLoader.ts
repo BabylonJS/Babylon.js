@@ -1,13 +1,13 @@
 import { Logger } from "../../Misc/logger";
-import type { Nullable } from "../../types";
+import { type Nullable } from "../../types";
 import { Camera } from "../../Cameras/camera";
-import type { Scene } from "../../scene";
+import { type Scene } from "../../scene";
 import { Vector3 } from "../../Maths/math.vector";
 import { Color3, Color4 } from "../../Maths/math.color";
 import { Mesh } from "../../Meshes/mesh";
-import type { AbstractMesh } from "../../Meshes/abstractMesh";
+import { type AbstractMesh } from "../../Meshes/abstractMesh";
 import { Geometry } from "../../Meshes/geometry";
-import type { Node } from "../../node";
+import { type Node } from "../../node";
 import { TransformNode } from "../../Meshes/transformNode";
 import { Material } from "../../Materials/material";
 import { MultiMaterial } from "../../Materials/multiMaterial";
@@ -21,7 +21,7 @@ import { SceneLoaderFlags } from "../sceneLoaderFlags";
 import { Constants } from "../../Engines/constants";
 import { AssetContainer } from "../../assetContainer";
 import { ActionManager } from "../../Actions/actionManager";
-import type { IParticleSystem } from "../../Particles/IParticleSystem";
+import { type IParticleSystem } from "../../Particles/IParticleSystem";
 import { Skeleton } from "../../Bones/skeleton";
 import { MorphTargetManager } from "../../Morph/morphTargetManager";
 import { CannonJSPlugin } from "../../Physics/v1/Plugins/cannonJSPlugin";
@@ -34,7 +34,7 @@ import { PostProcess } from "../../PostProcesses/postProcess";
 import { SpriteManager } from "core/Sprites/spriteManager";
 import { GetIndividualParser, Parse } from "./babylonFileParser.function";
 import { Observable } from "../../Misc/observable";
-import type { MorphTarget } from "../../Morph/morphTarget";
+import { type MorphTarget } from "../../Morph/morphTarget";
 
 import "../../Physics/joinedPhysicsEngineComponent";
 import "../../Helpers/sceneHelpers";
@@ -176,8 +176,36 @@ export function LoadAssetContainerFromSerializedScene(scene: Scene, serializedSc
 const LoadAssetContainer = (scene: Scene, data: string | object, rootUrl: string, onError?: (message: string, exception?: any) => void, addToScene = false): AssetContainer => {
     const container = new AssetContainer(scene);
 
+    // When loading into a container (not directly into the scene), suppress entity-added
+    // observables to prevent scene events during loading. Entities still get added to scene
+    // arrays (so the linking code can find them), but no events fire.
+    // They are removed from the scene at the end via container.removeAllFromScene().
+    let savedObservables: Record<string, Observable<any>> | undefined;
     if (!addToScene) {
-        scene._blockEntityCollection = true;
+        savedObservables = {
+            mesh: scene.onNewMeshAddedObservable,
+            transformNode: scene.onNewTransformNodeAddedObservable,
+            light: scene.onNewLightAddedObservable,
+            camera: scene.onNewCameraAddedObservable,
+            material: scene.onNewMaterialAddedObservable,
+            multiMaterial: scene.onNewMultiMaterialAddedObservable,
+            texture: scene.onNewTextureAddedObservable,
+            skeleton: scene.onNewSkeletonAddedObservable,
+            geometry: scene.onNewGeometryAddedObservable,
+            animationGroup: scene.onNewAnimationGroupAddedObservable,
+            particleSystem: scene.onNewParticleSystemAddedObservable,
+        };
+        scene.onNewMeshAddedObservable = new Observable();
+        scene.onNewTransformNodeAddedObservable = new Observable();
+        scene.onNewLightAddedObservable = new Observable();
+        scene.onNewCameraAddedObservable = new Observable();
+        scene.onNewMaterialAddedObservable = new Observable();
+        scene.onNewMultiMaterialAddedObservable = new Observable();
+        scene.onNewTextureAddedObservable = new Observable();
+        scene.onNewSkeletonAddedObservable = new Observable();
+        scene.onNewGeometryAddedObservable = new Observable();
+        scene.onNewAnimationGroupAddedObservable = new Observable();
+        scene.onNewParticleSystemAddedObservable = new Observable();
     }
 
     // Entire method running in try block, so ALWAYS logs as far as it got, only actually writes details
@@ -399,19 +427,7 @@ const LoadAssetContainer = (scene: Scene, data: string | object, rootUrl: string
                 for (index = 0, cache = vertexData.length; index < cache; index++) {
                     const parsedVertexData = vertexData[index];
 
-                    // Geometies are found by loadedUniqueId when imported
-                    // So we need to temporarily unblock the entity collection to add them to the scene
-                    scene._blockEntityCollection = false;
-                    // Temporarily replace the onNewGeometryAddedObservable to avoid multiple notifications
-                    const onNewGeometryAddedObservable = scene.onNewGeometryAddedObservable;
-                    scene.onNewGeometryAddedObservable = new Observable<Geometry>();
-
                     addedGeometry.push(Geometry.Parse(parsedVertexData, scene, rootUrl));
-
-                    // Restore the onNewGeometryAddedObservable
-                    scene.onNewGeometryAddedObservable = onNewGeometryAddedObservable;
-                    // Restore the previous state of entity collection blocking
-                    scene._blockEntityCollection = !addToScene;
                 }
             }
 
@@ -446,6 +462,21 @@ const LoadAssetContainer = (scene: Scene, data: string | object, rootUrl: string
                     for (const instance of (mesh as Mesh).instances) {
                         container.meshes.push(instance);
                         instance._parentContainer = container;
+                    }
+                }
+                // Load partProxies from GaussianSplattingMesh into AssetContainer
+                if (mesh.getClassName() === "GaussianSplattingMesh") {
+                    const partProxies = (mesh as any)._partProxies as AbstractMesh[] | Map<number, AbstractMesh> | undefined;
+                    const proxies = Array.isArray(partProxies) ? partProxies : partProxies ? Array.from(partProxies.values()) : [];
+                    for (const partProxy of proxies) {
+                        if (!partProxy) {
+                            continue;
+                        }
+                        container.meshes.push(partProxy);
+                        partProxy._parentContainer = container;
+                        if (partProxy._waitingParsedUniqueId != null) {
+                            TempIndexContainer[partProxy._waitingParsedUniqueId] = partProxy;
+                        }
                     }
                 }
                 log += index === 0 ? "\n\tMeshes:" : "";
@@ -678,6 +709,13 @@ const LoadAssetContainer = (scene: Scene, data: string | object, rootUrl: string
         }
 
         // freeze world matrix application
+        for (index = 0, cache = scene.transformNodes.length; index < cache; index++) {
+            const currentTransformNode = scene.transformNodes[index];
+            if (currentTransformNode._waitingFreezeWorldMatrix) {
+                currentTransformNode.freezeWorldMatrix();
+                currentTransformNode._waitingFreezeWorldMatrix = null;
+            }
+        }
         for (index = 0, cache = scene.meshes.length; index < cache; index++) {
             const currentMesh = scene.meshes[index];
             if (currentMesh._waitingData.freezeWorldMatrix) {
@@ -751,10 +789,22 @@ const LoadAssetContainer = (scene: Scene, data: string | object, rootUrl: string
         TempSkeletonIndexContainer = {};
 
         if (!addToScene) {
-            // Removes any breadcrumb left during the loading like geometries
+            // Restore observables before removing from scene
+            if (savedObservables) {
+                scene.onNewMeshAddedObservable = savedObservables.mesh;
+                scene.onNewTransformNodeAddedObservable = savedObservables.transformNode;
+                scene.onNewLightAddedObservable = savedObservables.light;
+                scene.onNewCameraAddedObservable = savedObservables.camera;
+                scene.onNewMaterialAddedObservable = savedObservables.material;
+                scene.onNewMultiMaterialAddedObservable = savedObservables.multiMaterial;
+                scene.onNewTextureAddedObservable = savedObservables.texture;
+                scene.onNewSkeletonAddedObservable = savedObservables.skeleton;
+                scene.onNewGeometryAddedObservable = savedObservables.geometry;
+                scene.onNewAnimationGroupAddedObservable = savedObservables.animationGroup;
+                scene.onNewParticleSystemAddedObservable = savedObservables.particleSystem;
+            }
+            // Removes entities from scene arrays and moves them to the container
             container.removeAllFromScene();
-            // Unblock entity collection
-            scene._blockEntityCollection = false;
         }
         if (log !== null && SceneLoaderFlags.loggingLevel !== Constants.SCENELOADER_NO_LOGGING) {
             Logger.Log(
@@ -972,6 +1022,17 @@ RegisterSceneLoaderPlugin({
                         meshes.push(mesh);
                         parsedIdToNodeMap.set(mesh._waitingParsedUniqueId!, mesh);
                         mesh._waitingParsedUniqueId = null;
+                        if (mesh.getClassName() === "GaussianSplattingMesh") {
+                            const partProxies = (mesh as any)._partProxies as AbstractMesh[] | Map<number, AbstractMesh> | undefined;
+                            const proxies = Array.isArray(partProxies) ? partProxies : partProxies ? Array.from(partProxies.values()) : [];
+                            for (const partProxy of proxies) {
+                                if (!partProxy || partProxy._waitingParsedUniqueId == null) {
+                                    continue;
+                                }
+                                parsedIdToNodeMap.set(partProxy._waitingParsedUniqueId, partProxy);
+                                partProxy._waitingParsedUniqueId = null;
+                            }
+                        }
                         log += "\n\tMesh " + mesh.toString(fullDetails);
                     }
                 }
@@ -1093,6 +1154,13 @@ RegisterSceneLoaderPlugin({
                 }
 
                 // freeze and compute world matrix application
+                for (let index = 0, cache = scene.transformNodes.length; index < cache; index++) {
+                    const currentTransformNode = scene.transformNodes[index];
+                    if (currentTransformNode._waitingFreezeWorldMatrix) {
+                        currentTransformNode.freezeWorldMatrix();
+                        currentTransformNode._waitingFreezeWorldMatrix = null;
+                    }
+                }
                 for (let index = 0, cache = scene.meshes.length; index < cache; index++) {
                     currentMesh = scene.meshes[index];
                     if (currentMesh._waitingData.freezeWorldMatrix) {

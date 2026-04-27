@@ -1,4 +1,15 @@
-import type { Observer, Nullable, Scene, SubMesh, AbstractMesh, Mesh, Effect, IThinEffectLayerOptions, Color3, EffectWrapper } from "core/index";
+import {
+    type Observer,
+    type Nullable,
+    type Scene,
+    type SubMesh,
+    type AbstractMesh,
+    type Mesh,
+    type Effect,
+    type IThinEffectLayerOptions,
+    type Color3,
+    type EffectWrapper,
+} from "core/index";
 import { Vector2 } from "../Maths/math.vector";
 import { VertexBuffer } from "../Buffers/buffer";
 import { Material } from "../Materials/material";

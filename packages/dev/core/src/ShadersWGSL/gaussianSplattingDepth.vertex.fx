@@ -37,7 +37,7 @@ varying vDepthMetric: f32;
 @vertex
 fn main(input : VertexInputs) -> FragmentInputs {
 
-    let splatIndex: f32 = getSplatIndex(i32(input.position.z + 0.5), input.splatIndex0, input.splatIndex1, input.splatIndex2, input.splatIndex3);
+    let splatIndex: f32 = getSplatIndex(i32(vertexInputs.position.z + 0.5), vertexInputs.splatIndex0, vertexInputs.splatIndex1, vertexInputs.splatIndex2, vertexInputs.splatIndex3);
 
     var splat: Splat = readSplat(splatIndex, uniforms.dataTextureSize);
     var covA: vec3f = splat.covA.xyz;
@@ -51,7 +51,7 @@ fn main(input : VertexInputs) -> FragmentInputs {
 
     let worldPos: vec4f = splatWorld * vec4f(splat.center.xyz, 1.0);
 
-    vertexOutputs.vPosition = input.position.xy;
+    vertexOutputs.vPosition = vertexInputs.position.xy;
     vertexOutputs.vColor = splat.color;
     vertexOutputs.vColor.w *= uniforms.alpha;
 
@@ -60,7 +60,7 @@ fn main(input : VertexInputs) -> FragmentInputs {
     vertexOutputs.vColor.w *= uniforms.partVisibility[splat.partIndex];
 #endif
 
-    vertexOutputs.position = gaussianSplatting(input.position.xy, worldPos.xyz, vec2f(1.0, 1.0), covA, covB, splatWorld, scene.view, scene.projection, uniforms.focal, uniforms.invViewport, uniforms.kernelSize);
+    vertexOutputs.position = gaussianSplatting(vertexInputs.position.xy, worldPos.xyz, vec2f(1.0, 1.0), covA, covB, splatWorld, scene.view, scene.projection, uniforms.focal, uniforms.invViewport, uniforms.kernelSize);
 #ifdef DEPTH_RENDER
     #ifdef USE_REVERSE_DEPTHBUFFER
         vertexOutputs.vDepthMetric = ((-vertexOutputs.position.z + uniforms.depthValues.x) / (uniforms.depthValues.y));

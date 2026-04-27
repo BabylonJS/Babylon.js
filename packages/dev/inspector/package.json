@@ -38,6 +38,7 @@
         "sass": "^1.62.1",
         "re-resizable": "^6.9.1",
         "react": "^18.2.0",
+        "split.js": "^1.6.5",
         "react-dom": "^18.2.0"
     },
     "sideEffects": false

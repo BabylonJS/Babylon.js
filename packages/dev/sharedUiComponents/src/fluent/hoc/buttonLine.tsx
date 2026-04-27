@@ -1,7 +1,6 @@
 import { LineContainer } from "./propertyLines/propertyLine";
-import type { FunctionComponent } from "react";
-import { Button } from "../primitives/button";
-import type { ButtonProps } from "../primitives/button";
+import { type FunctionComponent } from "react";
+import { Button, type ButtonProps } from "../primitives/button";
 
 type ButtonLineProps = Omit<ButtonProps, "label"> & {
     label: string; // Require a label when button is the entire line (by default, label is optional on a button)
@@ -16,9 +15,11 @@ type ButtonLineProps = Omit<ButtonProps, "label"> & {
 export const ButtonLine: FunctionComponent<ButtonLineProps> = (props) => {
     ButtonLine.displayName = "ButtonLine";
 
+    const { uniqueId, ...buttonProps } = props;
+
     return (
-        <LineContainer uniqueId={props.uniqueId ?? props.label}>
-            <Button {...props} />
+        <LineContainer uniqueId={uniqueId ?? props.label}>
+            <Button {...buttonProps} />
         </LineContainer>
     );
 };

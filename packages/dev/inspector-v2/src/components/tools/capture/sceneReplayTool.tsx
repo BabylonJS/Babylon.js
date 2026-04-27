@@ -1,14 +1,13 @@
 import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
-import { useState, useCallback } from "react";
-import type { FunctionComponent } from "react";
-import type { Scene } from "core/scene";
+import { useState, useCallback, type FunctionComponent } from "react";
+import { type Scene } from "core/scene";
 import { RecordRegular, SaveRegular, ArrowDownloadRegular } from "@fluentui/react-icons";
 import { SceneRecorder } from "core/Misc/sceneRecorder";
 import { Tools } from "core/Misc/tools";
 import { FileUploadLine } from "shared-ui-components/fluent/hoc/fileUploadLine";
 import { Label } from "@fluentui/react-components";
 import { Logger } from "core/Misc/logger";
-import { useResource } from "../../../hooks/resourceHooks";
+import { useResource } from "shared-ui-components/modularTool/hooks/resourceHooks";
 
 export const SceneReplayTool: FunctionComponent<{ scene: Scene }> = ({ scene }) => {
     const [isRecording, setIsRecording] = useState(false);

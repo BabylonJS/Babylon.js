@@ -1,5 +1,5 @@
 import { Logger } from "core/Misc/logger.js";
-import type { CommandBuffer } from "./commandBuffer.js";
+import { type CommandBuffer } from "./commandBuffer.js";
 
 /**
  * Logs all the commands associated to a command buffer.

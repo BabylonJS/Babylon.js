@@ -1,16 +1,14 @@
-import type { ServiceDefinition } from "../../../modularity/serviceDefinition";
-import type { ISceneContext } from "../../sceneContext";
-import type { IWatcherService } from "../../watcherService";
-import type { ISceneExplorerService } from "./sceneExplorerService";
+import { type ServiceDefinition } from "shared-ui-components/modularTool/modularity/serviceDefinition";
+import { type ISceneContext, SceneContextIdentity } from "../../sceneContext";
+import { type IWatcherService, WatcherServiceIdentity } from "../../watcherService";
+import { type ISceneExplorerService, SceneExplorerServiceIdentity } from "./sceneExplorerService";
 
+import { tokens } from "@fluentui/react-components";
 import { ImageEditRegular, ImageRegular } from "@fluentui/react-icons";
 
 import { DynamicTexture } from "core/Materials/Textures/dynamicTexture";
 import { Observable } from "core/Misc/observable";
-import { SceneContextIdentity } from "../../sceneContext";
-import { WatcherServiceIdentity } from "../../watcherService";
 import { DefaultSectionsOrder } from "./defaultSectionsMetadata";
-import { SceneExplorerServiceIdentity } from "./sceneExplorerService";
 
 export const TextureExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplorerService, ISceneContext, IWatcherService]> = {
     friendlyName: "Texture Explorer",
@@ -44,7 +42,8 @@ export const TextureExplorerServiceDefinition: ServiceDefinition<[], [ISceneExpl
                     },
                 };
             },
-            entityIcon: ({ entity: texture }) => (texture instanceof DynamicTexture ? <ImageEditRegular /> : <ImageRegular />),
+            entityIcon: ({ entity: texture }) =>
+                texture instanceof DynamicTexture ? <ImageEditRegular color={tokens.colorPaletteGrapeForeground2} /> : <ImageRegular color={tokens.colorPaletteGrapeForeground2} />,
             getEntityAddedObservables: () => [scene.onNewTextureAddedObservable],
             getEntityRemovedObservables: () => [scene.onTextureRemovedObservable],
         });

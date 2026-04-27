@@ -1,14 +1,13 @@
-import type { Nullable } from "../types";
-import type { Matrix } from "../Maths/math.vector";
-import { Vector3, TmpVectors, Quaternion, Vector4, Vector2 } from "../Maths/math.vector";
+import { type Nullable } from "../types";
+import { type Matrix, Vector3, TmpVectors, Quaternion, Vector4, Vector2 } from "../Maths/math.vector";
 import { Color4 } from "../Maths/math.color";
-import type { Mesh } from "../Meshes/mesh";
+import { type Mesh } from "../Meshes/mesh";
 import { BoundingInfo } from "../Culling/boundingInfo";
 import { BoundingSphere } from "../Culling/boundingSphere";
-import type { SolidParticleSystem } from "./solidParticleSystem";
+import { type SolidParticleSystem } from "./solidParticleSystem";
 import { AbstractMesh } from "../Meshes/abstractMesh";
-import type { Plane } from "../Maths/math.plane";
-import type { Material } from "../Materials/material";
+import { type Plane } from "../Maths/math.plane";
+import { type Material } from "../Materials/material";
 /**
  * Represents one particle of a solid particle system.
  */

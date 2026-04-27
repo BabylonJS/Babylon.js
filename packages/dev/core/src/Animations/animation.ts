@@ -1,21 +1,20 @@
-import type { IEasingFunction, EasingFunction } from "./easing";
+import { type IEasingFunction, type EasingFunction } from "./easing";
 import { Vector3, Quaternion, Vector2, Matrix, TmpVectors } from "../Maths/math.vector";
 import { Color3, Color4 } from "../Maths/math.color";
 import { Hermite, Lerp } from "../Maths/math.scalar.functions";
-import type { DeepImmutable, Nullable } from "../types";
-import type { Scene } from "../scene";
+import { type DeepImmutable, type Nullable } from "../types";
+import { type Scene } from "../scene";
 import { RegisterClass } from "../Misc/typeStore";
-import type { IAnimationKey } from "./animationKey";
-import { AnimationKeyInterpolation } from "./animationKey";
+import { type IAnimationKey, AnimationKeyInterpolation } from "./animationKey";
 import { AnimationRange } from "./animationRange";
-import type { AnimationEvent } from "./animationEvent";
+import { type AnimationEvent } from "./animationEvent";
 import { Node } from "../node";
-import type { IAnimatable } from "./animatable.interface";
+import { type IAnimatable } from "./animatable.interface";
 import { Size } from "../Maths/math.size";
 import { WebRequest } from "../Misc/webRequest";
 import { Constants } from "../Engines/constants";
-import type { Animatable } from "./animatable";
-import type { RuntimeAnimation } from "./runtimeAnimation";
+import { type Animatable } from "./animatable";
+import { type RuntimeAnimation } from "./runtimeAnimation";
 import { SerializationHelper } from "../Misc/decorators.serialization";
 
 // Static values to help the garbage collector
@@ -108,6 +107,16 @@ export class Animation {
      * When matrix interpolation is enabled, this boolean forces the system to use Matrix.DecomposeLerp instead of Matrix.Lerp. Interpolation is more precise but slower
      */
     public static AllowMatrixDecomposeForInterpolation = true;
+
+    /**
+     * When true, starting a new animation on a property that is already being animated
+     * will inherit the original value from the active animation instead of snapshotting
+     * the current (mid-animation) value. This prevents properties (e.g. morph target
+     * influence) from permanently sticking at intermediate values when animations
+     * overlap or interrupt each other.
+     * @see https://playground.babylonjs.com/#6A16YD#0
+     */
+    public static InheritOriginalValueFromActiveAnimations = false;
 
     /**
      * Gets or sets the unique id of the animation (the uniqueness is solely among other animations)
@@ -659,10 +668,10 @@ export class Animation {
             ret += ", Ranges: {";
             let first = true;
             for (const name in this._ranges) {
-                if (first) {
+                if (!first) {
                     ret += ", ";
-                    first = false;
                 }
+                first = false;
                 ret += name;
             }
             ret += "}";

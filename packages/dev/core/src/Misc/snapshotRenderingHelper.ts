@@ -1,18 +1,18 @@
-import type {
-    AbstractEngine,
-    AbstractMesh,
-    EffectLayer,
-    Mesh,
-    Nullable,
-    Observer,
-    Scene,
-    WebGPUDrawContext,
-    WebGPUShaderProcessor,
-    WebGPUPipelineContext,
-    GaussianSplattingMesh,
-    DrawWrapper,
-    Camera,
-    SpriteManager,
+import {
+    type AbstractEngine,
+    type AbstractMesh,
+    type EffectLayer,
+    type Mesh,
+    type Nullable,
+    type Observer,
+    type Scene,
+    type WebGPUDrawContext,
+    type WebGPUShaderProcessor,
+    type WebGPUPipelineContext,
+    type GaussianSplattingMesh,
+    type DrawWrapper,
+    type Camera,
+    type SpriteManager,
 } from "core/index";
 
 import { Constants } from "core/Engines/constants";
@@ -311,7 +311,13 @@ export class SnapshotRenderingHelper {
     }
 
     /**
-     * Call this method to update a mesh on the GPU after some properties have changed (position, rotation, scaling, visibility).
+     * Call this method to update a mesh on the GPU after some properties have changed (position, rotation, scaling).
+     * Note: in FAST snapshot mode the GPU bundle is recorded once and replayed every frame, so draw calls
+     * (including instance counts) are baked in. This method updates per-mesh GPU data such as transforms and
+     * `mesh.visibility`, but it cannot change whether a recorded draw call is emitted. To apply changes such as
+     * `mesh.isVisible`, `setEnabled(false)`, or per-instance visibility/state changes that affect instance counts,
+     * wrap the change in a disableSnapshotRendering() / enableSnapshotRendering() pair so the snapshot is
+     * re-recorded.
      * @param mesh The mesh to update. Can be a single mesh or an array of meshes to update.
      * @param updateInstancedMeshes If true, the method will also update instanced meshes. Default is true. If you know instanced meshes won't move (or you don't have instanced meshes), you can set this to false to save some CPU time.
      */

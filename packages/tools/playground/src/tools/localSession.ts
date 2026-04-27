@@ -1,8 +1,7 @@
 /* eslint-disable jsdoc/require-jsdoc */
 import { Logger } from "@dev/core";
-import type { GlobalState } from "../globalState";
-import { PackSnippetData } from "./snippet";
-import type { V2Manifest, ExtraSnippetOptions } from "./snippet";
+import { type GlobalState } from "../globalState";
+import { PackSnippetData, type V2Manifest, type ExtraSnippetOptions } from "./snippet";
 import { Utilities } from "./utilities";
 
 declare let JSZip: any;

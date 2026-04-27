@@ -6,6 +6,7 @@ uniform Material {
     float pointSize;
 
     vec2 vDebugMode;
+    vec2 renderTargetSize;
 
     vec4 cameraInfo;
     mat4 backgroundRefractionMatrix;
@@ -53,6 +54,11 @@ uniform Material {
     float vTransmissionScatterAnisotropy;
     float vTransmissionDispersionScale;
     float vTransmissionDispersionAbbeNumber;
+    float vSubsurfaceWeight;
+    vec3 vSubsurfaceColor;
+    float vSubsurfaceRadius;
+    vec3 vSubsurfaceRadiusScale;
+    float vSubsurfaceScatterAnisotropy;
     float vCoatWeight;
     vec3 vCoatColor;
     float vCoatRoughness;
@@ -62,6 +68,7 @@ uniform Material {
     float vFuzzWeight;
     vec3 vFuzzColor;
     float vFuzzRoughness;
+    float vGeometryThinWalled;
     vec2 vGeometryCoatTangent;
     float vGeometryThickness;
     vec3 vEmissionColor;
@@ -95,6 +102,12 @@ uniform Material {
     mat4 transmissionScatterMatrix;
     vec2 vTransmissionDispersionScaleInfos;
     mat4 transmissionDispersionScaleMatrix;
+    vec2 vSubsurfaceWeightInfos;
+    mat4 subsurfaceWeightMatrix;
+    vec2 vSubsurfaceColorInfos;
+    mat4 subsurfaceColorMatrix;
+    vec2 vSubsurfaceRadiusScaleInfos;
+    mat4 subsurfaceRadiusScaleMatrix;
     vec2 vCoatWeightInfos;
     mat4 coatWeightMatrix;
     vec2 vCoatColorInfos;

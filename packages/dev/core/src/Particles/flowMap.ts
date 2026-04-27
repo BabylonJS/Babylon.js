@@ -1,7 +1,7 @@
 import { Matrix, Vector3 } from "../Maths/math.vector";
-import type { Particle } from "../Particles/particle";
-import type { IVector3Like } from "../Maths/math.like";
-import type { Texture } from "core/Materials/Textures/texture";
+import { type Particle } from "../Particles/particle";
+import { type IVector3Like } from "../Maths/math.like";
+import { type Texture } from "core/Materials/Textures/texture";
 import { TextureTools } from "core/Misc/textureTools";
 
 const FlowVector = new Vector3(0, 0, 0);

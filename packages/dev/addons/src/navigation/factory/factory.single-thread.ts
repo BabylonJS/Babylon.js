@@ -1,6 +1,6 @@
 import { InjectGenerators } from "../generator/injection";
 import { RecastNavigationJSPluginV2 } from "../plugin/RecastNavigationJSPlugin";
-import type { RecastInjection } from "../types";
+import { type RecastInjection } from "../types";
 import { GetRecast, InitRecast } from "./common";
 
 /**

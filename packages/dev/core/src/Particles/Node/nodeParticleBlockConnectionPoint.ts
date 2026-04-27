@@ -1,9 +1,9 @@
-import type { Nullable } from "../../types";
+import { type Nullable } from "../../types";
 import { Observable } from "../../Misc/observable";
-import type { NodeParticleBlock } from "./nodeParticleBlock";
+import { type NodeParticleBlock } from "./nodeParticleBlock";
 import { NodeParticleBlockConnectionPointTypes } from "./Enums/nodeParticleBlockConnectionPointTypes";
-import type { NodeParticleBuildState } from "./nodeParticleBuildState";
-import type { ParticleInputBlock } from "./Blocks/particleInputBlock";
+import { type NodeParticleBuildState } from "./nodeParticleBuildState";
+import { type ParticleInputBlock } from "./Blocks/particleInputBlock";
 
 /**
  * Enum used to define the compatibility state between two connection points

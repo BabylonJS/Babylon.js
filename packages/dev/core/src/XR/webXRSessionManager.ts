@@ -1,18 +1,17 @@
 import { Logger } from "../Misc/logger";
-import type { Observer } from "../Misc/observable";
-import { Observable } from "../Misc/observable";
-import type { Nullable } from "../types";
-import type { IDisposable, Scene } from "../scene";
-import type { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
-import type { WebXRRenderTarget } from "./webXRTypes";
+import { type Observer, Observable } from "../Misc/observable";
+import { type Nullable } from "../types";
+import { type IDisposable, type Scene } from "../scene";
+import { type RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
+import { type WebXRRenderTarget } from "./webXRTypes";
 import { WebXRManagedOutputCanvas, WebXRManagedOutputCanvasOptions } from "./webXRManagedOutputCanvas";
-import type { Engine } from "../Engines/engine";
-import type { IWebXRRenderTargetTextureProvider, WebXRLayerRenderTargetTextureProvider } from "./webXRRenderTargetTextureProvider";
-import type { Viewport } from "../Maths/math.viewport";
-import type { WebXRLayerWrapper } from "./webXRLayerWrapper";
+import { type Engine } from "../Engines/engine";
+import { type IWebXRRenderTargetTextureProvider, type WebXRLayerRenderTargetTextureProvider } from "./webXRRenderTargetTextureProvider";
+import { type Viewport } from "../Maths/math.viewport";
+import { type WebXRLayerWrapper } from "./webXRLayerWrapper";
 import { NativeXRLayerWrapper, NativeXRRenderTarget } from "./native/nativeXRRenderTarget";
 import { WebXRWebGLLayerWrapper } from "./webXRWebGLLayer";
-import type { AbstractEngine } from "../Engines/abstractEngine";
+import { type AbstractEngine } from "../Engines/abstractEngine";
 
 /**
  * Manages an XRSession to work with Babylon's engine
@@ -272,19 +271,22 @@ export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextu
             () => {
                 this.inXRSession = false;
 
+                // Cache the value of engine in case it is disposed during onXRSessionEnded callbacks
+                const engine = this._engine;
+
                 // Notify frame observers
                 this.onXRSessionEnded.notifyObservers(null);
 
-                if (this._engine) {
+                if (engine && !engine.isDisposed) {
                     // make sure dimensions object is restored
-                    this._engine.framebufferDimensionsObject = null;
+                    engine.framebufferDimensionsObject = null;
 
                     // Restore frame buffer to avoid clear on xr framebuffer after session end
-                    this._engine.restoreDefaultFramebuffer();
+                    engine.restoreDefaultFramebuffer();
 
                     // Need to restart render loop as after the session is ended the last request for new frame will never call callback
-                    this._engine.customAnimationFrameRequester = null;
-                    this._engine._renderLoop();
+                    engine.customAnimationFrameRequester = null;
+                    engine._renderLoop();
                 }
 
                 // Dispose render target textures.

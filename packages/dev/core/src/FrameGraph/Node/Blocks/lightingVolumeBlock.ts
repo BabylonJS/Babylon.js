@@ -1,4 +1,4 @@
-import type { FrameGraph, FrameGraphShadowGeneratorTask, NodeRenderGraphBuildState, NodeRenderGraphConnectionPoint, Scene } from "core/index";
+import { type FrameGraph, type FrameGraphShadowGeneratorTask, type NodeRenderGraphBuildState, type NodeRenderGraphConnectionPoint, type Scene } from "core/index";
 import { FrameGraphLightingVolumeTask } from "core/FrameGraph/Tasks/Misc/lightingVolumeTask";
 import { RegisterClass } from "../../../Misc/typeStore";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../Decorators/nodeDecorator";

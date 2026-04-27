@@ -1,11 +1,11 @@
-import type { Nullable, IndicesArray, FloatArray } from "../../types";
+import { type Nullable, type IndicesArray, type FloatArray } from "../../types";
 import { Vector3, Matrix, Vector2, TmpVectors } from "../../Maths/math.vector";
 import { Lerp } from "../../Maths/math.scalar.functions";
 import { Mesh } from "../mesh";
 import { VertexBuffer } from "../../Buffers/buffer";
 import { VertexData } from "../mesh.vertexData";
-import type { AbstractMesh } from "../abstractMesh";
-import type { Camera } from "../../Cameras/camera";
+import { type AbstractMesh } from "../abstractMesh";
+import { type Camera } from "../../Cameras/camera";
 import { useOpenGLOrientationForUV } from "../../Compat/compatibilityOptions";
 
 const XpAxis = new Vector3(1, 0, 0);
@@ -254,7 +254,6 @@ export function CreateDecal(
         }
 
         for (let index = 0; index < vertices.length; index += 3) {
-            let total = 0;
             let nV1: Nullable<DecalVertex> = null;
             let nV2: Nullable<DecalVertex> = null;
             let nV3: Nullable<DecalVertex> = null;
@@ -268,7 +267,7 @@ export function CreateDecal(
             const v2Out = d2 > 0;
             const v3Out = d3 > 0;
 
-            total = (v1Out ? 1 : 0) + (v2Out ? 1 : 0) + (v3Out ? 1 : 0);
+            const total = (v1Out ? 1 : 0) + (v2Out ? 1 : 0) + (v3Out ? 1 : 0);
 
             switch (total) {
                 case 0:

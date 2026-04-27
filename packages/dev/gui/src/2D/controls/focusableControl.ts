@@ -1,6 +1,6 @@
-import type { IKeyboardEvent } from "core/Events/deviceInputEvents";
-import type { Nullable } from "core/types";
-import type { Control } from "./control";
+import { type IKeyboardEvent } from "core/Events/deviceInputEvents";
+import { type Nullable } from "core/types";
+import { type Control } from "./control";
 
 /**
  * Interface used to define a control that can receive focus

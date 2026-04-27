@@ -1,5 +1,5 @@
 import * as react from "react";
-import type { GlobalState } from "../../globalState";
+import { type GlobalState } from "../../globalState";
 
 import "../../assets/styles/components/log.scss";
 

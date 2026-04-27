@@ -76,7 +76,7 @@ float geometry_thickness = 0.0;
     #endif
 #endif
 
-#if defined(ANISOTROPIC) || defined(FUZZ) || defined(REFRACTED_BACKGROUND)
+#if defined(ANISOTROPIC) || defined(FUZZ) || defined(REFRACTED_BACKGROUND) || defined(USE_IRRADIANCE_TEXTURE_FOR_SCATTERING)
     vec3 noise = vec3(2.0) * texture2D(blueNoiseSampler, gl_FragCoord.xy / 256.0).xyz - vec3(1.0);
 #endif
 

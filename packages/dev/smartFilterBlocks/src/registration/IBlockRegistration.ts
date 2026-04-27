@@ -1,5 +1,5 @@
-import type { ThinEngine } from "core/Engines/thinEngine.js";
-import type { SmartFilter, SmartFilterDeserializer, ISerializedBlockV1, BaseBlock } from "smart-filters";
+import { type ThinEngine } from "core/Engines/thinEngine.js";
+import { type SmartFilter, type SmartFilterDeserializer, type ISerializedBlockV1, type BaseBlock } from "smart-filters";
 
 /**
  * Options for the block factory when creating a new block

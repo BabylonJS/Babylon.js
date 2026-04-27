@@ -1,13 +1,15 @@
-import type { IDisposable, Nullable } from "core/index";
-import type { ServiceDefinition } from "../../../modularity/serviceDefinition";
-import type { IGizmoService } from "../../gizmoService";
-import type { ISceneContext } from "../../sceneContext";
-import type { IWatcherService } from "../../watcherService";
-import type { ISceneExplorerService } from "./sceneExplorerService";
+import { type FrameGraphTask, type IDisposable, type Nullable } from "core/index";
+import { type ServiceDefinition } from "shared-ui-components/modularTool/modularity/serviceDefinition";
+import { type IGizmoService, GizmoServiceIdentity } from "../../gizmoService";
+import { type ISceneContext, SceneContextIdentity } from "../../sceneContext";
+import { type IWatcherService, WatcherServiceIdentity } from "../../watcherService";
+import { type ISceneExplorerService, SceneExplorerServiceIdentity } from "./sceneExplorerService";
 
+import { tokens } from "@fluentui/react-components";
 import {
     BorderNoneRegular,
     BorderOutsideRegular,
+    BubbleMultipleRegular,
     CameraRegular,
     EditRegular,
     EyeOffRegular,
@@ -21,6 +23,7 @@ import {
 } from "@fluentui/react-icons";
 
 import { Camera } from "core/Cameras/camera";
+import { FindMainCamera } from "core/FrameGraph/frameGraphUtils";
 import { ClusteredLightContainer } from "core/Lights/Clustered/clusteredLightContainer";
 import { Light } from "core/Lights/light";
 import { AbstractMesh } from "core/Meshes/abstractMesh";
@@ -30,14 +33,17 @@ import { Observable } from "core/Misc/observable";
 import { Node } from "core/node";
 import { MeshIcon } from "shared-ui-components/fluent/icons";
 import { EditNodeGeometry, GetNodeGeometry } from "../../../misc/nodeGeometryEditor";
-import { GizmoServiceIdentity } from "../../gizmoService";
-import { SceneContextIdentity } from "../../sceneContext";
-import { WatcherServiceIdentity } from "../../watcherService";
 import { DefaultCommandsOrder, DefaultSectionsOrder } from "./defaultSectionsMetadata";
-import { SceneExplorerServiceIdentity } from "./sceneExplorerService";
-import { FindMainCamera, FindMainObjectRenderer } from "core/FrameGraph/frameGraphUtils";
 
 import "core/Rendering/boundingBoxRenderer";
+
+function IsCameraFrameGraphTask(task: FrameGraphTask): task is FrameGraphTask & { camera: Camera } {
+    return (task as Partial<{ camera: Camera }>).camera instanceof Camera;
+}
+
+function IsNodesSectionType(node: Node): boolean {
+    return node instanceof TransformNode || node instanceof Camera || node instanceof Light;
+}
 
 export const NodeExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplorerService, ISceneContext, IGizmoService, IWatcherService]> = {
     friendlyName: "Node Explorer",
@@ -50,24 +56,39 @@ export const NodeExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplore
 
         const nodeMovedObservable = new Observable<Node>();
 
+        // Set of all nodes known to be in the scene, rebuilt each time getRootEntities
+        // is called. Used by getEntityDisplayInfo to detect orphaned ancestor nodes.
+        const knownSceneNodes = new Set<Node>();
+
         const sectionRegistration = sceneExplorerService.addSection({
             displayName: "Nodes",
             order: DefaultSectionsOrder.Nodes,
             getRootEntities: () => {
-                const rootNodes = [...scene.rootNodes];
+                const rootNodes = new Set<Node>(scene.rootNodes);
+                knownSceneNodes.clear();
 
-                // If any non-root node has a parent and that parent is not one of the node types shown in the Nodes section,
-                // then we should treat it as a root node, otherwise it won't show up anywhere in scene explorer.
-                // An example of this is when a Mesh or a TransformNode is parented under a Bone.
+                // Ensure all nodes in the scene are reachable in the explorer, even if their
+                // parent was removed from the scene or is not a type shown in the Nodes section.
                 for (const node of [...scene.meshes, ...scene.transformNodes, ...scene.cameras, ...scene.lights]) {
-                    if (
-                        node.parent &&
-                        !(node.parent instanceof AbstractMesh) &&
-                        !(node.parent instanceof TransformNode) &&
-                        !(node.parent instanceof Camera) &&
-                        !(node.parent instanceof Light)
-                    ) {
-                        rootNodes.push(node);
+                    knownSceneNodes.add(node);
+
+                    if (!node.parent) {
+                        continue;
+                    }
+
+                    if (!IsNodesSectionType(node.parent)) {
+                        // Parent is not a type shown in the Nodes section (e.g. a Bone).
+                        // Treat this node as a root so it still appears in the explorer.
+                        rootNodes.add(node);
+                    } else {
+                        // Walk up through Nodes-section-type parents to find the topmost ancestor.
+                        // If that ancestor was removed from the scene (not in rootNodes), add it
+                        // so the entire subtree remains visible in the explorer.
+                        let ancestor: Node = node.parent;
+                        while (ancestor.parent && IsNodesSectionType(ancestor.parent)) {
+                            ancestor = ancestor.parent;
+                        }
+                        rootNodes.add(ancestor);
                     }
                 }
 
@@ -76,14 +97,15 @@ export const NodeExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplore
                 for (const light of scene.lights) {
                     if (light instanceof ClusteredLightContainer) {
                         for (const childLight of light.lights) {
-                            if (!childLight.parent && !rootNodes.includes(childLight)) {
-                                rootNodes.push(childLight);
+                            knownSceneNodes.add(childLight);
+                            if (!childLight.parent) {
+                                rootNodes.add(childLight);
                             }
                         }
                     }
                 }
 
-                return rootNodes;
+                return [...rootNodes];
             },
             getEntityChildren: (node) => node.getChildren(),
             getEntityDisplayInfo: (node) => {
@@ -93,10 +115,20 @@ export const NodeExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplore
 
                 const parentHookToken = watcherService.watchProperty(node, "parent", () => nodeMovedObservable.notifyObservers(node));
 
+                // A node is "not in the scene" if it is a Nodes-section type but is not
+                // a known scene node. This handles nodes that were removed from the scene
+                // but still appear because a descendant is in the scene. Nodes from the
+                // !IsNodesSectionType(parent) branch are unaffected because they always
+                // come from the scene's tracking lists. Clustered light children are also
+                // unaffected because they are added to knownSceneNodes explicitly.
+                const validationError =
+                    IsNodesSectionType(node) && !knownSceneNodes.has(node) ? "This entity is not in the scene but is shown because a descendant is still in the scene." : undefined;
+
                 return {
                     get name() {
-                        return node.name;
+                        return node.name || `Unnamed ${node.getClassName()}`;
                     },
+                    validationError,
                     onChange: onChangeObservable,
                     dispose: () => {
                         nameHookToken.dispose();
@@ -107,13 +139,15 @@ export const NodeExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplore
             },
             entityIcon: ({ entity: node }) =>
                 node instanceof AbstractMesh ? (
-                    <MeshIcon />
+                    <MeshIcon color={tokens.colorPaletteBlueForeground2} />
                 ) : node instanceof TransformNode ? (
-                    <MyLocationRegular />
+                    <MyLocationRegular color={tokens.colorPaletteBlueForeground2} />
                 ) : node instanceof Camera ? (
-                    <CameraRegular />
+                    <CameraRegular color={tokens.colorPaletteGreenForeground2} />
+                ) : node instanceof ClusteredLightContainer ? (
+                    <BubbleMultipleRegular color={tokens.colorPaletteYellowForeground2} />
                 ) : node instanceof Light ? (
-                    <LightbulbRegular />
+                    <LightbulbRegular color={tokens.colorPaletteYellowForeground2} />
                 ) : (
                     <></>
                 ),
@@ -245,15 +279,28 @@ export const NodeExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplore
                     set isEnabled(enabled: boolean) {
                         const activeCamera = getActiveCamera();
                         if (enabled && activeCamera !== camera) {
-                            activeCamera?.detachControl();
                             if (scene.frameGraph) {
-                                const objectRenderer = FindMainObjectRenderer(scene.frameGraph);
-                                if (objectRenderer) {
-                                    objectRenderer.camera = camera;
-                                    onChangeObservable.notifyObservers(); // manual trigger, because scene.onActiveCameraChanged won't be triggered by the line above
-                                    camera.attachControl(true);
-                                }
+                                void (async (frameGraph) => {
+                                    let updated = false;
+                                    const nrg = frameGraph.getLinkedNodeRenderGraph();
+                                    if (nrg) {
+                                        updated = await nrg.replaceCameraAsync(activeCamera, camera);
+                                    } else {
+                                        for (const task of frameGraph.tasks) {
+                                            if (IsCameraFrameGraphTask(task)) {
+                                                task.camera = camera;
+                                                updated = true;
+                                            }
+                                        }
+                                    }
+                                    if (updated) {
+                                        activeCamera?.detachControl();
+                                        camera.attachControl(true);
+                                        onChangeObservable.notifyObservers();
+                                    }
+                                })(scene.frameGraph);
                             } else {
+                                activeCamera?.detachControl();
                                 scene.activeCamera = camera;
                                 camera.attachControl(true);
                             }

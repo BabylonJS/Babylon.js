@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import type { ISize } from "../Maths/math.size";
-import type { Nullable } from "../types";
+import { type ISize } from "../Maths/math.size";
+import { type Nullable } from "../types";
 
-import type { BaseTexture } from "../Materials/Textures/baseTexture";
+import { type BaseTexture } from "../Materials/Textures/baseTexture";
 
 /**
  * Transform some pixel data to a base64 string

@@ -1,11 +1,11 @@
 import { serialize, serializeAsColor3 } from "core/Misc/decorators";
 import { SerializationHelper } from "core/Misc/decorators.serialization";
 import { Color3 } from "core/Maths/math.color";
-import type { Texture } from "core/Materials/Textures/texture";
+import { type Texture } from "core/Materials/Textures/texture";
 import { ProceduralTexture } from "core/Materials/Textures/Procedurals/proceduralTexture";
-import type { Scene } from "core/scene";
+import { type Scene } from "core/scene";
 import { RegisterClass } from "core/Misc/typeStore";
-import type { Nullable } from "core/types";
+import { type Nullable } from "core/types";
 
 import "./brickProceduralTexture.fragment";
 

@@ -1,12 +1,11 @@
-import type { SmartArrayNoDuplicate } from "../../Misc/smartArray";
-import type { Scene } from "../../scene";
-import type { RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture";
+import { type SmartArrayNoDuplicate } from "../../Misc/smartArray";
+import { type Scene } from "../../scene";
+import { type RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture";
 import { ShadowGenerator } from "./shadowGenerator";
 import { CascadedShadowGenerator } from "./cascadedShadowGenerator";
-import type { ISceneSerializableComponent } from "../../sceneComponent";
-import { SceneComponentConstants } from "../../sceneComponent";
+import { type ISceneSerializableComponent, SceneComponentConstants } from "../../sceneComponent";
 import { AddParser } from "core/Loading/Plugins/babylonFileParser.function";
-import type { IAssetContainer } from "core/IAssetContainer";
+import { type IAssetContainer } from "core/IAssetContainer";
 
 // Adds the parser to the scene parsers.
 AddParser(SceneComponentConstants.NAME_SHADOWGENERATOR, (parsedData: any, scene: Scene) => {

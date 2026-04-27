@@ -1,6 +1,6 @@
-import type { IFlowGraphBlockConfiguration } from "./flowGraphBlock";
+import { type IFlowGraphBlockConfiguration } from "./flowGraphBlock";
 import { FlowGraphExecutionBlock } from "./flowGraphExecutionBlock";
-import type { FlowGraphSignalConnection } from "./flowGraphSignalConnection";
+import { type FlowGraphSignalConnection } from "./flowGraphSignalConnection";
 
 /**
  * An execution block that has an out signal. This signal is triggered when the synchronous execution of this block is done.

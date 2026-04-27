@@ -1,8 +1,8 @@
-import type { IVector2Like } from "core/Maths/math.like";
+import { type IVector2Like } from "core/Maths/math.like";
 
-import type { BezierCurve } from "../maths/bezier";
+import { type BezierCurve } from "../maths/bezier";
 
-import type { Node } from "../nodes/node";
+import { type Node } from "../nodes/node";
 
 /**
  * Represents a Babylon.js thin version of a Lottie animation.

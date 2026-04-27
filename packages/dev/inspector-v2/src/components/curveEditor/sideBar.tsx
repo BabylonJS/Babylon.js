@@ -1,10 +1,9 @@
-import type { FunctionComponent } from "react";
+import { type FunctionComponent, useCallback, useEffect, useRef, useState } from "react";
 
 import { makeStyles, tokens } from "@fluentui/react-components";
-import { useCallback, useEffect, useRef, useState } from "react";
 import { AddRegular, ArrowDownloadRegular, SaveRegular } from "@fluentui/react-icons";
-import type { Animation } from "core/Animations/animation";
-import type { TargetedAnimation } from "core/Animations/animationGroup";
+import { type Animation } from "core/Animations/animation";
+import { type TargetedAnimation } from "core/Animations/animationGroup";
 
 import { Button } from "shared-ui-components/fluent/primitives/button";
 import { Popover } from "shared-ui-components/fluent/primitives/popover";

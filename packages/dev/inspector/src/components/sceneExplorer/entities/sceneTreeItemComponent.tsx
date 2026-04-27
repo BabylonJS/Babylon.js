@@ -1,27 +1,26 @@
-import type { Nullable } from "core/types";
-import type { Observer, Observable } from "core/Misc/observable";
-import type { PointerInfo } from "core/Events/pointerEvents";
-import { PointerEventTypes } from "core/Events/pointerEvents";
-import type { IExplorerExtensibilityGroup } from "core/Debug/debugLayer";
-import type { Scene } from "core/scene";
+import { type Nullable } from "core/types";
+import { type Observer, type Observable } from "core/Misc/observable";
+import { type PointerInfo, PointerEventTypes } from "core/Events/pointerEvents";
+import { type IExplorerExtensibilityGroup } from "core/Debug/debugLayer";
+import { type Scene } from "core/scene";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSyncAlt, faImage, faCrosshairs, faArrowsAlt, faCompress, faRedoAlt, faVectorSquare, faLocationDot } from "@fortawesome/free-solid-svg-icons";
 import { ExtensionsComponent } from "../extensionsComponent";
 import * as React from "react";
 
-import type { GlobalState } from "../../globalState";
+import { type GlobalState } from "../../globalState";
 import { UtilityLayerRenderer } from "core/Rendering/utilityLayerRenderer";
 import { PropertyChangedEvent } from "../../../components/propertyChangedEvent";
-import type { LightGizmo } from "core/Gizmos/lightGizmo";
-import type { CameraGizmo } from "core/Gizmos/cameraGizmo";
-import type { Camera } from "core/Cameras/camera";
+import { type LightGizmo } from "core/Gizmos/lightGizmo";
+import { type CameraGizmo } from "core/Gizmos/cameraGizmo";
+import { type Camera } from "core/Cameras/camera";
 import { TmpVectors, Vector3 } from "core/Maths/math";
 import { GizmoCoordinatesMode } from "core/Gizmos/gizmo";
-import type { Bone } from "core/Bones/bone";
+import { type Bone } from "core/Bones/bone";
 
 import { setDebugNode } from "../treeNodeDebugger";
-import type { DragStartEndEvent } from "core/Behaviors/Meshes/pointerDragEvents";
+import { type DragStartEndEvent } from "core/Behaviors/Meshes/pointerDragEvents";
 import { DisposeInspectorGizmoManager, GetInspectorGizmoManager } from "../../../inspectorGizmoManager";
 
 interface ISceneTreeItemComponentProps {
@@ -209,12 +208,11 @@ export class SceneTreeItemComponent extends React.Component<
 
                         const p0p1 = TmpVectors.Vector3[0];
                         const p1p2 = TmpVectors.Vector3[1];
-                        let normal = TmpVectors.Vector3[2];
 
                         p1.subtractToRef(p0, p0p1);
                         p2.subtractToRef(p1, p1p2);
 
-                        normal = Vector3.Cross(p0p1, p1p2);
+                        const normal = Vector3.Cross(p0p1, p1p2);
 
                         return Vector3.Dot(normal, ray.direction) < 0;
                     }

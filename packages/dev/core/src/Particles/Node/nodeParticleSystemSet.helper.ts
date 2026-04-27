@@ -1,25 +1,25 @@
-import type { Attractor } from "../attractor";
-import type { FlowMap } from "../flowMap";
-import type { Color4 } from "core/Maths/math.color";
-import type { ColorGradient } from "core/Misc";
-import type { FactorGradient } from "core/Misc/gradients";
-import type { Nullable } from "core/types";
-import type { BaseTexture } from "core/Materials/Textures/baseTexture";
-import type { ProceduralTexture } from "core/Materials/Textures/Procedurals/proceduralTexture";
-import type { Mesh } from "core/Meshes/mesh";
-import type { ParticleSystem } from "core/Particles/particleSystem";
-import type { IParticleSystem } from "core/Particles/IParticleSystem";
-import type { BoxParticleEmitter } from "core/Particles/EmitterTypes/boxParticleEmitter";
-import type { ConeDirectedParticleEmitter, ConeParticleEmitter } from "core/Particles/EmitterTypes/coneParticleEmitter";
-import type { CustomParticleEmitter } from "core/Particles/EmitterTypes/customParticleEmitter";
-import type { CylinderDirectedParticleEmitter, CylinderParticleEmitter } from "core/Particles/EmitterTypes/cylinderParticleEmitter";
-import type { HemisphericParticleEmitter } from "core/Particles/EmitterTypes/hemisphericParticleEmitter";
-import type { MeshParticleEmitter } from "core/Particles/EmitterTypes/meshParticleEmitter";
-import type { PointParticleEmitter } from "core/Particles/EmitterTypes/pointParticleEmitter";
-import type { SphereDirectedParticleEmitter, SphereParticleEmitter } from "core/Particles/EmitterTypes/sphereParticleEmitter";
-import type { NodeParticleConnectionPoint } from "core/Particles/Node/nodeParticleBlockConnectionPoint";
-import type { IShapeBlock } from "core/Particles/Node/Blocks/Emitters/IShapeBlock";
-import type { NodeParticleBlockConnectionPointTypes } from "core/Particles/Node/Enums/nodeParticleBlockConnectionPointTypes";
+import { type Attractor } from "../attractor";
+import { type FlowMap } from "../flowMap";
+import { type Color4 } from "core/Maths/math.color";
+import { type ColorGradient } from "core/Misc";
+import { type FactorGradient } from "core/Misc/gradients";
+import { type Nullable } from "core/types";
+import { type BaseTexture } from "core/Materials/Textures/baseTexture";
+import { type ProceduralTexture } from "core/Materials/Textures/Procedurals/proceduralTexture";
+import { type Mesh } from "core/Meshes/mesh";
+import { type ParticleSystem } from "core/Particles/particleSystem";
+import { type IParticleSystem } from "core/Particles/IParticleSystem";
+import { type BoxParticleEmitter } from "core/Particles/EmitterTypes/boxParticleEmitter";
+import { type ConeDirectedParticleEmitter, type ConeParticleEmitter } from "core/Particles/EmitterTypes/coneParticleEmitter";
+import { type CustomParticleEmitter } from "core/Particles/EmitterTypes/customParticleEmitter";
+import { type CylinderDirectedParticleEmitter, type CylinderParticleEmitter } from "core/Particles/EmitterTypes/cylinderParticleEmitter";
+import { type HemisphericParticleEmitter } from "core/Particles/EmitterTypes/hemisphericParticleEmitter";
+import { type MeshParticleEmitter } from "core/Particles/EmitterTypes/meshParticleEmitter";
+import { type PointParticleEmitter } from "core/Particles/EmitterTypes/pointParticleEmitter";
+import { type SphereDirectedParticleEmitter, type SphereParticleEmitter } from "core/Particles/EmitterTypes/sphereParticleEmitter";
+import { type NodeParticleConnectionPoint } from "core/Particles/Node/nodeParticleBlockConnectionPoint";
+import { type IShapeBlock } from "core/Particles/Node/Blocks/Emitters/IShapeBlock";
+import { type NodeParticleBlockConnectionPointTypes } from "core/Particles/Node/Enums/nodeParticleBlockConnectionPointTypes";
 
 import { Vector2, Vector3 } from "core/Maths/math.vector";
 import { NodeParticleSystemSet } from "./nodeParticleSystemSet";
@@ -512,7 +512,7 @@ function _UpdateParticleColorBlockGroup(
     colorGradients: Nullable<Array<ColorGradient>>,
     context: RuntimeConversionContext
 ): NodeParticleConnectionPoint {
-    let colorCalculation: NodeParticleConnectionPoint | undefined = undefined;
+    let colorCalculation: NodeParticleConnectionPoint | undefined;
     if (colorGradients && colorGradients.length > 0) {
         if (context.colorGradientValue0Output === undefined) {
             throw new Error("Initial color gradient values not found in context.");
@@ -779,7 +779,7 @@ function _UpdateParticleFlowMapBlockGroup(inputParticle: NodeParticleConnectionP
     const flowMapTextureBlock = new ParticleTextureSourceBlock("Flow Map Texture");
     flowMapTextureBlock.serializedCachedData = true;
     flowMapTextureBlock.textureDataUrl = GenerateBase64StringFromPixelData(flowMap.data, { width: flowMap.width, height: flowMap.height }, true) ?? "";
-    flowMapTextureBlock.texture.connectTo(updateFlowMapBlock.flowMap);
+    flowMapTextureBlock.textureOutput.connectTo(updateFlowMapBlock.flowMap);
 
     _CreateAndConnectInput("Flow Map Strength", flowMapStrength, updateFlowMapBlock.strength);
 
@@ -1207,5 +1207,5 @@ function _CreateTextureBlock(texture: Nullable<BaseTexture>): NodeParticleConnec
     // Texture - always use sourceTexture to preserve all texture options
     const textureBlock = new ParticleTextureSourceBlock("Texture");
     textureBlock.sourceTexture = texture;
-    return textureBlock.texture;
+    return textureBlock.textureOutput;
 }

@@ -1,11 +1,11 @@
 /* eslint-disable babylonjs/available */
-import type { DataBuffer } from "../../Buffers/dataBuffer";
+import { type DataBuffer } from "../../Buffers/dataBuffer";
 import { WebGPUDataBuffer } from "../../Meshes/WebGPU/webgpuDataBuffer";
 import { FromHalfFloat } from "../../Misc/textureTools";
-import type { Nullable } from "../../types";
+import { type Nullable } from "../../types";
 import { allocateAndCopyTypedBuffer } from "../abstractEngine.functions";
 import { Constants } from "../constants";
-import type { WebGPUEngine } from "../webgpuEngine";
+import { type WebGPUEngine } from "../webgpuEngine";
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import * as WebGPUConstants from "./webgpuConstants";
 
@@ -195,7 +195,7 @@ export class WebGPUBufferManager {
                         }
                         const data2 = new Uint8Array(data.buffer);
                         let offset = bytesPerRow,
-                            offset2 = 0;
+                            offset2: number;
                         for (let y = 1; y < height; ++y) {
                             offset2 = y * bytesPerRowAligned;
                             for (let x = 0; x < bytesPerRow; ++x) {

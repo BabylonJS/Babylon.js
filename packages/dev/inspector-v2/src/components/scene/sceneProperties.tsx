@@ -1,13 +1,13 @@
 import { Scene } from "core/scene";
-import type { FunctionComponent } from "react";
+import { type FunctionComponent } from "react";
 import { Color3PropertyLine, Color4PropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/colorPropertyLine";
 import { NumberDropdownPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/dropdownPropertyLine";
 import { BoundProperty } from "../properties/boundProperty";
 import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
-import type { BaseTexture } from "core/Materials/Textures/baseTexture";
-import type { Nullable } from "core/types";
+import { type BaseTexture } from "core/Materials/Textures/baseTexture";
+import { type Nullable } from "core/types";
 import { LinkPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/linkPropertyLine";
-import type { ISelectionService } from "../../services/selectionService";
+import { type ISelectionService } from "../../services/selectionService";
 import { FileUploadLine } from "shared-ui-components/fluent/hoc/fileUploadLine";
 import { Logger } from "core/Misc/logger";
 import { Tools } from "core/Misc/tools";
@@ -219,9 +219,26 @@ export const SceneRenderingProperties: FunctionComponent<{ scene: Scene; selecti
 
     const envTexture = useProperty(scene, "environmentTexture");
     const fogMode = useProperty(scene, "fogMode");
+    const useOIT = useProperty(scene, "useOrderIndependentTransparency");
 
     return (
         <>
+            <BoundProperty component={SwitchPropertyLine} label="OIT" description="Order Independent Transparency" target={scene} propertyKey="useOrderIndependentTransparency" />
+
+            <Collapse visible={useOIT}>
+                {useOIT && scene.depthPeelingRenderer && (
+                    <BoundProperty
+                        component={SyncedSliderPropertyLine}
+                        label="passCount"
+                        description="Render the number of transparent layers"
+                        target={scene.depthPeelingRenderer}
+                        propertyKey="passCount"
+                        min={2}
+                        max={8}
+                        step={1}
+                    />
+                )}
+            </Collapse>
             <NumberDropdownPropertyLine
                 options={
                     [

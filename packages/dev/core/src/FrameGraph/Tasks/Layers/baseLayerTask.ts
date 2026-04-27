@@ -1,19 +1,19 @@
-import type {
-    FrameGraph,
-    FrameGraphTextureHandle,
-    Scene,
-    FrameGraphTextureCreationOptions,
-    Effect,
-    ThinBlurPostProcess,
-    AbstractEngine,
-    Nullable,
-    Observer,
-    RenderingGroupInfo,
-    ThinEffectLayer,
-    FrameGraphRenderPass,
-    FrameGraphRenderContext,
-    FrameGraphPass,
-    FrameGraphContext,
+import {
+    type FrameGraph,
+    type FrameGraphTextureHandle,
+    type Scene,
+    type FrameGraphTextureCreationOptions,
+    type Effect,
+    type ThinBlurPostProcess,
+    type AbstractEngine,
+    type Nullable,
+    type Observer,
+    type RenderingGroupInfo,
+    type ThinEffectLayer,
+    type FrameGraphRenderPass,
+    type FrameGraphRenderContext,
+    type FrameGraphPass,
+    type FrameGraphContext,
 } from "core/index";
 import { FrameGraphTask } from "../../frameGraphTask";
 import { FrameGraphObjectRendererTask } from "../Rendering/objectRendererTask";
@@ -299,7 +299,7 @@ export class FrameGraphBaseLayerTask extends FrameGraphTask {
         let onAfterBlurPass: FrameGraphPass<FrameGraphContext> | undefined;
 
         if (this._blurType !== FrameGraphBaseLayerBlurType.None) {
-            let blurTextureType = 0;
+            let blurTextureType: number;
             if (this._engine.getCaps().textureHalfFloatRender) {
                 blurTextureType = Constants.TEXTURETYPE_HALF_FLOAT;
             } else {

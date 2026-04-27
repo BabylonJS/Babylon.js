@@ -1,11 +1,10 @@
-import type { IExplorerExtensibilityGroup } from "core/Debug/debugLayer";
-import type { Control } from "gui/2D/controls/control";
+import { type IExplorerExtensibilityGroup } from "core/Debug/debugLayer";
+import { type Control } from "gui/2D/controls/control";
 import { TreeItemLabelComponent } from "../../treeItemLabelComponent";
 import { ExtensionsComponent } from "../../extensionsComponent";
 import * as React from "react";
-import type { GlobalState } from "../../../../globalState";
-import { DragOverLocation } from "../../../../globalState";
-import type { Grid } from "gui/2D/controls/grid";
+import { type GlobalState, DragOverLocation } from "../../../../globalState";
+import { type Grid } from "gui/2D/controls/grid";
 import { Container } from "gui/2D/controls/container";
 import { ControlTypes } from "../../../../controlTypes";
 
@@ -13,8 +12,8 @@ import visibilityNotActiveIcon from "../../../../imgs/visibilityNotActiveIcon.sv
 import visibilityActiveIcon from "../../../../imgs/visibilityActiveIcon.svg";
 import makeComponentIcon from "../../../../imgs/makeComponentIcon.svg";
 import makeChildOfContainerIcon from "../../../../imgs/makeChildOfContainerIcon.svg";
-import type { Observer } from "core/Misc/observable";
-import type { Nullable } from "core/types";
+import { type Observer } from "core/Misc/observable";
+import { type Nullable } from "core/types";
 
 interface IControlTreeItemComponentProps {
     control: Control;

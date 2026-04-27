@@ -1,4 +1,4 @@
-import type { VertexDataTypedArray } from "core/Buffers/bufferUtils";
+import { type VertexDataTypedArray } from "core/Buffers/bufferUtils";
 
 /**
  * The available Draco attribute names.

@@ -148,4 +148,23 @@ export const enum FlowGraphBlockNames {
     FunctionReference = "FlowGraphFunctionReference",
     BezierCurveEasing = "FlowGraphBezierCurveEasing",
     DataSwitch = "FlowGraphDataSwitchBlock",
+    DebugBlock = "FlowGraphDebugBlock",
+    // Physics
+    PhysicsCollisionEvent = "FlowGraphPhysicsCollisionEventBlock",
+    PhysicsApplyForce = "FlowGraphApplyForceBlock",
+    PhysicsApplyImpulse = "FlowGraphApplyImpulseBlock",
+    PhysicsSetLinearVelocity = "FlowGraphSetLinearVelocityBlock",
+    PhysicsSetAngularVelocity = "FlowGraphSetAngularVelocityBlock",
+    PhysicsSetMotionType = "FlowGraphSetPhysicsMotionTypeBlock",
+    PhysicsGetLinearVelocity = "FlowGraphGetLinearVelocityBlock",
+    PhysicsGetAngularVelocity = "FlowGraphGetAngularVelocityBlock",
+    PhysicsGetMassProperties = "FlowGraphGetPhysicsMassPropertiesBlock",
+    // Audio
+    AudioPlaySound = "FlowGraphPlaySoundBlock",
+    AudioStopSound = "FlowGraphStopSoundBlock",
+    AudioPauseSound = "FlowGraphPauseSoundBlock",
+    AudioSetVolume = "FlowGraphSetSoundVolumeBlock",
+    AudioSoundEndedEvent = "FlowGraphSoundEndedEventBlock",
+    AudioGetVolume = "FlowGraphGetSoundVolumeBlock",
+    AudioIsSoundPlaying = "FlowGraphIsSoundPlayingBlock",
 }

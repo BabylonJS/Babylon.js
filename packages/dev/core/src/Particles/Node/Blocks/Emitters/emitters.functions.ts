@@ -1,4 +1,4 @@
-import type { Particle } from "core/Particles/particle";
+import { type Particle } from "core/Particles/particle";
 
 /**
  * Creates the local position data for the particle

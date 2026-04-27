@@ -1,9 +1,8 @@
-import type { FunctionComponent } from "react";
+import { type FunctionComponent, useMemo } from "react";
 
-import type { IDisposable } from "core/index";
+import { type IDisposable } from "core/index";
 
 import { DeleteRegular } from "@fluentui/react-icons";
-import { useMemo } from "react";
 
 import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
 import { TextInputPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/inputPropertyLine";

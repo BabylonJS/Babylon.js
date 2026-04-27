@@ -17,7 +17,7 @@ const madd: vec2f =  vec2f(0.5, 0.5);
 fn main(input : VertexInputs) -> FragmentInputs {
 #define CUSTOM_VERTEX_MAIN_BEGIN
 
-	var shiftedPosition: vec2f = input.position * uniforms.scale + uniforms.offset;
+	var shiftedPosition: vec2f = vertexInputs.position * uniforms.scale + uniforms.offset;
 	vertexOutputs.vUV = (uniforms.textureMatrix *  vec4f(shiftedPosition * madd + madd, 1.0, 0.0)).xy;
 	vertexOutputs.position =  vec4f(shiftedPosition, 0.0, 1.0);
 

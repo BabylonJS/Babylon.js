@@ -1,7 +1,6 @@
-import type { ConditionalBlock } from "core/Materials/Node/Blocks/conditionalBlock";
-import { ConditionalBlockConditions } from "core/Materials/Node/Blocks/conditionalBlock";
-import type { IDisplayManager } from "shared-ui-components/nodeGraphSystem/interfaces/displayManager";
-import type { INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
+import { type ConditionalBlock, ConditionalBlockConditions } from "core/Materials/Node/Blocks/conditionalBlock";
+import { type IDisplayManager } from "shared-ui-components/nodeGraphSystem/interfaces/displayManager";
+import { type INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
 
 export class ConditionalDisplayManager implements IDisplayManager {
     public getHeaderClass() {

@@ -1,14 +1,14 @@
 import { RegisterClass } from "../../../Misc/typeStore";
 import { NodeGeometryBlockConnectionPointTypes } from "../Enums/nodeGeometryConnectionPointTypes";
 import { NodeGeometryBlock } from "../nodeGeometryBlock";
-import type { NodeGeometryConnectionPoint } from "../nodeGeometryBlockConnectionPoint";
+import { type NodeGeometryConnectionPoint } from "../nodeGeometryBlockConnectionPoint";
 import { PropertyTypeForEdition, editableInPropertyPage } from "../../../Decorators/nodeDecorator";
-import type { NodeGeometryBuildState } from "../nodeGeometryBuildState";
-import type { FloatArray } from "../../../types";
+import { type NodeGeometryBuildState } from "../nodeGeometryBuildState";
+import { type FloatArray } from "../../../types";
 import { VertexData } from "../../../Meshes/mesh.vertexData";
 import { WithinEpsilon } from "../../../Maths/math.scalar.functions";
 import { Epsilon } from "../../../Maths/math.constants";
-import type { INodeGeometryExecutionContext } from "../Interfaces/nodeGeometryExecutionContext";
+import { type INodeGeometryExecutionContext } from "../Interfaces/nodeGeometryExecutionContext";
 /**
  * Block used to extract unique positions from a geometry
  */

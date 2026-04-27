@@ -1,8 +1,8 @@
 import * as React from "react";
-import type { GlobalState } from "../../../globalState";
-import type { InputBlock } from "core/Materials/Node/Blocks/Input/inputBlock";
+import { type GlobalState } from "../../../globalState";
+import { type InputBlock } from "core/Materials/Node/Blocks/Input/inputBlock";
 import { Vector2LineComponent } from "shared-ui-components/lines/vector2LineComponent";
-import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
+import { type LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 
 interface IVector2PropertyTabComponentProps {
     globalState: GlobalState;

@@ -1,7 +1,5 @@
-import { Popover, PopoverSurface, PopoverTrigger } from "@fluentui/react-components";
-import type { OnOpenChangeData, OpenPopoverEvents } from "@fluentui/react-components";
-import type { FunctionComponent, PropsWithChildren } from "react";
-import { useState, useEffect } from "react";
+import { Popover, PopoverSurface, PopoverTrigger, type OnOpenChangeData, type OpenPopoverEvents } from "@fluentui/react-components";
+import { type FunctionComponent, type PropsWithChildren, useState, useEffect } from "react";
 
 type PositionedPopoverProps = {
     x: number;

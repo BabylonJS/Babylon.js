@@ -1,16 +1,14 @@
-import type { EffectRenderer } from "core/Materials/effectRenderer.js";
-import type { RenderTargetWrapper } from "core/Engines/renderTargetWrapper.js";
-import type { AbstractEngine } from "core/Engines/abstractEngine.js";
-import type { Effect } from "core/Materials/effect.js";
-import { EffectWrapper } from "core/Materials/effectRenderer.js";
-import type { ThinRenderTargetTexture } from "core/Materials/Textures/thinRenderTargetTexture.js";
+import { type EffectRenderer, EffectWrapper } from "core/Materials/effectRenderer.js";
+import { type RenderTargetWrapper } from "core/Engines/renderTargetWrapper.js";
+import { type AbstractEngine } from "core/Engines/abstractEngine.js";
+import { type Effect } from "core/Materials/effect.js";
+import { type ThinRenderTargetTexture } from "core/Materials/Textures/thinRenderTargetTexture.js";
 
-import type { IDisposable } from "../IDisposable.js";
-import type { ShaderProgram } from "../utils/shaderCodeUtils.js";
+import { type IDisposable } from "../IDisposable.js";
+import { type ShaderProgram, DecorateSymbol, DisableUniform, GetShaderCreateOptions } from "../utils/shaderCodeUtils.js";
 import { CreateStrongRef, type StrongRef } from "./strongRef.js";
-import type { IDisableableBlock } from "../blockFoundation/disableableShaderBlock.js";
-import { DecorateSymbol, DisableUniform, GetShaderCreateOptions } from "../utils/shaderCodeUtils.js";
-import type { OutputBlock } from "../blockFoundation/outputBlock.js";
+import { type IDisableableBlock } from "../blockFoundation/disableableShaderBlock.js";
+import { type OutputBlock } from "../blockFoundation/outputBlock.js";
 
 /**
  * The shader bindings for a ShaderBlock that can't be disabled.

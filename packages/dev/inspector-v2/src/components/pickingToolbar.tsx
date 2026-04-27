@@ -1,12 +1,10 @@
-import type { MenuButtonProps } from "@fluentui/react-components";
-import type { FunctionComponent } from "react";
+import { type MenuButtonProps, Menu, MenuItemCheckbox, MenuList, MenuPopover, MenuTrigger, SplitButton, tokens, Tooltip } from "@fluentui/react-components";
+import { type FunctionComponent, useCallback, useEffect, useMemo, useState } from "react";
 
-import type { AbstractMesh, IMeshDataCache, Nullable, Scene } from "core/index";
-import type { IGizmoService } from "../services/gizmoService";
+import { type AbstractMesh, type IMeshDataCache, type Nullable, type Scene } from "core/index";
+import { type IGizmoService } from "../services/gizmoService";
 
-import { Menu, MenuItemCheckbox, MenuList, MenuPopover, MenuTrigger, SplitButton, tokens, Tooltip } from "@fluentui/react-components";
 import { TargetRegular } from "@fluentui/react-icons";
-import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { PointerEventTypes } from "core/Events/pointerEvents";
 import { TmpVectors, Vector3 } from "core/Maths/math.vector";
@@ -88,12 +86,11 @@ export const PickingToolbar: FunctionComponent<{
 
                             const p0p1 = TmpVectors.Vector3[0];
                             const p1p2 = TmpVectors.Vector3[1];
-                            let normal = TmpVectors.Vector3[2];
 
                             p1.subtractToRef(p0, p0p1);
                             p2.subtractToRef(p1, p1p2);
 
-                            normal = Vector3.Cross(p0p1, p1p2);
+                            const normal = Vector3.Cross(p0p1, p1p2);
 
                             return Vector3.Dot(normal, ray.direction) < 0;
                         }

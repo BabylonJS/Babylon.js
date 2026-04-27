@@ -1,11 +1,10 @@
-import type { Nullable } from "../../types";
+import { type Nullable } from "../../types";
 import { SoundState } from "../soundState";
-import type { IAbstractSoundOptions, IAbstractSoundPlayOptions, IAbstractSoundStoredOptions } from "./abstractSound";
-import { AbstractSound } from "./abstractSound";
-import type { PrimaryAudioBus } from "./audioBus";
-import type { AudioEngineV2 } from "./audioEngineV2";
-import type { IStaticSoundBufferOptions, StaticSoundBuffer } from "./staticSoundBuffer";
-import type { _StaticSoundInstance } from "./staticSoundInstance";
+import { type IAbstractSoundOptions, type IAbstractSoundPlayOptions, type IAbstractSoundStoredOptions, AbstractSound } from "./abstractSound";
+import { type PrimaryAudioBus } from "./audioBus";
+import { type AudioEngineV2 } from "./audioEngineV2";
+import { type IStaticSoundBufferOptions, type StaticSoundBuffer } from "./staticSoundBuffer";
+import { type _StaticSoundInstance } from "./staticSoundInstance";
 
 /** @internal */
 export interface IStaticSoundOptionsBase {
