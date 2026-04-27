@@ -279,13 +279,13 @@ void main(void) {
             surface_translucency_weight = transmission_weight;
         #endif
 
-        float refractionAlphaG = transmission_roughness * transmission_roughness;
+        float transmission_roughness_alpha = transmission_roughness * transmission_roughness;
         
         #ifdef SCATTERING
             // Transmission Scattering
             #ifdef GEOMETRY_THIN_WALLED
                 vec3 iso_scatter_density = vec3(1.0);
-                float roughness_alpha_modified_for_scatter = 1.0;
+                transmission_roughness_alpha = transmission_roughness;
             #else
 
                 #ifdef USE_IRRADIANCE_TEXTURE_FOR_SCATTERING
@@ -293,6 +293,11 @@ void main(void) {
                     // This allows us to capture higher order scattering effects that aren't possible with just a single scatter sample.
                     vec3 mfp = vec3(100.0) / volumeParams.extinction_coeff;
                     vec3 scattered_light_from_irradiance_texture = sss_convolve(sceneIrradianceSampler, sceneDepthSampler, renderTargetSize, mfp, projection, inverseProjection, 16, noise.xy);
+                    float numLights = float(LIGHTCOUNT);
+                    #ifdef REFLECTION
+                        numLights += 1.0;
+                    #endif
+                    scattered_light_from_irradiance_texture /= numLights;
                 #else
                     vec3 scattered_light_from_irradiance_texture = vec3(0.0);
                 #endif
@@ -304,40 +309,39 @@ void main(void) {
                 vec3 iso_scatter_density = clamp(vec3(1.0) - iso_scatter_transmittance, 0.0, 1.0);
             
                 // Refraction roughness is modified by the density of the scattering and also by the anisotropy.
-                float roughness_alpha_modified_for_scatter = min(refractionAlphaG + (1.0 - abs(volumeParams.anisotropy)) * max3(iso_scatter_density * iso_scatter_density), 1.0);
-                roughness_alpha_modified_for_scatter = pow(roughness_alpha_modified_for_scatter, 6.0);
-                roughness_alpha_modified_for_scatter = clamp(roughness_alpha_modified_for_scatter, refractionAlphaG, 1.0);
+                transmission_roughness_alpha = min(transmission_roughness_alpha + pow((1.0 - abs(volumeParams.anisotropy)) * max3(iso_scatter_density * iso_scatter_density), 3.0), 1.0);
             #endif
 
             // Blend the multi-scatter color towards single-scatter based on the scatter density
             // This is an empirical approximation to account for weaker scattering at low densities where scattering isn't strong enough to reach the multiple scattering colour.
             volumeParams.multi_scatter_color = mix(volumeParams.ss_albedo, volumeParams.multi_scatter_color, max3(iso_scatter_density));
-        #else
-            float roughness_alpha_modified_for_scatter = refractionAlphaG;
         #endif
 
         #if defined(TRANSMISSION_SLAB) && (!defined(TRANSMISSION_SLAB_VOLUME) || defined(GEOMETRY_THIN_WALLED))
             // Geometry is either thin-walled or we have a transmission slab with depth=0
-            // For now, assume that mesh is closed and light enters and exits through the surface, leading to double-tinting.
-            transmission_tint *= transmission_color.rgb * transmission_color.rgb;
 
-            #ifdef SUBSURFACE_SLAB
-                // When subsurface is also present, we need to blend some values between transmission and subsurface slabs.
-                float unweighted_translucency = mix(subsurface_weight, 1.0f, transmission_weight);
-                transmission_tint = mix(vec3(1.0), transmission_tint, transmission_weight / unweighted_translucency);
-                // Roughness for transmission is just surface roughness while, for subsurface, transmission is fully diffuse.
-                roughness_alpha_modified_for_scatter = mix(1.0, refractionAlphaG, transmission_weight / unweighted_translucency);
-            #endif
-
+            // Apply surface tinting.
+            transmission_tint *= transmission_color.rgb;
             #ifdef GEOMETRY_THIN_WALLED
                 float sin2 = 1.0 - baseGeoInfo.NdotV * baseGeoInfo.NdotV;
-                // Divide by the square of the relative IOR (eta) of the incident medium and coat. This
-                // is just coat_ior since the incident medium is air (IOR = 1.0).
+                // Divide by the square of the relative IOR (eta) of the incident medium and surface. This
+                // is just specular_ior since the incident medium is air (IOR = 1.0).
                 sin2 = sin2 / (specular_ior * specular_ior);
                 float cos_t = sqrt(1.0 - sin2);
                 float pathLength = 1.0 / cos_t;
                 transmission_tint = pow(transmission_tint, vec3(pathLength));
+            #else
+                // If this material is volumetric (i.e. not thin-walled), we'll
+                // assume that the mesh is manifold and light enters and exits through the surface, leading to double-tinting.
+                transmission_tint *= transmission_color.rgb;
             #endif
+        #endif
+        #if defined(SUBSURFACE_SLAB) && defined(GEOMETRY_THIN_WALLED)
+            // When subsurface is also present, we need to blend some values between transmission and subsurface slabs.
+            float unweighted_translucency = mix(subsurface_weight, 1.0f, transmission_weight);
+            transmission_tint = mix(vec3(1.0), transmission_tint, transmission_weight / unweighted_translucency);
+            // Roughness for transmission is just surface roughness while, for subsurface, transmission is fully diffuse.
+            transmission_roughness_alpha = mix(1.0, transmission_roughness_alpha, transmission_weight / unweighted_translucency);
         #endif
     #endif
     // __________________ Transmitted Light From Background Refraction ___________________________
@@ -349,15 +353,7 @@ void main(void) {
 
     // __________________________ Direct Lighting ____________________________
     vec3 material_surface_direct = vec3(0., 0., 0.);
-    // The refracted background is basically an environment contribution so it's
-    // included in the environment lighting section above. However, if we don't
-    // have IBL enabled, we still need to compute the refracted background here and
-    // will split it between all the lights.
-    #ifdef REFLECTION
-        slab_translucent_background = vec4(0., 0., 0., 1.);
-    #else
-        slab_translucent_background /= float(LIGHTCOUNT); // Average the background contribution over the number of lights
-    #endif
+    
     #if defined(LIGHT0)
         float aggShadow = 0.;
         #include<openpbrDirectLightingInit>[0..maxSimultaneousLights]

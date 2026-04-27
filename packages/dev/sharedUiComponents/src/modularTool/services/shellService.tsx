@@ -1,3 +1,4 @@
+import { useResizeHandle, type UseResizeHandleParams } from "@fluentui-contrib/react-resize-handle";
 import {
     type MenuTriggerProps,
     Button,
@@ -49,7 +50,6 @@ import { Theme } from "../components/theme";
 import { useOrderedObservableCollection } from "../hooks/observableHooks";
 import { useSetting } from "../hooks/settingsHooks";
 import { MakePopoverTeachingMoment } from "../hooks/teachingMomentHooks";
-import { useResizeHandle } from "../hooks/useResizeHandle";
 import { ObservableCollection } from "../misc/observableCollection";
 
 /**
@@ -800,6 +800,13 @@ function usePane(
     const [paneWidthSetting, setPaneWidthSetting] = useSetting(location === "left" ? LeftSidePaneWidthAdjustSettingDescriptor : RightSidePaneWidthAdjustSettingDescriptor);
     const [paneHeightSetting, setPaneHeightSetting] = useSetting(location === "left" ? LeftSidePaneHeightAdjustSettingDescriptor : RightSidePaneHeightAdjustSettingDescriptor);
 
+    // Keep setting values in refs so the composed ref callbacks below can read the latest values
+    // without causing the callbacks to be recreated (which would cause unnecessary ref detach/reattach).
+    const paneWidthSettingRef = useRef(paneWidthSetting);
+    paneWidthSettingRef.current = paneWidthSetting;
+    const paneHeightSettingRef = useRef(paneHeightSetting);
+    paneHeightSettingRef.current = paneHeightSetting;
+
     const currentSidePanes = useMemo(() => sidePanes.filter((entry) => entry.horizontalLocation === location), [sidePanes, location]);
     const topPanes = useMemo(() => currentSidePanes.filter((entry) => entry.verticalLocation === "top"), [currentSidePanes]);
     const bottomPanes = useMemo(() => currentSidePanes.filter((entry) => entry.verticalLocation === "bottom"), [currentSidePanes]);
@@ -999,6 +1006,24 @@ function usePane(
         [createPaneTabList, bottomPanes, bottomSelectedTab]
     );
 
+    // Memoize the resize onChange handlers so the Fluent hook's element ref callbacks remain stable across renders.
+    // The contrib hook's returned elementRef callback transitively depends on onChange, so an inline arrow here would
+    // force the composed refs below to be recreated every render, defeating the ref-stability optimization.
+    const onPaneWidthChange = useCallback<NonNullable<UseResizeHandleParams["onChange"]>>(
+        (_event, data) => {
+            // Whenever the width is adjusted, store the value.
+            setPaneWidthSetting(data.value);
+        },
+        [setPaneWidthSetting]
+    );
+    const onPaneHeightChange = useCallback<NonNullable<UseResizeHandleParams["onChange"]>>(
+        (_event, data) => {
+            // Whenever the height is adjusted, store the value.
+            setPaneHeightSetting(data.value);
+        },
+        [setPaneHeightSetting]
+    );
+
     // This manages the CSS variable that controls the width of the side pane.
     const paneWidthAdjustCSSVar = "--pane-width-adjust";
     const {
@@ -1007,12 +1032,11 @@ function usePane(
         setValue: setPaneWidthAdjust,
     } = useResizeHandle({
         growDirection: location === "left" ? "end" : "start",
+        relative: true,
         variableName: paneWidthAdjustCSSVar,
+        variableTarget: "element",
         minValue: minWidth - defaultWidth,
-        onChange: (value) => {
-            // Whenever the width is adjusted, store the value.
-            setPaneWidthSetting(value);
-        },
+        onChange: onPaneWidthChange,
     });
 
     // This manages the CSS variable that controls the height of the bottom pane.
@@ -1023,14 +1047,37 @@ function usePane(
         setValue: setPaneHeightAdjust,
     } = useResizeHandle({
         growDirection: "up",
+        relative: true,
         variableName: paneHeightAdjustCSSVar,
-        onChange: (value) => {
-            // Whenever the height is adjusted, store the value.
-            setPaneHeightSetting(value);
-        },
+        variableTarget: "element",
+        onChange: onPaneHeightChange,
     });
 
-    // This ensures that when the component is first rendered, the CSS variable is set from storage.
+    // Compose the Fluent hook's element ref callbacks with logic to apply stored settings when elements mount.
+    // This is necessary because on the initial render, side pane elements may not be in the DOM yet (no panes
+    // registered). The Fluent hook's setValue will silently fail when the element doesn't exist (in relative mode,
+    // it measures the element before/after and reverts if unchanged, which always happens when the element is null).
+    // By composing the ref callback, we ensure the stored value is applied immediately after the element mounts.
+    const composedHorizontalElementRef = useCallback(
+        (node: HTMLElement | null) => {
+            paneHorizontalResizeElementRef(node);
+            if (node) {
+                setPaneWidthAdjust(paneWidthSettingRef.current);
+            }
+        },
+        [paneHorizontalResizeElementRef, setPaneWidthAdjust]
+    );
+    const composedVerticalElementRef = useCallback(
+        (node: HTMLElement | null) => {
+            paneVerticalResizeElementRef(node);
+            if (node) {
+                setPaneHeightAdjust(paneHeightSettingRef.current);
+            }
+        },
+        [paneVerticalResizeElementRef, setPaneHeightAdjust]
+    );
+
+    // Handle external setting changes (e.g. settings reset) after elements are already mounted.
     useLayoutEffect(() => {
         setPaneWidthAdjust(paneWidthSetting);
         setPaneHeightAdjust(paneHeightSetting);
@@ -1099,7 +1146,7 @@ function usePane(
                 {/* Render the bottom pane content. This is the element that can be resized vertically. */}
                 {bottomPanes.length > 0 && (
                     <div
-                        ref={paneVerticalResizeElementRef}
+                        ref={composedVerticalElementRef}
                         className={classes.paneContent}
                         style={{ height: `clamp(200px, calc(45% + var(${paneHeightAdjustCSSVar}, 0px)), 100% - 300px)`, flex: "0 0 auto" }}
                     >
@@ -1161,7 +1208,7 @@ function usePane(
                             <div className={`${classes.pane} ${location === "left" ? classes.paneLeft : classes.paneRight}`}>
                                 <Collapse orientation="horizontal" visible={!collapsed}>
                                     <div
-                                        ref={paneHorizontalResizeElementRef}
+                                        ref={composedHorizontalElementRef}
                                         className={classes.paneContainer}
                                         style={{ width: `clamp(${minWidth}px, calc(${defaultWidth}px + var(${paneWidthAdjustCSSVar}, 0px)), 1000px)` }}
                                     >

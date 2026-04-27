@@ -474,6 +474,42 @@
             "devHostQsps": "exp=lottie&file=textChildParent.json&useWorker=true&useUrl=true",
             "referenceImage": "lottie-text-child-parent.png",
             "readySelector": "#lottie-ready"
+        },
+        {
+            "title": "Lottie - Animated Fill/Stroke Frame 0 (Main Thread, URL)",
+            "devHostQsps": "exp=lottie&file=animated_fill_stroke.json&useWorker=false&useUrl=true&frame=0",
+            "referenceImage": "lottie-animated-fill-stroke-frame0.png",
+            "readySelector": "#lottie-ready"
+        },
+        {
+            "title": "Lottie - Animated Fill/Stroke Frame 0 (Web Worker, URL)",
+            "devHostQsps": "exp=lottie&file=animated_fill_stroke.json&useWorker=true&useUrl=true&frame=0",
+            "referenceImage": "lottie-animated-fill-stroke-frame0.png",
+            "readySelector": "#lottie-ready"
+        },
+        {
+            "title": "Lottie - Animated Dash Frame 0 (Main Thread, URL)",
+            "devHostQsps": "exp=lottie&file=animated_dash.json&useWorker=false&useUrl=true&frame=0",
+            "referenceImage": "lottie-animated-dash-frame0.png",
+            "readySelector": "#lottie-ready"
+        },
+        {
+            "title": "Lottie - Animated Dash Frame 0 (Web Worker, URL)",
+            "devHostQsps": "exp=lottie&file=animated_dash.json&useWorker=true&useUrl=true&frame=0",
+            "referenceImage": "lottie-animated-dash-frame0.png",
+            "readySelector": "#lottie-ready"
+        },
+        {
+            "title": "Lottie - Gradient Stroke Frame 0 (Main Thread, URL)",
+            "devHostQsps": "exp=lottie&file=gradient_stroke.json&useWorker=false&useUrl=true&frame=0",
+            "referenceImage": "lottie-gradient-stroke-frame0.png",
+            "readySelector": "#lottie-ready"
+        },
+        {
+            "title": "Lottie - Gradient Stroke Frame 0 (Web Worker, URL)",
+            "devHostQsps": "exp=lottie&file=gradient_stroke.json&useWorker=true&useUrl=true&frame=0",
+            "referenceImage": "lottie-gradient-stroke-frame0.png",
+            "readySelector": "#lottie-ready"
         }
     ]
 }

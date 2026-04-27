@@ -10,9 +10,9 @@ import { Matrix, TmpVectors, Vector2, Vector3, type Quaternion } from "core/Math
 import { Logger } from "core/Misc/logger";
 import { GaussianSplattingMaterial } from "core/Materials/GaussianSplatting/gaussianSplattingMaterial";
 import { RawTexture } from "core/Materials/Textures/rawTexture";
+import { type InternalTexture } from "core/Materials/Textures/internalTexture";
 import { Constants } from "core/Engines/constants";
 import "core/Meshes/thinInstanceMesh";
-import { type ThinEngine } from "core/Engines/thinEngine";
 import { ToHalfFloat } from "core/Misc/textureTools";
 import { type Material } from "core/Materials/material";
 import { type Effect } from "core/Materials/effect";
@@ -39,6 +39,31 @@ interface IUpdateOptions {
     flipY?: boolean;
     /** @internal When set, skips reprocessing splats [0, previousVertexCount) and copies from cached arrays instead. */
     previousVertexCount?: number;
+}
+
+interface ITextureDataUpdateCapableEngine {
+    updateTextureData(
+        texture: InternalTexture,
+        imageData: ArrayBufferView,
+        xOffset: number,
+        yOffset: number,
+        width: number,
+        height: number,
+        faceIndex?: number,
+        lod?: number,
+        generateMipMaps?: boolean
+    ): void;
+    updateRawTexture(
+        texture: Nullable<InternalTexture>,
+        data: Nullable<ArrayBufferView>,
+        format: number,
+        invertY: boolean,
+        compression?: Nullable<string>,
+        type?: number,
+        useSRGBBuffer?: boolean
+    ): void;
+    _gl?: unknown;
+    isWebGPU?: boolean;
 }
 
 // @internal
@@ -392,6 +417,39 @@ export class GaussianSplattingMeshBase extends Mesh {
     private _cameraViewInfos = new Map<number, ICameraViewInfo>();
 
     protected static readonly _DefaultViewUpdateThreshold = 1e-4;
+
+    /**
+     * Returns a byte-accurate view for retained splat data, preserving any non-zero byte offset.
+     * @param data The retained splat source bytes.
+     * @returns A Uint8Array covering the exact source byte range.
+     * @internal
+     */
+    protected static _GetSplatDataBytes(data: ArrayBuffer | ArrayBufferView): Uint8Array {
+        return ArrayBuffer.isView(data) ? new Uint8Array(data.buffer, data.byteOffset, data.byteLength) : new Uint8Array(data);
+    }
+
+    /**
+     * Returns a Float32 reinterpretation for retained splat data, copying only when alignment requires it.
+     * @param data The retained splat source bytes.
+     * @returns A Float32Array over the exact source byte range.
+     * @internal
+     */
+    protected static _GetSplatDataFloats(data: ArrayBuffer | ArrayBufferView): Float32Array {
+        const bytes = GaussianSplattingMeshBase._GetSplatDataBytes(data);
+        const floatSize = Float32Array.BYTES_PER_ELEMENT;
+
+        if (bytes.byteLength % floatSize !== 0) {
+            throw new Error(`Gaussian splat data byte length (${bytes.byteLength}) is not divisible by ${floatSize} and cannot be reinterpreted as Float32 data.`);
+        }
+
+        if (bytes.byteOffset % floatSize !== 0) {
+            const copy = new Uint8Array(bytes.byteLength);
+            copy.set(bytes);
+            return new Float32Array(copy.buffer, 0, bytes.byteLength / floatSize);
+        }
+
+        return new Float32Array(bytes.buffer, bytes.byteOffset, bytes.byteLength / floatSize);
+    }
 
     /**
      * Cosine value of the angle threshold to update view dependent splat sorting. Default is 0.0001.
@@ -2104,8 +2162,8 @@ export class GaussianSplattingMeshBase extends Mesh {
             return new RawTexture(data, width, height, format, this._scene, false, false, Constants.TEXTURE_BILINEAR_SAMPLINGMODE, Constants.TEXTURETYPE_UNSIGNED_BYTE);
         };
 
-        const createTextureFromDataU32 = (data: Uint32Array, width: number, height: number, format: number) => {
-            return new RawTexture(data, width, height, format, this._scene, false, false, Constants.TEXTURE_NEAREST_SAMPLINGMODE, Constants.TEXTURETYPE_UNSIGNED_INTEGER);
+        const createEmptyTextureU32 = (width: number, height: number, format: number) => {
+            return new RawTexture(null, width, height, format, this._scene, false, false, Constants.TEXTURE_NEAREST_SAMPLINGMODE, Constants.TEXTURETYPE_UNSIGNED_INTEGER);
         };
 
         const createTextureFromDataF16 = (data: Uint16Array, width: number, height: number, format: number) => {
@@ -2126,12 +2184,12 @@ export class GaussianSplattingMeshBase extends Mesh {
             // Handle SH textures in update path - create if they don't exist
             if (sh && !this._shTextures) {
                 this._shTextures = [];
-                for (const shData of sh) {
-                    const buffer = new Uint32Array(shData.buffer);
-                    const shTexture = createTextureFromDataU32(buffer, textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA_INTEGER);
+                for (let textureIndex = 0; textureIndex < sh.length; textureIndex++) {
+                    const shTexture = createEmptyTextureU32(textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA_INTEGER);
                     shTexture.wrapU = Constants.TEXTURE_CLAMP_ADDRESSMODE;
                     shTexture.wrapV = Constants.TEXTURE_CLAMP_ADDRESSMODE;
                     this._shTextures!.push(shTexture);
+                    this._updateShTextureData(shTexture, sh[textureIndex], textureSize.x, 0, textureSize.y);
                 }
             }
 
@@ -2171,12 +2229,14 @@ export class GaussianSplattingMeshBase extends Mesh {
 
             if (sh) {
                 this._shTextures = [];
-                for (const shData of sh) {
-                    const buffer = new Uint32Array(shData.buffer);
-                    const shTexture = createTextureFromDataU32(buffer, textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA_INTEGER);
+                for (let textureIndex = 0; textureIndex < sh.length; textureIndex++) {
+                    const shTexture = createEmptyTextureU32(textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA_INTEGER);
                     shTexture.wrapU = Constants.TEXTURE_CLAMP_ADDRESSMODE;
                     shTexture.wrapV = Constants.TEXTURE_CLAMP_ADDRESSMODE;
                     this._shTextures!.push(shTexture);
+                }
+                for (let textureIndex = 0; textureIndex < sh.length; textureIndex++) {
+                    this._updateShTextureData(this._shTextures[textureIndex], sh[textureIndex], textureSize.x, 0, textureSize.y);
                 }
             }
 
@@ -2459,8 +2519,68 @@ export class GaussianSplattingMeshBase extends Mesh {
     }
 
     protected _updateTextureFromData = (texture: BaseTexture, data: ArrayBufferView, width: number, lineStart: number, lineCount: number) => {
-        (this.getEngine() as ThinEngine).updateTextureData(texture.getInternalTexture()!, data, 0, lineStart, width, lineCount, 0, 0, false);
+        const engine = this._getTextureDataUpdateEngine();
+        engine.updateTextureData(texture.getInternalTexture()!, data, 0, lineStart, width, lineCount, 0, 0, false);
     };
+
+    protected _updateTextureFromDataRect = (texture: BaseTexture, data: ArrayBufferView, xOffset: number, yOffset: number, width: number, height: number) => {
+        const engine = this._getTextureDataUpdateEngine();
+        engine.updateTextureData(texture.getInternalTexture()!, data, xOffset, yOffset, width, height, 0, 0, false);
+    };
+
+    protected _getTextureDataUpdateEngine(): ITextureDataUpdateCapableEngine {
+        return this.getEngine() as unknown as ITextureDataUpdateCapableEngine;
+    }
+
+    protected _updateShTextureData(texture: BaseTexture, shData: Uint8Array, textureWidth: number, lineStart: number, lineCount: number): void {
+        const engine = this._getTextureDataUpdateEngine();
+
+        // NativeEngine/NullEngine, updateTextureData unsupported
+        if (!engine._gl && !engine.isWebGPU) {
+            const internalTexture = texture.getInternalTexture()!;
+            const expectedByteLength = textureWidth * internalTexture.height * 16;
+            let uploadData: Uint32Array;
+            if (shData.byteLength === expectedByteLength && shData.byteOffset % Uint32Array.BYTES_PER_ELEMENT === 0) {
+                uploadData = new Uint32Array(shData.buffer, shData.byteOffset, shData.byteLength / Uint32Array.BYTES_PER_ELEMENT);
+            } else {
+                const padded = new Uint8Array(expectedByteLength);
+                padded.set(shData.subarray(0, Math.min(shData.byteLength, expectedByteLength)));
+                uploadData = new Uint32Array(padded.buffer);
+            }
+            engine.updateRawTexture(internalTexture, uploadData, internalTexture.format, internalTexture.invertY, null, internalTexture.type, internalTexture._useSRGBBuffer);
+            return;
+        }
+
+        const bytesPerTexel = 16;
+        const componentsPerTexel = 4;
+        const startTexel = lineStart * textureWidth;
+        const availableTexelCount = Math.floor(shData.byteLength / bytesPerTexel);
+
+        if (startTexel >= availableTexelCount) {
+            return;
+        }
+
+        let texelCount = Math.min(lineCount * textureWidth, availableTexelCount - startTexel);
+        if (texelCount <= 0) {
+            return;
+        }
+
+        const createView = (byteOffset: number, viewTexelCount: number) => {
+            return new Uint32Array(shData.buffer, shData.byteOffset + byteOffset, viewTexelCount * componentsPerTexel);
+        };
+
+        const fullRowCount = Math.floor(texelCount / textureWidth);
+        if (fullRowCount > 0) {
+            const fullRowTexelCount = fullRowCount * textureWidth;
+            this._updateTextureFromData(texture, createView(startTexel * bytesPerTexel, fullRowTexelCount), textureWidth, lineStart, fullRowCount);
+            texelCount -= fullRowTexelCount;
+        }
+
+        if (texelCount > 0) {
+            const partialRowOffset = (startTexel + fullRowCount * textureWidth) * bytesPerTexel;
+            this._updateTextureFromDataRect(texture, createView(partialRowOffset, texelCount), 0, lineStart + fullRowCount, texelCount, 1);
+        }
+    }
 
     protected _updateSubTextures(centers: Float32Array, covA: Uint16Array, covB: Uint16Array, colors: Uint8Array, lineStart: number, lineCount: number, sh?: Uint8Array[]): void {
         const textureSize = this._getTextureSize(this._vertexCount);
@@ -2485,9 +2605,7 @@ export class GaussianSplattingMeshBase extends Mesh {
         }
         if (sh) {
             for (let i = 0; i < sh.length; i++) {
-                const componentCount = 4;
-                const shView = new Uint32Array(sh[i].buffer, texelStart * componentCount * 4, texelCount * componentCount);
-                this._updateTextureFromData(this._shTextures![i], shView, textureSize.x, lineStart, lineCount);
+                this._updateShTextureData(this._shTextures![i], sh[i], textureSize.x, lineStart, lineCount);
             }
         }
     }
@@ -2657,12 +2775,8 @@ export class GaussianSplattingMeshBase extends Mesh {
         if (!srcRaw || srcCount === 0) {
             return;
         }
-        // _splatsData is typed as ArrayBuffer but callers may have stored a TypedArray before this
-        // guard was added. Extract the underlying ArrayBuffer so Float32Array reinterprets bytes
-        // correctly instead of value-converting each element.
-        const srcBuffer: ArrayBuffer = srcRaw instanceof ArrayBuffer ? srcRaw : ((srcRaw as unknown as ArrayBufferView).buffer as ArrayBuffer);
-        const uBuffer = new Uint8Array(srcBuffer);
-        const fBuffer = new Float32Array(srcBuffer);
+        const uBuffer = GaussianSplattingMeshBase._GetSplatDataBytes(srcRaw);
+        const fBuffer = GaussianSplattingMeshBase._GetSplatDataFloats(srcRaw);
 
         for (let i = 0; i < srcCount; i++) {
             this._makeSplat(dstOffset + i, fBuffer, uBuffer, covA, covB, colorArray, minimum, maximum, false, i);

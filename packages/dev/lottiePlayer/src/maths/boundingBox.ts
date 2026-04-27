@@ -1,5 +1,14 @@
-import { type RawElement, type RawFont, type RawEllipseShape, type RawPathShape, type RawRectangleShape, type RawStrokeShape, type RawTextData } from "../parsing/rawTypes";
-import { GetInitialVectorValues, GetInitialBezierData } from "../parsing/rawPropertyHelpers";
+import {
+    type RawElement,
+    type RawFont,
+    type RawEllipseShape,
+    type RawGradientStrokeShape,
+    type RawPathShape,
+    type RawRectangleShape,
+    type RawStrokeShape,
+    type RawTextData,
+} from "../parsing/rawTypes";
+import { GetInitialScalarValue, GetInitialVectorValues, GetInitialBezierData } from "../parsing/rawPropertyHelpers";
 import { ApplyLottieTextContext, MeasureLottieText, ResolveLottieText } from "../parsing/textLayout";
 
 /**
@@ -57,6 +66,11 @@ export function GetShapesBoundingBox(rawElements: RawElement[]): BoundingBox {
             GetPathVertices(boxCorners, rawElements[i] as RawPathShape);
         } else if (rawElements[i].ty === "st") {
             strokeWidth = Math.max(strokeWidth, GetStrokeInset(rawElements[i] as RawStrokeShape));
+        } else if (rawElements[i].ty === "gs") {
+            // Gradient strokes (`ty:"gs"`) have the same `w` width property as solid strokes and contribute
+            // identical pixel inset to the bounding box; skipping them here would clip the stroke against
+            // the atlas cell edges.
+            strokeWidth = Math.max(strokeWidth, GetStrokeInset(rawElements[i] as RawGradientStrokeShape));
         }
     }
 
@@ -195,8 +209,12 @@ function GetPathVertices(boxCorners: Corners, path: RawPathShape): void {
     }
 }
 
-function GetStrokeInset(stroke: RawStrokeShape): number {
-    return Math.ceil(stroke.w?.k as number) ?? 1;
+function GetStrokeInset(stroke: RawStrokeShape | RawGradientStrokeShape): number {
+    // Use the initial-value helper so animated widths (a===1) contribute their first-frame value
+    // to the bounding box. Casting `w.k as number` for an animated property yields a keyframe
+    // array, which `Math.ceil` turns into NaN and silently shrinks the sprite cell so the stroke
+    // gets clipped out.
+    return Math.ceil(stroke.w ? GetInitialScalarValue(stroke.w, 1) : 1);
 }
 
 function CalculatePointsWithTangentZero(

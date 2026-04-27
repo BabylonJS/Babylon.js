@@ -352,6 +352,7 @@ class TransmissionHelper {
         this._opaqueRenderTarget.ignoreCameraViewport = true;
         this._opaqueRenderTarget.renderList = this._opaqueMeshesCache;
         this._opaqueRenderTarget.clearColor = this._options.clearColor?.clone() ?? this._scene.clearColor.clone();
+        this._opaqueRenderTarget.clearColor.a = 0.0;
         this._opaqueRenderTarget.gammaSpace = false;
         this._opaqueRenderTarget.lodGenerationScale = this._options.lodGenerationScale;
         this._opaqueRenderTarget.lodGenerationOffset = this._options.lodGenerationOffset;
@@ -369,6 +370,7 @@ class TransmissionHelper {
             } else {
                 opaqueRenderTarget.clearColor.copyFrom(this._options.clearColor);
             }
+            opaqueRenderTarget.clearColor.a = 0.0;
 
             // For mixed MultiMaterial meshes, swap in the precomputed opaque-only
             // submesh array so translucent submeshes don't render into the opaque texture.

@@ -4134,6 +4134,10 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         serializationObject.isBlocker = this.isBlocker;
         serializationObject.sideOrientation = this.sideOrientation;
 
+        if (this._isWorldMatrixFrozen) {
+            serializationObject.freezeWorldMatrix = true;
+        }
+
         // Parent
         if (this.parent) {
             this.parent._serializeAsParent(serializationObject);
