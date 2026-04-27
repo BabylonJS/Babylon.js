@@ -374,6 +374,8 @@ async function mapWithConcurrency(items, fn, limit) {
 // ---------------------------------------------------------------------------
 async function main() {
     const configRaw = fs.readFileSync(CONFIG_PATH, "utf8");
+    const hasBOM = configRaw.startsWith("\uFEFF");
+    const hasCRLF = configRaw.includes("\r\n");
     const config = JSON.parse(configRaw.replace(/^\uFEFF/, ""));
     const tagMap = JSON.parse(fs.readFileSync(TAGMAP_PATH, "utf8"));
     const validTags = new Set(tagMap.tags);
@@ -471,7 +473,9 @@ async function main() {
     }
 
     if (!DRY_RUN) {
-        const output = JSON.stringify(config, null, 4) + "\n";
+        let output = JSON.stringify(config, null, 4) + "\n";
+        if (hasCRLF) output = output.replace(/\n/g, "\r\n");
+        if (hasBOM) output = "\uFEFF" + output;
         fs.writeFileSync(CONFIG_PATH, output, "utf8");
         console.log(`\nWrote updated config.json (${output.length} bytes)`);
     } else {
