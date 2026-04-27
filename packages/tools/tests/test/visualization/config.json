@@ -3439,12 +3439,12 @@
         },
         {
             "title": "OpenPBR Thin Walled Subsurface Anisotropy - IBL",
-            "playgroundId": "#WIBDPV#0",
+            "playgroundId": "#GT3JYS#1",
             "excludedEngines": ["webgl1"]
         },
         {
             "title": "OpenPBR Thin Walled Subsurface Anisotropy - Realtime IBL",
-            "playgroundId": "#TLPHB2#0",
+            "playgroundId": "#MB4ZGH#0",
             "excludedEngines": ["webgl1"]
         },
         {
@@ -3482,7 +3482,7 @@
         },
         {
             "title": "Havok FloatingOrigin Multi-Region",
-            "playgroundId": "#GRP5E9#0",
+            "playgroundId": "#ND10JJ#0",
             "useLargeWorldRendering": true
         },
         {
