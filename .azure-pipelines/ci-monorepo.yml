@@ -80,10 +80,9 @@ jobs:
     - job: Build
       displayName: "Build job"
       steps:
-          - checkout: self
-            clean: true
-            fetchDepth: 0
-            fetchTags: false
+          - template: templates/checkout-with-tag-override.yml
+            parameters:
+                fetchDepth: 0
 
           - task: UseNode@1
             displayName: "Use Node 22.x"
@@ -272,9 +271,7 @@ jobs:
     - job: ES6
       displayName: "ES6"
       steps:
-          - checkout: self
-            clean: true
-            fetchTags: false
+          - template: templates/checkout-with-tag-override.yml
 
           - task: UseNode@1
             displayName: "Use Node 22.x"
@@ -333,9 +330,7 @@ jobs:
     - job: FormatLint
       displayName: "Format, Lint, and more"
       steps:
-          - checkout: self
-            clean: true
-            fetchTags: false
+          - template: templates/checkout-with-tag-override.yml
 
           - task: UseNode@1
             displayName: "Use Node 22.x"
@@ -370,10 +365,9 @@ jobs:
       displayName: "TypeDoc check"
       condition: ne(variables['Build.SourceBranch'], 'refs/heads/master')
       steps:
-          - checkout: self
-            clean: true
-            fetchDepth: 0
-            fetchTags: false
+          - template: templates/checkout-with-tag-override.yml
+            parameters:
+                fetchDepth: 0
 
           - task: UseNode@1
             displayName: "Use Node 22.x"
@@ -416,9 +410,7 @@ jobs:
       displayName: "Unit tests"
       dependsOn: Build
       steps:
-          - checkout: self
-            clean: true
-            fetchTags: false
+          - template: templates/checkout-with-tag-override.yml
 
           - task: UseNode@1
             displayName: "Use Node 22.x"
@@ -480,9 +472,7 @@ jobs:
       displayName: "Interaction tests"
       dependsOn: Build
       steps:
-          - checkout: self
-            clean: true
-            fetchTags: false
+          - template: templates/checkout-with-tag-override.yml
 
           - task: UseNode@1
             displayName: "Use Node 22.x"
@@ -543,78 +533,6 @@ jobs:
                 testResultsFiles: "./packages/tools/tests/junit.xml"
 
     # ============================================================================
-    # VISUALIZATION TESTS - WEBGL1
-    # Depends on: Build
-    # NOTE: All test steps are DISABLED in the classic pipeline.
-    # Only Node setup is enabled; the job is effectively a no-op.
-    # ============================================================================
-    - job: VisualizationWebGL1
-      displayName: "Visualization tests - WebGL1"
-      dependsOn: Build
-      timeoutInMinutes: 40
-      steps:
-          - checkout: self
-            clean: true
-            fetchTags: false
-
-          - task: UseNode@1
-            displayName: "Use Node 22.x"
-            continueOnError: true
-            retryCountOnTaskFailure: 1
-            inputs:
-                version: "22.x"
-
-          # ALL REMAINING STEPS DISABLED in classic pipeline:
-          # - script: npm install
-          #   displayName: 'npm install'
-          #   env:
-          #     PUPPETEER_PRODUCT: firefox
-
-          # - script: |
-          #     export DISPLAY=:99
-          #     Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
-          #     sleep 3
-          #     npx jest --selectProjects=visualization --runInBand -i "webgl1"
-          #   displayName: 'visualization tests (FF)'
-          #   continueOnError: true
-          #   env:
-          #     CDN_BASE_URL: '$(SNAPSHOT_CDN_URL)/$(BuildName)'
-          #     BROWSER: firefox
-          #     TEST_GPU: desktop
-          #     PUPPETEER_PRODUCT: firefox
-
-          # - script: |
-          #     curl "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_DELETE)?path=$(BuildName)/testResults/webgl1" -X POST -H "Authorization: $(BASIC_AUTH)"
-          #   displayName: 'Delete test results'
-          #   condition: failed()
-
-          # - script: |
-          #     cd jest-screenshot-report
-          #     zip -r ../file.zip *
-          #     cd ..
-          #     curl $(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_UPLOAD) -i -X POST \
-          #       -H "Content-Type: multipart/form-data" \
-          #       -H "Authorization: $(BASIC_AUTH)" \
-          #       -F "path=$(BuildName)/testResults/webgl1" \
-          #       -F "storageAccount=$(SNAPSHOTS_STORAGE_ACCOUNT)" \
-          #       -F "zip=@file.zip"
-          #   displayName: 'Upload test results'
-          #   condition: failed()
-
-          # - task: GitHubComment@0
-          #   displayName: 'Writing GitHub comment'
-          #   condition: failed()
-          #   inputs:
-          #     gitHubConnection: '$(GITHUB_SERVICE_CONNECTION)'
-          #     repositoryName: '$(Build.Repository.Name)'
-          #     comment: |
-          #       Visualization tests for WebGL 1 have failed. If some tests failed because the snapshots do not match, the report can be found at
-          #
-          #       $(SNAPSHOT_CDN_URL)/$(BuildName)/testResults/webgl1/index.html
-          #
-          #       If tests were successful afterwards, this report might not be available anymore.
-
-    # ============================================================================
     # VISUALIZATION TESTS - WEBGL 2
     # Depends on: Build
     # Runs on BrowserStack
@@ -623,9 +541,7 @@ jobs:
       displayName: "Visualization tests - WebGL 2"
       dependsOn: Build
       steps:
-          - checkout: self
-            clean: true
-            fetchTags: false
+          - template: templates/checkout-with-tag-override.yml
 
           - task: UseNode@1
             displayName: "Use Node 22.x"
@@ -699,9 +615,7 @@ jobs:
       displayName: "Visualization tests - WebGPU"
       dependsOn: Build
       steps:
-          - checkout: self
-            clean: true
-            fetchTags: false
+          - template: templates/checkout-with-tag-override.yml
 
           - task: UseNode@1
             displayName: "Use Node 22.x"
@@ -779,9 +693,7 @@ jobs:
       pool:
           vmImage: windows-latest
       steps:
-          - checkout: self
-            clean: true
-            fetchTags: false
+          - template: templates/checkout-with-tag-override.yml
 
           - task: DownloadPipelineArtifact@2
             displayName: "Download Pipeline Artifact"
@@ -842,52 +754,52 @@ jobs:
             retryCountOnTaskFailure: 3
 
     # ============================================================================
-    # PERFORMANCE TESTS
+    # PERFORMANCE TESTS (DISABLED)
     # Depends on: Build
     # Uses statistical comparison (Welch's t-test + ratio check) with
     # confirmation passes to reduce flakiness.
     # ============================================================================
-    - job: PerformanceTests
-      displayName: "Performance tests"
-      dependsOn: Build
-      steps:
-          - checkout: self
-            clean: true
-            fetchTags: false
+    # - job: PerformanceTests
+    #   displayName: "Performance tests"
+    #   dependsOn: Build
+    #   steps:
+    #       - checkout: self
+    #         clean: true
+    #         fetchTags: false
 
-          - task: UseNode@1
-            displayName: "Use Node 22.x"
-            continueOnError: true
-            retryCountOnTaskFailure: 1
-            inputs:
-                version: "22.x"
+    #       - task: UseNode@1
+    #         displayName: "Use Node 22.x"
+    #         continueOnError: true
+    #         retryCountOnTaskFailure: 1
+    #         inputs:
+    #             version: "22.x"
 
-          - script: npm install
-            displayName: "npm install"
-            retryCountOnTaskFailure: 1
-            env:
-                PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: "true"
-                PUPPETEER_SKIP_DOWNLOAD: "true"
+    #       - script: npm install
+    #         displayName: "npm install"
+    #         retryCountOnTaskFailure: 1
+    #         env:
+    #             PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: "true"
+    #             PUPPETEER_SKIP_DOWNLOAD: "true"
 
-          - script: npx playwright install --with-deps
-            displayName: "Install Playwright browsers"
-            retryCountOnTaskFailure: 1
+    #       - script: npx playwright install --with-deps
+    #         displayName: "Install Playwright browsers"
+    #         retryCountOnTaskFailure: 1
 
-          - script: npm run test:performance
-            displayName: "Run performance tests"
-            continueOnError: true
-            env:
-                CDN_BASE_URL: "$(SNAPSHOT_CDN_URL)/$(BuildName)"
-                CI: "true"
-                TIMEOUT: "200000"
+    #       - script: npm run test:performance
+    #         displayName: "Run performance tests"
+    #         continueOnError: true
+    #         env:
+    #             CDN_BASE_URL: "$(SNAPSHOT_CDN_URL)/$(BuildName)"
+    #             CI: "true"
+    #             TIMEOUT: "200000"
 
-          - task: PublishTestResults@2
-            displayName: "Publish performance test results"
-            condition: always()
-            inputs:
-                testResultsFormat: "JUnit"
-                testResultsFiles: "junit.xml"
-                testRunTitle: "Performance Tests"
+    #       - task: PublishTestResults@2
+    #         displayName: "Publish performance test results"
+    #         condition: always()
+    #         inputs:
+    #             testResultsFormat: "JUnit"
+    #             testResultsFiles: "junit.xml"
+    #             testRunTitle: "Performance Tests"
 
     # ============================================================================
     # VIEWER TESTS
@@ -896,9 +808,7 @@ jobs:
     - job: ViewerTests
       displayName: "Viewer tests"
       steps:
-          - checkout: self
-            clean: true
-            fetchTags: false
+          - template: templates/checkout-with-tag-override.yml
 
           - task: UseNode@1
             displayName: "Use Node 22.x"
@@ -1070,9 +980,7 @@ jobs:
             )
           )
       steps:
-          - checkout: self
-            clean: true
-            fetchTags: false
+          - template: templates/checkout-with-tag-override.yml
 
           - bash: mkdir download
             displayName: "Prepare download directory"

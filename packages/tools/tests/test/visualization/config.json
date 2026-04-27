@@ -1,4 +1,4 @@
-﻿{
+{
     "root": "https://cdn.babylonjs.com",
     "tests": [
         {
@@ -3275,6 +3275,11 @@
             "excludedEngines": ["webgl1"]
         },
         {
+            "title": "OpenPBR Transmission Roughness glTF - Combination Lights",
+            "playgroundId": "#GRQHVV#314",
+            "excludedEngines": ["webgl1"]
+        },
+        {
             "title": "OpenPBR Transmission Roughness vs IOR - Analytic Lights",
             "playgroundId": "#GRQHVV#134",
             "excludedEngines": ["webgl1"]
@@ -3427,7 +3432,7 @@
         },
         {
             "title": "OpenPBR Thin Walled Anisotropic Transmission - IBL",
-            "playgroundId": "#GRQHVV#247",
+            "playgroundId": "#GRQHVV#315",
             "excludedEngines": ["webgl1"],
             "excludeFromAutomaticTesting": true
         },
@@ -3442,6 +3447,12 @@
             "excludedEngines": ["webgl1"]
         },
         {
+            "title": "OpenPBR Thin Walled Subsurface Anisotropy - Realtime IBL",
+            "playgroundId": "#GRQHVV#318",
+            "excludedEngines": ["webgl1"],
+            "renderCount": 5
+        },
+        {
             "title": "OpenPBR Thin Walled Subsurface Anisotropy - Analytic Lights",
             "playgroundId": "#GRQHVV#248",
             "excludedEngines": ["webgl1"]
@@ -3449,6 +3460,21 @@
         {
             "title": "OpenPBR Thin Walled Subsurface Transmission Blending - IBL",
             "playgroundId": "#URIA5X#0",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR Subsurface SSS Frame Graph - Shadows - IBL",
+            "playgroundId": "#PJ5JXH#115",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR Subsurface SSS Frame Graph - Analytic Lights",
+            "playgroundId": "#PJ5JXH#117",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR Subsurface SSS Frame Graph - Shadows - Combination Lights",
+            "playgroundId": "#PJ5JXH#116",
             "excludedEngines": ["webgl1"]
         },
         {
@@ -3471,182 +3497,152 @@
         },
         {
             "title": "Particles - Basic Properties - Size",
-            "playgroundId": "#0K3AQ2#3780",
-            "renderCount": 120,
+            "playgroundId": "#MP4MLC#0",
             "referenceImage": "particles-basic-size.png"
         },
         {
             "title": "Particles - Basic Properties - Scale",
-            "playgroundId": "#0K3AQ2#3782",
-            "renderCount": 120,
+            "playgroundId": "#D4J35U#0",
             "referenceImage": "particles-basic-scale.png"
         },
         {
             "title": "Particles - Basic Properties - Color",
-            "playgroundId": "#0K3AQ2#3786",
-            "renderCount": 120,
+            "playgroundId": "#MDSA3P#0",
             "referenceImage": "particles-basic-color.png"
         },
         {
             "title": "Particles - Basic Properties - Speed",
-            "playgroundId": "#0K3AQ2#3791",
-            "renderCount": 120,
+            "playgroundId": "#9EBA6C#0",
             "referenceImage": "particles-basic-speed.png"
         },
         {
             "title": "Particles - Basic Properties - Angular Speed",
-            "playgroundId": "#0K3AQ2#3796",
-            "renderCount": 120,
+            "playgroundId": "#SW2MU1#0",
             "referenceImage": "particles-basic-angular-speed.png"
         },
         {
             "title": "Particles - Basic Properties - Angular Speed - Rotation",
-            "playgroundId": "#0K3AQ2#3806",
-            "renderCount": 120,
+            "playgroundId": "#K7QQS5#0",
             "referenceImage": "particles-basic-angular-speed-rotation.png"
         },
         {
             "title": "Particles - Basic Properties - Translation Pivot",
-            "playgroundId": "#0K3AQ2#3808",
-            "renderCount": 120,
+            "playgroundId": "#SGRK8U#0",
             "referenceImage": "particles-basic-translation-pivot.png"
         },
         {
             "title": "Particles - Basic Properties - Direction",
-            "playgroundId": "#0K3AQ2#3814",
-            "renderCount": 120,
+            "playgroundId": "#9A7FUC#0",
             "referenceImage": "particles-basic-direction.png"
         },
         {
             "title": "Particles - Basic Properties - Direction - Gravity",
-            "playgroundId": "#0K3AQ2#3816",
-            "renderCount": 120,
+            "playgroundId": "#7R44LG#0",
             "referenceImage": "particles-basic-direction-gravity.png"
         },
         {
             "title": "Particles - Basic Properties - Emit Rate - Slow",
-            "playgroundId": "#0K3AQ2#3821",
-            "renderCount": 120,
+            "playgroundId": "#Z1YF6Y#0",
             "referenceImage": "particles-basic-emit-rate-slow.png"
         },
         {
             "title": "Particles - Basic Properties - Emit Rate - Fast",
-            "playgroundId": "#0K3AQ2#3823",
-            "renderCount": 120,
+            "playgroundId": "#0FU68O#0",
             "referenceImage": "particles-basic-emit-rate-fast.png"
         },
         {
             "title": "Particles - Basic Properties - Emission Limits",
-            "playgroundId": "#0K3AQ2#3825",
-            "renderCount": 120,
+            "playgroundId": "#T9YQQX#0",
             "referenceImage": "particles-basic-emission-limits.png"
         },
         {
             "title": "Particles - Basic Properties - Lifetime - Short",
-            "playgroundId": "#0K3AQ2#3829",
-            "renderCount": 120,
+            "playgroundId": "#HH34PQ#0",
             "referenceImage": "particles-basic-lifetime-short.png"
         },
         {
             "title": "Particles - Basic Properties - Lifetime - Long",
-            "playgroundId": "#0K3AQ2#3834",
-            "renderCount": 120,
+            "playgroundId": "#WAABDN#0",
             "referenceImage": "particles-basic-lifetime-long.png"
         },
         {
             "title": "Particles - Change - Size",
-            "playgroundId": "#0K3AQ2#3841",
-            "renderCount": 120,
+            "playgroundId": "#L90MXS#0",
             "referenceImage": "particles-basic-change-size.png"
         },
         {
             "title": "Particles - Change - Size 2",
-            "playgroundId": "#0K3AQ2#3844",
-            "renderCount": 120,
+            "playgroundId": "#H4K2HM#0",
             "referenceImage": "particles-basic-change-size-2.png"
         },
         {
             "title": "Particles - Change - Color",
-            "playgroundId": "#0K3AQ2#3847",
-            "renderCount": 120,
+            "playgroundId": "#AUPMMB#0",
             "referenceImage": "particles-basic-change-color.png"
         },
         {
             "title": "Particles - Change - Color 2",
-            "playgroundId": "#0K3AQ2#3851",
-            "renderCount": 120,
+            "playgroundId": "#HBTZXK#0",
             "referenceImage": "particles-basic-change-color-2.png"
         },
         {
             "title": "Particles - Change - Speed",
-            "playgroundId": "#0K3AQ2#3853",
-            "renderCount": 120,
+            "playgroundId": "#WJPDMN#0",
             "referenceImage": "particles-basic-change-speed.png"
         },
         {
             "title": "Particles - Change - Speed 2",
-            "playgroundId": "#0K3AQ2#3855",
-            "renderCount": 120,
+            "playgroundId": "#Z0P403#0",
             "referenceImage": "particles-basic-change-speed-2.png"
         },
         {
             "title": "Particles - Change - Speed Limit",
-            "playgroundId": "#0K3AQ2#3859",
-            "renderCount": 120,
+            "playgroundId": "#ZAE8XN#0",
             "referenceImage": "particles-basic-change-speed-limit.png"
         },
         {
             "title": "Particles - Change - Angular Speed",
-            "playgroundId": "#0K3AQ2#3862",
-            "renderCount": 120,
+            "playgroundId": "#NBQ82W#0",
             "referenceImage": "particles-basic-change-angular-speed.png"
         },
         {
             "title": "Particles - Change - Angular Speed 2",
-            "playgroundId": "#0K3AQ2#3865",
-            "renderCount": 120,
+            "playgroundId": "#Y37E4A#0",
             "referenceImage": "particles-basic-change-angular-speed-2.png"
         },
         {
             "title": "Particles - Change - Drag",
-            "playgroundId": "#0K3AQ2#3868",
-            "renderCount": 120,
+            "playgroundId": "#H5J2I5#0",
             "referenceImage": "particles-basic-change-drag.png"
         },
         {
             "title": "Particles - Change - Drag 2",
-            "playgroundId": "#0K3AQ2#3872",
-            "renderCount": 120,
+            "playgroundId": "#C4ISYX#0",
             "referenceImage": "particles-basic-change-drag-2.png"
         },
         {
             "title": "Particles - Change - Emit Rate",
-            "playgroundId": "#0K3AQ2#3875",
-            "renderCount": 120,
+            "playgroundId": "#28UTI5#0",
             "referenceImage": "particles-basic-change-emit-rate.png"
         },
         {
             "title": "Particles - Change - Emit Rate 2",
-            "playgroundId": "#0K3AQ2#3879",
-            "renderCount": 120,
+            "playgroundId": "#JW6JI4#0",
             "referenceImage": "particles-basic-change-emit-rate-2.png"
         },
         {
             "title": "Particles - Change - Lifetime",
-            "playgroundId": "#0K3AQ2#3885",
-            "renderCount": 120,
+            "playgroundId": "#LGZQU3#0",
             "referenceImage": "particles-basic-change-lifetime.png"
         },
         {
             "title": "Particles - Change - Lifetime 2",
-            "playgroundId": "#0K3AQ2#3890",
-            "renderCount": 120,
+            "playgroundId": "#24X4MW#0",
             "referenceImage": "particles-basic-change-lifetime-2.png"
         },
         {
             "title": "Particles - Change - Start Size",
-            "playgroundId": "#0K3AQ2#3897",
-            "renderCount": 120,
+            "playgroundId": "#OYHJGJ#0",
             "referenceImage": "particles-basic-change-start-size.png"
         },
         {

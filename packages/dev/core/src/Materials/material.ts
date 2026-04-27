@@ -1119,7 +1119,22 @@ export class Material implements IAnimatable, IClipPlanesHolder {
     }
 
     /**
-     * Locks updates for the material
+     * Locks updates for the material.
+     *
+     * Note: while a material is frozen, the scene can still rebind it at least
+     * once per camera render (and again whenever another material was bound in
+     * between). What can be skipped while the frozen material stays cached are
+     * per-mesh updates performed during a rebind.
+     *
+     * This includes per-mesh morph target influences. If the same frozen
+     * material is shared across several meshes that each have different
+     * per-mesh morph influences, only the mesh that triggers the rebind updates
+     * those values. Other meshes rendered afterward with the same cached frozen
+     * material may reuse stale influences and render with the wrong values.
+     *
+     * For that scenario either keep the material unfrozen, clone the material
+     * per mesh and freeze each clone, or `unfreeze()` before changing
+     * influences and `freeze()` again afterwards.
      */
     public freeze(): void {
         this.markDirty();

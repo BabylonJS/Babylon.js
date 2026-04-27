@@ -62,6 +62,12 @@ export type AnimationConfiguration = {
      * Default is undefined (play the full animation).
      */
     stopAtFrame?: number;
+    /**
+     * When true, the parser logs unsupported lottie features to the console after parsing.
+     * Useful for diagnosing why a given animation does not render as expected.
+     * Default is false.
+     */
+    debug?: boolean;
 };
 
 /**
