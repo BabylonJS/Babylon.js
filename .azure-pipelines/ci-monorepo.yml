@@ -664,8 +664,6 @@ jobs:
                 BROWSERSTACK_USERNAME: $(BROWSERSTACK_USERNAME)
                 BROWSERSTACK_ACCESS_KEY: $(BROWSERSTACK_ACCESS_KEY)
                 AFFECTED_TAGS: $(AFFECTED_TAGS)
-                BROWSERSTACK_USERNAME: $(BROWSERSTACK_USERNAME)
-                BROWSERSTACK_ACCESS_KEY: $(BROWSERSTACK_ACCESS_KEY)
 
           - script: |
                 curl "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_DELETE)?path=$(BuildName)/testResults/webgpuplaywright" -X POST -H "Authorization: $(BASIC_AUTH)"
