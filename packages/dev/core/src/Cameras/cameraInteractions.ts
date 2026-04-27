@@ -64,6 +64,10 @@ export type PointerInputMapEntry<TInteraction extends string = string> = {
     interaction: TInteraction;
     /** Multiplier applied to input deltas before passing to the handler. Default is 1. */
     sensitivity?: number;
+    /** Optional per-axis override for the X (horizontal / yaw) component. Falls back to `sensitivity` if unset. */
+    sensitivityX?: number;
+    /** Optional per-axis override for the Y (vertical / pitch) component. Falls back to `sensitivity` if unset. */
+    sensitivityY?: number;
 } & PointerConditions;
 
 /**
@@ -86,6 +90,10 @@ export type TouchInputMapEntry<TInteraction extends string = string> = {
     interaction: TInteraction;
     /** Multiplier applied to input deltas before passing to the handler. Default is 1. */
     sensitivity?: number;
+    /** Optional per-axis override for the X component. Falls back to `sensitivity` if unset. */
+    sensitivityX?: number;
+    /** Optional per-axis override for the Y component. Falls back to `sensitivity` if unset. */
+    sensitivityY?: number;
 } & TouchConditions;
 
 /**

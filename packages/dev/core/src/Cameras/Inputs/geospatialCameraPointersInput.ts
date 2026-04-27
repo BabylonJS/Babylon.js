@@ -30,13 +30,13 @@ export class GeospatialCameraPointersInput extends OrbitCameraPointersInput {
      */
     public get pitchSensitivity(): number {
         const entry = this.camera.movement.input.getEntry("pointer", "rotate");
-        return entry?.sensitivity ?? 1;
+        return entry?.sensitivityY ?? entry?.sensitivity ?? 1;
     }
 
     public set pitchSensitivity(value: number) {
         for (const entry of this.camera.movement.input.inputMap) {
             if (entry.source === "pointer" && entry.interaction === "rotate") {
-                entry.sensitivity = value;
+                entry.sensitivityY = value;
             }
         }
     }
@@ -48,13 +48,13 @@ export class GeospatialCameraPointersInput extends OrbitCameraPointersInput {
      */
     public get yawSensitivity(): number {
         const entry = this.camera.movement.input.getEntry("pointer", "rotate");
-        return entry?.sensitivity ?? 1;
+        return entry?.sensitivityX ?? entry?.sensitivity ?? 1;
     }
 
     public set yawSensitivity(value: number) {
         for (const entry of this.camera.movement.input.inputMap) {
             if (entry.source === "pointer" && entry.interaction === "rotate") {
-                entry.sensitivity = value;
+                entry.sensitivityX = value;
             }
         }
     }
@@ -89,12 +89,14 @@ export class GeospatialCameraPointersInput extends OrbitCameraPointersInput {
             return;
         }
         const sens = this._activeEntry.sensitivity ?? 1;
+        const sensX = this._activeEntry.sensitivityX ?? sens;
+        const sensY = this._activeEntry.sensitivityY ?? sens;
         const scene = this.camera.getScene();
 
         if (this._activeEntry.interaction === "pan") {
             this.camera.movement.input.handlers.pan.update(scene.pointerX, scene.pointerY);
         } else if (this._activeEntry.interaction === "rotate") {
-            this.camera.movement.input.handlers.rotate(offsetX * sens, -offsetY * sens);
+            this.camera.movement.input.handlers.rotate(offsetX * sensX, -offsetY * sensY);
         }
     }
 
@@ -156,7 +158,9 @@ export class GeospatialCameraPointersInput extends OrbitCameraPointersInput {
             // pointer→rotate entry so the configured rotate sensitivity (yaw/pitch) is honored.
             const rotateEntry = this.camera.movement.input.getEntry("pointer", "rotate");
             const sens = rotateEntry?.sensitivity ?? 1;
-            this.camera.movement.input.handlers.rotate(moveDeltaX * sens, -moveDeltaY * sens);
+            const sensX = rotateEntry?.sensitivityX ?? sens;
+            const sensY = rotateEntry?.sensitivityY ?? sens;
+            this.camera.movement.input.handlers.rotate(moveDeltaX * sensX, -moveDeltaY * sensY);
         }
     }
 

@@ -98,9 +98,12 @@ async function loadSceneAndStartRendering(renderCount: number) {
         sceneMetadata: { playgroundId: "#DUMMY#0", snippetCode: SCENE_CODE, snippetSceneCall: "createScene(engine)" },
         globalConfig: getGlobalConfig(),
     });
-    // Suppress the context menu to avoid interference with right-click drags
+    // Suppress the context menu to avoid interference with right-click drags.
+    // Using `oncontextmenu` property assignment (rather than addEventListener)
+    // overwrites any previous handler, so re-running this helper across tests
+    // does not accumulate listeners on the shared canvas.
     await page.evaluate(() => {
-        document.querySelector("#babylon-canvas")!.addEventListener("contextmenu", (e) => e.preventDefault());
+        (document.querySelector("#babylon-canvas") as HTMLElement).oncontextmenu = (e) => e.preventDefault();
     });
     return page.evaluate(evaluateRenderSceneForVisualization, { renderCount, continueRenderingOnDone: false });
 }

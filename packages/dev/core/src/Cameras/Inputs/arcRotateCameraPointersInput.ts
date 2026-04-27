@@ -160,8 +160,8 @@ export class ArcRotateCameraPointersInput extends OrbitCameraPointersInput {
                     this.camera.movement.panAccumulatedPixels.y += offsetY * panScale;
                 }
             } else if (entry.interaction === "rotate") {
-                const rotateScaleX = entry.sensitivity ?? 1 / this.angularSensibilityX;
-                const rotateScaleY = entry.sensitivity ?? 1 / this.angularSensibilityY;
+                const rotateScaleX = entry.sensitivityX ?? entry.sensitivity ?? 1 / this.angularSensibilityX;
+                const rotateScaleY = entry.sensitivityY ?? entry.sensitivity ?? 1 / this.angularSensibilityY;
                 this.camera.movement.activeInput = true;
                 this.camera.movement.rotationAccumulatedPixels.x += -offsetX * rotateScaleX;
                 this.camera.movement.rotationAccumulatedPixels.y += -offsetY * rotateScaleY;
