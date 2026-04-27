@@ -8,7 +8,7 @@
     // Coat IBL Fresnel
     var coatIblFresnel: f32 = 0.0;
     if (coat_weight > 0.0) {
-        coatIblFresnel = getReflectanceFromBRDFWithEnvLookup(vec3f(coatReflectance.F0), vec3f(coatReflectance.F90), coatGeoInfo.environmentBrdf).r;
+        coatIblFresnel = computeDielectricIblFresnel(coatReflectance, coatGeoInfo.environmentBrdf);
     
         // __________ Coat Darkening _____________
         // Hemisphere-averaged Fresnel (empirical approximation)
@@ -205,7 +205,7 @@
     // The colored fresnel represents the % of light reflected by the base specular lobe
     // The non-colored fresnel represents the % of light that doesn't penetrate through 
     // the base specular lobe. i.e. the specular lobe isn't energy conserving for coloured specular.
-    let dielectricIblFresnel: f32 = getReflectanceFromBRDFWithEnvLookup(vec3f(baseDielectricReflectance.F0), vec3f(baseDielectricReflectance.F90), baseGeoInfo.environmentBrdf).r;
+    let dielectricIblFresnel: f32 = computeDielectricIblFresnel(baseDielectricReflectance, baseGeoInfo.environmentBrdf);
     var dielectricIblColoredFresnel: vec3f = dielectricIblFresnel * specular_color;
     #ifdef THIN_FILM
         var thin_film_dielectric: vec3f = evalIridescence(thin_film_outside_ior, thin_film_ior, baseGeoInfo.NdotV, thin_film_thickness, baseDielectricReflectance.coloredF0);
@@ -217,7 +217,7 @@
     #endif
 
     // Conductor IBL Fresnel
-    var conductorIblFresnel: vec3f = conductorIblFresnel(baseConductorReflectance, baseGeoInfo.NdotV, specular_roughness, baseGeoInfo.environmentBrdf);
+    var conductorIblFresnel: vec3f = computeConductorIblFresnel(baseConductorReflectance, baseGeoInfo.environmentBrdf);
     #ifdef THIN_FILM
         var thinFilmConductorFresnel: vec3f = specular_weight * evalIridescence(thin_film_outside_ior, thin_film_ior, baseGeoInfo.NdotV, thin_film_thickness, baseConductorReflectance.coloredF0);
         thinFilmConductorFresnel = mix(thinFilmConductorFresnel, vec3(dot(thinFilmConductorFresnel, vec3f(0.3333f))), thin_film_desaturation_scale);

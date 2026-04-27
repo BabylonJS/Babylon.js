@@ -320,18 +320,33 @@
         return environmentRadiance.rgb;
     }
 #endif
-    #ifdef ENVIRONMENTBRDF
+#endif
+#if defined(ENVIRONMENTBRDF)
     #define pbr_inline
-    vec3 conductorIblFresnel(in ReflectanceParams reflectance, in float NdotV, in float roughness, in vec3 environmentBrdf)
+    float computeDielectricIblFresnel(in ReflectanceParams reflectance, in vec3 environmentBrdf)
     {
-        #if (CONDUCTOR_SPECULAR_MODEL == CONDUCTOR_SPECULAR_MODEL_OPENPBR)
-            // This is an empirical hack to modify the F0 albedo based on roughness. It's not based on any paper
-            // or anything. Just trying to match results of rough metals in a pathtracer.
-            vec3 albedoF0 = mix(reflectance.coloredF0, pow(reflectance.coloredF0, vec3(1.4)), roughness);
-            return getF82Specular(NdotV, albedoF0, reflectance.coloredF90, roughness);
+        float dielectricIblFresnel = getReflectanceFromBRDFLookup(vec3(reflectance.F0), vec3(reflectance.F90), environmentBrdf).r;
+        // environmentBrdf.y is E_ss (the F0-weighted hemisphere integral).
+        // Boost by the Fdez-Agüera factor so multiscattered light stays in the
+        // specular slab rather than leaking into the (potentially dark) irradiance.
+        float dielectricECF = 1.0 + reflectance.F0 * (1.0 / environmentBrdf.y - 1.0);
+        return clamp(dielectricIblFresnel * dielectricECF, 0.0, 1.0);
+    }
+
+    #define pbr_inline
+    vec3 computeConductorIblFresnel(in ReflectanceParams reflectance, in vec3 environmentBrdf)
+    {
+        #if (CONDUCTOR_SPECULAR_MODEL == CONDUCTOR_SPECULAR_MODEL_OPENPBR) && defined(ENVIRONMENTBRDF)
+            // environmentBrdf comes from the OpenPBR BRDF LUT (replaces the standard LUT for this material).
+            // The z channel was stored * BRDF_Z_SCALE to use the full 8-bit range — undo that here.
+            vec3 openPBRBrdf = vec3(environmentBrdf.xy, environmentBrdf.z / BRDF_Z_SCALE);
+            vec3 b     = getF82B(reflectance.coloredF0, reflectance.coloredF90);
+            vec3 E_F82 = getF82DirectionalAlbedo(reflectance.coloredF0, vec3(1.0), b, openPBRBrdf);
+            vec3 F_avg = getF82AverageFresnel(reflectance.coloredF0, b);
+            vec3 ECF   = vec3(1.0) + F_avg * (vec3(1.0) / openPBRBrdf.y - vec3(1.0));
+            return clamp(E_F82 * ECF, vec3(0.0), vec3(1.0));
         #else
             return getReflectanceFromBRDFLookup(reflectance.coloredF0, reflectance.coloredF90, environmentBrdf);
         #endif
     }
-    #endif
 #endif

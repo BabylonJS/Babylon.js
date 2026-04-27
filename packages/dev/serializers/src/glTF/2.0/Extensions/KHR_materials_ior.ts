@@ -33,12 +33,17 @@ export class KHR_materials_ior implements IGLTFExporterExtensionV2 {
         return this._wasUsed;
     }
 
-    private _isExtensionEnabled(mat: PBRMaterial): boolean {
+    private _isExtensionEnabled(mat: PBRMaterial | OpenPBRMaterial): boolean {
         // This extension must not be used on a material that also uses KHR_materials_unlit
         if (mat.unlit) {
             return false;
         }
-        return mat.indexOfRefraction != undefined && mat.indexOfRefraction != 1.5; // 1.5 is normative default value.
+        if (mat instanceof OpenPBRMaterial) {
+            return mat.specularIor != 1.5; // 1.5 is normative default value.
+        } else if (mat instanceof PBRMaterial) {
+            return mat.indexOfRefraction != undefined && mat.indexOfRefraction != 1.5; // 1.5 is normative default value.
+        }
+        return false;
     }
 
     /**
@@ -59,9 +64,8 @@ export class KHR_materials_ior implements IGLTFExporterExtensionV2 {
                 };
                 node.extensions = node.extensions || {};
                 node.extensions[NAME] = iorInfo;
-            } else if (babylonMaterial instanceof OpenPBRMaterial) {
+            } else if (babylonMaterial instanceof OpenPBRMaterial && this._isExtensionEnabled(babylonMaterial)) {
                 this._wasUsed = true;
-
                 const iorInfo: IKHRMaterialsIor = {
                     ior: babylonMaterial.specularIor,
                 };

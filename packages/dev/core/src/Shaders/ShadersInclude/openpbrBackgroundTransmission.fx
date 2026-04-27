@@ -5,7 +5,7 @@ vec4 slab_translucent_background = vec4(0., 0., 0., 1.);
 {
     // Select a mipmap LOD appropriate for the roughness (and IOR)
     // vBackgroundRefractionInfos.x is the number of mips of backgroundRefractionSampler
-    float refractionLOD = transmission_roughness_alpha * vBackgroundRefractionInfos.x;
+    float refractionLOD = min(transmission_roughness, 0.7) * vBackgroundRefractionInfos.x;
     vec2 refractionNoiseOffset = vec2(0.0);
     
     #ifdef DISPERSION
