@@ -650,7 +650,14 @@ async function runMeasurementOnLoadedPage(
         if (isTransientBrowserStackError(msg)) {
             throw e;
         }
-        return { skipped: `Scene error: ${msg}` };
+        // Known API-incompatibility patterns indicate the scene function uses
+        // APIs not present in the CDN version being tested. These are expected
+        // when testing older baselines and should be skipped, not failed.
+        if (msg.includes("is not a constructor") || msg.includes("is not defined") || msg.includes("is not a function") || msg.includes("Cannot read properties of undefined")) {
+            return { skipped: `Incompatible API: ${msg}` };
+        }
+        // Unknown errors are real failures — propagate so the test fails visibly.
+        throw e;
     }
 }
 

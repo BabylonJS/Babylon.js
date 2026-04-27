@@ -25,7 +25,7 @@
 #   BSTACK_SESSIONS_REQUIRED=3 .azure-pipelines/browserstack-wait.sh \
 #       npx playwright test --config ...
 # ---------------------------------------------------------------------------
-set -uo pipefail
+set -euo pipefail
 
 MAX_SESSIONS="${BSTACK_MAX_SESSIONS:-5}"
 PREFERRED="${BSTACK_SESSIONS_REQUIRED:-1}"

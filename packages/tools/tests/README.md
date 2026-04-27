@@ -26,8 +26,13 @@ npm run test:visualization -- --project=webgpu
 
 ### Visualization tests (BrowserStack)
 
-Tests can run entirely on BrowserStack infrastructure using the BrowserStack
-Automate SDK. This is what CI uses.
+Tests can run on BrowserStack infrastructure via two modes:
+
+- **Direct CDP** (`ci-monorepo`) — Playwright connects directly to a BrowserStack
+  Chrome session over a CDP WebSocket. Used for PR visualization and performance tests.
+- **BrowserStack SDK** (`ci-browser-testing`) — the `browserstack-node-sdk` intercepts
+  `browser.launch()` and routes it to a remote session. Used for nightly cross-browser
+  tests (Safari, Firefox).
 
 **Prerequisites:**
 
@@ -91,7 +96,7 @@ CDN_BASE_URL="http://localhost:1337" BSTACK_TEST_TYPE=webgl2 BROWSERSTACK_LOCAL=
 | File                                          | Purpose                                                      |
 | --------------------------------------------- | ------------------------------------------------------------ |
 | `playwright.config.ts`                        | Main config for local and legacy CDP-based BrowserStack runs |
-| `playwright.browserstack.config.ts`           | Config for BrowserStack Automate SDK runs (used in CI)       |
+| `playwright.browserstack.config.ts`           | Config for direct CDP BrowserStack runs (ci-monorepo)        |
 | `playwright.devhost.config.ts`                | Config for dev host tests (lottie, etc.)                     |
 | `browserstack.yml`                            | BrowserStack SDK platform and credential config              |
 | `packages/tools/tests/playwright.utils.ts`    | Shared project definitions and browser setup                 |

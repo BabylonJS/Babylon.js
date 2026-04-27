@@ -17,6 +17,15 @@ import { populateEnvironment } from "@dev/build-tools";
 
 populateEnvironment();
 
+if (!process.env.BROWSERSTACK_USERNAME || !process.env.BROWSERSTACK_ACCESS_KEY) {
+    throw new Error("BROWSERSTACK_USERNAME and BROWSERSTACK_ACCESS_KEY must be set. " + "Add them to .env at the repo root or export them in your shell.");
+}
+
+// Derive installed Playwright version so the BrowserStack capability stays in
+// sync with the repo's dependency and doesn't silently drift after upgrades.
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const playwrightVersion: string = require("@playwright/test/package.json").version;
+
 const testType = process.env.BSTACK_TEST_TYPE || "webgl2";
 const isPerformanceRun = testType === "performance";
 
@@ -37,7 +46,7 @@ const caps = {
     "browserstack.networkLogs": "false",
     "browserstack.debug": "false",
     "browserstack.idleTimeout": "300",
-    "browserstack.playwrightVersion": "1.57.0",
+    "browserstack.playwrightVersion": playwrightVersion,
 };
 
 const wsEndpoint = `wss://cdp.browserstack.com/playwright?caps=${encodeURIComponent(JSON.stringify(caps))}`;
