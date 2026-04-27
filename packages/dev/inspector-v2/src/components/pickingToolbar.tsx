@@ -1,14 +1,17 @@
 import { type MenuButtonProps, Menu, MenuItemCheckbox, MenuList, MenuPopover, MenuTrigger, SplitButton, tokens, Tooltip } from "@fluentui/react-components";
-import { type FunctionComponent, useCallback, useEffect, useMemo, useState } from "react";
+import { type FunctionComponent, useCallback, useEffect, useState } from "react";
 
-import { type AbstractMesh, type IMeshDataCache, type Nullable, type Scene } from "core/index";
+import { type Nullable, type Scene } from "core/index";
 import { type IGizmoService } from "../services/gizmoService";
 
 import { TargetRegular } from "@fluentui/react-icons";
 
+import { GPUPicker } from "core/Collisions/gpuPicker";
 import { PointerEventTypes } from "core/Events/pointerEvents";
-import { TmpVectors, Vector3 } from "core/Maths/math.vector";
+import { AsyncLock } from "core/Misc/asyncLock";
 import { useKeyListener } from "shared-ui-components/fluent/hooks/keyboardHooks";
+import { useObservableState } from "shared-ui-components/modularTool/hooks/observableHooks";
+import { useResource } from "shared-ui-components/modularTool/hooks/resourceHooks";
 
 export const PickingToolbar: FunctionComponent<{
     scene: Scene;
@@ -20,11 +23,46 @@ export const PickingToolbar: FunctionComponent<{
 }> = (props) => {
     const { scene, selectEntity, gizmoService, ignoreBackfaces, highlightSelectedEntity, onHighlightSelectedEntityChange } = props;
 
-    const meshDataCache = useMemo(() => new WeakMap<AbstractMesh, IMeshDataCache>(), [scene]);
     // Not sure why changing the cursor on the canvas itself doesn't work, so change it on the parent.
     const sceneElement = scene.getEngine().getRenderingCanvas()?.parentElement;
 
     const [pickingEnabled, setPickingEnabled] = useState(false);
+
+    // One GPUPicker per (scene, component lifetime). useResource handles disposal on unmount or when scene changes.
+    // The factory must be stable (memoized) so useResource doesn't recreate the picker on every render.
+    const gpuPicker = useResource(useCallback(() => new GPUPicker(), [scene]));
+
+    // Track the meshes the picker should know about. Re-evaluate whenever meshes are added or removed.
+    const pickableMeshes = useObservableState(
+        useCallback(() => scene.meshes.filter((mesh) => mesh.isEnabled() && mesh.isVisible && mesh.getTotalVertices() > 0), [scene]),
+        scene.onNewMeshAddedObservable,
+        scene.onMeshRemovedObservable
+    );
+
+    // Keep the GPUPicker's picking list in sync with the current pickable meshes (and apply the
+    // backface culling preference) while picking is enabled.
+    useEffect(() => {
+        if (!pickingEnabled) {
+            gpuPicker.clearPickingList();
+            return;
+        }
+
+        if (pickableMeshes.length === 0) {
+            gpuPicker.clearPickingList();
+            return;
+        }
+
+        gpuPicker.setPickingList(pickableMeshes);
+
+        // GPUPicker creates its picking ShaderMaterials lazily inside setPickingList. Apply the
+        // backface culling preference now so subsequent renders use the correct setting.
+        // (ShaderMaterial.backFaceCulling defaults to true, which matches ignoreBackfaces=true.)
+        for (const material of gpuPicker.defaultRenderMaterials) {
+            if (material) {
+                material.backFaceCulling = ignoreBackfaces ?? false;
+            }
+        }
+    }, [pickingEnabled, pickableMeshes, gpuPicker, ignoreBackfaces]);
 
     // Exit picking mode if the escape key is pressed.
     useKeyListener({
@@ -40,69 +78,42 @@ export const PickingToolbar: FunctionComponent<{
             const originalCursor = getComputedStyle(sceneElement).cursor;
             sceneElement.style.cursor = "crosshair";
 
+            const pickingLock = new AsyncLock();
+
             const pointerObserver = scene.onPrePointerObservable.add(() => {
-                let pickedEntity: Nullable<object> = null;
+                void pickingLock.lockAsync(async () => {
+                    let pickedEntity: Nullable<object> = null;
 
-                // Check camera gizmos.
-                if (!pickedEntity) {
-                    for (const cameraGizmo of gizmoService.getCameraGizmos(scene)) {
-                        if (cameraGizmo.isHovered) {
-                            pickedEntity = cameraGizmo.camera;
-                        }
-                    }
-                }
-
-                // Check light gizmos.
-                if (!pickedEntity) {
-                    for (const lightGizmo of gizmoService.getLightGizmos(scene)) {
-                        if (lightGizmo.isHovered) {
-                            pickedEntity = lightGizmo.light;
-                        }
-                    }
-                }
-
-                // Check the main scene.
-                if (!pickedEntity) {
-                    // Refresh bounding info to ensure morph target and skeletal animations are taken into account.
-                    for (const mesh of scene.meshes) {
-                        let cache = meshDataCache.get(mesh);
-                        if (!cache) {
-                            cache = {};
-                            meshDataCache.set(mesh, cache);
-                        }
-                        mesh.refreshBoundingInfo({ applyMorph: true, applySkeleton: true, cache });
-                    }
-
-                    const pickingInfo = scene.pick(
-                        scene.unTranslatedPointer.x,
-                        scene.unTranslatedPointer.y,
-                        (mesh) => mesh.isEnabled() && mesh.isVisible && mesh.getTotalVertices() > 0,
-                        false,
-                        undefined,
-                        (p0, p1, p2, ray) => {
-                            if (!ignoreBackfaces) {
-                                return true;
+                    // Check camera gizmos.
+                    if (!pickedEntity) {
+                        for (const cameraGizmo of gizmoService.getCameraGizmos(scene)) {
+                            if (cameraGizmo.isHovered) {
+                                pickedEntity = cameraGizmo.camera;
                             }
-
-                            const p0p1 = TmpVectors.Vector3[0];
-                            const p1p2 = TmpVectors.Vector3[1];
-
-                            p1.subtractToRef(p0, p0p1);
-                            p2.subtractToRef(p1, p1p2);
-
-                            const normal = Vector3.Cross(p0p1, p1p2);
-
-                            return Vector3.Dot(normal, ray.direction) < 0;
                         }
-                    );
+                    }
 
-                    pickedEntity = pickingInfo.pickedMesh;
-                }
+                    // Check light gizmos.
+                    if (!pickedEntity) {
+                        for (const lightGizmo of gizmoService.getLightGizmos(scene)) {
+                            if (lightGizmo.isHovered) {
+                                pickedEntity = lightGizmo.light;
+                            }
+                        }
+                    }
 
-                // If an entity was picked, select it.
-                if (pickedEntity) {
-                    selectEntity(pickedEntity);
-                }
+                    // Check the main scene.
+                    if (!pickedEntity) {
+                        const x = scene.unTranslatedPointer.x;
+                        const y = scene.unTranslatedPointer.y;
+                        const pickingInfo = await gpuPicker.pickAsync(x, y);
+                        pickedEntity = pickingInfo?.mesh ?? null;
+                    }
+
+                    if (pickedEntity) {
+                        selectEntity(pickedEntity);
+                    }
+                });
             }, PointerEventTypes.POINTERTAP);
 
             return () => {
@@ -114,7 +125,7 @@ export const PickingToolbar: FunctionComponent<{
         return () => {
             /* No-op */
         };
-    }, [pickingEnabled, sceneElement, ignoreBackfaces]);
+    }, [pickingEnabled, sceneElement, scene, gizmoService, gpuPicker, selectEntity]);
 
     const togglePicking = useCallback(() => {
         setPickingEnabled((prev) => !prev);
