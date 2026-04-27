@@ -29,7 +29,25 @@ const TAGMAP_PATH = path.join(ROOT, "packages/tools/tests/test/visualization/tag
 const args = process.argv.slice(2);
 const DRY_RUN = args.includes("--dry-run");
 const concurrencyIdx = args.indexOf("--concurrency");
-const CONCURRENCY = concurrencyIdx !== -1 ? parseInt(args[concurrencyIdx + 1], 10) : 5;
+let CONCURRENCY = 5;
+
+if (concurrencyIdx !== -1) {
+    const concurrencyValue = args[concurrencyIdx + 1];
+    const parsedConcurrency = Number(concurrencyValue);
+
+    if (
+        concurrencyValue === undefined ||
+        concurrencyValue.startsWith("--") ||
+        !Number.isFinite(parsedConcurrency) ||
+        !Number.isInteger(parsedConcurrency) ||
+        parsedConcurrency < 1
+    ) {
+        console.error("Invalid value for --concurrency. Expected an integer greater than or equal to 1.");
+        process.exit(1);
+    }
+
+    CONCURRENCY = parsedConcurrency;
+}
 
 // ---------------------------------------------------------------------------
 // Tag detection patterns — matched against snippet code
@@ -408,6 +426,7 @@ async function main() {
                 if (source === "code") codeTagged++;
                 else titleFallback++;
             } else {
+                delete test.dependsOn;
                 untagged++;
             }
 
