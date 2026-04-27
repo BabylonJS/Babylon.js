@@ -152,7 +152,10 @@ export class GeospatialCameraPointersInput extends OrbitCameraPointersInput {
         if (previousMultiTouchPanPosition && multiTouchPanPosition) {
             const moveDeltaX = multiTouchPanPosition.x - previousMultiTouchPanPosition.x;
             const moveDeltaY = multiTouchPanPosition.y - previousMultiTouchPanPosition.y;
-            const sens = this._activeEntry?.sensitivity ?? 1;
+            // Multi-touch is a gesture (no button), so `_activeEntry` is null. Resolve a fresh
+            // pointer→rotate entry so the configured rotate sensitivity (yaw/pitch) is honored.
+            const rotateEntry = this.camera.movement.input.getEntry("pointer", "rotate");
+            const sens = rotateEntry?.sensitivity ?? 1;
             this.camera.movement.input.handlers.rotate(moveDeltaX * sens, -moveDeltaY * sens);
         }
     }

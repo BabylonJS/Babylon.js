@@ -5,7 +5,7 @@ import { CameraInputTypes } from "../../Cameras/cameraInputsManager";
 import { OrbitCameraPointersInput } from "../../Cameras/Inputs/orbitCameraPointersInput";
 import { type PointerTouch } from "../../Events/pointerEvents";
 import { type IPointerEvent } from "../../Events/deviceInputEvents";
-import { type InputMapEntry } from "../cameraInteractions";
+import { type InputMapEntry, type PointerConditions } from "../cameraInteractions";
 
 /**
  * Manage the pointers inputs to control an arc rotate camera.
@@ -89,6 +89,9 @@ export class ArcRotateCameraPointersInput extends OrbitCameraPointersInput {
     /** Cached resolved inputMap entry for the current pointer gesture */
     private _activeEntry: InputMapEntry | null = null;
 
+    /** Cached conditions object for pointer-lock fallback resolution to avoid per-event allocations */
+    private _pointerLockConditions: PointerConditions = { button: 0, modifiers: {} };
+
     /**
      * Move camera from multi touch panning positions.
      * @param previousMultiTouchPanPosition
@@ -142,7 +145,7 @@ export class ArcRotateCameraPointersInput extends OrbitCameraPointersInput {
     public override onTouch(point: Nullable<PointerTouch>, offsetX: number, offsetY: number): void {
         // In pointer-lock mode, mouse movement rotates the camera even without a button held.
         // This matches legacy behavior where pointer-lock mouse deltas always drove rotation.
-        const entry = this._activeEntry ?? (this.camera.getEngine().isPointerLock ? this.camera.movement.input.resolveInteraction("pointer", { button: 0, modifiers: {} }) : null);
+        const entry = this._activeEntry ?? (this.camera.getEngine().isPointerLock ? this.camera.movement.input.resolveInteraction("pointer", this._pointerLockConditions) : null);
         if (entry) {
             // Per-pixel scale. The inputMap entry's `sensitivity` takes precedence so consumers can
             // tune feel declaratively (and so we can phase out the legacy sensibility properties).

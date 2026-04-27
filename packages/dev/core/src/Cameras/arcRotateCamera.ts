@@ -380,6 +380,9 @@ export class ArcRotateCamera extends TargetCamera {
 
     public override set inertia(value: number) {
         this._inertia = value;
+        // Keep the base-class backing field (`_baseInertia`) in sync so any code that goes
+        // through `Camera.prototype.inertia` (e.g. via reflection) does not see a stale value.
+        super.inertia = value;
         if (this.movement) {
             this.movement.rotationInertia = value;
             this.movement.zoomInertia = value;
@@ -1286,7 +1289,9 @@ export class ArcRotateCamera extends TargetCamera {
 
         if (rotDelta.x !== 0 || rotDelta.y !== 0 || zoomDelta !== 0 || panDelta.x !== 0 || panDelta.y !== 0) {
             hasUserInteractions = true;
-            this._applyRotationAndZoomDelta(rotDelta.x, rotDelta.y, zoomDelta);
+            if (rotDelta.x !== 0 || rotDelta.y !== 0 || zoomDelta !== 0) {
+                this._applyRotationAndZoomDelta(rotDelta.x, rotDelta.y, zoomDelta);
+            }
 
             if (panDelta.x !== 0 || panDelta.y !== 0) {
                 this._applyPanDelta(panDelta.x, panDelta.y);

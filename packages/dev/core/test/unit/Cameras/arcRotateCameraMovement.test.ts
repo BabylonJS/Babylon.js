@@ -3,7 +3,7 @@ import { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
 import { Vector3 } from "core/Maths/math.vector";
 import { NullEngine } from "core/Engines/nullEngine";
 import { Scene } from "core/scene";
-import type { Nullable } from "core/types";
+import { type Nullable } from "core/types";
 
 describe("ArcRotateCameraMovement", () => {
     let engine: Nullable<NullEngine> = null;
@@ -132,10 +132,21 @@ describe("ArcRotateCameraMovement", () => {
             expect(camera.movement.input.resolveInteraction("keyboard", { modifiers: { ctrl: true } })?.interaction).not.toBe("pan");
         });
 
+        it("removing ctrl panning also removes the pointer ctrl+left-drag pan entry", () => {
+            camera._useCtrlForPanning = false;
+            expect(camera.movement.input.resolveInteraction("pointer", { button: 0, modifiers: { ctrl: true } })?.interaction).not.toBe("pan");
+        });
+
         it("re-enabling ctrl panning re-adds the inputMap entry", () => {
             camera._useCtrlForPanning = false;
             camera._useCtrlForPanning = true;
             expect(camera.movement.input.resolveInteraction("keyboard", { modifiers: { ctrl: true } })?.interaction).toBe("pan");
+        });
+
+        it("re-enabling ctrl panning re-adds the pointer ctrl+left-drag pan entry", () => {
+            camera._useCtrlForPanning = false;
+            camera._useCtrlForPanning = true;
+            expect(camera.movement.input.resolveInteraction("pointer", { button: 0, modifiers: { ctrl: true } })?.interaction).toBe("pan");
         });
     });
 

@@ -63,6 +63,7 @@ export class GeospatialCameraKeyboardInput implements ICameraInput<GeospatialCam
      * (How many pixels of pointer input to apply per keypress, before rotation speed factor is applied by movement class)
      * @deprecated Use the `sensitivity` field on the keyboard rotate entry in `camera.movement.input.inputMap` instead.
      */
+    @serialize()
     public get rotationSensitivity(): number {
         const entry = this.camera.movement.input.inputMap.find((e) => e.source === "keyboard" && e.interaction === "rotate");
         return entry?.sensitivity ?? 1;
@@ -81,6 +82,7 @@ export class GeospatialCameraKeyboardInput implements ICameraInput<GeospatialCam
      * (How many pixels of pointer input to apply per keypress, before pan speed factor is applied by movement class)
      * @deprecated Use the `sensitivity` field on the keyboard pan entry in `camera.movement.input.inputMap` instead.
      */
+    @serialize()
     public get panSensitivity(): number {
         const entry = this.camera.movement.input.inputMap.find((e) => e.source === "keyboard" && e.interaction === "pan");
         return entry?.sensitivity ?? 1;
@@ -99,6 +101,7 @@ export class GeospatialCameraKeyboardInput implements ICameraInput<GeospatialCam
      * (How many pixels of pointer input to apply per keypress, before zoom speed factor is applied by movement class)
      * @deprecated Use the `sensitivity` field on the keyboard zoom entry in `camera.movement.input.inputMap` instead.
      */
+    @serialize()
     public get zoomSensitivity(): number {
         const entry = this.camera.movement.input.inputMap.find((e) => e.source === "keyboard" && e.interaction === "zoom");
         return entry?.sensitivity ?? 1;

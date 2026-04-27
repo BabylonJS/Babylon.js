@@ -228,41 +228,46 @@ export class ArcRotateCameraKeyboardMoveInput implements ICameraInput<ArcRotateC
                 const keyCode = this._keys[index];
 
                 this._keyboardConditions.key = keyCode;
-                const resolved = input.resolveInteraction("keyboard", this._keyboardConditions);
 
-                if (resolved) {
-                    // Per-frame impulse magnitude. The inputMap entry's `sensitivity` takes precedence
-                    // when set so consumers can tune feel declaratively (and so we can phase out the
-                    // legacy sensibility/angularSpeed properties over time). When `sensitivity` is
-                    // undefined, fall back to the legacy properties for backward compatibility.
-                    if (resolved.interaction === "pan") {
-                        const panSens = resolved.sensitivity ?? 1 / this.panningSensibility;
-                        if (this.keysLeft.indexOf(keyCode) !== -1) {
-                            input.handlers.pan(-panSens, 0);
-                        } else if (this.keysRight.indexOf(keyCode) !== -1) {
-                            input.handlers.pan(panSens, 0);
-                        } else if (this.keysUp.indexOf(keyCode) !== -1) {
-                            input.handlers.pan(0, panSens);
-                        } else if (this.keysDown.indexOf(keyCode) !== -1) {
-                            input.handlers.pan(0, -panSens);
-                        }
-                    } else if (resolved.interaction === "zoom") {
-                        const zoomSens = resolved.sensitivity ?? 1 / this.zoomingSensibility;
-                        if (this.keysUp.indexOf(keyCode) !== -1 || this.keysZoomIn.indexOf(keyCode) !== -1) {
-                            input.handlers.zoom(zoomSens);
-                        } else if (this.keysDown.indexOf(keyCode) !== -1 || this.keysZoomOut.indexOf(keyCode) !== -1) {
-                            input.handlers.zoom(-zoomSens);
-                        }
-                    } else if (resolved.interaction === "rotate") {
-                        const rotateSens = resolved.sensitivity ?? this.angularSpeed;
-                        if (this.keysLeft.indexOf(keyCode) !== -1) {
-                            input.handlers.rotate(-rotateSens, 0);
-                        } else if (this.keysRight.indexOf(keyCode) !== -1) {
-                            input.handlers.rotate(rotateSens, 0);
-                        } else if (this.keysUp.indexOf(keyCode) !== -1) {
-                            input.handlers.rotate(0, -rotateSens);
-                        } else if (this.keysDown.indexOf(keyCode) !== -1) {
-                            input.handlers.rotate(0, rotateSens);
+                // Skip resolveInteraction for the reset key — it has no inputMap entry of its own
+                // and would otherwise spuriously match the catch-all keyboard→rotate entry.
+                if (this.keysReset.indexOf(keyCode) === -1) {
+                    const resolved = input.resolveInteraction("keyboard", this._keyboardConditions);
+
+                    if (resolved) {
+                        // Per-frame impulse magnitude. The inputMap entry's `sensitivity` takes precedence
+                        // when set so consumers can tune feel declaratively (and so we can phase out the
+                        // legacy sensibility/angularSpeed properties over time). When `sensitivity` is
+                        // undefined, fall back to the legacy properties for backward compatibility.
+                        if (resolved.interaction === "pan") {
+                            const panSens = resolved.sensitivity ?? 1 / this.panningSensibility;
+                            if (this.keysLeft.indexOf(keyCode) !== -1) {
+                                input.handlers.pan(-panSens, 0);
+                            } else if (this.keysRight.indexOf(keyCode) !== -1) {
+                                input.handlers.pan(panSens, 0);
+                            } else if (this.keysUp.indexOf(keyCode) !== -1) {
+                                input.handlers.pan(0, panSens);
+                            } else if (this.keysDown.indexOf(keyCode) !== -1) {
+                                input.handlers.pan(0, -panSens);
+                            }
+                        } else if (resolved.interaction === "zoom") {
+                            const zoomSens = resolved.sensitivity ?? 1 / this.zoomingSensibility;
+                            if (this.keysUp.indexOf(keyCode) !== -1 || this.keysZoomIn.indexOf(keyCode) !== -1) {
+                                input.handlers.zoom(zoomSens);
+                            } else if (this.keysDown.indexOf(keyCode) !== -1 || this.keysZoomOut.indexOf(keyCode) !== -1) {
+                                input.handlers.zoom(-zoomSens);
+                            }
+                        } else if (resolved.interaction === "rotate") {
+                            const rotateSens = resolved.sensitivity ?? this.angularSpeed;
+                            if (this.keysLeft.indexOf(keyCode) !== -1) {
+                                input.handlers.rotate(-rotateSens, 0);
+                            } else if (this.keysRight.indexOf(keyCode) !== -1) {
+                                input.handlers.rotate(rotateSens, 0);
+                            } else if (this.keysUp.indexOf(keyCode) !== -1) {
+                                input.handlers.rotate(0, -rotateSens);
+                            } else if (this.keysDown.indexOf(keyCode) !== -1) {
+                                input.handlers.rotate(0, rotateSens);
+                            }
                         }
                     }
                 }

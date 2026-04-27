@@ -243,7 +243,8 @@ export class CameraMovement {
         this.rotationDeltaCurrentFrame.copyFromFloats(
             this._rotationVelocity.x * this.speed * this.rotationXSpeed * effectiveDeltaMs,
             this._rotationVelocity.y * this.speed * this.rotationYSpeed * effectiveDeltaMs,
-            this._rotationVelocity.z * this.speed * this.rotationYSpeed * effectiveDeltaMs
+            // z is not used by current handlers; keep at 0. Add a rotationZSpeed if z motion is wired up later.
+            0
         );
 
         this._zoomVelocity = this._calculateCurrentVelocity(this._zoomVelocity, this.zoomAccumulatedPixels, this.zoomInertia);
