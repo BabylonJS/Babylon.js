@@ -1,4 +1,4 @@
-{
+﻿{
     "root": "https://cdn.babylonjs.com",
     "tests": [
         {
@@ -183,7 +183,6 @@
         {
             "title": "OpenPBR Base Diffuse Roughness Prefiltered IBL with CDF",
             "playgroundId": "#MXACV7#28",
-            "renderCount": 5,
             "referenceImage": "openpbr_base_diffuse_roughness_prefiltered_ibl_with_cdf.png"
         },
         {
@@ -576,14 +575,12 @@
         },
         {
             "title": "Sliders",
-            "renderCount": 5,
             "playgroundId": "#HATGQZ#3",
             "referenceImage": "Sliders.png",
             "excludeFromAutomaticTesting": true
         },
         {
             "title": "Pointers",
-            "renderCount": 5,
             "playgroundId": "#1GLEJK#5",
             "referenceImage": "pointers.png",
             "excludeFromAutomaticTesting": true
@@ -616,7 +613,6 @@
         },
         {
             "title": "Clip planes",
-            "renderCount": 5,
             "playgroundId": "#Y6W087#0",
             "referenceImage": "clipplanes.png"
         },
@@ -762,7 +758,6 @@
         },
         {
             "title": "Highlights",
-            "renderCount": 5,
             "playgroundId": "#P7N8YW#1",
             "referenceImage": "highlights.png"
         },
@@ -795,7 +790,6 @@
         },
         {
             "title": "Capsule",
-            "renderCount": 10,
             "playgroundId": "#JAFIIU#4",
             "referenceImage": "CreateCapsule.png"
         },
@@ -806,7 +800,6 @@
         },
         {
             "title": "LOD",
-            "renderCount": 10,
             "playgroundId": "#FFMFW5#0",
             "referenceImage": "lod.png",
             "errorRatio": 5
@@ -827,14 +820,12 @@
         },
         {
             "title": "Advanced shadows",
-            "renderCount": 20,
             "playgroundId": "#SLV8LW#3",
             "referenceImage": "advancedShadows.png",
             "errorRatio": 5
         },
         {
             "title": "Advanced shadows (right handed)",
-            "renderCount": 20,
             "playgroundId": "#B48X7G#64",
             "referenceImage": "advancedShadows2.png",
             "errorRatio": 5
@@ -1307,26 +1298,22 @@
         {
             "title": "Enable disable post process",
             "playgroundId": "#1VI6WV#19",
-            "renderCount": 50,
             "errorRatio": 3,
             "referenceImage": "enableDisablePostProcess.png"
         },
         {
             "title": "Sharpen",
             "playgroundId": "#NAW8EA#1",
-            "renderCount": 20,
             "referenceImage": "sharpen.png"
         },
         {
             "title": "Depth of field",
             "playgroundId": "#IDSQK2#86",
-            "renderCount": 20,
             "referenceImage": "depthOfField.png"
         },
         {
             "title": "Chromatic aberration",
             "playgroundId": "#NAW8EA#0",
-            "renderCount": 20,
             "referenceImage": "chromaticAberration.png"
         },
         {
@@ -1479,13 +1466,11 @@
         },
         {
             "title": "Local cubemaps",
-            "renderCount": 2,
             "playgroundId": "#RNASML#4",
             "referenceImage": "local-cubemaps.png"
         },
         {
             "title": "TGA",
-            "renderCount": 5,
             "playgroundId": "#ZI77S7#4",
             "referenceImage": "tga.png"
         },
@@ -1518,14 +1503,12 @@
             "title": "SSAO2",
             "playgroundId": "#XT1HAS#1",
             "referenceImage": "ssao2.png",
-            "renderCount": 200,
             "excludedEngines": ["webgl1"],
             "excludeFromAutomaticTesting": true
         },
         {
             "title": "DepthRenderer",
             "playgroundId": "#3HPMAA#0",
-            "renderCount": 50,
             "referenceImage": "depthRenderer.png"
         },
         {
@@ -1568,14 +1551,12 @@
         {
             "title": "Prefiltering Irradiance on load",
             "playgroundId": "#FEEK7G#1111",
-            "renderCount": 5,
             "referenceImage": "prefilteringIrradiance.png",
             "excludedEngines": ["webgl1"]
         },
         {
             "title": "Prefiltering Irradiance on load with CDF",
             "playgroundId": "#FEEK7G#1110",
-            "renderCount": 5,
             "referenceImage": "prefilteringIrradianceCDF.png",
             "excludedEngines": ["webgl1"]
         },
@@ -1636,7 +1617,6 @@
         {
             "title": "KTX2 decoder test",
             "playgroundId": "#EIJH8L#27",
-            "renderCount": 5,
             "referenceImage": "ktx2decoder.png",
             "excludeFromAutomaticTesting": true
         },
@@ -1651,7 +1631,6 @@
             "title": "Screen space reflections",
             "playgroundId": "#PIZ1GK#1059",
             "referenceImage": "ssr.png",
-            "renderCount": 10,
             "excludedEngines": ["webgl1"],
             "excludeFromAutomaticTesting": true
         },
@@ -1659,7 +1638,6 @@
             "title": "Geometry buffer renderer",
             "playgroundId": "#PIZ1GK#1620",
             "referenceImage": "geometrybufferrenderer.png",
-            "renderCount": 10,
             "excludedEngines": ["webgl1"],
             "excludeFromAutomaticTesting": true
         },
@@ -1672,7 +1650,6 @@
             "title": "Shadows CSM and LODs",
             "playgroundId": "#24HWT9#20",
             "referenceImage": "shadowscsmandlod.png",
-            "renderCount": 2,
             "excludedEngines": ["webgl1"]
         },
         {
@@ -1682,13 +1659,11 @@
         },
         {
             "title": "Shadows with instances in left handed system",
-            "renderCount": 10,
             "playgroundId": "#MSAHKR#79",
             "referenceImage": "shadowsinstancesleft.png"
         },
         {
             "title": "Shadows with instances in right handed system",
-            "renderCount": 10,
             "playgroundId": "#MSAHKR#13",
             "referenceImage": "shadowsinstancesright.png"
         },
@@ -1997,7 +1972,6 @@
         },
         {
             "title": "Sample depth texture",
-            "renderCount": 2,
             "playgroundId": "#8RU8Q3#158",
             "excludedEngines": ["webgl1"],
             "referenceImage": "sampleDepthTexture.png"
@@ -2011,7 +1985,6 @@
         },
         {
             "title": "Show all procedural textures",
-            "renderCount": 5,
             "playgroundId": "#4N0QRP#1",
             "referenceImage": "allProcTextures.png",
             "excludeFromAutomaticTesting": true
@@ -2039,7 +2012,6 @@
         },
         {
             "title": "Bones and morphs computation order",
-            "renderCount": 40,
             "playgroundId": "#WGZLGJ#4040",
             "referenceImage": "bonesMorphsCompute.png",
             "errorRatio": 1
@@ -2047,7 +2019,6 @@
         {
             "title": "DepthRenderer rhs",
             "playgroundId": "#1PHYB0#138",
-            "renderCount": 5,
             "referenceImage": "depthRendererRHS.png"
         },
         {
@@ -2102,22 +2073,19 @@
             "title": "Load GUI snippet with unicode",
             "playgroundId": "#YS93KY",
             "referenceImage": "loadGuiSnippetWithUnicode.png",
-            "errorRatio": 4,
-            "renderCount": 50
+            "errorRatio": 4
         },
         {
             "title": "Parse GUI json with unicode",
             "playgroundId": "#ERVGT5",
             "referenceImage": "parseGuiJsonWithUnicode.png",
-            "errorRatio": 4,
-            "renderCount": 50
+            "errorRatio": 4
         },
         {
             "title": "Multi shadow generators per light",
             "playgroundId": "#LMQGSX#2",
             "referenceImage": "multiSGPerLight.png",
             "errorRatio": 2,
-            "renderCount": 5,
             "excludedEngines": ["webgl1"]
         },
         {
@@ -2208,7 +2176,6 @@
         {
             "title": "Screen Space Reflections 2",
             "playgroundId": "#PIZ1GK#1500",
-            "renderCount": 5,
             "excludedEngines": ["webgl1"],
             "referenceImage": "Screen-Space-Reflections-2.png"
         },
@@ -2329,7 +2296,6 @@
         },
         {
             "title": "edge-renderer-and-zOffset",
-            "renderCount": 5,
             "playgroundId": "#3DBA8X#1"
         },
         {
@@ -2350,7 +2316,6 @@
         },
         {
             "title": "sphere-with-custom-shader-to-display-wireframe-using-glow-layer",
-            "renderCount": 5,
             "playgroundId": "#Y05E2C#6"
         },
         {
@@ -2375,7 +2340,6 @@
         {
             "title": "default-render-pipeline",
             "playgroundId": "#GAFR36#0",
-            "renderCount": 5,
             "excludeFromAutomaticTesting": true
         },
         {
@@ -2388,7 +2352,6 @@
         },
         {
             "title": "procedural-texture-with-node-material",
-            "renderCount": 10,
             "playgroundId": "#IA4X0H#1"
         },
         {
@@ -2397,30 +2360,25 @@
         },
         {
             "title": "simple-custom-shader",
-            "renderCount": 5,
             "playgroundId": "#6GFJNR#2"
         },
         {
             "title": "show-multiple-guis",
-            "renderCount": 5,
             "errorRatio": 4,
             "playgroundId": "#6X9UMD#12"
         },
         {
             "title": "skybox-with-boombox",
-            "renderCount": 20,
             "errorRatio": 4,
             "playgroundId": "#I2TR8G#0"
         },
         {
             "title": "show-all-procedural-textures",
-            "renderCount": 5,
             "playgroundId": "#4N0QRP#1",
             "excludeFromAutomaticTesting": true
         },
         {
             "title": "custom-handling-of-materials-for-render-target-pass",
-            "renderCount": 60,
             "playgroundId": "#FIVL25#21"
         },
         {
@@ -2429,7 +2387,6 @@
         },
         {
             "title": "cascaded-shadow-maps-and-flying-saucers",
-            "renderCount": 10,
             "playgroundId": "#IIZ9UU#63",
             "excludedEngines": ["webgl1"]
         },
@@ -2440,7 +2397,6 @@
         },
         {
             "title": "depth-renderer",
-            "renderCount": 5,
             "playgroundId": "#1PHYB0#112"
         },
         {
@@ -2485,7 +2441,6 @@
         },
         {
             "title": "screen-space-curvature",
-            "renderCount": 5,
             "playgroundId": "#YF8D42#22",
             "excludedEngines": ["webgl1"]
         },
@@ -2503,7 +2458,6 @@
         },
         {
             "title": "Render to 3D RT",
-            "renderCount": 5,
             "playgroundId": "#XSNYAU#83",
             "errorRatio": 3,
             "excludedEngines": ["webgl1"]
@@ -3423,9 +3377,8 @@
         },
         {
             "title": "OpenPBR Subsurface Transmission Blending - Analytic Lights",
-            "playgroundId": "#GRQHVV#299",
-            "excludedEngines": ["webgl1"],
-            "renderCount": 2
+            "playgroundId": "#T69TFO#0",
+            "excludedEngines": ["webgl1"]
         },
         {
             "title": "OpenPBR Subsurface Transmission Blending Zero Depth - IBL",
@@ -3440,8 +3393,7 @@
         {
             "title": "OpenPBR Transmission Dense Scattering - SH",
             "playgroundId": "#GRQHVV#293",
-            "excludedEngines": ["webgl1"],
-            "renderCount": 10
+            "excludedEngines": ["webgl1"]
         },
         {
             "title": "OpenPBR Subsurface Dense Scattering - IBL",
@@ -3451,8 +3403,7 @@
         {
             "title": "OpenPBR Subsurface Dense Scattering - Analytic Lights",
             "playgroundId": "#GRQHVV#306",
-            "excludedEngines": ["webgl1"],
-            "renderCount": 10
+            "excludedEngines": ["webgl1"]
         },
         {
             "title": "OpenPBR Subsurface Dense Scattering - Realtime IBL",
@@ -3883,13 +3834,11 @@
         {
             "title": "Unbalanced push pop - debug markers",
             "playgroundId": "#T26WTI#2",
-            "renderCount": 10,
             "excludedEngines": ["webgl1", "webgl2"]
         },
         {
             "title": "Pending pop - debug markers",
             "playgroundId": "#24HWT9#25",
-            "renderCount": 10,
             "excludedEngines": ["webgl1", "webgl2"]
         },
         {
