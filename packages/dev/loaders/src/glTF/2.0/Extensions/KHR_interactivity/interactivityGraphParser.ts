@@ -20,7 +20,7 @@ export interface InteractivityEvent {
 }
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export const gltfTypeToBabylonType: {
-    [key: string]: { length: number; flowGraphType: FlowGraphTypes; elementType: "number" | "boolean" };
+    [key: string]: { length: number; flowGraphType: FlowGraphTypes; elementType: "number" | "boolean" | "string" };
 } = {
     float: { length: 1, flowGraphType: FlowGraphTypes.Number, elementType: "number" },
     bool: { length: 1, flowGraphType: FlowGraphTypes.Boolean, elementType: "boolean" },
@@ -31,6 +31,10 @@ export const gltfTypeToBabylonType: {
     float2x2: { length: 4, flowGraphType: FlowGraphTypes.Matrix2D, elementType: "number" },
     float3x3: { length: 9, flowGraphType: FlowGraphTypes.Matrix3D, elementType: "number" },
     int: { length: 1, flowGraphType: FlowGraphTypes.Integer, elementType: "number" },
+    // KHR_interactivity opaque reference type. Represented as a JSON Pointer string
+    // (e.g. "/nodes/17/") that addresses a glTF object. The empty string is the
+    // canonical "null reference" sentinel used by the parser.
+    ref: { length: 1, flowGraphType: FlowGraphTypes.String, elementType: "string" },
 };
 
 export class InteractivityGraphToFlowGraphParser {
@@ -38,7 +42,7 @@ export class InteractivityGraphToFlowGraphParser {
      * Note - the graph should be rejected if the same type is defined twice.
      * We currently don't validate that.
      */
-    private _types: { length: number; flowGraphType: FlowGraphTypes; elementType: "number" | "boolean" }[] = [];
+    private _types: { length: number; flowGraphType: FlowGraphTypes; elementType: "number" | "boolean" | "string" }[] = [];
     private _mappings: { flowGraphMapping: IGLTFToFlowGraphMapping; fullOperationName: string }[] = [];
     private _staticVariables: { type: FlowGraphTypes; value: any[] }[] = [];
     private _events: InteractivityEvent[] = [];
@@ -131,6 +135,10 @@ export class InteractivityGraphToFlowGraphParser {
                     break;
                 case FlowGraphTypes.Number:
                     value.push(NaN);
+                    break;
+                case FlowGraphTypes.String:
+                    // Default for a `ref`-typed value is the null reference, encoded as the empty string.
+                    value.push("" as any);
                     break;
                 case FlowGraphTypes.Vector2:
                     value.push(NaN, NaN);

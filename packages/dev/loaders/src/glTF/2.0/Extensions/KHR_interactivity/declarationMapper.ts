@@ -1104,10 +1104,22 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
             flows: {
                 err: { name: "error" },
             },
+            values: {
+                // New spec renames this output to `lastDelay` (ref). Internally we still produce a
+                // FlowGraphInteger; the index is unique per delay so it acts as the opaque handle.
+                lastDelay: { name: "lastDelayIndex" },
+            },
         },
     },
     "flow/cancelDelay": {
         blocks: [FlowGraphBlockNames.CancelDelay],
+        inputs: {
+            values: {
+                // New spec renames this input to `delay` (ref). The underlying block reads an int
+                // from `delayIndex`; when a ref-string flows in we coerce it via the path converter.
+                delay: { name: "delayIndex" },
+            },
+        },
     },
     "variable/get": {
         blocks: [FlowGraphBlockNames.GetVariable],

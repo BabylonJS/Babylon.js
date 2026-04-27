@@ -14,7 +14,7 @@ interface ConsoleEntry {
     text: string;
 }
 
-const KHRONOS_BASE = "E:\\Github\\glTF-Test-Assets-Interactivity\\Tests\\Interactivity";
+const KHRONOS_BASE = "E:\\KHR_Interactivity\\Opaque references\\glTF-Test-Assets-Interactivity-ref-type-spec-changes\\glTF-Test-Assets-Interactivity-ref-type-spec-changes\\Tests\\Interactivity";
 const SCENE_RUN_DURATION_MS = 3000;
 
 // Discover all GLB files

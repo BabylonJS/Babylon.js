@@ -1,5 +1,6 @@
 import { test, expect, Page } from "@playwright/test";
 import { evaluateDisposeEngine, evaluateCreateScene, evaluateInitEngine, getGlobalConfig } from "@tools/test-tools";
+import * as fs from "fs";
 
 /**
  * KHR_Interactivity Integration Tests
@@ -22,10 +23,15 @@ interface ConsoleEntry {
 
 const debug = process.env.DEBUG === "true";
 
-// Raw GitHub URLs for Khronos test GLBs
-const OVERVIEW_GLB_URL = "https://raw.githubusercontent.com/KhronosGroup/glTF-Test-Assets-Interactivity/main/Tests/Interactivity/Overview.glb";
-const SEND_RECEIVE_GLB_URL =
-    "https://raw.githubusercontent.com/KhronosGroup/glTF-Test-Assets-Interactivity/main/Tests/Interactivity/event/send_and_receive/glTF-Binary/send_and_receive.glb";
+// Local Khronos test GLBs from the new "Opaque references" / ref-type spec changes asset pack.
+const NEW_ASSETS_BASE = "E:\\KHR_Interactivity\\Opaque references\\glTF-Test-Assets-Interactivity-ref-type-spec-changes\\glTF-Test-Assets-Interactivity-ref-type-spec-changes\\Tests\\Interactivity";
+const OVERVIEW_GLB_PATH = `${NEW_ASSETS_BASE}\\Overview.glb`;
+const SEND_RECEIVE_GLB_PATH = `${NEW_ASSETS_BASE}\\event\\send_and_receive\\glTF-Binary\\send_and_receive.glb`;
+
+function loadAsDataUrl(filePath: string): string {
+    const buffer = fs.readFileSync(filePath);
+    return `data:model/gltf-binary;base64,${buffer.toString("base64")}`;
+}
 
 // How long to run the scene (milliseconds). Some tests use flow/setDelay
 // and need real time to pass for async events to fire.
@@ -78,6 +84,7 @@ test.describe("KHR_Interactivity", () => {
         page.on("console", consoleHandler);
 
         try {
+            const overviewDataUrl = loadAsDataUrl(OVERVIEW_GLB_PATH);
             // Load the GLB into the scene
             const loadResult = await page.evaluate(async (glbUrl: string) => {
                 try {
@@ -95,7 +102,7 @@ test.describe("KHR_Interactivity", () => {
                         error: e.message || String(e),
                     };
                 }
-            }, OVERVIEW_GLB_URL);
+            }, overviewDataUrl);
 
             expect(loadResult.success, `GLB loading failed: ${loadResult.error}`).toBe(true);
 
@@ -179,6 +186,7 @@ test.describe("KHR_Interactivity", () => {
         page.on("console", consoleHandler);
 
         try {
+            const sendReceiveDataUrl = loadAsDataUrl(SEND_RECEIVE_GLB_PATH);
             const loadResult = await page.evaluate(async (glbUrl: string) => {
                 try {
                     const scene = window.scene!;
@@ -195,7 +203,7 @@ test.describe("KHR_Interactivity", () => {
                         error: e.message || String(e),
                     };
                 }
-            }, SEND_RECEIVE_GLB_URL);
+            }, sendReceiveDataUrl);
 
             expect(loadResult.success, `GLB loading failed: ${loadResult.error}`).toBe(true);
 
