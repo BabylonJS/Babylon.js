@@ -1223,6 +1223,37 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                         }
                         this.props.globalState.lockObject.lock = false;
                     }}
+                    onDragOver={(evt) => {
+                        // Allow dropping 3D scene files anywhere on the editor.
+                        // During dragover, only DataTransferItem.kind/type are available (not the file name),
+                        // so accept any file drop and let the drop handler filter by extension.
+                        const items = evt.dataTransfer?.items;
+                        if (items && items.length > 0) {
+                            for (let i = 0; i < items.length; i++) {
+                                if (items[i].kind === "file") {
+                                    evt.preventDefault();
+                                    evt.stopPropagation();
+                                    return;
+                                }
+                            }
+                        }
+                    }}
+                    onDrop={(evt) => {
+                        const files = evt.dataTransfer?.files;
+                        if (!files || files.length === 0) {
+                            return;
+                        }
+                        const supportedExtensions = [".glb", ".gltf", ".babylon"];
+                        for (let i = 0; i < files.length; i++) {
+                            const name = files[i].name.toLowerCase();
+                            if (supportedExtensions.some((ext) => name.endsWith(ext))) {
+                                evt.preventDefault();
+                                evt.stopPropagation();
+                                this.props.globalState.onDropEventReceivedObservable.notifyObservers(evt.nativeEvent);
+                                return;
+                            }
+                        }
+                    }}
                 >
                     {/* Node creation menu */}
                     <NodeListComponent globalState={this.props.globalState} />

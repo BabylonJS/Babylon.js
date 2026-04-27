@@ -36,6 +36,7 @@ export class ScenePreviewComponent extends React.Component<IScenePreviewComponen
     private _onSceneContextChangedObserver: Nullable<Observer<SceneContext>> = null;
     private _onSnippetIdChangedObserver: Nullable<Observer<string>> = null;
     private _onReloadSnippetRequestedObserver: Nullable<Observer<void>> = null;
+    private _onDropEventObserver: Nullable<Observer<DragEvent>> = null;
 
     /** @internal */
     constructor(props: IScenePreviewComponentProps) {
@@ -79,6 +80,11 @@ export class ScenePreviewComponent extends React.Component<IScenePreviewComponen
             }
         });
 
+        // Listen for scene-file drops forwarded from the root editor (editor-wide drag-and-drop)
+        this._onDropEventObserver = this.props.globalState.onDropEventReceivedObservable.add((e) => {
+            this._handleDrop(e as unknown as React.DragEvent);
+        });
+
         // Create a default scene so the editor is usable without a snippet
         if (!this.props.globalState.sceneContext && !this.props.globalState.snippetId) {
             void this._createDefaultSceneAsync();
@@ -91,6 +97,7 @@ export class ScenePreviewComponent extends React.Component<IScenePreviewComponen
         this._onSceneContextChangedObserver?.remove();
         this._onSnippetIdChangedObserver?.remove();
         this._onReloadSnippetRequestedObserver?.remove();
+        this._onDropEventObserver?.remove();
     }
 
     private _watchContext(ctx: SceneContext) {
