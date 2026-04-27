@@ -34,8 +34,10 @@ export const PickingToolbar: FunctionComponent<{
     const gpuPicker = useResource(useCallback(() => new GPUPicker(), [scene]));
 
     // Track the meshes the picker should know about. Re-evaluate whenever meshes are added or removed.
+    // Do not filter on vertex count here: meshes can be created before their geometry is populated,
+    // and they still need to remain in the GPUPicker list so they become pickable once geometry arrives.
     const pickableMeshes = useObservableState(
-        useCallback(() => scene.meshes.filter((mesh) => mesh.isEnabled() && mesh.isVisible && mesh.getTotalVertices() > 0), [scene]),
+        useCallback(() => scene.meshes.filter((mesh) => mesh.isEnabled() && mesh.isVisible), [scene]),
         scene.onNewMeshAddedObservable,
         scene.onMeshRemovedObservable
     );

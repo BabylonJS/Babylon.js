@@ -918,7 +918,11 @@ export class GPUPicker {
             for (let i = 0; i < renderList.length; i++) {
                 const mesh = renderList[i];
                 const material = this._meshMaterialMap.get(mesh);
-                if (material && !material.isReady(mesh, mesh.hasInstances || mesh.hasThinInstances)) {
+                // Match the canonical "uses instanced shader variant" check used elsewhere in this file
+                // (see addPickingList) — InstancedMesh entries report isAnInstance=true while
+                // hasInstances=false, so omitting isAnInstance would validate the wrong shader variant.
+                const useInstances = mesh.hasInstances || mesh.isAnInstance || mesh.hasThinInstances;
+                if (material && !material.isReady(mesh, useInstances)) {
                     allReady = false;
                 }
             }
