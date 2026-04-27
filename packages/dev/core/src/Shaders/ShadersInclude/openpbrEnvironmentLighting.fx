@@ -200,19 +200,45 @@
     float dielectricIblFresnel = computeDielectricIblFresnel(baseDielectricReflectance, baseGeoInfo.environmentBrdf);
     vec3 dielectricIblColoredFresnel = dielectricIblFresnel * specular_color;
     #ifdef THIN_FILM
-        vec3 thinFilmDielectricFresnel = evalIridescence(thin_film_outside_ior, thin_film_ior, baseGeoInfo.NdotV, thin_film_thickness, baseDielectricReflectance.coloredF0);
+        // For rough surfaces, the GGX microfacet distribution means VdotH never truly reaches 0
+        // even at grazing NdotV. Using NdotV directly causes evalIridescence to return near-white
+        // at glancing angles for any roughness, which is incorrect. Clamping to the GGX alpha
+        // (specular_roughness^2) prevents this: smooth surfaces are unaffected (alpha≈0) while
+        // rough surfaces retain colored interference fringes at glancing view angles.
+        float thin_film_cos_theta = max(baseGeoInfo.NdotV, specularAlphaG);
         // Desaturate the thin film fresnel based on thickness and angle - this brings the results much
         // closer to path-tracing reference.
-        float thin_film_desaturation_scale = (thin_film_ior - 1.0) * sqrt(thin_film_thickness * 0.001 * baseGeoInfo.NdotV);
+        float thin_film_desaturation_scale = (thin_film_ior - 1.0) * sqrt(thin_film_thickness * 0.001 * thin_film_cos_theta);
+        // Shared BRDF LUT values for thin film energy conservation.
+        // brdf.x = integral of (F90-F0) Schlick factor; brdf.y = E_ss (white Fresnel integral).
+        float tf_brdf_x = baseGeoInfo.environmentBrdf.x;
+        float tf_E_ss   = baseGeoInfo.environmentBrdf.y;
+
+        // Dielectric thin film — evaluate, desaturate, then integrate over GGX distribution
+        // using the Schlick split-sum (b=0, F90=1) and apply multi-scattering ECF.
+        vec3 thinFilmDielectricFresnel = evalIridescence(thin_film_outside_ior, thin_film_ior, thin_film_cos_theta, thin_film_thickness, baseDielectricReflectance.coloredF0);
         thinFilmDielectricFresnel = mix(thinFilmDielectricFresnel, vec3(dot(thinFilmDielectricFresnel, vec3(0.3333))), thin_film_desaturation_scale);
+        vec3 tf_E_dielectric = (vec3(1.0) - thinFilmDielectricFresnel) * vec3(tf_brdf_x) + thinFilmDielectricFresnel * vec3(tf_E_ss);
+        vec3 tf_F_avg_dielectric = thinFilmDielectricFresnel + (vec3(1.0) - thinFilmDielectricFresnel) / 21.0;
+        vec3 tf_ECF_dielectric = vec3(1.0) + tf_F_avg_dielectric * (vec3(1.0) / vec3(tf_E_ss) - vec3(1.0));
+        thinFilmDielectricFresnel = clamp(tf_E_dielectric * tf_ECF_dielectric, vec3(0.0), vec3(1.0));
         dielectricIblColoredFresnel = mix(dielectricIblColoredFresnel, thinFilmDielectricFresnel * specular_color, thin_film_weight * thin_film_ior_scale);
+        // Furnace-test fix: the scalar dielectricIblFresnel controls diffuse suppression at line 436
+        // via (1 - F) * diffuse + F_colored * specular. If F_colored > F_scalar, energy is gained.
+        // Clamp scalar to max channel of colored to guarantee energy conservation in all channels.
+        dielectricIblFresnel = max(dielectricIblColoredFresnel.r, max(dielectricIblColoredFresnel.g, dielectricIblColoredFresnel.b));
     #endif
 
     // Conductor IBL Fresnel
     vec3 conductorIblFresnel = computeConductorIblFresnel(baseConductorReflectance, baseGeoInfo.environmentBrdf);
     #ifdef THIN_FILM
-        vec3 thinFilmConductorFresnel = specular_weight * evalIridescence(thin_film_outside_ior, thin_film_ior, baseGeoInfo.NdotV, thin_film_thickness, baseConductorReflectance.coloredF0);
-        thinFilmConductorFresnel = mix(thinFilmConductorFresnel, vec3(dot(thinFilmConductorFresnel, vec3(0.3333))), thin_film_desaturation_scale);
+        // Conductor thin film — same energy conservation as dielectric.
+        vec3 thinFilmConductorRaw = evalIridescence(thin_film_outside_ior, thin_film_ior, thin_film_cos_theta, thin_film_thickness, baseConductorReflectance.coloredF0);
+        thinFilmConductorRaw = mix(thinFilmConductorRaw, vec3(dot(thinFilmConductorRaw, vec3(0.3333))), thin_film_desaturation_scale);
+        vec3 tf_E_conductor = (vec3(1.0) - thinFilmConductorRaw) * vec3(tf_brdf_x) + thinFilmConductorRaw * vec3(tf_E_ss);
+        vec3 tf_F_avg_conductor = thinFilmConductorRaw + (vec3(1.0) - thinFilmConductorRaw) / 21.0;
+        vec3 tf_ECF_conductor = vec3(1.0) + tf_F_avg_conductor * (vec3(1.0) / vec3(tf_E_ss) - vec3(1.0));
+        vec3 thinFilmConductorFresnel = specular_weight * clamp(tf_E_conductor * tf_ECF_conductor, vec3(0.0), vec3(1.0));
         conductorIblFresnel = mix(conductorIblFresnel, thinFilmConductorFresnel, thin_film_weight * thin_film_ior_scale);
     #endif
 
