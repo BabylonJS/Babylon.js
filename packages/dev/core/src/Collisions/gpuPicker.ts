@@ -556,9 +556,6 @@ export class GPUPicker {
         const invertedY = rttSizeH - adjustedY - 1;
         this._preparePickingBuffer(this._engine!, rttSizeW, rttSizeH, adjustedX, invertedY);
 
-        // Make sure every picking material variant is compiled before the picking texture
-        // is rendered, otherwise the renderer will silently skip meshes whose effect is
-        // not yet ready and the click pixel will read back as background.
         await this._waitForPickingMaterialsReadyAsync();
 
         return await this._executePickingAsync(adjustedX, invertedY, disposeWhenDone);
@@ -936,6 +933,8 @@ export class GPUPicker {
                 this._cachedScene!.onAfterRenderObservable.addOnce(() => resolve());
             });
         }
+
+        Logger.Warn(`GPUPicker: gave up waiting for picking materials to compile after ${maxAttempts} attempts; picking results may be incorrect.`);
     }
 
     private _getMeshFromMultiplePoints(x: number, y: number, minX: number, maxY: number, w: number): { pickedMesh: Nullable<AbstractMesh>; thinInstanceIndex: number | undefined } {

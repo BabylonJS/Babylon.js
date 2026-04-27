@@ -9,6 +9,7 @@ import { TargetRegular } from "@fluentui/react-icons";
 import { GPUPicker } from "core/Collisions/gpuPicker";
 import { PointerEventTypes } from "core/Events/pointerEvents";
 import { AsyncLock } from "core/Misc/asyncLock";
+import { Logger } from "core/Misc/logger";
 import { useKeyListener } from "shared-ui-components/fluent/hooks/keyboardHooks";
 import { useObservableState } from "shared-ui-components/modularTool/hooks/observableHooks";
 import { useResource } from "shared-ui-components/modularTool/hooks/resourceHooks";
@@ -81,39 +82,51 @@ export const PickingToolbar: FunctionComponent<{
             const pickingLock = new AsyncLock();
 
             const pointerObserver = scene.onPrePointerObservable.add(() => {
-                void pickingLock.lockAsync(async () => {
-                    let pickedEntity: Nullable<object> = null;
+                // Capture pointer position and synchronous gizmo hover state at click time.
+                // The async GPU pick may queue behind a previous pick (e.g. while picking shaders
+                // compile on the very first click), and by the time the queued callback runs the
+                // pointer and gizmo hover state may have changed.
+                let pickedEntity: Nullable<object> = null;
 
-                    // Check camera gizmos.
-                    if (!pickedEntity) {
-                        for (const cameraGizmo of gizmoService.getCameraGizmos(scene)) {
-                            if (cameraGizmo.isHovered) {
-                                pickedEntity = cameraGizmo.camera;
-                            }
+                // Check camera gizmos.
+                if (!pickedEntity) {
+                    for (const cameraGizmo of gizmoService.getCameraGizmos(scene)) {
+                        if (cameraGizmo.isHovered) {
+                            pickedEntity = cameraGizmo.camera;
                         }
                     }
+                }
 
-                    // Check light gizmos.
-                    if (!pickedEntity) {
-                        for (const lightGizmo of gizmoService.getLightGizmos(scene)) {
-                            if (lightGizmo.isHovered) {
-                                pickedEntity = lightGizmo.light;
-                            }
+                // Check light gizmos.
+                if (!pickedEntity) {
+                    for (const lightGizmo of gizmoService.getLightGizmos(scene)) {
+                        if (lightGizmo.isHovered) {
+                            pickedEntity = lightGizmo.light;
                         }
                     }
+                }
 
-                    // Check the main scene.
-                    if (!pickedEntity) {
-                        const x = scene.unTranslatedPointer.x;
-                        const y = scene.unTranslatedPointer.y;
-                        const pickingInfo = await gpuPicker.pickAsync(x, y);
-                        pickedEntity = pickingInfo?.mesh ?? null;
-                    }
+                if (pickedEntity) {
+                    selectEntity(pickedEntity);
+                    return;
+                }
 
-                    if (pickedEntity) {
-                        selectEntity(pickedEntity);
+                // Check the main scene via GPU pick. Serialize concurrent picks via the lock so
+                // rapid clicks don't overlap on the GPU picker (which would otherwise no-op).
+                const x = scene.unTranslatedPointer.x;
+                const y = scene.unTranslatedPointer.y;
+                void (async () => {
+                    try {
+                        await pickingLock.lockAsync(async () => {
+                            const pickingInfo = await gpuPicker.pickAsync(x, y);
+                            if (pickingInfo?.mesh) {
+                                selectEntity(pickingInfo.mesh);
+                            }
+                        });
+                    } catch (error) {
+                        Logger.Warn(`GPU picking failed: ${error}`);
                     }
-                });
+                })();
             }, PointerEventTypes.POINTERTAP);
 
             return () => {
