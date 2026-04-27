@@ -24,23 +24,45 @@
     }
 #endif
 
-#if CONDUCTOR_SPECULAR_MODEL == CONDUCTOR_SPECULAR_MODEL_OPENPBR 
+#if CONDUCTOR_SPECULAR_MODEL == CONDUCTOR_SPECULAR_MODEL_OPENPBR
+    // F82 model constants
+    // cos_theta_max = 1/7 (the angle where the F82 dip peaks)
+    #define F82_COS_THETA_MAX           0.142857143
+    #define F82_ONE_MINUS_CTM_POW5      0.462664366  // (1 - 1/7)^5
+    #define F82_ONE_MINUS_CTM_POW6      0.396569457  // (1 - 1/7)^6
+    // b_denominator = cos_theta_max * (1 - cos_theta_max)^6
+    #define F82_B_DENOMINATOR_RECIP     17.6512785   // 1 / (cos_theta_max * (1-cos_theta_max)^6)
+
+    // B channel of the OpenPBR BRDF LUT stores  integral(f_GGX * VdotH * (1-VdotH)^6 * NdotL dL)
+    // scaled by BRDF_Z_SCALE to use the full [0,1] 8-bit range.
+    #define BRDF_Z_SCALE 16.0
+
     vec3 getF82Specular(float NdotV, vec3 F0, vec3 edgeTint, float roughness) {
         // F82 specular model for metals
         // https://academysoftwarefoundation.github.io/OpenPBR/index.html#model/basesubstrate/metal
-        const float cos_theta_max = 0.142857143; // 1 / 7
-        
-        const float one_minus_cos_theta_max_to_the_fifth = 0.462664366; // (1 - cos_theta_max)^5
-        const float one_minus_cos_theta_max_to_the_sixth = 0.396569457; // (1 - cos_theta_max)^6
         vec3 white_minus_F0 = vec3(1.0) - F0;
-        vec3 b_numerator = (F0 + white_minus_F0 * one_minus_cos_theta_max_to_the_fifth) * (vec3(1.0) - edgeTint);
-        const float b_denominator = cos_theta_max * one_minus_cos_theta_max_to_the_sixth;
-        const float b_denominator_reciprocal = 1.0 / b_denominator;
-        vec3 b = b_numerator * b_denominator_reciprocal; // analogous to "a" in the "Fresnel Equations Considered Harmful" slides
+        vec3 b = (F0 + white_minus_F0 * F82_ONE_MINUS_CTM_POW5) * (vec3(1.0) - edgeTint) * F82_B_DENOMINATOR_RECIP;
         float cos_theta = max(roughness, NdotV);
         float one_minus_cos_theta = 1.0 - cos_theta;
         vec3 offset_from_F0 = (white_minus_F0 - b * cos_theta * one_minus_cos_theta) * pow(one_minus_cos_theta, 5.0);
         return clamp(F0 + offset_from_F0, 0.0, 1.0);
+    }
+
+    // Compute the b coefficient (F82 dip strength) from F0 and edge tint.
+    vec3 getF82B(vec3 F0, vec3 edgeTint) {
+        return (F0 + (vec3(1.0) - F0) * F82_ONE_MINUS_CTM_POW5) * (vec3(1.0) - edgeTint) * F82_B_DENOMINATOR_RECIP;
+    }
+
+    // F82 directional albedo:  E_F82 = (F90-F0)*brdf.x + F0*brdf.y - b*brdf.z
+    vec3 getF82DirectionalAlbedo(vec3 F0, vec3 F90, vec3 b, vec3 environmentBrdf) {
+        return (F90 - F0) * environmentBrdf.x + F0 * environmentBrdf.y - b * environmentBrdf.z;
+    }
+
+    // Cosine-weighted hemisphere average of F82 Fresnel (closed form).
+    //   F_avg = 2*∫₀¹ F82(t)·t dt = F0 + (1-F0)/21 - b/126
+    //   The b/126 comes from 2·Beta(3,7) = 2·Γ(3)Γ(7)/Γ(10) = 2/252 = 1/126.
+    vec3 getF82AverageFresnel(vec3 F0, vec3 b) {
+        return F0 + (vec3(1.0) - F0) / 21.0 - b / 126.0;
     }
 #endif
 

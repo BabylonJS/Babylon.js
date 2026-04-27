@@ -5,7 +5,7 @@ var slab_translucent_background: vec4f = vec4f(0., 0., 0., 1.);
 {
     // Select a mipmap LOD appropriate for the roughness (and IOR)
     // vBackgroundRefractionInfos.x is the number of mips of backgroundRefractionSampler
-    let refractionLOD: f32 = transmission_roughness_alpha * uniforms.vBackgroundRefractionInfos.x;
+    let refractionLOD: f32 = min(transmission_roughness, 0.7) * uniforms.vBackgroundRefractionInfos.x;
     var refractionNoiseOffset: vec2f = vec2f(0.0f);
     
     #ifdef DISPERSION

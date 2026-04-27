@@ -126,13 +126,54 @@ export const evaluatePlaywrightVisTests = async (
 
     const excludeRegexArray = process.env.EXCLUDE_REGEX_ARRAY ? process.env.EXCLUDE_REGEX_ARRAY.split(",") : [];
 
-    const tests: any[] = config.tests.filter((test: any) => {
+    // AFFECTED_TAGS filtering: when set, only run tests whose dependsOn overlaps with affected tags.
+    // If not set or "ALL", run everything. If "NONE", skip all tests.
+    const affectedTagsEnv = process.env.AFFECTED_TAGS;
+    const affectedTagSet = affectedTagsEnv && affectedTagsEnv !== "ALL" && affectedTagsEnv !== "NONE" ? new Set(affectedTagsEnv.split(",")) : null;
+
+    let tests: any[] = config.tests.filter((test: any) => {
         const externallyExcluded = excludeRegexArray.some((regex) => {
             const re = new RegExp(regex, "i");
             return re.test(test.title);
         });
         return !(externallyExcluded || test.excludeFromAutomaticTesting || (test.excludedEngines && test.excludedEngines.includes(engineType)));
     });
+
+    // Apply tag-based filtering when AFFECTED_TAGS is set
+    if (affectedTagsEnv === "NONE") {
+        console.log("AFFECTED_TAGS=NONE — skipping all visualization tests");
+        tests = [];
+    } else if (affectedTagSet) {
+        const beforeCount = tests.length;
+        tests = tests.filter((test: any) => {
+            // Tests without dependsOn always run (conservative default)
+            if (!test.dependsOn || test.dependsOn.length === 0) {
+                return true;
+            }
+            return test.dependsOn.some((tag: string) => affectedTagSet.has(tag));
+        });
+        console.log(`AFFECTED_TAGS filtering: ${beforeCount} → ${tests.length} tests (tags: ${affectedTagsEnv})`);
+    }
+
+    // Validate dependsOn tags against tagMap if available
+    const tagMapPath = path.resolve(__dirname, "../visualization/tagMap.json");
+    if (fs.existsSync(tagMapPath)) {
+        try {
+            const tagMap = JSON.parse(fs.readFileSync(tagMapPath, "utf8"));
+            const validTags = new Set<string>(tagMap.tags);
+            for (const test of config.tests) {
+                if (test.dependsOn) {
+                    for (const tag of test.dependsOn) {
+                        if (!validTags.has(tag)) {
+                            console.warn(`[WARN] Unknown tag "${tag}" in dependsOn for test "${test.title}"`);
+                        }
+                    }
+                }
+            }
+        } catch {
+            // Ignore tagMap read errors — validation is optional
+        }
+    }
 
     function log(msg: any, title?: string) {
         const titleToLog = title ? `[${title}]` : "";

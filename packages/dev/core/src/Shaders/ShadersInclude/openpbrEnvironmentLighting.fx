@@ -8,7 +8,7 @@
     // Coat IBL Fresnel
     float coatIblFresnel = 0.0;
     if (coat_weight > 0.0) {
-        coatIblFresnel = getReflectanceFromBRDFLookup(vec3(coatReflectance.F0), vec3(coatReflectance.F90), coatGeoInfo.environmentBrdf).r;
+        coatIblFresnel = computeDielectricIblFresnel(coatReflectance, coatGeoInfo.environmentBrdf);
     
         // __________ Coat Darkening _____________
         // Hemisphere-averaged Fresnel (empirical approximation)
@@ -197,7 +197,7 @@
     // The non-colored fresnel represents the % of light that doesn't penetrate through 
     // the base specular lobe. i.e. the specular lobe isn't energy conserving for coloured specular.
 
-    float dielectricIblFresnel = getReflectanceFromBRDFLookup(vec3(baseDielectricReflectance.F0), vec3(baseDielectricReflectance.F90), baseGeoInfo.environmentBrdf).r;
+    float dielectricIblFresnel = computeDielectricIblFresnel(baseDielectricReflectance, baseGeoInfo.environmentBrdf);
     vec3 dielectricIblColoredFresnel = dielectricIblFresnel * specular_color;
     #ifdef THIN_FILM
         vec3 thinFilmDielectricFresnel = evalIridescence(thin_film_outside_ior, thin_film_ior, baseGeoInfo.NdotV, thin_film_thickness, baseDielectricReflectance.coloredF0);
@@ -209,7 +209,7 @@
     #endif
 
     // Conductor IBL Fresnel
-    vec3 conductorIblFresnel = conductorIblFresnel(baseConductorReflectance, baseGeoInfo.NdotV, specular_roughness, baseGeoInfo.environmentBrdf);
+    vec3 conductorIblFresnel = computeConductorIblFresnel(baseConductorReflectance, baseGeoInfo.environmentBrdf);
     #ifdef THIN_FILM
         vec3 thinFilmConductorFresnel = specular_weight * evalIridescence(thin_film_outside_ior, thin_film_ior, baseGeoInfo.NdotV, thin_film_thickness, baseConductorReflectance.coloredF0);
         thinFilmConductorFresnel = mix(thinFilmConductorFresnel, vec3(dot(thinFilmConductorFresnel, vec3(0.3333))), thin_film_desaturation_scale);
