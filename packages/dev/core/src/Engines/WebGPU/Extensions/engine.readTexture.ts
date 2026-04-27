@@ -1,7 +1,7 @@
 import { ThinWebGPUEngine } from "core/Engines/thinWebGPUEngine";
-import type { InternalTexture } from "../../../Materials/Textures/internalTexture";
-import type { Nullable } from "../../../types";
-import type { WebGPUHardwareTexture } from "../webgpuHardwareTexture";
+import { type InternalTexture } from "../../../Materials/Textures/internalTexture";
+import { type Nullable } from "../../../types";
+import { type WebGPUHardwareTexture } from "../webgpuHardwareTexture";
 
 declare module "../../abstractEngine" {
     // eslint-disable-next-line @typescript-eslint/naming-convention

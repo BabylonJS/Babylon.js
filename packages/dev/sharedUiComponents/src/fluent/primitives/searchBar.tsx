@@ -1,5 +1,4 @@
-import { Field, SearchBox as FluentSearchBox, makeStyles } from "@fluentui/react-components";
-import type { InputOnChangeData, SearchBoxChangeEvent } from "@fluentui/react-components";
+import { Field, SearchBox as FluentSearchBox, makeStyles, type InputOnChangeData, type SearchBoxChangeEvent } from "@fluentui/react-components";
 import { forwardRef } from "react";
 
 type SearchProps = {

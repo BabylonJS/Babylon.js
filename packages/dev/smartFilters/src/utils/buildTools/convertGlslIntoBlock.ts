@@ -1,7 +1,7 @@
 import * as fs from "fs";
 import { ExtractShaderProgramFromGlsl } from "./convertGlslIntoShaderProgram.js";
 import { ConnectionPointType } from "../../connection/connectionPointType.js";
-import { BlockDisableStrategy } from "../../blockFoundation/disableableShaderBlock.js";
+import { BlockDisableStrategy } from "../../blockFoundation/blockDisableStrategy.js";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const EXTRA_IMPORTS = "@EXTRA_IMPORTS@";
@@ -70,7 +70,7 @@ const FileTemplate = `/* eslint-disable prettier/prettier */
 // to the block. This file will get overwritten when the build
 // is run or during a watch when the .glsl file is updated.
 
-import type { Effect } from "${BABYLON_CORE_PATH}/Materials/effect.js";
+import { type Effect } from "${BABYLON_CORE_PATH}/Materials/effect.js";
 
 import {
     ${SHADER_BINDING_EXTENDS},

@@ -1,8 +1,6 @@
-import { PropertyLine } from "./propertyLine";
-import { Link } from "../../primitives/link";
-import type { LinkProps } from "../../primitives/link";
-import type { PropertyLineProps } from "./propertyLine";
-import type { FunctionComponent } from "react";
+import { PropertyLine, type PropertyLineProps } from "./propertyLine";
+import { Link, type LinkProps } from "../../primitives/link";
+import { type FunctionComponent } from "react";
 
 /**
  * Wraps a link in a property line

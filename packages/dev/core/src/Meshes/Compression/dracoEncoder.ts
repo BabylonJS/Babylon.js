@@ -1,20 +1,19 @@
 import { _IsConfigurationAvailable, DracoCodec, type IDracoCodecConfiguration } from "./dracoCodec";
-import type { EncoderMessage, IDracoAttributeData, IDracoEncodedMeshData, IDracoEncoderOptions, DracoAttributeName } from "./dracoEncoder.types";
+import { type EncoderMessage, type IDracoAttributeData, type IDracoEncodedMeshData, type IDracoEncoderOptions, type DracoAttributeName } from "./dracoEncoder.types";
 import { EncodeMesh, EncoderWorkerFunction } from "./dracoCompressionWorker";
 import { Tools } from "../../Misc/tools";
 import { VertexBuffer } from "../buffer";
-import type { Nullable } from "../../types";
+import { type Nullable } from "../../types";
 import { Mesh } from "../mesh";
-import type { Geometry } from "../geometry";
+import { type Geometry } from "../geometry";
 import { Logger } from "../../Misc/logger";
 import { deepMerge } from "../../Misc/deepMerger";
-import type { EncoderModule } from "draco3d";
+import { type EncoderModule } from "draco3d";
 import { AreIndices32Bits, GetTypedArrayData } from "core/Buffers/bufferUtils";
 
 // Missing type from types/draco3d. Do not use in public scope; UMD tests will fail because of EncoderModule.
 type DracoEncoderModule = (props: { wasmBinary?: ArrayBuffer }) => Promise<EncoderModule>;
 
-// eslint-disable-next-line @typescript-eslint/naming-convention
 declare let DracoEncoderModule: DracoEncoderModule;
 
 /**
@@ -63,7 +62,7 @@ function PrepareAttributesForDraco(input: Mesh | Geometry, excludedAttributes?: 
     for (const kind of input.getVerticesDataKinds()) {
         if (excludedAttributes?.includes(kind)) {
             if (kind === VertexBuffer.PositionKind) {
-                throw new Error("Cannot exclude position attribute from Draco encoding.");
+                throw new Error("Draco: Cannot exclude position attribute from encoding.");
             }
             continue;
         }
@@ -207,12 +206,12 @@ export class DracoEncoder extends DracoCodec {
         attributes: Array<IDracoAttributeData>,
         indices: Nullable<Uint16Array | Uint32Array>,
         options?: IDracoEncoderOptions
-    ): Promise<Nullable<IDracoEncodedMeshData>> {
+    ): Promise<IDracoEncodedMeshData> {
         const mergedOptions = options ? deepMerge(DefaultEncoderOptions, options) : DefaultEncoderOptions;
 
         if (this._workerPoolPromise) {
             const workerPool = await this._workerPoolPromise;
-            return await new Promise<Nullable<IDracoEncodedMeshData>>((resolve, reject) => {
+            return await new Promise<IDracoEncodedMeshData>((resolve, reject) => {
                 workerPool.push((worker, onComplete) => {
                     const onError = (error: ErrorEvent) => {
                         worker.removeEventListener("error", onError);
@@ -223,10 +222,15 @@ export class DracoEncoder extends DracoCodec {
                     };
 
                     const onMessage = (message: MessageEvent<EncoderMessage>) => {
-                        if (message.data.id === "encodeMeshDone") {
+                        if (message.data.id === "encodeMeshSuccess") {
                             worker.removeEventListener("error", onError);
                             worker.removeEventListener("message", onMessage);
                             resolve(message.data.encodedMeshData);
+                            onComplete();
+                        } else if (message.data.id === "encodeMeshError") {
+                            worker.removeEventListener("error", onError);
+                            worker.removeEventListener("message", onMessage);
+                            reject(new Error(message.data.errorMessage));
                             onComplete();
                         }
                     };
@@ -253,7 +257,7 @@ export class DracoEncoder extends DracoCodec {
             return EncodeMesh(encoder.module, attributes, indices, mergedOptions);
         }
 
-        throw new Error("Draco encoder module is not available");
+        throw new Error("Draco: Encoder module is not available");
     }
 
     /**
@@ -262,15 +266,15 @@ export class DracoEncoder extends DracoCodec {
      * @param options options for the encoding
      * @returns a promise that resolves to the newly-encoded data
      */
-    public async encodeMeshAsync(input: Mesh | Geometry, options?: IDracoEncoderOptions): Promise<Nullable<IDracoEncodedMeshData>> {
+    public async encodeMeshAsync(input: Mesh | Geometry, options?: IDracoEncoderOptions): Promise<IDracoEncodedMeshData> {
         const verticesCount = input.getTotalVertices();
         if (verticesCount == 0) {
-            throw new Error("Cannot compress geometry with Draco. There are no vertices.");
+            throw new Error("Draco: Cannot encode geometry with no vertices.");
         }
 
         // Prepare parameters for encoding
         if (input instanceof Mesh && input.morphTargetManager && options?.method === "MESH_EDGEBREAKER_ENCODING") {
-            Logger.Warn("Cannot use Draco EDGEBREAKER method with morph targets. Falling back to SEQUENTIAL method.");
+            Logger.Warn("Draco: Cannot use EDGEBREAKER encoding method with morph targets. Falling back to SEQUENTIAL method.");
             options.method = "MESH_SEQUENTIAL_ENCODING";
         }
 

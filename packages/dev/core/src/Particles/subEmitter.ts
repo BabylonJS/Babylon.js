@@ -1,11 +1,11 @@
 import { Vector3 } from "../Maths/math.vector";
 import { _WarnImport } from "../Misc/devTools";
-import type { AbstractEngine } from "../Engines/abstractEngine";
+import { type AbstractEngine } from "../Engines/abstractEngine";
 import { GetClass } from "../Misc/typeStore";
 
-import type { Scene } from "../scene";
-import type { AbstractMesh } from "../Meshes/abstractMesh";
-import type { ParticleSystem } from "../Particles/particleSystem";
+import { type Scene } from "../scene";
+import { type AbstractMesh } from "../Meshes/abstractMesh";
+import { type ParticleSystem } from "../Particles/particleSystem";
 
 /**
  * Type of sub emitter

@@ -1,10 +1,9 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import type * as eslint from "eslint";
 import type * as ESTree from "estree";
-import type { ParserContext } from "@microsoft/tsdoc";
-import { TSDocConfiguration, TSDocParser, TextRange } from "@microsoft/tsdoc";
+import { type ParserContext, TSDocConfiguration, TSDocParser, TextRange } from "@microsoft/tsdoc";
 import * as tsdoc from "@microsoft/tsdoc";
-import type { TSDocConfigFile } from "@microsoft/tsdoc-config";
+import { type TSDocConfigFile } from "@microsoft/tsdoc-config";
 import * as ts from "typescript";
 import * as fs from "fs";
 import * as path from "path";
@@ -235,7 +234,6 @@ const plugin: IPlugin = {
                 type: "problem",
                 docs: {
                     description: "Validates that TypeScript documentation comments conform to the TSDoc standard",
-                    category: "Stylistic Issues",
                     // This package is experimental
                     recommended: false,
                     url: "https://tsdoc.org/pages/packages/eslint-plugin-tsdoc",
@@ -346,7 +344,6 @@ const plugin: IPlugin = {
                 type: "problem",
                 docs: {
                     description: "Make sure documentation is available for public members",
-                    category: "Stylistic Issues",
                     // This package is experimental
                     recommended: false,
                     url: "https://tsdoc.org/pages/packages/eslint-plugin-tsdoc",
@@ -424,7 +421,6 @@ const plugin: IPlugin = {
                 type: "problem",
                 docs: {
                     description: "Make sure a comment exists",
-                    category: "Stylistic Issues",
                     recommended: false,
                     url: "https://tsdoc.org/pages/packages/eslint-plugin-tsdoc",
                 },
@@ -576,6 +572,12 @@ const plugin: IPlugin = {
                             return;
                         }
 
+                        // Skip imports where all specifiers are inline type imports (e.g. import { type Foo } from "...")
+                        // These are also erased during compilation and won't cause .js extension issues
+                        if (node.specifiers.length > 0 && node.specifiers.every((s) => s.type === "ImportSpecifier" && (s as any).importKind === "type")) {
+                            return;
+                        }
+
                         const importPath = node.source.value as string;
 
                         // Relative imports
@@ -608,6 +610,104 @@ const plugin: IPlugin = {
                                     return;
                                 }
                             }
+                        }
+                    },
+                };
+            },
+        },
+        "no-downlevel-iteration": {
+            meta: {
+                type: "problem",
+                docs: {
+                    description: "Disallow for...of loops and spread syntax on non-array iterables that break in the UMD build (ES5 target) without --downlevelIteration",
+                },
+                messages: {
+                    forOfNonArray:
+                        'for...of over a non-array iterable ({{typeName}}) will not work in the UMD build (ES5 target) without --downlevelIteration. Convert to an array first, e.g. "for (const x of Array.from(iterable))".',
+                    spreadNonArray:
+                        'Spreading a non-array iterable ({{typeName}}) will not work in the UMD build (ES5 target) without --downlevelIteration. Convert to an array first, e.g. "[...Array.from(iterable)]".',
+                },
+            },
+            create(context: eslint.Rule.RuleContext) {
+                // Access type-checker from typescript-eslint parser services
+                const parserServices = (context.sourceCode as any).parserServices;
+                if (!parserServices?.esTreeNodeToTSNodeMap || !parserServices?.program) {
+                    return {};
+                }
+
+                const checker: ts.TypeChecker = parserServices.program.getTypeChecker();
+
+                function isSafeForDownlevelIteration(type: ts.Type): boolean {
+                    // any/unknown - can't determine, assume safe
+                    if (type.getFlags() & (ts.TypeFlags.Any | ts.TypeFlags.Unknown)) {
+                        return true;
+                    }
+
+                    // String types - downlevel for-of uses index access which works (surrogate pairs aside)
+                    if (type.getFlags() & ts.TypeFlags.StringLike) {
+                        return true;
+                    }
+
+                    // Array types (Array<T>, T[], ReadonlyArray<T>)
+                    if (checker.isArrayType(type)) {
+                        return true;
+                    }
+
+                    // Tuple types ([T, U, ...])
+                    if (checker.isTupleType(type)) {
+                        return true;
+                    }
+
+                    // Union types - all members must be safe
+                    if (type.isUnion()) {
+                        return type.types.every((t) => isSafeForDownlevelIteration(t));
+                    }
+
+                    // Intersection types - if any member is safe, the whole type is safe
+                    if (type.isIntersection()) {
+                        return type.types.some((t) => isSafeForDownlevelIteration(t));
+                    }
+
+                    // Types with numeric index signature + length (covers TypedArrays, NodeList, HTMLCollection, arguments)
+                    // The downlevel for-of emit uses .length and [i] which works for these
+                    const numberIndexType = type.getNumberIndexType();
+                    if (numberIndexType && type.getProperty("length")) {
+                        return true;
+                    }
+
+                    return false;
+                }
+
+                function checkExpression(esTreeNode: ESTree.Expression, messageId: string) {
+                    try {
+                        const tsNode = parserServices.esTreeNodeToTSNodeMap.get(esTreeNode);
+                        if (!tsNode) {
+                            return;
+                        }
+
+                        const type = checker.getTypeAtLocation(tsNode);
+                        if (!isSafeForDownlevelIteration(type)) {
+                            context.report({
+                                node: esTreeNode,
+                                messageId,
+                                data: {
+                                    typeName: checker.typeToString(type),
+                                },
+                            });
+                        }
+                    } catch {
+                        // If type checking fails for any reason, don't report
+                    }
+                }
+
+                return {
+                    ForOfStatement(node: ESTree.ForOfStatement & eslint.Rule.NodeParentExtension) {
+                        checkExpression(node.right, "forOfNonArray");
+                    },
+                    SpreadElement(node: ESTree.SpreadElement & eslint.Rule.NodeParentExtension) {
+                        const parent = (node as any).parent;
+                        if (parent?.type === "ArrayExpression" || parent?.type === "CallExpression" || parent?.type === "NewExpression") {
+                            checkExpression(node.argument, "spreadNonArray");
                         }
                     },
                 };

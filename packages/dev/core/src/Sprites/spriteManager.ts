@@ -1,26 +1,24 @@
-import type { IDisposable, Scene } from "../scene";
-import type { Nullable } from "../types";
-import type { Observer } from "../Misc/observable";
-import { Observable } from "../Misc/observable";
+import { type IDisposable, type Scene } from "../scene";
+import { type Nullable } from "../types";
+import { type Observer, Observable } from "../Misc/observable";
 import { Vector3, TmpVectors, Matrix } from "../Maths/math.vector";
 import { Sprite } from "./sprite";
-import { SpriteSceneComponent } from "./spriteSceneComponent";
-import type { InternalSpriteAugmentedScene } from "./spriteSceneComponent";
+import { SpriteSceneComponent, type InternalSpriteAugmentedScene } from "./spriteSceneComponent";
 import { PickingInfo } from "../Collisions/pickingInfo";
-import type { Camera } from "../Cameras/camera";
+import { type Camera } from "../Cameras/camera";
 import { Texture } from "../Materials/Textures/texture";
 import { SceneComponentConstants } from "../sceneComponent";
 import { Logger } from "../Misc/logger";
 import { Tools } from "../Misc/tools";
 import { WebRequest } from "../Misc/webRequest";
-import type { SpriteRendererOptions } from "./spriteRenderer";
-import { SpriteRenderer } from "./spriteRenderer";
-import type { ThinSprite } from "./thinSprite";
-import type { ISize } from "../Maths/math.size";
+import { type SpriteRendererOptions, SpriteRenderer } from "./spriteRenderer";
+import { type ThinSprite } from "./thinSprite";
+import { type ISize } from "../Maths/math.size";
 import { EngineStore } from "../Engines/engineStore";
 import { Constants } from "../Engines/constants";
 
-import type { Ray } from "../Culling/ray";
+import { type Ray } from "../Culling/ray";
+import { type IAssetContainer } from "../IAssetContainer";
 
 // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Reflect
 declare const Reflect: any;
@@ -133,6 +131,9 @@ export interface SpriteManagerOptions {
  * @see https://doc.babylonjs.com/features/featuresDeepDive/sprites
  */
 export class SpriteManager implements ISpriteManager {
+    /** @internal */
+    public _parentContainer: Nullable<IAssetContainer> = null;
+
     /** Define the Url to load snippets */
     public static SnippetUrl = Constants.SnippetUrl;
 
@@ -413,7 +414,7 @@ export class SpriteManager implements ISpriteManager {
             } catch (e) {
                 this._fromPacked = false;
                 this._packedAndReady = false;
-                throw new Error("Invalid JSON from string. Spritesheet managed with constant cell size.");
+                throw new Error("Invalid JSON from string. Spritesheet managed with constant cell size.", { cause: e });
             }
         } else {
             const re = /\./g;
@@ -438,7 +439,7 @@ export class SpriteManager implements ISpriteManager {
                 } catch (e) {
                     this._fromPacked = false;
                     this._packedAndReady = false;
-                    throw new Error("Invalid JSON format. Please check documentation for format specifications.");
+                    throw new Error("Invalid JSON format. Please check documentation for format specifications.", { cause: e });
                 }
             };
             Tools.LoadFile(jsonUrl, onload, undefined, undefined, false, onerror);
@@ -493,8 +494,8 @@ export class SpriteManager implements ISpriteManager {
         const pickedPoint = TmpVectors.Vector3[0];
         const cameraSpacePosition = TmpVectors.Vector3[1];
         const cameraView = camera.getViewMatrix();
-        let activeRay: Ray = ray;
-        let pickedRay: Ray = ray;
+        let activeRay: Ray;
+        let pickedRay!: Ray;
 
         for (let index = 0; index < count; index++) {
             const sprite = this.sprites[index];
@@ -694,6 +695,14 @@ export class SpriteManager implements ISpriteManager {
             const index = this._scene.spriteManagers.indexOf(this);
             this._scene.spriteManagers.splice(index, 1);
             this._scene._onSpriteManagerRemovedObservable?.notifyObservers(this);
+        }
+
+        if (this._parentContainer && this._parentContainer.spriteManagers) {
+            const index = this._parentContainer.spriteManagers.indexOf(this);
+            if (index > -1) {
+                this._parentContainer.spriteManagers.splice(index, 1);
+            }
+            this._parentContainer = null;
         }
 
         // Callback

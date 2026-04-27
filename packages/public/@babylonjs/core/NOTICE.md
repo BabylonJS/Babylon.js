@@ -18,3 +18,7 @@ Licensed under the Apache 2.0 license.
 TWGSL (https://github.com/BabylonJS/twgsl)
 Copyright 20221-2024 The Babylon.js team
 Licensed under the Apache 2.0 License
+
+meshoptimizer (https://github.com/zeux/meshoptimizer)
+Copyright (c) 2016-2026 Arseny Kapoulkine
+Licensed under the MIT License

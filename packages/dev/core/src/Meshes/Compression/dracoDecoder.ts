@@ -4,13 +4,12 @@ import { Tools } from "../../Misc/tools";
 import { Geometry } from "../geometry";
 import { VertexBuffer } from "../buffer";
 import { Logger } from "../../Misc/logger";
-import type { BoundingInfo } from "../../Culling/boundingInfo";
-import type { Scene } from "../../scene";
-import type { Nullable } from "../../types";
+import { type BoundingInfo } from "../../Culling/boundingInfo";
+import { type Scene } from "../../scene";
+import { type Nullable } from "../../types";
 import { DecodeMesh, DecoderWorkerFunction } from "./dracoCompressionWorker";
-import type { IAttributeData, MeshData, DecoderMessage } from "./dracoDecoder.types";
+import { type IAttributeData, type MeshData, type DecoderMessage } from "./dracoDecoder.types";
 
-// eslint-disable-next-line @typescript-eslint/naming-convention
 declare let DracoDecoderModule: DracoDecoderModule;
 
 /**
@@ -218,7 +217,7 @@ export class DracoDecoder extends DracoCodec {
             });
         }
 
-        throw new Error("Draco decoder module is not available");
+        throw new Error("Draco: Decoder module is not available");
     }
 
     /**

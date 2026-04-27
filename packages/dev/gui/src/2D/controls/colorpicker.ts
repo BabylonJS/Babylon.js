@@ -1,19 +1,19 @@
 import { Observable } from "core/Misc/observable";
-import type { Vector2 } from "core/Maths/math.vector";
+import { type Vector2 } from "core/Maths/math.vector";
 
 import { Control } from "./control";
-import type { Measure } from "../measure";
+import { type Measure } from "../measure";
 import { InputText } from "./inputText";
 import { Rectangle } from "./rectangle";
 import { Button } from "./button";
 import { Grid } from "./grid";
-import type { AdvancedDynamicTexture } from "../advancedDynamicTexture";
+import { type AdvancedDynamicTexture } from "../advancedDynamicTexture";
 import { TextBlock } from "../controls/textBlock";
 import { RegisterClass } from "core/Misc/typeStore";
 import { Color3 } from "core/Maths/math.color";
-import type { PointerInfoBase } from "core/Events/pointerEvents";
+import { type PointerInfoBase } from "core/Events/pointerEvents";
 import { serialize } from "core/Misc/decorators";
-import type { ICanvas, ICanvasRenderingContext } from "core/Engines/ICanvas";
+import { type ICanvas, type ICanvasRenderingContext } from "core/Engines/ICanvas";
 import { EngineStore } from "core/Engines/engineStore";
 
 /** Class used to create color pickers */
@@ -250,10 +250,9 @@ export class ColorPicker extends Control {
                 data[index] = color.r * 255;
                 data[index + 1] = color.g * 255;
                 data[index + 2] = color.b * 255;
-                let alphaRatio = (dist - innerRadius) / (radius - innerRadius);
 
                 //apply less alpha to bigger color pickers
-                let alphaAmount = 0.2;
+                let alphaAmount: number;
                 const maxAlpha = 0.2;
                 const minAlpha = 0.04;
                 const lowerRadius = 50;
@@ -267,7 +266,7 @@ export class ColorPicker extends Control {
                     alphaAmount = ((minAlpha - maxAlpha) * (radius - lowerRadius)) / (upperRadius - lowerRadius) + maxAlpha;
                 }
 
-                alphaRatio = (dist - innerRadius) / (radius - innerRadius);
+                const alphaRatio = (dist - innerRadius) / (radius - innerRadius);
 
                 if (alphaRatio < alphaAmount) {
                     data[index + 3] = 255 * (alphaRatio / alphaAmount);

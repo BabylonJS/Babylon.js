@@ -1,10 +1,9 @@
-import type { Nullable } from "../types";
-import type { PostProcessOptions } from "./postProcess";
-import { PostProcess } from "./postProcess";
-import type { Camera } from "../Cameras/camera";
-import type { Effect } from "../Materials/effect";
+import { type Nullable } from "../types";
+import { type PostProcessOptions, PostProcess } from "./postProcess";
+import { type Camera } from "../Cameras/camera";
+import { type Effect } from "../Materials/effect";
 import { RegisterClass } from "../Misc/typeStore";
-import type { AbstractEngine } from "core/Engines/abstractEngine";
+import { type AbstractEngine } from "core/Engines/abstractEngine";
 import { ThinAnaglyphPostProcess } from "./thinAnaglyphPostProcess";
 
 /**

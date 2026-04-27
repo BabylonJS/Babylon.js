@@ -2,8 +2,8 @@ import { Tools } from "../Misc/tools";
 import { Observable } from "../Misc/observable";
 import { Scene } from "../scene";
 import { EngineStore } from "../Engines/engineStore";
-import type { IInspectable } from "../Misc/iInspectable";
-import type { Camera } from "../Cameras/camera";
+import { type IInspectable } from "../Misc/iInspectable";
+import { type Camera } from "../Cameras/camera";
 import { AbstractEngine } from "core/Engines/abstractEngine";
 
 // declare INSPECTOR namespace for compilation issue
@@ -352,9 +352,16 @@ export class DebugLayer {
                 }
             }
             if (!this.BJSINSPECTOR.Inspector.IsVisible) {
-                setTimeout(() => {
-                    this.select(entity, lineContainerTitles);
-                }, 100);
+                const waitAndCheck = () => {
+                    setTimeout(() => {
+                        if (this.BJSINSPECTOR.Inspector.IsVisible) {
+                            this.select(entity, lineContainerTitles);
+                        } else {
+                            waitAndCheck();
+                        }
+                    }, 100);
+                };
+                waitAndCheck();
             } else {
                 this.BJSINSPECTOR.Inspector.OnSelectionChangeObservable.notifyObservers(entity);
             }

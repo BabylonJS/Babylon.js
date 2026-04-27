@@ -1,8 +1,6 @@
-import type { FunctionComponent } from "react";
+import { type FunctionComponent, useCallback } from "react";
 
-import type { ISelectionService } from "../../../services/selectionService";
-
-import { useCallback } from "react";
+import { type ISelectionService } from "../../../services/selectionService";
 
 import { Constants } from "core/Engines/constants";
 import { RenderingManager } from "core/Rendering/renderingManager";
@@ -20,7 +18,7 @@ import { TextureSelectorPropertyLine } from "shared-ui-components/fluent/hoc/pro
 import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
 import { FileUploadLine } from "shared-ui-components/fluent/hoc/fileUploadLine";
 import { useProperty } from "../../../hooks/compoundPropertyHooks";
-import { NotifyPlaygroundOfSnippetChange, PersistSnippetId, PromptForSnippetId, SaveToSnippetServer } from "../../../utils/snippetUtils";
+import { NotifyPlaygroundOfSnippetChange, PersistSnippetId, PromptForSnippetId, SaveToSnippetServer } from "../../../misc/snippetUtils";
 import { CloudArrowDownRegular, CloudArrowUpRegular } from "@fluentui/react-icons";
 
 const SnippetDashboardStorageKey = "Babylon/InspectorV2/SnippetDashboard/SpriteManagers";

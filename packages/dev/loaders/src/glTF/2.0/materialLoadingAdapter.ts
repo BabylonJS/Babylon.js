@@ -1,7 +1,7 @@
-import type { Material } from "core/Materials/material";
-import type { BaseTexture } from "core/Materials/Textures/baseTexture";
-import type { Nullable } from "core/types";
-import type { Color3 } from "core/Maths/math.color";
+import { type Material } from "core/Materials/material";
+import { type BaseTexture } from "core/Materials/Textures/baseTexture";
+import { type Nullable } from "core/types";
+import { type Color3 } from "core/Maths/math.color";
 
 /**
  * Interface for material loading adapters that provides a unified OpenPBR-like interface
@@ -12,6 +12,11 @@ export interface IMaterialLoadingAdapter {
      * Gets the underlying material
      */
     readonly material: Material;
+
+    /**
+     * Finalizes material properties after loading is complete.
+     */
+    finalize?(): void;
 
     /**
      * Whether the material should be treated as unlit
@@ -267,9 +272,34 @@ export interface IMaterialLoadingAdapter {
     transmissionColor: Color3;
 
     /**
+     * Sets the scattering coefficient
+     */
+    transmissionScatter: Color3;
+
+    /**
+     * Sets the transmission scatter texture
+     */
+    transmissionScatterTexture: Nullable<BaseTexture>;
+
+    /**
+     * Sets the scattering anisotropy (-1 to 1)
+     */
+    transmissionScatterAnisotropy: number;
+
+    /**
      * Sets the dispersion Abbe number
      */
     transmissionDispersionAbbeNumber: number;
+
+    /**
+     * Sets the dispersion scale
+     */
+    transmissionDispersionScale: number;
+
+    /**
+     * The refraction background texture
+     */
+    refractionBackgroundTexture: Nullable<BaseTexture>;
 
     /**
      * Configures transmission for thin-surface transmission (KHR_materials_transmission)
@@ -279,6 +309,13 @@ export interface IMaterialLoadingAdapter {
     // ========================================
     // VOLUME PROPERTIES
     // ========================================
+
+    configureVolume(): void;
+
+    /**
+     * Sets whether the material is thin-walled (i.e. non-volumetric) or not.
+     */
+    geometryThinWalled: boolean;
 
     /**
      * Sets the thickness texture
@@ -295,7 +332,7 @@ export interface IMaterialLoadingAdapter {
     // ========================================
 
     /**
-     * Configures subsurface properties for PBR material
+     * Configures subsurface properties
      */
     configureSubsurface(): void;
 
@@ -318,6 +355,36 @@ export interface IMaterialLoadingAdapter {
      * Sets/gets the subsurface color texture
      */
     subsurfaceColorTexture: Nullable<BaseTexture>;
+
+    /**
+     * Sets/gets the diffuse transmission tint of the material
+     */
+    diffuseTransmissionTint: Color3;
+
+    /**
+     * Sets/gets the diffuse transmission tint texture of the material
+     */
+    diffuseTransmissionTintTexture: Nullable<BaseTexture>;
+
+    /**
+     * Sets/gets the subsurface radius (used for subsurface scattering)
+     */
+    subsurfaceRadius: number;
+
+    /**
+     * Sets/gets the subsurface radius scale (used for subsurface scattering)
+     */
+    subsurfaceRadiusScale: Color3;
+
+    /**
+     * Sets/gets the subsurface scattering anisotropy
+     */
+    subsurfaceScatterAnisotropy: number;
+
+    /**
+     * Does this material have a translucent surface (i.e. either transmission or subsurface)?
+     */
+    isTranslucent(): boolean;
 
     // ========================================
     // FUZZ LAYER (Sheen)

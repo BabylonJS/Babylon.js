@@ -1,7 +1,7 @@
 import * as React from "react";
-import type { Color4, Color3 } from "core/Maths/math.color";
+import { type Color4, type Color3 } from "core/Maths/math.color";
 import { ColorPicker } from "../colorPicker/colorPicker";
-import type { LockObject } from "../tabs/propertyGrids/lockObject";
+import { type LockObject } from "../tabs/propertyGrids/lockObject";
 
 export interface IColorPickerLineProps {
     value: Color4 | Color3;

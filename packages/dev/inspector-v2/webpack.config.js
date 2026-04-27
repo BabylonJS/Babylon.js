@@ -6,6 +6,10 @@ module.exports = (env) => {
     return {
         entry: "./test/app/index.tsx",
 
+        snapshot: {
+            managedPaths: [/^(.+?[\\/]node_modules[\\/](?!(@fluentui-contrib[\\/]react-virtualizer)))/],
+        },
+
         ...webpackTools.commonDevWebpackConfiguration(
             {
                 ...env,
@@ -28,7 +32,7 @@ module.exports = (env) => {
                 loaders: path.resolve("../../dev/loaders/dist"),
                 materials: path.resolve("../../dev/materials/dist"),
                 "shared-ui-components": path.resolve("../../dev/sharedUiComponents/src"),
-                "inspector-v2": path.resolve("./src"),
+                inspector: path.resolve("./src"),
                 serializers: path.resolve("../../dev/serializers/dist"),
                 "node-editor": path.resolve("../../tools/nodeEditor/dist"),
                 "node-geometry-editor": path.resolve("../../tools/nodeGeometryEditor/dist"),
@@ -50,7 +54,7 @@ module.exports = (env) => {
                 ],
                 enableFastRefresh: !production,
                 tsOptions: {
-                    configFile: "tsconfig.build.json",
+                    configFile: "tsconfig.webpack.json",
                     transpileOnly: true,
                 },
             }),

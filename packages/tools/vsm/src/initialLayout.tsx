@@ -1,5 +1,5 @@
 import { SceneRendererComponent } from "./components/SceneRendererComponent";
-import type { Layout } from "shared-ui-components/components/layout/types";
+import { type Layout } from "shared-ui-components/components/layout/types";
 import { EditValueComponent } from "./components/EditValueComponent";
 import { NodeListComponent } from "./components/NodeListComponent";
 import { StateViewNodeRenderer } from "./components/StateViewNodeRenderer";

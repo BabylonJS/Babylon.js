@@ -2,8 +2,8 @@ import { Matrix, Quaternion, Vector3 } from "../../../Maths/math.vector";
 import { _SpatialAudioSubNode } from "../../abstractAudio/subNodes/spatialAudioSubNode";
 import { _SpatialAudioDefaults } from "../../abstractAudio/subProperties/abstractSpatialAudio";
 import { _WebAudioParameterComponent } from "../components/webAudioParameterComponent";
-import type { _WebAudioEngine } from "../webAudioEngine";
-import type { IWebAudioInNode } from "../webAudioNode";
+import { type _WebAudioEngine } from "../webAudioEngine";
+import { type IWebAudioInNode } from "../webAudioNode";
 
 const TmpMatrix = Matrix.Zero();
 const TmpQuaternion = new Quaternion();

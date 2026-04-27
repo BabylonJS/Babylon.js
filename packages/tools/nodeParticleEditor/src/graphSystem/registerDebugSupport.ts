@@ -1,6 +1,6 @@
 import { NodeParticleBlockConnectionPointTypes } from "core/Particles/Node/Enums/nodeParticleBlockConnectionPointTypes";
-import type { NodeParticleConnectionPoint } from "core/Particles/Node/nodeParticleBlockConnectionPoint";
-import type { StateManager } from "shared-ui-components/nodeGraphSystem/stateManager";
+import { type NodeParticleConnectionPoint } from "core/Particles/Node/nodeParticleBlockConnectionPoint";
+import { type StateManager } from "shared-ui-components/nodeGraphSystem/stateManager";
 
 export const RegisterDebugSupport = (stateManager: StateManager) => {
     stateManager.isDebugConnectionAllowed = (a, b) => {

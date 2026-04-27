@@ -1,15 +1,15 @@
 import * as React from "react";
 import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
-import type { GlobalState } from "../../globalState";
-import type { Nullable } from "core/types";
-import type { Observer } from "core/Misc/observable";
+import { type GlobalState } from "../../globalState";
+import { type Nullable } from "core/types";
+import { type Observer } from "core/Misc/observable";
 import { InputsPropertyTabComponent } from "../../components/propertyTab/inputsPropertyTabComponent";
 import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
-import type { GraphFrame } from "shared-ui-components/nodeGraphSystem/graphFrame";
+import { type GraphFrame } from "shared-ui-components/nodeGraphSystem/graphFrame";
 import { Color3LineComponent } from "shared-ui-components/lines/color3LineComponent";
 import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineComponent";
-import type { GeometryInputBlock } from "core/Meshes/Node/Blocks/geometryInputBlock";
-import type { NodeGeometryBlock } from "core/Meshes/Node/nodeGeometryBlock";
+import { type GeometryInputBlock } from "core/Meshes/Node/Blocks/geometryInputBlock";
+import { type NodeGeometryBlock } from "core/Meshes/Node/nodeGeometryBlock";
 
 export interface IFramePropertyTabComponentProps {
     globalState: GlobalState;

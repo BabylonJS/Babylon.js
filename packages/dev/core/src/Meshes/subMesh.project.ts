@@ -1,9 +1,10 @@
 import { Constants } from "../Engines/constants";
 import { TmpVectors, Vector3 } from "../Maths/math.vector";
-import type { IndicesArray } from "../types";
+import { type IndicesArray } from "../types";
 import { SubMesh } from "./subMesh";
 
 declare module "./subMesh" {
+    /** @internal */
     // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface SubMesh {
         /** @internal */

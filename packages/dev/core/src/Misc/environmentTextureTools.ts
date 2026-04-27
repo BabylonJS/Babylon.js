@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import type { Nullable } from "../types";
+import { type Nullable } from "../types";
 import { Tools } from "./tools";
 import { Vector3 } from "../Maths/math.vector";
 import { ILog2 } from "../Maths/math.scalar.functions";
@@ -14,10 +14,11 @@ import { RGBDTextureTools } from "./rgbdTextureTools";
 import { DumpDataAsync } from "../Misc/dumpTools";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
-import type { RenderTargetWrapper } from "../Engines/renderTargetWrapper";
-import type { Engine, WebGPUEngine } from "core/Engines";
+import { type RenderTargetWrapper } from "../Engines/renderTargetWrapper";
+import { type Engine, type WebGPUEngine } from "core/Engines";
 
 import "../Materials/Textures/baseTexture.polynomial";
+import { GetBlobBufferSource } from "../Buffers/bufferUtils";
 
 const DefaultEnvironmentTextureImageType = "image/png";
 const CurrentVersion = 2;
@@ -200,7 +201,7 @@ export function GetEnvInfo(data: ArrayBufferView): Nullable<EnvironmentTextureIn
 
     // Read json manifest - collect characters up to null terminator
     let manifestString = "";
-    let charCode = 0x00;
+    let charCode: number;
     while ((charCode = dataView.getUint8(pos++))) {
         manifestString += String.fromCharCode(charCode);
     }
@@ -860,13 +861,14 @@ async function _UploadLevelsAsync(
         for (let face = 0; face < 6; face++) {
             // Constructs an image element from image data
             const bytes = imageData[i][face];
-            const blob = new Blob([bytes], { type: imageType });
+            const buffer = GetBlobBufferSource(bytes);
+            const blob = new Blob([buffer], { type: imageType });
             const url = URL.createObjectURL(blob);
             let promise: Promise<void>;
 
             if (engine._features.forceBitmapOverHTMLImageElement) {
                 // eslint-disable-next-line github/no-then
-                promise = engine.createImageBitmap(blob, { premultiplyAlpha: "none" }).then(async (img) => {
+                promise = engine.createImageBitmap(blob, { premultiplyAlpha: "none", colorSpaceConversion: "none" }).then(async (img) => {
                     return await _OnImageReadyAsync(img, engine, expandTexture, rgbdPostProcess, url, face, i, generateNonLODTextures, lodTextures, cubeRtt, texture);
                 });
             } else {

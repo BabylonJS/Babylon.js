@@ -1,5 +1,5 @@
 import { useContext } from "react";
-import type { StateMachine } from "../../stateMachine/StateMachine";
+import { type StateMachine } from "../../stateMachine/StateMachine";
 import { StateMachineContext } from "../../context/StateMachineContext";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention

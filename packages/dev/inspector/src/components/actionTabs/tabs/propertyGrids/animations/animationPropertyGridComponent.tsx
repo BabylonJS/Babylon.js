@@ -1,23 +1,23 @@
 import * as React from "react";
 
-import type { Observable, Observer } from "core/Misc/observable";
-import type { Scene } from "core/scene";
+import { type Observable, type Observer } from "core/Misc/observable";
+import { type Scene } from "core/scene";
 
-import type { PropertyChangedEvent } from "../../../../propertyChangedEvent";
+import { type PropertyChangedEvent } from "../../../../propertyChangedEvent";
 import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineComponent";
 import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
 import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent";
-import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
-import type { GlobalState } from "../../../../globalState";
-import type { Animation } from "core/Animations/animation";
-import type { Animatable } from "core/Animations/animatable";
+import { type LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
+import { type GlobalState } from "../../../../globalState";
+import { type Animation } from "core/Animations/animation";
+import { type Animatable } from "core/Animations/animatable";
 import { AnimationPropertiesOverride } from "core/Animations/animationPropertiesOverride";
-import type { AnimationRange } from "core/Animations/animationRange";
+import { type AnimationRange } from "core/Animations/animationRange";
 import { CheckBoxLineComponent } from "shared-ui-components/lines/checkBoxLineComponent";
-import type { Nullable } from "core/types";
+import { type Nullable } from "core/types";
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
 import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
-import type { IAnimatable } from "core/Animations/animatable.interface";
+import { type IAnimatable } from "core/Animations/animatable.interface";
 import { AnimationCurveEditorComponent } from "./curveEditor/animationCurveEditorComponent";
 import { Context } from "./curveEditor/context";
 

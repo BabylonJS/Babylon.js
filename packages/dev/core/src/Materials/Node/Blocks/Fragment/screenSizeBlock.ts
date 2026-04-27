@@ -1,11 +1,11 @@
 import { NodeMaterialBlock } from "../../nodeMaterialBlock";
 import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
-import type { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
-import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
+import { type NodeMaterialBuildState } from "../../nodeMaterialBuildState";
+import { type NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import { RegisterClass } from "../../../../Misc/typeStore";
-import type { Effect } from "../../../effect";
-import type { Scene } from "../../../../scene";
+import { type Effect } from "../../../effect";
+import { type Scene } from "../../../../scene";
 import { ShaderLanguage } from "../../../../Materials/shaderLanguage";
 
 /**
@@ -63,6 +63,10 @@ export class ScreenSizeBlock extends NodeMaterialBlock {
         return this._outputs[2];
     }
 
+    /**
+     * Bind data to effect
+     * @param effect - defines the effect to bind data to
+     */
     public override bind(effect: Effect) {
         const engine = this._scene.getEngine();
 

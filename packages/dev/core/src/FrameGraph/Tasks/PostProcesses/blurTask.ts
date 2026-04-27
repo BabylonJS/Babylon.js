@@ -1,4 +1,4 @@
-import type { FrameGraph, FrameGraphRenderContext, FrameGraphRenderPass } from "core/index";
+import { type FrameGraph, type FrameGraphRenderContext, type FrameGraphRenderPass } from "core/index";
 import { ThinBlurPostProcess } from "core/PostProcesses/thinBlurPostProcess";
 import { FrameGraphPostProcessTask } from "./postProcessTask";
 import { Vector2 } from "core/Maths/math.vector";

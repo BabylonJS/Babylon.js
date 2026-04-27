@@ -1,9 +1,7 @@
-import type { ISkeletonViewerDisplayOptions, Skeleton } from "core/index";
-import type { FunctionComponent } from "react";
+import { type ISkeletonViewerDisplayOptions, type Skeleton } from "core/index";
+import { type FunctionComponent, useReducer, useState } from "react";
 
-import type { DropdownOption } from "shared-ui-components/fluent/primitives/dropdown";
-
-import { useReducer, useState } from "react";
+import { type DropdownOption } from "shared-ui-components/fluent/primitives/dropdown";
 
 import { SkeletonViewer } from "core/Debug/skeletonViewer";
 import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";

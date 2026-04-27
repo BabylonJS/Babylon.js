@@ -1,10 +1,10 @@
 import { RegisterClass } from "../../../../Misc/typeStore";
 import { NodeParticleBlockConnectionPointTypes } from "../../Enums/nodeParticleBlockConnectionPointTypes";
 import { NodeParticleBlock } from "../../nodeParticleBlock";
-import type { NodeParticleConnectionPoint } from "../../nodeParticleBlockConnectionPoint";
-import type { NodeParticleBuildState } from "../../nodeParticleBuildState";
-import type { ThinParticleSystem } from "core/Particles/thinParticleSystem";
-import type { Particle } from "core/Particles/particle";
+import { type NodeParticleConnectionPoint } from "../../nodeParticleBlockConnectionPoint";
+import { type NodeParticleBuildState } from "../../nodeParticleBuildState";
+import { type ThinParticleSystem } from "core/Particles/thinParticleSystem";
+import { type Particle } from "core/Particles/particle";
 import { _ConnectAtTheEnd } from "core/Particles/Queue/executionQueue";
 
 /**
@@ -54,8 +54,8 @@ export class BasicPositionUpdateBlock extends NodeParticleBlock {
         const processPosition = (particle: Particle) => {
             state.particleContext = particle;
             state.systemContext = system;
-            particle.direction.scaleToRef(particle._directionScale, particle._scaledDirection);
-            particle.position.addInPlace(particle._scaledDirection);
+            particle.direction.scaleToRef(particle._properties.directionScale, particle._properties.scaledDirection);
+            particle.position.addInPlace(particle._properties.scaledDirection);
         };
 
         const positionProcessing = {

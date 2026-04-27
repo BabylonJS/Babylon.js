@@ -20,4 +20,12 @@ export class ShapeCastResult extends CastingResult {
     public setHitFraction(fraction: number) {
         this._hitFraction = fraction;
     }
+
+    /**
+     * Resets all the values to default
+     */
+    public override reset() {
+        super.reset();
+        this._hitFraction = 0;
+    }
 }

@@ -3,7 +3,7 @@ import { globSync } from "glob";
 import * as path from "path";
 import { copyFile, checkArgs } from "./utils.js";
 import * as chokidar from "chokidar";
-import type { DevPackageName } from "./packageMapping.js";
+import { type DevPackageName } from "./packageMapping.js";
 import { BuildShader } from "./buildShaders.js";
 
 const ProcessFile = (file: string, options: { isCore?: boolean; basePackageName?: DevPackageName; pathPrefix?: string; outputDir?: string } = {}) => {

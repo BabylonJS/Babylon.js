@@ -1,8 +1,18 @@
 /* eslint-disable @typescript-eslint/no-floating-promises */
 /* eslint-disable @typescript-eslint/naming-convention */
-import type { BaseTexture, CubeTexture, InternalTexture, ISize, IWheelEvent, Mesh, Nullable, PointerInfo, RawCubeTexture } from "core/index";
-import type { Channel } from "./channels";
-import type { IMetadata } from "./textureEditor";
+import {
+    type BaseTexture,
+    type CubeTexture,
+    type InternalTexture,
+    type ISize,
+    type IWheelEvent,
+    type Mesh,
+    type Nullable,
+    type PointerInfo,
+    type RawCubeTexture,
+} from "core/index";
+import { type Channel } from "./channels";
+import { type IMetadata } from "./textureEditor";
 
 import { Camera } from "core/Cameras/camera";
 import { FreeCamera } from "core/Cameras/freeCamera";
@@ -513,15 +523,10 @@ export class TextureCanvasManager {
 
     public async grabOriginalTexture() {
         // Grab image data from original texture and paint it onto the context of a DynamicTexture
-        this.setSize(this._originalTexture.getSize());
-        const data = await ApplyChannelsToTextureDataAsync(
-            this._originalTexture,
-            this._size.width,
-            this._size.height,
-            this._face,
-            { R: true, G: true, B: true, A: true },
-            this._mipLevel
-        );
+        const size = this._originalTexture.getSize();
+        // Fetch texture data BEFORE setting size (which clears the canvas) to avoid flicker
+        const data = await ApplyChannelsToTextureDataAsync(this._originalTexture, size.width, size.height, this._face, { R: true, G: true, B: true, A: true }, this._mipLevel);
+        this.setSize(size);
         this._imageData = data;
         this.paintPixelsOnCanvas(data, this._2DCanvas);
         this._3DCanvasTexture.update();
@@ -628,6 +633,7 @@ export class TextureCanvasManager {
     }
 
     public async resize(newSize: ISize) {
+        // Fetch texture data BEFORE setting size (which clears the canvas) to avoid flicker
         const data = await ApplyChannelsToTextureDataAsync(this._originalTexture, newSize.width, newSize.height, this._face, { R: true, G: true, B: true, A: true });
         this.setSize(newSize);
         this.paintPixelsOnCanvas(data, this._2DCanvas);

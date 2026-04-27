@@ -1,10 +1,10 @@
 import * as React from "react";
 import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
 import { GetGenericProperties, GetGeneralProperties } from "./genericNodePropertyComponent";
-import type { GlobalState } from "../../globalState";
-import type { IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
+import { type GlobalState } from "../../globalState";
+import { type IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
 import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineComponent";
-import type { NodeMaterialDebugBlock } from "core/Materials/Node/Blocks/debugBlock";
+import { type NodeMaterialDebugBlock } from "core/Materials/Node/Blocks/debugBlock";
 import { PropertyTabComponentBase } from "shared-ui-components/components/propertyTabComponentBase";
 import { CheckBoxLineComponent } from "../../sharedComponents/checkBoxLineComponent";
 

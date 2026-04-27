@@ -1,11 +1,11 @@
-import type { Nullable } from "core/types";
-import type { Observer } from "core/Misc/observable";
-import type { Vector2 } from "core/Maths/math.vector";
-import type { GraphNode } from "./graphNode";
-import type { StateManager } from "./stateManager";
-import type { ISelectionChangedOptions } from "./interfaces/selectionChangedOptions";
-import type { FrameNodePort } from "./frameNodePort";
-import type { IDisplayManager } from "./interfaces/displayManager";
+import { type Nullable } from "core/types";
+import { type Observer } from "core/Misc/observable";
+import { type Vector2 } from "core/Maths/math.vector";
+import { type GraphNode } from "./graphNode";
+import { type StateManager } from "./stateManager";
+import { type ISelectionChangedOptions } from "./interfaces/selectionChangedOptions";
+import { type FrameNodePort } from "./frameNodePort";
+import { type IDisplayManager } from "./interfaces/displayManager";
 import { PortDirectValueTypes, type IPortData } from "./interfaces/portData";
 import * as commonStyles from "./common.module.scss";
 import * as localStyles from "./nodePort.module.scss";
@@ -47,7 +47,14 @@ export class NodePort {
     public set portName(newName: string) {
         if (this._portLabelElement) {
             this.portData.updateDisplayName(newName);
-            this._portLabelElement.innerHTML = newName;
+            this.refreshLabel();
+        }
+    }
+
+    public refreshLabel() {
+        if (this._portLabelElement) {
+            this._portLabelElement.innerHTML = this.portData.name;
+            (this._portLabelElement as HTMLElement).title = this.portData.name;
         }
     }
 
@@ -108,6 +115,7 @@ export class NodePort {
     }
 
     public refresh() {
+        this.refreshLabel();
         if (this._stateManager.applyNodePortDesign(this.portData, this._element, this._imgHost, this._pip)) {
             this._element.style.background = "#000";
         }
@@ -166,10 +174,19 @@ export class NodePort {
 
             if (!coords || rect.left > coords.x || rect.right < coords.x || rect.top > coords.y || rect.bottom < coords.y) {
                 this._element.classList.remove(localStyles["selected"]);
+                this._element.classList.remove(localStyles["incompatible"]);
                 return;
             }
 
-            this._element.classList.add(localStyles["selected"]);
+            // Check type compatibility with the source port being dragged
+            const sourcePortData = this._stateManager.candidateSourcePortData;
+            if (sourcePortData && sourcePortData.checkCompatibilityState(this.portData) !== 0) {
+                this._element.classList.add(localStyles["incompatible"]);
+                this._element.classList.remove(localStyles["selected"]);
+            } else {
+                this._element.classList.add(localStyles["selected"]);
+                this._element.classList.remove(localStyles["incompatible"]);
+            }
             this._stateManager.onCandidatePortSelectedObservable.notifyObservers(this);
         });
 
@@ -183,6 +200,11 @@ export class NodePort {
         });
 
         this.refresh();
+    }
+
+    public remove() {
+        this._portContainer.remove();
+        this.dispose();
     }
 
     public dispose() {
@@ -204,6 +226,7 @@ export class NodePort {
             const portLabel = root.ownerDocument.createElement("div");
             portLabel.classList.add(commonStyles["port-label"]);
             portLabel.innerHTML = portData.name;
+            portLabel.title = portData.name;
             portContainer.appendChild(portLabel);
         }
 
@@ -234,6 +257,19 @@ export class NodePort {
                         portData.directValueDefinition.valueMax
                     );
                     break;
+                case PortDirectValueTypes.String: {
+                    portUIcontainer.classList.add(localStyles.stringContainer);
+                    const textInput = root.ownerDocument.createElement("input");
+                    textInput.type = "text";
+                    textInput.value = source[propertyName] ?? "";
+                    textInput.placeholder = portData.name;
+                    textInput.onchange = () => {
+                        source[propertyName] = textInput.value;
+                        node._forceRebuild(source, propertyName);
+                    };
+                    portUIcontainer.appendChild(textInput);
+                    break;
+                }
             }
         }
 

@@ -1,6 +1,6 @@
-import type { Nullable } from "../../types";
-import type { Scene } from "../../scene";
-import type { Vector4 } from "../../Maths/math.vector";
+import { type Nullable } from "../../types";
+import { type Scene } from "../../scene";
+import { type Vector4 } from "../../Maths/math.vector";
 import { Mesh } from "../mesh";
 import { VertexData } from "../mesh.vertexData";
 import { useOpenGLOrientationForUV } from "../../Compat/compatibilityOptions";
@@ -16,7 +16,6 @@ import { useOpenGLOrientationForUV } from "../../Compat/compatibilityOptions";
  * * backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1)
  * @returns the VertexData of the box
  */
-// eslint-disable-next-line @typescript-eslint/naming-convention
 export function CreateDiscVertexData(options: {
     radius?: number;
     tessellation?: number;

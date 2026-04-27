@@ -1,4 +1,11 @@
-import type { Scene, NodeRenderGraphBuildState, FrameGraph, FrameGraphTextureHandle, NodeRenderGraphConnectionPoint, FrameGraphObjectRendererTask } from "core/index";
+import {
+    type Scene,
+    type NodeRenderGraphBuildState,
+    type FrameGraph,
+    type FrameGraphTextureHandle,
+    type NodeRenderGraphConnectionPoint,
+    type FrameGraphObjectRendererTask,
+} from "core/index";
 import { NodeRenderGraphBlock } from "../../nodeRenderGraphBlock";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import { NodeRenderGraphBlockConnectionPointTypes, NodeRenderGraphConnectionPointDirection } from "../../Types/nodeRenderGraphTypes";

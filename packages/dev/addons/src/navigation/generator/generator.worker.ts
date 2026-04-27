@@ -4,11 +4,11 @@
  * Workers are not yet supported.
  * For more info visit: https://forum.babylonjs.com/t/replacing-recastjs-with-recast-navigation-js/56003/46
  */
-import type { NavMeshQuery, NavMesh, TileCache } from "@recast-navigation/core";
+import { type NavMeshQuery, type NavMesh, type TileCache } from "@recast-navigation/core";
 
-import type { Mesh } from "core/Meshes/mesh";
+import { type Mesh } from "core/Meshes/mesh";
 
-import type { INavMeshParametersV2 } from "../types";
+import { type INavMeshParametersV2 } from "../types";
 import { GetPositionsAndIndices } from "../common/getters";
 import { BuildFromNavmeshData, BuildFromTileCacheData } from "./generator.common";
 import { CreateDefaultTileCacheMeshProcess } from "../common/tile-cache";

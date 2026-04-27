@@ -12,6 +12,7 @@ export * from "./Passes/renderPass";
 
 export * from "./Tasks/Layers/glowLayerTask";
 export * from "./Tasks/Layers/highlightLayerTask";
+export * from "./Tasks/Layers/selectionOutlineTask";
 
 export * from "./Tasks/Misc/computeShaderTask";
 export * from "./Tasks/Misc/cullObjectsTask";
@@ -51,6 +52,7 @@ export * from "./Tasks/Texture/generateMipMapsTask";
 
 export * from "./Tasks/Rendering/csmShadowGeneratorTask";
 export * from "./Tasks/Rendering/geometryRendererTask";
+export * from "./Tasks/Rendering/iblShadowsRendererTask";
 export * from "./Tasks/Rendering/objectRendererTask";
 export * from "./Tasks/Rendering/shadowGeneratorTask";
 export * from "./Tasks/Rendering/utilityLayerRendererTask";

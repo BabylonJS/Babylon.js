@@ -1,18 +1,18 @@
 import { NodeMaterialBlock } from "../../nodeMaterialBlock";
 import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
-import type { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
-import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
+import { type NodeMaterialBuildState } from "../../nodeMaterialBuildState";
+import { type NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import { RegisterClass } from "../../../../Misc/typeStore";
-import type { Nullable } from "../../../../types";
-import type { Scene } from "../../../../scene";
-import type { Effect } from "../../../effect";
-import type { NodeMaterial, NodeMaterialDefines } from "../../nodeMaterial";
-import type { Mesh } from "../../../../Meshes/mesh";
-import type { Light } from "../../../../Lights/light";
+import { type Nullable } from "../../../../types";
+import { type Scene } from "../../../../scene";
+import { type Effect } from "../../../effect";
+import { type NodeMaterial, type NodeMaterialDefines } from "../../nodeMaterial";
+import { type Mesh } from "../../../../Meshes/mesh";
+import { type Light } from "../../../../Lights/light";
 import { PointLight } from "../../../../Lights/pointLight";
-import type { ShadowGenerator } from "../../../../Lights/Shadows/shadowGenerator";
-import type { ShadowLight } from "../../../../Lights";
+import { type ShadowGenerator } from "../../../../Lights/Shadows/shadowGenerator";
+import { type ShadowLight } from "../../../../Lights";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
 /**
@@ -112,6 +112,12 @@ export class LightInformationBlock extends NodeMaterialBlock {
         return this._outputs[6];
     }
 
+    /**
+     * Bind data to effect
+     * @param effect - the effect to bind to
+     * @param nodeMaterial - the node material
+     * @param mesh - the mesh
+     */
     public override bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh) {
         if (!mesh) {
             return;
@@ -162,6 +168,10 @@ export class LightInformationBlock extends NodeMaterialBlock {
         }
     }
 
+    /**
+     * Prepare the list of defines
+     * @param defines - the list of defines
+     */
     public override prepareDefines(defines: NodeMaterialDefines) {
         if (!defines._areLightsDirty && !this._forcePrepareDefines) {
             return;
@@ -229,6 +239,10 @@ export class LightInformationBlock extends NodeMaterialBlock {
         return this;
     }
 
+    /**
+     * Serializes the block
+     * @returns the serialized object
+     */
     public override serialize(): any {
         const serializationObject = super.serialize();
 
@@ -239,6 +253,12 @@ export class LightInformationBlock extends NodeMaterialBlock {
         return serializationObject;
     }
 
+    /**
+     * Deserializes the block
+     * @param serializationObject - the serialization object
+     * @param scene - the scene
+     * @param rootUrl - the root URL
+     */
     public override _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
         super._deserialize(serializationObject, scene, rootUrl);
 

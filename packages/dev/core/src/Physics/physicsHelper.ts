@@ -1,17 +1,17 @@
-import type { Nullable } from "../types";
+import { type Nullable } from "../types";
 import { Logger } from "../Misc/logger";
 import { TmpVectors, Vector3 } from "../Maths/math.vector";
-import type { AbstractMesh } from "../Meshes/abstractMesh";
-import type { Mesh } from "../Meshes/mesh";
+import { type AbstractMesh } from "../Meshes/abstractMesh";
+import { type Mesh } from "../Meshes/mesh";
 import { CreateSphere } from "../Meshes/Builders/sphereBuilder";
 import { CreateCylinder } from "../Meshes/Builders/cylinderBuilder";
 import { Ray } from "../Culling/ray";
-import type { Scene } from "../scene";
-import type { PhysicsEngine as PhysicsEngineV1 } from "./physicsEngine";
-import type { PhysicsEngine as PhysicsEngineV2 } from "./v2/physicsEngine";
-import type { IPhysicsEngine } from "./IPhysicsEngine";
-import type { PhysicsImpostor } from "./v1/physicsImpostor";
-import type { PhysicsBody } from "./v2/physicsBody";
+import { type Scene } from "../scene";
+import { type PhysicsEngine as PhysicsEngineV1 } from "./physicsEngine";
+import { type PhysicsEngine as PhysicsEngineV2 } from "./v2/physicsEngine";
+import { type IPhysicsEngine } from "./IPhysicsEngine";
+import { type PhysicsImpostor } from "./v1/physicsImpostor";
+import { type PhysicsBody } from "./v2/physicsBody";
 import { PhysicsMotionType } from "./v2/IPhysicsEnginePlugin";
 
 class HelperTools {
@@ -43,10 +43,11 @@ class HelperTools {
      * @returns
      */
     static HasAppliedForces(body: PhysicsBody, instanceIndex?: number) {
+        const mesh = body.transformNode as Mesh;
         return (
             body.getMotionType(instanceIndex) === PhysicsMotionType.STATIC ||
             (body.getMassProperties(instanceIndex)?.mass ?? 0) === 0 ||
-            (body.transformNode as Mesh)?.getTotalVertices() === 0
+            (mesh && mesh.getTotalVertices && mesh.getTotalVertices() === 0)
         );
     }
 
@@ -746,7 +747,7 @@ class PhysicsUpdraftEvent {
     }
 
     private _getBodyHitData(body: PhysicsBody, data: PhysicsHitData, instanceIndex?: number): boolean {
-        if (HelperTools.HasAppliedForces(body)) {
+        if (HelperTools.HasAppliedForces(body, instanceIndex)) {
             return false;
         }
 
@@ -885,15 +886,15 @@ class PhysicsVortexEvent {
     }
 
     /**
-     * Disables the cortex.
+     * Disables the vortex.
      */
     public disable() {
         this._scene.unregisterBeforeRender(this._tickCallback);
     }
 
     /**
-     * Disposes the sphere.
-     * @param force
+     * Disposes the cylinder.
+     * @param force Specifies if the vortex should be disposed by force
      */
     public dispose(force: boolean = true) {
         if (!this._cylinder) {
@@ -1040,7 +1041,7 @@ class PhysicsVortexEvent {
 }
 
 /**
- * Options fot the radial explosion event
+ * Options for the radial explosion event
  * @see https://doc.babylonjs.com/features/featuresDeepDive/physics/usingPhysicsEngine#further-functionality-of-the-impostor-class
  */
 export class PhysicsRadialExplosionEventOptions {
@@ -1065,18 +1066,18 @@ export class PhysicsRadialExplosionEventOptions {
     sphere: { segments: number; diameter: number } = { segments: 32, diameter: 1 };
 
     /**
-     * Sphere options for the radial explosion.
+     * Callback that is triggered when the radial explosion affects impostors.
      */
     affectedImpostorsCallback: (affectedImpostorsWithData: Array<PhysicsAffectedImpostorWithData>) => void;
 
     /**
-     * Sphere options for the radial explosion.
+     * Callback that is triggered when the radial explosion affects bodies.
      */
     affectedBodiesCallback: (affectedBodiesWithData: Array<PhysicsAffectedBodyWithData>) => void;
 }
 
 /**
- * Options fot the updraft event
+ * Options for the updraft event
  * @see https://doc.babylonjs.com/features/featuresDeepDive/physics/usingPhysicsEngine#further-functionality-of-the-impostor-class
  */
 export class PhysicsUpdraftEventOptions {
@@ -1102,7 +1103,7 @@ export class PhysicsUpdraftEventOptions {
 }
 
 /**
- * Options fot the vortex event
+ * Options for the vortex event
  * @see https://doc.babylonjs.com/features/featuresDeepDive/physics/usingPhysicsEngine#further-functionality-of-the-impostor-class
  */
 export class PhysicsVortexEventOptions {

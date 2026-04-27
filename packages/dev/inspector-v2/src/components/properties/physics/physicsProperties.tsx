@@ -1,9 +1,8 @@
-import type { FunctionComponent } from "react";
+import { type FunctionComponent, useCallback } from "react";
 
-import type { PhysicsBody, TransformNode } from "core/index";
-import type { DropdownOption } from "shared-ui-components/fluent/primitives/dropdown";
+import { type PhysicsBody, type TransformNode } from "core/index";
+import { type DropdownOption } from "shared-ui-components/fluent/primitives/dropdown";
 
-import { useCallback } from "react";
 import { MessageBar } from "shared-ui-components/fluent/primitives/messageBar";
 
 import { Vector3 } from "core/Maths/math.vector";
@@ -14,7 +13,7 @@ import { TextPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/
 import { Vector3PropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/vectorPropertyLine";
 import { useProperty, useVector3Property } from "../../../hooks/compoundPropertyHooks";
 import { useInterceptObservable } from "../../../hooks/instrumentationHooks";
-import { useObservableState } from "../../../hooks/observableHooks";
+import { useObservableState } from "shared-ui-components/modularTool/hooks/observableHooks";
 
 import "core/Physics/v2/physicsEngineComponent";
 import { BoundProperty } from "../boundProperty";
@@ -119,46 +118,13 @@ const PhysicsBodyProperties: FunctionComponent<{ physicsBody: PhysicsBody }> = (
 
     return (
         <>
-            <NumberDropdownPropertyLine
-                key="MotionType"
-                label="Motion Type"
-                options={MotionOptions}
-                value={motionType}
-                onChange={(value) => {
-                    return physicsBody.setMotionType(value);
-                }}
-            />
-            <NumberDropdownPropertyLine
-                label="Prestep Type"
-                options={PrestepOptions}
-                value={prestepType}
-                onChange={(value) => {
-                    return physicsBody.setPrestepType(value);
-                }}
-            />
+            <NumberDropdownPropertyLine key="MotionType" label="Motion Type" options={MotionOptions} value={motionType} onChange={(value) => physicsBody.setMotionType(value)} />
+            <NumberDropdownPropertyLine label="Prestep Type" options={PrestepOptions} value={prestepType} onChange={(value) => physicsBody.setPrestepType(value)} />
             {shape && <TextPropertyLine label="Shape Type" value={GetShapeTypeString(type)} />}
             {/* Linear Damping */}
-            <NumberInputPropertyLine
-                label="Linear Damping"
-                min={0}
-                max={1}
-                step={0.01}
-                value={linearDamping}
-                onChange={(e) => {
-                    physicsBody.setLinearDamping(e);
-                }}
-            />
+            <NumberInputPropertyLine label="Linear Damping" min={0} max={1} step={0.01} value={linearDamping} onChange={(value) => physicsBody.setLinearDamping(value)} />
             {/* Angular Damping */}
-            <NumberInputPropertyLine
-                label="Angular Damping"
-                min={0}
-                max={1}
-                step={0.01}
-                value={angularDamping}
-                onChange={(e) => {
-                    physicsBody.setAngularDamping(e);
-                }}
-            />
+            <NumberInputPropertyLine label="Angular Damping" min={0} max={1} step={0.01} value={angularDamping} onChange={(value) => physicsBody.setAngularDamping(value)} />
             {/* Material Properties */}
             {shape && (
                 <>

@@ -1,19 +1,17 @@
 /* eslint-disable @typescript-eslint/no-unsafe-return */
-import type { Nullable, IndicesArray } from "../../types";
+import { type Nullable, type IndicesArray, type FloatArray } from "../../types";
 import { Logger } from "../../Misc/logger";
 import { BuildArray } from "../../Misc/arrayTools";
-import type { Matrix } from "../../Maths/math.vector";
-import { Vector3, Quaternion } from "../../Maths/math.vector";
-import type { TransformNode } from "../../Meshes/transformNode";
+import { type Matrix, Vector3, Quaternion } from "../../Maths/math.vector";
+import { type TransformNode } from "../../Meshes/transformNode";
 import { AbstractMesh } from "../../Meshes/abstractMesh";
 import { Mesh } from "../../Meshes/mesh";
-import type { Scene } from "../../scene";
-import type { Bone } from "../../Bones/bone";
-import type { BoundingInfo } from "../../Culling/boundingInfo";
-import type { PhysicsEngine as PhysicsEngineV1 } from "./physicsEngine";
+import { type Scene } from "../../scene";
+import { type Bone } from "../../Bones/bone";
+import { type BoundingInfo } from "../../Culling/boundingInfo";
+import { type PhysicsEngine as PhysicsEngineV1 } from "./physicsEngine";
 
-import type { PhysicsJointData } from "./physicsJoint";
-import { PhysicsJoint } from "./physicsJoint";
+import { type PhysicsJointData, PhysicsJoint } from "./physicsJoint";
 import { Space } from "../../Maths/math.axis";
 
 /**
@@ -138,7 +136,7 @@ export interface IPhysicsEnabledObject {
      * @param kind The type of vertex data
      * @returns A nullable array of numbers, or a float32 array
      */
-    getVerticesData(kind: string): Nullable<Array<number> | Float32Array>;
+    getVerticesData(kind: string): Nullable<FloatArray>;
     /**
      * Gets the indices from the mesh
      * @returns A nullable array of index arrays

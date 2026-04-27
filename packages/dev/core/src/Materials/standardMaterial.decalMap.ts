@@ -1,4 +1,4 @@
-import type { Nullable } from "core/types";
+import { type Nullable } from "core/types";
 import { DecalMapConfiguration } from "./material.decalMapConfiguration";
 import { StandardMaterial } from "./standardMaterial";
 

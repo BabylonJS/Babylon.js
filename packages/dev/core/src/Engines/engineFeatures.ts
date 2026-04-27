@@ -78,7 +78,4 @@ export interface EngineFeatures {
 
     /** @internal */
     _checkNonFloatVertexBuffersDontRecreatePipelineContext: boolean;
-
-    /** @internal */
-    _collectUbosUpdatedInFrame: boolean;
 }

@@ -1,13 +1,12 @@
-import type { Nullable } from "../types";
-import type { Camera } from "../Cameras/camera";
-import type { PostProcessOptions } from "./postProcess";
-import { PostProcess } from "./postProcess";
-import type { AbstractEngine } from "../Engines/abstractEngine";
+import { type Nullable } from "../types";
+import { type Camera } from "../Cameras/camera";
+import { type PostProcessOptions, PostProcess } from "./postProcess";
+import { type AbstractEngine } from "../Engines/abstractEngine";
 
 import { RegisterClass } from "../Misc/typeStore";
 import { SerializationHelper } from "../Misc/decorators.serialization";
 
-import type { Scene } from "../scene";
+import { type Scene } from "../scene";
 
 /**
  * DisplayPassPostProcess which produces an output the same as it's input

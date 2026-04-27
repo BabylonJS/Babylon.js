@@ -296,7 +296,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
         reflectionAmount *= planarReflectionFresnel;
 
         #ifdef REFLECTIONFALLOFF
-            var reflectionDistanceFalloff: f32 = 1.0 - saturate(length(vPositionW.xyz - uniforms.vBackgroundCenter) * uniforms.vReflectionControl.w);
+            var reflectionDistanceFalloff: f32 = 1.0 - saturate(length(fragmentInputs.vPositionW.xyz - uniforms.vBackgroundCenter) * uniforms.vReflectionControl.w);
             reflectionDistanceFalloff *= reflectionDistanceFalloff;
             reflectionAmount *= reflectionDistanceFalloff;
         #endif

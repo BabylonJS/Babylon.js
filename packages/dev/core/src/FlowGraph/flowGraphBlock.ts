@@ -1,14 +1,14 @@
 import { RandomGUID } from "../Misc/guid";
 import { FlowGraphConnectionType } from "./flowGraphConnection";
-import type { FlowGraphContext } from "./flowGraphContext";
+import { type FlowGraphContext } from "./flowGraphContext";
 import { FlowGraphDataConnection } from "./flowGraphDataConnection";
-import type { RichType } from "./flowGraphRichTypes";
-import type { ISerializedFlowGraphBlock, IObjectAccessor } from "./typeDefinitions";
+import { type RichType } from "./flowGraphRichTypes";
+import { type ISerializedFlowGraphBlock, type IObjectAccessor } from "./typeDefinitions";
 import { defaultValueSerializationFunction } from "./serialization";
-import type { Scene } from "../scene";
-import type { IPathToObjectConverter } from "../ObjectModel/objectModelInterfaces";
-import type { IAssetContainer } from "core/IAssetContainer";
-import type { FlowGraphAction } from "./flowGraphLogger";
+import { type Scene } from "../scene";
+import { type IPathToObjectConverter } from "../ObjectModel/objectModelInterfaces";
+import { type IAssetContainer } from "core/IAssetContainer";
+import { type FlowGraphAction } from "./flowGraphLogger";
 
 /**
  * Options for parsing a block.
@@ -18,6 +18,7 @@ export interface IFlowGraphBlockParseOptions {
      * A function that parses a value from a serialization object.
      * @param key the key of the property
      * @param serializationObject the serialization object where the property is located
+     * @param assetsContainer the assets container
      * @param scene the scene that the block is being parsed in
      * @returns the parsed value
      */

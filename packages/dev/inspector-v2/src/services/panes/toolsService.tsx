@@ -1,16 +1,17 @@
-import type { Nullable } from "core/types";
-import type { IDisposable, Scene } from "core/scene";
-import type { IService, ServiceDefinition } from "../../modularity/serviceDefinition";
-import type { IShellService } from "../shellService";
-import type { DynamicAccordionSection, DynamicAccordionSectionContent } from "../../components/extensibleAccordion";
+import { type Nullable } from "core/types";
+import { type IDisposable, type Scene } from "core/scene";
+import { type IService, type ServiceDefinition } from "shared-ui-components/modularTool/modularity/serviceDefinition";
+import { type IShellService, ShellServiceIdentity } from "shared-ui-components/modularTool/services/shellService";
+import { type DynamicAccordionSection, type DynamicAccordionSectionContent } from "shared-ui-components/modularTool/components/extensibleAccordion";
 import { WrenchRegular } from "@fluentui/react-icons";
-import { useObservableCollection, useObservableState, useOrderedObservableCollection } from "../../hooks/observableHooks";
-import { ObservableCollection } from "../../misc/observableCollection";
-import { ShellServiceIdentity } from "../shellService";
+import { useObservableCollection, useObservableState, useOrderedObservableCollection } from "shared-ui-components/modularTool/hooks/observableHooks";
+import { ObservableCollection } from "shared-ui-components/modularTool/misc/observableCollection";
 import { ToolsPane } from "../../components/tools/toolsPane";
-import { SceneContextIdentity } from "../sceneContext";
-import type { ISceneContext } from "../sceneContext";
+import { SceneContextIdentity, type ISceneContext } from "../sceneContext";
 
+/**
+ * The unique identity symbol for the tools service.
+ */
 export const ToolsServiceIdentity = Symbol("ToolsService");
 
 /**
@@ -56,25 +57,29 @@ export const ToolsServiceDefinition: ServiceDefinition<[IToolsService], [IShellS
                     horizontalLocation: "right",
                     verticalLocation: "top",
                     order: 400,
-                    suppressTeachingMoment: true,
+                    teachingMoment: false,
                     content: () => {
                         const sections = useOrderedObservableCollection(sectionsCollection);
                         const sectionContent = useObservableCollection(sectionContentCollection);
                         const scene = useObservableState(() => sceneContext.currentScene, sceneContext.currentSceneObservable);
 
-                        return scene && <ToolsPane sections={sections} sectionContent={sectionContent} context={scene} />;
+                        return (
+                            scene && (
+                                <ToolsPane
+                                    uniqueId="Tools"
+                                    sections={sections}
+                                    sectionContent={sectionContent}
+                                    context={scene}
+                                    enablePinnedItems
+                                    enableHiddenItems
+                                    enableSearchItems
+                                />
+                            )
+                        );
                     },
                 });
             }
         });
-
-        /**
-         * Left TODO: Implement the following sections from toolsTabComponent.tsx
-         * - GLTF Validator (see glTFComponent.tsx) (consider putting in Import tools)
-         * - Reflector
-         * - GIF (consider putting in Capture Tools)
-         * - Replay (consider putting in Capture Tools)
-         */
 
         return {
             addSection: (section) => sectionsCollection.add(section),

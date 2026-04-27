@@ -1,9 +1,9 @@
 import * as React from "react";
-import type { Observable } from "core/Misc/observable";
-import type { PropertyChangedEvent } from "shared-ui-components/propertyChangedEvent";
+import { type Observable } from "core/Misc/observable";
+import { type PropertyChangedEvent } from "shared-ui-components/propertyChangedEvent";
 import { CommonControlPropertyGridComponent } from "../gui/commonControlPropertyGridComponent";
-import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
-import type { Ellipse } from "gui/2D/controls/ellipse";
+import { type LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
+import { type Ellipse } from "gui/2D/controls/ellipse";
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
 import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
 import { makeTargetsProxy } from "shared-ui-components/lines/targetsProxy";
@@ -12,7 +12,7 @@ import { ContainerPropertyGridComponent } from "./containerPropertyGridComponent
 import strokeWeightIcon from "shared-ui-components/imgs/strokeWeightIcon.svg";
 import { IconComponent } from "shared-ui-components/lines/iconComponent";
 import { UnitButton } from "shared-ui-components/lines/unitButton";
-import type { GlobalState } from "../../../../globalState";
+import { type GlobalState } from "../../../../globalState";
 
 interface IEllipsePropertyGridComponentProps {
     ellipses: Ellipse[];

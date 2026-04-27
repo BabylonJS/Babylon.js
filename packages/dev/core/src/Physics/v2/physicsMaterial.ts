@@ -16,11 +16,11 @@ export const enum PhysicsMaterialCombineMode {
      * min( valueA , valueB )
      */
     MINIMUM,
-    /* The final value will be the larger of the two:
+    /** The final value will be the larger of the two:
      * max( valueA , valueB )
      */
     MAXIMUM,
-    /* The final value will be the arithmetic mean of the two values:
+    /** The final value will be the arithmetic mean of the two values:
      * (valueA + valueB) / 2
      */
     ARITHMETIC_MEAN,

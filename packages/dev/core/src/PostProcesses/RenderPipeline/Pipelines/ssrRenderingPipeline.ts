@@ -1,27 +1,28 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { serialize } from "../../../Misc/decorators";
 import { SerializationHelper } from "../../../Misc/decorators.serialization";
-import type { Camera } from "../../../Cameras/camera";
-import type { Effect } from "../../../Materials/effect";
+import { type Camera } from "../../../Cameras/camera";
+import { type Effect } from "../../../Materials/effect";
 import { PostProcess } from "../../postProcess";
 import { PostProcessRenderPipeline } from "../postProcessRenderPipeline";
 import { PostProcessRenderEffect } from "../postProcessRenderEffect";
-import type { Scene } from "../../../scene";
+import { type Scene } from "../../../scene";
 import { RegisterClass } from "../../../Misc/typeStore";
 import { ScreenSpaceReflections2Configuration } from "../../../Rendering/screenSpaceReflections2Configuration";
-import type { PrePassRenderer } from "../../../Rendering/prePassRenderer";
+import { type PrePassRenderer } from "../../../Rendering/prePassRenderer";
 import { GeometryBufferRenderer } from "../../../Rendering/geometryBufferRenderer";
 import { Constants } from "../../../Engines/constants";
-import type { Nullable } from "../../../types";
-import type { CubeTexture } from "../../../Materials/Textures/cubeTexture";
+import { type Nullable } from "../../../types";
+import { type CubeTexture } from "../../../Materials/Textures/cubeTexture";
 import { DepthRenderer } from "../../../Rendering/depthRenderer";
-import type { ISize } from "../../../Maths/math.size";
+import { type ISize } from "../../../Maths/math.size";
 import { ThinSSRRenderingPipeline } from "./thinSSRRenderingPipeline";
 import { ThinSSRPostProcess } from "core/PostProcesses/thinSSRPostProcess";
 import { ThinSSRBlurPostProcess } from "core/PostProcesses/thinSSRBlurPostProcess";
 import { ThinSSRBlurCombinerPostProcess } from "core/PostProcesses/thinSSRBlurCombinerPostProcess";
 
 import "../postProcessRenderPipelineManagerSceneComponent";
+import "../../../Rendering/geometryBufferRendererSceneComponent";
 
 /**
  * Render pipeline to produce Screen Space Reflections (SSR) effect
@@ -531,6 +532,14 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
     public set debug(value: boolean) {
         this._thinSSRRenderingPipeline.debug = value;
         this._buildPipeline();
+    }
+
+    /**
+     * Checks if all the post processes in the pipeline are ready.
+     * @returns True if all the post processes in the pipeline are ready
+     */
+    public isReady() {
+        return this._thinSSRRenderingPipeline.isReady();
     }
 
     /**

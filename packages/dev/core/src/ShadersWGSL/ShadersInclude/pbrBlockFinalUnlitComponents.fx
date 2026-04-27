@@ -12,7 +12,7 @@ finalDiffuse *= uniforms.vLightingIntensity.x;
 
 // _____________________________ Ambient ________________________________________
 var finalAmbient: vec3f = uniforms.vAmbientColor;
-finalAmbient *= surfaceAlbedo.rgb;
+finalAmbient = finalAmbient * surfaceAlbedo.rgb;
 
 // _____________________________ Emissive ________________________________________
 var finalEmissive: vec3f = uniforms.vEmissiveColor;

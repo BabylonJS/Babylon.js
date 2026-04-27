@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-import type { IAtmospherePhysicalPropertiesOptions } from "./atmospherePhysicalPropertiesOptions";
+import { type IAtmospherePhysicalPropertiesOptions } from "./atmospherePhysicalPropertiesOptions";
 import { Observable } from "core/Misc/observable";
 import { Vector3 } from "core/Maths/math.vector";
 

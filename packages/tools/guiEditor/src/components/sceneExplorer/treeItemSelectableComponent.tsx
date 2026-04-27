@@ -1,12 +1,11 @@
-import type { Nullable } from "core/types";
-import type { IExplorerExtensibilityGroup } from "core/Debug/debugLayer";
+import { type Nullable } from "core/types";
+import { type IExplorerExtensibilityGroup } from "core/Debug/debugLayer";
 
 import { Tools } from "../../tools";
 import * as React from "react";
-import type { GlobalState } from "../../globalState";
-import { DragOverLocation } from "../../globalState";
+import { type GlobalState, DragOverLocation } from "../../globalState";
 import { ControlTreeItemComponent } from "./entities/gui/controlTreeItemComponent";
-import type { Observer } from "core/Misc/observable";
+import { type Observer } from "core/Misc/observable";
 import { Container } from "gui/2D/controls/container";
 
 import expandedIcon from "../../imgs/expandedIcon.svg";

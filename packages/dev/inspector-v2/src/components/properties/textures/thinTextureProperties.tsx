@@ -1,15 +1,14 @@
-import type { FunctionComponent } from "react";
+import { type FunctionComponent, useCallback } from "react";
 
-import type { ThinTexture } from "core/index";
-import type { DropdownOption } from "shared-ui-components/fluent/primitives/dropdown";
-
-import { useCallback } from "react";
+import { type ThinTexture } from "core/index";
+import { type DropdownOption } from "shared-ui-components/fluent/primitives/dropdown";
 
 import { NumberDropdownPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/dropdownPropertyLine";
 import { StringifiedPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/stringifiedPropertyLine";
 import { Texture } from "core/Materials/Textures/texture";
-import { useObservableState } from "../../../hooks/observableHooks";
+import { useObservableState } from "shared-ui-components/modularTool/hooks/observableHooks";
 import { useInterceptObservable } from "../../../hooks/instrumentationHooks";
+import { Property } from "../boundProperty";
 
 const SamplingMode = [
     { label: "Nearest", value: Texture.NEAREST_NEAREST }, // 1
@@ -48,6 +47,14 @@ export const ThinTextureSamplingProperties: FunctionComponent<{ texture: ThinTex
         useCallback(() => texture.samplingMode, [texture]),
         useInterceptObservable("function", texture, "updateSamplingMode")
     );
-
-    return <NumberDropdownPropertyLine label="Sampling" value={samplingMode} options={SamplingMode} onChange={(value) => texture.updateSamplingMode(value)} />;
+    return (
+        <Property
+            component={NumberDropdownPropertyLine}
+            label="Sampling"
+            propertyPath="samplingMode"
+            value={samplingMode}
+            options={SamplingMode}
+            onChange={(value) => texture.updateSamplingMode(value)}
+        />
+    );
 };

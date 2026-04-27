@@ -1,12 +1,12 @@
-import type { AnimationRange } from "../Animations/animationRange";
+import { type AnimationRange } from "../Animations/animationRange";
 import { RawTexture } from "../Materials/Textures/rawTexture";
 import { Texture } from "../Materials/Textures/texture";
-import type { Mesh } from "../Meshes/mesh";
+import { type Mesh } from "../Meshes/mesh";
 import { EncodeArrayBufferToBase64, DecodeBase64ToBinary } from "../Misc/stringTools";
-import type { Scene } from "../scene";
+import { type Scene } from "../scene";
 import { Constants } from "../Engines/constants";
 import { Skeleton } from "core/Bones/skeleton";
-import type { Nullable } from "core/types";
+import { type Nullable } from "core/types";
 import { ToHalfFloat } from "../Misc/textureTools";
 import { Logger } from "../Misc/logger";
 

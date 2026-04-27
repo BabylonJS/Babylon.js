@@ -1,15 +1,15 @@
-import type { Observer } from "../Misc/observable";
+import { type Observer } from "../Misc/observable";
 import { SmartArray } from "../Misc/smartArray";
 import { Logger } from "../Misc/logger";
-import type { Nullable } from "../types";
-import type { IDisposable, Scene } from "../scene";
+import { type Nullable } from "../types";
+import { type IDisposable, type Scene } from "../scene";
 import { EngineStore } from "../Engines/engineStore";
-import type { Mesh } from "../Meshes/mesh";
+import { type Mesh } from "../Meshes/mesh";
 import { MorphTarget } from "./morphTarget";
 import { Constants } from "../Engines/constants";
-import type { Effect } from "../Materials/effect";
+import { type Effect } from "../Materials/effect";
 import { RawTexture2DArray } from "../Materials/Textures/rawTexture2DArray";
-import type { IAssetContainer } from "core/IAssetContainer";
+import { type IAssetContainer } from "core/IAssetContainer";
 /**
  * This class is used to deform meshes using morphing between different targets
  * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/morphTargets
@@ -123,8 +123,12 @@ export class MorphTargetManager implements IDisposable {
     /**
      * Creates a new MorphTargetManager
      * @param scene defines the current scene
+     * @param meshName name of the mesh this morph target manager is associated with
      */
-    public constructor(scene: Nullable<Scene> = null) {
+    public constructor(
+        scene: Nullable<Scene> = null,
+        public meshName?: string
+    ) {
         if (!scene) {
             scene = EngineStore.LastCreatedScene;
         }
@@ -459,6 +463,7 @@ export class MorphTargetManager implements IDisposable {
         const serializationObject: any = {};
 
         serializationObject.id = this.uniqueId;
+        serializationObject.meshName = this.meshName;
 
         serializationObject.targets = [];
         for (const target of this._targets) {
@@ -604,7 +609,7 @@ export class MorphTargetManager implements IDisposable {
             const targetCount = this._targets.length;
             const data = new Float32Array(targetCount * this._textureWidth * this._textureHeight * 4);
 
-            let offset = 0;
+            let offset: number;
             for (let index = 0; index < targetCount; index++) {
                 const target = this._targets[index];
 
@@ -723,7 +728,7 @@ export class MorphTargetManager implements IDisposable {
         const result = new MorphTargetManager(scene);
 
         for (const targetData of serializationObject.targets) {
-            result.addTarget(MorphTarget.Parse(targetData, scene));
+            result.addTarget(MorphTarget.Parse(targetData, scene, result));
         }
 
         if (serializationObject.metadata) {

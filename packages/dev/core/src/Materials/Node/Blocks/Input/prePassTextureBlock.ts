@@ -1,12 +1,11 @@
 import { NodeMaterialBlock } from "../../nodeMaterialBlock";
 import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
-import type { Effect } from "../../../../Materials/effect";
-import { NodeMaterialConnectionPointDirection } from "../../nodeMaterialBlockConnectionPoint";
-import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
-import type { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
+import { type Effect } from "../../../../Materials/effect";
+import { NodeMaterialConnectionPointDirection, type NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
+import { type NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import { RegisterClass } from "../../../../Misc/typeStore";
-import type { NodeMaterial } from "../../nodeMaterial";
+import { type NodeMaterial } from "../../nodeMaterial";
 import { NodeMaterialConnectionPointCustomObject } from "../../nodeMaterialConnectionPointCustomObject";
 import { Constants } from "../../../../Engines/constants";
 import { ImageSourceBlock } from "../Dual/imageSourceBlock";
@@ -252,6 +251,11 @@ export class PrePassTextureBlock extends NodeMaterialBlock {
         return this;
     }
 
+    /**
+     * Bind data to effect
+     * @param effect - defines the effect to bind data to
+     * @param nodeMaterial - defines the node material
+     */
     public override bind(effect: Effect, nodeMaterial: NodeMaterial) {
         const scene = nodeMaterial.getScene();
         const prePassRenderer = scene.enablePrePassRenderer();

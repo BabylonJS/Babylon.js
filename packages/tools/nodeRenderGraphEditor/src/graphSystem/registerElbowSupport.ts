@@ -1,5 +1,5 @@
 //import type { NodeRenderGraphConnectionPoint } from "core/FrameGraph/Node/nodeRenderGraphBlockConnectionPoint";
-import type { StateManager } from "shared-ui-components/nodeGraphSystem/stateManager";
+import { type StateManager } from "shared-ui-components/nodeGraphSystem/stateManager";
 
 export const RegisterElbowSupport = (stateManager: StateManager) => {
     stateManager.isElbowConnectionAllowed = (a, b) => {

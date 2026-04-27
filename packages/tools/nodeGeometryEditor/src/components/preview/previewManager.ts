@@ -1,16 +1,16 @@
-import type { GlobalState } from "../../globalState";
-import type { Nullable } from "core/types";
-import type { Observer } from "core/Misc/observable";
+import { type GlobalState } from "../../globalState";
+import { type Nullable } from "core/types";
+import { type Observer } from "core/Misc/observable";
 import { Engine } from "core/Engines/engine";
 import { Scene } from "core/scene";
 import { Matrix, Vector3 } from "core/Maths/math.vector";
 import { HemisphericLight } from "core/Lights/hemisphericLight";
 import { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
-import type { FramingBehavior } from "core/Behaviors/Cameras/framingBehavior";
+import { type FramingBehavior } from "core/Behaviors/Cameras/framingBehavior";
 import { Color3 } from "core/Maths/math.color";
 import "core/Rendering/depthRendererSceneComponent";
-import type { NodeGeometry } from "core/Meshes/Node/nodeGeometry";
-import type { NodeGeometryBlock } from "core/Meshes/Node/nodeGeometryBlock";
+import { type NodeGeometry } from "core/Meshes/Node/nodeGeometry";
+import { type NodeGeometryBlock } from "core/Meshes/Node/nodeGeometryBlock";
 import { StandardMaterial } from "core/Materials/standardMaterial";
 import { Texture } from "core/Materials/Textures/texture";
 import { PreviewMode } from "./previewMode";
@@ -19,13 +19,13 @@ import { DataStorage } from "core/Misc/dataStorage";
 import { TransformNode } from "core/Meshes/transformNode";
 import { MultiMaterial } from "core/Materials/multiMaterial";
 import { GLTF2Export } from "serializers/glTF/2.0/glTFSerializer";
-import type { GLTFData } from "serializers/glTF/2.0/glTFData";
+import { type GLTFData } from "serializers/glTF/2.0/glTFData";
 import { Animation } from "core/Animations/animation";
 import { AxesViewer } from "core/Debug/axesViewer";
 import { DynamicTexture } from "core/Materials/Textures/dynamicTexture";
 import { MeshBuilder } from "core/Meshes/meshBuilder";
 import { NormalMaterial } from "materials/normal/normalMaterial";
-import type { Mesh } from "core/Meshes/mesh";
+import { type Mesh } from "core/Meshes/mesh";
 import { SceneLoaderFlags } from "core/Loading/sceneLoaderFlags";
 
 export class PreviewManager {

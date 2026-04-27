@@ -36,10 +36,6 @@
                 }
             }
         }
-        .inspector-v2-button {
-            background-color: #ff9354;
-            color: #2e194d !important;
-        }
     }
 
     &.background-js {
@@ -59,10 +55,6 @@
                     filter: invert(17%) !important;
                 }
             }
-        }
-        .inspector-v2-button {
-            background-color: #9b85ff;
-            color: #040207 !important;
         }
     }
 
@@ -268,21 +260,6 @@
                         color: black;
                     }
                 }
-            }
-        }
-    }
-
-    .inspector-v2-button {
-        width: 180px !important;
-        font-weight: bold;
-    }
-}
-
-@media screen and (max-width: 1360px) {
-    .commands {
-        .commands-right {
-            .inspector-v2-button {
-                display: none !important;
             }
         }
     }

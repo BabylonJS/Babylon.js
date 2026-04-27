@@ -1,26 +1,26 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import type { IEffectCreationOptions, IShaderPath } from "../Materials/effect";
-import type { _IShaderProcessingContext } from "./Processors/shaderProcessingOptions";
-import type { Nullable, DataArray, IndicesArray, FloatArray, DeepImmutable } from "../types";
-import type { IColor4Like } from "../Maths/math.like";
-import type { DataBuffer } from "../Buffers/dataBuffer";
-import type { IPipelineContext } from "./IPipelineContext";
-import type { WebGLPipelineContext } from "./WebGL/webGLPipelineContext";
-import type { VertexBuffer } from "../Buffers/buffer";
-import type { InstancingAttributeInfo } from "./instancingAttributeInfo";
-import type { ThinTexture } from "../Materials/Textures/thinTexture";
-import type { IEffectFallbacks } from "../Materials/iEffectFallbacks";
-import type { IHardwareTextureWrapper } from "../Materials/Textures/hardwareTextureWrapper";
-import type { DrawWrapper } from "../Materials/drawWrapper";
-import type { IMaterialContext } from "./IMaterialContext";
-import type { IDrawContext } from "./IDrawContext";
-import type { ICanvas, ICanvasRenderingContext } from "./ICanvas";
-import type { IStencilState } from "../States/IStencilState";
-import type { InternalTextureCreationOptions, TextureSize } from "../Materials/Textures/textureCreationOptions";
-import type { RenderTargetWrapper } from "./renderTargetWrapper";
-import type { WebGLRenderTargetWrapper } from "./WebGL/webGLRenderTargetWrapper";
-import type { VideoTexture } from "../Materials/Textures/videoTexture";
-import type { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
+import { type IEffectCreationOptions, type IShaderPath, Effect } from "../Materials/effect";
+import { type _IShaderProcessingContext } from "./Processors/shaderProcessingOptions";
+import { type Nullable, type DataArray, type IndicesArray, type FloatArray, type DeepImmutable } from "../types";
+import { type IColor4Like } from "../Maths/math.like";
+import { type DataBuffer } from "../Buffers/dataBuffer";
+import { type IPipelineContext } from "./IPipelineContext";
+import { type WebGLPipelineContext } from "./WebGL/webGLPipelineContext";
+import { type VertexBuffer } from "../Buffers/buffer";
+import { type InstancingAttributeInfo } from "./instancingAttributeInfo";
+import { type ThinTexture } from "../Materials/Textures/thinTexture";
+import { type IEffectFallbacks } from "../Materials/iEffectFallbacks";
+import { type IHardwareTextureWrapper } from "../Materials/Textures/hardwareTextureWrapper";
+import { type DrawWrapper } from "../Materials/drawWrapper";
+import { type IMaterialContext } from "./IMaterialContext";
+import { type IDrawContext } from "./IDrawContext";
+import { type ICanvas, type ICanvasRenderingContext } from "./ICanvas";
+import { type IStencilState } from "../States/IStencilState";
+import { type InternalTextureCreationOptions, type TextureSize } from "../Materials/Textures/textureCreationOptions";
+import { type RenderTargetWrapper } from "./renderTargetWrapper";
+import { type WebGLRenderTargetWrapper } from "./WebGL/webGLRenderTargetWrapper";
+import { type VideoTexture } from "../Materials/Textures/videoTexture";
+import { type RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import {
     createPipelineContext,
     createRawShaderProgram,
@@ -35,8 +35,8 @@ import {
     _isRenderingStateCompiled,
 } from "./thinEngine.functions";
 
-import type { AbstractEngineOptions, ISceneLike, PrepareTextureFunction, PrepareTextureProcessFunction } from "./abstractEngine";
-import type { PerformanceMonitor } from "../Misc/performanceMonitor";
+import { type AbstractEngineOptions, type ISceneLike, type PrepareTextureFunction, type PrepareTextureProcessFunction, AbstractEngine } from "./abstractEngine";
+import { type PerformanceMonitor } from "../Misc/performanceMonitor";
 import { IsWrapper } from "../Materials/drawWrapper.functions";
 import { Logger } from "../Misc/logger";
 import { IsWindowObjectExist } from "../Misc/domManagement";
@@ -44,12 +44,10 @@ import { WebGLShaderProcessor } from "./WebGL/webGLShaderProcessors";
 import { WebGL2ShaderProcessor } from "./WebGL/webGL2ShaderProcessors";
 import { WebGLDataBuffer } from "../Meshes/WebGL/webGLDataBuffer";
 import { GetExponentOfTwo } from "../Misc/tools.functions";
-import { AbstractEngine } from "./abstractEngine";
 import { Constants } from "./constants";
 import { WebGLHardwareTexture } from "./WebGL/webGLHardwareTexture";
 import { ShaderLanguage } from "../Materials/shaderLanguage";
 import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
-import { Effect } from "../Materials/effect";
 import { _ConcatenateShader, _GetGlobalDefines } from "./abstractEngine.functions";
 import { resetCachedPipeline } from "core/Materials/effect.functions";
 import { HasStencilAspect, IsDepthTexture } from "core/Materials/Textures/textureHelper.functions";
@@ -93,8 +91,9 @@ export interface EngineOptions extends AbstractEngineOptions, WebGLContextAttrib
     failIfMajorPerformanceCaveat?: boolean;
 
     /**
-     * If sRGB Buffer support is not set during construction, use this value to force a specific state
-     * This is added due to an issue when processing textures in chrome/edge/firefox
+     * If sRGB buffer support is not set during construction, use this value to force a specific state
+     * This was originally added to mitigate an issue when processing textures in chrome/edge/firefox.
+     * The browser issue has since been fixed. This option remains for backward compatibility.
      * This will not influence NativeEngine and WebGPUEngine which set the behavior to true during construction.
      */
     forceSRGBBufferSupportState?: boolean;
@@ -281,7 +280,7 @@ export class ThinEngine extends AbstractEngine {
             return;
         }
 
-        let canvas: Nullable<HTMLCanvasElement> = null;
+        let canvas: Nullable<HTMLCanvasElement>;
         if ((canvasOrContext as any).getContext) {
             canvas = <HTMLCanvasElement>canvasOrContext;
 
@@ -395,7 +394,7 @@ export class ThinEngine extends AbstractEngine {
                 try {
                     this._gl = <WebGL2RenderingContext>(canvas.getContext("webgl", options) || canvas.getContext("experimental-webgl", options));
                 } catch (e) {
-                    throw new Error("WebGL not supported");
+                    throw new Error("WebGL not supported", { cause: e });
                 }
             }
 
@@ -562,6 +561,7 @@ export class ThinEngine extends AbstractEngine {
             textureNorm16: this._gl.getExtension("EXT_texture_norm16") ? true : false,
             blendParametersPerTarget: false,
             dualSourceBlending: false,
+            supportReadWriteStorageTextures: false,
         };
 
         this._caps.supportFloatTexturesResolve = this._caps.colorBufferFloat;
@@ -646,6 +646,19 @@ export class ThinEngine extends AbstractEngine {
         // Compressed formats
         if (this._caps.astc) {
             this._gl.COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR = this._caps.astc.COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR;
+            this._gl.COMPRESSED_SRGB8_ALPHA8_ASTC_5x4_KHR = this._caps.astc.COMPRESSED_SRGB8_ALPHA8_ASTC_5x4_KHR;
+            this._gl.COMPRESSED_SRGB8_ALPHA8_ASTC_5x5_KHR = this._caps.astc.COMPRESSED_SRGB8_ALPHA8_ASTC_5x5_KHR;
+            this._gl.COMPRESSED_SRGB8_ALPHA8_ASTC_6x5_KHR = this._caps.astc.COMPRESSED_SRGB8_ALPHA8_ASTC_6x5_KHR;
+            this._gl.COMPRESSED_SRGB8_ALPHA8_ASTC_6x6_KHR = this._caps.astc.COMPRESSED_SRGB8_ALPHA8_ASTC_6x6_KHR;
+            this._gl.COMPRESSED_SRGB8_ALPHA8_ASTC_8x5_KHR = this._caps.astc.COMPRESSED_SRGB8_ALPHA8_ASTC_8x5_KHR;
+            this._gl.COMPRESSED_SRGB8_ALPHA8_ASTC_8x6_KHR = this._caps.astc.COMPRESSED_SRGB8_ALPHA8_ASTC_8x6_KHR;
+            this._gl.COMPRESSED_SRGB8_ALPHA8_ASTC_8x8_KHR = this._caps.astc.COMPRESSED_SRGB8_ALPHA8_ASTC_8x8_KHR;
+            this._gl.COMPRESSED_SRGB8_ALPHA8_ASTC_10x5_KHR = this._caps.astc.COMPRESSED_SRGB8_ALPHA8_ASTC_10x5_KHR;
+            this._gl.COMPRESSED_SRGB8_ALPHA8_ASTC_10x6_KHR = this._caps.astc.COMPRESSED_SRGB8_ALPHA8_ASTC_10x6_KHR;
+            this._gl.COMPRESSED_SRGB8_ALPHA8_ASTC_10x8_KHR = this._caps.astc.COMPRESSED_SRGB8_ALPHA8_ASTC_10x8_KHR;
+            this._gl.COMPRESSED_SRGB8_ALPHA8_ASTC_10x10_KHR = this._caps.astc.COMPRESSED_SRGB8_ALPHA8_ASTC_10x10_KHR;
+            this._gl.COMPRESSED_SRGB8_ALPHA8_ASTC_12x10_KHR = this._caps.astc.COMPRESSED_SRGB8_ALPHA8_ASTC_12x10_KHR;
+            this._gl.COMPRESSED_SRGB8_ALPHA8_ASTC_12x12_KHR = this._caps.astc.COMPRESSED_SRGB8_ALPHA8_ASTC_12x12_KHR;
         }
         if (this._caps.bptc) {
             this._gl.COMPRESSED_SRGB_ALPHA_BPTC_UNORM_EXT = this._caps.bptc.COMPRESSED_SRGB_ALPHA_BPTC_UNORM_EXT;
@@ -840,7 +853,6 @@ export class ThinEngine extends AbstractEngine {
             supportSpriteInstancing: true,
             forceVertexBufferStrideAndOffsetMultiple4Bytes: false,
             _checkNonFloatVertexBuffersDontRecreatePipelineContext: false,
-            _collectUbosUpdatedInFrame: false,
         };
     }
 
@@ -1833,7 +1845,6 @@ export class ThinEngine extends AbstractEngine {
             this._currentInstanceBuffers.splice(index, 1);
 
             shouldClean = true;
-            index = this._currentInstanceLocations.indexOf(attributeLocation);
         }
 
         if (shouldClean) {
@@ -2637,7 +2648,7 @@ export class ThinEngine extends AbstractEngine {
             return false;
         }
 
-        this._gl.uniformMatrix4fv(uniform, false, matrices);
+        this._gl.uniformMatrix4fv(uniform, false, matrices as Float32List);
         return true;
     }
 
@@ -2942,7 +2953,7 @@ export class ThinEngine extends AbstractEngine {
         delayGPUTextureCreation = true,
         source = InternalTextureSource.Unknown
     ): InternalTexture {
-        let generateMipMaps = false;
+        let generateMipMaps: boolean;
         let createMipMaps = false;
         let type = Constants.TEXTURETYPE_UNSIGNED_BYTE;
         let samplingMode = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE;
@@ -3058,7 +3069,7 @@ export class ThinEngine extends AbstractEngine {
         this._internalTexturesCache.push(texture);
 
         if (createMSAATexture) {
-            let renderBuffer: Nullable<WebGLRenderbuffer> = null;
+            let renderBuffer: Nullable<WebGLRenderbuffer>;
 
             if (IsDepthTexture(texture.format)) {
                 renderBuffer = this._setupFramebufferDepthAttachments(
@@ -3390,6 +3401,45 @@ export class ThinEngine extends AbstractEngine {
                     break;
                 case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_4x4:
                     internalFormat = gl.COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR;
+                    break;
+                case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_5x4:
+                    internalFormat = gl.COMPRESSED_SRGB8_ALPHA8_ASTC_5x4_KHR;
+                    break;
+                case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_5x5:
+                    internalFormat = gl.COMPRESSED_SRGB8_ALPHA8_ASTC_5x5_KHR;
+                    break;
+                case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_6x5:
+                    internalFormat = gl.COMPRESSED_SRGB8_ALPHA8_ASTC_6x5_KHR;
+                    break;
+                case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_6x6:
+                    internalFormat = gl.COMPRESSED_SRGB8_ALPHA8_ASTC_6x6_KHR;
+                    break;
+                case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_8x5:
+                    internalFormat = gl.COMPRESSED_SRGB8_ALPHA8_ASTC_8x5_KHR;
+                    break;
+                case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_8x6:
+                    internalFormat = gl.COMPRESSED_SRGB8_ALPHA8_ASTC_8x6_KHR;
+                    break;
+                case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_8x8:
+                    internalFormat = gl.COMPRESSED_SRGB8_ALPHA8_ASTC_8x8_KHR;
+                    break;
+                case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_10x5:
+                    internalFormat = gl.COMPRESSED_SRGB8_ALPHA8_ASTC_10x5_KHR;
+                    break;
+                case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_10x6:
+                    internalFormat = gl.COMPRESSED_SRGB8_ALPHA8_ASTC_10x6_KHR;
+                    break;
+                case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_10x8:
+                    internalFormat = gl.COMPRESSED_SRGB8_ALPHA8_ASTC_10x8_KHR;
+                    break;
+                case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_10x10:
+                    internalFormat = gl.COMPRESSED_SRGB8_ALPHA8_ASTC_10x10_KHR;
+                    break;
+                case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_12x10:
+                    internalFormat = gl.COMPRESSED_SRGB8_ALPHA8_ASTC_12x10_KHR;
+                    break;
+                case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_12x12:
+                    internalFormat = gl.COMPRESSED_SRGB8_ALPHA8_ASTC_12x12_KHR;
                     break;
                 case Constants.TEXTUREFORMAT_COMPRESSED_RGB_S3TC_DXT1:
                     if (this._caps.s3tc_srgb) {

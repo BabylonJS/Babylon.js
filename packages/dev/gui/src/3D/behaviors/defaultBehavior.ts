@@ -1,14 +1,14 @@
-import type { Behavior } from "core/Behaviors/behavior";
+import { type Behavior } from "core/Behaviors/behavior";
 import { FollowBehavior } from "core/Behaviors/Meshes/followBehavior";
 import { SixDofDragBehavior } from "core/Behaviors/Meshes/sixDofDragBehavior";
-import type { Scene } from "core/scene";
-import type { Mesh } from "core/Meshes/mesh";
-import type { Observer } from "core/Misc/observable";
-import type { Nullable } from "core/types";
+import { type Scene } from "core/scene";
+import { type Mesh } from "core/Meshes/mesh";
+import { type Observer } from "core/Misc/observable";
+import { type Nullable } from "core/types";
 import { SurfaceMagnetismBehavior } from "core/Behaviors/Meshes/surfaceMagnetismBehavior";
-import type { Vector3 } from "core/Maths/math.vector";
-import type { PickingInfo } from "core/Collisions/pickingInfo";
-import type { AbstractMesh } from "core/Meshes/abstractMesh";
+import { type Vector3 } from "core/Maths/math.vector";
+import { type PickingInfo } from "core/Collisions/pickingInfo";
+import { type AbstractMesh } from "core/Meshes/abstractMesh";
 
 /**
  * Default behavior for 3D UI elements.

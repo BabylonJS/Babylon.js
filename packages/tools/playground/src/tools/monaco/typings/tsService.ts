@@ -55,7 +55,7 @@ export function CreateTsShim(opts?: { libNames?: string[] }) {
         version: "5.x-shim",
         libMap, // used by ATA to ignore lib refs
         preProcessFile(text: string) {
-            let imports: { s: number; e: number }[] = [];
+            let imports: { s: number; e: number }[];
             try {
                 imports = parse(text)[0] as any as { s: number; e: number }[];
             } catch {

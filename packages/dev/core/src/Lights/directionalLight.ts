@@ -1,14 +1,14 @@
 import { serialize } from "../Misc/decorators";
-import type { Camera } from "../Cameras/camera";
-import type { Scene } from "../scene";
+import { type Camera } from "../Cameras/camera";
+import { type Scene } from "../scene";
 import { Matrix, Vector3 } from "../Maths/math.vector";
 import { Node } from "../node";
-import type { AbstractMesh } from "../Meshes/abstractMesh";
+import { type AbstractMesh } from "../Meshes/abstractMesh";
 import { Light } from "./light";
 import { ShadowLight } from "./shadowLight";
-import type { Effect } from "../Materials/effect";
+import { type Effect } from "../Materials/effect";
 import { RegisterClass } from "../Misc/typeStore";
-import type { Nullable } from "../types";
+import { type Nullable } from "../types";
 import { Constants } from "core/Engines/constants";
 
 Node.AddNodeConstructor("Light_Type_1", (name, scene) => {

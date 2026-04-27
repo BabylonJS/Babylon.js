@@ -1,18 +1,20 @@
 import { NodeMaterialBlock } from "../../nodeMaterialBlock";
 import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
-import type { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
+import { type NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
-import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
-import type { BaseTexture } from "../../../Textures/baseTexture";
+import { type NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
+import { type BaseTexture } from "../../../Textures/baseTexture";
 import { RegisterClass } from "../../../../Misc/typeStore";
-import type { Scene } from "../../../../scene";
-import type { InputBlock } from "../Input/inputBlock";
+import { type Scene } from "../../../../scene";
+import { type InputBlock } from "../Input/inputBlock";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
-import type { Effect } from "../../../effect";
+import { type Effect } from "../../../effect";
 
-import type { NodeMaterial } from "../../nodeMaterial";
+import { type NodeMaterial } from "../../nodeMaterial";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { Constants } from "core/Engines/constants";
+
+import "../../../../Rendering/depthRendererSceneComponent";
 
 /**
  * Block used to retrieve the depth (zbuffer) of the scene
@@ -126,6 +128,7 @@ export class SceneDepthBlock extends NodeMaterialBlock {
         state._excludeVariableName("textureSampler");
     }
 
+    /** {@inheritDoc} */
     public override get target() {
         if (!this.uv.isConnected) {
             return NodeMaterialBlockTargets.VertexAndFragment;
@@ -144,6 +147,11 @@ export class SceneDepthBlock extends NodeMaterialBlock {
         return depthRenderer.getDepthMap();
     }
 
+    /**
+     * Bind data to effect
+     * @param effect - the effect to bind to
+     * @param nodeMaterial - the node material
+     */
     public override bind(effect: Effect, nodeMaterial: NodeMaterial) {
         const texture = this._getTexture(nodeMaterial.getScene());
 
@@ -271,6 +279,10 @@ export class SceneDepthBlock extends NodeMaterialBlock {
         return this;
     }
 
+    /**
+     * Serializes the block
+     * @returns the serialized object
+     */
     public override serialize(): any {
         const serializationObject = super.serialize();
 
@@ -281,6 +293,12 @@ export class SceneDepthBlock extends NodeMaterialBlock {
         return serializationObject;
     }
 
+    /**
+     * Deserializes the block
+     * @param serializationObject - the serialization object
+     * @param scene - the scene
+     * @param rootUrl - the root url
+     */
     public override _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
         super._deserialize(serializationObject, scene, rootUrl);
 

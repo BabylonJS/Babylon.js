@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import type { Nullable } from "../types";
+import { type Nullable } from "../types";
 import { Observable } from "./observable";
 import { GetDOMTextContent, IsNavigatorAvailable, IsWindowObjectExist } from "./domManagement";
 import { Logger } from "./logger";
@@ -7,10 +7,10 @@ import { DeepCopier } from "./deepCopier";
 import { PrecisionDate } from "./precisionDate";
 import { _WarnImport } from "./devTools";
 import { WebRequest } from "./webRequest";
-import type { IFileRequest } from "./fileRequest";
+import { type IFileRequest } from "./fileRequest";
 import { EngineStore } from "../Engines/engineStore";
-import type { ReadFileError } from "./fileTools";
 import {
+    type ReadFileError,
     FileToolsOptions,
     DecodeBase64UrlToBinary,
     IsBase64DataUrl,
@@ -19,18 +19,17 @@ import {
     ReadFile as FileToolsReadFile,
     SetCorsBehavior,
 } from "./fileTools";
-import type { IOfflineProvider } from "../Offline/IOfflineProvider";
+import { type IOfflineProvider } from "../Offline/IOfflineProvider";
 import { TimingTools } from "./timingTools";
 import { InstantiationTools } from "./instantiationTools";
 import { RandomGUID } from "./guid";
-import type { IScreenshotSize } from "./interfaces/screenshotSize";
-import type { Camera } from "../Cameras/camera";
-import type { IColor4Like } from "../Maths/math.like";
+import { type IScreenshotSize } from "./interfaces/screenshotSize";
+import { type Camera } from "../Cameras/camera";
+import { type IColor4Like } from "../Maths/math.like";
 import { IsExponentOfTwo, Mix } from "./tools.functions";
-import type { AbstractEngine } from "../Engines/abstractEngine";
-import type { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
-import type { INative } from "../Engines/Native/nativeInterfaces";
-import { NativeTraceLevel } from "../Engines/Native/nativeInterfaces";
+import { type AbstractEngine } from "../Engines/abstractEngine";
+import { type RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
+import { type INative, NativeTraceLevel } from "../Engines/Native/nativeInterfaces";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 declare const _native: INative;
@@ -233,8 +232,8 @@ export class Tools {
      * @param color defines the output color
      */
     public static FetchToRef(u: number, v: number, width: number, height: number, pixels: Uint8Array, color: IColor4Like): void {
-        const wrappedU = (Math.abs(u) * width) % width | 0;
-        const wrappedV = (Math.abs(v) * height) % height | 0;
+        const wrappedU = ((Math.abs(u) * width) % width) | 0;
+        const wrappedV = ((Math.abs(v) * height) % height) | 0;
 
         const position = (wrappedU + wrappedV * width) * 4;
         color.r = pixels[position] / 255;
@@ -498,6 +497,14 @@ export class Tools {
     public static readonly _DefaultCdnUrl = "https://cdn.babylonjs.com";
 
     /**
+     * The CDN version to use when constructing versioned CDN URLs.
+     * Injected at build time by the version update script.
+     * When set, unversioned CDN URLs will be rewritten to include this version prefix.
+     * @internal
+     */
+    public static _CdnVersion = "9.4.1";
+
+    /**
      * @internal
      */
     public static readonly _DefaultAssetsUrl = "https://assets.babylonjs.com/core";
@@ -515,7 +522,7 @@ export class Tools {
 
         if (Tools.AssetBaseUrl && url.startsWith(Tools._DefaultAssetsUrl)) {
             // normalize the baseUrl
-            const baseUrl = Tools.AssetBaseUrl[Tools.AssetBaseUrl.length - 1] === "/" ? Tools.AssetBaseUrl.substring(0, Tools.AssetBaseUrl.length - 1) : Tools.AssetBaseUrl;
+            const baseUrl = Tools.AssetBaseUrl.endsWith("/") ? Tools.AssetBaseUrl.slice(0, -1) : Tools.AssetBaseUrl;
             return url.replace(Tools._DefaultAssetsUrl, baseUrl);
         }
 
@@ -532,13 +539,22 @@ export class Tools {
         if (!scriptUrl) {
             return "";
         }
-        // if the base URL was set, and the script Url is an absolute path change the default path
-        if (Tools.ScriptBaseUrl && scriptUrl.startsWith(Tools._DefaultCdnUrl)) {
-            // change the default host, which is https://cdn.babylonjs.com with the one defined
-            // make sure no trailing slash is present
-
-            const baseUrl = Tools.ScriptBaseUrl[Tools.ScriptBaseUrl.length - 1] === "/" ? Tools.ScriptBaseUrl.substring(0, Tools.ScriptBaseUrl.length - 1) : Tools.ScriptBaseUrl;
-            scriptUrl = scriptUrl.replace(Tools._DefaultCdnUrl, baseUrl);
+        if (scriptUrl.startsWith(Tools._DefaultCdnUrl)) {
+            if (Tools.ScriptBaseUrl) {
+                // if the base URL was set, and the script Url is an absolute path change the default path
+                // change the default host, which is https://cdn.babylonjs.com with the one defined
+                // make sure no trailing slash is present
+                const baseUrl = Tools.ScriptBaseUrl.endsWith("/") ? Tools.ScriptBaseUrl.slice(0, -1) : Tools.ScriptBaseUrl;
+                scriptUrl = scriptUrl.replace(Tools._DefaultCdnUrl, baseUrl);
+            } else if (Tools._CdnVersion) {
+                // If a CDN version is set (injected at build time), rewrite unversioned CDN URLs to versioned ones
+                const versionedBase = `${Tools._DefaultCdnUrl}/v${Tools._CdnVersion}`;
+                // Guard against double-versioning if the URL already contains the version prefix
+                // (e.g. when GetBabylonScriptURL is called multiple times on the same URL)
+                if (!scriptUrl.startsWith(versionedBase)) {
+                    scriptUrl = scriptUrl.replace(Tools._DefaultCdnUrl, versionedBase);
+                }
+            }
         }
 
         // run the preprocessor

@@ -1,9 +1,9 @@
-import type { FloatArray, IndicesArray, Nullable } from "core/types";
-import type { Mesh } from "core/Meshes/mesh";
-import type { NodeParticleBuildState } from "core/Particles/Node/nodeParticleBuildState";
-import type { NodeParticleConnectionPoint } from "core/Particles/Node/nodeParticleBlockConnectionPoint";
-import type { Particle } from "core/Particles/particle";
-import type { IShapeBlock } from "./IShapeBlock";
+import { type FloatArray, type IndicesArray, type Nullable } from "core/types";
+import { type Mesh } from "core/Meshes/mesh";
+import { type NodeParticleBuildState } from "core/Particles/Node/nodeParticleBuildState";
+import { type NodeParticleConnectionPoint } from "core/Particles/Node/nodeParticleBlockConnectionPoint";
+import { type Particle } from "core/Particles/particle";
+import { type IShapeBlock } from "./IShapeBlock";
 
 import { RegisterClass } from "core/Misc/typeStore";
 import { VertexData } from "core/Meshes/mesh.vertexData";
@@ -181,7 +181,7 @@ export class MeshShapeBlock extends NodeParticleBlock implements IShapeBlock {
                 Vector3.TransformNormalFromFloatsToRef(randX, randY, randZ, state.emitterWorldMatrix!, particle.direction);
             }
 
-            particle._initialDirection = particle.direction.clone();
+            particle._properties.initialDirection = particle.direction.clone();
         };
 
         system._positionCreation.process = (particle: Particle) => {

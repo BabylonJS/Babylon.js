@@ -1,10 +1,12 @@
-import type { IMaterial, IKHRMaterialsTransmission } from "babylonjs-gltf2interface";
-import type { IGLTFExporterExtensionV2 } from "../glTFExporterExtension";
+import { type IMaterial, type IKHRMaterialsTransmission } from "babylonjs-gltf2interface";
+import { type IGLTFExporterExtensionV2 } from "../glTFExporterExtension";
 import { GLTFExporter } from "../glTFExporter";
-import type { Material } from "core/Materials/material";
+import { type Material } from "core/Materials/material";
 import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
-import type { BaseTexture } from "core/Materials/Textures/baseTexture";
+import { type BaseTexture } from "core/Materials/Textures/baseTexture";
 import { Logger } from "core/Misc/logger";
+import { OpenPBRMaterial } from "core/Materials/PBR/openpbrMaterial";
+import { Color3 } from "core/Maths/math.color";
 
 const NAME = "KHR_materials_transmission";
 
@@ -50,27 +52,38 @@ export class KHR_materials_transmission implements IGLTFExporterExtensionV2 {
 
         if (babylonMaterial instanceof PBRMaterial) {
             if (this._isExtensionEnabled(babylonMaterial)) {
-                if (babylonMaterial.subSurface.thicknessTexture) {
-                    additionalTextures.push(babylonMaterial.subSurface.thicknessTexture);
+                if (babylonMaterial.subSurface.refractionIntensityTexture && babylonMaterial.subSurface.useGltfStyleTextures) {
+                    additionalTextures.push(babylonMaterial.subSurface.refractionIntensityTexture);
                 }
                 return additionalTextures;
+            }
+        } else if (babylonMaterial instanceof OpenPBRMaterial) {
+            if (babylonMaterial.transmissionWeight > 0 && babylonMaterial.transmissionWeightTexture) {
+                additionalTextures.push(babylonMaterial.transmissionWeightTexture);
+                if (babylonMaterial.transmissionColorTexture) {
+                    additionalTextures.push(babylonMaterial.transmissionColorTexture);
+                }
+            }
+            if (babylonMaterial.subsurfaceWeight > 0 && babylonMaterial.subsurfaceWeightTexture) {
+                additionalTextures.push(babylonMaterial.subsurfaceWeightTexture);
             }
         }
 
         return additionalTextures;
     }
 
-    private _isExtensionEnabled(mat: PBRMaterial): boolean {
+    private _isExtensionEnabled(mat: Material): boolean {
         // This extension must not be used on a material that also uses KHR_materials_unlit
-        if (mat.unlit) {
-            return false;
+        if (mat instanceof OpenPBRMaterial && !mat.unlit) {
+            return mat.transmissionWeight > 0 || mat.subsurfaceWeight > 0;
+        } else if (mat instanceof PBRMaterial && !mat.unlit) {
+            const subs = mat.subSurface;
+            return (
+                (subs.isRefractionEnabled && subs.refractionIntensity != undefined && subs.refractionIntensity != 0) ||
+                (subs.refractionIntensityTexture != null && subs.useGltfStyleTextures)
+            );
         }
-        const subs = mat.subSurface;
-        return (subs.isRefractionEnabled && subs.refractionIntensity != undefined && subs.refractionIntensity != 0) || this._hasTexturesExtension(mat);
-    }
-
-    private _hasTexturesExtension(mat: PBRMaterial): boolean {
-        return mat.subSurface.refractionIntensityTexture != null;
+        return false;
     }
 
     /**
@@ -81,25 +94,25 @@ export class KHR_materials_transmission implements IGLTFExporterExtensionV2 {
      * @returns true if successful
      */
     public async postExportMaterialAsync?(context: string, node: IMaterial, babylonMaterial: Material): Promise<IMaterial> {
-        if (babylonMaterial instanceof PBRMaterial && this._isExtensionEnabled(babylonMaterial)) {
+        if (!this._isExtensionEnabled(babylonMaterial)) {
+            return node;
+        }
+        if (babylonMaterial instanceof PBRMaterial) {
             this._wasUsed = true;
 
             const subSurface = babylonMaterial.subSurface;
             const transmissionFactor = subSurface.refractionIntensity === 0 ? undefined : subSurface.refractionIntensity;
 
-            const volumeInfo: IKHRMaterialsTransmission = {
+            const transmissionInfo: IKHRMaterialsTransmission = {
                 transmissionFactor: transmissionFactor,
             };
 
-            if (this._hasTexturesExtension(babylonMaterial)) {
-                this._exporter._materialNeedsUVsSet.add(babylonMaterial);
-            }
-
             if (subSurface.refractionIntensityTexture) {
                 if (subSurface.useGltfStyleTextures) {
-                    const transmissionTexture = await this._exporter._materialExporter.exportTextureAsync(subSurface.refractionIntensityTexture);
+                    this._exporter._materialNeedsUVsSet.add(babylonMaterial);
+                    const transmissionTexture = this._exporter._materialExporter.getTextureInfo(subSurface.refractionIntensityTexture);
                     if (transmissionTexture) {
-                        volumeInfo.transmissionTexture = transmissionTexture;
+                        transmissionInfo.transmissionTexture = transmissionTexture;
                     }
                 } else {
                     Logger.Warn(`${context}: Exporting a subsurface refraction intensity texture without \`useGltfStyleTextures\` is not supported`);
@@ -107,7 +120,51 @@ export class KHR_materials_transmission implements IGLTFExporterExtensionV2 {
             }
 
             node.extensions ||= {};
-            node.extensions[NAME] = volumeInfo;
+            node.extensions[NAME] = transmissionInfo;
+        } else if (babylonMaterial instanceof OpenPBRMaterial) {
+            this._wasUsed = true;
+
+            const subsurfaceFractionOfDielectric = (1.0 - babylonMaterial.transmissionWeight) * babylonMaterial.subsurfaceWeight;
+            const transmissionFactor = subsurfaceFractionOfDielectric + babylonMaterial.transmissionWeight;
+
+            const transmissionInfo: IKHRMaterialsTransmission = {
+                transmissionFactor: transmissionFactor,
+            };
+
+            if (babylonMaterial.transmissionWeightTexture) {
+                this._exporter._materialNeedsUVsSet.add(babylonMaterial);
+                const transmissionTexture = this._exporter._materialExporter.getTextureInfo(babylonMaterial.transmissionWeightTexture);
+                if (transmissionTexture) {
+                    transmissionInfo.transmissionTexture = transmissionTexture;
+                }
+            } else if (babylonMaterial.subsurfaceWeightTexture) {
+                this._exporter._materialNeedsUVsSet.add(babylonMaterial);
+                const subsurfaceTexture = this._exporter._materialExporter.getTextureInfo(babylonMaterial.subsurfaceWeightTexture);
+                if (subsurfaceTexture) {
+                    transmissionInfo.transmissionTexture = subsurfaceTexture;
+                }
+            }
+
+            if (babylonMaterial.transmissionDepth == 0.0 && (!babylonMaterial.transmissionColor.equals(Color3.White()) || babylonMaterial.transmissionColorTexture)) {
+                if (node.pbrMetallicRoughness) {
+                    if (!node.pbrMetallicRoughness.baseColorFactor) {
+                        node.pbrMetallicRoughness.baseColorFactor = [1, 1, 1, 1];
+                    }
+                    node.pbrMetallicRoughness.baseColorFactor[0] *= babylonMaterial.transmissionColor.r;
+                    node.pbrMetallicRoughness.baseColorFactor[1] *= babylonMaterial.transmissionColor.g;
+                    node.pbrMetallicRoughness.baseColorFactor[2] *= babylonMaterial.transmissionColor.b;
+                    if (babylonMaterial.transmissionColorTexture && !node.pbrMetallicRoughness.baseColorTexture) {
+                        const transmissionColorTexture = this._exporter._materialExporter.getTextureInfo(babylonMaterial.transmissionColorTexture);
+                        if (transmissionColorTexture) {
+                            node.pbrMetallicRoughness.baseColorTexture = transmissionColorTexture;
+                            this._exporter._materialNeedsUVsSet.add(babylonMaterial);
+                        }
+                    }
+                }
+            }
+
+            node.extensions ||= {};
+            node.extensions[NAME] = transmissionInfo;
         }
 
         return node;

@@ -1,4 +1,4 @@
-import type { Scene } from "../scene";
+import { type Scene } from "../scene";
 import { Vector3, Vector2, TmpVectors, Vector4 } from "../Maths/math.vector";
 import { VertexBuffer } from "../Buffers/buffer";
 import { Mesh } from "../Meshes/mesh";
@@ -33,6 +33,7 @@ export class GroundMesh extends Mesh {
     /** @internal */
     public _maxZ: number;
 
+    /** @internal */
     constructor(name: string, scene?: Scene) {
         super(name, scene);
     }
@@ -225,13 +226,13 @@ export class GroundMesh extends Mesh {
         const v1v4 = TmpVectors.Vector3[6];
         const norm1 = TmpVectors.Vector3[7];
         const norm2 = TmpVectors.Vector3[8];
-        let i = 0;
-        let j = 0;
-        let k = 0;
-        let cd = 0; // 2D slope coefficient : z = cd * x + h
-        let h = 0;
-        let d1 = 0; // facet plane equation : ax + by + cz + d = 0
-        let d2 = 0;
+        let i: number;
+        let j: number;
+        let k: number;
+        let cd: number; // 2D slope coefficient : z = cd * x + h
+        let h: number;
+        let d1: number; // facet plane equation : ax + by + cz + d = 0
+        let d2: number;
 
         const subdivisionsX = this._subdivisionsX;
         const subdivisionsY = this._subdivisionsY;

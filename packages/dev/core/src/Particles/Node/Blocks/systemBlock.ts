@@ -1,18 +1,23 @@
-import type { ParticleSystem } from "core/Particles/particleSystem";
-import type { NodeParticleConnectionPoint } from "core/Particles/Node/nodeParticleBlockConnectionPoint";
-import type { NodeParticleBuildState } from "core/Particles/Node/nodeParticleBuildState";
-import type { ParticleGradientValueBlock } from "./particleGradientValueBlock";
+import { type Nullable } from "core/types";
+import { type AbstractMesh } from "core/Meshes/abstractMesh";
+import { type ParticleSystem } from "core/Particles/particleSystem";
+import { type NodeParticleConnectionPoint } from "core/Particles/Node/nodeParticleBlockConnectionPoint";
+import { type NodeParticleBuildState } from "core/Particles/Node/nodeParticleBuildState";
 
 import { Constants } from "../../../Engines/constants";
 import { editableInPropertyPage, PropertyTypeForEdition } from "core/Decorators/nodeDecorator";
 import { RegisterClass } from "core/Misc/typeStore";
 import { Vector2, Vector3 } from "core/Maths/math.vector";
-import { Color3, Color4 } from "core/Maths/math.color";
+import { Color4 } from "core/Maths/math.color";
 import { BaseParticleSystem } from "core/Particles/baseParticleSystem";
 import { NodeParticleBlock } from "core/Particles/Node/nodeParticleBlock";
 import { _TriggerSubEmitter } from "core/Particles/Node/Blocks/Triggers/triggerTools";
 import { NodeParticleBlockConnectionPointTypes } from "core/Particles/Node/Enums/nodeParticleBlockConnectionPointTypes";
-import { ParticleGradientBlock } from "./particleGradientBlock";
+
+type CustomShader = {
+    shaderPath: { fragmentElement: string };
+    shaderOptions: { uniforms: string[]; samplers: string[]; defines: string[] };
+};
 
 /**
  * Block used to get a system of particles
@@ -111,8 +116,25 @@ export class SystemBlock extends NodeParticleBlock {
     @editableInPropertyPage("Do no start", PropertyTypeForEdition.Boolean, "ADVANCED", { embedded: true, notifiers: { rebuild: true } })
     public doNoStart = false;
 
+    /**
+     * Gets or sets the rendering group id for the particle system (0 by default)
+     */
+    @editableInPropertyPage("Rendering group id", PropertyTypeForEdition.Int, "ADVANCED", { embedded: true, notifiers: { rebuild: true }, min: 0 })
+    public renderingGroupId = 0;
+
     /** @internal */
     public _internalId = SystemBlock._IdCounter++;
+
+    /**
+     * Gets or sets the custom shader configuration used to render the particles.
+     * This can be used to set your own shader to render the particle system.
+     */
+    public customShader: Nullable<CustomShader> = null;
+
+    /**
+     * Gets or sets the emitter for the particle system.
+     */
+    public emitter: Nullable<AbstractMesh | Vector3> = Vector3.Zero();
 
     /**
      * Create a new SystemBlock
@@ -131,8 +153,6 @@ export class SystemBlock extends NodeParticleBlock {
         this.registerInput("targetStopDuration", NodeParticleBlockConnectionPointTypes.Float, true, 0, 0);
         this.registerInput("onStart", NodeParticleBlockConnectionPointTypes.System, true);
         this.registerInput("onEnd", NodeParticleBlockConnectionPointTypes.System, true);
-        this.registerInput("rampGradient", NodeParticleBlockConnectionPointTypes.Color4, true);
-        this.registerInput("emitterPosition", NodeParticleBlockConnectionPointTypes.Vector3, true, Vector3.Zero());
         this.registerOutput("system", NodeParticleBlockConnectionPointTypes.System);
     }
 
@@ -201,20 +221,6 @@ export class SystemBlock extends NodeParticleBlock {
     }
 
     /**
-     * Gets the rampGradient input component
-     */
-    public get rampGradient(): NodeParticleConnectionPoint {
-        return this._inputs[8];
-    }
-
-    /**
-     * Gets the emitterPosition input component
-     */
-    public get emitterPosition(): NodeParticleConnectionPoint {
-        return this._inputs[9];
-    }
-
-    /**
      * Gets the system output component
      */
     public get system(): NodeParticleConnectionPoint {
@@ -249,37 +255,32 @@ export class SystemBlock extends NodeParticleBlock {
         particleSystem.textureMask = this.textureMask.getConnectedValue(state) ?? new Color4(1, 1, 1, 1);
         particleSystem.isLocal = this.isLocal;
         particleSystem.disposeOnStop = this.disposeOnStop;
-        particleSystem.emitter = (this.emitterPosition.getConnectedValue(state) as Vector3) ?? Vector3.Zero();
+        particleSystem.renderingGroupId = this.renderingGroupId;
+        if (this.emitter) {
+            particleSystem.emitter = this.emitter;
+        }
+
+        // Apply custom shader if defined
+        if (this.customShader) {
+            const engine = particleSystem.getScene()?.getEngine();
+            if (engine?.createEffectForParticles) {
+                const defines: string = this.customShader.shaderOptions.defines.length > 0 ? this.customShader.shaderOptions.defines.join("\n") : "";
+                const effect = engine.createEffectForParticles(
+                    this.customShader.shaderPath.fragmentElement,
+                    this.customShader.shaderOptions.uniforms,
+                    this.customShader.shaderOptions.samplers,
+                    defines
+                );
+                particleSystem.setCustomEffect(effect, 0);
+                particleSystem.customShader = this.customShader;
+            }
+        }
 
         // The emit rate can vary if it is connected to another block like a gradient
         particleSystem._calculateEmitRate = () => {
             state.systemContext = particleSystem;
             return this.emitRate.getConnectedValue(state) as number;
         };
-
-        // Get the ramp gradients
-        particleSystem.useRampGradients = false;
-        if (this.rampGradient.isConnected) {
-            if (this.rampGradient.connectedPoint?.ownerBlock instanceof ParticleGradientBlock) {
-                // We have a possible gradient, loop through its entries
-                const gradientInputs = this.rampGradient.connectedPoint?.ownerBlock.inputs;
-
-                // Skip the first input which is the gradient selector, and we only care about the gradient values
-                for (let i = 1; i < gradientInputs.length; i++) {
-                    if (gradientInputs[i].isConnected) {
-                        const rampEntry = gradientInputs[i].connectedPoint?.ownerBlock as ParticleGradientValueBlock;
-                        const color = rampEntry._inputs[0].getConnectedValue(state) as Color4;
-                        particleSystem.addRampGradient(rampEntry.reference, new Color3(color.r, color.g, color.b));
-                        particleSystem.useRampGradients = true;
-                    }
-                }
-            } else {
-                // We have a single value, add it as ramp gradient
-                const color = this.rampGradient.getConnectedValue(state) as Color4;
-                particleSystem.addRampGradient(0, new Color3(color.r, color.g, color.b));
-                particleSystem.useRampGradients = true;
-            }
-        }
 
         this.system._storedValue = this;
 
@@ -342,7 +343,9 @@ export class SystemBlock extends NodeParticleBlock {
         serializationObject.isLocal = this.isLocal;
         serializationObject.disposeOnStop = this.disposeOnStop;
         serializationObject.doNoStart = this.doNoStart;
+        serializationObject.renderingGroupId = this.renderingGroupId;
         serializationObject.startDelay = this.startDelay;
+        serializationObject.customShader = this.customShader;
 
         return serializationObject;
     }
@@ -364,6 +367,7 @@ export class SystemBlock extends NodeParticleBlock {
         this.isLocal = serializationObject.isLocal ?? false;
         this.disposeOnStop = serializationObject.disposeOnStop ?? false;
         this.doNoStart = !!serializationObject.doNoStart;
+        this.renderingGroupId = serializationObject.renderingGroupId ?? 0;
 
         if (serializationObject.emitRate !== undefined) {
             this.emitRate.value = serializationObject.emitRate;
@@ -375,6 +379,10 @@ export class SystemBlock extends NodeParticleBlock {
 
         if (serializationObject.startDelay !== undefined) {
             this.startDelay = serializationObject.startDelay;
+        }
+
+        if (serializationObject.customShader !== undefined) {
+            this.customShader = serializationObject.customShader;
         }
     }
 }

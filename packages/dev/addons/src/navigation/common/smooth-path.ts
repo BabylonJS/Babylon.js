@@ -1,11 +1,10 @@
-import type { NavMeshQuery, NavMesh, QueryFilter } from "@recast-navigation/core";
+import { type NavMeshQuery, type NavMesh, type QueryFilter } from "@recast-navigation/core";
 
-import type { IVector3Like } from "core/Maths/math.like";
+import { type IVector3Like } from "core/Maths/math.like";
 import { Vector3 } from "core/Maths/math.vector";
 
 import { ConvertNavPathPoints } from "./convert";
-import type { RecastInjection, SteerTargetResult } from "../types";
-import { ComputePathError, type ComputePathResult } from "../types";
+import { type RecastInjection, type SteerTargetResult, ComputePathError, type ComputePathResult } from "../types";
 import { GetRecast } from "../factory/common";
 
 const _DELTA = new Vector3();
@@ -343,7 +342,7 @@ function inRange(a: Vector3, b: Vector3, r: number, h: number) {
     const dx = b.x - a.x;
     const dy = b.y - a.y;
     const dz = b.z - a.z;
-    return dx * dx + dz * dz < r && Math.abs(dy) < h;
+    return dx * dx + dz * dz < r * r && Math.abs(dy) < h;
 }
 
 // eslint-disable-next-line @typescript-eslint/naming-convention

@@ -1,12 +1,12 @@
-import type { Nullable } from "../types";
+import { type Nullable } from "../types";
 import { Color3 } from "../Maths/math.color";
-import type { AbstractMesh } from "../Meshes/abstractMesh";
+import { type AbstractMesh } from "../Meshes/abstractMesh";
 import { CreateSphere } from "../Meshes/Builders/sphereBuilder";
-import type { IParticleSystem } from "./IParticleSystem";
+import { type IParticleSystem } from "./IParticleSystem";
 import { GPUParticleSystem } from "./gpuParticleSystem";
 import { EngineStore } from "../Engines/engineStore";
 import { ParticleSystem } from "../Particles/particleSystem";
-import type { Scene, IDisposable } from "../scene";
+import { type Scene, type IDisposable } from "../scene";
 import { StandardMaterial } from "../Materials/standardMaterial";
 import type { Vector3 } from "../Maths/math.vector";
 import type { SolidParticleSystem } from "./solidParticleSystem";

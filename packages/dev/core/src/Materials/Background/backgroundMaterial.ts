@@ -2,22 +2,21 @@
 import { serialize, serializeAsColor3, expandToProperty, serializeAsTexture, serializeAsVector3 } from "../../Misc/decorators";
 import { SmartArray } from "../../Misc/smartArray";
 import { Logger } from "../../Misc/logger";
-import type { Nullable, int, float } from "../../types";
-import type { Scene } from "../../scene";
-import type { Matrix } from "../../Maths/math.vector";
-import { TmpVectors, Vector3, Vector4 } from "../../Maths/math.vector";
+import { type Nullable, type int, type float } from "../../types";
+import { type Scene } from "../../scene";
+import { type Matrix, TmpVectors, Vector3, Vector4 } from "../../Maths/math.vector";
 import { VertexBuffer } from "../../Buffers/buffer";
-import type { SubMesh } from "../../Meshes/subMesh";
-import type { AbstractMesh } from "../../Meshes/abstractMesh";
-import type { Mesh } from "../../Meshes/mesh";
-import type { IEffectCreationOptions } from "../../Materials/effect";
+import { type SubMesh } from "../../Meshes/subMesh";
+import { type AbstractMesh } from "../../Meshes/abstractMesh";
+import { type Mesh } from "../../Meshes/mesh";
+import { type IEffectCreationOptions } from "../../Materials/effect";
 import { MaterialDefines } from "../../Materials/materialDefines";
 import { PushMaterial } from "../../Materials/pushMaterial";
 import { ImageProcessingDefinesMixin } from "../../Materials/imageProcessingConfiguration.defines";
 import { ImageProcessingConfiguration } from "../../Materials/imageProcessingConfiguration";
-import type { BaseTexture } from "../../Materials/Textures/baseTexture";
-import type { RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture";
-import type { IShadowLight } from "../../Lights/shadowLight";
+import { type BaseTexture } from "../../Materials/Textures/baseTexture";
+import { type RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture";
+import { type IShadowLight } from "../../Lights/shadowLight";
 import { Constants } from "../../Engines/constants";
 import { RegisterClass } from "../../Misc/typeStore";
 import { MaterialFlags } from "../materialFlags";
@@ -46,6 +45,7 @@ import {
     PrepareUniformsAndSamplersList,
     PrepareUniformsAndSamplersForIBL,
     PrepareUniformLayoutForIBL,
+    AreLightsTexturesReady,
 } from "../materialHelper.functions";
 import { SerializationHelper } from "../../Misc/decorators.serialization";
 import { ShaderLanguage } from "../shaderLanguage";
@@ -140,45 +140,80 @@ class BackgroundMaterialDefines extends ImageProcessingDefinesMixin(BackgroundMa
      */
     public PROJECTED_GROUND = false;
 
-    // Reflection.
+    /** Defines whether reflection is enabled */
     public REFLECTION = false;
+    /** Defines whether the reflection map is 3D */
     public REFLECTIONMAP_3D = false;
+    /** Defines whether the reflection map is spherical */
     public REFLECTIONMAP_SPHERICAL = false;
+    /** Defines whether the reflection map is planar */
     public REFLECTIONMAP_PLANAR = false;
+    /** Defines whether the reflection map is cubic */
     public REFLECTIONMAP_CUBIC = false;
+    /** Defines whether the reflection map is in projection mode */
     public REFLECTIONMAP_PROJECTION = false;
+    /** Defines whether the reflection map is a skybox */
     public REFLECTIONMAP_SKYBOX = false;
+    /** Defines whether the reflection map is explicit */
     public REFLECTIONMAP_EXPLICIT = false;
+    /** Defines whether the reflection map is equirectangular */
     public REFLECTIONMAP_EQUIRECTANGULAR = false;
+    /** Defines whether the reflection map is fixed equirectangular */
     public REFLECTIONMAP_EQUIRECTANGULAR_FIXED = false;
+    /** Defines whether the reflection map is mirrored fixed equirectangular */
     public REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED = false;
+    /** Defines whether the cubic map should be inverted */
     public INVERTCUBICMAP = false;
+    /** Defines whether the reflection map uses opposite Z */
     public REFLECTIONMAP_OPPOSITEZ = false;
+    /** Defines whether LOD is stored in the reflection alpha channel */
     public LODINREFLECTIONALPHA = false;
+    /** Defines whether the reflection uses gamma space */
     public GAMMAREFLECTION = false;
+    /** Defines whether the reflection is in RGBD format */
     public RGBDREFLECTION = false;
+    /** Defines whether the equirectangular reflection uses a custom field of view */
     public EQUIRECTANGULAR_RELFECTION_FOV = false;
 
-    // Default BJS.
+    /** Defines whether main UV1 channel is used */
     public MAINUV1 = false;
+    /** Defines whether main UV2 channel is used */
     public MAINUV2 = false;
+    /** Defines whether UV1 is used */
     public UV1 = false;
+    /** Defines whether UV2 is used */
     public UV2 = false;
+    /** Defines whether clip plane 1 is enabled */
     public CLIPPLANE = false;
+    /** Defines whether clip plane 2 is enabled */
     public CLIPPLANE2 = false;
+    /** Defines whether clip plane 3 is enabled */
     public CLIPPLANE3 = false;
+    /** Defines whether clip plane 4 is enabled */
     public CLIPPLANE4 = false;
+    /** Defines whether clip plane 5 is enabled */
     public CLIPPLANE5 = false;
+    /** Defines whether clip plane 6 is enabled */
     public CLIPPLANE6 = false;
+    /** Defines whether point size is used */
     public POINTSIZE = false;
+    /** Defines whether fog is enabled */
     public FOG = false;
+    /** Defines whether normals are available */
     public NORMAL = false;
+    /** Defines the number of bone influencers */
     public NUM_BONE_INFLUENCERS = 0;
+    /** Defines the number of bones per mesh */
     public BonesPerMesh = 0;
+    /** Defines whether instances are used */
     public INSTANCES = false;
+    /** Defines whether shadow uses float textures */
     public SHADOWFLOAT = false;
+    /** Defines whether logarithmic depth is enabled */
     public LOGARITHMICDEPTH = false;
+    /** Defines whether non-uniform scaling is applied */
     public NONUNIFORMSCALING = false;
+    /** Defines whether alpha testing is enabled */
     public ALPHATEST = false;
 
     /**
@@ -571,6 +606,10 @@ export class BackgroundMaterial extends BackgroundMaterialBase {
         // Lights
         PrepareDefinesForLights(scene, mesh, defines, false, this._maxSimultaneousLights);
         defines._needNormals = true;
+
+        if (!AreLightsTexturesReady(scene, mesh, this._maxSimultaneousLights)) {
+            return false;
+        }
 
         // Multiview
         PrepareDefinesForMultiview(scene, defines);

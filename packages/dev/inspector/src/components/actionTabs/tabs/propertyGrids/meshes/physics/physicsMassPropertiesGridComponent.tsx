@@ -1,9 +1,9 @@
-import type { Observable } from "core/Misc/observable";
-import type { PhysicsBody } from "core/Physics/v2/physicsBody";
-import type { GlobalState } from "inspector/components/globalState";
-import type { PropertyChangedEvent } from "inspector/components/propertyChangedEvent";
+import { type Observable } from "core/Misc/observable";
+import { type PhysicsBody } from "core/Physics/v2/physicsBody";
+import { type GlobalState } from "inspector/components/globalState";
+import { type PropertyChangedEvent } from "inspector/components/propertyChangedEvent";
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
-import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
+import { type LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 
 /**
  * Properties of the physics mass properties grid component.

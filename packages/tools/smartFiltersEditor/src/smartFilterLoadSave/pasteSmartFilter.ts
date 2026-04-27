@@ -1,6 +1,6 @@
-import type { ThinEngine } from "core/Engines/thinEngine";
-import type { SmartFilter, SmartFilterDeserializer } from "smart-filters";
-import type { Nullable } from "core/types";
+import { type ThinEngine } from "core/Engines/thinEngine";
+import { type SmartFilter, type SmartFilterDeserializer } from "smart-filters";
+import { type Nullable } from "core/types";
 
 /**
  * Pastes a Smart Filter from clipboard.
@@ -14,7 +14,7 @@ export async function PasteSmartFilterFromClipboardAsync(smartFilterDeserializer
         const smartFilter = await smartFilterDeserializer.deserialize(engine, JSON.parse(clipboardText));
         return smartFilter;
     } catch (error) {
-        throw new Error(`Failed to paste Smart Filter: ${error instanceof Error ? error.message : String(error)}`);
+        throw new Error(`Failed to paste Smart Filter: ${error instanceof Error ? error.message : String(error)}`, { cause: error });
     }
 }
 
@@ -30,6 +30,6 @@ export async function PasteSmartFilterFromStringAsync(smartFilterDeserializer: S
         const smartFilter = await smartFilterDeserializer.deserialize(engine, JSON.parse(input));
         return smartFilter;
     } catch (error) {
-        throw new Error(`Failed to paste Smart Filter: ${error instanceof Error ? error.message : String(error)}`);
+        throw new Error(`Failed to paste Smart Filter: ${error instanceof Error ? error.message : String(error)}`, { cause: error });
     }
 }

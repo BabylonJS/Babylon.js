@@ -1,7 +1,6 @@
-import type { Nullable } from "../../types";
-import type { Scene } from "../../scene";
-import type { Vector4 } from "../../Maths/math.vector";
-import { Vector3, TmpVectors, Matrix } from "../../Maths/math.vector";
+import { type Nullable } from "../../types";
+import { type Scene } from "../../scene";
+import { type Vector4, Vector3, TmpVectors, Matrix } from "../../Maths/math.vector";
 import { Mesh } from "../mesh";
 import { CreateRibbon } from "./ribbonBuilder";
 import { Path3D } from "../../Maths/math.path";
@@ -23,18 +22,6 @@ import { Path3D } from "../../Maths/math.path";
  * * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created. The NUMBER of points CAN'T CHANGE, only their positions.
  * @param name defines the name of the mesh
  * @param options defines the options used to create the mesh
- * @param options.path
- * @param options.radius
- * @param options.tessellation
- * @param options.radiusFunction
- * @param options.cap
- * @param options.arc
- * @param options.updatable
- * @param options.sideOrientation
- * @param options.frontUVs
- * @param options.backUVs
- * @param options.instance
- * @param options.invertUV
  * @param scene defines the hosting scene
  * @returns the tube mesh
  * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/creation/param

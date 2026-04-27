@@ -1,8 +1,8 @@
-import type { Nullable } from "core/types";
-import type { Particle } from "core/Particles/particle";
-import type { NodeParticleConnectionPoint } from "core/Particles/Node/nodeParticleBlockConnectionPoint";
-import type { NodeParticleBuildState } from "core/Particles/Node/nodeParticleBuildState";
-import type { IShapeBlock } from "./IShapeBlock";
+import { type Nullable } from "core/types";
+import { type Particle } from "core/Particles/particle";
+import { type NodeParticleConnectionPoint } from "core/Particles/Node/nodeParticleBlockConnectionPoint";
+import { type NodeParticleBuildState } from "core/Particles/Node/nodeParticleBuildState";
+import { type IShapeBlock } from "./IShapeBlock";
 
 import { TmpVectors, Vector3 } from "core/Maths/math.vector";
 import { RegisterClass } from "core/Misc/typeStore";
@@ -91,7 +91,7 @@ export class CustomShapeBlock extends NodeParticleBlock implements IShapeBlock {
                 Vector3.TransformNormalToRef(tmpVector, state.emitterWorldMatrix!, particle.direction);
             }
 
-            particle._initialDirection = particle.direction.clone();
+            particle._properties.initialDirection = particle.direction.clone();
         };
 
         system._positionCreation.process = (particle: Particle) => {

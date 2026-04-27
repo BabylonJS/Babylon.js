@@ -1,13 +1,13 @@
-import type { Skeleton } from "./skeleton";
+import { type Skeleton } from "./skeleton";
 import { Vector3, Quaternion, Matrix, TmpVectors } from "../Maths/math.vector";
 import { BuildArray } from "../Misc/arrayTools";
-import type { Nullable } from "../types";
-import type { TransformNode } from "../Meshes/transformNode";
+import { type Nullable } from "../types";
+import { type TransformNode } from "../Meshes/transformNode";
 import { Node } from "../node";
 import { Space } from "../Maths/math.axis";
 
-import type { Animation } from "../Animations/animation";
-import type { AnimationPropertiesOverride } from "../Animations/animationPropertiesOverride";
+import { type Animation } from "../Animations/animation";
+import { type AnimationPropertiesOverride } from "../Animations/animationPropertiesOverride";
 
 /**
  * Class used to store bone information
@@ -59,6 +59,9 @@ export class Bone extends Node {
 
     /** @internal */
     public _waitingTransformNodeId: Nullable<string> = null;
+
+    /** @internal */
+    public _waitingTransformNodeUniqueId: Nullable<number> = null;
 
     /** @internal */
     get _matrix(): Matrix {

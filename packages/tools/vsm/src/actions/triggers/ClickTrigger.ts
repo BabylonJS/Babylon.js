@@ -1,5 +1,5 @@
 import { PointerEventTypes } from "core/Events/pointerEvents";
-import type { AbstractMesh } from "core/Meshes/abstractMesh";
+import { type AbstractMesh } from "core/Meshes/abstractMesh";
 import { BaseTrigger } from "./BaseTrigger";
 
 /**

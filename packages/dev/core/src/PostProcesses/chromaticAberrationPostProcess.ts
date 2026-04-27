@@ -1,16 +1,15 @@
-import type { Vector2 } from "../Maths/math.vector";
-import type { Nullable } from "../types";
-import type { PostProcessOptions } from "./postProcess";
-import { PostProcess } from "./postProcess";
-import type { Camera } from "../Cameras/camera";
-import type { AbstractEngine } from "../Engines/abstractEngine";
+import { type Vector2 } from "../Maths/math.vector";
+import { type Nullable } from "../types";
+import { type PostProcessOptions, PostProcess } from "./postProcess";
+import { type Camera } from "../Cameras/camera";
+import { type AbstractEngine } from "../Engines/abstractEngine";
 import { Constants } from "../Engines/constants";
 
 import { RegisterClass } from "../Misc/typeStore";
 import { serialize } from "../Misc/decorators";
 import { SerializationHelper } from "../Misc/decorators.serialization";
 
-import type { Scene } from "../scene";
+import { type Scene } from "../scene";
 import { ThinChromaticAberrationPostProcess } from "./thinChromaticAberrationPostProcess";
 
 /**

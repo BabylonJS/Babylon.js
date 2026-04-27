@@ -1,9 +1,9 @@
 import { NodeGeometryBlock } from "../nodeGeometryBlock";
-import type { NodeGeometryConnectionPoint } from "../nodeGeometryBlockConnectionPoint";
+import { type NodeGeometryConnectionPoint } from "../nodeGeometryBlockConnectionPoint";
 import { RegisterClass } from "../../../Misc/typeStore";
 import { NodeGeometryBlockConnectionPointTypes } from "../Enums/nodeGeometryConnectionPointTypes";
-import type { VertexData } from "../../mesh.vertexData";
-import type { NodeGeometryBuildState } from "../nodeGeometryBuildState";
+import { type VertexData } from "../../mesh.vertexData";
+import { type NodeGeometryBuildState } from "../nodeGeometryBuildState";
 
 /**
  * Block used to get information about a geometry

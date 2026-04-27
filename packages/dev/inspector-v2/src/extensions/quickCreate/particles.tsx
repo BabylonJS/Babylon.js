@@ -2,29 +2,19 @@ import { ParticleSystem } from "core/Particles/particleSystem";
 import { GPUParticleSystem } from "core/Particles/gpuParticleSystem";
 import { NodeParticleSystemSet } from "core/Particles/Node/nodeParticleSystemSet";
 import { Texture } from "core/Materials/Textures/texture";
-import type { Scene } from "core/scene";
-import { useState } from "react";
-import type { FunctionComponent } from "react";
-import { Button } from "shared-ui-components/fluent/primitives/button";
-import { makeStyles, tokens } from "@fluentui/react-components";
+import { type Scene } from "core/scene";
+import { useState, type FunctionComponent } from "react";
 import { TextInputPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/inputPropertyLine";
 import { SpinButtonPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/spinButtonPropertyLine";
-import { SettingsPopover } from "./settingsPopover";
+import { QuickCreateSection, QuickCreateItem } from "./quickCreateLayout";
+import { type ISelectionService } from "../../services/selectionService";
 
 // Side-effect import needed for GPUParticleSystem
 import "core/Particles/webgl2ParticleSystem";
 
-const useStyles = makeStyles({
-    section: {
-        display: "flex",
-        flexDirection: "column",
-        rowGap: tokens.spacingVerticalM,
-    },
-    row: { display: "flex", alignItems: "center", gap: "4px" },
-});
-
 type ParticlesContentProps = {
     scene: Scene;
+    selectionService: ISelectionService;
 };
 
 /**
@@ -32,9 +22,7 @@ type ParticlesContentProps = {
  * @param props - Component props
  * @returns React component
  */
-export const ParticlesContent: FunctionComponent<ParticlesContentProps> = ({ scene }) => {
-    const classes = useStyles();
-
+export const ParticlesContent: FunctionComponent<ParticlesContentProps> = ({ scene, selectionService }) => {
     // CPU Particle System state
     const [cpuParticleSystemName, setCpuParticleSystemName] = useState("Particle System");
     const [cpuParticleSystemCapacity, setCpuParticleSystemCapacity] = useState(2000);
@@ -47,92 +35,86 @@ export const ParticlesContent: FunctionComponent<ParticlesContentProps> = ({ sce
     const [nodeParticleSystemName, setNodeParticleSystemName] = useState("Node Particle System");
     const [nodeParticleSystemSnippetId, setNodeParticleSystemSnippetId] = useState("");
 
-    const handleCreateCPUParticleSystem = () => {
-        setTimeout(() => {
-            const system = new ParticleSystem(cpuParticleSystemName, cpuParticleSystemCapacity, scene);
-            system.particleTexture = new Texture("https://assets.babylonjs.com/textures/flare.png", scene);
-            system.start();
-        }, 0);
+    const handleCreateCPUAsync = async () => {
+        return await new Promise<{ name: string }>((resolve) => {
+            setTimeout(() => {
+                const system = new ParticleSystem(cpuParticleSystemName, cpuParticleSystemCapacity, scene);
+                system.particleTexture = new Texture("https://assets.babylonjs.com/textures/flare.png", scene);
+                system.start();
+                resolve(system);
+            }, 0);
+        });
     };
 
-    const handleCreateGPUParticleSystem = () => {
-        if (GPUParticleSystem.IsSupported) {
+    const handleCreateGPUAsync = async () => {
+        if (!GPUParticleSystem.IsSupported) {
+            alert("GPU Particle System is not supported.");
+            throw new Error("GPU Particle System is not supported.");
+        }
+        return await new Promise<{ name: string }>((resolve) => {
             setTimeout(() => {
                 const system = new GPUParticleSystem(gpuParticleSystemName, { capacity: gpuParticleSystemCapacity }, scene);
                 system.particleTexture = new Texture("https://assets.babylonjs.com/textures/flare.png", scene);
                 system.start();
+                resolve(system);
             }, 0);
-        } else {
-            alert("GPU Particle System is not supported.");
-        }
+        });
     };
 
-    const handleCreateNodeParticleSystemAsync = async () => {
-        try {
-            let nodeParticleSet;
-            const snippetId = nodeParticleSystemSnippetId.trim();
-            if (snippetId) {
-                nodeParticleSet = await NodeParticleSystemSet.ParseFromSnippetAsync(snippetId);
-                nodeParticleSet.name = nodeParticleSystemName;
-            } else {
-                nodeParticleSet = NodeParticleSystemSet.CreateDefault(nodeParticleSystemName);
-            }
-            const particleSystemSet = await nodeParticleSet.buildAsync(scene);
-            for (const system of particleSystemSet.systems) {
-                system.name = nodeParticleSystemName;
-            }
-            particleSystemSet.start();
-        } catch (e) {
-            global.console.error("Error creating Node Particle System:", e);
-            alert("Failed to create Node Particle System: " + e);
+    const handleCreateNodeAsync = async () => {
+        let nodeParticleSet;
+        const snippetId = nodeParticleSystemSnippetId.trim();
+        if (snippetId) {
+            nodeParticleSet = await NodeParticleSystemSet.ParseFromSnippetAsync(snippetId);
+            nodeParticleSet.name = nodeParticleSystemName;
+        } else {
+            nodeParticleSet = NodeParticleSystemSet.CreateDefault(nodeParticleSystemName);
         }
+        const particleSystemSet = await nodeParticleSet.buildAsync(scene);
+        const systems = particleSystemSet.systems;
+        if (systems.length === 0) {
+            throw new Error("No particle systems were produced by the node particle system.");
+        }
+        for (const system of systems) {
+            system.name = nodeParticleSystemName;
+        }
+        particleSystemSet.start();
+        return systems[0];
     };
 
     return (
-        <div className={classes.section}>
+        <QuickCreateSection>
             {/* CPU Particle System */}
-            <div className={classes.row}>
-                <Button onClick={handleCreateCPUParticleSystem} label="CPU Particle System" />
-                <SettingsPopover>
-                    <TextInputPropertyLine label="Name" value={cpuParticleSystemName} onChange={(value) => setCpuParticleSystemName(value)} />
-                    <SpinButtonPropertyLine
-                        label="Capacity"
-                        value={cpuParticleSystemCapacity}
-                        onChange={(value) => setCpuParticleSystemCapacity(value)}
-                        min={1}
-                        max={100000}
-                        step={100}
-                    />
-                    <Button appearance="primary" onClick={handleCreateCPUParticleSystem} label="Create" />
-                </SettingsPopover>
-            </div>
+            <QuickCreateItem selectionService={selectionService} label="CPU Particle System" onCreate={handleCreateCPUAsync}>
+                <TextInputPropertyLine label="Name" value={cpuParticleSystemName} onChange={(value) => setCpuParticleSystemName(value)} />
+                <SpinButtonPropertyLine
+                    label="Capacity"
+                    value={cpuParticleSystemCapacity}
+                    onChange={(value) => setCpuParticleSystemCapacity(value)}
+                    min={1}
+                    max={100000}
+                    step={100}
+                />
+            </QuickCreateItem>
 
             {/* GPU Particle System */}
-            <div className={classes.row}>
-                <Button onClick={handleCreateGPUParticleSystem} label="GPU Particle System" />
-                <SettingsPopover>
-                    <TextInputPropertyLine label="Name" value={gpuParticleSystemName} onChange={(value) => setGpuParticleSystemName(value)} />
-                    <SpinButtonPropertyLine
-                        label="Capacity"
-                        value={gpuParticleSystemCapacity}
-                        onChange={(value) => setGpuParticleSystemCapacity(value)}
-                        min={1}
-                        max={1000000}
-                        step={1000}
-                    />
-                    <Button appearance="primary" onClick={handleCreateGPUParticleSystem} label="Create" />
-                </SettingsPopover>
-            </div>
+            <QuickCreateItem selectionService={selectionService} label="GPU Particle System" onCreate={handleCreateGPUAsync}>
+                <TextInputPropertyLine label="Name" value={gpuParticleSystemName} onChange={(value) => setGpuParticleSystemName(value)} />
+                <SpinButtonPropertyLine
+                    label="Capacity"
+                    value={gpuParticleSystemCapacity}
+                    onChange={(value) => setGpuParticleSystemCapacity(value)}
+                    min={1}
+                    max={1000000}
+                    step={1000}
+                />
+            </QuickCreateItem>
 
             {/* Node Particle System */}
-            <div className={classes.row}>
-                <Button onClick={handleCreateNodeParticleSystemAsync} label="Node Particle System" />
-                <SettingsPopover>
-                    <TextInputPropertyLine label="Name" value={nodeParticleSystemName} onChange={(value) => setNodeParticleSystemName(value)} />
-                    <TextInputPropertyLine label="Snippet ID" value={nodeParticleSystemSnippetId} onChange={(value) => setNodeParticleSystemSnippetId(value)} />
-                    <Button appearance="primary" onClick={handleCreateNodeParticleSystemAsync} label="Create" />
-                </SettingsPopover>
-            </div>
-        </div>
+            <QuickCreateItem selectionService={selectionService} label="Node Particle System" onCreate={handleCreateNodeAsync}>
+                <TextInputPropertyLine label="Name" value={nodeParticleSystemName} onChange={(value) => setNodeParticleSystemName(value)} />
+                <TextInputPropertyLine label="Snippet ID" value={nodeParticleSystemSnippetId} onChange={(value) => setNodeParticleSystemSnippetId(value)} />
+            </QuickCreateItem>
+        </QuickCreateSection>
     );
 };

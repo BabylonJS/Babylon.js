@@ -1,13 +1,12 @@
-import type { Nullable } from "core/types";
-import type { AbstractAudioNode } from "../abstractAudio/abstractAudioNode";
-import type { IAudioBusOptions } from "../abstractAudio/audioBus";
-import { AudioBus } from "../abstractAudio/audioBus";
+import { type Nullable } from "core/types";
+import { type AbstractAudioNode } from "../abstractAudio/abstractAudioNode";
+import { type IAudioBusOptions, AudioBus } from "../abstractAudio/audioBus";
 import { _HasSpatialAudioOptions, type AbstractSpatialAudio } from "../abstractAudio/subProperties/abstractSpatialAudio";
 import { _StereoAudio } from "../abstractAudio/subProperties/stereoAudio";
 import { _WebAudioBusAndSoundSubGraph } from "./subNodes/webAudioBusAndSoundSubGraph";
 import { _SpatialWebAudio } from "./subProperties/spatialWebAudio";
-import type { _WebAudioEngine } from "./webAudioEngine";
-import type { IWebAudioInNode, IWebAudioSuperNode } from "./webAudioNode";
+import { type _WebAudioEngine } from "./webAudioEngine";
+import { type IWebAudioInNode, type IWebAudioSuperNode } from "./webAudioNode";
 
 /** @internal */
 export class _WebAudioBus extends AudioBus implements IWebAudioSuperNode {

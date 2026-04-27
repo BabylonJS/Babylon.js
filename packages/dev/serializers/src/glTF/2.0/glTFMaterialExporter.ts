@@ -2,26 +2,37 @@
 /* eslint-disable github/no-then */
 /* eslint-disable babylonjs/available */
 
-import type { ITextureInfo, IMaterial, IMaterialPbrMetallicRoughness, IMaterialOcclusionTextureInfo, ISampler, IImage } from "babylonjs-gltf2interface";
-import { ImageMimeType, MaterialAlphaMode, TextureMagFilter, TextureMinFilter, TextureWrapMode } from "babylonjs-gltf2interface";
+import {
+    type ITextureInfo,
+    type IMaterial,
+    type IMaterialPbrMetallicRoughness,
+    type IMaterialOcclusionTextureInfo,
+    type ISampler,
+    type IImage,
+    ImageMimeType,
+    MaterialAlphaMode,
+    TextureMagFilter,
+    TextureMinFilter,
+    TextureWrapMode,
+} from "babylonjs-gltf2interface";
 
-import type { DeepImmutable, Nullable } from "core/types";
+import { type DeepImmutable, type Nullable } from "core/types";
 import { Color3 } from "core/Maths/math.color";
 import { Scalar } from "core/Maths/math.scalar";
 import { Tools } from "core/Misc/tools";
 import { GetTextureDataAsync, TextureTools } from "core/Misc/textureTools";
-import type { BaseTexture } from "core/Materials/Textures/baseTexture";
+import { type BaseTexture } from "core/Materials/Textures/baseTexture";
 import { Texture } from "core/Materials/Textures/texture";
 import { RawTexture } from "core/Materials/Textures/rawTexture";
 
-import type { Scene } from "core/scene";
+import { type Scene } from "core/scene";
 
-import type { GLTFExporter } from "./glTFExporter";
+import { type GLTFExporter } from "./glTFExporter";
 import { Constants } from "core/Engines/constants";
 import { EncodeImageAsync } from "core/Misc/dumpTools";
 
-import type { Material } from "core/Materials/material";
-import type { StandardMaterial } from "core/Materials/standardMaterial";
+import { type Material } from "core/Materials/material";
+import { type StandardMaterial } from "core/Materials/standardMaterial";
 import { PBRBaseMaterial } from "core/Materials/PBR/pbrBaseMaterial";
 import { SpecularPowerToRoughness } from "core/Helpers/materialConversionHelper";
 import { InternalTextureSource } from "core/Materials/Textures/internalTexture";
@@ -107,22 +118,27 @@ async function GetCachedImageAsync(babylonTexture: BaseTexture): Promise<Nullabl
     let data;
     let mimeType = (babylonTexture as Texture).mimeType;
 
-    if (!buffer) {
-        data = await Tools.LoadFileAsync(internalTexture.url);
-        mimeType = GetMimeType(internalTexture.url) || mimeType;
-    } else if (ArrayBuffer.isView(buffer)) {
-        data = buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength) as ArrayBuffer;
-    } else if (buffer instanceof ArrayBuffer) {
-        data = buffer;
-    } else if (buffer instanceof Blob) {
-        data = await buffer.arrayBuffer();
-        mimeType = buffer.type || mimeType;
-    } else if (typeof buffer === "string") {
-        data = await Tools.LoadFileAsync(buffer);
-        mimeType = GetMimeType(buffer) || mimeType;
-    } else if (typeof HTMLImageElement !== "undefined" && buffer instanceof HTMLImageElement) {
-        data = await Tools.LoadFileAsync(buffer.src);
-        mimeType = GetMimeType(buffer.src) || mimeType;
+    try {
+        if (!buffer) {
+            data = await Tools.LoadFileAsync(internalTexture.url);
+            mimeType = GetMimeType(internalTexture.url) || mimeType;
+        } else if (ArrayBuffer.isView(buffer)) {
+            data = buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength) as ArrayBuffer;
+        } else if (buffer instanceof ArrayBuffer) {
+            data = buffer;
+        } else if (buffer instanceof Blob) {
+            data = await buffer.arrayBuffer();
+            mimeType = buffer.type || mimeType;
+        } else if (typeof buffer === "string") {
+            data = await Tools.LoadFileAsync(buffer);
+            mimeType = GetMimeType(buffer) || mimeType;
+        } else if (typeof HTMLImageElement !== "undefined" && buffer instanceof HTMLImageElement) {
+            data = await Tools.LoadFileAsync(buffer.src);
+            mimeType = GetMimeType(buffer.src) || mimeType;
+        }
+    } catch {
+        // Failed to load texture data, fall back to GPU texture read via GetTextureDataAsync
+        return null;
     }
 
     if (data && IsSupportedMimeType(mimeType)) {

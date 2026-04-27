@@ -1,5 +1,5 @@
-import type { Nullable } from "core/types";
-import type { AbstractEngine } from "core/Engines/abstractEngine";
+import { type Nullable } from "core/types";
+import { type AbstractEngine } from "core/Engines/abstractEngine";
 import { ThinDepthOfFieldBlurPostProcess } from "./thinDepthOfFieldBlurPostProcess";
 import { ThinCircleOfConfusionPostProcess } from "./thinCircleOfConfusionPostProcess";
 import { ThinDepthOfFieldMergePostProcess } from "./thinDepthOfFieldMergePostProcess";
@@ -93,8 +93,8 @@ export class ThinDepthOfFieldEffect {
         this._circleOfConfusion = new ThinCircleOfConfusionPostProcess(name, engine, { depthNotNormalized, blockCompilation });
         this.blurLevel = blurLevel;
 
-        let blurCount = 1;
-        let kernelSize = 15;
+        let blurCount: number;
+        let kernelSize: number;
         switch (blurLevel) {
             case ThinDepthOfFieldEffectBlurLevel.High: {
                 blurCount = 3;

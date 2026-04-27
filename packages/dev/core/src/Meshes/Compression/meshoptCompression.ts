@@ -1,13 +1,10 @@
 import { Tools } from "../../Misc/tools";
-import type { IDisposable } from "../../scene";
-import type { Nullable } from "../../types";
+import { type IDisposable } from "../../scene";
+import { type Nullable } from "../../types";
 
-// eslint-disable-next-line @typescript-eslint/naming-convention
 declare let MeshoptDecoder: any;
 
-// eslint-disable-next-line @typescript-eslint/naming-convention
 let NumberOfWorkers = 0;
-// eslint-disable-next-line @typescript-eslint/naming-convention
 let WorkerTimeout: Nullable<ReturnType<typeof setTimeout>> = null;
 
 /**

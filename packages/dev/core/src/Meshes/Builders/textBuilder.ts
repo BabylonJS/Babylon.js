@@ -1,9 +1,8 @@
-import type { Color4 } from "../../Maths/math.color";
+import { type Color4 } from "../../Maths/math.color";
 import { Path2 } from "../../Maths/math.path";
-import { Vector3 } from "../../Maths/math.vector";
-import type { Vector4 } from "../../Maths/math.vector";
-import type { Scene } from "../../scene";
-import type { Nullable } from "../../types";
+import { Vector3, type Vector4 } from "../../Maths/math.vector";
+import { type Scene } from "../../scene";
+import { type Nullable } from "../../types";
 import { Mesh } from "../mesh";
 import { TransformNode } from "../transformNode";
 import { ExtrudePolygon } from "./polygonBuilder";

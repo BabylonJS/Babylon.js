@@ -17,6 +17,7 @@ export interface IParsedSplat {
     faces?: number[];
     hasVertexColors?: boolean;
     sh?: Uint8Array[];
+    shDegree?: number;
     trainedWithAntialiasing?: boolean;
     compressed?: boolean;
     rawSplat?: boolean;

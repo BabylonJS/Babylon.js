@@ -10,7 +10,7 @@
         overflow: hidden;
     }
 
-    .wait-screen {
+    & ~ .wait-screen {
         display: grid;
         justify-content: center;
         align-content: center;

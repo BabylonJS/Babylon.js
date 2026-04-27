@@ -1,10 +1,12 @@
 import { RegisterClass } from "../../../../Misc/typeStore";
-import type { Effect } from "../../../effect";
+import { type Effect } from "../../../effect";
+
+import "../../../../Rendering/depthRendererSceneComponent";
 
 import { ImageSourceBlock } from "./imageSourceBlock";
-import type { Nullable } from "../../../../types";
-import type { Texture } from "../../../Textures/texture";
-import type { NodeMaterial } from "../../nodeMaterial";
+import { type Nullable } from "../../../../types";
+import { type Texture } from "../../../Textures/texture";
+import { type NodeMaterial } from "../../nodeMaterial";
 /**
  * Block used to provide an depth texture for a TextureBlock
  */
@@ -28,6 +30,11 @@ export class DepthSourceBlock extends ImageSourceBlock {
         // Do nothing, we always use the depth texture from the scene
     }
 
+    /**
+     * Bind data to effect
+     * @param effect - the effect to bind to
+     * @param nodeMaterial - the node material
+     */
     public override bind(effect: Effect, nodeMaterial: NodeMaterial) {
         const scene = nodeMaterial.getScene();
         const renderer = scene.enableDepthRenderer();
@@ -37,6 +44,10 @@ export class DepthSourceBlock extends ImageSourceBlock {
         super.bind(effect, nodeMaterial);
     }
 
+    /**
+     * Checks if the block is ready
+     * @returns true if ready
+     */
     public override isReady() {
         return true;
     }
@@ -53,6 +64,10 @@ export class DepthSourceBlock extends ImageSourceBlock {
         return super._dumpPropertiesCode(true);
     }
 
+    /**
+     * Serializes the block
+     * @returns the serialized object
+     */
     public override serialize(): any {
         return super.serialize(true);
     }

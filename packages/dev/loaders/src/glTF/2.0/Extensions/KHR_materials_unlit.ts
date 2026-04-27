@@ -1,9 +1,9 @@
-import type { Nullable } from "core/types";
+import { type Nullable } from "core/types";
 import { Color3 } from "core/Maths/math.color";
-import type { Material } from "core/Materials/material";
+import { type Material } from "core/Materials/material";
 
-import type { IMaterial } from "../glTFLoaderInterfaces";
-import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
+import { type IMaterial } from "../glTFLoaderInterfaces";
+import { type IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader } from "../glTFLoader";
 import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
 
@@ -67,7 +67,7 @@ export class KHR_materials_unlit implements IGLTFLoaderExtension {
 
     // eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
     private _loadUnlitPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Promise<void> {
-        const adapter = this._loader._getOrCreateMaterialAdapter(babylonMaterial);
+        const adapter = this._loader._getOrCreateMaterialAdapter(babylonMaterial)!;
 
         const promises = new Array<Promise<any>>();
 

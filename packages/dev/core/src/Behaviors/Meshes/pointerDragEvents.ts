@@ -1,6 +1,6 @@
-import type { PointerInfo } from "core/Events/pointerEvents";
-import type { Vector3 } from "core/Maths/math.vector";
-import type { Nullable } from "core/types";
+import { type PointerInfo } from "core/Events/pointerEvents";
+import { type Vector3 } from "core/Maths/math.vector";
+import { type Nullable } from "core/types";
 
 /**
  * Event type for drag move events

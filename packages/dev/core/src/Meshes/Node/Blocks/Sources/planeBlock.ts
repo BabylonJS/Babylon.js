@@ -1,7 +1,7 @@
 import { NodeGeometryBlockConnectionPointTypes } from "../../Enums/nodeGeometryConnectionPointTypes";
 import { NodeGeometryBlock } from "../../nodeGeometryBlock";
-import type { NodeGeometryConnectionPoint } from "../../nodeGeometryBlockConnectionPoint";
-import type { NodeGeometryBuildState } from "../../nodeGeometryBuildState";
+import { type NodeGeometryConnectionPoint } from "../../nodeGeometryBlockConnectionPoint";
+import { type NodeGeometryBuildState } from "../../nodeGeometryBuildState";
 import { GeometryInputBlock } from "../geometryInputBlock";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import { Matrix } from "../../../../Maths/math.vector";
@@ -94,6 +94,7 @@ export class PlaneBlock extends NodeGeometryBlock {
         return this._outputs[0];
     }
 
+    /** @internal */
     public override autoConfigure() {
         if (this.size.isConnected) {
             return;
@@ -180,6 +181,7 @@ export class PlaneBlock extends NodeGeometryBlock {
         return serializationObject;
     }
 
+    /** @internal */
     public override _deserialize(serializationObject: any) {
         super._deserialize(serializationObject);
 

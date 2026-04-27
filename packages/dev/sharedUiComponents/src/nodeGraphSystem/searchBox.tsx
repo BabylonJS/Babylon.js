@@ -1,5 +1,5 @@
 import * as React from "react";
-import type { StateManager } from "./stateManager";
+import { type StateManager } from "./stateManager";
 import "./searchBox.scss";
 import { NodeLedger } from "./nodeLedger";
 import { ToolContext } from "../fluent/hoc/fluentToolWrapper";

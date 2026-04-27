@@ -3,6 +3,7 @@
 
 #define CUSTOM_VERTEX_BEGIN
 
+#ifndef USE_VERTEX_PULLING
 attribute position: vec3f;
 #ifdef NORMAL
 attribute normal: vec3f;
@@ -16,6 +17,7 @@ attribute uv: vec2f;
 #include<uvAttributeDeclaration>[2..7]
 #ifdef VERTEXCOLOR
 attribute color: vec4f;
+#endif
 #endif
 
 #include<helperFunctions>
@@ -74,6 +76,9 @@ varying vViewDepth: f32;
 #endif
 
 #include<logDepthDeclaration>
+
+#include<vertexPullingDeclaration>
+
 #define CUSTOM_VERTEX_DEFINITIONS
 
 @vertex
@@ -81,22 +86,43 @@ fn main(input : VertexInputs) -> FragmentInputs {
 
 	#define CUSTOM_VERTEX_MAIN_BEGIN
 
+#ifdef USE_VERTEX_PULLING
+	var positionUpdated: vec3f = vec3f(0.0);
+    #ifdef NORMAL
+	var normalUpdated: vec3f = vec3f(0.0);
+    #endif
+    #ifdef TANGENT
+	var tangentUpdated: vec4f = vec4f(0.0);
+    #endif
+    #ifdef UV1
+	var uvUpdated: vec2f = vec2f(0.0);
+    #endif
+    #ifdef UV2
+    var uv2Updated: vec2f = vec2f(0.0);
+    #endif
+    #ifdef VERTEXCOLOR
+    var colorUpdated: vec4f = vec4f(0.0);
+    #endif
+#else
 	var positionUpdated: vec3f = vertexInputs.position;
-#ifdef NORMAL
+    #ifdef NORMAL
 	var normalUpdated: vec3f = vertexInputs.normal;
-#endif
-#ifdef TANGENT
+    #endif
+    #ifdef TANGENT
 	var tangentUpdated: vec4f = vertexInputs.tangent;
-#endif
-#ifdef UV1
+    #endif
+    #ifdef UV1
 	var uvUpdated: vec2f = vertexInputs.uv;
-#endif
-#ifdef UV2
+    #endif
+    #ifdef UV2
     var uv2Updated: vec2f = vertexInputs.uv2;
-#endif
-#ifdef VERTEXCOLOR
+    #endif
+    #ifdef VERTEXCOLOR
     var colorUpdated: vec4f = vertexInputs.color;
+    #endif
 #endif
+
+#include<vertexPullingVertex>
 
 #include<morphTargetsVertexGlobal>
 #include<morphTargetsVertex>[0..maxSimultaneousMorphTargets]
@@ -117,8 +143,13 @@ fn main(input : VertexInputs) -> FragmentInputs {
     vertexOutputs.vPreviousPosition = uniforms.previousViewProjection * finalPreviousWorld * vec4f(positionUpdated, 1.0);
 #endif
 
+#ifdef USE_VERTEX_PULLING
+#include<bonesVertex>(vertexInputs.matricesIndices,vp_matricesIndices,vertexInputs.matricesWeights,vp_matricesWeights,vertexInputs.matricesIndicesExtra,vp_matricesIndicesExtra,vertexInputs.matricesWeightsExtra,vp_matricesWeightsExtra)
+#include<bakedVertexAnimation>(vertexInputs.matricesIndices,vp_matricesIndices,vertexInputs.matricesWeights,vp_matricesWeights,vertexInputs.matricesIndicesExtra,vp_matricesIndicesExtra,vertexInputs.matricesWeightsExtra,vp_matricesWeightsExtra)
+#else
 #include<bonesVertex>
 #include<bakedVertexAnimation>
+#endif
 
 	var worldPos: vec4f = finalWorld * vec4f(positionUpdated, 1.0);
 

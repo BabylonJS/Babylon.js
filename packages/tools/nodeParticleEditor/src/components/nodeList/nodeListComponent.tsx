@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import * as React from "react";
-import type { GlobalState } from "../../globalState";
+import { type GlobalState } from "../../globalState";
 import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
 import { DraggableLineComponent } from "shared-ui-components/lines/draggableLineComponent";
-import type { Observer } from "core/Misc/observable";
-import type { Nullable } from "core/types";
+import { type Observer } from "core/Misc/observable";
+import { type Nullable } from "core/types";
 import { DraggableLineWithButtonComponent } from "shared-ui-components/lines/draggableLineWithButtonComponent";
 import { LineWithFileButtonComponent } from "shared-ui-components/lines/lineWithFileButtonComponent";
 import { Tools } from "core/Misc/tools";
@@ -170,6 +170,31 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                     </LineContainerComponent>
                 );
             }
+
+            // Register blocks
+            const ledger = NodeLedger.RegisteredNodeNames;
+            for (const key in allBlocks) {
+                const blocks = allBlocks[key] as string[];
+                if (blocks.length) {
+                    for (const block of blocks) {
+                        if (!ledger.includes(block)) {
+                            ledger.push(block);
+                        }
+                    }
+                }
+            }
+            NodeLedger.NameFormatter = (name) => {
+                let finalName: string;
+                // custom frame
+                if (name.endsWith("Custom")) {
+                    const nameIndex = name.lastIndexOf("Custom");
+                    finalName = name.substring(0, nameIndex);
+                    finalName += " [custom]";
+                } else {
+                    finalName = name.replace("Block", "");
+                }
+                return finalName;
+            };
         }
 
         // Register all blocks (register all blocks regardless of mode, as they may exist in saved files)

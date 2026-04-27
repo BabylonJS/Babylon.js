@@ -20,3 +20,8 @@ declare module "monaco-editor/esm/vs/editor/common/services/languageFeatures" {
     const SuggestAdapter: any;
     export type SuggestAdapter = any;
 }
+
+declare module "monaco-editor/esm/vs/base/common/color.js" {
+    export const Color: any;
+    export const HSLA: any;
+}

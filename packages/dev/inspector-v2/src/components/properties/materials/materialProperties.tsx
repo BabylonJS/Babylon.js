@@ -1,6 +1,6 @@
-import type { FunctionComponent } from "react";
+import { type FunctionComponent } from "react";
 
-import type { DropdownOption } from "shared-ui-components/fluent/primitives/dropdown";
+import { type DropdownOption } from "shared-ui-components/fluent/primitives/dropdown";
 
 import { Constants } from "core/Engines/constants";
 import { Engine } from "core/Engines/engine";
@@ -15,6 +15,8 @@ import { Collapse } from "shared-ui-components/fluent/primitives/collapse";
 import { useProperty } from "../../../hooks/compoundPropertyHooks";
 import { BoundProperty } from "../boundProperty";
 import { HexPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/hexPropertyLine";
+import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
+import { StandardMaterial } from "core/Materials/standardMaterial";
 
 const OrientationOptions = [
     { label: "Clockwise", value: Material.ClockWiseSideOrientation },
@@ -142,6 +144,8 @@ export const MaterialGeneralProperties: FunctionComponent<{ material: Material }
 
 export const MaterialTransparencyProperties: FunctionComponent<{ material: Material }> = (props) => {
     const { material } = props;
+    const hasAlphaCutOff = material instanceof PBRMaterial || material instanceof StandardMaterial;
+    const useAlphaTest = useProperty(material, "transparencyMode") === Material.MATERIAL_ALPHATEST;
 
     return (
         <>
@@ -156,6 +160,17 @@ export const MaterialTransparencyProperties: FunctionComponent<{ material: Mater
                 nullable
                 defaultValue={Material.MATERIAL_OPAQUE}
             />
+            <Collapse visible={hasAlphaCutOff && useAlphaTest}>
+                <BoundProperty
+                    component={SyncedSliderPropertyLine}
+                    label="alphaCutOff"
+                    target={material as PBRMaterial | StandardMaterial}
+                    propertyKey="alphaCutOff"
+                    min={0}
+                    max={1}
+                    step={0.01}
+                />
+            </Collapse>
             <BoundProperty
                 component={NumberDropdownPropertyLine}
                 label="Alpha Mode"
@@ -175,16 +190,17 @@ export const MaterialStencilProperties: FunctionComponent<{ material: Material }
 
     return (
         <>
-            <BoundProperty component={SwitchPropertyLine} label="Enabled" target={material.stencil} propertyKey="enabled" />
+            <BoundProperty component={SwitchPropertyLine} label="Enabled" target={material.stencil} propertyKey="enabled" propertyPath="stencil.enabled" />
             <Collapse visible={stencilEnabled}>
                 <>
-                    <BoundProperty component={HexPropertyLine} label="Write Mask" target={material.stencil} propertyKey="mask" numBits={8} />
-                    <BoundProperty component={HexPropertyLine} label="Read Mask" target={material.stencil} propertyKey="funcMask" numBits={8} />
+                    <BoundProperty component={HexPropertyLine} label="Write Mask" target={material.stencil} propertyKey="mask" propertyPath="stencil.mask" numBits={8} />
+                    <BoundProperty component={HexPropertyLine} label="Read Mask" target={material.stencil} propertyKey="funcMask" propertyPath="stencil.funcMask" numBits={8} />
                     <BoundProperty
                         component={NumberInputPropertyLine}
                         label="Reference Value"
                         target={material.stencil}
                         propertyKey="funcRef"
+                        propertyPath="stencil.funcRef"
                         step={1}
                         forceInt={true}
                         min={0}
@@ -200,6 +216,7 @@ export const MaterialStencilProperties: FunctionComponent<{ material: Material }
                                     label="Function"
                                     target={material.stencil}
                                     propertyKey="func"
+                                    propertyPath="stencil.func"
                                     options={StencilFunctionOptions}
                                 />
                                 <BoundProperty
@@ -207,6 +224,7 @@ export const MaterialStencilProperties: FunctionComponent<{ material: Material }
                                     label="Stencil Fail Operation"
                                     target={material.stencil}
                                     propertyKey="opStencilFail"
+                                    propertyPath="stencil.opStencilFail"
                                     options={StencilOperationOptions}
                                 />
                                 <BoundProperty
@@ -214,6 +232,7 @@ export const MaterialStencilProperties: FunctionComponent<{ material: Material }
                                     label="Depth Fail Operation"
                                     target={material.stencil}
                                     propertyKey="opDepthFail"
+                                    propertyPath="stencil.opDepthFail"
                                     options={StencilOperationOptions}
                                 />
                                 <BoundProperty
@@ -221,6 +240,7 @@ export const MaterialStencilProperties: FunctionComponent<{ material: Material }
                                     label="Stencil & Depth Pass Operation"
                                     target={material.stencil}
                                     propertyKey="opStencilDepthPass"
+                                    propertyPath="stencil.opStencilDepthPass"
                                     options={StencilOperationOptions}
                                 />
                             </>
@@ -236,6 +256,7 @@ export const MaterialStencilProperties: FunctionComponent<{ material: Material }
                                     label="Function"
                                     target={material.stencil}
                                     propertyKey="backFunc"
+                                    propertyPath="stencil.backFunc"
                                     options={StencilFunctionOptions}
                                 />
                                 <BoundProperty
@@ -243,6 +264,7 @@ export const MaterialStencilProperties: FunctionComponent<{ material: Material }
                                     label="Stencil Fail Operation"
                                     target={material.stencil}
                                     propertyKey="backOpStencilFail"
+                                    propertyPath="stencil.backOpStencilFail"
                                     options={StencilOperationOptions}
                                 />
                                 <BoundProperty
@@ -250,6 +272,7 @@ export const MaterialStencilProperties: FunctionComponent<{ material: Material }
                                     label="Depth Fail Operation"
                                     target={material.stencil}
                                     propertyKey="backOpDepthFail"
+                                    propertyPath="stencil.backOpDepthFail"
                                     options={StencilOperationOptions}
                                 />
                                 <BoundProperty
@@ -257,6 +280,7 @@ export const MaterialStencilProperties: FunctionComponent<{ material: Material }
                                     label="Stencil & Depth Pass Operation"
                                     target={material.stencil}
                                     propertyKey="backOpStencilDepthPass"
+                                    propertyPath="stencil.backOpStencilDepthPass"
                                     options={StencilOperationOptions}
                                 />
                             </>

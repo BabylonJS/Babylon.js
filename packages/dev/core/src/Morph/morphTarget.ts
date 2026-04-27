@@ -1,16 +1,16 @@
-import type { IAnimatable } from "../Animations/animatable.interface";
+import { type IAnimatable } from "../Animations/animatable.interface";
 import { Observable } from "../Misc/observable";
-import type { Nullable, FloatArray } from "../types";
-import type { Scene } from "../scene";
+import { type Nullable, type FloatArray } from "../types";
+import { type Scene } from "../scene";
 import { EngineStore } from "../Engines/engineStore";
-import type { AbstractMesh } from "../Meshes/abstractMesh";
+import { type AbstractMesh } from "../Meshes/abstractMesh";
 import { VertexBuffer } from "../Buffers/buffer";
-import type { AnimationPropertiesOverride } from "../Animations/animationPropertiesOverride";
+import { type AnimationPropertiesOverride } from "../Animations/animationPropertiesOverride";
 import { serialize } from "../Misc/decorators";
 import { SerializationHelper } from "../Misc/decorators.serialization";
 import { GetClass } from "../Misc/typeStore";
-
-import type { Animation } from "../Animations/animation";
+import { type Animation } from "../Animations/animation";
+import { type MorphTargetManager } from "./morphTargetManager";
 
 /**
  * Defines a target to use with MorphTargetManager
@@ -66,6 +66,12 @@ export class MorphTarget implements IAnimatable {
     @serialize()
     public id: string;
 
+    /**
+     * Gets or sets the morph target manager this morph target is associated with
+     */
+    @serialize()
+    public morphTargetManager: Nullable<MorphTargetManager> = null;
+
     private _animationPropertiesOverride: Nullable<AnimationPropertiesOverride> = null;
 
     /**
@@ -87,14 +93,16 @@ export class MorphTarget implements IAnimatable {
      * @param name defines the name of the target
      * @param influence defines the influence to use
      * @param scene defines the scene the morphtarget belongs to
+     * @param morphTargetManager morph target manager this morph target is associated with
      */
     public constructor(
-        /** defines the name of the target */
         public name: string,
         influence = 0,
-        scene: Nullable<Scene> = null
+        scene: Nullable<Scene> = null,
+        morphTargetManager: Nullable<MorphTargetManager> = null
     ) {
         this.id = name;
+        this.morphTargetManager = morphTargetManager;
         this._scene = scene || EngineStore.LastCreatedScene;
         this.influence = influence;
 
@@ -305,7 +313,7 @@ export class MorphTarget implements IAnimatable {
      * @returns a new MorphTarget
      */
     public clone(): MorphTarget {
-        const newOne = SerializationHelper.Clone(() => new MorphTarget(this.name, this.influence, this._scene), this);
+        const newOne = SerializationHelper.Clone(() => new MorphTarget(this.name, this.influence, this._scene, this.morphTargetManager), this);
 
         newOne._positions = this._positions;
         newOne._normals = this._normals;
@@ -327,10 +335,12 @@ export class MorphTarget implements IAnimatable {
         serializationObject.name = this.name;
         serializationObject.influence = this.influence;
 
-        serializationObject.positions = Array.prototype.slice.call(this.getPositions());
         if (this.id != null) {
             serializationObject.id = this.id;
         }
+        serializationObject.uniqueId = this.uniqueId;
+
+        serializationObject.positions = Array.prototype.slice.call(this.getPositions());
         if (this.hasNormals) {
             serializationObject.normals = Array.prototype.slice.call(this.getNormals());
         }
@@ -367,10 +377,11 @@ export class MorphTarget implements IAnimatable {
      * Creates a new target from serialized data
      * @param serializationObject defines the serialized data to use
      * @param scene defines the hosting scene
+     * @param morphTargetManager morph target manager this morph target is associated with
      * @returns a new MorphTarget
      */
-    public static Parse(serializationObject: any, scene?: Scene): MorphTarget {
-        const result = new MorphTarget(serializationObject.name, serializationObject.influence);
+    public static Parse(serializationObject: any, scene?: Scene, morphTargetManager: Nullable<MorphTargetManager> = null): MorphTarget {
+        const result = new MorphTarget(serializationObject.name, serializationObject.influence, scene, morphTargetManager);
 
         result.setPositions(serializationObject.positions);
 
@@ -429,7 +440,7 @@ export class MorphTarget implements IAnimatable {
             name = mesh.name;
         }
 
-        const result = new MorphTarget(name, influence, mesh.getScene());
+        const result = new MorphTarget(name, influence, mesh.getScene(), mesh.morphTargetManager);
 
         result.setPositions(<FloatArray>mesh.getVerticesData(VertexBuffer.PositionKind));
 

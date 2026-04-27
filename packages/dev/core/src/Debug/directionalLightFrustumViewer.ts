@@ -1,17 +1,17 @@
-import type { Nullable } from "core/types";
-import type { Camera } from "../Cameras/camera";
-import type { DirectionalLight } from "../Lights/directionalLight";
+import { type Nullable } from "core/types";
+import { type Camera } from "../Cameras/camera";
+import { type DirectionalLight } from "../Lights/directionalLight";
 import { StandardMaterial } from "../Materials/standardMaterial";
 import { Color3 } from "../Maths/math.color";
 import { Matrix, TmpVectors, Vector3 } from "../Maths/math.vector";
 import { CreateLines } from "../Meshes/Builders/linesBuilder";
-import type { LinesMesh } from "../Meshes/linesMesh";
+import { type LinesMesh } from "../Meshes/linesMesh";
 import { Mesh } from "../Meshes/mesh";
 import { VertexData } from "../Meshes/mesh.vertexData";
 import { TransformNode } from "../Meshes/transformNode";
-import type { Scene } from "../scene";
+import { type Scene } from "../scene";
 import { Constants } from "core/Engines/constants";
-import type { FrameGraph } from "core/FrameGraph/frameGraph";
+import { type FrameGraph } from "core/FrameGraph/frameGraph";
 import { FrameGraphUtils } from "core/FrameGraph/frameGraphUtils";
 
 /**

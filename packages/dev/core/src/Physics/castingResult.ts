@@ -1,6 +1,6 @@
 import { Vector3 } from "../Maths/math.vector";
-import type { PhysicsShape } from "./v2/physicsShape";
-import type { PhysicsBody } from "./v2/physicsBody";
+import { type PhysicsShape } from "./v2/physicsShape";
+import { type PhysicsBody } from "./v2/physicsBody";
 
 /**
  * Base class for results of casts.
@@ -44,7 +44,7 @@ export class CastingResult {
         return this._hasHit;
     }
 
-    /*
+    /**
      * The index of the original triangle which was hit. Will be -1 if contact point is not on a mesh shape
      */
     get triangleIndex(): number {
@@ -82,7 +82,7 @@ export class CastingResult {
 }
 
 /**
- * Interface for the size containing width and height
+ * Interface for 3D coordinates
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 interface IXYZ {

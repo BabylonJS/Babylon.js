@@ -81,7 +81,7 @@ export class STLExport {
             doNotBakeTransform = true;
         }
 
-        let data: DataView | string = "";
+        let data: DataView<ArrayBuffer> | string = "";
 
         let faceCount = 0;
         let offset = 0;

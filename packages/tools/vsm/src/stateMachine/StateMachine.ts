@@ -3,13 +3,13 @@
  * between them.
  */
 
-import type { AbstractMesh } from "core/Meshes/abstractMesh";
+import { type AbstractMesh } from "core/Meshes/abstractMesh";
 import { Tools } from "core/Misc/tools";
-import type { Scene } from "core/scene";
+import { type Scene } from "core/scene";
 import { ActionCoordinator } from "../actions/ActionCoordinator";
 import { ExecuteCodeAction } from "../actions/actions/ExecuteCodeAction";
 import { ClickTrigger } from "../actions/triggers/ClickTrigger";
-import type { State } from "./State";
+import { type State } from "./State";
 
 /**
  * The State Machine is responsible for switching between various states based on

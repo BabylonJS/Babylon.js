@@ -1,17 +1,16 @@
-import type { _IProcessingOptions, ShaderCustomProcessingFunction, _IShaderProcessingContext } from "core/Engines/Processors/shaderProcessingOptions";
+import { type _IProcessingOptions, type ShaderCustomProcessingFunction, type _IShaderProcessingContext } from "core/Engines/Processors/shaderProcessingOptions";
 import { GetDOMTextContent, IsWindowObjectExist } from "core/Misc/domManagement";
-import type { Nullable } from "core/types";
+import { type Nullable } from "core/types";
 import { ShaderLanguage } from "./shaderLanguage";
-import type { WebGLContext } from "core/Engines/thinEngine.functions";
-import { getStateObject } from "core/Engines/thinEngine.functions";
+import { type WebGLContext, getStateObject } from "core/Engines/thinEngine.functions";
 import { ShaderStore } from "core/Engines/shaderStore";
-import type { AbstractEngine } from "core/Engines/abstractEngine";
-import type { Effect, IShaderPath } from "./effect";
-import type { IPipelineContext } from "core/Engines/IPipelineContext";
+import { type AbstractEngine } from "core/Engines/abstractEngine";
+import { type Effect, type IShaderPath } from "./effect";
+import { type IPipelineContext } from "core/Engines/IPipelineContext";
 import { Logger } from "core/Misc/logger";
 import { Finalize, Initialize, Process } from "core/Engines/Processors/shaderProcessor";
 import { _LoadFile } from "core/Engines/abstractEngine.functions";
-import type { WebGLPipelineContext } from "core/Engines/WebGL/webGLPipelineContext";
+import { type WebGLPipelineContext } from "core/Engines/WebGL/webGLPipelineContext";
 
 /**
  * Options to be used when creating a pipeline
@@ -153,25 +152,45 @@ export function _ProcessShaderCode(
         fragmentSource = baseName.fragment || baseName;
     }
 
+    // Important:
+    //   The vertex shader must be compiled before the fragment shader, as processing the fragment shader may require information from the vertex shader.
+    //   Also, they should be processed in the same JS tick because the shader processor is a singleton and stores information about the current processing in its internal state.
+    //   Processing the vertex and fragment shaders in different ticks may cause issues as the internal state may be overridden by another shader being processed in between.
+    // This means that the shaders must be processed in sequence and synchronously, but the loading of the shader code can be done in parallel
+    // as long as we wait for both shaders to be loaded before starting the processing.
     const shaderCodes: [string | undefined, string | undefined] = [undefined, undefined];
     const shadersLoaded = () => {
         if (shaderCodes[0] && shaderCodes[1]) {
-            processorOptions.isFragment = true;
-            const [migratedVertexCode, fragmentCode] = shaderCodes;
+            const [vertexCode, fragmentCode] = shaderCodes;
+            Initialize(processorOptions);
             Process(
-                fragmentCode,
+                vertexCode,
                 processorOptions,
-                (migratedFragmentCode, codeBeforeMigration) => {
+                (migratedVertexCode, codeBeforeMigration) => {
                     if (effectContext) {
-                        effectContext._fragmentSourceCodeBeforeMigration = codeBeforeMigration;
+                        effectContext._vertexSourceCodeBeforeMigration = codeBeforeMigration;
                     }
                     if (processFinalCode) {
-                        migratedFragmentCode = processFinalCode("fragment", migratedFragmentCode);
+                        migratedVertexCode = processFinalCode("vertex", migratedVertexCode);
                     }
-                    const finalShaders = Finalize(migratedVertexCode, migratedFragmentCode, processorOptions);
-                    processorOptions = null as any;
-                    const finalCode = UseFinalCode(finalShaders.vertexCode, finalShaders.fragmentCode, baseName, shaderLanguage);
-                    onFinalCodeReady?.(finalCode.vertexSourceCode, finalCode.fragmentSourceCode);
+                    processorOptions.isFragment = true;
+                    Process(
+                        fragmentCode,
+                        processorOptions,
+                        (migratedFragmentCode: string, codeBeforeMigration: string) => {
+                            if (effectContext) {
+                                effectContext._fragmentSourceCodeBeforeMigration = codeBeforeMigration;
+                            }
+                            if (processFinalCode) {
+                                migratedFragmentCode = processFinalCode("fragment", migratedFragmentCode);
+                            }
+                            const finalShaders = Finalize(migratedVertexCode, migratedFragmentCode, processorOptions);
+                            processorOptions = null as any;
+                            const finalCode = UseFinalCode(finalShaders.vertexCode, finalShaders.fragmentCode, baseName, shaderLanguage);
+                            onFinalCodeReady?.(finalCode.vertexSourceCode, finalCode.fragmentSourceCode);
+                        },
+                        engine
+                    );
                 },
                 engine
             );
@@ -182,23 +201,11 @@ export function _ProcessShaderCode(
         "Vertex",
         "",
         (vertexCode) => {
-            Initialize(processorOptions);
-            Process(
-                vertexCode,
-                processorOptions,
-                (migratedVertexCode, codeBeforeMigration) => {
-                    if (effectContext) {
-                        effectContext._rawVertexSourceCode = vertexCode;
-                        effectContext._vertexSourceCodeBeforeMigration = codeBeforeMigration;
-                    }
-                    if (processFinalCode) {
-                        migratedVertexCode = processFinalCode("vertex", migratedVertexCode);
-                    }
-                    shaderCodes[0] = migratedVertexCode;
-                    shadersLoaded();
-                },
-                engine
-            );
+            if (effectContext) {
+                effectContext._rawVertexSourceCode = vertexCode;
+            }
+            shaderCodes[0] = vertexCode;
+            shadersLoaded();
         },
         shaderLanguage
     );

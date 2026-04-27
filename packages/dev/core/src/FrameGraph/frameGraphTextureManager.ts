@@ -1,17 +1,17 @@
-import type {
-    Scene,
-    AbstractEngine,
-    TextureSize,
-    Nullable,
-    FrameGraphTextureCreationOptions,
-    FrameGraphTextureHandle,
-    InternalTextureCreationOptions,
-    InternalTexture,
-    FrameGraphTextureOptions,
-    FrameGraphTextureDescription,
-    RenderTargetWrapper,
-    FrameGraphTask,
-    IFrameGraphPass,
+import {
+    type Scene,
+    type AbstractEngine,
+    type TextureSize,
+    type Nullable,
+    type FrameGraphTextureCreationOptions,
+    type FrameGraphTextureHandle,
+    type InternalTextureCreationOptions,
+    type InternalTexture,
+    type FrameGraphTextureOptions,
+    type FrameGraphTextureDescription,
+    type RenderTargetWrapper,
+    type FrameGraphTask,
+    type IFrameGraphPass,
 } from "core/index";
 import { getDimensionsFromTextureSize, textureSizeIsObject } from "../Materials/Textures/textureCreationOptions";
 import { Texture } from "../Materials/Textures/texture";
@@ -1158,6 +1158,32 @@ export class FrameGraphTextureManager {
                 return { width: 4, height: 4, length: 8 };
             case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_4x4:
                 return { width: 4, height: 4, length: 16 };
+            case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_5x4:
+                return { width: 5, height: 4, length: 16 };
+            case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_5x5:
+                return { width: 5, height: 5, length: 16 };
+            case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_6x5:
+                return { width: 6, height: 5, length: 16 };
+            case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_6x6:
+                return { width: 6, height: 6, length: 16 };
+            case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_8x5:
+                return { width: 8, height: 5, length: 16 };
+            case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_8x6:
+                return { width: 8, height: 6, length: 16 };
+            case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_8x8:
+                return { width: 8, height: 8, length: 16 };
+            case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_10x5:
+                return { width: 10, height: 5, length: 16 };
+            case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_10x6:
+                return { width: 10, height: 6, length: 16 };
+            case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_10x8:
+                return { width: 10, height: 8, length: 16 };
+            case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_10x10:
+                return { width: 10, height: 10, length: 16 };
+            case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_12x10:
+                return { width: 12, height: 10, length: 16 };
+            case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_12x12:
+                return { width: 12, height: 12, length: 16 };
             case Constants.TEXTUREFORMAT_COMPRESSED_RGB_ETC1_WEBGL:
             case Constants.TEXTUREFORMAT_COMPRESSED_RGB8_ETC2:
                 return { width: 4, height: 4, length: 8 };
@@ -1173,10 +1199,10 @@ export class FrameGraphTextureManager {
                     case Constants.TEXTUREFORMAT_R_INTEGER:
                     case Constants.TEXTUREFORMAT_ALPHA:
                     case Constants.TEXTUREFORMAT_LUMINANCE:
-                    case Constants.TEXTUREFORMAT_LUMINANCE_ALPHA:
                         return { width: 1, height: 1, length: 1 };
                     case Constants.TEXTUREFORMAT_RG:
                     case Constants.TEXTUREFORMAT_RG_INTEGER:
+                    case Constants.TEXTUREFORMAT_LUMINANCE_ALPHA:
                         return { width: 1, height: 1, length: 2 };
                     case Constants.TEXTUREFORMAT_RGB:
                     case Constants.TEXTUREFORMAT_RGB_INTEGER:

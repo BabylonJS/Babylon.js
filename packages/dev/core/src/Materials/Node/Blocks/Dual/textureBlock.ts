@@ -1,24 +1,22 @@
 import { NodeMaterialBlock } from "../../nodeMaterialBlock";
 import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
-import type { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
+import { type NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
-import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
-import { NodeMaterialConnectionPointDirection } from "../../nodeMaterialBlockConnectionPoint";
-import type { NodeMaterialDefines } from "../../nodeMaterial";
-import { NodeMaterial } from "../../nodeMaterial";
+import { type NodeMaterialConnectionPoint, NodeMaterialConnectionPointDirection } from "../../nodeMaterialBlockConnectionPoint";
+import { type NodeMaterialDefines, NodeMaterial } from "../../nodeMaterial";
 import { InputBlock } from "../Input/inputBlock";
-import type { Effect } from "../../../effect";
-import type { Nullable } from "../../../../types";
+import { type Effect } from "../../../effect";
+import { type Nullable } from "../../../../types";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import { Texture } from "../../../Textures/texture";
-import type { Scene } from "../../../../scene";
+import { type Scene } from "../../../../scene";
 import { NodeMaterialModes } from "../../Enums/nodeMaterialModes";
 import { Constants } from "../../../../Engines/constants";
 import "../../../../Shaders/ShadersInclude/helperFunctions";
 import { ImageSourceBlock } from "./imageSourceBlock";
 import { NodeMaterialConnectionPointCustomObject } from "../../nodeMaterialConnectionPointCustomObject";
 import { EngineStore } from "../../../../Engines/engineStore";
-import type { PrePassTextureBlock } from "../Input/prePassTextureBlock";
+import { type PrePassTextureBlock } from "../Input/prePassTextureBlock";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
 /**
@@ -39,6 +37,19 @@ export class TextureBlock extends NodeMaterialBlock {
     private _imageSource: Nullable<ImageSourceBlock | PrePassTextureBlock>;
 
     protected _texture: Nullable<Texture>;
+
+    /**
+     * Gets or sets a boolean indicating if the block is used in fragment shader only
+     * If false the system will allow optimizations to use it in vertex shader when possible for the uv computation
+     */
+    public get fragmentOnly(): boolean {
+        return this._fragmentOnly;
+    }
+
+    public set fragmentOnly(value: boolean) {
+        this._fragmentOnly = value;
+    }
+
     /**
      * Gets or sets the texture associated with the node
      */
@@ -321,12 +332,19 @@ export class TextureBlock extends NodeMaterialBlock {
         return NodeMaterialBlockTargets.VertexAndFragment;
     }
 
+    /** {@inheritDoc} */
     public override get target() {
         return this._getEffectiveTarget();
     }
 
+    /** {@inheritDoc} */
     public override set target(value: NodeMaterialBlockTargets) {}
 
+    /**
+     * Auto configure the block based on the material
+     * @param material - the node material
+     * @param additionalFilteringInfo - optional filtering info
+     */
     public override autoConfigure(material: NodeMaterial, additionalFilteringInfo: (node: NodeMaterialBlock) => boolean = () => true) {
         if (!this.uv.isConnected) {
             if (material.mode === NodeMaterialModes.PostProcess) {
@@ -349,6 +367,10 @@ export class TextureBlock extends NodeMaterialBlock {
         }
     }
 
+    /**
+     * Initialize the list of defines
+     * @param defines - the material defines
+     */
     public override initializeDefines(defines: NodeMaterialDefines) {
         if (!defines._areTexturesDirty) {
             return;
@@ -359,6 +381,10 @@ export class TextureBlock extends NodeMaterialBlock {
         }
     }
 
+    /**
+     * Prepare the list of defines
+     * @param defines - the material defines
+     */
     public override prepareDefines(defines: NodeMaterialDefines) {
         if (!defines._areTexturesDirty) {
             return;
@@ -392,6 +418,10 @@ export class TextureBlock extends NodeMaterialBlock {
         }
     }
 
+    /**
+     * Checks if the block is ready
+     * @returns true if ready
+     */
     public override isReady() {
         if (this._isSourcePrePass) {
             return true;
@@ -404,6 +434,10 @@ export class TextureBlock extends NodeMaterialBlock {
         return true;
     }
 
+    /**
+     * Bind data to effect
+     * @param effect - the effect to bind to
+     */
     public override bind(effect: Effect) {
         if (this._isSourcePrePass) {
             effect.setFloat(this._textureInfoName, 1);
@@ -681,9 +715,12 @@ export class TextureBlock extends NodeMaterialBlock {
         return codeString;
     }
 
+    /**
+     * Serializes the block
+     * @returns the serialized object
+     */
     public override serialize(): any {
         const serializationObject = super.serialize();
-
         serializationObject.convertToGammaSpace = this.convertToGammaSpace;
         serializationObject.convertToLinearSpace = this.convertToLinearSpace;
         serializationObject.fragmentOnly = this._fragmentOnly;
@@ -700,6 +737,13 @@ export class TextureBlock extends NodeMaterialBlock {
         return serializationObject;
     }
 
+    /**
+     * Deserializes the block
+     * @param serializationObject - the serialization object
+     * @param scene - the scene
+     * @param rootUrl - the root url
+     * @param urlRewriter - optional url rewriter
+     */
     public override _deserialize(serializationObject: any, scene: Scene, rootUrl: string, urlRewriter?: (url: string) => string) {
         super._deserialize(serializationObject, scene, rootUrl);
 

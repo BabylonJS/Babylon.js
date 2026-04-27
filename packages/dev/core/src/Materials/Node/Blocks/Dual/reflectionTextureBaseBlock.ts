@@ -1,15 +1,14 @@
 import { NodeMaterialBlock } from "../../nodeMaterialBlock";
-import type { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
+import { type NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
-import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
-import type { BaseTexture } from "../../../Textures/baseTexture";
-import type { NodeMaterialDefines } from "../../nodeMaterial";
-import { NodeMaterial } from "../../nodeMaterial";
-import type { Effect } from "../../../effect";
-import type { Mesh } from "../../../../Meshes/mesh";
-import type { Nullable } from "../../../../types";
+import { type NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
+import { type BaseTexture } from "../../../Textures/baseTexture";
+import { type NodeMaterialDefines, NodeMaterial } from "../../nodeMaterial";
+import { type Effect } from "../../../effect";
+import { type Mesh } from "../../../../Meshes/mesh";
+import { type Nullable } from "../../../../types";
 import { RegisterClass } from "../../../../Misc/typeStore";
-import type { Scene } from "../../../../scene";
+import { type Scene } from "../../../../scene";
 import { InputBlock } from "../Input/inputBlock";
 import { NodeMaterialSystemValues } from "../../Enums/nodeMaterialSystemValues";
 import { Constants } from "../../../../Engines/constants";
@@ -18,7 +17,7 @@ import { CubeTexture } from "../../../Textures/cubeTexture";
 import { Texture } from "../../../Textures/texture";
 import { EngineStore } from "../../../../Engines/engineStore";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
-import type { SubMesh } from "../../../..//Meshes/subMesh";
+import { type SubMesh } from "../../../..//Meshes/subMesh";
 import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
@@ -169,6 +168,10 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
         return this.texture;
     }
 
+    /**
+     * Initialize the block
+     * @param state - the build state
+     */
     public override initialize(state: NodeMaterialBuildState) {
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
         this._initShaderSourceAsync(state.shaderLanguage);
@@ -224,6 +227,10 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
         }
     }
 
+    /**
+     * Prepare the list of defines
+     * @param defines - the material defines
+     */
     public override prepareDefines(defines: NodeMaterialDefines) {
         if (!defines._areTexturesDirty) {
             return;
@@ -249,6 +256,10 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
         defines.setValue(this._defineMirroredEquirectangularFixedName, texture.coordinatesMode === Constants.TEXTURE_FIXED_EQUIRECTANGULAR_MIRRORED_MODE, true);
     }
 
+    /**
+     * Checks if the block is ready
+     * @returns true if ready
+     */
     public override isReady() {
         const texture = this._getTexture();
 
@@ -259,6 +270,13 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
         return true;
     }
 
+    /**
+     * Bind data to effect
+     * @param effect - the effect to bind to
+     * @param nodeMaterial - the node material
+     * @param mesh - the mesh to bind for
+     * @param _subMesh - the submesh
+     */
     public override bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh, _subMesh?: SubMesh) {
         const texture = this._getTexture();
 
@@ -579,6 +597,10 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
         return codeString;
     }
 
+    /**
+     * Serializes the block
+     * @returns the serialized object
+     */
     public override serialize(): any {
         const serializationObject = super.serialize();
 
@@ -591,6 +613,12 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
         return serializationObject;
     }
 
+    /**
+     * Deserializes the block
+     * @param serializationObject - the serialization object
+     * @param scene - the scene
+     * @param rootUrl - the root url
+     */
     public override _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
         super._deserialize(serializationObject, scene, rootUrl);
 

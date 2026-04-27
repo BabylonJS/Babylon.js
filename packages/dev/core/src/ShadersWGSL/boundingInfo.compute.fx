@@ -52,12 +52,15 @@ fn atomicMaxFloat(atomicVar: ptr<storage, atomic<i32>, read_write>, value: f32) 
 
 fn readMatrixFromRawSampler(smp : texture_2d<f32>, index : f32) -> mat4x4<f32>
 {
-    let offset = i32(index)  * 4;	
+    let offset = i32(index) * 4;	
+    let textureWidth = i32(settings.boneTextureInfo.x);
+    let y = offset / textureWidth;
+    let x = offset % textureWidth;
 
-    let m0 = textureLoad(smp, vec2<i32>(offset + 0, 0), 0);
-    let m1 = textureLoad(smp, vec2<i32>(offset + 1, 0), 0);
-    let m2 = textureLoad(smp, vec2<i32>(offset + 2, 0), 0);
-    let m3 = textureLoad(smp, vec2<i32>(offset + 3, 0), 0);
+    let m0 = textureLoad(smp, vec2<i32>(x + 0, y), 0);
+    let m1 = textureLoad(smp, vec2<i32>(x + 1, y), 0);
+    let m2 = textureLoad(smp, vec2<i32>(x + 2, y), 0);
+    let m3 = textureLoad(smp, vec2<i32>(x + 3, y), 0);
 
     return mat4x4<f32>(m0, m1, m2, m3);
 }
@@ -70,6 +73,7 @@ const identity = mat4x4f(
 );
 
 struct Settings {
+    boneTextureInfo: vec2f,
     morphTargetTextureInfo: vec3f,
     morphTargetCount: f32,
     indexResult : u32,
@@ -98,20 +102,20 @@ struct Settings {
 #ifdef MORPHTARGETS
 fn readVector3FromRawSampler(targetIndex : i32, vertexIndex : u32) -> vec3f
 {			
-    let vertexID = f32(vertexIndex) * settings.morphTargetTextureInfo.x;
-    let y = floor(vertexID / settings.morphTargetTextureInfo.y);
-    let x = vertexID - y * settings.morphTargetTextureInfo.y;
-    let textureUV = vec2<i32>(i32(x), i32(y));
-    return textureLoad(morphTargets, textureUV, i32(morphTargetTextureIndices[targetIndex]), 0).xyz;
+    let vertexID: u32 = vertexIndex * u32(settings.morphTargetTextureInfo.x);
+    let textureWidth: u32 = u32(settings.morphTargetTextureInfo.y);
+    let y: u32 = vertexID / textureWidth;
+    let x: u32 = vertexID % textureWidth;
+    return textureLoad(morphTargets, vec2u(x, y), u32(morphTargetTextureIndices[targetIndex]), 0).xyz;
 }
 
 fn readVector4FromRawSampler(targetIndex : i32, vertexIndex : u32) -> vec4f
 {			
-    let vertexID = f32(vertexIndex) * settings.morphTargetTextureInfo.x;
-    let y = floor(vertexID / settings.morphTargetTextureInfo.y);
-    let x = vertexID - y * settings.morphTargetTextureInfo.y;
-    let textureUV = vec2<i32>(i32(x), i32(y));
-    return textureLoad(morphTargets, textureUV, i32(morphTargetTextureIndices[targetIndex]), 0);
+    let vertexID: u32 = vertexIndex * u32(settings.morphTargetTextureInfo.x);
+    let textureWidth: u32 = u32(settings.morphTargetTextureInfo.y);
+    let y: u32 = vertexID / textureWidth;
+    let x: u32 = vertexID % textureWidth;
+    return textureLoad(morphTargets, vec2u(x, y), u32(morphTargetTextureIndices[targetIndex]), 0);
 }
 #endif
 

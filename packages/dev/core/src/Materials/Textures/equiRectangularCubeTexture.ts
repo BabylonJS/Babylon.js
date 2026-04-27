@@ -1,12 +1,13 @@
 import { PanoramaToCubeMapTools } from "../../Misc/HighDynamicRange/panoramaToCubemap";
 import { BaseTexture } from "./baseTexture";
 import { Texture } from "./texture";
-import type { Scene } from "../../scene";
-import type { Nullable } from "../../types";
+import { type Scene } from "../../scene";
+import { type Nullable } from "../../types";
 import { Tools } from "../../Misc/tools";
 import { Constants } from "../../Engines/constants";
 import { LoadImage } from "../../Misc/fileTools";
 import { IsDocumentAvailable } from "core/Misc/domManagement";
+import "../../Materials/Textures/baseTexture.polynomial";
 
 /**
  * This represents a texture coming from an equirectangular image supported by the web browser canvas.
@@ -48,6 +49,7 @@ export class EquiRectangularCubeTexture extends BaseTexture {
      * @param onLoad — defines a callback called when texture is loaded
      * @param onError — defines a callback called if there is an error
      * @param supersample — defines if texture must be supersampled (default: false)
+     * @param sphericalPolynomialTargetSize — target face size for spherical polynomial computation. 0 = full resolution (default).
      */
     constructor(
         url: string,
@@ -57,7 +59,8 @@ export class EquiRectangularCubeTexture extends BaseTexture {
         gammaSpace: boolean = true,
         onLoad: Nullable<() => void> = null,
         onError: Nullable<(message?: string, exception?: any) => void> = null,
-        supersample = false
+        supersample = false,
+        sphericalPolynomialTargetSize = 0
     ) {
         super(scene);
 
@@ -74,6 +77,7 @@ export class EquiRectangularCubeTexture extends BaseTexture {
         this.gammaSpace = gammaSpace;
         this._onLoad = onLoad;
         this._onError = onError;
+        this._sphericalPolynomialTargetSize = sphericalPolynomialTargetSize;
 
         this.hasAlpha = false;
         this.isCube = true;
@@ -250,5 +254,24 @@ export class EquiRectangularCubeTexture extends BaseTexture {
         newTexture.coordinatesMode = this.coordinatesMode;
 
         return newTexture;
+    }
+
+    /**
+     * Finish the loading sequence of a texture flagged as delayed load.
+     * @internal
+     */
+    public override delayLoad(): void {
+        if (this.delayLoadState !== Constants.DELAYLOADSTATE_NOTLOADED) {
+            return;
+        }
+
+        this._texture = this._getFromCache(this.url, this._noMipmap, undefined, undefined, undefined, this.isCube);
+        this.delayLoadState = Constants.DELAYLOADSTATE_LOADED;
+
+        if (!this._texture) {
+            this._loadImage(() => {
+                this._loadTexture();
+            }, this._onError);
+        }
     }
 }

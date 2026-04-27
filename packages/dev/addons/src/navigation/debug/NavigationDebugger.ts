@@ -1,33 +1,33 @@
-import type {
-    DebugDrawerPrimitive,
-    DebugDrawerPrimitiveType,
-    NavMesh,
-    NavMeshQuery,
-    RecastCompactHeightfield,
-    RecastContourSet,
-    RecastHeightfield,
-    RecastHeightfieldLayer,
-    RecastHeightfieldLayerSet,
-    RecastPolyMesh,
-    RecastPolyMeshDetail,
-    DebugDrawerUtils,
+import {
+    type DebugDrawerPrimitive,
+    type DebugDrawerPrimitiveType,
+    type NavMesh,
+    type NavMeshQuery,
+    type RecastCompactHeightfield,
+    type RecastContourSet,
+    type RecastHeightfield,
+    type RecastHeightfieldLayer,
+    type RecastHeightfieldLayerSet,
+    type RecastPolyMesh,
+    type RecastPolyMeshDetail,
+    type DebugDrawerUtils,
 } from "@recast-navigation/core";
 
-import type { GreasedLineMaterialOptions } from "core/Materials/GreasedLine/greasedLineMaterialInterfaces";
+import { type GreasedLineMaterialOptions } from "core/Materials/GreasedLine/greasedLineMaterialInterfaces";
 import { StandardMaterial } from "core/Materials/standardMaterial";
 import { Color3 } from "core/Maths/math.color";
 import { Matrix } from "core/Maths/math.vector";
 import { CreateGreasedLine } from "core/Meshes/Builders/greasedLineBuilder";
-import type { GreasedLineBaseMesh, GreasedLineMeshOptions } from "core/Meshes/GreasedLine/greasedLineBaseMesh";
+import { type GreasedLineBaseMesh, type GreasedLineMeshOptions } from "core/Meshes/GreasedLine/greasedLineBaseMesh";
 import { Mesh } from "core/Meshes/mesh";
 import { VertexData } from "core/Meshes/mesh.vertexData";
 import { TransformNode } from "core/Meshes/transformNode";
-import type { Scene } from "core/scene";
-import type { Nullable } from "core/types";
+import { type Scene } from "core/scene";
+import { type Nullable } from "core/types";
 import { CreateBox } from "core/Meshes/Builders/boxBuilder";
 import { Logger } from "core/Misc/logger";
 
-import type { GeneratorIntermediates } from "../types";
+import { type GeneratorIntermediates } from "../types";
 import { GetRecast } from "../factory/common";
 
 // TODO: Enum?

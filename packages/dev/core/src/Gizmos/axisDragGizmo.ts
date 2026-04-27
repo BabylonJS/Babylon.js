@@ -1,21 +1,18 @@
-import type { Observer } from "../Misc/observable";
-import { Observable } from "../Misc/observable";
-import type { Nullable } from "../types";
-import type { PointerInfo } from "../Events/pointerEvents";
-import type { Vector3 } from "../Maths/math.vector";
+import { type Observer, Observable } from "../Misc/observable";
+import { type Nullable } from "../types";
+import { type PointerInfo } from "../Events/pointerEvents";
 import { TransformNode } from "../Meshes/transformNode";
-import type { Node } from "../node";
+import { type Node } from "../node";
 import { Mesh } from "../Meshes/mesh";
 import { CreateCylinder } from "../Meshes/Builders/cylinderBuilder";
 import { PointerDragBehavior } from "../Behaviors/Meshes/pointerDragBehavior";
-import type { GizmoAxisCache, IGizmo } from "./gizmo";
-import { Gizmo } from "./gizmo";
+import { type GizmoAxisCache, type IGizmo, Gizmo } from "./gizmo";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
 import { StandardMaterial } from "../Materials/standardMaterial";
-import type { Scene } from "../scene";
-import type { PositionGizmo } from "./positionGizmo";
+import { type Scene } from "../scene";
+import { type PositionGizmo } from "./positionGizmo";
 import { Color3 } from "../Maths/math.color";
-import { TmpVectors } from "../Maths/math.vector";
+import { TmpVectors, Vector3 } from "../Maths/math.vector";
 
 /**
  * Interface for axis drag gizmo
@@ -202,18 +199,26 @@ export class AxisDragGizmo extends Gizmo implements IAxisDragGizmo {
                 // will be recomputed in _matrixChanged function
 
                 let matrixChanged: boolean = false;
+                // Transform delta by additionalTransformNode world matrix if present
+                let delta = event.delta;
+                if (this._additionalTransformNode) {
+                    const additionalInverseMatrix = TmpVectors.Matrix[0];
+                    this._additionalTransformNode.getWorldMatrix().invertToRef(additionalInverseMatrix);
+                    Vector3.TransformNormalToRef(event.delta, additionalInverseMatrix, TmpVectors.Vector3[3]);
+                    delta = TmpVectors.Vector3[3];
+                }
                 // Snapping logic
                 if (this.snapDistance == 0) {
                     this.attachedNode.getWorldMatrix().getTranslationToRef(TmpVectors.Vector3[2]);
-                    TmpVectors.Vector3[2].addInPlace(event.delta);
+                    TmpVectors.Vector3[2].addInPlace(delta);
                     if (this.dragBehavior.validateDrag(TmpVectors.Vector3[2])) {
                         if ((this.attachedNode as any).position) {
                             // Required for nodes like lights
-                            (this.attachedNode as any).position.addInPlaceFromFloats(event.delta.x, event.delta.y, event.delta.z);
+                            (this.attachedNode as any).position.addInPlaceFromFloats(delta.x, delta.y, delta.z);
                         }
 
                         // use _worldMatrix to not force a matrix update when calling GetWorldMatrix especially with Cameras
-                        this.attachedNode.getWorldMatrix().addTranslationFromFloats(event.delta.x, event.delta.y, event.delta.z);
+                        this.attachedNode.getWorldMatrix().addTranslationFromFloats(delta.x, delta.y, delta.z);
                         this.attachedNode.updateCache();
                         matrixChanged = true;
                     }
@@ -222,7 +227,7 @@ export class AxisDragGizmo extends Gizmo implements IAxisDragGizmo {
                     if (Math.abs(currentSnapDragDistance) > this.snapDistance) {
                         const dragSteps = Math.floor(Math.abs(currentSnapDragDistance) / this.snapDistance);
                         currentSnapDragDistance = currentSnapDragDistance % this.snapDistance;
-                        event.delta.normalizeToRef(TmpVectors.Vector3[1]);
+                        delta.normalizeToRef(TmpVectors.Vector3[1]);
                         TmpVectors.Vector3[1].scaleInPlace(this.snapDistance * dragSteps);
 
                         this.attachedNode.getWorldMatrix().getTranslationToRef(TmpVectors.Vector3[2]);

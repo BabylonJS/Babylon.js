@@ -1,3 +1,5 @@
+import { Logger } from "./logger";
+
 interface IStorage {
     getItem: (key: string) => string | null;
     setItem: (key: string, value: string) => void;
@@ -86,5 +88,30 @@ export class DataStorage {
      */
     public static WriteNumber(key: string, value: number) {
         this._Storage.setItem(key, value.toString());
+    }
+
+    /**
+     * Reads a JSON value from the data storage
+     * @param key The key to read
+     * @param defaultValue The value if the key doesn't exist
+     * @returns The JSON value
+     */
+    public static ReadJson<T>(key: string, defaultValue: T): T {
+        const value = this._Storage.getItem(key);
+        try {
+            return value !== null ? JSON.parse(value) : defaultValue;
+        } catch (e) {
+            Logger.Warn(`Failed to parse JSON from storage for key "${key}". Returning default value.`, e);
+            return defaultValue;
+        }
+    }
+
+    /**
+     * Writes a JSON value to the data storage
+     * @param key The key to write
+     * @param value The JSON value to write
+     */
+    public static WriteJson<T>(key: string, value: T) {
+        this._Storage.setItem(key, JSON.stringify(value));
     }
 }

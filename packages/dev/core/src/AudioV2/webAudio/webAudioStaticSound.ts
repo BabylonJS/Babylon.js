@@ -1,20 +1,24 @@
-import type { Nullable } from "../../types";
-import type { AbstractAudioNode } from "../abstractAudio/abstractAudioNode";
-import type { IStaticSoundCloneOptions, IStaticSoundOptions, IStaticSoundPlayOptions, IStaticSoundStopOptions, IStaticSoundStoredOptions } from "../abstractAudio/staticSound";
-import { StaticSound } from "../abstractAudio/staticSound";
-import type { IStaticSoundBufferCloneOptions, IStaticSoundBufferOptions } from "../abstractAudio/staticSoundBuffer";
-import { StaticSoundBuffer } from "../abstractAudio/staticSoundBuffer";
-import type { IStaticSoundInstanceOptions } from "../abstractAudio/staticSoundInstance";
-import { _StaticSoundInstance } from "../abstractAudio/staticSoundInstance";
+import { type Nullable } from "../../types";
+import { type AbstractAudioNode } from "../abstractAudio/abstractAudioNode";
+import {
+    type IStaticSoundCloneOptions,
+    type IStaticSoundOptions,
+    type IStaticSoundPlayOptions,
+    type IStaticSoundStopOptions,
+    type IStaticSoundStoredOptions,
+    StaticSound,
+} from "../abstractAudio/staticSound";
+import { type IStaticSoundBufferCloneOptions, type IStaticSoundBufferOptions, StaticSoundBuffer } from "../abstractAudio/staticSoundBuffer";
+import { type IStaticSoundInstanceOptions, _StaticSoundInstance } from "../abstractAudio/staticSoundInstance";
 import { _HasSpatialAudioOptions, type AbstractSpatialAudio } from "../abstractAudio/subProperties/abstractSpatialAudio";
 import { _StereoAudio } from "../abstractAudio/subProperties/stereoAudio";
-import { _CleanUrl, _FileExtensionRegex } from "../audioUtils";
+import { _CleanUrl, _FileExtensionRegex, _LoadArrayBufferFromUrlAsync } from "../audioUtils";
 import { SoundState } from "../soundState";
 import { _WebAudioParameterComponent } from "./components/webAudioParameterComponent";
 import { _WebAudioBusAndSoundSubGraph } from "./subNodes/webAudioBusAndSoundSubGraph";
 import { _SpatialWebAudio } from "./subProperties/spatialWebAudio";
-import type { _WebAudioEngine } from "./webAudioEngine";
-import type { IWebAudioInNode, IWebAudioOutNode, IWebAudioSuperNode } from "./webAudioNode";
+import { type _WebAudioEngine } from "./webAudioEngine";
+import { type IWebAudioInNode, type IWebAudioOutNode, type IWebAudioSuperNode } from "./webAudioNode";
 
 type StaticSoundSourceType = ArrayBuffer | AudioBuffer | StaticSoundBuffer | string | string[];
 
@@ -250,7 +254,8 @@ export class _WebAudioStaticSoundBuffer extends StaticSoundBuffer {
 
     private async _initFromUrlAsync(url: string): Promise<void> {
         url = _CleanUrl(url);
-        await this._initFromArrayBufferAsync(await (await fetch(url)).arrayBuffer());
+        const { data } = await _LoadArrayBufferFromUrlAsync(url);
+        await this._initFromArrayBufferAsync(data);
     }
 
     private async _initFromUrlsAsync(urls: string[], skipCodecCheck: boolean): Promise<void> {
@@ -311,8 +316,6 @@ class _WebAudioStaticSoundInstance extends _StaticSoundInstance implements IWebA
 
         this._pitch?.dispose();
         this._playbackRate?.dispose();
-
-        this._sourceNode = null;
 
         this.stop();
 
@@ -427,14 +430,16 @@ class _WebAudioStaticSoundInstance extends _StaticSoundInstance implements IWebA
 
     /** @internal */
     public pause(): void {
-        if (this._state === SoundState.Paused) {
+        if (this._state !== SoundState.Started && this._state !== SoundState.Starting) {
             return;
         }
+
+        const wasStarted = this._state === SoundState.Started;
 
         this._setState(SoundState.Paused);
         this._enginePauseTime += this.engine.currentTime - this._enginePlayTime;
 
-        if (this._state === SoundState.Started) {
+        if (wasStarted) {
             this._sourceNode?.stop();
         } else {
             this.engine.stateChangedObservable.removeCallback(this._onEngineStateChanged);

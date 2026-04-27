@@ -1,8 +1,8 @@
 import { RegisterClass } from "core/Misc/typeStore";
-import type { IFlowGraphBlockConfiguration } from "../../flowGraphBlock";
-import type { FlowGraphContext } from "../../flowGraphContext";
+import { type IFlowGraphBlockConfiguration } from "../../flowGraphBlock";
+import { type FlowGraphContext } from "../../flowGraphContext";
 import { FlowGraphExecutionBlockWithOutSignal } from "../../flowGraphExecutionBlockWithOutSignal";
-import type { FlowGraphSignalConnection } from "../../flowGraphSignalConnection";
+import { type FlowGraphSignalConnection } from "../../flowGraphSignalConnection";
 import { FlowGraphBlockNames } from "../flowGraphBlockNames";
 import { RichTypeAny } from "core/FlowGraph/flowGraphRichTypes";
 
@@ -27,10 +27,6 @@ export interface IFlowGraphSetVariableBlockConfiguration extends IFlowGraphBlock
 export class FlowGraphSetVariableBlock<T> extends FlowGraphExecutionBlockWithOutSignal {
     constructor(config: IFlowGraphSetVariableBlockConfiguration) {
         super(config);
-        // check if the variable is defined
-        if (!config.variable && !config.variables) {
-            throw new Error("FlowGraphSetVariableBlock: variable/variables is not defined");
-        }
         // check if the variable is an array
         if (config.variables && config.variable) {
             throw new Error("FlowGraphSetVariableBlock: variable and variables are both defined");

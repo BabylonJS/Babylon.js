@@ -1,43 +1,42 @@
-import type { Observer } from "../Misc/observable";
-import type { DataArray, FloatArray, IndicesArray, Nullable } from "../types";
-import type { PerfCounter } from "../Misc/perfCounter";
-import type { PostProcess } from "../PostProcesses/postProcess";
-import type { Scene } from "../scene";
-import type { IColor4Like, IViewportLike } from "../Maths/math.like";
-import type { ICanvas, IImage, IPath2D } from "./ICanvas";
-import type { IHardwareTextureWrapper } from "../Materials/Textures/hardwareTextureWrapper";
-import type { EngineCapabilities } from "./engineCapabilities";
-import type { DataBuffer } from "../Buffers/dataBuffer";
-import type { RenderTargetWrapper } from "./renderTargetWrapper";
-import type { IShaderProcessor } from "./Processors/iShaderProcessor";
-import type { ShaderLanguage } from "../Materials/shaderLanguage";
-import type { IAudioEngineOptions } from "../Audio/Interfaces/IAudioEngineOptions";
-import type { EngineFeatures } from "./engineFeatures";
-import type { UniformBuffer } from "../Materials/uniformBuffer";
-import type { StorageBuffer } from "../Buffers/storageBuffer";
-import type { IEffectCreationOptions, IShaderPath } from "../Materials/effect";
-import type { IOfflineProvider } from "../Offline/IOfflineProvider";
-import type { IWebRequest } from "../Misc/interfaces/iWebRequest";
-import type { IFileRequest } from "../Misc/fileRequest";
-import type { Texture } from "../Materials/Textures/texture";
-import type { LoadFileError } from "../Misc/fileTools";
-import type { _IShaderProcessingContext } from "./Processors/shaderProcessingOptions";
-import type { IPipelineContext } from "./IPipelineContext";
-import type { ThinTexture } from "../Materials/Textures/thinTexture";
-import type { InternalTextureCreationOptions, TextureSize } from "../Materials/Textures/textureCreationOptions";
-import type { EffectFallbacks } from "../Materials/effectFallbacks";
-import type { IMaterialContext } from "./IMaterialContext";
-import type { IStencilStateProperties, IStencilState } from "../States/IStencilState";
-import type { DrawWrapper } from "../Materials/drawWrapper";
-import type { IDrawContext } from "./IDrawContext";
-import type { VertexBuffer } from "../Meshes/buffer";
-import type { IAudioEngine } from "../Audio/Interfaces/IAudioEngine";
-import type { WebRequest } from "core/Misc/webRequest";
-import type { PerformanceMonitor } from "core/Misc/performanceMonitor";
-import type { ILoadingScreen } from "../Loading/loadingScreen";
+import { type Observer, Observable } from "../Misc/observable";
+import { type DataArray, type FloatArray, type IndicesArray, type Nullable } from "../types";
+import { type PerfCounter } from "../Misc/perfCounter";
+import { type PostProcess } from "../PostProcesses/postProcess";
+import { type Scene } from "../scene";
+import { type IColor4Like, type IViewportLike } from "../Maths/math.like";
+import { type ICanvas, type IImage, type IPath2D } from "./ICanvas";
+import { type IHardwareTextureWrapper } from "../Materials/Textures/hardwareTextureWrapper";
+import { type EngineCapabilities } from "./engineCapabilities";
+import { type DataBuffer } from "../Buffers/dataBuffer";
+import { type RenderTargetWrapper } from "./renderTargetWrapper";
+import { type IShaderProcessor } from "./Processors/iShaderProcessor";
+import { type ShaderLanguage } from "../Materials/shaderLanguage";
+import { type IAudioEngineOptions } from "../Audio/Interfaces/IAudioEngineOptions";
+import { type EngineFeatures } from "./engineFeatures";
+import { type UniformBuffer } from "../Materials/uniformBuffer";
+import { type StorageBuffer } from "../Buffers/storageBuffer";
+import { type IEffectCreationOptions, type IShaderPath, Effect } from "../Materials/effect";
+import { type IOfflineProvider } from "../Offline/IOfflineProvider";
+import { type IWebRequest } from "../Misc/interfaces/iWebRequest";
+import { type IFileRequest } from "../Misc/fileRequest";
+import { type Texture } from "../Materials/Textures/texture";
+import { type LoadFileError } from "../Misc/fileTools";
+import { type _IShaderProcessingContext } from "./Processors/shaderProcessingOptions";
+import { type IPipelineContext } from "./IPipelineContext";
+import { type ThinTexture } from "../Materials/Textures/thinTexture";
+import { type InternalTextureCreationOptions, type TextureSize } from "../Materials/Textures/textureCreationOptions";
+import { type EffectFallbacks } from "../Materials/effectFallbacks";
+import { type IMaterialContext } from "./IMaterialContext";
+import { type IStencilStateProperties, type IStencilState } from "../States/IStencilState";
+import { type DrawWrapper } from "../Materials/drawWrapper";
+import { type IDrawContext } from "./IDrawContext";
+import { type VertexBuffer } from "../Meshes/buffer";
+import { type IAudioEngine } from "../Audio/Interfaces/IAudioEngine";
+import { type WebRequest } from "core/Misc/webRequest";
+import { type PerformanceMonitor } from "core/Misc/performanceMonitor";
+import { type ILoadingScreen } from "../Loading/loadingScreen";
 import { EngineStore } from "./engineStore";
 import { Logger } from "../Misc/logger";
-import { Effect } from "../Materials/effect";
 import { PerformanceConfigurator } from "./performanceConfigurator";
 import { PrecisionDate } from "../Misc/precisionDate";
 import { DepthCullingState } from "../States/depthCullingState";
@@ -48,10 +47,9 @@ import { _WarnImport } from "../Misc/devTools";
 import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
 import { IsDocumentAvailable, IsNavigatorAvailable, IsWindowObjectExist } from "../Misc/domManagement";
 import { Constants } from "./constants";
-import { Observable } from "../Misc/observable";
 import { EngineFunctionContext, _LoadFile } from "./abstractEngine.functions";
-import type { Material } from "core/Materials/material";
-import type { IInternalTextureLoader } from "../Materials/Textures/Loaders/internalTextureLoader";
+import { type Material } from "core/Materials/material";
+import { type IInternalTextureLoader } from "../Materials/Textures/Loaders/internalTextureLoader";
 
 /**
  * Defines the interface used by objects working like Scene
@@ -138,7 +136,6 @@ export interface AbstractEngineOptions {
     useHighPrecisionMatrix?: boolean;
 
     /**
-     * @experimental
      * LargeWorldRendering helps avoid floating point imprecision of rendering large worlds by
      * 1. Forcing highPrecisionMatrices (matrix computations in 64 bits instead of 32)
      * 2. Enabling floatingOriginMode in all scenes -- offsetting position-related uniform and attribute values before passing to shader so that active camera is centered at origin and world is offset by active camera position
@@ -1277,8 +1274,9 @@ export abstract class AbstractEngine {
 
     /**
      * Unbind the current render target and bind the default framebuffer
+     * @param unbindOnly defines a boolean indicating that the function should only unbind the current render target without binding the default framebuffer
      */
-    public abstract restoreDefaultFramebuffer(): void;
+    public abstract restoreDefaultFramebuffer(unbindOnly?: boolean): void;
 
     /**
      * Draw a list of indexed primitives
@@ -1703,9 +1701,12 @@ export abstract class AbstractEngine {
             if (!buffer) {
                 this._loadFile(
                     url,
-                    (data) => {
-                        // eslint-disable-next-line @typescript-eslint/no-floating-promises
-                        callbackAsync(new Uint8Array(data as ArrayBuffer));
+                    async (data) => {
+                        try {
+                            await callbackAsync(new Uint8Array(data as ArrayBuffer));
+                        } catch (reason) {
+                            onInternalError("Failed to parse texture data", reason);
+                        }
                     },
                     undefined,
                     scene ? scene.offlineProvider : undefined,
@@ -1715,12 +1716,17 @@ export abstract class AbstractEngine {
                     }
                 );
             } else {
+                const processBufferAsync = async (data: ArrayBufferView) => {
+                    try {
+                        await callbackAsync(data);
+                    } catch (reason) {
+                        onInternalError("Failed to parse texture data", reason);
+                    }
+                };
                 if (buffer instanceof ArrayBuffer) {
-                    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-                    callbackAsync(new Uint8Array(buffer));
+                    void processBufferAsync(new Uint8Array(buffer));
                 } else if (ArrayBuffer.isView(buffer)) {
-                    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-                    callbackAsync(buffer);
+                    void processBufferAsync(buffer);
                 } else {
                     if (onError) {
                         onError("Unable to load: only ArrayBuffer or ArrayBufferView is supported", null);
@@ -1922,14 +1928,14 @@ export abstract class AbstractEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@8.45.5";
+        return "babylonjs@9.4.1";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "8.45.5";
+        return "9.4.1";
     }
 
     /**
@@ -2281,6 +2287,7 @@ export abstract class AbstractEngine {
      * @param type defines the type fo the data (Engine.TEXTURETYPE_UNSIGNED_BYTE by default)
      * @param creationFlags specific flags to use when creating the texture (Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures, for eg)
      * @param useSRGBBuffer defines if the texture must be loaded in a sRGB GPU buffer (if supported by the GPU).
+     * @param mipLevelCount defines the number of mip levels to allocate for the texture
      * @returns the raw texture inside an InternalTexture
      */
     public createRawTexture(
@@ -2294,7 +2301,8 @@ export abstract class AbstractEngine {
         compression?: Nullable<string>,
         type?: number,
         creationFlags?: number,
-        useSRGBBuffer?: boolean
+        useSRGBBuffer?: boolean,
+        mipLevelCount?: number
     ): InternalTexture {
         throw _WarnImport("engine.rawTexture");
     }
@@ -2370,6 +2378,7 @@ export abstract class AbstractEngine {
      * @param compression defines the compressed used (can be null)
      * @param textureType defines the compressed used (can be null)
      * @param creationFlags specific flags to use when creating the texture (Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures, for eg)
+     * @param mipLevelCount defines the number of mip levels to allocate for the texture
      * @returns a new raw 2D array texture (stored in an InternalTexture)
      */
     public createRawTexture2DArray(
@@ -2383,7 +2392,8 @@ export abstract class AbstractEngine {
         samplingMode: number,
         compression?: Nullable<string>,
         textureType?: number,
-        creationFlags?: number
+        creationFlags?: number,
+        mipLevelCount?: number
     ): InternalTexture {
         throw _WarnImport("engine.rawTexture");
     }

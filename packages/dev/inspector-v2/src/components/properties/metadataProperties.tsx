@@ -1,8 +1,7 @@
-import type { FunctionComponent } from "react";
+import { type FunctionComponent, useContext, useEffect, useMemo, useState } from "react";
 
 import { Body1, Button, makeStyles, tokens, Tooltip } from "@fluentui/react-components";
 import { ArrowUndoRegular, BracesDismiss16Regular, BracesRegular, SaveRegular } from "@fluentui/react-icons";
-import { useContext, useMemo, useState } from "react";
 
 import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
 import { ToolContext } from "shared-ui-components/fluent/hoc/fluentToolWrapper";
@@ -84,9 +83,12 @@ function StringifyMetadata(metadata: unknown, format: boolean) {
     }
 
     if (metadata) {
-        if (ObjectCanSafelyStringify(metadata)) {
+        // Try JSON.stringify even for objects with functions — it safely omits
+        // function-valued and undefined properties. Only fall back to String()
+        // for cases that actually throw (e.g. circular references).
+        try {
             return JSON.stringify(metadata, undefined, format ? PrettyJSONIndent : undefined);
-        } else {
+        } catch {
             return String(metadata);
         }
     }
@@ -172,6 +174,10 @@ export const MetadataProperties: FunctionComponent<{ entity: IMetadataContainer 
     const isReadonly = canPreventObjectCorruption && preventObjectCorruption;
 
     const [editedMetadata, setEditedMetadata] = useState(stringifiedMetadata);
+    useEffect(() => {
+        setEditedMetadata(stringifiedMetadata);
+    }, [stringifiedMetadata]);
+
     const isEditedMetadataJSON = useMemo(() => IsParsable(editedMetadata), [editedMetadata]);
     const unformattedEditedMetadata = useMemo(() => Restringify(editedMetadata, false), [editedMetadata]);
 
@@ -181,7 +187,7 @@ export const MetadataProperties: FunctionComponent<{ entity: IMetadataContainer 
             <Collapse visible={canPreventObjectCorruption}>
                 <SwitchPropertyLine label="Prevent Object Corruption" value={isReadonly} onChange={setPreventObjectCorruption} />
             </Collapse>
-            <LineContainer>
+            <LineContainer uniqueId="MetadataTextarea">
                 <Textarea disabled={isReadonly} value={editedMetadata} onChange={setEditedMetadata} />
             </LineContainer>
             <ButtonLine
@@ -196,7 +202,7 @@ export const MetadataProperties: FunctionComponent<{ entity: IMetadataContainer 
                     setEditedMetadata(withGLTFExtras);
                 }}
             />
-            <LineContainer>
+            <LineContainer uniqueId="MetadataButtonDiv">
                 <div className={classes.buttonDiv}>
                     {/* TODO: gehalper - need to update our Button primitive to accommodate these scenarios. */}
                     <Button size={size} icon={<SaveRegular />} disabled={stringifiedMetadata === unformattedEditedMetadata} onClick={() => SaveMetadata(entity, editedMetadata)}>

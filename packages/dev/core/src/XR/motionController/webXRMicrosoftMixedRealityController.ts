@@ -1,9 +1,13 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import type { IMinimalMotionControllerObject, MotionControllerHandedness, IMotionControllerLayoutMap } from "./webXRAbstractMotionController";
-import { WebXRAbstractMotionController } from "./webXRAbstractMotionController";
+import {
+    type IMinimalMotionControllerObject,
+    type MotionControllerHandedness,
+    type IMotionControllerLayoutMap,
+    WebXRAbstractMotionController,
+} from "./webXRAbstractMotionController";
 import { WebXRMotionControllerManager } from "./webXRMotionControllerManager";
-import type { AbstractMesh } from "../../Meshes/abstractMesh";
-import type { Scene } from "../../scene";
+import { type AbstractMesh } from "../../Meshes/abstractMesh";
+import { type Scene } from "../../scene";
 import { Mesh } from "../../Meshes/mesh";
 import { Quaternion } from "../../Maths/math.vector";
 import { SceneLoader } from "../../Loading/sceneLoader";
@@ -83,11 +87,11 @@ export class WebXRMicrosoftMixedRealityController extends WebXRAbstractMotionCon
     public profileId = "microsoft-mixed-reality";
 
     constructor(scene: Scene, gamepadObject: IMinimalMotionControllerObject, handedness: MotionControllerHandedness) {
-        super(scene, MixedRealityProfile["left-right"], gamepadObject, handedness);
+        super(scene, MixedRealityProfile[handedness], gamepadObject, handedness);
     }
 
     protected _getFilenameAndPath(): { filename: string; path: string } {
-        let filename = "";
+        let filename: string;
         if (this.handedness === "left") {
             filename = WebXRMicrosoftMixedRealityController.MODEL_LEFT_FILENAME;
         } else {

@@ -1,16 +1,16 @@
 import { NodeGeometryBlock } from "../../nodeGeometryBlock";
-import type { NodeGeometryConnectionPoint } from "../../nodeGeometryBlockConnectionPoint";
+import { type NodeGeometryConnectionPoint } from "../../nodeGeometryBlockConnectionPoint";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import { NodeGeometryBlockConnectionPointTypes } from "../../Enums/nodeGeometryConnectionPointTypes";
-import type { NodeGeometryBuildState } from "../../nodeGeometryBuildState";
-import type { INodeGeometryExecutionContext } from "../../Interfaces/nodeGeometryExecutionContext";
-import type { VertexData } from "../../../mesh.vertexData";
+import { type NodeGeometryBuildState } from "../../nodeGeometryBuildState";
+import { type INodeGeometryExecutionContext } from "../../Interfaces/nodeGeometryExecutionContext";
+import { type VertexData } from "../../../mesh.vertexData";
 import { Vector3 } from "../../../../Maths/math.vector";
 import { PropertyTypeForEdition, editableInPropertyPage } from "../../../../Decorators/nodeDecorator";
-import type { Nullable } from "../../../../types";
+import { type Nullable } from "../../../../types";
 import { Ray } from "../../../../Culling/ray";
 import { extractMinAndMax } from "../../../../Maths/math.functions";
-import type { INodeGeometryInstancingContext } from "../../Interfaces/nodeGeometryInstancingContext";
+import { type INodeGeometryInstancingContext } from "../../Interfaces/nodeGeometryInstancingContext";
 
 /**
  * Block used to instance geometry inside a geometry
@@ -193,7 +193,7 @@ export class InstantiateOnVolumeBlock extends NodeGeometryBlock implements INode
             }
 
             // Processing
-            let instanceGeometry: Nullable<VertexData> = null;
+            let instanceGeometry: Nullable<VertexData>;
             const instanceCount = this.count.getConnectedValue(state);
             const additionalVertexData: VertexData[] = [];
             const boundingInfo = extractMinAndMax(this._vertexData.positions, 0, this._vertexData.positions.length / 3);
@@ -344,6 +344,7 @@ export class InstantiateOnVolumeBlock extends NodeGeometryBlock implements INode
         return serializationObject;
     }
 
+    /** @internal */
     public override _deserialize(serializationObject: any) {
         super._deserialize(serializationObject);
 

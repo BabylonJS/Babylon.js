@@ -6,8 +6,11 @@ uniform Material {
     float pointSize;
 
     vec2 vDebugMode;
+    vec2 renderTargetSize;
 
     vec4 cameraInfo;
+    mat4 backgroundRefractionMatrix;
+    vec3 vBackgroundRefractionInfos;
 
     vec2 vReflectionInfos;
     mat4 reflectionMatrix;
@@ -44,6 +47,18 @@ uniform Material {
     vec4 vReflectanceInfo;
     vec4 vSpecularColor;
     vec3 vSpecularAnisotropy;
+    float vTransmissionWeight;
+    vec3 vTransmissionColor;
+    float vTransmissionDepth;
+    vec3 vTransmissionScatter;
+    float vTransmissionScatterAnisotropy;
+    float vTransmissionDispersionScale;
+    float vTransmissionDispersionAbbeNumber;
+    float vSubsurfaceWeight;
+    vec3 vSubsurfaceColor;
+    float vSubsurfaceRadius;
+    vec3 vSubsurfaceRadiusScale;
+    float vSubsurfaceScatterAnisotropy;
     float vCoatWeight;
     vec3 vCoatColor;
     float vCoatRoughness;
@@ -53,7 +68,9 @@ uniform Material {
     float vFuzzWeight;
     vec3 vFuzzColor;
     float vFuzzRoughness;
+    float vGeometryThinWalled;
     vec2 vGeometryCoatTangent;
+    float vGeometryThickness;
     vec3 vEmissionColor;
     float vThinFilmWeight;
     vec2 vThinFilmThickness;
@@ -75,6 +92,22 @@ uniform Material {
     mat4 specularRoughnessMatrix;
     vec2 vSpecularRoughnessAnisotropyInfos;
     mat4 specularRoughnessAnisotropyMatrix;
+    vec2 vTransmissionWeightInfos;
+    mat4 transmissionWeightMatrix;
+    vec2 vTransmissionColorInfos;
+    mat4 transmissionColorMatrix;
+    vec2 vTransmissionDepthInfos;
+    mat4 transmissionDepthMatrix;
+    vec2 vTransmissionScatterInfos;
+    mat4 transmissionScatterMatrix;
+    vec2 vTransmissionDispersionScaleInfos;
+    mat4 transmissionDispersionScaleMatrix;
+    vec2 vSubsurfaceWeightInfos;
+    mat4 subsurfaceWeightMatrix;
+    vec2 vSubsurfaceColorInfos;
+    mat4 subsurfaceColorMatrix;
+    vec2 vSubsurfaceRadiusScaleInfos;
+    mat4 subsurfaceRadiusScaleMatrix;
     vec2 vCoatWeightInfos;
     mat4 coatWeightMatrix;
     vec2 vCoatColorInfos;
@@ -101,6 +134,8 @@ uniform Material {
     mat4 geometryCoatTangentMatrix;
     vec2 vGeometryOpacityInfos;
     mat4 geometryOpacityMatrix;
+    vec2 vGeometryThicknessInfos;
+    mat4 geometryThicknessMatrix;
     vec2 vEmissionColorInfos;
     mat4 emissionColorMatrix;
     vec2 vThinFilmWeightInfos;

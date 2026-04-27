@@ -1,7 +1,6 @@
-import type { Texture } from "core/index";
-import type { ISettingsContext } from "../../../services/settingsContext";
+import { type Texture } from "core/index";
 
-import type { FunctionComponent } from "react";
+import { type FunctionComponent } from "react";
 
 import { Constants } from "core/Engines/constants";
 import { BooleanBadgePropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/booleanBadgePropertyLine";
@@ -41,10 +40,10 @@ export const TextureGeneralProperties: FunctionComponent<{ texture: Texture }> =
     );
 };
 
-export const TextureTransformProperties: FunctionComponent<{ texture: Texture; settings: ISettingsContext }> = (props) => {
-    const { texture, settings } = props;
+export const TextureTransformProperties: FunctionComponent<{ texture: Texture }> = (props) => {
+    const { texture } = props;
 
-    const [toDisplayAngle, fromDisplayAngle] = useAngleConverters(settings);
+    const [toDisplayAngle, fromDisplayAngle] = useAngleConverters();
     const wrapU = useProperty(texture, "wrapU");
     const wrapV = useProperty(texture, "wrapV");
 
@@ -61,6 +60,7 @@ export const TextureTransformProperties: FunctionComponent<{ texture: Texture; s
                 propertyKey="uAng"
                 min={0}
                 max={toDisplayAngle(Math.PI * 2)}
+                step={0.01}
                 convertTo={(value) => toDisplayAngle(value, true)}
                 convertFrom={fromDisplayAngle}
             />
@@ -71,6 +71,7 @@ export const TextureTransformProperties: FunctionComponent<{ texture: Texture; s
                 propertyKey="vAng"
                 min={0}
                 max={toDisplayAngle(Math.PI * 2)}
+                step={0.01}
                 convertTo={(value) => toDisplayAngle(value, true)}
                 convertFrom={fromDisplayAngle}
             />
@@ -81,6 +82,7 @@ export const TextureTransformProperties: FunctionComponent<{ texture: Texture; s
                 propertyKey="wAng"
                 min={0}
                 max={toDisplayAngle(Math.PI * 2)}
+                step={0.01}
                 convertTo={(value) => toDisplayAngle(value, true)}
                 convertFrom={fromDisplayAngle}
             />

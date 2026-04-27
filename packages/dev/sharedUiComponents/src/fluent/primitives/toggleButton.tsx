@@ -1,9 +1,9 @@
 import { ToggleButton as FluentToggleButton, makeStyles } from "@fluentui/react-components";
-import type { ButtonProps } from "./button";
-import { useCallback, useContext, useEffect, useState } from "react";
-import type { FunctionComponent } from "react";
-import type { FluentIcon } from "@fluentui/react-icons";
+import { type ButtonProps } from "./button";
+import { useCallback, useContext, useEffect, useState, type FunctionComponent } from "react";
+import { type FluentIcon } from "@fluentui/react-icons";
 import { ToolContext } from "../hoc/fluentToolWrapper";
+import { Tooltip } from "./tooltip";
 
 const useStyles = makeStyles({
     button: {
@@ -34,26 +34,27 @@ export const ToggleButton: FunctionComponent<ToggleButtonProps> = (props) => {
     const classes = useStyles();
     const [checked, setChecked] = useState(value);
     const toggle = useCallback(() => {
-        setChecked((prev) => {
-            const enabled = !prev;
+        setChecked((prevChecked) => {
+            const enabled = !prevChecked;
             onChange(enabled);
             return enabled;
         });
-    }, [setChecked]);
+    }, [onChange]);
 
     useEffect(() => {
         setChecked(props.value);
     }, [props.value]);
 
     return (
-        <FluentToggleButton
-            className={classes.button}
-            title={title}
-            size={size}
-            icon={checked ? <props.checkedIcon /> : props.uncheckedIcon ? <props.uncheckedIcon /> : <props.checkedIcon />}
-            appearance={appearance}
-            checked={checked}
-            onClick={toggle}
-        />
+        <Tooltip content={title ?? ""}>
+            <FluentToggleButton
+                className={classes.button}
+                size={size}
+                icon={checked ? <props.checkedIcon /> : props.uncheckedIcon ? <props.uncheckedIcon /> : <props.checkedIcon />}
+                appearance={appearance}
+                checked={checked}
+                onClick={toggle}
+            />
+        </Tooltip>
     );
 };

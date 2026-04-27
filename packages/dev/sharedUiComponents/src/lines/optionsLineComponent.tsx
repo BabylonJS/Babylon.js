@@ -1,12 +1,11 @@
 import * as React from "react";
-import type { Observable } from "core/Misc/observable";
-import type { PropertyChangedEvent } from "../propertyChangedEvent";
+import { type Observable } from "core/Misc/observable";
+import { type PropertyChangedEvent } from "../propertyChangedEvent";
 import { copyCommandToClipboard, getClassNameWithNamespace } from "../copyCommandToClipboard";
-import type { IInspectableOptions } from "core/Misc/iInspectable";
+import { type IInspectableOptions } from "core/Misc/iInspectable";
 import copyIcon from "../imgs/copy.svg";
 import { PropertyLine } from "../fluent/hoc/propertyLines/propertyLine";
-import { Dropdown } from "../fluent/primitives/dropdown";
-import type { AcceptedDropdownValue } from "../fluent/primitives/dropdown";
+import { Dropdown, type AcceptedDropdownValue } from "../fluent/primitives/dropdown";
 import { ToolContext } from "../fluent/hoc/fluentToolWrapper";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -56,6 +55,10 @@ export class OptionsLine extends React.Component<IOptionsLineProps, { value: num
     override shouldComponentUpdate(nextProps: IOptionsLineProps, nextState: { value: number }) {
         if (this._localChange) {
             this._localChange = false;
+            return true;
+        }
+
+        if (nextProps.options !== this.props.options) {
             return true;
         }
 

@@ -1,30 +1,27 @@
-import type { Nullable, FloatArray, DataArray, IndicesArray } from "../types";
-import type { Scene } from "../scene";
-import type { Vector2 } from "../Maths/math.vector";
-import { Vector3 } from "../Maths/math.vector";
+import { type Nullable, type FloatArray, type DataArray, type IndicesArray } from "../types";
+import { type Scene } from "../scene";
+import { type Vector2, Vector3 } from "../Maths/math.vector";
 import { Color4 } from "../Maths/math.color";
-import type { IGetSetVerticesData } from "../Meshes/mesh.vertexData";
-import { VertexData } from "../Meshes/mesh.vertexData";
-import { VertexBuffer } from "../Buffers/buffer";
+import { type IGetSetVerticesData, VertexData } from "../Meshes/mesh.vertexData";
+import { VertexBuffer, type Buffer } from "../Buffers/buffer";
 import { SubMesh } from "../Meshes/subMesh";
-import type { AbstractMesh } from "../Meshes/abstractMesh";
-import type { Effect } from "../Materials/effect";
+import { type AbstractMesh } from "../Meshes/abstractMesh";
+import { type Effect } from "../Materials/effect";
 import { SceneLoaderFlags } from "../Loading/sceneLoaderFlags";
 import { BoundingInfo } from "../Culling/boundingInfo";
 import { Constants } from "../Engines/constants";
 import { Tools } from "../Misc/tools";
 import { Tags } from "../Misc/tags";
-import type { DataBuffer } from "../Buffers/dataBuffer";
+import { type DataBuffer } from "../Buffers/dataBuffer";
 import { extractMinAndMax } from "../Maths/math.functions";
 import { EngineStore } from "../Engines/engineStore";
 import { useOpenGLOrientationForUV } from "../Compat/compatibilityOptions";
 
-import type { Mesh } from "../Meshes/mesh";
-import type { Buffer } from "../Buffers/buffer";
-import type { AbstractEngine } from "../Engines/abstractEngine";
-import type { ThinEngine } from "../Engines/thinEngine";
+import { type Mesh } from "../Meshes/mesh";
+import { type AbstractEngine } from "../Engines/abstractEngine";
+import { type ThinEngine } from "../Engines/thinEngine";
 import { CopyFloatData, GetTypedArrayData } from "../Buffers/bufferUtils";
-import type { IAssetContainer } from "core/IAssetContainer";
+import { type IAssetContainer } from "core/IAssetContainer";
 
 /**
  * Class used to store geometry data (vertex buffers + index buffer)
@@ -1055,7 +1052,18 @@ export class Geometry implements IGetSetVerticesData {
             const { type, byteOffset, byteStride, normalized } = vb;
             updatable = updatable || isUpdatable;
 
-            const copy = GetTypedArrayData(bufferData, size, type, byteOffset, byteStride, this._totalVertices, true);
+            let numElements = this._totalVertices;
+            if (vb.getIsInstanced()) {
+                // Do our best with the data we have to find a number of instances when the vertex buffer is instanced...
+                let bufferDataByteSize: number;
+                if (bufferData instanceof Array) {
+                    bufferDataByteSize = bufferData.length * 4;
+                } else {
+                    bufferDataByteSize = bufferData.byteLength;
+                }
+                numElements = bufferDataByteSize / byteStride;
+            }
+            const copy = GetTypedArrayData(bufferData, size, type, byteOffset, byteStride, numElements, true);
             const newVb = new VertexBuffer(this._engine, copy, kind, {
                 updatable: isUpdatable,
                 useBytes: false,
@@ -1065,9 +1073,10 @@ export class Geometry implements IGetSetVerticesData {
                 type: type,
                 normalized: normalized,
                 takeBufferOwnership: true,
+                instanced: vb.getIsInstanced(),
             });
 
-            geometry.setVerticesBuffer(newVb, this._totalVertices);
+            geometry.setVerticesBuffer(newVb, numElements);
         }
 
         geometry._updatable = updatable;
@@ -1552,7 +1561,7 @@ export class Geometry implements IGetSetVerticesData {
         if (!SceneLoaderFlags.CleanBoneMatrixWeights) {
             return;
         }
-        let noInfluenceBoneIndex = 0.0;
+        let noInfluenceBoneIndex: number;
         if (parsedGeometry.skeletonId > -1) {
             const skeleton = mesh.getScene().getLastSkeletonById(parsedGeometry.skeletonId);
 

@@ -1,4 +1,4 @@
-import type { IBlockRegistration } from "smart-filters-blocks";
+import { type IBlockRegistration } from "smart-filters-blocks";
 import { CustomBlocksNamespace, type BlockEditorRegistration } from "smart-filters-editor-control";
 
 /**

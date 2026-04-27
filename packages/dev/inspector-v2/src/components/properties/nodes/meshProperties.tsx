@@ -1,37 +1,23 @@
-import type { FunctionComponent } from "react";
+import { type FunctionComponent } from "react";
 
-import type { Mesh, NodeGeometry } from "core/index";
+import { type Mesh, type MorphTarget } from "core/index";
 
 import { EditRegular } from "@fluentui/react-icons";
 
 import { Constants } from "core/Engines/constants";
 import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
 import { NumberDropdownPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/dropdownPropertyLine";
+import { NumberInputPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/inputPropertyLine";
 import { SyncedSliderPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/syncedSliderPropertyLine";
+import { EditNodeGeometry, GetNodeGeometry } from "../../../misc/nodeGeometryEditor";
 import { BoundProperty } from "../boundProperty";
 
 export const MeshGeneralProperties: FunctionComponent<{ mesh: Mesh }> = (props) => {
     const { mesh } = props;
 
-    const nodeGeometry = mesh._internalMetadata?.nodeGeometry as NodeGeometry | undefined;
+    const nodeGeometry = GetNodeGeometry(mesh);
 
-    return (
-        <>
-            {nodeGeometry && (
-                <ButtonLine
-                    label="Edit"
-                    icon={EditRegular}
-                    onClick={async () => {
-                        // TODO: Figure out how to get all the various build steps to work with this.
-                        //       See the initial attempt here: https://github.com/BabylonJS/Babylon.js/pull/17646
-                        // const { NodeGeometryEditor } = await import("node-geometry-editor/nodeGeometryEditor");
-                        // NodeGeometryEditor.Show({ nodeGeometry: nodeGeometry, hostScene: mesh.getScene() });
-                        await nodeGeometry.edit({ nodeGeometryEditorConfig: { hostScene: mesh.getScene() } });
-                    }}
-                />
-            )}
-        </>
-    );
+    return <>{nodeGeometry && <ButtonLine label="Edit" icon={EditRegular} onClick={async () => await EditNodeGeometry(nodeGeometry, mesh.getScene())} />}</>;
 };
 
 export const MeshDisplayProperties: FunctionComponent<{ mesh: Mesh }> = (props) => {
@@ -60,6 +46,45 @@ export const MeshDisplayProperties: FunctionComponent<{ mesh: Mesh }> = (props) 
                     { value: Constants.MATERIAL_CounterClockWiseSideOrientation, label: "CounterClockwise" },
                 ]}
             />
+        </>
+    );
+};
+
+export const MeshMorphTargetsProperties: FunctionComponent<{ mesh: Mesh }> = (props) => {
+    const { mesh } = props;
+
+    if (!mesh.morphTargetManager) {
+        return null;
+    }
+
+    const morphTargets: MorphTarget[] = [];
+    for (let index = 0; index < mesh.morphTargetManager.numTargets; index++) {
+        const target = mesh.morphTargetManager.getTarget(index);
+        if (target.hasPositions) {
+            morphTargets.push(target);
+        }
+    }
+
+    if (morphTargets.length === 0) {
+        return null;
+    }
+
+    return (
+        <>
+            {morphTargets.map((target, index) => {
+                const targetName = target.name || `Target ${index}`;
+                return (
+                    <BoundProperty
+                        key={index}
+                        component={NumberInputPropertyLine}
+                        label={targetName}
+                        description={`Influence of morph target "${targetName}"`}
+                        target={target}
+                        propertyKey="influence"
+                        step={0.01}
+                    />
+                );
+            })}
         </>
     );
 };

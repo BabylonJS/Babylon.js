@@ -1,6 +1,6 @@
-import type { ServiceDefinition } from "../../../modularity/serviceDefinition";
-import type { ISelectionService } from "../../selectionService";
-import type { IPropertiesService } from "./propertiesService";
+import { type ServiceDefinition } from "shared-ui-components/modularTool/modularity/serviceDefinition";
+import { type ISelectionService, SelectionServiceIdentity } from "../../selectionService";
+import { type IPropertiesService, PropertiesServiceIdentity } from "./propertiesService";
 
 import { AbstractMesh } from "core/Meshes/abstractMesh";
 import { GaussianSplattingMesh } from "core/Meshes/GaussianSplatting/gaussianSplattingMesh";
@@ -16,10 +16,8 @@ import {
     AbstractMeshOutlineOverlayProperties,
 } from "../../../components/properties/nodes/abstractMeshProperties";
 import { GaussianSplattingDisplayProperties } from "../../../components/properties/nodes/gaussianSplattingProperties";
-import { MeshDisplayProperties, MeshGeneralProperties } from "../../../components/properties/nodes/meshProperties";
+import { MeshDisplayProperties, MeshGeneralProperties, MeshMorphTargetsProperties } from "../../../components/properties/nodes/meshProperties";
 import { NodeGeneralProperties } from "../../../components/properties/nodes/nodeProperties";
-import { SelectionServiceIdentity } from "../../selectionService";
-import { PropertiesServiceIdentity } from "./propertiesService";
 
 export const NodePropertiesServiceDefinition: ServiceDefinition<[], [IPropertiesService, ISelectionService]> = {
     friendlyName: "Mesh Properties",
@@ -83,6 +81,10 @@ export const NodePropertiesServiceDefinition: ServiceDefinition<[], [IProperties
                 {
                     section: "Display",
                     component: ({ context }) => <MeshDisplayProperties mesh={context} />,
+                },
+                {
+                    section: "Morph Targets",
+                    component: ({ context }) => <MeshMorphTargetsProperties mesh={context} />,
                 },
             ],
         });

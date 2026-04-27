@@ -1,46 +1,42 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-import type { AbstractEngine } from "core/Engines/abstractEngine";
+import { type AbstractEngine } from "core/Engines/abstractEngine";
 import { AtmospherePBRMaterialPlugin } from "./atmospherePBRMaterialPlugin";
 import { AtmospherePerCameraVariables } from "./atmospherePerCameraVariables";
 import { AtmospherePhysicalProperties } from "./atmospherePhysicalProperties";
-import type { BaseTexture } from "core/Materials/Textures/baseTexture";
-import type { Camera } from "core/Cameras/camera";
+import { type BaseTexture } from "core/Materials/Textures/baseTexture";
+import { type Camera } from "core/Cameras/camera";
 import { Color3 } from "core/Maths/math.color";
 import { Constants } from "core/Engines/constants";
-import type { DeepImmutable, Nullable } from "core/types";
+import { type DeepImmutable, type Nullable } from "core/types";
 import { DiffuseSkyIrradianceLut } from "./diffuseSkyIrradianceLut";
-import type { DirectionalLight } from "core/Lights/directionalLight";
-import type { Effect } from "core/Materials/effect";
+import { type DirectionalLight } from "core/Lights/directionalLight";
+import { type Effect } from "core/Materials/effect";
 import { EffectRenderer, EffectWrapper } from "core/Materials/effectRenderer";
-import type { IAtmosphereOptions } from "./atmosphereOptions";
-import type { IColor3Like, IVector3Like } from "core/Maths/math.like";
-import type { IDisposable, Scene } from "core/scene";
+import { type IAtmosphereOptions } from "./atmosphereOptions";
+import { type IColor3Like, type IVector3Like } from "core/Maths/math.like";
+import { type IDisposable, type Scene } from "core/scene";
 import { Observable, type Observer } from "core/Misc/observable";
 import { RegisterMaterialPlugin, UnregisterMaterialPlugin } from "core/Materials/materialPluginManager";
-import type { RenderingGroupInfo } from "core/Rendering/renderingManager";
+import { type RenderingGroupInfo } from "core/Rendering/renderingManager";
 import { RenderTargetTexture, type RenderTargetTextureOptions } from "core/Materials/Textures/renderTargetTexture";
-import type { RenderTargetWrapper } from "core/Engines/renderTargetWrapper";
+import { type RenderTargetWrapper } from "core/Engines/renderTargetWrapper";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { TransmittanceLut } from "./transmittanceLut";
 import { UniformBuffer } from "core/Materials/uniformBuffer";
 import { Vector3 } from "core/Maths/math.vector";
-import "./Shaders/compositeAerialPerspective.fragment";
-import "./Shaders/compositeSky.fragment";
-import "./Shaders/compositeGlobeAtmosphere.fragment";
-import "./Shaders/fullscreenTriangle.vertex";
-import "./Shaders/multiScattering.fragment";
-import "./Shaders/skyView.fragment";
-import "./Shaders/aerialPerspective.fragment";
-import "./Shaders/ShadersInclude/atmosphereFragmentDeclaration";
-import "./Shaders/ShadersInclude/atmosphereFunctions";
-import "./Shaders/ShadersInclude/atmosphereUboDeclaration";
-import "./Shaders/ShadersInclude/atmosphereVertexDeclaration";
-import "./Shaders/ShadersInclude/depthFunctions";
 
 const MaterialPlugin = "atmo-pbr";
 
 const AerialPerspectiveLutLayers = 32;
+
+const TransmittanceSampleCount = 128;
+const SkyViewLutSampleCount = 30;
+const MultiScatteringLutSampleCount = 64;
+const MultiScatteringAzimuthSampleCount = 16;
+const MultiScatteringInclinationSampleCount = 8;
+const DiffuseSkyIrradianceLutSampleCount = 32;
 
 let UniqueId = 0;
 
@@ -53,6 +49,7 @@ export class Atmosphere implements IDisposable {
     private readonly _directionToLight = Vector3.Zero();
     private readonly _tempSceneAmbient = new Color3();
     private readonly _engine: AbstractEngine;
+    private readonly _isDiffuseSkyIrradianceLutEnabled: boolean;
     private _physicalProperties: AtmospherePhysicalProperties;
     private _transmittanceLut: Nullable<TransmittanceLut>;
     private _diffuseSkyIrradianceLut: Nullable<DiffuseSkyIrradianceLut>;
@@ -91,6 +88,7 @@ export class Atmosphere implements IDisposable {
     private _aerialPerspectiveLutHasBeenRendered = false;
 
     private _hasRenderedMultiScatteringLut = false;
+    private _hasEverRenderedMultiScatteringLut = false;
     private _multiScatteringEffectWrapper: Nullable<EffectWrapper> = null;
     private _multiScatteringLutRenderTarget: Nullable<RenderTargetTexture> = null;
 
@@ -107,6 +105,7 @@ export class Atmosphere implements IDisposable {
     private _globeAtmosphereCompositorEffectWrapper: Nullable<EffectWrapper> = null;
 
     private _onBeforeCameraRenderObserver: Nullable<Observer<Camera>> = null;
+    private _onBeforeRenderObserver: Nullable<Observer<Scene>> = null;
     private _onBeforeDrawPhaseObserver: Nullable<Observer<Scene>> = null;
     private _onAfterRenderingGroupObserver: Nullable<Observer<RenderingGroupInfo>> = null;
 
@@ -116,7 +115,7 @@ export class Atmosphere implements IDisposable {
      * @returns True if the atmosphere is supported, false otherwise.
      */
     public static IsSupported(engine: AbstractEngine): boolean {
-        return !engine._badOS && !engine.isWebGPU && engine.version >= 2;
+        return !engine._badOS && (engine.isWebGPU || engine.version >= 2);
     }
 
     /**
@@ -635,6 +634,14 @@ export class Atmosphere implements IDisposable {
             atmosphereUbo.addUniform("cameraNearPlane", 1);
             atmosphereUbo.addUniform("originHeight", 1);
             atmosphereUbo.addUniform("sinCameraAtmosphereHorizonAngleFromNadir", 1);
+            atmosphereUbo.addUniform("transmittanceSampleCount", 1);
+            // 16-byte boundary
+            atmosphereUbo.addUniform("skyViewLutSampleCount", 1);
+            atmosphereUbo.addUniform("multiScatteringLutSampleCount", 1);
+            atmosphereUbo.addUniform("multiScatteringAzimuthSampleCount", 1);
+            atmosphereUbo.addUniform("multiScatteringInclinationSampleCount", 1);
+            // 16-byte boundary
+            atmosphereUbo.addUniform("diffuseSkyIrradianceLutSampleCount", 1);
             atmosphereUbo.create();
         }
         return this._atmosphereUbo;
@@ -662,10 +669,7 @@ export class Atmosphere implements IDisposable {
     ) {
         const engine = (this._engine = scene.getEngine());
 
-        if (engine.isWebGPU) {
-            throw new Error("Atmosphere is not supported on WebGPU.");
-        }
-        if (engine.version < 2) {
+        if (!engine.isWebGPU && engine.version < 2) {
             throw new Error(`Atmosphere is not supported on WebGL ${engine.version}.`);
         }
 
@@ -713,6 +717,18 @@ export class Atmosphere implements IDisposable {
         this._minimumMultiScattering.y = minimumMultiScatteringColor.g * this._minimumMultiScatteringIntensity;
         this._minimumMultiScattering.z = minimumMultiScatteringColor.b * this._minimumMultiScatteringIntensity;
 
+        // Initialize light direction and color.
+        {
+            const light = lights[0];
+            this._directionToLight.copyFrom(light.direction).scaleInPlace(-1);
+            const lightColor = this._linearLightColor.copyFrom(light.diffuse);
+            if (!this._isLinearSpaceLight) {
+                lightColor.toLinearSpaceToRef(lightColor);
+            }
+            const intensity = light.intensity;
+            this._lightRadianceAtCamera.set(intensity * lightColor.r, intensity * lightColor.g, intensity * lightColor.b);
+        }
+
         this._effectRenderer = new EffectRenderer(engine, {
             // Full screen triangle.
             indices: [0, 2, 1],
@@ -721,7 +737,9 @@ export class Atmosphere implements IDisposable {
 
         this._transmittanceLut = new TransmittanceLut(this);
         this._multiScatteringLutRenderTarget = CreateRenderTargetTexture("atmo-multiScattering", { width: 32, height: 32 }, scene);
-        if (options?.isDiffuseSkyIrradianceLutEnabled ?? true) {
+        this._multiScatteringEffectWrapper = CreateMultiScatteringEffectWrapper(engine, this.uniformBuffer, this._groundAlbedo);
+        this._isDiffuseSkyIrradianceLutEnabled = options?.isDiffuseSkyIrradianceLutEnabled ?? true;
+        if (this._isDiffuseSkyIrradianceLutEnabled) {
             this._diffuseSkyIrradianceLut = new DiffuseSkyIrradianceLut(this);
         }
         if (this._isSkyViewLutEnabled) {
@@ -730,6 +748,11 @@ export class Atmosphere implements IDisposable {
         if (this._isAerialPerspectiveLutEnabled) {
             this.aerialPerspectiveLutRenderTarget!;
         }
+
+        // Render global LUTs once per frame (not per camera).
+        this._onBeforeRenderObserver = scene.onBeforeRenderObservable.add(() => {
+            this.renderGlobalLuts();
+        });
 
         // Before rendering, make sure the per-camera variables have been updated.
         this._onBeforeCameraRenderObserver = scene.onBeforeCameraRenderObservable.add((x) => {
@@ -804,18 +827,23 @@ export class Atmosphere implements IDisposable {
             }
             return null;
         });
+
+        scene.addIsReadyCheck(this);
     }
 
     /**
      * @override
      */
     public dispose(): void {
+        this.scene.removeIsReadyCheck(this);
         this._onBeforeCameraRenderObserver?.remove();
         this._onBeforeCameraRenderObserver = null;
         this._onBeforeDrawPhaseObserver?.remove();
         this._onBeforeDrawPhaseObserver = null;
         this._onAfterRenderingGroupObserver?.remove();
         this._onAfterRenderingGroupObserver = null;
+        this._onBeforeRenderObserver?.remove();
+        this._onBeforeRenderObserver = null;
         this._globeAtmosphereCompositorEffectWrapper?.dispose();
         this._globeAtmosphereCompositorEffectWrapper = null;
         this._skyCompositorEffectWrapper?.dispose();
@@ -868,6 +896,76 @@ export class Atmosphere implements IDisposable {
     }
 
     /**
+     * Returns true if the atmosphere is ready for rendering.
+     * Note, this will cause a render of the global LUTs if they are not up to date.
+     * @returns true if the atmosphere is ready
+     */
+    public isReady(): boolean {
+        if (!this._isEnabled) {
+            return true;
+        }
+
+        const engine = this._engine;
+        const uniformBuffer = this.uniformBuffer;
+        const isSkyViewLutEnabled = this._isSkyViewLutEnabled;
+        const isLinearSpaceComposition = this._isLinearSpaceComposition;
+        const applyApproximateTransmittance = this._applyApproximateTransmittance;
+        const depthTexture = this.depthTexture;
+        this._skyCompositorEffectWrapper ??= CreateSkyCompositorEffectWrapper(engine, uniformBuffer, isSkyViewLutEnabled, isLinearSpaceComposition, applyApproximateTransmittance);
+        this._globeAtmosphereCompositorEffectWrapper ??= CreateGlobeAtmosphereCompositorEffectWrapper(
+            engine,
+            uniformBuffer,
+            isSkyViewLutEnabled,
+            isLinearSpaceComposition,
+            applyApproximateTransmittance,
+            this._aerialPerspectiveIntensity,
+            this._aerialPerspectiveRadianceBias,
+            depthTexture !== null
+        );
+        if (depthTexture !== null) {
+            this._aerialPerspectiveCompositorEffectWrapper ??= CreateAerialPerspectiveCompositorEffectWrapper(
+                engine,
+                uniformBuffer,
+                this._isAerialPerspectiveLutEnabled,
+                isSkyViewLutEnabled,
+                isLinearSpaceComposition,
+                applyApproximateTransmittance,
+                this._aerialPerspectiveIntensity,
+                this._aerialPerspectiveRadianceBias
+            );
+        }
+
+        // Read back LUT data from the GPU if a readback is pending (deferred from a previous render call).
+        void this._transmittanceLut?.readPixelsAsync();
+        void this._diffuseSkyIrradianceLut?.readPixelsAsync();
+
+        this.renderGlobalLuts(); // Start rendering of global LUTs during readiness polling.
+
+        if (!this._transmittanceLut?.hasLutData || (this._isDiffuseSkyIrradianceLutEnabled && !this._diffuseSkyIrradianceLut?.hasLutData)) {
+            return false;
+        }
+        if (!this._hasRenderedMultiScatteringLut || this._multiScatteringLutRenderTarget?.isReady() === false || this._multiScatteringEffectWrapper?.isReady() === false) {
+            return false;
+        }
+        if (this._isSkyViewLutEnabled && (this._skyViewLutRenderTarget?.isReady() === false || this._skyViewLutEffectWrapper?.isReady() === false)) {
+            return false;
+        }
+        if (this._isAerialPerspectiveLutEnabled && (this._aerialPerspectiveLutRenderTarget?.isReady() === false || this._aerialPerspectiveLutEffectWrapper?.isReady() === false)) {
+            return false;
+        }
+
+        if (
+            this._skyCompositorEffectWrapper?.isReady() === false ||
+            this._aerialPerspectiveCompositorEffectWrapper?.isReady() === false ||
+            this._globeAtmosphereCompositorEffectWrapper?.isReady() === false
+        ) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
      * The class name of the {@link Atmosphere}.
      * @returns - The class name of the atmosphere.
      */
@@ -905,36 +1003,6 @@ export class Atmosphere implements IDisposable {
     ): T =>
         this._diffuseSkyIrradianceLut?.getDiffuseSkyIrradianceToRef(directionToLight, pointRadius, pointGeocentricNormal, lightIrradiance, result) ??
         ((result.r = 0), (result.g = 0), (result.b = 0), result);
-
-    /**
-     * Creates a new {@link EffectWrapper} for the multiple scattering LUT
-     * @returns The newly created {@link EffectWrapper}.
-     */
-    private _createMultiScatteringEffectWrapper(): EffectWrapper {
-        const engine = this._engine;
-        const name = "atmo-multiScattering";
-        const ubo = this.uniformBuffer;
-        const useUbo = ubo.useUbo;
-
-        const defines = ["#define POSITION_VEC2"];
-        if (!this._groundAlbedo.equals(Color3.BlackReadOnly)) {
-            defines.push("#define USE_GROUND_ALBEDO");
-        }
-
-        return new EffectWrapper({
-            engine,
-            name,
-            vertexShader: "fullscreenTriangle",
-            fragmentShader: "multiScattering",
-            attributeNames: ["position"],
-            uniformNames: ["depth", ...(useUbo ? [] : ubo.getUniformNames())],
-            uniformBuffers: useUbo ? [ubo.name] : [],
-            samplerNames: ["transmittanceLut"],
-            defines,
-            useShaderStore: true,
-        });
-    }
-
     /**
      * Draws the multiple scattering LUT using {@link EffectWrapper} and {@link EffectRenderer}.
      */
@@ -969,14 +1037,8 @@ export class Atmosphere implements IDisposable {
             return;
         }
 
-        // Aerial perspective compositor only renders when inside the atmosphere.
-        const isOutsideAtmosphere = this._cameraAtmosphereVariables.clampedCameraRadius > this._physicalProperties.atmosphereRadius;
-        if (isOutsideAtmosphere) {
-            return;
-        }
-
         const engine = this._engine;
-        this._aerialPerspectiveCompositorEffectWrapper ??= CreateAerialPerspectiveCompositorEffectWrapper(
+        const effectWrapper = (this._aerialPerspectiveCompositorEffectWrapper ??= CreateAerialPerspectiveCompositorEffectWrapper(
             engine,
             this.uniformBuffer,
             this._isAerialPerspectiveLutEnabled,
@@ -985,14 +1047,24 @@ export class Atmosphere implements IDisposable {
             this._applyApproximateTransmittance,
             this._aerialPerspectiveIntensity,
             this._aerialPerspectiveRadianceBias
-        );
+        ));
+
+        if (!this._isGlobalLutsReady) {
+            return;
+        }
+
+        // Aerial perspective compositor only renders when inside the atmosphere.
+        const isOutsideAtmosphere = this._cameraAtmosphereVariables.clampedCameraRadius > this._physicalProperties.atmosphereRadius;
+        if (isOutsideAtmosphere) {
+            return;
+        }
 
         const skyViewLut = this._isSkyViewLutEnabled ? this.skyViewLutRenderTarget : null;
         const multiScatteringLut = this._multiScatteringLutRenderTarget!;
         const transmittanceLut = this._transmittanceLut!.renderTarget;
         const aerialPerspectiveLut = this._isAerialPerspectiveLutEnabled ? this.aerialPerspectiveLutRenderTarget : null;
         if (
-            !this._aerialPerspectiveCompositorEffectWrapper.isReady() ||
+            !effectWrapper.isReady() ||
             !(skyViewLut?.isReady() ?? true) ||
             !multiScatteringLut.isReady() ||
             !transmittanceLut.isReady() ||
@@ -1005,7 +1077,7 @@ export class Atmosphere implements IDisposable {
         DrawEffect(
             engine,
             this._effectRenderer!,
-            this._aerialPerspectiveCompositorEffectWrapper,
+            effectWrapper,
             null, // No render target, it will render to the current buffer.
             (effectRenderer, _, effect) => {
                 if (this.depthTexture === null) {
@@ -1042,6 +1114,19 @@ export class Atmosphere implements IDisposable {
             return;
         }
 
+        const engine = this._engine;
+        const effectWrapper = (this._skyCompositorEffectWrapper ??= CreateSkyCompositorEffectWrapper(
+            engine,
+            this.uniformBuffer,
+            this._isSkyViewLutEnabled,
+            this._isLinearSpaceComposition,
+            this._applyApproximateTransmittance
+        ));
+
+        if (!this._isGlobalLutsReady) {
+            return;
+        }
+
         // The sky compositor only renders when inside the atmosphere.
         const isOutsideAtmosphere = this._cameraAtmosphereVariables.clampedCameraRadius > this._physicalProperties.atmosphereRadius;
         if (isOutsideAtmosphere) {
@@ -1052,26 +1137,17 @@ export class Atmosphere implements IDisposable {
             return;
         }
 
-        const engine = this._engine;
-        this._skyCompositorEffectWrapper ??= CreateSkyCompositorEffectWrapper(
-            engine,
-            this.uniformBuffer,
-            this._isSkyViewLutEnabled,
-            this._isLinearSpaceComposition,
-            this._applyApproximateTransmittance
-        );
-
         const skyViewLut = this._isSkyViewLutEnabled ? this.skyViewLutRenderTarget : null;
         const multiScatteringLut = this._multiScatteringLutRenderTarget!;
         const transmittanceLut = this._transmittanceLut!.renderTarget;
-        if (!this._skyCompositorEffectWrapper.isReady() || !(skyViewLut?.isReady() ?? true) || !multiScatteringLut.isReady() || !transmittanceLut.isReady()) {
+        if (!effectWrapper.isReady() || !(skyViewLut?.isReady() ?? true) || !multiScatteringLut.isReady() || !transmittanceLut.isReady()) {
             return;
         }
 
         DrawEffect(
             engine,
             this._effectRenderer!,
-            this._skyCompositorEffectWrapper,
+            effectWrapper,
             null, // No render target, it will render to the current buffer.
             (effectRenderer, _, effect) => {
                 this.bindUniformBufferToEffect(effect);
@@ -1101,14 +1177,8 @@ export class Atmosphere implements IDisposable {
             return;
         }
 
-        // Globe atmosphere compositor only renders when outside the atmosphere.
-        const isOutsideAtmosphere = this._cameraAtmosphereVariables.clampedCameraRadius > this._physicalProperties.atmosphereRadius;
-        if (!isOutsideAtmosphere) {
-            return;
-        }
-
         const engine = this._engine;
-        this._globeAtmosphereCompositorEffectWrapper ??= CreateGlobeAtmosphereCompositorEffectWrapper(
+        const effectWrapper = (this._globeAtmosphereCompositorEffectWrapper ??= CreateGlobeAtmosphereCompositorEffectWrapper(
             engine,
             this.uniformBuffer,
             this._isSkyViewLutEnabled,
@@ -1117,12 +1187,22 @@ export class Atmosphere implements IDisposable {
             this._aerialPerspectiveIntensity,
             this._aerialPerspectiveRadianceBias,
             this.depthTexture !== null
-        );
+        ));
+
+        if (!this._isGlobalLutsReady) {
+            return;
+        }
+
+        // Globe atmosphere compositor only renders when outside the atmosphere.
+        const isOutsideAtmosphere = this._cameraAtmosphereVariables.clampedCameraRadius > this._physicalProperties.atmosphereRadius;
+        if (!isOutsideAtmosphere) {
+            return;
+        }
 
         const skyViewLut = this._isSkyViewLutEnabled ? this.skyViewLutRenderTarget : null;
         const multiScatteringLut = this._multiScatteringLutRenderTarget!;
         const transmittanceLut = this._transmittanceLut!.renderTarget;
-        if (!this._globeAtmosphereCompositorEffectWrapper.isReady() || !(skyViewLut?.isReady() ?? true) || !multiScatteringLut.isReady() || !transmittanceLut.isReady()) {
+        if (!effectWrapper.isReady() || !(skyViewLut?.isReady() ?? true) || !multiScatteringLut.isReady() || !transmittanceLut.isReady()) {
             return;
         }
 
@@ -1133,7 +1213,7 @@ export class Atmosphere implements IDisposable {
         DrawEffect(
             engine,
             this._effectRenderer!,
-            this._globeAtmosphereCompositorEffectWrapper,
+            effectWrapper,
             null, // No render target, it will render to the current buffer.
             (effectRenderer, _, effect) => {
                 this.bindUniformBufferToEffect(effect);
@@ -1172,30 +1252,30 @@ export class Atmosphere implements IDisposable {
         this._globeAtmosphereCompositorEffectWrapper = null;
     }
 
+    private get _isGlobalLutsReady(): boolean {
+        return (
+            this._hasEverRenderedMultiScatteringLut &&
+            !!this._transmittanceLut?.hasLutData &&
+            (!this._isDiffuseSkyIrradianceLutEnabled || this._diffuseSkyIrradianceLut!.hasLutData)
+        );
+    }
+
     /**
      * Updates the camera variables that are specific to the atmosphere.
      * @param camera - The camera to update the variables for.
      */
     private _updatePerCameraVariables(camera: Camera): void {
         const light = this._lights[0];
-        this._directionToLight.copyFrom(light.direction);
-        this._directionToLight.scaleInPlace(-1);
+        const directionToLight = this._directionToLight.copyFrom(light.direction).scaleInPlace(-1);
 
         const properties = this._physicalProperties;
         const cameraAtmosphereVariables = this._cameraAtmosphereVariables;
-        cameraAtmosphereVariables.update(
-            camera,
-            properties.planetRadius,
-            properties.planetRadiusWithOffset,
-            properties.atmosphereRadius,
-            this._directionToLight,
-            this.originHeight
-        );
+        cameraAtmosphereVariables.update(camera, properties.planetRadius, properties.planetRadiusWithOffset, properties.atmosphereRadius, directionToLight, this.originHeight);
 
         this._transmittanceLut!.updateLightParameters(light, cameraAtmosphereVariables.clampedCameraRadius, cameraAtmosphereVariables.cameraGeocentricNormal);
         this._linearLightColor.copyFrom(light.diffuse);
 
-        this.getDiffuseSkyIrradianceToRef(this._directionToLight, 0, cameraAtmosphereVariables.cameraGeocentricNormal, this.lights[0].intensity, this._tempSceneAmbient);
+        this.getDiffuseSkyIrradianceToRef(directionToLight, 0, cameraAtmosphereVariables.cameraGeocentricNormal, light.intensity, this._tempSceneAmbient);
         if (!this.isLinearSpaceLight) {
             this._tempSceneAmbient.toGammaSpaceToRef(this._tempSceneAmbient);
         }
@@ -1231,10 +1311,6 @@ export class Atmosphere implements IDisposable {
         {
             this.onBeforeRenderLutsForCameraObservable.notifyObservers(camera);
 
-            // After UBO update we can render the global LUTs which use some of these values on the GPU.
-            // TODO: Could break out update and UBOs to global vs. per-camera.
-            this.renderGlobalLuts();
-
             // If atmosphere is enabled, render the per-camera LUTs (sky view and aerial perspective).
             if (isEnabled && !this._transmittanceLut!.isDirty && this._hasRenderedMultiScatteringLut) {
                 if (this._isSkyViewLutEnabled) {
@@ -1263,6 +1339,10 @@ export class Atmosphere implements IDisposable {
      * Renders the lookup tables that do not depend on a camera position.
      */
     public renderGlobalLuts(): void {
+        if (this.uniformBuffer.useUbo) {
+            this.updateUniformBuffer();
+        }
+
         const hasNewTransmittanceLut = this._transmittanceLut!.render();
         if (hasNewTransmittanceLut) {
             this._hasRenderedMultiScatteringLut = false;
@@ -1270,10 +1350,11 @@ export class Atmosphere implements IDisposable {
         }
 
         if (!this._transmittanceLut!.isDirty && !this._hasRenderedMultiScatteringLut) {
-            this._multiScatteringEffectWrapper ??= this._createMultiScatteringEffectWrapper();
+            this._multiScatteringEffectWrapper ??= CreateMultiScatteringEffectWrapper(this._engine, this.uniformBuffer, this._groundAlbedo);
             if (this._multiScatteringEffectWrapper?.isReady() && this._multiScatteringLutRenderTarget?.isReady()) {
                 this._drawMultiScatteringLut();
                 this._hasRenderedMultiScatteringLut = true;
+                this._hasEverRenderedMultiScatteringLut = true;
             }
         }
 
@@ -1288,17 +1369,14 @@ export class Atmosphere implements IDisposable {
      */
     public bindUniformBufferToEffect(effect: Effect): void {
         const uniformBuffer = this.uniformBuffer;
-        const name = uniformBuffer.name;
-        uniformBuffer.bindToEffect(effect, name);
-        if (uniformBuffer.useUbo) {
-            uniformBuffer.bindUniformBuffer();
-        } else {
-            this.updateUniformBuffer();
-        }
+        const isWGSL = effect.shaderLanguage === ShaderLanguage.WGSL;
+        const blockName = isWGSL ? "atmosphere" : uniformBuffer.name;
+        uniformBuffer.bindToEffect(effect, blockName);
+        uniformBuffer.useUbo ? uniformBuffer.update() : this.updateUniformBuffer();
     }
 
     /**
-     * Updates the atmosphere's uniform buffer.
+     * Updates the values in the atmosphere's uniform buffer.
      */
     public updateUniformBuffer(): void {
         const physicalProperties = this._physicalProperties;
@@ -1349,8 +1427,13 @@ export class Atmosphere implements IDisposable {
         ubo.updateFloat("cameraNearPlane", cameraAtmosphereVariables.cameraNearPlane);
         ubo.updateFloat("originHeight", this._originHeight);
         ubo.updateFloat("sinCameraAtmosphereHorizonAngleFromNadir", cameraAtmosphereVariables.sinCameraAtmosphereHorizonAngleFromNadir);
+        ubo.updateFloat("transmittanceSampleCount", TransmittanceSampleCount);
+        ubo.updateFloat("skyViewLutSampleCount", SkyViewLutSampleCount);
+        ubo.updateFloat("multiScatteringLutSampleCount", MultiScatteringLutSampleCount);
+        ubo.updateFloat("multiScatteringAzimuthSampleCount", MultiScatteringAzimuthSampleCount);
+        ubo.updateFloat("multiScatteringInclinationSampleCount", MultiScatteringInclinationSampleCount);
+        ubo.updateFloat("diffuseSkyIrradianceLutSampleCount", DiffuseSkyIrradianceLutSampleCount);
         ubo.updateFloat("atmosphereExposure", this._exposure);
-        ubo.update();
     }
 
     /**
@@ -1416,6 +1499,8 @@ export class Atmosphere implements IDisposable {
  * @param samplerNames - The sampler names to use.
  * @param uniformBuffers - The uniform buffers to use.
  * @param defineNames - Array of define names to prepend with "#define ".
+ * @param useWebGPU - Whether to use WebGPU shaders.
+ * @param extraInitializations - Optional extra initializations callback for loading shaders.
  * @returns The effect wrapper.
  */
 const CreateEffectWrapper = (
@@ -1425,10 +1510,11 @@ const CreateEffectWrapper = (
     uniformNames?: string[],
     samplerNames?: string[],
     uniformBuffers?: string[],
-    defineNames?: string[]
+    defineNames?: string[],
+    useWebGPU = false,
+    extraInitializations?: (useWebGPU: boolean, list: Promise<any>[]) => void
 ): EffectWrapper => {
     const defines = defineNames?.map((defineName) => `#define ${defineName}`) ?? [];
-
     return new EffectWrapper({
         engine,
         name,
@@ -1440,6 +1526,41 @@ const CreateEffectWrapper = (
         samplerNames,
         defines,
         useShaderStore: true,
+        shaderLanguage: useWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
+        extraInitializations,
+    });
+};
+
+const CreateMultiScatteringEffectWrapper = (engine: AbstractEngine, uniformBuffer: UniformBuffer, groundAlbedo: Color3): EffectWrapper => {
+    const name = "atmo-multiScattering";
+    const useUbo = uniformBuffer.useUbo;
+    const useWebGPU = engine.isWebGPU && !EffectWrapper.ForceGLSL;
+    const uboName = useWebGPU ? "atmosphere" : uniformBuffer.name;
+
+    const defines = ["#define POSITION_VEC2"];
+    if (!groundAlbedo.equals(Color3.BlackReadOnly)) {
+        defines.push("#define USE_GROUND_ALBEDO");
+    }
+
+    return new EffectWrapper({
+        engine,
+        name,
+        vertexShader: "fullscreenTriangle",
+        fragmentShader: "multiScattering",
+        attributeNames: ["position"],
+        uniformNames: ["depth", ...(useUbo ? [] : uniformBuffer.getUniformNames())],
+        uniformBuffers: useUbo ? [uboName] : [],
+        samplerNames: ["transmittanceLut"],
+        defines,
+        useShaderStore: true,
+        shaderLanguage: useWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
+        extraInitializations: (_, list) => {
+            list.push(
+                ...(useWebGPU
+                    ? [import("./ShadersWGSL/fullscreenTriangle.vertex"), import("./ShadersWGSL/multiScattering.fragment")]
+                    : [import("./Shaders/fullscreenTriangle.vertex"), import("./Shaders/multiScattering.fragment")])
+            );
+        },
     });
 };
 
@@ -1505,6 +1626,8 @@ const DrawEffect = (
         return;
     }
 
+    effectRenderer.saveStates();
+
     // Set additional depth/stencil states before calling applyEffectWrapper.
     const currentDepthWrite = engine.getDepthWrite();
     if (depthWrite !== undefined) {
@@ -1513,15 +1636,15 @@ const DrawEffect = (
     const currentDepthFunction = engine.getDepthFunction();
     engine.setDepthFunction(depthFunction);
 
-    // Likewise with the alpha mode, which can affect depth state too.
     const currentAlphaMode = engine.getAlphaMode();
-    if (alphaMode !== Constants.ALPHA_DISABLE) {
-        engine.setAlphaMode(alphaMode);
-    }
+    engine.setAlphaMode(alphaMode, true);
 
-    effectRenderer.saveStates();
+    const currentCull = engine.depthCullingState.cull;
+
     effectRenderer.setViewport();
     effectRenderer.applyEffectWrapper(effectWrapper, depthTest); // Note, stencil is false by default.
+
+    engine.depthCullingState.cull = false;
 
     const effect = effectWrapper.effect;
 
@@ -1531,7 +1654,8 @@ const DrawEffect = (
     drawCallback(effectRenderer, renderTarget?.renderTarget!, effect, engine);
 
     // Restore state (order matters!)
-    engine.setAlphaMode(currentAlphaMode);
+    engine.depthCullingState.cull = currentCull;
+    engine.setAlphaMode(currentAlphaMode, true);
     if (currentDepthWrite !== undefined) {
         engine.setDepthWrite(currentDepthWrite);
     }
@@ -1563,7 +1687,9 @@ const CreateSkyCompositorEffectWrapper = (
     applyApproximateTransmittance: boolean
 ): EffectWrapper => {
     const useUbo = uniformBuffer.useUbo;
-    const defines = ["COMPUTE_WORLD_RAY"];
+    const useWebGPU = engine.isWebGPU && !EffectWrapper.ForceGLSL;
+    const uboName = useWebGPU ? "atmosphere" : uniformBuffer.name;
+    const defines = ["POSITION_VEC2", "COMPUTE_WORLD_RAY"];
     if (isSkyViewLutEnabled) {
         defines.push("USE_SKY_VIEW_LUT");
     }
@@ -1580,8 +1706,16 @@ const CreateSkyCompositorEffectWrapper = (
         "compositeSky",
         ["depth", ...(useUbo ? [] : uniformBuffer.getUniformNames())],
         textures,
-        useUbo ? [uniformBuffer.name] : [],
-        defines
+        useUbo ? [uboName] : [],
+        defines,
+        useWebGPU,
+        (_, list) => {
+            list.push(
+                ...(useWebGPU
+                    ? [import("./ShadersWGSL/fullscreenTriangle.vertex"), import("./ShadersWGSL/compositeSky.fragment")]
+                    : [import("./Shaders/fullscreenTriangle.vertex"), import("./Shaders/compositeSky.fragment")])
+            );
+        }
     );
 };
 
@@ -1591,16 +1725,27 @@ const CreateSkyCompositorEffectWrapper = (
  * @param uniformBuffer - The uniform buffer to use.
  * @returns The created EffectWrapper.
  */
-const CreateAerialPerspectiveEffectWrapper = (engine: AbstractEngine, uniformBuffer: UniformBuffer): EffectWrapper =>
-    CreateEffectWrapper(
+const CreateAerialPerspectiveEffectWrapper = (engine: AbstractEngine, uniformBuffer: UniformBuffer): EffectWrapper => {
+    const useWebGPU = engine.isWebGPU && !EffectWrapper.ForceGLSL;
+    const uboName = useWebGPU ? "atmosphere" : uniformBuffer.name;
+    return CreateEffectWrapper(
         engine,
         "atmo-aerialPerspective",
         "aerialPerspective",
-        ["layerIdx", "depth", ...(uniformBuffer.useUbo ? [] : uniformBuffer.getUniformNames())],
+        ["layerIdx", ...(uniformBuffer.useUbo ? [] : uniformBuffer.getUniformNames())],
         ["transmittanceLut", "multiScatteringLut"],
-        uniformBuffer.useUbo ? [uniformBuffer.name] : [],
-        ["COMPUTE_WORLD_RAY"]
+        uniformBuffer.useUbo ? [uboName] : [],
+        ["POSITION_VEC2", "COMPUTE_WORLD_RAY"],
+        useWebGPU,
+        (_, list) => {
+            list.push(
+                ...(useWebGPU
+                    ? [import("./ShadersWGSL/fullscreenTriangle.vertex"), import("./ShadersWGSL/aerialPerspective.fragment")]
+                    : [import("./Shaders/fullscreenTriangle.vertex"), import("./Shaders/aerialPerspective.fragment")])
+            );
+        }
     );
+};
 
 /**
  * Creates an EffectWrapper for the aerial perspective compositor.
@@ -1625,7 +1770,9 @@ const CreateAerialPerspectiveCompositorEffectWrapper = (
     aerialPerspectiveRadianceBias: number
 ): EffectWrapper => {
     const useUbo = uniformBuffer.useUbo;
-    const defines = ["COMPUTE_WORLD_RAY"];
+    const useWebGPU = engine.isWebGPU && !EffectWrapper.ForceGLSL;
+    const uboName = useWebGPU ? "atmosphere" : uniformBuffer.name;
+    const defines = ["POSITION_VEC2", "COMPUTE_WORLD_RAY"];
     if (isAerialPerspectiveLutEnabled) {
         defines.push("USE_AERIAL_PERSPECTIVE_LUT");
     }
@@ -1659,8 +1806,16 @@ const CreateAerialPerspectiveCompositorEffectWrapper = (
         "compositeAerialPerspective",
         ["depth", ...(useUbo ? [] : uniformBuffer.getUniformNames())],
         samplers,
-        useUbo ? [uniformBuffer.name] : [],
-        defines
+        useUbo ? [uboName] : [],
+        defines,
+        useWebGPU,
+        (_, list) => {
+            list.push(
+                ...(useWebGPU
+                    ? [import("./ShadersWGSL/fullscreenTriangle.vertex"), import("./ShadersWGSL/compositeAerialPerspective.fragment")]
+                    : [import("./Shaders/fullscreenTriangle.vertex"), import("./Shaders/compositeAerialPerspective.fragment")])
+            );
+        }
     );
 };
 
@@ -1687,7 +1842,9 @@ const CreateGlobeAtmosphereCompositorEffectWrapper = (
     hasDepthTexture: boolean
 ): EffectWrapper => {
     const useUbo = uniformBuffer.useUbo;
-    const defines = ["COMPUTE_WORLD_RAY"];
+    const useWebGPU = engine.isWebGPU && !EffectWrapper.ForceGLSL;
+    const uboName = useWebGPU ? "atmosphere" : uniformBuffer.name;
+    const defines = ["POSITION_VEC2", "COMPUTE_WORLD_RAY"];
     if (isSkyViewLutEnabled) {
         defines.push("USE_SKY_VIEW_LUT");
     }
@@ -1721,8 +1878,16 @@ const CreateGlobeAtmosphereCompositorEffectWrapper = (
         "compositeGlobeAtmosphere",
         ["depth", ...(useUbo ? [] : uniformBuffer.getUniformNames())],
         samplers,
-        useUbo ? [uniformBuffer.name] : [],
-        defines
+        useUbo ? [uboName] : [],
+        defines,
+        useWebGPU,
+        (_, list) => {
+            list.push(
+                ...(useWebGPU
+                    ? [import("./ShadersWGSL/fullscreenTriangle.vertex"), import("./ShadersWGSL/compositeGlobeAtmosphere.fragment")]
+                    : [import("./Shaders/fullscreenTriangle.vertex"), import("./Shaders/compositeGlobeAtmosphere.fragment")])
+            );
+        }
     );
 };
 
@@ -1732,12 +1897,24 @@ const CreateGlobeAtmosphereCompositorEffectWrapper = (
  * @param uniformBuffer - The uniform buffer to use.
  * @returns The created EffectWrapper.
  */
-const CreateSkyViewEffectWrapper = (engine: AbstractEngine, uniformBuffer: UniformBuffer): EffectWrapper =>
-    CreateEffectWrapper(
+const CreateSkyViewEffectWrapper = (engine: AbstractEngine, uniformBuffer: UniformBuffer): EffectWrapper => {
+    const useWebGPU = engine.isWebGPU && !EffectWrapper.ForceGLSL;
+    const uboName = useWebGPU ? "atmosphere" : uniformBuffer.name;
+    return CreateEffectWrapper(
         engine,
         "atmo-skyView",
         "skyView",
         ["depth", ...(uniformBuffer.useUbo ? [] : uniformBuffer.getUniformNames())],
         ["transmittanceLut", "multiScatteringLut"],
-        uniformBuffer.useUbo ? [uniformBuffer.name] : []
+        uniformBuffer.useUbo ? [uboName] : [],
+        ["POSITION_VEC2"],
+        useWebGPU,
+        (_, list) => {
+            list.push(
+                ...(useWebGPU
+                    ? [import("./ShadersWGSL/fullscreenTriangle.vertex"), import("./ShadersWGSL/skyView.fragment")]
+                    : [import("./Shaders/fullscreenTriangle.vertex"), import("./Shaders/skyView.fragment")])
+            );
+        }
     );
+};

@@ -1,4 +1,4 @@
-import type { TileCacheMeshProcess } from "@recast-navigation/core";
+import { type TileCacheMeshProcess } from "@recast-navigation/core";
 
 import { GetRecast } from "../factory/common";
 

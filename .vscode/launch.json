@@ -228,6 +228,20 @@
         {
             "type": "msedge",
             "request": "launch",
+            "name": "Flow Graph Editor development (Edge)",
+            "url": "http://localhost:1345",
+            "preLaunchTask": "Flow Graph Editor Serve (Dev)"
+        },
+        {
+            "type": "chrome",
+            "request": "launch",
+            "name": "Flow Graph Editor development (Chrome)",
+            "url": "http://localhost:1345",
+            "preLaunchTask": "Flow Graph Editor Serve (Dev)"
+        },
+        {
+            "type": "msedge",
+            "request": "launch",
             "name": "Node Render Graph Editor development (Edge)",
             "url": "http://localhost:1344",
             "preLaunchTask": "Node Render Graph Editor Serve (Dev)"
@@ -310,6 +324,20 @@
         {
             "type": "msedge",
             "request": "launch",
+            "name": "Launch Flow Graph Editor (Edge)",
+            "url": "http://localhost:1345",
+            "preLaunchTask": "Flow Graph Editor Serve for core (Dev)"
+        },
+        {
+            "type": "chrome",
+            "request": "launch",
+            "name": "Launch Flow Graph Editor (Chrome)",
+            "url": "http://localhost:1345",
+            "preLaunchTask": "Flow Graph Editor Serve for core (Dev)"
+        },
+        {
+            "type": "msedge",
+            "request": "launch",
             "name": "Launch Node Render Graph Editor (Edge)",
             "url": "http://localhost:1344",
             "preLaunchTask": "Node Render Graph Editor Serve for core (Dev)"
@@ -323,42 +351,30 @@
         },
         {
             /*
-            Launch tests
-            https://jestjs.io/docs/troubleshooting#debugging-in-vs-code
+            Launch unit tests with Vitest
+            https://vitest.dev/guide/debugging
             */
             "type": "node",
             "request": "launch",
             "name": "Run and Debug unit tests (Dev)",
-            "runtimeArgs": ["--inspect-brk", "${workspaceRoot}/node_modules/jest/bin/jest.js", "--runInBand", "--selectProjects", "unit"],
+            "runtimeExecutable": "npx",
+            "runtimeArgs": ["vitest", "run", "--project=unit", "--no-file-parallelism"],
             "console": "integratedTerminal",
             "internalConsoleOptions": "neverOpen",
-            "port": 9229,
-            // "outFiles": ["${workspaceRoot}/**/dist/**/*"], // debugging sources
-            // "envFile": "${workspaceRoot}/.env",
             "preLaunchTask": "Build (Dev)"
         },
         {
             /*
-            Launch tests
-            https://jestjs.io/docs/troubleshooting#debugging-in-vs-code
+            Launch current test file with Vitest
+            https://vitest.dev/guide/debugging
             */
             "type": "node",
             "request": "launch",
             "name": "Run and Debug current unit test file (Dev)",
-            "runtimeArgs": [
-                "--inspect-brk",
-                "${workspaceRoot}/node_modules/jest/bin/jest.js",
-                "--runInBand",
-                "--selectProjects",
-                "unit",
-                "--test-path-pattern",
-                "${fileBasenameNoExtension}"
-            ],
+            "runtimeExecutable": "npx",
+            "runtimeArgs": ["vitest", "run", "--project=unit", "--no-file-parallelism", "${fileBasenameNoExtension}"],
             "console": "integratedTerminal",
             "internalConsoleOptions": "neverOpen",
-            "port": 9229,
-            // "outFiles": ["${workspaceRoot}/**/dist/**/*"], // debugging sources
-            // "envFile": "${workspaceRoot}/.env",
             "preLaunchTask": "Build (Dev)"
         },
         {
@@ -414,13 +430,14 @@
         },
         {
             /*
-            Launch tests
-            https://jestjs.io/docs/troubleshooting#debugging-in-vs-code
+            Launch validation tests - WebGL1
+            Note - the recommended way would be to use the extension in the test tab of vscode.
             */
             "type": "node",
             "request": "launch",
             "name": "Run validation tests - WebGL1 (Dev)",
-            "runtimeArgs": ["--inspect-brk", "${workspaceRoot}/node_modules/jest/bin/jest.js", "--runInBand", "--selectProjects", "visualization", "-i", "webgl1"],
+            "runtimeExecutable": "npx",
+            "runtimeArgs": ["playwright", "test", "-c", "${workspaceRoot}/playwright.config.ts", "--project", "webgl1"],
             "console": "integratedTerminal",
             "internalConsoleOptions": "neverOpen",
             "port": 9229,
@@ -430,23 +447,14 @@
         },
         {
             /*
-            Launch tests
-            https://jestjs.io/docs/troubleshooting#debugging-in-vs-code
+            Launch single validation test - WebGL1
+            Note - the recommended way would be to use the extension in the test tab of vscode.
             */
             "type": "node",
             "request": "launch",
             "name": "Run single validation test - WebGL1 (Dev)",
-            "runtimeArgs": [
-                "--inspect-brk",
-                "${workspaceRoot}/node_modules/jest/bin/jest.js",
-                "--runInBand",
-                "--selectProjects",
-                "visualization",
-                "-i",
-                "webgl1",
-                "-t",
-                "${input:testName}"
-            ],
+            "runtimeExecutable": "npx",
+            "runtimeArgs": ["playwright", "test", "-c", "${workspaceRoot}/playwright.config.ts", "--project", "webgl1", "-g", "${input:testName}"],
             "console": "integratedTerminal",
             "internalConsoleOptions": "neverOpen",
             "port": 9229,
@@ -508,19 +516,16 @@
         },
         {
             /*
-            Launch tests
-            https://jestjs.io/docs/troubleshooting#debugging-in-vs-code
+            Launch integration tests with Playwright
             */
             "type": "node",
             "request": "launch",
             "name": "Run and Debug integration tests (Dev)",
-            "runtimeArgs": ["--inspect-brk", "${workspaceRoot}/node_modules/jest/bin/jest.js", "--runInBand", "--selectProjects", "integration"],
+            "runtimeExecutable": "npx",
+            "runtimeArgs": ["playwright", "test", "-c", "${workspaceRoot}/playwright.config.ts", "--project", "integration"],
             "console": "integratedTerminal",
             "internalConsoleOptions": "neverOpen",
             "port": 9229,
-            "env": {
-                "HEADLESS": "true"
-            },
             // "outFiles": ["${workspaceRoot}/**/dist/**/*"], // debugging sources
             // "envFile": "${workspaceRoot}/.env",
             "preLaunchTask": "CDN Serve Prod (Dev)"

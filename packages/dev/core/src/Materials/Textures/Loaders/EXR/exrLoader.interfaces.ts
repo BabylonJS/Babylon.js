@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import type { Nullable } from "core/types";
-import type { DataCursor } from "./exrLoader.core";
+import { type Nullable } from "core/types";
+import { type DataCursor } from "./exrLoader.core";
 
 export const INT32_SIZE = 4;
 export const FLOAT32_SIZE = 4;

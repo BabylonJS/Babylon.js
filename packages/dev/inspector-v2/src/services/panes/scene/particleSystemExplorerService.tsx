@@ -1,19 +1,20 @@
-import type { ServiceDefinition } from "../../../modularity/serviceDefinition";
-import type { ISceneContext } from "../../sceneContext";
-import type { ISceneExplorerService } from "./sceneExplorerService";
+import { type ServiceDefinition } from "shared-ui-components/modularTool/modularity/serviceDefinition";
+import { type ISceneContext, SceneContextIdentity } from "../../sceneContext";
+import { type IWatcherService, WatcherServiceIdentity } from "../../watcherService";
+import { type ISceneExplorerService, SceneExplorerServiceIdentity } from "./sceneExplorerService";
 
-import { DropRegular } from "@fluentui/react-icons";
+import { tokens } from "@fluentui/react-components";
+import { DropRegular, EditRegular } from "@fluentui/react-icons";
 
 import { Observable } from "core/Misc/observable";
-import { InterceptProperty } from "../../../instrumentation/propertyInstrumentation";
-import { SceneContextIdentity } from "../../sceneContext";
-import { DefaultSectionsOrder } from "./defaultSectionsMetadata";
-import { SceneExplorerServiceIdentity } from "./sceneExplorerService";
+import { ParticleSystem } from "core/Particles/particleSystem";
+import { EditParticleSystem } from "../../../misc/nodeParticleEditor";
+import { DefaultCommandsOrder, DefaultSectionsOrder } from "./defaultSectionsMetadata";
 
-export const ParticleSystemExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplorerService, ISceneContext]> = {
+export const ParticleSystemExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplorerService, ISceneContext, IWatcherService]> = {
     friendlyName: "Particle System Explorer",
-    consumes: [SceneExplorerServiceIdentity, SceneContextIdentity],
-    factory: (sceneExplorerService, sceneContext) => {
+    consumes: [SceneExplorerServiceIdentity, SceneContextIdentity, WatcherServiceIdentity],
+    factory: (sceneExplorerService, sceneContext, watcherService) => {
         const scene = sceneContext.currentScene;
         if (!scene) {
             return undefined;
@@ -26,15 +27,11 @@ export const ParticleSystemExplorerServiceDefinition: ServiceDefinition<[], [ISc
             getEntityDisplayInfo: (particleSystem) => {
                 const onChangeObservable = new Observable<void>();
 
-                const nameHookToken = InterceptProperty(particleSystem, "name", {
-                    afterSet: () => {
-                        onChangeObservable.notifyObservers();
-                    },
-                });
+                const nameHookToken = watcherService.watchProperty(particleSystem, "name", () => onChangeObservable.notifyObservers());
 
                 return {
                     get name() {
-                        return particleSystem.name;
+                        return particleSystem.name || `Unnamed ${particleSystem.getClassName()}`;
                     },
                     onChange: onChangeObservable,
                     dispose: () => {
@@ -43,14 +40,29 @@ export const ParticleSystemExplorerServiceDefinition: ServiceDefinition<[], [ISc
                     },
                 };
             },
-            entityIcon: () => <DropRegular />,
+            entityIcon: () => <DropRegular color={tokens.colorPaletteCranberryForeground2} />,
             getEntityAddedObservables: () => [scene.onNewParticleSystemAddedObservable],
             getEntityRemovedObservables: () => [scene.onParticleSystemRemovedObservable],
+        });
+
+        const editParticleSystemCommandRegistration = sceneExplorerService.addEntityCommand({
+            predicate: (entity): entity is ParticleSystem => entity instanceof ParticleSystem && entity.isNodeGenerated,
+            order: DefaultCommandsOrder.EditParticleSystem,
+            getCommand: (particleSystem) => {
+                return {
+                    type: "action",
+                    displayName: "Edit in Node Particle System Editor",
+                    icon: () => <EditRegular />,
+                    // eslint-disable-next-line @typescript-eslint/naming-convention
+                    execute: async () => await EditParticleSystem(particleSystem),
+                };
+            },
         });
 
         return {
             dispose: () => {
                 sectionRegistration.dispose();
+                editParticleSystemCommandRegistration.dispose();
             },
         };
     },

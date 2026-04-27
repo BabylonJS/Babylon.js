@@ -1,8 +1,8 @@
 import { BlockTools } from "../../blockTools";
-import type { IDisplayManager } from "shared-ui-components/nodeGraphSystem/interfaces/displayManager";
-import type { INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
+import { type IDisplayManager } from "shared-ui-components/nodeGraphSystem/interfaces/displayManager";
+import { type INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
 import * as styles from "./inputDisplayManager.module.scss";
-import type { NodeRenderGraphInputBlock } from "core/FrameGraph/Node/Blocks/inputBlock";
+import { type NodeRenderGraphInputBlock } from "core/FrameGraph/Node/Blocks/inputBlock";
 import { NodeRenderGraphBlockConnectionPointTypes } from "core/FrameGraph/Node/Types/nodeRenderGraphTypes";
 
 export class InputDisplayManager implements IDisplayManager {
@@ -23,7 +23,7 @@ export class InputDisplayManager implements IDisplayManager {
     }
 
     public getBackgroundColor(nodeData: INodeData): string {
-        let color = "";
+        let color: string;
         const inputBlock = nodeData.data as NodeRenderGraphInputBlock;
 
         switch (inputBlock.type) {

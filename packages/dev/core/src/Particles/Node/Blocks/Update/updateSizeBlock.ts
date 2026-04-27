@@ -1,7 +1,7 @@
-import type { Particle } from "core/Particles/particle";
-import type { ThinParticleSystem } from "core/Particles/thinParticleSystem";
-import type { NodeParticleConnectionPoint } from "core/Particles/Node/nodeParticleBlockConnectionPoint";
-import type { NodeParticleBuildState } from "core/Particles/Node/nodeParticleBuildState";
+import { type Particle } from "core/Particles/particle";
+import { type ThinParticleSystem } from "core/Particles/thinParticleSystem";
+import { type NodeParticleConnectionPoint } from "core/Particles/Node/nodeParticleBlockConnectionPoint";
+import { type NodeParticleBuildState } from "core/Particles/Node/nodeParticleBuildState";
 
 import { RegisterClass } from "core/Misc/typeStore";
 import { NodeParticleBlock } from "core/Particles/Node/nodeParticleBlock";

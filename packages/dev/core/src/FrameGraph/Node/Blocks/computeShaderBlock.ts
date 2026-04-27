@@ -1,4 +1,4 @@
-import type { NodeRenderGraphConnectionPoint, Scene, FrameGraph, IComputeShaderPath, IComputeShaderOptions } from "core/index";
+import { type NodeRenderGraphConnectionPoint, type Scene, type FrameGraph, type IComputeShaderPath, type IComputeShaderOptions } from "core/index";
 import { RegisterClass } from "../../../Misc/typeStore";
 import { NodeRenderGraphBlockConnectionPointTypes } from "../Types/nodeRenderGraphTypes";
 import { NodeRenderGraphBlock } from "../nodeRenderGraphBlock";

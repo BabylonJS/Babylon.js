@@ -3,18 +3,18 @@ import { NodeMaterialBlock } from "../../nodeMaterialBlock";
 import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
 import { NodeMaterialBlockConnectionPointMode } from "../../Enums/nodeMaterialBlockConnectionPointMode";
 import { NodeMaterialSystemValues } from "../../Enums/nodeMaterialSystemValues";
-import type { Nullable } from "../../../../types";
-import type { Effect } from "../../../../Materials/effect";
+import { type Nullable } from "../../../../types";
+import { type Effect } from "../../../../Materials/effect";
 import { Matrix, Vector2, Vector3, Vector4 } from "../../../../Maths/math.vector";
-import type { Scene } from "../../../../scene";
-import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
-import type { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
+import { type Scene } from "../../../../scene";
+import { type NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
+import { type NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import { GetClass, RegisterClass } from "../../../../Misc/typeStore";
 import { Color3, Color4, TmpColors, TmpVectors } from "../../../../Maths/math";
 import { AnimatedInputBlockTypes } from "./animatedInputBlockTypes";
 import { Observable } from "../../../../Misc/observable";
-import type { NodeMaterial } from "../../nodeMaterial";
+import { type NodeMaterial } from "../../nodeMaterial";
 import { PrecisionDate } from "../../../../Misc/precisionDate";
 import { ShaderLanguage } from "../../../../Materials/shaderLanguage";
 
@@ -187,6 +187,9 @@ export class InputBlock extends NodeMaterialBlock {
                     case NodeMaterialSystemValues.CameraPosition:
                         this._type = NodeMaterialBlockConnectionPointTypes.Vector3;
                         return this._type;
+                    case NodeMaterialSystemValues.CameraForward:
+                        this._type = NodeMaterialBlockConnectionPointTypes.Vector3;
+                        return this._type;
                     case NodeMaterialSystemValues.FogColor:
                         this._type = NodeMaterialBlockConnectionPointTypes.Color3;
                         return this._type;
@@ -267,7 +270,6 @@ export class InputBlock extends NodeMaterialBlock {
      * Please note that this value will be ignored if valueCallback is defined
      */
     public get value(): any {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return this._storedValue;
     }
 
@@ -443,6 +445,9 @@ export class InputBlock extends NodeMaterialBlock {
         return `${notDefine ? "#ifndef" : "#ifdef"} ${define}\n`;
     }
 
+    /**
+     * Initialize the block
+     */
     public override initialize() {
         this.associatedVariableName = "";
     }
@@ -694,6 +699,18 @@ export class InputBlock extends NodeMaterialBlock {
                 case NodeMaterialSystemValues.CameraPosition:
                     scene.bindEyePosition(effect, variableName, true);
                     break;
+                case NodeMaterialSystemValues.CameraForward:
+                    if (scene.activeCamera) {
+                        const transform = scene.activeCamera.getWorldMatrix();
+                        const forward = TmpVectors.Vector3[2];
+                        forward.set(0, 0, scene.useRightHandedSystem ? -1 : 1);
+                        const worldForward = new Vector3();
+                        Vector3.TransformNormalToRef(forward, transform, worldForward);
+                        worldForward.normalize();
+
+                        effect.setVector3(variableName, worldForward);
+                    }
+                    break;
                 case NodeMaterialSystemValues.FogColor:
                     effect.setColor3(variableName, scene.fogColor);
                     break;
@@ -850,12 +867,19 @@ export class InputBlock extends NodeMaterialBlock {
         return super._dumpPropertiesCode();
     }
 
+    /**
+     * Releases the resources held by the block
+     */
     public override dispose() {
         this.onValueChangedObservable.clear();
 
         super.dispose();
     }
 
+    /**
+     * Serializes the block
+     * @returns the serialized object
+     */
     public override serialize(): any {
         const serializationObject = super.serialize();
 
@@ -885,6 +909,12 @@ export class InputBlock extends NodeMaterialBlock {
         return serializationObject;
     }
 
+    /**
+     * Deserializes the block
+     * @param serializationObject - defines the serialized object
+     * @param scene - defines the scene
+     * @param rootUrl - defines the root URL
+     */
     public override _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
         this._mode = serializationObject.mode;
         super._deserialize(serializationObject, scene, rootUrl);

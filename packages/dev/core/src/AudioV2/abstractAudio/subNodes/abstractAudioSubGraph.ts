@@ -1,7 +1,7 @@
-import type { Nullable } from "../../../types";
-import type { AbstractAudioNode, AbstractNamedAudioNode } from "../abstractAudioNode";
-import type { _AbstractAudioSubNode } from "./abstractAudioSubNode";
-import type { AudioSubNode } from "./audioSubNode";
+import { type Nullable } from "../../../types";
+import { type AbstractAudioNode, type AbstractNamedAudioNode } from "../abstractAudioNode";
+import { type _AbstractAudioSubNode } from "./abstractAudioSubNode";
+import { type AudioSubNode } from "./audioSubNode";
 
 /**
  * Adds common sub graph functionality to an audio node.

@@ -1,16 +1,16 @@
 import * as React from "react";
 import { GlobalState } from "./globalState";
 import { GraphEditor } from "./graphEditor";
-import type { NodeMaterial } from "core/Materials/Node/nodeMaterial";
+import { type NodeMaterial } from "core/Materials/Node/nodeMaterial";
 import { SerializationTools } from "./serializationTools";
-import type { Observable } from "core/Misc/observable";
+import { type Observable } from "core/Misc/observable";
 import { PreviewType } from "./components/preview/previewType";
 import { DataStorage } from "core/Misc/dataStorage";
 import { NodeMaterialModes } from "core/Materials/Node/Enums/nodeMaterialModes";
 import { RegisterToDisplayManagers } from "./graphSystem/registerToDisplayLedger";
 import { RegisterToPropertyTabManagers } from "./graphSystem/registerToPropertyLedger";
 import { RegisterTypeLedger } from "./graphSystem/registerToTypeLedger";
-import type { Color4 } from "core/Maths/math.color";
+import { type Color4 } from "core/Maths/math.color";
 import { CreatePopup } from "shared-ui-components/popupHelper";
 import { createRoot } from "react-dom/client";
 

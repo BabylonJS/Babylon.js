@@ -14,7 +14,7 @@ const pos = array(
 fn main(input : VertexInputs) -> FragmentInputs {
 
 #define CUSTOM_VERTEX_MAIN_BEGIN
-    vertexOutputs.position = vec4f(pos[input.vertexIndex], uniforms.depthValue, 1.0);
+    vertexOutputs.position = vec4f(pos[vertexInputs.vertexIndex], uniforms.depthValue, 1.0);
 
 #define CUSTOM_VERTEX_MAIN_END
 }

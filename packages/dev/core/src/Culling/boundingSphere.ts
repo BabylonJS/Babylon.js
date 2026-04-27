@@ -1,7 +1,7 @@
-import type { DeepImmutable } from "../types";
+import { type DeepImmutable } from "../types";
 import { BuildArray } from "../Misc/arrayTools";
 import { Matrix, Vector3 } from "../Maths/math.vector";
-import type { Plane } from "../Maths/math.plane";
+import { type Plane } from "../Maths/math.plane";
 
 /**
  * Class used to store bounding sphere information

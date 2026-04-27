@@ -1,5 +1,5 @@
-import type { Scene } from "core/scene";
-import type { FrameGraph } from "core/FrameGraph/frameGraph";
+import { type Scene } from "core/scene";
+import { type FrameGraph } from "core/FrameGraph/frameGraph";
 import { NodeRenderGraphBlockConnectionPointTypes } from "core/FrameGraph/Node/Types/nodeRenderGraphTypes";
 import { NodeRenderGraphOutputBlock } from "core/FrameGraph/Node/Blocks/outputBlock";
 import { NodeRenderGraphInputBlock } from "core/FrameGraph/Node/Blocks/inputBlock";
@@ -45,6 +45,8 @@ import { NodeRenderGraphSSAO2PostProcessBlock } from "core/FrameGraph/Node/Block
 import { NodeRenderGraphComputeShaderBlock } from "core/FrameGraph/Node/Blocks/computeShaderBlock";
 import { NodeRenderGraphVolumetricLightingBlock } from "core/FrameGraph/Node/Blocks/PostProcesses/volumetricLightingBlock";
 import { NodeRenderGraphLightingVolumeBlock } from "core/FrameGraph/Node/Blocks/lightingVolumeBlock";
+import { NodeRenderGraphSelectionOutlineLayerBlock } from "core/FrameGraph/Node/Blocks/Layers/selectionOutlineLayerBlock";
+import { NodeRenderGraphIblShadowsRendererBlock } from "core/FrameGraph/Node/Blocks/Rendering/iblShadowsRendererBlock";
 
 /**
  * Static class for BlockTools
@@ -203,13 +205,19 @@ export class BlockTools {
             case "LightingVolumeBlock": {
                 return new NodeRenderGraphLightingVolumeBlock("Lighting Volume", frameGraph, scene);
             }
+            case "SelectionOutlineLayerBlock": {
+                return new NodeRenderGraphSelectionOutlineLayerBlock("Selection Outline Layer", frameGraph, scene);
+            }
+            case "IblShadowsRendererBlock": {
+                return new NodeRenderGraphIblShadowsRendererBlock("IBL Shadows", frameGraph, scene);
+            }
         }
 
         return null;
     }
 
     public static GetColorFromConnectionNodeType(type: NodeRenderGraphBlockConnectionPointTypes) {
-        let color = "#964848";
+        let color: string;
         switch (type) {
             case NodeRenderGraphBlockConnectionPointTypes.ObjectList:
                 color = "#84995c";
@@ -247,6 +255,9 @@ export class BlockTools {
                 break;
             case NodeRenderGraphBlockConnectionPointTypes.TextureVelocity:
                 color = "#e55151";
+                break;
+            case NodeRenderGraphBlockConnectionPointTypes.TextureIrradiance:
+                color = "#e52151";
                 break;
             case NodeRenderGraphBlockConnectionPointTypes.TextureScreenDepth:
                 color = "#e55185";
@@ -313,6 +324,8 @@ export class BlockTools {
                 return NodeRenderGraphBlockConnectionPointTypes.TextureWorldPosition;
             case "TextureVelocity":
                 return NodeRenderGraphBlockConnectionPointTypes.TextureVelocity;
+            case "TextureIrradiance":
+                return NodeRenderGraphBlockConnectionPointTypes.TextureIrradiance;
             case "TextureScreenDepth":
                 return NodeRenderGraphBlockConnectionPointTypes.TextureScreenDepth;
             case "TextureLocalPosition":
@@ -358,6 +371,8 @@ export class BlockTools {
                 return "TextureReflectivity";
             case NodeRenderGraphBlockConnectionPointTypes.TextureWorldPosition:
                 return "TexturePosition";
+            case NodeRenderGraphBlockConnectionPointTypes.TextureIrradiance:
+                return "TextureIrradiance";
             case NodeRenderGraphBlockConnectionPointTypes.TextureVelocity:
                 return "TextureVelocity";
             case NodeRenderGraphBlockConnectionPointTypes.TextureScreenDepth:

@@ -1,8 +1,8 @@
 import { NodeGeometryBlock } from "../../nodeGeometryBlock";
-import type { NodeGeometryConnectionPoint } from "../../nodeGeometryBlockConnectionPoint";
+import { type NodeGeometryConnectionPoint } from "../../nodeGeometryBlockConnectionPoint";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import { NodeGeometryBlockConnectionPointTypes } from "../../Enums/nodeGeometryConnectionPointTypes";
-import type { NodeGeometryBuildState } from "../../nodeGeometryBuildState";
+import { type NodeGeometryBuildState } from "../../nodeGeometryBuildState";
 import { GeometryInputBlock } from "../geometryInputBlock";
 import { Matrix, Vector3 } from "../../../../Maths/math.vector";
 
@@ -43,6 +43,7 @@ export class ScalingBlock extends NodeGeometryBlock {
         return this._outputs[0];
     }
 
+    /** @internal */
     public override autoConfigure() {
         if (!this.scale.isConnected) {
             const scaleInput = new GeometryInputBlock("Scale");

@@ -1,7 +1,7 @@
 import { NodeGeometryBlockConnectionPointTypes } from "../../Enums/nodeGeometryConnectionPointTypes";
 import { NodeGeometryBlock } from "../../nodeGeometryBlock";
-import type { NodeGeometryConnectionPoint } from "../../nodeGeometryBlockConnectionPoint";
-import type { NodeGeometryBuildState } from "../../nodeGeometryBuildState";
+import { type NodeGeometryConnectionPoint } from "../../nodeGeometryBlockConnectionPoint";
+import { type NodeGeometryBuildState } from "../../nodeGeometryBuildState";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import { Vector3 } from "core/Maths/math.vector";
 import { VertexData } from "core/Meshes/mesh.vertexData";
@@ -40,7 +40,7 @@ export class PointListBlock extends NodeGeometryBlock {
         return this._outputs[0];
     }
 
-    protected override _buildBlock(state: NodeGeometryBuildState) {
+    protected override _buildBlock(_state: NodeGeometryBuildState) {
         this.geometry._storedFunction = () => {
             this.geometry._executionCount = 1;
 
@@ -82,6 +82,7 @@ export class PointListBlock extends NodeGeometryBlock {
         return serializationObject;
     }
 
+    /** @internal */
     public override _deserialize(serializationObject: any) {
         super._deserialize(serializationObject);
 

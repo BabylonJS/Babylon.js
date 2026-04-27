@@ -2,7 +2,7 @@ import * as React from "react";
 import { Color3, Color4 } from "core/Maths/math.color";
 import { ColorComponentEntry } from "./colorComponentEntry";
 import { HexColor } from "./hexColor";
-import type { LockObject } from "../tabs/propertyGrids/lockObject";
+import { type LockObject } from "../tabs/propertyGrids/lockObject";
 
 import "./colorPicker.scss";
 import { Logger } from "core/Misc/logger";

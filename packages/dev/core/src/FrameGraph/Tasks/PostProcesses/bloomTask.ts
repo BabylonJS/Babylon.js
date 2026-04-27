@@ -1,4 +1,4 @@
-import type { FrameGraph, FrameGraphTextureCreationOptions, FrameGraphTextureHandle } from "core/index";
+import { type FrameGraph, type FrameGraphTextureCreationOptions, type FrameGraphTextureHandle } from "core/index";
 import { Constants } from "core/Engines/constants";
 import { FrameGraphBloomMergeTask } from "./bloomMergeTask";
 import { FrameGraphTask } from "../../frameGraphTask";
@@ -19,6 +19,17 @@ export class FrameGraphBloomTask extends FrameGraphTask {
      * The sampling mode to use for the source texture.
      */
     public sourceSamplingMode = Constants.TEXTURE_BILINEAR_SAMPLINGMODE;
+
+    /**
+     * The alpha mode to use when applying the bloom effect.
+     */
+    public get alphaMode() {
+        return this._merge.alphaMode;
+    }
+
+    public set alphaMode(mode: number) {
+        this._merge.alphaMode = mode;
+    }
 
     /**
      * The target texture to render the bloom effect to.
@@ -180,7 +191,9 @@ export class FrameGraphBloomTask extends FrameGraphTask {
 
         passDisabled.setRenderTarget(this.outputTexture);
         passDisabled.setExecuteFunc((context) => {
-            context.copyTexture(this.sourceTexture);
+            if (this.alphaMode === Constants.ALPHA_DISABLE) {
+                context.copyTexture(this.sourceTexture);
+            }
         });
     }
 

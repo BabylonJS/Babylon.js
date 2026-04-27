@@ -1,4 +1,4 @@
-import type { Scene, FrameGraph } from "core/index";
+import { type Scene, type FrameGraph } from "core/index";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
 import { FrameGraphBloomTask } from "../../../Tasks/PostProcesses/bloomTask";
@@ -82,7 +82,7 @@ export class NodeRenderGraphBloomPostProcessBlock extends NodeRenderGraphBasePos
     }
 
     /** The strength of the bloom. */
-    @editableInPropertyPage("Weight", PropertyTypeForEdition.Float, "PROPERTIES", { min: 0, max: 3 })
+    @editableInPropertyPage("Weight", PropertyTypeForEdition.Float, "PROPERTIES", { min: 0, max: 10 })
     public get weight(): number {
         return this._frameGraphTask.bloom.weight;
     }

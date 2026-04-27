@@ -1,10 +1,8 @@
-import type { FunctionComponent } from "react";
-import { useState, useContext, useEffect } from "react";
-import { Combobox as FluentComboBox, makeStyles, useComboboxFilter, useId, Option } from "@fluentui/react-components";
-import type { OptionOnSelectData, SelectionEvents } from "@fluentui/react-components";
+import { useState, useContext, useEffect, forwardRef } from "react";
+import { Combobox as FluentComboBox, makeStyles, useComboboxFilter, useId, Option, type OptionOnSelectData, type SelectionEvents } from "@fluentui/react-components";
 import { ToolContext } from "../hoc/fluentToolWrapper";
 import { CustomTokens } from "./utils";
-import type { PrimitiveProps } from "./primitive";
+import { type PrimitiveProps } from "./primitive";
 
 const useStyles = makeStyles({
     root: {
@@ -15,8 +13,8 @@ const useStyles = makeStyles({
         maxWidth: "400px",
     },
     comboBox: {
-        width: CustomTokens.inputWidth,
-        minWidth: CustomTokens.inputWidth,
+        width: CustomTokens.valueWidth,
+        minWidth: CustomTokens.valueWidth,
         boxSizing: "border-box",
     },
     input: {
@@ -52,6 +50,10 @@ export type ComboBoxProps = PrimitiveProps<string> & {
      * Options to display as label/value pairs
      */
     options: ComboBoxOption[];
+    /**
+     * The default open state when open is uncontrolled
+     */
+    defaultOpen?: boolean;
 };
 
 /**
@@ -59,7 +61,7 @@ export type ComboBoxProps = PrimitiveProps<string> & {
  * @param props
  * @returns
  */
-export const ComboBox: FunctionComponent<ComboBoxProps> = (props) => {
+export const ComboBox = forwardRef<HTMLInputElement, ComboBoxProps>((props, ref) => {
     ComboBox.displayName = "ComboBox";
     const comboId = useId();
     const styles = useStyles();
@@ -97,6 +99,8 @@ export const ComboBox: FunctionComponent<ComboBoxProps> = (props) => {
         <div className={styles.root}>
             <label id={comboId}>{props.label}</label>
             <FluentComboBox
+                ref={ref}
+                defaultOpen={props.defaultOpen}
                 size={size}
                 root={{ className: styles.comboBox }}
                 input={{ className: styles.input }}
@@ -111,4 +115,4 @@ export const ComboBox: FunctionComponent<ComboBoxProps> = (props) => {
             </FluentComboBox>
         </div>
     );
-};
+});

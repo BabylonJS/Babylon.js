@@ -1,21 +1,20 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-import type { Atmosphere } from "./atmosphere";
-import type { AtmospherePhysicalProperties } from "./atmospherePhysicalProperties";
+import { type Atmosphere } from "./atmosphere";
+import { type AtmospherePhysicalProperties } from "./atmospherePhysicalProperties";
 import { Clamp, SmoothStep } from "core/Maths/math.scalar.functions";
 import { Constants } from "core/Engines/constants";
-import type { DirectionalLight } from "core/Lights/directionalLight";
+import { type DirectionalLight } from "core/Lights/directionalLight";
 import { EffectRenderer, EffectWrapper } from "core/Materials/effectRenderer";
 import { FromHalfFloat } from "core/Misc/textureTools";
-import type { IColor3Like, IColor4Like, IVector2Like, IVector3Like } from "core/Maths/math.like";
-import type { Nullable } from "core/types";
+import { type IColor3Like, type IColor4Like, type IVector2Like, type IVector3Like } from "core/Maths/math.like";
+import { type Nullable } from "core/types";
 import { Observable } from "core/Misc/observable";
 import { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
 import { Sample2DRgbaToRef } from "./sampling";
 import { Vector3Dot } from "core/Maths/math.vector.functions";
-import "./Shaders/fullscreenTriangle.vertex";
-import "./Shaders/transmittance.fragment";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
 const LutWidthPx = 256;
 const LutHeightPx = 64;
@@ -53,7 +52,7 @@ const ComputeLutUVToRef = (properties: AtmospherePhysicalProperties, radius: num
 
 const SampleLutToRef = (
     properties: AtmospherePhysicalProperties,
-    lutData: Uint8Array | Uint16Array,
+    lutData: Float32Array,
     positionDistanceToOrigin: number,
     cosAngleLightToZenith: number,
     result: IColor4Like
@@ -64,7 +63,7 @@ const SampleLutToRef = (
     }
 
     ComputeLutUVToRef(properties, positionDistanceToOrigin, cosAngleLightToZenith, Uv);
-    Sample2DRgbaToRef(Uv.x, Uv.y, LutWidthPx, LutHeightPx, lutData, result, UseHalfFloat ? FromHalfFloat : (value) => value / 255.0);
+    Sample2DRgbaToRef(Uv.x, Uv.y, LutWidthPx, LutHeightPx, lutData, result, null);
 
     const weight = Clamp(SmoothStep(1.0, 0.0, Clamp((Uv.x - TransmittanceMaxUnoccludedU) / TransmittanceHorizonRange)));
     result.r *= weight;
@@ -84,12 +83,13 @@ export class TransmittanceLut {
     public readonly onUpdatedObservable = new Observable<void>();
 
     private readonly _atmosphere: Atmosphere;
-    private _lutData: Uint8Array | Uint16Array = new Uint8Array(0);
+    private _lutData: Float32Array = new Float32Array(0);
     private _renderTarget: Nullable<RenderTargetTexture>;
     private _effectWrapper: Nullable<EffectWrapper>;
     private _effectRenderer: Nullable<EffectRenderer>;
     private _isDirty = true;
     private _isDisposed = false;
+    private _needsReadPixels = false;
 
     /**
      * True if the LUT has been rendered.
@@ -107,6 +107,13 @@ export class TransmittanceLut {
             throw new Error();
         }
         return this._renderTarget;
+    }
+
+    /**
+     * True if the LUT data has been read back from the GPU.
+     */
+    public get hasLutData(): boolean {
+        return this._lutData[0] !== undefined;
     }
 
     /**
@@ -134,6 +141,8 @@ export class TransmittanceLut {
 
         const atmosphereUbo = atmosphere.uniformBuffer;
         const useUbo = atmosphereUbo.useUbo;
+        const useWebGPU = engine.isWebGPU && !EffectWrapper.ForceGLSL;
+        const uboName = useWebGPU ? "atmosphere" : atmosphereUbo.name;
         this._effectWrapper = new EffectWrapper({
             engine,
             name,
@@ -141,9 +150,17 @@ export class TransmittanceLut {
             fragmentShader: "transmittance",
             attributeNames: ["position"],
             uniformNames: ["depth", ...(useUbo ? [] : atmosphereUbo.getUniformNames())],
-            uniformBuffers: useUbo ? [atmosphereUbo.name] : [],
+            uniformBuffers: useUbo ? [uboName] : [],
             defines: ["#define POSITION_VEC2"],
             useShaderStore: true,
+            shaderLanguage: useWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
+            extraInitializations: (_, list) => {
+                list.push(
+                    ...(useWebGPU
+                        ? [import("./ShadersWGSL/fullscreenTriangle.vertex"), import("./ShadersWGSL/transmittance.fragment")]
+                        : [import("./Shaders/fullscreenTriangle.vertex"), import("./Shaders/transmittance.fragment")])
+                );
+            },
         });
 
         this._effectRenderer = new EffectRenderer(engine, {
@@ -204,15 +221,14 @@ export class TransmittanceLut {
             return false;
         }
 
-        const engine = this._atmosphere.scene.getEngine();
+        const effectRenderer = this._effectRenderer!;
+        effectRenderer.saveStates();
 
+        const engine = this._atmosphere.scene.getEngine();
         engine.bindFramebuffer(this.renderTarget.renderTarget!, undefined, undefined, undefined, true);
 
-        const effectRenderer = this._effectRenderer!;
-        effectRenderer.applyEffectWrapper(effectWrapper);
-
-        effectRenderer.saveStates();
         effectRenderer.setViewport();
+        effectRenderer.applyEffectWrapper(effectWrapper);
 
         const effect = effectWrapper.effect;
         effectRenderer.bindBuffers(effect);
@@ -227,17 +243,41 @@ export class TransmittanceLut {
         engine.restoreDefaultFramebuffer();
 
         this._isDirty = false;
+        this._needsReadPixels = true;
 
-        // eslint-disable-next-line github/no-then
-        void this.renderTarget.readPixels(0, 0, undefined, undefined, UseHalfFloat /* noDataConversion */)?.then((value: ArrayBufferView) => {
-            if (this._isDisposed) {
-                return;
-            }
-            this._lutData = value as Uint8Array | Uint16Array;
-            this.onUpdatedObservable.notifyObservers();
+        // Defer readPixels to the end of the frame.
+        this._atmosphere.scene.onAfterRenderObservable.addOnce(async () => {
+            await this.readPixelsAsync();
         });
 
         return true;
+    }
+
+    /**
+     * Reads back the LUT data from the GPU if a readback is pending.
+     * @internal
+     */
+    public async readPixelsAsync(): Promise<void> {
+        if (!this._needsReadPixels || this._isDisposed) {
+            return;
+        }
+        this._needsReadPixels = false;
+
+        const value = await this.renderTarget.readPixels(0, 0, undefined, undefined, true /* noDataConversion */);
+        if (value && !this._isDisposed) {
+            const rawLutData = value as Uint8Array | Uint16Array;
+            const lutData = (this._lutData = new Float32Array(rawLutData.length));
+            if (rawLutData instanceof Uint16Array) {
+                for (let i = 0; i < rawLutData.length; i++) {
+                    lutData[i] = FromHalfFloat(rawLutData[i]);
+                }
+            } else {
+                for (let i = 0; i < rawLutData.length; i++) {
+                    lutData[i] = rawLutData[i] / 255.0;
+                }
+            }
+            this.onUpdatedObservable.notifyObservers();
+        }
     }
 
     /**

@@ -13,7 +13,11 @@
         "clean": "rimraf dist && rimraf *.tsbuildinfo -g",
         "compile": "tsc -b tsconfig.build.json",
         "watch": "tsc -b tsconfig.build.json --watch",
-        "test": "npm run compile && node ./dist/index.js"
+        "test:unit": "node ./scripts/run-unit-tests.cjs",
+        "test": "npm run compile && node ./dist/index.js --suite ci",
+        "test:all": "npm run compile && node ./dist/index.js --suite all",
+        "test:packages": "npm run compile && node ./dist/index.js --suite packages",
+        "list": "npm run compile && node ./dist/index.js --list"
     },
     "sideEffects": true,
     "dependencies": {

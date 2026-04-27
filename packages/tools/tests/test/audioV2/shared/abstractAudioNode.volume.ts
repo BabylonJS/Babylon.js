@@ -1,6 +1,13 @@
 import { EvaluateAbstractAudioNodeTestAsync } from "../utils/abstractAudioNode.utils";
-import type { AudioNodeType } from "../utils/audioV2.utils";
-import { Channel, EvaluateErrorMessageAsync, EvaluateVolumesAtTimeAsync, ExpectValueToBeCloseTo, RealtimeVolumeRange, VolumePrecision } from "../utils/audioV2.utils";
+import {
+    type AudioNodeType,
+    Channel,
+    EvaluateErrorMessageAsync,
+    EvaluateVolumesAtTimeAsync,
+    ExpectValueToBeCloseTo,
+    RealtimeVolumeRange,
+    VolumePrecision,
+} from "../utils/audioV2.utils";
 
 import { expect, test } from "@playwright/test";
 

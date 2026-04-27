@@ -1,15 +1,15 @@
-import type { FresnelParameters } from "../Materials/fresnelParameters";
-import type { ImageProcessingConfiguration } from "../Materials/imageProcessingConfiguration";
+import { type FresnelParameters } from "../Materials/fresnelParameters";
+import { type ImageProcessingConfiguration } from "../Materials/imageProcessingConfiguration";
 import { _WarnImport } from "./devTools";
-import type { ColorCurves } from "../Materials/colorCurves";
-import type { Scene } from "../scene";
-import type { Nullable } from "../types";
-import type { BaseTexture } from "../Materials/Textures/baseTexture";
-import type { IAnimatable } from "../Animations/animatable.interface";
+import { type ColorCurves } from "../Materials/colorCurves";
+import { type Scene } from "../scene";
+import { type Nullable } from "../types";
+import { type BaseTexture } from "../Materials/Textures/baseTexture";
+import { type IAnimatable } from "../Animations/animatable.interface";
 import { Tags } from "./tags";
 import { Color3, Color4 } from "../Maths/math.color";
 import { Matrix, Quaternion, Vector2, Vector3 } from "../Maths/math.vector";
-import type { Camera } from "../Cameras/camera";
+import { type Camera } from "../Cameras/camera";
 import { GetMergedStore } from "./decorators.functions";
 
 /** @internal */
@@ -46,7 +46,11 @@ const CopySource = function <T>(creationFunction: () => T, source: T, instanciat
                 case 6: // Mesh reference
                 case 9: // Image processing configuration reference
                 case 11: // Camera reference
-                    (<any>destination)[property] = sourceProperty;
+                    if (typeof sourceProperty.slice === "function") {
+                        (<any>destination)[property] = sourceProperty.slice();
+                    } else {
+                        (<any>destination)[property] = sourceProperty;
+                    }
                     break;
                 case 1: // Texture
                     if (options.cloneTexturesOnlyOnce && textureMap[sourceProperty.uniqueId]) {

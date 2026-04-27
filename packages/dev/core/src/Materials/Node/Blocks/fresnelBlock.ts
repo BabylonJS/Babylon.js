@@ -1,11 +1,11 @@
 import { NodeMaterialBlock } from "../nodeMaterialBlock";
 import { NodeMaterialBlockTargets } from "../Enums/nodeMaterialBlockTargets";
 import { NodeMaterialBlockConnectionPointTypes } from "../Enums/nodeMaterialBlockConnectionPointTypes";
-import type { NodeMaterialBuildState } from "../nodeMaterialBuildState";
-import type { NodeMaterialConnectionPoint } from "../nodeMaterialBlockConnectionPoint";
+import { type NodeMaterialBuildState } from "../nodeMaterialBuildState";
+import { type NodeMaterialConnectionPoint } from "../nodeMaterialBlockConnectionPoint";
 import { RegisterClass } from "../../../Misc/typeStore";
 import { InputBlock } from "./Input/inputBlock";
-import type { NodeMaterial } from "../nodeMaterial";
+import { type NodeMaterial } from "../nodeMaterial";
 
 import "../../../Shaders/ShadersInclude/fresnelFunction";
 import { ViewDirectionBlock } from "./viewDirectionBlock";
@@ -72,6 +72,10 @@ export class FresnelBlock extends NodeMaterialBlock {
         return this._outputs[0];
     }
 
+    /**
+     * Auto configure the block based on the material
+     * @param material - the node material
+     */
     public override autoConfigure(material: NodeMaterial) {
         if (!this.viewDirection.isConnected) {
             const viewDirectionInput = new ViewDirectionBlock("View direction");

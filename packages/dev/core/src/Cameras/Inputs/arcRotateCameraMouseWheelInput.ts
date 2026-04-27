@@ -1,16 +1,13 @@
-import type { Nullable } from "../../types";
+import { type Nullable } from "../../types";
 import { serialize } from "../../Misc/decorators";
-import type { EventState, Observer } from "../../Misc/observable";
-import type { ArcRotateCamera } from "../../Cameras/arcRotateCamera";
-import type { ICameraInput } from "../../Cameras/cameraInputsManager";
-import { CameraInputTypes } from "../../Cameras/cameraInputsManager";
-import type { PointerInfo } from "../../Events/pointerEvents";
-import { PointerEventTypes } from "../../Events/pointerEvents";
+import { type EventState, type Observer } from "../../Misc/observable";
+import { type ArcRotateCamera } from "../../Cameras/arcRotateCamera";
+import { type ICameraInput, CameraInputTypes } from "../../Cameras/cameraInputsManager";
+import { type PointerInfo, PointerEventTypes } from "../../Events/pointerEvents";
 import { Plane } from "../../Maths/math.plane";
 import { Vector3, Matrix, TmpVectors } from "../../Maths/math.vector";
 import { Epsilon } from "../../Maths/math.constants";
-import type { IWheelEvent } from "../../Events/deviceInputEvents";
-import { EventConstants } from "../../Events/deviceInputEvents";
+import { type IWheelEvent, EventConstants } from "../../Events/deviceInputEvents";
 import { Clamp } from "../../Maths/math.scalar.functions";
 import { Tools } from "../../Misc/tools";
 
@@ -65,7 +62,7 @@ export class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCam
     private _globalOffset: Vector3 = new Vector3(0, 0, 0);
 
     protected _computeDeltaFromMouseWheelLegacyEvent(mouseWheelDelta: number, radius: number) {
-        let delta = 0;
+        let delta: number;
         const wheelDelta = mouseWheelDelta * 0.01 * this.wheelDeltaPercentage * radius;
         if (mouseWheelDelta > 0) {
             delta = wheelDelta / (1.0 + this.wheelDeltaPercentage);
@@ -87,7 +84,7 @@ export class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCam
                 return;
             }
             const event = <IWheelEvent>p.event;
-            let delta = 0;
+            let delta: number;
             const platformScale = event.deltaMode === EventConstants.DOM_DELTA_LINE ? FfMultiplier : 1; // If this happens to be set to DOM_DELTA_LINE, adjust accordingly
 
             const wheelDelta = -(event.deltaY * platformScale);

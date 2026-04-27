@@ -1,5 +1,4 @@
-import type { PropsWithChildren } from "react";
-import { useContext, useEffect, useRef } from "react";
+import { type PropsWithChildren, useContext, useEffect, useRef } from "react";
 import * as styles from "./splitContainer.module.scss";
 import { ControlledSize, SplitDirection, SplitContext } from "./splitContext";
 import { ToolContext } from "shared-ui-components/fluent/hoc/fluentToolWrapper";
@@ -135,7 +134,7 @@ export const SplitContainer: React.FC<PropsWithChildren<ISplitContainerProps>> =
             }
 
             const child = children[i] as HTMLElement;
-            let childsize = 0;
+            let childsize: number;
             if (props.direction === SplitDirection.Horizontal) {
                 childsize = child.getBoundingClientRect().width;
             } else {
@@ -196,7 +195,7 @@ export const SplitContainer: React.FC<PropsWithChildren<ISplitContainerProps>> =
             return;
         }
 
-        let current = 0;
+        let current: number;
         if (controlledSide === ControlledSize.First) {
             current = sourceIndex - 1;
         } else {
@@ -277,8 +276,8 @@ export const SplitContainer: React.FC<PropsWithChildren<ISplitContainerProps>> =
             return;
         }
 
-        let current = 0;
-        let other = 0;
+        let current: number;
+        let other: number;
         if (controlledSide === ControlledSize.First) {
             current = sourceIndex - 1;
             other = sourceIndex + 1;
@@ -289,8 +288,9 @@ export const SplitContainer: React.FC<PropsWithChildren<ISplitContainerProps>> =
 
         if (size !== undefined) {
             const sizeString = `${size | 0}px`;
+            const alreadySet = props.direction === SplitDirection.Horizontal ? childArray[current].style.width : childArray[current].style.height;
 
-            if (!childArray[current].style.width) {
+            if (!alreadySet) {
                 if (props.direction === SplitDirection.Horizontal) {
                     childArray[current].style.width = sizeString;
                 } else {

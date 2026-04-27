@@ -1,11 +1,10 @@
 import { Logger } from "../../Misc/logger";
-import type { Nullable } from "../../types";
-import type { Scene } from "../../scene";
-import type { ISize } from "../../Maths/math.size";
-import type { ITextureCreationOptions } from "../../Materials/Textures/texture";
-import { Texture } from "../../Materials/Textures/texture";
+import { type Nullable } from "../../types";
+import { type Scene } from "../../scene";
+import { type ISize } from "../../Maths/math.size";
+import { type ITextureCreationOptions, Texture } from "../../Materials/Textures/texture";
 import { Constants } from "../../Engines/constants";
-import type { ICanvas, ICanvasRenderingContext } from "../../Engines/ICanvas";
+import { type ICanvas, type ICanvasRenderingContext } from "../../Engines/ICanvas";
 
 import "../../Engines/Extensions/engine.dynamicTexture";
 

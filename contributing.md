@@ -60,3 +60,25 @@ In order to not bloat the core engine with unwanted or unnecessary features (tha
 -   Does this feature already exist in a similar framework?
 
 If your PR does not fall into the core category you can consider using our [Extensions repo](https://github.com/BabylonJS/Extensions) for more high level features.
+
+## Managing Cloud Agents (GitHub Agentic Workflows)
+
+This repository uses [GitHub Agentic Workflows](https://github.com/github/gh-aw) to run AI-powered automation in GitHub Actions. The workflow definitions live in `.github/workflows/*.md` files and are compiled to `.lock.yml` files before they can run.
+
+If you want to create, update, or test these cloud agent workflows, we recommend installing the `gh-aw` CLI extension first:
+
+```bash
+gh extension install github/gh-aw
+```
+
+You can then compile, validate, and test workflows locally before checking them in. For example, to test a workflow from your working branch without merging to `main`:
+
+```bash
+# Compile your workflow changes
+gh aw compile
+
+# Run a workflow from your current branch
+gh workflow run <workflow-name>.lock.yml --ref <your-branch>
+```
+
+> **Note:** The `gh-aw` extension is optional. It is only needed if you are working on the agent workflow definitions themselves. It is not required for general Babylon.js development.

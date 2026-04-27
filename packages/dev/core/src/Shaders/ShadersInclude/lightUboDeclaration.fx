@@ -26,6 +26,9 @@
 #ifdef IESLIGHTTEXTURE{X}
 	uniform sampler2D iesLightTexture{X};
 #endif
+#ifdef RECTAREALIGHTEMISSIONTEXTURE{X}
+	uniform sampler2D rectAreaLightEmissionTexture{X};
+#endif
 #ifdef PROJECTEDLIGHTTEXTURE{X}
 	uniform mat4 textureProjectionMatrix{X};
 	uniform sampler2D projectionLightTexture{X};

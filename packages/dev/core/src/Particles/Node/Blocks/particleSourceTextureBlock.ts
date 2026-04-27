@@ -1,8 +1,8 @@
-import type { NodeParticleConnectionPoint } from "../nodeParticleBlockConnectionPoint";
-import type { NodeParticleBuildState } from "../nodeParticleBuildState";
-import type { Nullable } from "core/types";
-import type { BaseTexture } from "../../../Materials/Textures/baseTexture";
-import type { ProceduralTexture } from "../../../Materials";
+import { type NodeParticleConnectionPoint } from "../nodeParticleBlockConnectionPoint";
+import { type NodeParticleBuildState } from "../nodeParticleBuildState";
+import { type Nullable } from "core/types";
+import { type BaseTexture } from "../../../Materials/Textures/baseTexture";
+import { type ProceduralTexture } from "../../../Materials/Textures/Procedurals/proceduralTexture";
 
 import { Texture } from "core/Materials/Textures/texture";
 import { RegisterClass } from "../../../Misc/typeStore";
@@ -31,6 +31,11 @@ export class ParticleTextureSourceBlock extends NodeParticleBlock {
     private _sourceTexture: Nullable<BaseTexture> = null;
     private _cachedData: Nullable<INodeParticleTextureData> = null;
     private _clonedTextures: BaseTexture[] = [];
+
+    /**
+     * Gets or sets the strenght of the flow map effect
+     */
+    public invertY = true;
 
     /**
      * Indicates if the texture data should be serialized as a base64 string.
@@ -74,6 +79,14 @@ export class ParticleTextureSourceBlock extends NodeParticleBlock {
     }
 
     /**
+     * Gets the texture directly set on this block.
+     * This value will not be serialized.
+     */
+    public get sourceTexture(): Nullable<BaseTexture> {
+        return this._sourceTexture;
+    }
+
+    /**
      * Directly sets the texture to be used by this block.
      * This value will not be serialized.
      */
@@ -85,6 +98,22 @@ export class ParticleTextureSourceBlock extends NodeParticleBlock {
         this._sourceTexture = value;
         this._url = (value as Texture).url || "";
         this._textureDataUrl = "";
+    }
+
+    /**
+     * Gets the texture set on this block.
+     * This value will not be serialized.
+     */
+    public get texture(): Nullable<BaseTexture> {
+        return this.sourceTexture;
+    }
+
+    /**
+     * Sets the texture to be used by this block.
+     * This value will not be serialized.
+     */
+    public set texture(value: Nullable<BaseTexture>) {
+        this.sourceTexture = value;
     }
 
     /**
@@ -108,7 +137,7 @@ export class ParticleTextureSourceBlock extends NodeParticleBlock {
     /**
      * Gets the texture output component
      */
-    public get texture(): NodeParticleConnectionPoint {
+    public get textureOutput(): NodeParticleConnectionPoint {
         return this._outputs[0];
     }
 
@@ -117,7 +146,7 @@ export class ParticleTextureSourceBlock extends NodeParticleBlock {
      * @returns a promise that resolves to the texture content, including width, height, and pixel data
      */
     async extractTextureContentAsync() {
-        if (!this.texture._storedValue && !this._sourceTexture) {
+        if (!this.textureOutput._storedValue && !this._sourceTexture) {
             return null;
         }
 
@@ -125,7 +154,7 @@ export class ParticleTextureSourceBlock extends NodeParticleBlock {
             return this._cachedData;
         }
 
-        const texture = this.texture._storedValue || this._sourceTexture;
+        const texture = this.textureOutput._storedValue || this._sourceTexture;
         return await new Promise<
             Nullable<{
                 width: number;
@@ -155,7 +184,7 @@ export class ParticleTextureSourceBlock extends NodeParticleBlock {
                         this._cachedData = {
                             width: size.width,
                             height: size.height,
-                            data: data as Uint8ClampedArray,
+                            data: new Uint8ClampedArray(data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength)),
                         };
                         resolve(this._cachedData);
                     })
@@ -196,16 +225,16 @@ export class ParticleTextureSourceBlock extends NodeParticleBlock {
                 // Cross-engine: recreate texture from URL if available, preserving invertY
                 const url = (this._sourceTexture as Texture).url || this._url;
                 if (url) {
-                    const invertY = (this._sourceTexture as Texture).invertY ?? true;
+                    const invertY = (this._sourceTexture as Texture).invertY ?? this.invertY;
                     const tex = new Texture(url, state.scene, undefined, invertY);
                     this._copyTextureProperties(this._sourceTexture, tex);
                     this._clonedTextures.push(tex);
-                    this.texture._storedValue = tex;
+                    this.textureOutput._storedValue = tex;
                     return;
                 }
                 // No URL available - use the source texture directly as fallback
                 // This may not render correctly but avoids breaking completely
-                this.texture._storedValue = this._sourceTexture;
+                this.textureOutput._storedValue = this._sourceTexture;
                 return;
             }
 
@@ -213,28 +242,28 @@ export class ParticleTextureSourceBlock extends NodeParticleBlock {
             const cloned = this._sourceTexture.clone();
             if (cloned) {
                 this._clonedTextures.push(cloned);
-                this.texture._storedValue = cloned;
+                this.textureOutput._storedValue = cloned;
             } else {
-                this.texture._storedValue = this._sourceTexture;
+                this.textureOutput._storedValue = this._sourceTexture;
             }
             return;
         }
 
         if (!this._textureDataUrl && !this._url) {
-            this.texture._storedValue = null;
+            this.textureOutput._storedValue = null;
             return;
         }
 
         if (this._textureDataUrl) {
-            const tex = new Texture(this._textureDataUrl, state.scene);
+            const tex = new Texture(this._textureDataUrl, state.scene, undefined, this.invertY);
             this._clonedTextures.push(tex);
-            this.texture._storedValue = tex;
+            this.textureOutput._storedValue = tex;
             return;
         }
 
-        const tex = new Texture(this._url, state.scene);
+        const tex = new Texture(this._url, state.scene, undefined, this.invertY);
         this._clonedTextures.push(tex);
-        this.texture._storedValue = tex;
+        this.textureOutput._storedValue = tex;
     }
 
     /**
@@ -246,6 +275,7 @@ export class ParticleTextureSourceBlock extends NodeParticleBlock {
 
         serializationObject.url = this.url;
         serializationObject.serializedCachedData = this.serializedCachedData;
+        serializationObject.invertY = this.invertY;
 
         if (this.serializedCachedData) {
             serializationObject.textureDataUrl = this.textureDataUrl;
@@ -263,6 +293,7 @@ export class ParticleTextureSourceBlock extends NodeParticleBlock {
 
         this.url = serializationObject.url;
         this.serializedCachedData = !!serializationObject.serializedCachedData;
+        this.invertY = !!serializationObject.invertY;
 
         if (serializationObject.textureDataUrl) {
             this.textureDataUrl = serializationObject.textureDataUrl;
@@ -278,7 +309,7 @@ export class ParticleTextureSourceBlock extends NodeParticleBlock {
             tex.dispose();
         }
         this._clonedTextures = [];
-        this.texture._storedValue = null;
+        this.textureOutput._storedValue = null;
         // Never dispose _sourceTexture - it's owned by the caller
         super.dispose();
     }

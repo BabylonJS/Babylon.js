@@ -70,7 +70,7 @@
 // // End of OpenEXR license -------------------------------------------------
 
 /** @internal */
-export function DecodeRunLength(source: ArrayBuffer) {
+export function DecodeRunLength(source: ArrayBufferLike) {
     let size = source.byteLength;
     const out = [];
     let p = 0;

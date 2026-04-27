@@ -1,7 +1,7 @@
-import type { ITextureInfo, IKHRTextureTransform } from "babylonjs-gltf2interface";
+import { type ITextureInfo, type IKHRTextureTransform } from "babylonjs-gltf2interface";
 import { Tools } from "core/Misc/tools";
-import type { Texture } from "core/Materials/Textures/texture";
-import type { IGLTFExporterExtensionV2 } from "../glTFExporterExtension";
+import { type Texture } from "core/Materials/Textures/texture";
+import { type IGLTFExporterExtensionV2 } from "../glTFExporterExtension";
 import { GLTFExporter } from "../glTFExporter";
 
 const NAME = "KHR_texture_transform";

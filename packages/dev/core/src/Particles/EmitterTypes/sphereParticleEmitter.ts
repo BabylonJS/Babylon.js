@@ -1,11 +1,10 @@
-import type { Matrix } from "../../Maths/math.vector";
-import { Vector3 } from "../../Maths/math.vector";
+import { type Matrix, Vector3 } from "../../Maths/math.vector";
 import { RandomRange } from "../../Maths/math.scalar.functions";
-import type { Particle } from "../../Particles/particle";
-import type { IParticleEmitterType } from "./IParticleEmitterType";
+import { type Particle } from "../../Particles/particle";
+import { type IParticleEmitterType } from "./IParticleEmitterType";
 import { DeepCopier } from "../../Misc/deepCopier";
-import type { UniformBufferEffectCommonAccessor } from "../../Materials/uniformBufferEffectCommonAccessor";
-import type { UniformBuffer } from "../../Materials/uniformBuffer";
+import { type UniformBufferEffectCommonAccessor } from "../../Materials/uniformBufferEffectCommonAccessor";
+import { type UniformBuffer } from "../../Materials/uniformBuffer";
 /**
  * Particle emitter emitting particles from the inside of a sphere.
  * It emits the particles alongside the sphere radius. The emission direction might be randomized.
@@ -268,7 +267,7 @@ export class SphereDirectedParticleEmitter extends SphereParticleEmitter {
      */
     public override parse(serializationObject: any): void {
         super.parse(serializationObject);
-        this.direction1.copyFrom(serializationObject.direction1);
-        this.direction2.copyFrom(serializationObject.direction2);
+        Vector3.FromArrayToRef(serializationObject.direction1, 0, this.direction1);
+        Vector3.FromArrayToRef(serializationObject.direction2, 0, this.direction2);
     }
 }

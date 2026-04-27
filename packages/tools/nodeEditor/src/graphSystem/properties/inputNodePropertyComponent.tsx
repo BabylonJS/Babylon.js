@@ -1,5 +1,5 @@
 import * as React from "react";
-import type { GlobalState } from "../../globalState";
+import { type GlobalState } from "../../globalState";
 import { FloatPropertyTabComponent } from "../../components/propertyTab/properties/floatPropertyTabComponent";
 import { Vector2PropertyTabComponent } from "../../components/propertyTab/properties/vector2PropertyTabComponent";
 import { Color3PropertyTabComponent } from "../../components/propertyTab/properties/color3PropertyTabComponent";
@@ -10,14 +10,14 @@ import { LineContainerComponent } from "shared-ui-components/lines/lineContainer
 import { NodeMaterialBlockConnectionPointTypes } from "core/Materials/Node/Enums/nodeMaterialBlockConnectionPointTypes";
 import { NodeMaterialSystemValues } from "core/Materials/Node/Enums/nodeMaterialSystemValues";
 import { AnimatedInputBlockTypes } from "core/Materials/Node/Blocks/Input/animatedInputBlockTypes";
-import type { InputBlock } from "core/Materials/Node/Blocks/Input/inputBlock";
+import { type InputBlock } from "core/Materials/Node/Blocks/Input/inputBlock";
 import { GetGeneralProperties } from "./genericNodePropertyComponent";
 import { CheckBoxLineComponent } from "../../sharedComponents/checkBoxLineComponent";
 import { Color4PropertyTabComponent } from "../../components/propertyTab/properties/color4PropertyTabComponent";
-import type { Nullable } from "core/types";
-import type { Observer } from "core/Misc/observable";
+import { type Nullable } from "core/types";
+import { type Observer } from "core/Misc/observable";
 import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
-import type { IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
+import { type IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
 import { OptionsLine } from "shared-ui-components/lines/optionsLineComponent";
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
 import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent";
@@ -236,7 +236,10 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                 ];
                 break;
             case NodeMaterialBlockConnectionPointTypes.Vector3:
-                systemValuesOptions = [{ label: "Camera position", value: NodeMaterialSystemValues.CameraPosition }];
+                systemValuesOptions = [
+                    { label: "Camera position", value: NodeMaterialSystemValues.CameraPosition },
+                    { label: "Camera forward", value: NodeMaterialSystemValues.CameraForward },
+                ];
                 attributeOptions = [
                     { label: "position", value: "position" },
                     { label: "normal", value: "normal" },

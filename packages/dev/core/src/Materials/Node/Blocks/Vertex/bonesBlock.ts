@@ -1,17 +1,17 @@
 import { NodeMaterialBlock } from "../../nodeMaterialBlock";
 import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
-import type { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
+import { type NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import { NodeMaterialSystemValues } from "../../Enums/nodeMaterialSystemValues";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
-import type { AbstractMesh } from "../../../../Meshes/abstractMesh";
-import type { Mesh } from "../../../../Meshes/mesh";
-import type { Effect } from "../../../effect";
-import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
-import type { NodeMaterial, NodeMaterialDefines } from "../../nodeMaterial";
+import { type AbstractMesh } from "../../../../Meshes/abstractMesh";
+import { type Mesh } from "../../../../Meshes/mesh";
+import { type Effect } from "../../../effect";
+import { type NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
+import { type NodeMaterial, type NodeMaterialDefines } from "../../nodeMaterial";
 import { InputBlock } from "../Input/inputBlock";
 import { RegisterClass } from "../../../../Misc/typeStore";
 
-import type { EffectFallbacks } from "../../../effectFallbacks";
+import { type EffectFallbacks } from "../../../effectFallbacks";
 import { BindBonesParameters, PrepareDefinesForBones } from "../../../materialHelper.functions";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
@@ -41,7 +41,7 @@ export class BonesBlock extends NodeMaterialBlock {
      */
     public override initialize(state: NodeMaterialBuildState) {
         state._excludeVariableName("boneSampler");
-        state._excludeVariableName("boneTextureWidth");
+        state._excludeVariableName("boneTextureInfo");
         state._excludeVariableName("mBones");
         state._excludeVariableName("BonesPerMesh");
 
@@ -111,6 +111,11 @@ export class BonesBlock extends NodeMaterialBlock {
         return this._outputs[0];
     }
 
+    /**
+     * Auto configure the block based on the material
+     * @param material - the node material
+     * @param additionalFilteringInfo - additional filtering info
+     */
     public override autoConfigure(material: NodeMaterial, additionalFilteringInfo: (node: NodeMaterialBlock) => boolean = () => true) {
         if (!this.matricesIndices.isConnected) {
             let matricesIndicesInput = material.getInputBlockByPredicate((b) => b.isAttribute && b.name === "matricesIndices" && additionalFilteringInfo(b));
@@ -141,16 +146,33 @@ export class BonesBlock extends NodeMaterialBlock {
         }
     }
 
+    /**
+     * Provides the fallbacks
+     * @param fallbacks - the effect fallbacks
+     * @param mesh - the mesh
+     */
     public override provideFallbacks(fallbacks: EffectFallbacks, mesh?: AbstractMesh) {
         if (mesh && mesh.useBones && mesh.computeBonesUsingShaders && mesh.skeleton) {
             fallbacks.addCPUSkinningFallback(0, mesh);
         }
     }
 
+    /**
+     * Bind data to effect
+     * @param effect - the effect to bind to
+     * @param nodeMaterial - the node material
+     * @param mesh - the mesh
+     */
     public override bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh) {
         BindBonesParameters(mesh, effect);
     }
 
+    /**
+     * Prepare the list of defines
+     * @param defines - the list of defines
+     * @param nodeMaterial - the node material
+     * @param mesh - the mesh
+     */
     public override prepareDefines(defines: NodeMaterialDefines, nodeMaterial: NodeMaterial, mesh?: AbstractMesh) {
         if (!defines._areAttributesDirty || !mesh) {
             return;
@@ -171,7 +193,7 @@ export class BonesBlock extends NodeMaterialBlock {
         state.sharedData.blocksWithDefines.push(this);
 
         // Register internal uniforms and samplers
-        state.uniforms.push("boneTextureWidth");
+        state.uniforms.push("boneTextureInfo");
         state.uniforms.push("mBones");
 
         state.samplers.push("boneSampler");

@@ -47,9 +47,10 @@
 #include<openpbrDielectricReflectance>
 #include<openpbrConductorReflectance>
 
-#include<openpbrBlockAmbientOcclusion>
+#include<openpbrAmbientOcclusionFunctions>
 #include<openpbrGeometryInfo>
 #include<openpbrIblFunctions>
+#include<openpbrVolumeFunctions>
 
 // Do a mix between layers with additional multipliers for each layer.
 fn layer(slab_bottom: vec3f, slab_top: vec3f, lerp_factor: f32, bottom_multiplier: vec3f, top_multiplier: vec3f) -> vec3f {
@@ -60,6 +61,10 @@ fn layer(slab_bottom: vec3f, slab_top: vec3f, lerp_factor: f32, bottom_multiplie
 // _____________________________ MAIN FUNCTION ____________________________
 @fragment
 fn main(input: FragmentInputs) -> FragmentOutputs {
+
+    #ifdef PREPASS_IRRADIANCE
+        var total_direct_diffuse: vec3f = vec3f(0.0f);
+    #endif
 
     #define CUSTOM_FRAGMENT_MAIN_BEGIN
 
@@ -76,6 +81,12 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     // ______________________ Read Base properties & Opacity ______________________________
     #include<openpbrBaseLayerData>
 
+    // _____________________________ Read Transmission Layer properties ______________________
+    #include<openpbrTransmissionLayerData>
+
+    // _____________________________ Read Subsurface Layer properties ______________________
+    #include<openpbrSubsurfaceLayerData>
+
     // _____________________________ Read Coat Layer properties ______________________
     #include<openpbrCoatLayerData>
 
@@ -84,29 +95,14 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     // _____________________________ Read Fuzz Layer properties ______________________
     #include<openpbrFuzzLayerData>
 
-    // TEMP
-    var subsurface_weight: f32 = 0.0f;
-    var transmission_weight: f32 = 0.0f;
+    // _____________________________ Read AO Properties _______________________________
+    #include<openpbrAmbientOcclusionData>
 
     #define CUSTOM_FRAGMENT_UPDATE_ALPHA
 
     #include<depthPrePass>
 
     #define CUSTOM_FRAGMENT_BEFORE_LIGHTS
-
-    // _____________________________ AO  _______________________________
-    var aoOut: ambientOcclusionOutParams;
-
-#ifdef AMBIENT_OCCLUSION
-    var ambientOcclusionFromTexture: vec3f = textureSample(ambientOcclusionSampler, ambientOcclusionSamplerSampler, fragmentInputs.vAmbientOcclusionUV + uvOffset).rgb;
-#endif
-
-    aoOut = ambientOcclusionBlock(
-    #ifdef AMBIENT_OCCLUSION
-        ambientOcclusionFromTexture,
-        uniforms.vAmbientOcclusionInfos
-    #endif
-    );
 
     // _____________________________ Compute Geometry info for coat layer _________________________
     #ifdef ANISOTROPIC_COAT
@@ -173,6 +169,164 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     // Base Metallic
     let baseConductorReflectance: ReflectanceParams = conductorReflectance(base_color, specular_color, specular_weight);
 
+    // Absorption for entire volume thickness
+    var volume_absorption: vec3f = vec3f(1.0f);
+    // Surface constant tint for transmission
+    var transmission_tint: vec3f = vec3f(1.0f);
+    var surface_translucency_weight: f32 = 0.0f;
+    #if defined(REFRACTED_BACKGROUND) || defined(REFRACTED_ENVIRONMENT) || defined(REFRACTED_LIGHTS)
+        #if defined(GEOMETRY_THIN_WALLED)
+            let refractedViewVector: vec3f = -viewDirectionW;
+        #else
+            #ifdef DISPERSION
+                var refractedViewVectors: array<vec3f, 3>;
+                let iorDispersionSpread: f32 = transmission_dispersion_scale / transmission_dispersion_abbe_number * (specular_ior - 1.0f);
+                let dispersion_iors: vec3f = vec3f(specular_ior - iorDispersionSpread, specular_ior, specular_ior + iorDispersionSpread);
+                for (var i: i32 = 0; i < 3; i++) {
+                    refractedViewVectors[i] = double_refract(-viewDirectionW, normalW, dispersion_iors[i]);    
+                }
+            #else
+                let refractedViewVector: vec3f = double_refract(-viewDirectionW, normalW, specular_ior);
+            #endif
+        #endif
+        #ifdef GEOMETRY_THIN_WALLED
+            let transmission_roughness: f32 = specular_roughness;
+        #else
+            // Transmission blurriness is affected by IOR so we scale the roughness accordingly
+            let transmission_roughness: f32 = specular_roughness * clamp(4.0f * (specular_ior - 1.0f), 0.001f, 1.0f);
+        #endif
+
+        #if (defined(TRANSMISSION_SLAB) || defined(SUBSURFACE_SLAB))
+        
+            var volumeParams: OpenPBRHomogeneousVolume;
+            {
+                #if defined(TRANSMISSION_SLAB)
+                    let transmissionVolumeParams: OpenPBRHomogeneousVolume = computeOpenPBRTransmissionVolume(
+                        transmission_color.rgb,
+                        transmission_depth,
+                        transmission_scatter.rgb,
+                        transmission_scatter_anisotropy
+                    );
+                #endif
+                #if defined(SUBSURFACE_SLAB)
+                    let subsurfaceVolumeParams: OpenPBRHomogeneousVolume = computeOpenPBRSubsurfaceVolume(
+                        subsurface_color.rgb,
+                        subsurface_radius,
+                        subsurface_radius_scale.rgb,
+                        subsurface_scatter_anisotropy
+                    );
+                #endif
+                // Handle constant transmission with subsurface
+                // Also, handle thin-walled geometry
+                #if !defined(TRANSMISSION_SLAB)
+                    volumeParams = subsurfaceVolumeParams;
+                    surface_translucency_weight = subsurface_weight;
+                #elif !defined(SUBSURFACE_SLAB)
+                    volumeParams = transmissionVolumeParams;
+                    #ifdef TRANSMISSION_SLAB_VOLUME
+                        volumeParams.multi_scatter_color = singleScatterToMultiScatterAlbedo(volumeParams.ss_albedo);
+                    #endif
+                    surface_translucency_weight = transmission_weight;
+                #else
+                    let subsurface_fraction_of_dielectric: f32 = (1.0f - transmission_weight) * subsurface_weight;
+                    let subsurface_and_transmission_fraction_of_dielectric: f32 = subsurface_fraction_of_dielectric + transmission_weight;
+                    let reciprocal_of_subsurface_and_transmission_fraction_of_dielectric: f32 =
+                        1.0f / maxEps(subsurface_and_transmission_fraction_of_dielectric);
+                    let trans_weight: f32 = transmission_weight * reciprocal_of_subsurface_and_transmission_fraction_of_dielectric;
+                    let subsurf_weight: f32 = subsurface_fraction_of_dielectric * reciprocal_of_subsurface_and_transmission_fraction_of_dielectric;
+                    volumeParams.scatter_coeff = transmissionVolumeParams.scatter_coeff * trans_weight + subsurfaceVolumeParams.scatter_coeff * subsurf_weight;
+                    volumeParams.absorption_coeff = transmissionVolumeParams.absorption_coeff * trans_weight + subsurfaceVolumeParams.absorption_coeff * subsurf_weight;
+                    volumeParams.anisotropy = (transmissionVolumeParams.anisotropy * trans_weight + subsurfaceVolumeParams.anisotropy * subsurf_weight) / maxEps(trans_weight + subsurf_weight);
+                    volumeParams.extinction_coeff = volumeParams.absorption_coeff + volumeParams.scatter_coeff;
+                    volumeParams.ss_albedo = volumeParams.scatter_coeff / maxEpsVec3(volumeParams.extinction_coeff);
+                    volumeParams.multi_scatter_color = singleScatterToMultiScatterAlbedo(volumeParams.ss_albedo);
+                    surface_translucency_weight = subsurface_and_transmission_fraction_of_dielectric;
+                #endif
+            }
+            volume_absorption = exp(-volumeParams.absorption_coeff * geometry_thickness);
+            
+            // Calculate approximate colour resulting from scattering. This will be used to colour diffuse lighting.
+            var backscatter_color: vec3f = vec3f(1.0f);
+            {
+                let reduced_scatter: vec3f = volumeParams.scatter_coeff * vec3f(1.0f - volumeParams.anisotropy);
+                let reduced_albedo: vec3f = reduced_scatter / (volumeParams.absorption_coeff + reduced_scatter);
+                let sqrt_term: vec3f = max(sqrt(vec3f(1.0f) - reduced_albedo), vec3f(0.0001f));
+                backscatter_color = (vec3f(1.0f) - sqrt_term) / (vec3f(1.0f) + sqrt_term);
+            }
+        #elif defined(TRANSMISSION_SLAB)
+            // If we only have a transmission slab and no subsurface, use the transmission_weight directly
+            surface_translucency_weight = transmission_weight;
+        #endif
+
+        var transmission_roughness_alpha: f32 = transmission_roughness * transmission_roughness;
+        
+        #ifdef SCATTERING
+            // Transmission Scattering
+            #ifdef GEOMETRY_THIN_WALLED
+                var iso_scatter_density: vec3f = vec3f(1.0f);
+                transmission_roughness_alpha = transmission_roughness;
+            #else
+
+                #ifdef USE_IRRADIANCE_TEXTURE_FOR_SCATTERING
+                    // If we have a precomputed multi-scatter texture, we can use the scatter vector to sample it and get a more accurate scattered environment light.
+                    // This allows us to capture higher order scattering effects that aren't possible with just a single scatter sample.
+                    let mfp: vec3f = vec3f(100.0f) / volumeParams.extinction_coeff;
+                    var scattered_light_from_irradiance_texture: vec3f = sss_convolve(sceneIrradianceSampler, sceneDepthSampler, uniforms.renderTargetSize, mfp, scene.projection, scene.inverseProjection, 16, noise.xy);
+                    var numLights = f32(LIGHTCOUNT);
+                    #ifdef REFLECTION
+                        numLights += 1.0f;
+                    #endif
+                    scattered_light_from_irradiance_texture /= vec3f(numLights);
+                #else
+                    let scattered_light_from_irradiance_texture: vec3f = vec3f(0.0f);
+                #endif
+                
+                let back_to_iso_scattering_blend: f32 = min(1.0f + volumeParams.anisotropy, 1.0f);
+                let iso_to_forward_scattering_blend: f32 = max(volumeParams.anisotropy, 0.0f);
+                // The 0.2 exponent is an empirical fit to match reference renderers - check if it works broadly
+                let iso_scatter_transmittance: vec3f = pow(exp(-volumeParams.scatter_coeff * geometry_thickness), vec3f(0.2f));
+                var iso_scatter_density: vec3f = clamp(vec3f(1.0f) - iso_scatter_transmittance, vec3f(0.0f), vec3f(1.0f));
+            
+                // Refraction roughness is modified by the density of the scattering and also by the anisotropy.
+                transmission_roughness_alpha = min(transmission_roughness_alpha + pow((1.0f - abs(volumeParams.anisotropy)) * max3(iso_scatter_density * iso_scatter_density), 3.0f), 1.0f);
+            #endif
+
+            // Blend the multi-scatter color towards single-scatter based on the scatter density
+            // This is an empirical approximation to account for weaker scattering at low densities where scattering isn't strong enough to reach the multiple scattering colour.
+            volumeParams.multi_scatter_color = mix(volumeParams.ss_albedo, volumeParams.multi_scatter_color, max3(iso_scatter_density));
+        #endif
+
+        #if defined(TRANSMISSION_SLAB) && (!defined(TRANSMISSION_SLAB_VOLUME) || defined(GEOMETRY_THIN_WALLED))
+            // Geometry is either thin-walled or we have a transmission slab with depth=0
+
+            // Apply surface tinting.
+            transmission_tint *= transmission_color.rgb;
+            #ifdef GEOMETRY_THIN_WALLED
+                var sin2: f32 = 1.0f - baseGeoInfo.NdotV * baseGeoInfo.NdotV;
+                // Divide by the square of the relative IOR (eta) of the incident medium and surface. This
+                // is just specular_ior since the incident medium is air (IOR = 1.0).
+                sin2 = sin2 / (specular_ior * specular_ior);
+                let cos_t: f32 = sqrt(1.0f - sin2);
+                let pathLength: f32 = 1.0f / cos_t;
+                transmission_tint = pow(transmission_tint, vec3f(pathLength));
+            #else
+                // If this material is volumetric (i.e. not thin-walled), we'll
+                // assume that the mesh is manifold and light enters and exits through the surface, leading to double-tinting.
+                transmission_tint *= transmission_color.rgb;
+            #endif
+        #endif
+        #if defined(SUBSURFACE_SLAB) && defined(GEOMETRY_THIN_WALLED)
+            // When subsurface is also present, we need to blend some values between transmission and subsurface slabs.
+            let unweighted_translucency: f32 = mix(subsurface_weight, 1.0f, transmission_weight);
+            transmission_tint = mix(vec3f(1.0f), transmission_tint, transmission_weight / unweighted_translucency);
+            // Roughness for transmission is just surface roughness while, for subsurface, transmission is fully diffuse.
+            transmission_roughness_alpha = mix(1.0f, transmission_roughness_alpha, transmission_weight / unweighted_translucency);
+        #endif
+
+    #endif
+    // __________________ Transmitted Light From Background Refraction ___________________________
+    #include<openpbrBackgroundTransmission>
+
     // ________________________ Environment (IBL) Lighting ____________________________
     var material_surface_ibl: vec3f = vec3f(0.f, 0.f, 0.f);
     #include<openpbrEnvironmentLighting>
@@ -181,10 +335,8 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     var material_surface_direct: vec3f = vec3f(0.f, 0.f, 0.f);
     #if defined(LIGHT0)
         var aggShadow: f32 = 0.f;
-        var numLights: f32 = 0.f;
         #include<openpbrDirectLightingInit>[0..maxSimultaneousLights]
         #include<openpbrDirectLighting>[0..maxSimultaneousLights]
-        
     #endif
 
     // _________________________ Emissive Lighting _______________________________
@@ -217,7 +369,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     #define CUSTOM_FRAGMENT_BEFORE_FRAGCOLOR
 
 #ifdef PREPASS
-    #include<pbrBlockPrePass>
+    #include<openpbrBlockPrePass>
 #endif
 
 #if !defined(PREPASS) && !defined(ORDER_INDEPENDENT_TRANSPARENCY)

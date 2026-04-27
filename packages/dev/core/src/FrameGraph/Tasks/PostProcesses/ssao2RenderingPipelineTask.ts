@@ -1,4 +1,4 @@
-import type { FrameGraph, FrameGraphTextureHandle, Camera, FrameGraphTextureCreationOptions } from "core/index";
+import { type FrameGraph, type FrameGraphTextureHandle, type Camera, type FrameGraphTextureCreationOptions } from "core/index";
 import { Constants } from "core/Engines/constants";
 import { FrameGraphTask } from "../../frameGraphTask";
 import { ThinSSAO2RenderingPipeline } from "core/PostProcesses/RenderPipeline/Pipelines/thinSSAO2RenderingPipeline";
@@ -19,6 +19,17 @@ export class FrameGraphSSAO2RenderingPipelineTask extends FrameGraphTask {
      * The sampling mode to use for the source texture.
      */
     public sourceSamplingMode = Constants.TEXTURE_BILINEAR_SAMPLINGMODE;
+
+    /**
+     * The alpha mode to use when applying the SSAO2 effect.
+     */
+    public get alphaMode() {
+        return this._ssaoCombine.alphaMode;
+    }
+
+    public set alphaMode(mode: number) {
+        this._ssaoCombine.alphaMode = mode;
+    }
 
     /**
      * The depth texture used by the SSAO2 effect (Z coordinate in camera view space).
@@ -47,6 +58,9 @@ export class FrameGraphSSAO2RenderingPipelineTask extends FrameGraphTask {
         this._camera = camera;
 
         this.ssao.camera = camera;
+        if (this._ssao) {
+            this._ssao.camera = camera;
+        }
     }
 
     /**
@@ -225,7 +239,9 @@ export class FrameGraphSSAO2RenderingPipelineTask extends FrameGraphTask {
 
         passDisabled.setRenderTarget(this.outputTexture);
         passDisabled.setExecuteFunc((context) => {
-            context.copyTexture(this.sourceTexture);
+            if (this.alphaMode === Constants.ALPHA_DISABLE) {
+                context.copyTexture(this.sourceTexture);
+            }
         });
     }
 

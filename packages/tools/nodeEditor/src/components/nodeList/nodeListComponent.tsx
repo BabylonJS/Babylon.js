@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import * as React from "react";
-import type { GlobalState } from "../../globalState";
+import { type GlobalState } from "../../globalState";
 import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
 import { DraggableLineComponent } from "shared-ui-components/lines/draggableLineComponent";
 import { NodeMaterialModes } from "core/Materials/Node/Enums/nodeMaterialModes";
-import type { Observer } from "core/Misc/observable";
-import type { Nullable } from "core/types";
+import { type Observer } from "core/Misc/observable";
+import { type Nullable } from "core/types";
 import { DraggableLineWithButtonComponent } from "shared-ui-components/lines/draggableLineWithButtonComponent";
 import { LineWithFileButtonComponent } from "shared-ui-components/lines/lineWithFileButtonComponent";
 import { Tools } from "core/Misc/tools";
@@ -102,6 +102,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         RoundBlock: "Outputs fractional values rounded to the nearest whole number",
         ModBlock: "Outputs the value of one parameter modulo another",
         CameraPositionBlock: "Outputs a Vector3 position of the active scene camera",
+        CameraForwardBlock: "Outputs a Vector3 containing the forward direction of the active scene camera",
         CameraParametersBlock: "Outputs a Vector4 containing (-1 for webGL and 1 for webGPU, camera.minZ, camera.maxZ, 1 / camera.maxZ)",
         FogBlock: "Applies fog to the scene with an increasing opacity based on distance from the camera",
         FogColorBlock: "The system value for fog color pulled from the scene",
@@ -144,6 +145,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         ReflectBlock: "Outputs the direction of the input vector reflected across the surface normal.",
         RefractBlock: "Outputs a direction simulating a deflection of the input vector.",
         Rotate2dBlock: "Rotates UV coordinates around the W axis.",
+        PannerBlock: "Pans UV coordinates over time based on a speed vector. It animates coordinates connected to the UV input by the speed input multiplied with the time input.",
         PBRMetallicRoughnessBlock: "PBR metallic/roughness material",
         SheenBlock: "PBR Sheen block",
         AnisotropyBlock: "PBR Anisotropy block",
@@ -454,6 +456,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 "ReflectBlock",
                 "RefractBlock",
                 "Rotate2dBlock",
+                "PannerBlock",
                 "TransformBlock",
                 "ScreenSpaceBlock",
                 "TwirlBlock",
@@ -516,6 +519,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
             Scene: [
                 "FogBlock",
                 "CameraPositionBlock",
+                "CameraForwardBlock",
                 "CameraParametersBlock",
                 "FogColorBlock",
                 "ImageProcessingBlock",
@@ -688,7 +692,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 }
             }
             NodeLedger.NameFormatter = (name) => {
-                let finalName = name;
+                let finalName: string;
                 // custom frame
                 if (name.endsWith("Custom")) {
                     const nameIndex = name.lastIndexOf("Custom");

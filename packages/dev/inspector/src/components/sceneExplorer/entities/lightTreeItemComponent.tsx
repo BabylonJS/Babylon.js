@@ -1,6 +1,6 @@
-import type { IExplorerExtensibilityGroup } from "core/Debug/debugLayer";
-import type { Light } from "core/Lights/light";
-import type { Camera } from "core/Cameras/camera";
+import { type IExplorerExtensibilityGroup } from "core/Debug/debugLayer";
+import { type Light } from "core/Lights/light";
+import { type Camera } from "core/Cameras/camera";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faLightbulb, faEye } from "@fortawesome/free-solid-svg-icons";
@@ -8,7 +8,7 @@ import { faLightbulb as faLightbubRegular } from "@fortawesome/free-regular-svg-
 import { TreeItemLabelComponent } from "../treeItemLabelComponent";
 import { ExtensionsComponent } from "../extensionsComponent";
 import * as React from "react";
-import type { GlobalState } from "../../globalState";
+import { type GlobalState } from "../../globalState";
 import { GetInspectorGizmoManager } from "../../../inspectorGizmoManager";
 
 interface ILightTreeItemComponentProps {

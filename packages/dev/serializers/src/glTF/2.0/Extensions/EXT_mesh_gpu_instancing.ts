@@ -1,10 +1,9 @@
-import type { INode, IEXTMeshGpuInstancing } from "babylonjs-gltf2interface";
-import { AccessorType, AccessorComponentType } from "babylonjs-gltf2interface";
-import type { IGLTFExporterExtensionV2 } from "../glTFExporterExtension";
-import type { BufferManager } from "../bufferManager";
+import { type INode, type IEXTMeshGpuInstancing, AccessorType, AccessorComponentType } from "babylonjs-gltf2interface";
+import { type IGLTFExporterExtensionV2 } from "../glTFExporterExtension";
+import { type BufferManager } from "../bufferManager";
 import { GLTFExporter } from "../glTFExporter";
-import type { Nullable } from "core/types";
-import type { Node } from "core/node";
+import { type Nullable } from "core/types";
+import { type Node } from "core/node";
 import { Mesh } from "core/Meshes/mesh";
 import "core/Meshes/thinInstanceMesh";
 import { TmpVectors, Quaternion, Vector3 } from "core/Maths/math.vector";

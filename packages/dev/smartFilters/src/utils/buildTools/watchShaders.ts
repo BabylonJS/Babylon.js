@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 /**
  * Watches all .glsl files under <shaderPath> and rebuilds them when changed.
  * @param shaderPath - The path to the shaders to watch
@@ -6,10 +5,10 @@
  * @param babylonCorePath - The path to import the Babylon core from (optional)
  * @example node watchShaders.js <shaderPath> @babylonjs/smart-filters
  */
-
 import { watch } from "chokidar";
 import { extname } from "path";
 import { ConvertShader } from "./convertShaders.js";
+import { log, error } from "./buildToolsLogger.js";
 
 const ExternalArguments = process.argv.slice(2);
 if (ExternalArguments.length >= 2 && ExternalArguments[0] && ExternalArguments[1]) {
@@ -28,17 +27,17 @@ if (ExternalArguments.length >= 2 && ExternalArguments[0] && ExternalArguments[1
             return;
         }
 
-        console.log(`Change detected. Starting conversion...`);
+        log(`Change detected. Starting conversion...`);
 
         // Wrap in try-catch to prevent the watcher from crashing
         // if the new shader changes are invalid
         try {
             ConvertShader(file, smartFiltersCorePath, babylonCorePath);
-            console.log(`Successfully updated shader ${file}`);
-        } catch (error) {
-            console.error(`Failed to convert shader ${file}: ${error}`);
+            log(`Successfully updated shader ${file}`);
+        } catch (err) {
+            error(`Failed to convert shader ${file}: ${err}`);
         }
 
-        console.log(`Watching for changes in ${shaderPath}...`);
+        log(`Watching for changes in ${shaderPath}...`);
     });
 }

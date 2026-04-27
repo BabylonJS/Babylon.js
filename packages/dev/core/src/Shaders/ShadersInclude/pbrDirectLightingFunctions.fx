@@ -167,7 +167,6 @@ float evalFuzz(vec3 L, float NdotL, float NdotV, vec3 T, vec3 B, vec3 ltcLut)
         float BdotL = dot(B, info.L);
         float alphaG = convertRoughnessToAverageSlope(info.roughness);
         vec2 alphaTB = getAnisotropicRoughness(alphaG, anisotropy);
-        alphaTB = max(alphaTB, square(geometricRoughnessFactor));
 
         float distribution = normalDistributionFunction_BurleyGGX_Anisotropic(NdotH, TdotH, BdotH, alphaTB);
         float smithVisibility = smithVisibility_GGXCorrelated_Anisotropic(info.NdotL, info.NdotV, TdotV, BdotV, TdotL, BdotL, alphaTB);

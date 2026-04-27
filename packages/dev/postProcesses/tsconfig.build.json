@@ -6,8 +6,8 @@
         "outDir": "./dist",
         "rootDir": "./src",
         "paths": {
-            "core/*": ["dev/core/dist/*"],
-            "post-processes/*": ["dev/postProcesses/src/*"]
+            "core/*": ["../../dev/core/dist/*"],
+            "post-processes/*": ["../../dev/postProcesses/src/*"]
         }
     },
 

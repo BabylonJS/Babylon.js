@@ -1,4 +1,4 @@
-import type { FrameGraph, FrameGraphRenderPass, Camera, FrameGraphTextureHandle } from "core/index";
+import { type FrameGraph, type FrameGraphRenderPass, type Camera, type FrameGraphTextureHandle } from "core/index";
 import { Constants } from "core/Engines/constants";
 import { FrameGraphPostProcessTask } from "./postProcessTask";
 import { ThinSSRPostProcess } from "core/PostProcesses/thinSSRPostProcess";

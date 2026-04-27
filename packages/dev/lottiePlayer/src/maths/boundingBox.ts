@@ -1,4 +1,15 @@
-import type { RawBezier, RawElement, RawFont, RawPathShape, RawRectangleShape, RawStrokeShape, RawTextData, RawTextDocument } from "../parsing/rawTypes";
+import {
+    type RawElement,
+    type RawFont,
+    type RawEllipseShape,
+    type RawGradientStrokeShape,
+    type RawPathShape,
+    type RawRectangleShape,
+    type RawStrokeShape,
+    type RawTextData,
+} from "../parsing/rawTypes";
+import { GetInitialScalarValue, GetInitialVectorValues, GetInitialBezierData } from "../parsing/rawPropertyHelpers";
+import { ApplyLottieTextContext, MeasureLottieText, ResolveLottieText } from "../parsing/textLayout";
 
 /**
  * Represents a bounding box for a shape in the animation.
@@ -8,20 +19,20 @@ export type BoundingBox = {
     height: number;
     /** Width of the bounding box */
     width: number;
-    /** X coordinate of the center of the bounding box */
+    /** X offset for translating shape coordinates into the atlas cell. Accounts for stroke padding. */
     centerX: number;
-    /** Y coordinate of the center of the bounding box */
+    /** Y offset for translating shape coordinates into the atlas cell. Accounts for stroke padding. */
     centerY: number;
-    /** Box X offset, as the box may not be centered around (0,0) */
+    /** X coordinate of the geometric center of the shape in its local space */
     offsetX: number;
-    /** Box Y offset, as the box may not be centered around (0,0) */
+    /** Y coordinate of the geometric center of the shape in its local space */
     offsetY: number;
     /** Inset for the stroke, if applicable. */
     strokeInset: number;
-    /** Optional: Canvas2D text metrics for precise vertical alignment */
-    actualBoundingBoxAscent?: number;
-    /** Optional: Canvas2D text metrics for precise vertical alignment */
-    actualBoundingBoxDescent?: number;
+    /** Optional: Distance from the top of the text texture to the first baseline. Only populated for text bounding boxes. */
+    baselineOffsetY?: number;
+    /** Optional: Descent (in pixels) of the last text line below its baseline. Only populated for text bounding boxes. */
+    descent?: number;
 };
 
 // Corners of the bounding box
@@ -49,25 +60,45 @@ export function GetShapesBoundingBox(rawElements: RawElement[]): BoundingBox {
     for (let i = 0; i < rawElements.length; i++) {
         if (rawElements[i].ty === "rc") {
             GetRectangleVertices(boxCorners, rawElements[i] as RawRectangleShape);
+        } else if (rawElements[i].ty === "el") {
+            GetEllipseVertices(boxCorners, rawElements[i] as RawEllipseShape);
         } else if (rawElements[i].ty === "sh") {
             GetPathVertices(boxCorners, rawElements[i] as RawPathShape);
         } else if (rawElements[i].ty === "st") {
             strokeWidth = Math.max(strokeWidth, GetStrokeInset(rawElements[i] as RawStrokeShape));
+        } else if (rawElements[i].ty === "gs") {
+            // Gradient strokes (`ty:"gs"`) have the same `w` width property as solid strokes and contribute
+            // identical pixel inset to the bounding box; skipping them here would clip the stroke against
+            // the atlas cell edges.
+            strokeWidth = Math.max(strokeWidth, GetStrokeInset(rawElements[i] as RawGradientStrokeShape));
         }
     }
 
-    const width = Math.ceil(Math.abs(boxCorners.maxX)) + Math.ceil(Math.abs(boxCorners.minX));
-    const height = Math.ceil(Math.abs(boxCorners.maxY)) + Math.ceil(Math.abs(boxCorners.minY));
+    // If no vertices were added (e.g., empty animated keyframes), return a zero-size bounding box
+    if (!Number.isFinite(boxCorners.minX)) {
+        return {
+            width: 0,
+            height: 0,
+            centerX: 0,
+            centerY: 0,
+            offsetX: 0,
+            offsetY: 0,
+            strokeInset: 0,
+        };
+    }
 
-    const offsetX = (Math.abs(boxCorners.maxX) - Math.abs(boxCorners.minX)) / 2;
-    const offsetY = (Math.abs(boxCorners.maxY) - Math.abs(boxCorners.minY)) / 2;
+    const width = boxCorners.maxX - boxCorners.minX;
+    const height = boxCorners.maxY - boxCorners.minY;
+
+    const offsetX = (boxCorners.minX + boxCorners.maxX) / 2;
+    const offsetY = (boxCorners.minY + boxCorners.maxY) / 2;
 
     return {
         width: width + strokeWidth,
         height: height + strokeWidth,
-        // The center of the box is the center of its width and height, modified by its offset and the stroke width
-        centerX: width / 2 - offsetX + strokeWidth / 2,
-        centerY: height / 2 - offsetY + strokeWidth / 2,
+        // Translate the original min corner into the atlas cell, leaving room for stroke expansion.
+        centerX: -boxCorners.minX + strokeWidth / 2,
+        centerY: -boxCorners.minY + strokeWidth / 2,
         offsetX: offsetX,
         offsetY: offsetY,
         strokeInset: 0,
@@ -89,59 +120,35 @@ export function GetTextBoundingBox(
     variables: Map<string, string>
 ): BoundingBox | undefined {
     spritesCanvasContext.save();
-    let textInfo: RawTextDocument | undefined = undefined;
-    if (textData.d && textData.d.k && textData.d.k.length > 0) {
-        textInfo = textData.d.k[0].s as RawTextDocument;
-    }
 
-    if (!textInfo) {
+    const resolvedText = ResolveLottieText(textData, rawFonts, variables);
+    if (!resolvedText) {
         spritesCanvasContext.restore();
         return undefined;
     }
 
-    const fontSize = textInfo.s;
-    const fontFamily = textInfo.f;
-    const finalFont = rawFonts.get(fontFamily);
-    if (!finalFont) {
-        spritesCanvasContext.restore();
-        return undefined;
-    }
+    ApplyLottieTextContext(spritesCanvasContext, resolvedText);
 
-    const weight = finalFont.fWeight || "400"; // Default to normal weight if not specified
-    spritesCanvasContext.font = `${weight} ${fontSize}px ${finalFont.fFamily}`;
+    const layout = MeasureLottieText(resolvedText, (text) => spritesCanvasContext.measureText(text));
 
-    if (textInfo.sc !== undefined && textInfo.sc.length >= 3 && textInfo.sw !== undefined && textInfo.sw > 0) {
-        spritesCanvasContext.lineWidth = textInfo.sw;
-    }
-
-    // Text is supported as a possible variable (for localization for example)
-    // Check if the text is a variable and replace it if it is
-    let text = textInfo.t;
-    const variableText = variables.get(text);
-    if (variableText !== undefined) {
-        text = variableText;
-    }
-    const metrics = spritesCanvasContext.measureText(text);
-
-    const widthPx = Math.ceil(metrics.width);
-    const heightPx = Math.ceil(metrics.actualBoundingBoxAscent) + Math.ceil(metrics.actualBoundingBoxDescent);
+    spritesCanvasContext.restore();
 
     return {
-        width: widthPx,
-        height: heightPx,
-        centerX: widthPx / 2,
-        centerY: heightPx / 2,
-        offsetX: 0, // The bounding box calculated by the canvas for the text is always centered in (0, 0)
-        offsetY: 0, // The bounding box calculated by the canvas for the text is always centered in (0, 0)
+        width: layout.width,
+        height: layout.height,
+        centerX: layout.width / 2,
+        centerY: layout.height / 2,
+        offsetX: layout.offsetX,
+        offsetY: layout.offsetY,
         strokeInset: 0, // Text bounding box ignores stroke padding here
-        actualBoundingBoxAscent: metrics.actualBoundingBoxAscent,
-        actualBoundingBoxDescent: metrics.actualBoundingBoxDescent,
+        baselineOffsetY: layout.baselineOffsetY,
+        descent: layout.descent,
     };
 }
 
 function GetRectangleVertices(boxCorners: Corners, rect: RawRectangleShape): void {
-    const size = rect.s.k as number[];
-    const position = rect.p.k as number[];
+    const size = GetInitialVectorValues(rect.s);
+    const position = GetInitialVectorValues(rect.p);
 
     // Calculate the four corners of the rectangle
     UpdateBoxCorners(boxCorners, position[0] - size[0] / 2, position[1] - size[1] / 2);
@@ -150,8 +157,23 @@ function GetRectangleVertices(boxCorners: Corners, rect: RawRectangleShape): voi
     UpdateBoxCorners(boxCorners, position[0] - size[0] / 2, position[1] + size[1] / 2);
 }
 
+function GetEllipseVertices(boxCorners: Corners, ellipse: RawEllipseShape): void {
+    const size = GetInitialVectorValues(ellipse.s);
+    const position = GetInitialVectorValues(ellipse.p);
+
+    // The axis-aligned bounding box of an ellipse is the same as a rectangle with the same size
+    UpdateBoxCorners(boxCorners, position[0] - size[0] / 2, position[1] - size[1] / 2);
+    UpdateBoxCorners(boxCorners, position[0] + size[0] / 2, position[1] - size[1] / 2);
+    UpdateBoxCorners(boxCorners, position[0] + size[0] / 2, position[1] + size[1] / 2);
+    UpdateBoxCorners(boxCorners, position[0] - size[0] / 2, position[1] + size[1] / 2);
+}
+
 function GetPathVertices(boxCorners: Corners, path: RawPathShape): void {
-    const bezier = path.ks.k as RawBezier;
+    const bezier = GetInitialBezierData(path.ks);
+    if (!bezier) {
+        return;
+    }
+
     const vertices = bezier.v;
     const inTangents = bezier.i;
     const outTangents = bezier.o;
@@ -187,8 +209,12 @@ function GetPathVertices(boxCorners: Corners, path: RawPathShape): void {
     }
 }
 
-function GetStrokeInset(stroke: RawStrokeShape): number {
-    return Math.ceil(stroke.w?.k as number) ?? 1;
+function GetStrokeInset(stroke: RawStrokeShape | RawGradientStrokeShape): number {
+    // Use the initial-value helper so animated widths (a===1) contribute their first-frame value
+    // to the bounding box. Casting `w.k as number` for an animated property yields a keyframe
+    // array, which `Math.ceil` turns into NaN and silently shrinks the sprite cell so the stroke
+    // gets clipped out.
+    return Math.ceil(stroke.w ? GetInitialScalarValue(stroke.w, 1) : 1);
 }
 
 function CalculatePointsWithTangentZero(

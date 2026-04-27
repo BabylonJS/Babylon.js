@@ -1,4 +1,4 @@
-import type { FrameGraph, FrameGraphTextureHandle, Camera, FrameGraphTextureCreationOptions } from "core/index";
+import { type FrameGraph, type FrameGraphTextureHandle, type Camera, type FrameGraphTextureCreationOptions } from "core/index";
 import { Constants } from "core/Engines/constants";
 import { FrameGraphTask } from "../../frameGraphTask";
 import { ThinSSRRenderingPipeline } from "core/PostProcesses/RenderPipeline/Pipelines/thinSSRRenderingPipeline";
@@ -19,6 +19,17 @@ export class FrameGraphSSRRenderingPipelineTask extends FrameGraphTask {
      * The sampling mode to use for the source texture.
      */
     public sourceSamplingMode = Constants.TEXTURE_BILINEAR_SAMPLINGMODE;
+
+    /**
+     * The alpha mode to use when applying the SSR effect.
+     */
+    public get alphaMode() {
+        return this._ssrBlurCombiner.alphaMode;
+    }
+
+    public set alphaMode(mode: number) {
+        this._ssrBlurCombiner.alphaMode = mode;
+    }
 
     /**
      * The normal texture used by the SSR effect.
@@ -59,6 +70,9 @@ export class FrameGraphSSRRenderingPipelineTask extends FrameGraphTask {
         this._camera = camera;
 
         this.ssr.camera = camera;
+        if (this._ssr) {
+            this._ssr.camera = camera;
+        }
     }
 
     /**
@@ -240,7 +254,9 @@ export class FrameGraphSSRRenderingPipelineTask extends FrameGraphTask {
 
         passDisabled.setRenderTarget(this.outputTexture);
         passDisabled.setExecuteFunc((context) => {
-            context.copyTexture(this.sourceTexture);
+            if (this.alphaMode === Constants.ALPHA_DISABLE) {
+                context.copyTexture(this.sourceTexture);
+            }
         });
     }
 

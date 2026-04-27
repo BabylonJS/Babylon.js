@@ -19,7 +19,6 @@ uniform sampler2D multiScatteringLut;
 #endif
 
 #include<core/helperFunctions>
-#include<depthFunctions>
 #include<atmosphereFunctions>
 
 varying vec2 uv;
@@ -37,16 +36,15 @@ void main() {
 
         float cosAngleBetweenViewAndZenith;
         bool isRayIntersectingGround;
-        vec4 skyColor =
-            sampleSkyViewLut(
-                skyViewLut,
-                clampedCameraRadius,
-                cameraGeocentricNormal,
-                rayDirection,
-                directionToLight,
-                cosCameraHorizonAngleFromZenith,
-                cosAngleBetweenViewAndZenith,
-                isRayIntersectingGround);
+        vec4 skyColor = sampleSkyViewLut(
+            skyViewLut,
+            clampedCameraRadius,
+            cameraGeocentricNormal,
+            rayDirection,
+            directionToLight,
+            cosCameraHorizonAngleFromZenith,
+            cosAngleBetweenViewAndZenith,
+            isRayIntersectingGround);
 
         #ifndef APPLY_TRANSMITTANCE_BLENDING
             skyColor.a = 0.;
@@ -75,8 +73,7 @@ void main() {
         }
 
         vec3 transmittance;
-        vec3 radiance;
-        integrateScatteredRadiance(
+        vec3 radiance = integrateScatteredRadiance(
             false, // isAerialPerspectiveLut
             atmosphereExposure * lightIntensity,
             transmittanceLut,
@@ -86,9 +83,8 @@ void main() {
             rayDirection,
             directionToLight,
             100000000.,
-            SkyViewLutSampleCount,
+            skyViewLutSampleCount,
             -1., // No planet hit.
-            radiance,
             transmittance);
 
         #if APPLY_TRANSMITTANCE_BLENDING

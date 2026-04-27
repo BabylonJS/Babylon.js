@@ -7,6 +7,7 @@ html {
     --button-hover-background: #162d3a;
     --font-size: 20px;
     --active-font-size: 22px;
+    --titlebar-height: env(titlebar-area-height, 0px);
 }
 
 html,
@@ -21,6 +22,30 @@ body,
     background: var(--background);
     font-family: "acumin-pro-condensed";
     font-weight: normal;
+}
+
+/* PWA Title Bar */
+.titlebar {
+    display: none;
+}
+
+@media (display-mode: window-controls-overlay) {
+    .titlebar {
+        position: fixed;
+        top: 0;
+        left: env(titlebar-area-x, 0);
+        width: env(titlebar-area-width, 100%);
+        height: env(titlebar-area-height, 32px);
+        background: var(--background);
+        color: #fff;
+        display: flex;
+        align-items: center;
+        padding-left: 12px;
+        font-size: 14px;
+        -webkit-app-region: drag;
+        app-region: drag;
+        z-index: 1000;
+    }
 }
 
 .hidden {
@@ -43,6 +68,8 @@ body,
     height: 50px;
     width: 100%;
     bottom: 50px;
+    z-index: 5;
+    pointer-events: none;
 }
 
 #logoContainer {
@@ -102,9 +129,80 @@ body,
     }
 }
 
-@media (max-width: 1024px) {
+@media (max-width: 768px) {
     html {
         --footer-height: 50px;
         --font-size: 16px;
+    }
+}
+
+/* Folder Access Prompt */
+#folderAccessPrompt {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+
+    .prompt-content {
+        background: var(--footer-background);
+        padding: 30px;
+        border-radius: 10px;
+        max-width: 450px;
+        color: white;
+        text-align: center;
+
+        p {
+            margin: 0 0 15px 0;
+            line-height: 1.5;
+        }
+
+        strong {
+            color: #bb464b;
+        }
+    }
+
+    .prompt-buttons {
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+        margin-top: 20px;
+
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            font-family: inherit;
+            transition:
+                transform 0.1s,
+                background 0.2s;
+
+            &:first-child {
+                background: #bb464b;
+                color: white;
+
+                &:hover {
+                    background: #e0684b;
+                    transform: scale(1.05);
+                }
+            }
+
+            &:last-child {
+                background: #444;
+                color: white;
+
+                &:hover {
+                    background: #555;
+                    transform: scale(1.05);
+                }
+            }
+        }
     }
 }

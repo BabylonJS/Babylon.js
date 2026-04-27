@@ -2,11 +2,13 @@ export * from "./effectLayer";
 export * from "./effectLayerSceneComponent";
 export * from "./glowLayer";
 export * from "./highlightLayer";
+export * from "./selectionOutlineLayer";
 export * from "./layer";
 export * from "./layerSceneComponent";
 export * from "./thinEffectLayer";
 export * from "./thinGlowLayer";
 export * from "./thinHighlightLayer";
+export * from "./thinSelectionOutlineLayer";
 
 // EffectLayer
 export * from "../Shaders/glowMapGeneration.fragment";

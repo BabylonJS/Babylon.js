@@ -2,26 +2,26 @@
  * Implementation based on https://medium.com/@shrekshao_71662/dual-depth-peeling-implementation-in-webgl-11baa061ba4b
  */
 import { Constants } from "../Engines/constants";
-import type { AbstractEngine } from "../Engines/abstractEngine";
-import type { Effect } from "../Materials/effect";
+import { type AbstractEngine } from "../Engines/abstractEngine";
+import { type Effect } from "../Materials/effect";
 import { MultiRenderTarget } from "../Materials/Textures/multiRenderTarget";
-import type { InternalTextureCreationOptions } from "../Materials/Textures/textureCreationOptions";
+import { type InternalTextureCreationOptions } from "../Materials/Textures/textureCreationOptions";
 import { Color4 } from "../Maths/math.color";
-import type { SubMesh } from "../Meshes/subMesh";
-import type { AbstractMesh } from "../Meshes/abstractMesh";
+import { type SubMesh } from "../Meshes/subMesh";
+import { type AbstractMesh } from "../Meshes/abstractMesh";
 import { SmartArray } from "../Misc/smartArray";
-import type { Scene } from "../scene";
+import { type Scene } from "../scene";
 import { ThinTexture } from "../Materials/Textures/thinTexture";
 import { EffectRenderer, EffectWrapper } from "../Materials/effectRenderer";
-import type { PrePassRenderer } from "./prePassRenderer";
-import type { IMaterialContext } from "../Engines/IMaterialContext";
-import type { DrawWrapper } from "../Materials/drawWrapper";
+import { type PrePassRenderer } from "./prePassRenderer";
+import { type IMaterialContext } from "../Engines/IMaterialContext";
+import { type DrawWrapper } from "../Materials/drawWrapper";
 import { Material } from "../Materials/material";
 
 import "../Engines/Extensions/engine.multiRender";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
-import type { RenderTargetWrapper } from "../Engines/renderTargetWrapper";
-import type { Nullable } from "../types";
+import { type RenderTargetWrapper } from "../Engines/renderTargetWrapper";
+import { type Nullable } from "../types";
 
 /**
  * @internal
@@ -190,6 +190,14 @@ export class ThinDepthPeelingRenderer {
         return { width: this._engine.getRenderWidth(), height: this._engine.getRenderHeight() };
     }
 
+    // TODO : support multiview for WebXR stereo rendering.
+    // Currently, the MRTs created here are mono (2D textures), so depth peeling only produces correct
+    // order-independent transparency for one view. In XR with OVR_multiview2, transparent objects that
+    // partially overlap other transparent objects may render incorrectly in one or both eyes — fragments
+    // behind a transparent surface can disappear or flicker depending on camera angle.
+    // To fix this, the MultiRenderTargets should use 2-layer texture arrays when the active XR session
+    // uses multiview, and the peeling shaders (oitBackBlend, oitFinal) should be updated to read/write
+    // via gl_ViewID_OVR so both eyes are peeled in a single pass.
     protected _createTextures() {
         const size = this._getTextureSize();
 
@@ -497,8 +505,8 @@ export class ThinDepthPeelingRenderer {
         this._scene.resetCachedMaterial();
 
         // depth peeling ping-pong
-        let readId = 0;
-        let writeId = 0;
+        let readId: number;
+        let writeId: number = 0;
 
         for (let i = 0; i < this._passCount; i++) {
             readId = i % 2;

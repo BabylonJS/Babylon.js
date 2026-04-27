@@ -1,11 +1,11 @@
-import type { NodeMaterialBuildState } from "../nodeMaterialBuildState";
+import { type NodeMaterialBuildState } from "../nodeMaterialBuildState";
 import { RegisterClass } from "../../../Misc/typeStore";
 import { NodeMaterialBlock } from "../nodeMaterialBlock";
 import { NodeMaterialBlockConnectionPointTypes } from "../Enums/nodeMaterialBlockConnectionPointTypes";
-import type { NodeMaterialConnectionPoint } from "../nodeMaterialBlockConnectionPoint";
+import { type NodeMaterialConnectionPoint } from "../nodeMaterialBlockConnectionPoint";
 import { NodeMaterialBlockTargets } from "../Enums/nodeMaterialBlockTargets";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
-import type { Scene } from "core/scene";
+import { type Scene } from "core/scene";
 import { editableInPropertyPage, PropertyTypeForEdition } from "core/Decorators/nodeDecorator";
 
 /**
@@ -15,6 +15,9 @@ import { editableInPropertyPage, PropertyTypeForEdition } from "core/Decorators/
  */
 export class NodeMaterialDebugBlock extends NodeMaterialBlock {
     private _isActive = false;
+
+    /** @internal */
+    public _forcedActive = false;
 
     /** Gets or sets a boolean indicating if we want to render alpha when using a rgba input*/
     @editableInPropertyPage("Render Alpha", PropertyTypeForEdition.Boolean, undefined)
@@ -49,7 +52,7 @@ export class NodeMaterialDebugBlock extends NodeMaterialBlock {
 
     /** @internal */
     public override get _isFinalOutputAndActive() {
-        return this.isActive;
+        return this.isActive || this._forcedActive;
     }
 
     /** @internal */
@@ -75,7 +78,7 @@ export class NodeMaterialDebugBlock extends NodeMaterialBlock {
     protected override _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
-        if (!this._isActive) {
+        if (!this._isFinalOutputAndActive) {
             return this;
         }
 
@@ -104,18 +107,30 @@ export class NodeMaterialDebugBlock extends NodeMaterialBlock {
         return this;
     }
 
+    /**
+     * Serializes the block
+     * @returns the serialized object
+     */
     public override serialize(): any {
         const serializationObject = super.serialize();
         serializationObject.isActive = this._isActive;
         serializationObject.renderAlpha = this.renderAlpha;
+        serializationObject._forcedActive = this._forcedActive;
         return serializationObject;
     }
 
+    /**
+     * Deserializes the block
+     * @param serializationObject - the serialization object
+     * @param scene - the scene
+     * @param rootUrl - the root URL
+     */
     public override _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
         super._deserialize(serializationObject, scene, rootUrl);
 
         this.isActive = serializationObject.isActive;
         this.renderAlpha = serializationObject.renderAlpha;
+        this._forcedActive = serializationObject._forcedActive;
     }
 }
 

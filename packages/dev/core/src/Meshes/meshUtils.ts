@@ -1,7 +1,7 @@
-import type { AnimationGroup } from "../Animations/animationGroup";
-import type { FloatArray, Nullable } from "../types";
-import type { AbstractMesh } from "./abstractMesh";
-import type { Mesh } from "./mesh";
+import { type AnimationGroup } from "../Animations/animationGroup";
+import { type FloatArray, type Nullable } from "../types";
+import { type AbstractMesh } from "./abstractMesh";
+import { type Mesh } from "./mesh";
 
 import { VertexBuffer } from "../Buffers/buffer";
 import { TmpVectors, Vector3 } from "../Maths/math.vector";

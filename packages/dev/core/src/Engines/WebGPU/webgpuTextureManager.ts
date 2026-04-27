@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 /* eslint-disable babylonjs/available */
-/* eslint-disable jsdoc/require-jsdoc */
 // License for the mipmap generation code:
 //
 // Copyright 2020 Brandon Jones
@@ -23,21 +22,20 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 import * as WebGPUConstants from "./webgpuConstants";
-import type { WebGPUBufferManager } from "./webgpuBufferManager";
+import { type WebGPUBufferManager } from "./webgpuBufferManager";
 import { Constants } from "../constants";
-import type { Nullable } from "../../types";
-import type { InternalTexture } from "../../Materials/Textures/internalTexture";
-import { InternalTextureSource } from "../../Materials/Textures/internalTexture";
-import type { IHardwareTextureWrapper } from "../../Materials/Textures/hardwareTextureWrapper";
-import type { BaseTexture } from "../../Materials/Textures/baseTexture";
+import { type Nullable } from "../../types";
+import { type InternalTexture, InternalTextureSource } from "../../Materials/Textures/internalTexture";
+import { type IHardwareTextureWrapper } from "../../Materials/Textures/hardwareTextureWrapper";
+import { type BaseTexture } from "../../Materials/Textures/baseTexture";
 import { WebGPUHardwareTexture } from "./webgpuHardwareTexture";
-import type { ExternalTexture } from "../../Materials/Textures/externalTexture";
-import type { WebGPUEngine } from "../webgpuEngine";
+import { type ExternalTexture } from "../../Materials/Textures/externalTexture";
+import { type WebGPUEngine } from "../webgpuEngine";
 import { WebGPUTextureHelper } from "./webgpuTextureHelper";
-import type { _IProcessingOptions } from "../Processors/shaderProcessingOptions";
+import { type _IProcessingOptions } from "../Processors/shaderProcessingOptions";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { Finalize, Initialize, Process } from "../Processors/shaderProcessor";
-import type { WebGPUShaderProcessorWGSL } from "./webgpuShaderProcessorsWGSL";
+import { type WebGPUShaderProcessorWGSL } from "./webgpuShaderProcessorsWGSL";
 
 // TODO WEBGPU improve mipmap generation by using compute shaders
 
@@ -234,7 +232,7 @@ const resolveDepthFragmentSource = `
         for (var i = 0u; i < numSamples; i = i + 1u) {
             depth = min(depth, textureLoad(msaaDepthTexture, vec2u(input.position.xy), i));
         }
-        
+
         fragmentOutputs.color = vec4f(depth);
     #else
         fragmentOutputs.color = vec4f(textureLoad(msaaDepthTexture, vec2u(input.position.xy), 0)); // do like WebGL, take the first sample
@@ -603,6 +601,7 @@ export class WebGPUTextureManager {
 
         if (useOwnCommandEncoder) {
             this._device.queue.submit([commandEncoder!.finish()]);
+            // eslint-disable-next-line no-useless-assignment
             commandEncoder = null as any;
         }
     }
@@ -769,6 +768,7 @@ export class WebGPUTextureManager {
 
         if (useOwnCommandEncoder) {
             this._device.queue.submit([commandEncoder!.finish()]);
+            // eslint-disable-next-line no-useless-assignment
             commandEncoder = null as any;
         }
     }
@@ -789,7 +789,8 @@ export class WebGPUTextureManager {
         commandEncoder?: GPUCommandEncoder,
         usage = -1,
         additionalUsages = 0,
-        label?: string
+        label?: string,
+        mipLevelCount?: number
     ): GPUTexture {
         sampleCount = WebGPUTextureHelper.GetSample(sampleCount);
 
@@ -802,7 +803,8 @@ export class WebGPUTextureManager {
 
         const renderAttachmentFlag = renderableTextureFormatToIndex[format] ? WebGPUConstants.TextureUsage.RenderAttachment : 0;
         const isCompressedFormat = WebGPUTextureHelper.IsCompressedFormat(format);
-        const mipLevelCount = hasMipmaps ? WebGPUTextureHelper.ComputeNumMipmapLevels(imageBitmap.width, imageBitmap.height) : 1;
+        const maxNumMipLevels = WebGPUTextureHelper.ComputeNumMipmapLevels(imageBitmap.width, imageBitmap.height);
+        const effectiveMipLevelCount = hasMipmaps ? Math.min(mipLevelCount ?? maxNumMipLevels, maxNumMipLevels) : 1;
         const usages = usage >= 0 ? usage : WebGPUConstants.TextureUsage.CopySrc | WebGPUConstants.TextureUsage.CopyDst | WebGPUConstants.TextureUsage.TextureBinding;
 
         additionalUsages |= hasMipmaps && !isCompressedFormat ? WebGPUConstants.TextureUsage.CopySrc | renderAttachmentFlag : 0;
@@ -821,14 +823,14 @@ export class WebGPUTextureManager {
             format,
             usage: usages | additionalUsages,
             sampleCount,
-            mipLevelCount,
+            mipLevelCount: effectiveMipLevelCount,
         });
 
         if (WebGPUTextureHelper.IsImageBitmap(imageBitmap)) {
             this.updateTexture(imageBitmap, gpuTexture, imageBitmap.width, imageBitmap.height, layerCount, format, 0, 0, invertY, premultiplyAlpha, 0, 0);
 
             if (hasMipmaps && generateMipmaps) {
-                this.generateMipmaps(gpuTexture, mipLevelCount, 0, commandEncoder);
+                this.generateMipmaps(gpuTexture, effectiveMipLevelCount, 0, commandEncoder);
             }
         }
 
@@ -911,6 +913,7 @@ export class WebGPUTextureManager {
 
         if (useOwnCommandEncoder) {
             this._device.queue.submit([commandEncoder!.finish()]);
+            // eslint-disable-next-line no-useless-assignment
             commandEncoder = null as any;
         }
     }
@@ -1005,6 +1008,7 @@ export class WebGPUTextureManager {
 
         if (useOwnCommandEncoder) {
             this._device.queue.submit([commandEncoder!.finish()]);
+            // eslint-disable-next-line no-useless-assignment
             commandEncoder = null as any;
         }
     }
@@ -1030,6 +1034,7 @@ export class WebGPUTextureManager {
 
         const gpuTextureWrapper = texture._hardwareTexture as WebGPUHardwareTexture;
         const isStorageTexture = ((creationFlags ?? 0) & Constants.TEXTURE_CREATIONFLAG_STORAGE) !== 0;
+        const label = texture.label ? texture.label + "_InternalUniqueId" + texture.uniqueId : "InternalUniqueId" + texture.uniqueId;
 
         gpuTextureWrapper.format = gpuTextureWrapper.originalFormat = WebGPUTextureHelper.GetWebGPUTextureFormat(texture.type, texture.format, texture._useSRGBBuffer);
 
@@ -1065,7 +1070,6 @@ export class WebGPUTextureManager {
         } else {
             mipmapCount = hasMipMaps ? WebGPUTextureHelper.ComputeNumMipmapLevels(width, height) : 1;
         }
-
         if (texture.isCube) {
             const gpuTexture = this.createCubeTexture(
                 { width, height, layers: layerCount },
@@ -1078,7 +1082,7 @@ export class WebGPUTextureManager {
                 this._commandEncoderForCreation,
                 gpuTextureWrapper.textureUsages,
                 gpuTextureWrapper.textureAdditionalUsages,
-                texture.label
+                label
             );
 
             gpuTextureWrapper.set(gpuTexture);
@@ -1091,7 +1095,7 @@ export class WebGPUTextureManager {
                 {
                     label: `BabylonWebGPUDevice${this._engine.uniqueId}_TextureViewCube${texture.is2DArray ? "_Array" + layerCount : ""}_${width}x${height}_${
                         hasMipMaps ? "wmips" : "womips"
-                    }_${format}_${dimension}_${aspect}_${texture.label ?? "noname"}`,
+                    }_${format}_${dimension}_${aspect}_${label}`,
                     format,
                     dimension,
                     mipLevelCount: mipmapCount,
@@ -1105,7 +1109,7 @@ export class WebGPUTextureManager {
         } else {
             const gpuTexture = this.createTexture(
                 { width, height, layers: layerCount },
-                texture.generateMipMaps,
+                hasMipMaps,
                 texture.generateMipMaps,
                 texture.invertY,
                 false,
@@ -1115,7 +1119,7 @@ export class WebGPUTextureManager {
                 this._commandEncoderForCreation,
                 gpuTextureWrapper.textureUsages,
                 gpuTextureWrapper.textureAdditionalUsages,
-                texture.label
+                label
             );
 
             gpuTextureWrapper.set(gpuTexture);
@@ -1133,7 +1137,7 @@ export class WebGPUTextureManager {
                 {
                     label: `BabylonWebGPUDevice${this._engine.uniqueId}_TextureView${texture.is3D ? "3D" : "2D"}${
                         texture.is2DArray ? "_Array" + arrayLayerCount : ""
-                    }_${width}x${height}${texture.is3D ? "x" + layerCount : ""}_${hasMipMaps ? "wmips" : "womips"}_${format}_${dimension}_${aspect}_${texture.label ?? "noname"}`,
+                    }_${width}x${height}${texture.is3D ? "x" + layerCount : ""}_${hasMipMaps ? "wmips" : "womips"}_${format}_${dimension}_${aspect}_${label}`,
                     format,
                     dimension,
                     mipLevelCount: mipmapCount,
@@ -1182,7 +1186,16 @@ export class WebGPUTextureManager {
             label: `BabylonWebGPUDevice${this._engine.uniqueId}_resolveMSAADepthTexture${msaaTexture.label ? "_" + msaaTexture.label : ""}`,
             colorAttachments: [
                 {
-                    view: outputTexture,
+                    // Note: the WebGPU spec allows passing a GPUTexture directly as the view, but Safari rejects it (non-compliant).
+                    // We explicitly create a GPUTextureView to work around this Safari bug.
+                    view: outputTexture.createView({
+                        format,
+                        dimension: WebGPUConstants.TextureViewDimension.E2d,
+                        baseMipLevel: 0,
+                        mipLevelCount: 1,
+                        arrayLayerCount: 1,
+                        baseArrayLayer: 0,
+                    }),
                     loadOp: WebGPUConstants.LoadOp.Load,
                     storeOp: WebGPUConstants.StoreOp.Store,
                 },
@@ -1219,6 +1232,7 @@ export class WebGPUTextureManager {
 
         if (useOwnCommandEncoder) {
             this._device.queue.submit([commandEncoder!.finish()]);
+            // eslint-disable-next-line no-useless-assignment
             commandEncoder = null as any;
         }
     }
@@ -1362,6 +1376,17 @@ export class WebGPUTextureManager {
         } else {
             imageBitmap = imageBitmap as ImageBitmap | ImageData | HTMLImageElement | HTMLVideoElement | VideoFrame | HTMLCanvasElement | OffscreenCanvas;
             this._device.queue.copyExternalImageToTexture({ source: imageBitmap, flipY: invertY }, textureCopyView, textureExtent);
+        }
+    }
+
+    public updateMipLevelCountForInternalTexture(texture: InternalTexture, mipLevelCount?: number) {
+        const maxNumMipLevels = WebGPUTextureHelper.ComputeNumMipmapLevels(texture.width, texture.height);
+        if (mipLevelCount !== undefined) {
+            texture.mipLevelCount = Math.min(Math.max(1, mipLevelCount), maxNumMipLevels);
+        } else if (texture.generateMipMaps) {
+            texture.mipLevelCount = maxNumMipLevels;
+        } else {
+            texture.mipLevelCount = 1;
         }
     }
 

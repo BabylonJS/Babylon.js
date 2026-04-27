@@ -1,19 +1,18 @@
-import type { ServiceDefinition } from "../../../modularity/serviceDefinition";
-import type { ISceneContext } from "../../sceneContext";
-import type { ISceneExplorerService } from "./sceneExplorerService";
+import { type ServiceDefinition } from "shared-ui-components/modularTool/modularity/serviceDefinition";
+import { type ISceneContext, SceneContextIdentity } from "../../sceneContext";
+import { type IWatcherService, WatcherServiceIdentity } from "../../watcherService";
+import { type ISceneExplorerService, SceneExplorerServiceIdentity } from "./sceneExplorerService";
 
+import { tokens } from "@fluentui/react-components";
 import { BlurRegular } from "@fluentui/react-icons";
 
 import { Observable } from "core/Misc/observable";
-import { InterceptProperty } from "../../../instrumentation/propertyInstrumentation";
-import { SceneContextIdentity } from "../../sceneContext";
 import { DefaultSectionsOrder } from "./defaultSectionsMetadata";
-import { SceneExplorerServiceIdentity } from "./sceneExplorerService";
 
-export const PostProcessExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplorerService, ISceneContext]> = {
+export const PostProcessExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplorerService, ISceneContext, IWatcherService]> = {
     friendlyName: "Post Process Explorer",
-    consumes: [SceneExplorerServiceIdentity, SceneContextIdentity],
-    factory: (sceneExplorerService, sceneContext) => {
+    consumes: [SceneExplorerServiceIdentity, SceneContextIdentity, WatcherServiceIdentity],
+    factory: (sceneExplorerService, sceneContext, watcherService) => {
         const scene = sceneContext.currentScene;
         if (!scene) {
             return undefined;
@@ -26,15 +25,11 @@ export const PostProcessExplorerServiceDefinition: ServiceDefinition<[], [IScene
             getEntityDisplayInfo: (postProcess) => {
                 const onChangeObservable = new Observable<void>();
 
-                const nameHookToken = InterceptProperty(postProcess, "name", {
-                    afterSet: () => {
-                        onChangeObservable.notifyObservers();
-                    },
-                });
+                const nameHookToken = watcherService.watchProperty(postProcess, "name", () => onChangeObservable.notifyObservers());
 
                 return {
                     get name() {
-                        return postProcess.name;
+                        return postProcess.name || `Unnamed ${postProcess.getClassName()}`;
                     },
                     onChange: onChangeObservable,
                     dispose: () => {
@@ -43,7 +38,7 @@ export const PostProcessExplorerServiceDefinition: ServiceDefinition<[], [IScene
                     },
                 };
             },
-            entityIcon: () => <BlurRegular />,
+            entityIcon: () => <BlurRegular color={tokens.colorPaletteRedForeground2} />,
             getEntityAddedObservables: () => [scene.onNewPostProcessAddedObservable],
             getEntityRemovedObservables: () => [scene.onPostProcessRemovedObservable],
         });

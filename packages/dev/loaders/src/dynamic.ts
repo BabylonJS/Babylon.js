@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 
-import type { ISceneLoaderPluginFactory, SceneLoaderPluginOptions } from "core/Loading/sceneLoader";
-import { RegisterSceneLoaderPlugin } from "core/Loading/sceneLoader";
+import { type ISceneLoaderPluginFactory, type SceneLoaderPluginOptions, RegisterSceneLoaderPlugin } from "core/Loading/sceneLoader";
 
 import { BVHFileLoaderMetadata } from "./BVH/bvhFileLoader.metadata";
 import { GLTFFileLoaderMetadata } from "./glTF/glTFFileLoader.metadata";

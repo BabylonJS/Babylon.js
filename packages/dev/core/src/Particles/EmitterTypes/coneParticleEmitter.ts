@@ -1,11 +1,10 @@
-import type { Matrix } from "core/Maths/math.vector";
-import type { Particle } from "core/Particles/particle";
-import type { UniformBufferEffectCommonAccessor } from "core/Materials/uniformBufferEffectCommonAccessor";
-import type { UniformBuffer } from "core/Materials/uniformBuffer";
-import type { IParticleEmitterType } from "./IParticleEmitterType";
+import { type Matrix, Vector3 } from "core/Maths/math.vector";
+import { type Particle } from "core/Particles/particle";
+import { type UniformBufferEffectCommonAccessor } from "core/Materials/uniformBufferEffectCommonAccessor";
+import { type UniformBuffer } from "core/Materials/uniformBuffer";
+import { type IParticleEmitterType } from "./IParticleEmitterType";
 
 import { DeepCopier } from "core/Misc/deepCopier";
-import { Vector3 } from "core/Maths/math.vector";
 import { RandomRange } from "core/Maths/math.scalar.functions";
 
 /**
@@ -225,7 +224,7 @@ export class ConeParticleEmitter implements IParticleEmitterType {
         this.directionRandomizer = serializationObject.directionRandomizer;
 
         this.radiusRange = serializationObject.radiusRange !== undefined ? serializationObject.radiusRange : 1;
-        this.heightRange = serializationObject.radiusRange !== undefined ? serializationObject.heightRange : 1;
+        this.heightRange = serializationObject.heightRange !== undefined ? serializationObject.heightRange : 1;
         this.emitFromSpawnPointOnly = serializationObject.emitFromSpawnPointOnly !== undefined ? serializationObject.emitFromSpawnPointOnly : false;
     }
 }
@@ -282,8 +281,7 @@ export class ConeDirectedParticleEmitter extends ConeParticleEmitter {
      * @param uboOrEffect defines the update shader
      */
     public override applyToShader(uboOrEffect: UniformBufferEffectCommonAccessor): void {
-        uboOrEffect.setFloat("radius", this.radius);
-        uboOrEffect.setFloat("radiusRange", this.radiusRange);
+        super.applyToShader(uboOrEffect);
         uboOrEffect.setVector3("direction1", this.direction1);
         uboOrEffect.setVector3("direction2", this.direction2);
     }
@@ -293,8 +291,7 @@ export class ConeDirectedParticleEmitter extends ConeParticleEmitter {
      * @param ubo ubo to create the structure for
      */
     public override buildUniformLayout(ubo: UniformBuffer): void {
-        ubo.addUniform("radius", 1);
-        ubo.addUniform("radiusRange", 1);
+        super.buildUniformLayout(ubo);
         ubo.addUniform("direction1", 3);
         ubo.addUniform("direction2", 3);
     }
@@ -334,7 +331,7 @@ export class ConeDirectedParticleEmitter extends ConeParticleEmitter {
      */
     public override parse(serializationObject: any): void {
         super.parse(serializationObject);
-        this.direction1.copyFrom(serializationObject.direction1);
-        this.direction2.copyFrom(serializationObject.direction2);
+        Vector3.FromArrayToRef(serializationObject.direction1, 0, this.direction1);
+        Vector3.FromArrayToRef(serializationObject.direction2, 0, this.direction2);
     }
 }

@@ -5,7 +5,7 @@
         "outDir": "./dist",
         "rootDir": "./src",
         "declaration": true,
-        "target": "es5",
+        "target": "ES2015",
         "importHelpers": true,
     },
 

@@ -48,10 +48,12 @@
 
             #ifdef REFLECTIONMAP_OPPOSITEZ
                 irradianceVector.z *= -1.0;
+                irradianceView.z *= -1.0;
             #endif
 
             #ifdef INVERTCUBICMAP
                 irradianceVector.y *= -1.0;
+                irradianceView.y *= -1.0;
             #endif
         #endif
         #ifdef USESPHERICALFROMREFLECTIONMAP
@@ -204,6 +206,8 @@
         , const vec3 viewDirectionW
         , const vec3 positionW
         , const vec3 noise
+        , bool isRefraction
+        , float ior
     #ifdef REFLECTIONMAP_3D
         , in samplerCube reflectionSampler
     #else
@@ -248,7 +252,7 @@
                 vec4(radianceAnisotropic(alphaT, alphaB, reflectionSampler,
                                      view, tangent,
                                      bitangent, normal,
-                                     vReflectionFilteringInfo, noise.xy),
+                                     vReflectionFilteringInfo, noise.xy, isRefraction, ior),
                  1.0);
         #else
             // We will sample multiple reflections using interpolated surface normals along
@@ -288,8 +292,16 @@
                     bentNormal = normalW;
                 }
                 
+                if (isRefraction) {
+                    reflectionCoords = double_refract(-viewDirectionW, bentNormal, ior);
+                } else {
+                    reflectionCoords = reflect(-viewDirectionW, bentNormal);
+                }
                 // Use this new normal to calculate a reflection vector to sample from.
-                reflectionCoords = createReflectionCoords(positionW, bentNormal);
+                reflectionCoords = vec3(reflectionMatrix * vec4(reflectionCoords, 0));
+                #ifdef REFLECTIONMAP_OPPOSITEZ
+                    reflectionCoords.z *= -1.0;
+                #endif
                 radianceSample = sampleReflectionLod(reflectionSampler, reflectionCoords, reflectionLOD);
                 #ifdef RGBDREFLECTION
                     environmentRadiance.rgb += sample_weight * fromRGBD(radianceSample);
@@ -308,7 +320,7 @@
         return environmentRadiance.rgb;
     }
 #endif
-
+    #ifdef ENVIRONMENTBRDF
     #define pbr_inline
     vec3 conductorIblFresnel(in ReflectanceParams reflectance, in float NdotV, in float roughness, in vec3 environmentBrdf)
     {
@@ -321,4 +333,5 @@
             return getReflectanceFromBRDFLookup(reflectance.coloredF0, reflectance.coloredF90, environmentBrdf);
         #endif
     }
+    #endif
 #endif

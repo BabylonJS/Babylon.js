@@ -1,9 +1,8 @@
 import * as React from "react";
-import type { IToolParameters, IToolData, IToolType, IToolGUIProps } from "../textureEditorComponent";
-import type { PointerInfo } from "core/Events/pointerEvents";
-import { PointerEventTypes } from "core/Events/pointerEvents";
-import type { Nullable } from "core/types";
-import type { Observer } from "core/Misc/observable";
+import { type IToolParameters, type IToolData, type IToolType, type IToolGUIProps } from "../textureEditorComponent";
+import { type PointerInfo, PointerEventTypes } from "core/Events/pointerEvents";
+import { type Nullable } from "core/types";
+import { type Observer } from "core/Misc/observable";
 import { Vector2 } from "core/Maths/math.vector";
 import { Color3 } from "core/Maths/math.color";
 

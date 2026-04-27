@@ -1,16 +1,15 @@
 import { NodeMaterialBlock } from "../../nodeMaterialBlock";
 import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
-import type { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
-import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
-import { NodeMaterialConnectionPointDirection } from "../../nodeMaterialBlockConnectionPoint";
+import { type NodeMaterialBuildState } from "../../nodeMaterialBuildState";
+import { type NodeMaterialConnectionPoint, NodeMaterialConnectionPointDirection } from "../../nodeMaterialBlockConnectionPoint";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import { RegisterClass } from "../../../../Misc/typeStore";
-import type { Nullable } from "../../../../types";
+import { type Nullable } from "../../../../types";
 import { Texture } from "../../../Textures/texture";
 import { Constants } from "../../../../Engines/constants";
-import type { Effect } from "../../../effect";
+import { type Effect } from "../../../effect";
 import { NodeMaterial } from "../../nodeMaterial";
-import type { Scene } from "../../../../scene";
+import { type Scene } from "../../../../scene";
 import { NodeMaterialConnectionPointCustomObject } from "../../nodeMaterialConnectionPointCustomObject";
 import { EngineStore } from "../../../../Engines/engineStore";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
@@ -73,6 +72,11 @@ export class ImageSourceBlock extends NodeMaterialBlock {
         this.registerOutput("dimensions", NodeMaterialBlockConnectionPointTypes.Vector2);
     }
 
+    /**
+     * Bind data to effect
+     * @param effect - the effect to bind to
+     * @param _nodeMaterial - the node material
+     */
     public override bind(effect: Effect, _nodeMaterial: NodeMaterial) {
         if (!this.texture) {
             return;
@@ -81,6 +85,10 @@ export class ImageSourceBlock extends NodeMaterialBlock {
         effect.setTexture(this._samplerName, this.texture);
     }
 
+    /**
+     * Checks if the block is ready
+     * @returns true if ready
+     */
     public override isReady() {
         if (this.texture && !this.texture.isReadyOrNotBlocking()) {
             return false;
@@ -124,7 +132,7 @@ export class ImageSourceBlock extends NodeMaterialBlock {
         }
 
         if (this.dimensions.isConnected) {
-            let affect: string = "";
+            let affect: string;
             if (state.shaderLanguage === ShaderLanguage.WGSL) {
                 affect = `vec2f(textureDimensions(${this._samplerName}, 0).xy)`;
             } else {
@@ -165,6 +173,11 @@ export class ImageSourceBlock extends NodeMaterialBlock {
         return codeString;
     }
 
+    /**
+     * Serializes the block
+     * @param ignoreTexture - whether to skip texture serialization
+     * @returns the serialized object
+     */
     public override serialize(ignoreTexture = false): any {
         const serializationObject = super.serialize();
 
@@ -180,6 +193,13 @@ export class ImageSourceBlock extends NodeMaterialBlock {
         return serializationObject;
     }
 
+    /**
+     * Deserializes the block
+     * @param serializationObject - the serialization object
+     * @param scene - the scene
+     * @param rootUrl - the root url
+     * @param urlRewriter - optional url rewriter
+     */
     public override _deserialize(serializationObject: any, scene: Scene, rootUrl: string, urlRewriter?: (url: string) => string) {
         super._deserialize(serializationObject, scene, rootUrl, urlRewriter);
 

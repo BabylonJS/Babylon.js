@@ -1,7 +1,7 @@
-import type { NodeParticleConnectionPoint } from "../../nodeParticleBlockConnectionPoint";
-import type { NodeParticleBuildState } from "../../nodeParticleBuildState";
-import type { Particle } from "core/Particles/particle";
-import type { IShapeBlock } from "./IShapeBlock";
+import { type NodeParticleConnectionPoint } from "../../nodeParticleBlockConnectionPoint";
+import { type NodeParticleBuildState } from "../../nodeParticleBuildState";
+import { type Particle } from "core/Particles/particle";
+import { type IShapeBlock } from "./IShapeBlock";
 
 import { RegisterClass } from "../../../../Misc/typeStore";
 import { NodeParticleBlockConnectionPointTypes } from "../../Enums/nodeParticleBlockConnectionPointTypes";
@@ -103,7 +103,7 @@ export class BoxShapeBlock extends NodeParticleBlock implements IShapeBlock {
                 Vector3.TransformNormalFromFloatsToRef(randX, randY, randZ, state.emitterWorldMatrix!, particle.direction);
             }
 
-            particle._initialDirection = particle.direction.clone();
+            particle._properties.initialDirection = particle.direction.clone();
         };
 
         system._positionCreation.process = (particle: Particle) => {

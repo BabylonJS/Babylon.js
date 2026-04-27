@@ -1,14 +1,22 @@
-﻿import type { IGLTFTechniqueParameter, IGLTFAccessor, IGLTFRuntime, IGLTFBufferView } from "./glTFLoaderInterfaces";
-import { EParameterType, ETextureWrapMode, ETextureFilterType, EComponentType } from "./glTFLoaderInterfaces";
+﻿import {
+    type IGLTFTechniqueParameter,
+    type IGLTFAccessor,
+    type IGLTFRuntime,
+    type IGLTFBufferView,
+    EParameterType,
+    ETextureWrapMode,
+    ETextureFilterType,
+    EComponentType,
+} from "./glTFLoaderInterfaces";
 
-import type { Nullable } from "core/types";
+import { type Nullable } from "core/types";
 import { Vector2, Vector3, Vector4, Matrix } from "core/Maths/math.vector";
 import { Color4 } from "core/Maths/math.color";
 import { Effect } from "core/Materials/effect";
 import { ShaderMaterial } from "core/Materials/shaderMaterial";
 import { Texture } from "core/Materials/Textures/texture";
-import type { Node } from "core/node";
-import type { Scene } from "core/scene";
+import { type Node } from "core/node";
+import { type Scene } from "core/scene";
 
 /**
  * Utils functions for GLTF

@@ -1,19 +1,19 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-import type { Atmosphere } from "./atmosphere";
-import type { AtmospherePhysicalProperties } from "./atmospherePhysicalProperties";
+import { type Atmosphere } from "./atmosphere";
+import { type AtmospherePhysicalProperties } from "./atmospherePhysicalProperties";
 import { Clamp } from "core/Maths/math.scalar.functions";
 import { Constants } from "core/Engines/constants";
 import { EffectRenderer, EffectWrapper } from "core/Materials/effectRenderer";
 import { FromHalfFloat } from "core/Misc/textureTools";
-import type { IColor3Like, IColor4Like, IVector2Like, IVector3Like } from "core/Maths/math.like";
-import type { Nullable } from "core/types";
+import { type IColor3Like, type IColor4Like, type IVector2Like, type IVector3Like } from "core/Maths/math.like";
+import { type Nullable } from "core/types";
 import { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
 import { Sample2DRgbaToRef } from "./sampling";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { ShaderStore } from "core/Engines/shaderStore";
 import { Vector3Dot } from "core/Maths/math.vector.functions";
-import "./Shaders/diffuseSkyIrradiance.fragment";
-import "./Shaders/fullscreenTriangle.vertex";
 
 const RaySamples = 128;
 const LutWidthPx = 64;
@@ -40,7 +40,8 @@ export class DiffuseSkyIrradianceLut {
     private _effectRenderer: Nullable<EffectRenderer> = null;
     private _isDirty = true;
     private _isDisposed = false;
-    private _lutData: Uint8Array | Uint16Array = new Uint16Array(0);
+    private _needsReadPixels = false;
+    private _lutData: Float32Array = new Float32Array(0);
 
     /**
      * True if the LUT needs to be rendered.
@@ -100,8 +101,9 @@ export class DiffuseSkyIrradianceLut {
 
         const atmosphereUbo = atmosphere.uniformBuffer;
         const useUbo = atmosphereUbo.useUbo;
+        const useWebGPU = engine.isWebGPU && !EffectWrapper.ForceGLSL;
+        const uboName = useWebGPU ? "atmosphere" : atmosphereUbo.name;
 
-        const heightParam = engine.isWebGPU ? "radius" : "filteringInfo.x";
         this._effectWrapper = new EffectWrapper({
             engine,
             name,
@@ -109,16 +111,35 @@ export class DiffuseSkyIrradianceLut {
             fragmentShader: "diffuseSkyIrradiance",
             attributeNames: ["position"],
             uniformNames: ["depth", ...(useUbo ? [] : atmosphereUbo.getUniformNames())],
-            uniformBuffers: useUbo ? [atmosphereUbo.name] : [],
-            defines: [
-                "#define POSITION_VEC2",
-                `#define NUM_SAMPLES ${RaySamples}u`,
-                "#define CUSTOM_IRRADIANCE_FILTERING_INPUT /* empty */", // empty, no input texture needed as the radiance is procedurally generated from ray marching.
-                // The following ray marches the atmosphere to get the radiance.
-                `#define CUSTOM_IRRADIANCE_FILTERING_FUNCTION vec3 c = integrateForIrradiance(n, Ls, vec3(0., ${heightParam}, 0.));`,
-            ],
+            uniformBuffers: useUbo ? [uboName] : [],
+            defines: ["#define POSITION_VEC2", `#define NUM_SAMPLES ${RaySamples}u`, "#define CUSTOM_IRRADIANCE_FILTERING_INPUT", "#define CUSTOM_IRRADIANCE_FILTERING_FUNCTION"],
             samplers: ["transmittanceLut", "multiScatteringLut"],
             useShaderStore: true,
+            shaderLanguage: useWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
+            extraInitializationsAsync: async () => {
+                await Promise.all(
+                    useWebGPU
+                        ? [import("./ShadersWGSL/fullscreenTriangle.vertex"), import("./ShadersWGSL/diffuseSkyIrradiance.fragment")]
+                        : [import("./Shaders/fullscreenTriangle.vertex"), import("./Shaders/diffuseSkyIrradiance.fragment")]
+                );
+
+                // Replace the CUSTOM_IRRADIANCE_FILTERING_INPUT and CUSTOM_IRRADIANCE_FILTERING_FUNCTION placeholders.
+                // Note, the regex replacements look for lines that *only* contain these placeholder strings.
+                // Since buildShaders removes leading whitespace, the placeholders are expected to start at the beginning of the line.
+                const includeStore = useWebGPU ? ShaderStore.IncludesShadersStoreWGSL : ShaderStore.IncludesShadersStore;
+                let patchedInclude = includeStore["hdrFilteringFunctions"];
+                patchedInclude = patchedInclude.replace(/^CUSTOM_IRRADIANCE_FILTERING_INPUT\s*$/gm, "");
+                patchedInclude = patchedInclude.replace(
+                    /^CUSTOM_IRRADIANCE_FILTERING_FUNCTION\s*$/gm,
+                    useWebGPU ? "var c = integrateForIrradiance(n, Ls, vec3f(0., filteringInfo.x, 0.));" : "vec3 c = integrateForIrradiance(n, Ls, vec3(0., filteringInfo.x, 0.));"
+                );
+
+                // Replace the existing #include<hdrFilteringFunctions> with the patched include.
+                const shaderStore = useWebGPU ? ShaderStore.ShadersStoreWGSL : ShaderStore.ShadersStore;
+                let shader = shaderStore["diffuseSkyIrradiancePixelShader"];
+                shader = shader.replace("#include<hdrFilteringFunctions>", patchedInclude);
+                shaderStore["diffuseSkyIrradiancePixelShader"] = shader;
+            },
         });
 
         this._effectRenderer = new EffectRenderer(engine, {
@@ -166,7 +187,7 @@ export class DiffuseSkyIrradianceLut {
 
         const cosAngleLightToZenith = Vector3Dot(directionToLight, cameraGeocentricNormal);
         ComputeLutUVToRef(properties, radius, cosAngleLightToZenith, UvTemp);
-        Sample2DRgbaToRef(UvTemp.x, UvTemp.y, LutWidthPx, LutHeightPx, this._lutData, Color4Temp, FromHalfFloat);
+        Sample2DRgbaToRef(UvTemp.x, UvTemp.y, LutWidthPx, LutHeightPx, this._lutData, Color4Temp, null);
 
         const intensity = atmosphere.diffuseSkyIrradianceIntensity;
         result.r = intensity * (lightIrradiance * Color4Temp.r + additionalDiffuseSkyIrradiance.r);
@@ -187,15 +208,14 @@ export class DiffuseSkyIrradianceLut {
             return false;
         }
 
-        const engine = this._atmosphere.scene.getEngine();
+        const effectRenderer = this._effectRenderer!;
+        effectRenderer.saveStates();
 
+        const engine = this._atmosphere.scene.getEngine();
         engine.bindFramebuffer(this.renderTarget.renderTarget!, undefined, undefined, undefined, true);
 
-        const effectRenderer = this._effectRenderer!;
-        effectRenderer.applyEffectWrapper(effectWrapper);
-
-        effectRenderer.saveStates();
         effectRenderer.setViewport();
+        effectRenderer.applyEffectWrapper(effectWrapper);
 
         const effect = effectWrapper.effect;
         effectRenderer.bindBuffers(effect);
@@ -213,16 +233,40 @@ export class DiffuseSkyIrradianceLut {
         engine.restoreDefaultFramebuffer();
 
         this._isDirty = false;
+        this._needsReadPixels = true;
 
-        // eslint-disable-next-line github/no-then
-        void this.renderTarget.readPixels(0, 0, undefined, undefined, true /* noDataConversion */)?.then((value: ArrayBufferView) => {
-            if (this._isDisposed) {
-                return;
-            }
-            this._lutData = value as Uint8Array | Uint16Array;
+        // Defer readPixels to the end of the frame.
+        this._atmosphere.scene.onAfterRenderObservable.addOnce(async () => {
+            await this.readPixelsAsync();
         });
 
         return true;
+    }
+
+    /**
+     * Reads back the LUT data from the GPU if a readback is pending.
+     * @internal
+     */
+    public async readPixelsAsync(): Promise<void> {
+        if (!this._needsReadPixels || this._isDisposed) {
+            return;
+        }
+        this._needsReadPixels = false;
+
+        const value = await this.renderTarget.readPixels(0, 0, undefined, true, true /* noDataConversion */);
+        if (value && !this._isDisposed) {
+            const rawLutData = value as Uint8Array | Uint16Array;
+            const lutData = (this._lutData = new Float32Array(rawLutData.length));
+            if (rawLutData instanceof Uint16Array) {
+                for (let i = 0; i < rawLutData.length; i++) {
+                    lutData[i] = FromHalfFloat(rawLutData[i]);
+                }
+            } else {
+                for (let i = 0; i < rawLutData.length; i++) {
+                    lutData[i] = rawLutData[i] / 255.0;
+                }
+            }
+        }
     }
 
     /**

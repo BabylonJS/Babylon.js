@@ -2,8 +2,8 @@ import { editableInPropertyPage, PropertyTypeForEdition } from "core/Decorators/
 import { RegisterClass } from "../../../Misc/typeStore";
 import { NodeParticleBlockConnectionPointTypes } from "../Enums/nodeParticleBlockConnectionPointTypes";
 import { NodeParticleBlock } from "../nodeParticleBlock";
-import type { NodeParticleConnectionPoint } from "../nodeParticleBlockConnectionPoint";
-import type { NodeParticleBuildState } from "../nodeParticleBuildState";
+import { type NodeParticleConnectionPoint } from "../nodeParticleBlockConnectionPoint";
+import { type NodeParticleBuildState } from "../nodeParticleBuildState";
 import { Particle } from "../../particle";
 import { ThinParticleSystem } from "../../thinParticleSystem";
 
@@ -99,10 +99,10 @@ export class ParticleLocalVariableBlock extends NodeParticleBlock {
                 this._storage.set(id, value);
 
                 if (this.scope === ParticleLocalVariableBlockScope.Particle) {
-                    if (state.particleContext instanceof Particle) {
-                        state.particleContext!.onReset = () => {
+                    if (state.particleContext instanceof Particle && state.particleContext!._properties) {
+                        state.particleContext!._properties.onReset = () => {
                             this._storage.delete(id);
-                            (state.particleContext as Particle).onReset = null;
+                            (state.particleContext as Particle)._properties.onReset = null;
                         };
                     }
                 }

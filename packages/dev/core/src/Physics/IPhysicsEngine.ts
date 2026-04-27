@@ -1,7 +1,7 @@
-import type { Vector3 } from "../Maths/math.vector";
-import type { PhysicsRaycastResult, IRaycastQuery } from "./physicsRaycastResult";
-import type { IPhysicsEnginePlugin as IPhysicsEnginePluginV1 } from "./v1/IPhysicsEnginePlugin";
-import type { IPhysicsEnginePluginV2 } from "./v2/IPhysicsEnginePlugin";
+import { type Vector3 } from "../Maths/math.vector";
+import { type PhysicsRaycastResult, type IRaycastQuery } from "./physicsRaycastResult";
+import { type IPhysicsEnginePlugin as IPhysicsEnginePluginV1 } from "./v1/IPhysicsEnginePlugin";
+import { type IPhysicsEnginePluginV2 } from "./v2/IPhysicsEnginePlugin";
 
 /**
  * Interface used to define a physics engine

@@ -1,6 +1,6 @@
-import type { IDisposable, Scene } from "core/scene";
-import type { BMFontChar } from "./sdf/bmFont";
-import type { SdfFont } from "./sdf/font";
+import { type IDisposable, type Scene } from "core/scene";
+import { type BMFontChar } from "./sdf/bmFont";
+import { type SdfFont } from "./sdf/font";
 import { Texture } from "core/Materials/Textures/texture";
 
 enum CharCode {

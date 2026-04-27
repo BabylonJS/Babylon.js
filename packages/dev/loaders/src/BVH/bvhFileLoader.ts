@@ -1,9 +1,14 @@
-import type { ISceneLoaderPluginAsync, ISceneLoaderPluginFactory, ISceneLoaderAsyncResult, SceneLoaderPluginOptions } from "core/Loading/sceneLoader";
-import { RegisterSceneLoaderPlugin } from "core/Loading/sceneLoader";
+import {
+    type ISceneLoaderPluginAsync,
+    type ISceneLoaderPluginFactory,
+    type ISceneLoaderAsyncResult,
+    type SceneLoaderPluginOptions,
+    RegisterSceneLoaderPlugin,
+} from "core/Loading/sceneLoader";
 import { AssetContainer } from "core/assetContainer";
 import { Animation } from "core/Animations/animation";
-import type { Scene } from "core/scene";
-import type { BVHLoadingOptions } from "./bvhLoadingOptions";
+import { type Scene } from "core/scene";
+import { type BVHLoadingOptions } from "./bvhLoadingOptions";
 import { BVHFileLoaderMetadata } from "./bvhFileLoader.metadata";
 import { ReadBvh } from "./bvhLoader";
 

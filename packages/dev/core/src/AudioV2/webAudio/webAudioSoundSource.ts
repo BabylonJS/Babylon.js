@@ -1,21 +1,19 @@
-import type { Nullable } from "../../types";
-import type { AbstractAudioNode } from "../abstractAudio/abstractAudioNode";
-import type { ISoundSourceOptions } from "../abstractAudio/abstractSoundSource";
-import { AbstractSoundSource } from "../abstractAudio/abstractSoundSource";
-import type { AbstractSpatialAudio } from "../abstractAudio/subProperties/abstractSpatialAudio";
-import { _HasSpatialAudioOptions } from "../abstractAudio/subProperties/abstractSpatialAudio";
+import { type Nullable } from "../../types";
+import { type AbstractAudioNode } from "../abstractAudio/abstractAudioNode";
+import { type ISoundSourceOptions, AbstractSoundSource } from "../abstractAudio/abstractSoundSource";
+import { type AbstractSpatialAudio, _HasSpatialAudioOptions } from "../abstractAudio/subProperties/abstractSpatialAudio";
 import { _StereoAudio } from "../abstractAudio/subProperties/stereoAudio";
 import { _WebAudioBusAndSoundSubGraph } from "./subNodes/webAudioBusAndSoundSubGraph";
 import { _SpatialWebAudio } from "./subProperties/spatialWebAudio";
-import type { _WebAudioEngine } from "./webAudioEngine";
-import type { IWebAudioInNode } from "./webAudioNode";
+import { type _WebAudioEngine } from "./webAudioEngine";
+import { type IWebAudioInNode } from "./webAudioNode";
 
 /** @internal */
 export class _WebAudioSoundSource extends AbstractSoundSource {
     private _stereo: Nullable<_StereoAudio> = null;
 
     protected _subGraph: _WebAudioBusAndSoundSubGraph;
-    protected _webAudioNode: AudioNode;
+    protected _webAudioNode: Nullable<AudioNode> = null;
 
     /** @internal */
     public _audioContext: AudioContext | OfflineAudioContext;
@@ -69,6 +67,17 @@ export class _WebAudioSoundSource extends AbstractSoundSource {
     /** @internal */
     public override dispose(): void {
         super.dispose();
+
+        if (this._webAudioNode) {
+            if (this._webAudioNode instanceof MediaStreamAudioSourceNode) {
+                for (const track of this._webAudioNode.mediaStream.getTracks()) {
+                    track.stop();
+                }
+            }
+
+            this._webAudioNode.disconnect();
+            this._webAudioNode = null;
+        }
 
         this._stereo = null;
 
@@ -129,10 +138,10 @@ export class _WebAudioSoundSource extends AbstractSoundSource {
         protected override _onSubNodesChanged(): void {
             super._onSubNodesChanged();
 
-            this._owner._inNode.disconnect();
+            this._owner._inNode?.disconnect();
 
             if (this._owner._subGraph._inNode) {
-                this._owner._inNode.connect(this._owner._subGraph._inNode);
+                this._owner._inNode?.connect(this._owner._subGraph._inNode);
             }
         }
     };

@@ -1,16 +1,16 @@
-import type { Nullable } from "../../types";
+import { type Nullable } from "../../types";
 import { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { Constants } from "../../Engines/constants";
 import { Matrix } from "../../Maths/math.vector";
 import { Observable } from "../../Misc/observable";
-import type { ExternalTexture } from "./externalTexture";
+import { type ExternalTexture } from "./externalTexture";
 
 import "../../Engines/Extensions/engine.dynamicTexture";
 import "../../Engines/Extensions/engine.videoTexture";
 
-import type { AbstractEngine } from "../../Engines/abstractEngine";
-import type { Scene } from "../../scene";
-import type { WebGPUEngine } from "core/Engines/webgpuEngine";
+import { type AbstractEngine } from "../../Engines/abstractEngine";
+import { type Scene } from "../../scene";
+import { type WebGPUEngine } from "core/Engines/webgpuEngine";
 
 /**
  * Defines the options related to the creation of an HtmlElementTexture
@@ -115,8 +115,8 @@ export class HtmlElementTexture extends BaseTexture {
     }
 
     private _createInternalTexture(): void {
-        let width = 0;
-        let height = 0;
+        let width: number;
+        let height: number;
         if (this._isVideo) {
             width = (this.element as HTMLVideoElement).videoWidth;
             height = (this.element as HTMLVideoElement).videoHeight;

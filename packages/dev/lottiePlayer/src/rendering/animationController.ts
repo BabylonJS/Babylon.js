@@ -2,26 +2,22 @@ import "core/Engines/Extensions/engine.alpha";
 import "core/Shaders/sprites.vertex";
 import "core/Shaders/sprites.fragment";
 
+import { type RawLottieAnimation } from "../parsing/rawTypes";
+import { type AnimationInfo } from "../parsing/parsedTypes";
+import { type Node } from "../nodes/node";
+import { type AnimationConfiguration, UpdateConfiguration } from "../animationConfiguration";
+
 import { ThinEngine } from "core/Engines/thinEngine";
 import { Viewport } from "core/Maths/math.viewport";
-
 import { RenderingManager } from "./renderingManager";
-
-import type { RawLottieAnimation } from "../parsing/rawTypes";
-import type { AnimationInfo } from "../parsing/parsedTypes";
+import { ThinMatrix } from "../maths/matrix";
 import { Parser } from "../parsing/parser";
 import { SpritePacker } from "../parsing/spritePacker";
-
-import { ThinMatrix } from "../maths/matrix";
-
-import type { Node } from "../nodes/node";
-
-import type { AnimationConfiguration } from "../animationConfiguration";
 
 /**
  * Defines the babylon combine alpha value to prevent a large import.
  */
-const AlphaCombine = 2;
+const ALPHA_PREMULTIPLIED = 7;
 
 /**
  * Class that controls the playing of lottie animations using Babylon.js
@@ -30,9 +26,10 @@ export class AnimationController {
     private _isReady: boolean;
 
     private readonly _canvas: HTMLCanvasElement | OffscreenCanvas;
-    private _scaleFactor: number;
+    private _canvasScale: number;
+    private readonly _atlasScale: number;
     private readonly _variables: Map<string, string>;
-    private readonly _configuration: AnimationConfiguration;
+    private _configuration: AnimationConfiguration;
     private readonly _engine: ThinEngine;
     private readonly _spritePacker: SpritePacker;
 
@@ -50,11 +47,13 @@ export class AnimationController {
     private _lastFrameTime: number;
     private _deltaTime: number;
     private _loop: boolean;
+    private _hasRendered: boolean;
 
     private _accumulatedTime: number;
     private _framesToAdvance: number;
 
     private readonly _renderingManager: RenderingManager;
+    private readonly _onFirstRender?: () => void;
 
     /**
      * Gets the canvas used for rendering the animation.
@@ -84,22 +83,28 @@ export class AnimationController {
      * Creates a new instance of the Player.
      * @param canvas The canvas element to render the animation on.
      * @param animationData The raw lottie animation as a JSON object.
-     * @param scaleFactor The scale factor between the animation and the container, it will modify the sprites size in the atlas
+     * @param canvasScale The scale factor for the canvas / viewport (may be \< 1 when the animation is larger than the container).
+     * @param atlasScale The scale factor for the sprite atlas (always \>= 1 to keep sprites crisp).
      * @param variables Map of variables to replace in the animation file.
-     * @param configuration The configuration for the animation player.
+     * @param configuration The partial configuration for the animation player. Will be finalized after engine creation.
+     * @param mainThreadDevicePixelRatio The devicePixelRatio from the main thread (used in worker scenarios).
+     * @param onFirstRender Optional callback invoked after the first frame renders.
      */
     public constructor(
         canvas: HTMLCanvasElement | OffscreenCanvas,
         animationData: RawLottieAnimation,
-        scaleFactor: number,
+        canvasScale: number,
+        atlasScale: number,
         variables: Map<string, string>,
-        configuration: AnimationConfiguration
+        configuration: Partial<AnimationConfiguration>,
+        mainThreadDevicePixelRatio?: number,
+        onFirstRender?: () => void
     ) {
         this._isReady = false;
         this._canvas = canvas;
-        this._scaleFactor = scaleFactor;
+        this._canvasScale = canvasScale;
+        this._atlasScale = atlasScale;
         this._variables = variables;
-        this._configuration = configuration;
         this._currentFrame = 0;
         this._isPlaying = false;
         this._animationFrameId = null;
@@ -107,10 +112,12 @@ export class AnimationController {
         this._deltaTime = 0;
         this._accumulatedTime = 0;
         this._framesToAdvance = 0;
-        this._loop = this._configuration.loopAnimation;
         this._frameDuration = 1000 / 30; // Default to 30 FPS
         this._firstRun = true;
+        this._hasRendered = false;
+        this._onFirstRender = onFirstRender;
 
+        const supportDeviceLost = configuration.supportDeviceLost ?? true;
         this._engine = new ThinEngine(
             this._canvas,
             false, // Antialias
@@ -122,23 +129,28 @@ export class AnimationController {
                 depth: false,
                 // Important to allow skip frame and tiled optimizations
                 preserveDrawingBuffer: false,
-                premultipliedAlpha: false,
-                doNotHandleContextLost: this._configuration.supportDeviceLost,
-                // Usefull during debug to simulate WebGL1 devices (Safari)
+                premultipliedAlpha: true, // Using premultiplied alpha to avoid issues with colors bleeding in the texture atlas
+                doNotHandleContextLost: !supportDeviceLost,
+                // Useful during debug to simulate WebGL1 devices (Safari)
                 // disableWebGL2Support: true,
             },
             false
         );
+
+        // Finalize configuration now that we can query GPU capabilities
+        const maxTextureSize = this._engine.getCaps().maxTextureSize;
+        this._configuration = UpdateConfiguration(configuration, maxTextureSize, mainThreadDevicePixelRatio);
+        this._loop = this._configuration.loopAnimation;
 
         // Prevent parallel shader compilation to simplify the boot sequence
         // Only a couple of fast compile shaders.
         this._engine.getCaps().parallelShaderCompile = undefined;
         this._engine.depthCullingState.depthTest = false;
         this._engine.stencilState.stencilTest = false;
-        this._engine.setAlphaMode(AlphaCombine);
+        this._engine.setAlphaMode(ALPHA_PREMULTIPLIED);
 
-        this._spritePacker = new SpritePacker(this._engine, this._isHtmlCanvas(canvas), this._scaleFactor, this._variables, this._configuration);
-        this._renderingManager = new RenderingManager(this._engine, this._spritePacker.texture, this._configuration);
+        this._spritePacker = new SpritePacker(this._engine, this._isHtmlCanvas(canvas), this._atlasScale, this._variables, this._configuration);
+        this._renderingManager = new RenderingManager(this._engine, this._configuration);
 
         this._projectionMatrix = new ThinMatrix();
         this._worldMatrix = new ThinMatrix();
@@ -149,11 +161,15 @@ export class AnimationController {
         // Parse the animation
         const parser = new Parser(this._spritePacker, animationData, this._configuration, this._renderingManager);
 
+        if (this._configuration.debug) {
+            parser.debug();
+        }
+
         this._animation = parser.animationInfo;
         this._frameDuration = 1000 / this._animation.frameRate;
 
         this._cleanTree(this._animation.nodes);
-        this._setSize(animationData.w, animationData.h, this._scaleFactor);
+        this._setSize(animationData.w, animationData.h, this._canvasScale);
 
         this._isReady = true;
     }
@@ -190,16 +206,17 @@ export class AnimationController {
     }
 
     /**
-     * Sets a new scale factor for the animation and updates the rendering size.
-     * @param scale The new scale factor to apply to the animation.
+     * Sets a new canvas scale factor for the animation and updates the rendering size.
+     * This only affects the canvas/viewport size, not the sprite atlas.
+     * @param canvasScale The new canvas scale factor to apply to the animation.
      */
-    public setScale(scale: number): void {
-        if (scale <= 0 || this._animation === undefined) {
+    public setScale(canvasScale: number): void {
+        if (canvasScale <= 0 || this._animation === undefined) {
             return;
         }
 
-        this._scaleFactor = scale;
-        this._setSize(this._animation.widthPx, this._animation.heightPx, this._scaleFactor);
+        this._canvasScale = canvasScale;
+        this._setSize(this._animation.widthPx, this._animation.heightPx, this._canvasScale);
     }
 
     /**
@@ -216,25 +233,44 @@ export class AnimationController {
 
         this._engine.dispose();
         this._renderingManager.dispose();
-        this._spritePacker.texture.dispose();
+        for (const texture of this._spritePacker.textures) {
+            texture.dispose();
+        }
     }
 
     /**
-     * Sets the rendering size for the engine
+     * Sets the rendering size for the engine.
+     *
+     * The engine back-buffer is sized to the canvas (width * canvasScale * dpr),
+     * but the orthographic projection maps the coordinate space so that sprites
+     * rasterised at `atlasScale` in the atlas are correctly placed in the
+     * `canvasScale`-sized viewport.
+     *
      * @param width Width of the rendering canvas
      * @param height Height of the rendering canvas
-     * @param scale Scale ratio between the container and the animation
+     * @param canvasScale Canvas scale ratio between the container and the animation
      */
-    private _setSize(width: number, height: number, scale: number): void {
+    private _setSize(width: number, height: number, canvasScale: number): void {
         const { _engine, _projectionMatrix, _worldMatrix } = this;
         const devicePixelRatio = this._configuration.devicePixelRatio;
 
-        _engine.setSize(width * scale * devicePixelRatio, height * scale * devicePixelRatio);
+        _engine.setSize(width * canvasScale * devicePixelRatio, height * canvasScale * devicePixelRatio);
 
         const world = _worldMatrix.asArray();
         world[5] = -1; // we are upside down with Lottie
 
-        _projectionMatrix.orthoOffCenterLeftHanded(0, _engine.getRenderWidth() / (devicePixelRatio * scale), _engine.getRenderHeight() / (devicePixelRatio * scale), 0, -100, 100);
+        // The projection always maps the full animation coordinate space [0, width] × [0, height]
+        // into the canvas. Dividing by canvasScale cancels it out from
+        // the engine resolution, so sprites positioned in animation-space render correctly
+        // regardless of whether the canvas is smaller or larger than the animation.
+        _projectionMatrix.orthoOffCenterLeftHanded(
+            0,
+            _engine.getRenderWidth() / (devicePixelRatio * canvasScale),
+            _engine.getRenderHeight() / (devicePixelRatio * canvasScale),
+            0,
+            -100,
+            100
+        );
 
         // If we are not playing anymore (animation finished), resizing clears the buffer.
         // Redraw the last frame so the canvas does not appear blank after a resize.
@@ -312,15 +348,19 @@ export class AnimationController {
         }
 
         let stoppingAfterThisFrame = false;
-        if (this._currentFrame > this._animation.endFrame) {
-            if (this._loop) {
+        const effectiveEndFrame = this._configuration.stopAtFrame !== undefined ? Math.min(this._configuration.stopAtFrame, this._animation.endFrame) : this._animation.endFrame;
+        // Lottie out-point (op) is exclusive — the last visible frame is op - 1
+        const lastVisibleFrame = this._configuration.stopAtFrame !== undefined ? effectiveEndFrame : effectiveEndFrame - 1;
+
+        if (this._currentFrame > lastVisibleFrame) {
+            if (this._loop && this._configuration.stopAtFrame === undefined) {
                 this._currentFrame = (this._currentFrame % (this._animation.endFrame - this._animation.startFrame)) + this._animation.startFrame;
                 for (let i = 0; i < this._animation.nodes.length; i++) {
                     this._animation.nodes[i].reset();
                 }
             } else {
-                // When not looping, clamp to the last frame of the animation
-                this._currentFrame = this._animation.endFrame;
+                // When not looping, clamp to the last visible frame
+                this._currentFrame = lastVisibleFrame;
                 stoppingAfterThisFrame = true;
             }
         }
@@ -332,8 +372,17 @@ export class AnimationController {
         // Render all layers of the animation
         this._renderingManager.render(this._worldMatrix, this._projectionMatrix);
 
+        if (!this._hasRendered) {
+            this._hasRendered = true;
+            this._onFirstRender?.();
+        }
+
         if (stoppingAfterThisFrame) {
-            this._isPlaying = false;
+            if (this._configuration.stopAtFrame === undefined) {
+                this._isPlaying = false;
+            }
+            // When stopAtFrame is set, the render loop stays alive to prevent
+            // preserveDrawingBuffer:false from clearing the canvas.
         }
     }
 }

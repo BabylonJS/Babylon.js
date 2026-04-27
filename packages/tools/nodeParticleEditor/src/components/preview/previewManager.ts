@@ -1,24 +1,30 @@
-import type { GlobalState } from "../../globalState";
-import type { Nullable } from "core/types";
-import type { Observer } from "core/Misc/observable";
+import { type GlobalState } from "../../globalState";
+import { type Nullable } from "core/types";
+import { type Observer } from "core/Misc/observable";
 import { Engine } from "core/Engines/engine";
 import { Scene } from "core/scene";
-import { Vector3 } from "core/Maths/math.vector";
+import { Matrix, Vector3 } from "core/Maths/math.vector";
 import { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
 import { Color3 } from "core/Maths/math.color";
 import { SceneLoaderFlags } from "core/Loading/sceneLoaderFlags";
-import type { NodeParticleSystemSet } from "core/Particles/Node/nodeParticleSystemSet";
+import { type NodeParticleSystemSet } from "core/Particles/Node/nodeParticleSystemSet";
 import { LogEntry } from "../log/logComponent";
 import { GridMaterial } from "materials/grid/gridMaterial";
 import { MeshBuilder } from "core/Meshes/meshBuilder";
-import type { AbstractMesh } from "core/Meshes/abstractMesh";
+import { type AbstractMesh } from "core/Meshes/abstractMesh";
 import { SceneInstrumentation } from "core/Instrumentation/sceneInstrumentation";
-import type { ThinParticleSystem } from "core/Particles/thinParticleSystem";
-import type { ParticleSystemSet } from "core/Particles/particleSystemSet";
+import { type ThinParticleSystem } from "core/Particles/thinParticleSystem";
+import { type ParticleSystemSet } from "core/Particles/particleSystemSet";
 import { EngineStore } from "core/Engines";
 import type { ParticleSystem } from "core/Particles";
 import { SolidParticleSystem } from "core/Particles/solidParticleSystem";
 import { DirectionalLight } from "core/Lights";
+import { AxesViewer } from "core/Debug/axesViewer";
+import { TransformNode } from "core/Meshes/transformNode";
+import { DynamicTexture } from "core/Materials/Textures/dynamicTexture";
+import { StandardMaterial } from "core/Materials/standardMaterial";
+import { MeshShapeBlock } from "core/Particles/Node/Blocks/Emitters/meshShapeBlock";
+import { type FramingBehavior } from "core/Behaviors/Cameras/framingBehavior";
 
 export class PreviewManager {
     private _nodeParticleSystemSet: NodeParticleSystemSet;
@@ -60,11 +66,12 @@ export class PreviewManager {
 
         this._camera.doNotSerialize = true;
         this._camera.lowerRadiusLimit = 3;
-        this._camera.upperRadiusLimit = 10;
+        this._camera.upperRadiusLimit = 100;
         this._camera.wheelPrecision = 20;
         this._camera.minZ = 0.001;
         this._camera.attachControl(false);
         this._camera.useFramingBehavior = true;
+        (this._camera.getBehaviorByName("Framing") as FramingBehavior).elevationReturnTime = -1;
         this._camera.wheelDeltaPercentage = 0.01;
         this._camera.pinchDeltaPercentage = 0.01;
 
@@ -107,6 +114,59 @@ export class PreviewManager {
 
         const ground = MeshBuilder.CreateGround("ground", { width: 100, height: 100 }, this._scene);
         ground.material = groundMaterial;
+
+        // Axis
+        const generateTextPlane = function (text: string, color: string, size: number, scene: Scene, parent: TransformNode) {
+            const dynamicTexture = new DynamicTexture("DynamicTexture", 50, scene, true);
+            dynamicTexture.hasAlpha = true;
+            dynamicTexture.drawText(text, 14, 35, "bold 40px Arial", color, "transparent", true);
+            const plane = MeshBuilder.CreatePlane("TextPlane", { size: size }, scene);
+            const material = new StandardMaterial("TextPlaneMaterial", scene);
+            material.backFaceCulling = false;
+            material.disableLighting = true;
+            material.emissiveTexture = dynamicTexture;
+            material.diffuseTexture = dynamicTexture;
+
+            plane.material = material;
+            plane.billboardMode = TransformNode.BILLBOARDMODE_ALL;
+            plane.renderingGroupId = 2;
+            plane.setParent(parent);
+
+            return plane;
+        };
+
+        const axis = new AxesViewer(this._scene, 1, 2, undefined, undefined, undefined, 3);
+        const dummy = new TransformNode("Dummy", this._scene);
+        dummy.doNotSerialize = true;
+        axis.xAxis.setParent(dummy);
+        axis.xAxis.doNotSerialize = true;
+        axis.yAxis.setParent(dummy);
+        axis.yAxis.doNotSerialize = true;
+        axis.zAxis.setParent(dummy);
+        axis.zAxis.doNotSerialize = true;
+
+        (axis.xAxis.getChildMeshes()[0].material as StandardMaterial).emissiveColor.scaleInPlace(2);
+        (axis.yAxis.getChildMeshes()[0].material as StandardMaterial).emissiveColor.scaleInPlace(2);
+        (axis.zAxis.getChildMeshes()[0].material as StandardMaterial).emissiveColor.scaleInPlace(2);
+
+        const xPlane = generateTextPlane("x", "red", 0.5, this._scene, dummy);
+        xPlane.position.x = 1;
+        xPlane.position.y = 0.3;
+
+        const yPlane = generateTextPlane("y", "#0F0", 0.5, this._scene, dummy);
+        yPlane.position.y = 1.55;
+
+        const zPlane = generateTextPlane("z", "blue", 0.5, this._scene, dummy);
+        zPlane.position.z = 1;
+        zPlane.position.y = 0.3;
+
+        const targetPosition = new Vector3(3.5, 3.6, 13);
+        const tempMat = Matrix.Identity();
+
+        this._scene.onBeforeCameraRenderObservable.add(() => {
+            this._scene.getViewMatrix().invertToRef(tempMat);
+            Vector3.TransformCoordinatesToRef(targetPosition, tempMat, dummy.position);
+        });
     }
 
     private _refreshPreview() {
@@ -135,6 +195,7 @@ export class PreviewManager {
                 }
                 this._particleSystemSet = particleSystemSet;
                 this._particleSystemSet.start();
+                this._updateCameraLimits();
                 this._globalState.onLogRequiredObservable.notifyObservers(new LogEntry("Node Particle System Set build successful", false));
             } catch (err) {
                 this._globalState.onLogRequiredObservable.notifyObservers(new LogEntry(err, true));
@@ -158,7 +219,38 @@ export class PreviewManager {
         }
     }
 
+    private _updateCameraLimits() {
+        let smallestDiameter = Infinity;
+
+        for (const block of this._nodeParticleSystemSet.attachedBlocks) {
+            if (block instanceof MeshShapeBlock && block.mesh) {
+                const boundingInfo = block.mesh.getBoundingInfo();
+                if (boundingInfo) {
+                    // Use local-space radius since the mesh may live in a different scene
+                    // whose world matrix has not been computed
+                    const diameter = boundingInfo.boundingSphere.radius * 2;
+                    if (diameter > 0 && diameter < smallestDiameter) {
+                        smallestDiameter = diameter;
+                    }
+                }
+            }
+        }
+
+        if (smallestDiameter !== Infinity && smallestDiameter < 3) {
+            this._camera.lowerRadiusLimit = smallestDiameter;
+
+            // Increase wheel delta so zooming feels responsive at small scales
+            this._camera.wheelDeltaPercentage = 0.05;
+            this._camera.pinchDeltaPercentage = 0.05;
+        } else {
+            this._camera.lowerRadiusLimit = 3;
+            this._camera.wheelDeltaPercentage = 0.01;
+            this._camera.pinchDeltaPercentage = 0.01;
+        }
+    }
+
     private async _reconnectEmittersAsync(scene: Scene) {
+        const systemsToReplace: ParticleSystem[] = [];
         const map = new Map<number, Nullable<AbstractMesh | Vector3>>();
 
         for (const ps of scene.particleSystems) {
@@ -169,13 +261,30 @@ export class PreviewManager {
                 const reference = particleSystem._blockReference;
                 const emitter = particleSystem.emitter;
 
-                particleSystem.dispose();
-
+                systemsToReplace.push(particleSystem);
                 map.set(reference, emitter);
             }
         }
 
-        const newSet = await this._nodeParticleSystemSet.buildAsync(scene);
+        // Only build new systems if we found matching ones to replace
+        if (map.size === 0) {
+            return;
+        }
+
+        // Build new systems first - if this fails, we keep the old systems intact
+        let newSet: ParticleSystemSet;
+        try {
+            newSet = await this._nodeParticleSystemSet.buildAsync(scene);
+        } catch {
+            // Build failed, keep old systems in their current state
+            return;
+        }
+
+        // Only dispose old systems after successful build
+        for (const particleSystem of systemsToReplace) {
+            particleSystem.dispose();
+        }
+
         for (const [reference, emitter] of map) {
             const particleSystem = (newSet.systems as ParticleSystem[]).find((ps) => ps._blockReference === reference);
             if (particleSystem) {
@@ -194,7 +303,7 @@ export class PreviewManager {
             this._particleSystemSet.dispose();
         }
 
-        if (this._nodeParticleSystemSet) {
+        if (this._globalState.disposeOnClose && this._nodeParticleSystemSet) {
             this._nodeParticleSystemSet.dispose();
         }
 

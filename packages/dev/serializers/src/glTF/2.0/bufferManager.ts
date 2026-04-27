@@ -1,5 +1,5 @@
-import type { TypedArray } from "core/types";
-import type { AccessorComponentType, AccessorType, IAccessor, IBufferView } from "babylonjs-gltf2interface";
+import { type TypedArray } from "core/types";
+import { type AccessorComponentType, type AccessorType, type IAccessor, type IBufferView } from "babylonjs-gltf2interface";
 import { DataWriter } from "./dataWriter";
 
 type TypedArrayForglTF = Exclude<TypedArray, Float64Array | BigInt64Array | BigUint64Array>;
@@ -43,7 +43,7 @@ export class BufferManager {
      * @param bufferViews The list of bufferViews to be populated while writing the binary
      * @returns The binary buffer
      */
-    public generateBinary(bufferViews: IBufferView[]): Uint8Array {
+    public generateBinary(bufferViews: IBufferView[]): Uint8Array<ArrayBuffer> {
         // Construct a DataWriter with the total byte length to prevent resizing
         let totalByteLength = 0;
         this._bufferViewToData.forEach((data) => {

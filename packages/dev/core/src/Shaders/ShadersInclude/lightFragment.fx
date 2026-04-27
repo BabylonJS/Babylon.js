@@ -54,7 +54,11 @@
             #elif defined(DIRLIGHT{X})
                 preInfo = computeDirectionalPreLightingInfo(light{X}.vLightData, viewDirectionW, normalW);
             #elif defined(AREALIGHT{X}) && defined(AREALIGHTUSED) && defined(AREALIGHTSUPPORTED)
-                preInfo = computeAreaPreLightingInfo(areaLightsLTC1Sampler, areaLightsLTC2Sampler, viewDirectionW, normalW, vPositionW, light{X}.vLightData, light{X}.vLightWidth.xyz, light{X}.vLightHeight.xyz, roughness);
+                #if defined(RECTAREALIGHTEMISSIONTEXTURE{X})
+                    preInfo = computeAreaPreLightingInfoWithTexture(areaLightsLTC1Sampler, areaLightsLTC2Sampler, rectAreaLightEmissionTexture{X}, viewDirectionW, normalW, vPositionW, light{X}.vLightData, light{X}.vLightWidth.xyz, light{X}.vLightHeight.xyz, roughness);
+                #else
+                    preInfo = computeAreaPreLightingInfo(areaLightsLTC1Sampler, areaLightsLTC2Sampler, viewDirectionW, normalW, vPositionW, light{X}.vLightData, light{X}.vLightWidth.xyz, light{X}.vLightHeight.xyz, roughness);
+                #endif
             #endif
 
             preInfo.NdotV = NdotV;
@@ -237,11 +241,20 @@
             #elif defined(POINTLIGHT{X}) || defined(DIRLIGHT{X})
                 info = computeLighting(viewDirectionW, normalW, light{X}.vLightData, diffuse{X}.rgb, light{X}.vLightSpecular.rgb, diffuse{X}.a, glossiness);
             #elif defined(AREALIGHT{X}) && defined(AREALIGHTUSED) && defined(AREALIGHTSUPPORTED)
-                info = computeAreaLighting(areaLightsLTC1Sampler, areaLightsLTC2Sampler, viewDirectionW, normalW, vPositionW, light{X}.vLightData.xyz, light{X}.vLightWidth.rgb, light{X}.vLightHeight.rgb, diffuse{X}.rgb, light{X}.vLightSpecular.rgb,
-                #ifdef AREALIGHTNOROUGHTNESS
-                    0.5
+                #if defined(RECTAREALIGHTEMISSIONTEXTURE{X})
+                    info = computeAreaLightingWithTexture(areaLightsLTC1Sampler, areaLightsLTC2Sampler, rectAreaLightEmissionTexture{X}, viewDirectionW, normalW, vPositionW, light{X}.vLightData.xyz, light{X}.vLightWidth.rgb, light{X}.vLightHeight.rgb, diffuse{X}.rgb, light{X}.vLightSpecular.rgb,
+                    #ifdef AREALIGHTNOROUGHTNESS
+                        0.5
+                    #else
+                        vReflectionInfos.y
+                    #endif
                 #else
-                    vReflectionInfos.y
+                    info = computeAreaLighting(areaLightsLTC1Sampler, areaLightsLTC2Sampler, viewDirectionW, normalW, vPositionW, light{X}.vLightData.xyz, light{X}.vLightWidth.rgb, light{X}.vLightHeight.rgb, diffuse{X}.rgb, light{X}.vLightSpecular.rgb,
+                    #ifdef AREALIGHTNOROUGHTNESS
+                        0.5
+                    #else
+                        vReflectionInfos.y
+                    #endif
                 #endif
                 );
             #elif defined(CLUSTLIGHT{X}) && CLUSTLIGHT_BATCH > 0

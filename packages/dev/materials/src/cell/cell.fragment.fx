@@ -92,6 +92,9 @@ vec3 computeCustomDiffuseLighting(lightingInfo info, vec3 diffuseBase, float sha
 	return max(diffuseBase, vec3(0.2));
 }
 
+#if defined(CLUSTLIGHT_BATCH) && CLUSTLIGHT_BATCH > 0
+varying float vViewDepth;
+#endif
 
 #define CUSTOM_FRAGMENT_DEFINITIONS
 

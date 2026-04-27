@@ -1,10 +1,8 @@
-import type { GriffelRenderer } from "@fluentui/react-components";
-import type { FunctionComponent, PropsWithChildren, Ref } from "react";
-
-import { createDOMRenderer, FluentProvider, makeStyles, Portal, RendererProvider } from "@fluentui/react-components";
-import { useCallback, useEffect, useImperativeHandle, useState } from "react";
+import { type GriffelRenderer, createDOMRenderer, FluentProvider, Portal, RendererProvider } from "@fluentui/react-components";
+import { type FunctionComponent, type PropsWithChildren, type Ref, useCallback, useEffect, useImperativeHandle, useState } from "react";
 
 import { Logger } from "core/Misc/logger";
+import { ToastProvider } from "../primitives/toast";
 
 function ToFeaturesString(options: ChildWindowOptions) {
     const { defaultWidth, defaultHeight, defaultLeft, defaultTop } = options;
@@ -27,15 +25,6 @@ function ToFeaturesString(options: ChildWindowOptions) {
 
     return features.map((feature) => `${feature.key}=${feature.value}`).join(",");
 }
-
-const useStyles = makeStyles({
-    container: {
-        display: "flex",
-        flexGrow: 1,
-        flexDirection: "column",
-        overflow: "hidden",
-    },
-});
 
 export type ChildWindowOptions = {
     /**
@@ -108,7 +97,6 @@ export type ChildWindowProps = {
  */
 export const ChildWindow: FunctionComponent<PropsWithChildren<ChildWindowProps>> = (props) => {
     const { id, children, onOpenChange, imperativeRef: imperativeRef } = props;
-    const classes = useStyles();
 
     const [windowState, setWindowState] = useState<{ mountNode: HTMLElement; renderer: GriffelRenderer }>();
     const [childWindow, setChildWindow] = useState<Window>();
@@ -199,22 +187,9 @@ export const ChildWindow: FunctionComponent<PropsWithChildren<ChildWindowProps>>
             body.style.display = "flex";
             body.style.overflow = "hidden";
 
-            const applyWindowState = () => {
-                // Setup the window state, including creating a Fluent/Griffel "renderer" for managing runtime styles/classes in the child window.
-                setWindowState({ mountNode: body, renderer: createDOMRenderer(childWindow.document) });
-                onOpenChange?.(true);
-            };
-
-            // Once the child window document is ready, setup the window state which will trigger another effect that renders into the child window.
-            if (childWindow.document.readyState === "complete") {
-                applyWindowState();
-            } else {
-                const onChildWindowLoad = () => {
-                    applyWindowState();
-                };
-                childWindow.addEventListener("load", onChildWindowLoad, { once: true });
-                disposeActions.push(() => childWindow.removeEventListener("load", onChildWindowLoad));
-            }
+            // Setup the window state, including creating a Fluent/Griffel "renderer" for managing runtime styles/classes in the child window.
+            setWindowState({ mountNode: body, renderer: createDOMRenderer(childWindow.document) });
+            onOpenChange?.(true);
 
             // When the child window is closed for any reason, transition back to a closed state.
             const onChildWindowUnload = () => {
@@ -268,8 +243,17 @@ export const ChildWindow: FunctionComponent<PropsWithChildren<ChildWindowProps>>
             {/* RenderProvider manages Fluent style/class state. */}
             <RendererProvider renderer={renderer} targetDocument={mountNode.ownerDocument}>
                 {/* Fluent Provider is needed for managing other Fluent state and applying the current theme mode. */}
-                <FluentProvider className={classes.container} applyStylesToPortals={false} targetDocument={mountNode.ownerDocument}>
-                    {children}
+                <FluentProvider
+                    style={{
+                        display: "flex",
+                        flexGrow: 1,
+                        flexDirection: "column",
+                        overflow: "hidden",
+                    }}
+                    applyStylesToPortals={false}
+                    targetDocument={mountNode.ownerDocument}
+                >
+                    <ToastProvider>{children}</ToastProvider>
                 </FluentProvider>
             </RendererProvider>
         </Portal>

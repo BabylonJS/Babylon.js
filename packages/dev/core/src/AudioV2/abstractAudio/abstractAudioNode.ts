@@ -1,5 +1,5 @@
 import { Observable } from "../../Misc/observable";
-import type { AudioEngineV2 } from "./audioEngineV2";
+import { type AudioEngineV2 } from "./audioEngineV2";
 
 export const enum AudioNodeType {
     HAS_INPUTS = 1,

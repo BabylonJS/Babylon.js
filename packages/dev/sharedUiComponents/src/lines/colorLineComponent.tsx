@@ -1,13 +1,13 @@
 import * as React from "react";
-import type { Observable } from "core/Misc/observable";
+import { type Observable } from "core/Misc/observable";
 import { Color3, Color4 } from "core/Maths/math.color";
 import { NumericInput } from "./numericInputComponent";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMinus, faPlus } from "@fortawesome/free-solid-svg-icons";
-import type { PropertyChangedEvent } from "../propertyChangedEvent";
+import { type PropertyChangedEvent } from "../propertyChangedEvent";
 import { copyCommandToClipboard, getClassNameWithNamespace } from "../copyCommandToClipboard";
 import { ColorPickerLine } from "./colorPickerComponent";
-import type { LockObject } from "../tabs/propertyGrids/lockObject";
+import { type LockObject } from "../tabs/propertyGrids/lockObject";
 import { conflictingValuesPlaceholder } from "./targetsProxy";
 import copyIcon from "../imgs/copy.svg";
 import { Color3PropertyLine, Color4PropertyLine } from "../fluent/hoc/propertyLines/colorPropertyLine";

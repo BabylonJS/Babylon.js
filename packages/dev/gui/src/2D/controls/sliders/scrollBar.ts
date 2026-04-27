@@ -1,13 +1,13 @@
-import type { Vector2 } from "core/Maths/math.vector";
+import { type Vector2 } from "core/Maths/math.vector";
 import { BaseSlider } from "./baseSlider";
-import type { Control } from "../control";
+import { type Control } from "../control";
 import { Measure } from "../../measure";
-import type { PointerInfoBase } from "core/Events/pointerEvents";
+import { type PointerInfoBase } from "core/Events/pointerEvents";
 import { serialize } from "core/Misc/decorators";
-import type { ICanvasRenderingContext } from "core/Engines/ICanvas";
-import type { Nullable } from "core/types";
-import type { BaseGradient } from "../gradient/BaseGradient";
-import type { AdvancedDynamicTexture } from "gui/2D/advancedDynamicTexture";
+import { type ICanvasRenderingContext } from "core/Engines/ICanvas";
+import { type Nullable } from "core/types";
+import { type BaseGradient } from "../gradient/BaseGradient";
+import { type AdvancedDynamicTexture } from "gui/2D/advancedDynamicTexture";
 import { Tools } from "core/Misc/tools";
 import { RegisterClass } from "core/Misc/typeStore";
 
@@ -88,7 +88,7 @@ export class ScrollBar extends BaseSlider {
     }
 
     protected override _getThumbThickness(): number {
-        let thumbThickness = 0;
+        let thumbThickness: number;
         if (this._thumbWidth.isPixel) {
             thumbThickness = this._thumbWidth.getValue(this._host);
         } else {
@@ -142,11 +142,9 @@ export class ScrollBar extends BaseSlider {
      * @internal
      */
     protected override _updateValueFromPointer(x: number, y: number): void {
-        if (this.rotation != 0) {
-            this._invertTransformMatrix.transformCoordinates(x, y, this._transformedPosition);
-            x = this._transformedPosition.x;
-            y = this._transformedPosition.y;
-        }
+        this._invertTransformMatrix.transformCoordinates(x, y, this._transformedPosition);
+        x = this._transformedPosition.x;
+        y = this._transformedPosition.y;
 
         const sign = this._invertScrollDirection ? -1 : 1;
 
@@ -171,7 +169,7 @@ export class ScrollBar extends BaseSlider {
         }
 
         // Delta mode
-        let delta = 0;
+        let delta: number;
         if (this.isVertical) {
             delta = -((y - this._originY) / (this._currentMeasure.height - this._effectiveThumbThickness));
         } else {

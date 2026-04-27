@@ -10,8 +10,7 @@
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import * as KTX2 from "core/Materials/Textures/ktx2decoderTypes";
 
-import type { IKTX2_ImageDesc } from "./ktx2FileReader";
-import { KTX2FileReader, SupercompressionScheme } from "./ktx2FileReader";
+import { type IKTX2_ImageDesc, KTX2FileReader, SupercompressionScheme } from "./ktx2FileReader";
 import { TranscoderManager } from "./transcoderManager";
 import { LiteTranscoder_UASTC_ASTC } from "./Transcoders/liteTranscoder_UASTC_ASTC";
 import { LiteTranscoder_UASTC_BC7 } from "./Transcoders/liteTranscoder_UASTC_BC7";
@@ -115,7 +114,7 @@ export class KTX2Decoder {
 
             const levelUncompressedByteLength = kfr.levels[level].uncompressedByteLength;
 
-            let levelDataBuffer = kfr.data.buffer;
+            let levelDataBuffer: ArrayBufferLike | ArrayBufferView = kfr.data.buffer;
 
             let levelDataOffset = kfr.levels[level].byteOffset + kfr.data.byteOffset;
             let imageOffsetInLevel = 0;
@@ -137,9 +136,13 @@ export class KTX2Decoder {
                 if (kfr.header.supercompressionScheme === SupercompressionScheme.BasisLZ) {
                     imageDesc = kfr.supercompressionGlobalData.imageDescs![firstImageDescIndex + imageIndex];
 
-                    encodedData = new Uint8Array(levelDataBuffer, levelDataOffset + imageDesc.rgbSliceByteOffset, imageDesc.rgbSliceByteLength + imageDesc.alphaSliceByteLength);
+                    encodedData = new Uint8Array(
+                        levelDataBuffer as ArrayBuffer,
+                        levelDataOffset + imageDesc.rgbSliceByteOffset,
+                        imageDesc.rgbSliceByteLength + imageDesc.alphaSliceByteLength
+                    );
                 } else {
-                    encodedData = new Uint8Array(levelDataBuffer, levelDataOffset + imageOffsetInLevel, levelImageByteLength);
+                    encodedData = new Uint8Array(levelDataBuffer as ArrayBuffer, levelDataOffset + imageOffsetInLevel, levelImageByteLength);
 
                     imageOffsetInLevel += levelImageByteLength;
                 }

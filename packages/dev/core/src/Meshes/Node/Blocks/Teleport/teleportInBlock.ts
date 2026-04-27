@@ -1,9 +1,9 @@
-import type { Nullable } from "core/types";
+import { type Nullable } from "core/types";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import { NodeGeometryBlockConnectionPointTypes } from "../../Enums/nodeGeometryConnectionPointTypes";
 import { NodeGeometryBlock } from "../../nodeGeometryBlock";
-import type { NodeGeometryConnectionPoint } from "../../nodeGeometryBlockConnectionPoint";
-import type { TeleportOutBlock } from "./teleportOutBlock";
+import { type NodeGeometryConnectionPoint } from "../../nodeGeometryBlockConnectionPoint";
+import { type TeleportOutBlock } from "./teleportOutBlock";
 
 /**
  * Defines a block used to teleport a value to an endpoint
@@ -42,6 +42,7 @@ export class TeleportInBlock extends NodeGeometryBlock {
         return this._inputs[0];
     }
 
+    /** @internal */
     public override _dumpCode(uniqueNames: string[], alreadyDumped: NodeGeometryBlock[]) {
         let codeString = super._dumpCode(uniqueNames, alreadyDumped);
 

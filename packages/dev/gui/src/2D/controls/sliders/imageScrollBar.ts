@@ -1,11 +1,11 @@
-import type { Vector2 } from "core/Maths/math.vector";
+import { type Vector2 } from "core/Maths/math.vector";
 import { BaseSlider } from "./baseSlider";
-import type { Control } from "../control";
-import type { Image } from "../image";
+import { type Control } from "../control";
+import { type Image } from "../image";
 import { Measure } from "../../measure";
-import type { PointerInfoBase } from "core/Events/pointerEvents";
+import { type PointerInfoBase } from "core/Events/pointerEvents";
 import { serialize } from "core/Misc/decorators";
-import type { ICanvasRenderingContext } from "core/Engines/ICanvas";
+import { type ICanvasRenderingContext } from "core/Engines/ICanvas";
 
 /**
  * Class used to create slider controls
@@ -144,7 +144,7 @@ export class ImageScrollBar extends BaseSlider {
     }
 
     public set thumbHeight(value: number) {
-        if (this._thumbLength === value) {
+        if (this._thumbHeight === value) {
             return;
         }
 
@@ -183,7 +183,7 @@ export class ImageScrollBar extends BaseSlider {
     }
 
     protected override _getThumbThickness(): number {
-        let thumbThickness = 0;
+        let thumbThickness: number;
         if (this._thumbWidth.isPixel) {
             thumbThickness = this._thumbWidth.getValue(this._host);
         } else {
@@ -252,11 +252,9 @@ export class ImageScrollBar extends BaseSlider {
      * @internal
      */
     protected override _updateValueFromPointer(x: number, y: number): void {
-        if (this.rotation != 0) {
-            this._invertTransformMatrix.transformCoordinates(x, y, this._transformedPosition);
-            x = this._transformedPosition.x;
-            y = this._transformedPosition.y;
-        }
+        this._invertTransformMatrix.transformCoordinates(x, y, this._transformedPosition);
+        x = this._transformedPosition.x;
+        y = this._transformedPosition.y;
 
         const sign = this._invertScrollDirection ? -1 : 1;
 
@@ -281,7 +279,7 @@ export class ImageScrollBar extends BaseSlider {
         }
 
         // Delta mode
-        let delta = 0;
+        let delta: number;
         if (this.isVertical) {
             delta = -((y - this._originY) / (this._currentMeasure.height - this._effectiveThumbThickness));
         } else {

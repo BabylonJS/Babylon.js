@@ -78,7 +78,7 @@ export function LerpAngle(start: number, end: number, amount: number): number {
  * @returns the inverseLerp value
  */
 export function InverseLerp(a: number, b: number, value: number): number {
-    let result: number = 0;
+    let result: number;
     if (a != b) {
         result = Clamp((value - a) / (b - a));
     } else {
@@ -292,7 +292,7 @@ export function SmoothStep(from: number, to: number, tx: number): number {
  * @returns resulting value
  */
 export function MoveTowards(current: number, target: number, maxDelta: number): number {
-    let result: number = 0;
+    let result: number;
     if (Math.abs(target - current) <= maxDelta) {
         result = target;
     } else {
@@ -313,7 +313,7 @@ export function MoveTowards(current: number, target: number, maxDelta: number): 
  */
 export function MoveTowardsAngle(current: number, target: number, maxDelta: number): number {
     const num: number = DeltaAngle(current, target);
-    let result: number = 0;
+    let result: number;
     if (-maxDelta < num && num < maxDelta) {
         result = target;
     } else {

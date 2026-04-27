@@ -1,11 +1,11 @@
 import { serialize, serializeAsColor3, expandToProperty, serializeAsTexture } from "../../Misc/decorators";
 import { SerializationHelper } from "../../Misc/decorators.serialization";
-import type { Scene } from "../../scene";
-import type { Color3 } from "../../Maths/math.color";
-import type { BaseTexture } from "../../Materials/Textures/baseTexture";
+import { type Scene } from "../../scene";
+import { type Color3 } from "../../Maths/math.color";
+import { type BaseTexture } from "../../Materials/Textures/baseTexture";
 import { PBRBaseSimpleMaterial } from "./pbrBaseSimpleMaterial";
 import { RegisterClass } from "../../Misc/typeStore";
-import type { Nullable } from "../../types";
+import { type Nullable } from "../../types";
 
 /**
  * The PBR material of BJS following the metal roughness convention.

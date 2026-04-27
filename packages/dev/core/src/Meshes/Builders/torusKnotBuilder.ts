@@ -1,8 +1,7 @@
-import type { Vector4 } from "../../Maths/math.vector";
-import { Vector3 } from "../../Maths/math.vector";
+import { type Vector4, Vector3 } from "../../Maths/math.vector";
 import { Mesh } from "../mesh";
 import { VertexData } from "../mesh.vertexData";
-import type { Scene } from "../../scene";
+import { type Scene } from "../../scene";
 import { useOpenGLOrientationForUV } from "../../Compat/compatibilityOptions";
 
 // based on http://code.google.com/p/away3d/source/browse/trunk/fp10/Away3D/src/away3d/primitives/TorusKnot.as?spec=svn2473&r=2473
@@ -18,15 +17,6 @@ import { useOpenGLOrientationForUV } from "../../Compat/compatibilityOptions";
  * * sideOrientation optional and takes the values : Mesh.FRONTSIDE (default), Mesh.BACKSIDE or Mesh.DOUBLESIDE
  * * frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
  * * backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1)
- * @param options.radius
- * @param options.tube
- * @param options.radialSegments
- * @param options.tubularSegments
- * @param options.p
- * @param options.q
- * @param options.sideOrientation
- * @param options.frontUVs
- * @param options.backUVs
  * @returns the VertexData of the Torus Knot
  */
 export function CreateTorusKnotVertexData(options: {
@@ -144,16 +134,6 @@ export function CreateTorusKnotVertexData(options: {
  * * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.
  * @param name defines the name of the mesh
  * @param options defines the options used to create the mesh
- * @param options.radius
- * @param options.tube
- * @param options.radialSegments
- * @param options.tubularSegments
- * @param options.p
- * @param options.q
- * @param options.updatable
- * @param options.sideOrientation
- * @param options.frontUVs
- * @param options.backUVs
  * @param scene defines the hosting scene
  * @returns the torus knot mesh
  * @see  https://doc.babylonjs.com/features/featuresDeepDive/mesh/creation/set#torus-knot

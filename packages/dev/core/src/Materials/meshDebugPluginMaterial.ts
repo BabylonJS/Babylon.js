@@ -1,17 +1,17 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { MaterialPluginBase } from "./materialPluginBase";
-import type { Scene } from "../scene";
-import type { UniformBuffer } from "./uniformBuffer";
-import type { FloatArray, Nullable } from "../types";
+import { type Scene } from "../scene";
+import { type UniformBuffer } from "./uniformBuffer";
+import { type FloatArray, type Nullable } from "../types";
 import { MaterialDefines } from "./materialDefines";
-import type { PBRBaseMaterial } from "./PBR/pbrBaseMaterial";
-import type { StandardMaterial } from "./standardMaterial";
+import { type PBRBaseMaterial } from "./PBR/pbrBaseMaterial";
+import { type StandardMaterial } from "./standardMaterial";
 import { RegisterClass } from "../Misc/typeStore";
 import { Color3 } from "core/Maths/math";
-import type { Mesh } from "core/Meshes/mesh";
+import { type Mesh } from "core/Meshes/mesh";
 import { Logger } from "core/Misc/logger";
 import { expandToProperty, serialize, serializeAsColor3 } from "core/Misc/decorators";
-import type { AbstractMesh } from "core/Meshes/abstractMesh";
+import { type AbstractMesh } from "core/Meshes/abstractMesh";
 import { ShaderLanguage } from "./shaderLanguage";
 
 const vertexDefinitions = `#if defined(DBG_ENABLED)

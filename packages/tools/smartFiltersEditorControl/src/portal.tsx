@@ -1,5 +1,5 @@
 import * as react from "react";
-import type { GlobalState } from "./globalState";
+import { type GlobalState } from "./globalState";
 import * as reactDOM from "react-dom";
 
 interface IPortalProps {

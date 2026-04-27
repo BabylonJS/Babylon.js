@@ -1,14 +1,14 @@
 import { NodeMaterialBlock } from "../../nodeMaterialBlock";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
-import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
-import type { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
-import type { AbstractMesh } from "../../../../Meshes/abstractMesh";
-import type { NodeMaterial, NodeMaterialDefines } from "../../nodeMaterial";
+import { type NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
+import { type NodeMaterialBuildState } from "../../nodeMaterialBuildState";
+import { type AbstractMesh } from "../../../../Meshes/abstractMesh";
+import { type NodeMaterial, type NodeMaterialDefines } from "../../nodeMaterial";
 import { NodeMaterialSystemValues } from "../../Enums/nodeMaterialSystemValues";
 import { InputBlock } from "../Input/inputBlock";
 import { RegisterClass } from "../../../../Misc/typeStore";
-import type { SubMesh } from "../../../../Meshes/subMesh";
+import { type SubMesh } from "../../../../Meshes/subMesh";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
 /**
@@ -91,6 +91,11 @@ export class InstancesBlock extends NodeMaterialBlock {
         return this._outputs[1];
     }
 
+    /**
+     * Auto configure the block based on the material
+     * @param material - the node material
+     * @param additionalFilteringInfo - additional filtering info
+     */
     public override autoConfigure(material: NodeMaterial, additionalFilteringInfo: (node: NodeMaterialBlock) => boolean = () => true) {
         if (!this.world0.connectedPoint) {
             let world0Input = material.getInputBlockByPredicate((b) => b.isAttribute && b.name === "world0" && additionalFilteringInfo(b));
@@ -141,6 +146,14 @@ export class InstancesBlock extends NodeMaterialBlock {
         this.world.define = "!INSTANCES || THIN_INSTANCES";
     }
 
+    /**
+     * Prepare the list of defines
+     * @param defines - the list of defines
+     * @param nodeMaterial - the node material
+     * @param mesh - the mesh
+     * @param useInstances - whether to use instances
+     * @param subMesh - the sub mesh
+     */
     public override prepareDefines(defines: NodeMaterialDefines, nodeMaterial: NodeMaterial, mesh?: AbstractMesh, useInstances: boolean = false, subMesh?: SubMesh) {
         let changed = false;
         if (defines["INSTANCES"] !== useInstances) {

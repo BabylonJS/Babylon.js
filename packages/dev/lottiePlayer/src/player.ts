@@ -1,17 +1,17 @@
-import type { Nullable } from "core/types";
-import type { AnimationInput } from "./types";
-import type {
-    AnimationSizeMessagePayload,
-    AnimationUrlMessage,
-    ContainerResizeMessage,
-    DisposeMessage,
-    Message,
-    StartAnimationMessage,
-    PreWarmMessage,
-    WorkerLoadedMessagePayload,
+import { type Nullable } from "core/types";
+import { type AnimationInput } from "./types";
+import {
+    type AnimationSizeMessagePayload,
+    type AnimationUrlMessage,
+    type ContainerResizeMessage,
+    type DisposeMessage,
+    type Message,
+    type StartAnimationMessage,
+    type PreWarmMessage,
+    type WorkerLoadedMessagePayload,
 } from "./messageTypes";
-import type { RawLottieAnimation } from "./parsing/rawTypes";
-import { CalculateScaleFactor } from "./rendering/calculateScaleFactor";
+import { type RawLottieAnimation } from "./parsing/rawTypes";
+import { CalculateScaleFactors, type ScaleFactors } from "./rendering/calculateScaleFactor";
 import { BlobWorkerWrapper as Worker } from "./blobWorkerWrapper";
 
 /**
@@ -32,7 +32,7 @@ export class Player {
     private _canvas: Nullable<HTMLCanvasElement> = null;
     private _animationWidth: number = 0;
     private _animationHeight: number = 0;
-    private _scaleFactor: number = 1;
+    private _scaleFactors: ScaleFactors = { canvasScale: 1, atlasScale: 1 };
     private _resizeObserver: Nullable<ResizeObserver> = null;
     private _resizeDebounceHandle: number | null = null;
     private _resizeDebounceMs: number = 1000 / 60; // Debounce resize updates to approximately 60 FPS
@@ -214,9 +214,9 @@ export class Player {
         this._canvas.id = "babylon-canvas";
 
         // The size of the canvas is the relation between the size of the container div and the size of the animation
-        this._scaleFactor = CalculateScaleFactor(this._animationWidth, this._animationHeight, this._input.container);
-        this._canvas.style.width = `${this._animationWidth * this._scaleFactor}px`;
-        this._canvas.style.height = `${this._animationHeight * this._scaleFactor}px`;
+        this._scaleFactors = CalculateScaleFactors(this._animationWidth, this._animationHeight, this._input.container);
+        this._canvas.style.width = `${this._animationWidth * this._scaleFactors.canvasScale}px`;
+        this._canvas.style.height = `${this._animationHeight * this._scaleFactors.canvasScale}px`;
 
         // Append the canvas to the container
         this._input.container.appendChild(this._canvas);
@@ -226,10 +226,12 @@ export class Player {
             type: "startAnimation",
             payload: {
                 canvas: offscreen,
-                scaleFactor: this._scaleFactor,
+                canvasScale: this._scaleFactors.canvasScale,
+                atlasScale: this._scaleFactors.atlasScale,
                 variables: this._input.variables,
                 configuration: this._input.configuration,
                 animationData: IsRawLottieAnimation(animationData) ? animationData : undefined,
+                mainThreadDevicePixelRatio: window.devicePixelRatio,
             },
         };
 
@@ -272,6 +274,10 @@ export class Player {
                 this._preWarmPromise = null;
                 break;
             }
+            case "firstRender": {
+                this._input?.onFirstRender?.();
+                break;
+            }
         }
     }
 
@@ -294,16 +300,16 @@ export class Player {
                 return;
             }
 
-            const newScale = CalculateScaleFactor(this._animationWidth, this._animationHeight, this._input.container);
-            if (this._scaleFactor !== newScale) {
-                this._scaleFactor = newScale;
+            const newScaleFactors = CalculateScaleFactors(this._animationWidth, this._animationHeight, this._input.container);
+            if (this._scaleFactors.canvasScale !== newScaleFactors.canvasScale) {
+                this._scaleFactors = newScaleFactors;
 
-                this._canvas.style.width = `${this._animationWidth * newScale}px`;
-                this._canvas.style.height = `${this._animationHeight * newScale}px`;
+                this._canvas.style.width = `${this._animationWidth * newScaleFactors.canvasScale}px`;
+                this._canvas.style.height = `${this._animationHeight * newScaleFactors.canvasScale}px`;
 
                 const containerResizeMessage: ContainerResizeMessage = {
                     type: "containerResize",
-                    payload: { scaleFactor: newScale },
+                    payload: { canvasScale: newScaleFactors.canvasScale },
                 };
                 this._worker.postMessage(containerResizeMessage);
             }

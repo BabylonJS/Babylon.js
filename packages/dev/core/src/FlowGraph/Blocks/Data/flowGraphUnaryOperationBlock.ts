@@ -1,7 +1,7 @@
-import type { FlowGraphDataConnection } from "../../flowGraphDataConnection";
-import type { IFlowGraphBlockConfiguration } from "../../flowGraphBlock";
-import type { RichType } from "../../flowGraphRichTypes";
-import type { FlowGraphContext } from "../../flowGraphContext";
+import { type FlowGraphDataConnection } from "../../flowGraphDataConnection";
+import { type IFlowGraphBlockConfiguration } from "../../flowGraphBlock";
+import { type RichType } from "../../flowGraphRichTypes";
+import { type FlowGraphContext } from "../../flowGraphContext";
 import { FlowGraphCachedOperationBlock } from "./flowGraphCachedOperationBlock";
 
 /**

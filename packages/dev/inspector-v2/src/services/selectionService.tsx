@@ -1,0 +1,105 @@
+import { type IDisposable, type IReadonlyObservable, type Nullable } from "core/index";
+import { type IService, type ServiceDefinition } from "shared-ui-components/modularTool/modularity/serviceDefinition";
+import { type ISettingsService, SettingsServiceIdentity } from "shared-ui-components/modularTool/services/settingsService";
+import { type ISceneContext, SceneContextIdentity } from "./sceneContext";
+import { type ISettingsStore, type SettingDescriptor, SettingsStoreIdentity } from "shared-ui-components/modularTool/services/settingsStore";
+import { type IShellService, ShellServiceIdentity } from "shared-ui-components/modularTool/services/shellService";
+
+import { Observable } from "core/Misc/observable";
+import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
+import { useSetting } from "shared-ui-components/modularTool/hooks/settingsHooks";
+import { InterceptFunction } from "../instrumentation/functionInstrumentation";
+
+/**
+ * The unique identity symbol for the selection service.
+ */
+export const SelectionServiceIdentity = Symbol("SelectionService");
+
+/**
+ * Tracks the currently selected entity.
+ */
+export interface ISelectionService extends IService<typeof SelectionServiceIdentity> {
+    /**
+     * Gets or sets the currently selected entity.
+     */
+    selectedEntity: Nullable<object>;
+
+    /**
+     * An observable that notifies when the selected entity changes.
+     */
+    readonly onSelectedEntityChanged: IReadonlyObservable<void>;
+}
+
+const ShowPropertiesOnSelectionSettingDescriptor: SettingDescriptor<boolean> = {
+    key: "ShowPropertiesOnSelection",
+    defaultValue: true,
+};
+
+export const SelectionServiceDefinition: ServiceDefinition<[ISelectionService], [IShellService, ISettingsStore, ISettingsService, ISceneContext]> = {
+    friendlyName: "Selection Service",
+    produces: [SelectionServiceIdentity],
+    consumes: [ShellServiceIdentity, SettingsStoreIdentity, SettingsServiceIdentity, SceneContextIdentity],
+    factory: (shellService, settingsStore, settingsService, sceneContext) => {
+        settingsService.addSectionContent({
+            key: "Selection Service Settings",
+            section: "UI",
+            component: () => {
+                const [showPropertiesOnEntitySelection, setShowPropertiesOnEntitySelection] = useSetting(ShowPropertiesOnSelectionSettingDescriptor);
+
+                return (
+                    <SwitchPropertyLine
+                        label="Show Properties on Selection"
+                        description="Automatically open the properties pane when an entity is selected."
+                        value={showPropertiesOnEntitySelection}
+                        onChange={(checked) => {
+                            setShowPropertiesOnEntitySelection(checked);
+                        }}
+                    />
+                );
+            },
+        });
+
+        let selectedEntityState: Nullable<object> = null;
+        const selectedEntityObservable = new Observable<void>();
+        let disposedHook: Nullable<IDisposable> = null;
+
+        const setSelectedItem = (item: Nullable<object>) => {
+            if (item !== selectedEntityState) {
+                disposedHook?.dispose();
+                disposedHook = null;
+
+                selectedEntityState = item;
+                selectedEntityObservable.notifyObservers();
+
+                if (item) {
+                    const disposable = item as Partial<IDisposable>;
+                    if (typeof disposable.dispose === "function") {
+                        disposedHook = InterceptFunction(disposable, "dispose", { afterCall: () => setSelectedItem(null) });
+                    }
+                }
+
+                // Expose the selected entity through a global variable. This is an Inspector v1 feature that people have found useful.
+                (globalThis as Record<string, unknown>).debugNode = item;
+
+                // Automatically open the properties pane when an entity is selected.
+                if (item && settingsStore.readSetting(ShowPropertiesOnSelectionSettingDescriptor)) {
+                    shellService.sidePanes.find((pane) => pane.key === "Properties")?.select();
+                }
+            }
+        };
+
+        // Set the scene as the default selected entity.
+        setSelectedItem(sceneContext.currentScene);
+
+        return {
+            get selectedEntity() {
+                return selectedEntityState;
+            },
+            set selectedEntity(item: Nullable<object>) {
+                setSelectedItem(item);
+            },
+            onSelectedEntityChanged: selectedEntityObservable,
+            dispose: () => selectedEntityObservable.clear(),
+        };
+    },
+};

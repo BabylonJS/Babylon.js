@@ -1,10 +1,10 @@
-import type { Nullable } from "core/types";
+import { type Nullable } from "core/types";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import { NodeGeometryBlockConnectionPointTypes } from "../../Enums/nodeGeometryConnectionPointTypes";
-import type { INodeGeometryTextureData } from "../../Interfaces/nodeGeometryTextureData";
+import { type INodeGeometryTextureData } from "../../Interfaces/nodeGeometryTextureData";
 import { NodeGeometryBlock } from "../../nodeGeometryBlock";
-import type { NodeGeometryConnectionPoint } from "../../nodeGeometryBlockConnectionPoint";
-import type { Texture } from "core/Materials/Textures/texture";
+import { type NodeGeometryConnectionPoint } from "../../nodeGeometryBlockConnectionPoint";
+import { type Texture } from "core/Materials/Textures/texture";
 import { TextureTools } from "core/Misc/textureTools";
 /**
  * Block used to load texture data
@@ -145,7 +145,6 @@ export class GeometryTextureBlock extends NodeGeometryBlock {
     public async extractFromTextureAsync(texture: Texture) {
         return await new Promise<void>((resolve, reject) => {
             if (!texture.isReady()) {
-                // eslint-disable-next-line @typescript-eslint/no-misused-promises
                 texture.onLoadObservable.addOnce(async () => {
                     try {
                         await this.extractFromTextureAsync(texture);
@@ -208,6 +207,7 @@ export class GeometryTextureBlock extends NodeGeometryBlock {
         return serializationObject;
     }
 
+    /** @internal */
     public override _deserialize(serializationObject: any) {
         super._deserialize(serializationObject);
 

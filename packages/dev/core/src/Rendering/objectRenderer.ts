@@ -1,19 +1,19 @@
-import type {
-    Nullable,
-    Immutable,
-    Camera,
-    Scene,
-    AbstractMesh,
-    SubMesh,
-    Material,
-    IParticleSystem,
-    InstancedMesh,
-    BoundingBox,
-    BoundingBoxRenderer,
-    UniformBuffer,
-    AbstractEngine,
-    ClusteredLightContainer,
+import {
+    type Nullable,
+    type Immutable,
+    type Camera,
+    type Scene,
+    type AbstractMesh,
+    type SubMesh,
+    type Material,
+    type IParticleSystem,
+    type InstancedMesh,
+    type BoundingBox,
+    type BoundingBoxRenderer,
+    type AbstractEngine,
+    type ClusteredLightContainer,
 } from "core/index";
+import { UniformBuffer } from "../Materials/uniformBuffer";
 import { Observable } from "../Misc/observable";
 import { RenderingManager } from "../Rendering/renderingManager";
 import { Constants } from "../Engines/constants";
@@ -238,12 +238,18 @@ export class ObjectRenderer {
     ) => void;
 
     /**
-     * An event triggered before rendering the objects
+     * An event triggered before rendering the objects.
+     * Note: This observable is also triggered during readiness checks (e.g. when calling scene.isReady()),
+     * in which case the render target is not bound to the output. Observers should avoid performing
+     * GPU state changes (such as clearing or modifying the framebuffer) unless the render target is actually bound.
      */
     public readonly onBeforeRenderObservable = new Observable<number>();
 
     /**
-     * An event triggered after rendering the objects
+     * An event triggered after rendering the objects.
+     * Note: This observable is also triggered during readiness checks (e.g. when calling scene.isReady()),
+     * in which case the render target is not bound to the output. Observers should avoid performing
+     * GPU state changes (such as clearing or modifying the framebuffer) unless the render target is actually bound.
      */
     public readonly onAfterRenderObservable = new Observable<number>();
 
@@ -284,6 +290,7 @@ export class ObjectRenderer {
     protected _activeBoundingBoxes = new SmartArray<BoundingBox>(32);
     protected _useUBO: boolean;
     protected _sceneUBOs: UniformBuffer[]; // It's an array because we may need multiple ubos per frame if the object renderer is used several times in a frame (e.g. for rigged cameras)
+    protected _sceneUBOIsMultiview: boolean[]; // Parallel array caching the multiview state per UBO slot — avoids getUniformNames().indexOf() in the hot path
     protected _currentSceneUBO: UniformBuffer;
     protected _currentFrameId = -1;
     protected _currentSceneUBOIndex = 0;
@@ -436,10 +443,6 @@ export class ObjectRenderer {
         this._scene = scene;
         this._engine = this._scene.getEngine();
         this._useUBO = this._engine.supportsUniformBuffers;
-        if (this._useUBO) {
-            this._sceneUBOs = [];
-            this._createSceneUBO();
-        }
 
         this.renderList = [] as AbstractMesh[];
         this._renderPassIds = [];
@@ -487,10 +490,18 @@ export class ObjectRenderer {
         }
     }
 
-    private _createSceneUBO(): void {
-        const index = this._sceneUBOs.length;
-
-        this._sceneUBOs.push(this._scene.createSceneUniformBuffer(`Scene ubo #${index} for ${this.name}`, false));
+    private _createSceneUBO(name: string, isMultiview: boolean): UniformBuffer {
+        const engine = this._scene.getEngine();
+        const ubo = new UniformBuffer(engine, undefined, isMultiview, name, undefined, false);
+        ubo.addUniform("viewProjection", 16);
+        if (isMultiview) {
+            ubo.addUniform("viewProjectionR", 16);
+        }
+        ubo.addUniform("view", 16);
+        ubo.addUniform("projection", 16);
+        ubo.addUniform("vEyePosition", 4);
+        ubo.addUniform("inverseProjection", 16);
+        return ubo;
     }
 
     private _getSceneUBO(): UniformBuffer {
@@ -499,8 +510,24 @@ export class ObjectRenderer {
             this._currentFrameId = this._engine.frameId;
         }
 
+        if (!this._sceneUBOs) {
+            this._sceneUBOs = [];
+            this._sceneUBOIsMultiview = [];
+        }
+
+        const activeRenderTarget = this._engine._currentRenderTarget;
+        const isMultiview = !!(activeRenderTarget && activeRenderTarget.texture?.isMultiview) || !!(this._scene as any)._multiviewSceneUboIsActive;
+
+        // Check if we have enough UBOs or if the current one is compatible
         if (this._currentSceneUBOIndex >= this._sceneUBOs.length) {
-            this._createSceneUBO();
+            const index = this._sceneUBOs.length;
+            this._sceneUBOs.push(this._createSceneUBO(`Scene ubo #${index} for ${this.name}`, isMultiview));
+            this._sceneUBOIsMultiview.push(isMultiview);
+        } else if (this._sceneUBOIsMultiview[this._currentSceneUBOIndex] !== isMultiview) {
+            // Layout mismatch, recreate
+            this._sceneUBOs[this._currentSceneUBOIndex].dispose();
+            this._sceneUBOs[this._currentSceneUBOIndex] = this._createSceneUBO(`Scene ubo #${this._currentSceneUBOIndex} for ${this.name}`, isMultiview);
+            this._sceneUBOIsMultiview[this._currentSceneUBOIndex] = isMultiview;
         }
 
         const ubo = this._sceneUBOs[this._currentSceneUBOIndex++];
@@ -532,9 +559,20 @@ export class ObjectRenderer {
     /**
      * Indicates if the renderer should render the current frame.
      * The output is based on the specified refresh rate.
+     * When snapshot rendering is active, this always returns true to ensure render pass
+     * topology stays consistent between the recording frame and playback frames.
      * @returns true if the renderer should render the current frame
      */
     public shouldRender(): boolean {
+        if (this._engine.snapshotRendering) {
+            // When snapshot rendering is active (recording or playing), we must always render
+            // to ensure the number of render passes stays consistent between the recording frame
+            // and all playback frames. If a render target is skipped during recording but not
+            // during playback (or vice versa), the recorded bundle list indices become misaligned,
+            // causing visual artifacts such as flickering.
+            return true;
+        }
+
         if (this._currentRefreshId === -1) {
             // At least render once
             this._currentRefreshId = 1;
@@ -744,16 +782,21 @@ export class ObjectRenderer {
 
         const numPasses = this.options.numPasses;
         for (let passIndex = 0; passIndex < numPasses && returnValue; passIndex++) {
-            let currentRenderList: Nullable<Array<AbstractMesh>> = null;
             const defaultRenderList = this.renderList ? this.renderList : scene.frameGraph ? scene.meshes : scene.getActiveMeshes().data;
-            const defaultRenderListLength = this.renderList ? this.renderList.length : scene.frameGraph ? scene.meshes.length : scene.getActiveMeshes().length;
+            const defaultRenderListLength = this.renderList || scene.frameGraph ? defaultRenderList.length : scene.getActiveMeshes().length;
 
             this._engine.currentRenderPassId = this._renderPassIds[passIndex];
 
             this.onBeforeRenderObservable.notifyObservers(passIndex);
 
+            let currentRenderList: Nullable<Array<AbstractMesh>> = null;
+            let currentRenderListLength = defaultRenderListLength;
+
             if (this.getCustomRenderList) {
                 currentRenderList = this.getCustomRenderList(passIndex, defaultRenderList, defaultRenderListLength);
+                if (currentRenderList) {
+                    currentRenderListLength = currentRenderList.length;
+                }
             }
 
             if (!currentRenderList) {
@@ -764,7 +807,7 @@ export class ObjectRenderer {
                 scene.updateTransformMatrix(true);
             }
 
-            for (let i = 0; i < currentRenderList.length && returnValue; ++i) {
+            for (let i = 0; i < currentRenderListLength && returnValue; ++i) {
                 const mesh = currentRenderList[i];
 
                 if (!mesh.isEnabled() || mesh.isBlocked || !mesh.isVisible || !mesh.subMeshes) {
@@ -807,11 +850,11 @@ export class ObjectRenderer {
 
         // Get the list of meshes to dispatch to the rendering manager
         let currentRenderList: Nullable<Array<AbstractMesh>> = null;
-        let currentRenderListLength = 0;
-        let checkLayerMask = false;
+        let currentRenderListLength: number;
+        let checkLayerMask: boolean;
 
         const defaultRenderList = this.renderList ? this.renderList : scene.frameGraph ? scene.meshes : scene.getActiveMeshes().data;
-        const defaultRenderListLength = this.renderList ? this.renderList.length : scene.frameGraph ? scene.meshes.length : scene.getActiveMeshes().length;
+        const defaultRenderListLength = this.renderList || scene.frameGraph ? defaultRenderList.length : scene.getActiveMeshes().length;
 
         if (this.getCustomRenderList) {
             currentRenderList = this.getCustomRenderList(passIndex, defaultRenderList, defaultRenderListLength);
@@ -819,8 +862,10 @@ export class ObjectRenderer {
 
         if (!currentRenderList) {
             // No custom render list provided, we prepare the rendering for the default list, but check
-            // first if we did not already performed the preparation (in this frame) before so as to avoid re-doing it several times
-            if (this._defaultRenderListPrepared && !winterIsComing) {
+            // first if we did not already performed the preparation (in this frame) before so as to avoid re-doing it several times.
+            // In WebGPU, instance data (visibleInstances) is stored per render pass ID. Each cascade/face (in CSM) uses a different
+            // render pass ID, so we must re-prepare for each pass to register instances in the correct per-pass storage.
+            if (this._defaultRenderListPrepared && !winterIsComing && !this._engine.isWebGPU) {
                 return defaultRenderList;
             }
             this._defaultRenderListPrepared = true;
@@ -879,7 +924,7 @@ export class ObjectRenderer {
                         continue;
                     }
 
-                    let meshToRender: Nullable<AbstractMesh> = null;
+                    let meshToRender: Nullable<AbstractMesh>;
 
                     if (cameraForLOD) {
                         const meshToRenderAndFrameId = mesh._internalAbstractMeshDataInfo._currentLOD.get(cameraForLOD);

@@ -1,6 +1,6 @@
-import type { IComputePipelineContext } from "../../Compute/IComputePipelineContext";
-import type { Nullable } from "../../types";
-import type { WebGPUEngine } from "../webgpuEngine";
+import { type IComputePipelineContext } from "../../Compute/IComputePipelineContext";
+import { type Nullable } from "../../types";
+import { type WebGPUEngine } from "../webgpuEngine";
 
 /** @internal */
 export class WebGPUComputePipelineContext implements IComputePipelineContext {

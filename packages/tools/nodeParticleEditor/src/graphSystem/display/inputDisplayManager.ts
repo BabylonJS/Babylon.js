@@ -1,8 +1,8 @@
-import type { Color4 } from "core/Maths/math.color";
-import type { Vector2, Vector3 } from "core/Maths/math.vector";
-import type { ParticleInputBlock } from "core/Particles/Node/Blocks/particleInputBlock";
-import type { IDisplayManager } from "shared-ui-components/nodeGraphSystem/interfaces/displayManager";
-import type { INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
+import { type Color4 } from "core/Maths/math.color";
+import { type Vector2, type Vector3 } from "core/Maths/math.vector";
+import { type ParticleInputBlock } from "core/Particles/Node/Blocks/particleInputBlock";
+import { type IDisplayManager } from "shared-ui-components/nodeGraphSystem/interfaces/displayManager";
+import { type INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
 
 import { BlockTools } from "../../blockTools";
 import * as styles from "./inputDisplayManager.module.scss";
@@ -36,13 +36,13 @@ export class InputDisplayManager implements IDisplayManager {
     }
 
     public getBackgroundColor(nodeData: INodeData): string {
-        let color = "";
+        let color: string;
         const inputBlock = nodeData.data as ParticleInputBlock;
 
         switch (inputBlock.type) {
             case NodeParticleBlockConnectionPointTypes.Color4: {
                 if (inputBlock.value) {
-                    color = inputBlock.value.toHexString();
+                    color = inputBlock.value.toHexString(true);
                     break;
                 }
             }
@@ -157,6 +157,10 @@ export class InputDisplayManager implements IDisplayManager {
                 case NodeParticleBlockConnectionPointTypes.Color4: {
                     const col4Value = inputBlock.value as Color4;
                     value = `(${col4Value.r.toFixed(2)}, ${col4Value.g.toFixed(2)}, ${col4Value.b.toFixed(2)}, ${col4Value.a.toFixed(2)})`;
+                    // Use black or white text for readability based on perceived luminance (ignore alpha)
+                    const luminance = 0.3 * col4Value.r + 0.59 * col4Value.g + 0.11 * col4Value.b;
+                    const isDarkBackground = luminance < 0.5;
+                    contentArea.style.color = isDarkBackground ? "white" : "black";
                     break;
                 }
             }

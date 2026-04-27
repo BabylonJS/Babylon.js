@@ -1,10 +1,10 @@
 import { Tools } from "../Misc/tools";
-import type { Observer } from "../Misc/observable";
-import type { Nullable } from "../types";
-import type { Camera } from "../Cameras/camera";
-import type { Scene, IDisposable } from "../scene";
+import { type Observer } from "../Misc/observable";
+import { type Nullable } from "../types";
+import { type Camera } from "../Cameras/camera";
+import { type Scene, type IDisposable } from "../scene";
 import { PerfCounter } from "../Misc/perfCounter";
-import type { ObjectRenderer } from "../Rendering/objectRenderer";
+import { type ObjectRenderer } from "../Rendering/objectRenderer";
 /**
  * This class can be used to get instrumentation data from a Babylon engine
  * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/optimize_your_scene#sceneinstrumentation

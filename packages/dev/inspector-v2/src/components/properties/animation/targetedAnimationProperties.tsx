@@ -1,7 +1,7 @@
-import type { FunctionComponent } from "react";
+import { type FunctionComponent } from "react";
 
-import type { TargetedAnimation } from "core/index";
-import type { ISelectionService } from "../../../services/selectionService";
+import { type TargetedAnimation } from "core/index";
+import { type ISelectionService } from "../../../services/selectionService";
 import { LinkToEntityPropertyLine } from "../linkToEntityPropertyLine";
 
 export const TargetedAnimationGeneralProperties: FunctionComponent<{ targetedAnimation: TargetedAnimation; selectionService: ISelectionService }> = (props) => {

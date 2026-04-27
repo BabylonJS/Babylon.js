@@ -1,16 +1,16 @@
 import { InputBlockBase, type InputBlock } from "./inputBlock.js";
-import type { BaseBlock } from "./baseBlock.js";
+import { type BaseBlock } from "./baseBlock.js";
 import { ConnectionPointType } from "../connection/connectionPointType.js";
-import type {
-    BooleanInputBlockData,
-    Color3InputBlockData,
-    Color4InputBlockData,
-    FloatInputBlockData,
-    SerializedInputBlockData,
-    TextureInputBlockData,
-    Vector2InputBlockData,
+import {
+    type BooleanInputBlockData,
+    type Color3InputBlockData,
+    type Color4InputBlockData,
+    type FloatInputBlockData,
+    type SerializedInputBlockData,
+    type TextureInputBlockData,
+    type Vector2InputBlockData,
 } from "./inputBlock.serialization.types.js";
-import type { IBlockSerializerV1 } from "../serialization/v1/smartFilterSerialization.types.js";
+import { type IBlockSerializerV1 } from "../serialization/v1/smartFilterSerialization.types.js";
 
 /**
  * Determines which generic type of InputBlock we are trying to serialize and calls the appropriate function

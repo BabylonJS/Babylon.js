@@ -172,6 +172,9 @@ const InterpolationBlocks: IBlockDefinition[] = [
     { name: "LerpBlock", category: "Interpolation", modes: BothModes, tooltip: "Interpolate between two values" },
     { name: "GradientValueBlock", category: "Interpolation", modes: BothModes, tooltip: "A gradient value block used to define a value at a specific age" },
     { name: "GradientBlock", category: "Interpolation", modes: BothModes, tooltip: "A gradient block used to define a gradient of values over the lifetime of a particle" },
+    { name: "NLerpBlock", category: "Interpolation", modes: BothModes, tooltip: "Block used to normalize lerp between 2 values" },
+    { name: "SmoothStepBlock", category: "Interpolation", modes: BothModes, tooltip: "Block used to smooth step a value" },
+    { name: "StepBlock", category: "Interpolation", modes: BothModes, tooltip: "Block used to step a value" },
 ];
 
 const MiscBlocks: IBlockDefinition[] = [

@@ -9,6 +9,7 @@ export * from "./resourceContainerBlock";
 
 export * from "./Layers/glowLayerBlock";
 export * from "./Layers/highlightLayerBlock";
+export * from "./Layers/selectionOutlineLayerBlock";
 
 export * from "./PostProcesses/anaglyphPostProcessBlock";
 export * from "./PostProcesses/basePostProcessBlock";
@@ -38,6 +39,7 @@ export * from "./PostProcesses/volumetricLightingBlock";
 
 export * from "./Rendering/csmShadowGeneratorBlock";
 export * from "./Rendering/geometryRendererBlock";
+export * from "./Rendering/iblShadowsRendererBlock";
 export * from "./Rendering/objectRendererBlock";
 export * from "./Rendering/shadowGeneratorBlock";
 export * from "./Rendering/utilityLayerRendererBlock";

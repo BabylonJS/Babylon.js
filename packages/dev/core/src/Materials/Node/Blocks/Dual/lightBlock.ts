@@ -1,18 +1,18 @@
 import { NodeMaterialBlock } from "../../nodeMaterialBlock";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
-import type { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
-import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
-import type { AbstractMesh } from "../../../../Meshes/abstractMesh";
-import type { NodeMaterial, NodeMaterialDefines } from "../../nodeMaterial";
-import type { Effect } from "../../../effect";
-import type { Mesh } from "../../../../Meshes/mesh";
+import { type NodeMaterialBuildState } from "../../nodeMaterialBuildState";
+import { type NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
+import { type AbstractMesh } from "../../../../Meshes/abstractMesh";
+import { type NodeMaterial, type NodeMaterialDefines } from "../../nodeMaterial";
+import { type Effect } from "../../../effect";
+import { type Mesh } from "../../../../Meshes/mesh";
 import { NodeMaterialSystemValues } from "../../Enums/nodeMaterialSystemValues";
 import { InputBlock } from "../Input/inputBlock";
-import type { Light } from "../../../../Lights/light";
-import type { Nullable } from "../../../../types";
+import { type Light } from "../../../../Lights/light";
+import { type Nullable } from "../../../../types";
 import { RegisterClass } from "../../../../Misc/typeStore";
-import type { Scene } from "../../../../scene";
+import { type Scene } from "../../../../scene";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
 import { Logger } from "../../../../Misc/logger";
 import { BindLight, BindLights, PrepareDefinesForLight, PrepareDefinesForLights, PrepareUniformsAndSamplersForLight } from "../../../materialHelper.functions";
@@ -162,6 +162,10 @@ export class LightBlock extends NodeMaterialBlock {
         return this._outputs[2];
     }
 
+    /**
+     * Initialize the block
+     * @param state - the build state
+     */
     public override initialize(state: NodeMaterialBuildState) {
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
         this._initShaderSourceAsync(state.shaderLanguage);
@@ -200,6 +204,11 @@ export class LightBlock extends NodeMaterialBlock {
         this.onCodeIsReadyObservable.notifyObservers(this);
     }
 
+    /**
+     * Auto configure the block based on the material
+     * @param material - the node material
+     * @param additionalFilteringInfo - optional filtering info
+     */
     public override autoConfigure(material: NodeMaterial, additionalFilteringInfo: (node: NodeMaterialBlock) => boolean = () => true) {
         if (!this.cameraPosition.isConnected) {
             let cameraPositionInput = material.getInputBlockByPredicate((b) => b.systemValue === NodeMaterialSystemValues.CameraPosition && additionalFilteringInfo(b));
@@ -212,6 +221,12 @@ export class LightBlock extends NodeMaterialBlock {
         }
     }
 
+    /**
+     * Prepare the list of defines
+     * @param defines - the material defines
+     * @param nodeMaterial - the node material
+     * @param mesh - the mesh to prepare for
+     */
     public override prepareDefines(defines: NodeMaterialDefines, nodeMaterial: NodeMaterial, mesh?: AbstractMesh) {
         if (!mesh || !defines._areLightsDirty) {
             return;
@@ -238,6 +253,27 @@ export class LightBlock extends NodeMaterialBlock {
         }
     }
 
+    /**
+     * Checks if the block is ready
+     * @param mesh - the mesh to check
+     * @param nodeMaterial - the node material
+     * @param defines - the list of defines
+     * @returns true if ready
+     */
+    public override isReady(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
+        if (this.light && !this.light.areLightTexturesReady()) {
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Update the uniforms and samples
+     * @param state - the build state
+     * @param nodeMaterial - the node material
+     * @param defines - the material defines
+     * @param uniformBuffers - the uniform buffers
+     */
     public override updateUniformsAndSamples(state: NodeMaterialBuildState, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines, uniformBuffers: string[]) {
         state.samplers.push("areaLightsLTC1Sampler");
         state.samplers.push("areaLightsLTC2Sampler");
@@ -254,11 +290,18 @@ export class LightBlock extends NodeMaterialBlock {
                 uniformBuffers,
                 onlyUpdateBuffersList,
                 defines["IESLIGHTTEXTURE" + lightIndex],
-                defines["CLUSTLIGHT" + lightIndex]
+                defines["CLUSTLIGHT" + lightIndex],
+                defines["RECTAREALIGHTEMISSIONTEXTURE" + lightIndex]
             );
         }
     }
 
+    /**
+     * Bind data to effect
+     * @param effect - the effect to bind to
+     * @param nodeMaterial - the node material
+     * @param mesh - the mesh to bind for
+     */
     public override bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh) {
         if (!mesh) {
             return;
@@ -372,6 +415,9 @@ export class LightBlock extends NodeMaterialBlock {
         const accessor = isWGSL ? "fragmentInputs." : "";
         state.sharedData.forcedBindableBlocks.push(this);
         state.sharedData.blocksWithDefines.push(this);
+        if (this.light) {
+            state.sharedData.blockingBlocks.push(this);
+        }
         const worldPos = this.worldPosition;
 
         let worldPosVariableName = worldPos.associatedVariableName;
@@ -476,6 +522,10 @@ export class LightBlock extends NodeMaterialBlock {
         return this;
     }
 
+    /**
+     * Serializes the block
+     * @returns the serialized object
+     */
     public override serialize(): any {
         const serializationObject = super.serialize();
 
@@ -488,6 +538,12 @@ export class LightBlock extends NodeMaterialBlock {
         return serializationObject;
     }
 
+    /**
+     * Deserializes the block
+     * @param serializationObject - the serialization object
+     * @param scene - the scene
+     * @param rootUrl - the root url
+     */
     public override _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
         super._deserialize(serializationObject, scene, rootUrl);
 

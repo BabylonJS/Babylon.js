@@ -1,14 +1,14 @@
 import { NodeMaterialBlock } from "../../nodeMaterialBlock";
 import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
-import type { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
+import { type NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
-import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
+import { type NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
 import { RegisterClass } from "../../../../Misc/typeStore";
-import type { Scene } from "../../../../scene";
-import type { NodeMaterialDefines, NodeMaterial } from "../../nodeMaterial";
+import { type Scene } from "../../../../scene";
+import { type NodeMaterialDefines, type NodeMaterial } from "../../nodeMaterial";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
-import type { Effect } from "../../../effect";
-import type { Mesh } from "../../../../Meshes/mesh";
+import { type Effect } from "../../../effect";
+import { type Mesh } from "../../../../Meshes/mesh";
 import { BindLogDepth } from "../../../materialHelper.functions";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
@@ -30,7 +30,7 @@ export enum FragmentOutputBlockColorSpace {
 export class FragmentOutputBlock extends NodeMaterialBlock {
     private _linearDefineName: string;
     private _gammaDefineName: string;
-    private _additionalColorDefineName: string;
+    private _additionalColorDefineName: string | undefined;
     protected _outputString: string;
 
     /**
@@ -70,8 +70,8 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
         embedded: true,
         options: [
             { label: "No color space", value: FragmentOutputBlockColorSpace.NoColorSpace },
-            { label: "Gamma", value: FragmentOutputBlockColorSpace.Gamma },
-            { label: "Linear", value: FragmentOutputBlockColorSpace.Linear },
+            { label: "To Gamma", value: FragmentOutputBlockColorSpace.Gamma },
+            { label: "To Linear", value: FragmentOutputBlockColorSpace.Linear },
         ],
     })
     public get colorSpace() {
@@ -145,12 +145,25 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
         return state.shaderLanguage === ShaderLanguage.WGSL ? "fragmentOutputsColor" : "gl_FragColor";
     }
 
+    /**
+     * Prepare the list of defines
+     * @param defines - the material defines
+     * @param nodeMaterial - the node material
+     */
     public override prepareDefines(defines: NodeMaterialDefines, nodeMaterial: NodeMaterial) {
         defines.setValue(this._linearDefineName, this.convertToLinearSpace, true);
         defines.setValue(this._gammaDefineName, this.convertToGammaSpace, true);
-        defines.setValue(this._additionalColorDefineName, this.additionalColor.connectedPoint && nodeMaterial._useAdditionalColor, true);
+        if (this._additionalColorDefineName !== undefined) {
+            defines.setValue(this._additionalColorDefineName, !!this.additionalColor.connectedPoint && nodeMaterial._useAdditionalColor, true);
+        }
     }
 
+    /**
+     * Bind data to effect
+     * @param effect - the effect to bind to
+     * @param nodeMaterial - the node material
+     * @param mesh - the mesh to bind for
+     */
     public override bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh) {
         if ((this.useLogarithmicDepth || nodeMaterial.useLogarithmicDepth) && mesh) {
             BindLogDepth(undefined, effect, mesh.getScene());
@@ -236,7 +249,7 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
         }
 
         state.compilationString += `#ifdef ${this._linearDefineName}\n`;
-        state.compilationString += `${outputString}  = toLinearSpace(${outputString});\n`;
+        state.compilationString += `${outputString}  = toLinearSpace${state.shaderLanguage === ShaderLanguage.WGSL ? "Vec4" : ""}(${outputString});\n`;
         state.compilationString += `#endif\n`;
 
         state.compilationString += `#ifdef ${this._gammaDefineName}\n`;
@@ -273,6 +286,10 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
         return codeString;
     }
 
+    /**
+     * Serializes the block
+     * @returns the serialized object
+     */
     public override serialize(): any {
         const serializationObject = super.serialize();
 
@@ -283,6 +300,12 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
         return serializationObject;
     }
 
+    /**
+     * Deserializes the block
+     * @param serializationObject - the serialization object
+     * @param scene - the scene
+     * @param rootUrl - the root url
+     */
     public override _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
         super._deserialize(serializationObject, scene, rootUrl);
 

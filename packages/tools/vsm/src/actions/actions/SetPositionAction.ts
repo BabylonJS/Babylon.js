@@ -1,5 +1,5 @@
-import type { Vector3 } from "core/Maths/math";
-import type { TransformNode } from "core/Meshes/transformNode";
+import { type Vector3 } from "core/Maths/math";
+import { type TransformNode } from "core/Meshes/transformNode";
 import { BaseAction } from "./BaseAction";
 
 /**
@@ -21,7 +21,7 @@ export class SetPositionAction extends BaseAction {
         this._targetNode = value;
     }
 
-    public execute(): void {
+    public override execute(): void {
         if (this._targetNode) {
             this._targetNode.position = this._targetPosition;
         }

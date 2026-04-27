@@ -1,8 +1,15 @@
-import type { Scene } from "../../scene";
-import type { Vector3 } from "../../Maths/math.vector";
-import type { Nullable } from "../../types";
-import type { IPhysicsEnginePluginV2, PhysicsConstraintParameters, PhysicsConstraintAxisLimitMode, PhysicsConstraintMotorType, ConstrainedBodyPair } from "./IPhysicsEnginePlugin";
-import { PhysicsConstraintAxis, PhysicsConstraintType } from "./IPhysicsEnginePlugin";
+import { type Scene } from "../../scene";
+import { type Vector3 } from "../../Maths/math.vector";
+import { type Nullable } from "../../types";
+import {
+    type IPhysicsEnginePluginV2,
+    type PhysicsConstraintParameters,
+    type PhysicsConstraintAxisLimitMode,
+    type PhysicsConstraintMotorType,
+    type ConstrainedBodyPair,
+    PhysicsConstraintAxis,
+    PhysicsConstraintType,
+} from "./IPhysicsEnginePlugin";
 
 /**
  * This is a holder class for the physics constraint created by the physics plugin
@@ -421,7 +428,7 @@ export class LockConstraint extends PhysicsConstraint {
  * @param axisA - The first axis of the constraint in local space.
  * @param axisB - The second axis of the constraint in local space.
  * @param scene - The scene the constraint belongs to.
- * @returns The created LockConstraint.
+ * @returns The created PrismaticConstraint.
  */
 export class PrismaticConstraint extends PhysicsConstraint {
     constructor(pivotA: Vector3, pivotB: Vector3, axisA: Vector3, axisB: Vector3, scene: Scene) {

@@ -1,16 +1,16 @@
 import { MaterialDefines } from "core/Materials/materialDefines";
 import { MaterialPluginBase } from "core/Materials/materialPluginBase";
-import type { InternalTexture } from "core/Materials/Textures/internalTexture";
-import type { Material } from "core/Materials/material";
+import { type InternalTexture } from "core/Materials/Textures/internalTexture";
+import { type Material } from "core/Materials/material";
 import { Constants } from "core/Engines/constants";
-import type { StandardMaterial } from "core/Materials/standardMaterial";
+import { type StandardMaterial } from "core/Materials/standardMaterial";
 import { PBRBaseMaterial } from "core/Materials/PBR/pbrBaseMaterial";
-import type { UniformBuffer } from "core/Materials/uniformBuffer";
+import { type UniformBuffer } from "core/Materials/uniformBuffer";
 import { expandToProperty, serialize } from "core/Misc/decorators";
 import { RegisterClass } from "core/Misc/typeStore";
 
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
-import { OpenPBRMaterial } from "core/Materials/PBR/openpbrMaterial";
+import { type OpenPBRMaterial } from "core/Materials/PBR/openpbrMaterial";
 /**
  * @internal
  */
@@ -31,7 +31,20 @@ export class IBLShadowsPluginMaterial extends MaterialPluginBase {
     /**
      * The texture containing the contribution from IBL shadows.
      */
-    public iblShadowsTexture: InternalTexture;
+    private _iblShadowsTexture!: InternalTexture;
+
+    public get iblShadowsTexture(): InternalTexture {
+        return this._iblShadowsTexture;
+    }
+
+    public set iblShadowsTexture(value: InternalTexture) {
+        if (this._iblShadowsTexture === value) {
+            return;
+        }
+
+        this._iblShadowsTexture = value;
+        this._markAllSubMeshesAsTexturesDirty();
+    }
 
     /**
      * The opacity of the shadows.
@@ -78,6 +91,10 @@ export class IBLShadowsPluginMaterial extends MaterialPluginBase {
         this._internalMarkAllSubMeshesAsTexturesDirty = material._dirtyCallbacks[Constants.MATERIAL_TextureDirtyFlag];
     }
 
+    private _isOpenPBRMaterial(): boolean {
+        return this._material.getClassName() === "OpenPBRMaterial";
+    }
+
     public override prepareDefines(defines: MaterialIBLShadowsRenderDefines) {
         defines.RENDER_WITH_IBL_SHADOWS = this._isEnabled;
         defines.COLORED_IBL_SHADOWS = this.isColored;
@@ -87,17 +104,35 @@ export class IBLShadowsPluginMaterial extends MaterialPluginBase {
         return "IBLShadowsPluginMaterial";
     }
 
-    public override getUniforms() {
-        return {
-            ubo: [
-                { name: "renderTargetSize", size: 2, type: "vec2" },
-                { name: "shadowOpacity", size: 1, type: "float" },
-            ],
-            fragment: `#ifdef RENDER_WITH_IBL_SHADOWS
+    public override getUniforms(_shaderLanguage: ShaderLanguage) {
+        const result: any = {};
+        result.ubo = [];
+        if (this._isOpenPBRMaterial()) {
+            if (_shaderLanguage === ShaderLanguage.WGSL) {
+                result.fragment = `#ifdef RENDER_WITH_IBL_SHADOWS
+                    var shadowOpacity: f32;
+                #endif`;
+            } else {
+                result.fragment = `#ifdef RENDER_WITH_IBL_SHADOWS
+                    uniform float shadowOpacity;
+                #endif`;
+            }
+        } else {
+            result.ubo.push({ name: "renderTargetSize", size: 2, type: "vec2" });
+            if (_shaderLanguage === ShaderLanguage.WGSL) {
+                result.fragment = `#ifdef RENDER_WITH_IBL_SHADOWS
+                    var renderTargetSize: vec2f;
+                    var shadowOpacity: f32;
+                #endif`;
+            } else {
+                result.fragment = `#ifdef RENDER_WITH_IBL_SHADOWS
                     uniform vec2 renderTargetSize;
                     uniform float shadowOpacity;
-                #endif`,
-        };
+                #endif`;
+            }
+        }
+        result.ubo.push({ name: "shadowOpacity", size: 1, type: "float" });
+        return result;
     }
 
     public override getSamplers(samplers: string[]) {
@@ -105,7 +140,7 @@ export class IBLShadowsPluginMaterial extends MaterialPluginBase {
     }
 
     public override bindForSubMesh(uniformBuffer: UniformBuffer) {
-        if (this._isEnabled) {
+        if (this._isEnabled && this.iblShadowsTexture) {
             uniformBuffer.bindTexture("iblShadowsTexture", this.iblShadowsTexture);
             uniformBuffer.updateFloat2("renderTargetSize", this._material.getScene().getEngine().getRenderWidth(), this._material.getScene().getEngine().getRenderHeight());
             uniformBuffer.updateFloat("shadowOpacity", this.shadowOpacity);
@@ -161,7 +196,7 @@ export class IBLShadowsPluginMaterial extends MaterialPluginBase {
                     #endif
                 #endif
             `;
-            } else if (this._material instanceof OpenPBRMaterial) {
+            } else if (this._isOpenPBRMaterial()) {
                 // eslint-disable-next-line @typescript-eslint/naming-convention
                 frag["CUSTOM_FRAGMENT_BEFORE_IBLLAYERCOMPOSITION"] = `
                 #ifdef RENDER_WITH_IBL_SHADOWS
@@ -169,16 +204,15 @@ export class IBLShadowsPluginMaterial extends MaterialPluginBase {
                         #ifdef REFLECTION
                             #ifdef COLORED_IBL_SHADOWS
                                 var shadowValue: vec3f = computeIndirectShadow();
-                                slab_diffuse_ibl *= shadowValue;
-                                slab_glossy_ibl *= mix(vec3f(1.0), shadowValue, specularAlphaG);
+                                ambient_occlusion = min(ambient_occlusion, shadowValue);
                             #else
                                 var shadowValue: vec2f = computeIndirectShadow();
-                                slab_diffuse_ibl *= vec3f(shadowValue.x);
-                                slab_glossy_ibl *= vec3f(mix(pow(shadowValue.y, 4.0), shadowValue.x, specularAlphaG));
+                                ambient_occlusion = min(ambient_occlusion, vec3f(shadowValue.x));
+                                specular_ambient_occlusion = min(specular_ambient_occlusion, pow(shadowValue.y, 4.0));
                             #endif
                         #endif
                     #else
-                        slab_diffuse_ibl *= computeIndirectShadow().x;
+                        ambient_occlusion = min(ambient_occlusion, vec3f(computeIndirectShadow().x));
                     #endif
                 #endif
             `;
@@ -239,7 +273,7 @@ export class IBLShadowsPluginMaterial extends MaterialPluginBase {
                     #endif
                 #endif
             `;
-            } else if (this._material instanceof OpenPBRMaterial) {
+            } else if (this._isOpenPBRMaterial()) {
                 // eslint-disable-next-line @typescript-eslint/naming-convention
                 frag["CUSTOM_FRAGMENT_BEFORE_IBLLAYERCOMPOSITION"] = `
                 #ifdef RENDER_WITH_IBL_SHADOWS
@@ -247,16 +281,15 @@ export class IBLShadowsPluginMaterial extends MaterialPluginBase {
                         #ifdef REFLECTION
                             #ifdef COLORED_IBL_SHADOWS
                                 vec3 shadowValue = computeIndirectShadow();
-                                slab_diffuse_ibl.rgb *= shadowValue.rgb;
-                                slab_glossy_ibl *= mix(vec3(1.0), shadowValue.rgb, specularAlphaG);
+                                ambient_occlusion = min(ambient_occlusion, shadowValue);
                             #else
                                 vec2 shadowValue = computeIndirectShadow();
-                                slab_diffuse_ibl *= shadowValue.x;
-                                slab_glossy_ibl *= mix(pow(shadowValue.y, 4.0), shadowValue.x, specularAlphaG);
+                                ambient_occlusion = min(ambient_occlusion, vec3(shadowValue.x));
+                                specular_ambient_occlusion = min(specular_ambient_occlusion, pow(shadowValue.y, 4.0));
                             #endif
                         #endif
                     #else
-                        slab_diffuse_ibl *= computeIndirectShadow().x;
+                        ambient_occlusion = min(ambient_occlusion, vec3(computeIndirectShadow().x));
                     #endif
                 #endif
             `;

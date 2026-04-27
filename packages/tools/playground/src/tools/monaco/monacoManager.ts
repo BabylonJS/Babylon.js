@@ -1,10 +1,10 @@
 /* eslint-disable no-await-in-loop */
 /* eslint-disable @typescript-eslint/no-floating-promises */
 import * as monaco from "monaco-editor/esm/vs/editor/editor.api";
-import type { GlobalState } from "../../globalState";
+import { type GlobalState, type IDiagnosticInfo } from "../../globalState";
 import { Utilities } from "../utilities";
 import { Logger, Observable } from "@dev/core";
-import { debounce } from "ts-debounce";
+import { debounce } from "../debounce";
 import { v5 as uuidv5 } from "uuid";
 
 import { EditorHost } from "./editor/editorHost";
@@ -17,14 +17,12 @@ import { TemplatesService } from "./completion/templatesService";
 import { CompletionService } from "./completion/completionService";
 import { CodeAnalysisService } from "./analysis/codeAnalysisService";
 import { DefinitionService } from "./navigation/definitionService";
-import type { V2RunnerOptions } from "./run/runner";
-import type { SnippetData } from "../snippet";
-import { ManifestVersion, type V2Manifest } from "../snippet";
-import { CreateV2Runner } from "./run/runner";
+import { type V2RunnerOptions, CreateV2Runner } from "./run/runner";
+import { type SnippetData, ManifestVersion, type V2Manifest } from "../snippet";
 import { CompilationError } from "../../components/errorDisplayComponent";
 import { ParseSpec } from "./typings/utils";
 import { CodeLensService } from "./codeLens/codeLensProvider";
-import type { RequestLocalResolve } from "./typings/types";
+import { type RequestLocalResolve } from "./typings/types";
 import { WriteLastLocal, ReadLastLocal } from "../localSession";
 
 interface IRunConfig {
@@ -165,24 +163,54 @@ export class MonacoManager {
 
             globalState.onRunRequiredObservable.notifyObservers();
             this._hydrating = false;
+            this._files.setDirty(false);
 
             const lastLocalJson = ReadLastLocal(this.globalState);
             if (lastLocalJson) {
                 try {
                     const lastLocal = JSON.parse(lastLocalJson) as SnippetData;
                     if (lastLocal.sessionData) {
-                        this.globalState.openEditors = lastLocal.sessionData.openFiles;
-                        this.globalState.onOpenEditorsChangedObservable?.notifyObservers();
-                        this.switchActiveFile(lastLocal.sessionData.activeFile);
-                        this.editorHost.editor?.setPosition(lastLocal.sessionData.cursorPosition);
-                        this.editorHost.editor?.focus();
-                        this.editorHost.editor?.revealPositionInCenter(lastLocal.sessionData.cursorPosition);
+                        const validFiles = new Set(Object.keys(this.globalState.files ?? {}));
+                        const filteredOpenFiles = lastLocal.sessionData.openFiles.filter((f) => validFiles.has(f));
+                        if (filteredOpenFiles.length > 0) {
+                            this.globalState.openEditors = filteredOpenFiles;
+                            this.globalState.onOpenEditorsChangedObservable?.notifyObservers();
+                        }
+                        if (lastLocal.sessionData.activeFile && validFiles.has(lastLocal.sessionData.activeFile)) {
+                            this.switchActiveFile(lastLocal.sessionData.activeFile);
+                            this.editorHost.editor?.setPosition(lastLocal.sessionData.cursorPosition);
+                            this.editorHost.editor?.focus();
+                            this.editorHost.editor?.revealPositionInCenter(lastLocal.sessionData.cursorPosition);
+                        }
                     }
                 } catch {}
             }
         });
 
         this.globalState.onFilesChangedObservable.add(() => {
+            // Create models for any new files that don't have models yet,
+            // and sync content for existing models that have changed externally.
+            for (const [path, code] of Object.entries(this.globalState.files)) {
+                if (!this._files.has(path)) {
+                    this._files.addFile(path, code, (p, c) => {
+                        this.globalState.files[p] = c;
+                        this._files.setDirty(true);
+                    });
+                } else {
+                    const model = this._files.getModel(path);
+                    if (model && model.getValue() !== code) {
+                        model.setValue(code);
+                    }
+                }
+            }
+
+            // Remove models for files that no longer exist.
+            for (const path of this._files.paths()) {
+                if (!(path in this.globalState.files)) {
+                    this._files.removeFile(path);
+                }
+            }
+
             // Prevent worker restart during hydration to avoid race conditions
             if (!this._hydrating) {
                 this._tsPipeline.forceSyncModels();
@@ -201,6 +229,24 @@ export class MonacoManager {
 
         // Initialize getRunnable as a bound method
         this.globalState.getRunnable = this.getRunnableAsync.bind(this);
+
+        // Expose diagnostics from Monaco editor markers.
+        this.globalState.getDiagnostics = () => {
+            const result: IDiagnosticInfo[] = [];
+            const markers = monaco.editor.getModelMarkers({});
+            for (const marker of markers) {
+                const uri = marker.resource?.path ?? "";
+                const fileName = uri.startsWith("/pg/") ? uri.slice(4) : uri;
+                result.push({
+                    file: fileName,
+                    message: marker.message,
+                    severity: marker.severity === monaco.MarkerSeverity.Error ? "error" : marker.severity === monaco.MarkerSeverity.Warning ? "warning" : "info",
+                    line: marker.startLineNumber,
+                    column: marker.startColumn,
+                });
+            }
+            return result;
+        };
     }
 
     private _initializeFileState(entry: string) {
@@ -551,6 +597,7 @@ export class MonacoManager {
             "https://preview.babylonjs.com/proceduralTexturesLibrary/babylonjs.proceduralTextures.d.ts",
             "https://preview.babylonjs.com/serializers/babylonjs.serializers.d.ts",
             "https://preview.babylonjs.com/inspector/babylon.inspector.d.ts",
+            "https://preview.babylonjs.com/inspector/babylon.inspector-v2.d.ts",
             "https://preview.babylonjs.com/accessibility/babylon.accessibility.d.ts",
             "https://preview.babylonjs.com/addons/babylonjs.addons.d.ts",
             "https://preview.babylonjs.com/glTF2Interface/babylon.glTF2Interface.d.ts",
@@ -558,7 +605,7 @@ export class MonacoManager {
         ];
 
         // snapshot/version/local overrides
-        let snapshot = "";
+        let snapshot: string;
         if (window.location.search.indexOf("snapshot=") !== -1) {
             snapshot = window.location.search.split("snapshot=")[1].split("&")[0];
             for (let i = 0; i < declarations.length; i++) {
@@ -566,7 +613,7 @@ export class MonacoManager {
             }
         }
 
-        let version = "";
+        let version: string;
         if (window.location.search.indexOf("version=") !== -1) {
             version = window.location.search.split("version=")[1].split("&")[0];
             for (let i = 0; i < declarations.length; i++) {
@@ -575,12 +622,18 @@ export class MonacoManager {
         }
 
         if (location.hostname === "localhost" && location.search.indexOf("dist") === -1) {
+            const cdnPort = (window as any).__CDN_PORT__ || 1337;
             for (let i = 0; i < declarations.length; i++) {
-                declarations[i] = declarations[i].replace("https://preview.babylonjs.com/", "//localhost:1337/");
+                declarations[i] = declarations[i].replace("https://preview.babylonjs.com/", `//localhost:${cdnPort}/`);
             }
         }
 
-        if (location.href.indexOf("BabylonToolkit") !== -1 || Utilities.ReadBoolFromStore("babylon-toolkit", false) || Utilities.ReadBoolFromStore("babylon-toolkit-used", false)) {
+        const toolkitExplicit = localStorage.getItem("babylon-toolkit");
+        if (
+            location.href.indexOf("BabylonToolkit") !== -1 ||
+            Utilities.ReadBoolFromStore("babylon-toolkit", false) ||
+            (toolkitExplicit !== "false" && Utilities.ReadBoolFromStore("babylon-toolkit-used", false))
+        ) {
             declarations.push("https://cdn.jsdelivr.net/gh/BabylonJS/BabylonToolkit@master/Runtime/babylon.toolkit.d.ts");
             declarations.push("https://cdn.jsdelivr.net/gh/BabylonJS/BabylonToolkit@master/Runtime/default.playground.d.ts");
         }
@@ -755,7 +808,14 @@ export { Playground };`;
         this.globalState.importsMap = {};
         this.globalState.entryFilePath = undefined as any;
         this.globalState.activeFilePath = undefined as any;
-        this.globalState.currentSnippetToken = "";
+
+        // Only clear the snippet token when not loading a snippet.
+        // During loading, a language switch fires onLanguageChangedObservable which
+        // calls this method; clearing the token here would cause the next save to
+        // create a new snippet instead of incrementing the revision.
+        if (!this.globalState.loadingCodeInProgress) {
+            this.globalState.currentSnippetToken = "";
+        }
 
         this.globalState.onFilesChangedObservable.notifyObservers();
         this.globalState.onManifestChangedObservable.notifyObservers();
@@ -951,7 +1011,6 @@ export { Playground };`;
         const files: Array<{ path: string; content: string; lastModified: number }> = [];
         const skipDir = /^(node_modules|\.git|\.hg|\.svn|\.idea|\.vscode)$/i;
         const walkAsync = async (dir: FileSystemDirectoryHandle, prefix = "") => {
-            // @ts-expect-error: .values() is not in TS lib yet
             for await (const entry of dir.values()) {
                 if (entry.kind === "directory") {
                     if (skipDir.test(entry.name)) {

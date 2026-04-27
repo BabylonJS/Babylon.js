@@ -1,4 +1,4 @@
-import type { NodeRenderGraphConnectionPoint, Scene, Nullable, FrameGraph, NodeRenderGraphTeleportInBlock, NodeRenderGraphBuildState } from "core/index";
+import { type NodeRenderGraphConnectionPoint, type Scene, type Nullable, type FrameGraph, type NodeRenderGraphTeleportInBlock, type NodeRenderGraphBuildState } from "core/index";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import { NodeRenderGraphBlockConnectionPointTypes } from "../../Types/nodeRenderGraphTypes";
 import { NodeRenderGraphBlock } from "../../nodeRenderGraphBlock";

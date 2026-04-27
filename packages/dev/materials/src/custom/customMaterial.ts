@@ -1,14 +1,14 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import type { Texture } from "core/Materials/Textures/texture";
+import { type Texture } from "core/Materials/Textures/texture";
 import { Effect } from "core/Materials/effect";
-import type { MaterialDefines } from "core/Materials/materialDefines";
+import { type MaterialDefines } from "core/Materials/materialDefines";
 import { StandardMaterial } from "core/Materials/standardMaterial";
-import type { Mesh } from "core/Meshes/mesh";
-import type { Scene } from "core/scene";
+import { type Mesh } from "core/Meshes/mesh";
+import { type Scene } from "core/scene";
 import { RegisterClass } from "core/Misc/typeStore";
 import { Color3, Color4 } from "core/Maths/math.color";
-import type { Nullable } from "core/types";
-import type { SubMesh } from "core/Meshes/subMesh";
+import { type Nullable } from "core/types";
+import { type SubMesh } from "core/Meshes/subMesh";
 
 import "core/Shaders/default.vertex";
 import "core/Shaders/default.fragment";

@@ -1,13 +1,13 @@
 import { Scene } from "core/scene";
-import type { FunctionComponent } from "react";
+import { type FunctionComponent } from "react";
 import { Color3PropertyLine, Color4PropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/colorPropertyLine";
 import { NumberDropdownPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/dropdownPropertyLine";
 import { BoundProperty } from "../properties/boundProperty";
 import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
-import type { BaseTexture } from "core/Materials/Textures/baseTexture";
-import type { Nullable } from "core/types";
+import { type BaseTexture } from "core/Materials/Textures/baseTexture";
+import { type Nullable } from "core/types";
 import { LinkPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/linkPropertyLine";
-import type { ISelectionService } from "../../services/selectionService";
+import { type ISelectionService } from "../../services/selectionService";
 import { FileUploadLine } from "shared-ui-components/fluent/hoc/fileUploadLine";
 import { Logger } from "core/Misc/logger";
 import { Tools } from "core/Misc/tools";
@@ -29,9 +29,33 @@ export const SceneMaterialImageProcessingProperties: FunctionComponent<{ scene: 
 
     return (
         <>
-            <BoundProperty component={SyncedSliderPropertyLine} label="Contrast" min={0} max={4} step={0.1} target={imageProcessing} propertyKey="contrast" />
-            <BoundProperty component={SyncedSliderPropertyLine} label="Exposure" min={0} max={4} step={0.1} target={imageProcessing} propertyKey="exposure" />
-            <BoundProperty component={SwitchPropertyLine} label="Tone Mapping" target={imageProcessing} propertyKey="toneMappingEnabled" />
+            <BoundProperty
+                component={SyncedSliderPropertyLine}
+                label="Contrast"
+                min={0}
+                max={4}
+                step={0.1}
+                target={imageProcessing}
+                propertyKey="contrast"
+                propertyPath="imageProcessingConfiguration.contrast"
+            />
+            <BoundProperty
+                component={SyncedSliderPropertyLine}
+                label="Exposure"
+                min={0}
+                max={4}
+                step={0.1}
+                target={imageProcessing}
+                propertyKey="exposure"
+                propertyPath="imageProcessingConfiguration.exposure"
+            />
+            <BoundProperty
+                component={SwitchPropertyLine}
+                label="Tone Mapping"
+                target={imageProcessing}
+                propertyKey="toneMappingEnabled"
+                propertyPath="imageProcessingConfiguration.toneMappingEnabled"
+            />
             <Collapse visible={imageProcessing.toneMappingEnabled}>
                 <BoundProperty
                     component={NumberDropdownPropertyLine}
@@ -45,13 +69,53 @@ export const SceneMaterialImageProcessingProperties: FunctionComponent<{ scene: 
                     label="Tone Mapping Type"
                     target={imageProcessing}
                     propertyKey="toneMappingType"
+                    propertyPath="imageProcessingConfiguration.toneMappingType"
                 />
             </Collapse>
-            <BoundProperty component={SwitchPropertyLine} label="Vignette" target={imageProcessing} propertyKey="vignetteEnabled" />
-            <BoundProperty component={SyncedSliderPropertyLine} label="Vignette FOV" min={0} max={Math.PI} step={0.1} target={imageProcessing} propertyKey="vignetteCameraFov" />
-            <BoundProperty component={SyncedSliderPropertyLine} label="Vignette Center X" min={0} max={1} step={0.1} target={imageProcessing} propertyKey="vignetteCenterX" />
-            <BoundProperty component={SyncedSliderPropertyLine} label="Vignette Center Y" min={0} max={1} step={0.1} target={imageProcessing} propertyKey="vignetteCenterY" />
-            <BoundProperty component={Color4PropertyLine} label="Vignette Color" target={imageProcessing} propertyKey="vignetteColor" />
+            <BoundProperty
+                component={SwitchPropertyLine}
+                label="Vignette"
+                target={imageProcessing}
+                propertyKey="vignetteEnabled"
+                propertyPath="imageProcessingConfiguration.vignetteEnabled"
+            />
+            <BoundProperty
+                component={SyncedSliderPropertyLine}
+                label="Vignette FOV"
+                min={0}
+                max={Math.PI}
+                step={0.1}
+                target={imageProcessing}
+                propertyKey="vignetteCameraFov"
+                propertyPath="imageProcessingConfiguration.vignetteCameraFov"
+            />
+            <BoundProperty
+                component={SyncedSliderPropertyLine}
+                label="Vignette Center X"
+                min={0}
+                max={1}
+                step={0.1}
+                target={imageProcessing}
+                propertyKey="vignetteCenterX"
+                propertyPath="imageProcessingConfiguration.vignetteCenterX"
+            />
+            <BoundProperty
+                component={SyncedSliderPropertyLine}
+                label="Vignette Center Y"
+                min={0}
+                max={1}
+                step={0.1}
+                target={imageProcessing}
+                propertyKey="vignetteCenterY"
+                propertyPath="imageProcessingConfiguration.vignetteCenterY"
+            />
+            <BoundProperty
+                component={Color4PropertyLine}
+                label="Vignette Color"
+                target={imageProcessing}
+                propertyKey="vignetteColor"
+                propertyPath="imageProcessingConfiguration.vignetteColor"
+            />
             <BoundProperty
                 component={NumberDropdownPropertyLine}
                 options={
@@ -63,8 +127,15 @@ export const SceneMaterialImageProcessingProperties: FunctionComponent<{ scene: 
                 label="Vignette Blend Mode"
                 target={imageProcessing}
                 propertyKey="vignetteBlendMode"
+                propertyPath="imageProcessingConfiguration.vignetteBlendMode"
             />
-            <BoundProperty component={SwitchPropertyLine} label="Dithering" target={imageProcessing} propertyKey="ditheringEnabled" />
+            <BoundProperty
+                component={SwitchPropertyLine}
+                label="Dithering"
+                target={imageProcessing}
+                propertyKey="ditheringEnabled"
+                propertyPath="imageProcessingConfiguration.ditheringEnabled"
+            />
             <BoundProperty
                 component={SyncedSliderPropertyLine}
                 label="Dithering Intensity"
@@ -73,6 +144,7 @@ export const SceneMaterialImageProcessingProperties: FunctionComponent<{ scene: 
                 step={0.5 / 255.0}
                 target={imageProcessing}
                 propertyKey="ditheringIntensity"
+                propertyPath="imageProcessingConfiguration.ditheringIntensity"
             />
         </>
     );
@@ -130,7 +202,7 @@ export const SceneShadowsProperties: FunctionComponent<{ scene: Scene }> = (prop
     return (
         <>
             <ButtonLine
-                label={"Normalize scene"}
+                label={"Normalize Scene"}
                 onClick={() => {
                     for (const mesh of scene.meshes) {
                         mesh.normalizeToUnitCube(true);
@@ -147,9 +219,26 @@ export const SceneRenderingProperties: FunctionComponent<{ scene: Scene; selecti
 
     const envTexture = useProperty(scene, "environmentTexture");
     const fogMode = useProperty(scene, "fogMode");
+    const useOIT = useProperty(scene, "useOrderIndependentTransparency");
 
     return (
         <>
+            <BoundProperty component={SwitchPropertyLine} label="OIT" description="Order Independent Transparency" target={scene} propertyKey="useOrderIndependentTransparency" />
+
+            <Collapse visible={useOIT}>
+                {useOIT && scene.depthPeelingRenderer && (
+                    <BoundProperty
+                        component={SyncedSliderPropertyLine}
+                        label="passCount"
+                        description="Render the number of transparent layers"
+                        target={scene.depthPeelingRenderer}
+                        propertyKey="passCount"
+                        min={2}
+                        max={8}
+                        step={1}
+                    />
+                )}
+            </Collapse>
             <NumberDropdownPropertyLine
                 options={
                     [
@@ -199,7 +288,7 @@ export const SceneRenderingProperties: FunctionComponent<{ scene: Scene; selecti
             />
 
             {scene.environmentTexture && (
-                <LinkPropertyLine label="Env. texture" value={scene.environmentTexture.name} onLink={() => (selectionService.selectedEntity = scene.environmentTexture)} />
+                <LinkPropertyLine label="Env. Texture" value={scene.environmentTexture.name} onLink={() => (selectionService.selectedEntity = scene.environmentTexture)} />
             )}
 
             <FileUploadLine

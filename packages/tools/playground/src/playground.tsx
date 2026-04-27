@@ -2,7 +2,7 @@ import * as React from "react";
 import { createRoot } from "react-dom/client";
 import { MonacoComponent } from "./components/editor/monacoComponent";
 import { RenderingComponent } from "./components/rendererComponent";
-import { GlobalState, EditionMode, RuntimeMode } from "./globalState";
+import { GlobalState, EditionMode, RuntimeMode, type IEngineSwitchDialogRequest } from "./globalState";
 import { FooterComponent } from "./components/footerComponent";
 import { HeaderComponent } from "./components/headerComponent";
 import { SaveManager } from "./tools/saveManager";
@@ -10,6 +10,7 @@ import { LoadManager } from "./tools/loadManager";
 import { WaitRingComponent } from "./components/waitRingComponent";
 import { MetadataComponent } from "./components/metadataComponent";
 import { HamburgerMenuComponent } from "./components/hamburgerMenu";
+import { EngineSwitchDialog } from "./components/engineSwitchDialog";
 import { Utilities } from "./tools/utilities";
 import { ShortcutManager } from "./tools/shortcutManager";
 import { ErrorDisplayComponent } from "./components/errorDisplayComponent";
@@ -17,6 +18,7 @@ import { ExamplesComponent } from "./components/examplesComponent";
 import { QRCodeComponent } from "./components/qrCodeComponent";
 import { SplitContainer } from "shared-ui-components/split/splitContainer";
 import { Splitter } from "shared-ui-components/split/splitter";
+import { type IObserver } from "core/Misc";
 
 import "./scss/main.scss";
 import { ControlledSize, SplitDirection } from "shared-ui-components/split/splitContext";
@@ -41,6 +43,10 @@ export class Playground extends React.Component<
          *
          */
         mode: EditionMode;
+        /**
+         *
+         */
+        engineSwitchDialog: IEngineSwitchDialogRequest | null;
     }
 > {
     private _monacoRef: React.RefObject<HTMLDivElement>;
@@ -49,6 +55,8 @@ export class Playground extends React.Component<
     private _splitContainerRef: React.RefObject<HTMLDivElement>;
 
     private _globalState: GlobalState;
+    private _syncTitle: () => void = () => {};
+    private _savedObserver: IObserver | null = null;
 
     /**
      *
@@ -78,7 +86,11 @@ export class Playground extends React.Component<
 
         const defaultDesktop = Utilities.ReadBoolFromStore("editor", true) ? EditionMode.Desktop : EditionMode.RenderingOnly;
 
-        this.state = { errorMessage: "", mode: window.innerWidth < this._globalState.MobileSizeTrigger ? this._globalState.mobileDefaultMode : defaultDesktop };
+        this.state = {
+            errorMessage: "",
+            mode: window.innerWidth < this._globalState.MobileSizeTrigger ? this._globalState.mobileDefaultMode : defaultDesktop,
+            engineSwitchDialog: null,
+        };
 
         window.addEventListener("resize", () => {
             const defaultDesktop = Utilities.ReadBoolFromStore("editor", true) ? EditionMode.Desktop : EditionMode.RenderingOnly;
@@ -94,15 +106,40 @@ export class Playground extends React.Component<
         });
 
         this._globalState.doNotRun = location.search.indexOf("norun") !== -1 || !Utilities.ReadBoolFromStore("auto-run", true);
+        this._globalState.onEngineSwitchDialogRequiredObservable.add((request) => {
+            this.setState({ engineSwitchDialog: request });
+        });
 
         // Managers
         this.saveManager = new SaveManager(this._globalState);
         this.loadManager = new LoadManager(this._globalState);
         this.shortcutManager = new ShortcutManager(this._globalState);
+
+        // Keep document.title in sync with the snippet ID from the URL hash.
+        const baseTitle = typeof document !== "undefined" ? document.title : "";
+        this._syncTitle = () => {
+            if (typeof document === "undefined") {
+                return;
+            }
+            const hash = location.hash;
+            if (hash && hash.length > 1) {
+                document.title = `${baseTitle} - ${hash}`;
+            } else {
+                document.title = baseTitle;
+            }
+        };
+        this._syncTitle();
+        window.addEventListener("hashchange", this._syncTitle);
+        this._savedObserver = this._globalState.onSavedObservable.add(this._syncTitle);
     }
 
     override componentDidMount() {
         this.checkSize();
+    }
+
+    override componentWillUnmount() {
+        window.removeEventListener("hashchange", this._syncTitle);
+        this._savedObserver?.remove();
     }
 
     override componentDidUpdate() {
@@ -143,6 +180,24 @@ export class Playground extends React.Component<
         }
     }
 
+    private _resolveEngineSwitchDialog = (shouldSwitch: boolean) => {
+        const request = this.state.engineSwitchDialog;
+        if (!request) {
+            return;
+        }
+
+        request.resolve(shouldSwitch);
+        this.setState({ engineSwitchDialog: null });
+    };
+
+    private _cancelEngineSwitchDialog = () => {
+        this._resolveEngineSwitchDialog(false);
+    };
+
+    private _confirmEngineSwitchDialog = () => {
+        this._resolveEngineSwitchDialog(true);
+    };
+
     public override render() {
         if (this._globalState.runtimeMode === RuntimeMode.Full) {
             return (
@@ -153,6 +208,12 @@ export class Playground extends React.Component<
                         <ErrorDisplayComponent globalState={this._globalState} />
                         <WaitRingComponent globalState={this._globalState} />
                     </div>
+                    <EngineSwitchDialog
+                        globalState={this._globalState}
+                        request={this.state.engineSwitchDialog}
+                        onCancel={this._cancelEngineSwitchDialog}
+                        onConfirm={this._confirmEngineSwitchDialog}
+                    />
                 </>
             );
         }
@@ -167,6 +228,12 @@ export class Playground extends React.Component<
                         <ErrorDisplayComponent globalState={this._globalState} />
                         <WaitRingComponent globalState={this._globalState} />
                     </div>
+                    <EngineSwitchDialog
+                        globalState={this._globalState}
+                        request={this.state.engineSwitchDialog}
+                        onCancel={this._cancelEngineSwitchDialog}
+                        onConfirm={this._confirmEngineSwitchDialog}
+                    />
                 </>
             );
         }
@@ -188,6 +255,12 @@ export class Playground extends React.Component<
                 <ErrorDisplayComponent globalState={this._globalState} />
                 <WaitRingComponent globalState={this._globalState} />
                 <MetadataComponent globalState={this._globalState} />
+                <EngineSwitchDialog
+                    globalState={this._globalState}
+                    request={this.state.engineSwitchDialog}
+                    onCancel={this._cancelEngineSwitchDialog}
+                    onConfirm={this._confirmEngineSwitchDialog}
+                />
             </div>
         );
     }

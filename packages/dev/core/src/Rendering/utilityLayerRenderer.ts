@@ -1,18 +1,15 @@
-import type { IDisposable } from "../scene";
-import { Scene } from "../scene";
-import type { Nullable } from "../types";
-import type { Observer } from "../Misc/observable";
-import { Observable } from "../Misc/observable";
-import type { PointerInfoPre } from "../Events/pointerEvents";
-import { PointerInfo, PointerEventTypes } from "../Events/pointerEvents";
+import { type IDisposable, Scene } from "../scene";
+import { type Nullable } from "../types";
+import { type Observer, Observable } from "../Misc/observable";
+import { type PointerInfoPre, PointerInfo, PointerEventTypes } from "../Events/pointerEvents";
 import { PickingInfo } from "../Collisions/pickingInfo";
-import type { AbstractMesh } from "../Meshes/abstractMesh";
+import { type AbstractMesh } from "../Meshes/abstractMesh";
 import { EngineStore } from "../Engines/engineStore";
 import { HemisphericLight } from "../Lights/hemisphericLight";
 import { Vector3 } from "../Maths/math.vector";
-import type { Camera } from "../Cameras/camera";
+import { type Camera } from "../Cameras/camera";
 import { Color3 } from "../Maths/math.color";
-import type { IPointerEvent } from "../Events/deviceInputEvents";
+import { type IPointerEvent } from "../Events/deviceInputEvents";
 
 /**
  * Renders a layer on top of an existing scene
@@ -104,12 +101,23 @@ export class UtilityLayerRenderer implements IDisposable {
      */
     public static get DefaultKeepDepthUtilityLayer(): UtilityLayerRenderer {
         if (UtilityLayerRenderer._DefaultKeepDepthUtilityLayer == null) {
-            UtilityLayerRenderer._DefaultKeepDepthUtilityLayer = new UtilityLayerRenderer(EngineStore.LastCreatedScene!);
-            UtilityLayerRenderer._DefaultKeepDepthUtilityLayer.utilityLayerScene.autoClearDepthAndStencil = false;
-            UtilityLayerRenderer._DefaultKeepDepthUtilityLayer.originalScene.onDisposeObservable.addOnce(() => {
-                UtilityLayerRenderer._DefaultKeepDepthUtilityLayer = null;
-            });
+            return UtilityLayerRenderer._CreateDefaultKeepUtilityLayerFromScene(EngineStore.LastCreatedScene!);
         }
+        return UtilityLayerRenderer._DefaultKeepDepthUtilityLayer;
+    }
+
+    /**
+     * Creates an utility layer, and set it as a default utility layer (Depth map of the previous scene is not cleared before drawing on top of it)
+     * @param scene associated scene
+     * @internal
+     */
+    public static _CreateDefaultKeepUtilityLayerFromScene(scene: Scene): UtilityLayerRenderer {
+        UtilityLayerRenderer._DefaultKeepDepthUtilityLayer = new UtilityLayerRenderer(scene);
+        UtilityLayerRenderer._DefaultKeepDepthUtilityLayer.utilityLayerScene.autoClearDepthAndStencil = false;
+        UtilityLayerRenderer._DefaultKeepDepthUtilityLayer.originalScene.onDisposeObservable.addOnce(() => {
+            UtilityLayerRenderer._DefaultKeepDepthUtilityLayer = null;
+        });
+
         return UtilityLayerRenderer._DefaultKeepDepthUtilityLayer;
     }
 
@@ -199,7 +207,7 @@ export class UtilityLayerRenderer implements IDisposable {
                 }
 
                 const getNearPickDataForScene = (scene: Scene) => {
-                    let scenePick = null;
+                    let scenePick: Nullable<PickingInfo>;
 
                     if (prePointerInfo.nearInteractionPickingInfo) {
                         if (prePointerInfo.nearInteractionPickingInfo.pickedMesh!.getScene() == scene) {

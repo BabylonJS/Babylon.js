@@ -1,9 +1,8 @@
 import { FlowGraphBlock, type IFlowGraphBlockConfiguration } from "core/FlowGraph/flowGraphBlock";
-import type { FlowGraphContext } from "core/FlowGraph/flowGraphContext";
-import type { FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnection";
+import { type FlowGraphContext } from "core/FlowGraph/flowGraphContext";
+import { type FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnection";
 import { RichTypeAny } from "core/FlowGraph/flowGraphRichTypes";
-import type { FlowGraphNumber } from "core/FlowGraph/utils";
-import { getNumericValue, isNumeric } from "core/FlowGraph/utils";
+import { type FlowGraphNumber, getNumericValue, isNumeric } from "core/FlowGraph/utils";
 import { FlowGraphBlockNames } from "../flowGraphBlockNames";
 import { RegisterClass } from "core/Misc/typeStore";
 

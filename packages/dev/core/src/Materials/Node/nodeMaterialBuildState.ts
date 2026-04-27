@@ -1,13 +1,13 @@
 import { NodeMaterialBlockConnectionPointTypes } from "./Enums/nodeMaterialBlockConnectionPointTypes";
 import { NodeMaterialBlockTargets } from "./Enums/nodeMaterialBlockTargets";
-import type { NodeMaterialBuildStateSharedData } from "./nodeMaterialBuildStateSharedData";
+import { type NodeMaterialBuildStateSharedData } from "./nodeMaterialBuildStateSharedData";
 import { ShaderLanguage } from "../shaderLanguage";
-import type { NodeMaterialConnectionPoint } from "./nodeMaterialBlockConnectionPoint";
+import { type NodeMaterialConnectionPoint } from "./nodeMaterialBlockConnectionPoint";
 import { ShaderStore as EngineShaderStore } from "../../Engines/shaderStore";
 import { Constants } from "../../Engines/constants";
-import type { NodeMaterialBlock } from "./nodeMaterialBlock";
+import { type NodeMaterialBlock } from "./nodeMaterialBlock";
 import { Process } from "core/Engines/Processors/shaderProcessor";
-import type { _IProcessingOptions } from "core/Engines/Processors/shaderProcessingOptions";
+import { type _IProcessingOptions } from "core/Engines/Processors/shaderProcessingOptions";
 import { WebGLShaderProcessor } from "core/Engines/WebGL/webGLShaderProcessors";
 import { Logger } from "core/Misc/logger";
 

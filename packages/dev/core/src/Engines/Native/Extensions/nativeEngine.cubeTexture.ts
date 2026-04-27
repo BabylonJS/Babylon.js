@@ -2,9 +2,9 @@
 import { InternalTexture, InternalTextureSource } from "../../../Materials/Textures/internalTexture";
 import { Texture } from "../../../Materials/Textures/texture";
 import { CreateRadianceImageDataArrayBufferViews, GetEnvInfo, UploadEnvSpherical } from "../../../Misc/environmentTextureTools";
-import type { IWebRequest } from "../../../Misc/interfaces/iWebRequest";
-import type { Scene } from "../../../scene";
-import type { Nullable } from "../../../types";
+import { type IWebRequest } from "../../../Misc/interfaces/iWebRequest";
+import { type Scene } from "../../../scene";
+import { type Nullable } from "../../../types";
 import { Constants } from "../../constants";
 import { ThinNativeEngine } from "../../thinNativeEngine";
 

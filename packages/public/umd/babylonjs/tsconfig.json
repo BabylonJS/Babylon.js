@@ -3,8 +3,8 @@
 
     "compilerOptions": {
         "paths": {
-            "core/*": ["dev/core/dist/*"],
-            "@lts/core/*": ["lts/core/dist/*"],
+            "core/*": ["../../../dev/core/dist/*"],
+            "@lts/core/*": ["../../../lts/core/dist/*"],
         }
     },
 }

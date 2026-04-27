@@ -1,21 +1,22 @@
 import { Bone } from "./bone";
 import { Observable } from "../Misc/observable";
 import { Vector3, Matrix, TmpVectors } from "../Maths/math.vector";
-import type { Scene } from "../scene";
-import type { Nullable } from "../types";
-import type { AbstractMesh } from "../Meshes/abstractMesh";
+import { type Scene } from "../scene";
+import { type Nullable } from "../types";
+import { type AbstractMesh } from "../Meshes/abstractMesh";
 import { RawTexture } from "../Materials/Textures/rawTexture";
-import type { Animatable } from "../Animations/animatable.core";
-import type { AnimationPropertiesOverride } from "../Animations/animationPropertiesOverride";
+import { type Animatable } from "../Animations/animatable.core";
+import { type AnimationPropertiesOverride } from "../Animations/animationPropertiesOverride";
 import { Animation } from "../Animations/animation";
 import { AnimationRange } from "../Animations/animationRange";
 import { EngineStore } from "../Engines/engineStore";
 import { Constants } from "../Engines/constants";
 import { Logger } from "../Misc/logger";
 import { DeepCopier } from "../Misc/deepCopier";
-import type { IInspectable } from "../Misc/iInspectable";
-import type { IAnimatable } from "../Animations/animatable.interface";
-import type { IAssetContainer } from "core/IAssetContainer";
+import { type IInspectable } from "../Misc/iInspectable";
+import { type IAnimatable } from "../Animations/animatable.interface";
+import { type IAssetContainer } from "core/IAssetContainer";
+import { type TransformNode } from "core/Meshes/transformNode";
 
 /**
  * Class used to handle skinning animations
@@ -49,6 +50,12 @@ export class Skeleton implements IAnimatable {
     private _identity = Matrix.Identity();
     private _synchronizedWithMesh: AbstractMesh;
     private _currentRenderId = -1;
+
+    /** @internal */
+    public _textureWidth = 0;
+
+    /** @internal */
+    public _textureHeight = 1;
 
     private _ranges: { [name: string]: Nullable<AnimationRange> } = {};
 
@@ -259,6 +266,34 @@ export class Skeleton implements IAnimatable {
             }
         }
         return -1;
+    }
+
+    /**
+     * Finds a bone in a skeleton that is linked to the given transform node.
+     * @param transformNode The transform node to find the bone for
+     * @returns The bone linked to the transform node, or null if not found
+     */
+    public findBoneFromLinkedTransformNode(transformNode: TransformNode) {
+        for (const bone of this.bones) {
+            if (bone._linkedTransformNode === transformNode) {
+                return bone;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Finds a bone in a skeleton by the name of its linked transform node.
+     * @param name The name of the linked transform node
+     * @returns The bone linked to the transform node with the given name, or null if not found
+     */
+    public findBoneFromLinkedTransformNodeName(name: string) {
+        for (const bone of this.bones) {
+            if (bone._linkedTransformNode && bone._linkedTransformNode.name === name) {
+                return bone;
+            }
+        }
+        return null;
     }
 
     /**
@@ -509,6 +544,24 @@ export class Skeleton implements IAnimatable {
         this._identity.copyToArray(targetMatrix, this.bones.length * 16);
     }
 
+    private _computeTextureSize(): number {
+        const requiredElementCount = 4 * (this.bones.length + 1); // 16 element -> RGBA x 4
+        let requiredTextureWidth = requiredElementCount;
+        let requiredTextureHeight = 1;
+
+        if (this.isUsingTextureForMatrices) {
+            const maxTextureSize = this.getScene().getEngine().getCaps().maxTextureSize & ~3; // must be a multiple of 4
+            if (maxTextureSize < requiredTextureWidth) {
+                requiredTextureWidth = maxTextureSize;
+                requiredTextureHeight = Math.ceil(requiredElementCount / maxTextureSize);
+            }
+        }
+        this._textureWidth = requiredTextureWidth;
+        this._textureHeight = requiredTextureHeight;
+
+        return this._textureWidth * this._textureHeight * 4; // 4 floats per RGBA pixel
+    }
+
     /**
      * Build all resources required to render a skeleton
      * @param dontCheckFrameId defines a boolean indicating if prepare should be run without checking first the current frame id (default: false)
@@ -538,13 +591,20 @@ export class Skeleton implements IAnimatable {
             }
         }
 
+        let requiredTransformBufferElementCount: Nullable<number> = null;
+
         if (this.needInitialSkinMatrix) {
             for (const mesh of this._meshesWithPoseMatrix) {
                 const poseMatrix = mesh.getPoseMatrix();
 
                 let needsUpdate = this._isDirty;
-                if (!mesh._bonesTransformMatrices || mesh._bonesTransformMatrices.length !== 16 * (this.bones.length + 1)) {
-                    mesh._bonesTransformMatrices = new Float32Array(16 * (this.bones.length + 1));
+
+                if (requiredTransformBufferElementCount === null) {
+                    requiredTransformBufferElementCount = this._computeTextureSize();
+                }
+
+                if (!mesh._bonesTransformMatrices || mesh._bonesTransformMatrices.length !== requiredTransformBufferElementCount) {
+                    mesh._bonesTransformMatrices = new Float32Array(requiredTransformBufferElementCount);
                     needsUpdate = true;
                 }
 
@@ -565,16 +625,17 @@ export class Skeleton implements IAnimatable {
                     }
 
                     if (this.isUsingTextureForMatrices) {
-                        const textureWidth = (this.bones.length + 1) * 4;
-                        if (!mesh._transformMatrixTexture || mesh._transformMatrixTexture.getSize().width !== textureWidth) {
+                        const meshTextureSize = mesh._transformMatrixTexture?.getSize();
+                        const meshTextureElementCount = meshTextureSize ? meshTextureSize.width * meshTextureSize.height * 4 : 0;
+                        if (!mesh._transformMatrixTexture || meshTextureElementCount !== requiredTransformBufferElementCount) {
                             if (mesh._transformMatrixTexture) {
                                 mesh._transformMatrixTexture.dispose();
                             }
 
                             mesh._transformMatrixTexture = RawTexture.CreateRGBATexture(
                                 mesh._bonesTransformMatrices,
-                                (this.bones.length + 1) * 4,
-                                1,
+                                this._textureWidth,
+                                this._textureHeight,
                                 this._scene,
                                 false,
                                 false,
@@ -596,8 +657,12 @@ export class Skeleton implements IAnimatable {
                 return;
             }
 
-            if (!this._transformMatrices || this._transformMatrices.length !== 16 * (this.bones.length + 1)) {
-                this._transformMatrices = new Float32Array(16 * (this.bones.length + 1));
+            if (requiredTransformBufferElementCount === null) {
+                requiredTransformBufferElementCount = this._computeTextureSize();
+            }
+
+            if (!this._transformMatrices || this._transformMatrices.length !== requiredTransformBufferElementCount) {
+                this._transformMatrices = new Float32Array(requiredTransformBufferElementCount);
 
                 if (this.isUsingTextureForMatrices) {
                     if (this._transformMatrixTexture) {
@@ -606,8 +671,8 @@ export class Skeleton implements IAnimatable {
 
                     this._transformMatrixTexture = RawTexture.CreateRGBATexture(
                         this._transformMatrices,
-                        (this.bones.length + 1) * 4,
-                        1,
+                        this._textureWidth,
+                        this._textureHeight,
                         this._scene,
                         false,
                         false,
@@ -743,6 +808,7 @@ export class Skeleton implements IAnimatable {
 
         serializationObject.name = this.name;
         serializationObject.id = this.id;
+        serializationObject.uniqueId = this.uniqueId;
 
         if (this.dimensionsAtRest) {
             serializationObject.dimensionsAtRest = this.dimensionsAtRest.asArray();
@@ -765,9 +831,11 @@ export class Skeleton implements IAnimatable {
                 index: bone.getIndex(),
                 name: bone.name,
                 id: bone.id,
+                uniqueId: bone.uniqueId,
                 matrix: bone.getBindMatrix().asArray(),
                 rest: bone.getRestMatrix().asArray(),
                 linkedTransformNodeId: bone.getTransformNode()?.id,
+                linkedTransformNodeUniqueId: bone.getTransformNode()?.uniqueId,
             };
 
             serializationObject.bones.push(serializedBone);
@@ -851,6 +919,11 @@ export class Skeleton implements IAnimatable {
             if (parsedBone.linkedTransformNodeId !== undefined && parsedBone.linkedTransformNodeId !== null) {
                 skeleton._hasWaitingData = true;
                 bone._waitingTransformNodeId = parsedBone.linkedTransformNodeId;
+            }
+
+            if (parsedBone.linkedTransformNodeUniqueId !== undefined && parsedBone.linkedTransformNodeUniqueId !== null) {
+                skeleton._hasWaitingData = true;
+                bone._waitingTransformNodeUniqueId = parsedBone.linkedTransformNodeUniqueId;
             }
         }
 

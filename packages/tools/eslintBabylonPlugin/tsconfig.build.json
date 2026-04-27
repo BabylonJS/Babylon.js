@@ -2,7 +2,7 @@
     "extends": "../../../tsconfig.build.json",
 
     "compilerOptions": {
-        "target": "es5",
+        "target": "ES2015",
         "module": "commonjs",
         "composite": true,
         "outDir": "./dist",

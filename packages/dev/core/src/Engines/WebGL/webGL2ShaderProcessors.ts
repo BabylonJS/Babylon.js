@@ -1,5 +1,5 @@
 import { ShaderLanguage } from "../../Materials/shaderLanguage";
-import type { IShaderProcessor } from "../Processors/iShaderProcessor";
+import { type IShaderProcessor } from "../Processors/iShaderProcessor";
 
 const VaryingRegex = /(flat\s)?\s*varying\s*.*/;
 

@@ -1,7 +1,7 @@
 import * as React from "react";
-import type { Observable } from "core/Misc/observable";
-import type { PropertyChangedEvent } from "../propertyChangedEvent";
-import type { LockObject } from "../tabs/propertyGrids/lockObject";
+import { type Observable } from "core/Misc/observable";
+import { type PropertyChangedEvent } from "../propertyChangedEvent";
+import { type LockObject } from "../tabs/propertyGrids/lockObject";
 import { ColorLine } from "./colorLineComponent";
 
 export interface IColor3LineComponentProps {

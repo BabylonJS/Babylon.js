@@ -1,23 +1,22 @@
 import { NodeMaterialBlock } from "../../nodeMaterialBlock";
 import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
-import type { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
+import { type NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
-import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
-import { NodeMaterialConnectionPointDirection } from "../../nodeMaterialBlockConnectionPoint";
+import { type NodeMaterialConnectionPoint, NodeMaterialConnectionPointDirection } from "../../nodeMaterialBlockConnectionPoint";
 import { RegisterClass } from "../../../../Misc/typeStore";
-import type { NodeMaterial, NodeMaterialDefines } from "../../nodeMaterial";
-import type { Mesh } from "../../../../Meshes/mesh";
+import { type NodeMaterial, type NodeMaterialDefines } from "../../nodeMaterial";
+import { type Mesh } from "../../../../Meshes/mesh";
 import { InputBlock } from "../Input/inputBlock";
-import type { Effect } from "../../../effect";
-import type { Scene } from "../../../../scene";
+import { type Effect } from "../../../effect";
+import { type Scene } from "../../../../scene";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
-import type { TextureBlock } from "../Dual/textureBlock";
+import { type TextureBlock } from "../Dual/textureBlock";
 import { NodeMaterialConnectionPointCustomObject } from "../../nodeMaterialConnectionPointCustomObject";
 import { TBNBlock } from "./TBNBlock";
 
 import { ShaderLanguage } from "../../../../Materials/shaderLanguage";
 import { Constants } from "../../../../Engines/constants";
-import type { Nullable } from "../../../../types";
+import { type Nullable } from "../../../../types";
 
 /**
  * Block used to perturb normals based on a normal map
@@ -157,7 +156,6 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
     /**
      * Gets the TBN input component
      */
-    // eslint-disable-next-line @typescript-eslint/naming-convention
     public get TBN(): NodeMaterialConnectionPoint {
         return this._inputs[9];
     }
@@ -183,6 +181,10 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
         return this._outputs[1];
     }
 
+    /**
+     * Initialize the block
+     * @param state - defines the state that will be used for the build
+     */
     public override initialize(state: NodeMaterialBuildState) {
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
         this._initShaderSourceAsync(state.shaderLanguage);
@@ -209,6 +211,11 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
         this.onCodeIsReadyObservable.notifyObservers(this);
     }
 
+    /**
+     * Prepare the list of defines
+     * @param defines - defines the list of defines to update
+     * @param nodeMaterial - defines the node material requesting the update
+     */
     public override prepareDefines(defines: NodeMaterialDefines, nodeMaterial: NodeMaterial) {
         const normalSamplerName = (this.normalMapColor.connectedPoint!._ownerBlock as TextureBlock).samplerName;
         const useParallax =
@@ -221,6 +228,12 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
         defines.setValue("OBJECTSPACE_NORMALMAP", this.useObjectSpaceNormalMap, true);
     }
 
+    /**
+     * Bind data to effect
+     * @param effect - defines the effect to bind data to
+     * @param nodeMaterial - defines the node material
+     * @param mesh - defines the mesh to bind data for
+     */
     public override bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh) {
         if (nodeMaterial.getScene()._mirroredCameraPosition) {
             effect.setFloat2(this._tangentSpaceParameterName, this.invertX ? 1.0 : -1.0, this.invertY ? 1.0 : -1.0);
@@ -238,6 +251,11 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
         }
     }
 
+    /**
+     * Auto configure the block based on the material
+     * @param material - defines the hosting NodeMaterial
+     * @param additionalFilteringInfo - defines additional filtering info
+     */
     public override autoConfigure(material: NodeMaterial, additionalFilteringInfo: (node: NodeMaterialBlock) => boolean = () => true) {
         if (!this.uv.isConnected) {
             let uvInput = material.getInputBlockByPredicate((b) => b.isAttribute && b.name === "uv" && additionalFilteringInfo(b));
@@ -447,6 +465,10 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
         return codeString;
     }
 
+    /**
+     * Serializes the block
+     * @returns the serialized object
+     */
     public override serialize(): any {
         const serializationObject = super.serialize();
 
@@ -458,6 +480,12 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
         return serializationObject;
     }
 
+    /**
+     * Deserializes the block
+     * @param serializationObject - defines the serialized object
+     * @param scene - defines the hosting scene
+     * @param rootUrl - defines the root URL to use for loading
+     */
     public override _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
         super._deserialize(serializationObject, scene, rootUrl);
 

@@ -3,21 +3,17 @@
 
 precision highp float;
 
-const float DiffuseSkyIrradianceLutSampleCount = 32.0;
-
 #include<__decl__atmosphereFragment>
 
 uniform sampler2D transmittanceLut;
 uniform sampler2D multiScatteringLut;
 
 #include<core/helperFunctions>
-#include<depthFunctions>
 #include<atmosphereFunctions>
 
 vec3 integrateForIrradiance(vec3 directionToLight, vec3 rayDirection, vec3 rayOrigin) {
-    vec3 radiance;
     vec3 transmittance;
-    integrateScatteredRadiance(
+    vec3 radiance = integrateScatteredRadiance(
         false, // isAerialPerspectiveLut
         1.,
         transmittanceLut,
@@ -28,9 +24,8 @@ vec3 integrateForIrradiance(vec3 directionToLight, vec3 rayDirection, vec3 rayOr
         rayDirection.xzy,
         directionToLight.xzy,
         100000000.,
-        DiffuseSkyIrradianceLutSampleCount,
+        diffuseSkyIrradianceLutSampleCount,
         -1., // No planet hit.
-        radiance,
         transmittance);
     return radiance;
 }
@@ -58,9 +53,9 @@ void main() {
         vec3(1.));
 
     // Apply desaturation factor.
-    float averageIrradiance = getLuminance(irradiance);
+    float averageIrradiance = getLuminanceUnclamped(irradiance);
     vec3 newIrradiance = mix(irradiance, vec3(averageIrradiance), diffuseSkyIrradianceDesaturationFactor);
-    float newIrradianceScale = getLuminance(newIrradiance);
+    float newIrradianceScale = getLuminanceUnclamped(newIrradiance);
     float rescaling = averageIrradiance / max(0.000001, newIrradianceScale);
     irradiance = newIrradiance * rescaling;
 

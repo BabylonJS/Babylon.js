@@ -1,16 +1,15 @@
-import type { Nullable } from "core/types";
-import type { Observer } from "core/Misc/observable";
-import { Observable } from "core/Misc/observable";
+import { type Nullable } from "core/types";
+import { type Observer, Observable } from "core/Misc/observable";
 
 import { StackPanel } from "./stackPanel";
 import { Button } from "./button";
-import type { Container } from "./container";
-import type { TextBlock } from "./textBlock";
-import type { InputText } from "./inputText";
+import { type Container } from "./container";
+import { type TextBlock } from "./textBlock";
+import { type InputText } from "./inputText";
 import { RegisterClass } from "core/Misc/typeStore";
-import type { AdvancedDynamicTexture } from "../advancedDynamicTexture";
+import { type AdvancedDynamicTexture } from "../advancedDynamicTexture";
 import { InputTextArea } from "./inputTextArea";
-import type { Control } from "./control";
+import { type Control } from "./control";
 
 /**
  * Class used to store key control properties

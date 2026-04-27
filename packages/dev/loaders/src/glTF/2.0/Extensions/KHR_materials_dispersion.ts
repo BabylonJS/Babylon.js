@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import type { Nullable } from "core/types";
-import type { Material } from "core/Materials/material";
-import type { IMaterial } from "../glTFLoaderInterfaces";
-import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
+import { type Nullable } from "core/types";
+import { type Material } from "core/Materials/material";
+import { type IMaterial } from "../glTFLoaderInterfaces";
+import { type IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader } from "../glTFLoader";
-import type { IKHRMaterialsDispersion } from "babylonjs-gltf2interface";
+import { type IKHRMaterialsDispersion } from "babylonjs-gltf2interface";
 import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
 
 const NAME = "KHR_materials_dispersion";
@@ -76,11 +76,12 @@ export class KHR_materials_dispersion implements IGLTFLoaderExtension {
 
         // If transparency isn't enabled already, this extension shouldn't do anything.
         // i.e. it requires either the KHR_materials_transmission or KHR_materials_diffuse_transmission extensions.
-        if (adapter.transmissionWeight > 0 || !extension.dispersion) {
+        if (adapter.transmissionWeight == 0 || !extension.dispersion) {
             return Promise.resolve();
         }
 
-        adapter.transmissionDispersionAbbeNumber = 20.0 / extension.dispersion;
+        adapter.transmissionDispersionAbbeNumber = 20.0;
+        adapter.transmissionDispersionScale = extension.dispersion;
 
         return Promise.resolve();
     }

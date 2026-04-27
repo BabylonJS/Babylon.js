@@ -1,13 +1,13 @@
-import type { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
-import type { IDisplayManager, VisualContentDescription } from "shared-ui-components/nodeGraphSystem/interfaces/displayManager";
-import type { INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
+import { type NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
+import { type IDisplayManager, type VisualContentDescription } from "shared-ui-components/nodeGraphSystem/interfaces/displayManager";
+import { type INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
 import * as styles from "./debugDisplayManager.module.scss";
 import * as commonStyles from "./common.module.scss";
-import type { GlobalState } from "node-editor/globalState";
-import type { Nullable } from "core/types";
-import type { StateManager } from "shared-ui-components/nodeGraphSystem/stateManager";
-import type { NodeMaterialDebugBlock } from "core/Materials";
-import type { Observer } from "core/Misc/observable";
+import { type GlobalState } from "node-editor/globalState";
+import { type Nullable } from "core/types";
+import { type StateManager } from "shared-ui-components/nodeGraphSystem/stateManager";
+import { type NodeMaterialDebugBlock } from "core/Materials";
+import { type Observer } from "core/Misc/observable";
 
 export class DebugDisplayManager implements IDisplayManager {
     private _previewCanvas: HTMLCanvasElement;
@@ -40,6 +40,7 @@ export class DebugDisplayManager implements IDisplayManager {
         }
 
         if (selectedData === data && !this._onPreviewSceneAfterRenderObserver) {
+            block._forcedActive = true;
             globalState.onPreviewUpdatedObservable.addOnce(() => {
                 this._onPreviewSceneAfterRenderObserver = globalState.onPreviewSceneAfterRenderObservable.add(async () => {
                     if (globalState.previewTexture && block.debug.isConnected) {
@@ -71,6 +72,7 @@ export class DebugDisplayManager implements IDisplayManager {
                 });
             });
         } else {
+            block._forcedActive = false;
             globalState.onPreviewSceneAfterRenderObservable.remove(this._onPreviewSceneAfterRenderObserver);
             this._onPreviewSceneAfterRenderObserver = null;
         }

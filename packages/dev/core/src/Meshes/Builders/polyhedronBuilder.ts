@@ -1,9 +1,9 @@
-import type { Scene } from "../../scene";
+import { type Scene } from "../../scene";
 import { Vector4 } from "../../Maths/math.vector";
 import { Color4 } from "../../Maths/math.color";
 import { Mesh } from "../mesh";
 import { VertexData } from "../mesh.vertexData";
-import type { Nullable } from "../../types";
+import { type Nullable } from "../../types";
 import { useOpenGLOrientationForUV } from "../../Compat/compatibilityOptions";
 
 // inspired from // http://stemkoski.github.io/Three.js/Polyhedra.html
@@ -486,8 +486,8 @@ export function CreatePolyhedronVertexData(options: {
     let index = 0;
     let faceIdx = 0; // face cursor in the array "indexes"
     const indexes: number[] = [];
-    let i = 0;
-    let f = 0;
+    let i: number;
+    let f: number;
     let u: number, v: number, ang: number, x: number, y: number, tmp: number;
 
     // default face colors and UV if undefined

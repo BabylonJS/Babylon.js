@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 /* eslint-disable babylonjs/available */
-import type { TypedArray } from "core/types";
+import { type TypedArray } from "core/types";
 
 const TypedArrayToWriteMethod = new Map<Function, (dataView: DataView, byteOffset: number, value: number) => void>([
     [Int8Array, (d, b, v) => d.setInt8(b, v)],
@@ -16,7 +16,7 @@ const TypedArrayToWriteMethod = new Map<Function, (dataView: DataView, byteOffse
 
 /** @internal */
 export class DataWriter {
-    private _data: Uint8Array;
+    private _data: Uint8Array<ArrayBuffer>;
     private _dataView: DataView;
     private _byteOffset: number;
 
@@ -39,7 +39,7 @@ export class DataWriter {
         return this._byteOffset;
     }
 
-    public getOutputData(): Uint8Array {
+    public getOutputData(): Uint8Array<ArrayBuffer> {
         return new Uint8Array(this._data.buffer, 0, this._byteOffset);
     }
 

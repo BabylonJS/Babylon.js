@@ -1,14 +1,14 @@
-import type { INodeContainer } from "shared-ui-components/nodeGraphSystem/interfaces/nodeContainer";
-import type { INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
-import type { IPortData } from "shared-ui-components/nodeGraphSystem/interfaces/portData";
+import { type INodeContainer } from "shared-ui-components/nodeGraphSystem/interfaces/nodeContainer";
+import { type INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
+import { type IPortData } from "shared-ui-components/nodeGraphSystem/interfaces/portData";
 import { ConnectionPointPortData } from "./connectionPointPortData";
 import * as styles from "./blockNodeData.module.scss";
-import type { Nullable } from "core/types";
-import type { Observer } from "core/Misc/observable";
-import type { NodeParticleBlock } from "core/Particles/Node/nodeParticleBlock";
-import type { ParticleTeleportOutBlock } from "core/Particles/Node/Blocks/Teleport/particleTeleportOutBlock";
-import type { ParticleTeleportInBlock } from "core/Particles/Node/Blocks/Teleport/particleTeleportInBlock";
-import type { NodeParticleConnectionPoint } from "core/Particles";
+import { type Nullable } from "core/types";
+import { type Observer } from "core/Misc/observable";
+import { type NodeParticleBlock } from "core/Particles/Node/nodeParticleBlock";
+import { type ParticleTeleportOutBlock } from "core/Particles/Node/Blocks/Teleport/particleTeleportOutBlock";
+import { type ParticleTeleportInBlock } from "core/Particles/Node/Blocks/Teleport/particleTeleportInBlock";
+import { type NodeParticleConnectionPoint } from "core/Particles";
 
 export class BlockNodeData implements INodeData {
     private _inputs: IPortData[] = [];
@@ -22,6 +22,8 @@ export class BlockNodeData implements INodeData {
     public refreshCallback?: () => void;
 
     public onInputCountChanged?: () => void;
+
+    public onInputRemoved?: (index: number) => void;
 
     public get uniqueId(): number {
         return this.data.uniqueId;
@@ -127,6 +129,17 @@ export class BlockNodeData implements INodeData {
         });
 
         this._onInputChangeObserver = data.onInputChangedObservable.add((input) => {
+            for (let i = 0; i < this._inputs.length; i++) {
+                if (this._inputs[i].data === input) {
+                    // It's a remove
+                    this._inputs.splice(i, 1);
+                    if (this.onInputRemoved) {
+                        this.onInputRemoved(i);
+                    }
+                    return;
+                }
+            }
+
             this._inputs.push(new ConnectionPointPortData(input, nodeContainer));
             if (this.onInputCountChanged) {
                 this.onInputCountChanged();

@@ -1,22 +1,18 @@
 import { Logger } from "../Misc/logger";
-import type { EventState, Observer } from "../Misc/observable";
-import { Observable } from "../Misc/observable";
-import type { Nullable } from "../types";
-import { Vector3 } from "../Maths/math.vector";
-import type { Quaternion } from "../Maths/math.vector";
+import { type EventState, type Observer, Observable } from "../Misc/observable";
+import { type Nullable } from "../types";
+import { Vector3, type Quaternion } from "../Maths/math.vector";
 import { Color3 } from "../Maths/math.color";
-import type { AbstractMesh } from "../Meshes/abstractMesh";
-import type { Mesh } from "../Meshes/mesh";
-import type { GizmoAnchorPoint, GizmoCoordinatesMode, GizmoAxisCache, IGizmo } from "./gizmo";
-import { Gizmo } from "./gizmo";
-import type { IPlaneRotationGizmo } from "./planeRotationGizmo";
-import { PlaneRotationGizmo } from "./planeRotationGizmo";
+import { type AbstractMesh } from "../Meshes/abstractMesh";
+import { type Mesh } from "../Meshes/mesh";
+import { type GizmoAnchorPoint, type GizmoCoordinatesMode, type GizmoAxisCache, type IGizmo, Gizmo } from "./gizmo";
+import { type IPlaneRotationGizmo, PlaneRotationGizmo } from "./planeRotationGizmo";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
-import type { Node } from "../node";
-import type { PointerInfo } from "../Events/pointerEvents";
-import type { TransformNode } from "../Meshes/transformNode";
-import type { GizmoManager } from "./gizmoManager";
-import type { DragEvent, DragStartEndEvent } from "core/Behaviors/Meshes/pointerDragEvents";
+import { type Node } from "../node";
+import { type PointerInfo } from "../Events/pointerEvents";
+import { type TransformNode } from "../Meshes/transformNode";
+import { type GizmoManager } from "./gizmoManager";
+import { type DragEvent, type DragStartEndEvent } from "core/Behaviors/Meshes/pointerDragEvents";
 
 /**
  * Interface for rotation gizmo
@@ -239,8 +235,8 @@ export class RotationGizmo extends Gizmo implements IRotationGizmo {
         // Relay drag events and set update scale
         const gizmos = [this.xGizmo, this.yGizmo, this.zGizmo];
         for (const gizmo of gizmos) {
-            //must set updateScale on each gizmo, as setting it on root RotationGizmo doesnt prevent individual gizmos from updating
-            //currently updateScale is a property with no getter/setter, so no good way to override behavior at runtime, so we will at least set it on startup
+            //must set updateScale on each gizmo, as setting it on root RotationGizmo doesn't prevent individual gizmos from updating
+            //set it on startup since options are only applied once at construction time
             if (options && options.updateScale != undefined) {
                 gizmo.updateScale = options.updateScale;
             }
@@ -354,7 +350,7 @@ export class RotationGizmo extends Gizmo implements IRotationGizmo {
     }
 
     /**
-     * posture that the gizmo will be display
+     * Orientation that the gizmo will be displayed with.
      * When set null, default value will be used (Quaternion(0, 0, 0, 1))
      */
     public override get customRotationQuaternion(): Nullable<Quaternion> {

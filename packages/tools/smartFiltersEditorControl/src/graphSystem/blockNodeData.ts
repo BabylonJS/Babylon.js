@@ -1,9 +1,9 @@
-import type { INodeContainer } from "shared-ui-components/nodeGraphSystem/interfaces/nodeContainer";
-import type { INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
-import type { IPortData } from "shared-ui-components/nodeGraphSystem/interfaces/portData";
+import { type INodeContainer } from "shared-ui-components/nodeGraphSystem/interfaces/nodeContainer";
+import { type INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
+import { type IPortData } from "shared-ui-components/nodeGraphSystem/interfaces/portData";
 import { ConnectionPointPortData } from "./connectionPointPortData.js";
 import * as styles from "../assets/styles/graphSystem/blockNodeData.module.scss";
-import type { BaseBlock } from "smart-filters";
+import { type BaseBlock } from "smart-filters";
 
 export class BlockNodeData implements INodeData {
     private _inputs: IPortData[] = [];

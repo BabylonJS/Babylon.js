@@ -6,10 +6,10 @@
         "rootDir": "./src",
         "composite": true,
         "paths": {
-            "core/*": ["dev/core/dist/*"],
-            "gui/*": ["dev/gui/dist/*"],
-            "shared-ui-components/*": ["dev/sharedUiComponents/dist/*"],
-            "gui-editor/*": ["tools/guiEditor/src/*"]
+            "core/*": ["../../dev/core/dist/*"],
+            "gui/*": ["../../dev/gui/dist/*"],
+            "shared-ui-components/*": ["../../dev/sharedUiComponents/dist/*"],
+            "gui-editor/*": ["../../tools/guiEditor/src/*"]
         }
     },
 

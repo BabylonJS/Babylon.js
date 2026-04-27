@@ -1,6 +1,5 @@
-import type { ArcRotateCamera } from "../../Cameras/arcRotateCamera";
-import type { ICameraInput } from "../../Cameras/cameraInputsManager";
-import { CameraInputTypes } from "../../Cameras/cameraInputsManager";
+import { type ArcRotateCamera } from "../../Cameras/arcRotateCamera";
+import { type ICameraInput, CameraInputTypes } from "../../Cameras/cameraInputsManager";
 import { ArcRotateCameraInputsManager } from "../../Cameras/arcRotateCameraInputsManager";
 import { Tools } from "../../Misc/tools";
 

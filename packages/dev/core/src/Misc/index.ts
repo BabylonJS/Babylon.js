@@ -70,6 +70,7 @@ export * from "./snapshotRenderingHelper";
 // eslint-disable-next-line import/export
 export * from "./observableCoroutine";
 export * from "./copyTextureToTexture";
+export * from "./areaLightsTextureTools";
 export { DumpTools, EncodeImageAsync } from "./dumpTools";
 export * from "./greasedLineTools";
 export * from "./equirectangularCapture";
@@ -78,6 +79,8 @@ export * from "./asyncLock";
 export * from "./bitArray";
 export * from "./urlTools";
 export * from "./lazy";
+export * from "./uniqueIdGenerator";
+export { workerFunction as KTX2WorkerFunction, initializeWebWorker as KTX2InitializeWebWorker } from "./khronosTextureContainer2Worker";
 
 // RGBDTextureTools
 export * from "../Shaders/rgbdDecode.fragment";
@@ -89,4 +92,7 @@ export * from "../ShadersWGSL/rgbdEncode.fragment";
 export * from "../Shaders/copyTextureToTexture.fragment";
 export * from "../ShadersWGSL/copyTextureToTexture.fragment";
 
+// Area Light Texture
+export * from "../Shaders/areaLightTextureProcessing.fragment";
+export * from "../ShadersWGSL/areaLightTextureProcessing.fragment";
 export * from "./tools.internals";

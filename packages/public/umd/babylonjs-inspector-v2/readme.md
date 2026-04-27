@@ -2,7 +2,7 @@
 
 The Babylon Inspector is a diagnostic tool that makes it possible to view and edit the scene graph, properties of entities within the scene, and more.
 
-If you are bundling your app, we recommend using the `@babylonjs/inspector@preview` ESM package instead of this UMD package. This package can be useful if you are trying to use Inspector directly in a web page without running your own bundler.
+If you are bundling your app, we recommend using the `@babylonjs/inspector` ESM package instead of this UMD package. This package can be useful if you are trying to use Inspector directly in a web page without running your own bundler.
 
 You can learn more in the Inspector [documentation](https://doc.babylonjs.com/toolsAndResources/inspectorv2/).
 
@@ -11,15 +11,15 @@ You can learn more in the Inspector [documentation](https://doc.babylonjs.com/to
 Install the package using npm:
 
 ```bash
-npm install babylonjs-inspector@preview
+npm install babylonjs-inspector
 ```
 
-The simplest way to use `Inspector` is to call the `BABYLON.ShowInspector` function, passing in your scene:
+The simplest way to use `Inspector` is to call the `INSPECTOR.ShowInspector` function, passing in your scene:
 
 ```ts
 // Your code that sets up a Babylon.js scene...
 
-BABYLON.ShowInspector(scene);
+INSPECTOR.ShowInspector(scene);
 ```
 
 ```html
@@ -30,8 +30,33 @@ BABYLON.ShowInspector(scene);
         <script>
             // Your code that sets up a Babylon.js scene...
 
-            BABYLON.ShowInspector(scene);
+            INSPECTOR.ShowInspector(scene);
         </script>
     </body>
 </html>
+```
+
+## Headless Inspectable (No UI)
+
+You can make a scene inspectable for the CLI without showing the Inspector UI by calling `StartInspectable`:
+
+```ts
+// Your code that sets up a Babylon.js scene...
+
+const token = INSPECTOR.StartInspectable(scene);
+
+// When you're done, dispose the token to disconnect:
+token.dispose();
+```
+
+`StartInspectable` connects the scene to the Inspector CLI bridge, enabling CLI commands like querying entities, taking screenshots, and capturing performance traces — all without rendering any Inspector UI. `ShowInspector` automatically calls `StartInspectable` internally.
+
+## Inspector CLI
+
+While the Inspector UI is designed for humans, the Inspector CLI is designed for AI agents. It provides machine-friendly JSON output for querying scene entities, capturing screenshots, collecting performance data, and more.
+
+To get started:
+
+```bash
+npx babylon-inspector --help
 ```

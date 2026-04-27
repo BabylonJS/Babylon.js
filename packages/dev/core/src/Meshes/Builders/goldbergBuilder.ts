@@ -1,12 +1,11 @@
-import type { Scene } from "../../scene";
+import { type Scene } from "../../scene";
 import { Vector3 } from "../../Maths/math.vector";
 import { Color4 } from "../../Maths/math.color";
 import { Mesh } from "../../Meshes/mesh";
 import { VertexData } from "../mesh.vertexData";
-import type { Nullable } from "../../types";
+import { type Nullable } from "../../types";
 import { Logger } from "../../Misc/logger";
-import type { PolyhedronData } from "../geodesicMesh";
-import { _PrimaryIsoTriangle, GeodesicData } from "../geodesicMesh";
+import { type PolyhedronData, _PrimaryIsoTriangle, GeodesicData } from "../geodesicMesh";
 import { GoldbergMesh } from "../goldbergMesh";
 import { useOpenGLOrientationForUV } from "../../Compat/compatibilityOptions";
 

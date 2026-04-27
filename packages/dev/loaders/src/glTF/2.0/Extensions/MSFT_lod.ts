@@ -1,15 +1,15 @@
 /* eslint-disable github/no-then */
-import type { Nullable } from "core/types";
+import { type Nullable } from "core/types";
 import { Observable } from "core/Misc/observable";
 import { Deferred } from "core/Misc/deferred";
-import type { Material } from "core/Materials/material";
-import type { TransformNode } from "core/Meshes/transformNode";
-import type { Mesh } from "core/Meshes/mesh";
-import type { BaseTexture } from "core/Materials/Textures/baseTexture";
-import type { INode, IMaterial, IBuffer, IScene } from "../glTFLoaderInterfaces";
-import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
+import { type Material } from "core/Materials/material";
+import { type TransformNode } from "core/Meshes/transformNode";
+import { type Mesh } from "core/Meshes/mesh";
+import { type BaseTexture } from "core/Materials/Textures/baseTexture";
+import { type INode, type IMaterial, type IBuffer, type IScene } from "../glTFLoaderInterfaces";
+import { type IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader, ArrayItem } from "../glTFLoader";
-import type { IProperty, IMSFTLOD } from "babylonjs-gltf2interface";
+import { type IProperty, type IMSFTLOD } from "babylonjs-gltf2interface";
 import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
 
 const NAME = "MSFT_lod";

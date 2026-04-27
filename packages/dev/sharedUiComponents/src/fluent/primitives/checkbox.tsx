@@ -1,9 +1,7 @@
-import type { CheckboxOnChangeData } from "@fluentui/react-components";
-import type { ChangeEvent, FunctionComponent } from "react";
+import { type CheckboxOnChangeData, Checkbox as FluentCheckbox, makeStyles } from "@fluentui/react-components";
+import { type ChangeEvent, type FunctionComponent, useEffect, useState } from "react";
 
-import { Checkbox as FluentCheckbox, makeStyles } from "@fluentui/react-components";
-import { useEffect, useState } from "react";
-import type { PrimitiveProps } from "./primitive";
+import { type PrimitiveProps } from "./primitive";
 
 const useCheckboxStyles = makeStyles({
     indicator: {

@@ -38,7 +38,7 @@
 
         #if (defined(USESPHERICALFROMREFLECTIONMAP) && (!defined(NORMAL) || !defined(USESPHERICALINVERTEX))) || (defined(USEIRRADIANCEMAP) && defined(REFLECTIONMAP_3D))
             var irradianceVector = (iblMatrix * vec4f(surfaceNormal, 0.0f)).xyz;
-            let irradianceView = (iblMatrix * vec4f(viewDirectionW, 0.0f)).xyz;
+            var irradianceView = (iblMatrix * vec4f(viewDirectionW, 0.0f)).xyz;
             #if !defined(USE_IRRADIANCE_DOMINANT_DIRECTION) && !defined(REALTIME_FILTERING)
                 // Approximate diffuse roughness by bending the surface normal away from the view.
                 #if BASE_DIFFUSE_MODEL != BRDF_DIFFUSE_MODEL_LAMBERT && BASE_DIFFUSE_MODEL != BRDF_DIFFUSE_MODEL_LEGACY
@@ -50,11 +50,13 @@
             #endif
 
             #ifdef REFLECTIONMAP_OPPOSITEZ
-                irradianceVector.z *= -1.0f;
+                irradianceVector.z *= -1.0;
+                irradianceView.z *= -1.0;
             #endif
 
             #ifdef INVERTCUBICMAP
-                irradianceVector.y *= -1.0f;
+                irradianceVector.y *= -1.0;
+                irradianceView.y *= -1.0;
             #endif
         #endif
         #ifdef USESPHERICALFROMREFLECTIONMAP
@@ -187,7 +189,7 @@
         #endif
 
         // _____________________________ Levels _____________________________________
-        // environmentRadiance.rgb *= reflectionInfos.xxx;
+        environmentRadiance = vec4f(environmentRadiance.rgb * reflectionInfos.x, environmentRadiance.a);
         return environmentRadiance.rgb;
     }
 
@@ -201,6 +203,8 @@
         , viewDirectionW: vec3f
         , positionW: vec3f
         , noise: vec3f
+        , isRefraction: bool
+        , ior: f32
     #ifdef REFLECTIONMAP_3D
         , reflectionSampler: texture_cube<f32>
         , reflectionSamplerSampler: sampler
@@ -245,7 +249,7 @@
                 vec4f(radianceAnisotropic(alphaT, alphaB, reflectionSampler, reflectionSamplerSampler,
                                          view, tangent,
                                          bitangent, normal,
-                                         reflectionFilteringInfo, noise.xy),
+                                         reflectionFilteringInfo, noise.xy, isRefraction, ior),
                      1.0f);
         #else
             // We will sample multiple reflections using interpolated surface normals along
@@ -287,8 +291,16 @@
                     bentNormal = normalW;
                 }
                 
+                if (isRefraction) {
+                    reflectionCoords = double_refract(-viewDirectionW, bentNormal, ior);
+                } else {
+                    reflectionCoords = reflect(-viewDirectionW, bentNormal);
+                }
                 // Use this new normal to calculate a reflection vector to sample from.
-                reflectionCoords = createReflectionCoords(positionW, bentNormal);
+                reflectionCoords = (uniforms.reflectionMatrix * vec4f(reflectionCoords, 0.f)).xyz;
+                #ifdef REFLECTIONMAP_OPPOSITEZ
+                    reflectionCoords.z *= -1.0f;
+                #endif
                 radianceSample = textureSampleLevel(reflectionSampler, reflectionSamplerSampler, reflectionCoords, reflectionLOD);
                 #ifdef RGBDREFLECTION
                     accumulatedRadiance += vec3f(sample_weight) * fromRGBD(radianceSample);
@@ -307,7 +319,7 @@
         return environmentRadiance.rgb;
     }
 #endif
-
+    #ifdef ENVIRONMENTBRDF
     fn conductorIblFresnel(reflectance: ReflectanceParams, NdotV: f32, roughness: f32, environmentBrdf: vec3f) -> vec3f
     {
         #if (CONDUCTOR_SPECULAR_MODEL == CONDUCTOR_SPECULAR_MODEL_OPENPBR)
@@ -319,4 +331,5 @@
             return getReflectanceFromBRDFLookup(reflectance.coloredF0, reflectance.coloredF90, environmentBrdf);
         #endif
     }
+    #endif
 #endif

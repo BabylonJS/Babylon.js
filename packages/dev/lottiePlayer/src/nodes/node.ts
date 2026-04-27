@@ -1,6 +1,6 @@
-import type { IVector2Like } from "core/Maths/math.like";
+import { type IVector2Like } from "core/Maths/math.like";
 
-import type { ScalarProperty, Vector2Property } from "../parsing/parsedTypes";
+import { type ScalarProperty, type Vector2Property } from "../parsing/parsedTypes";
 
 import { ThinMatrix } from "../maths/matrix";
 
@@ -29,6 +29,7 @@ export class Node {
 
     protected _isControl = false;
     protected _isShape = false;
+    protected _isNullLayer = false;
 
     /**
      * Gets the id of this node.
@@ -83,6 +84,13 @@ export class Node {
 
         if (this._opacity.currentValue === 0) {
             return 0;
+        }
+
+        // Skip parent opacity if parent is a null layer control node - null layers may have opacity 0
+        // but their children should still be visible. Still multiply by the null layer's parent opacity
+        // so that ancestors above the null layer are respected.
+        if (this._parent && this._parent._isNullLayer) {
+            return this._opacity.currentValue * (this._parent._parent?.opacity ?? 1);
         }
 
         return this._opacity.currentValue * (this._parent?.opacity ?? 1);
@@ -292,123 +300,194 @@ export class Node {
         return isUpdated || isParentUpdated;
     }
 
-    private _updatePosition(frame: number): boolean {
-        const keyframes = this._position.keyframes!;
+    /**
+     * Evaluates the world matrix at a specific frame without mutating any node state.
+     * @param frame The frame number to evaluate at.
+     * @param scale Output vector to receive the decomposed scale.
+     * @param translation Output vector to receive the decomposed translation.
+     * @returns The rotation in radians.
+     */
+    public decomposeWorldMatrixAtFrame(frame: number, scale: IVector2Like, translation: IVector2Like): number {
+        // Collect the chain from this node up to the root.
+        const chain: Node[] = [this];
+        let parent = this._parent;
+        while (parent) {
+            chain.push(parent);
+            parent = parent._parent;
+        }
+
+        // Iterative compose: two matrices + two vector scratches, independent of chain depth.
+        const acc = Node._ComposeScratchA;
+        const tmp = Node._ComposeScratchB;
+        const scratchScale = Node._ComposeScratchScale;
+        const scratchPos = Node._ComposeScratchPos;
+
+        chain[0]._composeLocalAtFrame(frame, acc, scratchScale, scratchPos);
+        for (let i = 1; i < chain.length; i++) {
+            chain[i]._composeLocalAtFrame(frame, tmp, scratchScale, scratchPos);
+            // world(node) = node_local * parent_world, so accumulate: acc = acc * ancestor_local.
+            // multiplyToRef captures all inputs before writing, so acc can be the output.
+            acc.multiplyToRef(tmp, acc);
+        }
+
+        return acc.decompose(scale, translation);
+    }
+
+    private _composeLocalAtFrame(frame: number, output: ThinMatrix, scratchScale: IVector2Like, scratchPos: IVector2Like): void {
+        const scaleIdx = Node._InterpolateVector2AtFrame(this._scale, frame, 0, scratchScale);
+        const scale = scaleIdx >= 0 ? scratchScale : this._scale.startValue;
+
+        const rotationIdx = Node._InterpolateScalarAtFrame(this._rotation, frame, 0, Node._ScalarScratch);
+        // Keyframe values are stored without negation (negation is applied at runtime),
+        // but startValue is already negated by the parser, so only negate interpolated results.
+        const rotation = rotationIdx >= 0 ? -Node._ScalarScratch.value : this._rotation.startValue;
+
+        const positionIdx = Node._InterpolateVector2AtFrame(this._position, frame, 0, scratchPos);
+        const position = positionIdx >= 0 ? scratchPos : this._position.startValue;
+
+        output.compose(scale, rotation, position);
+    }
+
+    // Scratch storage shared across interpolation helpers. Safe because all uses are synchronous
+    // and the results are consumed immediately after each call.
+    private static readonly _ScalarScratch: { value: number } = { value: 0 };
+    private static readonly _ComposeScratchA: ThinMatrix = new ThinMatrix();
+    private static readonly _ComposeScratchB: ThinMatrix = new ThinMatrix();
+    private static readonly _ComposeScratchScale: IVector2Like = { x: 0, y: 0 };
+    private static readonly _ComposeScratchPos: IVector2Like = { x: 0, y: 0 };
+
+    /**
+     * Interpolates a Vector2 property at a given frame and writes the result into `output`.
+     * @param property The Vector2 property to interpolate.
+     * @param frame The frame number to evaluate at.
+     * @param startIndex The keyframe index to start scanning from (for sequential playback optimization).
+     * @param output The vector that receives the interpolated value (only written when the return value is not -1).
+     * @returns The resolved segment index (0..len-2), or `len-1` if the frame is at/after the last keyframe,
+     * or `-1` if the frame is before the first keyframe or the property has no keyframes (in which case
+     * `output` is left unchanged).
+     */
+    private static _InterpolateVector2AtFrame(property: Vector2Property, frame: number, startIndex: number, output: IVector2Like): number {
+        const keyframes = property.keyframes;
+        if (!keyframes || keyframes.length === 0) {
+            return -1;
+        }
 
         if (frame < keyframes[0].time) {
-            return false; // Animation not started yet
+            return -1;
         }
 
-        if (frame > keyframes[keyframes.length - 1].time) {
-            this._position.currentValue = keyframes[keyframes.length - 1].value;
-            return true;
+        const lastIdx = keyframes.length - 1;
+        if (frame >= keyframes[lastIdx].time) {
+            const last = keyframes[lastIdx].value;
+            output.x = last.x;
+            output.y = last.y;
+            return lastIdx;
         }
 
-        // Find the right keyframe we are currently in
-        let currentFrameIndex = -1;
-        for (let i = this._position.currentKeyframeIndex; i < keyframes.length - 1; i++) {
+        let segmentIndex = -1;
+        for (let i = startIndex; i < lastIdx; i++) {
             if (frame >= keyframes[i].time && frame < keyframes[i + 1].time) {
-                currentFrameIndex = i;
-                this._position.currentKeyframeIndex = currentFrameIndex;
+                segmentIndex = i;
                 break;
             }
         }
 
-        if (currentFrameIndex === -1) {
-            return false; // No valid keyframe found for the current animation frame
+        if (segmentIndex === -1) {
+            return -1;
         }
 
-        const currentVector2Keyframe = keyframes[currentFrameIndex];
-        const nextVector2Keyframe = keyframes[currentFrameIndex + 1];
+        const currentKeyframe = keyframes[segmentIndex];
+        const nextKeyframe = keyframes[segmentIndex + 1];
+        const gradient = (frame - currentKeyframe.time) / (nextKeyframe.time - currentKeyframe.time);
 
-        // Animate the position
-        const gradient = (frame - currentVector2Keyframe.time) / (nextVector2Keyframe.time - currentVector2Keyframe.time);
+        const easeFactor1 = currentKeyframe.easeFunction1.interpolate(gradient);
+        const easeFactor2 = currentKeyframe.easeFunction2.interpolate(gradient);
 
-        const easeGradientFactor = currentVector2Keyframe.easeFunction1.interpolate(gradient);
-        this._position.currentValue.x = currentVector2Keyframe.value.x + easeGradientFactor * (nextVector2Keyframe.value.x - currentVector2Keyframe.value.x);
+        output.x = currentKeyframe.value.x + easeFactor1 * (nextKeyframe.value.x - currentKeyframe.value.x);
+        output.y = currentKeyframe.value.y + easeFactor2 * (nextKeyframe.value.y - currentKeyframe.value.y);
+        return segmentIndex;
+    }
 
-        const easeGradientFactor2 = currentVector2Keyframe.easeFunction2.interpolate(gradient);
-        this._position.currentValue.y = currentVector2Keyframe.value.y + easeGradientFactor2 * (nextVector2Keyframe.value.y - currentVector2Keyframe.value.y);
+    /**
+     * Interpolates a scalar property at a given frame and writes the result into `output.value`.
+     * @param property The scalar property to interpolate.
+     * @param frame The frame number to evaluate at.
+     * @param startIndex The keyframe index to start scanning from (for sequential playback optimization).
+     * @param output Holder that receives the interpolated value (only written when the return value is not -1).
+     * @returns The resolved segment index (0..len-2), or `len-1` if the frame is at/after the last keyframe,
+     * or `-1` if the frame is before the first keyframe or the property has no keyframes (in which case
+     * `output.value` is left unchanged).
+     */
+    private static _InterpolateScalarAtFrame(property: ScalarProperty, frame: number, startIndex: number, output: { value: number }): number {
+        const keyframes = property.keyframes;
+        if (!keyframes || keyframes.length === 0) {
+            return -1;
+        }
 
+        if (frame < keyframes[0].time) {
+            return -1;
+        }
+
+        const lastIdx = keyframes.length - 1;
+        if (frame >= keyframes[lastIdx].time) {
+            output.value = keyframes[lastIdx].value;
+            return lastIdx;
+        }
+
+        let segmentIndex = -1;
+        for (let i = startIndex; i < lastIdx; i++) {
+            if (frame >= keyframes[i].time && frame < keyframes[i + 1].time) {
+                segmentIndex = i;
+                break;
+            }
+        }
+
+        if (segmentIndex === -1) {
+            return -1;
+        }
+
+        const currentKeyframe = keyframes[segmentIndex];
+        const nextKeyframe = keyframes[segmentIndex + 1];
+        const gradient = (frame - currentKeyframe.time) / (nextKeyframe.time - currentKeyframe.time);
+
+        const easeFactor = currentKeyframe.easeFunction?.interpolate(gradient) ?? 0;
+        output.value = currentKeyframe.value + easeFactor * (nextKeyframe.value - currentKeyframe.value);
+        return segmentIndex;
+    }
+
+    private _updatePosition(frame: number): boolean {
+        const idx = Node._InterpolateVector2AtFrame(this._position, frame, this._position.currentKeyframeIndex, this._position.currentValue);
+        if (idx < 0) {
+            return false;
+        }
+        // Only advance when we resolved a real segment; leave the index alone when clamped to the last keyframe
+        // to match prior behavior (the original update loop only ran up to keyframes.length - 1, exclusive).
+        if (idx < this._position.keyframes!.length - 1) {
+            this._position.currentKeyframeIndex = idx;
+        }
         return true;
     }
 
     private _updateRotation(frame: number): boolean {
-        const keyframes = this._rotation.keyframes!;
-
-        if (frame < keyframes[0].time) {
-            return false; // Animation not started yet
+        const idx = Node._InterpolateScalarAtFrame(this._rotation, frame, this._rotation.currentKeyframeIndex, Node._ScalarScratch);
+        if (idx < 0) {
+            return false;
         }
-
-        if (frame > keyframes[keyframes.length - 1].time) {
-            this._rotation.currentValue = keyframes[keyframes.length - 1].value;
-            return true;
+        if (idx < this._rotation.keyframes!.length - 1) {
+            this._rotation.currentKeyframeIndex = idx;
         }
-
-        // Find the right keyframe we are currently in
-        let currentFrameIndex = -1;
-        for (let i = this._rotation.currentKeyframeIndex; i < keyframes.length - 1; i++) {
-            if (frame >= keyframes[i].time && frame < keyframes[i + 1].time) {
-                currentFrameIndex = i;
-                this._rotation.currentKeyframeIndex = currentFrameIndex;
-                break;
-            }
-        }
-
-        if (currentFrameIndex === -1) {
-            return false; // No valid keyframe found for the current animation frame
-        }
-
-        const currentScalarKeyframe = keyframes[currentFrameIndex];
-        const nextScalarKeyframe = keyframes[currentFrameIndex + 1];
-
-        // Animate the position
-        const gradient = (frame - currentScalarKeyframe.time) / (nextScalarKeyframe.time - currentScalarKeyframe.time);
-
-        const easeGradientFactor = currentScalarKeyframe.easeFunction.interpolate(gradient);
-        this._rotation.currentValue = -(currentScalarKeyframe.value + easeGradientFactor * (nextScalarKeyframe.value - currentScalarKeyframe.value));
-
+        this._rotation.currentValue = -Node._ScalarScratch.value;
         return true;
     }
 
     private _updateScale(frame: number): boolean {
-        const keyframes = this._scale.keyframes!;
-
-        if (frame < keyframes[0].time) {
-            return false; // Animation not started yet
+        const idx = Node._InterpolateVector2AtFrame(this._scale, frame, this._scale.currentKeyframeIndex, this._scale.currentValue);
+        if (idx < 0) {
+            return false;
         }
-
-        if (frame > keyframes[keyframes.length - 1].time) {
-            this._scale.currentValue = keyframes[keyframes.length - 1].value;
-            return true;
+        if (idx < this._scale.keyframes!.length - 1) {
+            this._scale.currentKeyframeIndex = idx;
         }
-
-        // Find the right keyframe we are currently in
-        let currentFrameIndex = -1;
-        for (let i = this._scale.currentKeyframeIndex; i < keyframes.length - 1; i++) {
-            if (frame >= keyframes[i].time && frame < keyframes[i + 1].time) {
-                currentFrameIndex = i;
-                this._scale.currentKeyframeIndex = currentFrameIndex;
-                break;
-            }
-        }
-
-        if (currentFrameIndex === -1) {
-            return false; // No valid keyframe found for the current animation frame
-        }
-
-        const currentVector2Keyframe = keyframes[currentFrameIndex];
-        const nextVector2Keyframe = keyframes[currentFrameIndex + 1];
-
-        // Animate the scale
-        const gradient = (frame - currentVector2Keyframe.time) / (nextVector2Keyframe.time - currentVector2Keyframe.time);
-
-        const easeGradientFactor = currentVector2Keyframe.easeFunction1.interpolate(gradient);
-        this._scale.currentValue.x = currentVector2Keyframe.value.x + easeGradientFactor * (nextVector2Keyframe.value.x - currentVector2Keyframe.value.x);
-
-        const easeGradientFactor2 = currentVector2Keyframe.easeFunction2.interpolate(gradient);
-        this._scale.currentValue.y = currentVector2Keyframe.value.y + easeGradientFactor2 * (nextVector2Keyframe.value.y - currentVector2Keyframe.value.y);
-
         return true;
     }
 
@@ -417,38 +496,14 @@ export class Node {
             return false;
         }
 
-        if (frame < this._opacity.keyframes[0].time) {
-            return false; // Animation not started yet
+        const idx = Node._InterpolateScalarAtFrame(this._opacity, frame, this._opacity.currentKeyframeIndex, Node._ScalarScratch);
+        if (idx < 0) {
+            return false;
         }
-
-        if (frame > this._opacity.keyframes[this._opacity.keyframes.length - 1].time) {
-            this._opacity.currentValue = this._opacity.keyframes[this._opacity.keyframes.length - 1].value;
-            return true;
+        if (idx < this._opacity.keyframes.length - 1) {
+            this._opacity.currentKeyframeIndex = idx;
         }
-
-        // Find the right keyframe we are currently in
-        let currentFrameIndex = -1;
-        for (let i = this._opacity.currentKeyframeIndex; i < this._opacity.keyframes.length - 1; i++) {
-            if (frame >= this._opacity.keyframes[i].time && frame < this._opacity.keyframes[i + 1].time) {
-                currentFrameIndex = i;
-                this._opacity.currentKeyframeIndex = currentFrameIndex;
-                break;
-            }
-        }
-
-        if (currentFrameIndex === -1) {
-            return false; // No valid keyframe found for the current animation frame
-        }
-
-        const currentScalarKeyframe = this._opacity.keyframes[currentFrameIndex];
-        const nextScalarKeyframe = this._opacity.keyframes[currentFrameIndex + 1];
-
-        // Animate the opacity
-        const gradient = (frame - currentScalarKeyframe.time) / (nextScalarKeyframe.time - currentScalarKeyframe.time);
-
-        const easeGradientFactor = currentScalarKeyframe.easeFunction?.interpolate(gradient) ?? 0;
-        this._opacity.currentValue = currentScalarKeyframe.value + easeGradientFactor * (nextScalarKeyframe.value - currentScalarKeyframe.value);
-
+        this._opacity.currentValue = Node._ScalarScratch.value;
         return true;
     }
 }

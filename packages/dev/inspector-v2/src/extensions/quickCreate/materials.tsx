@@ -1,25 +1,15 @@
 import { NodeMaterial } from "core/Materials/Node/nodeMaterial";
 import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import { StandardMaterial } from "core/Materials/standardMaterial";
-import type { Scene } from "core/scene";
-import { useState } from "react";
-import type { FunctionComponent } from "react";
-import { Button } from "shared-ui-components/fluent/primitives/button";
-import { makeStyles, tokens } from "@fluentui/react-components";
+import { type Scene } from "core/scene";
+import { useState, type FunctionComponent } from "react";
 import { TextInputPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/inputPropertyLine";
-import { SettingsPopover } from "./settingsPopover";
-
-const useStyles = makeStyles({
-    section: {
-        display: "flex",
-        flexDirection: "column",
-        rowGap: tokens.spacingVerticalM,
-    },
-    row: { display: "flex", alignItems: "center", gap: "4px" },
-});
+import { QuickCreateSection, QuickCreateItem } from "./quickCreateLayout";
+import { type ISelectionService } from "../../services/selectionService";
 
 type MaterialsContentProps = {
     scene: Scene;
+    selectionService: ISelectionService;
 };
 
 /**
@@ -27,9 +17,7 @@ type MaterialsContentProps = {
  * @param props - Component props
  * @returns React component
  */
-export const MaterialsContent: FunctionComponent<MaterialsContentProps> = ({ scene }) => {
-    const classes = useStyles();
-
+export const MaterialsContent: FunctionComponent<MaterialsContentProps> = ({ scene, selectionService }) => {
     // Node Material state
     const [nodeMaterialName, setNodeMaterialName] = useState("Node Material");
     const [nodeMaterialSnippetId, setNodeMaterialSnippetId] = useState("");
@@ -40,57 +28,44 @@ export const MaterialsContent: FunctionComponent<MaterialsContentProps> = ({ sce
     // Standard Material state
     const [standardMaterialName, setStandardMaterialName] = useState("Standard Material");
 
+    const createPBRMaterial = () => {
+        return new PBRMaterial(pbrMaterialName, scene);
+    };
+
+    const createStandardMaterial = () => {
+        return new StandardMaterial(standardMaterialName, scene);
+    };
+
     const handleCreateNodeMaterialAsync = async () => {
         if (nodeMaterialSnippetId) {
-            try {
-                const nodeMaterial = await NodeMaterial.ParseFromSnippetAsync(nodeMaterialSnippetId, scene);
-                nodeMaterial.name = nodeMaterialName;
-            } catch (e) {
-                alert("Failed to load Node Material from snippet: " + e);
-            }
+            const nodeMaterial = await NodeMaterial.ParseFromSnippetAsync(nodeMaterialSnippetId, scene);
+            nodeMaterial.name = nodeMaterialName;
+            return nodeMaterial;
         } else {
             const nodeMaterial = new NodeMaterial(nodeMaterialName, scene);
+            nodeMaterial.setToDefault();
             nodeMaterial.build();
+            return nodeMaterial;
         }
     };
 
-    const handleCreatePBRMaterial = () => {
-        new PBRMaterial(pbrMaterialName, scene);
-    };
-
-    const handleCreateStandardMaterial = () => {
-        new StandardMaterial(standardMaterialName, scene);
-    };
-
     return (
-        <div className={classes.section}>
+        <QuickCreateSection>
             {/* Node Material */}
-            <div className={classes.row}>
-                <Button onClick={handleCreateNodeMaterialAsync} label="Node Material" />
-                <SettingsPopover>
-                    <TextInputPropertyLine label="Name" value={nodeMaterialName} onChange={(value) => setNodeMaterialName(value)} />
-                    <TextInputPropertyLine label="Snippet ID" value={nodeMaterialSnippetId} onChange={(value) => setNodeMaterialSnippetId(value)} />
-                    <Button appearance="primary" onClick={handleCreateNodeMaterialAsync} label="Create" />
-                </SettingsPopover>
-            </div>
+            <QuickCreateItem selectionService={selectionService} label="Node Material" onCreate={handleCreateNodeMaterialAsync}>
+                <TextInputPropertyLine label="Name" value={nodeMaterialName} onChange={(value) => setNodeMaterialName(value)} />
+                <TextInputPropertyLine label="Snippet ID" value={nodeMaterialSnippetId} onChange={(value) => setNodeMaterialSnippetId(value)} />
+            </QuickCreateItem>
 
             {/* PBR Material */}
-            <div className={classes.row}>
-                <Button onClick={handleCreatePBRMaterial} label="PBR Material" />
-                <SettingsPopover>
-                    <TextInputPropertyLine label="Name" value={pbrMaterialName} onChange={(value) => setPbrMaterialName(value)} />
-                    <Button appearance="primary" onClick={handleCreatePBRMaterial} label="Create" />
-                </SettingsPopover>
-            </div>
+            <QuickCreateItem selectionService={selectionService} label="PBR Material" onCreate={() => createPBRMaterial()}>
+                <TextInputPropertyLine label="Name" value={pbrMaterialName} onChange={(value) => setPbrMaterialName(value)} />
+            </QuickCreateItem>
 
             {/* Standard Material */}
-            <div className={classes.row}>
-                <Button onClick={handleCreateStandardMaterial} label="Standard Material" />
-                <SettingsPopover>
-                    <TextInputPropertyLine label="Name" value={standardMaterialName} onChange={(value) => setStandardMaterialName(value)} />
-                    <Button appearance="primary" onClick={handleCreateStandardMaterial} label="Create" />
-                </SettingsPopover>
-            </div>
-        </div>
+            <QuickCreateItem selectionService={selectionService} label="Standard Material" onCreate={() => createStandardMaterial()}>
+                <TextInputPropertyLine label="Name" value={standardMaterialName} onChange={(value) => setStandardMaterialName(value)} />
+            </QuickCreateItem>
+        </QuickCreateSection>
     );
 };

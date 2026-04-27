@@ -1,10 +1,10 @@
 import { RegisterClass } from "../../../Misc/typeStore";
 import { NodeGeometryBlockConnectionPointTypes } from "../Enums/nodeGeometryConnectionPointTypes";
 import { NodeGeometryBlock } from "../nodeGeometryBlock";
-import type { NodeGeometryConnectionPoint } from "../nodeGeometryBlockConnectionPoint";
+import { type NodeGeometryConnectionPoint } from "../nodeGeometryBlockConnectionPoint";
 import { PropertyTypeForEdition, editableInPropertyPage } from "../../../Decorators/nodeDecorator";
-import type { NodeGeometryBuildState } from "../nodeGeometryBuildState";
-import type { VertexData } from "core/Meshes/mesh.vertexData";
+import { type NodeGeometryBuildState } from "../nodeGeometryBuildState";
+import { type VertexData } from "core/Meshes/mesh.vertexData";
 import { FixFlippedFaces } from "core/Maths/math.functions";
 
 /**
@@ -95,6 +95,7 @@ export class CleanGeometryBlock extends NodeGeometryBlock {
         return serializationObject;
     }
 
+    /** @internal */
     public override _deserialize(serializationObject: any) {
         super._deserialize(serializationObject);
 

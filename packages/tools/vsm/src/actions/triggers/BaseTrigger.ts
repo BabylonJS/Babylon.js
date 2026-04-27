@@ -1,5 +1,5 @@
 import { Observable } from "core/Misc/observable";
-import type { Scene } from "core/scene";
+import { type Scene } from "core/scene";
 
 /**
  * This class represents a trigger that can turn on one of two ways: either by having a

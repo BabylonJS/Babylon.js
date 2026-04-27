@@ -1,11 +1,11 @@
 import { Observable } from "../../Misc/observable";
-import type { Nullable } from "../../types";
+import { type Nullable } from "../../types";
 import { SoundState } from "../soundState";
 import { AudioNodeType } from "./abstractAudioNode";
-import type { _AbstractSoundInstance } from "./abstractSoundInstance";
+import { type _AbstractSoundInstance } from "./abstractSoundInstance";
 import { AbstractSoundSource, type ISoundSourceOptions } from "./abstractSoundSource";
-import type { AudioEngineV2 } from "./audioEngineV2";
-import type { IVolumeAudioOptions } from "./subNodes/volumeAudioSubNode";
+import { type AudioEngineV2 } from "./audioEngineV2";
+import { type IVolumeAudioOptions } from "./subNodes/volumeAudioSubNode";
 
 /** @internal */
 export interface IAbstractSoundOptionsBase {
@@ -169,6 +169,7 @@ export abstract class AbstractSound extends AbstractSoundSource {
         }
 
         this._state = SoundState.Paused;
+        this.engine._onSoundPlaybackStateChanged();
     }
 
     /**
@@ -185,6 +186,7 @@ export abstract class AbstractSound extends AbstractSoundSource {
         }
 
         this._state = SoundState.Started;
+        this.engine._onSoundPlaybackStateChanged();
     }
 
     /**
@@ -200,12 +202,14 @@ export abstract class AbstractSound extends AbstractSoundSource {
         }
 
         instance.onEndedObservable.addOnce(this._onInstanceEnded);
+        instance.onStateChangedObservable.add(this._onInstanceStateChanged);
         this._privateInstances.add(instance);
         this._newestInstance = instance;
     }
 
     protected _afterPlay(instance: _AbstractSoundInstance): void {
         this._state = instance.state;
+        this.engine._onSoundPlaybackStateChanged();
     }
 
     protected _getNewestInstance(): Nullable<_AbstractSoundInstance> {
@@ -231,12 +235,11 @@ export abstract class AbstractSound extends AbstractSoundSource {
 
     protected _stopExcessInstances(): void {
         if (this.maxInstances < Infinity) {
-            const numberOfInstancesToStop = Array.from(this._instances).filter((instance) => instance.state === SoundState.Started).length - this.maxInstances;
-            const it = this._instances.values();
+            const startedInstances = Array.from(this._instances).filter((instance) => instance.state === SoundState.Started);
+            const numberOfInstancesToStop = startedInstances.length - this.maxInstances;
 
             for (let i = 0; i < numberOfInstancesToStop; i++) {
-                const instance = it.next().value;
-                instance.stop();
+                startedInstances[i].stop();
             }
         }
     }
@@ -246,6 +249,7 @@ export abstract class AbstractSound extends AbstractSoundSource {
             this._newestInstance = null;
         }
 
+        instance.onStateChangedObservable.removeCallback(this._onInstanceStateChanged);
         this._privateInstances.delete(instance);
 
         if (this._instances.size === 0) {
@@ -254,5 +258,11 @@ export abstract class AbstractSound extends AbstractSoundSource {
         }
 
         instance.dispose();
+
+        this.engine._onSoundPlaybackStateChanged();
+    };
+
+    private _onInstanceStateChanged: (instance: _AbstractSoundInstance) => void = (_instance) => {
+        this.engine._onSoundPlaybackStateChanged();
     };
 }

@@ -1,17 +1,16 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import type { Nullable } from "core/types";
+import { type Nullable } from "core/types";
 import { Vector3 } from "core/Maths/math.vector";
 import { Color3 } from "core/Maths/math.color";
 import { DirectionalLight } from "core/Lights/directionalLight";
 import { PointLight } from "core/Lights/pointLight";
 import { SpotLight } from "core/Lights/spotLight";
 import { Light } from "core/Lights/light";
-import type { TransformNode } from "core/Meshes/transformNode";
+import { type TransformNode } from "core/Meshes/transformNode";
 
-import type { IKHRLightsPunctual_LightReference } from "babylonjs-gltf2interface";
-import { KHRLightsPunctual_LightType } from "babylonjs-gltf2interface";
-import type { INode, IKHRLightsPunctual_Light } from "../glTFLoaderInterfaces";
-import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
+import { type IKHRLightsPunctual_LightReference, KHRLightsPunctual_LightType } from "babylonjs-gltf2interface";
+import { type INode, type IKHRLightsPunctual_Light } from "../glTFLoaderInterfaces";
+import { type IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader, ArrayItem } from "../glTFLoader";
 import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
 

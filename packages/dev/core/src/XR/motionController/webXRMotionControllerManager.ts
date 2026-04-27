@@ -1,10 +1,10 @@
-import type { WebXRAbstractMotionController, IMotionControllerProfile } from "./webXRAbstractMotionController";
+import { type WebXRAbstractMotionController, type IMotionControllerProfile } from "./webXRAbstractMotionController";
 import { WebXRGenericTriggerMotionController } from "./webXRGenericMotionController";
-import type { Scene } from "../../scene";
+import { type Scene } from "../../scene";
 import { Tools } from "../../Misc/tools";
 import { WebXRProfiledMotionController } from "./webXRProfiledMotionController";
-import type { Nullable } from "../../types";
-import type { AbstractMesh } from "../../Meshes/abstractMesh";
+import { type Nullable } from "../../types";
+import { type AbstractMesh } from "../../Meshes/abstractMesh";
 
 /**
  * A construction function type to create a new controller based on an xrInput object
@@ -91,7 +91,7 @@ export class WebXRMotionControllerManager {
      * @returns an array with corresponding fallback profiles
      */
     public static FindFallbackWithProfileId(profileId: string): string[] {
-        const returnArray = this._Fallbacks[profileId] || [];
+        const returnArray = [...(this._Fallbacks[profileId] || [])];
 
         returnArray.unshift(profileId);
         return returnArray;
@@ -121,7 +121,7 @@ export class WebXRMotionControllerManager {
         // emulator support
         if (profileArray.length && !profileArray[0]) {
             // remove the first "undefined" that the emulator is adding
-            profileArray.pop();
+            profileArray.shift();
         }
 
         // legacy support - try using the gamepad id
@@ -149,8 +149,8 @@ export class WebXRMotionControllerManager {
             const secondFunction = this.PrioritizeOnlineRepository ? this._LoadProfilesFromAvailableControllersAsync : this._LoadProfileFromRepositoryAsync;
 
             // eslint-disable-next-line github/no-then
-            return firstFunction.call(this, profileArray, xrInput, scene).catch(() => {
-                return secondFunction.call(this, profileArray, xrInput, scene);
+            return await firstFunction.call(this, profileArray, xrInput, scene).catch(async () => {
+                return await secondFunction.call(this, profileArray, xrInput, scene);
             });
         } else {
             // use only available functions

@@ -1,13 +1,12 @@
 import * as react from "react";
-import type { GlobalState } from "../../globalState";
+import { type GlobalState } from "../../globalState";
 
 import { LineContainerComponent } from "../../sharedComponents/lineContainerComponent.js";
 
 import "../../assets/styles/components/propertyTab.scss";
-import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
+import { type LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 import { FloatSliderComponent } from "../../sharedComponents/floatSliderComponent.js";
-import { ConnectionPointType } from "smart-filters";
-import type { AnyInputBlock } from "smart-filters";
+import { ConnectionPointType, type AnyInputBlock } from "smart-filters";
 import { Vector2PropertyTabComponent } from "./properties/vector2PropertyTabComponent.js";
 import { Color3PropertyTabComponent } from "./properties/color3PropertyTabComponent.js";
 import { Color4PropertyTabComponent } from "./properties/color4PropertyTabComponent.js";

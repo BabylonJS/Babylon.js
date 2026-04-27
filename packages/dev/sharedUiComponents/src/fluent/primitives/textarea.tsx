@@ -1,7 +1,6 @@
-import type { TextareaOnChangeData } from "@fluentui/react-components";
-import { Textarea as FluentTextarea, makeStyles } from "@fluentui/react-components";
-import type { FunctionComponent, KeyboardEvent, ChangeEvent } from "react";
-import type { PrimitiveProps } from "./primitive";
+import { type TextareaOnChangeData, Textarea as FluentTextarea, makeStyles } from "@fluentui/react-components";
+import { type FunctionComponent, type KeyboardEvent, type ChangeEvent } from "react";
+import { type PrimitiveProps } from "./primitive";
 
 const useInputStyles = makeStyles({
     textarea: {

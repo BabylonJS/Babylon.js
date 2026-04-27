@@ -1,11 +1,10 @@
 import { GLTFLoaderExtension, GLTFLoader, GLTFLoaderBase } from "./glTFLoader";
 import { GLTFUtils } from "./glTFLoaderUtils";
-import type { Scene } from "core/scene";
-import type { IGLTFLoaderData } from "../glTFFileLoader";
-import type { IGLTFRuntime, IGLTFTexture, IGLTFImage, IGLTFBufferView, IGLTFShader } from "./glTFLoaderInterfaces";
-import { EComponentType } from "./glTFLoaderInterfaces";
+import { type Scene } from "core/scene";
+import { type IGLTFLoaderData } from "../glTFFileLoader";
+import { type IGLTFRuntime, type IGLTFTexture, type IGLTFImage, type IGLTFBufferView, type IGLTFShader, EComponentType } from "./glTFLoaderInterfaces";
 
-import type { IDataBuffer } from "core/Misc/dataReader";
+import { type IDataBuffer } from "core/Misc/dataReader";
 
 const BinaryExtensionBufferName = "binary_glTF";
 

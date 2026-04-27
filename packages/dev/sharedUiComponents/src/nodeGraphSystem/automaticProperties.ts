@@ -1,5 +1,5 @@
-import type { IEditablePropertyOption } from "core/Decorators/nodeDecorator";
-import type { StateManager } from "./stateManager";
+import { type IEditablePropertyOption } from "core/Decorators/nodeDecorator";
+import { type StateManager } from "./stateManager";
 
 /**
  * Function used to force a rebuild of the node system
@@ -7,8 +7,9 @@ import type { StateManager } from "./stateManager";
  * @param stateManager defines the state manager to use
  * @param propertyName name of the property that has been changed
  * @param notifiers list of notifiers to use
+ * @param engageActiveRefresh if active refresh should be engaged
  */
-export function ForceRebuild(source: any, stateManager: StateManager, propertyName: string, notifiers?: IEditablePropertyOption["notifiers"]) {
+export function ForceRebuild(source: any, stateManager: StateManager, propertyName: string, notifiers?: IEditablePropertyOption["notifiers"], engageActiveRefresh = true) {
     if (notifiers?.onValidation && !notifiers?.onValidation(source, propertyName)) {
         return;
     }
@@ -31,5 +32,11 @@ export function ForceRebuild(source: any, stateManager: StateManager, propertyNa
 
     if (notifiers?.activatePreviewCommand) {
         stateManager.onPreviewCommandActivated.notifyObservers(true);
+    }
+
+    if (engageActiveRefresh && stateManager.activeNode) {
+        for (const refresh of stateManager.activeNode._visualPropertiesRefresh) {
+            refresh();
+        }
     }
 }

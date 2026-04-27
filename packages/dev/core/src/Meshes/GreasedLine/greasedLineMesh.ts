@@ -1,17 +1,15 @@
-import type { Scene } from "../../scene";
-import type { Matrix } from "../../Maths/math.vector";
-import { Vector3 } from "../../Maths/math.vector";
+import { type Scene } from "../../scene";
+import { type Matrix, Vector3 } from "../../Maths/math.vector";
 import { Mesh } from "../mesh";
-import type { Ray, TrianglePickingPredicate } from "../../Culling/ray";
+import { type Ray, type TrianglePickingPredicate } from "../../Culling/ray";
 import { Buffer, VertexBuffer } from "../../Buffers/buffer";
 import { PickingInfo } from "../../Collisions/pickingInfo";
-import type { Nullable, FloatArray } from "../../types";
-import type { Node } from "../../node";
+import { type Nullable, type FloatArray } from "../../types";
+import { type Node } from "../../node";
 import { DeepCopier } from "../../Misc/deepCopier";
 import { GreasedLineTools } from "../../Misc/greasedLineTools";
-import type { GreasedLineMeshOptions } from "./greasedLineBaseMesh";
-import { GreasedLineBaseMesh } from "./greasedLineBaseMesh";
-import type { VertexData } from "../mesh.vertexData";
+import { type GreasedLineMeshOptions, GreasedLineBaseMesh } from "./greasedLineBaseMesh";
+import { type VertexData } from "../mesh.vertexData";
 
 Mesh._GreasedLineMeshParser = (parsedMesh: any, scene: Scene): Mesh => {
     return GreasedLineMesh.Parse(parsedMesh, scene);
@@ -330,8 +328,7 @@ export class GreasedLineMesh extends GreasedLineBaseMesh {
 
         const intersects = [];
         if (indices && positions && widths) {
-            let i = 0,
-                l = 0;
+            let i: number, l: number;
             for (i = 0, l = indices.length - 1; i < l; i += 3) {
                 const a = indices[i];
                 const b = indices[i + 1];
@@ -361,7 +358,6 @@ export class GreasedLineMesh extends GreasedLineBaseMesh {
                     }
                 }
             }
-            i = l;
         }
 
         return intersects;

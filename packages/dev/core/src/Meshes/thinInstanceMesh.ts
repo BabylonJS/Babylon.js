@@ -1,4 +1,4 @@
-import type { Nullable, DeepImmutableObject } from "../types";
+import { type Nullable, type DeepImmutableObject } from "../types";
 import { Mesh } from "../Meshes/mesh";
 import { VertexBuffer, Buffer } from "../Buffers/buffer";
 import { Matrix, Vector3, TmpVectors } from "../Maths/math.vector";
@@ -6,6 +6,7 @@ import { Logger } from "../Misc/logger";
 import { BoundingInfo } from "core/Culling/boundingInfo";
 
 declare module "./mesh" {
+    /** @internal */
     // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface Mesh {
         /**
@@ -90,10 +91,14 @@ declare module "./mesh" {
          * Applies a partial update to a buffer directly on the GPU
          * Note that the buffer located on the CPU is NOT updated! It's up to you to update it (or not) with the same data you pass to this method
          * @param kind name of the attribute to update. Use "matrix" to update the buffer of matrices
-         * @param data the data to set in the GPU buffer
-         * @param offset the offset in the GPU buffer where to update the data
+         * @param dataOrLength the data to set in the GPU buffer, or the length (in elements) of data to update starting from the offset.
+         * If you pass a length (number), it is the number of elements to update. For example, if kind is "matrix" and you pass 2 as length, it will update 2 matrices (2*16 floats) in the GPU buffer starting from the offset; in this case {@link offset} should also be expressed as a number of elements.
+         * If you pass a Float32Array, {@link offset} is interpreted in floats in the underlying GPU buffer, consistent with low-level buffer update methods such as updateDirectly.
+         * @param offset the offset in the GPU buffer where to update the data:
+         *  - when {@link dataOrLength} is a number, this is an element offset (for example, a matrix index);
+         *  - when {@link dataOrLength} is a Float32Array, this is a float offset in the underlying buffer.
          */
-        thinInstancePartialBufferUpdate(kind: string, data: Float32Array, offset: number): void;
+        thinInstancePartialBufferUpdate(kind: string, dataOrLength: Float32Array | number, offset: number): void;
 
         /**
          * Refreshes the bounding info, taking into account all the thin instances defined
@@ -117,9 +122,13 @@ declare module "./mesh" {
 
         /** @internal */
         _userThinInstanceBuffersStorage: {
+            /** @internal */
             data: { [key: string]: Float32Array };
+            /** @internal */
             sizes: { [key: string]: number };
+            /** @internal */
             vertexBuffers: { [key: string]: Nullable<VertexBuffer> };
+            /** @internal */
             strides: { [key: string]: number };
         };
     }
@@ -341,10 +350,21 @@ Mesh.prototype.thinInstanceBufferUpdated = function (kind: string): void {
     }
 };
 
-Mesh.prototype.thinInstancePartialBufferUpdate = function (kind: string, data: Float32Array, offset: number): void {
+Mesh.prototype.thinInstancePartialBufferUpdate = function (kind: string, dataOrLength: Float32Array | number, offset: number): void {
     if (kind === "matrix") {
         if (this._thinInstanceDataStorage.matrixBuffer) {
-            this._thinInstanceDataStorage.matrixBuffer.updateDirectly(data, offset);
+            if (typeof dataOrLength === "number") {
+                this._thinInstanceDataStorage.matrixBuffer.updateDirectly(
+                    new Float32Array(
+                        this._thinInstanceDataStorage.matrixData!.buffer,
+                        this._thinInstanceDataStorage.matrixData!.byteOffset + offset * 16 * Float32Array.BYTES_PER_ELEMENT,
+                        dataOrLength * 16
+                    ),
+                    offset * 16
+                );
+            } else {
+                this._thinInstanceDataStorage.matrixBuffer.updateDirectly(dataOrLength, offset);
+            }
         }
     } else {
         // preserve backward compatibility
@@ -353,7 +373,17 @@ Mesh.prototype.thinInstancePartialBufferUpdate = function (kind: string, data: F
         }
 
         if (this._userThinInstanceBuffersStorage?.vertexBuffers[kind]) {
-            this._userThinInstanceBuffersStorage.vertexBuffers[kind]!.updateDirectly(data, offset);
+            const buffer = this._userThinInstanceBuffersStorage.vertexBuffers[kind]!;
+            if (typeof dataOrLength === "number") {
+                const data = new Float32Array(
+                    this._userThinInstanceBuffersStorage.data[kind].buffer,
+                    this._userThinInstanceBuffersStorage.data[kind].byteOffset + offset * this._userThinInstanceBuffersStorage.strides[kind] * Float32Array.BYTES_PER_ELEMENT,
+                    dataOrLength * this._userThinInstanceBuffersStorage.strides[kind]
+                );
+                this._userThinInstanceBuffersStorage.vertexBuffers[kind]!.updateDirectly(data, offset * this._userThinInstanceBuffersStorage.strides[kind]);
+            } else {
+                buffer.updateDirectly(dataOrLength, offset);
+            }
         }
     }
 };

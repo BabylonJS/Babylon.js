@@ -1,7 +1,7 @@
 import { Constants } from "core/Engines/constants";
-import type { AbstractEngine } from "core/Engines/abstractEngine";
-import type { RenderTargetWrapper } from "core/Engines/renderTargetWrapper";
-import type { InternalTexture } from "core/Materials/Textures/internalTexture";
+import { type AbstractEngine } from "core/Engines/abstractEngine";
+import { type RenderTargetWrapper } from "core/Engines/renderTargetWrapper";
+import { type InternalTexture } from "core/Materials/Textures/internalTexture";
 import { CopyTextureToTexture } from "core/Misc/copyTextureToTexture";
 
 /** @internal */

@@ -1,13 +1,13 @@
 import { NodeMaterialBlock } from "../../nodeMaterialBlock";
 import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
-import type { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
+import { type NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
-import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
+import { type NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
 import { RegisterClass } from "../../../../Misc/typeStore";
-import type { Effect } from "../../../effect";
-import type { NodeMaterial, NodeMaterialDefines } from "../../nodeMaterial";
-import type { Mesh } from "../../../../Meshes/mesh";
-import type { AbstractMesh } from "../../../../Meshes/abstractMesh";
+import { type Effect } from "../../../effect";
+import { type NodeMaterial, type NodeMaterialDefines } from "../../nodeMaterial";
+import { type Mesh } from "../../../../Meshes/mesh";
+import { type AbstractMesh } from "../../../../Meshes/abstractMesh";
 import { BindClipPlane } from "../../../../Materials/clipPlaneMaterialHelper";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 /**
@@ -84,12 +84,20 @@ export class ClipPlanesBlock extends NodeMaterialBlock {
         return this._inputs[0];
     }
 
+    /** {@inheritDoc} */
     public override get target() {
         return NodeMaterialBlockTargets.VertexAndFragment;
     }
 
+    /** {@inheritDoc} */
     public override set target(value: NodeMaterialBlockTargets) {}
 
+    /**
+     * Prepares the shader defines related to clip planes for the given mesh
+     * @param defines - the material defines
+     * @param nodeMaterial - the node material
+     * @param mesh - the mesh to prepare for
+     */
     public override prepareDefines(defines: NodeMaterialDefines, nodeMaterial: NodeMaterial, mesh?: AbstractMesh) {
         if (!mesh) {
             return;
@@ -112,6 +120,12 @@ export class ClipPlanesBlock extends NodeMaterialBlock {
         defines.setValue("CLIPPLANE6", useClipPlane6, true);
     }
 
+    /**
+     * Bind data to effect
+     * @param effect - the effect to bind to
+     * @param nodeMaterial - the node material
+     * @param mesh - the mesh to bind for
+     */
     public override bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh) {
         if (!mesh) {
             return;

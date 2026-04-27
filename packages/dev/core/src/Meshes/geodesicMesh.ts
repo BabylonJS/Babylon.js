@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { Vector3, TmpVectors } from "../Maths/math.vector";
+import { Vector3 } from "../Maths/math.vector";
 import { HighestCommonFactor } from "../Maths/math.scalar.functions";
 import { PHI } from "../Maths/math.constants";
 import { _IsoVector } from "../Maths/math.isovector";
@@ -9,31 +9,48 @@ import { _IsoVector } from "../Maths/math.isovector";
  * When O is the isovector (0, 0), A is isovector (m, n)
  * @internal
  */
-// eslint-disable-next-line @typescript-eslint/naming-convention
 export class _PrimaryIsoTriangle {
     //properties
+    /** @internal */
     public m: number;
+    /** @internal */
     public n: number;
+    /** @internal */
     public cartesian: Vector3[] = [];
+    /** @internal */
     public vertices: _IsoVector[] = [];
+    /** @internal */
     public max: number[] = [];
+    /** @internal */
     public min: number[] = [];
+    /** @internal */
     public vecToidx: { [key: string]: number };
+    /** @internal */
     public vertByDist: { [key: string]: number[] };
+    /** @internal */
     public closestTo: number[][] = [];
 
+    /** @internal */
     public innerFacets: string[][] = [];
+    /** @internal */
     public isoVecsABOB: _IsoVector[][] = [];
+    /** @internal */
     public isoVecsOBOA: _IsoVector[][] = [];
+    /** @internal */
     public isoVecsBAOA: _IsoVector[][] = [];
+    /** @internal */
     public vertexTypes: number[][] = [];
 
+    /** @internal */
     public coau: number;
+    /** @internal */
     public cobu: number;
+    /** @internal */
     public coav: number;
+    /** @internal */
     public cobv: number;
 
-    // eslint-disable-next-line @typescript-eslint/naming-convention
+    /** @internal */
     public IDATA: PolyhedronData = new PolyhedronData(
         "icosahedron",
         "Regular",
@@ -88,13 +105,11 @@ export class _PrimaryIsoTriangle {
         const m = this.m;
         const n = this.n;
         let g = m; // hcf of m, n when n != 0
-        let m1 = 1;
-        let n1 = 0;
         if (n !== 0) {
             g = HighestCommonFactor(m, n);
         }
-        m1 = m / g;
-        n1 = n / g;
+        const m1 = m / g;
+        const n1 = n / g;
 
         let fr: number | string; //face to the right of current face
         let rot: number | string; //rotation about which vertex for fr
@@ -247,6 +262,7 @@ export class _PrimaryIsoTriangle {
         this.vecToidx = vecToidx;
     }
 
+    /** @internal */
     public calcCoeffs() {
         const m = this.m;
         const n = this.n;
@@ -260,6 +276,7 @@ export class _PrimaryIsoTriangle {
         this.cobv = (thirdR3 * (2 * m + n)) / LSQD;
     }
 
+    /** @internal */
     public createInnerFacets() {
         const m = this.m;
         const n = this.n;
@@ -275,6 +292,7 @@ export class _PrimaryIsoTriangle {
         }
     }
 
+    /** @internal */
     public edgeVecsABOB() {
         const m = this.m;
         const n = this.n;
@@ -327,6 +345,7 @@ export class _PrimaryIsoTriangle {
         }
     }
 
+    /** @internal */
     public mapABOBtoOBOA() {
         const point = new _IsoVector(0, 0);
         for (let i = 0; i < this.isoVecsABOB.length; i++) {
@@ -343,6 +362,7 @@ export class _PrimaryIsoTriangle {
         }
     }
 
+    /** @internal */
     public mapABOBtoBAOA() {
         const point = new _IsoVector(0, 0);
         for (let i = 0; i < this.isoVecsABOB.length; i++) {
@@ -359,7 +379,7 @@ export class _PrimaryIsoTriangle {
         }
     }
 
-    // eslint-disable-next-line @typescript-eslint/naming-convention
+    /** @internal */
     public MapToFace(faceNb: number, geodesicData: PolyhedronData) {
         const F = this.IDATA.face[faceNb];
         const oidx = F[2];
@@ -379,7 +399,7 @@ export class _PrimaryIsoTriangle {
         const mapped = [];
 
         let idx: string;
-        let tempVec: Vector3 = TmpVectors.Vector3[0];
+        let tempVec: Vector3;
         for (let i = 0; i < this.cartesian.length; i++) {
             tempVec = x.scale(this.cartesian[i].x).add(y.scale(this.cartesian[i].y)).add(O);
             mapped[i] = [tempVec.x, tempVec.y, tempVec.z];
@@ -446,8 +466,8 @@ export class _PrimaryIsoTriangle {
             max[i] = -Infinity;
         }
 
-        let y: number = 0;
-        let x: number = 0;
+        let y: number;
+        let x: number;
 
         const len: number = vertices.length;
         for (let i = 0; i < len; i++) {
@@ -546,13 +566,13 @@ export class _PrimaryIsoTriangle {
 /** Builds Polyhedron Data
  * @internal
  */
-
 export class PolyhedronData {
     /**
      * @internal
      */
     public edgematch: (number | string)[][];
 
+    /** @internal */
     constructor(
         /**
          * The name of the polyhedron
@@ -757,11 +777,11 @@ export class GeodesicData extends PolyhedronData {
                 map[this.face[f][i]].push(f);
             }
         }
-        let cx = 0;
-        let cy = 0;
-        let cz = 0;
-        let face = [];
-        let vertex = [];
+        let cx: number;
+        let cy: number;
+        let cz: number;
+        let face: number[];
+        let vertex: number[];
         this.adjacentFaces = [];
         for (let m = 0; m < map.length; m++) {
             goldbergPolyhedronData.face[m] = this.setOrder(m, map[m].concat([]));

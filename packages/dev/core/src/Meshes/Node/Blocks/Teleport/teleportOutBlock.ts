@@ -1,10 +1,10 @@
-import type { Nullable } from "../../../../types";
+import { type Nullable } from "../../../../types";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import { NodeGeometryBlockConnectionPointTypes } from "../../Enums/nodeGeometryConnectionPointTypes";
 import { NodeGeometryBlock } from "../../nodeGeometryBlock";
-import type { NodeGeometryConnectionPoint } from "../../nodeGeometryBlockConnectionPoint";
-import type { TeleportInBlock } from "./teleportInBlock";
-import type { NodeGeometryBuildState } from "../../nodeGeometryBuildState";
+import { type NodeGeometryConnectionPoint } from "../../nodeGeometryBlockConnectionPoint";
+import { type TeleportInBlock } from "./teleportInBlock";
+import { type NodeGeometryBuildState } from "../../nodeGeometryBuildState";
 
 /**
  * Defines a block used to receive a value from a teleport entry point
@@ -68,6 +68,7 @@ export class TeleportOutBlock extends NodeGeometryBlock {
         }
     }
 
+    /** @internal */
     public override _dumpCode(uniqueNames: string[], alreadyDumped: NodeGeometryBlock[]) {
         let codeString: string = "";
         if (this.entryPoint) {
@@ -79,6 +80,7 @@ export class TeleportOutBlock extends NodeGeometryBlock {
         return codeString + super._dumpCode(uniqueNames, alreadyDumped);
     }
 
+    /** @internal */
     public override _dumpCodeForOutputConnections(alreadyDumped: NodeGeometryBlock[]) {
         let codeString = super._dumpCodeForOutputConnections(alreadyDumped);
 
@@ -123,6 +125,7 @@ export class TeleportOutBlock extends NodeGeometryBlock {
         return serializationObject;
     }
 
+    /** @internal */
     public override _deserialize(serializationObject: any) {
         super._deserialize(serializationObject);
 

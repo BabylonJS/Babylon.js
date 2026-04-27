@@ -1,9 +1,9 @@
 import { FlowGraphBlockNames } from "core/FlowGraph/Blocks/flowGraphBlockNames";
-import type { GLTFLoader } from "../glTFLoader";
-import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
+import { type GLTFLoader } from "../glTFLoader";
+import { type IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
 import { addNewInteractivityFlowGraphMapping } from "./KHR_interactivity/declarationMapper";
-import type { INode } from "../glTFLoaderInterfaces";
+import { type INode } from "../glTFLoaderInterfaces";
 import { AddObjectAccessorToKey } from "./objectModelMapping";
 
 const NAME = "KHR_node_hoverability";

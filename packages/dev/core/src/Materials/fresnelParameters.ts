@@ -1,5 +1,5 @@
 import { DeepCopier } from "../Misc/deepCopier";
-import type { DeepImmutable } from "../types";
+import { type DeepImmutable } from "../types";
 import { Color3 } from "../Maths/math.color";
 import { SerializationHelper } from "../Misc/decorators.serialization";
 import { Constants } from "../Engines/constants";

@@ -2,7 +2,7 @@ import { Matrix, Quaternion, TmpVectors, Vector3 } from "core/Maths/math.vector"
 import { Epsilon } from "core/Maths/math.constants";
 import { TransformNode } from "core/Meshes/transformNode";
 import { AbstractMesh } from "core/Meshes/abstractMesh";
-import type { Node } from "core/node";
+import { type Node } from "core/node";
 
 /**
  * Matrix that converts handedness on the X-axis. Used to convert from LH to RH and vice versa.

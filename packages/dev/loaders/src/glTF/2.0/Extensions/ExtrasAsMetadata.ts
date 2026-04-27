@@ -1,13 +1,13 @@
-import type { Nullable } from "core/types";
-import type { TransformNode } from "core/Meshes/transformNode";
-import type { Camera } from "core/Cameras/camera";
-import type { AnimationGroup } from "core/Animations/animationGroup";
+import { type Nullable } from "core/types";
+import { type TransformNode } from "core/Meshes/transformNode";
+import { type Camera } from "core/Cameras/camera";
+import { type AnimationGroup } from "core/Animations/animationGroup";
 
-import type { IProperty } from "babylonjs-gltf2interface";
-import type { INode, ICamera, IMaterial, IAnimation } from "../glTFLoaderInterfaces";
-import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
-import type { GLTFLoader } from "../glTFLoader";
-import type { Material } from "core/Materials/material";
+import { type IProperty } from "babylonjs-gltf2interface";
+import { type INode, type ICamera, type IMaterial, type IAnimation } from "../glTFLoaderInterfaces";
+import { type IGLTFLoaderExtension } from "../glTFLoaderExtension";
+import { type GLTFLoader } from "../glTFLoader";
+import { type Material } from "core/Materials/material";
 import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
 
 const NAME = "ExtrasAsMetadata";

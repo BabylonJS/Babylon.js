@@ -24,8 +24,8 @@
         "outputDirectory": "./declarations"
     },
     {
-        "declarationLibs": ["@dev/inspector"],
-        "devPackageName": "inspector",
+        "declarationLibs": ["@dev/inspector-legacy"],
+        "devPackageName": "inspector-legacy",
         "filename": "inspector.d.ts",
         "outputDirectory": "./declarations"
     },

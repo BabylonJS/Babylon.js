@@ -1,20 +1,20 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { Logger } from "../Misc/logger";
-import type { Nullable, FloatArray, IndicesArray } from "../types";
+import { type Nullable, type FloatArray, type IndicesArray } from "../types";
 import { Engine } from "../Engines/engine";
-import type { RenderTargetCreationOptions } from "../Materials/Textures/textureCreationOptions";
-import type { VertexBuffer } from "../Buffers/buffer";
+import { type RenderTargetCreationOptions } from "../Materials/Textures/textureCreationOptions";
+import { type VertexBuffer } from "../Buffers/buffer";
 import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
-import type { Effect } from "../Materials/effect";
+import { type Effect } from "../Materials/effect";
 import { Constants } from "./constants";
-import type { IPipelineContext } from "./IPipelineContext";
+import { type IPipelineContext } from "./IPipelineContext";
 import { DataBuffer } from "../Buffers/dataBuffer";
-import type { IColor4Like, IViewportLike } from "../Maths/math.like";
-import type { ISceneLike } from "./abstractEngine";
+import { type IColor4Like, type IViewportLike } from "../Maths/math.like";
+import { type ISceneLike } from "./abstractEngine";
 import { PerformanceConfigurator } from "./performanceConfigurator";
-import type { DrawWrapper } from "../Materials/drawWrapper";
+import { type DrawWrapper } from "../Materials/drawWrapper";
 import { RenderTargetWrapper } from "./renderTargetWrapper";
-import type { IStencilState } from "../States/IStencilState";
+import { type IStencilState } from "../States/IStencilState";
 import { IsWrapper } from "../Materials/drawWrapper.functions";
 
 import "./AbstractEngine/abstractEngine.loadFile";
@@ -178,6 +178,7 @@ export class NullEngine extends Engine {
             textureNorm16: false,
             blendParametersPerTarget: false,
             dualSourceBlending: false,
+            supportReadWriteStorageTextures: false,
         };
 
         this._features = {
@@ -207,7 +208,6 @@ export class NullEngine extends Engine {
             supportSpriteInstancing: false,
             forceVertexBufferStrideAndOffsetMultiple4Bytes: false,
             _checkNonFloatVertexBuffersDontRecreatePipelineContext: false,
-            _collectUbosUpdatedInFrame: false,
         };
 
         if (options.renderingCanvas) {
@@ -722,6 +722,10 @@ export class NullEngine extends Engine {
         texture.height = this._options.textureSize;
         if (format) {
             texture.format = format;
+        }
+        // Store buffer to support export/serialization and other operations.
+        if (buffer) {
+            texture._buffer = buffer;
         }
 
         texture.isReady = true;

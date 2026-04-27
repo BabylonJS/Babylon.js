@@ -1,11 +1,11 @@
-import type { AdvancedDynamicTexture } from "gui/2D/advancedDynamicTexture";
-import type { ServiceDefinition } from "../../../modularity/serviceDefinition";
-import type { ISettingsContext } from "../../settingsContext";
-import type { ITextureEditorService } from "../../textureEditor/textureEditorService";
-import type { IPropertiesService } from "./propertiesService";
+import { type AdvancedDynamicTexture } from "gui/2D/advancedDynamicTexture";
+import { type ServiceDefinition } from "shared-ui-components/modularTool/modularity/serviceDefinition";
+import { type ITextureEditorService, TextureEditorServiceIdentity } from "../../textureEditor/textureEditorService";
+import { type IPropertiesService, PropertiesServiceIdentity } from "./propertiesService";
 
 import { BaseTexture } from "core/Materials/Textures/baseTexture";
 import { CubeTexture } from "core/Materials/Textures/cubeTexture";
+import { EnvCubeTexture } from "core/Materials/Textures/envCubeTexture";
 import { MultiRenderTarget } from "core/Materials/Textures/multiRenderTarget";
 import { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
 import { Texture } from "core/Materials/Textures/texture";
@@ -22,19 +22,16 @@ import { MultiRenderTargetGeneralProperties } from "../../../components/properti
 import { RenderTargetTextureGeneralProperties } from "../../../components/properties/textures/renderTargetTextureProperties";
 import { TextureGeneralProperties, TexturePreviewProperties, TextureTransformProperties } from "../../../components/properties/textures/textureProperties";
 import { ThinTextureGeneralProperties, ThinTextureSamplingProperties } from "../../../components/properties/textures/thinTextureProperties";
-import { SettingsContextIdentity } from "../../settingsContext";
-import { TextureEditorServiceIdentity } from "../../textureEditor/textureEditorService";
-import { PropertiesServiceIdentity } from "./propertiesService";
 
 // Don't use instanceof in this case as we don't want to bring in the gui package just to check if the entity is an AdvancedDynamicTexture.
 function IsAdvancedDynamicTexture(entity: unknown): entity is AdvancedDynamicTexture {
     return (entity as AdvancedDynamicTexture)?.getClassName?.() === "AdvancedDynamicTexture";
 }
 
-export const TexturePropertiesServiceDefinition: ServiceDefinition<[], [IPropertiesService, ISettingsContext, ITextureEditorService]> = {
+export const TexturePropertiesServiceDefinition: ServiceDefinition<[], [IPropertiesService, ITextureEditorService]> = {
     friendlyName: "Texture Properties",
-    consumes: [PropertiesServiceIdentity, SettingsContextIdentity, TextureEditorServiceIdentity],
-    factory: (propertiesService, settingsContext, textureEditorService) => {
+    consumes: [PropertiesServiceIdentity, TextureEditorServiceIdentity],
+    factory: (propertiesService, textureEditorService) => {
         const baseTextureContentRegistration = propertiesService.addSectionContent({
             key: "Base Texture Properties",
             predicate: (entity: unknown) => entity instanceof BaseTexture,
@@ -100,18 +97,18 @@ export const TexturePropertiesServiceDefinition: ServiceDefinition<[], [IPropert
             content: [
                 {
                     section: "Transform",
-                    component: ({ context }) => <TextureTransformProperties texture={context} settings={settingsContext} />,
+                    component: ({ context }) => <TextureTransformProperties texture={context} />,
                 },
             ],
         });
 
         const cubeTextureContentRegistration = propertiesService.addSectionContent({
             key: "Cube Texture Properties",
-            predicate: (entity: unknown) => entity instanceof CubeTexture,
+            predicate: (entity: unknown): entity is CubeTexture | EnvCubeTexture => entity instanceof CubeTexture || entity instanceof EnvCubeTexture,
             content: [
                 {
                     section: "Transform",
-                    component: ({ context }) => <CubeTextureTransformProperties texture={context} settings={settingsContext} />,
+                    component: ({ context }) => <CubeTextureTransformProperties texture={context} />,
                 },
             ],
         });

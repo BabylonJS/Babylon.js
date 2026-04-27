@@ -1,4 +1,4 @@
-import type { Nullable, EffectWrapperCreationOptions, Scene } from "core/index";
+import { type Nullable, type EffectWrapperCreationOptions, type Scene } from "core/index";
 import { Camera } from "../Cameras/camera";
 import { Halton2DSequence } from "core/Maths/halton2DSequence";
 import { Vector2 } from "core/Maths/math.vector";

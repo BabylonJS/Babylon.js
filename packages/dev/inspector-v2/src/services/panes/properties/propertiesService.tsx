@@ -1,21 +1,22 @@
-import type { IDisposable, IReadonlyObservable } from "core/index";
-import type { SectionsImperativeRef, DynamicAccordionSection, DynamicAccordionSectionContent } from "../../../components/extensibleAccordion";
-import type { PropertyChangeInfo } from "../../../contexts/propertyContext";
-import type { IService, ServiceDefinition } from "../../../modularity/serviceDefinition";
-import type { ISelectionService } from "../../selectionService";
-import type { IShellService } from "../../shellService";
+import { type IDisposable, type IReadonlyObservable } from "core/index";
+import { type DynamicAccordionSection, type DynamicAccordionSectionContent, type SectionsImperativeRef } from "shared-ui-components/modularTool/components/extensibleAccordion";
+import { type PropertyChangeInfo, PropertyContext } from "../../../contexts/propertyContext";
+import { type IService, type ServiceDefinition } from "shared-ui-components/modularTool/modularity/serviceDefinition";
+import { type ISelectionService, SelectionServiceIdentity } from "../../selectionService";
+import { type IShellService, ShellServiceIdentity } from "shared-ui-components/modularTool/services/shellService";
 
 import { DocumentTextRegular } from "@fluentui/react-icons";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef } from "react";
 
 import { Observable } from "core/Misc/observable";
+import { useImpulse } from "shared-ui-components/fluent/hooks/transientStateHooks";
 import { PropertiesPane } from "../../../components/properties/propertiesPane";
-import { PropertyContext } from "../../../contexts/propertyContext";
-import { useObservableCollection, useObservableState, useOrderedObservableCollection } from "../../../hooks/observableHooks";
-import { ObservableCollection } from "../../../misc/observableCollection";
-import { SelectionServiceIdentity } from "../../selectionService";
-import { ShellServiceIdentity } from "../../shellService";
+import { useObservableCollection, useObservableState, useOrderedObservableCollection } from "shared-ui-components/modularTool/hooks/observableHooks";
+import { ObservableCollection } from "shared-ui-components/modularTool/misc/observableCollection";
 
+/**
+ * The unique identity symbol for the properties service.
+ */
 export const PropertiesServiceIdentity = Symbol("PropertiesService");
 
 type PropertiesSectionContent<EntityT> = {
@@ -73,7 +74,7 @@ export const PropertiesServiceDefinition: ServiceDefinition<[IPropertiesService]
         const sectionsCollection = new ObservableCollection<DynamicAccordionSection>();
         const sectionContentCollection = new ObservableCollection<PropertiesSectionContent<unknown>>();
         const onPropertyChanged = new Observable<PropertyChangeInfo>();
-        const onHighlightSectionsRequested = new Observable<readonly string[]>();
+        const onHighlightSectionsRequested = new Observable<readonly string[]>(undefined, true);
 
         const registration = shellService.addSidePane({
             key: "Properties",
@@ -82,7 +83,8 @@ export const PropertiesServiceDefinition: ServiceDefinition<[IPropertiesService]
             horizontalLocation: "right",
             verticalLocation: "top",
             order: 100,
-            suppressTeachingMoment: true,
+            teachingMoment: false,
+            keepMounted: true,
             content: () => {
                 const sections = useOrderedObservableCollection(sectionsCollection);
                 const sectionContent = useObservableCollection(sectionContentCollection);
@@ -111,23 +113,41 @@ export const PropertiesServiceDefinition: ServiceDefinition<[IPropertiesService]
                 // The selected entity may be set at the same time as a highlight is requested.
                 // To account for this, we need to wait for one React render to complete before
                 // requesting the section highlight.
-                const [pendingHighlight, setPendingHighlight] = useState<readonly string[]>();
+                const [pendingHighlight, pulsePendingHighlightSections] = useImpulse<readonly string[]>();
 
                 useEffect(() => {
-                    const observer = onHighlightSectionsRequested.add(setPendingHighlight);
-                    return () => observer.remove();
+                    const observer = onHighlightSectionsRequested.add((sectionIds) => {
+                        // Now this UI component is observing, so we don't need to cache pending requests anymore.
+                        onHighlightSectionsRequested.notifyIfTriggered = false;
+                        onHighlightSectionsRequested.cleanLastNotifiedState();
+                        pulsePendingHighlightSections(sectionIds);
+                    });
+
+                    return () => {
+                        observer.remove();
+                        // Now this UI component is no longer observing, so we need to cache pending requests again.
+                        onHighlightSectionsRequested.notifyIfTriggered = true;
+                    };
                 }, []);
 
                 useEffect(() => {
                     if (pendingHighlight && sectionsRef.current) {
                         sectionsRef.current.highlightSections(pendingHighlight);
-                        setPendingHighlight(undefined);
                     }
                 }, [pendingHighlight]);
 
                 return (
                     <PropertyContext.Provider value={{ onPropertyChanged }}>
-                        <PropertiesPane sections={sections} sectionContent={applicableContent} context={entity} sectionsRef={sectionsRef} />
+                        <PropertiesPane
+                            uniqueId="Properties"
+                            sections={sections}
+                            sectionContent={applicableContent}
+                            context={entity}
+                            sectionsRef={sectionsRef}
+                            enablePinnedItems
+                            enableHiddenItems
+                            enableSearchItems
+                        />
                     </PropertyContext.Provider>
                 );
             },

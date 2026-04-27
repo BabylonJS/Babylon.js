@@ -1,6 +1,5 @@
-import type { FunctionComponent } from "react";
-import type { PrimitiveProps } from "./primitive";
-import { useEffect, useState } from "react";
+import { type FunctionComponent, useEffect, useState } from "react";
+import { type PrimitiveProps } from "./primitive";
 import { makeStyles, tokens } from "@fluentui/react-components";
 
 import { SyncedSliderInput } from "./syncedSlider";
@@ -13,22 +12,24 @@ const useGradientStyles = makeStyles({
     container: {
         display: "flex",
         alignItems: "center",
-        gap: tokens.spacingHorizontalS,
+        gap: tokens.spacingHorizontalXS, // Reduced gap
         width: "100%",
+        minWidth: 0,
+        overflow: "hidden",
     },
-    // Wrapper for factor spin buttons - fixed size
+    // Wrapper for factor spin buttons - fixed width, doesn't grow
     valueWrapper: {
-        flex: "0 0 auto", // Don't grow, natural size
+        flex: "0 0 auto", // Fixed size, no grow, no shrink
     },
     // Wrapper for color pickers - fixed size since they're just swatches
     colorWrapper: {
         flex: "0 0 auto",
         alignContent: "center",
     },
-    // Wrapper for the step slider - grows to fill remaining space
+    // Wrapper for the step slider - takes remaining space and can shrink
     stepSliderWrapper: {
         flex: "1 1 0", // Grow to fill available space
-        minWidth: 0,
+        minWidth: "100px", // Minimum to fit slider + spinbutton
     },
 });
 
@@ -67,7 +68,7 @@ const Gradient: FunctionComponent<PrimitiveProps<GradientProps<number | Color3 |
                 {gradient.value1 instanceof Color3 || gradient.value1 instanceof Color4 ? (
                     <ColorPickerPopup value={gradient.value1} onChange={(color) => gradientChange({ ...gradient, value1: color })} />
                 ) : (
-                    <SyncedSliderInput step={0.01} value={gradient.value1} onChange={(val) => gradientChange({ ...gradient, value1: val })} compact />
+                    <SyncedSliderInput step={0.01} precision={2} value={gradient.value1} onChange={(val) => gradientChange({ ...gradient, value1: val })} compact />
                 )}
             </div>
             {gradient.value2 !== undefined && (
@@ -75,7 +76,7 @@ const Gradient: FunctionComponent<PrimitiveProps<GradientProps<number | Color3 |
                     {gradient.value2 instanceof Color3 || gradient.value2 instanceof Color4 ? (
                         <ColorPickerPopup value={gradient.value2} onChange={(color) => gradientChange({ ...gradient, value2: color })} />
                     ) : (
-                        <SyncedSliderInput step={0.01} value={gradient.value2} onChange={(val) => gradientChange({ ...gradient, value2: val })} compact />
+                        <SyncedSliderInput step={0.01} precision={2} value={gradient.value2} onChange={(val) => gradientChange({ ...gradient, value2: val })} compact />
                     )}
                 </div>
             )}
@@ -86,9 +87,11 @@ const Gradient: FunctionComponent<PrimitiveProps<GradientProps<number | Color3 |
                     min={0}
                     max={1}
                     step={0.01}
+                    precision={2}
                     value={gradient.step}
                     onChange={(val) => gradientChange({ ...gradient, step: val })}
                     compact={hasNumericValues}
+                    growSlider={!hasNumericValues}
                 />
             </div>
         </div>

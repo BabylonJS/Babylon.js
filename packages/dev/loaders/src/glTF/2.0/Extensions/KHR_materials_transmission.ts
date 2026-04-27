@@ -1,20 +1,20 @@
-import type { Nullable } from "core/types";
-import type { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
-import type { Material } from "core/Materials/material";
-import type { BaseTexture } from "core/Materials/Textures/baseTexture";
-import type { IMaterial, ITextureInfo } from "../glTFLoaderInterfaces";
-import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
+import { type Nullable } from "core/types";
+import { type Material } from "core/Materials/material";
+import { MultiMaterial } from "core/Materials/multiMaterial";
+import { type BaseTexture } from "core/Materials/Textures/baseTexture";
+import { type IMaterial, type ITextureInfo } from "../glTFLoaderInterfaces";
+import { type IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader } from "../glTFLoader";
-import type { IKHRMaterialsTransmission } from "babylonjs-gltf2interface";
-import type { Scene } from "core/scene";
-import type { AbstractMesh } from "core/Meshes/abstractMesh";
-import type { Texture } from "core/Materials/Textures/texture";
+import { type IKHRMaterialsTransmission } from "babylonjs-gltf2interface";
+import { type Scene } from "core/scene";
+import { type AbstractMesh } from "core/Meshes/abstractMesh";
+import { type SubMesh } from "core/Meshes/subMesh";
+import { type Texture } from "core/Materials/Textures/texture";
 import { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
-import type { Observer } from "core/Misc/observable";
-import { Observable } from "core/Misc/observable";
+import { type Observer, Observable } from "core/Misc/observable";
 import { Constants } from "core/Engines/constants";
 import { Tools } from "core/Misc/tools";
-import type { Color4 } from "core/Maths/math.color";
+import { type Color4 } from "core/Maths/math.color";
 import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
 
 interface ITransmissionHelperHolder {
@@ -92,6 +92,15 @@ class TransmissionHelper {
     private _opaqueMeshesCache: AbstractMesh[] = [];
     private _transparentMeshesCache: AbstractMesh[] = [];
     private _materialObservers: { [id: string]: Nullable<Observer<AbstractMesh>> } = {};
+    private _loader: GLTFLoader;
+
+    // For MultiMaterial meshes with mixed opaque/translucent sub-materials:
+    // maps mesh → set of materialIndex values that are translucent.
+    private _translucentMaterialIndices: Map<AbstractMesh, Set<number>> = new Map();
+    // Precomputed opaque-only submesh arrays for mixed meshes, swapped in
+    // during the opaque RT render to avoid per-frame allocations.
+    private _opaqueOnlySubMeshes: Map<AbstractMesh, SubMesh[]> = new Map();
+    private _savedSubMeshes: Map<AbstractMesh, SubMesh[]> = new Map();
 
     /**
      * This observable will be notified with any error during the creation of the environment,
@@ -103,14 +112,16 @@ class TransmissionHelper {
      * constructor
      * @param options Defines the options we want to customize the helper
      * @param scene The scene to add the material to
+     * @param loader The glTF loader loading the asset
      */
-    constructor(options: Partial<ITransmissionHelperOptions>, scene: Scene) {
+    constructor(options: Partial<ITransmissionHelperOptions>, scene: Scene, loader: GLTFLoader) {
         this._options = {
             ...TransmissionHelper._GetDefaultOptions(),
             ...options,
         };
         this._scene = scene as any;
         this._scene._transmissionHelper = this;
+        this._loader = loader;
 
         this.onErrorObservable = new Observable();
         this._scene.onDisposeObservable.addOnce(() => {
@@ -162,8 +173,81 @@ class TransmissionHelper {
         return this._opaqueRenderTarget;
     }
 
-    private _shouldRenderAsTransmission(material: Nullable<Material>): boolean {
-        return (material as any)?.subSurface?.isRefractionEnabled ? true : false;
+    /**
+     * Classify a mesh's materials as transparent, opaque, or mixed.
+     * Sets the refraction background texture on any translucent materials found.
+     * For mixed MultiMaterial meshes, populates _translucentMaterialIndices so
+     * their translucent submeshes can be excluded from the opaque render target.
+     * @param mesh - The mesh to classify
+     * @returns 'transparent' if all materials are translucent, 'opaque' if none are, 'mixed' if both
+     */
+    private _classifyMeshMaterials(mesh: AbstractMesh): "transparent" | "opaque" | "mixed" {
+        const material = mesh.material;
+        if (!material) {
+            return "opaque";
+        }
+
+        // Single material case
+        if (!(material instanceof MultiMaterial)) {
+            if (!this._loader.isMatchingMaterialType(material)) {
+                return "opaque";
+            }
+            const adapter = this._loader._getOrCreateMaterialAdapter(material);
+            if (adapter.isTranslucent()) {
+                adapter.refractionBackgroundTexture = this._opaqueRenderTarget;
+                return "transparent";
+            }
+            return "opaque";
+        }
+
+        // MultiMaterial case: check each sub-material individually
+        let hasTranslucent = false;
+        let hasOpaque = false;
+        const translucentIndices = new Set<number>();
+
+        for (let i = 0; i < material.subMaterials.length; i++) {
+            const subMat = material.subMaterials[i];
+            if (!subMat) {
+                hasOpaque = true;
+                continue;
+            }
+            if (this._loader.isMatchingMaterialType(subMat)) {
+                const adapter = this._loader._getOrCreateMaterialAdapter(subMat);
+                if (adapter.isTranslucent()) {
+                    adapter.refractionBackgroundTexture = this._opaqueRenderTarget;
+                    hasTranslucent = true;
+                    translucentIndices.add(i);
+                } else {
+                    hasOpaque = true;
+                }
+            } else {
+                hasOpaque = true;
+            }
+        }
+
+        if (hasTranslucent && hasOpaque) {
+            this._translucentMaterialIndices.set(mesh, translucentIndices);
+            this._rebuildOpaqueOnlySubMeshes(mesh, translucentIndices);
+            return "mixed";
+        }
+        this._translucentMaterialIndices.delete(mesh);
+        this._opaqueOnlySubMeshes.delete(mesh);
+        return hasTranslucent ? "transparent" : "opaque";
+    }
+
+    /**
+     * Rebuild the cached opaque-only submesh array for a mixed mesh.
+     * Called when classification changes so the per-frame swap is allocation-free.
+     * @param mesh - The mesh to rebuild for
+     * @param translucentIndices - Set of materialIndex values that are translucent
+     */
+    private _rebuildOpaqueOnlySubMeshes(mesh: AbstractMesh, translucentIndices: Set<number>): void {
+        if (mesh.subMeshes) {
+            this._opaqueOnlySubMeshes.set(
+                mesh,
+                mesh.subMeshes.filter((sm: SubMesh) => !translucentIndices.has(sm.materialIndex))
+            );
+        }
     }
 
     private _addMesh(mesh: AbstractMesh): void {
@@ -172,14 +256,19 @@ class TransmissionHelper {
         // we need to defer the processing because _addMesh may be called as part as an instance mesh creation, in which case some
         // internal properties are not setup yet, like _sourceMesh (needed when doing mesh.material below)
         Tools.SetImmediate(() => {
-            if (this._shouldRenderAsTransmission(mesh.material)) {
-                (mesh.material as PBRMaterial).refractionTexture = this._opaqueRenderTarget;
-                if (this._transparentMeshesCache.indexOf(mesh) === -1) {
-                    this._transparentMeshesCache.push(mesh);
-                }
-            } else {
-                if (this._opaqueMeshesCache.indexOf(mesh) === -1) {
-                    this._opaqueMeshesCache.push(mesh);
+            if (mesh.material) {
+                const classification = this._classifyMeshMaterials(mesh);
+                if (classification === "transparent") {
+                    if (this._transparentMeshesCache.indexOf(mesh) === -1) {
+                        this._transparentMeshesCache.push(mesh);
+                    }
+                } else {
+                    // Both 'opaque' and 'mixed' go in the opaque cache.
+                    // For 'mixed', the translucent submeshes are temporarily
+                    // excluded during the opaque render target render.
+                    if (this._opaqueMeshesCache.indexOf(mesh) === -1) {
+                        this._opaqueMeshesCache.push(mesh);
+                    }
                 }
             }
         });
@@ -196,6 +285,8 @@ class TransmissionHelper {
         if (idx !== -1) {
             this._opaqueMeshesCache.splice(idx, 1);
         }
+        this._translucentMaterialIndices.delete(mesh);
+        this._opaqueOnlySubMeshes.delete(mesh);
     }
 
     private _parseScene(): void {
@@ -211,23 +302,19 @@ class TransmissionHelper {
         const transparentIdx = this._transparentMeshesCache.indexOf(mesh);
         const opaqueIdx = this._opaqueMeshesCache.indexOf(mesh);
 
-        // If the material is transparent, make sure that it's added to the transparent list and removed from the opaque list
-        const useTransmission = this._shouldRenderAsTransmission(mesh.material);
-        if (useTransmission) {
-            if (mesh.material) {
-                const subSurface = (mesh.material as PBRMaterial).subSurface;
-                if (subSurface) {
-                    subSurface.refractionTexture = this._opaqueRenderTarget;
-                }
-            }
+        const classification = this._classifyMeshMaterials(mesh);
+
+        if (classification === "transparent") {
+            // Fully translucent: move to transparent cache
             if (opaqueIdx !== -1) {
                 this._opaqueMeshesCache.splice(opaqueIdx, 1);
                 this._transparentMeshesCache.push(mesh);
             } else if (transparentIdx === -1) {
                 this._transparentMeshesCache.push(mesh);
             }
-            // If the material is opaque, make sure that it's added to the opaque list and removed from the transparent list
         } else {
+            // Opaque or mixed: move to opaque cache (mixed meshes have their
+            // translucent submeshes excluded during opaque RT render)
             if (transparentIdx !== -1) {
                 this._transparentMeshesCache.splice(transparentIdx, 1);
                 this._opaqueMeshesCache.push(mesh);
@@ -265,6 +352,7 @@ class TransmissionHelper {
         this._opaqueRenderTarget.ignoreCameraViewport = true;
         this._opaqueRenderTarget.renderList = this._opaqueMeshesCache;
         this._opaqueRenderTarget.clearColor = this._options.clearColor?.clone() ?? this._scene.clearColor.clone();
+        this._opaqueRenderTarget.clearColor.a = 0.0;
         this._opaqueRenderTarget.gammaSpace = false;
         this._opaqueRenderTarget.lodGenerationScale = this._options.lodGenerationScale;
         this._opaqueRenderTarget.lodGenerationOffset = this._options.lodGenerationOffset;
@@ -282,14 +370,42 @@ class TransmissionHelper {
             } else {
                 opaqueRenderTarget.clearColor.copyFrom(this._options.clearColor);
             }
+            opaqueRenderTarget.clearColor.a = 0.0;
+
+            // For mixed MultiMaterial meshes, swap in the precomputed opaque-only
+            // submesh array so translucent submeshes don't render into the opaque texture.
+            const tlEntries = this._opaqueOnlySubMeshes.entries();
+            for (let tlEntry = tlEntries.next(); !tlEntry.done; tlEntry = tlEntries.next()) {
+                const mesh = tlEntry.value[0];
+                const opaqueOnly = tlEntry.value[1];
+                if (mesh.subMeshes) {
+                    this._savedSubMeshes.set(mesh, mesh.subMeshes);
+                    mesh.subMeshes = opaqueOnly;
+                }
+            }
         });
         this._opaqueRenderTarget.onAfterUnbindObservable.add(() => {
             this._scene.environmentIntensity = saveSceneEnvIntensity;
+
+            // Restore the full submesh list after the opaque RT render
+            const savedEntries = this._savedSubMeshes.entries();
+            for (let savedEntry = savedEntries.next(); !savedEntry.done; savedEntry = savedEntries.next()) {
+                savedEntry.value[0].subMeshes = savedEntry.value[1];
+            }
+            this._savedSubMeshes.clear();
         });
 
+        // Update refraction textures on transparent and mixed meshes
         for (const mesh of this._transparentMeshesCache) {
-            if (this._shouldRenderAsTransmission(mesh.material)) {
-                (mesh.material as PBRMaterial).refractionTexture = this._opaqueRenderTarget;
+            if (mesh.material) {
+                this._classifyMeshMaterials(mesh);
+            }
+        }
+        const mixedEntries = this._translucentMaterialIndices.entries();
+        for (let mixedEntry = mixedEntries.next(); !mixedEntry.done; mixedEntry = mixedEntries.next()) {
+            const mesh = mixedEntry.value[0];
+            if (mesh.material) {
+                this._classifyMeshMaterials(mesh);
             }
         }
     }
@@ -305,6 +421,9 @@ class TransmissionHelper {
         }
         this._transparentMeshesCache = [];
         this._opaqueMeshesCache = [];
+        this._translucentMaterialIndices.clear();
+        this._opaqueOnlySubMeshes.clear();
+        this._savedSubMeshes.clear();
     }
 }
 
@@ -378,7 +497,7 @@ export class KHR_materials_transmission implements IGLTFLoaderExtension {
         const adapter = this._loader._getOrCreateMaterialAdapter(babylonMaterial);
         const transmissionWeight = extension.transmissionFactor !== undefined ? extension.transmissionFactor : 0.0;
 
-        if (transmissionWeight === 0) {
+        if (transmissionWeight === 0 || !adapter) {
             return Promise.resolve();
         }
 
@@ -390,7 +509,7 @@ export class KHR_materials_transmission implements IGLTFLoaderExtension {
         if (transmissionWeight > 0 && !this._loader.parent.dontUseTransmissionHelper) {
             const scene = babylonMaterial.getScene() as unknown as ITransmissionHelperHolder;
             if (!scene._transmissionHelper) {
-                new TransmissionHelper({}, babylonMaterial.getScene());
+                new TransmissionHelper({}, babylonMaterial.getScene(), this._loader);
             } else if (!scene._transmissionHelper?._isRenderTargetValid()) {
                 // If the render target is not valid, recreate it.
                 scene._transmissionHelper?._setupRenderTargets();

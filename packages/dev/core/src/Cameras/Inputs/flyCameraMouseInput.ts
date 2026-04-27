@@ -1,16 +1,14 @@
-import type { Nullable } from "../../types";
+import { type Nullable } from "../../types";
 import { serialize } from "../../Misc/decorators";
-import type { Observer } from "../../Misc/observable";
-import type { ICameraInput } from "../../Cameras/cameraInputsManager";
-import { CameraInputTypes } from "../../Cameras/cameraInputsManager";
-import type { FlyCamera } from "../../Cameras/flyCamera";
-import type { PointerInfo } from "../../Events/pointerEvents";
-import { PointerEventTypes } from "../../Events/pointerEvents";
-import type { Scene } from "../../scene";
+import { type Observer } from "../../Misc/observable";
+import { type ICameraInput, CameraInputTypes } from "../../Cameras/cameraInputsManager";
+import { type FlyCamera } from "../../Cameras/flyCamera";
+import { type PointerInfo, PointerEventTypes } from "../../Events/pointerEvents";
+import { type Scene } from "../../scene";
 import { Quaternion } from "../../Maths/math.vector";
 import { Axis } from "../../Maths/math.axis";
 import { Tools } from "../../Misc/tools";
-import type { IPointerEvent } from "../../Events/deviceInputEvents";
+import { type IPointerEvent } from "../../Events/deviceInputEvents";
 /**
  * Listen to mouse events to control the camera.
  * @see https://doc.babylonjs.com/features/featuresDeepDive/cameras/customizingCameraInputs

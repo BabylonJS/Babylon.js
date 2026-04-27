@@ -1,28 +1,23 @@
+import { type Camera } from "core/Cameras/camera";
 import { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
 import { UniversalCamera } from "core/Cameras/universalCamera";
+import { FreeCamera } from "core/Cameras/freeCamera";
+import { FollowCamera } from "core/Cameras/followCamera";
+import { FlyCamera } from "core/Cameras/flyCamera";
+import { GeospatialCamera } from "core/Cameras/geospatialCamera";
 import { Vector3 } from "core/Maths/math.vector";
-import type { Scene } from "core/scene";
-import { useState } from "react";
-import type { FunctionComponent } from "react";
-import { Button } from "shared-ui-components/fluent/primitives/button";
-import { makeStyles, tokens } from "@fluentui/react-components";
+import { type Scene } from "core/scene";
+import { useState, type FunctionComponent } from "react";
 import { TextInputPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/inputPropertyLine";
 import { SpinButtonPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/spinButtonPropertyLine";
 import { Vector3PropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/vectorPropertyLine";
 import { CheckboxPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/checkboxPropertyLine";
-import { SettingsPopover } from "./settingsPopover";
-
-const useStyles = makeStyles({
-    section: {
-        display: "flex",
-        flexDirection: "column",
-        rowGap: tokens.spacingVerticalM,
-    },
-    row: { display: "flex", alignItems: "center", gap: "4px" },
-});
+import { QuickCreateSection, QuickCreateItem } from "./quickCreateLayout";
+import { type ISelectionService } from "../../services/selectionService";
 
 type CamerasContentProps = {
     scene: Scene;
+    selectionService: ISelectionService;
 };
 
 /**
@@ -30,9 +25,7 @@ type CamerasContentProps = {
  * @param props - Component props
  * @returns React component
  */
-export const CamerasContent: FunctionComponent<CamerasContentProps> = ({ scene }) => {
-    const classes = useStyles();
-
+export const CamerasContent: FunctionComponent<CamerasContentProps> = ({ scene, selectionService }) => {
     // ArcRotate Camera state
     const [arcRotateCameraName, setArcRotateCameraName] = useState("ArcRotate Camera");
     const [arcRotateCameraTarget, setArcRotateCameraTarget] = useState(new Vector3(0, 0, 0));
@@ -45,64 +38,157 @@ export const CamerasContent: FunctionComponent<CamerasContentProps> = ({ scene }
     const [universalCameraName, setUniversalCameraName] = useState("Universal Camera");
     const [universalCameraPosition, setUniversalCameraPosition] = useState(new Vector3(0, 1, -10));
 
-    const handleCreateArcRotateCamera = () => {
-        const alpha = arcRotateCameraUseRadians ? arcRotateCameraAlpha : (arcRotateCameraAlpha * Math.PI) / 180;
-        const beta = arcRotateCameraUseRadians ? arcRotateCameraBeta : (arcRotateCameraBeta * Math.PI) / 180;
+    // Free Camera state
+    const [freeCameraName, setFreeCameraName] = useState("Free Camera");
+    const [freeCameraPosition, setFreeCameraPosition] = useState(new Vector3(0, 1, -10));
 
-        const camera = new ArcRotateCamera(arcRotateCameraName, alpha, beta, arcRotateCameraRadius, arcRotateCameraTarget, scene);
-        camera.attachControl(scene.getEngine().getRenderingCanvas(), true);
+    // Follow Camera state
+    const [followCameraName, setFollowCameraName] = useState("Follow Camera");
+    const [followCameraPosition, setFollowCameraPosition] = useState(new Vector3(0, 5, -10));
+    const [followCameraRadius, setFollowCameraRadius] = useState(10);
+    const [followCameraHeightOffset, setFollowCameraHeightOffset] = useState(4);
+    const [followCameraRotationOffset, setFollowCameraRotationOffset] = useState(0);
+
+    // Fly Camera state
+    const [flyCameraName, setFlyCameraName] = useState("Fly Camera");
+    const [flyCameraPosition, setFlyCameraPosition] = useState(new Vector3(0, 1, -10));
+
+    // Geospatial Camera state
+    const [geospatialCameraName, setGeospatialCameraName] = useState("Geospatial Camera");
+    const [geospatialCameraPlanetRadius, setGeospatialCameraPlanetRadius] = useState(6371000);
+
+    const setAsActiveIfNeeded = (camera: Camera) => {
         if (!scene.activeCamera) {
             scene.activeCamera = camera;
         }
     };
 
-    const handleCreateUniversalCamera = () => {
+    const createArcRotateCamera = () => {
+        const alpha = arcRotateCameraUseRadians ? arcRotateCameraAlpha : (arcRotateCameraAlpha * Math.PI) / 180;
+        const beta = arcRotateCameraUseRadians ? arcRotateCameraBeta : (arcRotateCameraBeta * Math.PI) / 180;
+        const camera = new ArcRotateCamera(arcRotateCameraName, alpha, beta, arcRotateCameraRadius, arcRotateCameraTarget, scene);
+        camera.attachControl(scene.getEngine().getRenderingCanvas(), true);
+        setAsActiveIfNeeded(camera);
+        return camera;
+    };
+
+    const createUniversalCamera = () => {
         const camera = new UniversalCamera(universalCameraName, universalCameraPosition, scene);
         camera.attachControl(scene.getEngine().getRenderingCanvas(), true);
-        if (!scene.activeCamera) {
-            scene.activeCamera = camera;
-        }
+        setAsActiveIfNeeded(camera);
+        return camera;
+    };
+
+    const createFreeCamera = () => {
+        const camera = new FreeCamera(freeCameraName, freeCameraPosition, scene);
+        camera.attachControl(scene.getEngine().getRenderingCanvas(), true);
+        setAsActiveIfNeeded(camera);
+        return camera;
+    };
+
+    const createFollowCamera = () => {
+        const camera = new FollowCamera(followCameraName, followCameraPosition, scene);
+        camera.radius = followCameraRadius;
+        camera.heightOffset = followCameraHeightOffset;
+        camera.rotationOffset = followCameraRotationOffset;
+        camera.attachControl(true);
+        setAsActiveIfNeeded(camera);
+        return camera;
+    };
+
+    const createFlyCamera = () => {
+        const camera = new FlyCamera(flyCameraName, flyCameraPosition, scene);
+        camera.attachControl(true);
+        setAsActiveIfNeeded(camera);
+        return camera;
+    };
+
+    const createGeospatialCamera = () => {
+        const camera = new GeospatialCamera(geospatialCameraName, scene, { planetRadius: geospatialCameraPlanetRadius });
+        camera.attachControl(true);
+        setAsActiveIfNeeded(camera);
+        return camera;
     };
 
     return (
-        <div className={classes.section}>
+        <QuickCreateSection>
             {/* ArcRotate Camera */}
-            <div className={classes.row}>
-                <Button onClick={handleCreateArcRotateCamera} label="ArcRotate Camera" />
-                <SettingsPopover>
-                    <TextInputPropertyLine label="Name" value={arcRotateCameraName} onChange={(value) => setArcRotateCameraName(value)} />
-                    <Vector3PropertyLine label="Target" value={arcRotateCameraTarget} onChange={(value) => setArcRotateCameraTarget(value)} />
-                    <SpinButtonPropertyLine label="Radius" value={arcRotateCameraRadius} onChange={(value) => setArcRotateCameraRadius(value)} min={0.1} max={1000} step={0.5} />
-                    <SpinButtonPropertyLine
-                        label={`Alpha ${arcRotateCameraUseRadians ? "(rad)" : "(deg)"}`}
-                        value={arcRotateCameraAlpha}
-                        onChange={(value) => setArcRotateCameraAlpha(value)}
-                        min={arcRotateCameraUseRadians ? -Math.PI * 2 : -360}
-                        max={arcRotateCameraUseRadians ? Math.PI * 2 : 360}
-                        step={arcRotateCameraUseRadians ? 0.1 : 5}
-                    />
-                    <SpinButtonPropertyLine
-                        label={`Beta ${arcRotateCameraUseRadians ? "(rad)" : "(deg)"}`}
-                        value={arcRotateCameraBeta}
-                        onChange={(value) => setArcRotateCameraBeta(value)}
-                        min={arcRotateCameraUseRadians ? 0 : 0}
-                        max={arcRotateCameraUseRadians ? Math.PI : 180}
-                        step={arcRotateCameraUseRadians ? 0.1 : 5}
-                    />
-                    <CheckboxPropertyLine label="Use Radians" value={arcRotateCameraUseRadians} onChange={(value) => setArcRotateCameraUseRadians(value)} />
-                    <Button appearance="primary" onClick={handleCreateArcRotateCamera} label="Create" />
-                </SettingsPopover>
-            </div>
+            <QuickCreateItem selectionService={selectionService} label="ArcRotate Camera" onCreate={() => createArcRotateCamera()}>
+                <TextInputPropertyLine label="Name" value={arcRotateCameraName} onChange={(value) => setArcRotateCameraName(value)} />
+                <Vector3PropertyLine label="Target" value={arcRotateCameraTarget} onChange={(value) => setArcRotateCameraTarget(value)} />
+                <SpinButtonPropertyLine label="Radius" value={arcRotateCameraRadius} onChange={(value) => setArcRotateCameraRadius(value)} min={0.1} max={1000} step={0.5} />
+                <SpinButtonPropertyLine
+                    label={`Alpha ${arcRotateCameraUseRadians ? "(rad)" : "(deg)"}`}
+                    value={arcRotateCameraAlpha}
+                    onChange={(value) => setArcRotateCameraAlpha(value)}
+                    min={arcRotateCameraUseRadians ? -Math.PI * 2 : -360}
+                    max={arcRotateCameraUseRadians ? Math.PI * 2 : 360}
+                    step={arcRotateCameraUseRadians ? 0.1 : 5}
+                />
+                <SpinButtonPropertyLine
+                    label={`Beta ${arcRotateCameraUseRadians ? "(rad)" : "(deg)"}`}
+                    value={arcRotateCameraBeta}
+                    onChange={(value) => setArcRotateCameraBeta(value)}
+                    min={arcRotateCameraUseRadians ? 0 : 0}
+                    max={arcRotateCameraUseRadians ? Math.PI : 180}
+                    step={arcRotateCameraUseRadians ? 0.1 : 5}
+                />
+                <CheckboxPropertyLine label="Use Radians" value={arcRotateCameraUseRadians} onChange={(value) => setArcRotateCameraUseRadians(value)} />
+            </QuickCreateItem>
 
             {/* Universal Camera */}
-            <div className={classes.row}>
-                <Button onClick={handleCreateUniversalCamera} label="Universal Camera" />
-                <SettingsPopover>
-                    <TextInputPropertyLine label="Name" value={universalCameraName} onChange={(value) => setUniversalCameraName(value)} />
-                    <Vector3PropertyLine label="Position" value={universalCameraPosition} onChange={(value) => setUniversalCameraPosition(value)} />
-                    <Button appearance="primary" onClick={handleCreateUniversalCamera} label="Create" />
-                </SettingsPopover>
-            </div>
-        </div>
+            <QuickCreateItem selectionService={selectionService} label="Universal Camera" onCreate={() => createUniversalCamera()}>
+                <TextInputPropertyLine label="Name" value={universalCameraName} onChange={(value) => setUniversalCameraName(value)} />
+                <Vector3PropertyLine label="Position" value={universalCameraPosition} onChange={(value) => setUniversalCameraPosition(value)} />
+            </QuickCreateItem>
+
+            {/* Free Camera */}
+            <QuickCreateItem selectionService={selectionService} label="Free Camera" onCreate={() => createFreeCamera()}>
+                <TextInputPropertyLine label="Name" value={freeCameraName} onChange={(value) => setFreeCameraName(value)} />
+                <Vector3PropertyLine label="Position" value={freeCameraPosition} onChange={(value) => setFreeCameraPosition(value)} />
+            </QuickCreateItem>
+
+            {/* Follow Camera */}
+            <QuickCreateItem selectionService={selectionService} label="Follow Camera" onCreate={() => createFollowCamera()}>
+                <TextInputPropertyLine label="Name" value={followCameraName} onChange={(value) => setFollowCameraName(value)} />
+                <Vector3PropertyLine label="Position" value={followCameraPosition} onChange={(value) => setFollowCameraPosition(value)} />
+                <SpinButtonPropertyLine label="Radius" value={followCameraRadius} onChange={(value) => setFollowCameraRadius(value)} min={0.1} max={1000} step={0.5} />
+                <SpinButtonPropertyLine
+                    label="Height Offset"
+                    value={followCameraHeightOffset}
+                    onChange={(value) => setFollowCameraHeightOffset(value)}
+                    min={-100}
+                    max={100}
+                    step={0.5}
+                />
+                <SpinButtonPropertyLine
+                    label="Rotation Offset (deg)"
+                    value={followCameraRotationOffset}
+                    onChange={(value) => setFollowCameraRotationOffset(value)}
+                    min={-180}
+                    max={180}
+                    step={5}
+                />
+            </QuickCreateItem>
+
+            {/* Fly Camera */}
+            <QuickCreateItem selectionService={selectionService} label="Fly Camera" onCreate={() => createFlyCamera()}>
+                <TextInputPropertyLine label="Name" value={flyCameraName} onChange={(value) => setFlyCameraName(value)} />
+                <Vector3PropertyLine label="Position" value={flyCameraPosition} onChange={(value) => setFlyCameraPosition(value)} />
+            </QuickCreateItem>
+
+            {/* Geospatial Camera */}
+            <QuickCreateItem selectionService={selectionService} label="Geospatial Camera" onCreate={() => createGeospatialCamera()}>
+                <TextInputPropertyLine label="Name" value={geospatialCameraName} onChange={(value) => setGeospatialCameraName(value)} />
+                <SpinButtonPropertyLine
+                    label="Planet Radius (m)"
+                    value={geospatialCameraPlanetRadius}
+                    onChange={(value) => setGeospatialCameraPlanetRadius(value)}
+                    min={1000}
+                    max={100000000}
+                    step={1000}
+                />
+            </QuickCreateItem>
+        </QuickCreateSection>
     );
 };

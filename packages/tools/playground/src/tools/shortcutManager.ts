@@ -1,4 +1,4 @@
-import type { GlobalState } from "../globalState";
+import { type GlobalState } from "../globalState";
 import { Utilities } from "./utilities";
 
 export class ShortcutManager {

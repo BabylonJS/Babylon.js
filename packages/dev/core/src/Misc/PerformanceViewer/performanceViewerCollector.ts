@@ -1,10 +1,10 @@
-import type { Scene } from "../../scene";
-import type { IPerfCustomEvent, IPerfDatasets, IPerfMetadata } from "../interfaces/iPerfViewer";
+import { type Scene } from "../../scene";
+import { type IPerfCustomEvent, type IPerfDatasets, type IPerfMetadata } from "../interfaces/iPerfViewer";
 import { EventState, Observable } from "../observable";
 import { PrecisionDate } from "../precisionDate";
 import { Tools } from "../tools";
 import { DynamicFloat32Array } from "./dynamicFloat32Array";
-import type { IPerfViewerCollectionStrategy, PerfStrategyInitialization } from "./performanceViewerCollectionStrategies";
+import { type IPerfViewerCollectionStrategy, type PerfStrategyInitialization } from "./performanceViewerCollectionStrategies";
 
 // the initial size of our array, should be a multiple of two!
 const InitialArraySize = 1800;

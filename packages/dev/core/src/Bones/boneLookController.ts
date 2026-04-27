@@ -1,8 +1,8 @@
-import type { Nullable } from "../types";
+import { type Nullable } from "../types";
 import { BuildArray } from "../Misc/arrayTools";
 import { Vector3, Quaternion, Matrix } from "../Maths/math.vector";
-import type { TransformNode } from "../Meshes/transformNode";
-import type { Bone } from "./bone";
+import { type TransformNode } from "../Meshes/transformNode";
+import { type Bone } from "./bone";
 import { Space, Axis } from "../Maths/math.axis";
 
 /**
@@ -550,7 +550,7 @@ export class BoneLookController {
         ang2 %= 2 * Math.PI;
         ang2 = ang2 < 0 ? ang2 + 2 * Math.PI : ang2;
 
-        let ab = 0;
+        let ab: number;
 
         if (ang1 < ang2) {
             ab = ang2 - ang1;

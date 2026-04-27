@@ -1,7 +1,7 @@
 import { Action } from "./action";
 import { RegisterClass } from "../Misc/typeStore";
 
-import type { ActionManager } from "./actionManager";
+import { type ActionManager } from "./actionManager";
 
 /**
  * A Condition applied to an Action

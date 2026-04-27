@@ -1,12 +1,17 @@
 /* global BABYLON */
 
 var hostElement = document.getElementById("host-element");
+var cdnPort = 1337;
 
 const fallbackUrl = "https://snapshots-cvgtc2eugrd3cgfd.z01.azurefd.net/refs/heads/master";
 
+// Register service worker for PWA
+if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("sw.js");
+}
+
 let loadScriptAsync = function (url, instantResolve) {
     return new Promise((resolve) => {
-        // eslint-disable-next-line no-undef
         let urlToLoad = typeof globalThis !== "undefined" && globalThis.__babylonSnapshotTimestamp__ ? url + "?t=" + globalThis.__babylonSnapshotTimestamp__ : url;
         const script = document.createElement("script");
         script.src = urlToLoad;
@@ -44,18 +49,23 @@ const Versions = {
         { url: "https://preview.babylonjs.com/serializers/babylonjs.serializers.min.js", instantResolve: true },
         { url: "https://preview.babylonjs.com/materialsLibrary/babylonjs.materials.min.js", instantResolve: true },
         { url: "https://preview.babylonjs.com/gui/babylon.gui.min.js", instantResolve: true },
-        { url: "https://preview.babylonjs.com/inspector/babylon.inspector.bundle.js", instantResolve: true },
-        { url: "https://preview.babylonjs.com/inspector/babylon.inspector-v2.bundle.js", instantResolve: true, minVersion: "8.40.1" },
+        // Allow an "inspectorv1" query param to force loading Inspector v1.
+        ...(window.location.search.toLocaleLowerCase().includes("inspectorv1")
+            ? [{ url: "https://preview.babylonjs.com/inspector/babylon.inspector.bundle.js", instantResolve: true }]
+            : [
+                  { url: "https://preview.babylonjs.com/inspector/babylon.inspector.bundle.js", instantResolve: true, maxVersion: "8.40.0" },
+                  { url: "https://preview.babylonjs.com/inspector/babylon.inspector-v2.bundle.js", instantResolve: true, minVersion: "8.40.1" },
+              ]),
     ],
     local: [
-        { url: `//${window.location.hostname}:1337/babylon.js`, instantResolve: false },
-        { url: `//${window.location.hostname}:1337/addons/babylonjs.addons.js`, instantResolve: false },
-        { url: `//${window.location.hostname}:1337/loaders/babylonjs.loaders.min.js`, instantResolve: false },
-        { url: `//${window.location.hostname}:1337/serializers/babylonjs.serializers.min.js`, instantResolve: false },
-        { url: `//${window.location.hostname}:1337/materialsLibrary/babylonjs.materials.min.js`, instantResolve: false },
-        { url: `//${window.location.hostname}:1337/gui/babylon.gui.min.js`, instantResolve: false },
-        { url: `//${window.location.hostname}:1337/inspector/babylon.inspector.bundle.js`, instantResolve: false },
-        { url: `//${window.location.hostname}:1337/inspector/babylon.inspector-v2.bundle.js`, instantResolve: false },
+        { url: `//${window.location.hostname}:${cdnPort}/babylon.js`, instantResolve: false },
+        { url: `//${window.location.hostname}:${cdnPort}/addons/babylonjs.addons.js`, instantResolve: false },
+        { url: `//${window.location.hostname}:${cdnPort}/loaders/babylonjs.loaders.min.js`, instantResolve: false },
+        { url: `//${window.location.hostname}:${cdnPort}/serializers/babylonjs.serializers.min.js`, instantResolve: false },
+        { url: `//${window.location.hostname}:${cdnPort}/materialsLibrary/babylonjs.materials.min.js`, instantResolve: false },
+        { url: `//${window.location.hostname}:${cdnPort}/gui/babylon.gui.min.js`, instantResolve: false },
+        // { url: `//${window.location.hostname}:${cdnPort}/inspector/babylon.inspector.bundle.js`, instantResolve: false },
+        { url: `//${window.location.hostname}:${cdnPort}/inspector/babylon.inspector-v2.bundle.js`, instantResolve: false },
     ],
 };
 
@@ -96,7 +106,11 @@ const isVersionGreaterOrEqual = function (version1, version2) {
 let checkBabylonVersionAsync = function () {
     let activeVersion = "dist";
 
-    if (window.location.hostname === "localhost" && window.location.search.indexOf("dist") === -1) {
+    // Check if running as installed PWA (standalone mode)
+    const isStandalone = window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone;
+
+    // Use local only when on localhost, not in standalone PWA mode, and ?dist not specified
+    if (window.location.hostname === "localhost" && window.location.search.indexOf("dist") === -1 && !isStandalone) {
         activeVersion = "local";
     }
 
@@ -125,7 +139,7 @@ let checkBabylonVersionAsync = function () {
         }));
     } else if (version && activeVersion === "dist") {
         versions = versions
-            .filter((v) => !v.minVersion || isVersionGreaterOrEqual(version, v.minVersion))
+            .filter((v) => (!v.minVersion || isVersionGreaterOrEqual(version, v.minVersion)) && (!v.maxVersion || isVersionGreaterOrEqual(v.maxVersion, version)))
             .map((v) => ({
                 url: v.url.replace("https://preview.babylonjs.com", "https://cdn.babylonjs.com/v" + version),
                 instantResolve: v.instantResolve,
@@ -137,14 +151,11 @@ let checkBabylonVersionAsync = function () {
     }).then(() => {
         // if local, set the default base URL
         if (snapshot) {
-            // eslint-disable-next-line no-undef
             globalThis.BABYLON.Tools.ScriptBaseUrl = "https://snapshots-cvgtc2eugrd3cgfd.z01.azurefd.net/" + snapshot;
         } else if (version) {
-            // eslint-disable-next-line no-undef
             globalThis.BABYLON.Tools.ScriptBaseUrl = "https://cdn.babylonjs.com/v" + version;
         } else if (activeVersion === "local") {
-            // eslint-disable-next-line no-undef
-            globalThis.BABYLON.Tools.ScriptBaseUrl = window.location.protocol + `//${window.location.hostname}:1337/`;
+            globalThis.BABYLON.Tools.ScriptBaseUrl = window.location.protocol + `//${window.location.hostname}:${cdnPort}/`;
         }
 
         return { version, bundles: versions.map((v) => v.url) };

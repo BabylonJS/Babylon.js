@@ -1,15 +1,14 @@
 import { NodeMaterialBlock } from "../../nodeMaterialBlock";
 import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
-import type { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
-import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
-import { NodeMaterialConnectionPointDirection } from "../../nodeMaterialBlockConnectionPoint";
+import { type NodeMaterialBuildState } from "../../nodeMaterialBuildState";
+import { type NodeMaterialConnectionPoint, NodeMaterialConnectionPointDirection } from "../../nodeMaterialBlockConnectionPoint";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import { InputBlock } from "../Input/inputBlock";
 import { NodeMaterialConnectionPointCustomObject } from "../../nodeMaterialConnectionPointCustomObject";
-import type { NodeMaterialDefines } from "../../nodeMaterial";
-import type { Scene } from "../../../../scene";
-import type { Nullable } from "../../../../types";
+import { type NodeMaterialDefines } from "../../nodeMaterial";
+import { type Scene } from "../../../../scene";
+import { type Nullable } from "../../../../types";
 import { PBRIridescenceConfiguration } from "../../../../Materials/PBR/pbrIridescenceConfiguration";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
@@ -83,6 +82,9 @@ export class IridescenceBlock extends NodeMaterialBlock {
         return this._outputs[0];
     }
 
+    /**
+     * Auto configure the block based on the material
+     */
     public override autoConfigure() {
         if (!this.intensity.isConnected) {
             const intensityInput = new InputBlock("Iridescence intensity", NodeMaterialBlockTargets.Fragment, NodeMaterialBlockConnectionPointTypes.Float);
@@ -99,6 +101,10 @@ export class IridescenceBlock extends NodeMaterialBlock {
         }
     }
 
+    /**
+     * Prepare the list of defines
+     * @param defines - the list of defines to update
+     */
     public override prepareDefines(defines: NodeMaterialDefines) {
         defines.setValue("IRIDESCENCE", true, true);
         defines.setValue("IRIDESCENCE_TEXTURE", false, true);
@@ -151,12 +157,22 @@ export class IridescenceBlock extends NodeMaterialBlock {
         return this;
     }
 
+    /**
+     * Serializes the block
+     * @returns the serialized object
+     */
     public override serialize(): any {
         const serializationObject = super.serialize();
 
         return serializationObject;
     }
 
+    /**
+     * Deserializes the block
+     * @param serializationObject - the object to deserialize from
+     * @param scene - the scene to deserialize in
+     * @param rootUrl - the root URL for assets
+     */
     public override _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
         super._deserialize(serializationObject, scene, rootUrl);
     }

@@ -1,12 +1,12 @@
 import { NodeGeometryBlock } from "../nodeGeometryBlock";
-import type { NodeGeometryConnectionPoint } from "../nodeGeometryBlockConnectionPoint";
+import { type NodeGeometryConnectionPoint } from "../nodeGeometryBlockConnectionPoint";
 import { RegisterClass } from "../../../Misc/typeStore";
 import { NodeGeometryBlockConnectionPointTypes } from "../Enums/nodeGeometryConnectionPointTypes";
-import type { VertexData } from "../../mesh.vertexData";
-import type { NodeGeometryBuildState } from "../nodeGeometryBuildState";
+import { type VertexData } from "../../mesh.vertexData";
+import { type NodeGeometryBuildState } from "../nodeGeometryBuildState";
 import { PropertyTypeForEdition, editableInPropertyPage } from "../../../Decorators/nodeDecorator";
 import { CSG2, InitializeCSG2Async, IsCSG2Ready } from "core/Meshes/csg2";
-import type { Nullable } from "core/types";
+import { type Nullable } from "core/types";
 import { CSG } from "core/Meshes/csg";
 
 /**
@@ -62,7 +62,6 @@ export class BooleanGeometryBlock extends NodeGeometryBlock {
             return null;
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-misused-promises
         if (!this._csg2LoadingPromise) {
             this._csg2LoadingPromise = InitializeCSG2Async();
         }
@@ -206,6 +205,7 @@ export class BooleanGeometryBlock extends NodeGeometryBlock {
         return serializationObject;
     }
 
+    /** @internal */
     public override _deserialize(serializationObject: any) {
         super._deserialize(serializationObject);
 

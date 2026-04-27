@@ -1,22 +1,22 @@
 import { NodeMaterialBlockConnectionPointTypes } from "./Enums/nodeMaterialBlockConnectionPointTypes";
-import type { NodeMaterialBuildState } from "./nodeMaterialBuildState";
-import type { Nullable } from "../../types";
+import { type NodeMaterialBuildState } from "./nodeMaterialBuildState";
+import { type Nullable } from "../../types";
 import { NodeMaterialConnectionPoint, NodeMaterialConnectionPointDirection } from "./nodeMaterialBlockConnectionPoint";
 import { NodeMaterialBlockTargets } from "./Enums/nodeMaterialBlockTargets";
-import type { Effect } from "../effect";
-import type { AbstractMesh } from "../../Meshes/abstractMesh";
-import type { Mesh } from "../../Meshes/mesh";
-import type { SubMesh } from "../../Meshes/subMesh";
-import type { NodeMaterial, NodeMaterialDefines } from "./nodeMaterial";
-import type { InputBlock } from "./Blocks/Input/inputBlock";
+import { type Effect } from "../effect";
+import { type AbstractMesh } from "../../Meshes/abstractMesh";
+import { type Mesh } from "../../Meshes/mesh";
+import { type SubMesh } from "../../Meshes/subMesh";
+import { type NodeMaterial, type NodeMaterialDefines } from "./nodeMaterial";
+import { type InputBlock } from "./Blocks/Input/inputBlock";
 import { UniqueIdGenerator } from "../../Misc/uniqueIdGenerator";
-import type { Scene } from "../../scene";
+import { type Scene } from "../../scene";
 import { GetClass } from "../../Misc/typeStore";
-import type { EffectFallbacks } from "../effectFallbacks";
+import { type EffectFallbacks } from "../effectFallbacks";
 import { Logger } from "core/Misc/logger";
 import { ShaderLanguage } from "../shaderLanguage";
 import { Observable } from "core/Misc/observable";
-import type { NodeMaterialTeleportOutBlock } from "./Blocks/Teleport/teleportOutBlock";
+import { type NodeMaterialTeleportOutBlock } from "./Blocks/Teleport/teleportOutBlock";
 
 /**
  * Defines a block that can be used inside a node based material
@@ -253,7 +253,6 @@ export class NodeMaterialBlock {
     public _setInitialTarget(target: NodeMaterialBlockTargets): void {
         this._target = target;
         // marked as read only
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
         (this._originalTargetIsNeutral as boolean) = target === NodeMaterialBlockTargets.Neutral;
     }
 
@@ -440,9 +439,6 @@ export class NodeMaterialBlock {
      * Connect current block with another block
      * @param other defines the block to connect with
      * @param options define the various options to help pick the right connections
-     * @param options.input
-     * @param options.output
-     * @param options.outputSwizzle
      * @returns the current block
      */
     public connectTo(
@@ -467,8 +463,7 @@ export class NodeMaterialBlock {
                 output.connectTo(input);
                 notFound = false;
             } else if (!output) {
-                // eslint-disable-next-line no-throw-literal
-                throw "Unable to find a compatible match";
+                throw new Error("Unable to find a compatible match");
             } else {
                 output = this.getSiblingOutput(output);
             }
@@ -970,7 +965,7 @@ export class NodeMaterialBlock {
         const serializedInputs = serializationObject.inputs;
         const serializedOutputs = serializationObject.outputs;
         if (serializedInputs) {
-            for (let i = 0; i < serializedInputs.length; i++) {
+            for (let i = 0; i < Math.min(serializedInputs.length, this.inputs.length); i++) {
                 const port = serializedInputs[i];
 
                 if (port.displayName) {
@@ -983,7 +978,7 @@ export class NodeMaterialBlock {
             }
         }
         if (serializedOutputs) {
-            for (let i = 0; i < serializedOutputs.length; i++) {
+            for (let i = 0; i < Math.min(serializedOutputs.length, this.outputs.length); i++) {
                 const port = serializedOutputs[i];
                 if (port.displayName) {
                     this.outputs[i].displayName = port.displayName;

@@ -1,29 +1,48 @@
-import type { SliderOnChangeData } from "@fluentui/react-components";
-import { makeStyles, Slider } from "@fluentui/react-components";
+import { type FunctionComponent, useEffect, useState, useRef } from "react";
+import { makeStyles, mergeClasses } from "@fluentui/react-components";
 import { SpinButton } from "./spinButton";
-import type { ChangeEvent, FunctionComponent } from "react";
-import { useEffect, useState, useRef, useContext } from "react";
-import type { PrimitiveProps } from "./primitive";
+import { Slider } from "./slider";
+import { type PrimitiveProps } from "./primitive";
 import { InfoLabel } from "./infoLabel";
-import { CustomTokens } from "./utils";
-import { ToolContext } from "../hoc/fluentToolWrapper";
 
 const useSyncedSliderStyles = makeStyles({
-    container: { display: "flex" },
+    container: { display: "flex", minWidth: 0 },
     syncedSlider: {
         flex: "1 1 0",
         flexDirection: "row",
         display: "flex",
         alignItems: "center",
+        minWidth: 0,
     },
+    // Default: 50/50 split between slider and spinbutton
     slider: {
-        flex: "1 1 auto", // Grow to fill available space
-        minWidth: CustomTokens.sliderMinWidth,
-        maxWidth: "none", // Allow slider to grow
+        flex: "1 1 0",
+        minWidth: 0,
+    },
+    spinButton: {
+        flex: "1 1 0",
+        minWidth: 0,
+    },
+    spinButtonInput: {
+        minWidth: "0",
+    },
+    // compact/growSlider overrides for standalone (non-PropertyLine) usage
+    compactSlider: {
+        flex: "1 1 auto",
+        minWidth: "50px",
+        maxWidth: "75px",
+    },
+    growSlider: {
+        flex: "1 1 auto",
+        minWidth: "50px",
     },
     compactSpinButton: {
-        width: "70px",
-        flex: "0 0 auto", // Don't grow, stay fixed
+        width: "65px",
+        minWidth: "65px",
+        maxWidth: "65px",
+    },
+    compactSpinButtonInput: {
+        minWidth: "0",
     },
 });
 
@@ -34,12 +53,16 @@ export type SyncedSliderProps = PrimitiveProps<number> & {
     max?: number;
     /** Step size for the slider */
     step?: number;
+    /** Optional fixed precision (number of decimal digits). Overrides the automatically computed display precision. */
+    precision?: number;
     /** Displayed in the ux to indicate unit of measurement */
     unit?: string;
     /** When true, onChange is only called when the user releases the slider, not during drag */
     notifyOnlyOnRelease?: boolean;
-    /** When true, slider grows to fill space and SpinButton is fixed at 70px */
+    /** When true, slider grows to fill space and SpinButton is fixed at 65px */
     compact?: boolean;
+    /** When true, slider grows to fill all available space (no maxWidth constraint) */
+    growSlider?: boolean;
 };
 
 /**
@@ -51,24 +74,15 @@ export const SyncedSliderInput: FunctionComponent<SyncedSliderProps> = (props) =
     SyncedSliderInput.displayName = "SyncedSliderInput";
     const { infoLabel, ...passthroughProps } = props;
     const classes = useSyncedSliderStyles();
-    const { size } = useContext(ToolContext);
-    const [value, setValue] = useState<number>(props.value);
+    const [value, setValue] = useState<number>(props.value ?? 0);
     const pendingValueRef = useRef<number>(undefined);
     const isDraggingRef = useRef(false);
 
-    // NOTE: The Fluent slider will add tick marks if the step prop is anything other than undefined.
-    // To avoid this, we scale the min/max based on the step so we can always make step undefined.
-    // The actual step size in the Fluent slider is 1 when it is ste to undefined.
-    const min = props.min ?? 0;
-    const max = props.max ?? 100;
-    const step = props.step ?? 1;
-
     useEffect(() => {
-        !isDraggingRef.current && setValue(props.value ?? ""); // Update local state when props.value changes as long as user is not actively dragging
+        !isDraggingRef.current && setValue(props.value ?? 0); // Update local state when props.value changes as long as user is not actively dragging
     }, [props.value]);
 
-    const handleSliderChange = (_: ChangeEvent<HTMLInputElement>, data: SliderOnChangeData) => {
-        const newValue = data.value * step;
+    const handleSliderChange = (newValue: number) => {
         setValue(newValue);
 
         if (props.notifyOnlyOnRelease) {
@@ -97,25 +111,46 @@ export const SyncedSliderInput: FunctionComponent<SyncedSliderProps> = (props) =
         props.onChange(value); // Input always updates immediately
     };
 
+    const hasSlider = props.min !== undefined && props.max !== undefined;
+    const useCompactSizing = props.compact || props.growSlider;
+
+    const getSliderClassName = () => {
+        if (props.growSlider) {
+            return classes.growSlider;
+        }
+        if (props.compact) {
+            return classes.compactSlider;
+        }
+        return classes.slider;
+    };
+
     return (
-        <div className={classes.container}>
+        <div className={mergeClasses(classes.container, props.className)}>
             {infoLabel && <InfoLabel {...infoLabel} htmlFor={"syncedSlider"} />}
             <div id="syncedSlider" className={classes.syncedSlider}>
-                {props.min !== undefined && props.max !== undefined && (
+                {hasSlider && (
                     <Slider
-                        {...passthroughProps}
-                        className={classes.slider}
-                        size={size}
-                        min={min / step}
-                        max={max / step}
-                        step={undefined}
-                        value={value / step}
+                        className={getSliderClassName()}
+                        value={value}
                         onChange={handleSliderChange}
+                        min={props.min}
+                        max={props.max}
+                        step={props.step}
+                        disabled={props.disabled}
                         onPointerDown={handleSliderPointerDown}
                         onPointerUp={handleSliderPointerUp}
                     />
                 )}
-                <SpinButton {...passthroughProps} className={props.compact ? classes.compactSpinButton : undefined} value={value} onChange={handleInputChange} step={props.step} />
+                <SpinButton
+                    {...passthroughProps}
+                    className={useCompactSizing ? classes.compactSpinButton : classes.spinButton}
+                    inputClassName={useCompactSizing ? classes.compactSpinButtonInput : classes.spinButtonInput}
+                    value={value}
+                    onChange={handleInputChange}
+                    step={props.step}
+                    disabled={props.disabled}
+                    disableDragButton
+                />
             </div>
         </div>
     );

@@ -1,11 +1,21 @@
-uniform vec4 vEyePosition;
-
 uniform float vBaseWeight;
 uniform vec4 vBaseColor;
 uniform float vBaseDiffuseRoughness;
 uniform vec4 vReflectanceInfo;
 uniform vec4 vSpecularColor;
 uniform vec3 vSpecularAnisotropy;
+uniform float vTransmissionWeight;
+uniform vec3 vTransmissionColor;
+uniform float vTransmissionDepth;
+uniform vec3 vTransmissionScatter;
+uniform float vTransmissionScatterAnisotropy;
+uniform float vTransmissionDispersionScale;
+uniform float vTransmissionDispersionAbbeNumber;
+uniform float vSubsurfaceWeight;
+uniform vec3 vSubsurfaceColor;
+uniform float vSubsurfaceRadius;
+uniform vec3 vSubsurfaceRadiusScale;
+uniform float vSubsurfaceScatterAnisotropy;
 uniform float vCoatWeight;
 uniform vec3 vCoatColor;
 uniform float vCoatRoughness;
@@ -16,14 +26,17 @@ uniform float vFuzzWeight;
 uniform vec3 vFuzzColor;
 uniform float vFuzzRoughness;
 uniform vec2 vGeometryCoatTangent;
+uniform float vGeometryThickness;
 uniform vec3 vEmissionColor;
 uniform float vThinFilmWeight;
 uniform vec2 vThinFilmThickness;
 uniform float vThinFilmIor;
+uniform float vGeometryThinWalled;
 
 // CUSTOM CONTROLS
 uniform vec4 vLightingIntensity;
 uniform float visibility;
+uniform vec2 renderTargetSize;
 
 // Samplers
 #ifdef BASE_COLOR
@@ -83,8 +96,44 @@ uniform vec2 vGeometryCoatNormalInfos;
 uniform vec2 vGeometryOpacityInfos;
 #endif
 
+#ifdef GEOMETRY_THICKNESS
+uniform vec2 vGeometryThicknessInfos;
+#endif
+
 #ifdef EMISSION_COLOR
 uniform vec2 vEmissionColorInfos;
+#endif
+
+#ifdef TRANSMISSION_WEIGHT
+uniform vec2 vTransmissionWeightInfos;
+#endif
+
+#ifdef TRANSMISSION_COLOR
+uniform vec2 vTransmissionColorInfos;
+#endif
+
+#ifdef TRANSMISSION_DEPTH
+uniform vec2 vTransmissionDepthInfos;
+#endif
+
+#ifdef TRANSMISSION_SCATTER
+uniform vec2 vTransmissionScatterInfos;
+#endif
+
+#ifdef TRANSMISSION_DISPERSION_SCALE
+uniform vec2 vTransmissionDispersionScaleInfos;
+#endif
+
+#ifdef SUBSURFACE_WEIGHT
+uniform vec2 vSubsurfaceWeightInfos;
+#endif
+
+#ifdef SUBSURFACE_COLOR
+uniform vec2 vSubsurfaceColorInfos;
+#endif
+
+#ifdef SUBSURFACE_RADIUS_SCALE
+uniform vec2 vSubsurfaceRadiusScaleInfos;
 #endif
 
 #ifdef COAT_WEIGHT
@@ -135,10 +184,8 @@ uniform vec2 vThinFilmWeightInfos;
 uniform vec2 vThinFilmThicknessInfos;
 #endif
 
-// Refraction Reflection
-#if defined(REFLECTIONMAP_SPHERICAL) || defined(REFLECTIONMAP_PROJECTION) || defined(SS_REFRACTION) || defined(PREPASS)
-uniform mat4 view;
-#endif
+// Scene uniforms (view, viewProjection, etc.) are included via sceneFragmentDeclaration or sceneUboDeclaration
+#include<sceneFragmentDeclaration>
 
 // Reflection
 #ifdef REFLECTION
@@ -197,6 +244,11 @@ uniform mat4 view;
         uniform vec3 vSphericalYZ;
         uniform vec3 vSphericalZX;
     #endif
+#endif
+
+#ifdef REFRACTED_BACKGROUND
+    uniform mat4 backgroundRefractionMatrix;
+    uniform vec3 vBackgroundRefractionInfos;
 #endif
 
 #define ADDITIONAL_FRAGMENT_DECLARATION

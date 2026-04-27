@@ -1,16 +1,14 @@
 import { Control } from "gui/2D/controls/control";
 import { Vector2 } from "core/Maths/math.vector";
 import * as React from "react";
-import type { GlobalState } from "../globalState";
-import type { Image } from "gui/2D/controls/image";
-import type { TextBlock } from "gui/2D/controls/textBlock";
-import type { DimensionProperties } from "./coordinateHelper";
-import { CoordinateHelper, Rect } from "./coordinateHelper";
-import type { Observer } from "core/Misc/observable";
-import type { Nullable } from "core/types";
+import { type GlobalState } from "../globalState";
+import { type Image } from "gui/2D/controls/image";
+import { type TextBlock } from "gui/2D/controls/textBlock";
+import { type DimensionProperties, CoordinateHelper, Rect } from "./coordinateHelper";
+import { type Observer } from "core/Misc/observable";
+import { type Nullable } from "core/types";
 import { ValueAndUnit } from "gui/2D/valueAndUnit";
-import type { IScalePoint } from "./gizmoScalePoint";
-import { GizmoScalePoint, ScalePointPosition } from "./gizmoScalePoint";
+import { type IScalePoint, GizmoScalePoint, ScalePointPosition } from "./gizmoScalePoint";
 import { MathTools } from "gui/2D/math2D";
 
 export interface IGuiGizmoProps {

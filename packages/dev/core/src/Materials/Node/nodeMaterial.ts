@@ -1,22 +1,21 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import type { NodeMaterialBlock } from "./nodeMaterialBlock";
+import { type NodeMaterialBlock } from "./nodeMaterialBlock";
 import { PushMaterial } from "../pushMaterial";
-import type { Scene } from "../../scene";
-import type { AbstractMesh } from "../../Meshes/abstractMesh";
+import { type Scene } from "../../scene";
+import { type AbstractMesh } from "../../Meshes/abstractMesh";
 import { Matrix, Vector2 } from "../../Maths/math.vector";
 import { Color3, Color4 } from "../../Maths/math.color";
-import type { Mesh } from "../../Meshes/mesh";
+import { type Mesh } from "../../Meshes/mesh";
 import { NodeMaterialBuildState } from "./nodeMaterialBuildState";
-import type { IEffectCreationOptions } from "../effect";
-import { Effect } from "../effect";
-import type { BaseTexture } from "../../Materials/Textures/baseTexture";
+import { type IEffectCreationOptions, Effect } from "../effect";
+import { type BaseTexture } from "../../Materials/Textures/baseTexture";
 import { Observable } from "../../Misc/observable";
 import { NodeMaterialBlockTargets } from "./Enums/nodeMaterialBlockTargets";
 import { NodeMaterialBuildStateSharedData } from "./nodeMaterialBuildStateSharedData";
-import type { SubMesh } from "../../Meshes/subMesh";
+import { type SubMesh } from "../../Meshes/subMesh";
 import { MaterialDefines } from "../../Materials/materialDefines";
-import type { NodeMaterialOptimizer } from "./Optimizers/nodeMaterialOptimizer";
-import type { Nullable } from "../../types";
+import { type NodeMaterialOptimizer } from "./Optimizers/nodeMaterialOptimizer";
+import { type Nullable } from "../../types";
 import { VertexBuffer } from "../../Buffers/buffer";
 import { Tools } from "../../Misc/tools";
 import { SfeModeDefine } from "./Blocks/Fragment/smartFilterFragmentOutputBlock";
@@ -27,25 +26,24 @@ import { InputBlock } from "./Blocks/Input/inputBlock";
 import { GetClass, RegisterClass } from "../../Misc/typeStore";
 import { serialize } from "../../Misc/decorators";
 import { SerializationHelper } from "../../Misc/decorators.serialization";
-import type { TextureBlock } from "./Blocks/Dual/textureBlock";
-import type { ReflectionTextureBaseBlock } from "./Blocks/Dual/reflectionTextureBaseBlock";
-import type { RefractionBlock } from "./Blocks/PBR/refractionBlock";
+import { type TextureBlock } from "./Blocks/Dual/textureBlock";
+import { type ReflectionTextureBaseBlock } from "./Blocks/Dual/reflectionTextureBaseBlock";
+import { type RefractionBlock } from "./Blocks/PBR/refractionBlock";
 import { CurrentScreenBlock } from "./Blocks/Dual/currentScreenBlock";
 import { ParticleTextureBlock } from "./Blocks/Particle/particleTextureBlock";
 import { ParticleRampGradientBlock } from "./Blocks/Particle/particleRampGradientBlock";
 import { ParticleBlendMultiplyBlock } from "./Blocks/Particle/particleBlendMultiplyBlock";
 import { EffectFallbacks } from "../effectFallbacks";
 import { WebRequest } from "../../Misc/webRequest";
-import type { PostProcessOptions } from "../../PostProcesses/postProcess";
-import { PostProcess } from "../../PostProcesses/postProcess";
+import { type PostProcessOptions, PostProcess } from "../../PostProcesses/postProcess";
 import { Constants } from "../../Engines/constants";
-import type { Camera } from "../../Cameras/camera";
+import { type Camera } from "../../Cameras/camera";
 import { VectorMergerBlock } from "./Blocks/vectorMergerBlock";
 import { RemapBlock } from "./Blocks/remapBlock";
 import { MultiplyBlock } from "./Blocks/multiplyBlock";
 import { NodeMaterialModes } from "./Enums/nodeMaterialModes";
 import { Texture } from "../Textures/texture";
-import type { IParticleSystem } from "../../Particles/IParticleSystem";
+import { type IParticleSystem } from "../../Particles/IParticleSystem";
 import { BaseParticleSystem } from "../../Particles/baseParticleSystem";
 import { ColorSplitterBlock } from "./Blocks/colorSplitterBlock";
 import { TimingTools } from "../../Misc/timingTools";
@@ -53,22 +51,22 @@ import { ProceduralTexture } from "../Textures/Procedurals/proceduralTexture";
 import { AnimatedInputBlockTypes } from "./Blocks/Input/animatedInputBlockTypes";
 import { TrigonometryBlock, TrigonometryBlockOperations } from "./Blocks/trigonometryBlock";
 import { NodeMaterialSystemValues } from "./Enums/nodeMaterialSystemValues";
-import type { ImageSourceBlock } from "./Blocks/Dual/imageSourceBlock";
+import { type ImageSourceBlock } from "./Blocks/Dual/imageSourceBlock";
 import { EngineStore } from "../../Engines/engineStore";
 import { Material } from "../material";
-import type { TriPlanarBlock } from "./Blocks/triPlanarBlock";
-import type { BiPlanarBlock } from "./Blocks/biPlanarBlock";
-import type { PrePassRenderer } from "../../Rendering/prePassRenderer";
-import type { PrePassTextureBlock } from "./Blocks/Input/prePassTextureBlock";
-import type { PrePassOutputBlock } from "./Blocks/Fragment/prePassOutputBlock";
-import type { NodeMaterialTeleportOutBlock } from "./Blocks/Teleport/teleportOutBlock";
-import type { NodeMaterialTeleportInBlock } from "./Blocks/Teleport/teleportInBlock";
+import { type TriPlanarBlock } from "./Blocks/triPlanarBlock";
+import { type BiPlanarBlock } from "./Blocks/biPlanarBlock";
+import { type PrePassRenderer } from "../../Rendering/prePassRenderer";
+import { type PrePassTextureBlock } from "./Blocks/Input/prePassTextureBlock";
+import { type PrePassOutputBlock } from "./Blocks/Fragment/prePassOutputBlock";
+import { type NodeMaterialTeleportOutBlock } from "./Blocks/Teleport/teleportOutBlock";
+import { type NodeMaterialTeleportInBlock } from "./Blocks/Teleport/teleportInBlock";
 import { Logger } from "core/Misc/logger";
-import { PrepareDefinesForCamera, PrepareDefinesForPrePass } from "../materialHelper.functions";
+import { PrepareDefinesForCamera, PrepareDefinesForPrePass, AreLightsTexturesReady } from "../materialHelper.functions";
 import { ImageProcessingDefinesMixin } from "../imageProcessingConfiguration.defines";
 import { ShaderLanguage } from "../shaderLanguage";
 import { AbstractEngine } from "../../Engines/abstractEngine";
-import type { LoopBlock } from "./Blocks/loopBlock";
+import { type LoopBlock } from "./Blocks/loopBlock";
 import { MaterialHelperGeometryRendering } from "../materialHelper.geometryrendering";
 import { UVDefinesMixin } from "../uv.defines";
 import { ImageProcessingMixin } from "../imageProcessing";
@@ -150,6 +148,7 @@ export class NodeMaterialDefines extends ImageProcessingDefinesMixin(NodeMateria
     public MORPHTARGETS_UV = false;
     /** Morph target uv2 */
     public MORPHTARGETS_UV2 = false;
+    /** Morph target color support */
     public MORPHTARGETS_COLOR = false;
     /** Morph target support positions */
     public MORPHTARGETTEXTURE_HASPOSITIONS = false;
@@ -161,6 +160,7 @@ export class NodeMaterialDefines extends ImageProcessingDefinesMixin(NodeMateria
     public MORPHTARGETTEXTURE_HASUVS = false;
     /** Morph target support uv2s */
     public MORPHTARGETTEXTURE_HASUV2S = false;
+    /** Morph target texture has colors */
     public MORPHTARGETTEXTURE_HASCOLORS = false;
     /** Number of morph influencers */
     public NUM_MORPH_INFLUENCERS = 0;
@@ -174,10 +174,13 @@ export class NodeMaterialDefines extends ImageProcessingDefinesMixin(NodeMateria
     /** Camera is perspective */
     public CAMERA_PERSPECTIVE = false;
 
+    /** Area light support */
     public AREALIGHTSUPPORTED = true;
 
+    /** Area light no roughness */
     public AREALIGHTNOROUGHTNESS = true;
 
+    /** Position W as varying */
     public POSITIONW_AS_VARYING = false;
 
     /**
@@ -301,6 +304,10 @@ export class NodeMaterial extends NodeMaterialBase {
     /** @internal */
     public _useAdditionalColor = false;
 
+    /**
+     * Sets whether glow mode is enabled
+     * @param value - the value to set
+     */
     public override set _glowModeEnabled(value: boolean) {
         this._useAdditionalColor = value;
     }
@@ -563,8 +570,7 @@ export class NodeMaterial extends NodeMaterialBase {
      */
     public addOutputNode(node: NodeMaterialBlock) {
         if (node.target === null) {
-            // eslint-disable-next-line no-throw-literal
-            throw "This node is not meant to be an output node. You may want to explicitly set its target value.";
+            throw new Error("This node is not meant to be an output node. You may want to explicitly set its target value.");
         }
 
         if ((node.target & NodeMaterialBlockTargets.Vertex) !== 0) {
@@ -649,6 +655,10 @@ export class NodeMaterial extends NodeMaterialBase {
     @serialize()
     public forceAlphaBlending = false;
 
+    /**
+     * Gets whether the glow layer is supported
+     * @returns true if the glow layer is supported
+     */
     public override get _supportGlowLayer() {
         if (this._fragmentOutputNodes.length === 0) {
             return false;
@@ -1635,7 +1645,7 @@ export class NodeMaterial extends NodeMaterialBase {
             }
         }
 
-        if (!subMesh.materialDefines || typeof subMesh.materialDefines === "string") {
+        if (!subMesh.materialDefines) {
             subMesh.materialDefines = new NodeMaterialDefines();
         }
 
@@ -1653,13 +1663,17 @@ export class NodeMaterial extends NodeMaterialBase {
             return false;
         }
 
+        if (!AreLightsTexturesReady(scene, mesh, this.maxSimultaneousLights)) {
+            return false;
+        }
+
         const result = this._processDefines(defines, mesh, useInstances, subMesh);
 
         if (result) {
             const previousEffect = subMesh.effect;
             // Compilation
             const join = defines.toString();
-            let effect = engine.createEffect(
+            const effect = engine.createEffect(
                 {
                     vertex: "nodeMaterial" + this._buildId,
                     fragment: "nodeMaterial" + this._buildId,
@@ -1691,7 +1705,6 @@ export class NodeMaterial extends NodeMaterialBase {
 
                 // Use previous effect while new one is compiling
                 if (this.allowShaderHotSwapping && previousEffect && !effect.isReady()) {
-                    effect = previousEffect;
                     defines.markAsUnprocessed();
 
                     if (result.lightDisposed) {

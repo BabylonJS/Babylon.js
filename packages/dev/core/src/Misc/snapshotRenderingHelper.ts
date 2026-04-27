@@ -1,18 +1,18 @@
-import type {
-    AbstractEngine,
-    AbstractMesh,
-    EffectLayer,
-    Mesh,
-    Nullable,
-    Observer,
-    Scene,
-    WebGPUDrawContext,
-    WebGPUShaderProcessor,
-    WebGPUPipelineContext,
-    GaussianSplattingMesh,
-    DrawWrapper,
-    Camera,
-    SpriteManager,
+import {
+    type AbstractEngine,
+    type AbstractMesh,
+    type EffectLayer,
+    type Mesh,
+    type Nullable,
+    type Observer,
+    type Scene,
+    type WebGPUDrawContext,
+    type WebGPUShaderProcessor,
+    type WebGPUPipelineContext,
+    type GaussianSplattingMesh,
+    type DrawWrapper,
+    type Camera,
+    type SpriteManager,
 } from "core/index";
 
 import { Constants } from "core/Engines/constants";
@@ -173,17 +173,21 @@ export class SnapshotRenderingHelper {
      * Enable snapshot rendering
      * Use this method instead of engine.snapshotRendering=true, to make sure everything is ready before enabling snapshot rendering.
      * Note that this method is ref-counted and works in pair with disableSnapshotRendering(): you should call enableSnapshotRendering() as many times as you call disableSnapshotRendering().
+     * @param debugMessage An optional message to display in debug logs to help identify the context of the call to enableSnapshotRendering
      */
-    public enableSnapshotRendering() {
+    public enableSnapshotRendering(debugMessage?: string) {
         if (!this._engine.isWebGPU) {
             return;
         }
+
+        this._log("enableSnapshotRendering", `called (refCount: ${this._disableRenderingRefCount - 1})${debugMessage ? ` - ${debugMessage}` : ""}`);
 
         if (--this._disableRenderingRefCount > 0) {
             return;
         }
 
-        this._log("enableSnapshotRendering", "called");
+        this._log("enableSnapshotRendering", `execute`);
+
         if (this._disableCancelFunctions.size > 0) {
             this._log("enableSnapshotRendering", `cancelling ${this._disableCancelFunctions.size} "disable" callbacks`);
         }
@@ -225,16 +229,22 @@ export class SnapshotRenderingHelper {
 
     /**
      * Disable snapshot rendering
-     * Note that this method is ref-counted and works in pair with disableSnapshotRendering(): you should call enableSnapshotRendering() as many times as you call disableSnapshotRendering().
+     * Note that this method is ref-counted and works in pair with enableSnapshotRendering(): you should call enableSnapshotRendering() as many times as you call disableSnapshotRendering().
+     * @param debugMessage An optional message to display in debug logs to help identify the context of the call to disableSnapshotRendering
      */
-    public disableSnapshotRendering() {
+    public disableSnapshotRendering(debugMessage?: string) {
         if (!this._engine.isWebGPU) {
             return;
         }
 
-        this._log("disableSnapshotRendering", "called");
+        this._log(
+            "disableSnapshotRendering",
+            `called (refCount: ${this._disableRenderingRefCount === 0 ? 0 : this._disableRenderingRefCount + 1})${debugMessage ? ` - ${debugMessage}` : ""}`
+        );
 
         if (this._disableRenderingRefCount === 0) {
+            this._log("disableSnapshotRendering", `execute (refCount set to 1 after execution)`);
+
             if (this._enableCancelFunctions.size > 0) {
                 this._log("disableSnapshotRendering", `cancelling ${this._enableCancelFunctions.size} "enable" callbacks`);
             }
@@ -301,7 +311,13 @@ export class SnapshotRenderingHelper {
     }
 
     /**
-     * Call this method to update a mesh on the GPU after some properties have changed (position, rotation, scaling, visibility).
+     * Call this method to update a mesh on the GPU after some properties have changed (position, rotation, scaling).
+     * Note: in FAST snapshot mode the GPU bundle is recorded once and replayed every frame, so draw calls
+     * (including instance counts) are baked in. This method updates per-mesh GPU data such as transforms and
+     * `mesh.visibility`, but it cannot change whether a recorded draw call is emitted. To apply changes such as
+     * `mesh.isVisible`, `setEnabled(false)`, or per-instance visibility/state changes that affect instance counts,
+     * wrap the change in a disableSnapshotRendering() / enableSnapshotRendering() pair so the snapshot is
+     * re-recorded.
      * @param mesh The mesh to update. Can be a single mesh or an array of meshes to update.
      * @param updateInstancedMeshes If true, the method will also update instanced meshes. Default is true. If you know instanced meshes won't move (or you don't have instanced meshes), you can set this to false to save some CPU time.
      */

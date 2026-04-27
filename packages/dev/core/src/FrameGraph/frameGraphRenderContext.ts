@@ -1,19 +1,19 @@
-import type {
-    Nullable,
-    AbstractEngine,
-    DrawWrapper,
-    IColor4Like,
-    Layer,
-    FrameGraphTextureHandle,
-    Effect,
-    FrameGraphTextureManager,
-    ObjectRenderer,
-    Scene,
-    FrameGraphRenderTarget,
-    InternalTexture,
-    UtilityLayerRenderer,
-    IStencilState,
-    IStencilStateProperties,
+import {
+    type Nullable,
+    type AbstractEngine,
+    type DrawWrapper,
+    type IColor4Like,
+    type Layer,
+    type FrameGraphTextureHandle,
+    type Effect,
+    type FrameGraphTextureManager,
+    type ObjectRenderer,
+    type Scene,
+    type FrameGraphRenderTarget,
+    type InternalTexture,
+    type UtilityLayerRenderer,
+    type IStencilState,
+    type IStencilStateProperties,
 } from "core/index";
 import { Constants } from "../Engines/constants";
 import { EffectRenderer } from "../Materials/effectRenderer";
@@ -239,6 +239,7 @@ export class FrameGraphRenderContext extends FrameGraphContext {
      * @param drawBackFace If true, the fullscreen quad will be drawn as a back face (in CW - optional)
      * @param depthTest If true, depth testing will be enabled when applying the effect (default is false)
      * @param noViewport If true, the current viewport will be left unchanged (optional). If false or undefined, the viewport will be set to the full render target size.
+     * @param alphaMode The alpha mode to use when applying the effect (default is ALPHA_DISABLE)
      * @returns True if the effect was applied, otherwise false (effect not ready)
      */
     public applyFullScreenEffect(
@@ -248,7 +249,8 @@ export class FrameGraphRenderContext extends FrameGraphContext {
         disableColorWrite?: boolean,
         drawBackFace?: boolean,
         depthTest?: boolean,
-        noViewport?: boolean
+        noViewport?: boolean,
+        alphaMode = Constants.ALPHA_DISABLE
     ): boolean {
         if (!drawWrapper.effect?.isReady()) {
             return false;
@@ -273,6 +275,7 @@ export class FrameGraphRenderContext extends FrameGraphContext {
             this._engine.setColorWrite(false);
         }
         this._engine.setDepthWrite(false);
+        this._engine.setAlphaMode(alphaMode);
 
         effectRenderer.bindBuffers(drawWrapper.effect);
         customBindings?.();
@@ -375,7 +378,7 @@ export class FrameGraphRenderContext extends FrameGraphContext {
      * Restores the default framebuffer (back buffer) as the current render target
      */
     public restoreDefaultFramebuffer(): void {
-        this._engine.restoreDefaultFramebuffer();
+        this._engine.restoreDefaultFramebuffer(true);
         this._renderTargetIsBound = false;
         this._currentRenderTarget = undefined;
     }
@@ -390,7 +393,7 @@ export class FrameGraphRenderContext extends FrameGraphContext {
 
         if (renderTargetWrapper === undefined) {
             if (this._engine._currentRenderTarget) {
-                this._engine.restoreDefaultFramebuffer();
+                this._engine.restoreDefaultFramebuffer(true);
             }
         } else if (this._engine._currentRenderTarget !== renderTargetWrapper) {
             if (this._engine._currentRenderTarget) {

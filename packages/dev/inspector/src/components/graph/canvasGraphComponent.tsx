@@ -1,11 +1,12 @@
-import type { PerformanceViewerCollector } from "core/Misc/PerformanceViewer/performanceViewerCollector";
-import type { Observable } from "core/Misc/observable";
+import { type PerformanceViewerCollector } from "core/Misc/PerformanceViewer/performanceViewerCollector";
+import { type Observable } from "core/Misc/observable";
+import { type Vector2 } from "core/Maths/math.vector";
 import * as React from "react";
 import { useEffect, useRef } from "react";
 import { CanvasGraphService } from "./canvasGraphService";
-import type { IPerfLayoutSize, IVisibleRangeChangedObservableProps } from "./graphSupportingTypes";
-import type { IPerfMetadata } from "core/Misc/interfaces/iPerfViewer";
-import type { Scene } from "core/scene";
+import { type IPerfLayoutSize, type IVisibleRangeChangedObservableProps } from "./graphSupportingTypes";
+import { type IPerfMetadata } from "core/Misc/interfaces/iPerfViewer";
+import { type Scene } from "core/scene";
 import { Logger } from "core/Misc/logger";
 
 interface ICanvasGraphComponentProps {
@@ -15,7 +16,7 @@ interface ICanvasGraphComponentProps {
     layoutObservable?: Observable<IPerfLayoutSize>;
     returnToPlayheadObservable?: Observable<void>;
     onVisibleRangeChangedObservable?: Observable<IVisibleRangeChangedObservableProps>;
-    initialGraphSize?: { width: number; height: number };
+    initialGraphSize?: Vector2;
 }
 
 export const CanvasGraphComponent: React.FC<ICanvasGraphComponentProps> = (props: ICanvasGraphComponentProps) => {
@@ -28,8 +29,8 @@ export const CanvasGraphComponent: React.FC<ICanvasGraphComponentProps> = (props
         }
 
         if (initialGraphSize) {
-            canvasRef.current.width = initialGraphSize.width;
-            canvasRef.current.height = initialGraphSize.height;
+            canvasRef.current.width = initialGraphSize.x;
+            canvasRef.current.height = initialGraphSize.y;
         }
 
         let cs: CanvasGraphService | undefined;

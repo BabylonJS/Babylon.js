@@ -21,11 +21,17 @@ export interface MeshData {
  * @internal
  */
 export interface IAttributeData {
+    /** @internal */
     kind: string;
+    /** @internal */
     data: ArrayBufferView;
+    /** @internal */
     size: number;
+    /** @internal */
     byteOffset: number;
+    /** @internal */
     byteStride: number;
+    /** @internal */
     normalized: boolean;
 }
 
@@ -33,7 +39,9 @@ export interface IAttributeData {
  * @internal
  */
 export interface IDecodeMeshDoneMessage {
+    /** @internal */
     id: "decodeMeshDone";
+    /** @internal */
     totalVertices: number;
 }
 
@@ -41,7 +49,9 @@ export interface IDecodeMeshDoneMessage {
  * @internal
  */
 export interface IIndicesMessage {
+    /** @internal */
     id: "indices";
+    /** @internal */
     data: Uint16Array | Uint32Array;
 }
 
@@ -49,6 +59,7 @@ export interface IIndicesMessage {
  * @internal
  */
 export interface IAttributeMessage extends IAttributeData {
+    /** @internal */
     id: "attribute";
 }
 

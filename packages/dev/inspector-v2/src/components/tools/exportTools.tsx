@@ -2,18 +2,18 @@ import { NumberDropdownPropertyLine } from "shared-ui-components/fluent/hoc/prop
 import { SceneSerializer } from "core/Misc/sceneSerializer";
 import { Tools } from "core/Misc/tools";
 import { EnvironmentTextureTools } from "core/Misc/environmentTextureTools";
-import type { CubeTexture } from "core/Materials/Textures/cubeTexture";
+import { type CubeTexture } from "core/Materials/Textures/cubeTexture";
 import { Logger } from "core/Misc/logger";
-import { useCallback, useState } from "react";
-import type { FunctionComponent } from "react";
-import type { Scene } from "core/scene";
+import { useCallback, useState, type FunctionComponent } from "react";
+import { type Scene } from "core/scene";
 import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
+import { useProperty } from "../../hooks/compoundPropertyHooks";
 import { SyncedSliderPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/syncedSliderPropertyLine";
-import type { Node } from "core/node";
+import { type Node } from "core/node";
 import { Mesh } from "core/Meshes/mesh";
-import type { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
-import type { StandardMaterial } from "core/Materials/standardMaterial";
-import type { BackgroundMaterial } from "core/Materials/Background/backgroundMaterial";
+import { type PBRMaterial } from "core/Materials/PBR/pbrMaterial";
+import { type StandardMaterial } from "core/Materials/standardMaterial";
+import { type BackgroundMaterial } from "core/Materials/Background/backgroundMaterial";
 import { Texture } from "core/Materials/Textures/texture";
 import { Camera } from "core/Cameras/camera";
 import { Light } from "core/Lights/light";
@@ -35,6 +35,9 @@ interface IBabylonExportOptionsState {
 }
 
 export const ExportBabylonTools: FunctionComponent<{ scene: Scene }> = ({ scene }) => {
+    // Track environment texture changes to re-render when it's updated (e.g., when a new HDRI is loaded)
+    const environmentTexture = useProperty(scene, "environmentTexture");
+
     const [babylonExportOptions, setBabylonExportOptions] = useState<Readonly<IBabylonExportOptionsState>>({
         imageTypeIndex: 0,
         imageQuality: 0.8,
@@ -48,12 +51,12 @@ export const ExportBabylonTools: FunctionComponent<{ scene: Scene }> = ({ scene 
     }, [scene]);
 
     const createEnvTexture = useCallback(async () => {
-        if (!scene.environmentTexture) {
+        if (!environmentTexture) {
             return;
         }
 
         try {
-            const buffer = await EnvironmentTextureTools.CreateEnvTextureAsync(scene.environmentTexture as CubeTexture, {
+            const buffer = await EnvironmentTextureTools.CreateEnvTextureAsync(environmentTexture as CubeTexture, {
                 imageType: EnvExportImageTypes[babylonExportOptions.imageTypeIndex].imageType,
                 imageQuality: babylonExportOptions.imageQuality,
                 disableIrradianceTexture: !babylonExportOptions.iblDiffuse,
@@ -64,15 +67,15 @@ export const ExportBabylonTools: FunctionComponent<{ scene: Scene }> = ({ scene 
             Logger.Error(error);
             alert(error);
         }
-    }, [scene, babylonExportOptions]);
+    }, [scene, environmentTexture, babylonExportOptions]);
 
     return (
         <>
             <ButtonLine label="Export to Babylon" icon={ArrowDownloadRegular} onClick={exportBabylon} />
-            {!scene.getEngine().premultipliedAlpha && scene.environmentTexture && scene.environmentTexture._prefiltered && scene.activeCamera && (
+            {!scene.getEngine().premultipliedAlpha && environmentTexture && environmentTexture._prefiltered && scene.activeCamera && (
                 <>
-                    <ButtonLine label="Generate .env texture" icon={ArrowDownloadRegular} onClick={createEnvTexture} />
-                    {scene.environmentTexture.irradianceTexture && (
+                    <ButtonLine label="Generate .env Texture" icon={ArrowDownloadRegular} onClick={createEnvTexture} />
+                    {environmentTexture.irradianceTexture && (
                         <SwitchPropertyLine
                             key="iblDiffuse"
                             label="Diffuse Texture"
@@ -180,6 +183,7 @@ export const ExportGltfTools = MakeLazyComponent(async () => {
 
         return (
             <>
+                <ButtonLine label="Export to GLB" icon={ArrowDownloadRegular} onClick={exportGLTF} disabled={isExportingGltf} />
                 <SwitchPropertyLine
                     key="GLTFExportDisabledNodes"
                     label="Export Disabled Nodes"
@@ -215,7 +219,6 @@ export const ExportGltfTools = MakeLazyComponent(async () => {
                     value={gltfExportOptions.dracoCompression}
                     onChange={(checked: boolean) => setGltfExportOptions({ ...gltfExportOptions, dracoCompression: checked })}
                 />
-                <ButtonLine label="Export to GLB" icon={ArrowDownloadRegular} onClick={exportGLTF} disabled={isExportingGltf} />
             </>
         );
     };

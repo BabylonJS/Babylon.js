@@ -1,9 +1,8 @@
-import type { Scene } from "../../scene";
-import type { Vector4 } from "../../Maths/math.vector";
-import { Vector3 } from "../../Maths/math.vector";
+import { type Scene } from "../../scene";
+import { type Vector4, Vector3 } from "../../Maths/math.vector";
 import { Mesh } from "../mesh";
 import { CreateRibbon } from "./ribbonBuilder";
-import type { Nullable } from "../../types";
+import { type Nullable } from "../../types";
 
 /**
  * Creates lathe mesh.
@@ -56,8 +55,8 @@ export function CreateLathe(
     const paths = [];
     const invertUV = options.invertUV || false;
 
-    let i = 0;
-    let p = 0;
+    let i: number;
+    let p: number;
     const step = (pi2 / tessellation) * arc;
     let rotated;
     let path: Array<Vector3>;

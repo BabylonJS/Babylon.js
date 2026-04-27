@@ -1,7 +1,7 @@
-import type { NavMesh } from "@recast-navigation/core";
+import { type NavMesh } from "@recast-navigation/core";
 
-import type { Scene } from "core/scene";
-import type { Node } from "core/node";
+import { type Scene } from "core/scene";
+import { type Node } from "core/node";
 import { Mesh } from "core/Meshes/mesh";
 import { VertexData } from "core/Meshes/mesh.vertexData";
 

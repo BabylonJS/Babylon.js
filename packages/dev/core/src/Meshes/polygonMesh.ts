@@ -1,10 +1,10 @@
 import { Logger } from "../Misc/logger";
-import type { Scene } from "../scene";
+import { type Scene } from "../scene";
 import { Vector3, Vector2 } from "../Maths/math.vector";
 import { VertexBuffer } from "../Buffers/buffer";
 import { Mesh } from "../Meshes/mesh";
 import { VertexData } from "../Meshes/mesh.vertexData";
-import type { Nullable } from "../types";
+import { type Nullable } from "../types";
 import { Path2 } from "../Maths/math.path";
 import { Epsilon } from "../Maths/math.constants";
 import { EngineStore } from "../Engines/engineStore";
@@ -15,6 +15,7 @@ declare let earcut: any;
  * Vector2 wth index property
  */
 class IndexedVector2 extends Vector2 {
+    /** @internal */
     constructor(
         original: Vector2,
         /** Index of the vector2 */
@@ -28,8 +29,10 @@ class IndexedVector2 extends Vector2 {
  * Defines points to create a polygon
  */
 class PolygonPoints {
+    /** @internal */
     elements = [] as IndexedVector2[];
 
+    /** @internal */
     add(originalPoints: Array<Vector2>): Array<IndexedVector2> {
         const result: IndexedVector2[] = [];
         for (const point of originalPoints) {
@@ -41,6 +44,7 @@ class PolygonPoints {
         return result;
     }
 
+    /** @internal */
     computeBounds(): { min: Vector2; max: Vector2; width: number; height: number } {
         const lmin = new Vector2(this.elements[0].x, this.elements[0].y);
         const lmax = new Vector2(this.elements[0].x, this.elements[0].y);
@@ -334,7 +338,7 @@ export class PolygonMeshBuilder {
 
             const vcNorm = vc.normalizeToNew();
             let vpNorm = vp.normalizeToNew();
-            let vnNorm = vn.normalizeToNew();
+            let vnNorm: Vector3;
 
             const dotp = Vector3.Dot(vpNorm, vcNorm);
             if (dotp > smoothingThreshold) {

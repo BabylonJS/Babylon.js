@@ -1,16 +1,16 @@
-import type { IMaterial, IKHRMaterialsClearcoat } from "babylonjs-gltf2interface";
-import type { IGLTFExporterExtensionV2 } from "../glTFExporterExtension";
+import { type IMaterial, type IKHRMaterialsClearcoat } from "babylonjs-gltf2interface";
+import { type IGLTFExporterExtensionV2 } from "../glTFExporterExtension";
 import { GLTFExporter } from "../glTFExporter";
-import type { Material } from "core/Materials/material";
+import { type Material } from "core/Materials/material";
 import { PBRBaseMaterial } from "core/Materials/PBR/pbrBaseMaterial";
-import type { BaseTexture } from "core/Materials/Textures/baseTexture";
+import { type BaseTexture } from "core/Materials/Textures/baseTexture";
 
 import { Tools } from "core/Misc/tools";
 import { OpenPBRMaterial } from "core/Materials/PBR/openpbrMaterial";
-import type { InternalTexture } from "core/Materials/Textures/internalTexture";
+import { type InternalTexture } from "core/Materials/Textures/internalTexture";
 import { Texture } from "core/Materials/Textures/texture";
 import { MergeTexturesAsync, CreateRGBAConfiguration, CreateTextureInput, CreateConstantInput } from "core/Materials/Textures/textureMerger";
-import type { Nullable } from "core/types";
+import { type Nullable } from "core/types";
 
 const NAME = "KHR_materials_clearcoat";
 
@@ -266,14 +266,14 @@ export class KHR_materials_clearcoat implements IGLTFExporterExtensionV2 {
 
                 node.extensions = node.extensions || {};
 
-                let coatWeightTexture: Nullable<BaseTexture> = null;
+                let coatWeightTexture: Nullable<BaseTexture>;
                 let coatTextureInfo;
                 if (babylonMaterial.coatWeightTexture) {
                     coatWeightTexture = this._mergedTexturesMap[babylonMaterial.coatWeightTexture.uniqueId];
                     coatTextureInfo = this._exporter._materialExporter.getTextureInfo(coatWeightTexture);
                 }
 
-                let coatRoughnessTexture: Nullable<BaseTexture> = null;
+                let coatRoughnessTexture: Nullable<BaseTexture>;
                 let coatRoughnessTextureInfo;
                 if (babylonMaterial.coatRoughnessTexture) {
                     coatRoughnessTexture = this._mergedTexturesMap[babylonMaterial.coatRoughnessTexture.uniqueId];

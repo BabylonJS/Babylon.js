@@ -80,6 +80,7 @@ import { CleanGeometryBlock } from "core/Meshes/Node/Blocks/cleanGeometryBlock";
 import { PointListBlock } from "core/Meshes/Node/Blocks/Sources/pointListBlock";
 import { SubdivideBlock } from "core/Meshes/Node/Blocks/subdivideBlock";
 import { GeometryEaseBlock } from "core/Meshes/Node/Blocks/geometryEaseBlock";
+import { ExtrudeGeometryBlock } from "core/Meshes/Node/Blocks/extrudeGeometryBlock";
 
 /**
  * Static class for BlockTools
@@ -91,6 +92,8 @@ export class BlockTools {
                 return new GeometryEaseBlock("Ease");
             case "SubdivideBlock":
                 return new SubdivideBlock("Subdivide");
+            case "ExtrudeBlock":
+                return new ExtrudeGeometryBlock("Extrude");
             case "PointListBlock":
                 return new PointListBlock("Point List");
             case "CleanGeometryBlock":

@@ -1,13 +1,17 @@
-import type { IDisposable, Node, Nullable } from "core/index";
-import type { ServiceDefinition } from "../../../modularity/serviceDefinition";
-import type { IGizmoService } from "../../gizmoService";
-import type { ISceneContext } from "../../sceneContext";
-import type { ISceneExplorerService } from "./sceneExplorerService";
+import { type FrameGraphTask, type IDisposable, type Nullable } from "core/index";
+import { type ServiceDefinition } from "shared-ui-components/modularTool/modularity/serviceDefinition";
+import { type IGizmoService, GizmoServiceIdentity } from "../../gizmoService";
+import { type ISceneContext, SceneContextIdentity } from "../../sceneContext";
+import { type IWatcherService, WatcherServiceIdentity } from "../../watcherService";
+import { type ISceneExplorerService, SceneExplorerServiceIdentity } from "./sceneExplorerService";
 
+import { tokens } from "@fluentui/react-components";
 import {
     BorderNoneRegular,
     BorderOutsideRegular,
+    BubbleMultipleRegular,
     CameraRegular,
+    EditRegular,
     EyeOffRegular,
     EyeRegular,
     FlashlightOffRegular,
@@ -19,24 +23,32 @@ import {
 } from "@fluentui/react-icons";
 
 import { Camera } from "core/Cameras/camera";
+import { FindMainCamera } from "core/FrameGraph/frameGraphUtils";
 import { ClusteredLightContainer } from "core/Lights/Clustered/clusteredLightContainer";
 import { Light } from "core/Lights/light";
 import { AbstractMesh } from "core/Meshes/abstractMesh";
+import { Mesh } from "core/Meshes/mesh";
 import { TransformNode } from "core/Meshes/transformNode";
 import { Observable } from "core/Misc/observable";
+import { Node } from "core/node";
 import { MeshIcon } from "shared-ui-components/fluent/icons";
-import { InterceptProperty } from "../../../instrumentation/propertyInstrumentation";
-import { GizmoServiceIdentity } from "../../gizmoService";
-import { SceneContextIdentity } from "../../sceneContext";
+import { EditNodeGeometry, GetNodeGeometry } from "../../../misc/nodeGeometryEditor";
 import { DefaultCommandsOrder, DefaultSectionsOrder } from "./defaultSectionsMetadata";
-import { SceneExplorerServiceIdentity } from "./sceneExplorerService";
 
 import "core/Rendering/boundingBoxRenderer";
 
-export const NodeExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplorerService, ISceneContext, IGizmoService]> = {
+function IsCameraFrameGraphTask(task: FrameGraphTask): task is FrameGraphTask & { camera: Camera } {
+    return (task as Partial<{ camera: Camera }>).camera instanceof Camera;
+}
+
+function IsNodesSectionType(node: Node): boolean {
+    return node instanceof TransformNode || node instanceof Camera || node instanceof Light;
+}
+
+export const NodeExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplorerService, ISceneContext, IGizmoService, IWatcherService]> = {
     friendlyName: "Node Explorer",
-    consumes: [SceneExplorerServiceIdentity, SceneContextIdentity, GizmoServiceIdentity],
-    factory: (sceneExplorerService, sceneContext, gizmoService) => {
+    consumes: [SceneExplorerServiceIdentity, SceneContextIdentity, GizmoServiceIdentity, WatcherServiceIdentity],
+    factory: (sceneExplorerService, sceneContext, gizmoService, watcherService) => {
         const scene = sceneContext.currentScene;
         if (!scene) {
             return undefined;
@@ -44,24 +56,39 @@ export const NodeExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplore
 
         const nodeMovedObservable = new Observable<Node>();
 
+        // Set of all nodes known to be in the scene, rebuilt each time getRootEntities
+        // is called. Used by getEntityDisplayInfo to detect orphaned ancestor nodes.
+        const knownSceneNodes = new Set<Node>();
+
         const sectionRegistration = sceneExplorerService.addSection({
             displayName: "Nodes",
             order: DefaultSectionsOrder.Nodes,
             getRootEntities: () => {
-                const rootNodes = [...scene.rootNodes];
+                const rootNodes = new Set<Node>(scene.rootNodes);
+                knownSceneNodes.clear();
 
-                // If any non-root node has a parent and that parent is not one of the node types shown in the Nodes section,
-                // then we should treat it as a root node, otherwise it won't show up anywhere in scene explorer.
-                // An example of this is when a Mesh or a TransformNode is parented under a Bone.
+                // Ensure all nodes in the scene are reachable in the explorer, even if their
+                // parent was removed from the scene or is not a type shown in the Nodes section.
                 for (const node of [...scene.meshes, ...scene.transformNodes, ...scene.cameras, ...scene.lights]) {
-                    if (
-                        node.parent &&
-                        !(node.parent instanceof AbstractMesh) &&
-                        !(node.parent instanceof TransformNode) &&
-                        !(node.parent instanceof Camera) &&
-                        !(node.parent instanceof Light)
-                    ) {
-                        rootNodes.push(node);
+                    knownSceneNodes.add(node);
+
+                    if (!node.parent) {
+                        continue;
+                    }
+
+                    if (!IsNodesSectionType(node.parent)) {
+                        // Parent is not a type shown in the Nodes section (e.g. a Bone).
+                        // Treat this node as a root so it still appears in the explorer.
+                        rootNodes.add(node);
+                    } else {
+                        // Walk up through Nodes-section-type parents to find the topmost ancestor.
+                        // If that ancestor was removed from the scene (not in rootNodes), add it
+                        // so the entire subtree remains visible in the explorer.
+                        let ancestor: Node = node.parent;
+                        while (ancestor.parent && IsNodesSectionType(ancestor.parent)) {
+                            ancestor = ancestor.parent;
+                        }
+                        rootNodes.add(ancestor);
                     }
                 }
 
@@ -70,33 +97,38 @@ export const NodeExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplore
                 for (const light of scene.lights) {
                     if (light instanceof ClusteredLightContainer) {
                         for (const childLight of light.lights) {
-                            if (!childLight.parent && !rootNodes.includes(childLight)) {
-                                rootNodes.push(childLight);
+                            knownSceneNodes.add(childLight);
+                            if (!childLight.parent) {
+                                rootNodes.add(childLight);
                             }
                         }
                     }
                 }
 
-                return rootNodes;
+                return [...rootNodes];
             },
             getEntityChildren: (node) => node.getChildren(),
             getEntityDisplayInfo: (node) => {
                 const onChangeObservable = new Observable<void>();
 
-                const nameHookToken = InterceptProperty(node, "name", {
-                    afterSet: () => onChangeObservable.notifyObservers(),
-                });
+                const nameHookToken = watcherService.watchProperty(node, "name", () => onChangeObservable.notifyObservers());
 
-                const parentHookToken = InterceptProperty(node, "parent", {
-                    afterSet: () => {
-                        nodeMovedObservable.notifyObservers(node);
-                    },
-                });
+                const parentHookToken = watcherService.watchProperty(node, "parent", () => nodeMovedObservable.notifyObservers(node));
+
+                // A node is "not in the scene" if it is a Nodes-section type but is not
+                // a known scene node. This handles nodes that were removed from the scene
+                // but still appear because a descendant is in the scene. Nodes from the
+                // !IsNodesSectionType(parent) branch are unaffected because they always
+                // come from the scene's tracking lists. Clustered light children are also
+                // unaffected because they are added to knownSceneNodes explicitly.
+                const validationError =
+                    IsNodesSectionType(node) && !knownSceneNodes.has(node) ? "This entity is not in the scene but is shown because a descendant is still in the scene." : undefined;
 
                 return {
                     get name() {
-                        return node.name;
+                        return node.name || `Unnamed ${node.getClassName()}`;
                     },
+                    validationError,
                     onChange: onChangeObservable,
                     dispose: () => {
                         nameHookToken.dispose();
@@ -107,13 +139,15 @@ export const NodeExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplore
             },
             entityIcon: ({ entity: node }) =>
                 node instanceof AbstractMesh ? (
-                    <MeshIcon />
+                    <MeshIcon color={tokens.colorPaletteBlueForeground2} />
                 ) : node instanceof TransformNode ? (
-                    <MyLocationRegular />
+                    <MyLocationRegular color={tokens.colorPaletteBlueForeground2} />
                 ) : node instanceof Camera ? (
-                    <CameraRegular />
+                    <CameraRegular color={tokens.colorPaletteGreenForeground2} />
+                ) : node instanceof ClusteredLightContainer ? (
+                    <BubbleMultipleRegular color={tokens.colorPaletteYellowForeground2} />
                 ) : node instanceof Light ? (
-                    <LightbulbRegular />
+                    <LightbulbRegular color={tokens.colorPaletteYellowForeground2} />
                 ) : (
                     <></>
                 ),
@@ -130,6 +164,35 @@ export const NodeExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplore
                 scene.onLightRemovedObservable,
             ],
             getEntityMovedObservables: () => [nodeMovedObservable],
+            dragDropConfig: {
+                canDrag: (node) => node instanceof Node,
+                canDrop: (draggedNode, targetNode) => {
+                    // Can't drop on self
+                    if (targetNode === draggedNode) {
+                        return false;
+                    }
+                    // Can't drop on a descendant
+                    if (targetNode !== null && targetNode.isDescendantOf(draggedNode)) {
+                        return false;
+                    }
+                    // Can drop onto section root (null) only if node has a parent
+                    if (targetNode === null) {
+                        return draggedNode.parent !== null;
+                    }
+                    return true;
+                },
+                onDrop: (draggedNode, targetNode) => {
+                    if (draggedNode.parent === targetNode) {
+                        return;
+                    }
+                    // Use setParent for TransformNodes to preserve world transform
+                    if (draggedNode instanceof TransformNode) {
+                        draggedNode.setParent(targetNode);
+                    } else {
+                        draggedNode.parent = targetNode;
+                    }
+                },
+            },
         });
 
         const abstractMeshBoundingBoxCommandRegistration = sceneExplorerService.addEntityCommand({
@@ -137,9 +200,7 @@ export const NodeExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplore
             order: DefaultCommandsOrder.MeshBoundingBox,
             getCommand: (mesh) => {
                 const onChangeObservable = new Observable<void>();
-                const showBoundingBoxHook = InterceptProperty(mesh, "showBoundingBox", {
-                    afterSet: () => onChangeObservable.notifyObservers(),
-                });
+                const showBoundingBoxHook = watcherService.watchProperty(mesh, "showBoundingBox", () => onChangeObservable.notifyObservers());
 
                 return {
                     type: "toggle",
@@ -167,9 +228,7 @@ export const NodeExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplore
             order: DefaultCommandsOrder.MeshVisibility,
             getCommand: (mesh) => {
                 const onChangeObservable = new Observable<void>();
-                const isVisibleHook = InterceptProperty(mesh, "isVisible", {
-                    afterSet: () => onChangeObservable.notifyObservers(),
-                });
+                const isVisibleHook = watcherService.watchProperty(mesh, "isVisible", () => onChangeObservable.notifyObservers());
 
                 return {
                     type: "toggle",
@@ -177,6 +236,10 @@ export const NodeExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplore
                         return `${mesh.isVisible ? "Hide" : "Show"} Mesh`;
                     },
                     icon: () => (mesh.isVisible ? <EyeRegular /> : <EyeOffRegular />),
+                    hotKey: {
+                        keyCode: "Space",
+                        control: true,
+                    },
                     get isEnabled() {
                         return !mesh.isVisible;
                     },
@@ -192,6 +255,8 @@ export const NodeExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplore
             },
         });
 
+        const getActiveCamera = () => (scene.frameGraph ? FindMainCamera(scene.frameGraph) : scene.activeCamera);
+
         const activeCameraCommandRegistration = sceneExplorerService.addEntityCommand({
             predicate: (entity: unknown) => entity instanceof Camera,
             order: DefaultCommandsOrder.CameraActive,
@@ -205,15 +270,40 @@ export const NodeExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplore
                 return {
                     type: "toggle",
                     displayName: "Activate and Attach Controls",
-                    icon: () => (scene.activeCamera === camera ? <VideoFilled /> : <VideoRegular />),
+                    icon: () => {
+                        return getActiveCamera() === camera ? <VideoFilled /> : <VideoRegular />;
+                    },
                     get isEnabled() {
-                        return scene.activeCamera === camera;
+                        return getActiveCamera() === camera;
                     },
                     set isEnabled(enabled: boolean) {
-                        if (enabled && scene.activeCamera !== camera) {
-                            scene.activeCamera?.detachControl();
-                            scene.activeCamera = camera;
-                            camera.attachControl(true);
+                        const activeCamera = getActiveCamera();
+                        if (enabled && activeCamera !== camera) {
+                            if (scene.frameGraph) {
+                                void (async (frameGraph) => {
+                                    let updated = false;
+                                    const nrg = frameGraph.getLinkedNodeRenderGraph();
+                                    if (nrg) {
+                                        updated = await nrg.replaceCameraAsync(activeCamera, camera);
+                                    } else {
+                                        for (const task of frameGraph.tasks) {
+                                            if (IsCameraFrameGraphTask(task)) {
+                                                task.camera = camera;
+                                                updated = true;
+                                            }
+                                        }
+                                    }
+                                    if (updated) {
+                                        activeCamera?.detachControl();
+                                        camera.attachControl(true);
+                                        onChangeObservable.notifyObservers();
+                                    }
+                                })(scene.frameGraph);
+                            } else {
+                                activeCamera?.detachControl();
+                                scene.activeCamera = camera;
+                                camera.attachControl(true);
+                            }
                         }
                     },
                     onChange: onChangeObservable,
@@ -291,6 +381,25 @@ export const NodeExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplore
 
         const lightGizmoCommandRegistration = addGizmoCommand(Light, gizmoService.getLightGizmo.bind(gizmoService));
 
+        const editNodeGeometryCommandRegistration = sceneExplorerService.addEntityCommand({
+            predicate: (entity: unknown): entity is Mesh => entity instanceof Mesh && !!GetNodeGeometry(entity),
+            order: DefaultCommandsOrder.EditNodeGeometry,
+            getCommand: (mesh) => {
+                return {
+                    type: "action",
+                    displayName: "Edit in Node Geometry Editor",
+                    icon: () => <EditRegular />,
+                    // eslint-disable-next-line @typescript-eslint/naming-convention
+                    execute: async () => {
+                        const nodeGeometry = GetNodeGeometry(mesh);
+                        if (nodeGeometry) {
+                            await EditNodeGeometry(nodeGeometry, mesh.getScene());
+                        }
+                    },
+                };
+            },
+        });
+
         return {
             dispose: () => {
                 sectionRegistration.dispose();
@@ -300,6 +409,7 @@ export const NodeExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplore
                 cameraGizmoCommandRegistration.dispose();
                 lightEnabledCommandRegistration.dispose();
                 lightGizmoCommandRegistration.dispose();
+                editNodeGeometryCommandRegistration.dispose();
             },
         };
     },

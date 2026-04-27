@@ -1,5 +1,5 @@
-import type { SpotLight } from "core/index";
-import type { FunctionComponent } from "react";
+import { type SpotLight } from "core/index";
+import { type FunctionComponent } from "react";
 
 import { Tools } from "core/Misc/tools";
 import { Color3PropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/colorPropertyLine";
@@ -38,6 +38,7 @@ export const SpotLightSetupProperties: FunctionComponent<{ context: SpotLight }>
                 max={90}
                 step={0.1}
             />
+            <BoundProperty label="Intensity" component={NumberInputPropertyLine} target={spotLight} propertyKey="intensity" />
             <BoundProperty label="Exponent" component={NumberInputPropertyLine} target={spotLight} propertyKey="exponent" />
         </>
     );

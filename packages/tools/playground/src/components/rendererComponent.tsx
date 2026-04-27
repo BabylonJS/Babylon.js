@@ -2,18 +2,21 @@
 /* eslint-disable github/no-then */
 /* eslint-disable @typescript-eslint/no-floating-promises */
 import * as React from "react";
-import type { GlobalState } from "../globalState";
-import { RuntimeMode } from "../globalState";
+import { type GlobalState, RuntimeMode, type InspectorV2Module } from "../globalState";
 import { Utilities } from "../tools/utilities";
 import { DownloadManager } from "../tools/downloadManager";
 import { AddFileRevision } from "../tools/localSession";
+import { type InspectorToken } from "inspector/inspector";
+import { type InspectableToken } from "inspector/inspectable";
+import { type ModularBridgeToken } from "inspector/index";
 
-import { Engine, EngineStore, WebGPUEngine, LastCreatedAudioEngine, Logger } from "@dev/core";
-import type { IDisposable, Nullable, Scene, ThinEngine } from "@dev/core";
+import { Engine, EngineStore, WebGPUEngine, LastCreatedAudioEngine, Logger, type Nullable, type Scene, type ThinEngine } from "@dev/core";
 
+import { MakePlaygroundCommandServiceDefinition } from "../tools/playgroundCommandService";
 import "../scss/rendering.scss";
 
-type InspectorV2Module = typeof import("inspector-v2/legacy/legacy") & typeof import("inspector-v2/index");
+const RunnableCreationTimeoutMs = 15000;
+const SceneRunTimeoutMs = 30000;
 
 interface IRenderingComponentProps {
     globalState: GlobalState;
@@ -34,8 +37,9 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
     private _canvasRef: React.RefObject<HTMLCanvasElement>;
     private _downloadManager: DownloadManager;
     private _inspectorFallback: boolean = false;
-    private readonly _inspectorV2ModulePromise: Promise<InspectorV2Module | undefined>;
-    private _inspectorV2Token: Nullable<IDisposable> = null;
+    private _inspectorV2Token: Nullable<InspectorToken> = null;
+    private _inspectableToken: Nullable<InspectableToken> = null;
+    private _bridgeToken: Nullable<ModularBridgeToken> = null;
 
     /**
      * Create the rendering component.
@@ -48,25 +52,6 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
             preferInspector: false,
         };
 
-        const isInspectorV2Supported = this.props.globalState.bundles.some((bundle) => bundle.includes("inspector-v2"));
-        this._inspectorV2ModulePromise = new Promise((resolve) => {
-            if (!isInspectorV2Supported) {
-                resolve(undefined);
-                return;
-            }
-
-            const checkGlobals = () => {
-                const inspectorV2Module: InspectorV2Module | undefined = (globalThis as any).INSPECTOR;
-                if (inspectorV2Module?.DetachInspectorGlobals) {
-                    inspectorV2Module.DetachInspectorGlobals();
-                    resolve(inspectorV2Module);
-                } else {
-                    setTimeout(checkGlobals, 50);
-                }
-            };
-            checkGlobals();
-        });
-
         // Create the global handleException
         (window as any).handleException = (e: Error) => {
             // eslint-disable-next-line no-console
@@ -75,8 +60,7 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
         };
 
         this.props.globalState.onRunRequiredObservable.add(() => {
-            // eslint-disable-next-line @typescript-eslint/no-floating-promises
-            this._compileAndRunAsync();
+            this._requestRun();
         });
 
         this._downloadManager = new DownloadManager(this.props.globalState);
@@ -87,7 +71,7 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
             this._downloadManager.downloadAsync();
         });
 
-        this.props.globalState.onInspectorRequiredObservable.add(async (action) => {
+        this.props.globalState.onInspectorRequiredObservable.add(async () => {
             if (!this._scene) {
                 return;
             }
@@ -104,51 +88,20 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
                 debugLayer.openedPanes = debugLayer.BJSINSPECTOR?.Inspector?._OpenedPane || 0;
             }
 
-            const isInspectorV1Enabled = this._scene.debugLayer.openedPanes !== 0;
-            const isInspectorV2Enabled = !!this._inspectorV2Token;
-            const isInspectorEnabled = isInspectorV1Enabled || isInspectorV2Enabled;
-
-            const searchParams = new URLSearchParams(window.location.search);
-            let isInspectorV2ModeEnabled = searchParams.has("inspectorv2") && searchParams.get("inspectorv2") !== "false";
-
-            if (action === "refresh") {
-                action = isInspectorEnabled ? "enable" : "disable";
-            } else if (action === "toggle") {
-                action = isInspectorEnabled ? "disable" : "enable";
-            }
-
-            if (action === "enable" && isInspectorV2ModeEnabled && !isInspectorV2Supported) {
-                isInspectorV2ModeEnabled = false;
-                alert("Inspector v2 is not supported in this version of Babylon.js. Falling back to Inspector V1.");
-            }
-
             this.setState({
-                preferInspector: action === "enable",
+                preferInspector: true,
             });
 
             // Inspector v2 should not be disposed during a React render, so just wait one JS frame.
             await Promise.resolve();
 
-            if (isInspectorV1Enabled && (isInspectorV2ModeEnabled || action === "disable")) {
-                this._scene.debugLayer.hide();
-            }
-
-            if (isInspectorV2Enabled && (!isInspectorV2ModeEnabled || action === "disable")) {
-                this._inspectorV2Token?.dispose();
+            if (this._inspectorV2Token) {
+                void this._inspectorV2Token.dispose();
                 this._inspectorV2Token = null;
-            }
-
-            if (!isInspectorV1Enabled && !isInspectorV2ModeEnabled && action === "enable") {
-                // Wait two frames for all the React async work to finish. This is ugly,
-                // but we'll remove it when we remove Inspector v1 as Inspector v2 handles
-                // the asynchrony for itself internally.
-                await new Promise((resolve) => setTimeout(resolve));
-                await new Promise((resolve) => setTimeout(resolve));
-                this._showInspectorV1Async();
-            }
-
-            if (!isInspectorV2Enabled && isInspectorV2ModeEnabled && action === "enable") {
-                this._showInspectorV2Async();
+            } else if (this._scene.debugLayer.openedPanes !== 0) {
+                this._scene.debugLayer.hide();
+            } else {
+                await this._showInspectorAsync();
             }
         });
 
@@ -158,8 +111,8 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
 
         this.props.globalState.onThemeChangedObservable.add(() => {
             if (this._inspectorV2Token) {
-                this._inspectorV2Token.dispose();
-                this._showInspectorV2Async();
+                void this._inspectorV2Token.dispose();
+                this._showInspectorAsync();
             }
         });
 
@@ -174,21 +127,43 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
         window.addEventListener("error", this._saveError);
     }
 
-    private async _showInspectorV1Async() {
-        if (this._scene) {
-            const inspectorV2Module = await this._inspectorV2ModulePromise;
-            inspectorV2Module?.DetachInspectorGlobals();
-            await this._scene.debugLayer.show({
-                embedMode: true,
+    private _ensureBridge() {
+        if (this._bridgeToken && !this._bridgeToken.isDisposed) {
+            return;
+        }
+        const inspectorV2Module: InspectorV2Module | undefined = (globalThis as any).INSPECTOR;
+        if (inspectorV2Module?.MakeModularBridge) {
+            this._bridgeToken = inspectorV2Module.MakeModularBridge({
+                autoEnable: location.search.includes("inspectable"),
+                serviceDefinitions: [MakePlaygroundCommandServiceDefinition(this.props.globalState, inspectorV2Module)],
             });
         }
     }
 
-    private async _showInspectorV2Async() {
+    private _ensureInspectable() {
+        if (this._inspectableToken && !this._inspectableToken.isDisposed) {
+            return;
+        }
+        if (!this._scene) {
+            return;
+        }
+        this._ensureBridge();
+        if (!this._bridgeToken) {
+            return;
+        }
+        const inspectorV2Module: InspectorV2Module | undefined = (globalThis as any).INSPECTOR;
+        if (inspectorV2Module?.StartInspectable) {
+            this._inspectableToken = inspectorV2Module.StartInspectable(this._scene, {
+                bridgeToken: this._bridgeToken,
+            });
+        }
+    }
+
+    private async _showInspectorAsync() {
         if (this._scene) {
-            const inspectorV2Module = await this._inspectorV2ModulePromise;
-            if (inspectorV2Module) {
-                inspectorV2Module.AttachInspectorGlobals();
+            const inspectorV2Module: InspectorV2Module | undefined = (globalThis as any).INSPECTOR;
+            if (inspectorV2Module?.ShowInspector) {
+                this._ensureInspectable();
                 const options = {
                     ...inspectorV2Module.ConvertOptions({
                         embedMode: true,
@@ -197,6 +172,10 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
                     themeMode: Utilities.ReadStringFromStore("theme", "Light") === "Dark" ? "dark" : "light",
                 } as const;
                 this._inspectorV2Token = inspectorV2Module.ShowInspector(this._scene, options);
+            } else {
+                await this._scene.debugLayer.show({
+                    embedMode: true,
+                });
             }
         }
     }
@@ -209,10 +188,39 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
         this.props.globalState.onErrorObservable.notifyObservers({
             message: message,
         });
-        this.props.globalState.onDisplayWaitRingObservable.notifyObservers(false);
+        this._finishRun();
+    }
+
+    private _failRun(error: unknown, fallbackMessage: string) {
+        const normalizedError = error instanceof Error ? error : new Error(fallbackMessage);
+        (window as any).handleException(normalizedError);
+        this._disposeTransientResources();
+        this._finishRun();
+    }
+
+    // eslint-disable-next-line @typescript-eslint/promise-function-async
+    private _withTimeout<T>(promise: Promise<T>, timeoutMs: number, timeoutMessage: string) {
+        return new Promise<T>((resolve, reject) => {
+            const timeoutHandle = window.setTimeout(() => {
+                reject(new Error(timeoutMessage));
+            }, timeoutMs);
+
+            promise.then(
+                (value) => {
+                    window.clearTimeout(timeoutHandle);
+                    resolve(value);
+                },
+                (error) => {
+                    window.clearTimeout(timeoutHandle);
+                    // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
+                    reject(error);
+                }
+            );
+        });
     }
 
     private _preventReentrancy = false;
+    private _queuedRunRequested = false;
 
     private _lastEngineKind: "webgpu" | "webgl2" | "webgl" | null = null;
 
@@ -229,8 +237,57 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
         (window as any).canvas = fresh;
     };
 
+    private _requestRun() {
+        if (this._preventReentrancy) {
+            this._queuedRunRequested = true;
+            return;
+        }
+
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+        this._compileAndRunAsync();
+    }
+
+    private _finishRun() {
+        this._preventReentrancy = false;
+
+        if (this._queuedRunRequested) {
+            this._queuedRunRequested = false;
+            // Schedule the replay after the current stack unwinds so observers finish
+            // handling the completed run before we start the queued one.
+            queueMicrotask(() => this._requestRun());
+            return false;
+        }
+
+        this.props.globalState.onDisplayWaitRingObservable.notifyObservers(false);
+        return true;
+    }
+
+    private _disposeTransientResources() {
+        try {
+            this._scene = null;
+            this._engine = null;
+
+            const globalObject = window as any;
+            delete globalObject.engine;
+            delete globalObject.scene;
+            delete globalObject.initFunction;
+
+            while (EngineStore.Instances.length) {
+                EngineStore.Instances[0].dispose();
+            }
+
+            let audioEngine;
+            while ((audioEngine = LastCreatedAudioEngine())) {
+                audioEngine.dispose();
+            }
+        } catch {
+            // Best effort cleanup after a failed or timed-out run.
+        }
+    }
+
     private async _compileAndRunAsync() {
         if (this._preventReentrancy) {
+            this._queuedRunRequested = true;
             return;
         }
         this._preventReentrancy = true;
@@ -242,8 +299,10 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
         const webgpuPromise = WebGPUEngine ? WebGPUEngine.IsSupportedAsync : Promise.resolve(false);
         const webGPUSupported = await webgpuPromise;
 
-        this._inspectorV2Token?.dispose();
+        await this._inspectorV2Token?.dispose();
         this._inspectorV2Token = null;
+        this._inspectableToken?.dispose();
+        this._inspectableToken = null;
 
         let useWebGPU = location.search.indexOf("webgpu") !== -1 && webGPUSupported;
         let forceWebGL1 = false;
@@ -341,19 +400,17 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
                     });
                 };
             }
-            // Build the runnable (always V2)
-            // The architecture for runnables changed from text block source code in PG_V1 to a full module in PG_V2.
+            // Bound startup waits so a hung module import / engine init cannot leave the
+            // playground permanently stuck behind the loading overlay.
             let runner;
             try {
-                runner = await this.props.globalState.getRunnable!();
+                runner = await this._withTimeout(this.props.globalState.getRunnable!(), RunnableCreationTimeoutMs, "The playground timed out while preparing the runnable.");
                 if (runner) {
                     // Local file revision storage for #{snippetId}#local support
                     AddFileRevision(this.props.globalState, runner!.getPackSnapshot().manifest);
                 }
             } catch (e) {
-                (window as any).handleException(e as Error);
-                this._preventReentrancy = false;
-                this.props.globalState.onDisplayWaitRingObservable.notifyObservers(false);
+                this._failRun(e, "The playground timed out while preparing the runnable.");
                 return;
             }
 
@@ -390,16 +447,17 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
             let sceneResult: Scene | null = null;
             let createdEngine: ThinEngine | null = null;
             try {
-                [sceneResult, createdEngine] = await runner.run(createEngineAsync, canvas);
+                [sceneResult, createdEngine] = await this._withTimeout(
+                    runner.run(createEngineAsync, canvas),
+                    SceneRunTimeoutMs,
+                    "The playground timed out while running the scene."
+                );
                 this._engine = createdEngine as Engine;
             } catch (err) {
-                (window as any).handleException(err as Error);
-                this._preventReentrancy = false;
-                this.props.globalState.onDisplayWaitRingObservable.notifyObservers(false);
+                this._failRun(err, "The playground timed out while running the scene.");
                 return;
             }
             if (!sceneResult) {
-                this._preventReentrancy = false;
                 return this._notifyError("createScene export not found or returned null.");
             }
 
@@ -407,21 +465,22 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
             (window as any).scene = this._scene;
             (window as any).startRenderLoop(this._engine, canvas);
 
+            // Start the inspectable bridge for the CLI if Inspector v2 is loaded.
+            this._ensureInspectable();
+
             this._engine!.scenes[0]?.executeWhenReady(() => {
                 this.props.globalState.onRunExecutedObservable.notifyObservers();
             });
 
-            this._preventReentrancy = false;
-            this.props.globalState.onDisplayWaitRingObservable.notifyObservers(false);
+            const isFinalRun = this._finishRun();
 
             // Rehydrate inspector
-            if (this.state.preferInspector && displayInspector) {
-                this.props.globalState.onInspectorRequiredObservable.notifyObservers("enable");
+            if (isFinalRun && this.state.preferInspector && displayInspector) {
+                this.props.globalState.onInspectorRequiredObservable.notifyObservers();
             }
             return;
         } catch (e) {
-            (window as any).handleException(e as Error);
-            this._preventReentrancy = false;
+            this._failRun(e, "The playground failed to run.");
         }
     }
 

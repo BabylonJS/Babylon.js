@@ -1,12 +1,11 @@
 import { NodeMaterialBlock } from "../nodeMaterialBlock";
 import { NodeMaterialBlockConnectionPointTypes } from "../Enums/nodeMaterialBlockConnectionPointTypes";
-import type { NodeMaterialBuildState } from "../nodeMaterialBuildState";
+import { type NodeMaterialBuildState } from "../nodeMaterialBuildState";
 import { NodeMaterialBlockTargets } from "../Enums/nodeMaterialBlockTargets";
 import { RegisterClass } from "../../../Misc/typeStore";
-import type { Scene } from "../../../scene";
-import type { Nullable } from "../../../types";
-import type { NodeMaterialConnectionPoint } from "../nodeMaterialBlockConnectionPoint";
-import { NodeMaterialConnectionPointDirection } from "../nodeMaterialBlockConnectionPoint";
+import { type Scene } from "../../../scene";
+import { type Nullable } from "../../../types";
+import { type NodeMaterialConnectionPoint, NodeMaterialConnectionPointDirection } from "../nodeMaterialBlockConnectionPoint";
 import { ImageSourceBlock } from "./Dual/imageSourceBlock";
 import { NodeMaterialConnectionPointCustomObject } from "../nodeMaterialConnectionPointCustomObject";
 
@@ -111,6 +110,10 @@ export class CustomBlock extends NodeMaterialBlock {
         return codeString;
     }
 
+    /**
+     * Serializes the block
+     * @returns the serialized object
+     */
     public override serialize(): any {
         const serializationObject = super.serialize();
 
@@ -119,6 +122,12 @@ export class CustomBlock extends NodeMaterialBlock {
         return serializationObject;
     }
 
+    /**
+     * Deserializes the block
+     * @param serializationObject - the serialization object
+     * @param scene - the scene
+     * @param rootUrl - the root URL
+     */
     public override _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
         this._deserializeOptions(serializationObject.options);
 

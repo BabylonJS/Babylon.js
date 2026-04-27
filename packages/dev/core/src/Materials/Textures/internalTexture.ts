@@ -1,12 +1,12 @@
 import { Observable } from "../../Misc/observable";
-import type { ImageSource, Nullable, int } from "../../types";
-import type { ICanvas, ICanvasRenderingContext } from "../../Engines/ICanvas";
-import type { IHardwareTextureWrapper } from "./hardwareTextureWrapper";
+import { type ImageSource, type Nullable, type int } from "../../types";
+import { type ICanvas, type ICanvasRenderingContext } from "../../Engines/ICanvas";
+import { type IHardwareTextureWrapper } from "./hardwareTextureWrapper";
 import { TextureSampler } from "./textureSampler";
 
-import type { AbstractEngine } from "../../Engines/abstractEngine";
-import type { BaseTexture } from "../../Materials/Textures/baseTexture";
-import type { SphericalPolynomial } from "../../Maths/sphericalPolynomial";
+import { type AbstractEngine } from "../../Engines/abstractEngine";
+import { type BaseTexture } from "../../Materials/Textures/baseTexture";
+import { type SphericalPolynomial } from "../../Maths/sphericalPolynomial";
 
 /**
  * Defines the source of the internal texture
@@ -122,6 +122,12 @@ export class InternalTexture extends TextureSampler {
     public override set useMipMaps(value: Nullable<boolean>) {
         this._useMipMaps = value;
     }
+    /**
+     * Gets the number of mip levels for this texture.
+     * Note: This property has the correct value only if the texture was created through
+     * `createRawTexture` or `createRawTexture2DArray`.
+     */
+    public mipLevelCount: number = 1;
     /**
      * Gets the number of samples used by the texture (WebGL2+ only)
      */
@@ -408,9 +414,19 @@ export class InternalTexture extends TextureSampler {
                     this._compression,
                     this.type,
                     this._creationFlags,
-                    this._useSRGBBuffer
+                    this._useSRGBBuffer,
+                    this.mipLevelCount
                 );
                 proxy._swapAndDie(this, false);
+
+                if (this._bufferViewArray) {
+                    for (let mipLevel = 0; mipLevel < this._bufferViewArray.length; mipLevel++) {
+                        const mipData = this._bufferViewArray[mipLevel];
+                        if (mipData) {
+                            this._engine.updateRawTexture(this, mipData, this.format, this.invertY, this._compression, this.type, this._useSRGBBuffer, mipLevel);
+                        }
+                    }
+                }
 
                 this.isReady = true;
                 break;
@@ -444,9 +460,20 @@ export class InternalTexture extends TextureSampler {
                     this.invertY,
                     this.samplingMode,
                     this._compression,
-                    this.type
+                    this.type,
+                    this._creationFlags,
+                    this.mipLevelCount
                 );
                 proxy._swapAndDie(this, false);
+
+                if (this._bufferViewArray) {
+                    for (let mipLevel = 0; mipLevel < this._bufferViewArray.length; mipLevel++) {
+                        const mipData = this._bufferViewArray[mipLevel];
+                        if (mipData) {
+                            this._engine.updateRawTexture2DArray(this, mipData, this.format, this.invertY, this._compression, this.type, mipLevel);
+                        }
+                    }
+                }
 
                 this.isReady = true;
                 break;

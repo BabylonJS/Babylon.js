@@ -1,9 +1,9 @@
 import { serialize } from "core/Misc/decorators";
 import { ParticleSystemSet } from "../particleSystemSet";
 import { SystemBlock } from "./Blocks/systemBlock";
-import type { Scene } from "core/scene";
+import { type Scene } from "core/scene";
 import { NodeParticleBuildState } from "./nodeParticleBuildState";
-import type { NodeParticleBlock } from "./nodeParticleBlock";
+import { type NodeParticleBlock } from "./nodeParticleBlock";
 import { SerializationHelper } from "core/Misc/decorators.serialization";
 import { Observable } from "core/Misc/observable";
 import { GetClass } from "core/Misc/typeStore";
@@ -17,14 +17,15 @@ import { ParticleTextureSourceBlock } from "./Blocks/particleSourceTextureBlock"
 import { NodeParticleContextualSources } from "./Enums/nodeParticleContextualSources";
 import { UpdatePositionBlock } from "./Blocks/Update/updatePositionBlock";
 import { ParticleMathBlock, ParticleMathBlockOperations } from "./Blocks/particleMathBlock";
+
 import { ParticleTrigonometryBlock, ParticleTrigonometryBlockOperations } from "./Blocks/particleTrigonometryBlock";
 import { BoxShapeBlock } from "./Blocks/Emitters/boxShapeBlock";
 import { CreateParticleBlock } from "./Blocks/Emitters/createParticleBlock";
 import { ParticleSystem } from "core/Particles/particleSystem";
-import type { ParticleTeleportOutBlock } from "./Blocks/Teleport/particleTeleportOutBlock";
-import type { ParticleTeleportInBlock } from "./Blocks/Teleport/particleTeleportInBlock";
-import type { Nullable } from "core/types";
-import type { Color4 } from "core/Maths/math.color";
+import { type ParticleTeleportOutBlock } from "./Blocks/Teleport/particleTeleportOutBlock";
+import { type ParticleTeleportInBlock } from "./Blocks/Teleport/particleTeleportInBlock";
+import { type Color4 } from "core/Maths/math.color";
+import { type Nullable } from "../../types";
 import { SolidParticleSystemBlock } from "./Blocks/SolidParticle/solidParticleSystemBlock";
 import { MeshSourceBlock } from "./Blocks/SolidParticle/meshSourceBlock";
 import { CreateSolidParticleBlock } from "./Blocks/SolidParticle/createSolidParticleBlock";
@@ -46,6 +47,8 @@ export interface INodeParticleEditorOptions {
     /** Additional configuration for the NPE */
     nodeEditorConfig?: {
         backgroundColor?: Color4;
+        /** If true, the node particle system set will be disposed when the editor is closed (default: true) */
+        disposeOnClose?: boolean;
     };
 }
 
@@ -340,7 +343,7 @@ export class NodeParticleSystemSet {
 
         // Texture
         const textureBlock = new ParticleTextureSourceBlock("Texture");
-        textureBlock.texture.connectTo(system.texture);
+        textureBlock.textureOutput.connectTo(system.texture);
         textureBlock.url = Tools.GetAssetUrl("https://assets.babylonjs.com/core/textures/flare.png");
 
         this._systemBlocks.push(system);

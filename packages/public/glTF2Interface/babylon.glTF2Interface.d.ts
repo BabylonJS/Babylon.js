@@ -7,7 +7,7 @@ declare module "babylonjs-gltf2interface" {
 /**
  * Module for glTF 2.0 Interface
  */
-declare module BABYLON.GLTF2 {
+declare namespace BABYLON.GLTF2 {
     /**
      * The datatype of the components in the attribute
      */
@@ -1159,6 +1159,17 @@ declare module BABYLON.GLTF2 {
         thicknessTexture?: ITextureInfo;
         attenuationDistance?: number;
         attenuationColor?: number[];
+    }
+
+    /**
+     * Interfaces from the KHR_materials_volume_scatter extension
+     */
+
+    /** @internal */
+    interface IKHRMaterialsVolumeScatter {
+        scatterAnisotropy?: number;
+        multiscatterColorFactor?: number[];
+        multiscatterColorTexture?: ITextureInfo;
     }
 
     /**

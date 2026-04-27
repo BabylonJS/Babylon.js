@@ -1,12 +1,12 @@
-import type {
-    Scene,
-    NodeRenderGraphBuildState,
-    FrameGraph,
-    FrameGraphTextureHandle,
-    FrameGraphObjectList,
-    Camera,
-    NodeRenderGraphResourceContainerBlock,
-    FrameGraphShadowGeneratorTask,
+import {
+    type Scene,
+    type NodeRenderGraphBuildState,
+    type FrameGraph,
+    type FrameGraphTextureHandle,
+    type FrameGraphObjectList,
+    type Camera,
+    type NodeRenderGraphResourceContainerBlock,
+    type FrameGraphShadowGeneratorTask,
 } from "core/index";
 import { NodeRenderGraphBlock } from "../../nodeRenderGraphBlock";
 import { NodeRenderGraphBlockConnectionPointTypes, NodeRenderGraphConnectionPointDirection } from "../../Types/nodeRenderGraphTypes";

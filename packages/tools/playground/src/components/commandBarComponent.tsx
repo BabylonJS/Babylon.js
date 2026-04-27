@@ -1,6 +1,6 @@
 /* eslint-disable github/no-then */
 import * as React from "react";
-import type { GlobalState } from "../globalState";
+import { type GlobalState } from "../globalState";
 import { CommandButtonComponent } from "./commandButtonComponent";
 import { CommandDropdownComponent } from "./commandDropdownComponent";
 import { Utilities } from "../tools/utilities";
@@ -15,9 +15,7 @@ interface ICommandBarComponentProps {
     globalState: GlobalState;
 }
 
-interface ICommandBarComponentState {
-    isInspectorV2ModeEnabled: boolean;
-}
+interface ICommandBarComponentState {}
 
 export class CommandBarComponent extends React.Component<ICommandBarComponentProps, ICommandBarComponentState> {
     private _webGPUSupported: boolean = false;
@@ -31,10 +29,7 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
     public constructor(props: ICommandBarComponentProps) {
         super(props);
 
-        const searchParams = new URL(window.location.href).searchParams;
-        this.state = {
-            isInspectorV2ModeEnabled: searchParams.has("inspectorv2") && searchParams.get("inspectorv2") !== "false",
-        };
+        this.state = {};
 
         // First Fetch JSON data for procedural code
         this._procedural = [];
@@ -48,6 +43,18 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
             .catch((err) => {
                 this._load();
             });
+    }
+
+    private _reloadWithEngineVersion(engineVersion: "WebGL2" | "WebGL" | "WebGPU") {
+        Utilities.MarkManualEngineSwitchReload();
+        Utilities.StoreStringToStore("engineVersion", engineVersion, true);
+
+        if (engineVersion !== "WebGPU" && location.search.indexOf("webgpu") !== -1) {
+            location.search = location.search.replace("webgpu", "");
+            return;
+        }
+
+        window.location.reload();
     }
 
     private _load() {
@@ -95,39 +102,12 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
         this.props.globalState.onDownloadRequiredObservable.notifyObservers();
     }
 
-    onInspector(action: "refresh" | "toggle") {
-        this.props.globalState.onInspectorRequiredObservable.notifyObservers(action);
+    onInspector() {
+        this.props.globalState.onInspectorRequiredObservable.notifyObservers();
     }
 
     onExamples() {
         this.props.globalState.onExamplesDisplayChangedObservable.notifyObservers();
-    }
-
-    onToggleInspectorV2Mode() {
-        const newState = !this.state.isInspectorV2ModeEnabled;
-        this.setState({ isInspectorV2ModeEnabled: newState }, () => {
-            // Update URL after state is set
-            const url = new URL(window.location.href);
-            if (this.state.isInspectorV2ModeEnabled) {
-                url.searchParams.set("inspectorv2", "true");
-                localStorage.setItem("inspectorv2", "true");
-            } else {
-                url.searchParams.delete("inspectorv2");
-                localStorage.removeItem("inspectorv2");
-            }
-            window.history.pushState({}, "", url.toString());
-            this.onInspector("refresh");
-        });
-    }
-
-    override componentDidMount(): void {
-        if (!this.state.isInspectorV2ModeEnabled && localStorage.getItem("inspectorv2") === "true") {
-            if (new URL(window.location.href).searchParams.get("inspectorv2") === "false") {
-                localStorage.removeItem("inspectorv2");
-            } else {
-                this.onToggleInspectorV2Mode();
-            }
-        }
     }
 
     public override render() {
@@ -225,7 +205,15 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                 tooltip: "Loads the Babylon Toolkit into the playground",
                 storeKey: "babylon-toolkit",
                 defaultValue: false,
-                onCheck: () => {},
+                onCheck: (value: boolean) => {
+                    if (!value) {
+                        try {
+                            localStorage.removeItem("babylon-toolkit-used");
+                        } catch {
+                            // Ignore storage errors
+                        }
+                    }
+                },
             },
             {
                 label: "Auto-run",
@@ -239,8 +227,7 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
         // Procedural Code Generator Options (build from procedural.json)
         const isJavaScript = this.props.globalState.language === "JS" || this.props.globalState.language === "JavaScript";
 
-        let proceduralOptions: any[] = [];
-        proceduralOptions = this._procedural.map((item) => {
+        const proceduralOptions = this._procedural.map((item) => {
             const obj: any = {
                 ...item,
                 onClick: () => {},
@@ -284,12 +271,7 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                 storeKey: "engineVersion",
                 isActive: activeEngineVersion === "WebGL2",
                 onClick: () => {
-                    Utilities.StoreStringToStore("engineVersion", "WebGL2", true);
-                    if (location.search.indexOf("webgpu") !== -1) {
-                        location.search = location.search.replace("webgpu", "");
-                    } else {
-                        window.location.reload();
-                    }
+                    this._reloadWithEngineVersion("WebGL2");
                 },
                 validate: () => window.confirm(Utilities.GetCodeLostConfirmationMessage("version")),
             },
@@ -299,15 +281,7 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                 storeKey: "engineVersion",
                 isActive: activeEngineVersion === "WebGL",
                 onClick: () => {
-                    if (location.search.indexOf("webgpu") !== -1) {
-                        location.search = location.search.replace("webgpu", "");
-                    }
-                    Utilities.StoreStringToStore("engineVersion", "WebGL", true);
-                    if (location.search.indexOf("webgpu") !== -1) {
-                        location.search = location.search.replace("webgpu", "");
-                    } else {
-                        window.location.reload();
-                    }
+                    this._reloadWithEngineVersion("WebGL");
                 },
                 validate: () => window.confirm(Utilities.GetCodeLostConfirmationMessage("version")),
             },
@@ -337,8 +311,7 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                 storeKey: "engineVersion",
                 isActive: activeEngineVersion === "WebGPU",
                 onClick: () => {
-                    Utilities.StoreStringToStore("engineVersion", "WebGPU", true);
-                    window.location.reload();
+                    this._reloadWithEngineVersion("WebGPU");
                 },
                 validate: () => window.confirm(Utilities.GetCodeLostConfirmationMessage("version")),
             });
@@ -350,7 +323,7 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                     <CommandButtonComponent globalState={this.props.globalState} tooltip="Run" icon="play" shortcut="Alt+Enter" isActive={true} onClick={() => this.onPlay()} />
                     <CommandButtonComponent globalState={this.props.globalState} tooltip="Save" icon="save" shortcut="Ctrl+S" isActive={false} onClick={() => this.onSave()} />
                     <CommandDropdownComponent globalState={this.props.globalState} icon="saveLocal" tooltip="Local file" items={fileOptions} />
-                    <CommandButtonComponent globalState={this.props.globalState} tooltip="Inspector" icon="inspector" isActive={false} onClick={() => this.onInspector("toggle")} />
+                    <CommandButtonComponent globalState={this.props.globalState} tooltip="Inspector" icon="inspector" isActive={false} onClick={() => this.onInspector()} />
                     <CommandButtonComponent
                         globalState={this.props.globalState}
                         tooltip="Download"
@@ -384,9 +357,6 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                         items={versionOptions}
                     />
                     <CommandButtonComponent globalState={this.props.globalState} tooltip="Examples" icon="examples" onClick={() => this.onExamples()} isActive={false} />
-                    <div className="language-button active inspector-v2-button" onClick={() => this.onToggleInspectorV2Mode()}>
-                        {this.state.isInspectorV2ModeEnabled ? "Back to Old Inspector" : "Try the New Inspector"}
-                    </div>
                 </div>
             </div>
         );

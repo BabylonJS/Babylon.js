@@ -1,14 +1,11 @@
-import type { Scene } from "../scene";
+import { type Scene } from "../scene";
 import { Vector3 } from "../Maths/math.vector";
 import { Epsilon } from "../Maths/math.constants";
-import type { InterpolatingBehavior } from "../Behaviors/Cameras/interpolatingBehavior";
+import { type InterpolatingBehavior } from "../Behaviors/Cameras/interpolatingBehavior";
 
 const FrameDurationAt60FPS = 1000 / 60;
 /**
- * @experimental
- * This class is subject to change as geospatial camera evolves.
- *
- * It is intended to hold all logic related to converting input pixel deltas into current frame deltas, taking speed / framerate into account
+ * Holds all logic related to converting input pixel deltas into current frame deltas, taking speed / framerate into account
  * to ensure smooth frame-rate-independent movement
  */
 export class CameraMovement {

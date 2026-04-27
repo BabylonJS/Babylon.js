@@ -2,9 +2,9 @@ import { RegisterClass } from "../../../../Misc/typeStore";
 import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import { NodeMaterialBlock } from "../../nodeMaterialBlock";
-import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
-import type { InputBlock } from "../Input/inputBlock";
-import type { NodeMaterialTeleportOutBlock } from "./teleportOutBlock";
+import { type NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
+import { type InputBlock } from "../Input/inputBlock";
+import { type NodeMaterialTeleportOutBlock } from "./teleportOutBlock";
 
 /**
  * Defines a block used to teleport a value to an endpoint
@@ -82,6 +82,12 @@ export class NodeMaterialTeleportInBlock extends NodeMaterialBlock {
         return this.input.isConnected && this.input.connectedPoint!.ownerBlock.isInput && (this.input.connectedPoint!.ownerBlock as InputBlock).isUniform;
     }
 
+    /**
+     * Dumps the code for the block
+     * @param uniqueNames - the unique names
+     * @param alreadyDumped - the already dumped blocks
+     * @returns the code string
+     */
     public override _dumpCode(uniqueNames: string[], alreadyDumped: NodeMaterialBlock[]) {
         let codeString = super._dumpCode(uniqueNames, alreadyDumped);
 

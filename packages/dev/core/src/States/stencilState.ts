@@ -1,5 +1,5 @@
 import { Constants } from "../Engines/constants";
-import type { IStencilState } from "./IStencilState";
+import { type IStencilState } from "./IStencilState";
 
 /**
  * @internal

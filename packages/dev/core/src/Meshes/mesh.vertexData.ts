@@ -1,21 +1,18 @@
 /* eslint-disable jsdoc/require-returns-check */
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import type { Nullable, FloatArray, IndicesArray, DeepImmutable } from "../types";
-import type { Matrix, Vector2 } from "../Maths/math.vector";
-import { Vector3, Vector4, TmpVectors } from "../Maths/math.vector";
+import { type Nullable, type FloatArray, type IndicesArray, type DeepImmutable } from "../types";
+import { type Matrix, type Vector2, Vector3, Vector4, TmpVectors } from "../Maths/math.vector";
 import { VertexBuffer } from "../Buffers/buffer";
 import { _WarnImport } from "../Misc/devTools";
-import type { Color3 } from "../Maths/math.color";
-import { Color4 } from "../Maths/math.color";
+import { type Color3, Color4 } from "../Maths/math.color";
 import { Logger } from "../Misc/logger";
 import { nativeOverride } from "../Misc/decorators";
-import type { Coroutine } from "../Misc/coroutine";
-import { makeSyncFunction, runCoroutineSync } from "../Misc/coroutine";
-import type { ICreateCapsuleOptions } from "./Builders/capsuleBuilder";
+import { type Coroutine, makeSyncFunction, runCoroutineSync } from "../Misc/coroutine";
+import { type ICreateCapsuleOptions } from "./Builders/capsuleBuilder";
 import { RuntimeError, ErrorCodes } from "../Misc/error";
 
-import type { Geometry } from "../Meshes/geometry";
-import type { Mesh } from "../Meshes/mesh";
+import { type Geometry } from "../Meshes/geometry";
+import { type Mesh } from "../Meshes/mesh";
 import { SubMesh } from "./subMesh";
 
 /**
@@ -592,7 +589,7 @@ export class VertexData implements IVertexDataLike {
         return this;
     }
 
-    @nativeOverride.filter((...[coordinates]: Parameters<typeof VertexData._TransformVector3Coordinates>) => !Array.isArray(coordinates))
+    @nativeOverride.filter((...args: Parameters<typeof VertexData._TransformVector3Coordinates>) => !Array.isArray(args[0]))
     private static _TransformVector3Coordinates(coordinates: FloatArray, transformation: DeepImmutable<Matrix>, offset = 0, length = coordinates.length) {
         const coordinate = TmpVectors.Vector3[0];
         const transformedCoordinate = TmpVectors.Vector3[1];
@@ -605,7 +602,7 @@ export class VertexData implements IVertexDataLike {
         }
     }
 
-    @nativeOverride.filter((...[normals]: Parameters<typeof VertexData._TransformVector3Normals>) => !Array.isArray(normals))
+    @nativeOverride.filter((...args: Parameters<typeof VertexData._TransformVector3Normals>) => !Array.isArray(args[0]))
     private static _TransformVector3Normals(normals: FloatArray, transformation: DeepImmutable<Matrix>, offset = 0, length = normals.length) {
         const normal = TmpVectors.Vector3[0];
         const transformedNormal = TmpVectors.Vector3[1];
@@ -618,7 +615,7 @@ export class VertexData implements IVertexDataLike {
         }
     }
 
-    @nativeOverride.filter((...[normals]: Parameters<typeof VertexData._TransformVector4Normals>) => !Array.isArray(normals))
+    @nativeOverride.filter((...args: Parameters<typeof VertexData._TransformVector4Normals>) => !Array.isArray(args[0]))
     private static _TransformVector4Normals(normals: FloatArray, transformation: DeepImmutable<Matrix>, offset = 0, length = normals.length) {
         const normal = TmpVectors.Vector4[0];
         const transformedNormal = TmpVectors.Vector4[1];
@@ -632,7 +629,7 @@ export class VertexData implements IVertexDataLike {
         }
     }
 
-    @nativeOverride.filter((...[indices]: Parameters<typeof VertexData._FlipFaces>) => !Array.isArray(indices))
+    @nativeOverride.filter((...args: Parameters<typeof VertexData._FlipFaces>) => !Array.isArray(args[0]))
     private static _FlipFaces(indices: IndicesArray, offset = 0, length = indices.length) {
         for (let index = offset; index < offset + length; index += 3) {
             const tmp = indices[index + 1];
@@ -939,7 +936,7 @@ export class VertexData implements IVertexDataLike {
 
         if (mergeMaterialIds) {
             // Merge material infos
-            let materialIndex = 0;
+            let materialIndex: number;
             let indexOffset = 0;
             let vertexOffset = 0;
             const materialInfos: VertexDataMaterialInfo[] = [];
@@ -1601,22 +1598,18 @@ export class VertexData implements IVertexDataLike {
     /**
      * Creates the VertexData for a tiled box
      * @param options an object used to set the following optional parameters for the box, required but can be empty
-     * * faceTiles sets the pattern, tile size and number of tiles for a face
-     * * faceUV an array of 6 Vector4 elements used to set different images to each box side
-     * * faceColors an array of 6 Color3 elements used to set different colors to each box side
-     * * sideOrientation optional and takes the values : Mesh.FRONTSIDE (default), Mesh.BACKSIDE or Mesh.DOUBLESIDE
-     * @param options.pattern
-     * @param options.width
-     * @param options.height
-     * @param options.depth
-     * @param options.tileSize
-     * @param options.tileWidth
-     * @param options.tileHeight
-     * @param options.alignHorizontal
-     * @param options.alignVertical
-     * @param options.faceUV
-     * @param options.faceColors
-     * @param options.sideOrientation
+     * - `pattern` sets the pattern
+     * - `width` sets the width
+     * - `height` sets the height
+     * - `depth` sets the depth
+     * - `tileSize` sets the tile size
+     * - `tileWidth` sets the tile width
+     * - `tileHeight` sets the tile height
+     * - `alignHorizontal` sets the horizontal alignment
+     * - `alignVertical` sets the vertical alignment
+     * - `faceUV` an array of 6 Vector4 elements used to set different images to each box side
+     * - `faceColors` an array of 6 Color3 elements used to set different colors to each box side
+     * - `sideOrientation` optional and takes the values : Mesh.FRONTSIDE (default), Mesh.BACKSIDE or Mesh.DOUBLESIDE
      * @returns the VertexData of the box
      * @deprecated Please use CreateTiledBoxVertexData instead
      */
@@ -1706,7 +1699,7 @@ export class VertexData implements IVertexDataLike {
      * * diameterBottom sets the diameter of the bottom of the cone, overwrites diameter,  optional, default diameter
      * * diameter sets the diameter of the top and bottom of the cone, optional default 1
      * * tessellation the number of prism sides, 3 for a triangular prism, optional, default 24
-     * * subdivisions` the number of rings along the cylinder height, optional, default 1
+     * * `subdivisions` the number of rings along the cylinder height, optional, default 1
      * * arc a number from 0 to 1, to create an unclosed cylinder based on the fraction of the circumference given by the arc value, optional, default 1
      * * faceColors an array of Color3 elements used to set different colors to the top, rings and bottom respectively
      * * faceUV an array of Vector4 elements used to set different images to the top, rings and bottom respectively
@@ -1806,8 +1799,8 @@ export class VertexData implements IVertexDataLike {
      * * zmin the ground minimum Z coordinate, optional, default -1
      * * xmax the ground maximum X coordinate, optional, default 1
      * * zmax the ground maximum Z coordinate, optional, default 1
-     * * subdivisions a javascript object {w: positive integer, h: positive integer}, `w` and `h` are the numbers of subdivisions on the ground width and height creating 'tiles', default {w: 6, h: 6}
-     * * precision a javascript object {w: positive integer, h: positive integer}, `w` and `h` are the numbers of subdivisions on the tile width and height, default {w: 2, h: 2}
+     * * subdivisions a javascript object `\{w: positive integer, h: positive integer\}`, `w` and `h` are the numbers of subdivisions on the ground width and height creating 'tiles', default `\{w: 6, h: 6\}`
+     * * precision a javascript object `\{w: positive integer, h: positive integer\}`, `w` and `h` are the numbers of subdivisions on the tile width and height, default `\{w: 2, h: 2\}`
      * @returns the VertexData of the TiledGround
      * @deprecated use CreateTiledGroundVertexData instead
      */
@@ -2058,26 +2051,26 @@ export class VertexData implements IVertexDataLike {
         }
     ): void {
         // temporary scalar variables
-        let index = 0; // facet index
-        let p1p2x = 0.0; // p1p2 vector x coordinate
-        let p1p2y = 0.0; // p1p2 vector y coordinate
-        let p1p2z = 0.0; // p1p2 vector z coordinate
-        let p3p2x = 0.0; // p3p2 vector x coordinate
-        let p3p2y = 0.0; // p3p2 vector y coordinate
-        let p3p2z = 0.0; // p3p2 vector z coordinate
-        let faceNormalx = 0.0; // facet normal x coordinate
-        let faceNormaly = 0.0; // facet normal y coordinate
-        let faceNormalz = 0.0; // facet normal z coordinate
-        let length = 0.0; // facet normal length before normalization
-        let v1x = 0; // vector1 x index in the positions array
-        let v1y = 0; // vector1 y index in the positions array
-        let v1z = 0; // vector1 z index in the positions array
-        let v2x = 0; // vector2 x index in the positions array
-        let v2y = 0; // vector2 y index in the positions array
-        let v2z = 0; // vector2 z index in the positions array
-        let v3x = 0; // vector3 x index in the positions array
-        let v3y = 0; // vector3 y index in the positions array
-        let v3z = 0; // vector3 z index in the positions array
+        let index: number; // facet index
+        let p1p2x: number; // p1p2 vector x coordinate
+        let p1p2y: number; // p1p2 vector y coordinate
+        let p1p2z: number; // p1p2 vector z coordinate
+        let p3p2x: number; // p3p2 vector x coordinate
+        let p3p2y: number; // p3p2 vector y coordinate
+        let p3p2z: number; // p3p2 vector z coordinate
+        let faceNormalx: number; // facet normal x coordinate
+        let faceNormaly: number; // facet normal y coordinate
+        let faceNormalz: number; // facet normal z coordinate
+        let length: number; // facet normal length before normalization
+        let v1x: number; // vector1 x index in the positions array
+        let v1y: number; // vector1 y index in the positions array
+        let v1z: number; // vector1 z index in the positions array
+        let v2x: number; // vector2 x index in the positions array
+        let v2y: number; // vector2 y index in the positions array
+        let v2z: number; // vector2 z index in the positions array
+        let v3x: number; // vector3 x index in the positions array
+        let v3y: number; // vector3 y index in the positions array
+        let v3z: number; // vector3 z index in the positions array
         let computeFacetNormals = false;
         let computeFacetPositions = false;
         let computeFacetPartitioning = false;
@@ -2296,7 +2289,7 @@ export class VertexData implements IVertexDataLike {
 
                 // uvs
                 const lu: number = uvs.length;
-                let u: number = 0;
+                let u: number;
                 for (u = 0; u < lu; u++) {
                     uvs[u + lu] = uvs[u];
                 }

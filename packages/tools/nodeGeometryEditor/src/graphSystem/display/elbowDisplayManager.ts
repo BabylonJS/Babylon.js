@@ -1,9 +1,9 @@
 import { BlockTools } from "../../blockTools";
-import type { IDisplayManager, VisualContentDescription } from "shared-ui-components/nodeGraphSystem/interfaces/displayManager";
-import type { INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
+import { type IDisplayManager, type VisualContentDescription } from "shared-ui-components/nodeGraphSystem/interfaces/displayManager";
+import { type INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
 import * as styles from "./elbowDisplayManager.module.scss";
-import type { NodeGeometryBlock } from "core/Meshes/Node/nodeGeometryBlock";
-import type { GeometryElbowBlock } from "core/Meshes/Node/Blocks/geometryElbowBlock";
+import { type NodeGeometryBlock } from "core/Meshes/Node/nodeGeometryBlock";
+import { type GeometryElbowBlock } from "core/Meshes/Node/Blocks/geometryElbowBlock";
 
 export class ElbowDisplayManager implements IDisplayManager {
     public getHeaderClass() {

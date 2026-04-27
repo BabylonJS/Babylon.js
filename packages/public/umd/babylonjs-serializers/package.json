@@ -1,6 +1,6 @@
 {
     "name": "babylonjs-serializers",
-    "version": "8.45.5",
+    "version": "9.4.1",
     "main": "babylonjs.serializers.min.js",
     "types": "babylonjs.serializers.module.d.ts",
     "files": [
@@ -15,13 +15,13 @@
         "test:escheck": "es-check es6 ./babylonjs.serializers.js"
     },
     "dependencies": {
-        "babylonjs": "^8.45.5",
-        "babylonjs-gltf2interface": "^8.45.5"
+        "babylonjs": "9.4.1",
+        "babylonjs-gltf2interface": "9.4.1"
     },
     "devDependencies": {
         "@dev/build-tools": "1.0.0",
         "@dev/core": "1.0.0",
-        "@lts/serializers": "1.0.0",
+        "@dev/serializers": "^1.0.0",
         "source-map-loader": "^4.0.0",
         "ts-loader": "^9.2.6",
         "webpack": "^5.103.0",

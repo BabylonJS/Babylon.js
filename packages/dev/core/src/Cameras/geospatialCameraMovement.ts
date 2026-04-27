@@ -1,22 +1,19 @@
 import { CameraMovement } from "./cameraMovement";
 import { Epsilon } from "../Maths/math.constants";
-import type { GeospatialLimits } from "./Limits/geospatialLimits";
+import { type GeospatialLimits } from "./Limits/geospatialLimits";
 import { Matrix, TmpVectors, Vector3 } from "../Maths/math.vector";
-import type { MeshPredicate } from "../Culling/ray.core";
+import { type MeshPredicate } from "../Culling/ray.core";
 import { Plane } from "../Maths/math.plane";
 import { Ray } from "../Culling/ray";
-import type { Scene } from "../scene";
+import { type Scene } from "../scene";
 import { Vector3Distance } from "../Maths/math.vector.functions";
 import { Clamp } from "../Maths/math.scalar.functions";
-import type { PickingInfo } from "../Collisions/pickingInfo";
-import type { Nullable } from "../types";
-import type { InterpolatingBehavior } from "../Behaviors/Cameras/interpolatingBehavior";
-import type { GeospatialCamera } from "./geospatialCamera";
+import { type PickingInfo } from "../Collisions/pickingInfo";
+import { type Nullable } from "../types";
+import { type InterpolatingBehavior } from "../Behaviors/Cameras/interpolatingBehavior";
+import { type GeospatialCamera } from "./geospatialCamera";
 
 /**
- * @experimental
- * This class is subject to change as the geospatial camera evolves.
- *
  * Geospatial-specific camera movement system that extends the base movement with
  * raycasting and altitude-aware zoom constraints.
  *
@@ -57,12 +54,25 @@ export class GeospatialCameraMovement extends CameraMovement {
     ) {
         super(scene, cameraPosition, behavior);
         this.pickPredicate = pickPredicate;
-        this._tempPickingRay = new Ray(this._cameraPosition, this._cameraLookAt);
+        this._tempPickingRay = Ray.Zero();
         this.panInertia = 0;
         this.rotationInertia = 0;
         this.rotationXSpeed = Math.PI / 500; // Move 1/500th of a half circle per pixel
         this.rotationYSpeed = Math.PI / 500; // Move 1/500th of a half circle per pixel
+        this.zoomSpeed = 2; // Base zoom speed; actual speed is scaled based on altitude
     }
+
+    /**
+     * Function to calculate the up vector from a given point.
+     * Can be overridden to support non-spherical planets or custom up vector logic.
+     * Defaults to using the geocentric normal.
+     * @param point The point from which to calculate the up vector (e.g., camera position)
+     * @param result The vector to store the calculated up vector
+     * @returns The calculated up vector
+     */
+    public calculateUpVectorFromPointToRef = (point: Vector3, result: Vector3): Vector3 => {
+        return point.normalizeToRef(result);
+    };
 
     public startDrag(pointerX: number, pointerY: number) {
         const pickResult = this._scene.pick(pointerX, pointerY, this.pickPredicate);
@@ -90,16 +100,22 @@ export class GeospatialCameraMovement extends CameraMovement {
      */
     private _recalculateDragPlaneHitPoint(hitPointRadius: number, ray: Ray, localToEcefResult: Matrix): void {
         // Use the camera's geocentric normal to find the dragPlaneOriginPoint which lives at hitPointRadius along the camera's geocentric normal
-        this._cameraPosition.normalizeToRef(this._dragPlaneNormal);
-        this._dragPlaneNormal.scaleToRef(hitPointRadius, this._dragPlaneOriginPointEcef);
+        this._cameraPosition.scaleToRef(hitPointRadius / Math.max(0.00001, this._cameraPosition.length()), this._dragPlaneOriginPointEcef);
 
         // The dragPlaneOffsetVector will later be recalculated when drag occurs, and the delta between the offset vectors will be applied to localTranslation
-        ComputeLocalBasisToRefs(this._dragPlaneOriginPointEcef, TmpVectors.Vector3[0], TmpVectors.Vector3[1], TmpVectors.Vector3[2]);
-        const localToEcef = Matrix.FromXYZAxesToRef(TmpVectors.Vector3[0], TmpVectors.Vector3[1], TmpVectors.Vector3[2], localToEcefResult);
+        ComputeLocalBasisToRefs(
+            this._dragPlaneOriginPointEcef,
+            TmpVectors.Vector3[0],
+            TmpVectors.Vector3[1],
+            this._dragPlaneNormal,
+            this._scene.useRightHandedSystem,
+            this.calculateUpVectorFromPointToRef
+        );
+        const localToEcef = Matrix.FromXYZAxesToRef(TmpVectors.Vector3[0], TmpVectors.Vector3[1], this._dragPlaneNormal, localToEcefResult);
         localToEcef.setTranslationFromFloats(this._dragPlaneOriginPointEcef.x, this._dragPlaneOriginPointEcef.y, this._dragPlaneOriginPointEcef.z);
         const ecefToLocal = localToEcef.invertToRef(TmpVectors.Matrix[1]);
 
-        // Now create a plane at that point, perpendicular to the camera's geocentric normal
+        // Now create a plane at that point, perpendicular to _dragPlaneNormal.
         Plane.FromPositionAndNormalToRef(this._dragPlaneOriginPointEcef, this._dragPlaneNormal, this._dragPlane);
 
         // Lastly, find the _dragPlaneHitPoint where the ray intersects the _dragPlane.
@@ -110,21 +126,32 @@ export class GeospatialCameraMovement extends CameraMovement {
     }
 
     public handleDrag(pointerX: number, pointerY: number) {
-        if (this._hitPointRadius) {
-            const pickResult = this._scene.pick(pointerX, pointerY);
-            if (pickResult.ray) {
-                const localToEcef = TmpVectors.Matrix[0];
-                this._recalculateDragPlaneHitPoint(this._hitPointRadius, pickResult.ray, localToEcef);
-
-                const delta = this._dragPlaneHitPointLocal.subtractToRef(this._previousDragPlaneHitPointLocal, TmpVectors.Vector3[6]);
-                this._previousDragPlaneHitPointLocal.copyFrom(this._dragPlaneHitPointLocal);
-
-                Vector3.TransformNormalToRef(delta, localToEcef, delta);
-                this._dragPlaneOriginPointEcef.addInPlace(delta);
-
-                this.panAccumulatedPixels.subtractInPlace(delta);
-            }
+        const scene = this._scene;
+        if (!this._hitPointRadius || !scene.activeCamera) {
+            return;
         }
+
+        scene.createPickingRayToRef(pointerX, pointerY, null, this._tempPickingRay, scene.activeCamera);
+
+        const localToEcef = TmpVectors.Matrix[0];
+        this._recalculateDragPlaneHitPoint(this._hitPointRadius, this._tempPickingRay, localToEcef);
+
+        const delta = this._dragPlaneHitPointLocal.subtractToRef(this._previousDragPlaneHitPointLocal, TmpVectors.Vector3[6]);
+
+        // When the camera is pitched nearly parallel to the drag plane, ray-plane intersection
+        // can produce enormous deltas. Clamp the delta to avoid massive jumps.
+        const maxDragDelta = this._hitPointRadius * 0.1; // Max 10% of hit radius per frame
+        const deltaLength = delta.length();
+        if (deltaLength > maxDragDelta) {
+            delta.scaleInPlace(maxDragDelta / deltaLength);
+        }
+
+        this._previousDragPlaneHitPointLocal.copyFrom(this._dragPlaneHitPointLocal);
+
+        Vector3.TransformNormalToRef(delta, localToEcef, delta);
+        this._dragPlaneOriginPointEcef.addInPlace(delta);
+
+        this.panAccumulatedPixels.subtractInPlace(delta);
     }
 
     /** @override */
@@ -136,7 +163,10 @@ export class GeospatialCameraMovement extends CameraMovement {
             const centerRadius = cameraCenter.length(); // distance from planet origin to camera center
             const currentRadius = this._cameraPosition.length();
             // Dampen the pan speed based on latitude (slower near poles)
-            const sineOfSphericalLat = centerRadius === 0 ? 0 : cameraCenter.z / centerRadius;
+            const upAtCenter = TmpVectors.Vector3[7];
+            this.calculateUpVectorFromPointToRef(cameraCenter, upAtCenter);
+            // Latitude is derived from the Z component of the up vector (ECEF convention: Z = polar axis)
+            const sineOfSphericalLat = upAtCenter.z;
             const cosOfSphericalLat = Math.sqrt(1 - Math.min(1, sineOfSphericalLat * sineOfSphericalLat));
             const latitudeDampening = Math.sqrt(Math.abs(cosOfSphericalLat)); // sqrt here reduces effect near equator
 
@@ -149,9 +179,9 @@ export class GeospatialCameraMovement extends CameraMovement {
             this._panSpeedMultiplier = 1;
         }
 
-        // If a pan drag or rotate is occurring, stop zooming.
+        // If a pan drag is occurring, stop zooming.
         let zoomTargetDistance: number | undefined;
-        if (this.isDragging || this.rotationAccumulatedPixels.lengthSquared() > Epsilon) {
+        if (this.isDragging) {
             this._zoomSpeedMultiplier = 0;
             this._zoomVelocity = 0;
         } else {
@@ -190,7 +220,7 @@ export class GeospatialCameraMovement extends CameraMovement {
         return this._scene.pickWithRay(this._tempPickingRay, this.pickPredicate);
     }
 }
-
+/** @internal */
 export function ClampCenterFromPolesInPlace(center: Vector3) {
     const sineOfSphericalLatitudeLimit = 0.998749218; // ~90 degrees
     const centerMagnitude = center.length(); // distance from planet origin
@@ -227,24 +257,54 @@ function IntersectRayWithPlaneToRef(ray: Ray, plane: Plane, ref: Vector3): boole
 
 /**
  * Helper to build east/north/up basis vectors at a world position.
+ * Cross product order is swapped based on handedness so that the east vector
+ * encodes the coordinate-system convention, removing the need for a separate yawScale.
+ * @param worldPos - The position on the globe
+ * @param refEast - Receives the east direction
+ * @param refNorth - Receives the north direction
+ * @param refUp - Receives the up (outward) direction
+ * @param useRightHandedSystem - Whether the scene uses a right-handed coordinate system (default: false)
+ * @param calculateUpVectorFromPointToRef - Optional function to calculate the up vector from a point. If supplied, this function will be used instead of assuming a spherical geocentric normal, allowing support for non-spherical planets or custom up vector logic.
  * @internal
  */
-export function ComputeLocalBasisToRefs(worldPos: Vector3, refEast: Vector3, refNorth: Vector3, refUp: Vector3) {
-    // up = normalized position (geocentric normal)
-    refUp.copyFrom(worldPos).normalize();
+export function ComputeLocalBasisToRefs(
+    worldPos: Vector3,
+    refEast: Vector3,
+    refNorth: Vector3,
+    refUp: Vector3,
+    useRightHandedSystem: boolean = false,
+    calculateUpVectorFromPointToRef?: (point: Vector3, result: Vector3) => Vector3
+): void {
+    if (calculateUpVectorFromPointToRef) {
+        calculateUpVectorFromPointToRef(worldPos, refUp);
+    } else {
+        // up = normalized position (geocentric normal)
+        refUp.copyFrom(worldPos).normalize();
+    }
 
-    // east = normalize(worldNorth × up)
-    // (cross product of Earth rotation axis with up gives east except near poles)
+    // east – cross product order determines handedness
     const worldNorth = Vector3.LeftHandedForwardReadOnly; // (0,0,1)
-    Vector3.CrossToRef(worldNorth, refUp, refEast);
+    if (useRightHandedSystem) {
+        Vector3.CrossToRef(worldNorth, refUp, refEast);
+    } else {
+        Vector3.CrossToRef(refUp, worldNorth, refEast);
+    }
 
     // at poles, cross with worldRight instead
     if (refEast.lengthSquared() < Epsilon) {
-        Vector3.CrossToRef(Vector3.Right(), refUp, refEast);
+        if (useRightHandedSystem) {
+            Vector3.CrossToRef(Vector3.Right(), refUp, refEast);
+        } else {
+            Vector3.CrossToRef(refUp, Vector3.Right(), refEast);
+        }
     }
     refEast.normalize();
 
-    // north = up × east (completes right-handed basis)
-    Vector3.CrossToRef(refUp, refEast, refNorth);
+    // north – completes the basis (cross order also swapped for handedness)
+    if (useRightHandedSystem) {
+        Vector3.CrossToRef(refUp, refEast, refNorth);
+    } else {
+        Vector3.CrossToRef(refEast, refUp, refNorth);
+    }
     refNorth.normalize();
 }

@@ -1,8 +1,8 @@
-import type { Observer } from "../Misc/observable";
+import { type Observer } from "../Misc/observable";
 import { PerfCounter } from "../Misc/perfCounter";
-import type { Nullable } from "../types";
-import type { IDisposable } from "../scene";
-import type { AbstractEngine } from "../Engines/abstractEngine";
+import { type Nullable } from "../types";
+import { type IDisposable } from "../scene";
+import { type AbstractEngine } from "../Engines/abstractEngine";
 /**
  * This class can be used to get instrumentation data from a Babylon engine
  * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/optimize_your_scene#engineinstrumentation
@@ -79,7 +79,8 @@ export class EngineInstrumentation implements IDisposable {
             });
 
             this._onAfterShaderCompilationObserver = this.engine.onAfterShaderCompilationObservable.add(() => {
-                this._shaderCompilationTime.endMonitoring();
+                this._shaderCompilationTime.endMonitoring(false);
+                this._shaderCompilationTime.endFrame();
             });
         } else {
             this.engine.onBeforeShaderCompilationObservable.remove(this._onBeforeShaderCompilationObserver);

@@ -1,12 +1,11 @@
-import type { InternalTexture } from "core/Materials/Textures/internalTexture";
-import type { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
-import type { Viewport } from "core/Maths/math.viewport";
+import { type InternalTexture } from "core/Materials/Textures/internalTexture";
+import { type RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
+import { type Viewport } from "core/Maths/math.viewport";
 import { Observable } from "core/Misc/observable";
-import type { WebXRLayerType } from "core/XR/webXRLayerWrapper";
-import { WebXRLayerWrapper } from "core/XR/webXRLayerWrapper";
+import { type WebXRLayerType, WebXRLayerWrapper } from "core/XR/webXRLayerWrapper";
 import { WebXRLayerRenderTargetTextureProvider } from "core/XR/webXRRenderTargetTextureProvider";
-import type { WebXRSessionManager } from "core/XR/webXRSessionManager";
-import type { Nullable } from "core/types";
+import { type WebXRSessionManager } from "core/XR/webXRSessionManager";
+import { type Nullable } from "core/types";
 
 /**
  * Wraps xr composition layers.

@@ -1,6 +1,6 @@
-import type { Nullable } from "core/types";
-import type { AnimationConfiguration } from "./animationConfiguration";
-import type { RawLottieAnimation } from "./parsing/rawTypes";
+import { type Nullable } from "core/types";
+import { type AnimationConfiguration } from "./animationConfiguration";
+import { type RawLottieAnimation } from "./parsing/rawTypes";
 
 /**
  * Generic type representing a message sent between the main thread and the worker.
@@ -103,20 +103,24 @@ export type AnimationSizeMessagePayload = {
 export type StartAnimationMessagePayload = {
     /** The canvas element to render the animation on. */
     canvas: OffscreenCanvas;
-    /** The scale in which to play the animation. */
-    scaleFactor: number;
+    /** The canvas/viewport scale factor (may be \< 1 when the animation is larger than the container). */
+    canvasScale: number;
+    /** The sprite-atlas scale factor (always \>= 1 so sprites are never rasterised too small). */
+    atlasScale: number;
     /** Optional variables to replace in the animation file. */
     variables: Nullable<Map<string, string>>;
     /** Optional configuration object to customize the animation playback. */
     configuration: Nullable<Partial<AnimationConfiguration>>;
     /** The parsed lottie animation if it is available */
     animationData?: RawLottieAnimation;
+    /** The devicePixelRatio from the main thread (workers can't access window.devicePixelRatio) */
+    mainThreadDevicePixelRatio: number;
 };
 
 /** Payload for the "containerResize" message type */
 export type ContainerResizeMessagePayload = {
-    /** The new scale after the resize. */
-    scaleFactor: number;
+    /** The new canvas scale after the resize. */
+    canvasScale: number;
 };
 
 /** Payload for the "preWarm" message type */
@@ -133,10 +137,13 @@ export type WorkerLoadedMessagePayload = {
 /** Payload for the "dispose" message type */
 export type DisposeMessagePayload = {};
 
+/** Payload for the "firstRender" message type */
+export type FirstRenderMessagePayload = {};
+
 /**
  * Valid message types that can be sent between the main thread and the worker.
  */
-export type MessageType = "animationUrl" | "animationSize" | "startAnimation" | "containerResize" | "preWarm" | "workerLoaded" | "dispose";
+export type MessageType = "animationUrl" | "animationSize" | "startAnimation" | "containerResize" | "preWarm" | "workerLoaded" | "firstRender" | "dispose";
 
 /**
  * Valid payload types that can be sent between the main thread and the worker.
@@ -148,4 +155,5 @@ export type MessagePayload =
     | ContainerResizeMessagePayload
     | PreWarmMessagePayload
     | WorkerLoadedMessagePayload
+    | FirstRenderMessagePayload
     | DisposeMessagePayload;

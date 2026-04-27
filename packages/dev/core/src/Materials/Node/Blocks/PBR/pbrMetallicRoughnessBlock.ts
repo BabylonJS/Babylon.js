@@ -1,24 +1,23 @@
 import { NodeMaterialBlock } from "../../nodeMaterialBlock";
 import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
-import type { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
-import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
-import { NodeMaterialConnectionPointDirection } from "../../nodeMaterialBlockConnectionPoint";
+import { type NodeMaterialBuildState } from "../../nodeMaterialBuildState";
+import { type NodeMaterialConnectionPoint, NodeMaterialConnectionPointDirection } from "../../nodeMaterialBlockConnectionPoint";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
-import type { NodeMaterial, NodeMaterialDefines } from "../../nodeMaterial";
+import { type NodeMaterial, type NodeMaterialDefines } from "../../nodeMaterial";
 import { NodeMaterialSystemValues } from "../../Enums/nodeMaterialSystemValues";
 import { InputBlock } from "../Input/inputBlock";
-import type { Light } from "../../../../Lights/light";
-import type { Nullable } from "../../../../types";
+import { type Light } from "../../../../Lights/light";
+import { type Nullable } from "../../../../types";
 import { RegisterClass } from "../../../../Misc/typeStore";
-import type { AbstractMesh } from "../../../../Meshes/abstractMesh";
-import type { Effect } from "../../../effect";
-import type { Mesh } from "../../../../Meshes/mesh";
+import { type AbstractMesh } from "../../../../Meshes/abstractMesh";
+import { type Effect } from "../../../effect";
+import { type Mesh } from "../../../../Meshes/mesh";
 import { PBRBaseMaterial } from "../../../PBR/pbrBaseMaterial";
-import type { Scene } from "../../../../scene";
+import { type Scene } from "../../../../scene";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
 import { NodeMaterialConnectionPointCustomObject } from "../../nodeMaterialConnectionPointCustomObject";
 import { SheenBlock } from "./sheenBlock";
-import type { BaseTexture } from "../../../Textures/baseTexture";
+import { type BaseTexture } from "../../../Textures/baseTexture";
 import { GetEnvironmentBRDFTexture } from "../../../../Misc/brdfTextureTools";
 import { MaterialFlags } from "../../../materialFlags";
 import { AnisotropyBlock } from "./anisotropyBlock";
@@ -26,8 +25,8 @@ import { ReflectionBlock } from "./reflectionBlock";
 import { ClearCoatBlock } from "./clearCoatBlock";
 import { IridescenceBlock } from "./iridescenceBlock";
 import { SubSurfaceBlock } from "./subSurfaceBlock";
-import type { RefractionBlock } from "./refractionBlock";
-import type { PerturbNormalBlock } from "../Fragment/perturbNormalBlock";
+import { type RefractionBlock } from "./refractionBlock";
+import { type PerturbNormalBlock } from "../Fragment/perturbNormalBlock";
 import { Constants } from "../../../../Engines/constants";
 import { Color3 } from "../../../../Maths/math.color";
 import { Logger } from "core/Misc/logger";
@@ -696,6 +695,11 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         return this._outputs[12];
     }
 
+    /**
+     * Auto configure the block based on the material
+     * @param material - the node material
+     * @param additionalFilteringInfo - additional filtering info
+     */
     public override autoConfigure(material: NodeMaterial, additionalFilteringInfo: (node: NodeMaterialBlock) => boolean = () => true) {
         if (!this.cameraPosition.isConnected) {
             let cameraPositionInput = material.getInputBlockByPredicate((b) => b.systemValue === NodeMaterialSystemValues.CameraPosition && additionalFilteringInfo(b));
@@ -718,6 +722,12 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         }
     }
 
+    /**
+     * Prepare the list of defines
+     * @param defines - the list of defines to update
+     * @param nodeMaterial - the node material
+     * @param mesh - the mesh to prepare defines for
+     */
     public override prepareDefines(defines: NodeMaterialDefines, nodeMaterial: NodeMaterial, mesh?: AbstractMesh) {
         if (!mesh) {
             return;
@@ -834,6 +844,13 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         }
     }
 
+    /**
+     * Update the uniforms and samples
+     * @param state - the build state
+     * @param nodeMaterial - the node material
+     * @param defines - the list of defines
+     * @param uniformBuffers - the uniform buffers
+     */
     public override updateUniformsAndSamples(state: NodeMaterialBuildState, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines, uniformBuffers: string[]) {
         for (let lightIndex = 0; lightIndex < nodeMaterial.maxSimultaneousLights; lightIndex++) {
             if (!defines["LIGHT" + lightIndex]) {
@@ -848,11 +865,19 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
                 uniformBuffers,
                 onlyUpdateBuffersList,
                 defines["IESLIGHTTEXTURE" + lightIndex],
-                defines["CLUSTLIGHT" + lightIndex]
+                defines["CLUSTLIGHT" + lightIndex],
+                defines["RECTAREALIGHTEMISSIONTEXTURE" + lightIndex]
             );
         }
     }
 
+    /**
+     * Checks if the block is ready
+     * @param mesh - the mesh to check
+     * @param nodeMaterial - the node material
+     * @param defines - the list of defines
+     * @returns true if ready
+     */
     public override isReady(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
         if (this._environmentBRDFTexture && !this._environmentBRDFTexture.isReady()) {
             return false;
@@ -864,9 +889,19 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
             }
         }
 
+        if (this.light && !this.light.areLightTexturesReady()) {
+            return false;
+        }
+
         return true;
     }
 
+    /**
+     * Bind data to effect
+     * @param effect - the effect to bind data to
+     * @param nodeMaterial - the node material
+     * @param mesh - the mesh to bind data for
+     */
     public override bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh) {
         if (!mesh) {
             return;
@@ -1547,6 +1582,10 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         return codeString;
     }
 
+    /**
+     * Serializes the block
+     * @returns the serialized object
+     */
     public override serialize(): any {
         const serializationObject = super.serialize();
 
@@ -1576,6 +1615,12 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         return serializationObject;
     }
 
+    /**
+     * Deserializes the block
+     * @param serializationObject - the object to deserialize from
+     * @param scene - the scene to deserialize in
+     * @param rootUrl - the root URL for assets
+     */
     public override _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
         super._deserialize(serializationObject, scene, rootUrl);
 

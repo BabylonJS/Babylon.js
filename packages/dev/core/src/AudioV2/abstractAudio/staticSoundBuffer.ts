@@ -1,4 +1,4 @@
-import type { AudioEngineV2 } from "./audioEngineV2";
+import { type AudioEngineV2 } from "./audioEngineV2";
 
 let StaticSoundBufferId = 1;
 

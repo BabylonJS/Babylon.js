@@ -49,12 +49,12 @@ attribute uv2: vec2f;
 
 @vertex
 fn main(input : VertexInputs) -> FragmentInputs {
-	var positionUpdated: vec3f = input.position;
+	var positionUpdated: vec3f = vertexInputs.position;
 #ifdef UV1
-    var uvUpdated: vec2f = input.uv;
+    var uvUpdated: vec2f = vertexInputs.uv;
 #endif
 #ifdef UV2
-		var uv2Updated: vec2f = input.uv2;
+		var uv2Updated: vec2f = vertexInputs.uv2;
 #endif
 
 #include<morphTargetsVertexGlobal>
@@ -68,7 +68,7 @@ var worldPos: vec4f = finalWorld *  vec4f(positionUpdated, 1.0);
 
 #ifdef CUBEMAP
 	vertexOutputs.vPosition = worldPos;
-	vertexOutputs.position = uniforms.viewProjection * finalWorld *  vec4f(input.position, 1.0);
+	vertexOutputs.position = uniforms.viewProjection * finalWorld *  vec4f(vertexInputs.position, 1.0);
 #else
 	vertexOutputs.vPosition = uniforms.viewProjection * worldPos;
 	vertexOutputs.position = vertexOutputs.vPosition;

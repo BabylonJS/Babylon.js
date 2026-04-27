@@ -1,20 +1,19 @@
 import { NodeMaterialBlock } from "../../nodeMaterialBlock";
 import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
-import type { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
-import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
-import { NodeMaterialConnectionPointDirection } from "../../nodeMaterialBlockConnectionPoint";
+import { type NodeMaterialBuildState } from "../../nodeMaterialBuildState";
+import { type NodeMaterialConnectionPoint, NodeMaterialConnectionPointDirection } from "../../nodeMaterialBlockConnectionPoint";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import { InputBlock } from "../Input/inputBlock";
 import { NodeMaterialConnectionPointCustomObject } from "../../nodeMaterialConnectionPointCustomObject";
-import type { NodeMaterial, NodeMaterialDefines } from "../../nodeMaterial";
-import type { ReflectionBlock } from "./reflectionBlock";
-import type { Scene } from "../../../../scene";
-import type { Nullable } from "../../../../types";
-import type { Mesh } from "../../../../Meshes/mesh";
-import type { Effect } from "../../../effect";
-import type { PBRMetallicRoughnessBlock } from "./pbrMetallicRoughnessBlock";
-import type { PerturbNormalBlock } from "../Fragment/perturbNormalBlock";
+import { type NodeMaterial, type NodeMaterialDefines } from "../../nodeMaterial";
+import { type ReflectionBlock } from "./reflectionBlock";
+import { type Scene } from "../../../../scene";
+import { type Nullable } from "../../../../types";
+import { type Mesh } from "../../../../Meshes/mesh";
+import { type Effect } from "../../../effect";
+import { type PBRMetallicRoughnessBlock } from "./pbrMetallicRoughnessBlock";
+import { type PerturbNormalBlock } from "../Fragment/perturbNormalBlock";
 import { PBRClearCoatConfiguration } from "../../../PBR/pbrClearCoatConfiguration";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
 import { TBNBlock } from "../Fragment/TBNBlock";
@@ -165,7 +164,6 @@ export class ClearCoatBlock extends NodeMaterialBlock {
     /**
      * Gets the TBN input component
      */
-    // eslint-disable-next-line @typescript-eslint/naming-convention
     public get TBN(): NodeMaterialConnectionPoint {
         return this._inputs[10];
     }
@@ -177,6 +175,9 @@ export class ClearCoatBlock extends NodeMaterialBlock {
         return this._outputs[0];
     }
 
+    /**
+     * Auto configure the block based on the material
+     */
     public override autoConfigure() {
         if (!this.intensity.isConnected) {
             const intensityInput = new InputBlock("ClearCoat intensity", NodeMaterialBlockTargets.Fragment, NodeMaterialBlockConnectionPointTypes.Float);
@@ -185,6 +186,10 @@ export class ClearCoatBlock extends NodeMaterialBlock {
         }
     }
 
+    /**
+     * Prepare the list of defines
+     * @param defines - the list of defines to update
+     */
     public override prepareDefines(defines: NodeMaterialDefines) {
         defines.setValue("CLEARCOAT", true);
         defines.setValue("CLEARCOAT_TEXTURE", false, true);
@@ -199,6 +204,12 @@ export class ClearCoatBlock extends NodeMaterialBlock {
         defines.setValue("CLEARCOAT_REMAP_F0", this.remapF0OnInterfaceChange, true);
     }
 
+    /**
+     * Bind data to effect
+     * @param effect - the effect to bind data to
+     * @param nodeMaterial - the node material
+     * @param mesh - the mesh to bind data for
+     */
     public override bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh) {
         super.bind(effect, nodeMaterial, mesh);
 
@@ -419,6 +430,10 @@ export class ClearCoatBlock extends NodeMaterialBlock {
         return codeString;
     }
 
+    /**
+     * Serializes the block
+     * @returns the serialized object
+     */
     public override serialize(): any {
         const serializationObject = super.serialize();
 
@@ -427,6 +442,12 @@ export class ClearCoatBlock extends NodeMaterialBlock {
         return serializationObject;
     }
 
+    /**
+     * Deserializes the block
+     * @param serializationObject - the object to deserialize from
+     * @param scene - the scene to deserialize in
+     * @param rootUrl - the root URL for assets
+     */
     public override _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
         super._deserialize(serializationObject, scene, rootUrl);
 

@@ -1,10 +1,8 @@
-import type { FunctionComponent } from "react";
+import { type FunctionComponent, useState } from "react";
 
-import type { AbstractMesh, ShaderMaterial } from "core/index";
-import type { DropdownOption } from "shared-ui-components/fluent/primitives/dropdown";
-import type { ISelectionService } from "../../../services/selectionService";
-
-import { useState } from "react";
+import { type AbstractMesh, type ShaderMaterial } from "core/index";
+import { type DropdownOption } from "shared-ui-components/fluent/primitives/dropdown";
+import { type ISelectionService } from "../../../services/selectionService";
 
 import { SkeletonViewer } from "core/Debug/skeletonViewer";
 import { FrameGraphUtils } from "core/FrameGraph/frameGraphUtils";
@@ -233,19 +231,17 @@ export const AbstractMeshEdgeRenderingProperties: FunctionComponent<{ mesh: Abst
                 }}
             />
             <Collapse visible={!!edgesRenderer}>
-                <>
-                    <BoundProperty
-                        component={SyncedSliderPropertyLine}
-                        label="Edges Width"
-                        description="Width of the rendered edges (0 to 10)."
-                        target={mesh}
-                        propertyKey="edgesWidth"
-                        min={0}
-                        max={10}
-                        step={0.1}
-                    />
-                    <BoundProperty component={Color4PropertyLine} label="Edge Color" target={mesh} propertyKey="edgesColor" />
-                </>
+                <BoundProperty
+                    component={SyncedSliderPropertyLine}
+                    label="Edges Width"
+                    description="Width of the rendered edges (0 to 10)."
+                    target={mesh}
+                    propertyKey="edgesWidth"
+                    min={0}
+                    max={10}
+                    step={0.1}
+                />
+                <BoundProperty component={Color4PropertyLine} label="Edge Color" target={mesh} propertyKey="edgesColor" />
             </Collapse>
         </>
     );

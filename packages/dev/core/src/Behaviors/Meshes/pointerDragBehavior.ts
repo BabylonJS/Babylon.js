@@ -1,21 +1,20 @@
-import type { Behavior } from "../../Behaviors/behavior";
+import { type Behavior } from "../../Behaviors/behavior";
 import { Mesh } from "../../Meshes/mesh";
-import type { AbstractMesh } from "../../Meshes/abstractMesh";
+import { type AbstractMesh } from "../../Meshes/abstractMesh";
+import { type TransformNode } from "../../Meshes/transformNode";
 import { Scene } from "../../scene";
-import type { Nullable } from "../../types";
-import type { Observer } from "../../Misc/observable";
-import { Observable } from "../../Misc/observable";
+import { type Nullable } from "../../types";
+import { type Observer, Observable } from "../../Misc/observable";
 import { TmpVectors, Vector3 } from "../../Maths/math.vector";
-import type { PointerInfo } from "../../Events/pointerEvents";
-import { PointerEventTypes } from "../../Events/pointerEvents";
+import { type PointerInfo, PointerEventTypes } from "../../Events/pointerEvents";
 import { Ray } from "../../Culling/ray";
 import { PivotTools } from "../../Misc/pivotTools";
-import type { ArcRotateCamera } from "../../Cameras/arcRotateCamera";
+import { type ArcRotateCamera } from "../../Cameras/arcRotateCamera";
 import { CreatePlane } from "../../Meshes/Builders/planeBuilder";
 
-import type { IPointerEvent } from "../../Events/deviceInputEvents";
+import { type IPointerEvent } from "../../Events/deviceInputEvents";
 import { Epsilon } from "../../Maths/math.constants";
-import type { DragEvent, DragStartEndEvent } from "./pointerDragEvents";
+import { type DragEvent, type DragStartEndEvent } from "./pointerDragEvents";
 
 /**
  * A behavior that when attached to a mesh will allow the mesh to be dragged around the screen based on pointer events
@@ -137,6 +136,12 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
      * the drag will continue even if another button is pressed on the same pointer.
      */
     public allowOtherButtonsDuringDrag = false;
+
+    /**
+     * If set, the drag axis will be transformed by the inverse of this node's world matrix.
+     * Useful when the drag behavior is used with a gizmo that has an additionalTransformNode.
+     */
+    public additionalTransformNode?: TransformNode;
 
     private _options: { dragAxis?: Vector3; dragPlaneNormal?: Vector3 };
 
@@ -446,7 +451,7 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
             if (this.updateDragPlane) {
                 this._updateDragPlanePosition(ray, pickedPoint);
             }
-            let dragLength = 0;
+            let dragLength: number;
             // depending on the drag mode option drag accordingly
             if (this._options.dragAxis) {
                 // Convert local drag axis to world if useObjectOrientationForDragging
@@ -456,6 +461,10 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
                 // Project delta drag from the drag plane onto the drag axis
                 pickedPoint.subtractToRef(this.lastDragPosition, this._tmpVector);
 
+                if (this.additionalTransformNode) {
+                    this.additionalTransformNode.getWorldMatrix().invertToRef(TmpVectors.Matrix[0]);
+                    Vector3.TransformNormalToRef(this._worldDragAxis, TmpVectors.Matrix[0], this._worldDragAxis);
+                }
                 this._worldDragAxis.normalize();
                 dragLength = Vector3.Dot(this._tmpVector, this._worldDragAxis);
                 this._worldDragAxis.scaleToRef(dragLength, this._dragDelta);

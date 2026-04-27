@@ -1,10 +1,10 @@
 import { Observable } from "../Misc/observable";
-import type { Nullable } from "../types";
+import { type Nullable } from "../types";
 import { ArcRotateCamera } from "../Cameras/arcRotateCamera";
-import type { Scene } from "../scene";
+import { type Scene } from "../scene";
 import { Vector3 } from "../Maths/math.vector";
 import { Color3, Color4 } from "../Maths/math.color";
-import type { AbstractMesh } from "../Meshes/abstractMesh";
+import { type AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
 import { BaseTexture } from "../Materials/Textures/baseTexture";
 import { Texture } from "../Materials/Textures/texture";
@@ -397,6 +397,10 @@ export class EnvironmentHelper {
         }
 
         if (this._groundMirror && !newOptions.enableGroundMirror) {
+            const index = this._scene.customRenderTargets.indexOf(this._groundMirror);
+            if (index !== -1) {
+                this._scene.customRenderTargets.splice(index, 1);
+            }
             this._groundMirror.dispose();
             this._groundMirror = null;
         }
@@ -620,6 +624,10 @@ export class EnvironmentHelper {
                         this._groundMirror.renderList.push(mesh);
                     }
                 }
+            }
+
+            if (this._scene.frameGraph) {
+                this._scene.customRenderTargets.push(this._groundMirror);
             }
         }
 

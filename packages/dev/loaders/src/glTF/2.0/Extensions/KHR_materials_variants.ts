@@ -1,16 +1,16 @@
-import type { Nullable } from "core/types";
-import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
+import { type Nullable } from "core/types";
+import { type IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader, ArrayItem } from "../glTFLoader";
 
-import type { Material } from "core/Materials/material";
+import { type Material } from "core/Materials/material";
 import { Mesh } from "core/Meshes/mesh";
-import type { Node } from "core/node";
-import type { AbstractMesh } from "core/Meshes/abstractMesh";
-import type { INode, IMeshPrimitive, IMesh } from "../glTFLoaderInterfaces";
-import type { IKHRMaterialVariants_Mapping, IKHRMaterialVariants_Variant, IKHRMaterialVariants_Variants } from "babylonjs-gltf2interface";
-import type { TransformNode } from "core/Meshes/transformNode";
+import { type Node } from "core/node";
+import { type AbstractMesh } from "core/Meshes/abstractMesh";
+import { type INode, type IMeshPrimitive, type IMesh } from "../glTFLoaderInterfaces";
+import { type IKHRMaterialVariants_Mapping, type IKHRMaterialVariants_Variant, type IKHRMaterialVariants_Variants } from "babylonjs-gltf2interface";
+import { type TransformNode } from "core/Meshes/transformNode";
 import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
-import type { MaterialVariantsController } from "../../glTFFileLoader";
+import { type MaterialVariantsController } from "../../glTFFileLoader";
 
 const NAME = "KHR_materials_variants";
 
@@ -296,7 +296,7 @@ export class KHR_materials_variants implements IGLTFLoaderExtension {
                                         // Replace the target when original mesh is cloned
                                         babylonMesh.onClonedObservable.add((newOne: Node) => {
                                             const newMesh = newOne as Mesh;
-                                            let metadata: Nullable<IExtensionMetadata> = null;
+                                            let metadata: Nullable<IExtensionMetadata>;
                                             let newRoot: Nullable<Node> = newMesh;
 
                                             // Find root to get medata

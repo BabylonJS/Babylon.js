@@ -1,17 +1,15 @@
-import type { Nullable } from "../types";
-import { Observable } from "../Misc/observable";
-import type { IReadonlyObservable } from "../Misc/observable";
+import { type Nullable } from "../types";
+import { Observable, type IReadonlyObservable } from "../Misc/observable";
 import { Scene } from "../scene";
-import type { Sprite } from "./sprite";
-import type { ISpriteManager } from "./spriteManager";
+import { type Sprite } from "./sprite";
+import { type ISpriteManager } from "./spriteManager";
 import { CreatePickingRayInCameraSpace, CreatePickingRayInCameraSpaceToRef, Ray } from "../Culling/ray.core";
-import type { Camera } from "../Cameras/camera";
+import { type Camera } from "../Cameras/camera";
 import { PickingInfo } from "../Collisions/pickingInfo";
-import type { ISceneComponent } from "../sceneComponent";
-import { SceneComponentConstants } from "../sceneComponent";
+import { type ISceneComponent, SceneComponentConstants } from "../sceneComponent";
 import { ActionEvent } from "../Actions/actionEvent";
 import { Constants } from "../Engines/constants";
-import type { IPointerEvent } from "../Events/deviceInputEvents";
+import { type IPointerEvent } from "../Events/deviceInputEvents";
 
 declare module "../scene" {
     // eslint-disable-next-line @typescript-eslint/naming-convention

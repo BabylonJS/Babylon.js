@@ -1,7 +1,6 @@
-import type { ICameraInput } from "core/Cameras";
-import { CameraInputsManager, FreeCamera } from "core/Cameras";
-import type { Engine } from "core/Engines";
-import { NullEngine } from "core/Engines";
+import { type ICameraInput, CameraInputsManager } from "core/Cameras/cameraInputsManager";
+import { FreeCamera } from "core/Cameras/freeCamera";
+import { type Engine, NullEngine } from "core/Engines";
 import { Vector3 } from "core/Maths";
 import { Scene } from "core/scene";
 
@@ -74,7 +73,7 @@ describe("CameraInputsManager", () => {
         });
 
         it("should attach control when it required", () => {
-            const attachControlSpy = jest.spyOn(input, "attachControl");
+            const attachControlSpy = vi.spyOn(input, "attachControl");
             manager.attachedToElement = true;
             manager.add(input);
 
@@ -82,7 +81,7 @@ describe("CameraInputsManager", () => {
         });
 
         it("should attach control when it required with preventDefault", () => {
-            const attachControlSpy = jest.spyOn(input, "attachControl");
+            const attachControlSpy = vi.spyOn(input, "attachControl");
             manager.attachedToElement = true;
             manager.noPreventDefault = true;
             manager.add(input);
@@ -143,7 +142,7 @@ describe("CameraInputsManager", () => {
         });
 
         it("should call rebuild input check after remove the input", () => {
-            const managerRebuildInputCheckSpy = jest.spyOn(manager, "rebuildInputCheck");
+            const managerRebuildInputCheckSpy = vi.spyOn(manager, "rebuildInputCheck");
 
             manager.add(input);
 
@@ -155,7 +154,7 @@ describe("CameraInputsManager", () => {
         });
 
         it("should detach control from input", () => {
-            const detachControlSpy = jest.spyOn(input, "detachControl");
+            const detachControlSpy = vi.spyOn(input, "detachControl");
 
             manager.add(input);
 

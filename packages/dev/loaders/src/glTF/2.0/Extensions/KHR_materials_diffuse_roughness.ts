@@ -1,10 +1,10 @@
-import type { Nullable } from "core/types";
-import type { Material } from "core/Materials/material";
+import { type Nullable } from "core/types";
+import { type Material } from "core/Materials/material";
 
-import type { IMaterial } from "../glTFLoaderInterfaces";
-import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
+import { type IMaterial } from "../glTFLoaderInterfaces";
+import { type IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader } from "../glTFLoader";
-import type { IKHRMaterialsDiffuseRoughness } from "babylonjs-gltf2interface";
+import { type IKHRMaterialsDiffuseRoughness } from "babylonjs-gltf2interface";
 import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
 
 const NAME = "KHR_materials_diffuse_roughness";
@@ -21,7 +21,7 @@ declare module "../../glTFFileLoader" {
 }
 
 /**
- * [Specification](https://github.com/KhronosGroup/glTF/blob/fdee35425ae560ea378092e38977216d63a094ec/extensions/2.0/Khronos/KHR_materials_diffuse_roughness/README.md)
+ * [Specification](https://github.com/KhronosGroup/glTF/blob/b102d2d2b40d44a8776800bb2bf85e218853c17d/extensions/2.0/Khronos/KHR_materials_diffuse_roughness/README.md)
  * @experimental
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention

@@ -1,4 +1,4 @@
-import type { NodeMaterialBlock } from "../nodeMaterialBlock";
+import { type NodeMaterialBlock } from "../nodeMaterialBlock";
 
 /**
  * Root class for all node material optimizers

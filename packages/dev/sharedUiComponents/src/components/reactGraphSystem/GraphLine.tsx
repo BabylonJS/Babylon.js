@@ -1,4 +1,4 @@
-import type { FC } from "react";
+import { type FC } from "react";
 import { useGraphContext } from "./useGraphContext";
 /**
  * props for the GraphLine component

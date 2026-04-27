@@ -1,9 +1,8 @@
-import type { IWebXRFeature } from "../webXRFeaturesManager";
-import { WebXRFeaturesManager, WebXRFeatureName } from "../webXRFeaturesManager";
-import type { WebXRSessionManager } from "../webXRSessionManager";
+import { type IWebXRFeature, WebXRFeaturesManager, WebXRFeatureName } from "../webXRFeaturesManager";
+import { type WebXRSessionManager } from "../webXRSessionManager";
 import { Observable } from "../../Misc/observable";
 import { Vector3, Matrix } from "../../Maths/math.vector";
-import type { TransformNode } from "../../Meshes/transformNode";
+import { type TransformNode } from "../../Meshes/transformNode";
 import { WebXRAbstractFeature } from "./WebXRAbstractFeature";
 import { Tools } from "../../Misc/tools";
 

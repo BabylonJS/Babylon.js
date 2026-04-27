@@ -1,5 +1,5 @@
 import { CameraInputsManager } from "./cameraInputsManager";
-import type { GeospatialCamera } from "./geospatialCamera";
+import { type GeospatialCamera } from "./geospatialCamera";
 import { GeospatialCameraPointersInput } from "./Inputs/geospatialCameraPointersInput";
 import { GeospatialCameraMouseWheelInput } from "./Inputs/geospatialCameraMouseWheelInput";
 import { GeospatialCameraKeyboardInput } from "./Inputs/geospatialCameraKeyboardInput";

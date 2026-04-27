@@ -1,12 +1,11 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import type { Scene } from "../../scene";
-import type { Vector3 } from "../../Maths/math.vector";
-import { Vector2, Vector4 } from "../../Maths/math.vector";
+import { type Scene } from "../../scene";
+import { type Vector3, Vector2, Vector4 } from "../../Maths/math.vector";
 import { Color4 } from "../../Maths/math.color";
 import { Mesh } from "../mesh";
 import { VertexData } from "../mesh.vertexData";
 import { PolygonMeshBuilder } from "../polygonMesh";
-import type { FloatArray, IndicesArray, Nullable } from "../../types";
+import { type FloatArray, type IndicesArray, type Nullable } from "../../types";
 import { VertexBuffer } from "../../Buffers/buffer";
 import { EngineStore } from "../../Engines/engineStore";
 import { useOpenGLOrientationForUV } from "../../Compat/compatibilityOptions";
@@ -46,10 +45,10 @@ export function CreatePolygonVertexData(polygon: Mesh, sideOrientation: number, 
     const uvs = <FloatArray>polygon.getVerticesData(VertexBuffer.UVKind);
     const indices = <IndicesArray>polygon.getIndices();
     const startIndex = positions.length / 9;
-    let disp = 0;
-    let distX = 0;
-    let distZ = 0;
-    let dist = 0;
+    let disp: number;
+    let distX: number;
+    let distZ: number;
+    let dist: number;
     let totalLen = 0;
     const cumulate = [0];
     if (wrap) {
@@ -62,7 +61,7 @@ export function CreatePolygonVertexData(polygon: Mesh, sideOrientation: number, 
         }
     }
     // set face colours and textures
-    let idx: number = 0;
+    let idx: number;
     let face: number = 0;
     for (let index = 0; index < normals.length; index += 3) {
         //Edge Face  no. 1
@@ -167,7 +166,7 @@ export function CreatePolygon(
     const depth = options.depth || 0;
     const smoothingThreshold = options.smoothingThreshold || 2;
     const contours: Array<Vector2> = [];
-    let hole: Array<Vector2> = [];
+    let hole: Array<Vector2>;
 
     for (let i = 0; i < shape.length; i++) {
         contours[i] = new Vector2(shape[i].x, shape[i].z);

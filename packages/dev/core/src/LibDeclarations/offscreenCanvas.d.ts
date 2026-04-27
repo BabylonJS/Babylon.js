@@ -74,7 +74,8 @@ declare var OffscreenCanvas: {
 };
 
 interface OffscreenCanvasRenderingContext2D
-    extends CanvasCompositing,
+    extends
+        CanvasCompositing,
         CanvasDrawImage,
         CanvasDrawPath,
         CanvasFillStrokeStyles,

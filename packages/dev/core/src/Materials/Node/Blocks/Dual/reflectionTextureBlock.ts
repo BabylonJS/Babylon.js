@@ -1,13 +1,13 @@
 import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
-import type { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
+import { type NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
-import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
-import type { NodeMaterial } from "../../nodeMaterial";
+import { type NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
+import { type NodeMaterial } from "../../nodeMaterial";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import { InputBlock } from "../Input/inputBlock";
 import { NodeMaterialSystemValues } from "../../Enums/nodeMaterialSystemValues";
 import { ReflectionTextureBaseBlock } from "./reflectionTextureBaseBlock";
-import type { NodeMaterialBlock } from "../../nodeMaterialBlock";
+import { type NodeMaterialBlock } from "../../nodeMaterialBlock";
 import { Logger } from "core/Misc/logger";
 
 /**
@@ -157,6 +157,11 @@ export class ReflectionTextureBlock extends ReflectionTextureBaseBlock {
         return this._outputs[5];
     }
 
+    /**
+     * Auto configure the block based on the material
+     * @param material - the node material
+     * @param additionalFilteringInfo - optional filtering info
+     */
     public override autoConfigure(material: NodeMaterial, additionalFilteringInfo: (node: NodeMaterialBlock) => boolean = () => true) {
         super.autoConfigure(material);
 

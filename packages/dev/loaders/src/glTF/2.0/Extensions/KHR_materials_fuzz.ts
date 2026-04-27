@@ -1,10 +1,10 @@
-import type { Nullable } from "core/types";
-import type { Material } from "core/Materials/material";
-import type { IMaterial, ITextureInfo } from "../glTFLoaderInterfaces";
-import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
+import { type Nullable } from "core/types";
+import { type Material } from "core/Materials/material";
+import { type IMaterial, type ITextureInfo } from "../glTFLoaderInterfaces";
+import { type IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader } from "../glTFLoader";
 import { Color3 } from "core/Maths/math.color";
-import type { IKHRMaterialsFuzz } from "babylonjs-gltf2interface";
+import { type IKHRMaterialsFuzz } from "babylonjs-gltf2interface";
 import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
 
 const NAME = "KHR_materials_fuzz";
@@ -21,7 +21,8 @@ declare module "../../glTFFileLoader" {
 }
 
 /**
- * [Specification]
+ * [Specification](https://github.com/KhronosGroup/glTF/blob/9734e44accd0dfb986ec5f376117aa00192745fe/extensions/2.0/Khronos/KHR_materials_fuzz/README.md)
+ * @experimental
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export class KHR_materials_fuzz implements IGLTFLoaderExtension {

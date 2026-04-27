@@ -1,13 +1,13 @@
 import { NodeMaterialBlock } from "../nodeMaterialBlock";
 import { NodeMaterialBlockConnectionPointTypes } from "../Enums/nodeMaterialBlockConnectionPointTypes";
-import type { NodeMaterialBuildState } from "../nodeMaterialBuildState";
+import { type NodeMaterialBuildState } from "../nodeMaterialBuildState";
 import { NodeMaterialBlockTargets } from "../Enums/nodeMaterialBlockTargets";
-import type { NodeMaterialConnectionPoint } from "../nodeMaterialBlockConnectionPoint";
+import { type NodeMaterialConnectionPoint } from "../nodeMaterialBlockConnectionPoint";
 import { RegisterClass } from "../../../Misc/typeStore";
-import type { Scene } from "../../../scene";
-import type { InputBlock } from "./Input/inputBlock";
-import type { AbstractMesh } from "../../../Meshes/abstractMesh";
-import type { NodeMaterial, NodeMaterialDefines } from "../nodeMaterial";
+import { type Scene } from "../../../scene";
+import { type InputBlock } from "./Input/inputBlock";
+import { type AbstractMesh } from "../../../Meshes/abstractMesh";
+import { type NodeMaterial, type NodeMaterialDefines } from "../nodeMaterial";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { editableInPropertyPage, PropertyTypeForEdition } from "core/Decorators/nodeDecorator";
 
@@ -179,6 +179,10 @@ export class TransformBlock extends NodeMaterialBlock {
         }
     }
 
+    /**
+     * Serializes the block
+     * @returns the serialized object
+     */
     public override serialize(): any {
         const serializationObject = super.serialize();
 
@@ -188,6 +192,12 @@ export class TransformBlock extends NodeMaterialBlock {
         return serializationObject;
     }
 
+    /**
+     * Deserializes the block from a serialization object
+     * @param serializationObject - the object to deserialize from
+     * @param scene - the current scene
+     * @param rootUrl - the root URL for loading
+     */
     public override _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
         super._deserialize(serializationObject, scene, rootUrl);
 

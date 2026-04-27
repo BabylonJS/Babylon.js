@@ -11,6 +11,41 @@ precision highp float;
 
 #include<clipPlaneVertexDeclaration>
 
+// IBL includes for irradiance calculation in vertex shader
+#ifdef IRRADIANCE
+    #ifdef REFLECTION
+        uniform mat4 reflectionMatrix;
+        uniform vec2 vReflectionInfos;
+        uniform vec3 vReflectionColor;
+        
+        #ifdef USESPHERICALFROMREFLECTIONMAP
+            varying vec3 vEnvironmentIrradiance;
+			#ifdef SPHERICAL_HARMONICS
+                uniform vec3 vSphericalL00;
+                uniform vec3 vSphericalL1_1;
+                uniform vec3 vSphericalL10;
+                uniform vec3 vSphericalL11;
+                uniform vec3 vSphericalL2_2;
+                uniform vec3 vSphericalL2_1;
+                uniform vec3 vSphericalL20;
+                uniform vec3 vSphericalL21;
+                uniform vec3 vSphericalL22;
+            #else
+                uniform vec3 vSphericalX;
+                uniform vec3 vSphericalY;
+                uniform vec3 vSphericalZ;
+                uniform vec3 vSphericalXX_ZZ;
+                uniform vec3 vSphericalYY_ZZ;
+                uniform vec3 vSphericalZZ;
+                uniform vec3 vSphericalXY;
+                uniform vec3 vSphericalYZ;
+                uniform vec3 vSphericalZX;
+            #endif
+			#include<harmonicsFunctions>
+        #endif
+    #endif
+#endif
+
 attribute vec3 position;
 #ifdef HAS_NORMAL_ATTRIBUTE
 	attribute vec3 normal;
@@ -40,6 +75,14 @@ attribute vec3 position;
 	varying vec2 vRoughnessUV;
 	uniform mat4 roughnessMatrix;
 	#endif
+	#ifdef SUBSURFACE_WEIGHT
+	varying vec2 vSubsurfaceWeightUV;
+	uniform mat4 subsurfaceWeightMatrix;
+	#endif
+	#ifdef TRANSMISSION_WEIGHT
+	varying vec2 vTransmissionWeightUV;
+	uniform mat4 transmissionWeightMatrix;
+	#endif
 
 	#ifdef UV1
 	attribute vec2 uv;
@@ -62,7 +105,7 @@ varying vec3 vNormalV;
 
 varying vec4 vViewPos;
 
-#if defined(POSITION) || defined(BUMP)
+#if defined(POSITION) || defined(BUMP) || defined(IRRADIANCE)
 varying vec3 vPositionW;
 #endif
 
@@ -155,7 +198,7 @@ void main(void)
 		#endif
 	#endif
 
-	#if defined(POSITION) || defined(BUMP)
+	#if defined(POSITION) || defined(BUMP) || defined(IRRADIANCE)
 	vPositionW = worldPos.xyz / worldPos.w;
 	#endif
 
@@ -187,6 +230,12 @@ void main(void)
 			#ifdef ALBEDO_UV1
 			vAlbedoUV = vec2(albedoMatrix * vec4(uvUpdated, 1.0, 0.0));
 			#endif
+			#ifdef SUBSURFACE_COLOR_UV1
+			vSubsurfaceColorUV = vec2(subsurfaceColorMatrix * vec4(uvUpdated, 1.0, 0.0));
+			#endif
+			#ifdef SUBSURFACE_WEIGHT_UV1
+			vSubsurfaceWeightUV = vec2(subsurfaceWeightMatrix * vec4(uvUpdated, 1.0, 0.0));
+			#endif
 		#endif
 		#ifdef UV2
 			#if defined(ALPHATEST) && defined(ALPHATEST_UV2)
@@ -211,8 +260,28 @@ void main(void)
 			#ifdef ALBEDO_UV2
 			vAlbedoUV = vec2(albedoMatrix * vec4(uv2Updated, 1.0, 0.0));
 			#endif
+			#ifdef SUBSURFACE_COLOR_UV2
+			vSubsurfaceColorUV = vec2(subsurfaceColorMatrix * vec4(uv2Updated, 1.0, 0.0));
+			#endif
+			#ifdef SUBSURFACE_WEIGHT_UV2
+			vSubsurfaceWeightUV = vec2(subsurfaceWeightMatrix * vec4(uv2Updated, 1.0, 0.0));
+			#endif
 		#endif
 	#endif
 
 	#include<bumpVertex>
+
+	// Calculate environment irradiance in vertex shader for spherical harmonics
+	#ifdef IRRADIANCE
+		#ifdef REFLECTION
+			#ifdef USESPHERICALFROMREFLECTIONMAP
+				// Transform normal to reflection space and compute SH irradiance
+				vec3 reflectionVector = vec3(reflectionMatrix * vec4(normalUpdated, 0.0)).xyz;
+				#ifdef REFLECTIONMAP_OPPOSITEZ
+					reflectionVector.z *= -1.0;
+				#endif
+				vEnvironmentIrradiance = computeEnvironmentIrradiance(reflectionVector) * vReflectionInfos.x;
+			#endif
+		#endif
+	#endif
 }

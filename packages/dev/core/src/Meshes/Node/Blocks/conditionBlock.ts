@@ -1,12 +1,12 @@
 import { NodeGeometryBlock } from "../nodeGeometryBlock";
-import type { NodeGeometryConnectionPoint } from "../nodeGeometryBlockConnectionPoint";
+import { type NodeGeometryConnectionPoint } from "../nodeGeometryBlockConnectionPoint";
 import { RegisterClass } from "../../../Misc/typeStore";
 import { NodeGeometryBlockConnectionPointTypes } from "../Enums/nodeGeometryConnectionPointTypes";
-import type { NodeGeometryBuildState } from "../nodeGeometryBuildState";
+import { type NodeGeometryBuildState } from "../nodeGeometryBuildState";
 import { PropertyTypeForEdition, editableInPropertyPage } from "../../../Decorators/nodeDecorator";
 import { WithinEpsilon } from "../../../Maths/math.scalar.functions";
 import { GeometryInputBlock } from "./geometryInputBlock";
-import type { NodeGeometry } from "../nodeGeometry";
+import { type NodeGeometry } from "../nodeGeometry";
 
 /**
  * Conditions supported by the condition block
@@ -126,6 +126,7 @@ export class ConditionBlock extends NodeGeometryBlock {
         return this._outputs[0];
     }
 
+    /** @internal */
     public override autoConfigure(nodeGeometry: NodeGeometry) {
         if (!this.ifTrue.isConnected) {
             const minInput =
@@ -216,6 +217,7 @@ export class ConditionBlock extends NodeGeometryBlock {
         return serializationObject;
     }
 
+    /** @internal */
     public override _deserialize(serializationObject: any) {
         super._deserialize(serializationObject);
 

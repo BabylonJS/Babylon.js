@@ -1,9 +1,9 @@
-import type { Nullable } from "../../types";
-import type { NodeGeometryBlock } from "./nodeGeometryBlock";
+import { type Nullable } from "../../types";
+import { type NodeGeometryBlock } from "./nodeGeometryBlock";
 import { Observable } from "../../Misc/observable";
 import { NodeGeometryBlockConnectionPointTypes } from "./Enums/nodeGeometryConnectionPointTypes";
-import type { GeometryInputBlock } from "./Blocks/geometryInputBlock";
-import type { NodeGeometryBuildState } from "./nodeGeometryBuildState";
+import { type GeometryInputBlock } from "./Blocks/geometryInputBlock";
+import { type NodeGeometryBuildState } from "./nodeGeometryBuildState";
 
 /**
  * Enum used to define the compatibility state between two connection points
@@ -349,7 +349,6 @@ export class NodeGeometryConnectionPoint {
      */
     public connectTo(connectionPoint: NodeGeometryConnectionPoint, ignoreConstraints = false): NodeGeometryConnectionPoint {
         if (!ignoreConstraints && !this.canConnectTo(connectionPoint)) {
-            // eslint-disable-next-line no-throw-literal
             throw `Cannot connect these two connectors. source: "${this.ownerBlock.name}".${this.name}, target: "${connectionPoint.ownerBlock.name}".${connectionPoint.name}`;
         }
 

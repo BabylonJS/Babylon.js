@@ -28,6 +28,14 @@ module.exports = (env) => {
                     filename: "[name].[contenthash].worker.js",
                     monacoEditorPath: path.resolve("../../../node_modules/monaco-editor"),
                 }),
+                // Override Monaco's defaultDocumentColorsComputer with a compatible version
+                // that doesn't use negative lookbehind regex (unsupported in older Safari).
+                // Using NormalModuleReplacementPlugin instead of resolve.alias to avoid
+                // circular resolution loops that cause CI timeouts.
+                new (require("webpack").NormalModuleReplacementPlugin)(
+                    /defaultDocumentColorsComputer\.js$/,
+                    path.resolve(__dirname, "src/tools/monaco/compat/defaultDocumentColorsComputer.ts")
+                ),
             ]
         ),
         resolve: {
@@ -45,6 +53,21 @@ module.exports = (env) => {
                 includeCSS: true,
                 extraRules: [
                     {
+                        test: /\.m?js$/,
+                        include: /node_modules[\\/]+monaco-editor/,
+                        use: {
+                            loader: "ts-loader",
+                            options: {
+                                transpileOnly: true,
+                                compilerOptions: {
+                                    allowJs: true,
+                                    target: "ES2015",
+                                    module: "ESNext",
+                                },
+                            },
+                        },
+                    },
+                    {
                         test: /\.ttf$/,
                         type: "asset/resource",
                     },
@@ -54,6 +77,7 @@ module.exports = (env) => {
                     },
                 ],
                 tsOptions: {
+                    transpileOnly: true,
                     compilerOptions: {
                         rootDir: "../../",
                     },
@@ -61,7 +85,7 @@ module.exports = (env) => {
             }),
         },
     };
-    const plugins = (commonConfig.plugins || []).filter((p) => !(p && p.constructor && p.constructor.name === "ReactRefreshWebpackPlugin"));
+    const plugins = (commonConfig.plugins || []).filter((p) => !(p && p.constructor && p.constructor.name === "ReactRefreshPlugin"));
     return {
         ...commonConfig,
         output: {

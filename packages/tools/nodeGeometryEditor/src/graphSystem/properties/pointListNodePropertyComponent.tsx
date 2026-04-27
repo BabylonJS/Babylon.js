@@ -1,8 +1,8 @@
 import * as React from "react";
 import { GeneralPropertyTabComponent } from "./genericNodePropertyComponent";
-import type { IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
+import { type IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
 import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
-import type { PointListBlock } from "core/Meshes";
+import { type PointListBlock } from "core/Meshes";
 import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineComponent";
 import { Vector3 } from "core/Maths";
 import { Vector3LineComponent } from "shared-ui-components/lines/vector3LineComponent";

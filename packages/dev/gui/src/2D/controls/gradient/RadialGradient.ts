@@ -1,4 +1,4 @@
-import type { ICanvasGradient, ICanvasRenderingContext } from "core/Engines/ICanvas";
+import { type ICanvasGradient, type ICanvasRenderingContext } from "core/Engines/ICanvas";
 import { BaseGradient } from "./BaseGradient";
 import { RegisterClass } from "core/Misc/typeStore";
 

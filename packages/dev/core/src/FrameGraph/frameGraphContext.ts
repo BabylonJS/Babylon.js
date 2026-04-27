@@ -1,4 +1,4 @@
-import type { AbstractEngine, FrameGraphTextureManager, Scene, FrameGraphTextureHandle, Nullable, InternalTexture, IViewportLike } from "core/index";
+import { type AbstractEngine, type FrameGraphTextureManager, type Scene, type FrameGraphTextureHandle, type Nullable, type InternalTexture, type IViewportLike } from "core/index";
 
 /**
  * Base class for frame graph context.
@@ -39,7 +39,7 @@ export class FrameGraphContext {
 
         if (this._engine._currentRenderTarget !== currentRenderTarget) {
             if (!currentRenderTarget) {
-                this._engine.restoreDefaultFramebuffer();
+                this._engine.restoreDefaultFramebuffer(true);
             } else {
                 this._engine.bindFramebuffer(currentRenderTarget);
             }
@@ -112,6 +112,6 @@ export class FrameGraphContext {
      * @param requiredHeight defines the height required for rendering. If not provided the height of the render texture is used.
      */
     public setViewport(viewport: IViewportLike, requiredWidth?: number, requiredHeight?: number): void {
-        this._engine.setViewport(viewport, requiredHeight, requiredWidth);
+        this._engine.setViewport(viewport, requiredWidth, requiredHeight);
     }
 }

@@ -1,11 +1,11 @@
-import type { Nullable } from "../types";
-import type { Scene } from "../scene";
+import { type Nullable } from "../types";
+import { type Scene } from "../scene";
 import { Quaternion, Matrix, Vector3, Vector2 } from "../Maths/math.vector";
 import { VertexBuffer } from "../Buffers/buffer";
-import type { AbstractMesh } from "../Meshes/abstractMesh";
+import { type AbstractMesh } from "../Meshes/abstractMesh";
 import { SubMesh } from "../Meshes/subMesh";
 import { Mesh } from "../Meshes/mesh";
-import type { Material } from "../Materials/material";
+import { type Material } from "../Materials/material";
 import { Color4 } from "../Maths/math.color";
 import { Constants } from "../Engines/constants";
 import { VertexData } from "./mesh.vertexData";
@@ -469,7 +469,6 @@ export class CSG {
         const vertColors = data.colors;
 
         if (!indices || !positions) {
-            // eslint-disable-next-line no-throw-literal
             throw "BABYLON.CSG: VertexData must at least contain positions and indices";
         }
 
@@ -544,7 +543,6 @@ export class CSG {
                 invertWinding = mesh.material.sideOrientation === Constants.MATERIAL_ClockWiseSideOrientation;
             }
         } else {
-            // eslint-disable-next-line no-throw-literal
             throw "BABYLON.CSG: Wrong Mesh type, must be BABYLON.Mesh";
         }
 
@@ -555,21 +553,17 @@ export class CSG {
             vertColors = mesh.getVerticesData(VertexBuffer.ColorKind);
 
         if (indices === null) {
-            // eslint-disable-next-line no-throw-literal
             throw "BABYLON.CSG: Mesh has no indices";
         }
         if (positions === null) {
-            // eslint-disable-next-line no-throw-literal
             throw "BABYLON.CSG: Mesh has no positions";
         }
         if (normals === null) {
-            // eslint-disable-next-line no-throw-literal
             throw "BABYLON.CSG: Mesh has no normals";
         }
 
         const subMeshes = mesh.subMeshes;
         if (!subMeshes) {
-            // eslint-disable-next-line no-throw-literal
             throw "BABYLON.CSG: Mesh has no submeshes";
         }
 
@@ -985,7 +979,7 @@ export class CSG {
                     );
                     materialMaxIndex = Math.max(subMeshObj.materialIndex, materialMaxIndex);
                 }
-                materialIndexOffset += ++materialMaxIndex;
+                materialIndexOffset += materialMaxIndex + 1;
             }
         }
 

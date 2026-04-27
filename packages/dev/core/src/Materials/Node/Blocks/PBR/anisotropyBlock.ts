@@ -1,15 +1,14 @@
-import type { NodeMaterial, NodeMaterialDefines } from "../../nodeMaterial";
+import { type NodeMaterial, type NodeMaterialDefines } from "../../nodeMaterial";
 import { NodeMaterialBlock } from "../../nodeMaterialBlock";
 import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
-import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
-import { NodeMaterialConnectionPointDirection } from "../../nodeMaterialBlockConnectionPoint";
+import { type NodeMaterialConnectionPoint, NodeMaterialConnectionPointDirection } from "../../nodeMaterialBlockConnectionPoint";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import { NodeMaterialConnectionPointCustomObject } from "../../nodeMaterialConnectionPointCustomObject";
 import { TBNBlock } from "../Fragment/TBNBlock";
-import type { Mesh } from "../../../../Meshes/mesh";
-import type { Effect } from "../../../effect";
-import type { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
+import { type Mesh } from "../../../../Meshes/mesh";
+import { type Effect } from "../../../effect";
+import { type NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
 /**
@@ -107,7 +106,6 @@ export class AnisotropyBlock extends NodeMaterialBlock {
     /**
      * Gets the TBN input component
      */
-    // eslint-disable-next-line @typescript-eslint/naming-convention
     public get TBN(): NodeMaterialConnectionPoint {
         return this._inputs[4];
     }
@@ -210,12 +208,22 @@ export class AnisotropyBlock extends NodeMaterialBlock {
         return code;
     }
 
+    /**
+     * Prepare the list of defines
+     * @param defines - the list of defines to update
+     */
     public override prepareDefines(defines: NodeMaterialDefines) {
         defines.setValue("ANISOTROPIC", true);
         defines.setValue("ANISOTROPIC_TEXTURE", false, true);
         defines.setValue("ANISOTROPIC_LEGACY", !this.roughness.isConnected);
     }
 
+    /**
+     * Bind data to effect
+     * @param effect - the effect to bind data to
+     * @param nodeMaterial - the node material
+     * @param mesh - the mesh to bind data for
+     */
     public override bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh) {
         super.bind(effect, nodeMaterial, mesh);
 

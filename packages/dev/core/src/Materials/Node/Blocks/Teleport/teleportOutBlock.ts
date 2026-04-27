@@ -1,12 +1,12 @@
-import type { Nullable } from "../../../../types";
+import { type Nullable } from "../../../../types";
 import { RegisterClass } from "../../../../Misc/typeStore";
-import type { NodeMaterialTeleportInBlock } from "./teleportInBlock";
+import { type NodeMaterialTeleportInBlock } from "./teleportInBlock";
 import { NodeMaterialBlock } from "../../nodeMaterialBlock";
 import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
-import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
-import type { Scene } from "../../../../scene";
+import { type NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
+import { type Scene } from "../../../../scene";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
-import type { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
+import { type NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 
 /**
  * Defines a block used to receive a value from a teleport entry point
@@ -86,6 +86,24 @@ export class NodeMaterialTeleportOutBlock extends NodeMaterialBlock {
         }
 
         state.compilationString += state._declareOutput(this.output) + ` = ${this.entryPoint.input.associatedVariableName};\n`;
+
+        if (this.entryPoint.endpoints.length > 1) {
+            // Check if all the endpoints are in the same shader stage
+            const firstConnected = this.entryPoint.endpoints.find((e) => e.output.isConnected);
+            if (firstConnected) {
+                const firstTarget = firstConnected.output.isConnectedInVertexShader;
+                for (const endpoint of this.entryPoint.endpoints) {
+                    if (endpoint === firstConnected) {
+                        continue;
+                    }
+                    if (endpoint.output.isConnected && endpoint.output.isConnectedInVertexShader !== firstTarget) {
+                        state.sharedData.raiseBuildError(
+                            `TeleportInBlock "${this.entryPoint.name}" cannot have outputs in different shader stages. All the outputs must be in the same shader stage (vertex or fragment but not both).`
+                        );
+                    }
+                }
+            }
+        }
     }
 
     /**
@@ -110,6 +128,12 @@ export class NodeMaterialTeleportOutBlock extends NodeMaterialBlock {
         }
     }
 
+    /**
+     * Dumps the code for the block
+     * @param uniqueNames - the unique names
+     * @param alreadyDumped - the already dumped blocks
+     * @returns the code string
+     */
     public override _dumpCode(uniqueNames: string[], alreadyDumped: NodeMaterialBlock[]) {
         let codeString: string = "";
         if (this.entryPoint) {
@@ -121,6 +145,11 @@ export class NodeMaterialTeleportOutBlock extends NodeMaterialBlock {
         return codeString + super._dumpCode(uniqueNames, alreadyDumped);
     }
 
+    /**
+     * Dumps the code for output connections
+     * @param alreadyDumped - the already dumped blocks
+     * @returns the code string
+     */
     public override _dumpCodeForOutputConnections(alreadyDumped: NodeMaterialBlock[]) {
         let codeString = super._dumpCodeForOutputConnections(alreadyDumped);
 
@@ -152,6 +181,12 @@ export class NodeMaterialTeleportOutBlock extends NodeMaterialBlock {
         return serializationObject;
     }
 
+    /**
+     * Deserializes the block
+     * @param serializationObject - the serialization object
+     * @param scene - the scene
+     * @param rootUrl - the root URL
+     */
     public override _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
         super._deserialize(serializationObject, scene, rootUrl);
 

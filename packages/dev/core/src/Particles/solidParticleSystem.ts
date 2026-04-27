@@ -1,4 +1,4 @@
-import type { Nullable, IndicesArray, FloatArray } from "../types";
+import { type Nullable, type IndicesArray, type FloatArray } from "../types";
 import { Vector3, Matrix, TmpVectors, Quaternion } from "../Maths/math.vector";
 import { Color4 } from "../Maths/math.color";
 import { VertexBuffer } from "../Buffers/buffer";
@@ -6,19 +6,19 @@ import { VertexData } from "../Meshes/mesh.vertexData";
 import { Mesh } from "../Meshes/mesh";
 import { CreateDisc } from "../Meshes/Builders/discBuilder";
 import { EngineStore } from "../Engines/engineStore";
-import type { Scene, IDisposable } from "../scene";
-import type { Observer } from "../Misc/observable";
+import { type Scene, type IDisposable } from "../scene";
+import { type Observer } from "../Misc/observable";
 import { DepthSortedParticle, SolidParticle, ModelShape, SolidParticleVertex } from "./solidParticle";
-import type { TargetCamera } from "../Cameras/targetCamera";
+import { type TargetCamera } from "../Cameras/targetCamera";
 import { BoundingInfo } from "../Culling/boundingInfo";
 import { Axis } from "../Maths/math.axis";
 import { SubMesh } from "../Meshes/subMesh";
-import type { Material } from "../Materials/material";
+import { type Material } from "../Materials/material";
 import { StandardMaterial } from "../Materials/standardMaterial";
 import { MultiMaterial } from "../Materials/multiMaterial";
-import type { PickingInfo } from "../Collisions/pickingInfo";
-import type { PBRMaterial } from "../Materials/PBR/pbrMaterial";
-import type { AbstractMesh } from "../Meshes/abstractMesh";
+import { type PickingInfo } from "../Collisions/pickingInfo";
+import { type PBRMaterial } from "../Materials/PBR/pbrMaterial";
+import { type AbstractMesh } from "../Meshes/abstractMesh";
 
 /**
  * The SPS is a single updatable mesh. The solid particles are simply separate parts or faces of this big mesh.
@@ -182,6 +182,7 @@ export class SolidParticleSystem implements IDisposable {
      * * bSphereRadiusFactor (optional float, default 1.0) : a number to multiply the bounding sphere radius by in order to reduce it for instance.
      * * computeBoundingBox (optional boolean, default false): if the bounding box of the entire SPS will be computed (for occlusion detection, for example). If it is false, the bounding box will be the bounding box of the first particle.
      * * autoFixFaceOrientation (optional boolean, default false): if the particle face orientations will be flipped for transformations that change orientation (scale (-1, 1, 1), for example)
+     * * camera (optional Camera) : the camera to use with the particule system. If not provided, use the scene active camera.
      * @param options.updatable
      * @param options.isPickable
      * @param options.enableDepthSort
@@ -193,6 +194,7 @@ export class SolidParticleSystem implements IDisposable {
      * @param options.enableMultiMaterial
      * @param options.computeBoundingBox
      * @param options.autoFixFaceOrientation
+     * @param options.camera
      * @example bSphereRadiusFactor = 1.0 / Math.sqrt(3.0) => the bounding sphere exactly matches a spherical mesh.
      */
     constructor(
@@ -210,11 +212,12 @@ export class SolidParticleSystem implements IDisposable {
             enableMultiMaterial?: boolean;
             computeBoundingBox?: boolean;
             autoFixFaceOrientation?: boolean;
+            camera?: TargetCamera;
         }
     ) {
         this.name = name;
         this._scene = scene || EngineStore.LastCreatedScene;
-        this._camera = <TargetCamera>scene.activeCamera;
+        this._camera = options && options.camera ? options.camera : <TargetCamera>scene.activeCamera;
         this._pickable = options ? <boolean>options.isPickable : false;
         this._depthSort = options ? <boolean>options.enableDepthSort : false;
         this._multimaterialEnabled = options ? <boolean>options.enableMultiMaterial : false;
@@ -374,9 +377,12 @@ export class SolidParticleSystem implements IDisposable {
         const meshPos = <FloatArray>mesh.getVerticesData(VertexBuffer.PositionKind);
         const meshInd = <IndicesArray>mesh.getIndices();
         const meshUV = <FloatArray>mesh.getVerticesData(this._getUVKind(mesh, options?.uvKind ?? 0));
-        const meshCol = <FloatArray>mesh.getVerticesData(VertexBuffer.ColorKind);
+        let meshCol = <FloatArray>mesh.getVerticesData(VertexBuffer.ColorKind);
         const meshNor = <FloatArray>mesh.getVerticesData(VertexBuffer.NormalKind);
         const storage = options && options.storage ? options.storage : null;
+        // Normalize vertex colors to RGBA (4 components) since the code below always reads 4 components per color.
+        // Source meshes (e.g. from glTF) may provide RGB (3 components) vertex colors.
+        meshCol = this._normalizeMeshVertexColors(mesh, meshPos, meshCol)!;
 
         let f: number = 0; // facet counter
         const totalFacets: number = meshInd.length / 3; // a facet is a triangle, so 3 indices
@@ -429,7 +435,7 @@ export class SolidParticleSystem implements IDisposable {
             }
 
             // create a model shape for each single particle
-            let idx: number = this.nbParticles;
+            const idx: number = this.nbParticles;
             const shape: Vector3[] = this._posToShape(facetPos);
             const shapeUV: number[] = this._uvsToShapeUV(facetUV);
             const shapeInd = facetInd.slice();
@@ -490,7 +496,6 @@ export class SolidParticleSystem implements IDisposable {
 
             if (!storage) {
                 this._index += shape.length;
-                idx++;
                 this.nbParticles++;
                 this._lastParticleId++;
             }
@@ -769,6 +774,31 @@ export class SolidParticleSystem implements IDisposable {
         return sp;
     }
 
+    private _normalizeMeshVertexColors(mesh: AbstractMesh, meshPos: FloatArray, meshCol: Nullable<FloatArray>): Nullable<FloatArray> {
+        if (!meshCol) {
+            return meshCol;
+        }
+        const vertexCount = meshPos.length / 3;
+        if (!vertexCount) {
+            return meshCol;
+        }
+        const colorBuffer = mesh.getVertexBuffer(VertexBuffer.ColorKind);
+        const colorStride = colorBuffer ? colorBuffer.getSize() : Math.round(meshCol.length / vertexCount);
+        if (colorStride !== 3 || meshCol.length !== vertexCount * 3) {
+            return meshCol;
+        }
+        const rgba = new Float32Array(vertexCount * 4);
+        for (let i = 0; i < vertexCount; i++) {
+            const rgbIndex = i * 3;
+            const rgbaIndex = i * 4;
+            rgba[rgbaIndex] = meshCol[rgbIndex];
+            rgba[rgbaIndex + 1] = meshCol[rgbIndex + 1];
+            rgba[rgbaIndex + 2] = meshCol[rgbIndex + 2];
+            rgba[rgbaIndex + 3] = 1;
+        }
+        return rgba;
+    }
+
     /**
      * Adds some particles to the SPS from the model shape. Returns the shape id.
      * Please read the doc : https://doc.babylonjs.com/features/featuresDeepDive/particles/solid_particle_system/immutable_sps
@@ -786,9 +816,12 @@ export class SolidParticleSystem implements IDisposable {
         const meshPos = <FloatArray>mesh.getVerticesData(VertexBuffer.PositionKind);
         const meshInd = <IndicesArray>mesh.getIndices();
         const meshUV = <FloatArray>mesh.getVerticesData(VertexBuffer.UVKind);
-        const meshCol = <FloatArray>mesh.getVerticesData(VertexBuffer.ColorKind);
+        let meshCol = <FloatArray>mesh.getVerticesData(VertexBuffer.ColorKind);
         const meshNor = <FloatArray>mesh.getVerticesData(VertexBuffer.NormalKind);
         this.recomputeNormals = meshNor ? false : true;
+        // Normalize vertex colors to RGBA (4 components) since _meshBuilder always reads 4 components per color.
+        // Source meshes (e.g. from glTF) may provide RGB (3 components) vertex colors.
+        meshCol = this._normalizeMeshVertexColors(mesh, meshPos, meshCol)!;
         const indices = Array.from(meshInd);
         const shapeNormals = meshNor ? Array.from(meshNor) : [];
         const shapeColors = meshCol ? Array.from(meshCol) : [];
@@ -1133,15 +1166,16 @@ export class SolidParticleSystem implements IDisposable {
             this.mesh.computeWorldMatrix(true);
             this.mesh._worldMatrix.invertToRef(invertedMatrix);
         }
+        const camera = this._camera ? this._camera : this._scene.activeCamera ? this._scene.activeCamera : this._scene.cameras[0];
         // if the particles will always face the camera
         if (this.billboard) {
             // compute the camera position and un-rotate it by the current mesh rotation
             const tmpVector0 = tempVectors[0];
-            this._camera.getDirectionToRef(Axis.Z, tmpVector0);
+            camera.getDirectionToRef(Axis.Z, tmpVector0);
             Vector3.TransformNormalToRef(tmpVector0, invertedMatrix, camAxisZ);
             camAxisZ.normalize();
             // same for camera up vector extracted from the cam view matrix
-            const view = this._camera.getViewMatrix(true);
+            const view = camera.getViewMatrix(true);
             Vector3.TransformNormalFromFloatsToRef(view.m[1], view.m[5], view.m[9], invertedMatrix, camAxisY);
             Vector3.CrossToRef(camAxisY, camAxisZ, camAxisX);
             camAxisY.normalize();
@@ -1150,17 +1184,17 @@ export class SolidParticleSystem implements IDisposable {
 
         // if depthSort, compute the camera global position in the mesh local system
         if (this._depthSort) {
-            Vector3.TransformCoordinatesToRef(this._camera.globalPosition, invertedMatrix, camInvertedPosition); // then un-rotate the camera
+            Vector3.TransformCoordinatesToRef(camera.globalPosition, invertedMatrix, camInvertedPosition); // then un-rotate the camera
         }
 
         Matrix.IdentityToRef(rotMatrix);
         let idx = 0; // current position index in the global array positions32
-        let index = 0; // position start index in the global array positions32 of the current particle
-        let colidx = 0; // current color index in the global array colors32
-        let colorIndex = 0; // color start index in the global array colors32 of the current particle
-        let uvidx = 0; // current uv index in the global array uvs32
-        let uvIndex = 0; // uv start index in the global array uvs32 of the current particle
-        let pt = 0; // current index in the particle model shape
+        let index: number; // position start index in the global array positions32 of the current particle
+        let colidx: number = 0; // current color index in the global array colors32
+        let colorIndex: number; // color start index in the global array colors32 of the current particle
+        let uvidx: number = 0; // current uv index in the global array uvs32
+        let uvIndex: number; // uv start index in the global array uvs32 of the current particle
+        let pt: number; // current index in the particle model shape
 
         if (this.mesh.isFacetDataEnabled) {
             this._computeBoundingBox = true;

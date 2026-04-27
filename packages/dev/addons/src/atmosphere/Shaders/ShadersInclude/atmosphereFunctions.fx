@@ -43,8 +43,6 @@ const vec2 SkyViewLutHalfTexelSize = vec2(0.5) / SkyViewLutSize;
 
 const float AerialPerspectiveLutKMPerSlice = 4.0;
 const float AerialPerspectiveLutRangeKM = AerialPerspectiveLutKMPerSlice * NumAerialPerspectiveLutLayers;
-const float TransmittanceSampleCount = 128.0;
-const float SkyViewLutSampleCount = 30.0;
 
 const vec2 TransmittanceLutSize = vec2(256., 64.);
 const vec2 TransmittanceLutDomainInUVSpace = (TransmittanceLutSize - vec2(1.)) / TransmittanceLutSize;
@@ -116,16 +114,16 @@ void getSkyViewUVFromParameters(
     // The sky view LUT is split into two halves, one half for the sky and one half for the ground.
     // v = 0 is nadir, v = 0.5 is horizon, v = 1 is zenith.
 
-    vec2 unit = vec2(0.0);
+    vec2 unit = vec2(0.);
     if (intersectsGround) {
 
-        float coord = (cosAngleBetweenViewAndZenith + 1.0) / (cosHorizonAngleFromZenith + 1.0);
+        float coord = (cosAngleBetweenViewAndZenith + 1.) / (cosHorizonAngleFromZenith + 1.);
         coord = sqrtClamped(coord); // more precision at nadir
         unit.y = 0.5 * coord; // 0 is nadir, 0.5 is horizon
 
     } else {
 
-        float coord = (cosAngleBetweenViewAndZenith - cosHorizonAngleFromZenith) / (1.0 - cosHorizonAngleFromZenith);
+        float coord = (cosAngleBetweenViewAndZenith - cosHorizonAngleFromZenith) / (1. - cosHorizonAngleFromZenith);
         coord = sqrtClamped(coord); // more precision at horizon, less at zenith.
         unit.y = 0.5 * coord + 0.5; // 0.5 is horizon, 1 is zenith
     }
@@ -142,7 +140,6 @@ void getSkyViewUVFromParameters(
 
 #if USE_SKY_VIEW_LUT && SAMPLE_SKY_VIEW_LUT
 
-#define inline
 vec4 sampleSkyViewLut(
     sampler2D skyViewLut,
     float positionRadius,
@@ -299,7 +296,6 @@ vec2 getTransmittanceUV(float radius, float cosAngleLightToZenith, out float dis
 }
 
 // Gets the transmittance of an external light through the atmosphere to a point described by its radius (from the center of the planet) and the angle of incoming light.
-#define inline
 vec4 sampleTransmittanceLut(sampler2D transmittanceLut, float positionRadius, float cosAngleLightToZenith) {
 
     float distanceToHorizon;
@@ -315,7 +311,7 @@ vec4 sampleTransmittanceLut(sampler2D transmittanceLut, float positionRadius, fl
 
 #ifndef EXCLUDE_RAY_MARCHING_FUNCTIONS
 
-#define inline
+#ifndef COMPUTE_MULTI_SCATTERING
 vec3 sampleMultiScatteringLut(sampler2D multiScatteringLut, float radius, float cosAngleLightToZenith) {
 
     vec2 unit = vec2(0.5 + 0.5 * cosAngleLightToZenith, (radius - planetRadius) / atmosphereThickness);
@@ -327,12 +323,12 @@ vec3 sampleMultiScatteringLut(sampler2D multiScatteringLut, float radius, float 
     return max(minMultiScattering, multiScattering);
 
 }
+#endif
 
 const float uniformPhase = RECIPROCAL_PI4;
 
 // Utilizes the transmittance LUT and multiple scattering LUT to compute the radiance and transmittance for a given ray.
-#define inline
-void integrateScatteredRadiance(
+vec3 integrateScatteredRadiance(
     bool isAerialPerspectiveLut,
     float lightIntensity,
     sampler2D transmittanceLut,
@@ -346,14 +342,13 @@ void integrateScatteredRadiance(
     float tMaxMax,
     float sampleCount,
     float distanceToSurface,
-    out vec3 radiance,
     out vec3 transmittance
     #if COMPUTE_MULTI_SCATTERING
         , out vec3 multiScattering
     #endif
     ) {
 
-    radiance = vec3(0.);
+    vec3 radiance = vec3(0.);
     transmittance = vec3(1.);
     #if COMPUTE_MULTI_SCATTERING
         multiScattering = vec3(0.);
@@ -366,7 +361,7 @@ void integrateScatteredRadiance(
     if (tBottom < 0.) {
         if (tTop < 0.) {
             // No intersection with the atmosphere or the planet, so early out.
-            return;
+            return radiance;
         } else {
             // Didn't intersect the planet, but did intersect the atmosphere.
             tMax = tTop;
@@ -456,6 +451,8 @@ void integrateScatteredRadiance(
 
     radiance *= lightIntensity;
 
+    return radiance;
+
 }
 
 #endif
@@ -476,7 +473,7 @@ float toAerialPerspectiveLayer(float distance, float aerialPerspectiveLutDistanc
 }
 
 vec4 applyAerialPerspectiveSaturation(vec4 aerialPerspective) {
-    float previousRadiance = getLuminance(aerialPerspective.rgb);
+    float previousRadiance = getLuminanceUnclamped(aerialPerspective.rgb);
     aerialPerspective.rgb = mix(vec3(previousRadiance), aerialPerspective.rgb, aerialPerspectiveSaturation);
     return aerialPerspective;
 }
@@ -588,7 +585,7 @@ vec4 renderTransmittance(vec2 uv) {
     float sinAngleLightToZenith = sqrtClamped(1. - cosAngleLightToZenith * cosAngleLightToZenith);
     vec3 directionToLight = normalize(vec3(0., cosAngleLightToZenith, sinAngleLightToZenith));
 
-    vec3 transmittance = computeTransmittance(vec3(0., radius, 0.), directionToLight, distanceToAtmosphereEdgeAlongAngle, TransmittanceSampleCount);
+    vec3 transmittance = computeTransmittance(vec3(0., radius, 0.), directionToLight, distanceToAtmosphereEdgeAlongAngle, transmittanceSampleCount);
     return vec4(transmittance, avg(transmittance));
 
 }
@@ -602,16 +599,10 @@ vec3 getSphereSample(float azimuth, float inclination, out float sinInclination)
     return vec3(sinInclination * sin(azimuth), cos(inclination), sinInclination * cos(azimuth));
 }
 
-// TODO: Uniforms.
-const float MultiScatteringInclinationSampleCount = 8.;
-const float MultiScatteringAzimuthSampleCount = 2. * MultiScatteringInclinationSampleCount;
-const float MultiScatteringLutSampleCount = 64.;
-const float MultiScatteringAzimuthIterationAngle = TWO_PI / MultiScatteringAzimuthSampleCount;
-const float MultiScatteringInclinationIterationAngle = PI / MultiScatteringInclinationSampleCount;
-const float MultiScatteringAngleStepProduct = MultiScatteringAzimuthIterationAngle * MultiScatteringInclinationIterationAngle;
-
-#define inline
 vec4 renderMultiScattering(vec2 uv, sampler2D transmittanceLut) {
+    float MultiScatteringAzimuthIterationAngle = TWO_PI / multiScatteringAzimuthSampleCount;
+    float MultiScatteringInclinationIterationAngle = PI / multiScatteringInclinationSampleCount;
+    float MultiScatteringAngleStepProduct = MultiScatteringAzimuthIterationAngle * MultiScatteringInclinationIterationAngle;
 
     vec2 unit = uvToUnit(uv, MultiScatteringLutDomainInUVSpace, MultiScatteringLutHalfTexelSize);
 
@@ -625,17 +616,16 @@ vec4 renderMultiScattering(vec2 uv, sampler2D transmittanceLut) {
     vec3 inscattered = vec3(0.);
     vec3 multiScatteringTotal = vec3(0.);
 
-    for (float i = 0.5; i < MultiScatteringAzimuthSampleCount; ++i) {
+    for (float i = 0.5; i < multiScatteringAzimuthSampleCount; i += 1.) {
         float azimuth = MultiScatteringAzimuthIterationAngle * i;
-        for (float j = 0.5; j < MultiScatteringInclinationSampleCount; ++j) {
+        for (float j = 0.5; j < multiScatteringInclinationSampleCount; j += 1.) {
             float inclination = MultiScatteringInclinationIterationAngle * j;
             float sinInclination;
             vec3 rayDirection = getSphereSample(azimuth, inclination, sinInclination);
 
-            vec3 radiance;
             vec3 transmittance;
             vec3 multiScattering;
-            integrateScatteredRadiance(
+            vec3 radiance = integrateScatteredRadiance(
                 false, // isAerialPerspectiveLut
                 1., // No light intensity; it will be applied in downstream LUTs (AerialPerspective, SkyView, and DiffuseSkyIrradiance).
                 transmittanceLut,
@@ -643,9 +633,8 @@ vec4 renderMultiScattering(vec2 uv, sampler2D transmittanceLut) {
                 rayDirection,
                 directionToLight,
                 100000000.,
-                MultiScatteringLutSampleCount,
+                multiScatteringLutSampleCount,
                 -1., // No planet hit.
-                radiance,
                 transmittance,
                 multiScattering);
 
@@ -708,7 +697,6 @@ void getSkyViewParametersFromUV(
 
 }
 
-#define inline
 vec4 renderSkyView(vec2 uv, sampler2D transmittanceLut, sampler2D multiScatteringLut) {
 
     float cosAngleBetweenViewAndZenith;
@@ -737,8 +725,7 @@ vec4 renderSkyView(vec2 uv, sampler2D transmittanceLut, sampler2D multiScatterin
     }
 
     vec3 transmittance;
-    vec3 radiance;
-    integrateScatteredRadiance(
+    vec3 radiance = integrateScatteredRadiance(
         false, // isAerialPerspectiveLut
         atmosphereExposure * lightIntensity,
         transmittanceLut,
@@ -748,9 +735,8 @@ vec4 renderSkyView(vec2 uv, sampler2D transmittanceLut, sampler2D multiScatterin
         rayDirection,
         directionToLightRelativeToCameraGeocentricNormal,
         100000000.,
-        SkyViewLutSampleCount,
+        skyViewLutSampleCount,
         -1., // No planet hit.
-        radiance,
         transmittance);
 
     float transparency = 1. - avg(transmittance);
@@ -762,7 +748,6 @@ vec4 renderSkyView(vec2 uv, sampler2D transmittanceLut, sampler2D multiScatterin
 
 #if RENDER_CAMERA_VOLUME
 
-#define inline
 vec4 renderCameraVolume(
     vec3 positionOnNearPlane,
     float layerIdx,
@@ -802,10 +787,9 @@ vec4 renderCameraVolume(
 
     }
 
-    float sampleCount = min(SkyViewLutSampleCount, 2. * layer + 2.);
+    float sampleCount = min(skyViewLutSampleCount, 2. * layer + 2.);
     vec3 transmittance;
-    vec3 radiance;
-    integrateScatteredRadiance(
+    vec3 radiance = integrateScatteredRadiance(
         true, // isAerialPerspectiveLut
         lightIntensity,
         transmittanceLut,
@@ -817,7 +801,6 @@ vec4 renderCameraVolume(
         tMaxMax,
         sampleCount,
         -1., // No planet hit.
-        radiance,
         transmittance);
 
     float transparency = 1. - avg(transmittance);

@@ -1,0 +1,59 @@
+.fge-context-menu-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 10000;
+}
+
+.fge-context-menu {
+    position: fixed;
+    z-index: 10001;
+    background: #2a2a2a;
+    border: 1px solid #555;
+    border-radius: 4px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    min-width: 180px;
+    padding: 4px 0;
+    font:
+        13px "acumin-pro",
+        sans-serif;
+    color: #ccc;
+
+    .fge-ctx-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 16px;
+        cursor: pointer;
+        white-space: nowrap;
+        user-select: none;
+
+        &:hover {
+            background: #3a5a8a;
+            color: white;
+        }
+
+        &.disabled {
+            opacity: 0.35;
+            cursor: not-allowed;
+            &:hover {
+                background: transparent;
+                color: #ccc;
+            }
+        }
+
+        .fge-ctx-shortcut {
+            margin-left: auto;
+            font-size: 11px;
+            opacity: 0.6;
+        }
+    }
+
+    .fge-ctx-separator {
+        height: 1px;
+        background: #555;
+        margin: 4px 0;
+    }
+}

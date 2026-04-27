@@ -1,4 +1,15 @@
-import type { Observer, Nullable, Scene, SubMesh, AbstractMesh, Mesh, Effect, IThinEffectLayerOptions, Color3, EffectWrapper } from "core/index";
+import {
+    type Observer,
+    type Nullable,
+    type Scene,
+    type SubMesh,
+    type AbstractMesh,
+    type Mesh,
+    type Effect,
+    type IThinEffectLayerOptions,
+    type Color3,
+    type EffectWrapper,
+} from "core/index";
 import { Vector2 } from "../Maths/math.vector";
 import { VertexBuffer } from "../Buffers/buffer";
 import { Material } from "../Materials/material";
@@ -177,6 +188,19 @@ export class ThinHighlightLayer extends ThinEffectLayer {
     public _mainObjectRendererRenderPassId = -1;
 
     /**
+     * Gets the stencil reference value used for the meshes rendered by the highlight layer.
+     */
+    public get stencilReference(): number {
+        return this._instanceGlowingMeshStencilReference << (8 - this.numStencilBits);
+    }
+
+    /**
+     * Number of stencil bits used by the highlight layer (default: 8).
+     * The layer uses the numStencilBits highest bits of the stencil buffer.
+     */
+    public numStencilBits = 8;
+
+    /**
      * Instantiates a new highlight Layer and references it to the scene..
      * @param name The name of the layer
      * @param scene The scene to use the layer in
@@ -200,6 +224,7 @@ export class ThinHighlightLayer extends ThinEffectLayer {
             renderingGroupId: -1,
             forceGLSL: false,
             mainTextureType: Constants.TEXTURETYPE_UNSIGNED_BYTE,
+            mainTextureFormat: Constants.TEXTUREFORMAT_RGBA,
             isStroke: false,
             ...options,
         };
@@ -322,7 +347,8 @@ export class ThinHighlightLayer extends ThinEffectLayer {
         // Draw order
         engine.setStencilMask(0x00);
         engine.setStencilBuffer(true);
-        engine.setStencilFunctionReference(this._instanceGlowingMeshStencilReference);
+        engine.setStencilFunctionReference(this._instanceGlowingMeshStencilReference << (8 - this.numStencilBits));
+        engine.setStencilFunctionMask(255 - ((1 << (8 - this.numStencilBits)) - 1));
 
         // 2 passes inner outer
         if (this.outerGlow && renderIndex === 0) {
@@ -469,7 +495,9 @@ export class ThinHighlightLayer extends ThinEffectLayer {
                         if (this._excludedMeshes && this._excludedMeshes[mesh.uniqueId]) {
                             this._defaultStencilReference(mesh);
                         } else {
-                            mesh.getScene().getEngine().setStencilFunctionReference(this._instanceGlowingMeshStencilReference);
+                            mesh.getScene()
+                                .getEngine()
+                                .setStencilFunctionReference(this._instanceGlowingMeshStencilReference << (8 - this.numStencilBits));
                         }
                     }
                 }),
@@ -541,7 +569,9 @@ export class ThinHighlightLayer extends ThinEffectLayer {
     }
 
     private _defaultStencilReference(mesh: Mesh) {
-        mesh.getScene().getEngine().setStencilFunctionReference(ThinHighlightLayer.NormalMeshStencilReference);
+        mesh.getScene()
+            .getEngine()
+            .setStencilFunctionReference(ThinHighlightLayer.NormalMeshStencilReference << (8 - this.numStencilBits));
     }
 
     public _disposeMesh(mesh: Mesh): void {

@@ -1,5 +1,5 @@
 import * as React from "react";
-import type { GlobalState } from "../globalState";
+import { type GlobalState } from "../globalState";
 
 import { Engine } from "core/Engines/engine";
 import { SceneLoader } from "core/Loading/sceneLoader";

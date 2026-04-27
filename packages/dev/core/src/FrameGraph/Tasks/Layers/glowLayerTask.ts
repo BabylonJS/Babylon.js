@@ -1,4 +1,4 @@
-import type { FrameGraph, Scene, IThinGlowLayerOptions } from "core/index";
+import { type FrameGraph, type Scene, type IThinGlowLayerOptions } from "core/index";
 import { ThinGlowLayer } from "core/Layers/thinGlowLayer";
 import { FrameGraphBaseLayerTask } from "./baseLayerTask";
 
@@ -21,7 +21,7 @@ export class FrameGraphGlowLayerTask extends FrameGraphBaseLayerTask {
     constructor(name: string, frameGraph: FrameGraph, scene: Scene, options?: IThinGlowLayerOptions) {
         super(name, frameGraph, scene, new ThinGlowLayer(name, scene, options, true), 2);
 
-        this.layer._renderPassId = this._objectRendererForLayer.objectRenderer.renderPassId;
+        this.layer._renderPassId = this._objectRendererForLayerTask.objectRenderer.renderPassId;
     }
 
     public override getClassName(): string {

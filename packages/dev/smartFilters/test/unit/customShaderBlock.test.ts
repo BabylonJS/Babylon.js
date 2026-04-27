@@ -1,4 +1,4 @@
-/* eslint-disable jest/no-conditional-expect */
+/* eslint-disable vitest/no-conditional-expect */
 import { Logger } from "../../src";
 import { SmartFilter } from "../../src/smartFilter.js";
 import { ImportCustomBlockDefinition } from "../../src/serialization/importCustomBlockDefinition.js";
@@ -112,8 +112,8 @@ vec4 test(vec2 vUV) { // main
 
 describe("CustomShaderBlock", () => {
     const smartFilter = new SmartFilter("TestSmartFilter");
-    const warnFn = jest.fn();
-    const errorFn = jest.fn();
+    const warnFn = vi.fn();
+    const errorFn = vi.fn();
 
     beforeAll(() => {
         Logger.Warn = warnFn;
@@ -121,7 +121,7 @@ describe("CustomShaderBlock", () => {
     });
 
     beforeEach(() => {
-        jest.clearAllMocks();
+        vi.clearAllMocks();
     });
 
     describe("Default Value Parsing", () => {

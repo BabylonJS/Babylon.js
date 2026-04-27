@@ -1,20 +1,18 @@
-import type { FunctionComponent } from "react";
+import { type FunctionComponent } from "react";
 
-import type { ArcRotateCamera } from "core/index";
-import type { ISettingsContext } from "../../../services/settingsContext";
+import { type ArcRotateCamera } from "core/index";
 
 import { NumberInputPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/inputPropertyLine";
 import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
-import { SyncedSliderPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/syncedSliderPropertyLine";
 import { Vector3PropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/vectorPropertyLine";
 import { useProperty } from "../../../hooks/compoundPropertyHooks";
 import { useAngleConverters } from "../../../hooks/settingsHooks";
 import { BoundProperty } from "../boundProperty";
 
-export const ArcRotateCameraTransformProperties: FunctionComponent<{ camera: ArcRotateCamera; settings: ISettingsContext }> = (props) => {
-    const { camera, settings } = props;
+export const ArcRotateCameraTransformProperties: FunctionComponent<{ camera: ArcRotateCamera }> = (props) => {
+    const { camera } = props;
 
-    const [toDisplayAngle, fromDisplayAngle, useDegrees] = useAngleConverters(settings);
+    const [toDisplayAngle, fromDisplayAngle, useDegrees] = useAngleConverters();
 
     const lowerAlphaLimit = useProperty(camera, "lowerAlphaLimit") ?? 0;
     const upperAlphaLimit = useProperty(camera, "upperAlphaLimit") ?? Math.PI * 2;
@@ -26,7 +24,7 @@ export const ArcRotateCameraTransformProperties: FunctionComponent<{ camera: Arc
     return (
         <>
             <BoundProperty
-                component={SyncedSliderPropertyLine}
+                component={NumberInputPropertyLine}
                 label="Alpha"
                 description={`Horizontal angle in ${useDegrees ? "degrees" : "radians"}`}
                 target={camera}
@@ -34,11 +32,12 @@ export const ArcRotateCameraTransformProperties: FunctionComponent<{ camera: Arc
                 min={toDisplayAngle(lowerAlphaLimit)}
                 max={toDisplayAngle(upperAlphaLimit)}
                 step={toDisplayAngle(0.01)}
+                unit={useDegrees ? "°" : "rad"}
                 convertTo={(value) => toDisplayAngle(value, true)}
                 convertFrom={fromDisplayAngle}
             />
             <BoundProperty
-                component={SyncedSliderPropertyLine}
+                component={NumberInputPropertyLine}
                 label="Beta"
                 description={`Vertical angle in ${useDegrees ? "degrees" : "radians"}`}
                 target={camera}
@@ -46,31 +45,20 @@ export const ArcRotateCameraTransformProperties: FunctionComponent<{ camera: Arc
                 min={toDisplayAngle(lowerBetaLimit)}
                 max={toDisplayAngle(upperBetaLimit)}
                 step={toDisplayAngle(0.01)}
+                unit={useDegrees ? "°" : "rad"}
                 convertTo={(value) => toDisplayAngle(value, true)}
                 convertFrom={fromDisplayAngle}
             />
-            {lowerRadiusLimit != null && upperRadiusLimit != null ? (
-                <BoundProperty
-                    component={SyncedSliderPropertyLine}
-                    label="Radius"
-                    description="Distance from the target point."
-                    target={camera}
-                    propertyKey="radius"
-                    min={lowerRadiusLimit}
-                    max={upperRadiusLimit}
-                    step={0.01}
-                />
-            ) : (
-                <BoundProperty
-                    component={NumberInputPropertyLine}
-                    label="Radius"
-                    description="Distance from the target point."
-                    target={camera}
-                    propertyKey="radius"
-                    min={0}
-                    step={0.01}
-                />
-            )}
+            <BoundProperty
+                component={NumberInputPropertyLine}
+                label="Radius"
+                description="Distance from the target point."
+                target={camera}
+                propertyKey="radius"
+                min={lowerRadiusLimit ?? undefined}
+                max={upperRadiusLimit ?? undefined}
+                step={0.01}
+            />
         </>
     );
 };
@@ -93,27 +81,105 @@ export const ArcRotateCameraControlProperties: FunctionComponent<{ camera: ArcRo
 export const ArcRotateCameraCollisionProperties: FunctionComponent<{ camera: ArcRotateCamera }> = (props) => {
     const { camera } = props;
 
-    const collisionRadius = useProperty(camera, "collisionRadius");
-
     return (
         <>
             <BoundProperty component={SwitchPropertyLine} label="Check Collisions" target={camera} propertyKey="checkCollisions" />
-            <Vector3PropertyLine label="Collision Radius" value={collisionRadius} onChange={(val) => (camera.collisionRadius = val)} />
+            <BoundProperty component={Vector3PropertyLine} label="Collision Radius" target={camera} propertyKey="collisionRadius" />
         </>
     );
 };
 
 export const ArcRotateCameraLimitsProperties: FunctionComponent<{ camera: ArcRotateCamera }> = (props) => {
     const { camera } = props;
+
+    const [toDisplayAngle, fromDisplayAngle, useDegrees] = useAngleConverters();
+
+    const minAlphaLimit = 0;
+    const maxAlphaLimit = Math.PI * 2;
+    const minBetaLimit = -Math.PI;
+    const maxBetaLimit = Math.PI;
+
+    const lowerAlphaLimit = useProperty(camera, "lowerAlphaLimit") ?? minAlphaLimit;
+    const upperAlphaLimit = useProperty(camera, "upperAlphaLimit") ?? maxAlphaLimit;
+    const lowerBetaLimit = useProperty(camera, "lowerBetaLimit") ?? minBetaLimit;
+    const upperBetaLimit = useProperty(camera, "upperBetaLimit") ?? maxBetaLimit;
+    const lowerRadiusLimit = useProperty(camera, "lowerRadiusLimit");
+    const upperRadiusLimit = useProperty(camera, "upperRadiusLimit");
+
     // TODO-Iv2: Update defaultValues
     return (
         <>
-            <BoundProperty component={NumberInputPropertyLine} label="Lower Alpha Limit" target={camera} propertyKey="lowerAlphaLimit" nullable defaultValue={0} />
-            <BoundProperty component={NumberInputPropertyLine} label="Upper Alpha Limit" target={camera} propertyKey="upperAlphaLimit" nullable defaultValue={Infinity} />
-            <BoundProperty component={NumberInputPropertyLine} label="Lower Beta Limit" target={camera} propertyKey="lowerBetaLimit" nullable defaultValue={-Math.PI} />
-            <BoundProperty component={NumberInputPropertyLine} label="Upper Beta Limit" target={camera} propertyKey="upperBetaLimit" nullable defaultValue={Math.PI} />
-            <BoundProperty component={NumberInputPropertyLine} label="Lower Radius Limit" target={camera} propertyKey="lowerRadiusLimit" nullable defaultValue={0} />
-            <BoundProperty component={NumberInputPropertyLine} label="Upper Radius Limit" target={camera} propertyKey="upperRadiusLimit" nullable defaultValue={100} />
+            <BoundProperty
+                component={NumberInputPropertyLine}
+                label="Lower Alpha Limit"
+                target={camera}
+                propertyKey="lowerAlphaLimit"
+                nullable
+                defaultValue={toDisplayAngle(minAlphaLimit)}
+                min={toDisplayAngle(minAlphaLimit)}
+                max={toDisplayAngle(upperAlphaLimit)}
+                unit={useDegrees ? "°" : "rad"}
+                convertTo={(value) => (value === null ? value : toDisplayAngle(value, true))}
+                convertFrom={(value) => (value === null ? value : fromDisplayAngle(value))}
+            />
+            <BoundProperty
+                component={NumberInputPropertyLine}
+                label="Upper Alpha Limit"
+                target={camera}
+                propertyKey="upperAlphaLimit"
+                nullable
+                defaultValue={toDisplayAngle(maxAlphaLimit)}
+                min={toDisplayAngle(lowerAlphaLimit)}
+                max={toDisplayAngle(maxAlphaLimit)}
+                unit={useDegrees ? "°" : "rad"}
+                convertTo={(value) => (value === null ? value : toDisplayAngle(value, true))}
+                convertFrom={(value) => (value === null ? value : fromDisplayAngle(value))}
+            />
+            <BoundProperty
+                component={NumberInputPropertyLine}
+                label="Lower Beta Limit"
+                target={camera}
+                propertyKey="lowerBetaLimit"
+                nullable
+                defaultValue={toDisplayAngle(minBetaLimit)}
+                min={toDisplayAngle(minBetaLimit)}
+                max={toDisplayAngle(upperBetaLimit)}
+                unit={useDegrees ? "°" : "rad"}
+                convertTo={(value) => (value === null ? value : toDisplayAngle(value, true))}
+                convertFrom={(value) => (value === null ? value : fromDisplayAngle(value))}
+            />
+            <BoundProperty
+                component={NumberInputPropertyLine}
+                label="Upper Beta Limit"
+                target={camera}
+                propertyKey="upperBetaLimit"
+                nullable
+                defaultValue={toDisplayAngle(maxBetaLimit)}
+                min={toDisplayAngle(lowerBetaLimit)}
+                max={toDisplayAngle(maxBetaLimit)}
+                unit={useDegrees ? "°" : "rad"}
+                convertTo={(value) => (value === null ? value : toDisplayAngle(value, true))}
+                convertFrom={(value) => (value === null ? value : fromDisplayAngle(value))}
+            />
+            <BoundProperty
+                component={NumberInputPropertyLine}
+                label="Lower Radius Limit"
+                target={camera}
+                propertyKey="lowerRadiusLimit"
+                nullable
+                defaultValue={0}
+                min={0}
+                max={upperRadiusLimit ?? undefined}
+            />
+            <BoundProperty
+                component={NumberInputPropertyLine}
+                label="Upper Radius Limit"
+                target={camera}
+                propertyKey="upperRadiusLimit"
+                nullable
+                defaultValue={100}
+                min={lowerRadiusLimit ?? undefined}
+            />
             <BoundProperty component={NumberInputPropertyLine} label="Lower Target Y Limit" target={camera} propertyKey="lowerTargetYLimit" />
         </>
     );

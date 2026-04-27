@@ -1,20 +1,32 @@
 import { serialize } from "../Misc/decorators";
 import { RandomGUID } from "../Misc/guid";
-import type { Scene } from "../scene";
-import type { FlowGraphAsyncExecutionBlock } from "./flowGraphAsyncExecutionBlock";
-import type { FlowGraphBlock } from "./flowGraphBlock";
-import type { FlowGraphDataConnection } from "./flowGraphDataConnection";
-import type { FlowGraph } from "./flowGraph";
+import { type Scene } from "../scene";
+import { type FlowGraphAsyncExecutionBlock } from "./flowGraphAsyncExecutionBlock";
+import { type FlowGraphBlock } from "./flowGraphBlock";
+import { type FlowGraphDataConnection } from "./flowGraphDataConnection";
+import { type FlowGraph } from "./flowGraph";
 import { defaultValueSerializationFunction } from "./serialization";
-import type { FlowGraphCoordinator } from "./flowGraphCoordinator";
+import { type FlowGraphCoordinator } from "./flowGraphCoordinator";
 import { Observable } from "../Misc/observable";
-import type { AssetType, FlowGraphAssetType } from "./flowGraphAssetsContext";
-import { GetFlowGraphAssetWithType } from "./flowGraphAssetsContext";
-import type { IAssetContainer } from "core/IAssetContainer";
-import type { Nullable } from "core/types";
+import { type AssetType, type FlowGraphAssetType, GetFlowGraphAssetWithType } from "./flowGraphAssetsContext";
+import { type IAssetContainer } from "core/IAssetContainer";
+import { type Nullable } from "core/types";
 import { FlowGraphAction, FlowGraphLogger } from "./flowGraphLogger";
-import type { IFlowGraphOnTickEventPayload } from "./Blocks/Event/flowGraphSceneTickEventBlock";
+import { type IFlowGraphOnTickEventPayload } from "./Blocks/Event/flowGraphSceneTickEventBlock";
+import { type FlowGraphExecutionBlock } from "./flowGraphExecutionBlock";
+import { type FlowGraphSignalConnection } from "./flowGraphSignalConnection";
 
+/**
+ * Represents a pending signal activation that was paused by a breakpoint.
+ */
+export interface IFlowGraphPendingActivation {
+    /** The block that was about to execute */
+    readonly block: FlowGraphExecutionBlock;
+    /** The context in which execution was paused */
+    readonly context: FlowGraphContext;
+    /** The signal connection that triggered the execution */
+    readonly signal: FlowGraphSignalConnection;
+}
 /**
  * Construction parameters for the context.
  */
@@ -43,6 +55,7 @@ export interface IFlowGraphContextParseOptions {
      * A function that parses a value from a serialization object.
      * @param key the key of the value
      * @param serializationObject the object containing the value
+     * @param assetsContainer the assets container
      * @param scene the current scene
      * @returns
      */
@@ -65,9 +78,22 @@ export class FlowGraphContext {
     @serialize()
     public uniqueId = RandomGUID();
     /**
+     * An optional user-facing name for the context.
+     * Defaults to an empty string; the editor may assign a label like "Context 0".
+     */
+    @serialize()
+    public name: string = "";
+    /**
      * These are the variables defined by a user.
      */
     private _userVariables: { [key: string]: any } = {};
+    /**
+     * Optional type annotations for user variables.
+     * Keys are variable names; values are type name strings (e.g. "number", "Vector3", "Mesh").
+     * This map is maintained by the editor and persisted through serialization so
+     * that a variable's declared type survives even when its value is undefined.
+     */
+    private _variableTypes: { [key: string]: string } = {};
     /**
      * These are the variables set by the blocks.
      */
@@ -98,6 +124,41 @@ export class FlowGraphContext {
      * Observable that is triggered when a node is executed.
      */
     public onNodeExecutedObservable: Observable<FlowGraphBlock> = new Observable<FlowGraphBlock>();
+
+    /**
+     * Observable triggered when a breakpoint is hit.
+     * Observers receive the pending activation (block, context, signal) that was paused.
+     */
+    public onBreakpointHitObservable: Observable<IFlowGraphPendingActivation> = new Observable<IFlowGraphPendingActivation>();
+
+    /**
+     * A predicate called before each execution block runs.
+     * If it returns true, execution is paused before the block and a
+     * pending activation is stored, which can be resumed via
+     * {@link continueExecution} or {@link stepExecution}.
+     *
+     * Set to `null` to disable breakpoint checking.
+     */
+    public breakpointPredicate: Nullable<(block: FlowGraphExecutionBlock) => boolean> = null;
+
+    /**
+     * The activation that is currently paused due to a breakpoint hit.
+     * `null` when execution is not paused on a breakpoint.
+     */
+    private _pendingActivation: Nullable<IFlowGraphPendingActivation> = null;
+
+    /**
+     * When true, the next activation will pause regardless of the breakpoint predicate.
+     * Set by {@link stepExecution}.
+     */
+    private _stepMode: boolean = false;
+
+    /**
+     * When set, the breakpoint check is skipped for this specific block uniqueId
+     * on the very next call to {@link _shouldBreak}. Used by continue/step to avoid
+     * immediately re-hitting the breakpoint on the block being resumed.
+     */
+    private _skipBreakpointForBlockId: Nullable<string> = null;
 
     /**
      * The assets context used by the flow graph context.
@@ -206,6 +267,31 @@ export class FlowGraphContext {
      */
     public get userVariables() {
         return this._userVariables;
+    }
+
+    /**
+     * Set the declared type annotation for a user variable.
+     * @param name - the variable name
+     * @param typeName - the type name string (e.g. "number", "Vector3", "Mesh")
+     */
+    public setVariableType(name: string, typeName: string): void {
+        this._variableTypes[name] = typeName;
+    }
+
+    /**
+     * Get the declared type annotation for a user variable.
+     * @param name - the variable name
+     * @returns the type name string, or undefined if no type was declared
+     */
+    public getVariableType(name: string): string | undefined {
+        return this._variableTypes[name];
+    }
+
+    /**
+     * Gets all variable type annotations.
+     */
+    public get variableTypes(): { [key: string]: string } {
+        return this._variableTypes;
     }
 
     /**
@@ -488,6 +574,99 @@ export class FlowGraphContext {
         return this._executionId;
     }
 
+    // ── Breakpoint API ─────────────────────────────────────────────────
+
+    /**
+     * Check whether the given block should break before executing.
+     * Called by the signal connection infrastructure.
+     * @internal
+     * @param block the block about to execute
+     * @param signal the signal that is triggering the execution
+     * @returns true if execution should be paused (breakpoint hit)
+     */
+    public _shouldBreak(block: FlowGraphExecutionBlock, signal: FlowGraphSignalConnection): boolean {
+        // If continue/step just resumed this specific block, let it through
+        if (this._skipBreakpointForBlockId === block.uniqueId) {
+            this._skipBreakpointForBlockId = null;
+            return false;
+        }
+
+        // If already paused on a breakpoint, silently block further execution
+        // without overwriting the pending activation or re-notifying observers.
+        if (this._pendingActivation) {
+            return true;
+        }
+
+        if (this._stepMode) {
+            this._stepMode = false;
+            this._pendingActivation = { block, context: this, signal };
+            this.onBreakpointHitObservable.notifyObservers(this._pendingActivation);
+            return true;
+        }
+        if (this.breakpointPredicate && this.breakpointPredicate(block)) {
+            this._pendingActivation = { block, context: this, signal };
+            this.onBreakpointHitObservable.notifyObservers(this._pendingActivation);
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Returns the currently paused activation, or null if not paused.
+     */
+    public get pendingActivation(): Nullable<IFlowGraphPendingActivation> {
+        return this._pendingActivation;
+    }
+
+    /**
+     * Resume execution from a breakpoint hit.
+     * The paused block and all downstream blocks will execute normally until
+     * the next breakpoint (if any) is hit.
+     */
+    public continueExecution(): void {
+        const pending = this._pendingActivation;
+        if (!pending) {
+            return;
+        }
+        this._pendingActivation = null;
+        // Tell _shouldBreak to skip the breakpoint for this block on re-entry
+        this._skipBreakpointForBlockId = pending.block.uniqueId;
+        pending.signal._activateSignal(this);
+        // Clear in case no re-entry happened (shouldn't linger)
+        this._skipBreakpointForBlockId = null;
+    }
+
+    /**
+     * Execute exactly the paused block and then pause again before the next
+     * execution block fires. If no activation is pending, this is a no-op.
+     */
+    public stepExecution(): void {
+        const pending = this._pendingActivation;
+        if (!pending) {
+            return;
+        }
+        this._pendingActivation = null;
+        // Enable step mode so the very next input-signal activation will pause
+        this._stepMode = true;
+        // Tell _shouldBreak to skip the breakpoint for this block on re-entry
+        this._skipBreakpointForBlockId = pending.block.uniqueId;
+        pending.signal._activateSignal(this);
+        // If nothing further executed (end of chain), clear step mode
+        this._stepMode = false;
+        this._skipBreakpointForBlockId = null;
+    }
+
+    /**
+     * Discard any pending breakpoint activation without resuming.
+     * Used when stopping or resetting the graph.
+     * @internal
+     */
+    public _clearPendingActivation(): void {
+        this._pendingActivation = null;
+        this._stepMode = false;
+        this._skipBreakpointForBlockId = null;
+    }
+
     /**
      * Serializes a context
      * @param serializationObject the object to write the values in
@@ -495,9 +674,14 @@ export class FlowGraphContext {
      */
     public serialize(serializationObject: any = {}, valueSerializationFunction: (key: string, value: any, serializationObject: any) => void = defaultValueSerializationFunction) {
         serializationObject.uniqueId = this.uniqueId;
+        serializationObject.name = this.name;
         serializationObject._userVariables = {};
         for (const key in this._userVariables) {
             valueSerializationFunction(key, this._userVariables[key], serializationObject._userVariables);
+        }
+        // Persist variable type annotations (editor metadata)
+        if (Object.keys(this._variableTypes).length > 0) {
+            serializationObject._variableTypes = { ...this._variableTypes };
         }
         serializationObject._connectionValues = {};
         for (const key in this._connectionValues) {

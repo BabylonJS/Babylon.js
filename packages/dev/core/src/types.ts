@@ -153,7 +153,7 @@ export type TypedArray =
 /**
  * Alias for types that can be used by a Buffer or VertexBuffer.
  */
-export type DataArray = number[] | ArrayBuffer | ArrayBufferView;
+export type DataArray = number[] | ArrayBufferLike | ArrayBufferView;
 
 /**
  * Alias type for primitive types

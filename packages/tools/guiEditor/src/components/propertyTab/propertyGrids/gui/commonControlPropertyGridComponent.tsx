@@ -1,24 +1,23 @@
 import * as React from "react";
-import type { Observable, Observer } from "core/Misc/observable";
-import type { PropertyChangedEvent } from "shared-ui-components/propertyChangedEvent";
+import { type Observable, type Observer } from "core/Misc/observable";
+import { type PropertyChangedEvent } from "shared-ui-components/propertyChangedEvent";
 import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
 import { Control } from "gui/2D/controls/control";
 import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent";
 import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
-import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
+import { type LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 import { CommandButtonComponent } from "../../../commandButtonComponent";
-import type { Image } from "gui/2D/controls/image";
-import type { TextBlock } from "gui/2D/controls/textBlock";
+import { type Image } from "gui/2D/controls/image";
+import { type TextBlock } from "gui/2D/controls/textBlock";
 import { Container } from "gui/2D/controls/container";
 import { CheckBoxLineComponent } from "shared-ui-components/lines/checkBoxLineComponent";
 import { ValueAndUnit } from "gui/2D/valueAndUnit";
 import { ColorLine } from "shared-ui-components/lines/colorLineComponent";
 import { makeTargetsProxy, conflictingValuesPlaceholder } from "shared-ui-components/lines/targetsProxy";
-import type { DimensionProperties } from "../../../../diagram/coordinateHelper";
-import { CoordinateHelper } from "../../../../diagram/coordinateHelper";
+import { type DimensionProperties, CoordinateHelper } from "../../../../diagram/coordinateHelper";
 import { Vector2 } from "core/Maths/math";
 
-import type { Nullable } from "core/types";
+import { type Nullable } from "core/types";
 import { IconComponent } from "shared-ui-components/lines/iconComponent";
 import { OptionsLineComponent } from "shared-ui-components/components/lines/OptionsLineComponent";
 
@@ -52,13 +51,13 @@ import vAlignCenterIcon from "shared-ui-components/imgs/vAlignCenterIcon.svg";
 import vAlignTopIcon from "shared-ui-components/imgs/vAlignTopIcon.svg";
 import vAlignBottomIcon from "shared-ui-components/imgs/vAlignBottomIcon.svg";
 import descendantsOnlyPaddingIcon from "shared-ui-components/imgs/descendantsOnlyPaddingIcon.svg";
-import type { StackPanel } from "gui/2D/controls/stackPanel";
+import { type StackPanel } from "gui/2D/controls/stackPanel";
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
 import { UnitButton } from "shared-ui-components/lines/unitButton";
-import type { IInspectableOptions } from "core/Misc/iInspectable";
+import { type IInspectableOptions } from "core/Misc/iInspectable";
 
 import { WorkbenchComponent } from "../../../../diagram/workbench";
-import type { GlobalState } from "../../../../globalState";
+import { type GlobalState } from "../../../../globalState";
 import { GUIEditor } from "../../../../guiEditor";
 
 interface ICommonControlPropertyGridComponentProps {

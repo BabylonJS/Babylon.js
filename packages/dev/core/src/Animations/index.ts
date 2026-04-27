@@ -11,3 +11,4 @@ export * from "./animatable.interface";
 export * from "./pathCursor";
 export * from "./animationGroupMask";
 export * from "./animation.optimizations";
+export * from "./animatorAvatar";

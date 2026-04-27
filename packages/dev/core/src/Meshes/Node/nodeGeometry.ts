@@ -1,10 +1,10 @@
 import { Observable } from "../../Misc/observable";
-import type { Nullable } from "../../types";
+import { type Nullable } from "../../types";
 import { Mesh } from "../mesh";
-import type { VertexData } from "../mesh.vertexData";
-import type { Scene } from "../../scene";
+import { type VertexData } from "../mesh.vertexData";
+import { type Scene } from "../../scene";
 import { GeometryOutputBlock } from "./Blocks/geometryOutputBlock";
-import type { NodeGeometryBlock } from "./nodeGeometryBlock";
+import { type NodeGeometryBlock } from "./nodeGeometryBlock";
 import { NodeGeometryBuildState } from "./nodeGeometryBuildState";
 import { GetClass } from "../../Misc/typeStore";
 import { serialize } from "../../Misc/decorators";
@@ -12,16 +12,15 @@ import { SerializationHelper } from "../../Misc/decorators.serialization";
 import { Constants } from "../../Engines/constants";
 import { WebRequest } from "../../Misc/webRequest";
 import { BoxBlock } from "./Blocks/Sources/boxBlock";
-import type { GeometryInputBlock } from "./Blocks/geometryInputBlock";
+import { type GeometryInputBlock } from "./Blocks/geometryInputBlock";
 import { PrecisionDate } from "../../Misc/precisionDate";
-import type { TeleportOutBlock } from "./Blocks/Teleport/teleportOutBlock";
-import type { TeleportInBlock } from "./Blocks/Teleport/teleportInBlock";
+import { type TeleportOutBlock } from "./Blocks/Teleport/teleportOutBlock";
+import { type TeleportInBlock } from "./Blocks/Teleport/teleportInBlock";
 import { Tools } from "../../Misc/tools";
-import type { Color4 } from "../../Maths/math.color";
+import { type Color4 } from "../../Maths/math.color";
 import { AbstractEngine } from "core/Engines/abstractEngine";
 
 // declare NODEGEOMETRYEDITOR namespace for compilation issue
-// eslint-disable-next-line @typescript-eslint/naming-convention
 declare let NODEGEOMETRYEDITOR: any;
 declare let BABYLON: any;
 
@@ -56,7 +55,6 @@ export class NodeGeometry {
     /** Define the Url to load snippets */
     public static SnippetUrl = Constants.SnippetUrl;
 
-    // eslint-disable-next-line @typescript-eslint/naming-convention
     private BJSNODEGEOMETRYEDITOR = this._getGlobalNodeGeometryEditor();
 
     /** @returns the inspector from bundle or global */
@@ -240,7 +238,6 @@ export class NodeGeometry {
         this._buildWasSuccessful = false;
 
         if (!this.outputBlock) {
-            // eslint-disable-next-line no-throw-literal
             throw "You must define the outputBlock property before building the geometry";
         }
         const now = PrecisionDate.Now;

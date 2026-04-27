@@ -1,13 +1,13 @@
-import type { DeepImmutable, Nullable } from "../types";
+import { type DeepImmutable, type Nullable } from "../types";
 import { BuildArray } from "../Misc/arrayTools";
 import { Matrix, Vector3 } from "../Maths/math.vector";
-import type { BoundingSphere } from "../Culling/boundingSphere";
+import { type BoundingSphere } from "../Culling/boundingSphere";
 
-import type { ICullable } from "./boundingInfo";
+import { type ICullable } from "./boundingInfo";
 import { Epsilon } from "../Maths/math.constants";
-import type { Plane } from "../Maths/math.plane";
+import { type Plane } from "../Maths/math.plane";
 
-import type { DrawWrapper } from "../Materials/drawWrapper";
+import { type DrawWrapper } from "../Materials/drawWrapper";
 
 /**
  * Class used to store bounding box information

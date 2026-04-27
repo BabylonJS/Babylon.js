@@ -1,9 +1,9 @@
-import type { Scene } from "core/scene";
-import type { Nullable } from "core/types";
-import type { AbstractMesh } from "core/Meshes/abstractMesh";
-import type { Particle } from "core/Particles/particle";
-import type { ThinParticleSystem } from "core/Particles/thinParticleSystem";
-import type { NodeParticleConnectionPoint } from "core/Particles/Node/nodeParticleBlockConnectionPoint";
+import { type Scene } from "core/scene";
+import { type Nullable } from "core/types";
+import { type AbstractMesh } from "core/Meshes/abstractMesh";
+import { type Particle } from "core/Particles/particle";
+import { type ThinParticleSystem } from "core/Particles/thinParticleSystem";
+import { type NodeParticleConnectionPoint } from "core/Particles/Node/nodeParticleBlockConnectionPoint";
 
 import { Color4 } from "core/Maths/math.color";
 import { Matrix, Vector2, Vector3 } from "core/Maths/math.vector";
@@ -144,14 +144,14 @@ export class NodeParticleBuildState {
                 if (this._isSolidParticle) {
                     return null;
                 }
-                return (this.particleContext as Particle)._directionScale;
+                return (this.particleContext as Particle)._properties.directionScale;
             case NodeParticleContextualSources.ScaledDirection:
                 if (this._isSolidParticle) {
                     return null;
                 }
                 const particle = this.particleContext as Particle;
-                particle.direction.scaleToRef(particle._directionScale, particle._scaledDirection);
-                return particle._scaledDirection;
+                particle.direction.scaleToRef(particle._properties.directionScale, particle._properties.scaledDirection);
+                return particle._properties.scaledDirection;
             case NodeParticleContextualSources.Color:
                 return this.particleContext.color;
             case NodeParticleContextualSources.InitialColor:
@@ -216,7 +216,8 @@ export class NodeParticleBuildState {
                 if (this._isSolidParticle) {
                     return null;
                 }
-                return (this.particleContext as Particle)._initialDirection;
+                return (this.particleContext as Particle)._properties.initialDirection;
+
             case NodeParticleContextualSources.ColorStep:
                 if (this._isSolidParticle) {
                     return null;
@@ -236,10 +237,10 @@ export class NodeParticleBuildState {
                 }
                 const particleForLocal = this.particleContext as Particle;
                 const systemForLocal = this.systemContext as ThinParticleSystem;
-                particleForLocal.direction.scaleToRef(particleForLocal._directionScale, particleForLocal._scaledDirection);
-                particleForLocal._localPosition!.addInPlace(particleForLocal._scaledDirection);
-                Vector3.TransformCoordinatesToRef(particleForLocal._localPosition!, systemForLocal._emitterWorldMatrix, particleForLocal.position);
-                return particleForLocal.position;
+                particleForLocal.direction.scaleToRef(particleForLocal._properties.directionScale, particleForLocal._properties.scaledDirection);
+                particleForLocal._properties.localPosition!.addInPlace(particleForLocal._properties.scaledDirection);
+                Vector3.TransformCoordinatesToRef(particleForLocal._properties.localPosition!, systemForLocal._emitterWorldMatrix, particleForLocal.position);
+                return this.particleContext.position;
         }
 
         return null;
