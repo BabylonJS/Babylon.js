@@ -15,6 +15,12 @@ var uvOffset: vec2f =  vec2f(0.0, 0.0);
 		// flip the uv for the backface
 		var TBNUV: vec2f = select(-fragmentInputs.vGeometryNormalUV, fragmentInputs.vGeometryNormalUV, fragmentInputs.frontFacing);
 		var TBN: mat3x3f = cotangent_frame(normalW * normalScale, input.vPositionW, TBNUV, uniforms.vTangentSpaceParams);
+	#elif defined(GEOMETRY_COAT_NORMAL)
+		// TODO - In the case that we're deriving the TBN using the UV mapping,
+		// the base noraml and coat normal should really be generating two different TBNs.
+		// So this code isn't correct if we have both normal maps and they have different UVs.
+		var TBNUV: vec2f = select(-fragmentInputs.vGeometryCoatNormalUV, fragmentInputs.vGeometryCoatNormalUV, fragmentInputs.frontFacing);
+		var TBN: mat3x3f = cotangent_frame(normalW * normalScale, input.vPositionW, TBNUV, uniforms.vTangentSpaceParams);
 	#else
 		// flip the uv for the backface
 		var TBNUV: vec2f = select(-fragmentInputs.vDetailUV, fragmentInputs.vDetailUV, fragmentInputs.frontFacing);
