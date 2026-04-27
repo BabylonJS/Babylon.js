@@ -64,7 +64,7 @@ jobs:
                 PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: "true"
                 PUPPETEER_SKIP_DOWNLOAD: "true"
 
-          - script: npx browserstack-node-sdk playwright test --config ./playwright.browserstack.config.ts
+          - script: npx playwright test --config ./playwright.browserstack.config.ts
             displayName: "Run tests (Webkit)"
             env:
                 CDN_BASE_URL: "https://cdn.babylonjs.com"
@@ -108,7 +108,7 @@ jobs:
                 PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: "true"
                 PUPPETEER_SKIP_DOWNLOAD: "true"
 
-          - script: npx browserstack-node-sdk playwright test --config ./playwright.browserstack.config.ts
+          - script: npx playwright test --config ./playwright.browserstack.config.ts
             displayName: "Run tests (Firefox)"
             env:
                 CDN_BASE_URL: "https://cdn.babylonjs.com"

@@ -26,13 +26,10 @@ npm run test:visualization -- --project=webgpu
 
 ### Visualization tests (BrowserStack)
 
-Tests can run on BrowserStack infrastructure via two modes:
-
-- **Direct CDP** (`ci-monorepo`) — Playwright connects directly to a BrowserStack
-  Chrome session over a CDP WebSocket. Used for PR visualization and performance tests.
-- **BrowserStack SDK** (`ci-browser-testing`) — the `browserstack-node-sdk` intercepts
-  `browser.launch()` and routes it to a remote session. Used for nightly cross-browser
-  tests (Safari, Firefox).
+Tests can run on BrowserStack infrastructure using Playwright's
+`connectOptions.wsEndpoint` — a direct CDP WebSocket connection to a remote
+BrowserStack browser session. Both `ci-monorepo` and `ci-browser-testing`
+use this approach.
 
 **Prerequisites:**
 
@@ -41,50 +38,50 @@ Tests can run on BrowserStack infrastructure via two modes:
     BROWSERSTACK_USERNAME=your_username
     BROWSERSTACK_ACCESS_KEY=your_access_key
     ```
-2. Run `npm install` (installs `browserstack-node-sdk`)
+2. Run `npm install`
 
 **Commands:**
 
 ```bash
 # WebGL2 on BrowserStack (Chrome/macOS by default)
 CDN_BASE_URL="https://cdn.babylonjs.com" BSTACK_TEST_TYPE=webgl2 \
-  npx browserstack-node-sdk playwright test --config ./playwright.browserstack.config.ts
+  npx playwright test --config ./playwright.browserstack.config.ts
 
 # Single test
 CDN_BASE_URL="https://cdn.babylonjs.com" BSTACK_TEST_TYPE=webgl2 \
-  npx browserstack-node-sdk playwright test --config ./playwright.browserstack.config.ts \
+  npx playwright test --config ./playwright.browserstack.config.ts \
   --grep "Particle system"
 
 # WebGPU on BrowserStack
 CDN_BASE_URL="https://cdn.babylonjs.com" BSTACK_TEST_TYPE=webgpu \
-  npx browserstack-node-sdk playwright test --config ./playwright.browserstack.config.ts
+  npx playwright test --config ./playwright.browserstack.config.ts
 
 # Override browser (e.g. Firefox)
 CDN_BASE_URL="https://cdn.babylonjs.com" BSTACK_TEST_TYPE=webgl2 \
   BSTACK_BROWSER=playwright-firefox BSTACK_OS="OS X" BSTACK_OS_VERSION=Sonoma \
-  npx browserstack-node-sdk playwright test --config ./playwright.browserstack.config.ts
+  npx playwright test --config ./playwright.browserstack.config.ts
 
-# Test against a local dev server (opens a BrowserStack Local tunnel)
-CDN_BASE_URL="http://localhost:1337" BSTACK_TEST_TYPE=webgl2 BROWSERSTACK_LOCAL=true \
-  npx browserstack-node-sdk playwright test --config ./playwright.browserstack.config.ts
+# Test against a local dev server (requires BrowserStack Local tunnel running separately)
+CDN_BASE_URL="http://localhost:1337" BSTACK_TEST_TYPE=webgl2 \
+  npx playwright test --config ./playwright.browserstack.config.ts
 ```
 
 ### Environment Variables
 
-| Variable               | Description                                                                    | Default                         |
-| ---------------------- | ------------------------------------------------------------------------------ | ------------------------------- |
-| `BSTACK_TEST_TYPE`     | Test suite to run: `webgl2`, `webgpu`, `performance`, `interaction`            | `webgl2`                        |
-| `CDN_BASE_URL`         | Base URL where Babylon.js snapshot is served                                   | —                               |
-| `CIWORKERS`            | Number of parallel Playwright workers / BrowserStack sessions                  | `5` (BrowserStack), `4` (local) |
-| `BSTACK_BROWSER`       | Override BrowserStack browser (e.g. `playwright-firefox`, `playwright-webkit`) | `chrome`                        |
-| `BSTACK_OS`            | Override BrowserStack OS                                                       | `OS X`                          |
-| `BSTACK_OS_VERSION`    | Override BrowserStack OS version                                               | `Sonoma`                        |
-| `BSTACK_BUILD_NAME`    | Override build name on BrowserStack dashboard                                  | Auto-generated from test type   |
-| `BROWSERSTACK_LOCAL`   | Set to `true` to enable BrowserStack Local tunnel for localhost testing        | `false`                         |
-| `EXCLUDE_REGEX_ARRAY`  | Comma-separated regex patterns to exclude tests                                | —                               |
-| `TIMEOUT`              | Per-test timeout in milliseconds                                               | Playwright default              |
-| `SCREENSHOT_THRESHOLD` | Pixel comparison threshold (0-1)                                               | `0.05`                          |
-| `SCREENSHOT_MAX_PIXEL` | Maximum allowed pixel difference                                               | `5`                             |
+| Variable            | Description                                                                    | Default                         |
+| ------------------- | ------------------------------------------------------------------------------ | ------------------------------- |
+| `BSTACK_TEST_TYPE`  | Test suite to run: `webgl2`, `webgpu`, `performance`, `interaction`            | `webgl2`                        |
+| `CDN_BASE_URL`      | Base URL where Babylon.js snapshot is served                                   | —                               |
+| `CIWORKERS`         | Number of parallel Playwright workers / BrowserStack sessions                  | `5` (BrowserStack), `4` (local) |
+| `BSTACK_BROWSER`    | Override BrowserStack browser (e.g. `playwright-firefox`, `playwright-webkit`) | `chrome`                        |
+| `BSTACK_OS`         | Override BrowserStack OS                                                       | `OS X`                          |
+| `BSTACK_OS_VERSION` | Override BrowserStack OS version                                               | `Sonoma`                        |
+| `BSTACK_BUILD_NAME` | Override build name on BrowserStack dashboard                                  | Auto-generated from test type   |
+
+| `EXCLUDE_REGEX_ARRAY` | Comma-separated regex patterns to exclude tests | — |
+| `TIMEOUT` | Per-test timeout in milliseconds | Playwright default |
+| `SCREENSHOT_THRESHOLD` | Pixel comparison threshold (0-1) | `0.05` |
+| `SCREENSHOT_MAX_PIXEL` | Maximum allowed pixel difference | `5` |
 
 ### BrowserStack Dashboard
 
@@ -96,9 +93,8 @@ CDN_BASE_URL="http://localhost:1337" BSTACK_TEST_TYPE=webgl2 BROWSERSTACK_LOCAL=
 | File                                          | Purpose                                                      |
 | --------------------------------------------- | ------------------------------------------------------------ |
 | `playwright.config.ts`                        | Main config for local and legacy CDP-based BrowserStack runs |
-| `playwright.browserstack.config.ts`           | Config for direct CDP BrowserStack runs (ci-monorepo)        |
+| `playwright.browserstack.config.ts`           | Config for BrowserStack CDP runs (all pipelines)             |
 | `playwright.devhost.config.ts`                | Config for dev host tests (lottie, etc.)                     |
-| `browserstack.yml`                            | BrowserStack SDK platform and credential config              |
 | `packages/tools/tests/playwright.utils.ts`    | Shared project definitions and browser setup                 |
 | `packages/tools/tests/browserstack.config.ts` | Legacy CDP endpoint configuration                            |
 
@@ -134,7 +130,7 @@ export $(grep -v '^#' .env | xargs)
 BSTACK_TEST_TYPE=performance \
   VISUALIZATION_PERF=true \
   CDN_VERSION=9.0.0 CDN_VERSION_B=9.3.3 \
-  npx browserstack-node-sdk playwright test \
+  npx playwright test \
     --config ./playwright.browserstack.config.ts \
     packages/tools/tests/test/performance/visualization.test.ts \
     -g "Shadows (webgl2)"
@@ -143,7 +139,7 @@ BSTACK_TEST_TYPE=performance \
 BSTACK_TEST_TYPE=performance \
   VISUALIZATION_PERF=true VISUALIZATION_PERF_ALL=true \
   CDN_VERSION=9.0.0 CDN_VERSION_B=9.3.3 \
-  npx browserstack-node-sdk playwright test \
+  npx playwright test \
     --config ./playwright.browserstack.config.ts \
     packages/tools/tests/test/performance/visualization.test.ts \
     -g "webgl2"
@@ -152,7 +148,7 @@ BSTACK_TEST_TYPE=performance \
 BSTACK_TEST_TYPE=performance \
   VISUALIZATION_PERF=true VISUALIZATION_PERF_ALL=true \
   CDN_VERSION=9.0.0 CDN_VERSION_B=9.3.3 \
-  npx browserstack-node-sdk playwright test \
+  npx playwright test \
     --config ./playwright.browserstack.config.ts \
     packages/tools/tests/test/performance/visualization.test.ts
 ```

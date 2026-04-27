@@ -72,30 +72,16 @@ BrowserStack credentials shared by pipelines that run browser tests.
 
 Linked by: ci-monorepo, ci-browser-testing.
 
-### BrowserStack execution modes
+### BrowserStack connection
 
-These credentials are consumed by more than one BrowserStack integration
-pattern:
+All pipelines connect to BrowserStack directly over CDP using Playwright's
+`connectOptions.wsEndpoint` (configured in `playwright.browserstack.config.ts`).
+The browser, OS, and credentials are passed as capabilities in the WebSocket URL.
 
-- `ci-monorepo` connects to BrowserStack directly over CDP using Playwright
-  `connectOptions.wsEndpoint`.
-- `ci-browser-testing` uses the
-  [browserstack-node-sdk](https://www.npmjs.com/package/browserstack-node-sdk),
-  where the SDK intercepts Playwright's `browser.launch()` and routes it to a
-  remote BrowserStack browser session.
-
-Use the pipeline-specific configuration for the job you are editing rather than
-assuming all BrowserStack runs go through the SDK.
-
-**SDK-based config files (`ci-browser-testing`):**
-
-- `browserstack.yml` — SDK platform config (browser, OS, parallelism)
-- `playwright.browserstack.config.ts` — Playwright config for SDK runs
-
-**SDK-based CI invocation example (`ci-browser-testing`):**
+**CI invocation (in YAML pipelines):**
 
 ```yaml
-- script: npx browserstack-node-sdk playwright test --config ./playwright.browserstack.config.ts
+- script: npx playwright test --config ./playwright.browserstack.config.ts
   env:
       BSTACK_TEST_TYPE: "webgl2" # or webgpu, performance, interaction
       CDN_BASE_URL: "$(SNAPSHOT_CDN_URL)/$(BuildName)"
