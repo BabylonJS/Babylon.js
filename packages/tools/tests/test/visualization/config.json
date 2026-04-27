@@ -1389,7 +1389,6 @@
         },
         {
             "title": "MultiSample render targets",
-            "renderCount": 20,
             "playgroundId": "#12MKMN#0",
             "referenceImage": "MultiSample-render-targets.png"
         },
@@ -1940,14 +1939,12 @@
         },
         {
             "title": "Reverse depth buffer and shadows",
-            "renderCount": 10,
             "playgroundId": "#WL4Q8J#20",
             "excludedEngines": ["webgl1"],
             "referenceImage": "reverseDepthBufferShadows.png"
         },
         {
             "title": "Reverse depth buffer and CSM shadows",
-            "renderCount": 10,
             "playgroundId": "#IIZ9UU#248",
             "excludedEngines": ["webgl1"],
             "referenceImage": "reverseDepthBufferCSMShadows.png"
@@ -1978,7 +1975,6 @@
         },
         {
             "title": "Order independent transparency",
-            "renderCount": 5,
             "playgroundId": "#1PLV5Z#104",
             "excludedEngines": ["webgl1"],
             "referenceImage": "oit.png"
