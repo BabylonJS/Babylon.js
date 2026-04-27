@@ -16,7 +16,7 @@ Reference material for Babylon.js visualization tests. For the workflow and step
 | `replaceUrl`                                                                 | No       | -             | Comma-separated replacement pairs for patching URLs                                                                                                             |
 | `excludeFromAutomaticTesting`                                                | No       | `false`       | Exclude the test from the standard visualization harness entirely, including targeted `-g` runs                                                                 |
 | `useLargeWorldRendering`, `useReverseDepthBuffer`, `useNonCompatibilityMode` | No       | -             | Per-test engine flags                                                                                                                                           |
-| `dependsOn`                                                                  | No*      | `[]`          | Array of module tags the test exercises (e.g. `["PBR", "Shadows"]`). **Required for new tests.** Tests without it always run in CI.                             |
+| `dependsOn`                                                                  | No\*     | `[]`          | Array of module tags the test exercises (e.g. `["PBR", "Shadows"]`). **Required for new tests.** Tests without it always run in CI.                             |
 
 ## `renderCount` guidance
 
@@ -63,12 +63,12 @@ Visualization tests support tag-based filtering so PRs only run the tests releva
 
 ### `AFFECTED_TAGS` values
 
-| Value | Behavior |
-|-------|----------|
-| Not set or empty | All tests run (backward compatible) |
-| `ALL` | All tests run (a "run-all" tag was affected, e.g. Engine, Rendering, Scene) |
-| `NONE` | No visualization tests run (no relevant files changed) |
-| `PBR,Shadows,...` | Only tests with matching `dependsOn` tags run |
+| Value             | Behavior                                                                    |
+| ----------------- | --------------------------------------------------------------------------- |
+| Not set or empty  | All tests run (backward compatible)                                         |
+| `ALL`             | All tests run (a "run-all" tag was affected, e.g. Engine, Rendering, Scene) |
+| `NONE`            | No visualization tests run (no relevant files changed)                      |
+| `PBR,Shadows,...` | Only tests with matching `dependsOn` tags run                               |
 
 ### Tag vocabulary
 

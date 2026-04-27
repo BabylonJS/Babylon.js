@@ -84,12 +84,22 @@ function main() {
     let changedFiles;
     if (USE_STDIN) {
         const input = fs.readFileSync(0, "utf8").trim();
-        changedFiles = input ? input.split("\n").map((f) => f.trim()).filter(Boolean) : [];
+        changedFiles = input
+            ? input
+                  .split("\n")
+                  .map((f) => f.trim())
+                  .filter(Boolean)
+            : [];
     } else {
         try {
             const mergeBase = execSync("git merge-base HEAD origin/master", { encoding: "utf8", cwd: ROOT }).trim();
             const diff = execSync(`git diff --name-only ${mergeBase} HEAD`, { encoding: "utf8", cwd: ROOT }).trim();
-            changedFiles = diff ? diff.split("\n").map((f) => f.trim()).filter(Boolean) : [];
+            changedFiles = diff
+                ? diff
+                      .split("\n")
+                      .map((f) => f.trim())
+                      .filter(Boolean)
+                : [];
         } catch (err) {
             // If git commands fail (e.g., shallow clone), fall back to ALL
             process.stderr.write(`[WARN] git diff failed, falling back to ALL: ${err.message}\n`);
