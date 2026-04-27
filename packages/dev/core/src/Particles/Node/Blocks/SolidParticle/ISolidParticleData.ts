@@ -1,6 +1,6 @@
-import type { Vector3 } from "core/Maths/math.vector";
-import type { Color4 } from "core/Maths/math.color";
-import type { VertexData } from "core/Meshes/mesh.vertexData";
+import { type Vector3 } from "core/Maths/math.vector";
+import { type Color4 } from "core/Maths/math.color";
+import { type VertexData } from "core/Meshes/mesh.vertexData";
 
 /**
  *  Interface for solid particle mesh source data

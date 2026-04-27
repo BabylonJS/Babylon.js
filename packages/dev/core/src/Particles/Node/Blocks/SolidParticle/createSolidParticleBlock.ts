@@ -3,9 +3,9 @@ import { Vector3 } from "core/Maths/math.vector";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import { NodeParticleBlockConnectionPointTypes } from "../../Enums/nodeParticleBlockConnectionPointTypes";
 import { NodeParticleBlock } from "../../nodeParticleBlock";
-import type { NodeParticleConnectionPoint } from "../../nodeParticleBlockConnectionPoint";
-import type { NodeParticleBuildState } from "../../nodeParticleBuildState";
-import type { ISolidParticleInitData } from "./ISolidParticleData";
+import { type NodeParticleConnectionPoint } from "../../nodeParticleBlockConnectionPoint";
+import { type NodeParticleBuildState } from "../../nodeParticleBuildState";
+import { type ISolidParticleInitData } from "./ISolidParticleData";
 
 /**
  * Block used to create a solid particle configuration (mesh, count, position, color, scaling, rotation)

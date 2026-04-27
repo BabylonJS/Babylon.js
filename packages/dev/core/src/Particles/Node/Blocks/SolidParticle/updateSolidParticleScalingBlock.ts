@@ -1,10 +1,10 @@
 import { RegisterClass } from "../../../../Misc/typeStore";
 import { NodeParticleBlockConnectionPointTypes } from "../../Enums/nodeParticleBlockConnectionPointTypes";
 import { NodeParticleBlock } from "../../nodeParticleBlock";
-import type { NodeParticleConnectionPoint } from "../../nodeParticleBlockConnectionPoint";
-import type { NodeParticleBuildState } from "../../nodeParticleBuildState";
-import type { ISolidParticleInitData, ISolidParticleUpdateData } from "./ISolidParticleData";
-import type { Vector3 } from "core/Maths/math.vector";
+import { type NodeParticleConnectionPoint } from "../../nodeParticleBlockConnectionPoint";
+import { type NodeParticleBuildState } from "../../nodeParticleBuildState";
+import { type ISolidParticleInitData, type ISolidParticleUpdateData } from "./ISolidParticleData";
+import { type Vector3 } from "core/Maths/math.vector";
 
 /**
  * Block used to update the scaling of a solid particle

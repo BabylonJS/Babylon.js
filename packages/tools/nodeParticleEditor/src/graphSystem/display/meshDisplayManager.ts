@@ -1,7 +1,7 @@
-import type { IDisplayManager } from "shared-ui-components/nodeGraphSystem/interfaces/displayManager";
-import type { INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
+import { type IDisplayManager } from "shared-ui-components/nodeGraphSystem/interfaces/displayManager";
+import { type INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
 import * as localStyles from "./meshDisplayManager.module.scss";
-import type { MeshSourceBlock } from "core/Particles/Node/Blocks/SolidParticle/meshSourceBlock";
+import { type MeshSourceBlock } from "core/Particles/Node/Blocks/SolidParticle/meshSourceBlock";
 
 export class MeshDisplayManager implements IDisplayManager {
     public getHeaderClass() {

@@ -1,10 +1,10 @@
 import { RegisterClass } from "../../../../Misc/typeStore";
 import { NodeParticleBlockConnectionPointTypes } from "../../Enums/nodeParticleBlockConnectionPointTypes";
 import { NodeParticleBlock } from "../../nodeParticleBlock";
-import type { NodeParticleConnectionPoint } from "../../nodeParticleBlockConnectionPoint";
-import type { NodeParticleBuildState } from "../../nodeParticleBuildState";
-import type { ISolidParticleInitData } from "./ISolidParticleData";
-import type { Observer } from "core/Misc/observable";
+import { type NodeParticleConnectionPoint } from "../../nodeParticleBlockConnectionPoint";
+import { type NodeParticleBuildState } from "../../nodeParticleBuildState";
+import { type ISolidParticleInitData } from "./ISolidParticleData";
+import { type Observer } from "core/Misc/observable";
 
 /**
  * Block used to merge multiple solid particle configurations

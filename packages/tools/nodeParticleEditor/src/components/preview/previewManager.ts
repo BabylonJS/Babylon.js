@@ -16,7 +16,7 @@ import { SceneInstrumentation } from "core/Instrumentation/sceneInstrumentation"
 import { type ThinParticleSystem } from "core/Particles/thinParticleSystem";
 import { type ParticleSystemSet } from "core/Particles/particleSystemSet";
 import { EngineStore } from "core/Engines";
-import type { ParticleSystem } from "core/Particles";
+import { type ParticleSystem } from "core/Particles";
 import { SolidParticleSystem } from "core/Particles/solidParticleSystem";
 import { DirectionalLight } from "core/Lights";
 import { AxesViewer } from "core/Debug/axesViewer";

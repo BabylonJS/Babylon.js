@@ -8,8 +8,8 @@ import { EngineStore } from "../Engines/engineStore";
 import { ParticleSystem } from "../Particles/particleSystem";
 import { type Scene, type IDisposable } from "../scene";
 import { StandardMaterial } from "../Materials/standardMaterial";
-import type { Vector3 } from "../Maths/math.vector";
-import type { SolidParticleSystem } from "./solidParticleSystem";
+import { type Vector3 } from "../Maths/math.vector";
+import { type SolidParticleSystem } from "./solidParticleSystem";
 
 /** Internal class used to store shapes for emitters */
 class ParticleSystemSetEmitterCreationOptions {

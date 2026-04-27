@@ -3,13 +3,13 @@
 import { RegisterClass } from "../../../../Misc/typeStore";
 import { NodeParticleBlockConnectionPointTypes } from "../../Enums/nodeParticleBlockConnectionPointTypes";
 import { NodeParticleBlock } from "../../nodeParticleBlock";
-import type { NodeParticleConnectionPoint } from "../../nodeParticleBlockConnectionPoint";
-import type { NodeParticleBuildState } from "../../nodeParticleBuildState";
-import type { Mesh } from "core/Meshes/mesh";
+import { type NodeParticleConnectionPoint } from "../../nodeParticleBlockConnectionPoint";
+import { type NodeParticleBuildState } from "../../nodeParticleBuildState";
+import { type Mesh } from "core/Meshes/mesh";
 import { VertexData } from "core/Meshes/mesh.vertexData";
 import { Observable } from "core/Misc/observable";
-import type { Nullable } from "core/types";
-import type { ISolidParticleMeshSourceData } from "./ISolidParticleData";
+import { type Nullable } from "core/types";
+import { type ISolidParticleMeshSourceData } from "./ISolidParticleData";
 
 /**
  * Block used to provide mesh source for SPS

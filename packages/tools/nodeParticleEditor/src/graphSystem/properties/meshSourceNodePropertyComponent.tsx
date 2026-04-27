@@ -1,18 +1,18 @@
 import { Component } from "react";
 import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
 import { GeneralPropertyTabComponent } from "./genericNodePropertyComponent";
-import type { IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
+import { type IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
 import { OptionsLine } from "shared-ui-components/lines/optionsLineComponent";
 import { FileButtonLine } from "shared-ui-components/lines/fileButtonLineComponent";
 import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
 import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineComponent";
 import { LoadSceneAsync } from "core/Loading/sceneLoader";
 import { EngineStore } from "core/Engines/engineStore";
-import type { Nullable } from "core/types";
-import type { Scene } from "core/scene";
-import type { Mesh } from "core/Meshes/mesh";
-import type { MeshSourceBlock } from "core/Particles/Node/Blocks/SolidParticle/meshSourceBlock";
-import type { Observer } from "core/Misc/observable";
+import { type Nullable } from "core/types";
+import { type Scene } from "core/scene";
+import { type Mesh } from "core/Meshes/mesh";
+import { type MeshSourceBlock } from "core/Particles/Node/Blocks/SolidParticle/meshSourceBlock";
+import { type Observer } from "core/Misc/observable";
 
 export class MeshSourcePropertyTabComponent extends Component<IPropertyComponentProps, { isLoading: boolean }> {
     private _onValueChangedObserver: Nullable<Observer<MeshSourceBlock>> = null;

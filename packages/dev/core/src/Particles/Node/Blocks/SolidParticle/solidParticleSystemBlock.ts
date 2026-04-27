@@ -1,13 +1,13 @@
 import { RegisterClass } from "../../../../Misc/typeStore";
 import { NodeParticleBlockConnectionPointTypes } from "../../Enums/nodeParticleBlockConnectionPointTypes";
 import { NodeParticleBlock } from "../../nodeParticleBlock";
-import type { NodeParticleConnectionPoint } from "../../nodeParticleBlockConnectionPoint";
-import type { NodeParticleBuildState } from "../../nodeParticleBuildState";
+import { type NodeParticleConnectionPoint } from "../../nodeParticleBlockConnectionPoint";
+import { type NodeParticleBuildState } from "../../nodeParticleBuildState";
 import { editableInPropertyPage, PropertyTypeForEdition } from "core/Decorators/nodeDecorator";
 import { SolidParticleSystem } from "core/Particles/solidParticleSystem";
-import type { ISolidParticleInitData } from "./ISolidParticleData";
+import { type ISolidParticleInitData } from "./ISolidParticleData";
 import { Mesh } from "core/Meshes/mesh";
-import type { SolidParticle } from "../../../solidParticle";
+import { type SolidParticle } from "../../../solidParticle";
 
 /**
  * Block used to create SolidParticleSystem from merged particle configurations

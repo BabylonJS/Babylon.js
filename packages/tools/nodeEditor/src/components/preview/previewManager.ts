@@ -45,7 +45,7 @@ import { Engine } from "core/Engines/engine";
 import { Animation } from "core/Animations/animation";
 import { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
 import { SceneLoaderFlags } from "core/Loading/sceneLoaderFlags";
-import type { SolidParticleSystem } from "core/Particles/solidParticleSystem";
+import { type SolidParticleSystem } from "core/Particles/solidParticleSystem";
 const DontSerializeTextureContent = true;
 
 export class PreviewManager {
