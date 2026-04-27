@@ -205,7 +205,7 @@ export class AtmospherePBRMaterialPlugin extends MaterialPluginBase {
         // env (e.g. a cube env using spherical harmonics), the standard PBR reflection block must run
         // instead, otherwise the injected `sampleReflection(irradianceSampler, ...)` would reference an
         // undeclared identifier. See forum 63276.
-        defines.USE_CUSTOM_REFLECTION = this._atmosphere.diffuseSkyIrradianceLut !== null && !!(defines as unknown as { USEIRRADIANCEMAP: boolean }).USEIRRADIANCEMAP;
+        defines.USE_CUSTOM_REFLECTION = this._atmosphere.diffuseSkyIrradianceLut !== null && !!defines.USEIRRADIANCEMAP;
         defines.USE_AERIAL_PERSPECTIVE_LUT = this._isAerialPerspectiveEnabled && this._atmosphere.isAerialPerspectiveLutEnabled;
         defines.APPLY_AERIAL_PERSPECTIVE_INTENSITY = this._isAerialPerspectiveEnabled && this._atmosphere.aerialPerspectiveIntensity !== 1.0;
         defines.APPLY_AERIAL_PERSPECTIVE_RADIANCE_BIAS = this._isAerialPerspectiveEnabled && this._atmosphere.aerialPerspectiveRadianceBias !== 0.0;
