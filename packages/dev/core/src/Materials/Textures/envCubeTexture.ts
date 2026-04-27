@@ -299,10 +299,20 @@ export abstract class EnvCubeTexture extends BaseTexture {
 
         if (engine._features.allowTexturePrefiltering && (this._prefilterOnLoad || this._prefilterIrradianceOnLoad)) {
             const previousOnLoad = this._onLoad;
+            const previousOnError = this._onError;
             const hdrFiltering = new HDRFiltering(engine);
             const prefilterPendingToken = {};
             const scene = this.getScene();
             scene?.addPendingData(prefilterPendingToken);
+            this._onError = () => {
+                // If the texture load itself fails, _onLoad never runs so the try/finally below
+                // never fires. Make sure the pending-data token is still cleared so the scene
+                // doesn't stay stuck in isLoading / executeWhenReady.
+                scene?.removePendingData(prefilterPendingToken);
+                if (previousOnError) {
+                    previousOnError();
+                }
+            };
             this._onLoad = () => {
                 void (async () => {
                     try {
