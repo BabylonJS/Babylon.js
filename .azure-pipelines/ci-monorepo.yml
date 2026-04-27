@@ -101,6 +101,14 @@ jobs:
             displayName: "Check git changes"
             continueOnError: true
 
+          - bash: |
+                TAGS=$(node scripts/compute-affected-vis-tags.mjs)
+                echo "Affected vis-test tags: $TAGS"
+                echo "##vso[task.setvariable variable=AFFECTED_TAGS;isOutput=true]$TAGS"
+            name: ComputeVisTags
+            displayName: "Compute affected vis-test tags"
+            continueOnError: true
+
           - template: templates/check-snapshot-exists.yml
             parameters:
                 snapshotPath: "$(BuildName)"
@@ -540,6 +548,9 @@ jobs:
     - job: VisualizationWebGL2
       displayName: "Visualization tests - WebGL 2"
       dependsOn: Build
+      condition: and(succeeded(), ne(dependencies.Build.outputs['ComputeVisTags.AFFECTED_TAGS'], 'NONE'))
+      variables:
+          AFFECTED_TAGS: $[ dependencies.Build.outputs['ComputeVisTags.AFFECTED_TAGS'] ]
       steps:
           - template: templates/checkout-with-tag-override.yml
 
@@ -574,6 +585,7 @@ jobs:
                 TIMEOUT: "27500"
                 BROWSERSTACK_USERNAME: $(BROWSERSTACK_USERNAME)
                 BROWSERSTACK_ACCESS_KEY: $(BROWSERSTACK_ACCESS_KEY)
+                AFFECTED_TAGS: $(AFFECTED_TAGS)
 
           - script: |
                 curl "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_DELETE)?path=$(BuildName)/testResults/webgl2playwright" -X POST -H "Authorization: $(BASIC_AUTH)"
@@ -614,6 +626,9 @@ jobs:
     - job: VisualizationWebGPU
       displayName: "Visualization tests - WebGPU"
       dependsOn: Build
+      condition: and(succeeded(), ne(dependencies.Build.outputs['ComputeVisTags.AFFECTED_TAGS'], 'NONE'))
+      variables:
+          AFFECTED_TAGS: $[ dependencies.Build.outputs['ComputeVisTags.AFFECTED_TAGS'] ]
       steps:
           - template: templates/checkout-with-tag-override.yml
 
@@ -648,6 +663,7 @@ jobs:
                 TIMEOUT: "27500"
                 BROWSERSTACK_USERNAME: $(BROWSERSTACK_USERNAME)
                 BROWSERSTACK_ACCESS_KEY: $(BROWSERSTACK_ACCESS_KEY)
+                AFFECTED_TAGS: $(AFFECTED_TAGS)
 
           - script: |
                 curl "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_DELETE)?path=$(BuildName)/testResults/webgpuplaywright" -X POST -H "Authorization: $(BASIC_AUTH)"

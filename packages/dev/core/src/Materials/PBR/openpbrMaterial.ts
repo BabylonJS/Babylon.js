@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { serialize, expandToProperty, addAccessorsForMaterialProperty } from "../../Misc/decorators";
-import { GetEnvironmentBRDFTexture, GetEnvironmentFuzzBRDFTexture } from "../../Misc/brdfTextureTools";
+import { GetEnvironmentFuzzBRDFTexture, GetOpenPBREnvironmentBRDFTexture } from "../../Misc/brdfTextureTools";
 import { type Nullable } from "../../types";
 import { type Scene } from "../../scene";
 import { type Color4, Color3 } from "../../Maths/math.color";
@@ -1896,7 +1896,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
             return this._renderTargets;
         };
 
-        this._environmentBRDFTexture = GetEnvironmentBRDFTexture(this.getScene());
+        this._environmentBRDFTexture = GetOpenPBREnvironmentBRDFTexture(this.getScene());
         this._environmentFuzzBRDFTexture = GetEnvironmentFuzzBRDFTexture(this.getScene());
         this.prePassConfiguration = new PrePassConfiguration();
 
@@ -2730,7 +2730,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
     public override dispose(forceDisposeEffect?: boolean, forceDisposeTextures?: boolean): void {
         this._breakShaderLoadedCheck = true;
         if (forceDisposeTextures) {
-            if (this._environmentBRDFTexture && this.getScene().environmentBRDFTexture !== this._environmentBRDFTexture) {
+            if (this._environmentBRDFTexture && (this.getScene() as any).openPBREnvironmentBRDFTexture !== this._environmentBRDFTexture) {
                 this._environmentBRDFTexture.dispose();
             }
             if (this._environmentFuzzBRDFTexture && this.getScene().environmentFuzzBRDFTexture !== this._environmentFuzzBRDFTexture) {
