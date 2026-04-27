@@ -45,9 +45,15 @@ interface VisualizationTest {
     renderCount?: number;
     performanceTest?: boolean;
     excludeFromPerformance?: boolean;
+    dependsOn?: string[];
 }
 
 const allTests: VisualizationTest[] = configData.tests;
+
+// AFFECTED_TAGS filtering: when set, only run tests whose dependsOn overlaps.
+// If not set or "ALL", run everything eligible. If "NONE", skip all tests.
+const affectedTagsEnv = process.env.AFFECTED_TAGS;
+const affectedTagSet = affectedTagsEnv && affectedTagsEnv !== "ALL" && affectedTagsEnv !== "NONE" ? new Set(affectedTagsEnv.split(",")) : null;
 
 // Only playground-based tests can be run through evaluatePrepareScene reliably.
 // sceneFolder/scriptToRun tests also work through evaluatePrepareScene.
@@ -57,8 +63,21 @@ const runnableTests = allTests.filter((t) => {
     if (t.excludeFromPerformance) return false;
     const hasScene = t.playgroundId || t.sceneFolder || t.scriptToRun;
     if (!hasScene) return false;
-    return runAll || t.performanceTest === true;
+    if (!(runAll || t.performanceTest === true)) return false;
+    // Tag-based filtering (mirrors visualization test filtering)
+    if (affectedTagsEnv === "NONE") return false;
+    if (affectedTagSet) {
+        // Tests without dependsOn always run (conservative default)
+        if (t.dependsOn && t.dependsOn.length > 0) {
+            return t.dependsOn.some((tag) => affectedTagSet.has(tag));
+        }
+    }
+    return true;
 });
+
+if (affectedTagSet) {
+    console.log(`[PERF] AFFECTED_TAGS filtering: ${allTests.length} → ${runnableTests.length} perf tests (tags: ${affectedTagsEnv})`);
+}
 
 const engines = ["webgl2", "webgpu"] as const;
 

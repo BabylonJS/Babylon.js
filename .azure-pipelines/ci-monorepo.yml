@@ -102,7 +102,14 @@ jobs:
             continueOnError: true
 
           - bash: |
-                TAGS=$(node scripts/compute-affected-vis-tags.mjs)
+                # For scheduled/build-completion runs, run ALL visualization tests.
+                # For PR/push runs, compute affected tags from the diff.
+                if [ "$(Build.Reason)" = "Schedule" ] || [ "$(Build.Reason)" = "BuildCompletion" ]; then
+                    TAGS="ALL"
+                    echo "Scheduled/publish run — running ALL visualization tests"
+                else
+                    TAGS=$(node scripts/compute-affected-vis-tags.mjs)
+                fi
                 echo "Affected vis-test tags: $TAGS"
                 echo "##vso[task.setvariable variable=AFFECTED_TAGS;isOutput=true]$TAGS"
             name: ComputeVisTags
@@ -582,7 +589,6 @@ jobs:
                 BSTACK_TEST_TYPE: "webgl2"
                 BSTACK_BUILD_NAME: "Visualization Tests - WebGL2"
                 TIMEOUT: "27500"
-                BSTACK_SESSIONS_REQUIRED: "2"
                 BROWSERSTACK_USERNAME: $(BROWSERSTACK_USERNAME)
                 BROWSERSTACK_ACCESS_KEY: $(BROWSERSTACK_ACCESS_KEY)
                 AFFECTED_TAGS: $(AFFECTED_TAGS)
@@ -663,7 +669,6 @@ jobs:
                 BSTACK_TEST_TYPE: "webgpu"
                 BSTACK_BUILD_NAME: "Visualization Tests - WebGPU"
                 TIMEOUT: "27500"
-                BSTACK_SESSIONS_REQUIRED: "2"
                 BROWSERSTACK_USERNAME: $(BROWSERSTACK_USERNAME)
                 BROWSERSTACK_ACCESS_KEY: $(BROWSERSTACK_ACCESS_KEY)
                 AFFECTED_TAGS: $(AFFECTED_TAGS)
@@ -783,6 +788,8 @@ jobs:
       displayName: "Performance tests"
       dependsOn: Build
       continueOnError: true
+      variables:
+          AFFECTED_TAGS: $[ dependencies.Build.outputs['ComputeVisTags.AFFECTED_TAGS'] ]
       steps:
           - checkout: self
             clean: true
@@ -814,10 +821,10 @@ jobs:
                 CDN_VERSION: "latest"
                 CIWORKERS: "$(CIWORKERS)"
                 TIMEOUT: "300000"
-                BSTACK_SESSIONS_REQUIRED: "2"
                 PERF_COMMENT_FILE: "$(Build.ArtifactStagingDirectory)/perf-comment.md"
                 BROWSERSTACK_USERNAME: $(BROWSERSTACK_USERNAME)
                 BROWSERSTACK_ACCESS_KEY: $(BROWSERSTACK_ACCESS_KEY)
+                AFFECTED_TAGS: $(AFFECTED_TAGS)
 
           - bash: |
                 if [ -f "$(Build.ArtifactStagingDirectory)/perf-comment.md" ]; then

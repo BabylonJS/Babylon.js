@@ -3,8 +3,8 @@
 # browserstack-wait.sh — Wait for BrowserStack sessions, then run a command.
 #
 # Polls the BrowserStack Automate REST API to check how many parallel sessions
-# are available. Tries to grab BSTACK_SESSIONS_REQUIRED (default 2) first;
-# if only fewer are available (but at least 1), starts with what's available.
+# are available. Tries to grab BSTACK_SESSIONS_REQUIRED first; if only fewer
+# are available (but at least 1), starts with what's available.
 # Exports CIWORKERS so the Playwright config adjusts its worker count to
 # match available sessions.
 #
@@ -12,7 +12,8 @@
 # (race condition), waits and retries.
 #
 # Environment variables:
-#   BSTACK_SESSIONS_REQUIRED  — Preferred session count (default: 2)
+#   BSTACK_SESSIONS_REQUIRED  — Preferred session count (default: 1)
+#   BSTACK_MAX_SESSIONS       — Max sessions on the plan; caps REQUIRED (default: 5)
 #   BSTACK_SESSIONS_MIN       — Minimum acceptable sessions (default: 1)
 #   BROWSERSTACK_USERNAME     — BrowserStack username (required)
 #   BROWSERSTACK_ACCESS_KEY   — BrowserStack access key (required)
@@ -21,12 +22,17 @@
 #   BSTACK_MAX_RETRIES        — Retries on QUEUE_SIZE_EXCEEDED (default: 3)
 #
 # Usage:
-#   BSTACK_SESSIONS_REQUIRED=2 .azure-pipelines/browserstack-wait.sh \
+#   BSTACK_SESSIONS_REQUIRED=3 .azure-pipelines/browserstack-wait.sh \
 #       npx playwright test --config ...
 # ---------------------------------------------------------------------------
 set -uo pipefail
 
-PREFERRED="${BSTACK_SESSIONS_REQUIRED:-2}"
+MAX_SESSIONS="${BSTACK_MAX_SESSIONS:-5}"
+PREFERRED="${BSTACK_SESSIONS_REQUIRED:-1}"
+# Cap preferred at max available on the plan
+if [ "$PREFERRED" -gt "$MAX_SESSIONS" ]; then
+    PREFERRED="$MAX_SESSIONS"
+fi
 MINIMUM="${BSTACK_SESSIONS_MIN:-1}"
 WAIT_TIMEOUT="${BSTACK_WAIT_TIMEOUT:-900}"
 INTERVAL="${BSTACK_POLL_INTERVAL:-30}"
