@@ -124,7 +124,9 @@ export class IblCdfGeneratorSceneComponent implements ISceneComponent {
      */
     public isReady(): boolean {
         const generator = this.scene._iblCdfGenerator;
-        if (!generator) {
+        // If there's no generator, or no environment texture for it to consume,
+        // there's nothing to wait for - report ready so Scene.isReady() doesn't stall.
+        if (!generator || !this.scene.environmentTexture) {
             return true;
         }
         return !!generator.isReady();
