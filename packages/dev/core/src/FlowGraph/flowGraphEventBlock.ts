@@ -14,7 +14,11 @@ export abstract class FlowGraphEventBlock extends FlowGraphAsyncExecutionBlock {
      */
     public initPriority: number = 0;
 
-    protected constructor(config?: IFlowGraphBlockConfiguration) {
+    /**
+     * Creates a new event block.
+     * @param config optional configuration
+     */
+    constructor(config?: IFlowGraphBlockConfiguration) {
         super(config);
         // Event blocks are driven by scene events, not by an incoming signal.
         // Remove the inherited `in` port so it is not shown in the editor UI

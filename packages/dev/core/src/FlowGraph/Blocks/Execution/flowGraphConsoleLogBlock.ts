@@ -111,7 +111,9 @@ export class FlowGraphConsoleLogBlock extends FlowGraphExecutionBlockWithOutSign
                     value = this.getDataInput(match)?.getValue(context);
                 }
                 if (value !== undefined) {
-                    template = template.replace(new RegExp(`\\{${match}\\}`, "g"), this._serializeValue(value));
+                    // Escape regex metacharacters in the placeholder name before building the pattern.
+                    const escapedMatch = match.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+                    template = template.replace(new RegExp(`\\{${escapedMatch}\\}`, "g"), this._serializeValue(value));
                 }
             }
             return template;

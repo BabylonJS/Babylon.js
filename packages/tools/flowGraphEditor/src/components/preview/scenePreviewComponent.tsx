@@ -82,7 +82,7 @@ export class ScenePreviewComponent extends React.Component<IScenePreviewComponen
 
         // Listen for scene-file drops forwarded from the root editor (editor-wide drag-and-drop)
         this._onDropEventObserver = this.props.globalState.onDropEventReceivedObservable.add((e) => {
-            this._handleDrop(e as unknown as React.DragEvent);
+            this._handleDrop(e);
         });
 
         // Create a default scene so the editor is usable without a snippet
@@ -457,12 +457,12 @@ export class ScenePreviewComponent extends React.Component<IScenePreviewComponen
         }
     }
 
-    private _handleDragOver = (e: React.DragEvent) => {
+    private _handleDragOver = (e: DragEvent | React.DragEvent) => {
         e.preventDefault();
         e.stopPropagation();
     };
 
-    private _handleDrop = (e: React.DragEvent) => {
+    private _handleDrop = (e: DragEvent | React.DragEvent) => {
         e.preventDefault();
         e.stopPropagation();
 
@@ -649,7 +649,7 @@ export class ScenePreviewComponent extends React.Component<IScenePreviewComponen
                         </div>
                     )}
                 </div>
-                <div className="preview-canvas-container" onDragOver={this._handleDragOver} onDrop={this._handleDrop}>
+                <div className="preview-canvas-container" onDragOver={this._handleDragOver as React.DragEventHandler} onDrop={this._handleDrop as React.DragEventHandler}>
                     <canvas ref={this._canvasRef} className="preview-canvas" />
                 </div>
                 {ctx && <div className="context-summary">{this._renderCategorySummary(ctx)}</div>}

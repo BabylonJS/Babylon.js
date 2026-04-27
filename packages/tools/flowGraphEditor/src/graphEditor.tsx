@@ -1225,17 +1225,15 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                     }}
                     onDragOver={(evt) => {
                         // Allow dropping 3D scene files anywhere on the editor.
-                        // During dragover, only DataTransferItem.kind/type are available (not the file name),
-                        // so accept any file drop and let the drop handler filter by extension.
-                        const items = evt.dataTransfer?.items;
-                        if (items && items.length > 0) {
-                            for (let i = 0; i < items.length; i++) {
-                                if (items[i].kind === "file") {
-                                    evt.preventDefault();
-                                    evt.stopPropagation();
-                                    return;
-                                }
-                            }
+                        // Check both DataTransferItem.kind (modern) and dataTransfer.types (legacy/Firefox)
+                        // to ensure preventDefault is called even when items list is unavailable.
+                        const dt = evt.dataTransfer;
+                        const hasFile =
+                            (dt?.items && Array.from(dt.items).some((item) => item.kind === "file")) ||
+                            (dt?.types && (dt.types.includes("Files") || dt.types.includes("application/x-moz-file")));
+                        if (hasFile) {
+                            evt.preventDefault();
+                            evt.stopPropagation();
                         }
                     }}
                     onDrop={(evt) => {
@@ -1243,12 +1241,13 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                         if (!files || files.length === 0) {
                             return;
                         }
+                        // Always prevent default when files are dropped to avoid browser navigation.
+                        evt.preventDefault();
+                        evt.stopPropagation();
                         const supportedExtensions = [".glb", ".gltf", ".babylon"];
                         for (let i = 0; i < files.length; i++) {
                             const name = files[i].name.toLowerCase();
                             if (supportedExtensions.some((ext) => name.endsWith(ext))) {
-                                evt.preventDefault();
-                                evt.stopPropagation();
                                 this.props.globalState.onDropEventReceivedObservable.notifyObservers(evt.nativeEvent);
                                 return;
                             }
