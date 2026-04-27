@@ -137,10 +137,13 @@ export type WorkerLoadedMessagePayload = {
 /** Payload for the "dispose" message type */
 export type DisposeMessagePayload = {};
 
+/** Payload for the "firstRender" message type */
+export type FirstRenderMessagePayload = {};
+
 /**
  * Valid message types that can be sent between the main thread and the worker.
  */
-export type MessageType = "animationUrl" | "animationSize" | "startAnimation" | "containerResize" | "preWarm" | "workerLoaded" | "dispose";
+export type MessageType = "animationUrl" | "animationSize" | "startAnimation" | "containerResize" | "preWarm" | "workerLoaded" | "firstRender" | "dispose";
 
 /**
  * Valid payload types that can be sent between the main thread and the worker.
@@ -152,4 +155,5 @@ export type MessagePayload =
     | ContainerResizeMessagePayload
     | PreWarmMessagePayload
     | WorkerLoadedMessagePayload
+    | FirstRenderMessagePayload
     | DisposeMessagePayload;

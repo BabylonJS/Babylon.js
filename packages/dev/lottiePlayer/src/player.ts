@@ -274,6 +274,10 @@ export class Player {
                 this._preWarmPromise = null;
                 break;
             }
+            case "firstRender": {
+                this._input?.onFirstRender?.();
+                break;
+            }
         }
     }
 

@@ -37,7 +37,7 @@ export const GLTFLoaderOptionsTool: FunctionComponent<{
                 <>
                     <BoundProperty
                         component={SwitchPropertyLine}
-                        label="Always compute bounding box"
+                        label="Always Compute Bounding Box"
                         target={loaderOptions}
                         propertyKey="alwaysComputeBoundingBox"
                         nullable
@@ -45,7 +45,7 @@ export const GLTFLoaderOptionsTool: FunctionComponent<{
                     />
                     <BoundProperty
                         component={SwitchPropertyLine}
-                        label="Always compute skeleton root node"
+                        label="Always Compute Skeleton Root Node"
                         target={loaderOptions}
                         propertyKey="alwaysComputeSkeletonRootNode"
                         nullable
@@ -53,7 +53,7 @@ export const GLTFLoaderOptionsTool: FunctionComponent<{
                     />
                     <BoundProperty
                         component={NumberDropdownPropertyLine}
-                        label="Animation start mode"
+                        label="Animation Start Mode"
                         options={AnimationStartModeOptions}
                         target={loaderOptions}
                         propertyKey="animationStartMode"
@@ -62,7 +62,7 @@ export const GLTFLoaderOptionsTool: FunctionComponent<{
                     />
                     <BoundProperty
                         component={SwitchPropertyLine}
-                        label="Capture performance counters"
+                        label="Capture Performance Counters"
                         target={loaderOptions}
                         propertyKey="capturePerformanceCounters"
                         nullable
@@ -70,7 +70,7 @@ export const GLTFLoaderOptionsTool: FunctionComponent<{
                     />
                     <BoundProperty
                         component={SwitchPropertyLine}
-                        label="Compile materials"
+                        label="Compile Materials"
                         target={loaderOptions}
                         propertyKey="compileMaterials"
                         nullable
@@ -78,7 +78,7 @@ export const GLTFLoaderOptionsTool: FunctionComponent<{
                     />
                     <BoundProperty
                         component={SwitchPropertyLine}
-                        label="Compile shadow generators"
+                        label="Compile Shadow Generators"
                         target={loaderOptions}
                         propertyKey="compileShadowGenerators"
                         nullable
@@ -86,7 +86,7 @@ export const GLTFLoaderOptionsTool: FunctionComponent<{
                     />
                     <BoundProperty
                         component={NumberDropdownPropertyLine}
-                        label="Coordinate system"
+                        label="Coordinate System"
                         options={CoordinateSystemModeOptions}
                         target={loaderOptions}
                         propertyKey="coordinateSystemMode"
@@ -95,7 +95,7 @@ export const GLTFLoaderOptionsTool: FunctionComponent<{
                     />
                     <BoundProperty
                         component={SwitchPropertyLine}
-                        label="Create instances"
+                        label="Create Instances"
                         target={loaderOptions}
                         propertyKey="createInstances"
                         nullable
@@ -103,7 +103,15 @@ export const GLTFLoaderOptionsTool: FunctionComponent<{
                     />
                     <BoundProperty
                         component={SwitchPropertyLine}
-                        label="Enable logging"
+                        label="Don't Use Transmission Helper"
+                        target={loaderOptions}
+                        propertyKey="dontUseTransmissionHelper"
+                        nullable
+                        defaultValue={LoaderOptionDefaults.dontUseTransmissionHelper}
+                    />
+                    <BoundProperty
+                        component={SwitchPropertyLine}
+                        label="Enable Logging"
                         target={loaderOptions}
                         propertyKey="loggingEnabled"
                         nullable
@@ -111,11 +119,51 @@ export const GLTFLoaderOptionsTool: FunctionComponent<{
                     />
                     <BoundProperty
                         component={SwitchPropertyLine}
-                        label="Load all materials"
+                        label="Load All Materials"
                         target={loaderOptions}
                         propertyKey="loadAllMaterials"
                         nullable
                         defaultValue={LoaderOptionDefaults.loadAllMaterials}
+                    />
+                    <BoundProperty
+                        component={SwitchPropertyLine}
+                        label="Load Morph Targets"
+                        target={loaderOptions}
+                        propertyKey="loadMorphTargets"
+                        nullable
+                        defaultValue={LoaderOptionDefaults.loadMorphTargets}
+                    />
+                    <BoundProperty
+                        component={SwitchPropertyLine}
+                        label="Load Node Animations"
+                        target={loaderOptions}
+                        propertyKey="loadNodeAnimations"
+                        nullable
+                        defaultValue={LoaderOptionDefaults.loadNodeAnimations}
+                    />
+                    <BoundProperty
+                        component={SwitchPropertyLine}
+                        label="Load Only Materials"
+                        target={loaderOptions}
+                        propertyKey="loadOnlyMaterials"
+                        nullable
+                        defaultValue={LoaderOptionDefaults.loadOnlyMaterials}
+                    />
+                    <BoundProperty
+                        component={SwitchPropertyLine}
+                        label="Load Skins"
+                        target={loaderOptions}
+                        propertyKey="loadSkins"
+                        nullable
+                        defaultValue={LoaderOptionDefaults.loadSkins}
+                    />
+                    <BoundProperty
+                        component={SwitchPropertyLine}
+                        label="Skip Materials"
+                        target={loaderOptions}
+                        propertyKey="skipMaterials"
+                        nullable
+                        defaultValue={LoaderOptionDefaults.skipMaterials}
                     />
                     <BoundProperty
                         component={SyncedSliderPropertyLine}
@@ -130,7 +178,7 @@ export const GLTFLoaderOptionsTool: FunctionComponent<{
                     />
                     <BoundProperty
                         component={SwitchPropertyLine}
-                        label="Transparency as coverage"
+                        label="Transparency As Coverage"
                         target={loaderOptions}
                         propertyKey="transparencyAsCoverage"
                         nullable
@@ -138,7 +186,7 @@ export const GLTFLoaderOptionsTool: FunctionComponent<{
                     />
                     <BoundProperty
                         component={SwitchPropertyLine}
-                        label="Use clip plane"
+                        label="Use Clip Plane"
                         target={loaderOptions}
                         propertyKey="useClipPlane"
                         nullable
@@ -146,7 +194,31 @@ export const GLTFLoaderOptionsTool: FunctionComponent<{
                     />
                     <BoundProperty
                         component={SwitchPropertyLine}
-                        label="Use sRGB buffers"
+                        label="Use glTF Texture Names"
+                        target={loaderOptions}
+                        propertyKey="useGltfTextureNames"
+                        nullable
+                        defaultValue={LoaderOptionDefaults.useGltfTextureNames}
+                    />
+                    <BoundProperty
+                        component={SwitchPropertyLine}
+                        label="Use OpenPBR"
+                        target={loaderOptions}
+                        propertyKey="useOpenPBR"
+                        nullable
+                        defaultValue={LoaderOptionDefaults.useOpenPBR}
+                    />
+                    <BoundProperty
+                        component={SwitchPropertyLine}
+                        label="Use Range Requests"
+                        target={loaderOptions}
+                        propertyKey="useRangeRequests"
+                        nullable
+                        defaultValue={LoaderOptionDefaults.useRangeRequests}
+                    />
+                    <BoundProperty
+                        component={SwitchPropertyLine}
+                        label="Use sRGB Buffers"
                         target={loaderOptions}
                         propertyKey="useSRGBBuffers"
                         nullable

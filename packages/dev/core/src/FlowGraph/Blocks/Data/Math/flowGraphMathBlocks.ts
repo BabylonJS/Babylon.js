@@ -316,6 +316,29 @@ export class FlowGraphRandomBlock extends FlowGraphConstantOperationBlock<FlowGr
         const max = this.max.getValue(context);
         return this._getRandomValue() * (max - min) + min;
     }
+
+    /**
+     * Override to use per-execution caching that generates a fresh value for each
+     * new signal execution, while returning the same value when read multiple times
+     * within the same execution (required by the KHR_Interactivity spec).
+     * @param context the graph context
+     */
+    public override _updateOutputs(context: FlowGraphContext) {
+        const cachedExecId = context._getExecutionVariable(this, "_randomExecId", -1);
+        if (cachedExecId === context.executionId) {
+            // Same execution — return the cached random value
+            return;
+        }
+        // New execution — generate a fresh random value
+        const calculatedValue = this._doOperation(context);
+        if (calculatedValue === undefined || calculatedValue === null) {
+            this.isValid.setValue(false, context);
+            return;
+        }
+        context._setExecutionVariable(this, "_randomExecId", context.executionId);
+        this.value.setValue(calculatedValue, context);
+        this.isValid.setValue(true, context);
+    }
 }
 RegisterClass(FlowGraphBlockNames.Random, FlowGraphRandomBlock);
 
@@ -719,14 +742,17 @@ export class FlowGraphEqualityBlock extends FlowGraphBinaryOperationBlock<FlowGr
     private _polymorphicEq(a: FlowGraphMathOperationType, b: FlowGraphMathOperationType) {
         const aClassName = _GetClassNameOf(a);
         const bClassName = _GetClassNameOf(b);
+        if (_AreSameVectorOrQuaternionClass(aClassName, bClassName) || _AreSameMatrixClass(aClassName, bClassName) || _AreSameIntegerClass(aClassName, bClassName)) {
+            return (a as Vector3).equals(b as Vector3);
+        }
+        // Handle mixed number/FlowGraphInteger comparison
+        if (isNumeric(a) && isNumeric(b)) {
+            return getNumericValue(a as FlowGraphNumber) === getNumericValue(b as FlowGraphNumber);
+        }
         if (typeof a !== typeof b) {
             return false;
         }
-        if (_AreSameVectorOrQuaternionClass(aClassName, bClassName) || _AreSameMatrixClass(aClassName, bClassName) || _AreSameIntegerClass(aClassName, bClassName)) {
-            return (a as Vector3).equals(b as Vector3);
-        } else {
-            return a === b;
-        }
+        return a === b;
     }
 }
 RegisterClass(FlowGraphBlockNames.Equality, FlowGraphEqualityBlock);

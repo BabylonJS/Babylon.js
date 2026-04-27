@@ -40,6 +40,6 @@
         "rollup": "^4.59.0",
         "rollup-plugin-minify-template-literals": "^1.1.7",
         "rollup-plugin-visualizer": "^5.12.0",
-        "vite": "^6.2.1"
+        "vite": "6.4.2"
     }
 }

@@ -101,3 +101,7 @@ Please see the [contribution guidelines](https://github.com/BabylonJS/Babylon.js
 ## Features
 
 To get a complete list of supported features, please visit our [website](https://www.babylonjs.com/).
+
+## Inspector
+
+The [`@babylonjs/inspector`](https://www.npmjs.com/package/@babylonjs/inspector) package provides a diagnostic tool for understanding scene state and rendering. It includes a visual UI for humans and a CLI for AI agents. See the [Inspector documentation](https://doc.babylonjs.com/toolsAndResources/inspectorv2/) for more details.

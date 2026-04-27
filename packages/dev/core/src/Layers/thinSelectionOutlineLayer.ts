@@ -93,6 +93,7 @@ export class ThinSelectionOutlineLayer extends ThinEffectLayer {
     public readonly _meshUniqueIdToSelectionId: number[] = [];
     /** @internal */
     public _selection: Nullable<AbstractMesh[]> = [];
+    private _instancedBufferSources: Set<Mesh> = new Set();
     private _nextSelectionId = 1;
 
     /**
@@ -672,63 +673,78 @@ export class ThinSelectionOutlineLayer extends ThinEffectLayer {
         }
 
         for (let index = 0; index < this._selection.length; ++index) {
-            const mesh = this._selection[index] as Mesh;
-            if (mesh._userInstancedBuffersStorage) {
-                const kind = ThinSelectionOutlineLayer.InstanceSelectionIdAttributeName;
-
-                // Dispose per-pass VBOs for ALL render passes (WebGPU).
-                // _processInstancedBuffers creates per-pass VBOs for every render pass
-                // that renders this mesh (main scene, depth renderer, etc.), not just
-                // this layer's own passes. We must clean them all up to avoid using
-                // a destroyed GPU buffer on the next submit.
-                if (mesh._userInstancedBuffersStorage.renderPasses) {
-                    for (const passId in mesh._userInstancedBuffersStorage.renderPasses) {
-                        const renderPassId = Number(passId);
-                        const passVBOs = mesh._userInstancedBuffersStorage.renderPasses[renderPassId];
-                        if (passVBOs?.[kind]) {
-                            passVBOs[kind]!.dispose();
-                            delete passVBOs[kind];
-                        }
-                    }
-                }
-
-                mesh._userInstancedBuffersStorage.vertexBuffers[kind]?.dispose();
-
-                const vao = mesh._userInstancedBuffersStorage.vertexArrayObjects?.[kind];
-                if (vao) {
-                    // invalidate VAO is very important to keep sync between VAO and vertex buffers
-                    (this._engine as ThinEngine).releaseVertexArrayObject(vao);
-                    delete mesh._userInstancedBuffersStorage.vertexArrayObjects![kind];
-                }
-
-                delete mesh._userInstancedBuffersStorage.data[kind];
-                delete mesh._userInstancedBuffersStorage.vertexBuffers[kind];
-                delete mesh._userInstancedBuffersStorage.strides[kind];
-                delete mesh._userInstancedBuffersStorage.sizes[kind];
-
-                if (Object.keys(mesh._userInstancedBuffersStorage.vertexBuffers).length === 0) {
-                    mesh._userInstancedBuffersStorage = undefined!;
-                }
-            }
-            if (mesh.instancedBuffers?.[ThinSelectionOutlineLayer.InstanceSelectionIdAttributeName] !== undefined) {
-                delete mesh.instancedBuffers[ThinSelectionOutlineLayer.InstanceSelectionIdAttributeName];
-            }
-
-            // In WebGPU non-compat mode, cached render bundles (fastBundle) bake
-            // vertex-buffer GPU handles at record time. Because the new VBO has
-            // the same format (and thus the same hashCode), the pipeline cache
-            // won't detect the change and would replay the stale bundle.
-            // Resetting the draw cache forces new bundles to be recorded.
-            if (this._engine.isWebGPU && !this._engine.compatibilityMode) {
-                mesh.resetDrawCache();
-            }
+            this._cleanUpInstanceSelectionId(this._selection[index] as Mesh);
         }
+
+        // addSelection registers instanceSelectionId on the source mesh
+        // (via sourceMesh.registerInstancedBuffer), but _selection contains
+        // the instance, not the source. Clean up source meshes separately.
+        this._instancedBufferSources.forEach((sourceMesh) => this._cleanUpInstanceSelectionId(sourceMesh));
+        this._instancedBufferSources.clear();
+
         this._selection.length = 0;
         this._meshUniqueIdToSelectionId.length = 0;
 
         this._nextSelectionId = 1;
 
         this._shouldRender = false;
+    }
+
+    /**
+     * Remove instanceSelectionId instanced buffer registration from a mesh,
+     * including GPU resources (per-pass VBOs, vertex buffers, VAOs).
+     * @param mesh - The mesh to clean up
+     */
+    private _cleanUpInstanceSelectionId(mesh: Mesh): void {
+        if (mesh._userInstancedBuffersStorage) {
+            const kind = ThinSelectionOutlineLayer.InstanceSelectionIdAttributeName;
+
+            // Dispose per-pass VBOs for ALL render passes (WebGPU).
+            // _processInstancedBuffers creates per-pass VBOs for every render pass
+            // that renders this mesh (main scene, depth renderer, etc.), not just
+            // this layer's own passes. We must clean them all up to avoid using
+            // a destroyed GPU buffer on the next submit.
+            if (mesh._userInstancedBuffersStorage.renderPasses) {
+                for (const passId in mesh._userInstancedBuffersStorage.renderPasses) {
+                    const renderPassId = Number(passId);
+                    const passVBOs = mesh._userInstancedBuffersStorage.renderPasses[renderPassId];
+                    if (passVBOs?.[kind]) {
+                        passVBOs[kind]!.dispose();
+                        delete passVBOs[kind];
+                    }
+                }
+            }
+
+            mesh._userInstancedBuffersStorage.vertexBuffers[kind]?.dispose();
+
+            const vao = mesh._userInstancedBuffersStorage.vertexArrayObjects?.[kind];
+            if (vao) {
+                // invalidate VAO is very important to keep sync between VAO and vertex buffers
+                (this._engine as ThinEngine).releaseVertexArrayObject(vao);
+                delete mesh._userInstancedBuffersStorage.vertexArrayObjects![kind];
+            }
+
+            delete mesh._userInstancedBuffersStorage.data[kind];
+            delete mesh._userInstancedBuffersStorage.vertexBuffers[kind];
+            delete mesh._userInstancedBuffersStorage.strides[kind];
+            delete mesh._userInstancedBuffersStorage.sizes[kind];
+
+            if (Object.keys(mesh._userInstancedBuffersStorage.vertexBuffers).length === 0) {
+                mesh._userInstancedBuffersStorage = undefined!;
+            }
+        }
+        if (mesh.instancedBuffers?.[ThinSelectionOutlineLayer.InstanceSelectionIdAttributeName] !== undefined) {
+            delete mesh.instancedBuffers[ThinSelectionOutlineLayer.InstanceSelectionIdAttributeName];
+        }
+
+        // In WebGPU non-compat mode, cached render bundles (fastBundle) bake
+        // vertex-buffer GPU handles at record time. Because the new VBO has
+        // the same format (and thus the same hashCode), the pipeline cache
+        // won't detect the change and would replay the stale bundle.
+        // Resetting the draw cache forces new bundles to be recorded.
+        if (this._engine.isWebGPU && !this._engine.compatibilityMode) {
+            mesh.resetDrawCache();
+        }
     }
 
     /**
@@ -760,6 +776,7 @@ export class ThinSelectionOutlineLayer extends ThinEffectLayer {
                 if (sourceMesh.instancedBuffers?.[ThinSelectionOutlineLayer.InstanceSelectionIdAttributeName] === undefined) {
                     sourceMesh.registerInstancedBuffer(ThinSelectionOutlineLayer.InstanceSelectionIdAttributeName, 1);
                 }
+                this._instancedBufferSources.add(sourceMesh);
 
                 mesh.instancedBuffers[ThinSelectionOutlineLayer.InstanceSelectionIdAttributeName] = nextId;
             } else if (mesh.hasThinInstances) {
@@ -798,6 +815,15 @@ export class ThinSelectionOutlineLayer extends ThinEffectLayer {
                 mesh.removeVerticesData(ThinSelectionOutlineLayer.InstanceSelectionIdAttributeName);
             } else if (mesh.hasThinInstances) {
                 (mesh as Mesh).thinInstanceSetBuffer(ThinSelectionOutlineLayer.InstanceSelectionIdAttributeName, null);
+            }
+
+            if (mesh.isAnInstance) {
+                const sourceMesh = (mesh as unknown as InstancedMesh).sourceMesh;
+                // Only remove the source from tracking if no other selected
+                // instance shares it, to avoid leaking its GPU resources.
+                if (sourceMesh && !selection.some((m) => m !== mesh && m.isAnInstance && (m as unknown as InstancedMesh).sourceMesh === sourceMesh)) {
+                    this._instancedBufferSources.delete(sourceMesh);
+                }
             }
 
             if (selection.length === 0) {

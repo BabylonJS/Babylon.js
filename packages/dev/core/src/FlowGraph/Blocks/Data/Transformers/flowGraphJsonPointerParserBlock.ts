@@ -106,6 +106,10 @@ export class FlowGraphJsonPointerParserBlock<P extends any, O extends FlowGraphA
         if (type.startsWith("Color")) {
             value = ToColor(value as Vector4, type) as unknown as P;
         }
+        // Unwrap FlowGraphInteger to plain number for numeric setters
+        if (typeof (value as any)?.value === "number" && (value as any)?.getClassName?.() === "FlowGraphInteger") {
+            value = (value as any).value as unknown as P;
+        }
         accessorContainer.info.set?.(value, accessorContainer.object);
     }
 

@@ -119,6 +119,12 @@ export type ModularToolOptions = {
      * The extension feeds that provide optional extensions the user can install.
      */
     extensionFeeds?: readonly IExtensionFeed[];
+
+    /**
+     * An optional parent ServiceContainer. Dependencies not found in the tool's own container
+     * will be resolved from this parent.
+     */
+    parentContainer?: ServiceContainer;
 } & ShellServiceOptions;
 
 /**
@@ -127,7 +133,7 @@ export type ModularToolOptions = {
  * @returns A token that can be used to dispose of the tool.
  */
 export function MakeModularTool(options: ModularToolOptions): IDisposable {
-    const { namespace, containerElement, serviceDefinitions, themeMode, showThemeSelector = true, extensionFeeds = [] } = options;
+    const { namespace, containerElement, serviceDefinitions, themeMode, showThemeSelector = true, extensionFeeds = [], parentContainer } = options;
 
     // Create the settings store immediately as it will be exposed to services and through React context.
     const settingsStore = new SettingsStore(namespace);
@@ -160,7 +166,7 @@ export function MakeModularTool(options: ModularToolOptions): IDisposable {
         // This is the main async initialization.
         useEffect(() => {
             const initializeExtensionManagerAsync = async () => {
-                const serviceContainer = new ServiceContainer("ModularToolContainer");
+                const serviceContainer = new ServiceContainer("ModularToolContainer", parentContainer);
 
                 // Expose the settings store as a service so other services can read/write settings.
                 await serviceContainer.addServiceAsync<[ISettingsStore], []>({

@@ -126,6 +126,31 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
             const from = this.from.getValue(context) ?? 0;
             // not accepting 0
             const to = this.to.getValue(context) || animationGroupToUse.to;
+
+            // Validate duration for interpolation animations: non-finite or negative values trigger the error flow.
+            // Only validate when animation is provided (interpolation case), not for general animation/start
+            // where the AnimationGroup's default to value may legitimately be negative.
+            if (!isFinite(to) || !isFinite(from)) {
+                return this._reportError(context, "Invalid animation duration");
+            }
+            if (animation && to < 0) {
+                return this._reportError(context, "Invalid animation duration");
+            }
+
+            // Validate easing function: NaN bezier control points trigger the error flow
+            if (animation) {
+                const animationsArray = Array.isArray(animation) ? animation : [animation];
+                for (const anim of animationsArray) {
+                    const easing = anim.getEasingFunction?.();
+                    if (easing && "x1" in easing) {
+                        const bezier = easing as unknown as { x1: number; y1: number; x2: number; y2: number };
+                        if (isNaN(bezier.x1) || isNaN(bezier.y1) || isNaN(bezier.x2) || isNaN(bezier.y2)) {
+                            return this._reportError(context, "Invalid bezier curve control points");
+                        }
+                    }
+                }
+            }
+
             const loop = !isFinite(to) || this.loop.getValue(context);
             this.currentAnimationGroup.setValue(animationGroupToUse, context);
 

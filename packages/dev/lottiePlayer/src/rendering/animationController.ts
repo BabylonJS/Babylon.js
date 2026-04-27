@@ -47,11 +47,13 @@ export class AnimationController {
     private _lastFrameTime: number;
     private _deltaTime: number;
     private _loop: boolean;
+    private _hasRendered: boolean;
 
     private _accumulatedTime: number;
     private _framesToAdvance: number;
 
     private readonly _renderingManager: RenderingManager;
+    private readonly _onFirstRender?: () => void;
 
     /**
      * Gets the canvas used for rendering the animation.
@@ -86,6 +88,7 @@ export class AnimationController {
      * @param variables Map of variables to replace in the animation file.
      * @param configuration The partial configuration for the animation player. Will be finalized after engine creation.
      * @param mainThreadDevicePixelRatio The devicePixelRatio from the main thread (used in worker scenarios).
+     * @param onFirstRender Optional callback invoked after the first frame renders.
      */
     public constructor(
         canvas: HTMLCanvasElement | OffscreenCanvas,
@@ -94,7 +97,8 @@ export class AnimationController {
         atlasScale: number,
         variables: Map<string, string>,
         configuration: Partial<AnimationConfiguration>,
-        mainThreadDevicePixelRatio?: number
+        mainThreadDevicePixelRatio?: number,
+        onFirstRender?: () => void
     ) {
         this._isReady = false;
         this._canvas = canvas;
@@ -110,6 +114,8 @@ export class AnimationController {
         this._framesToAdvance = 0;
         this._frameDuration = 1000 / 30; // Default to 30 FPS
         this._firstRun = true;
+        this._hasRendered = false;
+        this._onFirstRender = onFirstRender;
 
         const supportDeviceLost = configuration.supportDeviceLost ?? true;
         this._engine = new ThinEngine(
@@ -336,15 +342,17 @@ export class AnimationController {
         }
 
         let stoppingAfterThisFrame = false;
-        if (this._currentFrame > this._animation.endFrame) {
-            if (this._loop) {
+        const effectiveEndFrame = this._configuration.stopAtFrame !== undefined ? Math.min(this._configuration.stopAtFrame, this._animation.endFrame) : this._animation.endFrame;
+
+        if (this._currentFrame > effectiveEndFrame) {
+            if (this._loop && this._configuration.stopAtFrame === undefined) {
                 this._currentFrame = (this._currentFrame % (this._animation.endFrame - this._animation.startFrame)) + this._animation.startFrame;
                 for (let i = 0; i < this._animation.nodes.length; i++) {
                     this._animation.nodes[i].reset();
                 }
             } else {
-                // When not looping, clamp to the last frame of the animation
-                this._currentFrame = this._animation.endFrame;
+                // When not looping, clamp to the effective end frame
+                this._currentFrame = effectiveEndFrame;
                 stoppingAfterThisFrame = true;
             }
         }
@@ -356,8 +364,17 @@ export class AnimationController {
         // Render all layers of the animation
         this._renderingManager.render(this._worldMatrix, this._projectionMatrix);
 
+        if (!this._hasRendered) {
+            this._hasRendered = true;
+            this._onFirstRender?.();
+        }
+
         if (stoppingAfterThisFrame) {
-            this._isPlaying = false;
+            if (this._configuration.stopAtFrame === undefined) {
+                this._isPlaying = false;
+            }
+            // When stopAtFrame is set, the render loop stays alive to prevent
+            // preserveDrawingBuffer:false from clearing the canvas.
         }
     }
 }

@@ -13,6 +13,7 @@ Standard Babylon.js visualization tests are driven by config entries rather than
 - Config file: `packages/tools/tests/test/visualization/config.json`
 - Reference images for all Playwright visualization projects: `packages/tools/tests/test/visualization/ReferenceImages/`
 - Helper scripts: `.github/scripts/visual-testing/read-snippet.js` and `.github/scripts/visual-testing/save-snippet.js`
+- Playground workflow (writing code, managing snippets, local servers): [playground-workflow.instructions.md](playground-workflow.instructions.md)
 
 Do not create new wrapper Playwright files for normal visualization tests. The existing wrappers such as `visualization.webgl2.test.ts` and `visualization.webgpu.test.ts` already load every entry from the config.
 
@@ -34,30 +35,11 @@ The main exceptions are non-standard test types that already have their own docu
 The full automated workflow for adding a playground-based visual test is:
 
 0. Optionally study existing tests or the engine code for context.
-1. Write the playground code as a file.
-2. Start the local servers.
-3. Save the playground to the snippet server via the helper script.
-4. Verify the snippet in the local playground.
-5. Add a `config.json` entry that points at the snippet.
-6. Generate reference images.
-7. Run the test to confirm it passes.
-8. Clean up temporary files and any servers you started.
-
-## Reading Existing Snippets
-
-Use `.github/scripts/visual-testing/read-snippet.js` to fetch code from an existing Playground snippet. This is useful when you want to study a reference test or reuse an existing scene setup.
-
-The snippet server uses a slash URL format such as `https://snippet.babylonjs.com/ABC123/5`. The `playgroundId` format used in config entries is hash-based, such as `#ABC123#5`. The helper script handles the conversion automatically.
-
-```bash
-# Print snippet code to stdout
-node .github/scripts/visual-testing/read-snippet.js "#ABC123#5"
-
-# Save snippet code to a file for easier reading
-node .github/scripts/visual-testing/read-snippet.js "#ABC123#5" --save existing_test.js
-```
-
-The script handles both V2 manifest snippets and legacy raw-code snippets, and extracts the entry file's JavaScript source.
+1. Write, save, and verify the playground snippet (see [playground-workflow.instructions.md](playground-workflow.instructions.md)).
+2. Add a `config.json` entry that points at the snippet.
+3. Generate reference images.
+4. Run the test to confirm it passes.
+5. Clean up temporary files and any servers you started.
 
 ## Adding a New Visual Test (Automated Workflow)
 
@@ -71,144 +53,11 @@ If the user points you to existing tests as reference, study those first:
 
 If the user does not point to existing tests, read the relevant Babylon.js engine or tool code to understand the API and behavior you need to exercise.
 
-### Step 1: Write the Playground code
+### Step 1: Write code, save snippet, optionally start servers, verify
 
-Write the visual test scene as a normal Babylon Playground `createScene` function and save it to a temporary file. For AI-authored tests, default to a temporary `.js` file unless the user asks for TypeScript or a nearby reference test is already written in TypeScript. The helper script also supports `.ts` input when you intentionally want a TypeScript snippet. Working in a file avoids painful string escaping and makes iteration easier.
+Follow the Playground workflow in [playground-workflow.instructions.md](playground-workflow.instructions.md). After completing those steps you will have a snippet ID (e.g. `#ABC123#0`) ready for the config entry.
 
-Do not seed `Math.random` manually in standard visualization snippets. The visualization harness already replaces `Math.random` with a deterministic seeded implementation before running the snippet.
-
-```javascript
-// Save as temp_pg_mytest.js
-const createScene = function () {
-    const scene = new BABYLON.Scene(engine);
-    const camera = new BABYLON.ArcRotateCamera("camera", -Math.PI / 2, Math.PI / 2.5, 3, new BABYLON.Vector3(0, 0, 0), scene);
-    camera.attachControl(canvas, true);
-    new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), scene);
-
-    // Feature-specific setup goes here.
-
-    return scene;
-};
-
-export default createScene;
-```
-
-### Step 2: Start local servers
-
-The visual test workflow needs a build plus two local servers:
-
-- Babylon CDN server on `localhost:1337`
-- Playground server on `localhost:1338`
-
-The safest option is to use the VS Code tasks already defined in `.vscode/tasks.json`, because they already use the correct working directory:
-
-- `CDN Serve and watch (Dev)`
-- `Playground Serve for core (Dev)`
-
-In multi-root workspaces, background terminals often start in the wrong folder, so VS Code tasks are more reliable than ad hoc background shells.
-
-#### Step 2a: Check whether the servers are already running
-
-In PowerShell:
-
-```powershell
-Test-NetConnection -ComputerName localhost -Port 1337 -WarningAction SilentlyContinue -ErrorAction SilentlyContinue | Select-Object TcpTestSucceeded
-Test-NetConnection -ComputerName localhost -Port 1338 -WarningAction SilentlyContinue -ErrorAction SilentlyContinue | Select-Object TcpTestSucceeded
-```
-
-If both ports are already up, skip to Step 3. If only `1337` is up, start only the Playground server. If neither is up, continue below.
-
-#### Step 2b: Start the CDN server
-
-Preferred approach:
-
-- Start the `.vscode` task `CDN Serve and watch (Dev)`.
-
-Manual fallback from the Babylon.js repo root:
-
-```bash
-npm run build:dev
-npx build-tools -c dw -wd -wa -sc
-npm run serve -w @tools/babylon-server
-```
-
-#### Step 2c: Wait for the CDN server to be ready
-
-Do not continue until `localhost:1337` accepts connections.
-
-```powershell
-Start-Sleep -Seconds 15
-Test-NetConnection -ComputerName localhost -Port 1337 -WarningAction SilentlyContinue -ErrorAction SilentlyContinue | Select-Object TcpTestSucceeded
-```
-
-Repeat the check until the port is ready.
-
-#### Step 2d: Start the Playground server
-
-Preferred approach:
-
-- Start the `.vscode` task `Playground Serve for core (Dev)`.
-
-Manual fallback from the Babylon.js repo root:
-
-```bash
-npm run serve -w @tools/playground
-```
-
-Start the Playground only after the CDN server is up.
-
-#### Step 2e: Wait for the Playground server to be ready
-
-```powershell
-Start-Sleep -Seconds 15
-Test-NetConnection -ComputerName localhost -Port 1338 -WarningAction SilentlyContinue -ErrorAction SilentlyContinue | Select-Object TcpTestSucceeded
-```
-
-The Playground is only needed for visual preview in Step 4. Snapshot generation and normal visual test runs only require the CDN server.
-
-The local Playground at `http://localhost:1338` uses the local engine build served from the CDN server, which is why it reflects local Babylon.js code changes immediately.
-
-### Step 3: Save the snippet via the helper script
-
-Use `.github/scripts/visual-testing/save-snippet.js` to post the temp playground file directly to the Babylon snippet server. This is usually more reliable than manually saving through the Playground UI. The helper infers the snippet language from the file extension: `.js` stays JavaScript, while `.ts` and `.tsx` are saved as TypeScript snippets.
-
-```bash
-node .github/scripts/visual-testing/save-snippet.js <code-file> "<Name>" "<Description>"
-```
-
-Example:
-
-```bash
-node .github/scripts/visual-testing/save-snippet.js temp_pg_mytest.js "My Test Name" "Description of test"
-```
-
-If you intentionally want a TypeScript snippet instead of the default JavaScript flow, save the file as `temp_pg_mytest.ts` and pass that path to `save-snippet.js`.
-
-Expected output:
-
-```text
-Saved: #ABC123#0
-```
-
-Use that value as the `playgroundId` in `config.json`.
-
-If saving the snippet fails because the snippet server is unavailable or blocked from the current environment, stop and ask the user for help. Do not switch a standard visualization test to `scriptToRun` or another local-only workaround unless the user explicitly asks for that.
-
-### Step 4: Verify in the local Playground
-
-Open the saved snippet in the local Playground:
-
-```text
-http://localhost:1338/#ABC123#0
-```
-
-Use your browser automation or manual browser workflow to confirm the scene renders as expected before creating baselines.
-
-Note that the Playground editor covers part of the canvas. That is fine for this preview step. The actual visual tests capture the render canvas directly, not the visible editor layout.
-
-If you need to revise the snippet, edit the temp file and run `save-snippet.js` again. The snippet server will create a new revision, such as `#ABC123#1`, and the `playgroundId` in `config.json` should be updated accordingly.
-
-### Step 5: Add a config entry
+### Step 2: Add a config entry
 
 Append the new test to `packages/tools/tests/test/visualization/config.json`:
 
@@ -226,7 +75,7 @@ See the config field reference and `renderCount` heuristics below when choosing 
 
 If the user has not specified a naming convention, align with nearby entries in `config.json`. The `title` is used by Playwright `-g` filters, so it should be descriptive and unique.
 
-### Step 6: Generate reference images
+### Step 3: Generate reference images
 
 Run these from the repo root while the CDN server is running:
 
@@ -253,7 +102,7 @@ npx playwright test --config playwright.config.ts --project=webgl2 --update-snap
 npx playwright test --config playwright.config.ts --project=webgpu --update-snapshots -g "GPU Particles - Basic Properties - Emit Rate|GPU Particles - Basic Properties - Emission"
 ```
 
-### Step 7: Run and verify
+### Step 4: Run and verify
 
 After the baselines exist, run the targeted tests without updating snapshots:
 
@@ -270,28 +119,24 @@ To run the full visualization suite locally instead of a targeted title:
 npm run test:playwright -w @tools/tests
 ```
 
-### Step 8: Clean up
+### Step 5: Clean up
 
-Remove the temporary Playground source file you created (for example `temp_pg_mytest.js` or `temp_pg_mytest.ts`), remove any temporary files generated by `playwright-cli` for local inspection (typically under `.playwright-cli/`), and stop any long-running servers you started specifically for the task.
-
-```bash
-rm temp_pg_mytest.js
-```
+Remove temporary files and stop servers per the cleanup section in [playground-workflow.instructions.md](playground-workflow.instructions.md). Also remove any temporary files generated by `playwright-cli` for local inspection (typically under `.playwright-cli/`).
 
 ## Config fields
 
-| Field | Required | Default | Description |
-| --- | --- | --- | --- |
-| `title` | Yes | - | Test name used by Playwright output and `--grep` |
-| `playgroundId` | Yes | - | Playground snippet id, such as `#ABC123#0` |
-| `referenceImage` | No | title-derived | Optional PNG filename in `ReferenceImages/`; when omitted, the harness falls back to `title` and Playwright may normalize some characters in the final filename |
-| `renderCount` | No | `1` | Frames to render before capture |
-| `errorRatio` | No | about `1.1` | Allowed pixel-diff percentage |
-| `excludedEngines` | No | `[]` | Engines to skip, such as `["webgl1"]` |
-| `replace` | No | - | Comma-separated replacement pairs for patching code |
-| `replaceUrl` | No | - | Comma-separated replacement pairs for patching URLs |
-| `excludeFromAutomaticTesting` | No | `false` | Exclude the test from the standard visualization harness entirely, including targeted `-g` runs |
-| `useLargeWorldRendering`, `useReverseDepthBuffer`, `useNonCompatibilityMode` | No | - | Per-test engine flags |
+| Field                                                                        | Required | Default       | Description                                                                                                                                                     |
+| ---------------------------------------------------------------------------- | -------- | ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `title`                                                                      | Yes      | -             | Test name used by Playwright output and `--grep`                                                                                                                |
+| `playgroundId`                                                               | Yes      | -             | Playground snippet id, such as `#ABC123#0`                                                                                                                      |
+| `referenceImage`                                                             | No       | title-derived | Optional PNG filename in `ReferenceImages/`; when omitted, the harness falls back to `title` and Playwright may normalize some characters in the final filename |
+| `renderCount`                                                                | No       | `1`           | Frames to render before capture                                                                                                                                 |
+| `errorRatio`                                                                 | No       | about `1.1`   | Allowed pixel-diff percentage                                                                                                                                   |
+| `excludedEngines`                                                            | No       | `[]`          | Engines to skip, such as `["webgl1"]`                                                                                                                           |
+| `replace`                                                                    | No       | -             | Comma-separated replacement pairs for patching code                                                                                                             |
+| `replaceUrl`                                                                 | No       | -             | Comma-separated replacement pairs for patching URLs                                                                                                             |
+| `excludeFromAutomaticTesting`                                                | No       | `false`       | Exclude the test from the standard visualization harness entirely, including targeted `-g` runs                                                                 |
+| `useLargeWorldRendering`, `useReverseDepthBuffer`, `useNonCompatibilityMode` | No       | -             | Per-test engine flags                                                                                                                                           |
 
 ## `renderCount` guidance
 
@@ -371,13 +216,8 @@ Use `readySelector` and `screenshotDelayMs` when the page needs explicit readine
 ## Checklist
 
 - Context gathered from existing snippets or source code
-- Existing reference snippet read with `.github/scripts/visual-testing/read-snippet.js` when applicable
-- Temporary Playground file written
-- CDN server started and ready on `localhost:1337`
-- Playground server started and ready on `localhost:1338` when preview is needed
-- Snippet saved with `.github/scripts/visual-testing/save-snippet.js`
+- Playground snippet created and verified per [playground-workflow.instructions.md](playground-workflow.instructions.md)
 - `config.json` entry uses `playgroundId` for standard visualization tests
-- Snippet previewed locally before baselines are generated
 - Config entry added or updated in `packages/tools/tests/test/visualization/config.json`
 - WebGL2 baseline generated when applicable
 - WebGPU baseline generated when applicable

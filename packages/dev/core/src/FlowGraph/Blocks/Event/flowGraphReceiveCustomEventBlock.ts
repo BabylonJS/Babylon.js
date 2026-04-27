@@ -47,7 +47,8 @@ export class FlowGraphReceiveCustomEventBlock extends FlowGraphEventBlock {
             const typeKey = typeof entry.type === "string" ? entry.type : entry.type?.typeName;
             const richType = typeof entry.type?.serialize === "function" ? entry.type : getRichTypeByFlowGraphType(typeKey);
             entry.type = richType;
-            this.registerDataOutput(key, richType);
+            // Pass default value from event data schema so outputs have the correct initial value
+            this.registerDataOutput(key, richType, (entry as any).value);
         }
     }
 

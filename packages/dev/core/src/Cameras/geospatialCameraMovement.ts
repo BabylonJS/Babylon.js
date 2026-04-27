@@ -100,23 +100,22 @@ export class GeospatialCameraMovement extends CameraMovement {
      */
     private _recalculateDragPlaneHitPoint(hitPointRadius: number, ray: Ray, localToEcefResult: Matrix): void {
         // Use the camera's geocentric normal to find the dragPlaneOriginPoint which lives at hitPointRadius along the camera's geocentric normal
-        this.calculateUpVectorFromPointToRef(this._cameraPosition, this._dragPlaneNormal);
-        this._dragPlaneNormal.scaleToRef(hitPointRadius, this._dragPlaneOriginPointEcef);
+        this._cameraPosition.scaleToRef(hitPointRadius / Math.max(0.00001, this._cameraPosition.length()), this._dragPlaneOriginPointEcef);
 
         // The dragPlaneOffsetVector will later be recalculated when drag occurs, and the delta between the offset vectors will be applied to localTranslation
         ComputeLocalBasisToRefs(
             this._dragPlaneOriginPointEcef,
             TmpVectors.Vector3[0],
             TmpVectors.Vector3[1],
-            TmpVectors.Vector3[2],
+            this._dragPlaneNormal,
             this._scene.useRightHandedSystem,
             this.calculateUpVectorFromPointToRef
         );
-        const localToEcef = Matrix.FromXYZAxesToRef(TmpVectors.Vector3[0], TmpVectors.Vector3[1], TmpVectors.Vector3[2], localToEcefResult);
+        const localToEcef = Matrix.FromXYZAxesToRef(TmpVectors.Vector3[0], TmpVectors.Vector3[1], this._dragPlaneNormal, localToEcefResult);
         localToEcef.setTranslationFromFloats(this._dragPlaneOriginPointEcef.x, this._dragPlaneOriginPointEcef.y, this._dragPlaneOriginPointEcef.z);
         const ecefToLocal = localToEcef.invertToRef(TmpVectors.Matrix[1]);
 
-        // Now create a plane at that point, perpendicular to the camera's geocentric normal
+        // Now create a plane at that point, perpendicular to _dragPlaneNormal.
         Plane.FromPositionAndNormalToRef(this._dragPlaneOriginPointEcef, this._dragPlaneNormal, this._dragPlane);
 
         // Lastly, find the _dragPlaneHitPoint where the ray intersects the _dragPlane.

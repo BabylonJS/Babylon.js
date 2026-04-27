@@ -17,13 +17,13 @@ export type BoundingBox = {
     height: number;
     /** Width of the bounding box */
     width: number;
-    /** X coordinate of the center of the bounding box */
+    /** X offset for translating shape coordinates into the atlas cell. Accounts for stroke padding. */
     centerX: number;
-    /** Y coordinate of the center of the bounding box */
+    /** Y offset for translating shape coordinates into the atlas cell. Accounts for stroke padding. */
     centerY: number;
-    /** Box X offset, as the box may not be centered around (0,0) */
+    /** X coordinate of the geometric center of the shape in its local space */
     offsetX: number;
-    /** Box Y offset, as the box may not be centered around (0,0) */
+    /** Y coordinate of the geometric center of the shape in its local space */
     offsetY: number;
     /** Inset for the stroke, if applicable. */
     strokeInset: number;
@@ -65,18 +65,18 @@ export function GetShapesBoundingBox(rawElements: RawElement[]): BoundingBox {
         }
     }
 
-    const width = Math.ceil(Math.abs(boxCorners.maxX)) + Math.ceil(Math.abs(boxCorners.minX));
-    const height = Math.ceil(Math.abs(boxCorners.maxY)) + Math.ceil(Math.abs(boxCorners.minY));
+    const width = boxCorners.maxX - boxCorners.minX;
+    const height = boxCorners.maxY - boxCorners.minY;
 
-    const offsetX = (Math.abs(boxCorners.maxX) - Math.abs(boxCorners.minX)) / 2;
-    const offsetY = (Math.abs(boxCorners.maxY) - Math.abs(boxCorners.minY)) / 2;
+    const offsetX = (boxCorners.minX + boxCorners.maxX) / 2;
+    const offsetY = (boxCorners.minY + boxCorners.maxY) / 2;
 
     return {
         width: width + strokeWidth,
         height: height + strokeWidth,
-        // The center of the box is the center of its width and height, modified by its offset and the stroke width
-        centerX: width / 2 - offsetX + strokeWidth / 2,
-        centerY: height / 2 - offsetY + strokeWidth / 2,
+        // Translate the original min corner into the atlas cell, leaving room for stroke expansion.
+        centerX: -boxCorners.minX + strokeWidth / 2,
+        centerY: -boxCorners.minY + strokeWidth / 2,
         offsetX: offsetX,
         offsetY: offsetY,
         strokeInset: 0,

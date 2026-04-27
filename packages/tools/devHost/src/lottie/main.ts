@@ -13,8 +13,9 @@ export async function Main(searchParams: URLSearchParams): Promise<void> {
     div.style = "justify-content: center; align-items: center;"; // We want the animation centered
 
     // You can also pass a local file that you are serving from the devhost public folder to test: const fileUrl = './myLottieFile.json'
+    // You can also pass a local file that you are serving from the devhost public folder to test: ?file=./lottie/myLottieFile.json
     const filename = searchParams.get("file") || "triangles_noParents_noCross.json";
-    const fileUrl = `https://assets.babylonjs.com/lottie/${filename}`;
+    const fileUrl = filename.startsWith("./") || filename.startsWith("http") ? filename : `https://assets.babylonjs.com/lottie/${filename}`;
 
     // Whether to use a web worker for rendering or not, defaults to true
     const useWorkerParam = searchParams.get("useworker");
@@ -27,6 +28,11 @@ export async function Main(searchParams: URLSearchParams): Promise<void> {
     // Whether to use the file URL for the data or to parse the data in the devhost, defaults to true (use the file URL)
     const usePreWarmParam = searchParams.get("useprewarm");
     const usePrewarm = usePreWarmParam === "true"; // Default to false if not specified
+
+    // Optional frame number to render a single frame without starting playback (useful for visual testing animations)
+    const frameParam = searchParams.get("frame");
+    const parsedFrame = frameParam !== null ? parseInt(frameParam, 10) : NaN;
+    const stopAtFrame = Number.isFinite(parsedFrame) && parsedFrame >= 0 ? parsedFrame : undefined;
 
     // Whether variables are present in the URL to be used for the animation
     const urlVariables = searchParams.get("variables");
@@ -47,9 +53,23 @@ export async function Main(searchParams: URLSearchParams): Promise<void> {
     // This is the configuration for the player, you can pass as much or as little as you want, the rest will be defaulted
     const configuration: Partial<AnimationConfiguration> = {
         backgroundColor: { r: 255 / 255, g: 255 / 255, b: 255 / 255, a: 1 }, // Background color for the animation canvas, visual tests use white
+        stopAtFrame: stopAtFrame, // If set, the animation will stop at this frame (used by visual tests)
+    };
+
+    // Signal that the first frame has been rendered (used by visual tests for deterministic screenshots)
+    const onFirstRender = () => {
+        if (!document.getElementById("lottie-ready")) {
+            const readyIndicator = document.createElement("div");
+            readyIndicator.id = "lottie-ready";
+            readyIndicator.style.width = "1px";
+            readyIndicator.style.height = "1px";
+            document.body.appendChild(readyIndicator);
+        }
     };
 
     // Create the player and play the animation
+    const animationInput = { container: div, animationSource: useUrl ? fileUrl : (animationData as RawLottieAnimation), variables, configuration, onFirstRender };
+
     if (useWorker) {
         const player = new Player();
 
@@ -57,9 +77,9 @@ export async function Main(searchParams: URLSearchParams): Promise<void> {
             await player.preWarmPlayerAsync();
         }
 
-        await player.playAnimationAsync({ container: div, animationSource: useUrl ? fileUrl : (animationData as RawLottieAnimation), variables, configuration });
+        await player.playAnimationAsync(animationInput);
     } else {
         const player = new LocalPlayer();
-        await player.playAnimationAsync({ container: div, animationSource: useUrl ? fileUrl : (animationData as RawLottieAnimation), variables, configuration });
+        await player.playAnimationAsync(animationInput);
     }
 }

@@ -49,7 +49,7 @@
         "rollup-plugin-dts": "^6.1.1",
         "rollup-plugin-minify-template-literals": "^1.1.7",
         "sonda": "^0.11.1",
-        "vite": "^6.2.1"
+        "vite": "6.4.2"
     },
     "keywords": [
         "3D",
