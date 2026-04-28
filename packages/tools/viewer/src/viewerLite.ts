@@ -33,7 +33,6 @@ import {
     type AssetContainer,
     type DirectionalLight,
     type EngineContext,
-    type EnvironmentTextures,
     type AnimationGroup as LiteAnimationGroup,
     type ShadowGenerator as LiteShadowGenerator,
     type Mesh,
@@ -218,8 +217,10 @@ export class Viewer implements IViewer {
     private _environmentIntensity = this._options?.environmentConfig?.intensity ?? DefaultViewerOptions.environmentConfig.intensity;
     private _environmentBlur = this._options?.environmentConfig?.blur ?? DefaultViewerOptions.environmentConfig.blur;
     private _environmentRotation = this._options?.environmentConfig?.rotation ?? DefaultViewerOptions.environmentConfig.rotation;
-    /** Retained reference to the loaded environment GPU textures (used when swapping environments). */
-    private _envTextures: EnvironmentTextures | null = null;
+    /** The currently-loaded lighting URL ("auto" resolves to the embedded default). null = no lighting loaded. */
+    private _currentLightingUrl: string | null = null;
+    /** The currently-loaded skybox URL ("auto" resolves to the embedded default). null = no skybox loaded. */
+    private _currentSkyboxUrl: string | null = null;
 
     // Post processing
     private _toneMapping: ToneMapping = this._options?.postProcessing?.toneMapping ?? DefaultViewerOptions.postProcessing.toneMapping;
@@ -348,8 +349,22 @@ export class Viewer implements IViewer {
         observePromise(this._beginRendering());
 
         // Initial loads — each will restart the render loop to pick up new renderables
-        const envUrl = _options?.environmentLighting ?? _options?.environmentSkybox ?? "auto";
-        observePromise(this.loadEnvironment(envUrl));
+        const initialLightingUrl = _options?.environmentLighting ?? DefaultViewerOptions.environmentLighting;
+        const initialSkyboxUrl = _options?.environmentSkybox ?? DefaultViewerOptions.environmentSkybox;
+
+        // If lighting and skybox URLs are the same, do one combined load. Otherwise do them separately.
+        if (initialLightingUrl === initialSkyboxUrl) {
+            if (initialLightingUrl !== "none") {
+                observePromise(this.loadEnvironment(initialLightingUrl));
+            }
+        } else {
+            if (initialLightingUrl !== "none") {
+                observePromise(this.loadEnvironment(initialLightingUrl, { lighting: true, skybox: false }));
+            }
+            if (initialSkyboxUrl !== "none") {
+                observePromise(this.loadEnvironment(initialSkyboxUrl, { lighting: false, skybox: true }));
+            }
+        }
 
         if (_options?.source) {
             observePromise(this.loadModel(_options.source));
@@ -526,6 +541,13 @@ export class Viewer implements IViewer {
     public async loadEnvironment(url: string, options?: LoadEnvironmentOptions, abortSignal?: AbortSignal): Promise<void> {
         this._throwIfDisposedOrAborted(abortSignal);
 
+        // Default to updating both lighting and skybox.
+        const updateLighting = options?.lighting !== false;
+        const updateSkybox = options?.skybox !== false;
+        if (!updateLighting && !updateSkybox) {
+            return;
+        }
+
         this._loadEnvironmentAbortController?.abort(new AbortError("New environment is being loaded before previous environment finished loading."));
         const internalAbortController = (this._loadEnvironmentAbortController = new AbortController());
 
@@ -534,23 +556,46 @@ export class Viewer implements IViewer {
             try {
                 throwIfAborted(abortSignal, internalAbortController.signal);
 
-                const effectiveUrl = url === "auto" ? (await import("./defaultEnvironment")).default : url;
-                const ext = getExtension(effectiveUrl, options?.extension);
+                // Resolve the target URLs for lighting and skybox.
+                // Anything not being updated this call retains its current value.
+                const targetLightingUrl = updateLighting ? url : this._currentLightingUrl;
+                const targetSkyboxUrl = updateSkybox ? url : this._currentSkyboxUrl;
+
+                // Skip if nothing actually changes.
+                if (targetLightingUrl === this._currentLightingUrl && targetSkyboxUrl === this._currentSkyboxUrl) {
+                    return;
+                }
+
+                // Lite's loadEnvironment requires a lighting URL. The lighting URL is the source for the cubemap + irradiance SH;
+                // the skybox can be a separate URL or the same one. If only updating the skybox, we still pass the existing
+                // lighting URL to preserve it, but the loader will reupload — which is the cost for skybox-only changes.
+                // If only the skybox is being updated and the lighting URL is null, fall back to "auto".
+                const effectiveLightingUrl = targetLightingUrl ?? "auto";
+                const resolvedLightingUrl = effectiveLightingUrl === "auto" ? (await import("./defaultEnvironment")).default : effectiveLightingUrl;
+                const ext = getExtension(resolvedLightingUrl, options?.extension);
 
                 if (ext === ".hdr") {
-                    this._envTextures = await loadHdrEnvironment(this._scene, effectiveUrl, {
+                    // HDR loader doesn't support separate skybox URL; treat both as the same.
+                    await loadHdrEnvironment(this._scene, resolvedLightingUrl, {
                         skipGround: true,
                         skyboxSize: 20,
                     });
+                    this._currentLightingUrl = effectiveLightingUrl;
+                    if (updateSkybox) {
+                        this._currentSkyboxUrl = effectiveLightingUrl;
+                    }
                 } else {
-                    // .env or other — use the standard env loader
-                    this._envTextures = await liteLoadEnvironment(this._scene, effectiveUrl, {
+                    // .env or other — use the standard env loader, which supports a separate skyboxUrl.
+                    const resolvedSkyboxUrl = targetSkyboxUrl === "auto" ? (await import("./defaultEnvironment")).default : (targetSkyboxUrl ?? undefined);
+                    await liteLoadEnvironment(this._scene, resolvedLightingUrl, {
                         brdfUrl: (await import("./defaultBRDF")).default,
-                        skyboxUrl: options?.skybox !== false ? effectiveUrl : undefined,
-                        skipSkybox: options?.skybox === false,
+                        skyboxUrl: resolvedSkyboxUrl,
+                        skipSkybox: !targetSkyboxUrl,
                         skipGround: true,
                         skyboxSize: 20,
                     });
+                    this._currentLightingUrl = effectiveLightingUrl;
+                    this._currentSkyboxUrl = targetSkyboxUrl;
                 }
 
                 if (this._environmentRotation !== 0) {
@@ -572,12 +617,20 @@ export class Viewer implements IViewer {
         });
     }
 
-    public async resetEnvironment(_options?: EnvironmentOptions, abortSignal?: AbortSignal): Promise<void> {
+    public async resetEnvironment(options?: EnvironmentOptions, abortSignal?: AbortSignal): Promise<void> {
         this._throwIfDisposedOrAborted(abortSignal);
 
-        if (this._envTextures !== null) {
-            this._envTextures = null;
+        // Default to resetting both lighting and skybox.
+        const resetLighting = options?.lighting !== false;
+        const resetSkybox = options?.skybox !== false;
+
+        if (resetLighting) {
+            this._currentLightingUrl = null;
         }
+        if (resetSkybox) {
+            this._currentSkyboxUrl = null;
+        }
+
         this._environmentIntensity = DefaultViewerOptions.environmentConfig.intensity;
         this._environmentBlur = DefaultViewerOptions.environmentConfig.blur;
         this._environmentRotation = DefaultViewerOptions.environmentConfig.rotation;
@@ -1088,9 +1141,19 @@ export class Viewer implements IViewer {
 
         if (all || flags.includes("environment")) {
             observePromise(this.resetEnvironment());
-            if (this._options?.environmentLighting || this._options?.environmentSkybox) {
-                const envUrl = this._options.environmentLighting ?? this._options.environmentSkybox ?? "auto";
-                observePromise(this.loadEnvironment(envUrl));
+            const initialLightingUrl = this._options?.environmentLighting ?? DefaultViewerOptions.environmentLighting;
+            const initialSkyboxUrl = this._options?.environmentSkybox ?? DefaultViewerOptions.environmentSkybox;
+            if (initialLightingUrl === initialSkyboxUrl) {
+                if (initialLightingUrl !== "none") {
+                    observePromise(this.loadEnvironment(initialLightingUrl));
+                }
+            } else {
+                if (initialLightingUrl !== "none") {
+                    observePromise(this.loadEnvironment(initialLightingUrl, { lighting: true, skybox: false }));
+                }
+                if (initialSkyboxUrl !== "none") {
+                    observePromise(this.loadEnvironment(initialSkyboxUrl, { lighting: false, skybox: true }));
+                }
             }
         }
 
@@ -1245,6 +1308,6 @@ export class Viewer implements IViewer {
  * @returns A promise that resolves to the initialized Viewer.
  */
 export async function CreateViewerForCanvas(canvas: HTMLCanvasElement, options?: CanvasViewerOptions): Promise<Viewer> {
-    const engine = await createEngine(canvas);
+    const engine = await createEngine(canvas, { alphaMode: "premultiplied" });
     return new Viewer(engine, options);
 }
