@@ -56,6 +56,21 @@ import {
     type ViewerLoadModelOptions,
 } from "./viewerInterface";
 
+/**
+ * The options for the Lite Viewer.
+ */
+export type ViewerOptions = ViewerBaseOptions;
+
+/**
+ * Options for {@link Viewer.loadModel} on the Lite Viewer.
+ */
+export type LoadModelOptions = ViewerLoadModelOptions;
+
+/**
+ * Options for creating a Lite Viewer bound to a canvas.
+ */
+export type CanvasViewerOptions = ViewerBaseOptions;
+
 // ── Defaults ──
 
 const DefaultCameraAutoOrbit: CameraAutoOrbit = { enabled: false, speed: 0.5, delay: 4000 };
@@ -205,7 +220,7 @@ export class Viewer implements IViewer {
      */
     constructor(
         private readonly _engine: EngineContext,
-        private readonly _options?: ViewerBaseOptions
+        private readonly _options?: ViewerOptions
     ) {
         // Create scene internally (matching how full Viewer owns its scene)
         this._scene = createSceneContext(_engine);
@@ -1110,7 +1125,7 @@ export class Viewer implements IViewer {
  * @param options Optional viewer configuration.
  * @returns A promise that resolves to the initialized Viewer.
  */
-export async function CreateViewerForCanvas(canvas: HTMLCanvasElement, options?: ViewerBaseOptions): Promise<Viewer> {
+export async function CreateViewerForCanvas(canvas: HTMLCanvasElement, options?: CanvasViewerOptions): Promise<Viewer> {
     const engine = await createEngine(canvas);
     return new Viewer(engine, options);
 }

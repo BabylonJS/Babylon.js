@@ -1,15 +1,14 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { customElement } from "lit/decorators.js";
 import { ViewerElementBase } from "./viewerElementBase";
-import { type ViewerBaseOptions } from "./viewerInterface";
-import { type Viewer, CreateViewerForCanvas } from "./viewerLite";
+import { type CanvasViewerOptions, type Viewer, CreateViewerForCanvas } from "./viewerLite";
 
 /**
  * Viewer custom element backed by the Babylon Lite engine (WebGPU-only).
  * Provides the same `<babylon-viewer>` tag as the full viewer — the two are mutually exclusive.
  */
-export abstract class ViewerElement extends ViewerElementBase<Viewer, ViewerBaseOptions> {
-    protected constructor(options: ViewerBaseOptions = {}) {
+export abstract class ViewerElement extends ViewerElementBase<Viewer, CanvasViewerOptions> {
+    protected constructor(options: CanvasViewerOptions = {}) {
         super(options);
     }
 
@@ -20,7 +19,7 @@ export abstract class ViewerElement extends ViewerElementBase<Viewer, ViewerBase
         return this._viewer;
     }
 
-    protected override async _createViewer(canvas: HTMLCanvasElement, options: ViewerBaseOptions): Promise<Viewer> {
+    protected override async _createViewer(canvas: HTMLCanvasElement, options: CanvasViewerOptions): Promise<Viewer> {
         return await CreateViewerForCanvas(canvas, options);
     }
 }
@@ -37,7 +36,7 @@ export class HTML3DElement extends ViewerElement {
      * Creates a new HTML3DElement backed by the Lite viewer.
      * @param options The options to use for the viewer.
      */
-    public constructor(options?: Readonly<ViewerBaseOptions>) {
+    public constructor(options?: Readonly<CanvasViewerOptions>) {
         super(options);
     }
 }
@@ -47,7 +46,7 @@ export class HTML3DElement extends ViewerElement {
  * @param elementName The name of the custom element.
  * @param options The options to use for the viewer.
  */
-export function ConfigureCustomViewerElement(elementName: string, options: Readonly<ViewerBaseOptions>) {
+export function ConfigureCustomViewerElement(elementName: string, options: Readonly<CanvasViewerOptions>) {
     customElements.define(
         elementName,
         // eslint-disable-next-line jsdoc/require-jsdoc
