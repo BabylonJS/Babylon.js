@@ -15,9 +15,8 @@ import { type SubMesh } from "core/Meshes/subMesh";
 import { type Mesh } from "core/Meshes/mesh";
 import { Scene } from "core/scene";
 import { RegisterClass } from "core/Misc/typeStore";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
-import "./gradient.fragment";
-import "./gradient.vertex";
 import { EffectFallbacks } from "core/Materials/effectFallbacks";
 import { AddClipPlaneUniforms, BindClipPlane } from "core/Materials/clipPlaneMaterialHelper";
 import {
@@ -103,8 +102,16 @@ export class GradientMaterial extends PushMaterial {
     @expandToProperty("_markAllSubMeshesAsLightsDirty")
     public disableLighting: boolean;
 
-    constructor(name: string, scene?: Scene) {
-        super(name, scene);
+    private _shadersLoaded = false;
+
+    /**
+     * Instantiates a Gradient Material in the given scene
+     * @param name The friendly name of the material
+     * @param scene The scene to add the material to
+     * @param forceGLSL Use the GLSL code generation for the shader (even on WebGPU). Default is false
+     */
+    constructor(name: string, scene?: Scene, forceGLSL = false) {
+        super(name, scene, undefined, forceGLSL);
     }
 
     public override needAlphaBlending(): boolean {
@@ -253,6 +260,18 @@ export class GradientMaterial extends PushMaterial {
                         onCompiled: this.onCompiled,
                         onError: this.onError,
                         indexParameters: { maxSimultaneousLights: 4 },
+                        shaderLanguage: this._shaderLanguage,
+                        extraInitializationsAsync: this._shadersLoaded
+                            ? undefined
+                            : async () => {
+                                  if (this.shaderLanguage === ShaderLanguage.WGSL) {
+                                      await Promise.all([import("./wgsl/gradient.vertex"), import("./wgsl/gradient.fragment")]);
+                                  } else {
+                                      await Promise.all([import("./gradient.vertex"), import("./gradient.fragment")]);
+                                  }
+
+                                  this._shadersLoaded = true;
+                              },
                     },
                     engine
                 ),

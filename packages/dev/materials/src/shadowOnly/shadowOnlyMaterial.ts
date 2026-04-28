@@ -14,9 +14,8 @@ import { type SubMesh } from "core/Meshes/subMesh";
 import { type Mesh } from "core/Meshes/mesh";
 import { Scene } from "core/scene";
 import { RegisterClass } from "core/Misc/typeStore";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
-import "./shadowOnly.fragment";
-import "./shadowOnly.vertex";
 import { EffectFallbacks } from "core/Materials/effectFallbacks";
 import { type CascadedShadowGenerator } from "core/Lights/Shadows/cascadedShadowGenerator";
 import { AddClipPlaneUniforms, BindClipPlane } from "core/Materials/clipPlaneMaterialHelper";
@@ -61,9 +60,16 @@ class ShadowOnlyMaterialDefines extends MaterialDefines {
 export class ShadowOnlyMaterial extends PushMaterial {
     private _activeLight: IShadowLight;
     private _needAlphaBlending = true;
+    private _shadersLoaded = false;
 
-    constructor(name: string, scene?: Scene) {
-        super(name, scene);
+    /**
+     * Instantiates a ShadowOnly Material in the given scene
+     * @param name The friendly name of the material
+     * @param scene The scene to add the material to
+     * @param forceGLSL Use the GLSL code generation for the shader (even on WebGPU). Default is false
+     */
+    constructor(name: string, scene?: Scene, forceGLSL = false) {
+        super(name, scene, undefined, forceGLSL);
     }
 
     public shadowColor = Color3.Black();
@@ -242,6 +248,18 @@ export class ShadowOnlyMaterial extends PushMaterial {
                         onCompiled: this.onCompiled,
                         onError: this.onError,
                         indexParameters: { maxSimultaneousLights: 1 },
+                        shaderLanguage: this._shaderLanguage,
+                        extraInitializationsAsync: this._shadersLoaded
+                            ? undefined
+                            : async () => {
+                                  if (this.shaderLanguage === ShaderLanguage.WGSL) {
+                                      await Promise.all([import("./wgsl/shadowOnly.vertex"), import("./wgsl/shadowOnly.fragment")]);
+                                  } else {
+                                      await Promise.all([import("./shadowOnly.vertex"), import("./shadowOnly.fragment")]);
+                                  }
+
+                                  this._shadersLoaded = true;
+                              },
                     },
                     engine
                 ),
