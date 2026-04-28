@@ -260,6 +260,23 @@ export class InputMapper<THandlers extends Record<string, unknown>> {
         this.inputMap.splice(insertIndex, 0, entry);
     }
 
+    /**
+     * Changes the interaction for the first inputMap entry matching the given source and conditions.
+     * This is the simplest way to remap a single input without rebuilding the entire inputMap.
+     * @param source - The physical input source to match
+     * @param conditions - Conditions to match (button, modifiers, key, etc.)
+     * @param interaction - The new interaction to assign to the matched entry
+     * @returns true if a matching entry was found and updated, false otherwise
+     */
+    public setInteraction(source: InputSource, conditions: InputConditions | undefined, interaction: InteractionName<THandlers>): boolean {
+        const entry = this.resolveInteraction(source, conditions);
+        if (entry) {
+            entry.interaction = interaction;
+            return true;
+        }
+        return false;
+    }
+
     private _entryMatches(entry: InputMapEntry<InteractionName<THandlers>>, currentConditions?: InputConditions): boolean {
         switch (entry.source) {
             case "pointer":
