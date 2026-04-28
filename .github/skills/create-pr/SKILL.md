@@ -291,7 +291,7 @@ Use `<push-remote>`, `<upstream-remote>`, and `<base-branch>` from 1a.
    and review lens:
 
     ```
-      /code-review --base <upstream-remote>/<base-branch> --mode <automatic|interactive> --lens <instructions|agnostic|both>
+    /code-review --base <upstream-remote>/<base-branch> --mode <automatic|interactive> --lens <instructions|agnostic|both>
     ```
 
 2. **If interactive:** pause after code-review completes and ask the user
