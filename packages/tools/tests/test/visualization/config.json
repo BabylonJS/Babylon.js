@@ -4578,7 +4578,7 @@
         },
         {
             "title": "Particles - Helper - Fire",
-            "playgroundId": "#F18MP3#0",
+            "playgroundId": "#WHFJPV#0",
             "referenceImage": "particles-helper-fire.png",
             "dependsOn": ["Lights", "PBR", "Particles", "PostProcesses", "Textures"]
         },

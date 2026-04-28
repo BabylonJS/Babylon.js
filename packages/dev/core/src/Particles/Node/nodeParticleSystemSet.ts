@@ -263,6 +263,7 @@ export class NodeParticleSystemSet {
         }
 
         // Build the blocks
+        const buildPromises = new Array<Promise<void>>();
         for (const block of this.systemBlocks) {
             const state = new NodeParticleBuildState();
             state.buildId = this._buildId++;
@@ -276,10 +277,12 @@ export class NodeParticleSystemSet {
             // Errors
             state.emitErrors();
 
-            await state.waitForBuildPromisesAsync();
+            buildPromises.push(state.waitForBuildPromisesAsync());
 
             output.systems.push(system);
         }
+
+        await Promise.all(buildPromises);
 
         this.onBuildObservable.notifyObservers(this);
 
