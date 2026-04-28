@@ -481,6 +481,14 @@ export class ThinSelectionOutlineLayer extends ThinEffectLayer {
             (!!renderingMesh._userInstancedBuffersStorage &&
                 ThinSelectionOutlineLayer.InstanceSelectionIdAttributeName in renderingMesh._userInstancedBuffersStorage.vertexBuffers);
 
+        // When LOD transitions cause a different mesh to render with hardware instancing,
+        // the LOD mesh's own instanceSelectionId must reflect the source mesh's value so
+        // the "self" draw (representing the source mesh) gets the correct selection ID.
+        if (hardwareInstancedRendering && renderingMesh._masterMesh && renderingMesh.instancedBuffers) {
+            renderingMesh.instancedBuffers[ThinSelectionOutlineLayer.InstanceSelectionIdAttributeName] =
+                renderingMesh._masterMesh.instancedBuffers?.[ThinSelectionOutlineLayer.InstanceSelectionIdAttributeName] ?? null;
+        }
+
         this._setEmissiveTextureAndColor(renderingMesh, subMesh, material);
 
         this.onBeforeRenderMeshToEffect.notifyObservers(ownerMesh);
@@ -577,7 +585,11 @@ export class ThinSelectionOutlineLayer extends ThinEffectLayer {
                 if (selectionId === undefined && renderingMesh._masterMesh) {
                     selectionId = this._meshUniqueIdToSelectionId[renderingMesh._masterMesh.uniqueId];
                     if (selectionId === undefined) {
-                        selectionId = renderingMesh._masterMesh.instancedBuffers?.[ThinSelectionOutlineLayer.InstanceSelectionIdAttributeName];
+                        // Prefer the ownerMesh (submesh owner) which is the actual instance
+                        // being rendered during LOD, then fall back to the master (source) mesh.
+                        selectionId =
+                            ownerMesh.instancedBuffers?.[ThinSelectionOutlineLayer.InstanceSelectionIdAttributeName] ??
+                            renderingMesh._masterMesh.instancedBuffers?.[ThinSelectionOutlineLayer.InstanceSelectionIdAttributeName];
                     }
                 }
                 if (!renderingMesh.hasInstances && !renderingMesh.hasThinInstances && !renderingMesh.isAnInstance && selectionId !== undefined) {
@@ -779,6 +791,20 @@ export class ThinSelectionOutlineLayer extends ThinEffectLayer {
                 this._instancedBufferSources.add(sourceMesh);
 
                 mesh.instancedBuffers[ThinSelectionOutlineLayer.InstanceSelectionIdAttributeName] = nextId;
+
+                // Also register instanceSelectionId on LOD meshes so hardware instancing
+                // works during LOD transitions (LOD meshes replace the source mesh as the
+                // renderingMesh, and _processInstancedBuffers only processes kinds that
+                // are registered on the rendering mesh).
+                const lodLevels = sourceMesh.getLODLevels();
+                for (const level of lodLevels) {
+                    if (level.mesh) {
+                        if (level.mesh.instancedBuffers?.[ThinSelectionOutlineLayer.InstanceSelectionIdAttributeName] === undefined) {
+                            level.mesh.registerInstancedBuffer(ThinSelectionOutlineLayer.InstanceSelectionIdAttributeName, 1);
+                        }
+                        this._instancedBufferSources.add(level.mesh);
+                    }
+                }
             } else if (mesh.hasThinInstances) {
                 const thinInstanceCount = (mesh as Mesh).thinInstanceCount;
                 const selectionIdData = new Float32Array(thinInstanceCount);

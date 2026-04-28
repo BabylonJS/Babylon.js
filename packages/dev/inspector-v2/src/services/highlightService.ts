@@ -1,10 +1,10 @@
 import { type Nullable, type Observer, type Scene } from "core/index";
-import { type ServiceDefinition } from "../modularity/serviceDefinition";
+import { type ServiceDefinition } from "shared-ui-components/modularTool/modularity/serviceDefinition";
 import { type IGizmoService, GizmoServiceIdentity } from "./gizmoService";
 import { type ISceneContext, SceneContextIdentity } from "./sceneContext";
 import { type ISelectionService, SelectionServiceIdentity } from "./selectionService";
-import { type ISettingsStore, type SettingDescriptor, SettingsStoreIdentity } from "./settingsStore";
-import { type IThemeService, ThemeServiceIdentity } from "./themeService";
+import { type ISettingsStore, type SettingDescriptor, SettingsStoreIdentity } from "shared-ui-components/modularTool/services/settingsStore";
+import { type IThemeService, ThemeServiceIdentity } from "shared-ui-components/modularTool/services/themeService";
 
 import { SelectionOutlineLayer } from "core/Layers/selectionOutlineLayer";
 import { Color3 } from "core/Maths/math.color";

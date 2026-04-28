@@ -368,7 +368,9 @@ void main(void) {
                      uint(currentPixel.x);
 
   vec3 N = texelFetch(worldNormalSampler, currentPixel, 0).xyz;
-  // N = N * vec3(2.0) - vec3(1.0);
+#ifdef WORLD_NORMAL_UNSIGNED
+  N = N * vec3(2.0) - vec3(1.0);
+#endif
   if (length(N) < 0.01) {
     glFragColor = vec4(1.0, 1.0, 0.0, 1.0);
     return;

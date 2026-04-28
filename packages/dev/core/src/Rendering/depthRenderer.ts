@@ -113,6 +113,31 @@ export class DepthRenderer {
     }
 
     /**
+     * Ensures the GaussianSplatting depth material exists and is up to date for the given mesh.
+     * Creates the material on first call, and recreates it when alphaBlendedDepth changes.
+     * @param mesh the GaussianSplatting mesh
+     * @param renderPassId the render pass ID to look up the per-pass material
+     * @returns the current depth rendering material, or null if the mesh has no GS material
+     */
+    private _ensureGaussianSplattingDepthMaterial(mesh: AbstractMesh, renderPassId: number): Nullable<Material> {
+        let renderingMaterial = mesh._internalAbstractMeshDataInfo._materialForRenderPass?.[renderPassId];
+        const cachedAlphaBlendedDepth = this._alphaBlendedDepthMaterialCache.get(mesh.uniqueId);
+
+        if (renderingMaterial === undefined || cachedAlphaBlendedDepth !== this.alphaBlendedDepth) {
+            const gsMaterial = mesh.material as GaussianSplattingMaterial;
+            if (!gsMaterial) {
+                return null;
+            }
+            const compoundMesh = (mesh as unknown as GaussianSplattingMesh).isCompound;
+            renderingMaterial = gsMaterial.makeDepthRenderingMaterial(this._scene, this._shaderLanguage, this.alphaBlendedDepth, compoundMesh);
+            this.setMaterialForRendering(mesh, renderingMaterial);
+            this._alphaBlendedDepthMaterialCache.set(mesh.uniqueId, this.alphaBlendedDepth);
+        }
+
+        return renderingMaterial;
+    }
+
+    /**
      * Instantiates a depth renderer
      * @param scene The scene the renderer belongs to
      * @param type The texture type of the depth map (default: Engine.TEXTURETYPE_FLOAT)
@@ -200,6 +225,14 @@ export class DepthRenderer {
             if ((preWarm || refreshRate === 0) && mesh.subMeshes) {
                 for (let i = 0; i < mesh.subMeshes.length; ++i) {
                     const subMesh = mesh.subMeshes[i];
+                    const material = subMesh.getMaterial();
+                    const effectiveMesh = subMesh.getEffectiveMesh();
+
+                    // Skip submeshes that won't be rendered by the depth renderer (mirroring renderSubMesh logic)
+                    if (!material || effectiveMesh.infiniteDistance || material.disableDepthWrite || subMesh.verticesCount === 0) {
+                        continue;
+                    }
+
                     const renderingMesh = subMesh.getRenderingMesh();
 
                     const batch = renderingMesh._getInstancesRenderList(subMesh._id, !!subMesh.getReplacementMesh());
@@ -259,23 +292,26 @@ export class DepthRenderer {
             if (this.isReady(subMesh, hardwareInstancedRendering) && camera) {
                 subMesh._renderId = scene.getRenderId();
 
-                let renderingMaterial = effectiveMesh._internalAbstractMeshDataInfo._materialForRenderPass?.[engine.currentRenderPassId];
                 const gsClassName = effectiveMesh.getClassName();
                 if (gsClassName === "GaussianSplattingMesh") {
-                    const cachedAlphaBlendedDepth = this._alphaBlendedDepthMaterialCache.get(effectiveMesh.uniqueId);
-                    const compoundMesh = (effectiveMesh as GaussianSplattingMesh).isCompound;
-                    // Recreate material if it doesn't exist or if alphaBlendedDepth changed
-                    if (renderingMaterial === undefined || cachedAlphaBlendedDepth !== this.alphaBlendedDepth) {
-                        const gsMaterial = effectiveMesh.material! as GaussianSplattingMaterial;
-                        renderingMaterial = gsMaterial.makeDepthRenderingMaterial(this._scene, this._shaderLanguage, this.alphaBlendedDepth, compoundMesh);
-                        this.setMaterialForRendering(effectiveMesh, renderingMaterial);
-                        this._alphaBlendedDepthMaterialCache.set(effectiveMesh.uniqueId, this.alphaBlendedDepth);
-                        if (!renderingMaterial.isReady()) {
-                            return;
-                        }
+                    const gsMaterial = this._ensureGaussianSplattingDepthMaterial(effectiveMesh, engine.currentRenderPassId);
+                    if (gsMaterial && !gsMaterial.isReadyForSubMesh(effectiveMesh, subMesh, hardwareInstancedRendering)) {
+                        return;
                     }
+                    // Alpha blending for transparent materials
+                    if (this.alphaBlendedDepth && material.needAlphaBlendingForMesh(effectiveMesh)) {
+                        engine.setAlphaMode(Constants.ALPHA_COMBINE);
+                    } else {
+                        engine.setAlphaMode(Constants.ALPHA_DISABLE);
+                    }
+                    // Delegate to the GS mesh's render() which properly routes through camera meshes
+                    // with the correct thin instance data. The depth material is already set as the
+                    // render pass material and will be propagated to the camera mesh.
+                    (effectiveMesh as Mesh).render(subMesh, false);
+                    return;
                 }
 
+                const renderingMaterial = effectiveMesh._internalAbstractMeshDataInfo._materialForRenderPass?.[engine.currentRenderPassId];
                 let drawWrapper = subMesh._getDrawWrapper();
                 if (!drawWrapper && renderingMaterial) {
                     drawWrapper = renderingMaterial._getDrawWrapper();
@@ -437,7 +473,17 @@ export class DepthRenderer {
         const mesh = subMesh.getMesh();
         const scene = mesh.getScene();
 
-        const renderingMaterial = mesh._internalAbstractMeshDataInfo._materialForRenderPass?.[engine.currentRenderPassId];
+        // Use the depth map's render pass ID to look up per-pass materials,
+        // since isReady can be called outside of the depth renderer's render pass
+        // (e.g. from the scene's isReady check).
+        const renderPassId = this._depthMap.renderPassId;
+        let renderingMaterial: Nullable<Material> = mesh._internalAbstractMeshDataInfo._materialForRenderPass?.[renderPassId] ?? null;
+
+        // For GaussianSplatting meshes, eagerly create the depth material so that
+        // the scene's isReady check properly blocks until it is compiled.
+        if (mesh.getClassName() === "GaussianSplattingMesh") {
+            renderingMaterial = this._ensureGaussianSplattingDepthMaterial(mesh, renderPassId);
+        }
 
         if (renderingMaterial) {
             return renderingMaterial.isReadyForSubMesh(mesh, subMesh, useInstances);
@@ -553,7 +599,20 @@ export class DepthRenderer {
         PrepareStringDefinesForClipPlanes(material, scene, defines);
 
         // Get correct effect
-        const drawWrapper = subMesh._getDrawWrapper(undefined, true)!;
+        // Determine which render pass id to use for the draw wrapper. isReady can be called from
+        // contexts where engine.currentRenderPassId is *not* one of the depth map's render pass ids
+        // (e.g. from EffectLayer / scene readiness checks). In that case, using
+        // engine.currentRenderPassId would stamp the depth effect onto the main pass's draw wrapper,
+        // which is especially harmful for frozen materials that won't restore the correct effect on
+        // their next isReady call (forum bug 63230).
+        // When engine.currentRenderPassId already belongs to this depth map (the normal in-pass
+        // case, including multi-pass render targets like cube/array depth textures), keep using it
+        // so each pass keeps its own draw wrapper. Otherwise fall back to the depth map's primary
+        // render pass id.
+        const currentPassId = engine.currentRenderPassId;
+        const depthPassIds = this._depthMap.renderPassIds;
+        const passId = depthPassIds.includes(currentPassId) ? currentPassId : this._depthMap.renderPassId;
+        const drawWrapper = subMesh._getDrawWrapper(passId, true)!;
         const cachedDefines = drawWrapper.defines;
         const join = defines.join("\n");
         if (cachedDefines !== join) {

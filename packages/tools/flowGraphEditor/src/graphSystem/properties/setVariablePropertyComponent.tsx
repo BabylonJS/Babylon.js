@@ -1,8 +1,6 @@
 import * as React from "react";
 import { LineContainerComponent } from "../../sharedComponents/lineContainerComponent";
 import { type IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
-import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
-import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineComponent";
 import {
     GeneralPropertyTabComponent,
     ConstructorVariablesPropertyTabComponent,
@@ -13,20 +11,18 @@ import { type FlowGraphSetVariableBlock, type IFlowGraphSetVariableBlockConfigur
 import { type FlowGraphBlock } from "core/FlowGraph/flowGraphBlock";
 import { RichTypeAny } from "core/FlowGraph/flowGraphRichTypes";
 import { RemoveDataInput } from "./blockMutationHelper";
-
-interface ISetVariablePropertyState {
-    newVarName: string;
-}
+import { type GlobalState } from "../../globalState";
+import { AutoCompleteInputComponent } from "../../sharedComponents/autoCompleteInputComponent";
+import { GatherVariableNames } from "../../variableUtils";
 
 /**
  * Property panel for FlowGraphSetVariableBlock.
  * Handles both single-variable mode (via ConstructorVariablesPropertyTabComponent) and
  * multi-variable mode (shows a dynamic list of variable names with add/remove).
  */
-export class SetVariablePropertyComponent extends React.Component<IPropertyComponentProps, ISetVariablePropertyState> {
+export class SetVariablePropertyComponent extends React.Component<IPropertyComponentProps> {
     constructor(props: IPropertyComponentProps) {
         super(props);
-        this.state = { newVarName: "" };
     }
 
     private _getBlock(): FlowGraphSetVariableBlock<any> {
@@ -39,31 +35,6 @@ export class SetVariablePropertyComponent extends React.Component<IPropertyCompo
 
     private _isMultiMode(): boolean {
         return !!this._getConfig().variables;
-    }
-
-    private _addVariable() {
-        const name = this.state.newVarName.trim();
-        if (!name) {
-            return;
-        }
-
-        const block = this._getBlock();
-        const config = this._getConfig();
-        if (!config.variables) {
-            return;
-        }
-
-        // Prevent duplicate
-        if (config.variables.includes(name)) {
-            return;
-        }
-
-        config.variables.push(name);
-        block.registerDataInput(name, RichTypeAny);
-
-        this.setState({ newVarName: "" });
-        this.props.stateManager.onRebuildRequiredObservable.notifyObservers();
-        this.props.stateManager.onUpdateRequiredObservable.notifyObservers(block as unknown as FlowGraphBlock);
     }
 
     private _removeVariable(name: string) {
@@ -86,10 +57,54 @@ export class SetVariablePropertyComponent extends React.Component<IPropertyCompo
         this.forceUpdate();
     }
 
+    /**
+     * Gathers variable names defined elsewhere in the graph (excluding ones
+     * already added to this block) for the multi-variable picker.
+     * @returns an array of variable names available to pick from other blocks and contexts in the graph.
+     */
+    private _getPickableVariableNames(): string[] {
+        const globalState = this.props.stateManager.data as GlobalState;
+        const fg = globalState.flowGraph;
+        if (!fg) {
+            return [];
+        }
+
+        const currentBlock = this._getBlock() as unknown as FlowGraphBlock;
+        const config = this._getConfig();
+        const alreadyAdded = new Set(config.variables ?? []);
+
+        const allNames = GatherVariableNames(fg, currentBlock);
+        return allNames.filter((name) => !alreadyAdded.has(name));
+    }
+
+    private _addExistingVariable(name: string) {
+        if (!name) {
+            return;
+        }
+
+        const block = this._getBlock();
+        const config = this._getConfig();
+        if (!config.variables) {
+            return;
+        }
+
+        if (config.variables.includes(name)) {
+            return;
+        }
+
+        config.variables.push(name);
+        block.registerDataInput(name, RichTypeAny);
+
+        this.props.stateManager.onRebuildRequiredObservable.notifyObservers();
+        this.props.stateManager.onUpdateRequiredObservable.notifyObservers(block as unknown as FlowGraphBlock);
+        this.forceUpdate();
+    }
+
     override render() {
         const { stateManager, nodeData } = this.props;
         const isMulti = this._isMultiMode();
         const config = this._getConfig();
+        const pickableVars = isMulti ? this._getPickableVariableNames() : [];
 
         return (
             <>
@@ -121,15 +136,17 @@ export class SetVariablePropertyComponent extends React.Component<IPropertyCompo
                             </div>
                         ))}
                         {(config.variables || []).length === 0 && <div style={{ padding: "4px 8px", color: "#888", fontSize: "11px" }}>No variables defined.</div>}
-                        <TextInputLineComponent
-                            label="New variable"
+                        <AutoCompleteInputComponent
+                            label="Add variable"
+                            value=""
+                            suggestions={pickableVars}
                             lockObject={stateManager.lockObject}
-                            target={this.state}
-                            propertyName="newVarName"
-                            throttlePropertyChangedNotification={true}
-                            onChange={(v) => this.setState({ newVarName: v })}
+                            onChange={(v) => {
+                                if (v) {
+                                    this._addExistingVariable(v);
+                                }
+                            }}
                         />
-                        <ButtonLineComponent label="Add Variable" onClick={() => this._addVariable()} isDisabled={!this.state.newVarName.trim()} />
                     </LineContainerComponent>
                 )}
 

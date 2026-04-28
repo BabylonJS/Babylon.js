@@ -1,15 +1,15 @@
 import { type IDisposable, type Scene } from "core/index";
 
-import { type DynamicAccordionSection, type DynamicAccordionSectionContent } from "../../components/extensibleAccordion";
-import { type IService, type ServiceDefinition } from "../../modularity/serviceDefinition";
+import { type DynamicAccordionSection, type DynamicAccordionSectionContent } from "shared-ui-components/modularTool/components/extensibleAccordion";
+import { type IService, type ServiceDefinition } from "shared-ui-components/modularTool/modularity/serviceDefinition";
 import { type ISceneContext, SceneContextIdentity } from "../sceneContext";
-import { type IShellService, ShellServiceIdentity } from "../shellService";
+import { type IShellService, ShellServiceIdentity } from "shared-ui-components/modularTool/services/shellService";
 
 import { BugRegular } from "@fluentui/react-icons";
 
 import { DebugPane } from "../../components/debug/debugPane";
-import { useObservableCollection, useObservableState, useOrderedObservableCollection } from "../../hooks/observableHooks";
-import { ObservableCollection } from "../../misc/observableCollection";
+import { useObservableCollection, useObservableState, useOrderedObservableCollection } from "shared-ui-components/modularTool/hooks/observableHooks";
+import { ObservableCollection } from "shared-ui-components/modularTool/misc/observableCollection";
 
 /**
  * The unique identity symbol for the debug service.

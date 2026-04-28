@@ -22,7 +22,7 @@ import { GizmoCoordinatesMode } from "core/Gizmos/gizmo";
 import { TranslateIcon } from "shared-ui-components/fluent/icons";
 import { Collapse } from "shared-ui-components/fluent/primitives/collapse";
 import { ToggleButton } from "shared-ui-components/fluent/primitives/toggleButton";
-import { useObservableState } from "../hooks/observableHooks";
+import { useObservableState } from "shared-ui-components/modularTool/hooks/observableHooks";
 import { type ISceneContext } from "../services/sceneContext";
 
 const useStyles = makeStyles({

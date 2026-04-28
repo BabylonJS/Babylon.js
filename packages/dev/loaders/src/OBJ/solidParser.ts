@@ -240,7 +240,7 @@ export class SolidParser {
                 if (this._wrappedUvsForBabylon.length) {
                     this._unwrappedUVForBabylon.push(this._wrappedUvsForBabylon[l].x, this._wrappedUvsForBabylon[l].y); //z is an optional value not supported by BABYLON
                 }
-                if (this._unwrappedColorsForBabylon.length) {
+                if (this._wrappedColorsForBabylon.length) {
                     //Push the r, g, b, a values of each element in the unwrapped array
                     this._unwrappedColorsForBabylon.push(
                         this._wrappedColorsForBabylon[l].r,

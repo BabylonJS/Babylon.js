@@ -903,28 +903,18 @@ export class PhysicsViewer {
         mesh.material = this._getDebugAxisColoredMaterial(axisNumber, scene);
         mesh.parent = parent;
         const parentScaling = parent.absoluteScaling;
+        const sc = (parentScaling.x + parentScaling.y + parentScaling.z) / 3;
+        mesh.scaling.set(1 / sc, 1 / sc, 1 / sc);
         switch (axisNumber) {
             case 0:
                 mesh.rotation.z = Math.PI * 0.5;
                 mesh.rotation.x = -minLimit + Math.PI * 0.5;
-                // scaling on y,z
-                mesh.scaling.x = 1 / parentScaling.x;
-                mesh.scaling.y = 1 / parentScaling.z;
-                mesh.scaling.z = 1 / parentScaling.y;
                 break;
             case 1:
                 mesh.rotation.y = Math.PI * 1.5 + minLimit;
-                // flip x,z
-                mesh.scaling.x = 1 / parentScaling.z;
-                mesh.scaling.y = 1 / parentScaling.y;
-                mesh.scaling.z = 1 / parentScaling.x;
                 break;
             case 2:
                 mesh.rotation.x = Math.PI * 0.5;
-                // flip z,y
-                mesh.scaling.x = 1 / parentScaling.x;
-                mesh.scaling.y = 1 / parentScaling.z;
-                mesh.scaling.z = 1 / parentScaling.y;
                 break;
         }
         return mesh;

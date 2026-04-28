@@ -1,5 +1,5 @@
 import { type IInspectable as InspectableProperty } from "core/index";
-import { type ServiceDefinition } from "../modularity/serviceDefinition";
+import { type ServiceDefinition } from "shared-ui-components/modularTool/modularity/serviceDefinition";
 import { type IPropertiesService, PropertiesServiceIdentity } from "../services/panes/properties/propertiesService";
 
 import { InspectableType } from "core/Misc/iInspectable";

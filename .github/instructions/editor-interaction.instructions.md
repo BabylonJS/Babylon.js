@@ -1,3 +1,7 @@
+---
+applyTo: "packages/tools/{nodeEditor,nodeGeometryEditor,nodeParticleEditor,nodeRenderGraphEditor,guiEditor,smartFiltersEditor}/**/*.{ts,tsx}"
+---
+
 # How to Interact with Babylon Editors
 
 Babylon editors (Smart Filter Editor, Node Material Editor, etc.) share a common layout: a **block list** on the left, a **node graph canvas** in the center, **properties panel** on the right, and a **preview** at the bottom right.

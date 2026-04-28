@@ -90,7 +90,7 @@ function JsDecodeBase64ToBinary(base64Data: string): ArrayBuffer {
 export const EncodeArrayBufferToBase64 = (buffer: ArrayBuffer | ArrayBufferView): string => {
     const bytes = ArrayBuffer.isView(buffer) ? new Uint8Array(buffer.buffer, buffer.byteOffset, buffer.byteLength) : new Uint8Array(buffer);
 
-    return bytes.toBase64 ? bytes.toBase64() : JsEncodeArrayBufferToBase64(bytes);
+    return typeof bytes.toBase64 === "function" ? bytes.toBase64() : JsEncodeArrayBufferToBase64(bytes);
 };
 
 /**
@@ -108,7 +108,7 @@ export const DecodeBase64ToString = (base64Data: string): string => {
  * @returns ArrayBuffer of byte data
  */
 export const DecodeBase64ToBinary = (base64Data: string): ArrayBuffer => {
-    return Uint8Array.fromBase64 ? Uint8Array.fromBase64(base64Data).buffer : JsDecodeBase64ToBinary(base64Data);
+    return typeof Uint8Array.fromBase64 === "function" ? Uint8Array.fromBase64(base64Data).buffer : JsDecodeBase64ToBinary(base64Data);
 };
 
 /**

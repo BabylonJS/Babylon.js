@@ -30,7 +30,7 @@ export enum FragmentOutputBlockColorSpace {
 export class FragmentOutputBlock extends NodeMaterialBlock {
     private _linearDefineName: string;
     private _gammaDefineName: string;
-    private _additionalColorDefineName: string;
+    private _additionalColorDefineName: string | undefined;
     protected _outputString: string;
 
     /**
@@ -153,7 +153,9 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
     public override prepareDefines(defines: NodeMaterialDefines, nodeMaterial: NodeMaterial) {
         defines.setValue(this._linearDefineName, this.convertToLinearSpace, true);
         defines.setValue(this._gammaDefineName, this.convertToGammaSpace, true);
-        defines.setValue(this._additionalColorDefineName, this.additionalColor.connectedPoint && nodeMaterial._useAdditionalColor, true);
+        if (this._additionalColorDefineName !== undefined) {
+            defines.setValue(this._additionalColorDefineName, !!this.additionalColor.connectedPoint && nodeMaterial._useAdditionalColor, true);
+        }
     }
 
     /**

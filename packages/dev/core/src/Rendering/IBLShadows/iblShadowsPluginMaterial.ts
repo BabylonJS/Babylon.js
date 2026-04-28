@@ -31,7 +31,20 @@ export class IBLShadowsPluginMaterial extends MaterialPluginBase {
     /**
      * The texture containing the contribution from IBL shadows.
      */
-    public iblShadowsTexture: InternalTexture;
+    private _iblShadowsTexture!: InternalTexture;
+
+    public get iblShadowsTexture(): InternalTexture {
+        return this._iblShadowsTexture;
+    }
+
+    public set iblShadowsTexture(value: InternalTexture) {
+        if (this._iblShadowsTexture === value) {
+            return;
+        }
+
+        this._iblShadowsTexture = value;
+        this._markAllSubMeshesAsTexturesDirty();
+    }
 
     /**
      * The opacity of the shadows.
@@ -127,7 +140,7 @@ export class IBLShadowsPluginMaterial extends MaterialPluginBase {
     }
 
     public override bindForSubMesh(uniformBuffer: UniformBuffer) {
-        if (this._isEnabled) {
+        if (this._isEnabled && this.iblShadowsTexture) {
             uniformBuffer.bindTexture("iblShadowsTexture", this.iblShadowsTexture);
             uniformBuffer.updateFloat2("renderTargetSize", this._material.getScene().getEngine().getRenderWidth(), this._material.getScene().getEngine().getRenderHeight());
             uniformBuffer.updateFloat("shadowOpacity", this.shadowOpacity);

@@ -3,6 +3,7 @@ import { type IPointerEvent } from "../../Events/deviceInputEvents";
 import { type PointerTouch } from "../../Events/pointerEvents";
 import { type Nullable } from "../../types";
 import { OrbitCameraPointersInput } from "./orbitCameraPointersInput";
+import { Vector3Distance } from "../../Maths/math.vector.functions";
 
 /**
  * Geospatial camera inputs can simulate dragging the globe around or tilting the camera around some point on the globe
@@ -76,6 +77,8 @@ export class GeospatialCameraPointersInput extends OrbitCameraPointersInput {
      * @param pinchSquaredDistance
      */
     protected override _computePinchZoom(previousPinchSquaredDistance: number, pinchSquaredDistance: number): void {
+        const camera = this.camera;
+
         // Calculate zoom distance based on pinch delta
         const previousDistance = Math.sqrt(previousPinchSquaredDistance);
         const currentDistance = Math.sqrt(pinchSquaredDistance);
@@ -83,7 +86,7 @@ export class GeospatialCameraPointersInput extends OrbitCameraPointersInput {
 
         // Try to zoom towards centroid if we have it
         if (this._pinchCentroid) {
-            const scene = this.camera.getScene();
+            const scene = camera.getScene();
             const engine = scene.getEngine();
             const canvasRect = engine.getInputElementClientRect();
 
@@ -93,22 +96,22 @@ export class GeospatialCameraPointersInput extends OrbitCameraPointersInput {
                 const canvasY = this._pinchCentroid.y - canvasRect.top;
 
                 // Pick at centroid
-                const pickResult = scene.pick(canvasX, canvasY, this.camera.movement.pickPredicate);
+                const pickResult = scene.pick(canvasX, canvasY, camera.movement.pickPredicate);
                 if (pickResult?.pickedPoint) {
                     // Scale zoom by distance to picked point
-                    const distanceToPoint = this.camera.position.subtract(pickResult.pickedPoint).length();
+                    const distanceToPoint = Vector3Distance(pickResult.pickedPoint, camera.position);
                     const zoomDistance = pinchDelta * distanceToPoint * 0.005;
-                    const clampedZoom = this.camera.limits.clampZoomDistance(zoomDistance, this.camera.radius, distanceToPoint);
-                    this.camera.zoomToPoint(pickResult.pickedPoint, clampedZoom);
+                    const clampedZoom = camera.limits.clampZoomDistance(zoomDistance, camera.radius, distanceToPoint);
+                    camera.zoomToPoint(pickResult.pickedPoint, clampedZoom);
                     return;
                 }
             }
         }
 
         // Fallback: scale zoom by camera radius along lookat vector
-        const zoomDistance = pinchDelta * this.camera.radius * 0.005;
-        const clampedZoom = this.camera.limits.clampZoomDistance(zoomDistance, this.camera.radius);
-        this.camera.zoomAlongLookAt(clampedZoom);
+        const zoomDistance = pinchDelta * camera.radius * 0.005;
+        const clampedZoom = camera.limits.clampZoomDistance(zoomDistance, camera.radius);
+        camera.zoomAlongLookAt(clampedZoom);
     }
 
     /**

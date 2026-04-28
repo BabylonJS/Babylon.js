@@ -4,7 +4,7 @@ import { type Nullable, type Quaternion, type Vector3 } from "core/index";
 
 import { QuaternionPropertyLine, RotationVectorPropertyLine, Vector3PropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/vectorPropertyLine";
 import { useQuaternionProperty } from "../../hooks/compoundPropertyHooks";
-import { useSetting } from "../../hooks/settingsHooks";
+import { useSetting } from "shared-ui-components/modularTool/hooks/settingsHooks";
 import { UseDegreesSettingDescriptor, UseEulerSettingDescriptor } from "../../services/globalSettings";
 import { BoundProperty, Property } from "./boundProperty";
 

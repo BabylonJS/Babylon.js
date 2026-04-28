@@ -8,9 +8,75 @@ import { GaussianSplattingMeshBase } from "./gaussianSplattingMeshBase";
 
 import { RawTexture } from "core/Materials/Textures/rawTexture";
 import { Constants } from "core/Engines/constants";
+import { DecodeBase64ToBinary, EncodeArrayBufferToBase64 } from "core/Misc/stringTools";
+import { Mesh } from "core/Meshes/mesh";
 import "core/Meshes/thinInstanceMesh";
 import { GaussianSplattingPartProxyMesh } from "./gaussianSplattingPartProxyMesh";
+import { type BoundingInfo } from "../../Culling/boundingInfo";
 import { type BaseTexture } from "../../Materials/Textures/baseTexture";
+
+const _GaussianSplattingBytesPerSplat = 32;
+const _GaussianSplattingBytesPerShTexel = 16;
+
+interface IGaussianSplattingPartSource {
+    name: string;
+    _vertexCount: number;
+    _splatsData: Nullable<ArrayBuffer | ArrayBufferView>;
+    _shData: Nullable<Uint8Array[]>;
+    _shDegree: number;
+    isCompound: boolean;
+    getWorldMatrix(): Matrix;
+    getBoundingInfo(): BoundingInfo;
+    dispose(): void;
+}
+
+/**
+ * Run-Length Encoding (RLE) compression for serialization
+ * Compressed Uint32Array can be parsed using {@link ParsePartIndices}
+ * Some notes for devs: We do not expect Uint8Array larger than 4GB,
+ * so it should be safe to use Uint32Array.
+ * @param partIndices A view of partIndices from GaussianSplattingMesh
+ * @returns A compressed Uint32Array of [count, value, ...]
+ */
+function CompressPartIndices(partIndices: Uint8Array): Uint32Array {
+    const runs: number[] = [];
+    const length = partIndices.length;
+    let i = 0;
+    while (i < length) {
+        const value = partIndices[i];
+        let count = 1;
+        while (i + count < length && partIndices[i + count] === value) {
+            count++;
+        }
+        runs.push(count, value);
+        i += count;
+    }
+    return new Uint32Array(runs);
+}
+
+/**
+ * Parse partIndices compressed by {@link CompressPartIndices} to runtime array
+ * @param compressed The compressed partIndices of [count, value, ...]
+ * @returns runtime Uint8Array for GaussianSplattingMesh
+ */
+function ParsePartIndices(compressed: Uint32Array | number[]): Uint8Array {
+    let totalCount = 0;
+    const length = compressed.length;
+    for (let i = 0; i < length; i += 2) {
+        totalCount += compressed[i];
+    }
+
+    const partIndices = new Uint8Array(totalCount);
+    let offset = 0;
+    for (let i = 0; i < length; i += 2) {
+        const count = compressed[i];
+        const value = compressed[i + 1];
+        partIndices.fill(value, offset, offset + count);
+        offset += count;
+    }
+
+    return partIndices;
+}
 
 /**
  * Class used to render a Gaussian Splatting mesh. Supports both single-cloud and compound
@@ -40,19 +106,26 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
     private _partIndicesTexture: Nullable<BaseTexture> = null;
     private _partIndices: Nullable<Uint8Array> = null;
 
+    /** Gets the part indices texture used for compound rendering */
+    public get partIndicesTexture() {
+        return this._partIndicesTexture;
+    }
+
     /**
      * Creates a new GaussianSplattingMesh
      * @param name the name of the mesh
      * @param url optional URL to load a Gaussian Splatting file from
      * @param scene the hosting scene
      * @param keepInRam whether to keep the raw splat data in RAM after uploading to GPU
+     * @param needsRotationScaleTextures generate rotation and scale matrix textures required for voxel-based IBL shadows
      */
-    constructor(name: string, url: Nullable<string> = null, scene: Nullable<Scene> = null, keepInRam: boolean = false) {
+    constructor(name: string, url: Nullable<string> = null, scene: Nullable<Scene> = null, keepInRam: boolean = false, needsRotationScaleTextures: boolean = false) {
         super(name, url, scene, keepInRam);
         // Ensure _splatsData is retained once compound mode is entered — addPart/addParts need
         // the source data for full-texture rebuilds. Set after super() so it is visible to
         // _updateData when the async load completes.
         this._alwaysRetainSplatsData = true;
+        this._needsRotationScaleTextures = needsRotationScaleTextures;
     }
 
     /**
@@ -64,6 +137,27 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
     }
 
     /**
+     * Is this node ready to be used/rendered.
+     * Force-syncs every part proxy's world matrix into `_partMatrices` BEFORE delegating to
+     * the base readiness check. This guarantees that any pending proxy transform changes
+     * (for example a user-set `proxy.position`) are reflected in the next sort post, so the
+     * base `isReady` will only return true once `sortAppliedId === sortRequestId` for that
+     * up-to-date state. Without this, the proxy's `onAfterWorldMatrixUpdateObservable` would
+     * fire during the first render and queue a fresh sort AFTER readiness was reported,
+     * leaving the rendered frame with stale splat order on `renderCount=1` runs.
+     * @param completeCheck defines if a complete check (including materials and lights) has to be done (false by default)
+     * @returns true when ready
+     */
+    public override isReady(completeCheck = false): boolean {
+        for (const proxy of this._partProxies) {
+            if (proxy) {
+                proxy.computeWorldMatrix(true);
+            }
+        }
+        return super.isReady(completeCheck);
+    }
+
+    /**
      * Disposes proxy meshes and clears part data in addition to the base class GPU resources.
      * @param doNotRecurse Set to true to not recurse into each children
      */
@@ -71,9 +165,7 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
         for (const proxy of this._partProxies) {
             proxy.dispose();
         }
-        if (this._partIndicesTexture) {
-            this._partIndicesTexture.dispose();
-        }
+        this._partIndicesTexture?.dispose();
         this._partProxies = [];
         this._partMatrices = [];
         this._partVisibility = [];
@@ -213,6 +305,12 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
                 this._partVisibility.push(1.0);
             }
         }
+        // Skip the post / sort if the matrix is unchanged. Babylon recomputes the proxy mesh's world matrix every frame
+        // and fires onAfterWorldMatrixUpdateObservable, so without this guard a stable scene would queue a forced sort
+        // every frame and `isReady()` would never settle (sortRequestId would keep advancing past sortAppliedId).
+        if (this._partMatrices[partIndex].equals(worldMatrix)) {
+            return;
+        }
         this._partMatrices[partIndex].copyFrom(worldMatrix);
         // During a batch rebuild suppress intermediate posts — the final correct set is posted
         // once the full rebuild completes (at the end of removePart).
@@ -344,16 +442,119 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
         }
     }
 
+    private _appendPartSourceToArrays(
+        source: IGaussianSplattingPartSource,
+        dstOffset: number,
+        covA: Uint16Array,
+        covB: Uint16Array,
+        colorArray: Uint8Array,
+        sh: Uint8Array[] | undefined,
+        minimum: Vector3,
+        maximum: Vector3
+    ): void {
+        this._appendSourceToArrays(source as unknown as GaussianSplattingMeshBase, dstOffset, covA, covB, colorArray, sh, minimum, maximum);
+    }
+
+    private _createRetainedPartSource(proxy: GaussianSplattingPartProxyMesh): Nullable<IGaussianSplattingPartSource> {
+        if (!this._splatsData || (this._shDegree > 0 && !this._shData)) {
+            return null;
+        }
+
+        const splatByteOffset = proxy._splatsDataOffset * _GaussianSplattingBytesPerSplat;
+        const splatByteLength = proxy._vertexCount * _GaussianSplattingBytesPerSplat;
+        const shByteOffset = proxy._shDataOffset * _GaussianSplattingBytesPerShTexel;
+        const shByteLength = proxy._vertexCount * _GaussianSplattingBytesPerShTexel;
+        const splatBytes = GaussianSplattingMeshBase._GetSplatDataBytes(this._splatsData);
+
+        return {
+            name: proxy.name,
+            _vertexCount: proxy._vertexCount,
+            _splatsData: splatBytes.subarray(splatByteOffset, splatByteOffset + splatByteLength),
+            _shData: this._shData?.map((texture) => texture.subarray(shByteOffset, shByteOffset + shByteLength)) ?? null,
+            _shDegree: this._shData?.length ?? 0,
+            isCompound: false,
+            getWorldMatrix: () => proxy.getWorldMatrix(),
+            getBoundingInfo: () => proxy.getBoundingInfo(),
+            dispose: () => {},
+        };
+    }
+
+    private _retainMergedPartData(existingVertexCount: number, totalCount: number, others: IGaussianSplattingPartSource[], shDegree: number): void {
+        if (!this._keepInRam && !this._alwaysRetainSplatsData) {
+            this._splatsData = null;
+            this._shData = null;
+            return;
+        }
+
+        const mergedSplatsData = new Uint8Array(totalCount * _GaussianSplattingBytesPerSplat);
+        let splatByteOffset = 0;
+
+        if (this._splatsData && existingVertexCount > 0) {
+            mergedSplatsData.set(
+                GaussianSplattingMeshBase._GetSplatDataBytes(this._splatsData).subarray(0, existingVertexCount * _GaussianSplattingBytesPerSplat),
+                splatByteOffset
+            );
+            splatByteOffset += existingVertexCount * _GaussianSplattingBytesPerSplat;
+        }
+
+        for (const other of others) {
+            if (!other._splatsData) {
+                continue;
+            }
+
+            const splatByteLength = other._vertexCount * _GaussianSplattingBytesPerSplat;
+            mergedSplatsData.set(GaussianSplattingMeshBase._GetSplatDataBytes(other._splatsData).subarray(0, splatByteLength), splatByteOffset);
+            splatByteOffset += splatByteLength;
+        }
+
+        this._splatsData = mergedSplatsData.buffer;
+
+        if (shDegree <= 0) {
+            this._shData = null;
+            return;
+        }
+
+        const mergedShData: Uint8Array[] = [];
+        for (let textureIndex = 0; textureIndex < shDegree; textureIndex++) {
+            mergedShData.push(new Uint8Array(totalCount * _GaussianSplattingBytesPerShTexel));
+        }
+
+        let shByteOffset = 0;
+        if (this._shData && existingVertexCount > 0) {
+            const existingShByteLength = existingVertexCount * _GaussianSplattingBytesPerShTexel;
+            for (let textureIndex = 0; textureIndex < mergedShData.length; textureIndex++) {
+                if (textureIndex < this._shData.length) {
+                    mergedShData[textureIndex].set(this._shData[textureIndex].subarray(0, existingShByteLength), shByteOffset);
+                }
+            }
+            shByteOffset += existingShByteLength;
+        }
+
+        for (const other of others) {
+            const otherShByteLength = other._vertexCount * _GaussianSplattingBytesPerShTexel;
+            if (other._shData) {
+                for (let textureIndex = 0; textureIndex < mergedShData.length; textureIndex++) {
+                    if (textureIndex < other._shData.length) {
+                        mergedShData[textureIndex].set(other._shData[textureIndex].subarray(0, otherShByteLength), shByteOffset);
+                    }
+                }
+            }
+            shByteOffset += otherShByteLength;
+        }
+
+        this._shData = mergedShData;
+    }
+
     /**
-     * Core implementation for adding one or more external GaussianSplattingMesh objects as new
-     * parts. Writes directly into texture-sized CPU arrays and uploads in one pass — no merged
-     * CPU splat buffer is ever constructed.
+     * Core implementation for adding one or more source parts as new
+     * parts. Writes directly into texture-sized CPU arrays, updates the retained merged source
+     * buffers, and uploads in one pass.
      *
      * @param others - Source meshes to append (must each be non-compound and fully loaded)
      * @param disposeOthers - Dispose source meshes after appending
      * @returns Proxy meshes and their assigned part indices
      */
-    protected _addPartsInternal(others: GaussianSplattingMesh[], disposeOthers: boolean): { proxyMeshes: GaussianSplattingPartProxyMesh[]; assignedPartIndices: number[] } {
+    protected _addPartsInternal(others: IGaussianSplattingPartSource[], disposeOthers: boolean): { proxyMeshes: GaussianSplattingPartProxyMesh[]; assignedPartIndices: number[] } {
         if (others.length === 0) {
             return { proxyMeshes: [], assignedPartIndices: [] };
         }
@@ -382,7 +583,7 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
         const colorArray = new Uint8Array(textureLength * 4);
 
         // Determine merged SH degree
-        const hasSH = this._shData !== null && others.every((o) => o._shData !== null);
+        const hasSH = (splatCountA === 0 || this._shData !== null) && others.every((o) => o._shData !== null);
         const shDegreeNew = hasSH ? Math.max(this._shDegree, ...others.map((o) => o._shDegree)) : 0;
         let sh: Uint8Array[] | undefined = undefined;
         if (hasSH && shDegreeNew > 0) {
@@ -420,6 +621,7 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
         this._partIndices.set(partIndicesA.subarray(0, splatCountA));
 
         const assignedPartIndices: number[] = [];
+        const assignedSplatsDataOffsets: number[] = [];
         let dstOffset = splatCountA;
         const maxPartCount = GetGaussianSplattingMaxPartCount(this._scene.getEngine());
         for (const other of others) {
@@ -428,6 +630,7 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
             }
             const newPartIndex = nextPartIndex++;
             assignedPartIndices.push(newPartIndex);
+            assignedSplatsDataOffsets.push(dstOffset);
             this._partIndices.fill(newPartIndex, dstOffset, dstOffset + other._vertexCount);
             dstOffset += other._vertexCount;
         }
@@ -461,11 +664,11 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
                     // Rebuild the compound's legacy "own" data at part 0 (scenario A only).
                     // Skipped in the preferred empty-composer path (scenario B).
                     if (!this._partProxies[0] && this._splatsData) {
-                        const proxyVertexCount = this._partProxies.reduce((sum, proxy) => sum + (proxy ? proxy.proxiedMesh._vertexCount : 0), 0);
+                        const proxyVertexCount = this._partProxies.reduce((sum, proxy) => sum + (proxy ? proxy._vertexCount : 0), 0);
                         const part0Count = splatCountA - proxyVertexCount;
                         if (part0Count > 0) {
-                            const uBufA = new Uint8Array(this._splatsData);
-                            const fBufA = new Float32Array(this._splatsData);
+                            const uBufA = GaussianSplattingMeshBase._GetSplatDataBytes(this._splatsData);
+                            const fBufA = GaussianSplattingMeshBase._GetSplatDataFloats(this._splatsData);
                             for (let i = 0; i < part0Count; i++) {
                                 this._makeSplat(i, fBufA, uBufA, covA, covB, colorArray, minimum, maximum, false);
                             }
@@ -485,11 +688,15 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
                     // scenario B, part 0 is itself a proxied part with no implicit "own" data.
                     for (let partIndex = 0; partIndex < this._partProxies.length; partIndex++) {
                         const proxy = this._partProxies[partIndex];
-                        if (!proxy || !proxy.proxiedMesh) {
+                        if (!proxy) {
                             continue;
                         }
-                        this._appendSourceToArrays(proxy.proxiedMesh, rebuildOffset, covA, covB, colorArray, sh, minimum, maximum);
-                        rebuildOffset += proxy.proxiedMesh._vertexCount;
+                        const source = this._createRetainedPartSource(proxy);
+                        if (!source) {
+                            throw new Error(`Cannot rebuild compound part "${proxy.name}": the retained compound source data is not available.`);
+                        }
+                        this._appendPartSourceToArrays(source, rebuildOffset, covA, covB, colorArray, sh, minimum, maximum);
+                        rebuildOffset += source._vertexCount;
                     }
                 } else {
                     // No proxies yet: this is the very first addPart call on a mesh that loaded
@@ -498,8 +705,8 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
                     // In the preferred scenario B (empty composer) splatCountA is 0 and this
                     // entire branch is skipped by the outer `if (splatCountA > 0)` guard.
                     if (this._splatsData) {
-                        const uBufA = new Uint8Array(this._splatsData);
-                        const fBufA = new Float32Array(this._splatsData);
+                        const uBufA = GaussianSplattingMeshBase._GetSplatDataBytes(this._splatsData);
+                        const fBufA = GaussianSplattingMeshBase._GetSplatDataFloats(this._splatsData);
                         for (let i = 0; i < splatCountA; i++) {
                             this._makeSplat(i, fBufA, uBufA, covA, covB, colorArray, minimum, maximum, false);
                         }
@@ -528,8 +735,8 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
                     // addPart call (scenario A legacy path). Re-process the partial boundary
                     // row so it is not clobbered by stale zeros during the sub-texture upload.
                     if (this._splatsData) {
-                        const uBufA = new Uint8Array(this._splatsData);
-                        const fBufA = new Float32Array(this._splatsData);
+                        const uBufA = GaussianSplattingMeshBase._GetSplatDataBytes(this._splatsData);
+                        const fBufA = GaussianSplattingMeshBase._GetSplatDataFloats(this._splatsData);
                         for (let i = firstNewTexel; i < splatCountA; i++) {
                             this._makeSplat(i, fBufA, uBufA, covA, covB, colorArray, minimum, maximum, false, i);
                         }
@@ -541,29 +748,32 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
                     // Handles both layouts (see full-rebuild comment above):
                     //   A) LEGACY: _partProxies[0] absent → seed lookup[0] with this._splatsData
                     //   B) PREFERRED: _partProxies[0] present → all entries filled from proxies
-                    const proxyTotal = this._partProxies.reduce((s, p) => s + (p ? p.proxiedMesh._vertexCount : 0), 0);
+                    const proxyTotal = this._partProxies.reduce((s, p) => s + (p ? p._vertexCount : 0), 0);
                     const part0Count = splatCountA - proxyTotal; // > 0 only in legacy scenario A
                     const srcUBufs: (Uint8Array | null)[] = new Array(this._partProxies.length).fill(null);
                     const srcFBufs: (Float32Array | null)[] = new Array(this._partProxies.length).fill(null);
                     const partStarts: number[] = new Array(this._partProxies.length).fill(0);
                     // Legacy scenario A: part 0 is the mesh's own loaded data.
                     if (!this._partProxies[0] && this._splatsData && part0Count > 0) {
-                        srcUBufs[0] = new Uint8Array(this._splatsData);
-                        srcFBufs[0] = new Float32Array(this._splatsData);
+                        srcUBufs[0] = GaussianSplattingMeshBase._GetSplatDataBytes(this._splatsData);
+                        srcFBufs[0] = GaussianSplattingMeshBase._GetSplatDataFloats(this._splatsData);
                         partStarts[0] = 0;
                     }
                     // All proxied parts — start from pi=0 to cover preferred scenario B.
                     let cumOffset = part0Count;
                     for (let pi = 0; pi < this._partProxies.length; pi++) {
                         const proxy = this._partProxies[pi];
-                        if (!proxy?.proxiedMesh) {
+                        if (!proxy) {
                             continue;
                         }
-                        const srcData = proxy.proxiedMesh._splatsData ?? null;
-                        srcUBufs[pi] = srcData ? new Uint8Array(srcData) : null;
-                        srcFBufs[pi] = srcData ? new Float32Array(srcData) : null;
+                        const source = this._createRetainedPartSource(proxy);
+                        if (!source || !source._splatsData) {
+                            throw new Error(`Cannot rebuild compound part "${proxy.name}": the retained compound source data is not available.`);
+                        }
+                        srcUBufs[pi] = GaussianSplattingMeshBase._GetSplatDataBytes(source._splatsData);
+                        srcFBufs[pi] = GaussianSplattingMeshBase._GetSplatDataFloats(source._splatsData);
                         partStarts[pi] = cumOffset;
-                        cumOffset += proxy.proxiedMesh._vertexCount;
+                        cumOffset += source._vertexCount;
                     }
                     for (let splatIdx = firstNewTexel; splatIdx < splatCountA; splatIdx++) {
                         const partIdx = this._partIndices ? this._partIndices[splatIdx] : 0;
@@ -580,7 +790,7 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
         // Append each new source
         dstOffset = splatCountA;
         for (const other of others) {
-            this._appendSourceToArrays(other, dstOffset, covA, covB, colorArray, sh, minimum, maximum);
+            this._appendPartSourceToArrays(other, dstOffset, covA, covB, colorArray, sh, minimum, maximum);
             dstOffset += other._vertexCount;
         }
 
@@ -594,51 +804,93 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
         if (totalCount !== this._vertexCount) {
             this._updateSplatIndexBuffer(totalCount);
         }
+        this._retainMergedPartData(splatCountA, totalCount, others, shDegreeNew);
         this._vertexCount = totalCount;
         this._shDegree = shDegreeNew;
 
-        // --- Upload to GPU ---
-        if (incremental) {
-            // Update the part-indices texture (handles both create and update-in-place).
-            // _ensurePartIndicesTexture is a no-op when the texture already exists, so on the
-            // second+ addPart the partIndices would be stale without this call.
-            this._onUpdateTextures(textureSize);
-            this._updateSubTextures(this._splatPositions, covA, covB, colorArray, firstNewLine, textureSize.y - firstNewLine, sh);
-        } else {
-            this._updateTextures(covA, covB, colorArray, sh);
+        // Gate the sort worker for the duration of this operation. _updateTextures (below) may create the worker and fire an
+        // immediate sort via _postToWorker. At that point partMatrices has not yet been updated for the incoming parts, so the
+        // worker would compute depthCoeffs for fewer parts than partIndices references — crashing with
+        // "Cannot read properties of undefined (reading '0')".
+        // When called from removePart, _rebuilding is already true and _canPostToWorker is already false, so the gate is a
+        // no-op — removePart handles the final post+sort.
+        const needsWorkerGate = !this._rebuilding;
+        if (needsWorkerGate) {
+            this._canPostToWorker = false;
+            this._rebuilding = true;
         }
 
-        this.getBoundingInfo().reConstruct(minimum, maximum, this.getWorldMatrix());
-        this.setEnabled(true);
-        this._cachedBoundingMin = minimum.clone();
-        this._cachedBoundingMax = maximum.clone();
-        this._notifyWorkerNewData();
-
-        // --- Create proxy meshes ---
-        const proxyMeshes: GaussianSplattingPartProxyMesh[] = [];
-        for (let i = 0; i < others.length; i++) {
-            const other = others[i];
-            const newPartIndex = assignedPartIndices[i];
-
-            const partWorldMatrix = other.getWorldMatrix();
-            this.setWorldMatrixForPart(newPartIndex, partWorldMatrix);
-
-            const proxyMesh = new GaussianSplattingPartProxyMesh(other.name, this.getScene(), this, other, newPartIndex);
-
-            if (disposeOthers) {
-                other.dispose();
+        try {
+            // --- Upload to GPU ---
+            if (incremental) {
+                // Update the part-indices texture (handles both create and update-in-place).
+                // _ensurePartIndicesTexture is a no-op when the texture already exists, so on the
+                // second+ addPart the partIndices would be stale without this call.
+                this._onUpdateTextures(textureSize);
+                this._updateSubTextures(this._splatPositions, covA, covB, colorArray, firstNewLine, textureSize.y - firstNewLine, sh);
+            } else {
+                this._updateTextures(covA, covB, colorArray, sh);
             }
 
-            const quaternion = new Quaternion();
-            partWorldMatrix.decompose(proxyMesh.scaling, quaternion, proxyMesh.position);
-            proxyMesh.rotationQuaternion = quaternion;
-            proxyMesh.computeWorldMatrix(true);
+            this.getBoundingInfo().reConstruct(minimum, maximum, this.getWorldMatrix());
+            this.setEnabled(true);
+            this._cachedBoundingMin = minimum.clone();
+            this._cachedBoundingMax = maximum.clone();
+            this._notifyWorkerNewData();
 
-            this._partProxies[newPartIndex] = proxyMesh;
-            proxyMeshes.push(proxyMesh);
+            // --- Create proxy meshes ---
+            const proxyMeshes: GaussianSplattingPartProxyMesh[] = [];
+            for (let i = 0; i < others.length; i++) {
+                const other = others[i];
+                const newPartIndex = assignedPartIndices[i];
+
+                const partWorldMatrix = other.getWorldMatrix();
+                this.setWorldMatrixForPart(newPartIndex, partWorldMatrix);
+
+                const proxyMesh = new GaussianSplattingPartProxyMesh(
+                    other.name,
+                    this.getScene(),
+                    this,
+                    newPartIndex,
+                    other.getBoundingInfo(),
+                    other._vertexCount,
+                    assignedSplatsDataOffsets[i],
+                    assignedSplatsDataOffsets[i]
+                );
+
+                if (disposeOthers) {
+                    other.dispose();
+                }
+
+                const quaternion = new Quaternion();
+                partWorldMatrix.decompose(proxyMesh.scaling, quaternion, proxyMesh.position);
+                proxyMesh.rotationQuaternion = quaternion;
+                proxyMesh.computeWorldMatrix(true);
+
+                this._partProxies[newPartIndex] = proxyMesh;
+                proxyMeshes.push(proxyMesh);
+            }
+
+            // Restore the rebuild gate and post the now-complete partMatrices in one message, then trigger a single sort pass.
+            // This ensures the worker sees a consistent partMatrices array that matches the partIndices for every splat.
+            if (needsWorkerGate) {
+                this._rebuilding = false;
+                if (this._worker) {
+                    this._worker.postMessage({ partMatrices: this._partMatrices.map((matrix) => new Float32Array(matrix.m)) });
+                }
+                this._canPostToWorker = true;
+                this._postToWorker(true);
+            }
+
+            return { proxyMeshes, assignedPartIndices };
+        } catch (e) {
+            // Ensure the gates are always restored so sorting is not permanently frozen.
+            if (needsWorkerGate) {
+                this._rebuilding = false;
+                this._canPostToWorker = true;
+            }
+            throw e;
         }
-
-        return { proxyMeshes, assignedPartIndices };
     }
 
     // ---------------------------------------------------------------------------
@@ -647,7 +899,7 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
 
     /**
      * Add another mesh to this mesh, as a new part. This makes the current mesh a compound, if not already.
-     * The source mesh's splat data is read directly — no merged CPU buffer is constructed.
+     * The source mesh's splat data is read directly and copied into the compound's retained source buffers.
      * @param other - The other mesh to add. Must be fully loaded before calling this method.
      * @param disposeOther - Whether to dispose the other mesh after adding it to the current mesh.
      * @returns a placeholder mesh that can be used to manipulate the part transform
@@ -660,9 +912,9 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
 
     /**
      * Remove a part from this compound mesh.
-     * The remaining parts are rebuilt directly from their stored source mesh references —
-     * no merged CPU splat buffer is read back. The current mesh is reset to a plain (single-part)
-     * state and then each remaining source is re-added via addParts.
+     * The remaining parts are rebuilt directly from the compound mesh's retained source buffers.
+     * The current mesh is reset to a plain (single-part) state and then each remaining source is
+     * re-added via addParts.
      * @param index - The index of the part to remove
      * @deprecated Use {@link GaussianSplattingCompoundMesh.removePart} instead.
      */
@@ -672,19 +924,27 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
         }
 
         // Collect surviving proxy objects (sorted by current part index so part 0 is added first)
-        const survivors: Array<{ proxyMesh: GaussianSplattingPartProxyMesh; oldIndex: number; worldMatrix: Matrix; visibility: number }> = [];
+        const survivors: Array<{ proxyMesh: GaussianSplattingPartProxyMesh; source: IGaussianSplattingPartSource; oldIndex: number; worldMatrix: Matrix; visibility: number }> = [];
         for (let proxyIndex = 0; proxyIndex < this._partProxies.length; proxyIndex++) {
             const proxy = this._partProxies[proxyIndex];
-            if (proxy && proxyIndex !== index) {
-                survivors.push({ proxyMesh: proxy, oldIndex: proxyIndex, worldMatrix: proxy.getWorldMatrix().clone(), visibility: this._partVisibility[proxyIndex] ?? 1.0 });
+            if (!proxy || proxyIndex === index) {
+                continue;
             }
+            const source = this._createRetainedPartSource(proxy);
+            if (!source) {
+                throw new Error(`Cannot remove part: the retained compound source data is not available for part "${proxy.name}".`);
+            }
+            survivors.push({ proxyMesh: proxy, source, oldIndex: proxyIndex, worldMatrix: proxy.getWorldMatrix().clone(), visibility: this._partVisibility[proxyIndex] ?? 1.0 });
         }
         survivors.sort((a, b) => a.oldIndex - b.oldIndex);
 
         // Validate every survivor still has its source data. If even one is missing we cannot rebuild.
-        for (const { proxyMesh } of survivors) {
-            if (!proxyMesh.proxiedMesh._splatsData) {
-                throw new Error(`Cannot remove part: the source mesh for part "${proxyMesh.name}" no longer has its splat data available.`);
+        for (const { proxyMesh, source } of survivors) {
+            if (!source._splatsData) {
+                throw new Error(`Cannot remove part: the source data for part "${proxyMesh.name}" is not available.`);
+            }
+            if (source._shDegree > 0 && !source._shData) {
+                throw new Error(`Cannot remove part: the SH data for part "${proxyMesh.name}" is not available.`);
             }
         }
 
@@ -704,10 +964,16 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
         this._covariancesBTexture?.dispose();
         this._centersTexture?.dispose();
         this._colorsTexture?.dispose();
+        this._rotationsATexture?.dispose();
+        this._rotationsBTexture?.dispose();
+        this._rotationScaleTexture?.dispose();
         this._covariancesATexture = null;
         this._covariancesBTexture = null;
         this._centersTexture = null;
         this._colorsTexture = null;
+        this._rotationsATexture = null;
+        this._rotationsBTexture = null;
+        this._rotationScaleTexture = null;
         if (this._shTextures) {
             for (const t of this._shTextures) {
                 t.dispose();
@@ -725,6 +991,9 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
         this._partVisibility = [];
         this._cachedBoundingMin = null;
         this._cachedBoundingMax = null;
+        this._splatsData = null;
+        this._shData = null;
+        this._shDegree = 0;
 
         // Remove the proxy for the removed part and dispose it
         const proxyToRemove = this._partProxies[index];
@@ -744,38 +1013,164 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
         // Gate the sort worker: suppress any sort request until the full rebuild is committed.
         this._rebuilding = true;
         this._canPostToWorker = false;
-        const sources = survivors.map((s) => s.proxyMesh.proxiedMesh);
-        const { proxyMeshes: newProxies } = this._addPartsInternal(sources, false);
+        try {
+            const sources = survivors.map((s) => s.source);
+            const { proxyMeshes: newProxies } = this._addPartsInternal(sources, false);
 
-        // Restore world matrices and re-map proxies
-        for (let i = 0; i < survivors.length; i++) {
-            const oldProxy = survivors[i].proxyMesh;
-            const newProxy = newProxies[i];
-            const newPartIndex = newProxy.partIndex;
+            // Restore world matrices and re-map proxies
+            for (let i = 0; i < survivors.length; i++) {
+                const oldProxy = survivors[i].proxyMesh;
+                const newProxy = newProxies[i];
+                const newPartIndex = newProxy.partIndex;
 
-            // Restore the world matrix and visibility the user had set on the old proxy
-            this.setWorldMatrixForPart(newPartIndex, survivors[i].worldMatrix);
-            this.setPartVisibility(newPartIndex, survivors[i].visibility);
-            const quaternion = new Quaternion();
-            survivors[i].worldMatrix.decompose(newProxy.scaling, quaternion, newProxy.position);
-            newProxy.rotationQuaternion = quaternion;
-            newProxy.computeWorldMatrix(true);
+                // Restore the world matrix and visibility the user had set on the old proxy
+                this.setWorldMatrixForPart(newPartIndex, survivors[i].worldMatrix);
+                this.setPartVisibility(newPartIndex, survivors[i].visibility);
+                const quaternion = new Quaternion();
+                survivors[i].worldMatrix.decompose(newProxy.scaling, quaternion, newProxy.position);
+                newProxy.rotationQuaternion = quaternion;
+                newProxy.computeWorldMatrix(true);
 
-            // Update the old proxy's index so any existing user references still work
-            oldProxy.updatePartIndex(newPartIndex);
-            this._partProxies[newPartIndex] = oldProxy;
+                // Update the old proxy's index and metadata so existing user references still work.
+                oldProxy.updatePartIndex(newPartIndex);
+                oldProxy.updatePartMetadata(newProxy._vertexCount, newProxy._splatsDataOffset, newProxy._shDataOffset);
+                this._partProxies[newPartIndex] = oldProxy;
 
-            // newProxy is redundant — it was created inside _addPartsInternal; dispose it
-            newProxy.dispose();
+                // newProxy is redundant — it was created inside _addPartsInternal; dispose it
+                newProxy.dispose();
+            }
+
+            // Rebuild is complete: all partMatrices are now set correctly.
+            // Post the final complete set and fire one sort.
+            this._rebuilding = false;
+            // Break TypeScript's flow narrowing — _addPartsInternal may have reinstantiated _worker.
+            const workerAfterRebuild = this._worker as Worker | null;
+            workerAfterRebuild?.postMessage({ partMatrices: this._partMatrices.map((matrix) => new Float32Array(matrix.m)) });
+            this._canPostToWorker = true;
+            this._postToWorker(true);
+        } catch (e) {
+            // Ensure the gates are always restored so sorting is not permanently frozen.
+            this._rebuilding = false;
+            this._canPostToWorker = true;
+            throw e;
+        }
+    }
+
+    /**
+     * Serialize current GaussianSplattingMesh
+     * @param serializationObject defines the object which will receive the serialization data
+     * @param encoding the encoding of binary data, defaults to base64 for json serialize,
+     * kept for future internal use like cloning where base64 encoding wastes cycles and memory
+     * @returns the serialized object
+     */
+    public override serialize(serializationObject: any = {}, encoding: string = "base64"): any {
+        serializationObject = super.serialize(serializationObject);
+        serializationObject.subMeshes = [];
+        serializationObject.geometryUniqueId = undefined;
+        serializationObject.geometryId = undefined;
+        serializationObject.materialUniqueId = undefined;
+        serializationObject.materialId = undefined;
+        serializationObject.instances = [];
+        serializationObject.actions = undefined;
+        serializationObject.type = this.getClassName();
+        serializationObject.keepInRam = this._keepInRam;
+        serializationObject.disableDepthSort = this._disableDepthSort;
+        serializationObject.viewUpdateThreshold = this.viewUpdateThreshold;
+        serializationObject._flipY = this._flipY;
+
+        if (this._splatsData) {
+            serializationObject.splatsData = encoding === "base64" ? EncodeArrayBufferToBase64(this._splatsData) : this._splatsData;
+        }
+        if (this._shData) {
+            serializationObject.shData = encoding === "base64" ? this._shData.map(EncodeArrayBufferToBase64) : this._shData;
+        }
+        if (this._partIndices) {
+            const compressedIndices = CompressPartIndices(this._partIndices.subarray(0, this._vertexCount));
+            serializationObject.partIndices = encoding === "base64" ? EncodeArrayBufferToBase64(compressedIndices) : compressedIndices;
+        }
+        if (this._partProxies.length) {
+            serializationObject.partProxies = this._partProxies.filter((proxy) => !!proxy).map((proxy) => proxy.serialize());
         }
 
-        // Rebuild is complete: all partMatrices are now set correctly.
-        // Post the final complete set and fire one sort.
-        this._rebuilding = false;
-        // Break TypeScript's flow narrowing — _addPartsInternal may have reinstantiated _worker.
-        const workerAfterRebuild = this._worker as Worker | null;
-        workerAfterRebuild?.postMessage({ partMatrices: this._partMatrices.map((matrix) => new Float32Array(matrix.m)) });
-        this._canPostToWorker = true;
-        this._postToWorker(true);
+        return serializationObject;
+    }
+
+    /**
+     * Internal helper to parses a serialized GaussianSplattingMesh or GaussianSplattingCompoundMesh
+     * @param parsedMesh the serialized mesh
+     * @param scene the scene to create the GaussianSplattingMesh or GaussianSplattingCompoundMesh in
+     * @param ctor the constructor of the mesh to create
+     * @returns the created GaussianSplattingMesh
+     * @internal
+     */
+    public static _ParseInternal<T extends GaussianSplattingMesh>(
+        parsedMesh: any,
+        scene: Scene,
+        ctor: new (name: string, url: Nullable<string>, scene: Nullable<Scene>, keepInRam: boolean) => T
+    ): T {
+        const mesh = new ctor(parsedMesh.name, null, scene, parsedMesh.keepInRam);
+
+        mesh.disableDepthSort = parsedMesh.disableDepthSort ?? false;
+        mesh.viewUpdateThreshold = parsedMesh.viewUpdateThreshold ?? GaussianSplattingMeshBase._DefaultViewUpdateThreshold;
+
+        let splatsData: ArrayBuffer | string | undefined = parsedMesh.splatsData;
+        if (typeof splatsData === "string") {
+            splatsData = DecodeBase64ToBinary(splatsData);
+        }
+
+        const shData: string[] | Uint8Array[] | undefined = parsedMesh.shData;
+        let parsedShData: Uint8Array[] | undefined;
+        if (Array.isArray(shData) && shData.length) {
+            const newData: Uint8Array[] = [];
+            for (let i = 0, length = shData.length; i < length; i++) {
+                const data = shData[i];
+                if (typeof data === "string") {
+                    newData[i] = new Uint8Array(DecodeBase64ToBinary(data));
+                } else {
+                    newData[i] = data;
+                }
+            }
+            parsedShData = newData;
+        }
+
+        let partIndices: string | Uint32Array | number[] | undefined = parsedMesh.partIndices;
+        let parsedPartIndices: Uint8Array | undefined;
+        if (typeof partIndices === "string") {
+            partIndices = new Uint32Array(DecodeBase64ToBinary(partIndices));
+        }
+        if (partIndices) {
+            parsedPartIndices = ParsePartIndices(partIndices);
+        }
+
+        if (splatsData) {
+            const flipY = parsedMesh._flipY ?? false;
+            mesh.updateData(splatsData, parsedShData, { flipY }, parsedPartIndices);
+        }
+
+        if (parsedMesh.partProxies) {
+            for (const serializedPart of parsedMesh.partProxies) {
+                const part = Object.assign({}, serializedPart);
+                part.compoundSplatMesh = mesh;
+                const proxyMesh = Mesh.Parse(part, scene, "") as GaussianSplattingPartProxyMesh;
+                const newPartIndex = proxyMesh.partIndex;
+                mesh._partProxies[newPartIndex] = proxyMesh;
+                mesh.setWorldMatrixForPart(newPartIndex, proxyMesh.getWorldMatrix());
+                mesh.setPartVisibility(newPartIndex, proxyMesh.visibility);
+            }
+        }
+
+        return mesh;
+    }
+
+    /**
+     * Parses a serialized GaussianSplattingMesh
+     * @param parsedMesh the serialized mesh
+     * @param scene the scene to create the GaussianSplattingMesh in
+     * @returns the created GaussianSplattingMesh
+     */
+    public static override Parse(parsedMesh: any, scene: Scene): GaussianSplattingMesh {
+        return GaussianSplattingMesh._ParseInternal(parsedMesh, scene, GaussianSplattingMesh);
     }
 }
+
+Mesh._GaussianSplattingMeshParser = GaussianSplattingMesh.Parse;

@@ -7,7 +7,7 @@ import { Tools } from "core/Misc/tools";
 import { FileUploadLine } from "shared-ui-components/fluent/hoc/fileUploadLine";
 import { Label } from "@fluentui/react-components";
 import { Logger } from "core/Misc/logger";
-import { useResource } from "../../../hooks/resourceHooks";
+import { useResource } from "shared-ui-components/modularTool/hooks/resourceHooks";
 
 export const SceneReplayTool: FunctionComponent<{ scene: Scene }> = ({ scene }) => {
     const [isRecording, setIsRecording] = useState(false);

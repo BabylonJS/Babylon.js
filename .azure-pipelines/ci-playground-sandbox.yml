@@ -5,9 +5,9 @@
 # Triggers on PRs that touch playground, sandbox, or inspector-v2 files.
 # Builds and tests both Playground and Sandbox in parallel jobs.
 #
-# Secret variables (configure in pipeline UI):
-#   - BASIC_AUTH
-#   - DEPLOYMENT_SERVER
+# Variable groups:
+#   - BabylonJS-CI-Infrastructure
+#   - BabylonJS-Deployment (BASIC_AUTH, DEPLOYMENT_SERVER)
 # =============================================================================
 
 trigger: none
@@ -28,6 +28,7 @@ pr:
 
 variables:
     - group: BabylonJS-CI-Infrastructure
+    - group: BabylonJS-Deployment
     - name: BuildName
       value: $(Build.SourceBranch)
 
@@ -45,10 +46,10 @@ jobs:
             clean: true
             fetchTags: false
 
-          - task: NodeTool@0
-            displayName: "Use Node 22.4.1"
+          - task: UseNode@1
+            displayName: "Use Node 22.x"
             inputs:
-                versionSpec: "22.4.1"
+                version: "22.x"
 
           - task: Npm@1
             displayName: "npm install"
@@ -145,10 +146,10 @@ jobs:
             clean: true
             fetchTags: false
 
-          - task: NodeTool@0
-            displayName: "Use Node 22.4.1"
+          - task: UseNode@1
+            displayName: "Use Node 22.x"
             inputs:
-                versionSpec: "22.4.1"
+                version: "22.x"
 
           - task: Npm@1
             displayName: "npm install"

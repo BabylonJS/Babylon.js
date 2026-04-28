@@ -5,6 +5,7 @@ import { PropertyTabComponent } from "./components/propertyTab/propertyTabCompon
 import { Portal } from "./portal";
 import { LogComponent, LogEntry } from "./components/log/logComponent";
 import { type Nullable } from "core/types";
+import { type Observer } from "core/Misc/observable";
 import { MessageDialog } from "shared-ui-components/components/MessageDialog";
 import { SerializationTools } from "./serializationTools";
 import { blockFactory } from "core/FlowGraph/Blocks/flowGraphBlockFactory";
@@ -25,12 +26,18 @@ import { Splitter } from "shared-ui-components/split/splitter";
 import { ControlledSize, SplitDirection } from "shared-ui-components/split/splitContext";
 import { ScenePreviewComponent } from "./components/preview/scenePreviewComponent";
 import { GraphControlsComponent } from "./components/graphControls/graphControlsComponent";
+import { VariablesPanelComponent } from "./components/variables/variablesPanelComponent";
 import { HistoryStack } from "shared-ui-components/historyStack";
-import { type FlowGraphEventBlock } from "core/FlowGraph/flowGraphEventBlock";
+import { FlowGraphEventBlock } from "core/FlowGraph/flowGraphEventBlock";
 import { type IFlowGraphValidationResult, FlowGraphValidationSeverity } from "core/FlowGraph/flowGraphValidator";
 import { AnalyzeSmartGroup, ApplySmartGroupExposure } from "./graphSystem/smartGroup";
 import { HelpDialogComponent } from "./components/help/helpDialogComponent";
 import { type HelpTopicId } from "./components/help/helpContent";
+import { ContextMenuComponent, type ContextMenuEntry } from "./components/contextMenu/contextMenuComponent";
+import { ToastContainerComponent, ShowToast } from "./components/toast/toastComponent";
+import { HowToUseDialogComponent } from "./components/howToUse/howToUseDialogComponent";
+import { AllCompositeTemplates, type ICompositeTemplate } from "./compositeTemplates";
+import { GraphTabBarComponent } from "./components/graphTabBar/graphTabBarComponent";
 
 /**
  * Pre-populate string (and other primitive) config fields for blocks whose constructors
@@ -46,6 +53,8 @@ interface IGraphEditorState {
     message: string;
     isError: boolean;
     helpTopicId: HelpTopicId | undefined | null;
+    contextMenu: { x: number; y: number; items: ContextMenuEntry[] } | null;
+    showHowToUse: boolean;
 }
 
 /**
@@ -60,7 +69,13 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
     private _mouseLocationY = 0;
     private _onWidgetKeyUpPointer: any;
     private _historyStack: HistoryStack;
+    private _helpObserver: Nullable<Observer<any>> = null;
+    private _howToUseObserver: Nullable<Observer<void>> = null;
+    private _beforeActiveGraphObserver: Nullable<Observer<any>> = null;
+    private _activeGraphObserver: Nullable<Observer<any>> = null;
     private _blockClassRegistry = new Map<string, typeof FlowGraphBlock>();
+    /** Cache for O(1) block→GraphNode lookups (rebuilt on graph load) */
+    private _blockToNodeMap = new Map<FlowGraphBlock, GraphNode>();
 
     private _onDocumentKeyDown = (evt: KeyboardEvent) => {
         if (this._historyStack && this._historyStack.processKeyEvent(evt)) {
@@ -154,8 +169,19 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
             try {
                 const fg = globalState.flowGraph;
                 SerializationTools.UpdateLocations(fg, globalState);
+                // Snapshot live contexts so undo/redo preserves user variables,
+                // variable types, and connection values even when the graph is stopped.
+                globalState.snapshotUserVariables();
                 const serializationObject: any = {};
                 fg.serialize(serializationObject);
+                // Inject saved context snapshots when the graph has no live contexts
+                if (
+                    (!serializationObject.executionContexts || serializationObject.executionContexts.length === 0) &&
+                    globalState.savedContextSnapshots &&
+                    globalState.savedContextSnapshots.length > 0
+                ) {
+                    serializationObject.executionContexts = globalState.savedContextSnapshots;
+                }
                 // Include editor layout so positions are restored on undo/redo
                 serializationObject.editorData = (fg as any)._editorData;
                 // Cache block class constructors for synchronous parsing in applyUpdate
@@ -174,14 +200,41 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
             globalState.stateManager.onSelectionChangedObservable.notifyObservers(null);
             // Resolve block classes synchronously from the session-wide registry
             const resolvedClasses = (data.allBlocks || []).map((b: any) => this._blockClassRegistry.get(b.className)!);
-            // Parse the snapshot into a new FlowGraph synchronously
-            const coordinator = new FlowGraphCoordinator({ scene: globalState.scene });
-            const parsedGraph = ParseFlowGraph(data, { coordinator }, resolvedClasses);
-            SerializationTools.PreserveUnresolvedNames(parsedGraph, data);
-            if (data.editorData) {
-                (parsedGraph as any)._editorData = data.editorData;
+
+            // When we have a coordinator with multiple graphs, replace only the
+            // active graph. Otherwise fall back to creating a throwaway coordinator
+            // (legacy path, also used for single-graph sessions).
+            const existingCoordinator = globalState.coordinator;
+            if (existingCoordinator && existingCoordinator.flowGraphs.length > 0) {
+                const activeIndex = globalState.activeGraphIndex;
+                const oldGraph = existingCoordinator.flowGraphs[activeIndex];
+                if (oldGraph) {
+                    existingCoordinator.removeGraph(oldGraph);
+                }
+                // Parse into the existing coordinator
+                const parsedGraph = ParseFlowGraph(data, { coordinator: existingCoordinator }, resolvedClasses);
+                // Move the parsed graph to the correct position in the coordinator
+                const graphs = existingCoordinator.flowGraphs;
+                const currentIndex = graphs.indexOf(parsedGraph);
+                if (currentIndex !== activeIndex && currentIndex >= 0) {
+                    graphs.splice(currentIndex, 1);
+                    graphs.splice(activeIndex, 0, parsedGraph);
+                }
+                SerializationTools.PreserveUnresolvedNames(parsedGraph, data);
+                if (data.editorData) {
+                    (parsedGraph as any)._editorData = data.editorData;
+                }
+                globalState.flowGraph = parsedGraph;
+            } else {
+                // Fallback: create a throwaway coordinator
+                const coordinator = new FlowGraphCoordinator({ scene: globalState.scene });
+                const parsedGraph = ParseFlowGraph(data, { coordinator }, resolvedClasses);
+                SerializationTools.PreserveUnresolvedNames(parsedGraph, data);
+                if (data.editorData) {
+                    (parsedGraph as any)._editorData = data.editorData;
+                }
+                globalState.flowGraph = parsedGraph;
             }
-            globalState.flowGraph = parsedGraph;
             globalState.onResetRequiredObservable.notifyObservers(false);
         };
 
@@ -224,8 +277,12 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         this.build();
         this.props.globalState.onClearUndoStack.notifyObservers();
 
-        this.props.globalState.onHelpRequested.add((topicId) => {
+        this._helpObserver = this.props.globalState.onHelpRequested.add((topicId) => {
             this.setState({ helpTopicId: topicId ?? undefined });
+        });
+
+        this._howToUseObserver = this.props.globalState.onHowToUseRequested.add(() => {
+            this.setState({ showHowToUse: true });
         });
     }
 
@@ -249,6 +306,15 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         globalState.onClearUndoStack.clear();
         globalState.cancelPendingValidation();
 
+        this._helpObserver?.remove();
+        this._helpObserver = null;
+        this._howToUseObserver?.remove();
+        this._howToUseObserver = null;
+        this._beforeActiveGraphObserver?.remove();
+        this._beforeActiveGraphObserver = null;
+        this._activeGraphObserver?.remove();
+        this._activeGraphObserver = null;
+
         if (this._historyStack) {
             this._historyStack.dispose();
             this._historyStack = null as any;
@@ -263,6 +329,8 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
             message: "",
             isError: true,
             helpTopicId: null,
+            contextMenu: null,
+            showHowToUse: false,
         };
 
         this._graphCanvasRef = React.createRef();
@@ -280,6 +348,14 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
 
             const selectedLink = this._graphCanvas.selectedLink;
             const selectedNode = this._graphCanvas.selectedNodes.length ? this._graphCanvas.selectedNodes[0] : null;
+
+            // Check if this is a composite template
+            const emitTemplate = AllCompositeTemplates[eventData.type];
+            if (emitTemplate) {
+                await this._emitTemplateAsync(emitTemplate, targetX, targetY);
+                return;
+            }
+
             const newNode = await this._emitNewBlockAsync(eventData.type, targetX, targetY);
 
             if (newNode && eventData.smartAdd) {
@@ -301,6 +377,18 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
             } else {
                 this.build();
             }
+        });
+
+        // Persist canvas state (zoom, pan, node positions) on the outgoing graph
+        // so it is restored when the user switches back to that tab.
+        this._beforeActiveGraphObserver = this.props.globalState.onBeforeActiveGraphChanged.add((outgoingGraph) => {
+            SerializationTools.UpdateLocations(outgoingGraph, this.props.globalState);
+        });
+
+        // Rebuild the canvas when the active graph changes (multi-graph tab switch)
+        this._activeGraphObserver = this.props.globalState.onActiveGraphChanged.add(() => {
+            this.build();
+            this.props.globalState.onClearUndoStack.notifyObservers();
         });
 
         this.props.globalState.onImportFrameObservable.add((source: any) => {
@@ -326,7 +414,34 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         });
 
         this.props.globalState.onGetNodeFromBlock = (block) => {
-            return this._graphCanvas.findNodeFromData(block);
+            let node = this._blockToNodeMap.get(block);
+            if (!node) {
+                node = this._graphCanvas.findNodeFromData(block);
+                if (node) {
+                    this._blockToNodeMap.set(block, node);
+                }
+            }
+            return node;
+        };
+
+        // Viewport-based visibility check for debug highlighting.
+        // Uses cached node x/y and the canvas transform — no DOM queries.
+        this.props.globalState.isNodeVisible = (node: GraphNode) => {
+            const gc = this._graphCanvas;
+            const zoom = gc.zoom;
+            // Canvas-space viewport bounds
+            const viewLeft = -gc.x / zoom;
+            const viewTop = -gc.y / zoom;
+            const container = this._diagramContainerRef.current;
+            if (!container) {
+                return true; // fallback: treat as visible
+            }
+            const viewRight = viewLeft + container.clientWidth / zoom;
+            const viewBottom = viewTop + container.clientHeight / zoom;
+            // Node bounds (approximate — use cached width/height or generous defaults)
+            const nodeRight = node.x + 320; // typical max node width
+            const nodeBottom = node.y + 200; // typical max node height
+            return nodeRight >= viewLeft && node.x <= viewRight && nodeBottom >= viewTop && node.y <= viewBottom;
         };
 
         this.props.globalState.hostDocument.removeEventListener("keydown", this._onDocumentKeyDown, false);
@@ -457,13 +572,25 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
 
         // Reset the diagram
         this._graphCanvas.reset();
+        this._blockToNodeMap.clear();
 
         // Load graph of nodes from the flow graph
         if (this.props.globalState.flowGraph) {
             this.loadGraph();
         }
 
-        this.reOrganize(editorData);
+        if (editorData) {
+            this.reOrganize(editorData);
+        } else {
+            // No saved positions — defer auto-layout until after the browser
+            // has painted so that node DOM elements have real dimensions.
+            // setTimeout(0) defers to the next macro-task, after the browser
+            // has completed layout and paint. rAF alone is not sufficient
+            // because it fires *before* layout in some browsers.
+            setTimeout(() => {
+                this.reOrganize(null);
+            }, 0);
+        }
 
         // Notify that the graph has been (re-)built so components like
         // GraphControlsComponent can re-subscribe to the current flow graph.
@@ -511,8 +638,42 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         this.showWaitScreen();
         this._graphCanvas._isLoading = true;
 
-        this._graphCanvas.reOrganize(editorData, isImportingAFrame);
+        if (!editorData && this._graphCanvas.nodes.length > 100) {
+            // For large graphs (e.g. KHR_interactivity flocking demo), dagre
+            // layout is too expensive and freezes the browser.  Use a simple
+            // grid layout instead.
+            this._gridLayout();
+        } else {
+            this._graphCanvas.reOrganize(editorData, isImportingAFrame);
+        }
+
+        // Ensure loading flag is cleared and links are rendered.
+        // graphCanvas.reOrganize does this internally, but _gridLayout
+        // bypasses it, so we always do it here to be safe.
+        this._graphCanvas._isLoading = false;
+        for (const node of this._graphCanvas.nodes) {
+            node._refreshLinks();
+        }
         this.hideWaitScreen();
+    }
+
+    /**
+     * Fast grid layout for large graphs — avoids the O(V*E) dagre cost.
+     * Places nodes in a left-to-right grid with fixed column widths.
+     */
+    private _gridLayout() {
+        const nodes = this._graphCanvas.nodes;
+        const cols = Math.ceil(Math.sqrt(nodes.length));
+        const colWidth = 340;
+        const rowHeight = 200;
+        for (let i = 0; i < nodes.length; i++) {
+            nodes[i].x = (i % cols) * colWidth;
+            nodes[i].y = Math.floor(i / cols) * rowHeight;
+            nodes[i].cleanAccumulation();
+        }
+        this._graphCanvas.x = 0;
+        this._graphCanvas.y = 0;
+        this._graphCanvas.zoom = 1;
     }
 
     /** @internal */
@@ -533,6 +694,206 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         const scrollLeftMax = targetElem.scrollWidth - targetElem.offsetWidth;
         if (targetElem.scrollLeft + evt.deltaX < 0 || targetElem.scrollLeft + evt.deltaX > scrollLeftMax) {
             return evt.preventDefault();
+        }
+    };
+
+    /**
+     * Handle right-click context menu on the canvas.
+     * Determines what was clicked and builds the appropriate menu.
+     * @param evt the mouse event from the right-click
+     */
+    private _onContextMenu = (evt: React.MouseEvent) => {
+        // Don't suppress native context menu for text inputs
+        const target = evt.target;
+        if (target instanceof HTMLElement && (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.closest("[contenteditable]"))) {
+            return;
+        }
+        evt.preventDefault();
+        evt.stopPropagation();
+
+        const globalState = this.props.globalState;
+        const canvas = this._graphCanvas;
+        const items: ContextMenuEntry[] = [];
+
+        const selectedNodes = canvas.selectedNodes;
+        const selectedLink = canvas.selectedLink;
+        const selectedFrames = canvas.selectedFrames;
+
+        const isMac = navigator.platform.indexOf("Mac") >= 0;
+        const ctrlKey = isMac ? "⌘" : "Ctrl";
+
+        if (selectedNodes.length > 0) {
+            // ── Node context menu ──
+            items.push({
+                label: "Delete",
+                shortcut: "Del",
+                action: () => {
+                    for (const node of [...selectedNodes]) {
+                        const block = node.content?.data as FlowGraphBlock;
+                        if (block) {
+                            globalState.flowGraph.removeBlock(block);
+                        }
+                        node.dispose();
+                    }
+                    globalState.stateManager.onSelectionChangedObservable.notifyObservers(null);
+                    globalState.stateManager.onRebuildRequiredObservable.notifyObservers();
+                },
+            });
+            items.push({
+                label: "Duplicate",
+                shortcut: `${ctrlKey}+C / ${ctrlKey}+V`,
+                action: () => {
+                    // Update mouse location so paste places nodes at the right-click position
+                    this._mouseLocationX = evt.pageX;
+                    this._mouseLocationY = evt.pageY;
+                    // Use the copy/paste mechanism
+                    const keydownC = new KeyboardEvent("keydown", { key: "c", ctrlKey: !isMac, metaKey: isMac, bubbles: true });
+                    globalState.hostDocument.dispatchEvent(keydownC);
+                    setTimeout(() => {
+                        const keydownV = new KeyboardEvent("keydown", { key: "v", ctrlKey: !isMac, metaKey: isMac, bubbles: true });
+                        globalState.hostDocument.dispatchEvent(keydownV);
+                    }, 50);
+                },
+            });
+            items.push({ isSeparator: true });
+            if (selectedNodes.length === 1) {
+                const block = selectedNodes[0].content?.data as FlowGraphBlock;
+                if (block instanceof FlowGraphExecutionBlock) {
+                    const hasBreakpoint = globalState.hasBreakpoint(block.uniqueId);
+                    items.push({
+                        label: hasBreakpoint ? "Remove Breakpoint" : "Add Breakpoint",
+                        shortcut: "F9",
+                        action: () => {
+                            globalState.toggleBreakpoint(block.uniqueId);
+                        },
+                    });
+                }
+            }
+            if (selectedNodes.length >= 2) {
+                items.push({
+                    label: "Create Smart Group",
+                    shortcut: `${ctrlKey}+G`,
+                    action: () => this._createSmartGroup(),
+                });
+            }
+            items.push({ isSeparator: true });
+            items.push({
+                label: "Disconnect All Ports",
+                action: () => {
+                    for (const node of selectedNodes) {
+                        const block = node.content?.data as FlowGraphBlock;
+                        if (!block) {
+                            continue;
+                        }
+                        for (const input of block.dataInputs) {
+                            input.disconnectFromAll();
+                        }
+                        for (const output of block.dataOutputs) {
+                            output.disconnectFromAll();
+                        }
+                        if (block instanceof FlowGraphExecutionBlock) {
+                            for (const sig of block.signalInputs) {
+                                sig.disconnectFromAll();
+                            }
+                            for (const sig of block.signalOutputs) {
+                                sig.disconnectFromAll();
+                            }
+                        }
+                    }
+                    globalState.stateManager.onRebuildRequiredObservable.notifyObservers();
+                    ShowToast(globalState, "Disconnected all ports", "info");
+                },
+            });
+        } else if (selectedLink) {
+            // ── Link context menu ──
+            items.push({
+                label: "Delete Connection",
+                shortcut: "Del",
+                action: () => {
+                    selectedLink.dispose();
+                    globalState.stateManager.onSelectionChangedObservable.notifyObservers(null);
+                    globalState.stateManager.onRebuildRequiredObservable.notifyObservers();
+                },
+            });
+        } else if (selectedFrames.length > 0) {
+            // ── Frame context menu ──
+            items.push({
+                label: "Delete Frame",
+                shortcut: "Del",
+                action: () => {
+                    for (const frame of [...selectedFrames]) {
+                        frame.dispose();
+                    }
+                    globalState.stateManager.onSelectionChangedObservable.notifyObservers(null);
+                },
+            });
+            if (selectedFrames.length === 1) {
+                const frame = selectedFrames[0];
+                items.push({
+                    label: frame.isCollapsed ? "Expand" : "Collapse",
+                    action: () => {
+                        frame.isCollapsed = !frame.isCollapsed;
+                    },
+                });
+            }
+        } else {
+            // ── Canvas background context menu ──
+            items.push({
+                label: "Add Block...",
+                shortcut: "Space",
+                action: () => {
+                    canvas.showSearch();
+                },
+            });
+            items.push({
+                label: "Paste",
+                shortcut: `${ctrlKey}+V`,
+                action: () => {
+                    // Update mouse location so paste places nodes at the right-click position
+                    this._mouseLocationX = evt.pageX;
+                    this._mouseLocationY = evt.pageY;
+                    const keydownV = new KeyboardEvent("keydown", { key: "v", ctrlKey: !isMac, metaKey: isMac, bubbles: true });
+                    globalState.hostDocument.dispatchEvent(keydownV);
+                },
+            });
+            items.push({ isSeparator: true });
+            items.push({
+                label: "Create Sticky Note",
+                shortcut: `${ctrlKey}+M`,
+                action: () => {
+                    const container = globalState.hostDocument.querySelector(".diagram-container") as HTMLDivElement;
+                    const zoomLevel = canvas.zoom;
+                    const x = (evt.clientX - (container?.offsetLeft ?? 0) - canvas.x) / zoomLevel;
+                    const y = (evt.clientY - (container?.offsetTop ?? 0) - canvas.y) / zoomLevel;
+                    canvas.addStickyNote(x, y);
+                },
+            });
+            items.push({ isSeparator: true });
+            items.push({
+                label: "Select All",
+                shortcut: `${ctrlKey}+A`,
+                action: () => {
+                    globalState.stateManager.onSelectionChangedObservable.notifyObservers(null);
+                    for (const node of canvas.nodes) {
+                        globalState.stateManager.onSelectionChangedObservable.notifyObservers({ selection: node, forceKeepSelection: true });
+                    }
+                    for (const frame of canvas.frames) {
+                        globalState.stateManager.onSelectionChangedObservable.notifyObservers({ selection: frame, forceKeepSelection: true });
+                    }
+                },
+            });
+            items.push({
+                label: "Zoom to Fit",
+                action: () => globalState.onZoomToFitRequiredObservable.notifyObservers(),
+            });
+            items.push({
+                label: "Reorganize",
+                action: () => globalState.onReOrganizedRequiredObservable.notifyObservers(),
+            });
+        }
+
+        if (items.length > 0) {
+            this.setState({ contextMenu: { x: evt.clientX, y: evt.clientY, items } });
         }
     };
 
@@ -684,9 +1045,8 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
             }
 
             // Register event blocks with the flow graph
-            const maybeEvent = newBlock as unknown as FlowGraphEventBlock;
-            if (typeof maybeEvent._executeEvent === "function") {
-                this.props.globalState.flowGraph.addEventBlock(maybeEvent);
+            if (newBlock instanceof FlowGraphEventBlock) {
+                this.props.globalState.flowGraph.addEventBlock(newBlock);
             } else {
                 this.props.globalState.flowGraph.addBlock(newBlock);
             }
@@ -716,15 +1076,16 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
             // Use the FlowGraph block factory to create the block asynchronously
             const factory = blockFactory(blockType);
             const blockClass = await factory();
-            const block = new (blockClass as any)({ name: blockType }) as FlowGraphBlock;
+            // Constant blocks need a default value so their output port type is resolved correctly.
+            const config: any = { name: blockType };
+            if (blockType === "FlowGraphConstantBlock") {
+                config.value = 0;
+            }
+            const block = new (blockClass as any)(config) as FlowGraphBlock;
 
             // If this is an event block, register it with the flow graph.
-            // We check for the _executeEvent method which is unique to FlowGraphEventBlock,
-            // rather than checking .type, because other blocks (e.g. GetAssetBlock) also
-            // have a .type field with a different meaning (FlowGraphDataConnection).
-            const maybeEvent = block as unknown as FlowGraphEventBlock;
-            if (typeof maybeEvent._executeEvent === "function") {
-                this.props.globalState.flowGraph.addEventBlock(maybeEvent);
+            if (block instanceof FlowGraphEventBlock) {
+                this.props.globalState.flowGraph.addEventBlock(block);
             } else {
                 this.props.globalState.flowGraph.addBlock(block);
             }
@@ -753,7 +1114,96 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         const data = event.dataTransfer.getData("babylonjs-flow-graph-node");
 
         const container = this._diagramContainerRef.current!;
-        void this._emitNewBlockAsync(data, event.clientX - container.offsetLeft, event.clientY - container.offsetTop);
+        const dropX = event.clientX - container.offsetLeft;
+        const dropY = event.clientY - container.offsetTop;
+
+        // Check if this is a composite template drop
+        const dropTemplate = AllCompositeTemplates[data];
+        if (dropTemplate) {
+            void this._emitTemplateAsync(dropTemplate, dropX, dropY);
+            return;
+        }
+
+        void this._emitNewBlockAsync(data, dropX, dropY);
+    }
+
+    /**
+     * Instantiate a composite template: create all blocks, position them, and wire connections.
+     * @param template - the template definition
+     * @param dropX - X position of the drop
+     * @param dropY - Y position of the drop
+     */
+    private async _emitTemplateAsync(template: ICompositeTemplate, dropX: number, dropY: number): Promise<void> {
+        const createdNodes: GraphNode[] = [];
+
+        // Pre-resolve all block classes in parallel to avoid await-in-loop
+        const blockClasses: (typeof FlowGraphBlock)[] = [];
+        try {
+            const factories = template.blocks.map((blockDef) => blockFactory(blockDef.className));
+            const resolved = await Promise.all(factories.map(async (f) => await f()));
+            blockClasses.push(...resolved);
+        } catch (err) {
+            this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry(`Error resolving template block classes: ${err}`, true));
+            return;
+        }
+
+        // Create all blocks
+        for (let i = 0; i < template.blocks.length; i++) {
+            const blockDef = template.blocks[i];
+            try {
+                const blockClass = blockClasses[i];
+                const config: any = { name: blockDef.className, ...blockDef.config };
+                const block = new (blockClass as any)(config) as FlowGraphBlock;
+
+                if (block instanceof FlowGraphEventBlock) {
+                    this.props.globalState.flowGraph.addEventBlock(block);
+                } else {
+                    this.props.globalState.flowGraph.addBlock(block);
+                }
+
+                const newNode = this.appendBlock(block);
+                newNode.addClassToVisual(block.getClassName());
+
+                // Position the node at the drop location + offset
+                const zoomLevel = this._graphCanvas.zoom;
+                const nodeX = (dropX + blockDef.offsetX - this._graphCanvas.x) / zoomLevel;
+                const nodeY = (dropY + blockDef.offsetY - this._graphCanvas.y) / zoomLevel;
+                newNode.x = nodeX;
+                newNode.y = nodeY;
+                newNode.cleanAccumulation();
+
+                createdNodes.push(newNode);
+            } catch (err) {
+                this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry(`Error creating template block "${blockDef.className}": ${err}`, true));
+                return;
+            }
+        }
+
+        // Wire connections
+        for (const conn of template.connections) {
+            const fromNode = createdNodes[conn.fromBlock];
+            const toNode = createdNodes[conn.toBlock];
+            if (!fromNode || !toNode) {
+                continue;
+            }
+
+            // Find the matching ports by name (signal and data ports live in
+            // separate arrays on the underlying block, but the GraphNode merges
+            // them into unified outputPorts/inputPorts lists, so a single search works).
+            const fromPort = fromNode.outputPorts.find((p) => p.portData.name === conn.fromPort);
+            const toPort = toNode.inputPorts.find((p) => p.portData.name === conn.toPort);
+
+            if (fromPort && toPort) {
+                this._graphCanvas.connectPorts(fromPort.portData, toPort.portData);
+            }
+        }
+
+        // Force a refresh
+        this.setState({});
+
+        const blockCount = createdNodes.length;
+        const connCount = template.connections.length;
+        this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry(`Template "${template.name}" created: ${blockCount} blocks, ${connCount} connections`, false));
     }
 
     /** @internal */
@@ -773,6 +1223,36 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                         }
                         this.props.globalState.lockObject.lock = false;
                     }}
+                    onDragOver={(evt) => {
+                        // Allow dropping 3D scene files anywhere on the editor.
+                        // Check both DataTransferItem.kind (modern) and dataTransfer.types (legacy/Firefox)
+                        // to ensure preventDefault is called even when items list is unavailable.
+                        const dt = evt.dataTransfer;
+                        const hasFile =
+                            (dt?.items && Array.from(dt.items).some((item) => item.kind === "file")) ||
+                            (dt?.types && (dt.types.includes("Files") || dt.types.includes("application/x-moz-file")));
+                        if (hasFile) {
+                            evt.preventDefault();
+                            evt.stopPropagation();
+                        }
+                    }}
+                    onDrop={(evt) => {
+                        const files = evt.dataTransfer?.files;
+                        if (!files || files.length === 0) {
+                            return;
+                        }
+                        // Always prevent default when files are dropped to avoid browser navigation.
+                        evt.preventDefault();
+                        evt.stopPropagation();
+                        const supportedExtensions = [".glb", ".gltf", ".babylon"];
+                        for (let i = 0; i < files.length; i++) {
+                            const name = files[i].name.toLowerCase();
+                            if (supportedExtensions.some((ext) => name.endsWith(ext))) {
+                                this.props.globalState.onDropEventReceivedObservable.notifyObservers(evt.nativeEvent);
+                                return;
+                            }
+                        }
+                    }}
                 >
                     {/* Node creation menu */}
                     <NodeListComponent globalState={this.props.globalState} />
@@ -791,8 +1271,10 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                             event.preventDefault();
                         }}
                     >
-                        <div className="diagram-canvas-pane">
+                        <div className="diagram-canvas-pane" onContextMenu={this._onContextMenu}>
+                            <GraphTabBarComponent globalState={this.props.globalState} />
                             <GraphControlsComponent globalState={this.props.globalState} />
+                            <VariablesPanelComponent globalState={this.props.globalState} />
                             <GraphCanvasComponent
                                 ref={this._graphCanvasRef}
                                 stateManager={this.props.globalState.stateManager}
@@ -823,8 +1305,18 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                 {this.state.helpTopicId !== null && (
                     <HelpDialogComponent initialTopicId={this.state.helpTopicId ?? undefined} onClose={() => this.setState({ helpTopicId: null })} />
                 )}
+                {this.state.showHowToUse && <HowToUseDialogComponent globalState={this.props.globalState} onClose={() => this.setState({ showHowToUse: false })} />}
                 <div className="blocker">Flow Graph Editor needs a horizontal resolution of at least 900px</div>
                 <div className="wait-screen hidden">Processing...please wait</div>
+                {this.state.contextMenu && (
+                    <ContextMenuComponent
+                        x={this.state.contextMenu.x}
+                        y={this.state.contextMenu.y}
+                        items={this.state.contextMenu.items}
+                        onClose={() => this.setState({ contextMenu: null })}
+                    />
+                )}
+                <ToastContainerComponent globalState={this.props.globalState} />
             </Portal>
         );
     }

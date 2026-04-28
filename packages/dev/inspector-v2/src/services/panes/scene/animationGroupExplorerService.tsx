@@ -1,5 +1,5 @@
 import { type TargetedAnimation } from "core/index";
-import { type ServiceDefinition } from "../../../modularity/serviceDefinition";
+import { type ServiceDefinition } from "shared-ui-components/modularTool/modularity/serviceDefinition";
 import { type ISceneContext, SceneContextIdentity } from "../../sceneContext";
 import { type IWatcherService, WatcherServiceIdentity } from "../../watcherService";
 import { type ISceneExplorerService, SceneExplorerServiceIdentity } from "./sceneExplorerService";

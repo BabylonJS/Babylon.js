@@ -154,6 +154,13 @@ export class TransformNode extends Node {
 
     protected _isWorldMatrixFrozen = false;
 
+    /**
+     * @internal
+     * Set by .babylon parsers to defer freezeWorldMatrix() until parent links are resolved.
+     * Declared (not initialized) to avoid pushing every TransformNode/Mesh instance into V8 dictionary mode.
+     */
+    declare public _waitingFreezeWorldMatrix?: Nullable<boolean>;
+
     /** @internal */
     public _indexInSceneTransformNodesArray = -1;
 
@@ -1108,10 +1115,10 @@ export class TransformNode extends Node {
         if (this._infiniteDistance) {
             if (!this.parent && camera) {
                 const cameraWorldMatrix = camera.getWorldMatrix();
-                const cameraGlobalPosition = new Vector3(cameraWorldMatrix.m[12], cameraWorldMatrix.m[13], cameraWorldMatrix.m[14]);
+                const m = cameraWorldMatrix.m;
 
                 translation = TransformNode._TmpTranslation;
-                translation.copyFromFloats(this._position.x + cameraGlobalPosition.x, this._position.y + cameraGlobalPosition.y, this._position.z + cameraGlobalPosition.z);
+                translation.copyFromFloats(this._position.x + m[12], this._position.y + m[13], this._position.z + m[14]);
             }
         }
 
@@ -1469,6 +1476,10 @@ export class TransformNode extends Node {
 
         serializationObject.isEnabled = this.isEnabled();
 
+        if (this._isWorldMatrixFrozen) {
+            serializationObject.freezeWorldMatrix = true;
+        }
+
         // Animations
         SerializationHelper.AppendSerializedAnimations(this, serializationObject);
         serializationObject.ranges = this.serializeAnimationRanges();
@@ -1504,6 +1515,10 @@ export class TransformNode extends Node {
 
         if (parsedTransformNode.parentInstanceIndex !== undefined) {
             transformNode._waitingParentInstanceIndex = parsedTransformNode.parentInstanceIndex;
+        }
+
+        if (parsedTransformNode.freezeWorldMatrix) {
+            transformNode._waitingFreezeWorldMatrix = parsedTransformNode.freezeWorldMatrix;
         }
 
         // Animations

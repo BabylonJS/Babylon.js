@@ -7,7 +7,7 @@ import { ClusteredLightContainer } from "core/Lights/Clustered/clusteredLightCon
 import { ClusteredLightContainerSelectorPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/entitySelectorPropertyLine";
 import { Collapse } from "shared-ui-components/fluent/primitives/collapse";
 import { useInterceptObservable } from "../../../hooks/instrumentationHooks";
-import { useObservableState } from "../../../hooks/observableHooks";
+import { useObservableState } from "shared-ui-components/modularTool/hooks/observableHooks";
 
 function FindOwnerContainer(light: Light): ClusteredLightContainer | null {
     for (const sceneLight of light.getScene().lights) {

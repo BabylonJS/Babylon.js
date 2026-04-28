@@ -47,6 +47,7 @@ export const RegisterNodePortDesign = (stateManager: StateManager) => {
             case NodeRenderGraphBlockConnectionPointTypes.TextureReflectivity:
             case NodeRenderGraphBlockConnectionPointTypes.TextureWorldPosition:
             case NodeRenderGraphBlockConnectionPointTypes.TextureVelocity:
+            case NodeRenderGraphBlockConnectionPointTypes.TextureIrradiance:
             case NodeRenderGraphBlockConnectionPointTypes.TextureScreenDepth:
             case NodeRenderGraphBlockConnectionPointTypes.TextureLocalPosition:
             case NodeRenderGraphBlockConnectionPointTypes.TextureWorldNormal:

@@ -662,6 +662,10 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
                         this._selectNode(box);
                         totalRelativeDragDistance = 0;
                         previousScale = 0;
+                        this.attachedMesh!.computeWorldMatrix(true);
+                        this._update();
+                        this._lineBoundingBox.computeWorldMatrix(true);
+                        this._anchorMesh.position.copyFrom(this._lineBoundingBox.absolutePosition);
                         this._incrementalStartupValue.copyFrom(this.attachedMesh!.scaling);
                         this._incrementalAnchorStartupValue.copyFrom(this._anchorMesh.scaling);
                         initialAnchorCenter.copyFrom(this._anchorMesh.position);

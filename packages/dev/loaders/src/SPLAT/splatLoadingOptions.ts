@@ -33,4 +33,22 @@ export type SPLATLoadingOptions = {
      * Mesh that will be used to load data instead of creating a new one
      */
     gaussianSplattingMesh?: GaussianSplattingMesh;
+
+    /**
+     * Generate rotation and scale matrix textures required for voxel-based IBL shadows.
+     * Required for IBL shadows to work if keepInRam is false.
+     */
+    needsRotationScaleTextures?: boolean;
+
+    /**
+     * URL to load the spz WASM ES module from (e.g. the \@adobe/spz package).
+     * When provided, the WASM-based SPZ loader is used, which supports extra features
+     * such as antialiasing metadata, and vendor-specific extensions such as safe-orbit
+     * camera limits.
+     * Defaults to the \@adobe/spz unpkg URL when WebAssembly is supported, and undefined otherwise.
+     * Set to undefined to force the built-in manual SPZ parser regardless of WebAssembly support.
+     * @example Setting the URL directly on the loader options
+     * spzLibraryUrl: "https://unpkg.com/\@adobe/spz\@0.2.0/dist/spz.js"
+     */
+    spzLibraryUrl?: string;
 };

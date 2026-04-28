@@ -9,7 +9,7 @@ import { Button } from "shared-ui-components/fluent/primitives/button";
 import { Popover } from "shared-ui-components/fluent/primitives/popover";
 import { useCurveEditor } from "../curveEditorContext";
 import { ChannelColors, ColorChannelColors } from "../curveEditorColors";
-import { useObservableState } from "../../../hooks/observableHooks";
+import { useObservableState } from "shared-ui-components/modularTool/hooks/observableHooks";
 import { EditAnimationPanel } from "./editAnimationPanel";
 
 const useStyles = makeStyles({

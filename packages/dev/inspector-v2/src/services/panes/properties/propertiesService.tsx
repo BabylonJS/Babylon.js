@@ -1,9 +1,9 @@
 import { type IDisposable, type IReadonlyObservable } from "core/index";
-import { type DynamicAccordionSection, type DynamicAccordionSectionContent, type SectionsImperativeRef } from "../../../components/extensibleAccordion";
+import { type DynamicAccordionSection, type DynamicAccordionSectionContent, type SectionsImperativeRef } from "shared-ui-components/modularTool/components/extensibleAccordion";
 import { type PropertyChangeInfo, PropertyContext } from "../../../contexts/propertyContext";
-import { type IService, type ServiceDefinition } from "../../../modularity/serviceDefinition";
+import { type IService, type ServiceDefinition } from "shared-ui-components/modularTool/modularity/serviceDefinition";
 import { type ISelectionService, SelectionServiceIdentity } from "../../selectionService";
-import { type IShellService, ShellServiceIdentity } from "../../shellService";
+import { type IShellService, ShellServiceIdentity } from "shared-ui-components/modularTool/services/shellService";
 
 import { DocumentTextRegular } from "@fluentui/react-icons";
 import { useEffect, useMemo, useRef } from "react";
@@ -11,8 +11,8 @@ import { useEffect, useMemo, useRef } from "react";
 import { Observable } from "core/Misc/observable";
 import { useImpulse } from "shared-ui-components/fluent/hooks/transientStateHooks";
 import { PropertiesPane } from "../../../components/properties/propertiesPane";
-import { useObservableCollection, useObservableState, useOrderedObservableCollection } from "../../../hooks/observableHooks";
-import { ObservableCollection } from "../../../misc/observableCollection";
+import { useObservableCollection, useObservableState, useOrderedObservableCollection } from "shared-ui-components/modularTool/hooks/observableHooks";
+import { ObservableCollection } from "shared-ui-components/modularTool/misc/observableCollection";
 
 /**
  * The unique identity symbol for the properties service.

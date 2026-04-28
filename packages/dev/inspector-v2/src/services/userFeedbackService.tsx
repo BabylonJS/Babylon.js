@@ -1,5 +1,5 @@
-import { type ServiceDefinition } from "../modularity/serviceDefinition";
-import { type IShellService, ShellServiceIdentity } from "./shellService";
+import { type ServiceDefinition } from "shared-ui-components/modularTool/modularity/serviceDefinition";
+import { type IShellService, ShellServiceIdentity } from "shared-ui-components/modularTool/services/shellService";
 
 import { PersonFeedbackRegular } from "@fluentui/react-icons";
 

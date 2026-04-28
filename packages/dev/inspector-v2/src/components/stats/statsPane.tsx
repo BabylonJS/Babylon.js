@@ -5,10 +5,10 @@ import { makeStyles, tokens } from "@fluentui/react-components";
 import { AbstractEngine } from "core/Engines/abstractEngine";
 import { StringifiedPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/stringifiedPropertyLine";
 import { TextPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/textPropertyLine";
-import { useObservableState } from "../../hooks/observableHooks";
+import { useObservableState } from "shared-ui-components/modularTool/hooks/observableHooks";
 import { usePollingObservable } from "../../hooks/pollingHooks";
-import { ExtensibleAccordion } from "../extensibleAccordion";
-import { SidePaneContainer } from "../pane";
+import { ExtensibleAccordion } from "shared-ui-components/modularTool/components/extensibleAccordion";
+import { SidePaneContainer } from "shared-ui-components/modularTool/components/pane";
 
 const useStyles = makeStyles({
     pinnedStatsPane: {

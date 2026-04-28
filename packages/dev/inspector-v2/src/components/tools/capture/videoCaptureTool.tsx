@@ -3,7 +3,7 @@ import { type FunctionComponent, useState, useCallback } from "react";
 import { type Scene } from "core/scene";
 import { RecordRegular, RecordStopRegular } from "@fluentui/react-icons";
 import { VideoRecorder } from "core/Misc/videoRecorder";
-import { useResource } from "../../../hooks/resourceHooks";
+import { useResource } from "shared-ui-components/modularTool/hooks/resourceHooks";
 
 export const VideoCaptureTool: FunctionComponent<{ scene: Scene }> = ({ scene }) => {
     const [isRecording, setIsRecording] = useState(false);

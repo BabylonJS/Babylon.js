@@ -135,6 +135,20 @@ export class ConnectionPointPortData implements IPortData {
         return false;
     }
 
+    /**
+     * Gets a rich tooltip string describing the port name, type, and direction.
+     * Used for hover tooltips on ports in the graph canvas.
+     */
+    public get tooltip(): string {
+        const direction = this.direction === PortDataDirection.Input ? "Input" : "Output";
+        if (this.connectionKind === "signal") {
+            return `${this.data.name} (Signal ${direction})`;
+        }
+        const dataConn = this.data as FlowGraphDataConnection<any>;
+        const typeName = dataConn.richType?.typeName ?? "Unknown";
+        return `${this.data.name} (${typeName} ${direction})`;
+    }
+
     /** Gets the first connected port */
     public get connectedPort() {
         if (!this.isConnected) {

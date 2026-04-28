@@ -3,6 +3,7 @@ import { Tools } from "../Misc/tools";
 import { type IDisposable } from "../scene";
 import { type IWebXRAnchorSystemOptions, type WebXRAnchorSystem } from "./features/WebXRAnchorSystem";
 import { type IWebXRBackgroundRemoverOptions, type WebXRBackgroundRemover } from "./features/WebXRBackgroundRemover";
+import { type IWebXRBodyTrackingOptions, type WebXRBodyTracking } from "./features/WebXRBodyTracking";
 import { type IWebXRControllerMovementOptions, type WebXRControllerMovement } from "./features/WebXRControllerMovement";
 import { type IWebXRControllerPhysicsOptions, type WebXRControllerPhysics } from "./features/WebXRControllerPhysics";
 import { type IWebXRControllerPointerSelectionOptions, type WebXRControllerPointerSelection } from "./features/WebXRControllerPointerSelection";
@@ -179,6 +180,10 @@ export class WebXRFeatureName {
      * The name of the WebXR Raw Camera Access feature
      */
     public static readonly RAW_CAMERA_ACCESS = "xr-raw-camera-access" as const;
+    /**
+     * The name of the body tracking feature
+     */
+    public static readonly BODY_TRACKING = "xr-body-tracking" as const;
 }
 
 export type WebXRFeatureNameType = (typeof WebXRFeatureName)[Exclude<keyof typeof WebXRFeatureName, "prototype">];
@@ -205,6 +210,7 @@ export interface IWebXRFeatureNameTypeMap {
     [WebXRFeatureName.SPACE_WARP]: WebXRSpaceWarp;
     [WebXRFeatureName.TELEPORTATION]: WebXRMotionControllerTeleportation;
     [WebXRFeatureName.WALKING_LOCOMOTION]: WebXRWalkingLocomotion;
+    [WebXRFeatureName.BODY_TRACKING]: WebXRBodyTracking;
 }
 
 /**
@@ -232,6 +238,7 @@ export interface IWebXRFeatureNameOptionsMap {
     [WebXRFeatureName.SPACE_WARP]: undefined;
     [WebXRFeatureName.TELEPORTATION]: IWebXRTeleportationOptions;
     [WebXRFeatureName.WALKING_LOCOMOTION]: IWebXRWalkingLocomotionOptions;
+    [WebXRFeatureName.BODY_TRACKING]: IWebXRBodyTrackingOptions;
 }
 
 /**

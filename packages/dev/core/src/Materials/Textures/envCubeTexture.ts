@@ -301,18 +301,16 @@ export abstract class EnvCubeTexture extends BaseTexture {
             const previousOnLoad = this._onLoad;
             const hdrFiltering = new HDRFiltering(engine);
             this._onLoad = () => {
-                let irradiancePromise: Promise<Nullable<BaseTexture>> = Promise.resolve(null);
-                let radiancePromise: Promise<void> = Promise.resolve();
-                if (this._prefilterIrradianceOnLoad) {
-                    const hdrIrradianceFiltering = new HDRIrradianceFiltering(engine, { useCdf: this._prefilterUsingCdf });
-                    irradiancePromise = hdrIrradianceFiltering.prefilter(this);
-                }
-                if (this._prefilterOnLoad) {
-                    radiancePromise = hdrFiltering.prefilter(this);
-                }
-                // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
-                Promise.all([irradiancePromise, radiancePromise]).then((results) => {
-                    const irradianceTexture = results[0];
+                void (async () => {
+                    let irradianceTexture: Nullable<BaseTexture> = null;
+                    if (this._prefilterIrradianceOnLoad) {
+                        const hdrIrradianceFiltering = new HDRIrradianceFiltering(engine, { useCdf: this._prefilterUsingCdf });
+                        irradianceTexture = await hdrIrradianceFiltering.prefilter(this);
+                    }
+
+                    // Run irradiance prefiltering first because it samples the current source texture.
+                    // Radiance prefiltering mutates/swaps the source internal texture, so running both
+                    // concurrently can lead to stale/destroyed texture references on WebGPU.
                     if (this._prefilterIrradianceOnLoad && irradianceTexture) {
                         this.irradianceTexture = irradianceTexture;
                         const scene = this.getScene();
@@ -320,10 +318,15 @@ export abstract class EnvCubeTexture extends BaseTexture {
                             scene.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
                         }
                     }
+
+                    if (this._prefilterOnLoad) {
+                        await hdrFiltering.prefilter(this);
+                    }
+
                     if (previousOnLoad) {
                         previousOnLoad();
                     }
-                });
+                })();
             };
         }
 

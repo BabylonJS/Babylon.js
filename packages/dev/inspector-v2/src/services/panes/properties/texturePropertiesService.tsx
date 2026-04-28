@@ -1,10 +1,11 @@
 import { type AdvancedDynamicTexture } from "gui/2D/advancedDynamicTexture";
-import { type ServiceDefinition } from "../../../modularity/serviceDefinition";
+import { type ServiceDefinition } from "shared-ui-components/modularTool/modularity/serviceDefinition";
 import { type ITextureEditorService, TextureEditorServiceIdentity } from "../../textureEditor/textureEditorService";
 import { type IPropertiesService, PropertiesServiceIdentity } from "./propertiesService";
 
 import { BaseTexture } from "core/Materials/Textures/baseTexture";
 import { CubeTexture } from "core/Materials/Textures/cubeTexture";
+import { EnvCubeTexture } from "core/Materials/Textures/envCubeTexture";
 import { MultiRenderTarget } from "core/Materials/Textures/multiRenderTarget";
 import { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
 import { Texture } from "core/Materials/Textures/texture";
@@ -103,7 +104,7 @@ export const TexturePropertiesServiceDefinition: ServiceDefinition<[], [IPropert
 
         const cubeTextureContentRegistration = propertiesService.addSectionContent({
             key: "Cube Texture Properties",
-            predicate: (entity: unknown) => entity instanceof CubeTexture,
+            predicate: (entity: unknown): entity is CubeTexture | EnvCubeTexture => entity instanceof CubeTexture || entity instanceof EnvCubeTexture,
             content: [
                 {
                     section: "Transform",

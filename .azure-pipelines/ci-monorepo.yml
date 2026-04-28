@@ -3,21 +3,18 @@
 # Converted from Azure DevOps Classic Pipeline (Definition ID: 14)
 #
 # IMPORTANT SETUP NOTES:
-# 1. Link the 'BabylonJS-CI-Infrastructure' variable group (see VARIABLE-GROUPS.md).
+# 1. Link variable groups (see VARIABLE-GROUPS.md):
+#    - BabylonJS-CI-Infrastructure
+#    - BabylonJS-BrowserStack (BROWSERSTACK_ACCESS_KEY, BROWSERSTACK_USERNAME)
+#    - BabylonJS-Deployment (BASIC_AUTH, DEPLOYMENT_SERVER)
 #
-# 2. Secret variables must be configured in the Azure DevOps pipeline UI:
-#    - BASIC_AUTH
-#    - BROWSERSTACK_ACCESS_KEY
-#    - BROWSERSTACK_USERNAME
-#    - DEPLOYMENT_SERVER
-#
-# 3. Fork build settings (allow secrets, require comments for non-team members)
+# 2. Fork build settings (allow secrets, require comments for non-team members)
 #    must be configured in the Azure DevOps pipeline settings UI.
 #
-# 4. Authorize the GitHub service connection (GITHUB_SERVICE_CONNECTION)
+# 3. Authorize the GitHub service connection (GITHUB_SERVICE_CONNECTION)
 #    for this pipeline.
 #
-# 5. Update the 'resources.pipelines' source names to match your actual
+# 4. Update the 'resources.pipelines' source names to match your actual
 #    pipeline names in Azure DevOps.
 # =============================================================================
 
@@ -50,18 +47,20 @@ resources:
     pipelines:
         # Build completion trigger - cd-publish pipeline (Definition 15)
         - pipeline: buildCompletionTrigger
-          source: "<PUBLISH_PIPELINE_NAME>" # Replace with the YAML pipeline name once created
+          source: "Publish pipeline"
           trigger:
               branches:
                   include:
                       - master
         # Native tests artifact source - pipeline ID 36
         - pipeline: nativeTestsArtifact
-          source: "<NATIVE_TESTS_PIPELINE_NAME>" # Replace with the YAML pipeline name once created
+          source: "BabylonNative Nightly CI"
           project: ContinousIntegration
 
 variables:
     - group: BabylonJS-CI-Infrastructure
+    - group: BabylonJS-BrowserStack
+    - group: BabylonJS-Deployment
     - name: BuildName
       value: $(Build.SourceBranch)
     - name: BROWSERSTACK_BROWSER
@@ -81,17 +80,16 @@ jobs:
     - job: Build
       displayName: "Build job"
       steps:
-          - checkout: self
-            clean: true
-            fetchDepth: 0
-            fetchTags: false
+          - template: templates/checkout-with-tag-override.yml
+            parameters:
+                fetchDepth: 0
 
-          - task: NodeTool@0
-            displayName: "Use Node 22.4.1"
+          - task: UseNode@1
+            displayName: "Use Node 22.x"
             continueOnError: true
             retryCountOnTaskFailure: 1
             inputs:
-                versionSpec: "22.4.1"
+                version: "22.x"
 
           - bash: |
                 git diff --name-status $(git rev-parse origin/master) $(git rev-parse HEAD) | grep -q "what's new.md" && echo "##vso[task.setvariable variable=WhatsNewChanged]true"
@@ -101,6 +99,14 @@ jobs:
 
                 git diff --name-status $(git rev-parse origin/master) $(git rev-parse HEAD)
             displayName: "Check git changes"
+            continueOnError: true
+
+          - bash: |
+                TAGS=$(node scripts/compute-affected-vis-tags.mjs)
+                echo "Affected vis-test tags: $TAGS"
+                echo "##vso[task.setvariable variable=AFFECTED_TAGS;isOutput=true]$TAGS"
+            name: ComputeVisTags
+            displayName: "Compute affected vis-test tags"
             continueOnError: true
 
           - template: templates/check-snapshot-exists.yml
@@ -273,16 +279,14 @@ jobs:
     - job: ES6
       displayName: "ES6"
       steps:
-          - checkout: self
-            clean: true
-            fetchTags: false
+          - template: templates/checkout-with-tag-override.yml
 
-          - task: NodeTool@0
-            displayName: "Use Node 22.4.1"
+          - task: UseNode@1
+            displayName: "Use Node 22.x"
             continueOnError: true
             retryCountOnTaskFailure: 1
             inputs:
-                versionSpec: "22.4.1"
+                version: "22.x"
 
           - script: npm install
             displayName: "npm install"
@@ -334,16 +338,14 @@ jobs:
     - job: FormatLint
       displayName: "Format, Lint, and more"
       steps:
-          - checkout: self
-            clean: true
-            fetchTags: false
+          - template: templates/checkout-with-tag-override.yml
 
-          - task: NodeTool@0
-            displayName: "Use Node 22.17.1"
+          - task: UseNode@1
+            displayName: "Use Node 22.x"
             continueOnError: true
             retryCountOnTaskFailure: 1
             inputs:
-                versionSpec: "22.17.1"
+                version: "22.x"
 
           - script: npm install
             displayName: "npm install"
@@ -351,30 +353,13 @@ jobs:
                 PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: "true"
                 PUPPETEER_SKIP_DOWNLOAD: "true"
 
-          - script: npx prettier --list-different "./packages/**/src/**/*.{ts,tsx,js,scss}"
+          - script: npx prettier --list-different "./packages/**/src/**/*.{ts,tsx,js,json,scss,css}"
             displayName: "Formatting"
 
-          - script: npx eslint "packages/dev/core/src/**/*.ts" --quiet --format azure-devops
-            displayName: "Linting core"
+          - script: npm run lint:check-ci
+            displayName: "Linting"
             env:
                 NODE_OPTIONS: "--max-old-space-size=8192"
-
-          - script: npx eslint "packages/dev/**/src/**/*.{ts,tsx}" --quiet --ignore-pattern "packages/dev/core/*" --format azure-devops
-            displayName: "Linting dev"
-            env:
-                NODE_OPTIONS: "--max-old-space-size=8192"
-
-          - script: npx eslint "packages/tools/**/src/**/*.{ts,tsx}" --quiet --format azure-devops
-            displayName: "Linting tools"
-            env:
-                NODE_OPTIONS: "--max-old-space-size=8192"
-
-          # DISABLED in classic pipeline:
-          # - task: Npm@1
-          #   displayName: 'Linting'
-          #   inputs:
-          #     command: custom
-          #     customCommand: 'run lint:check -- --format azure-devops'
 
           - script: npx --yes dpdm -T --no-tree ./packages/dev/core/src/**/*
             displayName: "Circular dependencies"
@@ -388,17 +373,16 @@ jobs:
       displayName: "TypeDoc check"
       condition: ne(variables['Build.SourceBranch'], 'refs/heads/master')
       steps:
-          - checkout: self
-            clean: true
-            fetchDepth: 0
-            fetchTags: false
+          - template: templates/checkout-with-tag-override.yml
+            parameters:
+                fetchDepth: 0
 
-          - task: NodeTool@0
-            displayName: "Use Node 22.4.1"
+          - task: UseNode@1
+            displayName: "Use Node 22.x"
             continueOnError: true
             retryCountOnTaskFailure: 1
             inputs:
-                versionSpec: "22.4.1"
+                version: "22.x"
 
           - script: npm install
             displayName: "npm install"
@@ -434,16 +418,14 @@ jobs:
       displayName: "Unit tests"
       dependsOn: Build
       steps:
-          - checkout: self
-            clean: true
-            fetchTags: false
+          - template: templates/checkout-with-tag-override.yml
 
-          - task: NodeTool@0
-            displayName: "Use Node 22.4.1"
+          - task: UseNode@1
+            displayName: "Use Node 22.x"
             continueOnError: true
             retryCountOnTaskFailure: 1
             inputs:
-                versionSpec: "22.4.1"
+                version: "22.x"
 
           - task: Npm@1
             displayName: "npm install"
@@ -498,16 +480,14 @@ jobs:
       displayName: "Interaction tests"
       dependsOn: Build
       steps:
-          - checkout: self
-            clean: true
-            fetchTags: false
+          - template: templates/checkout-with-tag-override.yml
 
-          - task: NodeTool@0
-            displayName: "Use Node 22.4.1"
+          - task: UseNode@1
+            displayName: "Use Node 22.x"
             continueOnError: true
             retryCountOnTaskFailure: 1
             inputs:
-                versionSpec: "22.4.1"
+                version: "22.x"
 
           - template: templates/check-snapshot-exists.yml
             parameters:
@@ -561,78 +541,6 @@ jobs:
                 testResultsFiles: "./packages/tools/tests/junit.xml"
 
     # ============================================================================
-    # VISUALIZATION TESTS - WEBGL1
-    # Depends on: Build
-    # NOTE: All test steps are DISABLED in the classic pipeline.
-    # Only Node setup is enabled; the job is effectively a no-op.
-    # ============================================================================
-    - job: VisualizationWebGL1
-      displayName: "Visualization tests - WebGL1"
-      dependsOn: Build
-      timeoutInMinutes: 40
-      steps:
-          - checkout: self
-            clean: true
-            fetchTags: false
-
-          - task: NodeTool@0
-            displayName: "Use Node 22.4.1"
-            continueOnError: true
-            retryCountOnTaskFailure: 1
-            inputs:
-                versionSpec: "22.4.1"
-
-          # ALL REMAINING STEPS DISABLED in classic pipeline:
-          # - script: npm install
-          #   displayName: 'npm install'
-          #   env:
-          #     PUPPETEER_PRODUCT: firefox
-
-          # - script: |
-          #     export DISPLAY=:99
-          #     Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
-          #     sleep 3
-          #     npx jest --selectProjects=visualization --runInBand -i "webgl1"
-          #   displayName: 'visualization tests (FF)'
-          #   continueOnError: true
-          #   env:
-          #     CDN_BASE_URL: '$(SNAPSHOT_CDN_URL)/$(BuildName)'
-          #     BROWSER: firefox
-          #     TEST_GPU: desktop
-          #     PUPPETEER_PRODUCT: firefox
-
-          # - script: |
-          #     curl "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_DELETE)?path=$(BuildName)/testResults/webgl1" -X POST -H "Authorization: $(BASIC_AUTH)"
-          #   displayName: 'Delete test results'
-          #   condition: failed()
-
-          # - script: |
-          #     cd jest-screenshot-report
-          #     zip -r ../file.zip *
-          #     cd ..
-          #     curl $(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_UPLOAD) -i -X POST \
-          #       -H "Content-Type: multipart/form-data" \
-          #       -H "Authorization: $(BASIC_AUTH)" \
-          #       -F "path=$(BuildName)/testResults/webgl1" \
-          #       -F "storageAccount=$(SNAPSHOTS_STORAGE_ACCOUNT)" \
-          #       -F "zip=@file.zip"
-          #   displayName: 'Upload test results'
-          #   condition: failed()
-
-          # - task: GitHubComment@0
-          #   displayName: 'Writing GitHub comment'
-          #   condition: failed()
-          #   inputs:
-          #     gitHubConnection: '$(GITHUB_SERVICE_CONNECTION)'
-          #     repositoryName: '$(Build.Repository.Name)'
-          #     comment: |
-          #       Visualization tests for WebGL 1 have failed. If some tests failed because the snapshots do not match, the report can be found at
-          #
-          #       $(SNAPSHOT_CDN_URL)/$(BuildName)/testResults/webgl1/index.html
-          #
-          #       If tests were successful afterwards, this report might not be available anymore.
-
-    # ============================================================================
     # VISUALIZATION TESTS - WEBGL 2
     # Depends on: Build
     # Runs on BrowserStack
@@ -640,17 +548,18 @@ jobs:
     - job: VisualizationWebGL2
       displayName: "Visualization tests - WebGL 2"
       dependsOn: Build
+      condition: and(succeeded(), ne(dependencies.Build.outputs['ComputeVisTags.AFFECTED_TAGS'], 'NONE'))
+      variables:
+          AFFECTED_TAGS: $[ dependencies.Build.outputs['ComputeVisTags.AFFECTED_TAGS'] ]
       steps:
-          - checkout: self
-            clean: true
-            fetchTags: false
+          - template: templates/checkout-with-tag-override.yml
 
-          - task: NodeTool@0
+          - task: UseNode@1
             displayName: "Use Node 22.x"
             continueOnError: true
             retryCountOnTaskFailure: 1
             inputs:
-                versionSpec: "22.4.1"
+                version: "22.x"
 
           - template: templates/check-snapshot-exists.yml
             parameters:
@@ -666,7 +575,7 @@ jobs:
                 PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: "true"
                 PUPPETEER_SKIP_DOWNLOAD: "true"
 
-          - script: npm run test:playwright -w @tools/tests -- --project=webgl2 --project=webgl2-largeWorld
+          - script: npm run test:playwright -w @tools/tests -- --project=webgl2
             displayName: "WebGL2 BStack"
             env:
                 CDN_BASE_URL: "$(SNAPSHOT_CDN_URL)/$(BuildName)"
@@ -676,6 +585,7 @@ jobs:
                 TIMEOUT: "27500"
                 BROWSERSTACK_USERNAME: $(BROWSERSTACK_USERNAME)
                 BROWSERSTACK_ACCESS_KEY: $(BROWSERSTACK_ACCESS_KEY)
+                AFFECTED_TAGS: $(AFFECTED_TAGS)
 
           - script: |
                 curl "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_DELETE)?path=$(BuildName)/testResults/webgl2playwright" -X POST -H "Authorization: $(BASIC_AUTH)"
@@ -716,17 +626,18 @@ jobs:
     - job: VisualizationWebGPU
       displayName: "Visualization tests - WebGPU"
       dependsOn: Build
+      condition: and(succeeded(), ne(dependencies.Build.outputs['ComputeVisTags.AFFECTED_TAGS'], 'NONE'))
+      variables:
+          AFFECTED_TAGS: $[ dependencies.Build.outputs['ComputeVisTags.AFFECTED_TAGS'] ]
       steps:
-          - checkout: self
-            clean: true
-            fetchTags: false
+          - template: templates/checkout-with-tag-override.yml
 
-          - task: NodeTool@0
+          - task: UseNode@1
             displayName: "Use Node 22.x"
             continueOnError: true
             retryCountOnTaskFailure: 1
             inputs:
-                versionSpec: "22.4.1"
+                version: "22.x"
 
           - template: templates/check-snapshot-exists.yml
             parameters:
@@ -741,7 +652,7 @@ jobs:
                 PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: "true"
                 PUPPETEER_SKIP_DOWNLOAD: "true"
 
-          - script: npm run test:playwright -w @tools/tests -- --project=webgpu --project=webgpu-largeWorld
+          - script: npm run test:playwright -w @tools/tests -- --project=webgpu
             displayName: "WebGPU BStack"
             retryCountOnTaskFailure: 1
             env:
@@ -752,6 +663,7 @@ jobs:
                 TIMEOUT: "27500"
                 BROWSERSTACK_USERNAME: $(BROWSERSTACK_USERNAME)
                 BROWSERSTACK_ACCESS_KEY: $(BROWSERSTACK_ACCESS_KEY)
+                AFFECTED_TAGS: $(AFFECTED_TAGS)
 
           - script: |
                 curl "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_DELETE)?path=$(BuildName)/testResults/webgpuplaywright" -X POST -H "Authorization: $(BASIC_AUTH)"
@@ -797,9 +709,7 @@ jobs:
       pool:
           vmImage: windows-latest
       steps:
-          - checkout: self
-            clean: true
-            fetchTags: false
+          - template: templates/checkout-with-tag-override.yml
 
           - task: DownloadPipelineArtifact@2
             displayName: "Download Pipeline Artifact"
@@ -860,52 +770,52 @@ jobs:
             retryCountOnTaskFailure: 3
 
     # ============================================================================
-    # PERFORMANCE TESTS
+    # PERFORMANCE TESTS (DISABLED)
     # Depends on: Build
     # Uses statistical comparison (Welch's t-test + ratio check) with
     # confirmation passes to reduce flakiness.
     # ============================================================================
-    - job: PerformanceTests
-      displayName: "Performance tests"
-      dependsOn: Build
-      steps:
-          - checkout: self
-            clean: true
-            fetchTags: false
+    # - job: PerformanceTests
+    #   displayName: "Performance tests"
+    #   dependsOn: Build
+    #   steps:
+    #       - checkout: self
+    #         clean: true
+    #         fetchTags: false
 
-          - task: NodeTool@0
-            displayName: "Use Node 22.4.1"
-            continueOnError: true
-            retryCountOnTaskFailure: 1
-            inputs:
-                versionSpec: "22.4.1"
+    #       - task: UseNode@1
+    #         displayName: "Use Node 22.x"
+    #         continueOnError: true
+    #         retryCountOnTaskFailure: 1
+    #         inputs:
+    #             version: "22.x"
 
-          - script: npm install
-            displayName: "npm install"
-            retryCountOnTaskFailure: 1
-            env:
-                PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: "true"
-                PUPPETEER_SKIP_DOWNLOAD: "true"
+    #       - script: npm install
+    #         displayName: "npm install"
+    #         retryCountOnTaskFailure: 1
+    #         env:
+    #             PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: "true"
+    #             PUPPETEER_SKIP_DOWNLOAD: "true"
 
-          - script: npx playwright install --with-deps
-            displayName: "Install Playwright browsers"
-            retryCountOnTaskFailure: 1
+    #       - script: npx playwright install --with-deps
+    #         displayName: "Install Playwright browsers"
+    #         retryCountOnTaskFailure: 1
 
-          - script: npm run test:performance
-            displayName: "Run performance tests"
-            continueOnError: true
-            env:
-                CDN_BASE_URL: "$(SNAPSHOT_CDN_URL)/$(BuildName)"
-                CI: "true"
-                TIMEOUT: "200000"
+    #       - script: npm run test:performance
+    #         displayName: "Run performance tests"
+    #         continueOnError: true
+    #         env:
+    #             CDN_BASE_URL: "$(SNAPSHOT_CDN_URL)/$(BuildName)"
+    #             CI: "true"
+    #             TIMEOUT: "200000"
 
-          - task: PublishTestResults@2
-            displayName: "Publish performance test results"
-            condition: always()
-            inputs:
-                testResultsFormat: "JUnit"
-                testResultsFiles: "junit.xml"
-                testRunTitle: "Performance Tests"
+    #       - task: PublishTestResults@2
+    #         displayName: "Publish performance test results"
+    #         condition: always()
+    #         inputs:
+    #             testResultsFormat: "JUnit"
+    #             testResultsFiles: "junit.xml"
+    #             testRunTitle: "Performance Tests"
 
     # ============================================================================
     # VIEWER TESTS
@@ -914,16 +824,14 @@ jobs:
     - job: ViewerTests
       displayName: "Viewer tests"
       steps:
-          - checkout: self
-            clean: true
-            fetchTags: false
+          - template: templates/checkout-with-tag-override.yml
 
-          - task: NodeTool@0
-            displayName: "Use Node 22.4.1"
+          - task: UseNode@1
+            displayName: "Use Node 22.x"
             continueOnError: true
             retryCountOnTaskFailure: 1
             inputs:
-                versionSpec: "22.4.1"
+                version: "22.x"
 
           - task: Npm@1
             displayName: "npm install"
@@ -966,8 +874,8 @@ jobs:
             displayName: "Placeholder - all steps disabled"
 
           # DISABLED in classic pipeline - full step list:
-          # - task: NodeTool@0
-          #   displayName: 'Use Node 22.4.1'
+          # - task: UseNode@1
+          #   displayName: 'Use Node 22.x'
           #   continueOnError: true
           #   retryCountOnTaskFailure: 1
           #   inputs:
@@ -1088,9 +996,7 @@ jobs:
             )
           )
       steps:
-          - checkout: self
-            clean: true
-            fetchTags: false
+          - template: templates/checkout-with-tag-override.yml
 
           - bash: mkdir download
             displayName: "Prepare download directory"

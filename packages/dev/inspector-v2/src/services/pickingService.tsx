@@ -1,17 +1,17 @@
 import { type Nullable } from "core/index";
-import { type ServiceDefinition } from "../modularity/serviceDefinition";
+import { type ServiceDefinition } from "shared-ui-components/modularTool/modularity/serviceDefinition";
 import { type IGizmoService, GizmoServiceIdentity } from "./gizmoService";
-import { type ISettingsService, SettingsServiceIdentity } from "./panes/settingsService";
+import { type ISettingsService, SettingsServiceIdentity } from "shared-ui-components/modularTool/services/settingsService";
 import { type ISceneContext, SceneContextIdentity } from "./sceneContext";
 import { type ISelectionService, SelectionServiceIdentity } from "./selectionService";
-import { type SettingDescriptor } from "./settingsStore";
-import { type IShellService, ShellServiceIdentity } from "./shellService";
+import { type SettingDescriptor } from "shared-ui-components/modularTool/services/settingsStore";
+import { type IShellService, ShellServiceIdentity } from "shared-ui-components/modularTool/services/shellService";
 
 import { useCallback } from "react";
 import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
 import { PickingToolbar } from "../components/pickingToolbar";
-import { useObservableState } from "../hooks/observableHooks";
-import { useSetting } from "../hooks/settingsHooks";
+import { useObservableState } from "shared-ui-components/modularTool/hooks/observableHooks";
+import { useSetting } from "shared-ui-components/modularTool/hooks/settingsHooks";
 import { HighlightSelectedEntitySettingDescriptor } from "./highlightService";
 
 const IgnoreBackfacesForPickingSettingDescriptor: SettingDescriptor<boolean> = {

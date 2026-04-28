@@ -21,6 +21,7 @@ import { type SceneContext } from "./sceneContext";
 import { FlowGraphInteger } from "core/FlowGraph/CustomTypes/flowGraphInteger";
 import { type IFlowGraphValidationResult, ValidateFlowGraphWithBlockList } from "core/FlowGraph/flowGraphValidator";
 import { type HelpTopicId } from "./components/help/helpContent";
+import { FlowGraphCoordinator } from "core/FlowGraph/flowGraphCoordinator";
 
 /**
  * Class used to hold the global state of the flow graph editor
@@ -58,10 +59,18 @@ export class GlobalState {
     onPopupClosedObservable = new Observable<void>();
     /** Callback to get a graph node from a flow graph block */
     onGetNodeFromBlock: (block: FlowGraphBlock) => GraphNode;
+    // eslint-disable-next-line jsdoc/require-returns
+    /** Callback that returns true if the given graph node is within the visible viewport.
+     *  Used by the debug highlighter to skip offscreen nodes and save DOM work. */
+    isNodeVisible: (node: GraphNode) => boolean = () => true;
     /** Observable triggered when a drop event is received */
     onDropEventReceivedObservable = new Observable<DragEvent>();
     /** Observable triggered when help dialog is requested. Payload is an optional topic id. */
     onHelpRequested = new Observable<HelpTopicId | undefined>();
+    /** Observable triggered when a toast notification should be shown. */
+    onToastNotification = new Observable<{ message: string; severity: "info" | "success" | "error" | "warning" }>();
+    /** Observable triggered when the "How to Use" (embed code) dialog is requested. */
+    onHowToUseRequested = new Observable<void>();
     /** Whether the pointer is over the canvas */
     pointerOverCanvas: boolean = false;
     /** Lock object for property grid */
@@ -135,6 +144,149 @@ export class GlobalState {
 
     /** Optional custom save handler */
     customSave?: { label: string; action: (data: string) => Promise<void> };
+
+    // ── Multi-Graph / Coordinator ──────────────────────────────────────
+    /** The coordinator that owns all graphs in this editor session. */
+    private _coordinator: Nullable<FlowGraphCoordinator> = null;
+
+    /** Index of the currently active (displayed) graph within the coordinator. */
+    private _activeGraphIndex: number = 0;
+
+    /** Observable triggered when the active graph changes (graph switch, add, remove). */
+    onActiveGraphChanged = new Observable<FlowGraph>();
+
+    /** Observable triggered *before* the active graph changes, with the outgoing graph. */
+    onBeforeActiveGraphChanged = new Observable<FlowGraph>();
+
+    /** Observable triggered when the graph list changes (add, remove, rename). */
+    onGraphListChanged = new Observable<void>();
+
+    /**
+     * Gets the coordinator that owns all graphs.
+     */
+    public get coordinator(): Nullable<FlowGraphCoordinator> {
+        return this._coordinator;
+    }
+
+    /**
+     * Sets the coordinator and activates its first graph.
+     * This is the primary entry point when loading a new set of graphs.
+     */
+    public set coordinator(coordinator: Nullable<FlowGraphCoordinator>) {
+        this._coordinator = coordinator;
+        if (coordinator && coordinator.flowGraphs.length > 0) {
+            this._activeGraphIndex = 0;
+            this._activateGraph(coordinator.flowGraphs[0]);
+        }
+    }
+
+    /**
+     * Gets the index of the currently active graph.
+     */
+    public get activeGraphIndex(): number {
+        return this._activeGraphIndex;
+    }
+
+    /**
+     * Sets the active graph index, switching the editor to display that graph.
+     */
+    public set activeGraphIndex(index: number) {
+        if (!this._coordinator) {
+            return;
+        }
+        const graphs = this._coordinator.flowGraphs;
+        if (index < 0 || index >= graphs.length) {
+            return;
+        }
+        if (index === this._activeGraphIndex && this._flowGraph === graphs[index]) {
+            return;
+        }
+        this._activeGraphIndex = index;
+        this._activateGraph(graphs[index]);
+    }
+
+    /**
+     * Adds a new empty graph to the coordinator and switches to it.
+     * @returns the newly created FlowGraph
+     */
+    public addGraph(): FlowGraph {
+        if (!this._coordinator) {
+            this._coordinator = new FlowGraphCoordinator({ scene: this.scene });
+        }
+        const graph = this._coordinator.createGraph();
+        this._activeGraphIndex = this._coordinator.flowGraphs.indexOf(graph);
+        this._activateGraph(graph);
+        this.onGraphListChanged.notifyObservers();
+        return graph;
+    }
+
+    /**
+     * Removes a graph from the coordinator by index.
+     * If the active graph is removed, switches to the nearest remaining graph.
+     * The last graph cannot be removed.
+     * @param index - the index of the graph to remove
+     * @returns true if the graph was removed
+     */
+    public removeGraph(index: number): boolean {
+        if (!this._coordinator) {
+            return false;
+        }
+        const graphs = this._coordinator.flowGraphs;
+        if (graphs.length <= 1 || index < 0 || index >= graphs.length) {
+            return false;
+        }
+        const graph = graphs[index];
+        this._coordinator.removeGraph(graph);
+        // Adjust active index to keep the same graph selected when possible
+        if (index < this._activeGraphIndex) {
+            // Removed a graph before the active one — shift index down
+            this._activeGraphIndex--;
+        } else if (index === this._activeGraphIndex) {
+            // Removed the active graph — select the nearest remaining
+            if (this._activeGraphIndex >= graphs.length) {
+                this._activeGraphIndex = graphs.length - 1;
+            }
+            this._activateGraph(graphs[this._activeGraphIndex]);
+        }
+        // If index > _activeGraphIndex, no adjustment needed (active graph unchanged)
+        this.onGraphListChanged.notifyObservers();
+        return true;
+    }
+
+    /**
+     * Renames a graph.
+     * @param index - the index of the graph to rename
+     * @param name - the new name
+     */
+    public renameGraph(index: number, name: string): void {
+        if (!this._coordinator) {
+            return;
+        }
+        const graphs = this._coordinator.flowGraphs;
+        if (index < 0 || index >= graphs.length) {
+            return;
+        }
+        graphs[index].name = name;
+        this.onGraphListChanged.notifyObservers();
+    }
+
+    /**
+     * Internal: activate a graph — wire scene context, stop old graph, notify observers.
+     * This contains the same wiring logic that was previously in the `flowGraph` setter.
+     * @param graph - the graph to activate
+     */
+    private _activateGraph(graph: FlowGraph): void {
+        // Let observers (e.g. graphEditor) persist canvas state before the switch
+        if (this._flowGraph) {
+            // Snapshot user variables/contexts for the outgoing graph so they
+            // survive the stop() that the flowGraph setter triggers.
+            this._snapshotUserVariablesFrom(this._flowGraph);
+            this.onBeforeActiveGraphChanged.notifyObservers(this._flowGraph);
+        }
+        // Use the existing setter which does all the wiring
+        this.flowGraph = graph;
+        this.onActiveGraphChanged.notifyObservers(graph);
+    }
 
     // ── Validation ─────────────────────────────────────────────────────
     /** Whether live validation is enabled (re-validates on graph changes). */
@@ -240,23 +392,57 @@ export class GlobalState {
     private _isDebugMode: boolean = false;
     /** Observable triggered when debug mode changes */
     onDebugModeChanged = new Observable<boolean>();
+    /** Observable triggered when the selected context index changes */
+    onSelectedContextChanged = new Observable<number>();
     /** The index of the context to observe in debug mode (0 = first context) */
-    selectedContextIndex: number = 0;
+    private _selectedContextIndex: number = 0;
+
+    /** Get the currently selected execution context index */
+    public get selectedContextIndex(): number {
+        return this._selectedContextIndex;
+    }
+
+    /** Set the selected execution context index.
+     * Switches debug/breakpoint observers to the new context.
+     */
+    public set selectedContextIndex(value: number) {
+        if (value === this._selectedContextIndex) {
+            return;
+        }
+        this._selectedContextIndex = value;
+        // Re-attach debug observers to the new context if debug mode is active
+        if (this._isDebugMode && this._flowGraph?.state === FlowGraphState.Started) {
+            this._attachContextExecutionObserver();
+        }
+        this.onSelectedContextChanged.notifyObservers(value);
+    }
+
     /** Observer tracking node execution for debug highlighting */
     private _debugExecutionObserver: Nullable<Observer<FlowGraphBlock>> = null;
     /** Observer tracking graph state changes for debug re-subscription */
     private _debugStateObserver: Nullable<Observer<FlowGraphState>> = null;
     /** Per-node throttle timestamps to avoid excessive highlighting */
     private _highlightThrottleMap = new Map<string, number>();
+    /** Blocks that executed since the last debug frame — batched to avoid per-call DOM work */
+    private _debugPendingBlocks = new Set<FlowGraphBlock>();
+    /** rAF handle for batched debug updates */
+    private _debugRafId: number = 0;
     /** Port elements currently glowing — tracked so we can clear them on stop */
     private _activePortHighlights = new Set<HTMLElement>();
     /** Minimum interval between highlight pulses per node (ms) */
     private static readonly _HIGHLIGHT_THROTTLE_MS = 100;
+    /** Maximum number of nodes to process per rAF frame to keep the editor responsive */
+    private static readonly _MAX_HIGHLIGHTS_PER_FRAME = 30;
     /** Whether the debug pulse CSS has been injected into a given document */
     private static _DebugStyleInjectedDocs = new WeakSet<Document>();
+    /** Monotonically increasing counter toggled on port elements to restart CSS animation without forced reflow */
+    private _pulseGeneration = 0;
 
     /**
-     * Inject the CSS keyframe animation for port pulsing (once per document)
+     * Inject the CSS keyframe animation for port pulsing (once per document).
+     * Uses two alternating animation names keyed by a `data-debug-gen` attribute
+     * so we can restart the animation by toggling the attribute value — no forced
+     * reflow (`void el.offsetWidth`) needed.
      * @param doc - the document to inject the style into
      */
     private static _InjectDebugStyle(doc: Document): void {
@@ -266,35 +452,43 @@ export class GlobalState {
         GlobalState._DebugStyleInjectedDocs.add(doc);
         const style = doc.createElement("style");
         style.textContent = `
-            @keyframes debug-port-pulse {
+            @keyframes debug-port-pulse-a {
                 0%   { box-shadow: 0 0 8px 4px #33B766; }
                 16%  { box-shadow: 0 0 8px 4px #33B766; }
                 100% { box-shadow: none; }
             }
-            [data-debug-pulse] {
-                animation: debug-port-pulse 600ms ease-out forwards;
+            @keyframes debug-port-pulse-b {
+                0%   { box-shadow: 0 0 8px 4px #33B766; }
+                16%  { box-shadow: 0 0 8px 4px #33B766; }
+                100% { box-shadow: none; }
+            }
+            [data-debug-gen="0"] {
+                animation: debug-port-pulse-a 600ms ease-out forwards;
+            }
+            [data-debug-gen="1"] {
+                animation: debug-port-pulse-b 600ms ease-out forwards;
             }
         `;
         doc.head.appendChild(style);
     }
 
     /**
-     * Apply a brief green glow to a port connector element
+     * Apply a brief green glow to a port connector element.
+     * Uses a generation toggle to restart the CSS animation without forcing reflow.
      * @param el - the port HTML element to pulse
      */
     private _pulsePortElement(el: HTMLElement): void {
         GlobalState._InjectDebugStyle(el.ownerDocument);
-        // Remove and re-add to restart the CSS animation if already playing
-        delete el.dataset.debugPulse;
-        void el.offsetWidth; // force reflow so the browser sees the removal
-        el.dataset.debugPulse = "1";
+        // Toggle between "0" and "1" to switch animation names → restarts
+        // the CSS animation without needing void el.offsetWidth (forced reflow).
+        el.dataset.debugGen = String(this._pulseGeneration & 1);
         this._activePortHighlights.add(el);
     }
 
     /** Immediately clear all active port highlights */
     private _clearAllPortHighlights(): void {
         for (const el of this._activePortHighlights) {
-            delete el.dataset.debugPulse;
+            delete el.dataset.debugGen;
         }
         this._activePortHighlights.clear();
     }
@@ -351,6 +545,7 @@ export class GlobalState {
         this._debugExecutionObserver?.remove();
         this._debugExecutionObserver = null;
         this._highlightThrottleMap.clear();
+        this._debugPendingBlocks.clear();
 
         const context = this._flowGraph?.getContext(this.selectedContextIndex);
         if (!context) {
@@ -360,73 +555,131 @@ export class GlobalState {
         // Install breakpoint predicate when attaching to a context
         this._installBreakpointPredicate(context);
 
+        // The observer callback is kept as cheap as possible — it only adds
+        // the block to a pending set.  All DOM work is deferred to a single
+        // requestAnimationFrame pass per frame to avoid freezing on graphs
+        // with many blocks executing every frame.
         this._debugExecutionObserver = context.onNodeExecutedObservable.add((block) => {
-            const now = performance.now();
+            this._debugPendingBlocks.add(block);
+            if (!this._debugRafId) {
+                this._debugRafId = requestAnimationFrame(() => this._flushDebugHighlights());
+            }
+        });
+    }
+
+    /**
+     * Process all pending debug highlights in a single batched DOM pass.
+     * Performance safeguards for large graphs (100+ blocks):
+     * - Per-frame cap: only _MAX_HIGHLIGHTS_PER_FRAME nodes are updated per rAF call
+     * - Viewport culling: offscreen nodes skip all DOM work
+     * - No forced reflows: port pulse uses generation-toggle CSS trick
+     * - No graphNode.refresh(): only the execution-time label is updated
+     * - Link animations are skipped for offscreen nodes
+     */
+    private _flushDebugHighlights(): void {
+        this._debugRafId = 0;
+        const now = performance.now();
+        // Advance the pulse generation so CSS animation restarts via attribute toggle
+        this._pulseGeneration++;
+
+        let processed = 0;
+        for (const block of this._debugPendingBlocks) {
+            if (processed >= GlobalState._MAX_HIGHLIGHTS_PER_FRAME) {
+                // Leave remaining blocks for the next frame
+                break;
+            }
+
             const lastTime = this._highlightThrottleMap.get(block.uniqueId) ?? 0;
             if (now - lastTime < GlobalState._HIGHLIGHT_THROTTLE_MS) {
-                return;
+                // Remove throttled blocks so they don't carry over
+                this._debugPendingBlocks.delete(block);
+                continue;
             }
             this._highlightThrottleMap.set(block.uniqueId, now);
 
-            // Trigger a refresh so executionTime updates in the UI
-            if (this.onGetNodeFromBlock) {
-                const graphNode = this.onGetNodeFromBlock(block);
-                if (graphNode) {
-                    graphNode.refresh();
+            if (!this.onGetNodeFromBlock) {
+                this._debugPendingBlocks.delete(block);
+                continue;
+            }
+            const graphNode = this.onGetNodeFromBlock(block);
+            if (!graphNode) {
+                this._debugPendingBlocks.delete(block);
+                continue;
+            }
 
-                    // Build lookup of this block's CONNECTED input connections (data + signal).
-                    // For signal inputs, only include those that were recently activated so we
-                    // highlight the signal that actually triggered this execution rather than
-                    // every signal input on the block.
-                    const inputSet = new Set<unknown>();
-                    for (const dataIn of block.dataInputs) {
-                        if (dataIn.isConnected()) {
-                            inputSet.add(dataIn);
-                        }
-                    }
-                    if (block instanceof FlowGraphExecutionBlock) {
-                        for (const sig of block.signalInputs) {
-                            if (sig.isConnected() && now - (sig as FlowGraphSignalConnection)._lastActivationTime < GlobalState._HIGHLIGHT_THROTTLE_MS) {
-                                inputSet.add(sig);
-                            }
-                        }
-                    }
+            // Viewport culling — skip all DOM work for offscreen nodes
+            if (!this.isNodeVisible(graphNode)) {
+                this._debugPendingBlocks.delete(block);
+                processed++;
+                continue;
+            }
 
-                    // Pulse the port connector dots for each triggered input
-                    for (const port of graphNode.inputPorts) {
-                        if (inputSet.has(port.portData.data)) {
-                            this._pulsePortElement(port.element);
-                        }
-                    }
+            // Lightweight update: only refresh the execution time label
+            // instead of the full graphNode.refresh() which touches innerHTML,
+            // display manager, all ports, and all visual properties.
+            const execTime = graphNode.content.executionTime ?? 0;
+            if (execTime >= 0 && graphNode.executionTimeElement) {
+                const formatted = `${execTime.toFixed(2)} ms`;
+                if (graphNode.executionTimeElement.textContent !== formatted) {
+                    graphNode.executionTimeElement.textContent = formatted;
+                }
+            }
 
-                    // Pulse output signal ports that actually fired (recently) and are connected
-                    const firedOutputs = new Set<unknown>();
-                    if (block instanceof FlowGraphExecutionBlock) {
-                        for (const sig of block.signalOutputs) {
-                            if (sig.isConnected() && now - (sig as FlowGraphSignalConnection)._lastActivationTime < GlobalState._HIGHLIGHT_THROTTLE_MS) {
-                                firedOutputs.add(sig);
-                            }
-                        }
-                        for (const port of graphNode.outputPorts) {
-                            if (firedOutputs.has(port.portData.data)) {
-                                this._pulsePortElement(port.element);
-                            }
-                        }
-                    }
-
-                    // Animate traveling dot on incoming links
-                    for (const link of graphNode.links) {
-                        if (link.portB && inputSet.has(link.portB.portData.data)) {
-                            link.triggerFlowAnimation();
-                        }
-                        // Also animate outgoing signal links that fired
-                        if (link.portA && firedOutputs.has(link.portA.portData.data)) {
-                            link.triggerFlowAnimation();
-                        }
+            // Build lookup of this block's CONNECTED input connections (data + signal).
+            const inputSet = new Set<unknown>();
+            for (const dataIn of block.dataInputs) {
+                if (dataIn.isConnected()) {
+                    inputSet.add(dataIn);
+                }
+            }
+            if (block instanceof FlowGraphExecutionBlock) {
+                for (const sig of block.signalInputs) {
+                    if (sig.isConnected() && now - (sig as FlowGraphSignalConnection)._lastActivationTime < GlobalState._HIGHLIGHT_THROTTLE_MS) {
+                        inputSet.add(sig);
                     }
                 }
             }
-        });
+
+            // Pulse the port connector dots for each triggered input
+            for (const port of graphNode.inputPorts) {
+                if (inputSet.has(port.portData.data)) {
+                    this._pulsePortElement(port.element);
+                }
+            }
+
+            // Pulse output signal ports that actually fired (recently)
+            const firedOutputs = new Set<unknown>();
+            if (block instanceof FlowGraphExecutionBlock) {
+                for (const sig of block.signalOutputs) {
+                    if (sig.isConnected() && now - (sig as FlowGraphSignalConnection)._lastActivationTime < GlobalState._HIGHLIGHT_THROTTLE_MS) {
+                        firedOutputs.add(sig);
+                    }
+                }
+                for (const port of graphNode.outputPorts) {
+                    if (firedOutputs.has(port.portData.data)) {
+                        this._pulsePortElement(port.element);
+                    }
+                }
+            }
+
+            // Animate traveling dot on links (only for visible nodes)
+            for (const link of graphNode.links) {
+                if (link.portB && inputSet.has(link.portB.portData.data)) {
+                    link.triggerFlowAnimation();
+                }
+                if (link.portA && firedOutputs.has(link.portA.portData.data)) {
+                    link.triggerFlowAnimation();
+                }
+            }
+
+            this._debugPendingBlocks.delete(block);
+            processed++;
+        }
+
+        // If there are still pending blocks, schedule another frame
+        if (this._debugPendingBlocks.size > 0 && !this._debugRafId) {
+            this._debugRafId = requestAnimationFrame(() => this._flushDebugHighlights());
+        }
     }
 
     /** Unsubscribe from debug execution observers */
@@ -436,6 +689,11 @@ export class GlobalState {
         this._debugStateObserver?.remove();
         this._debugStateObserver = null;
         this._highlightThrottleMap.clear();
+        this._debugPendingBlocks.clear();
+        if (this._debugRafId) {
+            cancelAnimationFrame(this._debugRafId);
+            this._debugRafId = 0;
+        }
         this._clearAllPortHighlights();
         this._removeBreakpointPredicate();
     }
@@ -521,6 +779,89 @@ export class GlobalState {
         ctx?.stepExecution();
     }
 
+    // ── Execution Context Management ───────────────────────────────────
+    /** Observable triggered when a context is added or removed */
+    onContextListChanged = new Observable<void>();
+
+    /**
+     * Create a new execution context on the current flow graph.
+     * Assigns a default name like "Context N".
+     * @returns the index of the newly created context, or -1 if no graph
+     */
+    public createNewContext(): number {
+        if (!this._flowGraph) {
+            return -1;
+        }
+        const ctx = this._flowGraph.createContext();
+        const index = this._flowGraph.contextCount - 1;
+        ctx.name = `Context ${index}`;
+        // Copy the assets context from the scene if available
+        if (this.sceneContext?.scene) {
+            ctx.assetsContext = this.sceneContext.scene;
+        }
+        this.onContextListChanged.notifyObservers();
+        return index;
+    }
+
+    /**
+     * Remove an execution context by index.
+     * If the removed context was the selected one, selects the nearest remaining context.
+     * @param index - the index of the context to remove
+     * @returns true if removed successfully
+     */
+    public removeContextAt(index: number): boolean {
+        if (!this._flowGraph) {
+            return false;
+        }
+        // Don't allow removing the last context
+        if (this._flowGraph.contextCount <= 1) {
+            return false;
+        }
+        const removed = this._flowGraph.removeContext(index);
+        if (!removed) {
+            return false;
+        }
+        // Adjust selection
+        if (this._selectedContextIndex >= this._flowGraph.contextCount) {
+            this._selectedContextIndex = this._flowGraph.contextCount - 1;
+        }
+        if (this._isDebugMode && this._flowGraph.state === FlowGraphState.Started) {
+            this._attachContextExecutionObserver();
+        }
+        this.onContextListChanged.notifyObservers();
+        this.onSelectedContextChanged.notifyObservers(this._selectedContextIndex);
+        return true;
+    }
+
+    /**
+     * Rename an execution context.
+     * @param index - the index of the context
+     * @param name - the new name
+     */
+    public renameContext(index: number, name: string): void {
+        const ctx = this._flowGraph?.getContext(index);
+        if (ctx) {
+            ctx.name = name;
+            this.onContextListChanged.notifyObservers();
+        }
+    }
+
+    /**
+     * Get a summary of all execution contexts (index, uniqueId, name).
+     * @returns an array of context info objects
+     */
+    public getContextList(): Array<{ index: number; uniqueId: string; name: string }> {
+        const result: Array<{ index: number; uniqueId: string; name: string }> = [];
+        if (!this._flowGraph) {
+            return result;
+        }
+        for (let i = 0; i < this._flowGraph.contextCount; i++) {
+            const ctx = this._flowGraph.getContext(i);
+            result.push({ index: i, uniqueId: ctx.uniqueId, name: ctx.name || `Context ${i}` });
+        }
+        return result;
+    }
+
     /** The scene context populated when a Playground snippet is loaded */
     sceneContext: Nullable<SceneContext> = null;
     /** Observable triggered when the scene context changes (snippet loaded/disposed) */
@@ -545,6 +886,48 @@ export class GlobalState {
      * Built eagerly when a scene context arrives so it survives scene disposal.
      */
     private _cachedOldIdToName: Map<string, Map<number, string>> | null = null;
+
+    /**
+     * Saved user variables from the last execution context before setScene cleared it.
+     * These are restored into the newly created context to preserve mesh references.
+     */
+    private _savedUserVariables: { [key: string]: any } | null = null;
+
+    /**
+     * Saved connection values (unconnected input defaults) from the last execution context
+     * before setScene cleared it. These hold values like the "2" in a divide-by-2 block
+     * that has no incoming connection on its "b" input.
+     */
+    private _savedConnectionValues: { [key: string]: any } | null = null;
+
+    /**
+     * Serialized snapshots of ALL execution contexts, taken before stop()/setScene()
+     * clears them.  Used by SerializationTools.Serialize() to include context data
+     * (user variables, variable types, connection values) in the saved JSON even
+     * when the graph is stopped and has no live contexts.
+     */
+    private _savedContextSnapshots: any[] | null = null;
+
+    /**
+     * Per-graph serialized context snapshots, keyed by FlowGraph.uniqueId.
+     * Used to preserve context data for inactive graphs during multi-graph serialization.
+     */
+    private _perGraphContextSnapshots = new Map<string, any[]>();
+
+    /**
+     * Runtime (non-serialized) copies of each execution context's data.
+     * Unlike _savedContextSnapshots (which holds serialized/JSON-safe values for
+     * injecting into saved files), these hold actual runtime objects (Vector3,
+     * Mesh references, etc.) so they can be restored directly into newly
+     * created contexts without needing to re-parse.
+     */
+    private _savedContextRuntimeData: Array<{
+        userVariables: { [key: string]: any };
+        connectionValues: { [key: string]: any };
+        variableTypes: { [key: string]: string };
+        name: string;
+        uniqueId: string;
+    }> | null = null;
 
     /**
      * Gets the current flow graph
@@ -589,7 +972,15 @@ export class GlobalState {
         // press Start or Reset.  The graph may arrive already started when
         // opened from KHR_interactivity or another runtime path.
         if (flowGraph.state === FlowGraphState.Started || flowGraph.state === FlowGraphState.Paused) {
+            // Snapshot user variables before stop() clears execution contexts.
+            // These variables (e.g. pickedMesh_0 from KHR_interactivity) are
+            // set during parsing and would be lost when stop() empties contexts.
+            this._snapshotUserVariablesFrom(flowGraph);
             flowGraph.stop();
+        } else {
+            // Graph is already stopped but may still have parsed contexts with
+            // variables that we need to preserve for when start() is called.
+            this._snapshotUserVariablesFrom(flowGraph);
         }
 
         // Wire the observer: when scene context changes, update all execution contexts
@@ -612,19 +1003,89 @@ export class GlobalState {
                 // Cache the NEW scene's id→name map for the next reload
                 this._cacheSceneIdToNameMap(ctx.scene);
 
+                // Snapshot user variables before setScene clears contexts —
+                // they contain mesh references (pickedMesh_0 etc.) from
+                // KHR_interactivity that must survive scene switches.
+                this._snapshotUserVariables();
+
                 if (typeof flowGraph.setScene === "function") {
                     flowGraph.setScene(ctx.scene);
                 }
+                // Re-create contexts from snapshots so the editor UI has
+                // live contexts after setScene() clears them.
+                this._restoreContextsFromSnapshots(flowGraph);
             }
         });
 
         // Wrap createContext() so newly created contexts also inherit the loaded scene
+        // and any saved user variables from the previous context.
         this._originalCreateContext = flowGraph.createContext.bind(flowGraph);
         const origCreate = this._originalCreateContext!;
         flowGraph.createContext = (): FlowGraphContext => {
             const ctx = origCreate();
+            // Assign a default name if the context doesn't have one
+            if (!ctx.name) {
+                ctx.name = `Context ${flowGraph.contextCount - 1}`;
+            }
             if (this.sceneContext) {
                 ctx.assetsContext = this.sceneContext.scene;
+            }
+            // Restore full context data from the runtime snapshot matching
+            // this context's index. This handles user variables, variable types,
+            // connection values, and names for ALL contexts (not just the first).
+            if (this._savedContextRuntimeData && this._savedContextRuntimeData.length > 0) {
+                const ctxIndex = flowGraph.contextCount - 1;
+                // Only restore from the exact matching index — do not fall back
+                // to snapshot[0] to avoid silently restoring the wrong data
+                // when contexts are removed or reordered.
+                const runtimeData = this._savedContextRuntimeData[ctxIndex];
+                if (runtimeData) {
+                    for (const key in runtimeData.userVariables) {
+                        ctx.setVariable(key, runtimeData.userVariables[key]);
+                    }
+                    const serializedSnapshot = this._savedContextSnapshots?.[ctxIndex];
+                    if (serializedSnapshot?._userVariables) {
+                        for (const key in serializedSnapshot._userVariables) {
+                            const serializedVal = serializedSnapshot._userVariables[key];
+                            if (serializedVal && typeof serializedVal === "object" && serializedVal.className && !ctx.userVariables[key]) {
+                                ctx.setVariable(key, serializedVal);
+                            }
+                        }
+                    }
+                    for (const key in runtimeData.variableTypes) {
+                        ctx.setVariableType(key, runtimeData.variableTypes[key]);
+                    }
+                    for (const key in runtimeData.connectionValues) {
+                        ctx._setConnectionValueByKey(key, runtimeData.connectionValues[key]);
+                    }
+                    if (runtimeData.name) {
+                        ctx.name = runtimeData.name;
+                    }
+                    if (runtimeData.uniqueId) {
+                        ctx.uniqueId = runtimeData.uniqueId;
+                    }
+                }
+            } else {
+                // Legacy path: restore from flat saved variables (first context only)
+                if (this._savedUserVariables) {
+                    for (const key in this._savedUserVariables) {
+                        ctx.setVariable(key, this._savedUserVariables[key]);
+                    }
+                    this._savedUserVariables = null;
+                }
+                if (this._savedConnectionValues) {
+                    for (const key in this._savedConnectionValues) {
+                        ctx._setConnectionValueByKey(key, this._savedConnectionValues[key]);
+                    }
+                    this._savedConnectionValues = null;
+                }
+            }
+            // Resolve raw descriptor objects (e.g. {className:"Mesh",id:"x"})
+            // into actual scene objects.  _rebindContextUserVariables only
+            // works when execution contexts exist, so call it now that the
+            // context has been created and populated.
+            if (this.sceneContext?.scene) {
+                this._rebindContextUserVariables(this.sceneContext.scene);
             }
             return ctx;
         };
@@ -640,6 +1101,9 @@ export class GlobalState {
             if (typeof flowGraph.setScene === "function") {
                 flowGraph.setScene(this.sceneContext.scene);
             }
+            // Re-create contexts from snapshots so the editor UI has live
+            // contexts to display (variables panel, context selector, etc.)
+            this._restoreContextsFromSnapshots(flowGraph);
         }
 
         // Re-subscribe debug observers if debug mode is active
@@ -759,6 +1223,11 @@ export class GlobalState {
             this._rebindAnimationGroupReference(block, newScene);
             this._rebindAnimationReference(block, newScene);
         });
+
+        // --- Rebind mesh references stored in context user variables ---
+        // KHR_interactivity stores mesh references in user variables (e.g. pickedMesh_0)
+        // that feed MeshPickEvent blocks through GetVariable connections.
+        this._rebindContextUserVariables(newScene);
     }
 
     /**
@@ -798,15 +1267,19 @@ export class GlobalState {
             return;
         }
         const currentMesh = (meshInput as any)._defaultValue;
+        const isObjectRef = currentMesh != null && typeof currentMesh === "object";
         // Already pointing at a mesh in the new scene?
-        if (currentMesh && typeof currentMesh === "object" && newScene.meshes.some((m) => m === currentMesh)) {
+        if (isObjectRef && newScene.meshes.some((m) => m === currentMesh)) {
             return;
         }
-        const savedName: string | undefined = (block.config as any)?._meshName ?? (currentMesh && typeof currentMesh === "object" ? currentMesh.name : undefined);
-        if (!savedName) {
+        const savedName: string | undefined = (block.config as any)?._meshName ?? (isObjectRef ? currentMesh.name : undefined);
+        const savedUniqueId: number | undefined = isObjectRef ? currentMesh.uniqueId : undefined;
+        if (!savedName && savedUniqueId === undefined) {
             return;
         }
-        const match = newScene.meshes.find((m) => m.name === savedName);
+        // Filter by name, then prefer uniqueId match when multiple meshes share the same name
+        const candidates = savedName ? newScene.meshes.filter((m) => m.name === savedName) : [];
+        const match = candidates.length === 1 ? candidates[0] : savedUniqueId !== undefined ? candidates.find((m) => m.uniqueId === savedUniqueId) : candidates[0];
         if (match) {
             if (!block.config) {
                 (block as any).config = {};
@@ -870,6 +1343,168 @@ export class GlobalState {
                 (block as any).config = {};
             }
             (animInput as any)._defaultValue = match;
+        }
+    }
+
+    /**
+     * Rebind mesh and transform node references stored in context user variables.
+     * KHR_interactivity stores references like pickedMesh_0 in context._userVariables
+     * which are read by GetVariable blocks to feed MeshPickEvent.asset.
+     * When the scene changes, these references become stale and need updating.
+     * @param newScene - the newly loaded scene to resolve references against
+     */
+    private _rebindContextUserVariables(newScene: Scene): void {
+        if (!this._flowGraph) {
+            return;
+        }
+
+        const allMeshesAndNodes = [...newScene.meshes, ...newScene.transformNodes];
+
+        const ctxCount = (this._flowGraph as any)._executionContexts?.length ?? 0;
+        for (let i = 0; i < ctxCount; i++) {
+            const context = this._flowGraph.getContext(i);
+            if (!context) {
+                continue;
+            }
+            const vars = context.userVariables;
+            for (const key in vars) {
+                const value = vars[key];
+                if (!value || typeof value !== "object") {
+                    continue;
+                }
+                // Check if this is a stale mesh/transform node reference (raw descriptor object
+                // that wasn't resolved during parsing, or a reference to a disposed/wrong-scene mesh)
+                const isUnresolved = value.className && (value.id || value.name) && typeof value.getClassName !== "function";
+                const isStaleRef = typeof value.getClassName === "function" && !allMeshesAndNodes.some((m) => m === value);
+
+                if (isUnresolved || isStaleRef) {
+                    const name = value.name ?? (typeof value.getClassName === "function" ? value.name : undefined);
+                    const id = value.id ?? (typeof value.getClassName === "function" ? value.id : undefined);
+                    const uid: number | undefined = value.uniqueId;
+
+                    // Filter candidates by id first, then by name
+                    let candidates = id ? allMeshesAndNodes.filter((m) => m.id === id) : [];
+                    if (candidates.length === 0 && name) {
+                        candidates = allMeshesAndNodes.filter((m) => m.name === name);
+                    }
+
+                    // Prefer uniqueId match when multiple candidates share the same id/name
+                    const match = candidates.length === 1 ? candidates[0] : uid !== undefined ? candidates.find((m) => m.uniqueId === uid) : candidates[0];
+
+                    if (match) {
+                        context.setVariable(key, match);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Snapshot user variables and connection values from the selected execution context of a flow graph,
+     * falling back to the first execution context when the selected one is unavailable.
+     * Also serializes ALL execution contexts so they survive stop()/setScene().
+     * Called just before stop/setScene clears contexts so variables can be restored later.
+     * @param graph - the flow graph to snapshot from (defaults to current graph)
+     */
+    private _snapshotUserVariablesFrom(graph?: FlowGraph): void {
+        const fg = graph ?? this._flowGraph;
+        if (!fg) {
+            return;
+        }
+        // Snapshot from the selected context (or context 0 as fallback)
+        const ctx = fg.getContext(this._selectedContextIndex) ?? fg.getContext(0);
+        if (!ctx) {
+            return;
+        }
+        const vars = ctx.userVariables;
+        if (vars && Object.keys(vars).length > 0) {
+            this._savedUserVariables = { ...vars };
+        }
+        // Also snapshot connection values (unconnected input defaults)
+        const connVals = (ctx as any)._connectionValues;
+        if (connVals && Object.keys(connVals).length > 0) {
+            this._savedConnectionValues = { ...connVals };
+        }
+
+        // Snapshot ALL contexts so they survive stop()/setScene().
+        // Two parallel snapshots:
+        //   _savedContextSnapshots  — serialized (JSON-safe) for file save injection
+        //   _savedContextRuntimeData — runtime objects for live context restoration
+        if (fg.contextCount > 0) {
+            this._savedContextSnapshots = [];
+            this._savedContextRuntimeData = [];
+            for (let i = 0; i < fg.contextCount; i++) {
+                const context = fg.getContext(i);
+                // Serialized snapshot for SerializationTools
+                const serialized: any = {};
+                context.serialize(serialized);
+                this._savedContextSnapshots.push(serialized);
+                // Runtime snapshot for createContext wrapper
+                this._savedContextRuntimeData.push({
+                    userVariables: { ...context.userVariables },
+                    connectionValues: { ...(context as any)._connectionValues },
+                    variableTypes: { ...context.variableTypes },
+                    name: context.name,
+                    uniqueId: context.uniqueId,
+                });
+            }
+            // Store per-graph snapshots for multi-graph serialization
+            this._perGraphContextSnapshots.set(fg.uniqueId, [...this._savedContextSnapshots!]);
+        }
+    }
+
+    /**
+     * Convenience alias for snapshotting from the current flow graph.
+     */
+    private _snapshotUserVariables(): void {
+        this._snapshotUserVariablesFrom();
+    }
+
+    /**
+     * Public method to snapshot user variables before an operation that clears contexts.
+     * Call this before flowGraph.stop() to preserve variables for the next start().
+     */
+    public snapshotUserVariables(): void {
+        this._snapshotUserVariablesFrom();
+    }
+
+    /**
+     * Returns the last serialized context snapshots (taken before stop()/setScene()).
+     * Used by SerializationTools to inject context data into the serialized output
+     * when the graph is stopped and has no live execution contexts.
+     * @returns array of serialized context objects, or null if none saved
+     */
+    public get savedContextSnapshots(): any[] | null {
+        return this._savedContextSnapshots;
+    }
+
+    /**
+     * Returns saved context snapshots for a specific graph by uniqueId.
+     * Used by SerializationTools to inject context data for inactive graphs.
+     * @param graphUniqueId - the uniqueId of the graph
+     * @returns array of serialized context objects, or null if none saved
+     */
+    public getContextSnapshotsForGraph(graphUniqueId: string): any[] | null {
+        return this._perGraphContextSnapshots.get(graphUniqueId) ?? null;
+    }
+
+    /**
+     * Re-create execution contexts on the flow graph from `_savedContextSnapshots`.
+     * Called after setScene() clears live contexts so the editor UI (variables panel,
+     * context selector) has live contexts to display and serialize.
+     * @param fg - the flow graph to restore contexts on
+     */
+    private _restoreContextsFromSnapshots(fg: FlowGraph): void {
+        if (!this._savedContextSnapshots || this._savedContextSnapshots.length === 0) {
+            return;
+        }
+        if (fg.contextCount > 0) {
+            // Already has contexts (e.g. setScene was a no-op) — don't duplicate
+            return;
+        }
+        for (let i = 0; i < this._savedContextSnapshots.length; i++) {
+            // The wrapped createContext() picks up snapshot[i] automatically
+            fg.createContext();
         }
     }
 

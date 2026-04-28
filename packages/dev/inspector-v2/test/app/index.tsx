@@ -135,6 +135,16 @@ function createTestBoxes() {
     box.material = redMat;
     const boxInstance = box.createInstance("boxInstance");
     boxInstance.position = new Vector3(0, 0, -0.5);
+
+    const level1Torus = MeshBuilder.CreateTorus("level1Torus", {}, scene);
+    const level2Torus = MeshBuilder.CreateTorus("level2Torus", {}, scene);
+    level2Torus.position = new Vector3(0.5, 0, 0);
+    level2Torus.parent = level1Torus;
+    const level3Torus = MeshBuilder.CreateTorus("level3Torus", {}, scene);
+    level3Torus.parent = level2Torus;
+    level3Torus.position = new Vector3(0.5, 0, 0);
+    scene.removeMesh(level1Torus);
+    scene.removeMesh(level2Torus);
 }
 
 function createTestMetadata() {

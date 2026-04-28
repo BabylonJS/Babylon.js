@@ -9,11 +9,14 @@ import {
     FlowGraphMeshPickEventBlock,
     FlowGraphReceiveCustomEventBlock,
     FlowGraphSceneReadyEventBlock,
+    FlowGraphSceneTickEventBlock,
     FlowGraphSendCustomEventBlock,
     RichTypeNumber,
     RichTypeString,
+    ParseFlowGraphAsync,
 } from "core/FlowGraph";
 import { ParseFlowGraph } from "core/FlowGraph/flowGraphParser";
+import { FlowGraphPathConverter } from "core/FlowGraph/flowGraphPathConverter";
 import { Mesh } from "core/Meshes";
 import { Logger } from "core/Misc/logger";
 import { Scene } from "core/scene";
@@ -221,5 +224,91 @@ describe("Flow Graph Event Nodes", () => {
         // Mesh3 was picked, so we expect the pick to "bubble up" to mesh1
         expect(Logger.Log).toHaveBeenNthCalledWith(1, "Mesh 3 was picked");
         expect(Logger.Log).toHaveBeenNthCalledWith(2, "Mesh 1 was picked");
+    });
+
+    it("Event blocks fire both done and out signals", () => {
+        const graph = flowGraphCoordinator.createGraph();
+        const context = graph.createContext();
+
+        const sceneReady = new FlowGraphSceneReadyEventBlock();
+        graph.addEventBlock(sceneReady);
+
+        // Connect one log to 'done' and another to 'out'
+        const doneLog = new FlowGraphConsoleLogBlock({ name: "doneLog" });
+        sceneReady.done.connectTo(doneLog.in);
+        doneLog.message.setValue("done fired", context);
+
+        const outLog = new FlowGraphConsoleLogBlock({ name: "outLog" });
+        sceneReady.out.connectTo(outLog.in);
+        outLog.message.setValue("out fired", context);
+
+        graph.start();
+
+        expect(Logger.Log).toHaveBeenCalledWith("done fired");
+        expect(Logger.Log).toHaveBeenCalledWith("out fired");
+    });
+
+    it("Event blocks do not fire out signal at graph start (only when event triggers)", () => {
+        const graph = flowGraphCoordinator.createGraph();
+        const context = graph.createContext();
+
+        // Use SceneTickEvent which fires on every render frame
+        const tick = new FlowGraphSceneTickEventBlock();
+        graph.addEventBlock(tick);
+
+        const outLog = new FlowGraphConsoleLogBlock({ name: "outLog" });
+        tick.out.connectTo(outLog.in);
+        outLog.message.setValue("out fired", context);
+
+        // Start the graph — _startPendingTasks should NOT fire out
+        graph.start();
+
+        // Before any render frame, out should not have fired
+        // (The base FlowGraphAsyncExecutionBlock._startPendingTasks WOULD fire out,
+        // but the event block override should suppress it)
+        expect(Logger.Log).not.toHaveBeenCalledWith("out fired");
+    });
+
+    it("Event block fires both out and done signals after round-trip", async () => {
+        const mockContext: any = {};
+        const pathConverter = new FlowGraphPathConverter(mockContext);
+
+        const graph = flowGraphCoordinator.createGraph();
+        const context = graph.createContext();
+
+        const mesh = new Mesh("testMesh", scene);
+        const meshPick = new FlowGraphMeshPickEventBlock({ targetMesh: mesh });
+        graph.addEventBlock(meshPick);
+
+        // Connect to done
+        const doneLog = new FlowGraphConsoleLogBlock({ name: "doneLog" });
+        meshPick.done.connectTo(doneLog.in);
+        doneLog.message.setValue("done fired", context);
+
+        // Connect to out
+        const outLog = new FlowGraphConsoleLogBlock({ name: "outLog" });
+        meshPick.out.connectTo(outLog.in);
+        outLog.message.setValue("out fired", context);
+
+        // Serialize
+        const serialized: any = {};
+        graph.serialize(serialized);
+
+        // Parse into a new graph
+        const coordinator2 = new FlowGraphCoordinator({ scene });
+        const parsed = await ParseFlowGraphAsync(serialized, { coordinator: coordinator2, pathConverter });
+
+        parsed.start();
+
+        // Simulate a mesh pick
+        const pickInfo = new PickingInfo();
+        pickInfo.hit = true;
+        pickInfo.pickedMesh = mesh;
+        const mouseEvent = {} as any;
+        const pointerInfo = new PointerInfo(PointerEventTypes.POINTERPICK, mouseEvent, pickInfo);
+        scene.onPointerObservable.notifyObservers(pointerInfo);
+
+        expect(Logger.Log).toHaveBeenCalledWith("done fired");
+        expect(Logger.Log).toHaveBeenCalledWith("out fired");
     });
 });

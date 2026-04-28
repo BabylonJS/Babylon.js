@@ -57,32 +57,33 @@ CDN_VERSION=8.0.0 CDN_VERSION_B=latest npm run test:performance
 Each test scenario goes through this flow:
 
 1. **Warmup** — 2 passes (discarded), lets the browser JIT-compile and stabilize.
-2. **Measurement** — 10 passes per build. Each pass initializes the engine, creates the scene, calls `scene.render()` in a tight loop `framesToRender` times (default 2500), records the total wall-clock time, then disposes the scene and engine.
+2. **Interleaved measurement** — 10 rounds, each alternating between stable and dev builds. Even rounds run stable first; odd rounds run dev first — this cancels ordering bias. Each pass initializes the engine, creates the scene, calls `scene.render()` in a tight loop `framesToRender` times (default 2500), records the total wall-clock time, then disposes the scene and engine.
 3. **Trimming** — Removes 2 highest and 2 lowest values from each side, leaving 6 samples.
 4. **Statistical analysis**:
-    - **Welch's t-test** (one-tailed) checks if the difference is statistically significant (p < 0.05).
+    - **Paired t-test** (one-tailed) on the per-round differences (candidate − baseline) checks if the difference is statistically significant (p < 0.05). Because measurements are paired, machine-level variance (thermal throttling, noisy neighbors, GC pressure) cancels out.
     - **Ratio check** verifies the candidate is more than 15% slower.
     - Both must be true to flag a regression.
 5. **Noise detection** — If either side's coefficient of variation exceeds 10%, the result is marked INCONCLUSIVE and the test passes (noisy data cannot reliably detect regressions).
-6. **Confirmation** — If a regression is detected, 6 additional passes per build are run and merged with the initial data before making a final determination.
+6. **Confirmation** — If a regression is detected, additional interleaved rounds are run and merged with the initial data before making a final determination. The confirmation pass defaults to 6 rounds but may be increased to satisfy trimming/statistical minimums (e.g. 7 rounds with the default `trimCount=2`).
 
 ## Configuration
 
 Tests override defaults via `perfOptions`. All fields are optional:
 
-| Option               | Default    | Description                                                   |
-| -------------------- | ---------- | ------------------------------------------------------------- |
-| `numberOfPasses`     | 10         | Measured passes per build                                     |
-| `framesToRender`     | 2500       | Frames rendered per pass                                      |
-| `warmupPasses`       | 2          | Warmup passes (discarded)                                     |
-| `acceptedThreshold`  | 0.15       | Max allowed ratio above 1.0 (15%)                             |
-| `maxCov`             | 0.10       | Coefficient of variation above which results are inconclusive |
-| `trimCount`          | 2          | Outliers removed from each end                                |
-| `pValueThreshold`    | 0.05       | Statistical significance threshold                            |
-| `confirmationPasses` | 6          | Extra passes on suspected regression                          |
-| `cdnVersion`         | `""`       | Pin baseline to a CDN version                                 |
-| `cdnVersionB`        | `""`       | Pin candidate to a CDN version (skips dev)                    |
-| `engineName`         | `"webgl2"` | Engine to use: `"webgl2"` or `"webgpu"`                       |
+| Option               | Default    | Description                                                    |
+| -------------------- | ---------- | -------------------------------------------------------------- |
+| `numberOfPasses`     | 10         | Measured passes per build                                      |
+| `framesToRender`     | 2500       | Frames rendered per pass                                       |
+| `warmupPasses`       | 2          | Warmup passes (discarded)                                      |
+| `acceptedThreshold`  | 0.15       | Max allowed ratio above 1.0 (15%)                              |
+| `maxCov`             | 0.10       | Coefficient of variation above which results are inconclusive  |
+| `trimCount`          | 2          | Outliers removed from each end                                 |
+| `pValueThreshold`    | 0.05       | Statistical significance threshold                             |
+| `confirmationPasses` | 6          | Extra passes on suspected regression                           |
+| `cdnVersion`         | `""`       | Pin baseline to a CDN version                                  |
+| `cdnVersionB`        | `""`       | Pin candidate to a CDN version (skips dev)                     |
+| `engineName`         | `"webgl2"` | Engine to use: `"webgl2"` or `"webgpu"`                        |
+| `interleaved`        | `true`     | Alternate stable/dev each round with paired t-test (see below) |
 
 ## Test Output
 
@@ -96,6 +97,20 @@ When comparing CDN versions, labels reflect the versions:
 
 ```
 [PERF] Default scene: v7.0.0: 19.6ms, v8.0.0: 18.2ms, v8.0.0 is 7.1% faster, p-value: 0.0023
+```
+
+## Interleaved vs Sequential Sampling
+
+By default, `interleaved` is `true`: stable and dev measurements alternate each round so that environmental drift (thermal throttling, noisy neighbors, GC pressure) affects both builds equally. A **paired t-test** analyzes the per-round differences, which is more powerful than an independent test when measurements share correlated noise.
+
+Set `interleaved: false` to use the faster sequential mode, where all stable passes run first, then all dev passes, analyzed with **Welch's t-test**. This is ~2× faster (each build's page loads once instead of per-round) and is suitable for dedicated or local hardware where environmental stability is guaranteed.
+
+```ts
+// Fast local run — sequential sampling
+const perfOptions = { framesToRender: 2500, numberOfPasses: 10, interleaved: false };
+
+// CI / BrowserStack — interleaved (default)
+const perfOptions = { framesToRender: 2500, numberOfPasses: 10 };
 ```
 
 ## Test Files

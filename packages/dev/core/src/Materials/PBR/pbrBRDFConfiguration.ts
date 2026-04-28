@@ -192,7 +192,7 @@ export class PBRBRDFConfiguration extends MaterialPluginBase {
         defines.MS_BRDF_ENERGY_CONSERVATION = this._useEnergyConservation && this._useSmithVisibilityHeightCorrelated;
         defines.SPHERICAL_HARMONICS = this._useSphericalHarmonics;
         defines.SPECULAR_GLOSSINESS_ENERGY_CONSERVATION = this._useSpecularGlossinessInputEnergyConservation;
-        defines.MIX_IBL_RADIANCE_WITH_IRRADIANCE = this._mixIblRadianceWithIrradiance;
+        defines.MIX_IBL_RADIANCE_WITH_IRRADIANCE = this._mixIblRadianceWithIrradiance && !(this._material as PBRBaseMaterial)._disableLighting;
         defines.LEGACY_SPECULAR_ENERGY_CONSERVATION = this._useLegacySpecularEnergyConservation;
         defines.BASE_DIFFUSE_MODEL = this._baseDiffuseModel;
         defines.DIELECTRIC_SPECULAR_MODEL = this._dielectricSpecularModel;

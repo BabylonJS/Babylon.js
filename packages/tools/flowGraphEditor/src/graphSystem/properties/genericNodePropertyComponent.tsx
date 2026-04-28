@@ -24,6 +24,9 @@ import { getRichTypeByFlowGraphType } from "core/FlowGraph/flowGraphRichTypes";
 import { Vector2, Vector3, Vector4, Matrix } from "core/Maths/math.vector";
 import { Color3, Color4 } from "core/Maths/math.color";
 import { FlowGraphBlockDisplayName } from "../blockDisplayUtils";
+import { type GlobalState } from "../../globalState";
+import { AutoCompleteInputComponent } from "../../sharedComponents/autoCompleteInputComponent";
+import { GatherVariableNames } from "../../variableUtils";
 
 /**
  * Type names whose data inputs can be edited directly in
@@ -155,6 +158,22 @@ export class ConstructorVariablesPropertyTabComponent extends React.Component<IP
         this.props.stateManager.onUpdateRequiredObservable.notifyObservers(block);
     }
 
+    /**
+     * Gathers all variable names currently defined across the flow graph
+     * (from GetVariable/SetVariable blocks and context user variables).
+     * Excludes the variable owned by the given block to avoid self-reference.
+     * @param excludeBlock - The block to exclude from the scan.
+     * @returns Sorted array of variable names.
+     */
+    private _getExistingVariableNames(excludeBlock: FlowGraphBlock): string[] {
+        const globalState = this.props.stateManager.data as GlobalState;
+        const fg = globalState.flowGraph;
+        if (!fg) {
+            return [];
+        }
+        return GatherVariableNames(fg, excludeBlock);
+    }
+
     override render() {
         const block = this.props.nodeData.data as FlowGraphBlock;
         const fields = CONSTRUCTOR_CONFIG.get(block.getClassName());
@@ -259,6 +278,20 @@ export class ConstructorVariablesPropertyTabComponent extends React.Component<IP
                                 propertyName={field.key}
                                 extractValue={() => (block.config && block.config[field.key] != null ? (block.config[field.key] as string) : (field.options![0]?.value ?? ""))}
                                 onSelect={(v) => this._updateConfig(block, field.key, v as string)}
+                            />
+                        );
+                    }
+
+                    if (field.kind === "variable-picker") {
+                        const existingVars = this._getExistingVariableNames(block);
+                        return (
+                            <AutoCompleteInputComponent
+                                key={`${field.key}-${block.uniqueId}`}
+                                label={field.label}
+                                value={typeof currentVal === "string" ? currentVal : ""}
+                                suggestions={existingVars}
+                                lockObject={this.props.stateManager.lockObject}
+                                onChange={(v) => this._updateConfig(block, field.key, v)}
                             />
                         );
                     }

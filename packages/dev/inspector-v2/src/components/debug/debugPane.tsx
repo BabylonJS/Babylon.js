@@ -14,7 +14,7 @@ import { UtilityLayerRenderer } from "core/Rendering/utilityLayerRenderer";
 import { GridMaterial } from "materials/grid/gridMaterial";
 import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
 import { AccordionSection } from "shared-ui-components/fluent/primitives/accordion";
-import { ExtensibleAccordion } from "../extensibleAccordion";
+import { ExtensibleAccordion } from "shared-ui-components/modularTool/components/extensibleAccordion";
 import { BoundProperty } from "../properties/boundProperty";
 
 export const HelpersDebugSectionIdentity = Symbol("Helpers");

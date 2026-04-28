@@ -1,8 +1,8 @@
-import { type IDisposable, type IReadonlyObservable, type Scene } from "core/index";
-import { type WeaklyTypedServiceDefinition } from "./modularity/serviceContainer";
-import { type ServiceDefinition } from "./modularity/serviceDefinition";
-import { type ModularToolOptions, MakeModularTool } from "./modularTool";
-import { type IShellService, ShellServiceIdentity } from "./services/shellService";
+import { type IReadonlyObservable, type Scene } from "core/index";
+import { type WeaklyTypedServiceDefinition } from "shared-ui-components/modularTool/modularity/serviceContainer";
+import { type ServiceDefinition } from "shared-ui-components/modularTool/modularity/serviceDefinition";
+import { type ModularToolOptions, MakeModularTool } from "shared-ui-components/modularTool/modularTool";
+import { type IShellService, ShellServiceIdentity } from "shared-ui-components/modularTool/services/shellService";
 
 import { AsyncLock } from "core/Misc/asyncLock";
 import { Logger } from "core/Misc/logger";
@@ -55,7 +55,7 @@ import { SkeletonExplorerServiceDefinition } from "./services/panes/scene/skelet
 import { SoundExplorerServiceDefinition } from "./services/panes/scene/soundExplorerService";
 import { SpriteManagerExplorerServiceDefinition } from "./services/panes/scene/spriteManagerExplorerService";
 import { TextureExplorerServiceDefinition } from "./services/panes/scene/texturesExplorerService";
-import { SettingsServiceDefinition } from "./services/panes/settingsService";
+import { SettingsServiceDefinition } from "shared-ui-components/modularTool/services/settingsService";
 import { StatsServiceDefinition } from "./services/panes/statsService";
 import { CaptureToolsDefinition } from "./services/panes/tools/captureService";
 import { ExportServiceDefinition } from "./services/panes/tools/exportService";
@@ -65,7 +65,8 @@ import { GLTFValidationServiceDefinition } from "./services/panes/tools/import/g
 import { ToolsServiceDefinition } from "./services/panes/toolsService";
 import { PickingServiceDefinition } from "./services/pickingService";
 import { SelectionServiceDefinition } from "./services/selectionService";
-import { ShellSettingsServiceDefinition } from "./services/shellSettingsService";
+import { ShellSettingsServiceDefinition } from "shared-ui-components/modularTool/services/shellSettingsService";
+import { InspectorSettingsServiceDefinition } from "./services/inspectorSettingsService";
 import { TextureEditorServiceDefinition } from "./services/textureEditor/textureEditorService";
 import { UserFeedbackServiceDefinition } from "./services/userFeedbackService";
 import { WatcherRefreshToolbarServiceDefinition, WatcherServiceDefinition, WatcherSettingsServiceDefinition } from "./services/watcherService";
@@ -94,7 +95,13 @@ export type InspectorOptions = Omit<ModularToolOptions, "namespace" | "toolbarMo
  * A token returned by {@link ShowInspector} that can be used to dispose the inspector
  * and observe its disposal.
  */
-export type InspectorToken = IDisposable & {
+export type InspectorToken = {
+    /**
+     * Disposes the inspector. The returned promise resolves once all cleanup
+     * (including asynchronous React unmount and ServiceContainer disposal) is complete.
+     */
+    dispose(): Promise<void>;
+
     /**
      * Whether the inspector has been disposed.
      */
@@ -109,7 +116,7 @@ export type InspectorToken = IDisposable & {
 // TODO: The key should probably be the Canvas, because we only want to show one inspector instance per canvas.
 //       If it is called for a different scene that is rendering to the same canvas, then we should probably
 //       switch the inspector instance to that scene (once this is supported).
-const InspectorTokens = new WeakMap<Scene, IDisposable>();
+const InspectorTokens = new WeakMap<Scene, InspectorToken>();
 
 // This async lock is used to sequentialize all calls to ShowInspector and dispose of existing inspectors.
 // This is needed because each time Inspector is shown or hidden, it is potentially mutating the same DOM element.
@@ -123,7 +130,7 @@ const InspectorLock = new AsyncLock();
  */
 export function ShowInspector(scene: Scene, options: Partial<InspectorOptions> = {}): InspectorToken {
     // Dispose of any existing inspector for this scene.
-    InspectorTokens.get(scene)?.dispose();
+    void InspectorTokens.get(scene)?.dispose();
 
     // Default the dispose logic to a no-op until we know that we are actually going
     // to show the Inspector and there will be cleanup work to do.
@@ -134,9 +141,9 @@ export function ShowInspector(scene: Scene, options: Partial<InspectorOptions> =
     let isDisposed = false;
     const onDisposed = new Observable<void>();
     const inspectorToken = {
-        dispose() {
-            // eslint-disable-next-line @typescript-eslint/no-floating-promises
-            InspectorLock.lockAsync(async () => {
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        async dispose(): Promise<void> {
+            await InspectorLock.lockAsync(async () => {
                 await disposeAsync();
                 isDisposed = true;
                 onDisposed.notifyObservers();
@@ -161,9 +168,9 @@ export function ShowInspector(scene: Scene, options: Partial<InspectorOptions> =
         ...options,
     };
 
-    // Sequentialize showing the inspector (e.g. don't start showing until after a previous hide (for example) is finished).
+    // Sequentialize showing the inspector (e.g. don't start showing until after a previous hide is finished).
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    InspectorLock.lockAsync(async () => {
+    InspectorLock.lockAsync(() => {
         let parentElement = options.containerElement ?? null;
         // If a container element was not found, find an appropriate one above the engine's rendering canvas.
         if (!parentElement) {
@@ -231,8 +238,8 @@ export function ShowInspector(scene: Scene, options: Partial<InspectorOptions> =
 
         // Ensure the inspectable bridge is running for this scene. The inspector's
         // ServiceContainer will use the inspectable container as a parent, inheriting
-        // services like ISceneContext and IInspectableCommandRegistry.
-        const inspectableToken = _StartInspectable(scene);
+        // services like ISceneContext and IBridgeCommandRegistry.
+        const inspectableToken = _StartInspectable(scene, { autoEnable: false });
         disposeActions.push(() => inspectableToken.dispose());
 
         // Create a container element for the inspector UI.
@@ -365,6 +372,7 @@ export function ShowInspector(scene: Scene, options: Partial<InspectorOptions> =
 
             // Settings pane tab and related services.
             SettingsServiceDefinition,
+            InspectorSettingsServiceDefinition,
             WatcherSettingsServiceDefinition,
             ShellSettingsServiceDefinition,
 
@@ -415,11 +423,19 @@ export function ShowInspector(scene: Scene, options: Partial<InspectorOptions> =
             leftPaneDefaultCollapsed: options.leftPaneDefaultCollapsed,
             rightPaneDefaultCollapsed: options.rightPaneDefaultCollapsed,
         });
-        disposeActions.push(() => modularTool.dispose());
+        disposeActions.push(async () => await modularTool.dispose());
 
-        const sceneDisposedObserver = scene.onDisposeObservable.addOnce(() => {
-            inspectorToken.dispose();
-        });
+        // Use insertFirst so this fires before StartInspectable's scene-dispose
+        // callback, ensuring the UI child container is torn down first.
+        const sceneDisposedObserver = scene.onDisposeObservable.add(
+            () => {
+                void inspectorToken.dispose();
+            },
+            undefined,
+            true,
+            undefined,
+            true
+        );
 
         disposeActions.push(() => sceneDisposedObserver.remove());
 

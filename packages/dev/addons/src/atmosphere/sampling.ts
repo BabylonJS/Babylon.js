@@ -18,6 +18,8 @@ const TmpColor2 = MakeTempColor4Like();
 const TmpColor3 = MakeTempColor4Like();
 const TmpColor4 = MakeTempColor4Like();
 
+const DefaultNormalize = (value: number) => value / 255.0;
+
 /**
  * Samples the texture data at the given uv coordinate using bilinear interpolation.
  * Note this will not match GPU sampling behavior exactly.
@@ -28,7 +30,7 @@ const TmpColor4 = MakeTempColor4Like();
  * @param heightPx - The height of the texture in texels.
  * @param data - The texture data to sample.
  * @param result - The color to store the sample.
- * @param normalizeFunc - The function to normalize the texel values. Default is to divide by 255.
+ * @param normalizeFunc - The function to normalize the texel values. Default is to divide by 255. Pass null for no normalization.
  * @returns The result color.
  */
 export function Sample2DRgbaToRef<T extends IColor4Like>(
@@ -38,7 +40,7 @@ export function Sample2DRgbaToRef<T extends IColor4Like>(
     heightPx: number,
     data: Uint8Array | Uint16Array | Float32Array,
     result: T,
-    normalizeFunc = (value: number) => value / 255.0
+    normalizeFunc: ((value: number) => number) | null = DefaultNormalize
 ): T {
     if (widthPx <= 0 || heightPx <= 0) {
         throw new Error("Sample2DRgbaToRef: widthPx and heightPx must be positive.");
@@ -93,7 +95,7 @@ export function Sample2DRgbaToRef<T extends IColor4Like>(
  * @param height - The height of the texture in texels.
  * @param data - The texture data to sample from.
  * @param result - The color to store the sampled color in.
- * @param normalizeFunc - The function to normalize the texel values. Default is to divide by 255.
+ * @param normalizeFunc - The function to normalize the texel values. Default is to divide by 255. Pass null for no normalization.
  * @returns The result color.
  */
 const TexelFetch2DRgbaToRef = <T extends IColor4Like>(
@@ -103,14 +105,21 @@ const TexelFetch2DRgbaToRef = <T extends IColor4Like>(
     height: number,
     data: Uint8Array | Uint16Array | Float32Array,
     result: T,
-    normalizeFunc = (value: number) => value / 255.0
+    normalizeFunc: ((value: number) => number) | null = DefaultNormalize
 ): T => {
     const clampedTexelX = Clamp(x, 0, width - 1);
     const clampedTexelY = Clamp(y, 0, height - 1);
     const index = 4 * (clampedTexelY * width + clampedTexelX);
-    result.r = normalizeFunc(data[index]);
-    result.g = normalizeFunc(data[index + 1]);
-    result.b = normalizeFunc(data[index + 2]);
-    result.a = normalizeFunc(data[index + 3]);
+    if (normalizeFunc) {
+        result.r = normalizeFunc(data[index]);
+        result.g = normalizeFunc(data[index + 1]);
+        result.b = normalizeFunc(data[index + 2]);
+        result.a = normalizeFunc(data[index + 3]);
+    } else {
+        result.r = data[index];
+        result.g = data[index + 1];
+        result.b = data[index + 2];
+        result.a = data[index + 3];
+    }
     return result;
 };

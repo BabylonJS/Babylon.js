@@ -6,7 +6,7 @@ import { type DropdownOption } from "shared-ui-components/fluent/primitives/drop
 import { NumberDropdownPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/dropdownPropertyLine";
 import { StringifiedPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/stringifiedPropertyLine";
 import { Texture } from "core/Materials/Textures/texture";
-import { useObservableState } from "../../../hooks/observableHooks";
+import { useObservableState } from "shared-ui-components/modularTool/hooks/observableHooks";
 import { useInterceptObservable } from "../../../hooks/instrumentationHooks";
 import { Property } from "../boundProperty";
 

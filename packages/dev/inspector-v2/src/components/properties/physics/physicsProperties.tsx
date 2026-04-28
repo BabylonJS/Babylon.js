@@ -13,7 +13,7 @@ import { TextPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/
 import { Vector3PropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/vectorPropertyLine";
 import { useProperty, useVector3Property } from "../../../hooks/compoundPropertyHooks";
 import { useInterceptObservable } from "../../../hooks/instrumentationHooks";
-import { useObservableState } from "../../../hooks/observableHooks";
+import { useObservableState } from "shared-ui-components/modularTool/hooks/observableHooks";
 
 import "core/Physics/v2/physicsEngineComponent";
 import { BoundProperty } from "../boundProperty";

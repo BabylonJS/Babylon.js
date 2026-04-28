@@ -1,4 +1,4 @@
-import { type ServiceDefinition } from "../../../modularity/serviceDefinition";
+import { type ServiceDefinition } from "shared-ui-components/modularTool/modularity/serviceDefinition";
 import { ToolsServiceIdentity, type IToolsService } from "../toolsService";
 import { type IDisposable } from "core/scene";
 import { ReflectorTools } from "../../../components/tools/reflectorTools";

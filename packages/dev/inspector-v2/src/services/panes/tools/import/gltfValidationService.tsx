@@ -1,4 +1,4 @@
-import { type ServiceDefinition } from "../../../../modularity/serviceDefinition";
+import { type ServiceDefinition } from "shared-ui-components/modularTool/modularity/serviceDefinition";
 import { SceneLoader, type ISceneLoaderPlugin, type ISceneLoaderPluginAsync } from "core/Loading/sceneLoader";
 import { type GLTFFileLoader } from "loaders/glTF/glTFFileLoader";
 import { GLTFValidationTool } from "../../../../components/tools/import/gltfValidationTool";

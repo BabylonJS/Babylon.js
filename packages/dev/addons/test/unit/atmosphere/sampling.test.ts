@@ -97,4 +97,30 @@ describe("textureSampler", () => {
         Sample2DRgbaToRef(0.0, 0.5, 2, 2, data, result, (v) => v);
         (expect(result) as any).toBeApproxColor4Like({ r: 0.5, g: 0.0, b: 0.5, a: 1 });
     });
+    test("nullNormalizeFuncWithFloat32Array", () => {
+        const data = new Float32Array([0.2, 0.4, 0.6, 0.8, 0.1, 0.3, 0.5, 0.7, 0.9, 0.8, 0.7, 0.6, 1.0, 1.0, 1.0, 1.0]);
+
+        const result = { r: 0, g: 0, b: 0, a: 0 };
+        Sample2DRgbaToRef(0.25, 0.25, 2, 2, data, result, null);
+        (expect(result) as any).toBeApproxColor4Like({ r: 0.2, g: 0.4, b: 0.6, a: 0.8 });
+
+        Sample2DRgbaToRef(0.75, 0.75, 2, 2, data, result, null);
+        (expect(result) as any).toBeApproxColor4Like({ r: 1.0, g: 1.0, b: 1.0, a: 1.0 });
+
+        Sample2DRgbaToRef(0.5, 0.5, 2, 2, data, result, null);
+        (expect(result) as any).toBeApproxColor4Like({ r: 0.55, g: 0.625, b: 0.7, a: 0.775 });
+    });
+    test("defaultNormalizationForUint8Array", () => {
+        const data = new Uint8Array([255, 0, 128, 255, 0, 255, 64, 128]);
+
+        const result = { r: 0, g: 0, b: 0, a: 0 };
+        Sample2DRgbaToRef(0.5, 0.25, 1, 2, data, result);
+        (expect(result) as any).toBeApproxColor4Like({ r: 1.0, g: 0.0, b: 128 / 255, a: 1.0 });
+
+        Sample2DRgbaToRef(0.5, 0.75, 1, 2, data, result);
+        (expect(result) as any).toBeApproxColor4Like({ r: 0.0, g: 1.0, b: 64 / 255, a: 128 / 255 });
+
+        Sample2DRgbaToRef(0.5, 0.25, 1, 2, data, result, null);
+        (expect(result) as any).toBeApproxColor4Like({ r: 255, g: 0, b: 128, a: 255 });
+    });
 });

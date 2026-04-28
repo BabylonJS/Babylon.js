@@ -10,7 +10,7 @@ import { PointerEventTypes } from "core/Events/pointerEvents";
 import { Color3 } from "core/Maths/math.color";
 import { Vector2 } from "core/Maths/math.vector";
 import { Observable, type Observer } from "core/Misc/observable";
-import { useObservableState } from "../../../hooks/observableHooks";
+import { useObservableState } from "shared-ui-components/modularTool/hooks/observableHooks";
 
 const useStyles = makeStyles({
     settingsContainer: {

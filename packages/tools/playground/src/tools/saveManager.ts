@@ -13,7 +13,16 @@ export class SaveManager {
      * @param globalState Shared global state instance.
      */
     public constructor(public globalState: GlobalState) {
-        globalState.onSaveRequiredObservable.add(() => {
+        globalState.onSaveRequiredObservable.add((options) => {
+            // If save options are provided, apply them and skip the metadata dialog.
+            if (options) {
+                this.globalState.currentSnippetTitle = options.title ?? (this.globalState.currentSnippetTitle || "");
+                this.globalState.currentSnippetDescription = options.description ?? (this.globalState.currentSnippetDescription || "");
+                this.globalState.currentSnippetTags = options.tags ?? (this.globalState.currentSnippetTags || "");
+                this._saveSnippet();
+                return;
+            }
+
             if (!this.globalState.currentSnippetTitle || !this.globalState.currentSnippetDescription || !this.globalState.currentSnippetTags) {
                 this.globalState.onMetadataWindowHiddenObservable.addOnce((status) => {
                     if (status) {

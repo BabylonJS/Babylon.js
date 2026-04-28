@@ -8,6 +8,7 @@ import { type Nullable } from "core/types";
 import { NodeLedger } from "shared-ui-components/nodeGraphSystem/nodeLedger";
 import { AllFlowGraphBlocks } from "../../allBlockNames";
 import { GetBlockType, BlockTypeHeaderColor } from "../../graphSystem/blockTypeColors";
+import { GetTemplatesByCategory, AllCompositeTemplates } from "../../compositeTemplates";
 
 import "./nodeList.scss";
 
@@ -314,8 +315,29 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 if (finalName.endsWith("Block")) {
                     finalName = finalName.substring(0, finalName.length - 5);
                 }
+
                 return finalName;
             };
+        }
+
+        // Add composite template entries to the palette
+        const templateCategories = GetTemplatesByCategory();
+        for (const categoryName of Object.keys(templateCategories)) {
+            const templateNames = templateCategories[categoryName];
+            const templateItems = templateNames
+                .filter((name: string) => !this.state.filter || name.toLowerCase().indexOf(this.state.filter.toLowerCase()) !== -1)
+                .map((name: string) => {
+                    const template = AllCompositeTemplates[name];
+                    return <DraggableLineComponent key={name} data={name} tooltip={template.description} color="#8854d0" />;
+                });
+
+            if (templateItems.length) {
+                blockMenu.push(
+                    <LineContainerComponent key={"template_" + categoryName} title={"Templates: " + categoryName} closed={false}>
+                        {templateItems}
+                    </LineContainerComponent>
+                );
+            }
         }
 
         return (

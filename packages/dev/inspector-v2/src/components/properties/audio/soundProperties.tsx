@@ -8,7 +8,7 @@ import { NumberInputPropertyLine } from "shared-ui-components/fluent/hoc/propert
 import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
 import { TextPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/textPropertyLine";
 import { useInterceptObservable } from "../../../hooks/instrumentationHooks";
-import { useObservableState } from "../../../hooks/observableHooks";
+import { useObservableState } from "shared-ui-components/modularTool/hooks/observableHooks";
 import { BoundProperty, Property } from "../boundProperty";
 
 function useSoundState(sound: Sound) {

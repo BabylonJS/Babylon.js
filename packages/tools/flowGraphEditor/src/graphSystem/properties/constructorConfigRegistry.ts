@@ -23,7 +23,8 @@ export type ConstructorConfigFieldKind =
     | "number" // float input
     | "integer" // integer input (stored as FlowGraphInteger)
     | "string" // text input
-    | "options"; // drop-down with custom options
+    | "options" // drop-down with custom options
+    | "variable-picker"; // drop-down of existing graph variables + text input for new ones
 
 /**
  * Describes a single constructor-configurable field.
@@ -120,8 +121,8 @@ export const CONSTRUCTOR_CONFIG: ReadonlyMap<string, ReadonlyArray<IConstructorC
     ],
 
     // ---------- Variable blocks ----------
-    ["FlowGraphGetVariableBlock", [{ key: "variable", label: "Variable", kind: "string" }]],
-    ["FlowGraphSetVariableBlock", [{ key: "variable", label: "Variable", kind: "string" }]],
+    ["FlowGraphGetVariableBlock", [{ key: "variable", label: "Variable", kind: "variable-picker" }]],
+    ["FlowGraphSetVariableBlock", [{ key: "variable", label: "Variable", kind: "variable-picker" }]],
 
     // ---------- Console log ----------
     ["FlowGraphConsoleLogBlock", [{ key: "messageTemplate", label: "Message template", kind: "string" }]],

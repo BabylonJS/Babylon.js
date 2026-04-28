@@ -1,6 +1,7 @@
 /* eslint-disable no-console */
 import { spawn } from "child_process";
 import { dirname, join, resolve } from "path";
+import { readFileSync } from "fs";
 import { fileURLToPath } from "url";
 import { parseArgs } from "util";
 import { WebSocket } from "./webSocket.js";
@@ -14,7 +15,7 @@ import {
     type ExecResponse,
     type SessionInfo,
     type SessionsResponse,
-} from "./protocol.js";
+} from "shared-ui-components/modularTool/services/cli/protocol";
 
 const Config = LoadConfig();
 
@@ -22,14 +23,13 @@ const HELP_TEXT = `babylon-inspector — Interact with running Babylon.js scenes
 
 USAGE
   babylon-inspector [options]
-  babylon-inspector --command <command-id> [--arg value ...]
+  babylon-inspector --session <session-id> --command <command-id> [--arg value ...]
 
 OPTIONS
   --help                   Show this help message.
-  --session [session-id]   List active sessions, or specifies the target session.
-                           A session id is only needed when multiple sessions
-                           are active.
+  --session [session-id]   List active sessions, or specify the target session.
   --command [command-id]   List available commands, or execute one.
+                           Requires --session <session-id>.
                            Use --command <id> --help to see its arguments.
   --stop                   Stop the bridge process.
 
@@ -39,11 +39,15 @@ CONFIGURATION
 
 EXAMPLES
   babylon-inspector --session
-  babylon-inspector --command
   babylon-inspector --session 2 --command
-  babylon-inspector --command query-mesh --help
-  babylon-inspector --command query-mesh --uniqueId 42
+  babylon-inspector --session 2 --command query-mesh --help
   babylon-inspector --session 2 --command query-mesh --uniqueId 42
+
+ADDITIONAL RESOURCES
+  Babylon.js Documentation:  https://doc.babylonjs.com
+  Babylon.js Forum:          https://forum.babylonjs.com
+  Babylon.js Source:         https://github.com/babylonjs/Babylon.js
+  Babylon Native Source:     https://github.com/babylonjs/BabylonNative
 `;
 
 const KnownOptions = new Set(["help", "stop", "session", "command", "bridge-script"]);
@@ -227,14 +231,6 @@ async function WithBridge(bridgeScript: string | undefined, fn: (socket: WebSock
 }
 
 /**
- * Resolves the session id to use. If an explicit id is provided, returns it.
- * If not, queries the bridge: returns the sole session's id when exactly one
- * is active, or errors if zero or multiple sessions are active.
- * @param socket The WebSocket connection to the bridge.
- * @param explicitId An optional explicit session id string.
- * @returns The resolved numeric session id.
- */
-/**
  * Parses and validates an explicit session id string against the list of active sessions.
  * @param explicitId The session id string to validate.
  * @param sessions The list of active sessions from the bridge.
@@ -257,28 +253,20 @@ export function ValidateSessionId(explicitId: string, sessions: SessionInfo[]): 
 }
 
 /**
- * Resolves the session id to use. If an explicit id is provided, validates it
- * against the active sessions. If not, queries the bridge: returns the sole
- * session's id when exactly one is active, or errors if zero or multiple.
+ * Resolves and validates the session id. Requires an explicit session id
+ * provided via `--session <id>`. Throws if the id is missing, non-numeric,
+ * or does not match an active session.
  * @param socket The WebSocket connection to the bridge.
- * @param explicitId An optional explicit session id string.
- * @returns The resolved numeric session id.
+ * @param explicitId The session id string from --session.
+ * @returns The validated numeric session id.
  */
-export async function ResolveSessionId(socket: WebSocket, explicitId?: string): Promise<number> {
+export async function ResolveSessionId(socket: WebSocket, explicitId: string | undefined): Promise<number> {
+    if (explicitId === undefined) {
+        throw new Error("A session id is required. Use --session to list active sessions, then pass --session <id>.");
+    }
+
     const response = await SendAndReceive<SessionsResponse>(socket, { type: "sessions" });
-
-    if (explicitId !== undefined) {
-        return ValidateSessionId(explicitId, response.sessions).id;
-    }
-
-    if (response.sessions.length === 0) {
-        throw new Error("No active sessions. Make sure a browser is running with StartInspectable enabled.");
-    }
-    if (response.sessions.length > 1) {
-        const list = response.sessions.map((s) => `  [${s.id}] ${s.name}`).join("\n");
-        throw new Error(`Multiple active sessions:\n${list}\nSpecify a session id with --session <session-id>`);
-    }
-    return response.sessions[0].id;
+    return ValidateSessionId(explicitId, response.sessions).id;
 }
 
 /**
@@ -320,7 +308,8 @@ export function PrintCommandHelp(commandId: string, descriptor: CommandInfo, mis
         const maxLen = Math.max(...descriptor.args.map((a) => `--${a.name}${a.required ? " (required)" : ""}`.length));
         for (const arg of descriptor.args) {
             const label = `--${arg.name}${arg.required ? " (required)" : ""}`;
-            console.log(`  ${label.padEnd(maxLen)}  ${arg.description}`);
+            const typeHint = arg.type === "file" ? " [reads file content from path]" : "";
+            console.log(`  ${label.padEnd(maxLen)}  ${arg.description}${typeHint}`);
         }
     }
     if (missingRequired.length > 0 && !wantsHelp) {
@@ -402,6 +391,20 @@ async function HandleCommand(socket: WebSocket, args: IParsedArgs): Promise<void
     if (wantsHelp || missingRequired.length > 0) {
         PrintCommandHelp(commandId, descriptor, missingRequired, wantsHelp);
         return;
+    }
+
+    // Resolve "file" type arguments: read the file and replace the value with its contents.
+    for (const argDef of descriptor.args ?? []) {
+        if (argDef.type === "file" && argDef.name in commandArgs) {
+            const filePath = resolve(commandArgs[argDef.name]);
+            try {
+                commandArgs[argDef.name] = readFileSync(filePath, "utf-8");
+            } catch (err: unknown) {
+                console.error(`Error reading file for --${argDef.name}: ${err}`);
+                process.exitCode = 1;
+                return;
+            }
+        }
     }
 
     const response = await SendAndReceive<ExecResponse>(socket, {

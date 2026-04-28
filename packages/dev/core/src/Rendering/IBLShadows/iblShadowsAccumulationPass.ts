@@ -197,7 +197,7 @@ export class _IblShadowsAccumulationPass {
             this._scene,
             outputTextureOptions
         );
-        this._outputTexture.refreshRate = 1;
+        this._outputTexture.refreshRate = -1;
         this._outputTexture.autoClear = false;
         this._outputTexture.onGeneratedObservable.addOnce(() => {
             this.onReadyObservable.notifyObservers();

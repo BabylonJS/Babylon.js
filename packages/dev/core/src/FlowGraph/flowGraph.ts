@@ -15,6 +15,7 @@ import { type IFlowGraphEventTrigger, FlowGraphSceneEventCoordinator } from "./f
 import { type FlowGraphMeshPickEventBlock } from "./Blocks/Event/flowGraphMeshPickEventBlock";
 import { _IsDescendantOf } from "./utils";
 import { type IFlowGraphValidationResult, ValidateFlowGraphWithBlockList } from "./flowGraphValidator";
+import { RandomGUID } from "../Misc/guid";
 
 export const enum FlowGraphState {
     /**
@@ -43,6 +44,16 @@ export interface IFlowGraphParams {
      * The event coordinator used by the flow graph.
      */
     coordinator: FlowGraphCoordinator;
+    /**
+     * Optional human-readable name for the graph.
+     * Defaults to "Graph" if not provided.
+     */
+    name?: string;
+    /**
+     * Optional unique identifier for the graph.
+     * If not provided, a random UUID is generated.
+     */
+    uniqueId?: string;
 }
 
 /**
@@ -75,6 +86,16 @@ export interface IFlowGraphParseOptions {
  * @experimental FlowGraph is still in development and is subject to change.
  */
 export class FlowGraph {
+    /**
+     * A human-readable name for this graph.
+     */
+    public name: string;
+
+    /**
+     * A unique identifier for this graph. Auto-generated if not provided.
+     */
+    public uniqueId: string;
+
     /**
      * An observable that is triggered when the state of the graph changes.
      */
@@ -111,6 +132,13 @@ export class FlowGraph {
         return this._scene;
     }
     private _coordinator: FlowGraphCoordinator;
+
+    /**
+     * The coordinator that owns this flow graph.
+     */
+    public get coordinator(): FlowGraphCoordinator {
+        return this._coordinator;
+    }
     private _executionContexts: FlowGraphContext[] = [];
     private _sceneEventCoordinator: FlowGraphSceneEventCoordinator;
     private _eventObserver: Nullable<Observer<IFlowGraphEventTrigger>>;
@@ -143,6 +171,8 @@ export class FlowGraph {
         this._scene = params.scene;
         this._sceneEventCoordinator = new FlowGraphSceneEventCoordinator(this._scene);
         this._coordinator = params.coordinator;
+        this.name = params.name ?? "Graph";
+        this.uniqueId = params.uniqueId ?? RandomGUID();
     }
 
     private _attachEventObserver() {
@@ -205,6 +235,12 @@ export class FlowGraph {
         // Tear down old event coordinator
         this._detachEventObserver();
         this._sceneEventCoordinator.dispose();
+        // Clear execution contexts so start() creates fresh ones with the new scene.
+        // NOTE: This intentionally discards user variables and connection values.
+        // Callers that need to preserve them (e.g. the Flow Graph Editor) should
+        // snapshot context state BEFORE calling setScene() and restore it in a
+        // wrapped createContext() callback after start() re-creates contexts.
+        this._executionContexts.length = 0;
         // Rebuild with the new scene
         (this as { _scene: Scene })._scene = scene;
         this._scene.constantlyUpdateMeshUnderPointer = true; // ensure pointer info is always up to date for event blocks that need it
@@ -234,6 +270,28 @@ export class FlowGraph {
      */
     public getContext(index: number) {
         return this._executionContexts[index];
+    }
+
+    /**
+     * Returns the number of execution contexts currently attached to this graph.
+     */
+    public get contextCount(): number {
+        return this._executionContexts.length;
+    }
+
+    /**
+     * Remove an execution context by index. Any pending async blocks on
+     * the context are cleared before removal.
+     * @param index the index of the context to remove
+     * @returns the removed context, or undefined if the index was out of range
+     */
+    public removeContext(index: number): FlowGraphContext | undefined {
+        if (index < 0 || index >= this._executionContexts.length) {
+            return undefined;
+        }
+        const [removed] = this._executionContexts.splice(index, 1);
+        removed._clearPendingBlocks();
+        return removed;
     }
 
     /**
@@ -513,6 +571,8 @@ export class FlowGraph {
      * @param valueSerializeFunction a function to serialize complex values
      */
     public serialize(serializationObject: any = {}, valueSerializeFunction?: (key: string, value: any, serializationObject: any) => void) {
+        serializationObject.name = this.name;
+        serializationObject.uniqueId = this.uniqueId;
         serializationObject.allBlocks = [];
         // Collect all blocks: traversal-reachable ones plus any registered
         // orphans in _allBlocks (e.g. disconnected blocks in the editor).

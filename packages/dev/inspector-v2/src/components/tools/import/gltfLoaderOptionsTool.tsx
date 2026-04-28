@@ -1,4 +1,4 @@
-import { type FunctionComponent } from "react";
+import { type FunctionComponent, useCallback } from "react";
 
 import { type DropdownOption } from "shared-ui-components/fluent/primitives/dropdown";
 import {
@@ -9,6 +9,8 @@ import {
 } from "../../../services/panes/tools/import/gltfLoaderOptionsDefaults";
 
 import { GLTFLoaderAnimationStartMode, GLTFLoaderCoordinateSystemMode } from "loaders/glTF/glTFFileLoader";
+import { ArrowResetRegular } from "@fluentui/react-icons";
+import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
 import { NumberDropdownPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/dropdownPropertyLine";
 import { PropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/propertyLine";
 import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
@@ -29,6 +31,12 @@ const CoordinateSystemModeOptions: DropdownOption<number>[] = [
 export const GLTFLoaderOptionsTool: FunctionComponent<{
     loaderOptions: GLTFLoaderOptionsType;
 }> = ({ loaderOptions }) => {
+    const resetLoaderOptions = useCallback(() => {
+        for (const key of Object.keys(loaderOptions) as (keyof GLTFLoaderOptionsType)[]) {
+            loaderOptions[key] = null;
+        }
+    }, [loaderOptions]);
+
     return (
         <PropertyLine
             label="Loader Options"
@@ -224,6 +232,7 @@ export const GLTFLoaderOptionsTool: FunctionComponent<{
                         nullable
                         defaultValue={LoaderOptionDefaults.useSRGBBuffers}
                     />
+                    <ButtonLine label="Reset to Defaults" icon={ArrowResetRegular} onClick={resetLoaderOptions} />
                 </>
             }
         />
@@ -233,6 +242,14 @@ export const GLTFLoaderOptionsTool: FunctionComponent<{
 export const GLTFExtensionOptionsTool: FunctionComponent<{
     extensionOptions: GLTFExtensionOptionsType;
 }> = ({ extensionOptions }) => {
+    const resetExtensionOptions = useCallback(() => {
+        for (const options of Object.values(extensionOptions)) {
+            for (const key of Object.keys(options)) {
+                (options as Record<string, unknown>)[key] = null;
+            }
+        }
+    }, [extensionOptions]);
+
     return (
         <PropertyLine
             label="Extension Options"
@@ -271,6 +288,7 @@ export const GLTFExtensionOptionsTool: FunctionComponent<{
                                 />
                             );
                         })}
+                    <ButtonLine label="Reset to Defaults" icon={ArrowResetRegular} onClick={resetExtensionOptions} />
                 </>
             }
         />

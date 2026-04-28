@@ -343,6 +343,9 @@ export class _IblShadowsVoxelTracingPass {
         if (this._coloredShadows) {
             defines += "#define COLOR_SHADOWS 1u\n";
         }
+        if (this._scene.geometryBufferRenderer?.normalsAreUnsigned) {
+            defines += "#define WORLD_NORMAL_UNSIGNED\n";
+        }
         return defines;
     }
 

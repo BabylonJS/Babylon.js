@@ -341,6 +341,34 @@ export class RuntimeAnimation {
         let originalValue: any;
         const target = this._activeTargets[targetIndex];
 
+        if (Animation.InheritOriginalValueFromActiveAnimations) {
+            // When another active animation is already driving the same target+property,
+            // inherit its _originalValue instead of snapshotting the live (mid-animation) value.
+            // This prevents the "stuck value" bug when overlapping animations interrupt each other.
+            const activeAnimatables = this._scene._activeAnimatables;
+            for (let animIndex = 0; animIndex < activeAnimatables.length; animIndex++) {
+                const runtimeAnimations = activeAnimatables[animIndex]._runtimeAnimations;
+                for (let rtIndex = 0; rtIndex < runtimeAnimations.length; rtIndex++) {
+                    const rtAnim = runtimeAnimations[rtIndex];
+                    if (rtAnim === this) {
+                        continue;
+                    }
+                    if (rtAnim._targetPath === this._targetPath) {
+                        for (let i = 0; i < rtAnim._activeTargets.length; i++) {
+                            if (rtAnim._activeTargets[i] === target && rtAnim._originalValue[i] !== undefined) {
+                                if (rtAnim._originalValue[i] && rtAnim._originalValue[i].clone) {
+                                    this._originalValue[targetIndex] = rtAnim._originalValue[i].clone();
+                                } else {
+                                    this._originalValue[targetIndex] = rtAnim._originalValue[i];
+                                }
+                                return;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         if (target.getLocalMatrix && this._targetPath === "_matrix") {
             // For bones
             originalValue = target.getLocalMatrix();

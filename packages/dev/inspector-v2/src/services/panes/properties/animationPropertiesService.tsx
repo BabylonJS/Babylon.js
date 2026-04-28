@@ -1,7 +1,7 @@
 import { type IAnimatable } from "core/index";
 
 import { type IAnimatableContainer, type IAnimationRangeContainer, AnimationsProperties } from "../../../components/properties/animation/animationsProperties";
-import { type ServiceDefinition } from "../../../modularity/serviceDefinition";
+import { type ServiceDefinition } from "shared-ui-components/modularTool/modularity/serviceDefinition";
 import { type ISelectionService, SelectionServiceIdentity } from "../../selectionService";
 import { type IPropertiesService, PropertiesServiceIdentity } from "./propertiesService";
 import { type ISceneContext, SceneContextIdentity } from "../../../services/sceneContext";

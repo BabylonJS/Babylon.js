@@ -14,7 +14,7 @@ import { Color3 } from "core/Maths/math.color";
 import { Attractor } from "core/Particles/attractor";
 import { Color3PropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/colorPropertyLine";
 import { SyncedSliderPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/syncedSliderPropertyLine";
-import { useResource } from "../../../hooks/resourceHooks";
+import { useResource } from "shared-ui-components/modularTool/hooks/resourceHooks";
 import { AttractorComponent } from "./attractor";
 import { type IAttractorData, type IAttractorSource } from "./attractorAdapter";
 

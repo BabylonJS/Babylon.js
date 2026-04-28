@@ -161,6 +161,7 @@ export class MonacoComponent extends React.Component<IMonacoComponentProps, ICom
                 if (gs.activeEditorPath !== p) {
                     gs.activeEditorPath = p;
                     gs.onActiveEditorChangedObservable?.notifyObservers();
+                    this._monacoManager.switchActiveFile(p);
                 }
                 this.setState((s) => ({ ...s }));
             })

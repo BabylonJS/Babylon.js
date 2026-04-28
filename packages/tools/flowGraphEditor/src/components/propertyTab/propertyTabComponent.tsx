@@ -26,6 +26,7 @@ import { TextLineComponent } from "shared-ui-components/lines/textLineComponent"
 import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent";
 import { Constants } from "core/Engines/constants";
 import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
+import { ShowToast } from "../toast/toastComponent";
 
 interface IPropertyTabComponentProps {
     globalState: GlobalState;
@@ -84,6 +85,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                     this.props.globalState.onResetRequiredObservable.notifyObservers(false);
                     this.props.globalState.stateManager.onSelectionChangedObservable.notifyObservers(null);
                     this.props.globalState.onClearUndoStack.notifyObservers();
+                    ShowToast(this.props.globalState, "Flow graph loaded from file", "success");
                 };
                 void doLoadAsync();
             },
@@ -95,6 +97,42 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
     save() {
         const json = SerializationTools.Serialize(this.props.globalState.flowGraph, this.props.globalState);
         StringTools.DownloadAsFile(this.props.globalState.hostDocument, json, "flowGraph.json");
+        ShowToast(this.props.globalState, "Flow graph saved to file", "success");
+    }
+
+    /**
+     * Load a flow graph from a .glb/.gltf file that contains the BABYLON_flow_graph extension.
+     * @param file - the glb/gltf file to load
+     */
+    loadGlb(file: File) {
+        const doLoadAsync = async () => {
+            try {
+                const imported = await SerializationTools.ImportFromGlbAsync(file, this.props.globalState);
+                if (imported) {
+                    this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry("Flow graph loaded from glTF file", false));
+                } else {
+                    this.props.globalState.onLogRequiredObservable.notifyObservers(
+                        new LogEntry("No BABYLON_flow_graph extension found in this file. Drop the file on the preview pane to load its scene and KHR_interactivity data.", true)
+                    );
+                }
+            } catch (err) {
+                this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry("Error loading glTF: " + err, true));
+            }
+        };
+        void doLoadAsync();
+    }
+
+    /**
+     * Export the flow graph (and optionally the preview scene) as a .glb file.
+     */
+    async exportGlbAsync() {
+        try {
+            const scene = this.props.globalState.sceneContext?.scene ?? null;
+            await SerializationTools.ExportGlbAsync(this.props.globalState.flowGraph, this.props.globalState, scene);
+            this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry("Flow graph exported as flowGraph.glb", false));
+        } catch (err) {
+            this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry("Error exporting glTF: " + err, true));
+        }
     }
 
     customSave() {
@@ -159,11 +197,9 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                     });
                 }
 
-                this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry("Flow graph saved with ID: " + newId, false));
-                this.props.globalState.hostDocument.defaultView!.alert("Flow graph saved with ID: " + newId + " (the ID was also copied to your clipboard)");
+                ShowToast(this.props.globalState, "Graph saved — ID: " + newId + " (copied to clipboard)", "success");
             } else {
-                this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry("Unable to save flow graph to snippet server", true));
-                this.props.globalState.hostDocument.defaultView!.alert(`Unable to save your flow graph (${(dataToSend.payload.length / 1024).toFixed(0)} KB). Please try again.`);
+                ShowToast(this.props.globalState, `Unable to save flow graph (${(dataToSend.payload.length / 1024).toFixed(0)} KB). Please try again.`, "error");
             }
         } catch {
             this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry("Unable to save flow graph to snippet server", true));
@@ -195,13 +231,15 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                     this.props.globalState.stateManager.onSelectionChangedObservable.notifyObservers(null);
                     this.props.globalState.onClearUndoStack.notifyObservers();
                     this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry("Flow graph loaded from snippet " + id, false));
+                    ShowToast(this.props.globalState, "Flow graph loaded from snippet " + id, "success");
                     this.forceUpdate();
                 } catch (err) {
                     this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry("Error loading snippet: " + err, true));
+                    ShowToast(this.props.globalState, "Error loading snippet: " + err, "error");
                 }
             } else {
                 this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry("Unable to load snippet " + id, true));
-                this.props.globalState.hostDocument.defaultView!.alert("Unable to load snippet " + id);
+                ShowToast(this.props.globalState, "Unable to load snippet " + id, "error");
             }
         } catch {
             this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry("Unable to load snippet " + id, true));
@@ -298,10 +336,17 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                     </LineContainerComponent>
                     <LineContainerComponent title="FILE">
                         <FileButtonLineComponent label="Load" onClick={(file) => this.load(file)} accept=".json" />
+                        <FileButtonLineComponent label="Load glTF" onClick={(file) => this.loadGlb(file)} accept=".glb,.gltf" />
                         <ButtonLineComponent
                             label="Save"
                             onClick={() => {
                                 this.save();
+                            }}
+                        />
+                        <ButtonLineComponent
+                            label="Export glTF (.glb)"
+                            onClick={() => {
+                                void this.exportGlbAsync();
                             }}
                         />
                         {this.props.globalState.customSave && (

@@ -13,7 +13,15 @@ export type HelpTopicId =
     | "copy-paste"
     | "smart-groups"
     | "keyboard-shortcuts"
-    | "block-properties";
+    | "block-properties"
+    | "context-menus"
+    | "port-tooltips"
+    | "toast-notifications"
+    | "how-to-use"
+    | "variables"
+    | "gltf-import-export"
+    | "composite-templates"
+    | "execution-contexts";
 
 /**
  * A single help topic section (sub-heading within a topic).
@@ -349,6 +357,155 @@ export const HelpTopics: IHelpTopic[] = [
 <tr><td>Send/Receive Custom Event</td><td>Key-type list editor for event data ports.</td></tr>
 </table>
 <p><em>Scene-dependent pickers require a scene to be loaded in the Preview panel.</em></p>`,
+            },
+        ],
+    },
+    {
+        id: "context-menus",
+        title: "Right-Click Context Menus",
+        sections: [
+            {
+                html: `<p>Right-click on the canvas, a node, a link, or a frame to open a context menu with common actions.</p>`,
+            },
+            {
+                heading: "Canvas Menu",
+                html: `<ul>
+<li><b>Add Block...</b> — opens the block search box</li>
+<li><b>Paste</b> — pastes copied blocks</li>
+<li><b>Create Sticky Note</b> — adds a note at the click position</li>
+<li><b>Select All</b> — selects all nodes and frames</li>
+<li><b>Zoom to Fit</b> / <b>Reorganize</b></li>
+</ul>`,
+            },
+            {
+                heading: "Node Menu",
+                html: `<ul>
+<li><b>Delete</b> — removes selected block(s)</li>
+<li><b>Duplicate</b> — copies and pastes the selection</li>
+<li><b>Add/Remove Breakpoint</b> — toggles breakpoint (execution blocks only)</li>
+<li><b>Create Smart Group</b> — groups 2+ blocks into a frame</li>
+<li><b>Disconnect All Ports</b> — removes all connections</li>
+</ul>`,
+            },
+            {
+                heading: "Link & Frame Menus",
+                html: `<p><b>Link</b>: Delete Connection. <b>Frame</b>: Delete Frame, Collapse/Expand.</p>`,
+            },
+        ],
+    },
+    {
+        id: "port-tooltips",
+        title: "Port Tooltips",
+        sections: [
+            {
+                html: `<p>Hover over any port icon on a node to see a tooltip with the port's <b>name</b>, <b>data type</b>, and <b>direction</b> (Input/Output).</p>
+<p>Signal ports show "Signal Input" or "Signal Output". Data ports show the rich type name (e.g., Number, Vector3, Boolean).</p>`,
+            },
+        ],
+    },
+    {
+        id: "toast-notifications",
+        title: "Toast Notifications",
+        sections: [
+            {
+                html: `<p>Brief notifications appear in the bottom-right corner for save/load and other operations. They auto-dismiss after 4 seconds.</p>
+<ul>
+<li><b>Success</b> (green) — file/snippet saved or loaded</li>
+<li><b>Error</b> (red) — save/load failure</li>
+<li><b>Info</b> (blue) — general information</li>
+<li><b>Warning</b> (amber) — caution notices</li>
+</ul>
+<p>All toast messages are also logged to the Log panel.</p>`,
+            },
+        ],
+    },
+    {
+        id: "how-to-use",
+        title: "How to Use (Embed Code)",
+        sections: [
+            {
+                html: `<p>Click the <b>&lt;/&gt;</b> button in the toolbar to open the <b>How to Use</b> dialog. It shows ready-to-paste code samples for loading your flow graph in your own project.</p>`,
+            },
+            {
+                heading: "From Snippet Server",
+                html: `<p>If you've saved your graph to the snippet server, the dialog pre-fills the snippet ID. Fetch the snippet JSON and use <code>ParseFlowGraphAsync()</code> from <code>@babylonjs/core/FlowGraph/flowGraphParser</code> to load it.</p>`,
+            },
+            {
+                heading: "From JSON File",
+                html: `<p>Save your graph as a JSON file, then use <code>ParseFlowGraphAsync()</code> from <code>@babylonjs/core/FlowGraph/flowGraphParser</code> to parse it. Both methods require a <code>FlowGraphCoordinator</code> tied to your scene.</p>`,
+            },
+        ],
+    },
+    {
+        id: "variables",
+        title: "Variables Panel",
+        sections: [
+            {
+                html: `<p>The <b>Variables</b> section in the right property panel lists all variables referenced by <code>GetVariable</code> and <code>SetVariable</code> blocks.</p>`,
+            },
+            {
+                heading: "Managing Variables",
+                html: `<ul>
+<li><b>+ Add</b> — creates a new variable with an auto-generated name.</li>
+<li><b>Double-click</b> a name to rename. Renaming propagates to all Get/Set blocks.</li>
+<li><b>✕</b> — deletes the variable and removes all blocks referencing it.</li>
+</ul>
+<p>Each row shows a reference count (e.g., <code>2G / 1S</code> = 2 get blocks, 1 set block).</p>`,
+            },
+        ],
+    },
+    {
+        id: "gltf-import-export",
+        title: "glTF Import / Export",
+        sections: [
+            {
+                heading: "Importing from glTF",
+                html: `<p>Drop a <code>.glb</code> or <code>.gltf</code> file on the scene preview pane. If the file contains a <strong>KHR_interactivity</strong> extension, the flow graph is automatically loaded into the editor.</p>
+<p>Files exported by this editor contain a <strong>BABYLON_flow_graph</strong> custom extension, which is also detected and imported on drop.</p>
+<p>Alternatively, use the <strong>Load glTF</strong> button in the FILE section to load only the flow graph (no scene).</p>`,
+            },
+            {
+                heading: "Exporting to glTF",
+                html: `<p>Click <strong>Export glTF (.glb)</strong> in the FILE section. The flow graph is embedded in the file as a <strong>BABYLON_flow_graph</strong> custom extension.</p>
+<p>If a preview scene is loaded and the serializers package is available, the full scene + flow graph are exported together. Otherwise a minimal <code>.glb</code> containing only the flow graph data is created.</p>`,
+            },
+        ],
+    },
+    {
+        id: "composite-templates",
+        title: "Composite Templates",
+        sections: [
+            {
+                heading: "Using Templates",
+                html: `<p>The palette contains a <strong>Templates</strong> section with pre-built multi-block patterns. Drag a template onto the canvas to create all blocks and wire them together automatically.</p>
+<p>Available template categories:</p>
+<ul>
+<li><strong>Common Patterns</strong> — Click → Log, Timer Loop, Toggle Boolean, Branch on Condition, Sequence Chain, Delayed Action, Pointer Interaction</li>
+<li><strong>Animation Patterns</strong> — Lerp Animation</li>
+<li><strong>Communication</strong> — Custom Event Bridge</li>
+<li><strong>glTF Interactivity</strong> — Get → Set Property, Get → Set Variable</li>
+</ul>
+<p>After dropping a template, each block can be configured individually in the property panel.</p>`,
+            },
+        ],
+    },
+    {
+        id: "execution-contexts",
+        title: "Execution Contexts",
+        sections: [
+            {
+                html: `<p>A flow graph can run with multiple <b>execution contexts</b>, each representing an independent execution of the same graph logic with its own variable state.</p>
+<p>The <b>Ctx</b> dropdown in the toolbar shows all contexts. By default, one context ("Context 0") is created when the graph starts.</p>`,
+            },
+            {
+                heading: "Managing Contexts",
+                html: `<ul>
+<li><b>Ctx dropdown</b> — select which context is active for debug/variables</li>
+<li><b>+</b> — create a new context with independent variable state</li>
+<li><b>−</b> — remove the selected context (disabled when only one remains)</li>
+<li><b>✎</b> — rename the selected context</li>
+</ul>
+<p>Switching contexts updates the debug highlighting, breakpoints, and Variables panel to reflect the selected context's state.</p>`,
             },
         ],
     },
