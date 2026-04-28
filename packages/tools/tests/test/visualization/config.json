@@ -1596,8 +1596,7 @@
             "title": "Depth of field",
             "playgroundId": "#IDSQK2#86",
             "referenceImage": "depthOfField.png",
-            "dependsOn": ["Cameras", "Materials", "PostProcesses", "Shaders"],
-            "performanceTest": true
+            "dependsOn": ["Cameras", "Materials", "PostProcesses", "Shaders"]
         },
         {
             "title": "Chromatic aberration",
