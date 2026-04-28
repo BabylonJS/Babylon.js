@@ -555,7 +555,7 @@ jobs:
     - job: VisualizationWebGL2
       displayName: "Visualization tests - WebGL 2"
       dependsOn: Build
-      condition: and(succeeded(), ne(dependencies.Build.outputs['ComputeVisTags.AFFECTED_TAGS'], 'NONE'))
+      condition: succeeded()
       variables:
           AFFECTED_TAGS: $[ dependencies.Build.outputs['ComputeVisTags.AFFECTED_TAGS'] ]
       steps:
@@ -580,8 +580,13 @@ jobs:
                 PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: "true"
                 PUPPETEER_SKIP_DOWNLOAD: "true"
 
+          - bash: echo "No visualization tests affected by this change — skipping."
+            displayName: "Skip — no affected tests"
+            condition: eq(variables['AFFECTED_TAGS'], 'NONE')
+
           - bash: .azure-pipelines/browserstack-wait.sh npx playwright test --config ./playwright.browserstack.config.ts
             displayName: "WebGL2 BStack"
+            condition: ne(variables['AFFECTED_TAGS'], 'NONE')
             env:
                 CDN_BASE_URL: "$(SNAPSHOT_CDN_URL)/$(BuildName)"
                 CI: "true"
@@ -659,8 +664,13 @@ jobs:
                 PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: "true"
                 PUPPETEER_SKIP_DOWNLOAD: "true"
 
+          - bash: echo "No visualization tests affected by this change — skipping."
+            displayName: "Skip — no affected tests"
+            condition: eq(variables['AFFECTED_TAGS'], 'NONE')
+
           - bash: .azure-pipelines/browserstack-wait.sh npx playwright test --config ./playwright.browserstack.config.ts
             displayName: "WebGPU BStack"
+            condition: ne(variables['AFFECTED_TAGS'], 'NONE')
             retryCountOnTaskFailure: 1
             env:
                 CDN_BASE_URL: "$(SNAPSHOT_CDN_URL)/$(BuildName)"
