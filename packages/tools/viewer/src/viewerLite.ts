@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { type IColor4Like, type IReadonlyObservable, type Nullable } from "core/index";
+import { type IColor4Like, type IDisposable, type IReadonlyObservable, type Nullable } from "core/index";
+import { AsyncLock } from "core/Misc/asyncLock";
 import { AbortError } from "core/Misc/error";
 import { Logger } from "core/Misc/logger";
 import { Observable } from "core/Misc/observable";
@@ -56,7 +57,9 @@ import {
     type ViewerHotSpotResult,
     type ViewerLoadModelOptions,
     DefaultViewerBaseOptions,
-} from "./viewerInterface";
+    throwIfAborted,
+    observePromise,
+} from "./viewerBase";
 
 /**
  * The options for the Lite Viewer.
@@ -85,25 +88,6 @@ const DefaultCameraBeta = Math.PI / 2.5;
 const DefaultCameraRadius = 3;
 
 // ── Helpers ──
-
-function throwIfAborted(...signals: (AbortSignal | undefined)[]): void {
-    for (const signal of signals) {
-        signal?.throwIfAborted();
-    }
-}
-
-function observePromise(promise: Promise<unknown>): void {
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    (async () => {
-        try {
-            await promise;
-        } catch (e) {
-            if (!(e instanceof AbortError)) {
-                Logger.Error(`Viewer: ${e}`);
-            }
-        }
-    })();
-}
 
 function getExtension(url: string, explicitExt?: string): string {
     if (explicitExt) {
@@ -253,8 +237,13 @@ export class Viewer implements IViewer {
     private _container: AssetContainer | null = null;
     /** The source that was passed to the most recent {@link loadModel} call, for notifications. */
     private _modelSource: Nullable<string | File | ArrayBufferView> = null;
-    private _loadingProgress: boolean | number = false;
+    private readonly _loadOperations = new Set<Readonly<{ progress: Nullable<number> }>>();
     private _loadModelAbortController: AbortController | null = null;
+    private _loadEnvironmentAbortController: AbortController | null = null;
+    private _shadowsAbortController: AbortController | null = null;
+    private readonly _loadModelLock = new AsyncLock();
+    private readonly _loadEnvironmentLock = new AsyncLock();
+    private readonly _updateShadowsLock = new AsyncLock();
 
     // Animation
     private _selectedAnimation = -1;
@@ -501,66 +490,90 @@ export class Viewer implements IViewer {
     }
 
     public set environmentConfig(value: Partial<Readonly<EnvironmentParams>>) {
-        let changed = false;
-        if (value.intensity !== undefined && value.intensity !== this._environmentIntensity) {
-            this._environmentIntensity = value.intensity;
-            changed = true;
+        if (value.intensity !== undefined) {
+            this._changeEnvironmentIntensity(value.intensity);
         }
-        if (value.blur !== undefined && value.blur !== this._environmentBlur) {
-            this._environmentBlur = value.blur;
-            changed = true;
+        if (value.blur !== undefined) {
+            this._changeSkyboxBlur(value.blur);
         }
-        if (value.rotation !== undefined && value.rotation !== this._environmentRotation) {
-            this._environmentRotation = value.rotation;
-            this._scene.envRotationY = value.rotation;
-            changed = true;
+        if (value.rotation !== undefined) {
+            this._changeEnvironmentRotation(value.rotation);
         }
-        if (changed) {
-            this._onEnvironmentConfigurationChanged.notifyObservers();
+        this._onEnvironmentConfigurationChanged.notifyObservers();
+    }
+
+    private _changeEnvironmentIntensity(value: number) {
+        if (value !== this._environmentIntensity) {
+            this._environmentIntensity = value;
+        }
+    }
+
+    private _changeSkyboxBlur(value: number) {
+        if (value !== this._environmentBlur) {
+            this._environmentBlur = value;
+        }
+    }
+
+    private _changeEnvironmentRotation(value: number) {
+        if (value !== this._environmentRotation) {
+            this._environmentRotation = value;
+            if (this._scene.envRotationY !== undefined) {
+                this._scene.envRotationY = value;
+            }
         }
     }
 
     public async loadEnvironment(url: string, options?: LoadEnvironmentOptions, abortSignal?: AbortSignal): Promise<void> {
-        try {
-            throwIfAborted(abortSignal);
+        this._throwIfDisposedOrAborted(abortSignal);
 
-            const effectiveUrl = url === "auto" ? (await import("./defaultEnvironment")).default : url;
-            const ext = getExtension(effectiveUrl, options?.extension);
+        this._loadEnvironmentAbortController?.abort(new AbortError("New environment is being loaded before previous environment finished loading."));
+        const internalAbortController = (this._loadEnvironmentAbortController = new AbortController());
 
-            if (ext === ".hdr") {
-                this._envTextures = await loadHdrEnvironment(this._scene, effectiveUrl, {
-                    skipGround: true,
-                    skyboxSize: 20,
-                });
-            } else {
-                // .env or other — use the standard env loader
-                this._envTextures = await liteLoadEnvironment(this._scene, effectiveUrl, {
-                    brdfUrl: (await import("./defaultBRDF")).default,
-                    skyboxUrl: options?.skybox !== false ? effectiveUrl : undefined,
-                    skipSkybox: options?.skybox === false,
-                    skipGround: true,
-                    skyboxSize: 20,
-                });
-            }
+        return await this._loadEnvironmentLock.lockAsync(async () => {
+            const loadOperation = this._beginLoadOperation();
+            try {
+                throwIfAborted(abortSignal, internalAbortController.signal);
 
-            if (this._environmentRotation !== 0) {
-                this._scene.envRotationY = this._environmentRotation;
-            }
+                const effectiveUrl = url === "auto" ? (await import("./defaultEnvironment")).default : url;
+                const ext = getExtension(effectiveUrl, options?.extension);
 
-            throwIfAborted(abortSignal);
+                if (ext === ".hdr") {
+                    this._envTextures = await loadHdrEnvironment(this._scene, effectiveUrl, {
+                        skipGround: true,
+                        skyboxSize: 20,
+                    });
+                } else {
+                    // .env or other — use the standard env loader
+                    this._envTextures = await liteLoadEnvironment(this._scene, effectiveUrl, {
+                        brdfUrl: (await import("./defaultBRDF")).default,
+                        skyboxUrl: options?.skybox !== false ? effectiveUrl : undefined,
+                        skipSkybox: options?.skybox === false,
+                        skipGround: true,
+                        skyboxSize: 20,
+                    });
+                }
 
-            this._onEnvironmentChanged.notifyObservers();
-        } catch (e) {
-            if (e instanceof AbortError) {
+                if (this._environmentRotation !== 0) {
+                    this._scene.envRotationY = this._environmentRotation;
+                }
+
+                throwIfAborted(abortSignal, internalAbortController.signal);
+
+                this._onEnvironmentChanged.notifyObservers();
+            } catch (e) {
+                if (e instanceof AbortError) {
+                    throw e;
+                }
+                this._onEnvironmentError.notifyObservers(e);
                 throw e;
+            } finally {
+                loadOperation.dispose();
             }
-            this._onEnvironmentError.notifyObservers(e);
-            throw e;
-        }
+        });
     }
 
     public async resetEnvironment(_options?: EnvironmentOptions, abortSignal?: AbortSignal): Promise<void> {
-        throwIfAborted(abortSignal);
+        this._throwIfDisposedOrAborted(abortSignal);
 
         if (this._envTextures !== null) {
             this._envTextures = null;
@@ -634,19 +647,24 @@ export class Viewer implements IViewer {
             quality = "normal";
         }
 
-        this._shadowQuality = quality;
+        this._shadowsAbortController?.abort(new AbortError("Shadows quality is being changed before previous shadows finished initializing."));
+        this._shadowsAbortController = new AbortController();
 
-        // Tear down existing shadow state
-        if (this._shadowLight !== null) {
-            this._shadowLight = null;
-        }
-        this._shadowGenerator = null;
+        return await this._updateShadowsLock.lockAsync(async () => {
+            this._shadowQuality = quality;
 
-        if (quality === "normal" && this._container) {
-            this._setupShadows();
-        }
+            // Tear down existing shadow state
+            if (this._shadowLight !== null) {
+                this._shadowLight = null;
+            }
+            this._shadowGenerator = null;
 
-        this._onShadowsConfigurationChanged.notifyObservers();
+            if (quality === "normal" && this._container) {
+                this._setupShadows();
+            }
+
+            this._onShadowsConfigurationChanged.notifyObservers();
+        });
     }
 
     private _setupShadows(): void {
@@ -670,92 +688,85 @@ export class Viewer implements IViewer {
     // ── Model Loading ──
 
     public async loadModel(source: string | File | ArrayBufferView, options?: ViewerLoadModelOptions, abortSignal?: AbortSignal): Promise<void> {
+        this._throwIfDisposedOrAborted(abortSignal);
+
         // Abort any in-flight load
-        this._loadModelAbortController?.abort(new AbortError("Superseded by new load"));
-        const controller = new AbortController();
-        this._loadModelAbortController = controller;
+        this._loadModelAbortController?.abort(new AbortError("New model is being loaded before previous model finished loading."));
+        const internalAbortController = (this._loadModelAbortController = new AbortController());
 
-        const combinedAbort = abortSignal ? AbortSignal.any([abortSignal, controller.signal]) : controller.signal;
+        return await this._loadModelLock.lockAsync(async () => {
+            const loadOperation = this._beginLoadOperation();
+            try {
+                throwIfAborted(abortSignal, internalAbortController.signal);
 
-        try {
-            throwIfAborted(combinedAbort);
-
-            if (typeof source !== "string") {
-                Logger.Warn("Viewer: Only string URLs are supported for model loading. File and ArrayBufferView sources are not supported.");
-                this._onModelError.notifyObservers(new Error("Unsupported model source type"));
-                return;
-            }
-
-            // Set loading state
-            this._loadingProgress = true;
-            this._onLoadingProgressChanged.notifyObservers();
-
-            // Unload previous model
-            this._unloadCurrentModel();
-
-            // Load new model
-            const url = source;
-            if (options?.pluginExtension) {
-                // Append extension hint if provided
-                const ext = options.pluginExtension.startsWith(".") ? options.pluginExtension : `.${options.pluginExtension}`;
-                if (!url.toLowerCase().endsWith(ext.toLowerCase())) {
-                    // The Lite loader determines format from URL extension;
-                    // for now we just trust the URL.
+                if (typeof source !== "string") {
+                    Logger.Warn("Viewer: Only string URLs are supported for model loading. File and ArrayBufferView sources are not supported.");
+                    this._onModelError.notifyObservers(new Error("Unsupported model source type"));
+                    return;
                 }
-            }
 
-            const container = await loadGltf(this._engine, url);
+                // Unload previous model
+                this._unloadCurrentModel();
 
-            throwIfAborted(combinedAbort);
+                // Load new model
+                const url = source;
+                if (options?.pluginExtension) {
+                    // Append extension hint if provided
+                    const ext = options.pluginExtension.startsWith(".") ? options.pluginExtension : `.${options.pluginExtension}`;
+                    if (!url.toLowerCase().endsWith(ext.toLowerCase())) {
+                        // The Lite loader determines format from URL extension;
+                        // for now we just trust the URL.
+                    }
+                }
 
-            this._container = container;
-            this._modelSource = source;
+                const container = await loadGltf(this._engine, url);
 
-            // Add to scene and rebuild renderables
-            addToScene(this._scene, container);
-            await this._beginRendering();
+                throwIfAborted(abortSignal, internalAbortController.signal);
 
-            // Apply clear color from model if present
-            if (container.clearColor) {
-                this._scene.clearColor = container.clearColor;
-                this._onClearColorChanged.notifyObservers();
-            }
+                this._container = container;
+                this._modelSource = source;
 
-            // Setup shadows if configured
-            if (this._shadowQuality !== "none") {
-                this._setupShadows();
-            }
+                // Add to scene and rebuild renderables
+                addToScene(this._scene, container);
+                await this._beginRendering();
 
-            // Setup animations
-            this._setupAnimations();
+                // Apply clear color from model if present
+                if (container.clearColor) {
+                    this._scene.clearColor = container.clearColor;
+                    this._onClearColorChanged.notifyObservers();
+                }
 
-            // Apply material variant from options
-            if (this._options?.selectedMaterialVariant) {
-                this.selectedMaterialVariant = this._options.selectedMaterialVariant;
-            }
+                // Setup shadows if configured
+                if (this._shadowQuality !== "none") {
+                    this._setupShadows();
+                }
 
-            // Frame camera to loaded model
-            this._frameCameraToModel();
+                // Setup animations
+                this._setupAnimations();
 
-            // Loading complete
-            this._loadingProgress = false;
-            this._onLoadingProgressChanged.notifyObservers();
+                // Apply material variant from options
+                if (this._options?.selectedMaterialVariant) {
+                    this.selectedMaterialVariant = this._options.selectedMaterialVariant;
+                }
 
-            this._onModelChanged.notifyObservers(source);
-        } catch (e) {
-            this._loadingProgress = false;
-            this._onLoadingProgressChanged.notifyObservers();
+                // Frame camera to loaded model
+                this._frameCameraToModel();
 
-            if (e instanceof AbortError) {
+                this._onModelChanged.notifyObservers(source);
+            } catch (e) {
+                if (e instanceof AbortError) {
+                    throw e;
+                }
+                this._onModelError.notifyObservers(e);
                 throw e;
+            } finally {
+                loadOperation.dispose();
             }
-            this._onModelError.notifyObservers(e);
-            throw e;
-        }
+        });
     }
 
     public async resetModel(abortSignal?: AbortSignal): Promise<void> {
-        throwIfAborted(abortSignal);
+        this._throwIfDisposedOrAborted(abortSignal);
 
         this._loadModelAbortController?.abort(new AbortError("Model reset"));
         this._loadModelAbortController = null;
@@ -1009,7 +1020,56 @@ export class Viewer implements IViewer {
     }
 
     public get loadingProgress(): boolean | number {
-        return this._loadingProgress;
+        if (this._loadOperations.size > 0) {
+            let totalProgress = 0;
+            for (const operation of this._loadOperations) {
+                if (operation.progress == null) {
+                    return true;
+                }
+                totalProgress += operation.progress;
+            }
+
+            return totalProgress / this._loadOperations.size;
+        }
+
+        return false;
+    }
+
+    protected _beginLoadOperation(): IDisposable & { progress: Nullable<number> } {
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
+        const viewer = this;
+        let progress: Nullable<number> = null;
+
+        const loadOperation = {
+            get progress() {
+                return progress;
+            },
+            set progress(value: Nullable<number>) {
+                progress = value;
+                viewer._onLoadingProgressChanged.notifyObservers();
+            },
+            dispose: () => {
+                viewer._loadOperations.delete(loadOperation);
+                viewer._onLoadingProgressChanged.notifyObservers();
+            },
+        };
+
+        this._loadOperations.add(loadOperation);
+        this._onLoadingProgressChanged.notifyObservers();
+
+        return loadOperation;
+    }
+
+    /**
+     * Check for disposed or aborted state (basically everything that can interrupt an async operation).
+     * @param abortSignals A set of optional AbortSignals to also check.
+     */
+    private _throwIfDisposedOrAborted(...abortSignals: (Nullable<AbortSignal> | undefined)[]): void {
+        if (this._isDisposed) {
+            throw new Error("Viewer is disposed.");
+        }
+
+        throwIfAborted(...abortSignals);
     }
 
     public reset(...flags: ResetFlag[]): void {
@@ -1115,6 +1175,10 @@ export class Viewer implements IViewer {
         // Abort any in-flight loads
         this._loadModelAbortController?.abort(new AbortError("Disposed"));
         this._loadModelAbortController = null;
+        this._loadEnvironmentAbortController?.abort(new AbortError("Disposed"));
+        this._loadEnvironmentAbortController = null;
+        this._shadowsAbortController?.abort(new AbortError("Disposed"));
+        this._shadowsAbortController = null;
 
         // Unload model
         this._unloadCurrentModel();

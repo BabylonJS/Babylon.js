@@ -1,5 +1,34 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { type HotSpotQuery, type IColor4Like, type IDisposable, type Nullable, type IReadonlyObservable } from "core/index";
+import { AbortError } from "core/Misc/error";
+import { Logger } from "core/Misc/logger";
+
+/**
+ * Throws if any of the supplied abort signals is aborted.
+ * @param abortSignals The signals to check.
+ */
+export function throwIfAborted(...abortSignals: (Nullable<AbortSignal> | undefined)[]): void {
+    for (const signal of abortSignals) {
+        signal?.throwIfAborted();
+    }
+}
+
+/**
+ * Fire-and-forget wrapper for a promise that logs non-abort errors.
+ * @param promise The promise to observe.
+ */
+export function observePromise(promise: Promise<unknown>): void {
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    (async () => {
+        try {
+            await promise;
+        } catch (error) {
+            if (!(error instanceof AbortError)) {
+                Logger.Error(error);
+            }
+        }
+    })();
+}
 
 /**
  * Flags for selectively resetting parts of the viewer state.

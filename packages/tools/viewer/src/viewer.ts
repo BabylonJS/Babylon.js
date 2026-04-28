@@ -78,7 +78,9 @@ import {
     type ViewerHotSpotQuery,
     ViewerHotSpotResult,
     DefaultViewerBaseOptions,
-} from "./viewerInterface";
+    throwIfAborted,
+    observePromise,
+} from "./viewerBase";
 
 // eslint-disable-next-line @typescript-eslint/promise-function-async
 const LazySSAODependenciesPromise = new Lazy(() =>
@@ -151,12 +153,6 @@ type ShadowState = {
 function IsGaussianSplattingMesh(mesh: AbstractMesh): boolean {
     const className = mesh.getClassName();
     return className === "GaussianSplattingMesh" || className === "GaussianSplattingPartProxyMesh";
-}
-
-function throwIfAborted(...abortSignals: (Nullable<AbortSignal> | undefined)[]): void {
-    for (const signal of abortSignals) {
-        signal?.throwIfAborted();
-    }
 }
 
 async function createCubeTexture(url: string, scene: Scene, extension?: string) {
@@ -266,21 +262,6 @@ function adjustLightTargetDirection(targetDirection: Vector3): Vector3 {
 function computeModelsBoundingInfos(models: readonly Model[]): Nullable<ViewerBoundingInfo> {
     const maxExtents = computeModelsMaxExtents(models);
     return reduceMeshesExtendsToBoundingInfo(maxExtents);
-}
-
-// This helper function is used in functions that are naturally void returning, but need to call an async Promise returning function.
-// If there is any error (other than AbortError) in the async function, it will be logged.
-function observePromise(promise: Promise<unknown>): void {
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    (async () => {
-        try {
-            await promise;
-        } catch (error) {
-            if (!(error instanceof AbortError)) {
-                Logger.Error(error);
-            }
-        }
-    })();
 }
 
 /**

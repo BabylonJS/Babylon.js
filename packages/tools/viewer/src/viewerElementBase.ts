@@ -15,7 +15,7 @@ import {
     type ViewerHotSpotResult,
     IsShadowQuality,
     IsToneMapping,
-} from "./viewerInterface";
+} from "./viewerBase";
 
 import { property, query, state } from "lit/decorators.js";
 import { ref } from "lit/directives/ref.js";

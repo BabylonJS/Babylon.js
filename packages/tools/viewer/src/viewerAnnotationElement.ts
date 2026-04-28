@@ -3,7 +3,7 @@ import { type PropertyValues, LitElement, css, html } from "lit";
 
 import { customElement, property } from "lit/decorators.js";
 import { ViewerElementBase } from "./viewerElementBase";
-import { ViewerHotSpotResult } from "./viewerInterface";
+import { ViewerHotSpotResult } from "./viewerBase";
 
 /**
  * Displays child elements at the screen space location of a hotspot in a babylon-viewer.
