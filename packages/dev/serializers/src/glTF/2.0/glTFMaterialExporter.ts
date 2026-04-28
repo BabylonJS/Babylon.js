@@ -29,6 +29,7 @@ import { type Scene } from "core/scene";
 
 import { type GLTFExporter } from "./glTFExporter";
 import { Constants } from "core/Engines/constants";
+import { NullEngine } from "core/Engines/nullEngine";
 import { EncodeImageAsync } from "core/Misc/dumpTools";
 
 import { type Material } from "core/Materials/material";
@@ -109,6 +110,17 @@ async function GetCachedImageAsync(babylonTexture: BaseTexture): Promise<Nullabl
     if (!internalTexture || internalTexture.source !== InternalTextureSource.Url) {
         return null;
     }
+    if (internalTexture.invertY) {
+        // On a real engine, the GPU has the texture stored flipped (UNPACK_FLIP_Y_WEBGL),
+        // while the glTF loader uploads with invertY=false. Falling back to GPU readback
+        // produces bytes that round-trip correctly. NullEngine has no GPU readback path,
+        // so the cached URL bytes are the only option.
+        const engine = babylonTexture.getScene()?.getEngine();
+        if (!(engine instanceof NullEngine)) {
+            return null;
+        }
+    }
+
     const buffer = internalTexture._buffer;
 
     let data;
