@@ -1992,8 +1992,7 @@
             "referenceImage": "ssr.png",
             "excludedEngines": ["webgl1"],
             "excludeFromAutomaticTesting": true,
-            "dependsOn": ["Materials", "PostProcesses", "Textures"],
-            "performanceTest": true
+            "dependsOn": ["Materials", "PostProcesses", "Textures"]
         },
         {
             "title": "Geometry buffer renderer",
@@ -2048,8 +2047,7 @@
             "playgroundId": "#65MUMZ#47",
             "excludedEngines": ["webgl1"],
             "referenceImage": "prepass-ssao-particles.png",
-            "dependsOn": ["Materials", "Particles", "PostProcesses", "Probes", "Textures"],
-            "performanceTest": true
+            "dependsOn": ["Materials", "Particles", "PostProcesses", "Probes", "Textures"]
         },
         {
             "title": "Prepass SSAO + instances",
@@ -2540,8 +2538,7 @@
             "renderCount": 120,
             "referenceImage": "fluidParticleSystem.png",
             "excludedEngines": ["webgl1"],
-            "dependsOn": ["Particles", "Textures"],
-            "performanceTest": true
+            "dependsOn": ["Particles", "Textures"]
         },
         {
             "title": "Fluid rendering box sphere",
