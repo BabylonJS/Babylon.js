@@ -548,10 +548,13 @@ jobs:
     - job: VisualizationWebGL2
       displayName: "Visualization tests - WebGL 2"
       dependsOn: Build
-      condition: and(succeeded(), ne(dependencies.Build.outputs['ComputeVisTags.AFFECTED_TAGS'], 'NONE'))
       variables:
           AFFECTED_TAGS: $[ dependencies.Build.outputs['ComputeVisTags.AFFECTED_TAGS'] ]
       steps:
+          - bash: echo "No visualization tests affected by this change — skipping."
+            displayName: "Skip — no affected tests"
+            condition: eq(variables['AFFECTED_TAGS'], 'NONE')
+
           - template: templates/checkout-with-tag-override.yml
 
           - task: UseNode@1
@@ -570,6 +573,7 @@ jobs:
                 #npx playwright install
                 #npx playwright install --force chrome
             displayName: "npm install"
+            condition: ne(variables['AFFECTED_TAGS'], 'NONE')
             retryCountOnTaskFailure: 1
             env:
                 PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: "true"
@@ -577,6 +581,7 @@ jobs:
 
           - script: npm run test:playwright -w @tools/tests -- --project=webgl2
             displayName: "WebGL2 BStack"
+            condition: ne(variables['AFFECTED_TAGS'], 'NONE')
             env:
                 CDN_BASE_URL: "$(SNAPSHOT_CDN_URL)/$(BuildName)"
                 CI: "true"
@@ -591,7 +596,7 @@ jobs:
                 curl "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_DELETE)?path=$(BuildName)/testResults/webgl2playwright" -X POST -H "Authorization: $(BASIC_AUTH)"
             displayName: "Delete test results"
             continueOnError: true
-            condition: eq(variables['SNAPSHOTEXISTS'], 'true')
+            condition: and(eq(variables['SNAPSHOTEXISTS'], 'true'), ne(variables['AFFECTED_TAGS'], 'NONE'))
 
           - template: templates/upload-test-results.yml
             parameters:
@@ -599,10 +604,11 @@ jobs:
                 fallbackReportDir: "playwright-report"
                 deployPath: "$(BuildName)/testResults/webgl2playwright"
                 continueOnError: true
+                condition: ne(variables['AFFECTED_TAGS'], 'NONE')
 
           - task: GitHubComment@0
             displayName: "GitHub WebGL2 comment"
-            condition: eq(variables['SNAPSHOTEXISTS'], 'false')
+            condition: and(eq(variables['SNAPSHOTEXISTS'], 'false'), ne(variables['AFFECTED_TAGS'], 'NONE'))
             inputs:
                 gitHubConnection: "$(GITHUB_SERVICE_CONNECTION)"
                 repositoryName: "$(Build.Repository.Name)"
@@ -613,7 +619,7 @@ jobs:
 
           - task: PublishTestResults@2
             displayName: "Publish webgl2 test results"
-            condition: succeededOrFailed()
+            condition: and(succeededOrFailed(), ne(variables['AFFECTED_TAGS'], 'NONE'))
             inputs:
                 testResultsFormat: JUnit
                 testResultsFiles: "./packages/tools/tests/junit.xml"
@@ -626,10 +632,13 @@ jobs:
     - job: VisualizationWebGPU
       displayName: "Visualization tests - WebGPU"
       dependsOn: Build
-      condition: and(succeeded(), ne(dependencies.Build.outputs['ComputeVisTags.AFFECTED_TAGS'], 'NONE'))
       variables:
           AFFECTED_TAGS: $[ dependencies.Build.outputs['ComputeVisTags.AFFECTED_TAGS'] ]
       steps:
+          - bash: echo "No visualization tests affected by this change — skipping."
+            displayName: "Skip — no affected tests"
+            condition: eq(variables['AFFECTED_TAGS'], 'NONE')
+
           - template: templates/checkout-with-tag-override.yml
 
           - task: UseNode@1
@@ -647,6 +656,7 @@ jobs:
                 npm install
                 #npx playwright install --force chrome
             displayName: "npm install"
+            condition: ne(variables['AFFECTED_TAGS'], 'NONE')
             retryCountOnTaskFailure: 1
             env:
                 PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: "true"
@@ -654,6 +664,7 @@ jobs:
 
           - script: npm run test:playwright -w @tools/tests -- --project=webgpu
             displayName: "WebGPU BStack"
+            condition: ne(variables['AFFECTED_TAGS'], 'NONE')
             retryCountOnTaskFailure: 1
             env:
                 CDN_BASE_URL: "$(SNAPSHOT_CDN_URL)/$(BuildName)"
@@ -669,7 +680,7 @@ jobs:
                 curl "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_DELETE)?path=$(BuildName)/testResults/webgpuplaywright" -X POST -H "Authorization: $(BASIC_AUTH)"
             displayName: "Delete test results"
             continueOnError: true
-            condition: eq(variables['SNAPSHOTEXISTS'], 'true')
+            condition: and(eq(variables['SNAPSHOTEXISTS'], 'true'), ne(variables['AFFECTED_TAGS'], 'NONE'))
 
           - template: templates/upload-test-results.yml
             parameters:
@@ -677,11 +688,12 @@ jobs:
                 fallbackReportDir: "playwright-report"
                 deployPath: "$(BuildName)/testResults/webgpuplaywright"
                 continueOnError: true
+                condition: ne(variables['AFFECTED_TAGS'], 'NONE')
 
           - task: GitHubComment@0
             displayName: "Writing GitHub comment"
             continueOnError: true
-            condition: eq(variables['SNAPSHOTEXISTS'], 'false')
+            condition: and(eq(variables['SNAPSHOTEXISTS'], 'false'), ne(variables['AFFECTED_TAGS'], 'NONE'))
             inputs:
                 gitHubConnection: "$(GITHUB_SERVICE_CONNECTION)"
                 repositoryName: "$(Build.Repository.Name)"
@@ -692,7 +704,7 @@ jobs:
 
           - task: PublishTestResults@2
             displayName: "Publish webgpu test results"
-            condition: succeededOrFailed()
+            condition: and(succeededOrFailed(), ne(variables['AFFECTED_TAGS'], 'NONE'))
             inputs:
                 testResultsFormat: JUnit
                 testResultsFiles: "./packages/tools/tests/junit.xml"
