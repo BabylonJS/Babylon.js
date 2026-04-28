@@ -203,6 +203,11 @@ export class InputMapper<THandlers extends Record<string, unknown>> {
      * @param currentConditions - Conditions to match against, specific to the source type
      * @returns The matched InputMapEntry, or null if no entry matches
      */
+    public resolveInteraction(source: "pointer", currentConditions?: InputConditions): PointerInputMapEntry<InteractionName<THandlers>> | null;
+    public resolveInteraction(source: "wheel", currentConditions?: InputConditions): WheelInputMapEntry<InteractionName<THandlers>> | null;
+    public resolveInteraction(source: "touch", currentConditions?: InputConditions): TouchInputMapEntry<InteractionName<THandlers>> | null;
+    public resolveInteraction(source: "keyboard", currentConditions?: InputConditions): KeyboardInputMapEntry<InteractionName<THandlers>> | null;
+    public resolveInteraction(source: InputSource, currentConditions?: InputConditions): InputMapEntry<InteractionName<THandlers>> | null;
     public resolveInteraction(source: InputSource, currentConditions?: InputConditions): InputMapEntry<InteractionName<THandlers>> | null {
         for (const entry of this.inputMap) {
             if (entry.source === source && this._entryMatches(entry, currentConditions)) {
@@ -227,6 +232,11 @@ export class InputMapper<THandlers extends Record<string, unknown>> {
      * @param interaction - The interaction type to match
      * @returns The matching entry, or undefined if not found
      */
+    public getEntry(source: "pointer", interaction: InteractionName<THandlers>): PointerInputMapEntry<InteractionName<THandlers>> | undefined;
+    public getEntry(source: "wheel", interaction: InteractionName<THandlers>): WheelInputMapEntry<InteractionName<THandlers>> | undefined;
+    public getEntry(source: "touch", interaction: InteractionName<THandlers>): TouchInputMapEntry<InteractionName<THandlers>> | undefined;
+    public getEntry(source: "keyboard", interaction: InteractionName<THandlers>): KeyboardInputMapEntry<InteractionName<THandlers>> | undefined;
+    public getEntry(source: InputSource, interaction: InteractionName<THandlers>): InputMapEntry<InteractionName<THandlers>> | undefined;
     public getEntry(source: InputSource, interaction: InteractionName<THandlers>): InputMapEntry<InteractionName<THandlers>> | undefined {
         return this.inputMap.find((e) => e.source === source && e.interaction === interaction);
     }

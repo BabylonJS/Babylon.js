@@ -4,7 +4,7 @@ import { type PointerTouch } from "../../Events/pointerEvents";
 import { type Nullable } from "../../types";
 import { OrbitCameraPointersInput } from "./orbitCameraPointersInput";
 import { Vector3Distance } from "../../Maths/math.vector.functions";
-import { type InputMapEntry } from "../cameraInteractions";
+import { type PointerInputMapEntry } from "../cameraInteractions";
 
 /**
  * Geospatial camera inputs can simulate dragging the globe around or tilting the camera around some point on the globe
@@ -21,7 +21,7 @@ export class GeospatialCameraPointersInput extends OrbitCameraPointersInput {
     private _pinchCentroid: Nullable<PointerTouch> = null;
 
     /** Cached resolved inputMap entry for the current pointer gesture */
-    private _activeEntry: InputMapEntry | null = null;
+    private _activeEntry: PointerInputMapEntry | null = null;
 
     /**
      * Defines the rotation sensitivity of the pointer when rotating camera around the x axis (pitch).

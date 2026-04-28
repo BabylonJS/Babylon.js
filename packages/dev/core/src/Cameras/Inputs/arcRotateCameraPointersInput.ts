@@ -5,7 +5,7 @@ import { CameraInputTypes } from "../../Cameras/cameraInputsManager";
 import { OrbitCameraPointersInput } from "../../Cameras/Inputs/orbitCameraPointersInput";
 import { type PointerTouch } from "../../Events/pointerEvents";
 import { type IPointerEvent } from "../../Events/deviceInputEvents";
-import { type InputMapEntry, type PointerConditions } from "../cameraInteractions";
+import { type PointerConditions, type PointerInputMapEntry } from "../cameraInteractions";
 
 /**
  * Manage the pointers inputs to control an arc rotate camera.
@@ -87,7 +87,7 @@ export class ArcRotateCameraPointersInput extends OrbitCameraPointersInput {
     public pinchInwards = true;
 
     /** Cached resolved inputMap entry for the current pointer gesture */
-    private _activeEntry: InputMapEntry | null = null;
+    private _activeEntry: PointerInputMapEntry | null = null;
 
     /** Cached conditions object for pointer-lock fallback resolution to avoid per-event allocations */
     private _pointerLockConditions: PointerConditions = { button: 0, modifiers: {} };
