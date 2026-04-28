@@ -3,6 +3,11 @@ import { type IVector2Like } from "core/Maths/math.like";
 import { type RawFont, type RawTextData, type RawTextDocument, type RawTextJustify } from "./rawTypes";
 
 /**
+ * Controls whether text layout uses the current spec-correct placement metrics or Babylon.js 8.x-compatible metrics.
+ */
+export type LottieTextCompatibilityMode = "spec" | "babylon8";
+
+/**
  * Minimal text metrics shape used by the Lottie text layout helpers.
  */
 export type TextMetricsLike = {
@@ -229,9 +234,18 @@ export function ResolveLottieText(textData: RawTextData, rawFonts: Map<string, R
  * Measures the final texture layout for resolved Lottie text.
  * @param resolvedText Resolved text data.
  * @param measureText Callback used to measure text with the active font.
+ * @param compatibilityMode Text layout compatibility mode.
  * @returns The measured text layout.
  */
-export function MeasureLottieText(resolvedText: ResolvedLottieText, measureText: (text: string) => TextMetricsLike): LottieTextLayout {
+export function MeasureLottieText(
+    resolvedText: ResolvedLottieText,
+    measureText: (text: string) => TextMetricsLike,
+    compatibilityMode: LottieTextCompatibilityMode = "spec"
+): LottieTextLayout {
+    return compatibilityMode === "babylon8" ? MeasureBabylon8LottieText(resolvedText, measureText) : MeasureSpecLottieText(resolvedText, measureText);
+}
+
+function MeasureSpecLottieText(resolvedText: ResolvedLottieText, measureText: (text: string) => TextMetricsLike): LottieTextLayout {
     const hasParagraphBox = resolvedText.boxPosition !== undefined && resolvedText.boxSize !== undefined;
     const lineMeasurements = CreateLineMeasurements(resolvedText, measureText, hasParagraphBox);
     const bottomPaddingPx = resolvedText.hasStroke ? Math.max(MinimumTextBottomPaddingPx, resolvedText.textInfo.sw! / 2) : MinimumTextBottomPaddingPx;
@@ -296,6 +310,32 @@ export function MeasureLottieText(resolvedText: ResolvedLottieText, measureText:
             x: line.x - minX,
             baselineY: line.baselineY - minY,
         })),
+    };
+}
+
+function MeasureBabylon8LottieText(resolvedText: ResolvedLottieText, measureText: (text: string) => TextMetricsLike): LottieTextLayout {
+    const text = resolvedText.lines.join("\n");
+    const metrics = measureText(text);
+    const width = Math.ceil(metrics.width);
+    const ascent = Math.ceil(metrics.actualBoundingBoxAscent ?? resolvedText.baselineOffsetPx);
+    const descent = Math.ceil(metrics.actualBoundingBoxDescent ?? 0);
+    const height = ascent + descent;
+
+    return {
+        width,
+        height,
+        offsetX: 0,
+        offsetY: 0,
+        baselineOffsetY: ascent,
+        descent,
+        lines: [
+            {
+                text,
+                width,
+                x: 0,
+                baselineY: ascent,
+            },
+        ],
     };
 }
 

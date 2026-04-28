@@ -169,6 +169,37 @@ describe("GetTextBoundingBox", () => {
         expect(box?.offsetX).toBe(18);
     });
 
+    it("can measure point text with Babylon 8 bounds and baseline compatibility", () => {
+        const context = new FakeTextContext({
+            Turn: {
+                width: 40,
+                actualBoundingBoxLeft: 4,
+                actualBoundingBoxRight: 40,
+                actualBoundingBoxAscent: 10,
+                actualBoundingBoxDescent: 2,
+            },
+        });
+
+        const resolvedText = ResolveLottieText(createTextData("Turn"), createFonts(), new Map());
+
+        expect(resolvedText).toBeDefined();
+
+        const layout = MeasureLottieText(resolvedText!, (text) => context.measureText(text), "babylon8");
+        const box = GetTextBoundingBox(context as unknown as CanvasRenderingContext2D, createTextData("Turn"), createFonts(), new Map(), "babylon8");
+
+        expect(layout.width).toBe(40);
+        expect(layout.height).toBe(12);
+        expect(layout.offsetX).toBe(0);
+        expect(layout.offsetY).toBe(0);
+        expect(layout.baselineOffsetY).toBe(10);
+        expect(layout.lines[0].x).toBe(0);
+        expect(layout.lines[0].baselineY).toBe(10);
+        expect(box?.width).toBe(40);
+        expect(box?.height).toBe(12);
+        expect(box?.offsetX).toBe(0);
+        expect(box?.offsetY).toBe(0);
+    });
+
     it("accounts for paragraph box position and size when measuring text", () => {
         const context = new FakeTextContext({
             Question: {

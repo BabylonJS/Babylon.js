@@ -68,6 +68,13 @@ export type AnimationConfiguration = {
      * Default is false.
      */
     debug?: boolean;
+    /**
+     * Controls text layer positioning compatibility.
+     * "spec" uses the corrected Lottie text placement introduced in Babylon.js 9.x.
+     * "babylon8" preserves Babylon.js 8.x text layer placement for animations that were authored around that behavior.
+     * Default is "spec".
+     */
+    textLayerCompatibilityMode?: "spec" | "babylon8";
 };
 
 /**
@@ -84,6 +91,7 @@ export const DefaultConfiguration = {
     devicePixelRatio: 0, // 0 = auto-detect based on atlas size
     easingSteps: 4, // Number of steps to sample easing functions for animations - Less than 4 causes issues with some interpolations
     supportDeviceLost: true, // Whether to support device lost events for WebGL contexts,
+    textLayerCompatibilityMode: "spec", // Text layer positioning compatibility mode
 } as const satisfies AnimationConfiguration;
 
 /**
