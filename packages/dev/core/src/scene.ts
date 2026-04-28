@@ -156,6 +156,16 @@ export interface SceneOptions {
 
     /** Defines if the creation of the scene should impact the engine (Eg. UtilityLayer's scene) */
     virtual?: boolean;
+
+    /**
+     * Defines the default layerMask used when creating cameras in the scene (default: 0x0fffffff)
+     */
+    defaultCameraLayerMask?: number;
+
+    /**
+     * Defines the default layerMask used when creating renderable objects in the scene (default: 0x0fffffff)
+     */
+    defaultRenderableLayerMask?: number;
 }
 
 /**
@@ -1811,6 +1821,16 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
     private _uid: Nullable<string>;
 
     /**
+     * Gets or sets the default layerMask used for cameras created in this scene.
+     */
+    public defaultCameraLayerMask: number;
+
+    /**
+     * Gets or sets the default layerMask used for renderable objects created in this scene.
+     */
+    public defaultRenderableLayerMask: number;
+
+    /**
      * @internal
      * Backing store of defined scene components.
      */
@@ -2021,8 +2041,14 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
             useMaterialMeshMap: true,
             useClonedMeshMap: true,
             virtual: false,
+            defaultCameraLayerMask: 0x0fffffff,
+            defaultRenderableLayerMask: 0x0fffffff,
             ...options,
         };
+
+        // Scene Default Layer Masks
+        this.defaultCameraLayerMask = fullOptions.defaultCameraLayerMask;
+        this.defaultRenderableLayerMask = fullOptions.defaultRenderableLayerMask;
 
         engine = this._engine = engine || EngineStore.LastCreatedEngine;
         if (fullOptions.virtual) {
