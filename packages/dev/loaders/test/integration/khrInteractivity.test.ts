@@ -41,13 +41,16 @@ let page: Page;
 
 test.describe("KHR_Interactivity", () => {
     test.beforeAll(async ({ browser }) => {
+        // The babylon.js dev bundle is large (50+ MB); cold loads can take well over the
+        // default 30s hook timeout when the watcher has just rebuilt it.
+        test.setTimeout(120000);
         page = await browser.newPage();
         await page.goto(getGlobalConfig().baseUrl + `/empty.html`, {
             waitUntil: "load",
             timeout: 0,
         });
-        await page.waitForSelector("#babylon-canvas", { timeout: 20000 });
-        await page.waitForFunction(() => window.BABYLON);
+        await page.waitForSelector("#babylon-canvas", { timeout: 60000 });
+        await page.waitForFunction(() => window.BABYLON, undefined, { timeout: 60000 });
         page.setDefaultTimeout(0);
     });
 

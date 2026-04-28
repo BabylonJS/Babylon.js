@@ -12,6 +12,10 @@ import { addToBlockFactory } from "core/FlowGraph/Blocks/flowGraphBlockFactory";
 import { Quaternion, Vector3 } from "core/Maths/math.vector";
 import { type Scene } from "core/scene";
 import { type IAnimation } from "../glTFLoaderInterfaces";
+import { CompositePathToObjectConverter, type IPathConverterPrefixEntry } from "./compositePathToObjectConverter";
+import { BabylonScenePathToObjectConverter, BABYLON_SCENE_OBJECT_MODEL_PREFIX, CreateDefaultBabylonSceneObjectModelTree } from "./babylonScenePathToObjectConverter";
+import { type IObjectAccessor } from "core/FlowGraph/typeDefinitions";
+import { type IPathToObjectConverter } from "core/ObjectModel/objectModelInterfaces";
 
 const NAME = "KHR_interactivity";
 
@@ -39,7 +43,8 @@ export class KHR_interactivity implements IGLTFLoaderExtension {
      */
     public enabled: boolean;
 
-    private _pathConverter?: GLTFPathToObjectConverter<any, any, any>;
+    private _gltfPathConverter?: GLTFPathToObjectConverter<any, any, any>;
+    private _pathConverter?: CompositePathToObjectConverter<IObjectAccessor>;
 
     /**
      * @internal
@@ -47,13 +52,31 @@ export class KHR_interactivity implements IGLTFLoaderExtension {
      */
     constructor(private _loader: GLTFLoader) {
         this.enabled = this._loader.isExtensionUsed(NAME);
-        this._pathConverter = GetPathToObjectConverter(this._loader.gltf);
+        this._gltfPathConverter = GetPathToObjectConverter(this._loader.gltf);
+        const scene = _loader.babylonScene;
+        if (this._gltfPathConverter) {
+            // Build a composite that handles both:
+            //   - The Babylon-scene namespace (`/extensions/BABYLON_scene_objects/...`),
+            //     used by ref values that point at scene objects not described by the
+            //     source glTF (e.g. refs emitted by engine-side event blocks).
+            //   - The standard glTF object model (everything else), via the existing
+            //     glTF converter as a fallback.
+            const initialPrefixes: IPathConverterPrefixEntry<IObjectAccessor>[] = [];
+            if (scene) {
+                initialPrefixes.push({
+                    prefix: BABYLON_SCENE_OBJECT_MODEL_PREFIX,
+                    converter: new BabylonScenePathToObjectConverter(scene, CreateDefaultBabylonSceneObjectModelTree()),
+                });
+            }
+            this._pathConverter = new CompositePathToObjectConverter<IObjectAccessor>(
+                initialPrefixes,
+                this._gltfPathConverter as unknown as IPathToObjectConverter<IObjectAccessor>
+            );
+        }
         // avoid starting animations automatically.
         _loader._skipStartAnimationStep = true;
 
         // Update object model with new pointers
-
-        const scene = _loader.babylonScene;
         if (scene) {
             _AddInteractivityObjectModel(scene);
         }
@@ -61,6 +84,7 @@ export class KHR_interactivity implements IGLTFLoaderExtension {
 
     public dispose() {
         (this._loader as any) = null;
+        delete this._gltfPathConverter;
         delete this._pathConverter;
     }
 

@@ -292,6 +292,10 @@ module.exports = (env) => {
         },
     ];
     commonConfig.devServer.historyApiFallback = {
+        // disableDotRule lets the rewrites apply to URLs containing dots
+        // (e.g. /addons/babylonjs.addons.js → /addons/babylonjs.addons.min.js)
+        // which webpack-dev-server v5 otherwise excludes from rewrites by default.
+        disableDotRule: true,
         rewrites: redirects.map((data) => {
             return {
                 from: new RegExp(data.from),

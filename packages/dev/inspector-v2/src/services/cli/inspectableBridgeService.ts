@@ -1,7 +1,7 @@
 import { type IDisposable } from "core/index";
 import { Observable } from "core/Misc/observable";
 import { type BrowserRequest, type BrowserResponse, type CommandInfo } from "../../cli/protocol";
-import { type ServiceDefinition } from "../../modularity/serviceDefinition";
+import { type ServiceDefinition } from "shared-ui-components/modularTool/modularity/serviceDefinition";
 import { type ICliConnectionStatus, CliConnectionStatusIdentity } from "./cliConnectionStatus";
 import { type IInspectableCommandRegistry, type InspectableCommandDescriptor, InspectableCommandRegistryIdentity } from "./inspectableCommandRegistry";
 
