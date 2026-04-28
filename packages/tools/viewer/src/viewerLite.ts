@@ -54,6 +54,7 @@ import {
     type ViewerBaseOptions,
     type ViewerHotSpotResult,
     type ViewerLoadModelOptions,
+    DefaultViewerBaseOptions,
 } from "./viewerInterface";
 
 /**
@@ -73,13 +74,10 @@ export type CanvasViewerOptions = ViewerBaseOptions;
 
 // ── Defaults ──
 
-const DefaultCameraAutoOrbit: CameraAutoOrbit = { enabled: false, speed: 0.5, delay: 4000 };
-
-const DefaultEnvironmentConfig: EnvironmentParams = { intensity: 1, blur: 0.3, rotation: 0 };
-
-const DefaultPostProcessing: PostProcessing = { toneMapping: "standard", contrast: 1, exposure: 1, ssao: "disabled" };
-
-const DefaultShadowConfig: ShadowParams = { quality: "none" };
+/**
+ * The default options for the Lite Viewer.
+ */
+export const DefaultViewerOptions = DefaultViewerBaseOptions;
 
 const DefaultCameraAlpha = -Math.PI / 2;
 const DefaultCameraBeta = Math.PI / 2.5;
@@ -225,20 +223,20 @@ export class Viewer implements IViewer {
     private _renderLoopRunning = false;
 
     // Auto-orbit
-    private _autoOrbit: CameraAutoOrbit = { ...DefaultCameraAutoOrbit };
+    private _autoOrbit: CameraAutoOrbit = { ...DefaultViewerOptions.cameraAutoOrbit };
     private _autoOrbitIdleTime = 0;
     private _lastPointerTime = 0;
 
     // Environment
-    private _envConfig: EnvironmentParams = { ...DefaultEnvironmentConfig };
+    private _envConfig: EnvironmentParams = { ...DefaultViewerOptions.environmentConfig };
     /** Retained reference to the loaded environment GPU textures (used when swapping environments). */
     private _envTextures: EnvironmentTextures | null = null;
 
     // Post processing
-    private _postProcessing: PostProcessing = { ...DefaultPostProcessing };
+    private _postProcessing: PostProcessing = { ...DefaultViewerOptions.postProcessing };
 
     // Shadows
-    private _shadowConfig: ShadowParams = { ...DefaultShadowConfig };
+    private _shadowConfig: ShadowParams = { ...DefaultViewerOptions.shadowConfig };
     private _shadowGenerator: LiteShadowGenerator | null = null;
     /** Retained reference to the shadow directional light for cleanup when shadows are reconfigured. */
     private _shadowLight: DirectionalLight | null = null;
@@ -327,18 +325,18 @@ export class Viewer implements IViewer {
         // Auto-orbit
         if (_options?.cameraAutoOrbit) {
             this._autoOrbit = {
-                enabled: _options.cameraAutoOrbit.enabled ?? DefaultCameraAutoOrbit.enabled,
-                speed: _options.cameraAutoOrbit.speed ?? DefaultCameraAutoOrbit.speed,
-                delay: _options.cameraAutoOrbit.delay ?? DefaultCameraAutoOrbit.delay,
+                enabled: _options.cameraAutoOrbit.enabled ?? DefaultViewerOptions.cameraAutoOrbit.enabled,
+                speed: _options.cameraAutoOrbit.speed ?? DefaultViewerOptions.cameraAutoOrbit.speed,
+                delay: _options.cameraAutoOrbit.delay ?? DefaultViewerOptions.cameraAutoOrbit.delay,
             };
         }
 
         // Environment config
         if (_options?.environmentConfig) {
             this._envConfig = {
-                intensity: _options.environmentConfig.intensity ?? DefaultEnvironmentConfig.intensity,
-                blur: _options.environmentConfig.blur ?? DefaultEnvironmentConfig.blur,
-                rotation: _options.environmentConfig.rotation ?? DefaultEnvironmentConfig.rotation,
+                intensity: _options.environmentConfig.intensity ?? DefaultViewerOptions.environmentConfig.intensity,
+                blur: _options.environmentConfig.blur ?? DefaultViewerOptions.environmentConfig.blur,
+                rotation: _options.environmentConfig.rotation ?? DefaultViewerOptions.environmentConfig.rotation,
             };
         }
 
@@ -576,7 +574,7 @@ export class Viewer implements IViewer {
         if (this._envTextures !== null) {
             this._envTextures = null;
         }
-        this._envConfig = { ...DefaultEnvironmentConfig };
+        this._envConfig = { ...DefaultViewerOptions.environmentConfig };
         this._scene.envRotationY = 0;
 
         this._onEnvironmentChanged.notifyObservers();
@@ -1021,11 +1019,11 @@ export class Viewer implements IViewer {
             this.resetCamera();
             this.cameraAutoOrbit = this._options?.cameraAutoOrbit
                 ? {
-                      enabled: this._options.cameraAutoOrbit.enabled ?? DefaultCameraAutoOrbit.enabled,
-                      speed: this._options.cameraAutoOrbit.speed ?? DefaultCameraAutoOrbit.speed,
-                      delay: this._options.cameraAutoOrbit.delay ?? DefaultCameraAutoOrbit.delay,
+                      enabled: this._options.cameraAutoOrbit.enabled ?? DefaultViewerOptions.cameraAutoOrbit.enabled,
+                      speed: this._options.cameraAutoOrbit.speed ?? DefaultViewerOptions.cameraAutoOrbit.speed,
+                      delay: this._options.cameraAutoOrbit.delay ?? DefaultViewerOptions.cameraAutoOrbit.delay,
                   }
-                : { ...DefaultCameraAutoOrbit };
+                : { ...DefaultViewerOptions.cameraAutoOrbit };
         }
 
         if (all || flags.includes("environment")) {
@@ -1038,16 +1036,16 @@ export class Viewer implements IViewer {
 
         if (all || flags.includes("post-processing")) {
             this._applyPostProcessing({
-                toneMapping: this._options?.postProcessing?.toneMapping ?? DefaultPostProcessing.toneMapping,
-                contrast: this._options?.postProcessing?.contrast ?? DefaultPostProcessing.contrast,
-                exposure: this._options?.postProcessing?.exposure ?? DefaultPostProcessing.exposure,
-                ssao: this._options?.postProcessing?.ssao ?? DefaultPostProcessing.ssao,
+                toneMapping: this._options?.postProcessing?.toneMapping ?? DefaultViewerOptions.postProcessing.toneMapping,
+                contrast: this._options?.postProcessing?.contrast ?? DefaultViewerOptions.postProcessing.contrast,
+                exposure: this._options?.postProcessing?.exposure ?? DefaultViewerOptions.postProcessing.exposure,
+                ssao: this._options?.postProcessing?.ssao ?? DefaultViewerOptions.postProcessing.ssao,
             });
             this._onPostProcessingChanged.notifyObservers();
         }
 
         if (all || flags.includes("shadow")) {
-            observePromise(this.updateShadows({ quality: this._options?.shadowConfig?.quality ?? DefaultShadowConfig.quality }));
+            observePromise(this.updateShadows({ quality: this._options?.shadowConfig?.quality ?? DefaultViewerOptions.shadowConfig.quality }));
         }
 
         if (all || flags.includes("animation")) {

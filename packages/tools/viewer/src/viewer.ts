@@ -77,6 +77,7 @@ import {
     type ViewerBoundingInfo,
     type ViewerHotSpotQuery,
     ViewerHotSpotResult,
+    DefaultViewerBaseOptions,
 } from "./viewerInterface";
 
 // eslint-disable-next-line @typescript-eslint/promise-function-async
@@ -388,34 +389,7 @@ export type ViewerOptions = ViewerBaseOptions &
 /**
  * The default options for the Viewer.
  */
-export const DefaultViewerOptions = {
-    clearColor: [0, 0, 0, 0],
-    autoSuspendRendering: true,
-    environmentConfig: {
-        intensity: 1,
-        blur: 0.3,
-        rotation: 0,
-    },
-    environmentLighting: "auto",
-    environmentSkybox: "none",
-    cameraAutoOrbit: {
-        enabled: false,
-        delay: 2000,
-        speed: 0.05,
-    },
-    animationAutoPlay: false,
-    animationSpeed: 1,
-    shadowConfig: {
-        quality: "none",
-    },
-    postProcessing: {
-        toneMapping: "neutral",
-        contrast: 1,
-        exposure: 1,
-        ssao: "auto",
-    },
-    useRightHandedSystem: false,
-} as const satisfies ViewerOptions;
+export const DefaultViewerOptions = DefaultViewerBaseOptions;
 
 const defaultLoadEnvironmentOptions = {
     lighting: true,

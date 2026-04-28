@@ -382,6 +382,39 @@ export type ViewerBaseOptions = Partial<{
 }>;
 
 /**
+ * The default values for {@link ViewerBaseOptions}. Used as fallbacks by both the full Viewer
+ * and the Lite Viewer; each re-exports this as its own `DefaultViewerOptions`.
+ */
+export const DefaultViewerBaseOptions = {
+    clearColor: [0, 0, 0, 0],
+    autoSuspendRendering: true,
+    environmentConfig: {
+        intensity: 1,
+        blur: 0.3,
+        rotation: 0,
+    },
+    environmentLighting: "auto",
+    environmentSkybox: "none",
+    cameraAutoOrbit: {
+        enabled: false,
+        delay: 2000,
+        speed: 0.05,
+    },
+    animationAutoPlay: false,
+    animationSpeed: 1,
+    shadowConfig: {
+        quality: "none",
+    },
+    postProcessing: {
+        toneMapping: "neutral",
+        contrast: 1,
+        exposure: 1,
+        ssao: "auto",
+    },
+    useRightHandedSystem: false,
+} as const satisfies ViewerBaseOptions;
+
+/**
  * The subset of the Viewer API that ViewerElementBase depends on.
  * Both the full Babylon.js Viewer and ViewerLite implement this contract.
  */
