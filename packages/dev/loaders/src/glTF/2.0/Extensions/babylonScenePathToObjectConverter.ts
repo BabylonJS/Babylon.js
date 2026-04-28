@@ -101,7 +101,7 @@ export class BabylonScenePathToObjectConverter implements IPathToObjectConverter
         }
 
         const collectionName = parts[0];
-        const collection = (this._tree as Record<string, IBabylonObjectCollection<any> | undefined>)[collectionName];
+        const collection = (this._tree as unknown as Record<string, IBabylonObjectCollection<any> | undefined>)[collectionName];
         if (!collection) {
             throw new Error(`BabylonScenePathToObjectConverter: unknown collection "${collectionName}" in path "${path}".`);
         }
