@@ -50,6 +50,7 @@ import {
     type ResetFlag,
     type ShadowParams,
     type ShadowQuality,
+    type SSAOOptions,
     type ToneMapping,
     type ViewerBaseOptions,
     type ViewerHotSpotResult,
@@ -223,20 +224,27 @@ export class Viewer implements IViewer {
     private _renderLoopRunning = false;
 
     // Auto-orbit
-    private _autoOrbit: CameraAutoOrbit = { ...DefaultViewerOptions.cameraAutoOrbit };
+    private _autoOrbitEnabled = this._options?.cameraAutoOrbit?.enabled ?? DefaultViewerOptions.cameraAutoOrbit.enabled;
+    private _autoOrbitSpeed = this._options?.cameraAutoOrbit?.speed ?? DefaultViewerOptions.cameraAutoOrbit.speed;
+    private _autoOrbitDelay = this._options?.cameraAutoOrbit?.delay ?? DefaultViewerOptions.cameraAutoOrbit.delay;
     private _autoOrbitIdleTime = 0;
     private _lastPointerTime = 0;
 
     // Environment
-    private _envConfig: EnvironmentParams = { ...DefaultViewerOptions.environmentConfig };
+    private _environmentIntensity = this._options?.environmentConfig?.intensity ?? DefaultViewerOptions.environmentConfig.intensity;
+    private _environmentBlur = this._options?.environmentConfig?.blur ?? DefaultViewerOptions.environmentConfig.blur;
+    private _environmentRotation = this._options?.environmentConfig?.rotation ?? DefaultViewerOptions.environmentConfig.rotation;
     /** Retained reference to the loaded environment GPU textures (used when swapping environments). */
     private _envTextures: EnvironmentTextures | null = null;
 
     // Post processing
-    private _postProcessing: PostProcessing = { ...DefaultViewerOptions.postProcessing };
+    private _toneMapping: ToneMapping = this._options?.postProcessing?.toneMapping ?? DefaultViewerOptions.postProcessing.toneMapping;
+    private _contrast = this._options?.postProcessing?.contrast ?? DefaultViewerOptions.postProcessing.contrast;
+    private _exposure = this._options?.postProcessing?.exposure ?? DefaultViewerOptions.postProcessing.exposure;
+    private _ssaoOption: SSAOOptions = this._options?.postProcessing?.ssao ?? DefaultViewerOptions.postProcessing.ssao;
 
     // Shadows
-    private _shadowConfig: ShadowParams = { ...DefaultViewerOptions.shadowConfig };
+    private _shadowQuality: ShadowQuality = this._options?.shadowConfig?.quality ?? DefaultViewerOptions.shadowConfig.quality;
     private _shadowGenerator: LiteShadowGenerator | null = null;
     /** Retained reference to the shadow directional light for cleanup when shadows are reconfigured. */
     private _shadowLight: DirectionalLight | null = null;
@@ -250,7 +258,7 @@ export class Viewer implements IViewer {
 
     // Animation
     private _selectedAnimation = -1;
-    private _animationSpeed = 1;
+    private _animationSpeed = this._options?.animationSpeed ?? DefaultViewerOptions.animationSpeed;
     private _wasPlaying = false;
     private _lastProgress = -1;
 
@@ -258,7 +266,7 @@ export class Viewer implements IViewer {
     private _selectedMaterialVariant: Nullable<string> = null;
 
     // Hot spots
-    private _hotSpots: Record<string, HotSpot> = {};
+    private _hotSpots: Record<string, HotSpot> = this._options?.hotSpots ?? {};
     private _camerasAsHotSpots = false;
 
     // Lifecycle
@@ -322,42 +330,17 @@ export class Viewer implements IViewer {
             a: _options?.clearColor?.[3] ?? 0,
         };
 
-        // Auto-orbit
-        if (_options?.cameraAutoOrbit) {
-            this._autoOrbit = {
-                enabled: _options.cameraAutoOrbit.enabled ?? DefaultViewerOptions.cameraAutoOrbit.enabled,
-                speed: _options.cameraAutoOrbit.speed ?? DefaultViewerOptions.cameraAutoOrbit.speed,
-                delay: _options.cameraAutoOrbit.delay ?? DefaultViewerOptions.cameraAutoOrbit.delay,
-            };
-        }
+        // Auto-orbit, environment config, animation speed, and hot spots are initialized
+        // inline at the field declarations.
 
-        // Environment config
-        if (_options?.environmentConfig) {
-            this._envConfig = {
-                intensity: _options.environmentConfig.intensity ?? DefaultViewerOptions.environmentConfig.intensity,
-                blur: _options.environmentConfig.blur ?? DefaultViewerOptions.environmentConfig.blur,
-                rotation: _options.environmentConfig.rotation ?? DefaultViewerOptions.environmentConfig.rotation,
-            };
-        }
-
-        // Post processing
+        // Post processing — apply user-provided overrides to the scene's image processing
         if (_options?.postProcessing) {
             this._applyPostProcessing(_options.postProcessing);
         }
 
-        // Shadow config
+        // Shadow config — route through updateShadows so unsupported "high" is normalized to "normal"
         if (_options?.shadowConfig?.quality) {
             observePromise(this.updateShadows({ quality: _options.shadowConfig.quality }));
-        }
-
-        // Animation options
-        if (_options?.animationSpeed !== undefined) {
-            this._animationSpeed = _options.animationSpeed;
-        }
-
-        // Hot spots
-        if (_options?.hotSpots) {
-            this._hotSpots = _options.hotSpots;
         }
 
         // Per-frame callback
@@ -402,21 +385,25 @@ export class Viewer implements IViewer {
     // ── Camera ──
 
     public get cameraAutoOrbit(): Readonly<CameraAutoOrbit> {
-        return this._autoOrbit;
+        return {
+            enabled: this._autoOrbitEnabled,
+            speed: this._autoOrbitSpeed,
+            delay: this._autoOrbitDelay,
+        };
     }
 
     public set cameraAutoOrbit(value: Partial<Readonly<CameraAutoOrbit>>) {
         let changed = false;
-        if (value.enabled !== undefined && value.enabled !== this._autoOrbit.enabled) {
-            this._autoOrbit.enabled = value.enabled;
+        if (value.enabled !== undefined && value.enabled !== this._autoOrbitEnabled) {
+            this._autoOrbitEnabled = value.enabled;
             changed = true;
         }
-        if (value.speed !== undefined && value.speed !== this._autoOrbit.speed) {
-            this._autoOrbit.speed = value.speed;
+        if (value.speed !== undefined && value.speed !== this._autoOrbitSpeed) {
+            this._autoOrbitSpeed = value.speed;
             changed = true;
         }
-        if (value.delay !== undefined && value.delay !== this._autoOrbit.delay) {
-            this._autoOrbit.delay = value.delay;
+        if (value.delay !== undefined && value.delay !== this._autoOrbitDelay) {
+            this._autoOrbitDelay = value.delay;
             changed = true;
         }
         if (changed) {
@@ -506,21 +493,25 @@ export class Viewer implements IViewer {
     // ── Environment ──
 
     public get environmentConfig(): Readonly<EnvironmentParams> {
-        return this._envConfig;
+        return {
+            intensity: this._environmentIntensity,
+            blur: this._environmentBlur,
+            rotation: this._environmentRotation,
+        };
     }
 
     public set environmentConfig(value: Partial<Readonly<EnvironmentParams>>) {
         let changed = false;
-        if (value.intensity !== undefined && value.intensity !== this._envConfig.intensity) {
-            this._envConfig.intensity = value.intensity;
+        if (value.intensity !== undefined && value.intensity !== this._environmentIntensity) {
+            this._environmentIntensity = value.intensity;
             changed = true;
         }
-        if (value.blur !== undefined && value.blur !== this._envConfig.blur) {
-            this._envConfig.blur = value.blur;
+        if (value.blur !== undefined && value.blur !== this._environmentBlur) {
+            this._environmentBlur = value.blur;
             changed = true;
         }
-        if (value.rotation !== undefined && value.rotation !== this._envConfig.rotation) {
-            this._envConfig.rotation = value.rotation;
+        if (value.rotation !== undefined && value.rotation !== this._environmentRotation) {
+            this._environmentRotation = value.rotation;
             this._scene.envRotationY = value.rotation;
             changed = true;
         }
@@ -552,8 +543,8 @@ export class Viewer implements IViewer {
                 });
             }
 
-            if (this._envConfig.rotation !== 0) {
-                this._scene.envRotationY = this._envConfig.rotation;
+            if (this._environmentRotation !== 0) {
+                this._scene.envRotationY = this._environmentRotation;
             }
 
             throwIfAborted(abortSignal);
@@ -574,7 +565,9 @@ export class Viewer implements IViewer {
         if (this._envTextures !== null) {
             this._envTextures = null;
         }
-        this._envConfig = { ...DefaultViewerOptions.environmentConfig };
+        this._environmentIntensity = DefaultViewerOptions.environmentConfig.intensity;
+        this._environmentBlur = DefaultViewerOptions.environmentConfig.blur;
+        this._environmentRotation = DefaultViewerOptions.environmentConfig.rotation;
         this._scene.envRotationY = 0;
 
         this._onEnvironmentChanged.notifyObservers();
@@ -584,7 +577,12 @@ export class Viewer implements IViewer {
     // ── Post Processing ──
 
     public get postProcessing(): Readonly<PostProcessing> {
-        return this._postProcessing;
+        return {
+            toneMapping: this._toneMapping,
+            contrast: this._contrast,
+            exposure: this._exposure,
+            ssao: this._ssaoOption,
+        };
     }
 
     public set postProcessing(value: Partial<Readonly<PostProcessing>>) {
@@ -594,7 +592,7 @@ export class Viewer implements IViewer {
 
     private _applyPostProcessing(value: Partial<Readonly<PostProcessing>>): void {
         if (value.toneMapping !== undefined) {
-            this._postProcessing.toneMapping = value.toneMapping;
+            this._toneMapping = value.toneMapping;
             const liteType = toneMappingToLiteType(value.toneMapping);
             this._scene.imageProcessing.toneMappingEnabled = liteType !== undefined;
             if (liteType !== undefined) {
@@ -602,15 +600,15 @@ export class Viewer implements IViewer {
             }
         }
         if (value.exposure !== undefined) {
-            this._postProcessing.exposure = value.exposure;
+            this._exposure = value.exposure;
             this._scene.imageProcessing.exposure = value.exposure;
         }
         if (value.contrast !== undefined) {
-            this._postProcessing.contrast = value.contrast;
+            this._contrast = value.contrast;
             this._scene.imageProcessing.contrast = value.contrast;
         }
         if (value.ssao !== undefined) {
-            this._postProcessing.ssao = value.ssao;
+            this._ssaoOption = value.ssao;
             if (value.ssao !== "disabled") {
                 Logger.Warn("Viewer: SSAO is not supported by Babylon Lite.");
             }
@@ -620,7 +618,9 @@ export class Viewer implements IViewer {
     // ── Shadows ──
 
     public get shadowConfig(): Readonly<ShadowParams> {
-        return this._shadowConfig;
+        return {
+            quality: this._shadowQuality,
+        };
     }
 
     public async updateShadows(value: Partial<Readonly<ShadowParams>>): Promise<void> {
@@ -634,7 +634,7 @@ export class Viewer implements IViewer {
             quality = "normal";
         }
 
-        this._shadowConfig = { quality };
+        this._shadowQuality = quality;
 
         // Tear down existing shadow state
         if (this._shadowLight !== null) {
@@ -650,7 +650,7 @@ export class Viewer implements IViewer {
     }
 
     private _setupShadows(): void {
-        if (!this._container || this._shadowConfig.quality === "none") {
+        if (!this._container || this._shadowQuality === "none") {
             return;
         }
 
@@ -722,7 +722,7 @@ export class Viewer implements IViewer {
             }
 
             // Setup shadows if configured
-            if (this._shadowConfig.quality !== "none") {
+            if (this._shadowQuality !== "none") {
                 this._setupShadows();
             }
 
@@ -1153,7 +1153,7 @@ export class Viewer implements IViewer {
     };
 
     private _updateAutoOrbit(deltaMs: number): void {
-        if (!this._autoOrbit.enabled) {
+        if (!this._autoOrbitEnabled) {
             this._autoOrbitIdleTime = 0;
             return;
         }
@@ -1161,7 +1161,7 @@ export class Viewer implements IViewer {
         const now = performance.now();
         const idleMs = now - this._lastPointerTime;
 
-        if (idleMs < this._autoOrbit.delay) {
+        if (idleMs < this._autoOrbitDelay) {
             this._autoOrbitIdleTime = 0;
             return;
         }
@@ -1169,7 +1169,7 @@ export class Viewer implements IViewer {
         this._autoOrbitIdleTime += deltaMs;
 
         // Rotate alpha based on speed (radians per second)
-        const rotationAmount = (this._autoOrbit.speed * deltaMs) / 1000;
+        const rotationAmount = (this._autoOrbitSpeed * deltaMs) / 1000;
         this._camera.alpha += rotationAmount;
     }
 }
