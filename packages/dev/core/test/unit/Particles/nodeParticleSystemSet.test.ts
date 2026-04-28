@@ -5,7 +5,9 @@ import { NodeParticleSystemSet } from "core/Particles/Node/nodeParticleSystemSet
 import { SystemBlock } from "core/Particles/Node/Blocks/systemBlock";
 import { CreateParticleBlock } from "core/Particles/Node/Blocks/Emitters/createParticleBlock";
 import { UpdateFlowMapBlock } from "core/Particles/Node/Blocks/Update/updateFlowMapBlock";
+import { type BaseTexture } from "core/Materials/Textures/baseTexture";
 import { type INodeParticleTextureData, ParticleTextureSourceBlock } from "core/Particles/Node/Blocks/particleSourceTextureBlock";
+import { Observable } from "core/Misc/observable";
 
 import "core/Shaders/particles.vertex";
 import "core/Shaders/particles.fragment";
@@ -71,6 +73,47 @@ describe("NodeParticleSystemSet", () => {
         const builtSet = await buildPromise;
 
         expect(buildResolved).toBe(true);
+        expect(builtSet.systems.length).toBe(1);
+    });
+
+    it("resolves texture extraction with null when texture loading errors", async () => {
+        const textureBlock = new ParticleTextureSourceBlock("Flow Map Texture");
+        const loadObservable = new Observable<BaseTexture>();
+        const errorObservable = new Observable<Partial<{ message: string; exception: any }>>();
+        const texture = {
+            url: "bad-texture.png",
+            loadingError: false,
+            isReady: () => false,
+            onLoadObservable: loadObservable,
+            getInternalTexture: () => ({ onErrorObservable: errorObservable }),
+        } as unknown as BaseTexture;
+
+        textureBlock.sourceTexture = texture;
+
+        const textureContentPromise = textureBlock.extractTextureContentAsync();
+        errorObservable.notifyObservers({ message: "load failed" });
+
+        await expect(textureContentPromise).resolves.toBeNull();
+    });
+
+    it("resolves buildAsync when flow-map extraction rejects", async () => {
+        const nodeParticleSet = new NodeParticleSystemSet("test");
+        const systemBlock = new SystemBlock("System");
+        const createParticleBlock = new CreateParticleBlock("Create");
+        const flowMapBlock = new UpdateFlowMapBlock("Flow Map Update");
+        const flowMapTextureBlock = new ParticleTextureSourceBlock("Flow Map Texture");
+        const particleTextureBlock = new ParticleTextureSourceBlock("Particle Texture");
+
+        createParticleBlock.particle.connectTo(flowMapBlock.particle);
+        flowMapTextureBlock.textureOutput.connectTo(flowMapBlock.flowMap);
+        flowMapBlock.output.connectTo(systemBlock.particle);
+        particleTextureBlock.textureOutput.connectTo(systemBlock.texture);
+        nodeParticleSet.systemBlocks.push(systemBlock);
+
+        vi.spyOn(flowMapTextureBlock, "extractTextureContentAsync").mockRejectedValue(new Error("load failed"));
+
+        const builtSet = await nodeParticleSet.buildAsync(scene);
+
         expect(builtSet.systems.length).toBe(1);
     });
 });

@@ -78,7 +78,12 @@ export class UpdateFlowMapBlock extends NodeParticleBlock {
         if (flowMapTexture) {
             state.registerBuildPromise(
                 (async () => {
-                    const textureContent: Nullable<INodeParticleTextureData> = await flowMapTexture.extractTextureContentAsync();
+                    let textureContent: Nullable<INodeParticleTextureData>;
+                    try {
+                        textureContent = await flowMapTexture.extractTextureContentAsync();
+                    } catch {
+                        return;
+                    }
                     if (!textureContent) {
                         return;
                     }

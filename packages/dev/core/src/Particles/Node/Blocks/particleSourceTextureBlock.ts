@@ -163,15 +163,82 @@ export class ParticleTextureSourceBlock extends NodeParticleBlock {
             }>
         >((resolve, reject) => {
             if (!texture.isReady()) {
-                texture.onLoadObservable.addOnce(async () => {
+                let settled = false;
+                let loadObserver: Nullable<{ remove: () => void }> = null;
+                let internalErrorObserver: Nullable<{ remove: () => void }> = null;
+                let textureErrorObserver: Nullable<{ remove: () => void }> = null;
+
+                const cleanup = () => {
+                    loadObserver?.remove();
+                    internalErrorObserver?.remove();
+                    textureErrorObserver?.remove();
+                };
+
+                const settle = (textureContent: Nullable<INodeParticleTextureData>) => {
+                    if (settled) {
+                        return;
+                    }
+                    settled = true;
+                    cleanup();
+                    resolve(textureContent);
+                };
+
+                const fail = (error: any) => {
+                    if (settled) {
+                        return;
+                    }
+                    settled = true;
+                    cleanup();
+                    // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
+                    reject(error);
+                };
+
+                if (texture.loadingError) {
+                    settle(null);
+                    return;
+                }
+
+                const loadObservable = texture.onLoadObservable;
+                if (!loadObservable) {
+                    settle(null);
+                    return;
+                }
+
+                loadObserver = loadObservable.addOnce(async () => {
                     try {
                         this._cachedData = await this.extractTextureContentAsync();
-                        resolve(this._cachedData);
+                        settle(this._cachedData);
                     } catch (e) {
-                        // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
-                        reject(e);
+                        fail(e);
                     }
                 });
+
+                internalErrorObserver =
+                    texture.getInternalTexture()?.onErrorObservable.addOnce(() => {
+                        settle(null);
+                    }) ?? null;
+
+                textureErrorObserver = Texture.OnTextureLoadErrorObservable.add((erroredTexture) => {
+                    if (erroredTexture === texture) {
+                        settle(null);
+                    }
+                });
+
+                if (texture.loadingError) {
+                    settle(null);
+                    return;
+                }
+
+                if (texture.isReady()) {
+                    void (async () => {
+                        try {
+                            this._cachedData = await this.extractTextureContentAsync();
+                            settle(this._cachedData);
+                        } catch (e) {
+                            fail(e);
+                        }
+                    })();
+                }
                 return;
             }
             const size = texture.getSize();
