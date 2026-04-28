@@ -1849,8 +1849,7 @@
             "title": "Edges",
             "playgroundId": "#TYAHX#244",
             "referenceImage": "edges.png",
-            "dependsOn": ["Meshes"],
-            "performanceTest": true
+            "dependsOn": ["Meshes"]
         },
         {
             "title": "Outline",
