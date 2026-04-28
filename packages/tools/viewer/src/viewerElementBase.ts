@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-floating-promises */
 /* eslint-disable @typescript-eslint/naming-convention */
-import { type IColor4Like, type Nullable, type Observable } from "core/index";
+import { type IColor4Like, type Nullable, type IReadonlyObservable } from "core/index";
 import { type CSSResultGroup, type PropertyValues, type TemplateResult, LitElement, css, html } from "lit";
 import {
     type CameraOrbit,
@@ -1253,7 +1253,7 @@ export abstract class ViewerElementBase<ViewerClass extends IViewer = IViewer, O
     // Helper function to simplify keeping Viewer properties in sync with ViewerElementBase properties.
     private _createPropertyBinding(
         property: string & keyof ViewerElementBase,
-        getObservable: (viewer: ViewerClass) => Observable<any>,
+        getObservable: (viewer: ViewerClass) => IReadonlyObservable<any>,
         updateViewer: (viewer: ViewerClass) => void,
         updateElement: (viewer: ViewerClass) => void
     ) {

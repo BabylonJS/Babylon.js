@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { type HotSpotQuery, type IColor4Like, type IDisposable, type Nullable, type Observable } from "core/index";
+import { type HotSpotQuery, type IColor4Like, type IDisposable, type Nullable, type IReadonlyObservable } from "core/index";
 
 /**
  * Flags for selectively resetting parts of the viewer state.
@@ -391,92 +391,92 @@ export interface IViewer extends IDisposable {
     /**
      * Fired when the environment has changed.
      */
-    readonly onEnvironmentChanged: Observable<void>;
+    readonly onEnvironmentChanged: IReadonlyObservable<void>;
 
     /**
      * Fired when the environment configuration has changed.
      */
-    readonly onEnvironmentConfigurationChanged: Observable<void>;
+    readonly onEnvironmentConfigurationChanged: IReadonlyObservable<void>;
 
     /**
      * Fired when an error occurs while loading the environment.
      */
-    readonly onEnvironmentError: Observable<unknown>;
+    readonly onEnvironmentError: IReadonlyObservable<unknown>;
 
     /**
      * Fired when the shadows configuration changes.
      */
-    readonly onShadowsConfigurationChanged: Observable<void>;
+    readonly onShadowsConfigurationChanged: IReadonlyObservable<void>;
 
     /**
      * Fired when the post processing state changes.
      */
-    readonly onPostProcessingChanged: Observable<void>;
+    readonly onPostProcessingChanged: IReadonlyObservable<void>;
 
     /**
      * Fired when a model is loaded into the viewer (or unloaded from the viewer).
      */
-    readonly onModelChanged: Observable<Nullable<string | File | ArrayBufferView>>;
+    readonly onModelChanged: IReadonlyObservable<Nullable<string | File | ArrayBufferView>>;
 
     /**
      * Fired when an error occurs while loading a model.
      */
-    readonly onModelError: Observable<unknown>;
+    readonly onModelError: IReadonlyObservable<unknown>;
 
     /**
      * Fired when progress changes on loading activity.
      */
-    readonly onLoadingProgressChanged: Observable<void>;
+    readonly onLoadingProgressChanged: IReadonlyObservable<void>;
 
     /**
      * Fired when the camera auto orbit state changes.
      */
-    readonly onCameraAutoOrbitChanged: Observable<void>;
+    readonly onCameraAutoOrbitChanged: IReadonlyObservable<void>;
 
     /**
      * Fired when the selected animation changes.
      */
-    readonly onSelectedAnimationChanged: Observable<void>;
+    readonly onSelectedAnimationChanged: IReadonlyObservable<void>;
 
     /**
      * Fired when the animation speed changes.
      */
-    readonly onAnimationSpeedChanged: Observable<void>;
+    readonly onAnimationSpeedChanged: IReadonlyObservable<void>;
 
     /**
      * Fired when the selected animation is playing or paused.
      */
-    readonly onIsAnimationPlayingChanged: Observable<void>;
+    readonly onIsAnimationPlayingChanged: IReadonlyObservable<void>;
 
     /**
      * Fired when the current point on the selected animation timeline changes.
      */
-    readonly onAnimationProgressChanged: Observable<void>;
+    readonly onAnimationProgressChanged: IReadonlyObservable<void>;
 
     /**
      * Fired when the selected material variant changes.
      */
-    readonly onSelectedMaterialVariantChanged: Observable<void>;
+    readonly onSelectedMaterialVariantChanged: IReadonlyObservable<void>;
 
     /**
      * Fired when the hot spots object changes to a complete new object instance.
      */
-    readonly onHotSpotsChanged: Observable<void>;
+    readonly onHotSpotsChanged: IReadonlyObservable<void>;
 
     /**
      * Fired when the cameras as hot spots property changes.
      */
-    readonly onCamerasAsHotSpotsChanged: Observable<void>;
+    readonly onCamerasAsHotSpotsChanged: IReadonlyObservable<void>;
 
     /**
      * Fired after each frame is rendered.
      */
-    readonly onAfterRenderObservable: Observable<void>;
+    readonly onAfterRenderObservable: IReadonlyObservable<void>;
 
     /**
      * Fired when the clear color changes.
      */
-    readonly onClearColorChanged: Observable<void>;
+    readonly onClearColorChanged: IReadonlyObservable<void>;
 
     // ── Clear Color ──
 
