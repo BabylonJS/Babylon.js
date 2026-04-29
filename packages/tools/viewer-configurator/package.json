@@ -16,7 +16,8 @@
         "serve:prod": "webpack serve --env mode=production",
         "serve:https": "",
         "serve:dev": "webpack serve --env mode=development --env watch=all",
-        "clean": "rimraf dist"
+        "clean": "rimraf dist",
+        "serve:vite": "vite"
     },
     "dependencies": {
         "@dnd-kit/core": "^6.3.0",

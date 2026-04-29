@@ -127,12 +127,88 @@ Remove temporary files and stop servers per the cleanup section in [playground-w
 
 See [visual-tests-reference.md](visual-tests-reference.md) for the full reference.
 
+## `dependsOn` tags (required for new tests)
+
+Every new visualization test entry **must** include a `dependsOn` array listing the Babylon.js modules/features the test exercises. This enables selective CI — only tests whose tags overlap with changed files are run on PRs.
+
+Choose tags based on which Babylon.js APIs the playground snippet actually uses, not just the test title. A test that creates a PBR material with shadows on a glTF model should have `["PBR", "Shadows", "glTF", "Loaders"]`.
+
+Tests without `dependsOn` (or with an empty array) always run — this is the conservative fallback for tests that haven't been tagged yet.
+
+### Available tags
+
+Pick **only** from this list. The canonical source is `packages/tools/tests/test/visualization/tagMap.json`.
+
+| Tag | What it covers |
+|-----|---------------|
+| `Animations` | `Animation`, `AnimationGroup`, `beginAnimation`, keyframe animations |
+| `Atmosphere` | Atmospheric scattering (addons) |
+| `Audio` | `Sound`, `AudioEngine`, AudioV2 |
+| `BakedVertexAnimation` | `BakedVertexAnimationManager`, `VertexAnimationBaker` |
+| `Behaviors` | `PointerDragBehavior`, `BouncingBehavior`, `FramingBehavior`, etc. |
+| `Bones` | `Skeleton`, `Bone`, `BoneIKController` |
+| `Buffers` | GPU buffer management (VBO, IBO, SSBO) — **run-all tag** |
+| `Cameras` | Camera rigs, viewports, `FollowCamera`, `FlyCamera`, `upVector`, multi-camera |
+| `Collisions` | `checkCollisions`, `moveWithCollisions` |
+| `Compute` | `ComputeShader`, `StorageBuffer` |
+| `CSG` | Constructive Solid Geometry |
+| `Engine` | Engine implementations (WebGL, WebGPU, Native) — **run-all tag** |
+| `FlowGraph` | Node-based execution graphs |
+| `FrameGraph` | Render frame graphs |
+| `GaussianSplatting` | `GaussianSplattingMesh`, splat rendering |
+| `Gizmos` | `GizmoManager`, position/rotation/scale gizmos, `UtilityLayerRenderer` |
+| `glTF` | glTF/glb loading, glTF extensions |
+| `GreasedLine` | Greased line rendering |
+| `GUI` | `AdvancedDynamicTexture`, 2D/3D GUI controls, `HolographicSlate`, `NearMenu` |
+| `Helpers` | Utility helper classes — **run-all tag** |
+| `Layers` | `HighlightLayer`, `GlowLayer`, `EffectLayer` |
+| `LensFlares` | `LensFlareSystem` |
+| `LibMaterials` | Library materials: `GridMaterial`, `SkyMaterial`, `WaterMaterial`, `CellMaterial`, etc. |
+| `Lights` | `PointLight`, `SpotLight`, `DirectionalLight`, light-specific features |
+| `Loaders` | `SceneLoader`, `loadAssetContainerAsync`, generic loading |
+| `Materials` | `StandardMaterial`, `ShaderMaterial`, `MultiMaterial`, `BackgroundMaterial` |
+| `Maths` | Vector, Matrix, Quaternion math — **run-all tag** |
+| `Meshes` | Instancing, `thinInstance`, vertex manipulation, `EdgesRenderer`, `MergeMeshes`, `billboardMode`, `GPUPicker`, outlines |
+| `Misc` | Miscellaneous utilities — **run-all tag** |
+| `Morph` | `MorphTarget`, `MorphTargetManager` |
+| `MSDFText` | MSDF text rendering (addons) |
+| `Navigation` | `RecastJSPlugin`, `Crowd`, pathfinding |
+| `NodeMaterial` | Node Material Editor blocks, `NodeMaterial` |
+| `OBJ` | OBJ file loading |
+| `Particles` | `ParticleSystem`, `GPUParticleSystem`, `SolidParticleSystem` |
+| `PBR` | `PBRMaterial`, `PBRMetallicRoughnessMaterial`, OpenPBR, iridescence, clear coat, sheen, subsurface |
+| `Physics` | `PhysicsAggregate`, `HavokPlugin`, physics bodies/shapes |
+| `PostProcesses` | Post-processing effects, rendering pipelines, SSAO, SSR, DOF, bloom, motion blur |
+| `Probes` | `ReflectionProbe`, `MirrorTexture` |
+| `ProceduralTextures` | `ProceduralTexture` and built-in procedural textures |
+| `Rendering` | Core rendering pipeline, depth/geometry buffers — **run-all tag** |
+| `Scene` | Scene class, `AssetContainer`, node hierarchy — **run-all tag** |
+| `Serializers` | `GLTF2Export`, `STLExport`, `OBJExport`, `SceneSerializer` |
+| `Shaders` | GLSL/WGSL shader definitions, `Effect.ShadersStore` — **run-all tag** |
+| `SPLATLoader` | SPLAT/PLY/SPZ file loading |
+| `Sprites` | `SpriteManager`, `Sprite`, `SpriteMap` |
+| `Textures` | `CubeTexture`, `HDRCubeTexture`, `VideoTexture`, `DynamicTexture`, `RenderTargetTexture`, KTX2 |
+| `XR` | WebXR, `WebXRDefaultExperience` |
+
+Tags marked **run-all tag** trigger all visualization tests when their source files change, because they are foundational and can affect any test.
+
+Example:
+```json
+{
+    "title": "Your Test Title",
+    "playgroundId": "#ABC123#0",
+    "referenceImage": "your-test-title.png",
+    "dependsOn": ["PBR", "Shadows", "Lights"]
+}
+```
+
 ## Checklist
 
 - Context gathered from existing snippets or source code
 - Playground snippet created and verified per [playground-workflow.md](playground-workflow.md)
 - `config.json` entry uses `playgroundId` for standard visualization tests
 - Config entry added or updated in `packages/tools/tests/test/visualization/config.json`
+- `dependsOn` array specified with relevant module tags
 - WebGL2 baseline generated when applicable
 - WebGPU baseline generated when applicable
 - Targeted tests pass locally for the relevant engines

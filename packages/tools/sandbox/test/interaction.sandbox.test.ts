@@ -12,6 +12,19 @@ const snapshot = process.env.SNAPSHOT ? "?snapshot=" + process.env.SNAPSHOT : ""
 const cdnPort = ":" + (process.env.CDN_PORT || 1337);
 const url = (process.env.SANDBOX_BASE_URL || getGlobalConfig().baseUrl.replace(cdnPort, process.env.SANDBOX_PORT || ":1339")) + snapshot;
 
+/**
+ * Wait for the sandbox app to be fully rendered with CSS applied.
+ * With Vite, the app loads via a CDN bootstrap → shim → async ES module chain.
+ * CSS may not be applied when the "load" event fires, so we explicitly wait for
+ * the app DOM, stylesheets, and fonts before interacting or taking screenshots.
+ */
+async function waitForSandboxReady(page: import("@playwright/test").Page) {
+    // Wait for the sandbox React app to render
+    await page.waitForSelector("#canvasZone", { state: "visible" });
+    // Ensure all stylesheets and fonts are loaded (prevents FOUC in screenshots)
+    await page.evaluate(() => document.fonts.ready);
+}
+
 test("Sandbox is loaded (Desktop)", async ({ page }) => {
     await page.goto(url, {
         waitUntil: "load",
@@ -20,8 +33,7 @@ test("Sandbox is loaded (Desktop)", async ({ page }) => {
         width: 1920,
         height: 1080,
     });
-    // check visibility of both canvas AND the editor
-    await expect(page.locator("#canvasZone")).toBeVisible();
+    await waitForSandboxReady(page);
     // check snapshot of the page
     await expect(page).toHaveScreenshot({ maxDiffPixels: 3000 });
 });
@@ -52,6 +64,7 @@ test("dropping an image to the sandbox", async ({ page }) => {
     await page.waitForSelector("#babylonjsLoadingDiv", { state: "hidden" });
     await page.waitForSelector("#babylonjsLoadingDiv", { state: "detached" });
     await page.waitForLoadState("networkidle");
+    await page.evaluate(() => document.fonts.ready);
     // check snapshot of the rendering canvas (the full page includes Inspector, which has a lot of asynchrony and animation, making it hard to get a stable screenshot)
     await expect(page.locator("#renderCanvas")).toHaveScreenshot({ maxDiffPixels: 3000 });
     // but still check that the inspector is displayed
@@ -70,6 +83,7 @@ test("loading a model using query parameters", async ({ page }) => {
     await page.waitForSelector("#babylonjsLoadingDiv", { state: "hidden" });
     await page.waitForSelector("#babylonjsLoadingDiv", { state: "detached" });
     await page.waitForLoadState("networkidle");
+    await page.evaluate(() => document.fonts.ready);
     // check snapshot of the page
     await expect(page).toHaveScreenshot({ maxDiffPixels: 3000 });
 });
@@ -91,6 +105,7 @@ test("inspector is opened when clicking on the button", async ({ page }) => {
     // click the "Inspector" button
     await page.getByTitle("Display inspector").click();
     await expect(page.locator("#babylon-inspector-container")).toBeVisible();
+    await page.evaluate(() => document.fonts.ready);
     // check snapshot of the page
     await expect(page).toHaveScreenshot({ maxDiffPixels: 3000 });
 });

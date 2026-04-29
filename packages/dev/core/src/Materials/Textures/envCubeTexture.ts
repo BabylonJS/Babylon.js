@@ -299,28 +299,45 @@ export abstract class EnvCubeTexture extends BaseTexture {
 
         if (engine._features.allowTexturePrefiltering && (this._prefilterOnLoad || this._prefilterIrradianceOnLoad)) {
             const previousOnLoad = this._onLoad;
+            const previousOnError = this._onError;
             const hdrFiltering = new HDRFiltering(engine);
+            const prefilterPendingToken = {};
+            const scene = this.getScene();
+            scene?.addPendingData(prefilterPendingToken);
+            this._onError = () => {
+                // If the texture load itself fails, _onLoad never runs so the try/finally below
+                // never fires. Make sure the pending-data token is still cleared so the scene
+                // doesn't stay stuck in isLoading / executeWhenReady.
+                scene?.removePendingData(prefilterPendingToken);
+                if (previousOnError) {
+                    previousOnError();
+                }
+            };
             this._onLoad = () => {
                 void (async () => {
-                    let irradianceTexture: Nullable<BaseTexture> = null;
-                    if (this._prefilterIrradianceOnLoad) {
-                        const hdrIrradianceFiltering = new HDRIrradianceFiltering(engine, { useCdf: this._prefilterUsingCdf });
-                        irradianceTexture = await hdrIrradianceFiltering.prefilter(this);
-                    }
-
-                    // Run irradiance prefiltering first because it samples the current source texture.
-                    // Radiance prefiltering mutates/swaps the source internal texture, so running both
-                    // concurrently can lead to stale/destroyed texture references on WebGPU.
-                    if (this._prefilterIrradianceOnLoad && irradianceTexture) {
-                        this.irradianceTexture = irradianceTexture;
-                        const scene = this.getScene();
-                        if (scene) {
-                            scene.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
+                    try {
+                        let irradianceTexture: Nullable<BaseTexture> = null;
+                        if (this._prefilterIrradianceOnLoad) {
+                            const hdrIrradianceFiltering = new HDRIrradianceFiltering(engine, { useCdf: this._prefilterUsingCdf });
+                            irradianceTexture = await hdrIrradianceFiltering.prefilter(this);
                         }
-                    }
 
-                    if (this._prefilterOnLoad) {
-                        await hdrFiltering.prefilter(this);
+                        // Run irradiance prefiltering first because it samples the current source texture.
+                        // Radiance prefiltering mutates/swaps the source internal texture, so running both
+                        // concurrently can lead to stale/destroyed texture references on WebGPU.
+                        if (this._prefilterIrradianceOnLoad && irradianceTexture) {
+                            this.irradianceTexture = irradianceTexture;
+                            const innerScene = this.getScene();
+                            if (innerScene) {
+                                innerScene.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
+                            }
+                        }
+
+                        if (this._prefilterOnLoad) {
+                            await hdrFiltering.prefilter(this);
+                        }
+                    } finally {
+                        scene?.removePendingData(prefilterPendingToken);
                     }
 
                     if (previousOnLoad) {

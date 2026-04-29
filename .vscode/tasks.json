@@ -1,11 +1,11 @@
 {
-    // See https://go.microsoft.com/fwlink/?LinkId=733558
-    // for the documentation about the tasks.json format
     "version": "2.0.0",
     "tasks": [
         {
             "label": "Watch all for CDN (Dev)",
-            "dependsOn": ["Build (Dev)"],
+            "dependsOn": [
+                "Build (Dev)"
+            ],
             "type": "shell",
             "command": "npx build-tools -c dw -wd -wa -sc",
             "isBackground": true,
@@ -28,7 +28,6 @@
                     "endsPattern": "watching for asset changes..."
                 }
             }
-            // "problemMatcher": ["$tsc-watch"]
         },
         {
             "label": "Watch all (Dev)",
@@ -41,13 +40,18 @@
             "presentation": {
                 "group": "watch"
             },
-            "problemMatcher": ["$tsc-watch"]
+            "problemMatcher": [
+                "$tsc-watch"
+            ]
         },
         {
             "label": "Watch Smart Filters",
             "type": "shell",
             "command": "npm run watch:source:smart-filters",
-            "dependsOn": ["Watch Smart Filters Assets", "Watch Assets"],
+            "dependsOn": [
+                "Watch Smart Filters Assets",
+                "Watch Assets"
+            ],
             "isBackground": true,
             "runOptions": {
                 "instanceLimit": 1
@@ -55,7 +59,9 @@
             "presentation": {
                 "group": "watch"
             },
-            "problemMatcher": ["$tsc-watch"]
+            "problemMatcher": [
+                "$tsc-watch"
+            ]
         },
         {
             "label": "Watch Smart Filters Assets",
@@ -124,11 +130,15 @@
             "presentation": {
                 "group": "build"
             },
-            "problemMatcher": ["$tsc"]
+            "problemMatcher": [
+                "$tsc"
+            ]
         },
         {
             "label": "Run visualization tests (Dev)",
-            "dependsOn": ["CDN Serve and watch (Dev)"],
+            "dependsOn": [
+                "CDN Serve and watch (Dev)"
+            ],
             "type": "shell",
             "command": "npm",
             "runOptions": {
@@ -140,7 +150,10 @@
                     "HEADLESS": "false"
                 }
             },
-            "args": ["run", "test:visualization"],
+            "args": [
+                "run",
+                "test:visualization"
+            ],
             "presentation": {
                 "group": "test"
             },
@@ -148,7 +161,9 @@
         },
         {
             "label": "Run visualization tests headless (Dev)",
-            "dependsOn": ["CDN Serve and watch (Dev)"],
+            "dependsOn": [
+                "CDN Serve and watch (Dev)"
+            ],
             "type": "shell",
             "command": "npm",
             "runOptions": {
@@ -157,14 +172,19 @@
             "options": {
                 "cwd": "${workspaceFolder}"
             },
-            "args": ["run", "test:visualization"],
+            "args": [
+                "run",
+                "test:visualization"
+            ],
             "presentation": {
                 "group": "test"
             }
         },
         {
             "label": "Launch visualization test runner (Dev)",
-            "dependsOn": ["CDN Serve and watch (Dev)"],
+            "dependsOn": [
+                "CDN Serve and watch (Dev)"
+            ],
             "type": "shell",
             "command": "npm",
             "runOptions": {
@@ -176,7 +196,10 @@
                     "HEADLESS": "false"
                 }
             },
-            "args": ["run", "test:visualization:ui"],
+            "args": [
+                "run",
+                "test:visualization:ui"
+            ],
             "presentation": {
                 "group": "test"
             },
@@ -184,7 +207,9 @@
         },
         {
             "label": "Run Dev host (Dev)",
-            "dependsOn": ["Build (Dev)"],
+            "dependsOn": [
+                "Build (Dev)"
+            ],
             "type": "shell",
             "command": "npm",
             "runOptions": {
@@ -193,16 +218,41 @@
             "options": {
                 "cwd": "${workspaceFolder}"
             },
-            "args": ["run", "serve", "-w", "@tools/dev-host"],
+            "args": [
+                "run",
+                "serve",
+                "-w",
+                "@tools/dev-host"
+            ],
             "isBackground": true,
             "presentation": {
                 "group": "watch"
             },
-            "problemMatcher": ["$ts-webpack-watch", "$tslint-webpack-watch"]
+            "problemMatcher": [
+                {
+                    "pattern": {
+                        "regexp": ".",
+                        "file": 1,
+                        "location": 2,
+                        "message": 3
+                    },
+                    "background": {
+                        "activeOnStart": true,
+                        "beginsPattern": {
+                            "regexp": ".*Executing task.*"
+                        },
+                        "endsPattern": {
+                            "regexp": ".*VITE.*ready.*"
+                        }
+                    }
+                }
+            ]
         },
         {
             "label": "Run and Watch Dev host (Dev)",
-            "dependsOn": ["Watch all (Dev)"],
+            "dependsOn": [
+                "Watch all (Dev)"
+            ],
             "type": "shell",
             "command": "npm",
             "runOptions": {
@@ -211,16 +261,41 @@
             "options": {
                 "cwd": "${workspaceFolder}"
             },
-            "args": ["run", "serve", "-w", "@tools/dev-host"],
+            "args": [
+                "run",
+                "serve",
+                "-w",
+                "@tools/dev-host"
+            ],
             "isBackground": true,
             "presentation": {
                 "group": "watch"
             },
-            "problemMatcher": ["$ts-webpack-watch", "$tslint-webpack-watch"]
+            "problemMatcher": [
+                {
+                    "pattern": {
+                        "regexp": ".",
+                        "file": 1,
+                        "location": 2,
+                        "message": 3
+                    },
+                    "background": {
+                        "activeOnStart": true,
+                        "beginsPattern": {
+                            "regexp": ".*Executing task.*"
+                        },
+                        "endsPattern": {
+                            "regexp": ".*VITE.*ready.*"
+                        }
+                    }
+                }
+            ]
         },
         {
             "label": "CDN Serve and watch (Dev)",
-            "dependsOn": ["Watch all for CDN (Dev)"],
+            "dependsOn": [
+                "Watch all for CDN (Dev)"
+            ],
             "type": "shell",
             "command": "npm",
             "runOptions": {
@@ -229,16 +304,26 @@
             "options": {
                 "cwd": "${workspaceFolder}"
             },
-            "args": ["run", "serve", "-w", "@tools/babylon-server"],
+            "args": [
+                "run",
+                "serve",
+                "-w",
+                "@tools/babylon-server"
+            ],
             "isBackground": true,
             "presentation": {
                 "group": "watch"
             },
-            "problemMatcher": ["$ts-webpack-watch", "$tslint-webpack-watch"]
+            "problemMatcher": [
+                "$ts-webpack-watch",
+                "$tslint-webpack-watch"
+            ]
         },
         {
             "label": "CDN Serve (Dev)",
-            "dependsOn": ["Build (Dev)"],
+            "dependsOn": [
+                "Build (Dev)"
+            ],
             "type": "shell",
             "command": "npm",
             "runOptions": {
@@ -247,16 +332,26 @@
             "options": {
                 "cwd": "${workspaceFolder}"
             },
-            "args": ["run", "serve", "-w", "@tools/babylon-server"],
+            "args": [
+                "run",
+                "serve",
+                "-w",
+                "@tools/babylon-server"
+            ],
             "isBackground": true,
             "presentation": {
                 "group": "serve"
             },
-            "problemMatcher": ["$ts-webpack-watch", "$tslint-webpack-watch"]
+            "problemMatcher": [
+                "$ts-webpack-watch",
+                "$tslint-webpack-watch"
+            ]
         },
         {
             "label": "CDN Serve Prod (Dev)",
-            "dependsOn": ["Build (Dev)"],
+            "dependsOn": [
+                "Build (Dev)"
+            ],
             "type": "shell",
             "command": "npm",
             "runOptions": {
@@ -265,12 +360,20 @@
             "options": {
                 "cwd": "${workspaceFolder}"
             },
-            "args": ["run", "serve:prod", "-w", "@tools/babylon-server"],
+            "args": [
+                "run",
+                "serve:prod",
+                "-w",
+                "@tools/babylon-server"
+            ],
             "isBackground": true,
             "presentation": {
                 "group": "serve"
             },
-            "problemMatcher": ["$ts-webpack-watch", "$tslint-webpack-watch"]
+            "problemMatcher": [
+                "$ts-webpack-watch",
+                "$tslint-webpack-watch"
+            ]
         },
         {
             "label": "Playground Serve for core (Dev)",
@@ -283,30 +386,78 @@
             "options": {
                 "cwd": "${workspaceFolder}"
             },
-            "args": ["run", "serve", "-w", "@tools/playground"],
+            "args": [
+                "run",
+                "serve",
+                "-w",
+                "@tools/playground"
+            ],
             "isBackground": true,
             "presentation": {
                 "group": "serve"
             },
-            "problemMatcher": ["$ts-webpack-watch", "$tslint-webpack-watch"]
+            "problemMatcher": [
+                {
+                    "pattern": {
+                        "regexp": ".",
+                        "file": 1,
+                        "location": 2,
+                        "message": 3
+                    },
+                    "background": {
+                        "activeOnStart": true,
+                        "beginsPattern": {
+                            "regexp": ".*Executing task.*"
+                        },
+                        "endsPattern": {
+                            "regexp": ".*VITE.*ready.*"
+                        }
+                    }
+                }
+            ]
         },
         {
             "label": "Playground Serve (Dev)",
             "type": "shell",
             "command": "npm",
-            "dependsOn": ["CDN Serve and watch (Dev)"],
+            "dependsOn": [
+                "CDN Serve and watch (Dev)"
+            ],
             "runOptions": {
                 "instanceLimit": 1
             },
             "options": {
                 "cwd": "${workspaceFolder}"
             },
-            "args": ["run", "serve", "-w", "@tools/playground"],
+            "args": [
+                "run",
+                "serve",
+                "-w",
+                "@tools/playground"
+            ],
             "isBackground": true,
             "presentation": {
                 "group": "serve"
             },
-            "problemMatcher": ["$ts-webpack-watch", "$tslint-webpack-watch"]
+            "problemMatcher": [
+                {
+                    "pattern": {
+                        "regexp": ".",
+                        "file": 1,
+                        "location": 2,
+                        "message": 3
+                    },
+                    "background": {
+                        "activeOnStart": true,
+                        "beginsPattern": {
+                            "regexp": ".*Executing task.*"
+                        },
+                        "endsPattern": {
+                            "regexp": ".*VITE.*ready.*"
+                        }
+                    }
+                }
+            ]
         },
         {
             "label": "Sandbox Serve for core (Dev)",
@@ -319,30 +470,78 @@
             "options": {
                 "cwd": "${workspaceFolder}"
             },
-            "args": ["run", "serve", "-w", "@tools/sandbox"],
+            "args": [
+                "run",
+                "serve",
+                "-w",
+                "@tools/sandbox"
+            ],
             "isBackground": true,
             "presentation": {
                 "group": "serve"
             },
-            "problemMatcher": ["$ts-webpack-watch", "$tslint-webpack-watch"]
+            "problemMatcher": [
+                {
+                    "pattern": {
+                        "regexp": ".",
+                        "file": 1,
+                        "location": 2,
+                        "message": 3
+                    },
+                    "background": {
+                        "activeOnStart": true,
+                        "beginsPattern": {
+                            "regexp": ".*Executing task.*"
+                        },
+                        "endsPattern": {
+                            "regexp": ".*VITE.*ready.*"
+                        }
+                    }
+                }
+            ]
         },
         {
             "label": "Sandbox Serve (Dev)",
             "type": "shell",
             "command": "npm",
-            "dependsOn": ["CDN Serve and watch (Dev)"],
+            "dependsOn": [
+                "CDN Serve and watch (Dev)"
+            ],
             "runOptions": {
                 "instanceLimit": 1
             },
             "options": {
                 "cwd": "${workspaceFolder}"
             },
-            "args": ["run", "serve", "-w", "@tools/sandbox"],
+            "args": [
+                "run",
+                "serve",
+                "-w",
+                "@tools/sandbox"
+            ],
             "isBackground": true,
             "presentation": {
                 "group": "serve"
             },
-            "problemMatcher": ["$ts-webpack-watch", "$tslint-webpack-watch"]
+            "problemMatcher": [
+                {
+                    "pattern": {
+                        "regexp": ".",
+                        "file": 1,
+                        "location": 2,
+                        "message": 3
+                    },
+                    "background": {
+                        "activeOnStart": true,
+                        "beginsPattern": {
+                            "regexp": ".*Executing task.*"
+                        },
+                        "endsPattern": {
+                            "regexp": ".*VITE.*ready.*"
+                        }
+                    }
+                }
+            ]
         },
         {
             "label": "GUI Editor Serve for core (Dev)",
@@ -355,12 +554,35 @@
             "options": {
                 "cwd": "${workspaceFolder}"
             },
-            "args": ["run", "serve", "-w", "@tools/gui-editor"],
+            "args": [
+                "run",
+                "serve",
+                "-w",
+                "@tools/gui-editor"
+            ],
             "isBackground": true,
             "presentation": {
                 "group": "serve"
             },
-            "problemMatcher": ["$ts-webpack-watch", "$tslint-webpack-watch"]
+            "problemMatcher": [
+                {
+                    "pattern": {
+                        "regexp": ".",
+                        "file": 1,
+                        "location": 2,
+                        "message": 3
+                    },
+                    "background": {
+                        "activeOnStart": true,
+                        "beginsPattern": {
+                            "regexp": ".*Executing task.*"
+                        },
+                        "endsPattern": {
+                            "regexp": ".*VITE.*ready.*"
+                        }
+                    }
+                }
+            ]
         },
         {
             "label": "GUI Editor Serve (Dev)",
@@ -373,12 +595,35 @@
             "options": {
                 "cwd": "${workspaceFolder}"
             },
-            "args": ["run", "serve", "-w", "@tools/gui-editor"],
+            "args": [
+                "run",
+                "serve",
+                "-w",
+                "@tools/gui-editor"
+            ],
             "isBackground": true,
             "presentation": {
                 "group": "serve"
             },
-            "problemMatcher": ["$ts-webpack-watch", "$tslint-webpack-watch"]
+            "problemMatcher": [
+                {
+                    "pattern": {
+                        "regexp": ".",
+                        "file": 1,
+                        "location": 2,
+                        "message": 3
+                    },
+                    "background": {
+                        "activeOnStart": true,
+                        "beginsPattern": {
+                            "regexp": ".*Executing task.*"
+                        },
+                        "endsPattern": {
+                            "regexp": ".*VITE.*ready.*"
+                        }
+                    }
+                }
+            ]
         },
         {
             "label": "Node Editor Serve for core (Dev)",
@@ -391,12 +636,35 @@
             "options": {
                 "cwd": "${workspaceFolder}"
             },
-            "args": ["run", "serve", "-w", "@tools/node-editor"],
+            "args": [
+                "run",
+                "serve",
+                "-w",
+                "@tools/node-editor"
+            ],
             "isBackground": true,
             "presentation": {
                 "group": "serve"
             },
-            "problemMatcher": ["$ts-webpack-watch", "$tslint-webpack-watch"]
+            "problemMatcher": [
+                {
+                    "pattern": {
+                        "regexp": ".",
+                        "file": 1,
+                        "location": 2,
+                        "message": 3
+                    },
+                    "background": {
+                        "activeOnStart": true,
+                        "beginsPattern": {
+                            "regexp": ".*Executing task.*"
+                        },
+                        "endsPattern": {
+                            "regexp": ".*VITE.*ready.*"
+                        }
+                    }
+                }
+            ]
         },
         {
             "label": "Node Editor Serve (Dev)",
@@ -409,12 +677,35 @@
             "options": {
                 "cwd": "${workspaceFolder}"
             },
-            "args": ["run", "serve", "-w", "@tools/node-editor"],
+            "args": [
+                "run",
+                "serve",
+                "-w",
+                "@tools/node-editor"
+            ],
             "isBackground": true,
             "presentation": {
                 "group": "serve"
             },
-            "problemMatcher": ["$ts-webpack-watch", "$tslint-webpack-watch"]
+            "problemMatcher": [
+                {
+                    "pattern": {
+                        "regexp": ".",
+                        "file": 1,
+                        "location": 2,
+                        "message": 3
+                    },
+                    "background": {
+                        "activeOnStart": true,
+                        "beginsPattern": {
+                            "regexp": ".*Executing task.*"
+                        },
+                        "endsPattern": {
+                            "regexp": ".*VITE.*ready.*"
+                        }
+                    }
+                }
+            ]
         },
         {
             "label": "Node Geometry Editor Serve for core (Dev)",
@@ -427,12 +718,35 @@
             "options": {
                 "cwd": "${workspaceFolder}"
             },
-            "args": ["run", "serve", "-w", "@tools/node-geometry-editor"],
+            "args": [
+                "run",
+                "serve",
+                "-w",
+                "@tools/node-geometry-editor"
+            ],
             "isBackground": true,
             "presentation": {
                 "group": "serve"
             },
-            "problemMatcher": ["$ts-webpack-watch", "$tslint-webpack-watch"]
+            "problemMatcher": [
+                {
+                    "pattern": {
+                        "regexp": ".",
+                        "file": 1,
+                        "location": 2,
+                        "message": 3
+                    },
+                    "background": {
+                        "activeOnStart": true,
+                        "beginsPattern": {
+                            "regexp": ".*Executing task.*"
+                        },
+                        "endsPattern": {
+                            "regexp": ".*VITE.*ready.*"
+                        }
+                    }
+                }
+            ]
         },
         {
             "label": "Node Geometry Editor Serve (Dev)",
@@ -445,12 +759,35 @@
             "options": {
                 "cwd": "${workspaceFolder}"
             },
-            "args": ["run", "serve", "-w", "@tools/node-geometry-editor"],
+            "args": [
+                "run",
+                "serve",
+                "-w",
+                "@tools/node-geometry-editor"
+            ],
             "isBackground": true,
             "presentation": {
                 "group": "serve"
             },
-            "problemMatcher": ["$ts-webpack-watch", "$tslint-webpack-watch"]
+            "problemMatcher": [
+                {
+                    "pattern": {
+                        "regexp": ".",
+                        "file": 1,
+                        "location": 2,
+                        "message": 3
+                    },
+                    "background": {
+                        "activeOnStart": true,
+                        "beginsPattern": {
+                            "regexp": ".*Executing task.*"
+                        },
+                        "endsPattern": {
+                            "regexp": ".*VITE.*ready.*"
+                        }
+                    }
+                }
+            ]
         },
         {
             "label": "Flow Graph Editor Serve for core (Dev)",
@@ -466,12 +803,35 @@
                     "FGE_PORT": "1345"
                 }
             },
-            "args": ["run", "serve", "-w", "@tools/flow-graph-editor"],
+            "args": [
+                "run",
+                "serve",
+                "-w",
+                "@tools/flow-graph-editor"
+            ],
             "isBackground": true,
             "presentation": {
                 "group": "serve"
             },
-            "problemMatcher": ["$ts-webpack-watch", "$tslint-webpack-watch"]
+            "problemMatcher": [
+                {
+                    "pattern": {
+                        "regexp": ".",
+                        "file": 1,
+                        "location": 2,
+                        "message": 3
+                    },
+                    "background": {
+                        "activeOnStart": true,
+                        "beginsPattern": {
+                            "regexp": ".*Executing task.*"
+                        },
+                        "endsPattern": {
+                            "regexp": ".*VITE.*ready.*"
+                        }
+                    }
+                }
+            ]
         },
         {
             "label": "Flow Graph Editor Serve (Dev)",
@@ -487,12 +847,35 @@
                     "FGE_PORT": "1345"
                 }
             },
-            "args": ["run", "serve", "-w", "@tools/flow-graph-editor"],
+            "args": [
+                "run",
+                "serve",
+                "-w",
+                "@tools/flow-graph-editor"
+            ],
             "isBackground": true,
             "presentation": {
                 "group": "serve"
             },
-            "problemMatcher": ["$ts-webpack-watch", "$tslint-webpack-watch"]
+            "problemMatcher": [
+                {
+                    "pattern": {
+                        "regexp": ".",
+                        "file": 1,
+                        "location": 2,
+                        "message": 3
+                    },
+                    "background": {
+                        "activeOnStart": true,
+                        "beginsPattern": {
+                            "regexp": ".*Executing task.*"
+                        },
+                        "endsPattern": {
+                            "regexp": ".*VITE.*ready.*"
+                        }
+                    }
+                }
+            ]
         },
         {
             "label": "Node Render Graph Editor Serve for core (Dev)",
@@ -505,12 +888,35 @@
             "options": {
                 "cwd": "${workspaceFolder}"
             },
-            "args": ["run", "serve", "-w", "@tools/node-render-graph-editor"],
+            "args": [
+                "run",
+                "serve",
+                "-w",
+                "@tools/node-render-graph-editor"
+            ],
             "isBackground": true,
             "presentation": {
                 "group": "serve"
             },
-            "problemMatcher": ["$ts-webpack-watch", "$tslint-webpack-watch"]
+            "problemMatcher": [
+                {
+                    "pattern": {
+                        "regexp": ".",
+                        "file": 1,
+                        "location": 2,
+                        "message": 3
+                    },
+                    "background": {
+                        "activeOnStart": true,
+                        "beginsPattern": {
+                            "regexp": ".*Executing task.*"
+                        },
+                        "endsPattern": {
+                            "regexp": ".*VITE.*ready.*"
+                        }
+                    }
+                }
+            ]
         },
         {
             "label": "Node Render Graph Editor Serve (Dev)",
@@ -523,12 +929,35 @@
             "options": {
                 "cwd": "${workspaceFolder}"
             },
-            "args": ["run", "serve", "-w", "@tools/node-render-graph-editor"],
+            "args": [
+                "run",
+                "serve",
+                "-w",
+                "@tools/node-render-graph-editor"
+            ],
             "isBackground": true,
             "presentation": {
                 "group": "serve"
             },
-            "problemMatcher": ["$ts-webpack-watch", "$tslint-webpack-watch"]
+            "problemMatcher": [
+                {
+                    "pattern": {
+                        "regexp": ".",
+                        "file": 1,
+                        "location": 2,
+                        "message": 3
+                    },
+                    "background": {
+                        "activeOnStart": true,
+                        "beginsPattern": {
+                            "regexp": ".*Executing task.*"
+                        },
+                        "endsPattern": {
+                            "regexp": ".*VITE.*ready.*"
+                        }
+                    }
+                }
+            ]
         },
         {
             "label": "Node Particle Editor Serve for core (Dev)",
@@ -541,12 +970,35 @@
             "options": {
                 "cwd": "${workspaceFolder}"
             },
-            "args": ["run", "serve", "-w", "@tools/node-particle-editor"],
+            "args": [
+                "run",
+                "serve",
+                "-w",
+                "@tools/node-particle-editor"
+            ],
             "isBackground": true,
             "presentation": {
                 "group": "serve"
             },
-            "problemMatcher": ["$ts-webpack-watch", "$tslint-webpack-watch"]
+            "problemMatcher": [
+                {
+                    "pattern": {
+                        "regexp": ".",
+                        "file": 1,
+                        "location": 2,
+                        "message": 3
+                    },
+                    "background": {
+                        "activeOnStart": true,
+                        "beginsPattern": {
+                            "regexp": ".*Executing task.*"
+                        },
+                        "endsPattern": {
+                            "regexp": ".*VITE.*ready.*"
+                        }
+                    }
+                }
+            ]
         },
         {
             "label": "Node Particle Editor Serve (Dev)",
@@ -559,12 +1011,35 @@
             "options": {
                 "cwd": "${workspaceFolder}"
             },
-            "args": ["run", "serve", "-w", "@tools/node-particle-editor"],
+            "args": [
+                "run",
+                "serve",
+                "-w",
+                "@tools/node-particle-editor"
+            ],
             "isBackground": true,
             "presentation": {
                 "group": "serve"
             },
-            "problemMatcher": ["$ts-webpack-watch", "$tslint-webpack-watch"]
+            "problemMatcher": [
+                {
+                    "pattern": {
+                        "regexp": ".",
+                        "file": 1,
+                        "location": 2,
+                        "message": 3
+                    },
+                    "background": {
+                        "activeOnStart": true,
+                        "beginsPattern": {
+                            "regexp": ".*Executing task.*"
+                        },
+                        "endsPattern": {
+                            "regexp": ".*VITE.*ready.*"
+                        }
+                    }
+                }
+            ]
         },
         {
             "label": "Smart Filter Editor Serve (Dev)",
@@ -577,12 +1052,20 @@
             "options": {
                 "cwd": "${workspaceFolder}"
             },
-            "args": ["run", "serve", "-w", "@tools/smart-filters-editor"],
+            "args": [
+                "run",
+                "serve",
+                "-w",
+                "@tools/smart-filters-editor"
+            ],
             "isBackground": true,
             "presentation": {
                 "group": "serve"
             },
-            "problemMatcher": ["$ts-webpack-watch", "$tslint-webpack-watch"]
+            "problemMatcher": [
+                "$ts-webpack-watch",
+                "$tslint-webpack-watch"
+            ]
         },
         {
             "label": "VSM Serve for core (Dev)",
@@ -595,12 +1078,35 @@
             "options": {
                 "cwd": "${workspaceFolder}"
             },
-            "args": ["run", "serve", "-w", "@tools/visual-state-manager"],
+            "args": [
+                "run",
+                "serve",
+                "-w",
+                "@tools/visual-state-manager"
+            ],
             "isBackground": true,
             "presentation": {
                 "group": "serve"
             },
-            "problemMatcher": ["$ts-webpack-watch", "$tslint-webpack-watch"]
+            "problemMatcher": [
+                {
+                    "pattern": {
+                        "regexp": ".",
+                        "file": 1,
+                        "location": 2,
+                        "message": 3
+                    },
+                    "background": {
+                        "activeOnStart": true,
+                        "beginsPattern": {
+                            "regexp": ".*Executing task.*"
+                        },
+                        "endsPattern": {
+                            "regexp": ".*VITE.*ready.*"
+                        }
+                    }
+                }
+            ]
         },
         {
             "label": "VSM Serve (Dev)",
@@ -613,12 +1119,35 @@
             "options": {
                 "cwd": "${workspaceFolder}"
             },
-            "args": ["run", "serve", "-w", "@tools/visual-state-manager"],
+            "args": [
+                "run",
+                "serve",
+                "-w",
+                "@tools/visual-state-manager"
+            ],
             "isBackground": true,
             "presentation": {
                 "group": "serve"
             },
-            "problemMatcher": ["$ts-webpack-watch", "$tslint-webpack-watch"]
+            "problemMatcher": [
+                {
+                    "pattern": {
+                        "regexp": ".",
+                        "file": 1,
+                        "location": 2,
+                        "message": 3
+                    },
+                    "background": {
+                        "activeOnStart": true,
+                        "beginsPattern": {
+                            "regexp": ".*Executing task.*"
+                        },
+                        "endsPattern": {
+                            "regexp": ".*VITE.*ready.*"
+                        }
+                    }
+                }
+            ]
         },
         {
             "label": "Terminate All Tasks",
@@ -636,13 +1165,22 @@
             "options": {
                 "cwd": "${workspaceFolder}"
             },
-            "args": ["run", "watch:dev", "-w", "@tools/viewer"],
+            "args": [
+                "run",
+                "watch:dev",
+                "-w",
+                "@tools/viewer"
+            ],
             "isBackground": true,
-            "problemMatcher": ["$tsc-watch"]
+            "problemMatcher": [
+                "$tsc-watch"
+            ]
         },
         {
             "label": "Viewer Test App (Web)",
-            "dependsOn": ["Watch all (Dev)"],
+            "dependsOn": [
+                "Watch all (Dev)"
+            ],
             "type": "shell",
             "command": "npm",
             "runOptions": {
@@ -651,7 +1189,12 @@
             "options": {
                 "cwd": "${workspaceFolder}"
             },
-            "args": ["run", "serve", "-w", "@tools/viewer"],
+            "args": [
+                "run",
+                "serve",
+                "-w",
+                "@tools/viewer"
+            ],
             "isBackground": true,
             "problemMatcher": {
                 "pattern": "$tsc",
@@ -670,19 +1213,30 @@
             "label": "Viewer Configurator Serve (Dev)",
             "type": "shell",
             "command": "npm",
-            "dependsOn": ["Watch all (Dev)", "Watch Viewer"],
+            "dependsOn": [
+                "Watch all (Dev)",
+                "Watch Viewer"
+            ],
             "runOptions": {
                 "instanceLimit": 1
             },
             "options": {
                 "cwd": "${workspaceFolder}"
             },
-            "args": ["run", "serve", "-w", "@tools/viewer-configurator"],
+            "args": [
+                "run",
+                "serve",
+                "-w",
+                "@tools/viewer-configurator"
+            ],
             "isBackground": true,
             "presentation": {
                 "group": "serve"
             },
-            "problemMatcher": ["$ts-webpack-watch", "$tslint-webpack-watch"]
+            "problemMatcher": [
+                "$ts-webpack-watch",
+                "$tslint-webpack-watch"
+            ]
         },
         {
             "label": "Watch Inspector v2",
@@ -694,13 +1248,22 @@
             "options": {
                 "cwd": "${workspaceFolder}"
             },
-            "args": ["run", "watch:dev", "-w", "@dev/inspector"],
+            "args": [
+                "run",
+                "watch:dev",
+                "-w",
+                "@dev/inspector"
+            ],
             "isBackground": true,
-            "problemMatcher": ["$tsc-watch"]
+            "problemMatcher": [
+                "$tsc-watch"
+            ]
         },
         {
             "label": "Inspector v2 Test App",
-            "dependsOn": ["Watch all (Dev)"],
+            "dependsOn": [
+                "Watch all (Dev)"
+            ],
             "type": "shell",
             "command": "npm",
             "runOptions": {
@@ -709,12 +1272,20 @@
             "options": {
                 "cwd": "${workspaceFolder}"
             },
-            "args": ["run", "serve", "-w", "@dev/inspector"],
+            "args": [
+                "run",
+                "serve",
+                "-w",
+                "@dev/inspector"
+            ],
             "isBackground": true,
             "presentation": {
                 "group": "serve"
             },
-            "problemMatcher": ["$ts-webpack-watch", "$tslint-webpack-watch"]
+            "problemMatcher": [
+                "$ts-webpack-watch",
+                "$tslint-webpack-watch"
+            ]
         }
     ],
     "inputs": [

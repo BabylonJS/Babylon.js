@@ -1000,7 +1000,7 @@ export abstract class AbstractMesh extends TransformNode implements IDisposable,
         super(name, scene, false);
 
         scene = this.getScene();
-
+        this.layerMask = scene.defaultRenderableLayerMask;
         scene.addMesh(this);
 
         this._resyncLightSources();
