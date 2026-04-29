@@ -425,6 +425,26 @@ export class Parser {
             return;
         }
 
+        // Lottie/After Effects shape stack: a fill/stroke (or gradient fill/stroke) at a given level
+        // applies to every sibling shape/group above it. When a layer (or a group) mixes child groups
+        // with sibling decorators, those decorators have to flow into each child group so each group's
+        // sprite is rasterized with them. Without this, e.g. `[gr, gr, fl]` would render only the
+        // groups that already carry their own fill — the others would rasterize as empty sprites
+        let hasGroup = false;
+        let levelDecorators: RawElement[] | undefined;
+        for (let i = 0; i < elements.length; i++) {
+            const el = elements[i];
+            if (el.hd === true || el.ty === "tr") {
+                continue;
+            }
+            if (el.ty === "gr") {
+                hasGroup = true;
+            } else if (el.ty === "fl" || el.ty === "st" || el.ty === "gf" || el.ty === "gs") {
+                (levelDecorators ??= []).push(el);
+            }
+        }
+        const propagateDecorators = hasGroup && levelDecorators !== undefined && levelDecorators.length > 0;
+
         for (let i = 0; i < elements.length; i++) {
             if (elements[i].hd === true) {
                 continue; // Ignore hidden shapes
@@ -435,11 +455,14 @@ export class Parser {
             }
 
             if (elements[i].ty === "gr") {
-                this._parseGroup(elements[i], parent, rasterizationFrame);
+                this._parseGroup(elements[i], parent, rasterizationFrame, propagateDecorators ? levelDecorators : undefined);
                 //break;
             } else if (elements[i].ty === "sh" || elements[i].ty === "rc" || elements[i].ty === "el") {
                 this._parseShapes(elements, parent, rasterizationFrame);
                 break; // After parsing the shapes, this array of elements is done
+            } else if (propagateDecorators && (elements[i].ty === "fl" || elements[i].ty === "st" || elements[i].ty === "gf" || elements[i].ty === "gs")) {
+                // Already absorbed into the preceding sibling groups via `_parseGroup` above.
+                continue;
             } else {
                 this._unsupportedFeatures.push(`Only groups or shapes are supported as children of layers - Name: ${elements[i].nm} Type: ${elements[i].ty}`);
                 continue;
@@ -447,7 +470,7 @@ export class Parser {
         }
     }
 
-    private _parseGroup(group: RawElement, parent: Node, rasterizationFrame: number): void {
+    private _parseGroup(group: RawElement, parent: Node, rasterizationFrame: number, inheritedDecorators?: RawElement[]): void {
         if (group.it === undefined || group.it.length === 0) {
             this._unsupportedFeatures.push(`Unexpected empty group: ${group.nm}`);
             return;
@@ -457,6 +480,15 @@ export class Parser {
         if (transform === undefined) {
             this._unsupportedFeatures.push(`Group ${group.nm} does not have a transform which is not supported`);
             return;
+        }
+
+        // Splice any inherited decorators (parent-level fills/strokes) just before the group's
+        // transform so the rasterizer sees them in the same relative position they had at the
+        // parent level — i.e. below the group's own contents in z-order. Lottie's terminal-`tr`
+        // contract (relied on by `_getTransform` and `_drawVectorShape`) is preserved.
+        let items = group.it;
+        if (inheritedDecorators && inheritedDecorators.length > 0) {
+            items = group.it.slice(0, -1).concat(inheritedDecorators, group.it[group.it.length - 1]);
         }
 
         // Create the nodes on the scenegraph for this group
@@ -472,7 +504,7 @@ export class Parser {
         );
 
         // Parse the children of the group
-        this._parseElements(group.it, anchorNode, rasterizationFrame);
+        this._parseElements(items, anchorNode, rasterizationFrame);
     }
 
     private _parseShapes(elements: RawElement[], parent: Node, rasterizationFrame: number): void {

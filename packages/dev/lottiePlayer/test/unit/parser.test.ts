@@ -6,7 +6,7 @@ import { type RenderingManager } from "../../src/rendering/renderingManager";
 import { SpriteNode } from "../../src/nodes/spriteNode";
 import { ControlNode } from "../../src/nodes/controlNode";
 import { Node } from "../../src/nodes/node";
-import { type RawLottieAnimation, type RawShapeLayer, type RawTextLayer, type RawTransform } from "../../src/parsing/rawTypes";
+import { type RawElement, type RawLottieAnimation, type RawShapeLayer, type RawTextLayer, type RawTransform } from "../../src/parsing/rawTypes";
 import { type AnimationConfiguration } from "../../src/animationConfiguration";
 
 // Minimal valid empty transform (all fields optional, parser fills in defaults).
@@ -432,5 +432,152 @@ describe("Parser per-axis easing on Vector2 keyframes (I-06)", () => {
         expect(ease2.y1).toBe(0.6);
         expect(ease2.x2).toBe(0.7);
         expect(ease2.y2).toBe(0.8);
+    });
+});
+
+describe("Parser layer-level shape decorators", () => {
+    // Builds a SpritePacker mock that records every addLottieShape invocation so tests can
+    // assert which raw elements were rasterized into each sprite.
+    function makeRecordingPacker(): { packer: SpritePacker; calls: RawElement[][] } {
+        const calls: RawElement[][] = [];
+        const baseInfo: SpriteAtlasInfo = {
+            uOffset: 0,
+            vOffset: 0,
+            cellWidth: 16,
+            cellHeight: 16,
+            widthPx: 16,
+            heightPx: 16,
+            centerX: 8,
+            centerY: 8,
+            atlasIndex: 0,
+        };
+
+        const mock = {
+            addLottieShape: (rawElements: RawElement[]) => {
+                // Snapshot the array contents at call time; the parser may mutate sources later.
+                calls.push(rawElements.slice());
+                return baseInfo;
+            },
+            addLottieText: () => baseInfo,
+            updateAtlasTexture: () => {},
+            releaseCanvas: () => {},
+            get textures() {
+                return [];
+            },
+            get unsupportedFeatures() {
+                return [];
+            },
+            set rawFonts(_: unknown) {},
+        };
+
+        return { packer: mock as unknown as SpritePacker, calls };
+    }
+
+    // Mirrors the real-world structure that surfaced this bug (Lottie EDU_V2_07 "Search" layer):
+    // two sibling groups followed by a layer-level fill that should color both. Group 1 has its
+    // own fill (white inner circle); Group 2 has no fill of its own (the dark gray magnifying-glass
+    // body and handle); the layer-level dark-gray Fill 1 is supposed to fill Group 2 (and would also
+    // be drawn behind Group 1's white circle, where it is invisible).
+    it("propagates a layer-level fill to every sibling group's rasterized shape", () => {
+        const innerCirclePath = { ind: 0, ty: "sh", nm: "Path 1", ks: { a: 0, k: { i: [], o: [], v: [], c: true } } };
+        const lensPath = { ind: 0, ty: "sh", nm: "Path 2", ks: { a: 0, k: { i: [], o: [], v: [], c: true } } };
+        const whiteFill = { ty: "fl", nm: "Fill 1 (white)", c: { a: 0, k: [1, 1, 1, 1] }, o: { a: 0, k: 100 } };
+        const grayLayerFill = { ty: "fl", nm: "Fill 1 (gray)", c: { a: 0, k: [0.25, 0.25, 0.25, 1] }, o: { a: 0, k: 100 } };
+        const groupTransform = { ty: "tr", nm: "Transform" };
+
+        const animation: RawLottieAnimation = {
+            v: "5.0.0",
+            fr: 30,
+            ip: 0,
+            op: 60,
+            w: 100,
+            h: 100,
+            layers: [
+                {
+                    ty: 4,
+                    ind: 1,
+                    nm: "Search",
+                    ip: 0,
+                    op: 60,
+                    st: 0,
+                    ks: makeTransform(),
+                    shapes: [
+                        { ty: "gr", nm: "Group 1", it: [innerCirclePath, whiteFill, groupTransform] },
+                        { ty: "gr", nm: "Group 2", it: [lensPath, groupTransform] },
+                        grayLayerFill,
+                    ] as any,
+                } as RawShapeLayer,
+            ],
+        };
+
+        const { packer, calls } = makeRecordingPacker();
+        new Parser(packer, animation, makeConfiguration(), makeMockRenderingManager());
+
+        // Both groups must produce a sprite call.
+        expect(calls).toHaveLength(2);
+
+        // Group 1's call must include both the original white fill (so the inner circle stays
+        // white on top) AND the layer-level gray fill (drawn behind it).
+        const group1Items = calls[0];
+        const group1Fills = group1Items.filter((el) => el.ty === "fl");
+        expect(group1Fills).toHaveLength(2);
+        expect(group1Fills.map((f) => f.nm)).toContain("Fill 1 (white)");
+        expect(group1Fills.map((f) => f.nm)).toContain("Fill 1 (gray)");
+        // Transform must remain the last item; Lottie/AE require it and the parser's bounding box
+        // / fill code rely on it being terminal.
+        expect(group1Items[group1Items.length - 1].ty).toBe("tr");
+
+        // Group 2's call must inherit the layer-level gray fill (otherwise the magnifying glass
+        // outline rasterizes to nothing — the original bug from EDU_V2_07).
+        const group2Items = calls[1];
+        const group2Fills = group2Items.filter((el) => el.ty === "fl");
+        expect(group2Fills).toHaveLength(1);
+        expect(group2Fills[0].nm).toBe("Fill 1 (gray)");
+        expect(group2Items[group2Items.length - 1].ty).toBe("tr");
+    });
+
+    // A layer-level stroke (`st`) follows the same Lottie semantics as a layer-level fill: it
+    // applies to all sibling shapes/groups above it. Cover it here too so a future tweak to the
+    // decorator-detection list does not silently drop strokes.
+    it("propagates a layer-level stroke to every sibling group's rasterized shape", () => {
+        const path = { ind: 0, ty: "sh", nm: "Path 1", ks: { a: 0, k: { i: [], o: [], v: [], c: true } } };
+        const layerStroke = {
+            ty: "st",
+            nm: "Stroke 1",
+            c: { a: 0, k: [0, 0, 0, 1] },
+            o: { a: 0, k: 100 },
+            w: { a: 0, k: 2 },
+        };
+        const groupTransform = { ty: "tr", nm: "Transform" };
+
+        const animation: RawLottieAnimation = {
+            v: "5.0.0",
+            fr: 30,
+            ip: 0,
+            op: 60,
+            w: 100,
+            h: 100,
+            layers: [
+                {
+                    ty: 4,
+                    ind: 1,
+                    nm: "Outlined",
+                    ip: 0,
+                    op: 60,
+                    st: 0,
+                    ks: makeTransform(),
+                    shapes: [{ ty: "gr", nm: "Group 1", it: [path, groupTransform] }, layerStroke] as any,
+                } as RawShapeLayer,
+            ],
+        };
+
+        const { packer, calls } = makeRecordingPacker();
+        new Parser(packer, animation, makeConfiguration(), makeMockRenderingManager());
+
+        expect(calls).toHaveLength(1);
+        const group1Items = calls[0];
+        const group1Strokes = group1Items.filter((el) => el.ty === "st");
+        expect(group1Strokes).toHaveLength(1);
+        expect(group1Strokes[0].nm).toBe("Stroke 1");
     });
 });
