@@ -285,8 +285,11 @@ export class PrePassRenderer {
 
     private _enabled: boolean = false;
 
+    private readonly _geometryBufferRenderList: AbstractMesh[] = [];
     private _needsCompositionForThisPass = false;
-    private _postProcessesSourceForThisPass: Nullable<PostProcess>[];
+    private readonly _postProcessesSourceForThisPass: PostProcess[] = [];
+    private readonly _postProcessChainForThisPass: PostProcess[] = [];
+    private readonly _postProcessesForUpdate: PostProcess[] = [];
 
     /**
      * Indicates if the prepass is enabled
@@ -517,7 +520,10 @@ export class PrePassRenderer {
         }
 
         if (this._geometryBuffer) {
-            this._geometryBuffer.renderList = [];
+            this._geometryBufferRenderList.length = 0;
+            if (this._geometryBuffer.renderList !== this._geometryBufferRenderList) {
+                this._geometryBuffer.renderList = this._geometryBufferRenderList;
+            }
         }
 
         this._setupOutputForThisPass(this._currentTarget, camera);
@@ -559,7 +565,12 @@ export class PrePassRenderer {
         let postProcessChain = this._currentTarget._beforeCompositionPostProcesses;
 
         if (this._needsCompositionForThisPass) {
-            postProcessChain = postProcessChain.concat([this._currentTarget.imageProcessingPostProcess]);
+            postProcessChain = this._postProcessChainForThisPass;
+            postProcessChain.length = 0;
+            for (let index = 0; index < this._currentTarget._beforeCompositionPostProcesses.length; index++) {
+                postProcessChain.push(this._currentTarget._beforeCompositionPostProcesses[index]);
+            }
+            postProcessChain.push(this._currentTarget.imageProcessingPostProcess);
         }
 
         // Activates and renders the chain
@@ -733,10 +744,14 @@ export class PrePassRenderer {
     private _setupOutputForThisPass(prePassRenderTarget: PrePassRenderTarget, camera?: Camera) {
         // Order is : draw ===> prePassRenderTarget._postProcesses ==> ipp ==> camera._postProcesses
         const secondaryCamera = camera && this._scene.activeCameras && !!this._scene.activeCameras.length && this._scene.activeCameras.indexOf(camera) !== 0;
-        this._postProcessesSourceForThisPass = this._getPostProcessesSource(prePassRenderTarget, camera);
-        this._postProcessesSourceForThisPass = this._postProcessesSourceForThisPass.filter((pp) => {
-            return pp != null;
-        });
+        const postProcessesSource = this._getPostProcessesSource(prePassRenderTarget, camera);
+        this._postProcessesSourceForThisPass.length = 0;
+        for (let index = 0; index < postProcessesSource.length; index++) {
+            const postProcess = postProcessesSource[index];
+            if (postProcess) {
+                this._postProcessesSourceForThisPass.push(postProcess);
+            }
+        }
         this._scene.autoClear = true;
 
         const cameraHasImageProcessing = this._hasImageProcessing(this._postProcessesSourceForThisPass);
@@ -919,9 +934,15 @@ export class PrePassRenderer {
                 continue;
             }
 
-            postProcesses = <Nullable<PostProcess[]>>postProcesses.filter((pp) => {
-                return pp != null;
-            });
+            const postProcessesSource = postProcesses;
+            postProcesses = this._postProcessesForUpdate;
+            postProcesses.length = 0;
+            for (let j = 0; j < postProcessesSource.length; j++) {
+                const postProcess = postProcessesSource[j];
+                if (postProcess) {
+                    postProcesses.push(postProcess);
+                }
+            }
 
             if (postProcesses) {
                 for (let j = 0; j < postProcesses.length; j++) {
