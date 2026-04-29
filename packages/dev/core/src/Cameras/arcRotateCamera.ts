@@ -183,6 +183,7 @@ export class ArcRotateCamera extends TargetCamera {
 
     /**
      * Current inertia value on the longitudinal axis.
+     * When nonzero, represents the per-frame angular offset (in radians) applied to `alpha`.
      * The bigger this number the longer it will take for the camera to stop.
      * Reading this value also reflects the rotation delta the movement system will apply this frame
      * (decays toward 0 over the inertia tail), preserving legacy semantics for "is the camera still animating?" checks.
@@ -211,6 +212,7 @@ export class ArcRotateCamera extends TargetCamera {
 
     /**
      * Current inertia value on the latitudinal axis.
+     * When nonzero, represents the per-frame angular offset (in radians) applied to `beta`.
      * The bigger this number the longer it will take for the camera to stop.
      * Reading this value also reflects the rotation delta the movement system will apply this frame
      * (decays toward 0 over the inertia tail), preserving legacy semantics for "is the camera still animating?" checks.
@@ -239,6 +241,7 @@ export class ArcRotateCamera extends TargetCamera {
 
     /**
      * Current inertia value on the radius axis.
+     * When nonzero, represents the per-frame offset (in scene units) applied to `radius`.
      * The bigger this number the longer it will take for the camera to stop.
      * Reading this value also reflects the zoom delta the movement system will apply this frame
      * (decays toward 0 over the inertia tail), preserving legacy semantics for "is the camera still animating?" checks.
@@ -350,7 +353,8 @@ export class ArcRotateCamera extends TargetCamera {
 
     /**
      * Defines the value of the inertia used during panning.
-     * 0 would mean stop inertia and one would mean no deceleration at all.
+     * A decay coefficient applied per reference frame at 60fps:
+     * 0 means stop instantly, 0.9 means smooth glide, 1 means never stop.
      * Setting this also updates the movement system's pan inertia.
      */
     @serialize()
@@ -695,12 +699,7 @@ export class ArcRotateCamera extends TargetCamera {
      * Movement controller that provides framerate-independent physics and the declarative
      * inputMap for configuring which inputs map to which camera behaviors.
      *
-     * Modify `camera.movement.input.inputMap` to remap interactions. For example:
-     * ```ts
-     * // Change rotate to middle-click instead of left-click
-     * const entry = camera.movement.input.getEntry("pointer", "rotate");
-     * if (entry && entry.source === "pointer") entry.button = 1;
-     * ```
+     * See {@link InputMapper} for the full inputMap API (e.g. `setInteraction`, `getEntry`, `addEntry`).
      */
     public movement: ArcRotateCameraMovement;
 

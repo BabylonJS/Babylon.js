@@ -180,7 +180,7 @@ export class InputMapper<THandlers extends Record<string, unknown>> {
      * Interaction handlers keyed by interaction type.
      * Override individual handlers to customize behavior without changing input mapping.
      */
-    public handlers: THandlers;
+    public readonly handlers: THandlers;
 
     /**
      * Creates a new InputMapper.
