@@ -19,6 +19,7 @@ import url from "@rollup/plugin-url";
 import { copyFileSync, existsSync } from "fs";
 import { resolve, join, dirname } from "path";
 import { fileURLToPath } from "url";
+import { transform as esbuildTransform } from "esbuild";
 
 // Repo root — used as the filterRoot for @rollup/plugin-typescript so that
 // `**/*.ts` patterns are matched against repo-relative paths (which never start
@@ -222,14 +223,17 @@ export function babylonUMDExternalsPlugin(excludePackages = []) {
  * modules — it leaves `import("babylonjs")` etc. in the UMD output, which is
  * ES2020 syntax that fails the `es-check es6` gate.
  */
-function rewriteDynamicExternalImportsPlugin() {
+function rewriteDynamicExternalImportsPlugin(production = false) {
     return {
         name: "rewrite-dynamic-external-imports",
         renderChunk(code) {
             let result = code;
-            // Replace process.env.NODE_ENV so React (and other libs) bundle in production
-            // mode and don't reference the Node.js `process` global in browsers.
-            result = result.replaceAll("process.env.NODE_ENV", '"production"');
+            // Replace process.env.NODE_ENV so React (and other libs) don't
+            // reference the Node.js `process` global in browsers.
+            // Use "development" in dev builds so React DevTools doesn't complain
+            // about dead code elimination; use "production" in prod builds.
+            const nodeEnv = production ? '"production"' : '"development"';
+            result = result.replaceAll("process.env.NODE_ENV", nodeEnv);
             for (const [umdId, globalVar] of Object.entries(umdGlobals)) {
                 // Match import("umdId") or import('umdId') — dynamic import of an external.
                 const re = new RegExp(`import\\((['"])${umdId.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\1\\)`, "g");
@@ -273,6 +277,43 @@ function transpileExternalTsPlugin() {
                 },
             });
             return { code: result.outputText, map: result.sourceMapText || null };
+        },
+    };
+}
+
+/**
+ * Rollup plugin that uses esbuild for fast TypeScript transpilation.
+ * Strips types without checking them — equivalent to webpack's ts-loader
+ * with transpileOnly: true.  ~10-100x faster than @rollup/plugin-typescript.
+ *
+ * @param {object} [opts]
+ * @param {boolean} [opts.sourceMap]  Whether to produce sourcemaps (default true).
+ */
+function esbuildTranspilePlugin(opts = {}) {
+    const { sourceMap = true } = opts;
+    return {
+        name: "esbuild-transpile",
+        async transform(code, id) {
+            if (!id.endsWith(".ts") && !id.endsWith(".tsx")) return null;
+            const loader = id.endsWith(".tsx") ? "tsx" : "ts";
+            const result = await esbuildTransform(code, {
+                loader,
+                sourcefile: id,
+                sourcemap: sourceMap,
+                target: "es2020",
+                jsx: "automatic",
+                format: "esm",
+                tsconfigRaw: {
+                    compilerOptions: {
+                        experimentalDecorators: true,
+                        useDefineForClassFields: false,
+                    },
+                },
+            });
+            return {
+                code: result.code,
+                map: result.map || null,
+            };
         },
     };
 }
@@ -352,6 +393,10 @@ function camelize(str) {
  *   Named entry points for multi-file packages.
  * @param {string|((chunk:{name:string})=>string)} [options.overrideFilename]
  *   Override the output filename (string) or per-chunk (function).
+ * @param {boolean} [options.devMode]
+ *   When true, uses esbuild for TypeScript transpilation instead of tsc.
+ *   ~10x faster builds at the cost of no type checking (types are already
+ *   verified by the separate `tsc -b` step).  Defaults to false.
  */
 export function commonUMDRollupConfiguration(options) {
     const {
@@ -366,6 +411,7 @@ export function commonUMDRollupConfiguration(options) {
         minToMax = false,
         entryPoints,
         overrideFilename,
+        devMode = false,
     } = options;
 
     const production = mode === "production";
@@ -417,6 +463,27 @@ export function commonUMDRollupConfiguration(options) {
      */
     const resolveGlobal = (id) => externalsPlugin.globals[id] ?? umdGlobals[id] ?? id;
 
+    // In devMode, use esbuild for fast type-stripping transpilation instead of tsc.
+    const useEsbuild = devMode && !production;
+    const transpilePlugins = useEsbuild
+        ? [esbuildTranspilePlugin({ sourceMap: !devMode })]
+        : [
+              typescript({
+                  tsconfig: "tsconfig.build.json",
+                  declaration: false,
+                  declarationMap: false,
+                  sourceMap: true,
+                  inlineSources: false,
+                  // filterRoot set to the repo root so **/*.ts patterns match files from
+                  // any package (including aliased cross-package tool sources).
+                  filterRoot: REPO_ROOT,
+                  include: ["**/*.ts", "**/*.tsx"],
+              }),
+              // Fallback: transpile .ts files that are outside the tsconfig rootDir
+              // (e.g. aliased tool sources) which @rollup/plugin-typescript skips.
+              transpileExternalTsPlugin(),
+          ];
+
     const plugins = [
         externalsPlugin,
         aliasPlugin({ entries: aliasEntries }),
@@ -425,23 +492,10 @@ export function commonUMDRollupConfiguration(options) {
         // Handle SCSS/CSS imports from compiled dist/ files (tool packages).
         // Extracts styles to a companion .css file alongside the UMD bundle.
         postcss({ extract: true, minimize: production, use: ["sass"] }),
-        typescript({
-            tsconfig: "tsconfig.build.json",
-            declaration: false,
-            declarationMap: false,
-            sourceMap: true,
-            inlineSources: false,
-            // filterRoot set to the repo root so **/*.ts patterns match files from
-            // any package (including aliased cross-package tool sources).
-            filterRoot: REPO_ROOT,
-            include: ["**/*.ts", "**/*.tsx"],
-        }),
-        // Fallback: transpile .ts files that are outside the tsconfig rootDir
-        // (e.g. aliased tool sources) which @rollup/plugin-typescript skips.
-        transpileExternalTsPlugin(),
+        ...transpilePlugins,
         nodeResolve({ mainFields: ["browser", "module", "main"], browser: true, extensions: [".ts", ".tsx", ".js", ".jsx"] }),
         commonjs(),
-        rewriteDynamicExternalImportsPlugin(),
+        rewriteDynamicExternalImportsPlugin(production),
         ...(production
             ? [
                   terser({
@@ -466,7 +520,7 @@ export function commonUMDRollupConfiguration(options) {
             name: outputName,
             globals: resolveGlobal,
             exports: "named",
-            sourcemap: true,
+            sourcemap: !devMode,
             // extend:true makes Rollup emit `global.BABYLON = global.BABYLON || {}`
             // instead of `global.BABYLON = {}`, so each bundle merges into the shared
             // namespace rather than overwriting the previous bundle's exports.
@@ -490,24 +544,31 @@ export function commonUMDRollupConfiguration(options) {
         return Object.entries(entryPoints).map(([chunkName, inputFile], i) => {
             const perEntryExternals = babylonUMDExternalsPlugin([devPackageName, ...optionalExternalFunctionSkip]);
             const perEntryResolveGlobal = (id) => perEntryExternals.globals[id] ?? umdGlobals[id] ?? id;
+            // In devMode, esbuild is stateless so the shared transpilePlugins can be reused.
+            // In non-devMode, each entry needs its own tsc plugin instance.
+            const perEntryTranspilePlugins = useEsbuild
+                ? transpilePlugins
+                : [
+                      typescript({
+                          tsconfig: "tsconfig.build.json",
+                          declaration: false,
+                          declarationMap: false,
+                          sourceMap: true,
+                          inlineSources: false,
+                          filterRoot: REPO_ROOT,
+                          include: ["**/*.ts", "**/*.tsx"],
+                      }),
+                      transpileExternalTsPlugin(),
+                  ];
             const perEntryPlugins = [
                 perEntryExternals,
                 aliasPlugin({ entries: aliasEntries }),
                 url({ include: ["**/*.svg", "**/*.png", "**/*.jpg", "**/*.gif"], limit: Infinity }),
                 postcss({ extract: true, minimize: production, use: ["sass"] }),
-                typescript({
-                    tsconfig: "tsconfig.build.json",
-                    declaration: false,
-                    declarationMap: false,
-                    sourceMap: true,
-                    inlineSources: false,
-                    filterRoot: REPO_ROOT,
-                    include: ["**/*.ts", "**/*.tsx"],
-                }),
-                transpileExternalTsPlugin(),
+                ...perEntryTranspilePlugins,
                 nodeResolve({ mainFields: ["browser", "module", "main"], browser: true, extensions: [".ts", ".tsx", ".js", ".jsx"] }),
                 commonjs(),
-                rewriteDynamicExternalImportsPlugin(),
+                rewriteDynamicExternalImportsPlugin(production),
                 ...(production
                     ? [
                           terser({
@@ -526,7 +587,7 @@ export function commonUMDRollupConfiguration(options) {
                     name: outputName,
                     globals: perEntryResolveGlobal,
                     exports: "named",
-                    sourcemap: true,
+                    sourcemap: !devMode,
                     extend: true,
                     // Inline any dynamic imports so UMD format (which forbids code-splitting) is happy.
                     inlineDynamicImports: true,

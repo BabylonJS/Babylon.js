@@ -1,5 +1,6 @@
 import { defineConfig } from "vite";
 import path from "path";
+// @ts-ignore -- untyped JS helper
 import { commonDevViteConfiguration } from "../../public/viteToolsHelper.mjs";
 
 export default defineConfig((_env) => {
