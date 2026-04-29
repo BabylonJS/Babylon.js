@@ -7,16 +7,15 @@ export default defineConfig((_env) => {
         port: parseInt(process.env.NRGE_PORT ?? "1344"),
         aliases: {
             "shared-ui-components": path.resolve("../../dev/sharedUiComponents/src"),
+            gui: path.resolve("../../dev/gui/dist"),
         },
         cdnExternals: {
             "@dev/core": "BABYLON",
             core: "BABYLON",
-            gui: "BABYLON.GUI",
             loaders: "BABYLON",
         },
         productionExternals: {
             babylonjs: "BABYLON",
-            "babylonjs-gui": "BABYLON.GUI",
             "babylonjs-loaders": "BABYLON",
         },
     });
