@@ -12,11 +12,11 @@
 
         // Compute Pre Lighting infos
         #ifdef SPOTLIGHT{X}
-            preInfo{X} = computePointAndSpotPreLightingInfo(light{X}.vLightData, viewDirectionW, normalW, vPositionW);
-            preInfoCoat{X} = computePointAndSpotPreLightingInfo(light{X}.vLightData, viewDirectionW, coatNormalW, vPositionW);
+            preInfo{X} = computePointAndSpotPreLightingInfo(light{X}.vLightData, viewDirectionW, normalW, fragmentInputs.vPositionW);
+            preInfoCoat{X} = computePointAndSpotPreLightingInfo(light{X}.vLightData, viewDirectionW, coatNormalW, fragmentInputs.vPositionW);
         #elif defined(POINTLIGHT{X})
-            preInfo{X} = computePointAndSpotPreLightingInfo(light{X}.vLightData, viewDirectionW, normalW, vPositionW);
-            preInfoCoat{X} = computePointAndSpotPreLightingInfo(light{X}.vLightData, viewDirectionW, coatNormalW, vPositionW);
+            preInfo{X} = computePointAndSpotPreLightingInfo(light{X}.vLightData, viewDirectionW, normalW, fragmentInputs.vPositionW);
+            preInfoCoat{X} = computePointAndSpotPreLightingInfo(light{X}.vLightData, viewDirectionW, coatNormalW, fragmentInputs.vPositionW);
         #elif defined(HEMILIGHT{X})
             preInfo{X} = computeHemisphericPreLightingInfo(light{X}.vLightData, viewDirectionW, normalW);
             preInfoCoat{X} = computeHemisphericPreLightingInfo(light{X}.vLightData, viewDirectionW, coatNormalW);
@@ -24,8 +24,8 @@
             preInfo{X} = computeDirectionalPreLightingInfo(light{X}.vLightData, viewDirectionW, normalW);
             preInfoCoat{X} = computeDirectionalPreLightingInfo(light{X}.vLightData, viewDirectionW, coatNormalW);
         #elif defined(AREALIGHT{X}) && defined(AREALIGHTUSED) && defined(AREALIGHTSUPPORTED)
-            preInfo{X} = computeAreaPreLightingInfo(areaLightsLTC1Sampler, areaLightsLTC2Sampler, viewDirectionW, normalW, vPositionW, light{X}.vLightData, light{X}.vLightWidth.xyz, light{X}.vLightHeight.xyz, specular_roughness);
-            preInfoCoat{X} = computeAreaPreLightingInfo(areaLightsLTC1Sampler, areaLightsLTC2Sampler, viewDirectionW, coatNormalW, vPositionW, light{X}.vLightData, light{X}.vLightWidth.xyz, light{X}.vLightHeight.xyz, coat_roughness);
+            preInfo{X} = computeAreaPreLightingInfo(areaLightsLTC1Sampler, areaLightsLTC2Sampler, viewDirectionW, normalW, fragmentInputs.vPositionW, light{X}.vLightData, light{X}.vLightWidth.xyz, light{X}.vLightHeight.xyz, specular_roughness);
+            preInfoCoat{X} = computeAreaPreLightingInfo(areaLightsLTC1Sampler, areaLightsLTC2Sampler, viewDirectionW, coatNormalW, fragmentInputs.vPositionW, light{X}.vLightData, light{X}.vLightWidth.xyz, light{X}.vLightHeight.xyz, coat_roughness);
         #endif
 
         preInfo{X}.NdotV = baseGeoInfo.NdotV;

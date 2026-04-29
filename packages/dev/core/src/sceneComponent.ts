@@ -42,6 +42,7 @@ export class SceneComponentConstants {
     public static readonly NAME_CLUSTEREDLIGHTING = "ClusteredLighting";
 
     public static readonly STEP_ISREADYFORMESH_EFFECTLAYER = 0;
+    public static readonly STEP_ISREADYFORMESH_DEPTHRENDERER = 1;
 
     public static readonly STEP_BEFOREEVALUATEACTIVEMESH_BOUNDINGBOXRENDERER = 0;
 

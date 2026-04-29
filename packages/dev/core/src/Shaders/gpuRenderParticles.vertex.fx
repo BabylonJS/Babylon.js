@@ -40,6 +40,9 @@ uniform mat4 invView;
 
 #ifdef COLORGRADIENTS
 uniform sampler2D colorGradientSampler;
+#ifdef COLORGRADIENTS_COLOR2
+attribute vec4 seed;
+#endif
 #else
 uniform vec4 colorDead;
 attribute vec4 color;
@@ -128,7 +131,15 @@ void main() {
 	#endif
   float ratio = min(1.0, age / life);
 #ifdef COLORGRADIENTS
-	vColor = texture2D(colorGradientSampler, vec2(ratio, 0));
+	#ifdef COLORGRADIENTS_COLOR2
+		// Sample both rows of the color gradient texture (row 0 = color1, row 1 = color2) at their texel
+		// centers and lerp using the particle's persistent seed.x for a stable per-particle color.
+		vec4 vColor1 = texture2D(colorGradientSampler, vec2(ratio, 0.25));
+		vec4 vColor2 = texture2D(colorGradientSampler, vec2(ratio, 0.75));
+		vColor = mix(vColor1, vColor2, seed.x);
+	#else
+		vColor = texture2D(colorGradientSampler, vec2(ratio, 0));
+	#endif
 #else
 	vColor = color * vec4(1.0 - ratio) + colorDead * vec4(ratio);
 #endif

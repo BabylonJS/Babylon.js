@@ -2498,6 +2498,15 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
             }
         }
 
+        // Procedural textures
+        if (this.proceduralTexturesEnabled) {
+            for (const proceduralTexture of this.proceduralTextures) {
+                if (!proceduralTexture.isReady()) {
+                    isReady = false;
+                }
+            }
+        }
+
         // Layers
         if (this.layers) {
             for (const layer of this.layers) {

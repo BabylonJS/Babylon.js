@@ -76,10 +76,12 @@ export class Parser {
 
     private _rawFonts: Map<string, RawFont> = new Map<string, RawFont>(); // Map of font names to raw font data
     private _unsupportedFeatures: string[];
+    private _seenUnsupportedMessages: Set<string> = new Set<string>(); // Dedup guard so spammy per-property warnings only surface once.
 
     private _rootNodes: Node[]; // Array of root-level nodes in the animation, in top-down z order
     private _parentNodes: Map<number, Node> = new Map<number, Node>(); // Map of nodes to build the scenegraph from the animation layers
     private _currentLayerOriginalIndex: number = 0; // Original array index of the layer currently being parsed, used for sprite z-ordering
+    private _currentLayerName: string | undefined = undefined; // Name of the layer currently being parsed, used for diagnostic messages
     private _layerOriginalIndices: Map<RawLottieLayer, number> = new Map<RawLottieLayer, number>(); // Maps layers to their original array index for z-ordering
     private _startFrame: number = 0;
 
@@ -120,8 +122,22 @@ export class Parser {
         }
     }
 
+    /**
+     * Pushes a message to the unsupported features list only if it has not been seen before during this parse.
+     * Used for warnings that would otherwise be repeated for every property/layer matching the same case.
+     * @param message The message to push, used as the dedup key.
+     */
+    private _pushUnsupportedOnce(message: string): void {
+        if (this._seenUnsupportedMessages.has(message)) {
+            return;
+        }
+        this._seenUnsupportedMessages.add(message);
+        this._unsupportedFeatures.push(message);
+    }
+
     private _loadFromData(rawData: RawLottieAnimation): AnimationInfo {
         this._unsupportedFeatures.length = 0; // Clear previous errors
+        this._seenUnsupportedMessages.clear();
         this._startFrame = rawData.ip;
 
         this._parseFonts(rawData);
@@ -130,6 +146,7 @@ export class Parser {
         const orderedLayers = this._reoderLayers(rawData.layers);
         for (let i = 0; i < orderedLayers.length; i++) {
             this._currentLayerOriginalIndex = this._layerOriginalIndices.get(orderedLayers[i]) ?? i;
+            this._currentLayerName = orderedLayers[i].nm;
             this._parseLayer(orderedLayers[i]);
         }
 
@@ -141,6 +158,13 @@ export class Parser {
 
         // Reorder the sprites from back to front and set the final atlas textures
         this._renderingManager.ready(this._packer.textures);
+
+        // Drain any unsupported-feature reports from the packer before we drop the reference to it,
+        // so debug() can surface them after construction.
+        const packerUnsupported = this._packer.unsupportedFeatures;
+        for (let i = 0; i < packerUnsupported.length; i++) {
+            this._unsupportedFeatures.push(packerUnsupported[i]);
+        }
 
         // Release the canvas to avoid memory leaks
         this._packer.releaseCanvas();
@@ -347,11 +371,16 @@ export class Parser {
         // Get the rasterization scale at the frame when the layer first becomes visible
         const rasterizationFrame = this._getRasterizationFrame(layer);
         const currentScale = this._getRasterizationScale(parent, rasterizationFrame);
-        const spriteInfo = this._packer.addLottieText(layer.t, currentScale);
+        const spriteInfo = this._packer.addLottieText(layer.t, currentScale, layer.nm);
 
         if (spriteInfo === undefined) {
             return undefined;
         }
+
+        // Create the anchor node so text layers have the same scene graph structure as shape layers:
+        // ControlNode (TRS) -> Node (Anchor) -> SpriteNode. Positioning then mirrors _parseShapes,
+        // using the layout-derived center returned by addLottieText.
+        const anchorNode = this._parseNullLayer(layer, transform, parent);
 
         // Build the ThinSprite from the texture packer information
         const sprite = new ThinSprite();
@@ -369,36 +398,26 @@ export class Parser {
 
         this._renderingManager.addSprite(sprite, this._currentLayerOriginalIndex, spriteInfo.atlasIndex);
 
+        // The text layout (justification, baseline, paragraph box) is already baked into
+        // spriteInfo.centerX/centerY (boundingBox.offsetX/offsetY). Y is negated because Lottie's
+        // Y axis points down while Babylon's sprite system has Y pointing up. Same pattern as _parseShapes.
         const positionProperty: Vector2Property = {
-            startValue: { x: transform.anchorPoint.startValue.x, y: transform.anchorPoint.startValue.y },
-            currentValue: { x: transform.anchorPoint.currentValue.x, y: transform.anchorPoint.currentValue.y },
+            startValue: { x: spriteInfo.centerX || 0, y: -spriteInfo.centerY || 0 },
+            currentValue: { x: spriteInfo.centerX || 0, y: -spriteInfo.centerY || 0 },
             currentKeyframeIndex: 0,
         };
 
-        let textAlignment = 0;
-        if (layer.t.d && layer.t.d.k && layer.t.d.k.length > 0) {
-            textAlignment = layer.t.d.k[0].s.j;
-        }
-
-        // The X offset of the text depends on the alignment of the text: 0=left, 1=right, 2=centered
-        // Sprites are centered by default, so that is why the offset is 0 for centered text
-        const xAlignmentOffset = textAlignment === 0 ? spriteInfo.widthPx / 2 : textAlignment === 1 ? -spriteInfo.widthPx / 2 : 0;
-        positionProperty.startValue.x += xAlignmentOffset;
-        positionProperty.currentValue.x += xAlignmentOffset;
-
-        // For text, its Y position is at the baseline, so we need to offset it by half the height of the text upwards
-        positionProperty.startValue.y += spriteInfo.heightPx / 2;
-        positionProperty.currentValue.y += spriteInfo.heightPx / 2;
-
-        return new SpriteNode(
+        new SpriteNode(
             "Sprite",
             sprite,
             positionProperty,
             undefined, // Rotation is not used for sprites final transform
             undefined, // Scale is not used for sprites final transform
             undefined, // Opacity is not used for sprites final transform
-            parent
+            anchorNode
         );
+
+        return anchorNode;
     }
 
     private _parseElements(elements: RawElement[] | undefined, parent: Node, rasterizationFrame: number): void {
@@ -459,7 +478,7 @@ export class Parser {
     private _parseShapes(elements: RawElement[], parent: Node, rasterizationFrame: number): void {
         // Get the rasterization scale at the frame when the layer first becomes visible
         const currentScale = this._getRasterizationScale(parent, rasterizationFrame);
-        const spriteInfo = this._packer.addLottieShape(elements, currentScale);
+        const spriteInfo = this._packer.addLottieShape(elements, currentScale, this._currentLayerName);
 
         // Build the ThinSprite from the texture packer information
         const sprite = new ThinSprite();
@@ -668,6 +687,21 @@ export class Parser {
                 currentValue: defaultValue,
                 currentKeyframeIndex: 0,
             };
+        }
+
+        // The Lottie spec says `l` is optional and defaults to the array length, but in practice
+        // some exporters omit it on `[x, y, 0]` triples (e.g. After Effects emits 3D-style transforms
+        // even on 2D layers). We silently treat those as 2D using indices 0/1, but flag the case so
+        // we don't keep accepting unexpected component counts unnoticed.
+        if (property.l === undefined) {
+            const sampleLength = property.a === 0 ? (property.k as number[]).length : ((property.k as RawVectorKeyframe[])[0]?.s?.length ?? 2);
+            if (sampleLength !== 2) {
+                // Include the original layer index in the dedup key so two layers that happen to share `nm`
+                // each get their own warning instead of collapsing to a single message.
+                this._pushUnsupportedOnce(
+                    `Vector2 missing 'l' with ${sampleLength}-component value (expected 2) - Layer: ${this._currentLayerName ?? "<unknown>"} - LayerIdx: ${this._currentLayerOriginalIndex} - VectorType: ${vectorType}. Using x/y components.`
+                );
+            }
         }
 
         if (property.a === 0) {

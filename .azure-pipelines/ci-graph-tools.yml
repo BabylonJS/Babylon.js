@@ -3,12 +3,12 @@
 # Converted from Azure DevOps Classic Pipeline
 #
 # Triggers on PRs that touch graph tool editor files.
-# Builds NME, NGE, NRGE, GUI Editor, NPE, deploys snapshots, and runs
+# Builds NME, NGE, NRGE, GUI Editor, NPE, FGE, deploys snapshots, and runs
 # Playwright tests.
 #
-# Secret variables (configure in pipeline UI):
-#   - BASIC_AUTH
-#   - DEPLOYMENT_SERVER
+# Variable groups:
+#   - BabylonJS-CI-Infrastructure
+#   - BabylonJS-Deployment (BASIC_AUTH, DEPLOYMENT_SERVER)
 # =============================================================================
 
 trigger: none
@@ -23,12 +23,14 @@ pr:
             - packages/tools/nodeGeometryEditor/**/*.*
             - packages/tools/nodeRenderGraphEditor/**/*.*
             - packages/tools/guiEditor/**/*.*
+            - packages/tools/flowGraphEditor/**/*.*
             - packages/dev/sharedUiComponents/**/*.*
             - packages/dev/buildTools/src/webpackTools.ts
             - "**/*interaction.tools*"
 
 variables:
     - group: BabylonJS-CI-Infrastructure
+    - group: BabylonJS-Deployment
     - name: BuildName
       value: $(Build.SourceBranch)
 
@@ -43,10 +45,10 @@ jobs:
             clean: true
             fetchTags: false
 
-          - task: NodeTool@0
-            displayName: "Use Node 22.4.1"
+          - task: UseNode@1
+            displayName: "Use Node 22.x"
             inputs:
-                versionSpec: "22.4.1"
+                version: "22.x"
 
           - task: Npm@1
             displayName: "npm install"
@@ -94,6 +96,12 @@ jobs:
                 command: custom
                 customCommand: "run build:deployment -w @tools/node-particle-editor"
 
+          - task: Npm@1
+            displayName: "npm build flowGraphEditor"
+            inputs:
+                command: custom
+                customCommand: "run build:deployment -w @tools/flow-graph-editor"
+
           - template: templates/wait-for-snapshot.yml
             parameters:
                 displayName: "Wait for Babylon snapshot"
@@ -127,6 +135,12 @@ jobs:
                 toolPackageDir: "packages/tools/nodeParticleEditor"
                 deployPath: "TOOLS/$(BuildName)/nodeParticleEditor"
                 displayName: "Deploy NPE"
+
+          - template: templates/deploy-tool.yml
+            parameters:
+                toolPackageDir: "packages/tools/flowGraphEditor"
+                deployPath: "TOOLS/$(BuildName)/flowGraphEditor"
+                displayName: "Deploy FGE"
 
           - script: |
                 npx playwright install --with-deps
@@ -169,4 +183,5 @@ jobs:
                     $(SNAPSHOT_CDN_URL)/TOOLS/$(BuildName)/nodeGeometryEditor/
                     $(SNAPSHOT_CDN_URL)/TOOLS/$(BuildName)/nodeParticleEditor/
                     $(SNAPSHOT_CDN_URL)/TOOLS/$(BuildName)/nodeRenderGraphEditor/
+                    $(SNAPSHOT_CDN_URL)/TOOLS/$(BuildName)/flowGraphEditor/
                     $(SNAPSHOT_CDN_URL)/TOOLS/$(BuildName)/guiEditor/
