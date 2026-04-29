@@ -41,7 +41,9 @@ describe("InputText processKey", () => {
     it("does not call preventDefault for dead keys", () => {
         const input = new InputText("test");
 
-        const evt = createKeyEvent("Dead", 229);
+        // keyCode 192 (backtick/tilde) falls within the printable range (159-193),
+        // so this enters the printable character block and exercises the _deadKey guard.
+        const evt = createKeyEvent("Dead", 192);
         input.processKey(evt.keyCode, evt.key, evt);
 
         expect(evt.preventDefault).not.toHaveBeenCalled();
