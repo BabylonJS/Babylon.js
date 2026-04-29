@@ -15,6 +15,7 @@ import { Link } from "shared-ui-components/fluent/primitives/link";
 import { Dialog } from "shared-ui-components/fluent/primitives/dialog";
 
 import { getOrCreateManagers } from "../../smartAssetHandler";
+import { PROJECT_LOCALS_KEY } from "core/SmartAssets/projectSerializer";
 
 import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
 import { Body1, Caption1, makeStyles, tokens } from "@fluentui/react-components";
@@ -174,7 +175,9 @@ const SmartAssetList: FunctionComponent<{ scene: Scene; selectionService: ISelec
             }
             const entries: Array<{ key: string; url: string }> = [];
             for (const [key, url] of sam.getAll()) {
-                entries.push({ key, url });
+                if (key !== PROJECT_LOCALS_KEY) {
+                    entries.push({ key, url });
+                }
             }
             return entries;
         }, [sam]),

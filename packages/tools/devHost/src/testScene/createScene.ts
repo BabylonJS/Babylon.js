@@ -8,12 +8,14 @@ import { Color3, Color4 } from "core/Maths/math.color";
 import { Logger } from "core/Misc/logger";
 import { SmartAssetManager } from "core/SmartAssets/smartAssetManager";
 import { OverrideManager } from "core/SmartAssets/overrideManager";
-import { SerializeProject } from "core/SmartAssets/projectSerializer";
+import { SerializeProject, PROJECT_LOCALS_KEY } from "core/SmartAssets/projectSerializer";
 import { SceneSerializer } from "core/Misc/sceneSerializer";
 import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
+import "core/Materials/standardMaterial";
 import { type Texture } from "core/Materials/Textures/texture";
 import { CubeTexture } from "core/Materials/Textures/cubeTexture";
 import { registerBuiltInLoaders } from "loaders/dynamic";
+import "core/Loading/Plugins/babylonFileLoader";
 
 registerBuiltInLoaders();
 
@@ -202,51 +204,49 @@ export const createScene = async function (engine: Engine, canvas: HTMLCanvasEle
     });
 
     // ═══════════════════════════════════════════════════════════════
-    // Step 7: Serialize the project — test what survives
+    // Step 7: Serialize the project — test companion .babylon approach
     // ═══════════════════════════════════════════════════════════════
-    const projectData = SerializeProject(sam, overrides);
-    const seen = new WeakSet();
-    const projectJson = JSON.stringify(projectData, (_key, value) => {
-        if (typeof value === "object" && value !== null) {
-            if (seen.has(value)) {
-                return undefined;
-            }
-            seen.add(value);
-        }
-        return value;
-    }, 2);
+    const bundle = SerializeProject(sam, overrides);
+    const projectJson = JSON.stringify(bundle.project, null, 2);
 
     log("Step 7", `Project serialized: ${projectJson.length} bytes`);
-    log("Step 7", `  Assets: [${Object.keys(projectData.assets).join(", ")}]`);
-    log("Step 7", `  Overrides: ${projectData.overrides.length}`);
+    log("Step 7", `  Assets: [${Object.keys(bundle.project.assets).join(", ")}]`);
+    log("Step 7", `  Overrides: ${bundle.project.overrides.length}`);
 
-    // Check: does the project capture the in-tool-created material?
-    const hasInlineObjects = projectData.inlineObjects && Object.keys(projectData.inlineObjects).length > 0;
-    if (hasInlineObjects) {
-        const inlineNames = Object.keys(projectData.inlineObjects!);
-        pass(`Step 7a: inlineObjects captured: [${inlineNames.join(", ")}]`);
+    // Check: does the project produce a companion .babylon for the in-tool material?
+    if (bundle.companionBabylon) {
+        const companionSize = bundle.companionBabylon.size;
+        const hasLocalsKey = PROJECT_LOCALS_KEY in bundle.project.assets;
+        pass(`Step 7a: Companion .babylon generated (${companionSize} bytes, key registered: ${hasLocalsKey})`);
     } else {
-        fail("Step 7a", "inlineObjects missing from project");
+        fail("Step 7a", "No companion .babylon generated — in-tool material would be lost on reload");
+    }
+
+    // Check: project JSON has NO inlineObjects (replaced by companion)
+    if (!("inlineObjects" in bundle.project)) {
+        pass("Step 7b: Project JSON clean — no inlineObjects (companion .babylon instead)");
+    } else {
+        fail("Step 7b", "Project JSON still has inlineObjects — should be removed");
     }
 
     // Check: is the material assignment captured as override?
-    const hasMaterialAssignment = projectData.overrides.some(
+    const hasMaterialAssignment = bundle.project.overrides.some(
         (o) => o.propertyPath === "material" && typeof o.value === "string" && o.value.startsWith("ref:")
     );
     if (hasMaterialAssignment) {
-        pass("Step 7b: Material assignment persisted as ref: override");
+        pass("Step 7c: Material assignment persisted as ref: override");
     } else {
-        fail("Step 7b", "Material assignment override missing");
+        fail("Step 7c", "Material assignment override missing");
     }
 
     // Check: are texture slots captured as overrides?
-    const hasTextureOverrides = projectData.overrides.some(
+    const hasTextureOverrides = bundle.project.overrides.some(
         (o) => o.propertyPath === "albedoTexture" && typeof o.value === "string" && o.value.startsWith("texture:")
     );
     if (hasTextureOverrides) {
-        pass("Step 7c: Texture slot assignments persisted as texture: overrides");
+        pass("Step 7d: Texture slot assignments persisted as texture: overrides");
     } else {
-        fail("Step 7c", "Texture slot overrides missing");
+        fail("Step 7d", "Texture slot overrides missing");
     }
 
     // ═══════════════════════════════════════════════════════════════

@@ -1,17 +1,19 @@
-import { useCallback, useRef, useState, type FunctionComponent } from "react";
+import { useCallback, useState, type FunctionComponent } from "react";
 
 import { type Scene, type IDisposable } from "core/scene";
-import { SerializeProject, LoadProjectAsync } from "core/SmartAssets/projectSerializer";
+import { SerializeProject } from "core/SmartAssets/projectSerializer";
 import { Tools } from "core/Misc/tools";
 
 import { type ServiceDefinition } from "shared-ui-components/modularTool/modularity/serviceDefinition";
 import { type IToolsService, ToolsServiceIdentity } from "../toolsService";
 
 import { getOrCreateManagers } from "../../smartAssetHandler";
+import { saveProjectBundleAsync, loadProjectBundleAsync } from "./projectBundleIO";
 
 import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
+import { FileUploadLine } from "shared-ui-components/fluent/hoc/fileUploadLine";
 import { makeStyles, tokens } from "@fluentui/react-components";
-import { ArrowDownloadRegular, ArrowUploadRegular, DocumentTextRegular } from "@fluentui/react-icons";
+import { ArrowDownloadRegular, DocumentTextRegular } from "@fluentui/react-icons";
 
 const useStyles = makeStyles({
     statusMessage: {
@@ -50,43 +52,39 @@ export const SmartAssetToolsServiceDefinition: ServiceDefinition<[], [IToolsServ
 
 const SmartAssetProjectTools: FunctionComponent<{ scene: Scene }> = (props: { scene: Scene }) => {
     const scene = props.scene;
-    const fileInputRef = useRef<HTMLInputElement>(null);
     const [statusMessage, setStatusMessage] = useState<string>("");
     const styles = useStyles();
 
     const managers = useCallback(() => getOrCreateManagers(scene), [scene]);
 
-    const onSaveProject = useCallback(() => {
-        const { sam, overrides } = managers();
-        const project = SerializeProject(sam, overrides);
-        const json = JSON.stringify(project, null, 2);
-        const blob = new Blob([json], { type: "application/json" });
-        Tools.Download(blob, "project.json");
-        setStatusMessage(`Saved: ${Object.keys(project.assets).length} assets, ${project.overrides.length} overrides`);
+    const onSaveProject = useCallback(async () => {
+        try {
+            const { sam, overrides } = managers();
+            const zipBlob = await saveProjectBundleAsync(sam, overrides);
+            Tools.Download(zipBlob, "project.zip");
+
+            const bundle = SerializeProject(sam, overrides);
+            const assetCount = Object.keys(bundle.project.assets).length;
+            const overrideCount = bundle.project.overrides.length;
+            setStatusMessage(`Saved: ${assetCount} assets, ${overrideCount} overrides`);
+        } catch (err) {
+            setStatusMessage(`Save error: ${err}`);
+        }
     }, [managers]);
 
-    const onLoadProject = useCallback(() => {
-        fileInputRef.current?.click();
-    }, []);
-
-    const onFileSelected = useCallback(
-        async (e: React.ChangeEvent<HTMLInputElement>) => {
-            const file = e.target.files?.[0];
+    const onLoadProject = useCallback(
+        async (files: FileList) => {
+            const file = files[0];
             if (!file) {
                 return;
             }
 
             try {
                 const { sam, overrides } = managers();
-                await LoadProjectAsync(file, sam, overrides);
+                await loadProjectBundleAsync(file, sam, overrides);
                 setStatusMessage(`Loaded: ${sam.getAll().size} assets, ${overrides.getOverrides().length} overrides`);
             } catch (err) {
-                setStatusMessage(`Error: ${err}`);
-            }
-
-            // Reset file input so the same file can be loaded again
-            if (fileInputRef.current) {
-                fileInputRef.current.value = "";
+                setStatusMessage(`Load error: ${err}`);
             }
         },
         [managers]
@@ -95,15 +93,14 @@ const SmartAssetProjectTools: FunctionComponent<{ scene: Scene }> = (props: { sc
     const onShowProjectJson = useCallback(() => {
         const { sam, overrides } = managers();
         SerializeProject(sam, overrides);
-        setStatusMessage("Project JSON logged to console");
+        setStatusMessage("Project bundle logged to console");
     }, [managers]);
 
     return (
         <>
             <ButtonLine label="Save Project" icon={ArrowDownloadRegular} onClick={onSaveProject} />
-            <ButtonLine label="Load Project" icon={ArrowUploadRegular} onClick={onLoadProject} />
+            <FileUploadLine label="Load Project" accept=".zip" onClick={onLoadProject} />
             <ButtonLine label="Log Project to Console" icon={DocumentTextRegular} onClick={onShowProjectJson} />
-            <input ref={fileInputRef} type="file" accept=".json" style={{ display: "none" }} onChange={onFileSelected} />
             {statusMessage && <div className={styles.statusMessage}>{statusMessage}</div>}
         </>
     );

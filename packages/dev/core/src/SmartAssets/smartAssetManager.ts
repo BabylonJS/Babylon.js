@@ -491,6 +491,19 @@ export class SmartAssetManager {
         this._applyAllOverrides = () => overrideManager.applyAllOverrides();
     }
 
+    /**
+     * Registers an externally-loaded AssetContainer under a key, building
+     * provenance and tracking as if SAM had loaded it. Use this when the
+     * container was loaded outside SAM (e.g. with a custom pluginExtension).
+     * @param key - The key to associate with the container.
+     * @param container - The loaded AssetContainer.
+     */
+    public trackLoadedContainer(key: string, container: AssetContainer): void {
+        this._containers.set(key, container);
+        this._buildProvenance(key, container);
+        this.onAssetLoadedObservable.notifyObservers({ key, container });
+    }
+
     // ── Lifecycle ──
 
     /**

@@ -76,7 +76,7 @@ describe("ProjectSerializer", () => {
     // ── Serialization Tests ──
 
     describe("serializeProject", () => {
-        it("should produce a valid project document with assets and overrides", async () => {
+        it("should produce a valid project bundle with assets and overrides", async () => {
             sam.register("chair", "models/chair.glb");
             sam.register("table", "models/table.glb");
 
@@ -88,28 +88,30 @@ describe("ProjectSerializer", () => {
                 value: 0.2,
             });
 
-            const project = SerializeProject(sam, overrides);
+            const bundle = SerializeProject(sam, overrides);
 
-            expect(project.version).toBe(1);
-            expect(project.assets["chair"].url).toBe("models/chair.glb");
-            expect(project.assets["table"].url).toBe("models/table.glb");
-            expect(project.overrides.length).toBe(1);
-            expect(project.overrides[0].propertyPath).toBe("fogDensity");
+            expect(bundle.project.version).toBe(2);
+            expect(bundle.project.assets["chair"].url).toBe("models/chair.glb");
+            expect(bundle.project.assets["table"].url).toBe("models/table.glb");
+            expect(bundle.project.overrides.length).toBe(1);
+            expect(bundle.project.overrides[0].propertyPath).toBe("fogDensity");
+            expect(bundle.companionBabylon).toBeUndefined();
         });
 
         it("should produce empty overrides array when no overrides exist", () => {
             sam.register("chair", "chair.glb");
 
-            const project = SerializeProject(sam, overrides);
+            const bundle = SerializeProject(sam, overrides);
 
-            expect(project.overrides).toEqual([]);
+            expect(bundle.project.overrides).toEqual([]);
         });
 
         it("should produce empty assets when no assets registered", () => {
-            const project = SerializeProject(sam, overrides);
+            const bundle = SerializeProject(sam, overrides);
 
-            expect(Object.keys(project.assets).length).toBe(0);
-            expect(project.overrides).toEqual([]);
+            expect(Object.keys(bundle.project.assets).length).toBe(0);
+            expect(bundle.project.overrides).toEqual([]);
+            expect(bundle.companionBabylon).toBeUndefined();
         });
     });
 
@@ -118,7 +120,7 @@ describe("ProjectSerializer", () => {
     describe("deserializeProject", () => {
         it("should validate a correct project document", () => {
             const doc = {
-                version: 1,
+                version: 2,
                 assets: {
                     chair: { url: "chair.glb" },
                 },
@@ -134,7 +136,7 @@ describe("ProjectSerializer", () => {
             };
 
             const result = DeserializeProject(doc);
-            expect(result.version).toBe(1);
+            expect(result.version).toBe(2);
             expect(result.assets["chair"].url).toBe("chair.glb");
             expect(result.overrides.length).toBe(1);
         });
@@ -144,7 +146,7 @@ describe("ProjectSerializer", () => {
         });
 
         it("should throw when overrides is not an array", () => {
-            expect(() => DeserializeProject({ version: 1, assets: {}, overrides: "bad" })).toThrow(/must be an array/);
+            expect(() => DeserializeProject({ version: 2, assets: {}, overrides: "bad" })).toThrow(/must be an array/);
         });
 
         it("should throw on null input", () => {
@@ -175,13 +177,13 @@ describe("ProjectSerializer", () => {
                 value: 0.1,
             });
 
-            const serialized1 = SerializeProject(sam, overrides);
-            const json = JSON.stringify(serialized1);
+            const bundle = SerializeProject(sam, overrides);
+            const json = JSON.stringify(bundle.project);
             const parsed = JSON.parse(json);
             const deserialized = DeserializeProject(parsed);
 
             // Verify structure survived round-trip
-            expect(deserialized.version).toBe(1);
+            expect(deserialized.version).toBe(2);
             expect(Object.keys(deserialized.assets).length).toBe(2);
             expect(deserialized.overrides.length).toBe(2);
             expect(deserialized.overrides[0].value).toBe(0.5);
@@ -194,7 +196,7 @@ describe("ProjectSerializer", () => {
     describe("loadProjectAsync", () => {
         it("should load assets and apply overrides from a project object", async () => {
             const projectDoc = {
-                version: 1 as const,
+                version: 2 as const,
                 assets: {
                     chair: { url: "chair.glb" },
                 },
@@ -222,7 +224,7 @@ describe("ProjectSerializer", () => {
 
         it("should work with empty overrides", async () => {
             const projectDoc = {
-                version: 1 as const,
+                version: 2 as const,
                 assets: {
                     table: { url: "table.glb" },
                 },
