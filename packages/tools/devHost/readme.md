@@ -13,20 +13,21 @@ npm run serve -w @tools/dev-host
 
 Then open `http://localhost:1338`.
 
-# Scenarios
+## Scenarios
 
 Currently this dev host supports two scenarios that you can access by adding the `exp` QSP to the URL.
 
-## exp=lottie
+### exp=lottie
 
 This experience allows you to test the Babylon lottie-player. It supports the following params:
 
 - `file=string` Renders this file from the Babylon assets repo. For example, `file=triangles.json` uses `https://assets.babylonjs.com/lottie/triangles.json`.
 - `useWorker=boolean` Whether to use the webworker for rendering or not. Defaults to true if not used.
+- `legacyTextPosition=boolean` Whether text layers should use Babylon.js 8.x placement compatibility. Defaults to false if not used.
 
 To change lottie variables or more detailed configuration options, edit `src/lottie/main.ts` directly.
 
-## exp=testScene
+### exp=testScene
 
 This experience renders a small scene using ES6 imports by default, which makes it useful for testing core changes, side-effect imports, and other app-like runtime behavior. Edit `src/testScene/createScene.ts` to build a focused validation scene, then open `http://localhost:1338/?exp=testScene`.
 
