@@ -74,7 +74,7 @@ export type AnimationConfiguration = {
      * "babylon8" preserves Babylon.js 8.x text layer placement for animations that were authored around that behavior.
      * Default is "spec".
      */
-    textLayerCompatibilityMode?: "spec" | "babylon8";
+    textLayerCompatibilityMode: "spec" | "babylon8";
 };
 
 /**
