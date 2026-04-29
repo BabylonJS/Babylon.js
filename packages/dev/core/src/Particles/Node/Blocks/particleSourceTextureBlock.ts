@@ -162,7 +162,61 @@ export class ParticleTextureSourceBlock extends NodeParticleBlock {
                 data: Uint8ClampedArray;
             }>
         >((resolve, reject) => {
+            const extractProceduralTextureContentAsync = async (proceduralTexture: ProceduralTexture) => {
+                if (!proceduralTexture.isReady()) {
+                    const effect = proceduralTexture.getEffect();
+                    await new Promise<boolean>((resolveReady) => {
+                        let settled = false;
+                        let errorObserver: Nullable<{ remove: () => void }> = null;
+                        const settle = (ready: boolean) => {
+                            if (settled) {
+                                return;
+                            }
+                            settled = true;
+                            errorObserver?.remove();
+                            resolveReady(ready);
+                        };
+                        errorObserver = effect.onErrorObservable.add(() => {
+                            settle(false);
+                        });
+                        effect.executeWhenCompiled(() => {
+                            settle(true);
+                        });
+                    });
+                }
+
+                if (!proceduralTexture.isReady()) {
+                    return null;
+                }
+
+                proceduralTexture.render();
+                const data = await proceduralTexture.getContent();
+                if (!data) {
+                    return null;
+                }
+
+                const size = proceduralTexture.getSize();
+                return {
+                    width: size.width,
+                    height: size.height,
+                    data: new Uint8ClampedArray(data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength)),
+                };
+            };
+
             if (!texture.isReady()) {
+                if (texture.getContent) {
+                    void (async () => {
+                        try {
+                            this._cachedData = await extractProceduralTextureContentAsync(texture as ProceduralTexture);
+                            resolve(this._cachedData);
+                        } catch (e) {
+                            // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
+                            reject(e);
+                        }
+                    })();
+                    return;
+                }
+
                 let settled = false;
                 let loadObserver: Nullable<{ remove: () => void }> = null;
                 let internalErrorObserver: Nullable<{ remove: () => void }> = null;
@@ -243,16 +297,10 @@ export class ParticleTextureSourceBlock extends NodeParticleBlock {
             }
             const size = texture.getSize();
             if (texture.getContent) {
-                const proceduralTexture = texture as ProceduralTexture;
-                proceduralTexture
-                    .getContent()
+                extractProceduralTextureContentAsync(texture as ProceduralTexture)
                     // eslint-disable-next-line github/no-then
                     ?.then((data) => {
-                        this._cachedData = {
-                            width: size.width,
-                            height: size.height,
-                            data: new Uint8ClampedArray(data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength)),
-                        };
+                        this._cachedData = data;
                         resolve(this._cachedData);
                     })
                     // eslint-disable-next-line github/no-then
