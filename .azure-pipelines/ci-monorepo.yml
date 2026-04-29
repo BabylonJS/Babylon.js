@@ -631,17 +631,12 @@ jobs:
 
     # ============================================================================
     # VISUALIZATION TESTS - WEBGPU
-    # Depends on: Build + VisualizationWebGL2 (chained to prevent BrowserStack
-    # session contention — account has 5 parallel sessions shared across all
-    # PR builds, so running WebGL2 and WebGPU concurrently would exhaust them).
+    # Depends on: Build
     # Runs on BrowserStack
     # ============================================================================
     - job: VisualizationWebGPU
       displayName: "Visualization tests - WebGPU"
-      dependsOn:
-          - Build
-          - VisualizationWebGL2
-      condition: succeededOrFailed()
+      dependsOn: Build
       variables:
           AFFECTED_TAGS: $[ dependencies.Build.outputs['ComputeVisTags.AFFECTED_TAGS'] ]
       steps:
