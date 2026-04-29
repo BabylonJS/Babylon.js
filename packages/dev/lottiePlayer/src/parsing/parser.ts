@@ -8,6 +8,7 @@ import {
     type RawLottieLayer,
     type RawScalarProperty,
     type RawShapeLayer,
+    type RawSolidLayer,
     type RawTextLayer,
     type RawTransform,
     type RawTransformShape,
@@ -53,6 +54,39 @@ type LayerTree = {
     layer: RawLottieLayer;
     children: LayerTree[];
 };
+
+/**
+ * Parses a CSS hex color string in `#RGB` or `#RRGGBB` form into normalized 0..1 RGB components.
+ * Used for solid layers (`ty:1`), whose color is stored as a CSS string in `sc`. Falls back to
+ * black and pushes a warning for any other form (e.g. `rgb()`, named colors) so the source is
+ * traceable instead of silently producing the wrong color.
+ * @param value The raw `sc` string from a solid layer.
+ * @param layerName The owning layer's name (for the warning message).
+ * @param unsupported Mutable list to push a warning into when the value cannot be parsed.
+ * @returns A `[r, g, b]` triple of normalized components in 0..1.
+ */
+function ParseCssColorString(value: string, layerName: string | undefined, unsupported: string[]): [number, number, number] {
+    if (typeof value === "string") {
+        if (value.length === 7 && value[0] === "#") {
+            const r = parseInt(value.substring(1, 3), 16);
+            const g = parseInt(value.substring(3, 5), 16);
+            const b = parseInt(value.substring(5, 7), 16);
+            if (Number.isFinite(r) && Number.isFinite(g) && Number.isFinite(b)) {
+                return [r / 255, g / 255, b / 255];
+            }
+        }
+        if (value.length === 4 && value[0] === "#") {
+            const r = parseInt(value[1] + value[1], 16);
+            const g = parseInt(value[2] + value[2], 16);
+            const b = parseInt(value[3] + value[3], 16);
+            if (Number.isFinite(r) && Number.isFinite(g) && Number.isFinite(b)) {
+                return [r / 255, g / 255, b / 255];
+            }
+        }
+    }
+    unsupported.push(`Unsupported CSS color string in solid layer ${layerName ?? "<unknown>"}: ${value}`);
+    return [0, 0, 0];
+}
 
 /**
  * Parses a lottie animation file from a URL and returns the json representation of the file.
@@ -285,8 +319,8 @@ export class Parser {
             return; // Ignore hidden layers
         }
 
-        // We only support null, shape and text layers
-        if (layer.ty !== 3 && layer.ty !== 4 && layer.ty !== 5) {
+        // We only support solid, null, shape and text layers
+        if (layer.ty !== 1 && layer.ty !== 3 && layer.ty !== 4 && layer.ty !== 5) {
             this._unsupportedFeatures.push(`UnsupportedLayerType - Layer Name: ${layer.nm} - Layer Index: ${layer.ind} - Layer Type: ${layer.ty}`);
             return;
         }
@@ -320,6 +354,9 @@ export class Parser {
 
         let anchorNode: Node | undefined = undefined;
         switch (layer.ty) {
+            case 1: // Solid layer
+                anchorNode = this._parseSolidLayer(layer as RawSolidLayer, transform, trsNode);
+                break;
             case 3: // Null layer
                 anchorNode = this._parseNullLayer(layer, transform, trsNode);
                 break;
@@ -363,6 +400,82 @@ export class Parser {
         const anchorNode = this._parseNullLayer(layer, transform, parent);
         const rasterizationFrame = this._getRasterizationFrame(layer);
         this._parseElements(layer.shapes, anchorNode, rasterizationFrame);
+
+        return anchorNode;
+    }
+
+    private _parseSolidLayer(layer: RawSolidLayer, transform: Transform, parent: Node): Node {
+        const anchorNode = this._parseNullLayer(layer, transform, parent);
+
+        // Defensive: malformed solid layer with no usable rectangle. Skip rasterization but keep the
+        // anchor node so any layers parented to this one (via `ind`) still get a valid parent slot.
+        if (!(layer.sw > 0) || !(layer.sh > 0)) {
+            this._unsupportedFeatures.push(`Solid layer ${layer.nm} has invalid sw/sh and will not render`);
+            return anchorNode;
+        }
+
+        const [r, g, b] = ParseCssColorString(layer.sc, layer.nm, this._unsupportedFeatures);
+
+        // Solid layers are by definition a single flat color (Lottie schema only allows `sc` as a
+        // CSS color string — no gradient, no animation). Rasterize it into a 1x1 atlas cell instead
+        // of an `sw`x`sh` cell: the sprite samples one pixel and the GPU stretches it, which is
+        // pixel-equivalent for a flat fill and avoids consuming a multi-megabyte chunk of the atlas
+        // for what's typically a full-stage backplate (e.g. Pages.json's 960x540 "Grey" layer would
+        // otherwise eat ~90% of a 2048-pixel atlas page at devicePixelRatio=2).
+        const atlasShapes: RawElement[] = [
+            {
+                ty: "rc",
+                nm: "Solid Rect (atlas)",
+                d: 1,
+                p: { a: 0, k: [0.5, 0.5] },
+                s: { a: 0, k: [1, 1] },
+                r: { a: 0, k: 0 },
+            } as unknown as RawElement,
+            {
+                ty: "fl",
+                nm: "Solid Fill",
+                c: { a: 0, k: [r, g, b, 1] },
+                o: { a: 0, k: 100 },
+                r: 1,
+            } as unknown as RawElement,
+        ];
+
+        // Atlas write at unit scale: the cell is 1 lottie pixel * 1 = 1 atlas pixel (multiplied by
+        // devicePixelRatio internally). Using the layer's actual rasterization scale would defeat
+        // the optimization by reintroducing the sw*sh cell.
+        const atlasScale = { x: 1, y: 1 };
+        const spriteInfo = this._packer.addLottieShape(atlasShapes, atlasScale, layer.nm);
+
+        // Build the sprite ourselves rather than going through `_parseShapes`, so we can keep the
+        // tiny atlas cell while sizing the on-screen sprite to the layer's full sw*sh. The sprite
+        // is positioned with its center at (sw/2, -sh/2) in the layer's local space so its top-left
+        // sits at the layer origin (0, 0) — matching how After Effects positions a solid layer.
+        const sprite = new ThinSprite();
+        sprite._xOffset = spriteInfo.uOffset;
+        sprite._yOffset = spriteInfo.vOffset;
+        sprite._xSize = spriteInfo.cellWidth;
+        sprite._ySize = spriteInfo.cellHeight;
+        sprite.width = layer.sw;
+        sprite.height = layer.sh;
+        sprite.invertV = true;
+
+        this._renderingManager.addSprite(sprite, this._currentLayerOriginalIndex, spriteInfo.atlasIndex);
+
+        const positionProperty: Vector2Property = {
+            startValue: { x: layer.sw / 2, y: -layer.sh / 2 },
+            currentValue: { x: layer.sw / 2, y: -layer.sh / 2 },
+            currentKeyframeIndex: 0,
+        };
+
+        new SpriteNode(
+            "Sprite",
+            sprite,
+            positionProperty,
+            undefined, // Rotation is not used for sprites final transform
+            undefined, // Scale is not used for sprites final transform
+            undefined, // Opacity is not used for sprites final transform
+            anchorNode
+        );
 
         return anchorNode;
     }

@@ -581,3 +581,210 @@ describe("Parser layer-level shape decorators", () => {
         expect(group1Strokes[0].nm).toBe("Stroke 1");
     });
 });
+
+describe("Parser solid layer (ty:1)", () => {
+    // Same recording packer pattern as the layer-level decorator suite above. Defined inline so each
+    // describe block is self-contained.
+    function makeRecordingPacker(): { packer: SpritePacker; calls: RawElement[][] } {
+        const calls: RawElement[][] = [];
+        const baseInfo: SpriteAtlasInfo = {
+            uOffset: 0,
+            vOffset: 0,
+            cellWidth: 16,
+            cellHeight: 16,
+            widthPx: 16,
+            heightPx: 16,
+            centerX: 8,
+            centerY: 8,
+            atlasIndex: 0,
+        };
+
+        const mock = {
+            addLottieShape: (rawElements: RawElement[]) => {
+                calls.push(rawElements.slice());
+                return baseInfo;
+            },
+            addLottieText: () => baseInfo,
+            updateAtlasTexture: () => {},
+            releaseCanvas: () => {},
+            get textures() {
+                return [];
+            },
+            get unsupportedFeatures() {
+                return [];
+            },
+            set rawFonts(_: unknown) {},
+        };
+
+        return { packer: mock as unknown as SpritePacker, calls };
+    }
+
+    // Recording rendering manager so tests can assert the on-screen sprite dimensions handed to the
+    // sprite renderer. Solid layers stretch a 1x1 atlas cell to full sw*sh, so the on-screen size
+    // is the meaningful surface — distinct from `widthPx` reported by the packer.
+    function makeRecordingRenderingManager(): { rm: RenderingManager; sprites: { width: number; height: number }[] } {
+        const sprites: { width: number; height: number }[] = [];
+        const mock = {
+            addSprite: (sprite: { width: number; height: number }) => {
+                // Snapshot at call time — the parser may continue mutating the sprite afterwards.
+                sprites.push({ width: sprite.width, height: sprite.height });
+            },
+            ready: () => {},
+        };
+        return { rm: mock as unknown as RenderingManager, sprites };
+    }
+
+    it("rasterizes a ty:1 solid layer using a 1x1 atlas cell stretched to full sw*sh on screen", () => {
+        // Mirrors the "Grey" backplate in EDU/Pages.json: a 960x540 #f0f0f0 solid layer that the
+        // official Lottie player draws as a flat backplate. Solid layers are by definition a single
+        // flat color (Lottie schema only allows `sc` as a CSS color string), so we rasterize a 1x1
+        // cell into the atlas and let the sprite renderer stretch it. Otherwise a 960x540 backplate
+        // at devicePixelRatio=2 would consume ~90% of a 2048-pixel atlas page.
+        const animation: RawLottieAnimation = {
+            v: "5.0.0",
+            fr: 30,
+            ip: 0,
+            op: 60,
+            w: 960,
+            h: 540,
+            layers: [
+                {
+                    ty: 1,
+                    ind: 1,
+                    nm: "Grey",
+                    ip: 0,
+                    op: 60,
+                    st: 0,
+                    ks: makeTransform(),
+                    sw: 960,
+                    sh: 540,
+                    sc: "#f0f0f0",
+                } as any,
+            ],
+        };
+
+        const { packer, calls } = makeRecordingPacker();
+        const { rm, sprites } = makeRecordingRenderingManager();
+        new Parser(packer, animation, makeConfiguration(), rm);
+
+        // Solid layer must produce exactly one rasterization call containing a rectangle and a fill
+        // (in that order, mirroring the [shape, decorator] convention used by Lottie shape layers).
+        expect(calls).toHaveLength(1);
+        const items = calls[0];
+        expect(items).toHaveLength(2);
+
+        const rect = items[0] as any;
+        const fill = items[1] as any;
+        expect(rect.ty).toBe("rc");
+        expect(fill.ty).toBe("fl");
+
+        // Atlas cell geometry: 1x1 lottie pixel centered at (0.5, 0.5). Independent of sw/sh — that
+        // sizing happens on the sprite (below), not in the atlas.
+        expect(rect.s.k).toEqual([1, 1]);
+        expect(rect.p.k).toEqual([0.5, 0.5]);
+
+        // Fill color: #f0f0f0 -> 240/255 on each channel, alpha 1.
+        const expectedChannel = 240 / 255;
+        expect(fill.c.k[0]).toBeCloseTo(expectedChannel, 6);
+        expect(fill.c.k[1]).toBeCloseTo(expectedChannel, 6);
+        expect(fill.c.k[2]).toBeCloseTo(expectedChannel, 6);
+        expect(fill.c.k[3]).toBe(1);
+
+        // On-screen sprite size must reflect the layer's full sw/sh — that's the dimension the GPU
+        // stretches the 1x1 cell to. Pages.json's "Grey" layer is the regression case: dropping
+        // these dimensions or wiring sw/sh into the atlas instead would either lose the backplate
+        // or eat the atlas.
+        expect(sprites).toHaveLength(1);
+        expect(sprites[0].width).toBe(960);
+        expect(sprites[0].height).toBe(540);
+    });
+
+    it("handles short #RGB hex form for solid layer color", () => {
+        // After Effects normally exports the long form, but the CSS spec also allows #RGB. Cover it
+        // explicitly so the helper's two-branch path doesn't regress on shorter strings (e.g.
+        // hand-edited animations or third-party exporters).
+        const animation: RawLottieAnimation = {
+            v: "5.0.0",
+            fr: 30,
+            ip: 0,
+            op: 60,
+            w: 100,
+            h: 100,
+            layers: [
+                {
+                    ty: 1,
+                    ind: 1,
+                    nm: "Short",
+                    ip: 0,
+                    op: 60,
+                    st: 0,
+                    ks: makeTransform(),
+                    sw: 100,
+                    sh: 100,
+                    sc: "#f00",
+                } as any,
+            ],
+        };
+
+        const { packer, calls } = makeRecordingPacker();
+        new Parser(packer, animation, makeConfiguration(), makeMockRenderingManager());
+
+        expect(calls).toHaveLength(1);
+        const fill = calls[0][1] as any;
+        expect(fill.c.k[0]).toBe(1);
+        expect(fill.c.k[1]).toBe(0);
+        expect(fill.c.k[2]).toBe(0);
+    });
+
+    it("skips rasterization but still registers the anchor node when sw/sh are zero", () => {
+        // Defensive: malformed solid layer with no usable rectangle. We must not call addLottieShape
+        // with zero-size geometry (which produces zero-area sprites and risks divide-by-zero in
+        // bounding-box code), but we still need a valid anchor slot so child layers parented via
+        // `ind` resolve correctly.
+        const animation: RawLottieAnimation = {
+            v: "5.0.0",
+            fr: 30,
+            ip: 0,
+            op: 60,
+            w: 100,
+            h: 100,
+            layers: [
+                {
+                    ty: 1,
+                    ind: 1,
+                    nm: "Empty",
+                    ip: 0,
+                    op: 60,
+                    st: 0,
+                    ks: makeTransform(),
+                    sw: 0,
+                    sh: 0,
+                    sc: "#000000",
+                } as any,
+                {
+                    ty: 4,
+                    ind: 2,
+                    nm: "Child",
+                    parent: 1,
+                    ip: 0,
+                    op: 60,
+                    st: 0,
+                    ks: makeTransform(),
+                    shapes: [{ ty: "rc", nm: "rect" } as any],
+                } as RawShapeLayer,
+            ],
+        };
+
+        const { packer, calls } = makeRecordingPacker();
+        const parser = new Parser(packer, animation, makeConfiguration(), makeMockRenderingManager());
+
+        // Only the child shape rasterizes; the malformed solid layer is skipped.
+        expect(calls).toHaveLength(1);
+
+        // Solid layer's anchor was still created so the child resolves its parent and ends up as a
+        // descendant of the solid layer's ControlNode (not a stray root).
+        const roots = parser.animationInfo.nodes;
+        expect(roots).toHaveLength(1);
+        expect(roots[0].id).toBe("ControlNode (TRS) - Empty");
+    });
+});
