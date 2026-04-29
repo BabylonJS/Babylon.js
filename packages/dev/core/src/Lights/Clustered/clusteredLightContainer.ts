@@ -540,6 +540,15 @@ export class ClusteredLightContainer extends Light {
             return;
         }
         this._scene.removeLight(light);
+        // scene.removeLight only updates mesh.lightSources when the light was present in scene.lights.
+        // Lights constructed with `dontAddToScene = true` are still pushed into mesh.lightSources by
+        // Light's constructor (the `includedOnlyMeshes` setter calls `_resyncMeshes`), so we must
+        // explicitly clear them here. Otherwise the orphaned light would still be picked up by
+        // PrepareDefinesForLights and rendered as a regular point/spot light, bypassing the cluster
+        // (notably ignoring `maxRange`).
+        for (const mesh of this._scene.meshes) {
+            mesh._removeLightSource(light, false);
+        }
         this._lights.push(light);
         this._sortedLights.push(<PointLight | SpotLight>light);
 
