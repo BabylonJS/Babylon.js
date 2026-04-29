@@ -222,13 +222,9 @@ export const evaluatePlaywrightVisTests = async (
 
     test.afterEach(async () => {
         await page.evaluate(() => {
-            if (window.scene && window.scene.dispose) {
-                window.scene.dispose();
-            }
+            window.engine && window.engine.dispose();
             window.scene = null;
-            if (window.engine && window.engine.dispose) {
-                window.engine.dispose();
-            }
+            window.engine = null;
             window.engine = null;
         });
     });
