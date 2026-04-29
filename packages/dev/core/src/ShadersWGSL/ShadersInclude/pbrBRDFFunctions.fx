@@ -281,7 +281,7 @@ fn evalIridescence(outsideIOR: f32, eta2: f32, cosTheta1: f32, thinFilmThickness
     // Second interface
     var baseIOR: vec3f = getIORTfromAirToSurfaceR0(clamp(baseF0, vec3f(0.0), vec3f(0.9999))); // guard against 1.0
     var R1: vec3f = getR0fromIORsVec3(baseIOR, iridescenceIOR);
-    var R23: vec3f = fresnelSchlickGGXVec3(cosTheta2, R1,  vec3f(1.));
+    var R23: vec3f = fresnelSchlickGGXVec3(cosTheta2, R1, vec3f(1.));
     var phi23: vec3f =  vec3f(0.0);
     if (baseIOR[0] < iridescenceIOR) {
         phi23[0] = PI;
@@ -317,6 +317,85 @@ fn evalIridescence(outsideIOR: f32, eta2: f32, cosTheta1: f32, thinFilmThickness
 
     // Since out of gamut colors might be produced, negative color values are clamped to 0.
     return max(I,  vec3f(0.0));
+}
+
+// Variant of evalIridescence that accepts the base substrate IOR directly instead of recovering
+// it from baseF0 via getIORTfromAirToSurfaceR0. Use this when the actual IOR is known
+// (e.g., specular_ior for dielectrics) to avoid incorrect IOR recovery when baseF0 is
+// tinted by specular_color, and to guarantee R1=0 exactly when film and substrate IORs match.
+fn evalIridescenceWithIOR(outsideIOR: f32, eta2: f32, cosTheta1: f32, thinFilmThickness: f32, baseIOR: vec3f) -> vec3f {
+    var I: vec3f = vec3f(1.0);
+
+    var iridescenceIOR: f32 = mix(outsideIOR, eta2, smoothstep(0.0, 0.03, thinFilmThickness));
+    var sinTheta2Sq: f32 = square(outsideIOR / iridescenceIOR) * (1.0 - square(cosTheta1));
+
+    var cosTheta2Sq: f32 = 1.0 - sinTheta2Sq;
+    if (cosTheta2Sq < 0.0) {
+        return I;
+    }
+
+    var cosTheta2: f32 = sqrt(cosTheta2Sq);
+
+    // First interface
+    var R0: f32 = getR0fromIORs(iridescenceIOR, outsideIOR);
+    var R12: f32 = fresnelSchlickGGX(cosTheta1, R0, 1.);
+    var R21: f32 = R12;
+    var T121: f32 = 1.0 - R12;
+    var phi12: f32 = 0.0;
+    if (iridescenceIOR < outsideIOR) {
+        phi12 = PI;
+    }
+    var phi21: f32 = PI - phi12;
+
+    // Second interface — use baseIOR directly, no IOR recovery from F0
+    var R1: vec3f = getR0fromIORsVec3(baseIOR, iridescenceIOR);
+
+    // When film and substrate IORs match, R1=0 and there is no second-interface reflection.
+    // Return the first-interface Fresnel only — the thin film is optically absent.
+    // Without this guard two bugs combine to produce spurious colour even when R1=0:
+    //   1. Schlick with F90=1 gives R23=(1-cosTheta)^5 instead of 0 for matched IORs.
+    //   2. clamp(R12*R23, 1e-5, ...) forces r123=sqrt(1e-5)=0.003 non-zero, and
+    //      evalSensitivity then amplifies that into visible interference fringes.
+    let maxR1: f32 = max(R1.r, max(R1.g, R1.b));
+    if (maxR1 < 1e-6) {
+        return max(vec3f(R12), vec3f(0.0));
+    }
+
+    var R23: vec3f = fresnelSchlickGGXVec3(cosTheta2, R1, vec3f(1.));
+    var phi23: vec3f = vec3f(0.0);
+    if (baseIOR[0] < iridescenceIOR) {
+        phi23[0] = PI;
+    }
+    if (baseIOR[1] < iridescenceIOR) {
+        phi23[1] = PI;
+    }
+    if (baseIOR[2] < iridescenceIOR) {
+        phi23[2] = PI;
+    }
+
+    // Phase shift
+    var opd: f32 = 2.0 * iridescenceIOR * thinFilmThickness * cosTheta2;
+    var phi: vec3f = vec3f(phi21) + phi23;
+
+    // Compound terms
+    var R123: vec3f = clamp(R12 * R23, vec3f(1e-5), vec3f(0.9999));
+    var r123: vec3f = sqrt(R123);
+    var Rs: vec3f = (T121 * T121) * R23 / (vec3f(1.0) - R123);
+
+    // Reflectance term for m = 0 (DC term amplitude)
+    var C0: vec3f = R12 + Rs;
+    I = C0;
+
+    // Reflectance term for m > 0 (pairs of diracs)
+    var Cm: vec3f = Rs - T121;
+    for (var m: i32 = 1; m <= 2; m++)
+    {
+        Cm *= r123;
+        var Sm: vec3f = 2.0 * evalSensitivity(f32(m) * opd, f32(m) * phi);
+        I += Cm * Sm;
+    }
+
+    return max(I, vec3f(0.0));
 }
 #endif
 

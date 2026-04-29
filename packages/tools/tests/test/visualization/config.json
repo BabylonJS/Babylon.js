@@ -3326,6 +3326,16 @@
             "excludedEngines": ["webgl1"]
         },
         {
+            "title": "OpenPBR Thin Film and Specular Color - IBL",
+            "playgroundId": "#GRQHVV#322",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR Thin Film and Specular IOR Match - IBL",
+            "playgroundId": "#GRQHVV#323",
+            "excludedEngines": ["webgl1"]
+        },
+        {
             "title": "OpenPBR Thin Film Textures - IBL",
             "playgroundId": "#GRQHVV#174",
             "excludedEngines": ["webgl1"],
