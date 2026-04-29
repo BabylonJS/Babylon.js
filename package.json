@@ -22,6 +22,7 @@
         "chokidar": "~3.6.0",
         "dotenv": "~16.0.0",
         "es-check": "^7.1.1",
+        "esbuild": "^0.25.0",
         "eslint": "^10.0.2",
         "eslint-config-prettier": "^10.1.8",
         "eslint-formatter-azure-devops": "^1.2.0",

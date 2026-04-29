@@ -71,7 +71,7 @@ for (const batch of batches) {
             new Promise((resolvePromise) => {
                 const child = spawn("npm", ["run", "build:dev:fast", "-w", pkg], {
                     cwd: REPO_ROOT,
-                    stdio: ["ignore", "pipe", "pipe"],
+                    stdio: ["ignore", "ignore", "pipe"],
                     shell: true,
                 });
 

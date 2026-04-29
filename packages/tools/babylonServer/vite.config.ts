@@ -170,7 +170,7 @@ function babylonServerPlugin(): Plugin {
 
         const child = spawn("npm", ["run", "build:dev:fast", "-w", pkg], {
             cwd: REPO_ROOT,
-            stdio: ["ignore", "pipe", "pipe"],
+            stdio: ["ignore", "ignore", "pipe"],
             shell: true,
         });
         children.push(child);
@@ -265,6 +265,18 @@ function babylonServerPlugin(): Plugin {
                   }
                 : () => {};
 
+            /** Pipe a file to the response with error handling for TOCTOU races during rebuilds. */
+            const sendFile = (filePath: string, res: import("http").ServerResponse) => {
+                const stream = fs.createReadStream(filePath);
+                stream.on("error", () => {
+                    if (!res.headersSent) {
+                        res.statusCode = 500;
+                        res.end("File read error");
+                    }
+                });
+                stream.pipe(res);
+            };
+
             server.middlewares.use((req: Connect.IncomingMessage, res, next) => {
                 const url = req.url?.split("?")[0]?.replace(/^\//, "") ?? "";
 
@@ -276,7 +288,7 @@ function babylonServerPlugin(): Plugin {
                         log(200, "/" + url, `umd/${umdEntry.dir}`);
                         res.setHeader("Content-Type", "application/javascript");
                         res.setHeader("Access-Control-Allow-Origin", "*");
-                        fs.createReadStream(filePath).pipe(res);
+                        sendFile(filePath, res);
                         return;
                     }
                     log(404, "/" + url, "umd missing");
@@ -295,7 +307,7 @@ function babylonServerPlugin(): Plugin {
                             log(200, "/" + url, "sourcemap");
                             res.setHeader("Content-Type", "application/json");
                             res.setHeader("Access-Control-Allow-Origin", "*");
-                            fs.createReadStream(mapPath).pipe(res);
+                            sendFile(mapPath, res);
                             return;
                         }
                     }
@@ -312,7 +324,7 @@ function babylonServerPlugin(): Plugin {
                             log(200, "/" + url, "umd css");
                             res.setHeader("Content-Type", "text/css");
                             res.setHeader("Access-Control-Allow-Origin", "*");
-                            fs.createReadStream(cssPath).pipe(res);
+                            sendFile(cssPath, res);
                             return;
                         }
                     }
@@ -326,31 +338,30 @@ function babylonServerPlugin(): Plugin {
                         log(200, "/" + url, "declaration");
                         res.setHeader("Content-Type", "application/typescript");
                         res.setHeader("Access-Control-Allow-Origin", "*");
-                        fs.createReadStream(dtsPath).pipe(res);
+                        sendFile(dtsPath, res);
                         return;
                     }
                 }
 
                 // --- Playground public files (e.g. index.js CDN loader) ---
-                if (!url.includes("..")) {
-                    const pgPath = path.join(playgroundPublic, url);
-                    if (fs.existsSync(pgPath) && fs.statSync(pgPath).isFile()) {
-                        const ext = path.extname(pgPath);
-                        const mimeTypes: Record<string, string> = {
-                            ".js": "application/javascript",
-                            ".css": "text/css",
-                            ".html": "text/html",
-                            ".json": "application/json",
-                            ".wasm": "application/wasm",
-                            ".svg": "image/svg+xml",
-                            ".png": "image/png",
-                        };
-                        res.setHeader("Content-Type", mimeTypes[ext] ?? "application/octet-stream");
-                        res.setHeader("Access-Control-Allow-Origin", "*");
-                        log(200, "/" + url, "playground/public");
-                        fs.createReadStream(pgPath).pipe(res);
-                        return;
-                    }
+                const decodedUrl = decodeURIComponent(url);
+                const pgPath = path.resolve(playgroundPublic, decodedUrl);
+                if (pgPath.startsWith(playgroundPublic + path.sep) && fs.existsSync(pgPath) && fs.statSync(pgPath).isFile()) {
+                    const ext = path.extname(pgPath);
+                    const mimeTypes: Record<string, string> = {
+                        ".js": "application/javascript",
+                        ".css": "text/css",
+                        ".html": "text/html",
+                        ".json": "application/json",
+                        ".wasm": "application/wasm",
+                        ".svg": "image/svg+xml",
+                        ".png": "image/png",
+                    };
+                    res.setHeader("Content-Type", mimeTypes[ext] ?? "application/octet-stream");
+                    res.setHeader("Access-Control-Allow-Origin", "*");
+                    log(200, "/" + url, "playground/public");
+                    sendFile(pgPath, res);
+                    return;
                 }
 
                 // CORS headers for all other requests
