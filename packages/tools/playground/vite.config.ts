@@ -316,7 +316,7 @@ export default defineConfig({
     },
     optimizeDeps: {
         ...base.optimizeDeps,
-        exclude: [...(base.optimizeDeps?.exclude ?? []), "monaco-editor", "babylonjs-gltf2interface"],
+        exclude: [...(base.optimizeDeps?.exclude ?? []), "monaco-editor", "babylonjs-gltf2interface", "@dev/core", "core"],
     },
     server: {
         ...base.server,

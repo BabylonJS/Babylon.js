@@ -97,6 +97,26 @@ export function babylonDevExternalsPlugin(externals) {
         // import statements and can remove them before esbuild tries to resolve them.
         enforce: "pre",
 
+        // Tell the dep optimizer scanner that these bare specifiers are resolvable.
+        // Without this, esbuild's import scan during optimizeDeps would fail to find
+        // `core/Engines/...` etc. and report "could not be resolved" errors.
+        resolveId(id) {
+            if (pkgPrefixes.some((p) => id === p || id.startsWith(p + "/"))) {
+                return { id: `\0externalized:${id}`, external: false };
+            }
+        },
+
+        load(id) {
+            if (id.startsWith("\0externalized:")) {
+                const realId = id.slice("\0externalized:".length);
+                const pkg = pkgPrefixes.find((p) => realId === p || realId.startsWith(p + "/"));
+                if (pkg) {
+                    const globalChain = makeGlobalChain(externals[pkg]);
+                    return `const _g = ${globalChain} ?? {}; export default _g; export const __esModule = true;`;
+                }
+            }
+        },
+
         // Transform-based approach (dev + build): rewrite import statements that
         // reference external packages into direct property accesses on the global.
         // This is the exact equivalent of webpack's `externals: { "@dev/core": "BABYLON" }`.
@@ -275,8 +295,11 @@ export function commonDevViteConfiguration(options) {
 
         // Tell Vite to pre-bundle only the deps it needs, not the whole monorepo
         optimizeDeps: {
-            // Exclude local workspace packages from pre-bundling (they are aliased to src/dist)
-            exclude: Object.keys(aliases),
+            // Exclude local workspace packages from pre-bundling (they are aliased to src/dist).
+            // Also exclude CDN-externalized packages — their `dist/` files contain bare specifiers
+            // (e.g. `core/Engines/...`) that the dep optimizer's esbuild scan can't resolve.
+            // The babylonDevExternalsPlugin transform rewrites them at serve time.
+            exclude: [...Object.keys(aliases), ...(cdnExternals ? Object.keys(cdnExternals) : [])],
         },
     };
 }
