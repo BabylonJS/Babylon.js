@@ -2,10 +2,13 @@
 # Browser Testing Pipeline (Definition ID: 27)
 # Converted from Azure DevOps Classic Pipeline
 #
-# Scheduled nightly pipeline that runs WebGL2 visualization tests on
-# Webkit, Firefox, and compiles with Google Closure Compiler.
+# Nightly: Webkit and Firefox WebGL2 visualization tests, plus Google Closure
+#          Compiler validation. (Chrome ALL vis tests run via ci-monorepo on
+#          scheduled/publish triggers.)
+# Weekly (Saturday): Full performance test suite across all visualization tests
+#          for both WebGL2 and WebGPU.
 #
-# Schedule: 1:00 AM PST daily (09:00 UTC)
+# Schedule: 1:00 AM PST daily (09:00 UTC), plus 3:00 AM PST Saturday (11:00 UTC)
 #
 # Variable groups:
 #   - BabylonJS-BrowserStack (BROWSERSTACK_ACCESS_KEY, BROWSERSTACK_USERNAME)
@@ -15,13 +18,21 @@ trigger: none
 pr: none
 
 schedules:
-    # 1:00 AM PST = 09:00 UTC, all days (daysToBuild: 31)
+    # 1:00 AM PST = 09:00 UTC, all days
     - cron: "0 9 * * *"
       displayName: Nightly browser testing
       branches:
           include:
               - master
       always: false
+
+    # 3:00 AM PST = 11:00 UTC, Saturday only
+    - cron: "0 11 * * 6"
+      displayName: Weekly performance tests
+      branches:
+          include:
+              - master
+      always: true
 
 variables:
     - group: BabylonJS-BrowserStack
@@ -53,16 +64,19 @@ jobs:
                 PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: "true"
                 PUPPETEER_SKIP_DOWNLOAD: "true"
 
-          - script: npm run test:playwright -w @tools/tests -- --project=webgl2
+          - script: npx playwright test --config ./playwright.browserstack.config.ts
             displayName: "Run tests (Webkit)"
             env:
                 CDN_BASE_URL: "https://cdn.babylonjs.com"
                 CI: "true"
-                BROWSER: "BrowserStack"
+                BSTACK_TEST_TYPE: "webgl2"
+                BSTACK_BUILD_NAME: "Visualization Tests - Webkit"
                 TIMEOUT: "20000"
                 BROWSERSTACK_USERNAME: $(BROWSERSTACK_USERNAME)
                 BROWSERSTACK_ACCESS_KEY: $(BROWSERSTACK_ACCESS_KEY)
-                BROWSERSTACK_BROWSER: "playwright-webkit@latest:OSX Sonoma"
+                BSTACK_BROWSER: "playwright-webkit"
+                BSTACK_OS: "OS X"
+                BSTACK_OS_VERSION: "Sonoma"
                 EXCLUDE_REGEX_ARRAY: "Picking Visual Test,GUI Input Test,Export GLTF Extension KHR_texture_transform,PBR refraction,Procedural textures playground,GLTF Serializer Morph Target Animation,GLTF Serializer KHR materials clearcoat,Motion Blur"
                 SCREENSHOT_MAX_PIXEL: "6"
                 SCREENSHOT_THRESHOLD: "0.05"
@@ -94,16 +108,19 @@ jobs:
                 PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: "true"
                 PUPPETEER_SKIP_DOWNLOAD: "true"
 
-          - script: npm run test:playwright -w @tools/tests -- --project=webgl2
+          - script: npx playwright test --config ./playwright.browserstack.config.ts
             displayName: "Run tests (Firefox)"
             env:
                 CDN_BASE_URL: "https://cdn.babylonjs.com"
                 CI: "true"
-                BROWSER: "BrowserStack"
+                BSTACK_TEST_TYPE: "webgl2"
+                BSTACK_BUILD_NAME: "Visualization Tests - Firefox"
                 TIMEOUT: "20000"
                 BROWSERSTACK_USERNAME: $(BROWSERSTACK_USERNAME)
                 BROWSERSTACK_ACCESS_KEY: $(BROWSERSTACK_ACCESS_KEY)
-                BROWSERSTACK_BROWSER: "playwright-firefox@latest:OSX Sonoma"
+                BSTACK_BROWSER: "playwright-firefox"
+                BSTACK_OS: "OS X"
+                BSTACK_OS_VERSION: "Sonoma"
                 EXCLUDE_REGEX_ARRAY: "Procedural textures playground,Normed 16 bits texture formats"
                 SCREENSHOT_THRESHOLD: "0.05"
                 SCREENSHOT_MAX_PIXEL: "5"
@@ -165,3 +182,141 @@ jobs:
 
           - script: npx google-closure-compiler --js ./packages/public/umd/babylonjs-serializers/babylonjs.serializers.js --js_output_file serializers.out.js
             displayName: "Test serializers"
+
+    # ============================================================================
+    # WEEKLY PERFORMANCE TESTS (Saturday)
+    # Runs ALL visualization tests as performance tests for both WebGL2 and WebGPU.
+    # Compares the two most recent stable @babylonjs/core releases from npm,
+    # e.g. 9.12.0 (baseline) vs 9.13.0 (candidate).
+    # Uses all available BrowserStack parallel agents.
+    # ============================================================================
+    - job: ResolvePerfVersions
+      displayName: "Resolve perf versions"
+      condition: eq(variables['Build.CronSchedule.DisplayName'], 'Weekly performance tests')
+      steps:
+          - bash: |
+                # Resolve baseline and candidate versions for weekly perf comparison.
+                # Candidate = current latest stable release.
+                # Baseline  = the latest stable release that was published BEFORE the
+                #             last weekly run (~7 days ago). This ensures no releases
+                #             are skipped even if multiple versions shipped in one week.
+                VERSIONS=$(node -e "
+                  const { execSync } = require('child_process');
+                  const allVersions = JSON.parse(execSync('npm view @babylonjs/core versions --json', { encoding: 'utf8' }));
+                  const timeData = JSON.parse(execSync('npm view @babylonjs/core time --json', { encoding: 'utf8' }));
+                  const stable = allVersions.filter(v => !v.includes('-'));
+                  const candidate = stable[stable.length - 1];
+                  // Find the latest stable version published before 7 days ago
+                  const cutoff = Date.now() - 7 * 24 * 60 * 60 * 1000;
+                  const olderStable = stable.filter(v => new Date(timeData[v]).getTime() < cutoff && v !== candidate);
+                  const baseline = olderStable.length > 0 ? olderStable[olderStable.length - 1] : stable[stable.length - 2];
+                  console.log(baseline + ' ' + candidate);
+                ")
+                PREV=$(echo "$VERSIONS" | awk '{print $1}')
+                CURR=$(echo "$VERSIONS" | awk '{print $2}')
+                echo "Baseline (published before last run): $PREV"
+                echo "Candidate (current latest): $CURR"
+                echo "##vso[task.setvariable variable=PERF_CDN_BASELINE;isOutput=true]$PREV"
+                echo "##vso[task.setvariable variable=PERF_CDN_CANDIDATE;isOutput=true]$CURR"
+            name: ResolveVersions
+            displayName: "Resolve perf comparison versions"
+
+    - job: WeeklyPerfWebGL2
+      displayName: "Weekly perf - WebGL2"
+      dependsOn: ResolvePerfVersions
+      condition: and(succeeded(), eq(variables['Build.CronSchedule.DisplayName'], 'Weekly performance tests'))
+      variables:
+          PERF_CDN_BASELINE: $[ dependencies.ResolvePerfVersions.outputs['ResolveVersions.PERF_CDN_BASELINE'] ]
+          PERF_CDN_CANDIDATE: $[ dependencies.ResolvePerfVersions.outputs['ResolveVersions.PERF_CDN_CANDIDATE'] ]
+      steps:
+          - checkout: self
+            clean: true
+            fetchTags: false
+
+          - task: UseNode@1
+            displayName: "Use Node 22.x"
+            inputs:
+                version: "22.x"
+
+          - script: npm install
+            displayName: "NPM install"
+            env:
+                PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: "true"
+                PUPPETEER_SKIP_DOWNLOAD: "true"
+
+          - bash: |
+                echo "Baseline: $(PERF_CDN_BASELINE), Candidate: $(PERF_CDN_CANDIDATE)"
+                .azure-pipelines/browserstack-wait.sh npx playwright test --config ./playwright.browserstack.config.ts
+            displayName: "Performance - WebGL2 ALL (BStack)"
+            continueOnError: true
+            env:
+                CDN_BASE_URL: "https://cdn.babylonjs.com"
+                CI: "true"
+                BSTACK_TEST_TYPE: "performance"
+                BSTACK_BUILD_NAME: "Weekly Perf - WebGL2 ($(PERF_CDN_BASELINE) vs $(PERF_CDN_CANDIDATE))"
+                VISUALIZATION_PERF: "true"
+                VISUALIZATION_PERF_ALL: "true"
+                CDN_VERSION: $(PERF_CDN_BASELINE)
+                CDN_VERSION_B: $(PERF_CDN_CANDIDATE)
+                TIMEOUT: "300000"
+                BSTACK_SESSIONS_REQUIRED: "5"
+                BROWSERSTACK_USERNAME: $(BROWSERSTACK_USERNAME)
+                BROWSERSTACK_ACCESS_KEY: $(BROWSERSTACK_ACCESS_KEY)
+
+          - task: PublishTestResults@2
+            displayName: "Publish perf test results"
+            condition: succeededOrFailed()
+            inputs:
+                testResultsFormat: JUnit
+                testResultsFiles: "junit.xml"
+                testRunTitle: "Weekly Perf - WebGL2"
+
+    - job: WeeklyPerfWebGPU
+      displayName: "Weekly perf - WebGPU"
+      dependsOn: ResolvePerfVersions
+      condition: and(succeeded(), eq(variables['Build.CronSchedule.DisplayName'], 'Weekly performance tests'))
+      variables:
+          PERF_CDN_BASELINE: $[ dependencies.ResolvePerfVersions.outputs['ResolveVersions.PERF_CDN_BASELINE'] ]
+          PERF_CDN_CANDIDATE: $[ dependencies.ResolvePerfVersions.outputs['ResolveVersions.PERF_CDN_CANDIDATE'] ]
+      steps:
+          - checkout: self
+            clean: true
+            fetchTags: false
+
+          - task: UseNode@1
+            displayName: "Use Node 22.x"
+            inputs:
+                version: "22.x"
+
+          - script: npm install
+            displayName: "NPM install"
+            env:
+                PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: "true"
+                PUPPETEER_SKIP_DOWNLOAD: "true"
+
+          - bash: |
+                echo "Baseline: $(PERF_CDN_BASELINE), Candidate: $(PERF_CDN_CANDIDATE)"
+                .azure-pipelines/browserstack-wait.sh npx playwright test --config ./playwright.browserstack.config.ts -g "webgpu"
+            displayName: "Performance - WebGPU ALL (BStack)"
+            continueOnError: true
+            env:
+                CDN_BASE_URL: "https://cdn.babylonjs.com"
+                CI: "true"
+                BSTACK_TEST_TYPE: "performance"
+                BSTACK_BUILD_NAME: "Weekly Perf - WebGPU ($(PERF_CDN_BASELINE) vs $(PERF_CDN_CANDIDATE))"
+                VISUALIZATION_PERF: "true"
+                VISUALIZATION_PERF_ALL: "true"
+                CDN_VERSION: $(PERF_CDN_BASELINE)
+                CDN_VERSION_B: $(PERF_CDN_CANDIDATE)
+                TIMEOUT: "300000"
+                BSTACK_SESSIONS_REQUIRED: "5"
+                BROWSERSTACK_USERNAME: $(BROWSERSTACK_USERNAME)
+                BROWSERSTACK_ACCESS_KEY: $(BROWSERSTACK_ACCESS_KEY)
+
+          - task: PublishTestResults@2
+            displayName: "Publish perf test results"
+            condition: succeededOrFailed()
+            inputs:
+                testResultsFormat: JUnit
+                testResultsFiles: "junit.xml"
+                testRunTitle: "Weekly Perf - WebGPU"

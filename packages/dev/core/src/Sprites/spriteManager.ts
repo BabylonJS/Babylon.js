@@ -338,6 +338,7 @@ export class SpriteManager implements ISpriteManager {
         if (!scene) {
             scene = EngineStore.LastCreatedScene!;
         }
+        this.layerMask = scene.defaultRenderableLayerMask;
 
         if (!scene._getComponent(SceneComponentConstants.NAME_SPRITE)) {
             scene._addComponent(new SpriteSceneComponent(scene));

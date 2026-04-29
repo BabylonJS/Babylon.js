@@ -22,6 +22,7 @@ export class GaussianSplattingGpuPickingMaterialPlugin extends MaterialPluginBas
     private _isCompound: boolean = false;
     private _partPickingColors: number[] = [];
     private _partVisibility: number[] = [];
+    private _defaultPartVisibility: number[] = [];
     private _maxPartCount: number;
 
     /**
@@ -33,6 +34,7 @@ export class GaussianSplattingGpuPickingMaterialPlugin extends MaterialPluginBas
         super(material, "GaussianSplatGpuPicking", 200);
 
         this._maxPartCount = maxPartCount ?? GetGaussianSplattingMaxPartCount(material.getScene().getEngine());
+        this._defaultPartVisibility = new Array(this._maxPartCount).fill(1.0);
         this._enable(true);
     }
 
@@ -89,13 +91,14 @@ export class GaussianSplattingGpuPickingMaterialPlugin extends MaterialPluginBas
      * @param activeParts Array of part indices that should be pickable.
      */
     public setPartActive(activeParts: number[]): void {
-        const visibility = new Array(this._maxPartCount).fill(0.0);
+        const visibility = this._partVisibility;
+        visibility.length = this._maxPartCount;
+        visibility.fill(0.0);
         for (const index of activeParts) {
             if (index >= 0 && index < this._maxPartCount) {
                 visibility[index] = 1.0;
             }
         }
-        this._partVisibility = visibility;
     }
 
     /**
@@ -249,7 +252,7 @@ uniform pickingColor: vec3f;
         if (this._isCompound) {
             effect.setArray3("partPickingColors", this._partPickingColors);
             // default all visible when setPartActive hasn't been called
-            const visibility = this._partVisibility.length > 0 ? this._partVisibility : new Array(this._maxPartCount).fill(1.0);
+            const visibility = this._partVisibility.length > 0 ? this._partVisibility : this._defaultPartVisibility;
             effect.setArray("partVisibility", visibility);
         } else {
             effect.setFloat3("pickingColor", this._pickingColor[0], this._pickingColor[1], this._pickingColor[2]);
