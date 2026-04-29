@@ -64,6 +64,8 @@ module.exports = (env) => {
                 materials: path.resolve(basePathForSources, "materials", outputDirectoryForAliases),
                 "lottie-player": path.resolve(basePathForSources, "lottiePlayer", outputDirectoryForAliases),
                 inspector: path.resolve(__dirname, "../../", "dev", "inspector", outputDirectoryForAliases),
+                "inspector-v2": path.resolve(__dirname, "../../", "dev", "inspector-v2", outputDirectoryForAliases),
+                addons: path.resolve(basePathForSources, "addons", outputDirectoryForAliases),
                 "shared-ui-components": path.resolve(__dirname, "../../", "dev", "sharedUiComponents", outputDirectoryForAliases),
                 "post-processes": path.resolve(basePathForSources, "postProcesses", outputDirectoryForAliases),
                 "procedural-textures": path.resolve(basePathForSources, "proceduralTextures", outputDirectoryForAliases),
