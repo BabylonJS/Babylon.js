@@ -9,7 +9,8 @@ import {
     type RawTextData,
 } from "../parsing/rawTypes";
 import { GetInitialScalarValue, GetInitialVectorValues, GetInitialBezierData } from "../parsing/rawPropertyHelpers";
-import { ApplyLottieTextContext, type LottieTextCompatibilityMode, MeasureLottieText, ResolveLottieText } from "../parsing/textLayout";
+import { type LottieTextCompatibilityMode } from "../animationConfiguration";
+import { ApplyLottieTextContext, MeasureLottieText, ResolveLottieText } from "../parsing/textLayout";
 
 /**
  * Represents a bounding box for a shape in the animation.

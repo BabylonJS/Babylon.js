@@ -1,11 +1,7 @@
 import { type IVector2Like } from "core/Maths/math.like";
 
+import { type LottieTextCompatibilityMode } from "../animationConfiguration";
 import { type RawFont, type RawTextData, type RawTextDocument, type RawTextJustify } from "./rawTypes";
-
-/**
- * Controls whether text layout uses the current spec-correct placement metrics or Babylon.js 8.x-compatible metrics.
- */
-export type LottieTextCompatibilityMode = "spec" | "babylon8";
 
 /**
  * Minimal text metrics shape used by the Lottie text layout helpers.
@@ -314,6 +310,11 @@ function MeasureSpecLottieText(resolvedText: ResolvedLottieText, measureText: (t
 }
 
 function MeasureBabylon8LottieText(resolvedText: ResolvedLottieText, measureText: (text: string) => TextMetricsLike): LottieTextLayout {
+    // Babylon.js 8.x rasterized text via a single fillText call that received the raw Lottie text string,
+    // including any embedded line break characters. Canvas's fillText/measureText treat \n and \r as
+    // ignorable whitespace, so multi-line Lottie text rendered as a single line in Babylon.js 8.
+    // Joining the lines back together here intentionally reproduces that behavior; do not split across
+    // multiple LottieTextLineLayout entries or this mode will diverge from Babylon.js 8 placement.
     const text = resolvedText.lines.join("\n");
     const metrics = measureText(text);
     const width = Math.ceil(metrics.width);
