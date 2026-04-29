@@ -1,9 +1,8 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { type IColor4Like, type IDisposable, type IReadonlyObservable, type Nullable } from "core/index";
+import { type IColor4Like, type Nullable } from "core/index";
 import { AsyncLock } from "core/Misc/asyncLock";
 import { AbortError } from "core/Misc/error";
 import { Logger } from "core/Misc/logger";
-import { Observable } from "core/Misc/observable";
 
 import {
     addToScene,
@@ -55,6 +54,7 @@ import {
     type ViewerBaseOptions,
     type ViewerHotSpotResult,
     type ViewerLoadModelOptions,
+    ViewerBase,
     DefaultViewerBaseOptions,
     throwIfAborted,
     observePromise,
@@ -120,85 +120,7 @@ function toneMappingToLiteType(mode: ToneMapping): "standard" | "aces" | undefin
  * Features that are not available in Lite (SSAO, "high" shadow quality, hot spots, File/ArrayBufferView model sources)
  * will log warnings and fall back gracefully.
  */
-export class Viewer implements IViewer {
-    // ── Observables ──
-    // Concrete Observable instances are private so we can notifyObservers/clear internally;
-    // they are exposed publicly as IReadonlyObservable via getters below.
-
-    private readonly _onEnvironmentChanged = new Observable<void>();
-    private readonly _onEnvironmentConfigurationChanged = new Observable<void>();
-    private readonly _onEnvironmentError = new Observable<unknown>();
-    private readonly _onShadowsConfigurationChanged = new Observable<void>();
-    private readonly _onPostProcessingChanged = new Observable<void>();
-    private readonly _onModelChanged = new Observable<Nullable<string | File | ArrayBufferView>>();
-    private readonly _onModelError = new Observable<unknown>();
-    private readonly _onLoadingProgressChanged = new Observable<void>();
-    private readonly _onCameraAutoOrbitChanged = new Observable<void>();
-    private readonly _onSelectedAnimationChanged = new Observable<void>();
-    private readonly _onAnimationSpeedChanged = new Observable<void>();
-    private readonly _onIsAnimationPlayingChanged = new Observable<void>();
-    private readonly _onAnimationProgressChanged = new Observable<void>();
-    private readonly _onSelectedMaterialVariantChanged = new Observable<void>();
-    private readonly _onHotSpotsChanged = new Observable<void>();
-    private readonly _onCamerasAsHotSpotsChanged = new Observable<void>();
-    private readonly _onAfterRenderObservable = new Observable<void>();
-    private readonly _onClearColorChanged = new Observable<void>();
-
-    public get onEnvironmentChanged(): IReadonlyObservable<void> {
-        return this._onEnvironmentChanged;
-    }
-    public get onEnvironmentConfigurationChanged(): IReadonlyObservable<void> {
-        return this._onEnvironmentConfigurationChanged;
-    }
-    public get onEnvironmentError(): IReadonlyObservable<unknown> {
-        return this._onEnvironmentError;
-    }
-    public get onShadowsConfigurationChanged(): IReadonlyObservable<void> {
-        return this._onShadowsConfigurationChanged;
-    }
-    public get onPostProcessingChanged(): IReadonlyObservable<void> {
-        return this._onPostProcessingChanged;
-    }
-    public get onModelChanged(): IReadonlyObservable<Nullable<string | File | ArrayBufferView>> {
-        return this._onModelChanged;
-    }
-    public get onModelError(): IReadonlyObservable<unknown> {
-        return this._onModelError;
-    }
-    public get onLoadingProgressChanged(): IReadonlyObservable<void> {
-        return this._onLoadingProgressChanged;
-    }
-    public get onCameraAutoOrbitChanged(): IReadonlyObservable<void> {
-        return this._onCameraAutoOrbitChanged;
-    }
-    public get onSelectedAnimationChanged(): IReadonlyObservable<void> {
-        return this._onSelectedAnimationChanged;
-    }
-    public get onAnimationSpeedChanged(): IReadonlyObservable<void> {
-        return this._onAnimationSpeedChanged;
-    }
-    public get onIsAnimationPlayingChanged(): IReadonlyObservable<void> {
-        return this._onIsAnimationPlayingChanged;
-    }
-    public get onAnimationProgressChanged(): IReadonlyObservable<void> {
-        return this._onAnimationProgressChanged;
-    }
-    public get onSelectedMaterialVariantChanged(): IReadonlyObservable<void> {
-        return this._onSelectedMaterialVariantChanged;
-    }
-    public get onHotSpotsChanged(): IReadonlyObservable<void> {
-        return this._onHotSpotsChanged;
-    }
-    public get onCamerasAsHotSpotsChanged(): IReadonlyObservable<void> {
-        return this._onCamerasAsHotSpotsChanged;
-    }
-    public get onAfterRenderObservable(): IReadonlyObservable<void> {
-        return this._onAfterRenderObservable;
-    }
-    public get onClearColorChanged(): IReadonlyObservable<void> {
-        return this._onClearColorChanged;
-    }
-
+export class Viewer extends ViewerBase implements IViewer {
     // ── Private State ──
 
     private readonly _scene: SceneContext;
@@ -238,7 +160,6 @@ export class Viewer implements IViewer {
     private _container: AssetContainer | null = null;
     /** The source that was passed to the most recent {@link loadModel} call, for notifications. */
     private _modelSource: Nullable<string | File | ArrayBufferView> = null;
-    private readonly _loadOperations = new Set<Readonly<{ progress: Nullable<number> }>>();
     private _loadModelAbortController: AbortController | null = null;
     private _loadEnvironmentAbortController: AbortController | null = null;
     private _shadowsAbortController: AbortController | null = null;
@@ -260,7 +181,6 @@ export class Viewer implements IViewer {
     private _camerasAsHotSpots = false;
 
     // Lifecycle
-    private _isDisposed = false;
     private _defaultAlpha: number;
     private _defaultBeta: number;
     private _defaultRadius: number;
@@ -275,6 +195,7 @@ export class Viewer implements IViewer {
         private readonly _engine: EngineContext,
         private readonly _options?: ViewerOptions
     ) {
+        super();
         // Create scene internally (matching how full Viewer owns its scene)
         this._scene = createSceneContext(_engine);
         // Camera — NaN means "auto" (will be recomputed when model loads)
@@ -342,7 +263,7 @@ export class Viewer implements IViewer {
             this._updateAutoOrbit(_deltaMs);
             this._pollAnimationState();
 
-            this._onAfterRenderObservable.notifyObservers();
+            this.onAfterRenderObservable.notifyObservers();
         });
 
         // Start the render loop immediately (empty scene renders clear color)
@@ -383,7 +304,7 @@ export class Viewer implements IViewer {
         cc.g = value.g;
         cc.b = value.b;
         cc.a = value.a;
-        this._onClearColorChanged.notifyObservers();
+        this.onClearColorChanged.notifyObservers();
     }
 
     // ── Camera ──
@@ -411,7 +332,7 @@ export class Viewer implements IViewer {
             changed = true;
         }
         if (changed) {
-            this._onCameraAutoOrbitChanged.notifyObservers();
+            this.onCameraAutoOrbitChanged.notifyObservers();
         }
     }
 
@@ -514,7 +435,7 @@ export class Viewer implements IViewer {
         if (value.rotation !== undefined) {
             this._changeEnvironmentRotation(value.rotation);
         }
-        this._onEnvironmentConfigurationChanged.notifyObservers();
+        this.onEnvironmentConfigurationChanged.notifyObservers();
     }
 
     private _changeEnvironmentIntensity(value: number) {
@@ -604,12 +525,12 @@ export class Viewer implements IViewer {
 
                 throwIfAborted(abortSignal, internalAbortController.signal);
 
-                this._onEnvironmentChanged.notifyObservers();
+                this.onEnvironmentChanged.notifyObservers();
             } catch (e) {
                 if (e instanceof AbortError) {
                     throw e;
                 }
-                this._onEnvironmentError.notifyObservers(e);
+                this.onEnvironmentError.notifyObservers(e);
                 throw e;
             } finally {
                 loadOperation.dispose();
@@ -636,8 +557,8 @@ export class Viewer implements IViewer {
         this._environmentRotation = DefaultViewerOptions.environmentConfig.rotation;
         this._scene.envRotationY = 0;
 
-        this._onEnvironmentChanged.notifyObservers();
-        this._onEnvironmentConfigurationChanged.notifyObservers();
+        this.onEnvironmentChanged.notifyObservers();
+        this.onEnvironmentConfigurationChanged.notifyObservers();
     }
 
     // ── Post Processing ──
@@ -653,7 +574,7 @@ export class Viewer implements IViewer {
 
     public set postProcessing(value: Partial<Readonly<PostProcessing>>) {
         this._applyPostProcessing(value);
-        this._onPostProcessingChanged.notifyObservers();
+        this.onPostProcessingChanged.notifyObservers();
     }
 
     private _applyPostProcessing(value: Partial<Readonly<PostProcessing>>): void {
@@ -716,7 +637,7 @@ export class Viewer implements IViewer {
                 this._setupShadows();
             }
 
-            this._onShadowsConfigurationChanged.notifyObservers();
+            this.onShadowsConfigurationChanged.notifyObservers();
         });
     }
 
@@ -754,7 +675,7 @@ export class Viewer implements IViewer {
 
                 if (typeof source !== "string") {
                     Logger.Warn("Viewer: Only string URLs are supported for model loading. File and ArrayBufferView sources are not supported.");
-                    this._onModelError.notifyObservers(new Error("Unsupported model source type"));
+                    this.onModelError.notifyObservers(new Error("Unsupported model source type"));
                     return;
                 }
 
@@ -786,7 +707,7 @@ export class Viewer implements IViewer {
                 // Apply clear color from model if present
                 if (container.clearColor) {
                     this._scene.clearColor = container.clearColor;
-                    this._onClearColorChanged.notifyObservers();
+                    this.onClearColorChanged.notifyObservers();
                 }
 
                 // Setup shadows if configured
@@ -805,12 +726,12 @@ export class Viewer implements IViewer {
                 // Frame camera to loaded model
                 this._frameCameraToModel();
 
-                this._onModelChanged.notifyObservers(source);
+                this.onModelChanged.notifyObservers(source);
             } catch (e) {
                 if (e instanceof AbortError) {
                     throw e;
                 }
-                this._onModelError.notifyObservers(e);
+                this.onModelError.notifyObservers(e);
                 throw e;
             } finally {
                 loadOperation.dispose();
@@ -828,7 +749,7 @@ export class Viewer implements IViewer {
         this._unloadCurrentModel();
 
         if (hadModel) {
-            this._onModelChanged.notifyObservers(null);
+            this.onModelChanged.notifyObservers(null);
         }
     }
 
@@ -870,7 +791,7 @@ export class Viewer implements IViewer {
         const groups = this._container?.animationGroups;
         if (!groups || groups.length === 0) {
             this._selectedAnimation = -1;
-            this._onSelectedAnimationChanged.notifyObservers();
+            this.onSelectedAnimationChanged.notifyObservers();
             return;
         }
 
@@ -880,7 +801,7 @@ export class Viewer implements IViewer {
         }
 
         this._selectedAnimation = index >= 0 && index < groups.length ? index : -1;
-        this._onSelectedAnimationChanged.notifyObservers();
+        this.onSelectedAnimationChanged.notifyObservers();
     }
 
     public get animationSpeed(): number {
@@ -895,7 +816,7 @@ export class Viewer implements IViewer {
             group.speedRatio = value;
         }
 
-        this._onAnimationSpeedChanged.notifyObservers();
+        this.onAnimationSpeedChanged.notifyObservers();
     }
 
     public get isAnimationPlaying(): boolean {
@@ -923,7 +844,7 @@ export class Viewer implements IViewer {
         const frameAt60fps = targetSeconds * 60;
         goToFrame(group, frameAt60fps);
 
-        this._onAnimationProgressChanged.notifyObservers();
+        this.onAnimationProgressChanged.notifyObservers();
     }
 
     public toggleAnimation(): void {
@@ -940,7 +861,7 @@ export class Viewer implements IViewer {
             group.speedRatio = this._animationSpeed;
             group.loopAnimation = true;
             litePlayAnimation(group);
-            this._onIsAnimationPlayingChanged.notifyObservers();
+            this.onIsAnimationPlayingChanged.notifyObservers();
         }
     }
 
@@ -948,7 +869,7 @@ export class Viewer implements IViewer {
         const group = this._getActiveAnimationGroup();
         if (group) {
             litePauseAnimation(group);
-            this._onIsAnimationPlayingChanged.notifyObservers();
+            this.onIsAnimationPlayingChanged.notifyObservers();
         }
     }
 
@@ -970,7 +891,7 @@ export class Viewer implements IViewer {
         // Select the first animation by default, or the one specified in options
         const defaultIndex = this._options?.selectedAnimation ?? 0;
         this._selectedAnimation = defaultIndex >= 0 && defaultIndex < groups.length ? defaultIndex : 0;
-        this._onSelectedAnimationChanged.notifyObservers();
+        this.onSelectedAnimationChanged.notifyObservers();
 
         // Auto-play if configured
         if (this._options?.animationAutoPlay) {
@@ -978,7 +899,7 @@ export class Viewer implements IViewer {
             group.speedRatio = this._animationSpeed;
             group.loopAnimation = true;
             litePlayAnimation(group);
-            this._onIsAnimationPlayingChanged.notifyObservers();
+            this.onIsAnimationPlayingChanged.notifyObservers();
         }
     }
 
@@ -991,14 +912,14 @@ export class Viewer implements IViewer {
         const isPlaying = group.isPlaying;
         if (isPlaying !== this._wasPlaying) {
             this._wasPlaying = isPlaying;
-            this._onIsAnimationPlayingChanged.notifyObservers();
+            this.onIsAnimationPlayingChanged.notifyObservers();
         }
 
         if (isPlaying) {
             const progress = group.duration > 0 ? group.currentFrame / group.duration : 0;
             if (progress !== this._lastProgress) {
                 this._lastProgress = progress;
-                this._onAnimationProgressChanged.notifyObservers();
+                this.onAnimationProgressChanged.notifyObservers();
             }
         }
     }
@@ -1030,7 +951,7 @@ export class Viewer implements IViewer {
             }
         }
 
-        this._onSelectedMaterialVariantChanged.notifyObservers();
+        this.onSelectedMaterialVariantChanged.notifyObservers();
     }
 
     // ── Hot Spots ──
@@ -1041,7 +962,7 @@ export class Viewer implements IViewer {
 
     public set hotSpots(value: Record<string, HotSpot>) {
         this._hotSpots = value;
-        this._onHotSpotsChanged.notifyObservers();
+        this.onHotSpotsChanged.notifyObservers();
     }
 
     public get camerasAsHotSpots(): boolean {
@@ -1053,7 +974,7 @@ export class Viewer implements IViewer {
             return;
         }
         this._camerasAsHotSpots = value;
-        this._onCamerasAsHotSpotsChanged.notifyObservers();
+        this.onCamerasAsHotSpotsChanged.notifyObservers();
     }
 
     public queryHotSpot(_name: string, _result: ViewerHotSpotResult): boolean {
@@ -1070,59 +991,6 @@ export class Viewer implements IViewer {
 
     public get isModelLoaded(): boolean {
         return this._container !== null;
-    }
-
-    public get loadingProgress(): boolean | number {
-        if (this._loadOperations.size > 0) {
-            let totalProgress = 0;
-            for (const operation of this._loadOperations) {
-                if (operation.progress == null) {
-                    return true;
-                }
-                totalProgress += operation.progress;
-            }
-
-            return totalProgress / this._loadOperations.size;
-        }
-
-        return false;
-    }
-
-    protected _beginLoadOperation(): IDisposable & { progress: Nullable<number> } {
-        // eslint-disable-next-line @typescript-eslint/no-this-alias
-        const viewer = this;
-        let progress: Nullable<number> = null;
-
-        const loadOperation = {
-            get progress() {
-                return progress;
-            },
-            set progress(value: Nullable<number>) {
-                progress = value;
-                viewer._onLoadingProgressChanged.notifyObservers();
-            },
-            dispose: () => {
-                viewer._loadOperations.delete(loadOperation);
-                viewer._onLoadingProgressChanged.notifyObservers();
-            },
-        };
-
-        this._loadOperations.add(loadOperation);
-        this._onLoadingProgressChanged.notifyObservers();
-
-        return loadOperation;
-    }
-
-    /**
-     * Check for disposed or aborted state (basically everything that can interrupt an async operation).
-     * @param abortSignals A set of optional AbortSignals to also check.
-     */
-    private _throwIfDisposedOrAborted(...abortSignals: (Nullable<AbortSignal> | undefined)[]): void {
-        if (this._isDisposed) {
-            throw new Error("Viewer is disposed.");
-        }
-
-        throwIfAborted(...abortSignals);
     }
 
     public reset(...flags: ResetFlag[]): void {
@@ -1164,7 +1032,7 @@ export class Viewer implements IViewer {
                 exposure: this._options?.postProcessing?.exposure ?? DefaultViewerOptions.postProcessing.exposure,
                 ssao: this._options?.postProcessing?.ssao ?? DefaultViewerOptions.postProcessing.ssao,
             });
-            this._onPostProcessingChanged.notifyObservers();
+            this.onPostProcessingChanged.notifyObservers();
         }
 
         if (all || flags.includes("shadow")) {
@@ -1181,8 +1049,8 @@ export class Viewer implements IViewer {
                 }
                 this._selectedAnimation = this._options?.selectedAnimation ?? 0;
                 this._animationSpeed = this._options?.animationSpeed ?? 1;
-                this._onSelectedAnimationChanged.notifyObservers();
-                this._onAnimationSpeedChanged.notifyObservers();
+                this.onSelectedAnimationChanged.notifyObservers();
+                this.onAnimationSpeedChanged.notifyObservers();
 
                 if (this._options?.animationAutoPlay) {
                     this.playAnimation();
@@ -1220,11 +1088,10 @@ export class Viewer implements IViewer {
         this._renderLoopRunning = true;
     }
 
-    public dispose(): void {
+    public override dispose(): void {
         if (this._isDisposed) {
             return;
         }
-        this._isDisposed = true;
 
         // Detach camera controls
         this._detachControl?.();
@@ -1252,25 +1119,8 @@ export class Viewer implements IViewer {
         disposeScene(this._scene);
         disposeEngine(this._engine);
 
-        // Clear all observables
-        this._onEnvironmentChanged.clear();
-        this._onEnvironmentConfigurationChanged.clear();
-        this._onEnvironmentError.clear();
-        this._onShadowsConfigurationChanged.clear();
-        this._onPostProcessingChanged.clear();
-        this._onModelChanged.clear();
-        this._onModelError.clear();
-        this._onLoadingProgressChanged.clear();
-        this._onCameraAutoOrbitChanged.clear();
-        this._onSelectedAnimationChanged.clear();
-        this._onAnimationSpeedChanged.clear();
-        this._onIsAnimationPlayingChanged.clear();
-        this._onAnimationProgressChanged.clear();
-        this._onSelectedMaterialVariantChanged.clear();
-        this._onHotSpotsChanged.clear();
-        this._onCamerasAsHotSpotsChanged.clear();
-        this._onAfterRenderObservable.clear();
-        this._onClearColorChanged.clear();
+        // Base disposes observables and sets _isDisposed = true
+        super.dispose();
     }
 
     // ── Private Helpers ──

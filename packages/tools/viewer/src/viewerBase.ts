@@ -2,6 +2,7 @@
 import { type HotSpotQuery, type IColor4Like, type IDisposable, type Nullable, type IReadonlyObservable } from "core/index";
 import { AbortError } from "core/Misc/error";
 import { Logger } from "core/Misc/logger";
+import { Observable } from "core/Misc/observable";
 
 /**
  * Throws if any of the supplied abort signals is aborted.
@@ -739,4 +740,220 @@ export interface IViewer extends IDisposable {
      * Disposes the viewer and releases all resources.
      */
     dispose(): void;
+}
+
+/**
+ * Common base for the full Babylon.js {@link Viewer} and the lite Viewer.
+ *
+ * Encapsulates the pieces that are identical between both engine backends:
+ * - The 18 public observables exposed by the viewer surface area
+ * - In-flight load operation tracking (used to compute aggregate `loadingProgress`)
+ * - The `_throwIfDisposedOrAborted` helper used at the start of every async operation
+ * - The disposed flag and observable teardown in `dispose()`
+ *
+ * Subclasses are responsible for everything engine-specific (scene/engine creation,
+ * model + environment loading orchestration, camera, post-processing, shadows, etc.)
+ * and for declaring `implements IViewer` themselves so the public API contract is
+ * verified at the leaf class level.
+ */
+export abstract class ViewerBase {
+    // ── Observables ──
+    // Concrete `Observable<T>` is exposed publicly (it satisfies `IReadonlyObservable<T>`
+    // for the `IViewer` interface contract). Subclasses notify directly via `this.onXxx.notifyObservers()`.
+
+    /**
+     * Fired when the environment has changed.
+     */
+    public readonly onEnvironmentChanged = new Observable<void>();
+
+    /**
+     * Fired when the environment configuration has changed.
+     */
+    public readonly onEnvironmentConfigurationChanged = new Observable<void>();
+
+    /**
+     * Fired when an error occurs while loading the environment.
+     */
+    public readonly onEnvironmentError = new Observable<unknown>();
+
+    /**
+     * Fired when the shadows configuration changes.
+     */
+    public readonly onShadowsConfigurationChanged = new Observable<void>();
+
+    /**
+     * Fired when the post processing state changes.
+     */
+    public readonly onPostProcessingChanged = new Observable<void>();
+
+    /**
+     * Fired when a model is loaded into the viewer (or unloaded from the viewer).
+     * @remarks
+     * The event argument is the source that was loaded, or null if no model is loaded.
+     */
+    public readonly onModelChanged = new Observable<Nullable<string | File | ArrayBufferView>>();
+
+    /**
+     * Fired when an error occurs while loading a model.
+     */
+    public readonly onModelError = new Observable<unknown>();
+
+    /**
+     * Fired when progress changes on loading activity.
+     */
+    public readonly onLoadingProgressChanged = new Observable<void>();
+
+    /**
+     * Fired when the camera auto orbit state changes.
+     */
+    public readonly onCameraAutoOrbitChanged = new Observable<void>();
+
+    /**
+     * Fired when the selected animation changes.
+     */
+    public readonly onSelectedAnimationChanged = new Observable<void>();
+
+    /**
+     * Fired when the animation speed changes.
+     */
+    public readonly onAnimationSpeedChanged = new Observable<void>();
+
+    /**
+     * Fired when the selected animation is playing or paused.
+     */
+    public readonly onIsAnimationPlayingChanged = new Observable<void>();
+
+    /**
+     * Fired when the current point on the selected animation timeline changes.
+     */
+    public readonly onAnimationProgressChanged = new Observable<void>();
+
+    /**
+     * Fired when the selected material variant changes.
+     */
+    public readonly onSelectedMaterialVariantChanged = new Observable<void>();
+
+    /**
+     * Fired when the hot spots object changes to a complete new object instance.
+     */
+    public readonly onHotSpotsChanged = new Observable<void>();
+
+    /**
+     * Fired when the cameras as hot spots property changes.
+     */
+    public readonly onCamerasAsHotSpotsChanged = new Observable<void>();
+
+    /**
+     * Fired after each frame is rendered.
+     */
+    public readonly onAfterRenderObservable = new Observable<void>();
+
+    /**
+     * Fired when the clear color changes.
+     */
+    public readonly onClearColorChanged = new Observable<void>();
+
+    /**
+     * @internal Tracks in-flight load operations (model + environment + shadows) so that
+     * `loadingProgress` can return either an aggregate progress number, `true` (indeterminate),
+     * or `false` (no operations in flight).
+     */
+    protected readonly _loadOperations = new Set<Readonly<{ progress: Nullable<number> }>>();
+
+    /** @internal True after `dispose()` has been called. */
+    protected _isDisposed = false;
+
+    /**
+     * The current loading progress. False when no load is in flight, true when at least one
+     * load is in flight with indeterminate progress, or a number between 0 and 1 representing
+     * the average of all in-flight loads' progress.
+     */
+    public get loadingProgress(): boolean | number {
+        if (this._loadOperations.size > 0) {
+            let totalProgress = 0;
+            for (const operation of this._loadOperations) {
+                if (operation.progress == null) {
+                    return true;
+                }
+                totalProgress += operation.progress;
+            }
+
+            return totalProgress / this._loadOperations.size;
+        }
+
+        return false;
+    }
+
+    /**
+     * @internal Begin tracking a new load operation. Subclasses call this at the start of
+     * an async load and dispose the returned handle when it completes (or fails). The handle
+     * exposes a `progress` setter that, when assigned, fires `onLoadingProgressChanged`.
+     */
+    protected _beginLoadOperation(): IDisposable & { progress: Nullable<number> } {
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
+        const viewer = this;
+        let progress: Nullable<number> = null;
+
+        const loadOperation = {
+            get progress() {
+                return progress;
+            },
+            set progress(value: Nullable<number>) {
+                progress = value;
+                viewer.onLoadingProgressChanged.notifyObservers();
+            },
+            dispose: () => {
+                viewer._loadOperations.delete(loadOperation);
+                viewer.onLoadingProgressChanged.notifyObservers();
+            },
+        };
+
+        this._loadOperations.add(loadOperation);
+        this.onLoadingProgressChanged.notifyObservers();
+
+        return loadOperation;
+    }
+
+    /**
+     * @internal Throws if the viewer has been disposed or any of the supplied abort signals
+     * are aborted. Used at the start of every async operation to bail out early.
+     * @param abortSignals Optional abort signals to check.
+     */
+    protected _throwIfDisposedOrAborted(...abortSignals: (Nullable<AbortSignal> | undefined)[]): void {
+        if (this._isDisposed) {
+            throw new Error("Viewer is disposed.");
+        }
+
+        throwIfAborted(...abortSignals);
+    }
+
+    /**
+     * Disposes the viewer and releases shared resources (observables, disposed flag).
+     * Subclasses MUST override this method to dispose their own engine-specific state
+     * (engine, scene, abort controllers, models, etc.) and call `super.dispose()` last
+     * so observable consumers see the engine-specific notifications before observables clear.
+     *
+     * Subclasses should also early-return if `_isDisposed` is already true.
+     */
+    public dispose(): void {
+        this.onEnvironmentChanged.clear();
+        this.onEnvironmentConfigurationChanged.clear();
+        this.onEnvironmentError.clear();
+        this.onShadowsConfigurationChanged.clear();
+        this.onPostProcessingChanged.clear();
+        this.onModelChanged.clear();
+        this.onModelError.clear();
+        this.onLoadingProgressChanged.clear();
+        this.onCameraAutoOrbitChanged.clear();
+        this.onSelectedAnimationChanged.clear();
+        this.onAnimationSpeedChanged.clear();
+        this.onIsAnimationPlayingChanged.clear();
+        this.onAnimationProgressChanged.clear();
+        this.onSelectedMaterialVariantChanged.clear();
+        this.onHotSpotsChanged.clear();
+        this.onCamerasAsHotSpotsChanged.clear();
+        this.onAfterRenderObservable.clear();
+        this.onClearColorChanged.clear();
+        this._isDisposed = true;
+    }
 }

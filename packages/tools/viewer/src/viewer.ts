@@ -77,6 +77,7 @@ import {
     type ViewerBoundingInfo,
     type ViewerHotSpotQuery,
     ViewerHotSpotResult,
+    ViewerBase,
     DefaultViewerBaseOptions,
     throwIfAborted,
     observePromise,
@@ -463,7 +464,7 @@ type ModelInternal = Model & {
  * @remarks
  * The Viewer is not tied to a specific UI framework and can be used with Babylon.js in a browser or with Babylon Native.
  */
-export class Viewer implements IDisposable, IViewer {
+export class Viewer extends ViewerBase implements IDisposable, IViewer {
     static {
         registerBuiltInLoaders();
     }
@@ -472,99 +473,6 @@ export class Viewer implements IDisposable, IViewer {
      * When enabled, the Viewer will emit additional diagnostic logs to the console.
      */
     public showDebugLogs = false;
-
-    /**
-     * Fired when the environment has changed.
-     */
-    public readonly onEnvironmentChanged = new Observable<void>();
-
-    /**
-     * Fired when the environment configuration has changed.
-     */
-    public readonly onEnvironmentConfigurationChanged = new Observable<void>();
-
-    /**
-     * Fired when an error occurs while loading the environment.
-     */
-    public readonly onEnvironmentError = new Observable<unknown>();
-
-    /**
-     * Fired when the shadows configuration changes.
-     */
-    public readonly onShadowsConfigurationChanged = new Observable<void>();
-
-    /**
-     * Fired when the post processing state changes.
-     */
-    public readonly onPostProcessingChanged = new Observable<void>();
-
-    /**
-     * Fired when a model is loaded into the viewer (or unloaded from the viewer).
-     * @remarks
-     * The event argument is the source that was loaded, or null if no model is loaded.
-     */
-    public readonly onModelChanged = new Observable<Nullable<string | File | ArrayBufferView>>();
-
-    /**
-     * Fired when an error occurs while loading a model.
-     */
-    public readonly onModelError = new Observable<unknown>();
-
-    /**
-     * Fired when progress changes on loading activity.
-     */
-    public readonly onLoadingProgressChanged = new Observable<void>();
-
-    /**
-     * Fired when the camera auto orbit state changes.
-     */
-    public readonly onCameraAutoOrbitChanged = new Observable<void>();
-
-    /**
-     * Fired when the selected animation changes.
-     */
-    public readonly onSelectedAnimationChanged = new Observable<void>();
-
-    /**
-     * Fired when the animation speed changes.
-     */
-    public readonly onAnimationSpeedChanged = new Observable<void>();
-
-    /**
-     * Fired when the selected animation is playing or paused.
-     */
-    public readonly onIsAnimationPlayingChanged = new Observable<void>();
-
-    /**
-     * Fired when the current point on the selected animation timeline changes.
-     */
-    public readonly onAnimationProgressChanged = new Observable<void>();
-
-    /**
-     * Fired when the selected material variant changes.
-     */
-    public readonly onSelectedMaterialVariantChanged = new Observable<void>();
-
-    /**
-     * Fired when the hot spots object changes to a complete new object instance.
-     */
-    public readonly onHotSpotsChanged = new Observable<void>();
-
-    /**
-     * Fired when the cameras as hot spots property changes.
-     */
-    public readonly onCamerasAsHotSpotsChanged = new Observable<void>();
-
-    /**
-     * Fired after each frame is rendered.
-     */
-    public readonly onAfterRenderObservable = new Observable<void>();
-
-    /**
-     * Fired when the clear color changes.
-     */
-    public readonly onClearColorChanged = new Observable<void>();
-
     /**
      * Gets or sets the clear color (background color) of the viewer.
      */
@@ -623,7 +531,6 @@ export class Viewer implements IDisposable, IViewer {
     private readonly _autoSuspendRendering = this._options?.autoSuspendRendering ?? DefaultViewerOptions.autoSuspendRendering;
     private _sceneMutated = false;
     private _suspendRenderCount = 0;
-    private _isDisposed = false;
 
     private readonly _loadModelLock = new AsyncLock();
     private _loadModelAbortController: Nullable<AbortController> = null;
@@ -642,8 +549,6 @@ export class Viewer implements IDisposable, IViewer {
     private readonly _updateSSAOLock = new AsyncLock();
     private _ssaoAbortController: Nullable<AbortController> = null;
 
-    private readonly _loadOperations = new Set<Readonly<{ progress: Nullable<number> }>>();
-
     private _activeAnimationObservers: Observer<AnimationGroup>[] = [];
     private _animationSpeed = this._options?.animationSpeed ?? DefaultViewerOptions.animationSpeed;
 
@@ -658,6 +563,7 @@ export class Viewer implements IDisposable, IViewer {
         private readonly _engine: AbstractEngine,
         private readonly _options?: Readonly<ViewerOptions>
     ) {
+        super();
         if (this._options?.shadowConfig?.quality === "high" && this._options?.postProcessing?.ssao === "enabled") {
             throw new Error("High quality shadows are not compatible with SSAO. Please choose either high quality shadows or SSAO.");
         }
@@ -1008,29 +914,6 @@ export class Viewer implements IDisposable, IViewer {
         this._markSceneMutated();
     }
 
-    /**
-     * Gets information about loading activity.
-     * @remarks
-     * false indicates no loading activity.
-     * true indicates loading activity with no progress information.
-     * A number between 0 and 1 indicates loading activity with progress information.
-     */
-    public get loadingProgress(): boolean | number {
-        if (this._loadOperations.size > 0) {
-            let totalProgress = 0;
-            for (const operation of this._loadOperations) {
-                if (operation.progress == null) {
-                    return true;
-                }
-                totalProgress += operation.progress;
-            }
-
-            return totalProgress / this._loadOperations.size;
-        }
-
-        return false;
-    }
-
     protected get _loadedModels(): readonly Model[] {
         return this._loadedModelsBacking;
     }
@@ -1286,31 +1169,6 @@ export class Viewer implements IDisposable, IViewer {
             this._toggleCamerasAsHotSpots();
             this.onCamerasAsHotSpotsChanged.notifyObservers();
         }
-    }
-
-    protected _beginLoadOperation(): IDisposable & { progress: Nullable<number> } {
-        // eslint-disable-next-line @typescript-eslint/no-this-alias
-        const viewer = this;
-        let progress: Nullable<number> = null;
-
-        const loadOperation = {
-            get progress() {
-                return progress;
-            },
-            set progress(value: Nullable<number>) {
-                progress = value;
-                viewer.onLoadingProgressChanged.notifyObservers();
-            },
-            dispose: () => {
-                viewer._loadOperations.delete(loadOperation);
-                viewer.onLoadingProgressChanged.notifyObservers();
-            },
-        };
-
-        this._loadOperations.add(loadOperation);
-        this.onLoadingProgressChanged.notifyObservers();
-
-        return loadOperation;
     }
 
     /**
@@ -2460,7 +2318,11 @@ export class Viewer implements IDisposable, IViewer {
     /**
      * Disposes of the resources held by the Viewer.
      */
-    public dispose(): void {
+    public override dispose(): void {
+        if (this._isDisposed) {
+            return;
+        }
+
         this.selectedAnimation = -1;
         this.animationProgress = 0;
 
@@ -2477,29 +2339,12 @@ export class Viewer implements IDisposable, IViewer {
         this._disposeShadows();
         this._scene.dispose();
 
-        this.onEnvironmentChanged.clear();
-        this.onEnvironmentError.clear();
-        this.onEnvironmentConfigurationChanged.clear();
-        this.onPostProcessingChanged.clear();
-        this.onModelChanged.clear();
-        this.onModelError.clear();
-        this.onCameraAutoOrbitChanged.clear();
-        this.onSelectedAnimationChanged.clear();
-        this.onAnimationSpeedChanged.clear();
-        this.onIsAnimationPlayingChanged.clear();
-        this.onAnimationProgressChanged.clear();
-        this.onSelectedMaterialVariantChanged.clear();
-        this.onHotSpotsChanged.clear();
-        this.onCamerasAsHotSpotsChanged.clear();
-        this.onLoadingProgressChanged.clear();
-        this.onAfterRenderObservable.clear();
-        this.onClearColorChanged.clear();
-
         this._imageProcessingConfigurationObserver.remove();
         this._beforeRenderObserver?.remove();
         this._snapshotHelper?.dispose();
 
-        this._isDisposed = true;
+        // Base disposes observables and sets _isDisposed = true
+        super.dispose();
     }
 
     /**
@@ -2965,17 +2810,5 @@ export class Viewer implements IDisposable, IViewer {
         if (this.showDebugLogs) {
             Logger.Log(message);
         }
-    }
-
-    /**
-     * Check for disposed or aborted state (basically everything that can interrupt an async operation).
-     * @param abortSignals A set of optional AbortSignals to also check.
-     */
-    private _throwIfDisposedOrAborted(...abortSignals: (Nullable<AbortSignal> | undefined)[]): void {
-        if (this._isDisposed) {
-            throw new Error("Viewer is disposed.");
-        }
-
-        throwIfAborted(...abortSignals);
     }
 }
