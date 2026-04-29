@@ -222,17 +222,16 @@
         let tf_brdf_x: f32 = baseGeoInfo.environmentBrdf.x;
         let tf_E_ss: f32   = baseGeoInfo.environmentBrdf.y;
 
-        // Recover the base IOR from baseDielectricReflectance.F0, which already bakes in
-        // specular_weight as mix(0, F0_ior, weight). This preserves the original
-        // specular_weight -> thin-film-strength relationship while also benefiting from
-        // evalIridescenceWithIOR's early-return guard when the recovered IOR matches
-        // thin_film_ior (i.e. specular_ior == thin_film_ior at weight=1).
-        let tf_dielectric_base_ior: vec3f = getIORTfromAirToSurfaceR0(clamp(vec3f(baseDielectricReflectance.F0), vec3f(0.0), vec3f(0.9999)));
+        // evalIridescence recovers IOR from baseDielectricReflectance.F0 internally.
+        // F0 already bakes in specular_weight as mix(0, F0_ior, weight), so the
+        // specular_weight → thin-film-strength relationship is preserved. The maxR1
+        // guard inside evalIridescence suppresses spurious colour when film IOR matches
+        // the substrate IOR (e.g. specular_ior == thin_film_ior at weight=1).
         // Normal-incidence F0 for energy-correct split-sum magnitude.
-        var thinFilmDielectricF0: vec3f = evalIridescenceWithIOR(thin_film_outside_ior, thin_film_ior, 1.0, thin_film_thickness, tf_dielectric_base_ior);
+        var thinFilmDielectricF0: vec3f = evalIridescence(thin_film_outside_ior, thin_film_ior, 1.0, thin_film_thickness, vec3f(baseDielectricReflectance.F0));
         thinFilmDielectricF0 = mix(thinFilmDielectricF0, vec3(dot(thinFilmDielectricF0, vec3f(0.3333f))), thin_film_desaturation_scale);
         // Angle-dependent evaluation for NdotV-varying colour.
-        var thinFilmDielectricDir: vec3f = evalIridescenceWithIOR(thin_film_outside_ior, thin_film_ior, thin_film_cos_theta, thin_film_thickness, tf_dielectric_base_ior);
+        var thinFilmDielectricDir: vec3f = evalIridescence(thin_film_outside_ior, thin_film_ior, thin_film_cos_theta, thin_film_thickness, vec3f(baseDielectricReflectance.F0));
         thinFilmDielectricDir = mix(thinFilmDielectricDir, vec3(dot(thinFilmDielectricDir, vec3f(0.3333f))), thin_film_desaturation_scale);
         // Rescale directional colour ratios to F0 magnitude — energy-correct while preserving colour variation.
         let tf_f0d_avg: f32  = dot(thinFilmDielectricF0,  vec3f(0.3333f));

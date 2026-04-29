@@ -284,73 +284,12 @@ vec3 evalIridescence(float outsideIOR, float eta2, float cosTheta1, float thinFi
     // Second interface
     vec3 baseIOR = getIORTfromAirToSurfaceR0(clamp(baseF0, 0.0, 0.9999)); // guard against 1.0
     vec3 R1 = getR0fromIORs(baseIOR, iridescenceIOR);
-    vec3 R23 = fresnelSchlickGGX(cosTheta2, R1, vec3(1.));
-    vec3 phi23 = vec3(0.0);
-    if (baseIOR[0] < iridescenceIOR) phi23[0] = PI;
-    if (baseIOR[1] < iridescenceIOR) phi23[1] = PI;
-    if (baseIOR[2] < iridescenceIOR) phi23[2] = PI;
 
-    // Phase shift
-    float opd = 2.0 * iridescenceIOR * thinFilmThickness * cosTheta2;
-    vec3 phi = vec3(phi21) + phi23;
-
-    // Compound terms
-    vec3 R123 = clamp(R12 * R23, 1e-5, 0.9999);
-    vec3 r123 = sqrt(R123);
-    vec3 Rs = square(T121) * R23 / (vec3(1.0) - R123);
-
-    // Reflectance term for m = 0 (DC term amplitude)
-    vec3 C0 = R12 + Rs;
-    I = C0;
-
-    // Reflectance term for m > 0 (pairs of diracs)
-    vec3 Cm = Rs - T121;
-    for (int m = 1; m <= 2; ++m)
-    {
-        Cm *= r123;
-        vec3 Sm = 2.0 * evalSensitivity(float(m) * opd, float(m) * phi);
-        I += Cm * Sm;
-    }
-
-    // Since out of gamut colors might be produced, negative color values are clamped to 0.
-    return max(I, vec3(0.0));
-}
-
-// Variant of evalIridescence that accepts the base substrate IOR directly instead of recovering
-// it from baseF0 via getIORTfromAirToSurfaceR0. Use this when the actual IOR is known
-// (e.g., specular_ior for dielectrics) to avoid incorrect IOR recovery when baseF0 is
-// tinted by specular_color, and to guarantee R1=0 exactly when film and substrate IORs match.
-vec3 evalIridescenceWithIOR(float outsideIOR, float eta2, float cosTheta1, float thinFilmThickness, vec3 baseIOR) {
-    vec3 I = vec3(1.0);
-
-    float iridescenceIOR = mix(outsideIOR, eta2, smoothstep(0.0, 0.03, thinFilmThickness));
-    float sinTheta2Sq = square(outsideIOR / iridescenceIOR) * (1.0 - square(cosTheta1));
-
-    float cosTheta2Sq = 1.0 - sinTheta2Sq;
-    if (cosTheta2Sq < 0.0) {
-        return I;
-    }
-
-    float cosTheta2 = sqrt(cosTheta2Sq);
-
-    // First interface
-    float R0 = getR0fromIORs(iridescenceIOR, outsideIOR);
-    float R12 = fresnelSchlickGGX(cosTheta1, R0, 1.);
-    float R21 = R12;
-    float T121 = 1.0 - R12;
-    float phi12 = 0.0;
-    if (iridescenceIOR < outsideIOR) phi12 = PI;
-    float phi21 = PI - phi12;
-
-    // Second interface — use baseIOR directly, no IOR recovery from F0
-    vec3 R1 = getR0fromIORs(baseIOR, iridescenceIOR);
-
-    // When film and substrate IORs match, R1=0 and there is no second-interface reflection.
-    // Return the first-interface Fresnel only — the thin film is optically absent.
-    // Without this guard two bugs combine to produce spurious colour even when R1=0:
-    //   1. Schlick with F90=1 gives R23=(1-cosTheta)^5 instead of 0 for matched IORs.
-    //   2. clamp(R12*R23, 1e-5, ...) forces r123=sqrt(1e-5)=0.003 non-zero, and
-    //      evalSensitivity then amplifies that into visible interference fringes.
+    // When film and substrate IORs match (R1≈0), return the first-interface Fresnel only.
+    // Without this guard two bugs produce spurious colour even when R1=0:
+    //   1. Schlick F90=1 gives R23=(1-cosTheta)^5 instead of 0.
+    //   2. clamp(R12*R23, 1e-5,...) forces r123=sqrt(1e-5) non-zero, and evalSensitivity
+    //      amplifies that into visible interference fringes.
     float maxR1 = max(R1.r, max(R1.g, R1.b));
     if (maxR1 < 1e-6) {
         return max(vec3(R12), vec3(0.0));
@@ -384,6 +323,7 @@ vec3 evalIridescenceWithIOR(float outsideIOR, float eta2, float cosTheta1, float
         I += Cm * Sm;
     }
 
+    // Since out of gamut colors might be produced, negative color values are clamped to 0.
     return max(I, vec3(0.0));
 }
 #endif

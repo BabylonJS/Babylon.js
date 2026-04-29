@@ -53,13 +53,12 @@
             specularColoredFresnel = specularFresnel * specular_color;
             
             #ifdef THIN_FILM
-                // Recover the base IOR from baseDielectricReflectance.F0, which already bakes in
-                // specular_weight as mix(0, F0_ior, weight). This preserves the original
-                // specular_weight -> thin-film-strength relationship while also benefiting from
-                // evalIridescenceWithIOR's early-return guard when the recovered IOR matches
-                // thin_film_ior (i.e. specular_ior == thin_film_ior at weight=1).
-                let tf_dielectric_base_ior: vec3f = getIORTfromAirToSurfaceR0(clamp(vec3f(baseDielectricReflectance.F0), vec3f(0.0), vec3f(0.9999)));
-                var thinFilmDielectricFresnel: vec3f = evalIridescenceWithIOR(thin_film_outside_ior, thin_film_ior, preInfo{X}.VdotH, thin_film_thickness, tf_dielectric_base_ior);
+                // evalIridescence recovers IOR from baseDielectricReflectance.F0 internally.
+                // F0 already bakes in specular_weight as mix(0, F0_ior, weight), so the
+                // specular_weight → thin-film-strength relationship is preserved. The maxR1
+                // guard inside evalIridescence suppresses spurious colour when film IOR matches
+                // the substrate IOR (e.g. specular_ior == thin_film_ior at weight=1).
+                var thinFilmDielectricFresnel: vec3f = evalIridescence(thin_film_outside_ior, thin_film_ior, preInfo{X}.VdotH, thin_film_thickness, vec3f(baseDielectricReflectance.F0));
                 // Desaturate the thin film fresnel based on thickness and angle - this brings the results much
                 // closer to path-tracing reference.
                 thinFilmDielectricFresnel = mix(thinFilmDielectricFresnel, vec3f(dot(thinFilmDielectricFresnel, vec3f(0.3333f))), thin_film_desaturation_scale);

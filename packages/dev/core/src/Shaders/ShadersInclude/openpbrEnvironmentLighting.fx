@@ -214,19 +214,18 @@
         float tf_brdf_x = baseGeoInfo.environmentBrdf.x;
         float tf_E_ss   = baseGeoInfo.environmentBrdf.y;
 
-        // Recover the base IOR from baseDielectricReflectance.F0, which already bakes in
-        // specular_weight as mix(0, F0_ior, weight). This preserves the original
-        // specular_weight -> thin-film-strength relationship while also benefiting from
-        // evalIridescenceWithIOR's early-return guard when the recovered IOR matches
-        // thin_film_ior (i.e. specular_ior == thin_film_ior at weight=1).
-        vec3 tf_dielectric_base_ior = getIORTfromAirToSurfaceR0(vec3(clamp(baseDielectricReflectance.F0, 0.0, 0.9999)));
+        // evalIridescence recovers IOR from baseDielectricReflectance.F0 internally.
+        // F0 already bakes in specular_weight as mix(0, F0_ior, weight), so the
+        // specular_weight → thin-film-strength relationship is preserved. The maxR1
+        // guard inside evalIridescence suppresses spurious colour when film IOR matches
+        // the substrate IOR (e.g. specular_ior == thin_film_ior at weight=1).
         // Normal-incidence evaluation provides the energy-correct F0 magnitude for the split-sum.
         // Using an angle-dependent value as F0 inflates the split-sum integral because Schlick F90=1
         // makes the Fresnel climb toward 1 at grazing angles.
-        vec3 thinFilmDielectricF0 = evalIridescenceWithIOR(thin_film_outside_ior, thin_film_ior, 1.0, thin_film_thickness, tf_dielectric_base_ior);
+        vec3 thinFilmDielectricF0 = evalIridescence(thin_film_outside_ior, thin_film_ior, 1.0, thin_film_thickness, vec3(baseDielectricReflectance.F0));
         thinFilmDielectricF0 = mix(thinFilmDielectricF0, vec3(dot(thinFilmDielectricF0, vec3(0.3333))), thin_film_desaturation_scale);
         // Angle-dependent evaluation preserves the NdotV-varying colour shift characteristic of thin films.
-        vec3 thinFilmDielectricDir = evalIridescenceWithIOR(thin_film_outside_ior, thin_film_ior, thin_film_cos_theta, thin_film_thickness, tf_dielectric_base_ior);
+        vec3 thinFilmDielectricDir = evalIridescence(thin_film_outside_ior, thin_film_ior, thin_film_cos_theta, thin_film_thickness, vec3(baseDielectricReflectance.F0));
         thinFilmDielectricDir = mix(thinFilmDielectricDir, vec3(dot(thinFilmDielectricDir, vec3(0.3333))), thin_film_desaturation_scale);
         // Combine: rescale the directional evaluation's per-channel colour ratios to the F0 average
         // magnitude. avg(thinFilmDielectricFresnel) == avg(thinFilmDielectricF0), so the split-sum
