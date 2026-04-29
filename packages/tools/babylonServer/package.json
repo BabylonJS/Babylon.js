@@ -31,7 +31,7 @@
         "@dev/shared-ui-components": "1.0.0",
         "@tools/node-editor": "1.0.0",
         "@tools/gui-editor": "1.0.0",
-        "@tools/ktx2decoder": "1.0.0",
+        "@tools/ktx2decoder": "1.0.0"
     },
     "sideEffects": true
 }
