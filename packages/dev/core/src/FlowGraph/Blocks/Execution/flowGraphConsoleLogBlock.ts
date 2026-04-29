@@ -75,19 +75,51 @@ export class FlowGraphConsoleLogBlock extends FlowGraphExecutionBlockWithOutSign
         return FlowGraphBlockNames.ConsoleLog;
     }
 
+    private _serializeValue(value: any): string {
+        if (value === null || value === undefined) {
+            return String(value);
+        }
+        if (typeof value === "object") {
+            // Prefer the object's own toString() (e.g. Vector3 → "{X:1 Y:2 Z:3}").
+            // Only fall back to JSON.stringify when toString() is the unhelpful default.
+            const str = value.toString();
+            if (str === "[object Object]") {
+                try {
+                    return JSON.stringify(value);
+                } catch {
+                    return str;
+                }
+            }
+            return str;
+        }
+        return String(value);
+    }
+
     private _getMessageValue(context: FlowGraphContext): string {
         if (this.config?.messageTemplate) {
             let template: string = this.config.messageTemplate;
             const matches = this._getTemplateMatches(template);
+            // If the message input is an object, use its keys as the primary
+            // source for template placeholders, falling back to named data inputs.
+            const messageValue = this.message.getValue(context);
+            const messageObj = messageValue !== null && messageValue !== undefined && typeof messageValue === "object" ? messageValue : null;
             for (const match of matches) {
-                const value = this.getDataInput(match)?.getValue(context);
+                let value: any;
+                if (messageObj !== null && match in messageObj) {
+                    value = messageObj[match];
+                } else {
+                    value = this.getDataInput(match)?.getValue(context);
+                }
                 if (value !== undefined) {
-                    // replace all
-                    template = template.replace(new RegExp(`\\{${match}\\}`, "g"), value.toString());
+                    // Escape regex metacharacters in the placeholder name before building the pattern.
+                    const escapedMatch = match.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+                    template = template.replace(new RegExp(`\\{${escapedMatch}\\}`, "g"), this._serializeValue(value));
                 }
             }
             return template;
         } else {
+            // No template — pass the raw value directly so Logger receives the original
+            // object (e.g. Vector3) rather than a stringified representation.
             return this.message.getValue(context);
         }
     }

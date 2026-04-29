@@ -767,17 +767,21 @@ export class _IblShadowsVoxelRenderer {
             mrt.renderSprites = false;
             mrt.enableOutlineRendering = false;
 
-            mrt.customRenderFunction = (opaqueSubMeshes, alphaTestSubMeshes, transparentSubMeshes, depthOnlySubMeshes) => {
-                const buckets = [depthOnlySubMeshes, opaqueSubMeshes, alphaTestSubMeshes, transparentSubMeshes];
-                for (const bucket of buckets) {
-                    for (let index = 0; index < bucket.length; index++) {
-                        const subMesh = bucket.data[index];
-                        if (subMesh.getMaterial() !== voxelMaterial) {
-                            continue;
-                        }
-                        subMesh.render(false);
+            const renderBucket = (bucket: SmartArray<SubMesh>) => {
+                for (let index = 0; index < bucket.length; index++) {
+                    const subMesh = bucket.data[index];
+                    if (subMesh.getMaterial() !== voxelMaterial) {
+                        continue;
                     }
+                    subMesh.render(false);
                 }
+            };
+
+            mrt.customRenderFunction = (opaqueSubMeshes, alphaTestSubMeshes, transparentSubMeshes, depthOnlySubMeshes) => {
+                renderBucket(depthOnlySubMeshes);
+                renderBucket(opaqueSubMeshes);
+                renderBucket(alphaTestSubMeshes);
+                renderBucket(transparentSubMeshes);
             };
 
             mrt.renderList = [];
