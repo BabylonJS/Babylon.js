@@ -184,7 +184,8 @@ export class ArcRotateCamera extends TargetCamera {
     /**
      * Current inertia value on the longitudinal axis.
      * When nonzero, represents the per-frame angular offset (in radians) applied to `alpha`.
-     * The bigger this number the longer it will take for the camera to stop.
+     * Each frame, this value is multiplied by {@link inertia} (a decay coefficient where
+     * 0 = instant stop, 0.9 = smooth glide, 1 = never stops).
      * Reading this value also reflects the rotation delta the movement system will apply this frame
      * (decays toward 0 over the inertia tail), preserving legacy semantics for "is the camera still animating?" checks.
      * Setting this to 0 also stops the movement system's rotation velocity for backward compatibility.
@@ -213,7 +214,8 @@ export class ArcRotateCamera extends TargetCamera {
     /**
      * Current inertia value on the latitudinal axis.
      * When nonzero, represents the per-frame angular offset (in radians) applied to `beta`.
-     * The bigger this number the longer it will take for the camera to stop.
+     * Each frame, this value is multiplied by {@link inertia} (a decay coefficient where
+     * 0 = instant stop, 0.9 = smooth glide, 1 = never stops).
      * Reading this value also reflects the rotation delta the movement system will apply this frame
      * (decays toward 0 over the inertia tail), preserving legacy semantics for "is the camera still animating?" checks.
      * Setting this to 0 also stops the movement system's rotation velocity for backward compatibility.
@@ -242,7 +244,8 @@ export class ArcRotateCamera extends TargetCamera {
     /**
      * Current inertia value on the radius axis.
      * When nonzero, represents the per-frame offset (in scene units) applied to `radius`.
-     * The bigger this number the longer it will take for the camera to stop.
+     * Each frame, this value is multiplied by {@link inertia} (a decay coefficient where
+     * 0 = instant stop, 0.9 = smooth glide, 1 = never stops).
      * Reading this value also reflects the zoom delta the movement system will apply this frame
      * (decays toward 0 over the inertia tail), preserving legacy semantics for "is the camera still animating?" checks.
      * Setting this to 0 also stops the movement system's zoom velocity for backward compatibility.
