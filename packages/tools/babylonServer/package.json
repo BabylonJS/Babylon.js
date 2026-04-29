@@ -32,14 +32,6 @@
         "@tools/node-editor": "1.0.0",
         "@tools/gui-editor": "1.0.0",
         "@tools/ktx2decoder": "1.0.0",
-        "mini-css-extract-plugin": "^2.5.3",
-        "source-map-loader": "^4.0.0",
-        "style-loader": "^3.3.1",
-        "ts-loader": "^9.2.6",
-        "webpack": "^5.103.0",
-        "webpack-cli": "6.0.1",
-        "webpack-dev-server": "^5.2.2",
-        "webpack-merge": "^5.8.0"
     },
     "sideEffects": true
 }

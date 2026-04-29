@@ -12,7 +12,7 @@
 import { existsSync } from "fs";
 import { resolve, dirname } from "path";
 import { fileURLToPath } from "url";
-import { execSync, spawn } from "child_process";
+import { spawn } from "child_process";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const UMD_ROOT = resolve(__dirname, "../../../public/umd");

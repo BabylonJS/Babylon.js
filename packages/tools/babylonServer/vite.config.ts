@@ -280,6 +280,9 @@ function babylonServerPlugin(): Plugin {
                         return;
                     }
                     log(404, "/" + url, "umd missing");
+                    res.statusCode = 404;
+                    res.end("UMD bundle not found");
+                    return;
                 }
 
                 // --- Sourcemap serving (same dir as the UMD bundle) ---

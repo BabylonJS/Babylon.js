@@ -4,11 +4,6 @@ import svgr from "vite-plugin-svgr";
 // @ts-ignore -- untyped JS helper
 import { commonDevViteConfiguration, babylonDevExternalsPlugin } from "../../public/viteToolsHelper.mjs";
 
-// The defaultDocumentColorsComputer in Monaco core uses negative lookbehind regexes
-// unsupported in older Safari. Redirect to our compat shim (same approach as webpack's
-// NormalModuleReplacementPlugin in the old webpack.config.js).
-// const monacoColorComputerShim = path.resolve(__dirname, "src/tools/monaco/compat/defaultDocumentColorsComputer.ts");
-
 // ---------------------------------------------------------------------------
 // Monaco main-thread bundle
 // ---------------------------------------------------------------------------
