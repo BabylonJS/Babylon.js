@@ -49,6 +49,11 @@ const caps = {
     "browserstack.playwrightVersion": playwrightVersion,
 };
 
+// SECURITY NOTE: The wsEndpoint embeds BROWSERSTACK_ACCESS_KEY. Playwright may
+// log this URL on connection failure, and trace files (trace: "on-first-retry")
+// may include it. Ensure BROWSERSTACK_ACCESS_KEY is marked **secret** in the
+// Azure DevOps variable group, and do NOT publish playwright-report/ or
+// trace-*.zip as public CI artifacts.
 const wsEndpoint = `wss://cdp.browserstack.com/playwright?caps=${encodeURIComponent(JSON.stringify(caps))}`;
 
 // ---------------------------------------------------------------------------

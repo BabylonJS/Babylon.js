@@ -77,10 +77,6 @@ wait_for_sessions() {
             return 0
         elif [ "$available" -ge "$MINIMUM" ]; then
             GRANTED="$available"
-            # Cap at preferred (don't grab more than we asked for)
-            if [ "$GRANTED" -gt "$PREFERRED" ]; then
-                GRANTED="$PREFERRED"
-            fi
             echo "[browserstack-wait] ${available} session(s) available (wanted ${PREFERRED}) — using ${GRANTED}."
             return 0
         fi

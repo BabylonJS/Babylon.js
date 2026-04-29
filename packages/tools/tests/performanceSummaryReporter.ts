@@ -29,7 +29,7 @@ interface PerfEntry {
 
 // Matches the structured part of a [PERF] log line:
 // [PERF] <name>: <baselineLabel>: <time>ms, <candidateLabel>: <time>ms, <candidateLabel> is <pct>% faster|slower, p-value: <p>[, gpu/frame: ...]
-const PERF_LINE_REGEX = /\[PERF\]\s+(.+?):\s+(\S+):\s+([\d.]+)ms,\s+(\S+):\s+([\d.]+)ms,\s+\S+ is ([\d.]+)% (faster|slower),\s+p-value:\s+([\d.]+)/;
+const PERF_LINE_REGEX = /\[PERF\]\s+(.+?):\s+(\S+):\s+([\d.]+)ms,\s+(\S+):\s+([\d.]+)ms,\s+\S+ is ([\d.]+)% (faster|slower)(?:,\s+p-value:\s+([\d.]+))?/;
 const GPU_TIME_REGEX = /gpu\/frame:\s+\S+\s+([\d.]+)ms\s*\/\s*\S+\s+([\d.]+)ms/;
 
 class PerformanceSummaryReporter implements Reporter {
@@ -73,7 +73,7 @@ class PerformanceSummaryReporter implements Reporter {
 
         const formatDiff = (val: number): string => {
             const abs = Math.abs(val).toFixed(1);
-            return val > 0.05 ? `${abs}% slower` : val < -0.05 ? `${abs}% faster` : `${abs}% (no change)`;
+            return val > 1 ? `${abs}% slower` : val < -1 ? `${abs}% faster` : `${abs}% (no change)`;
         };
 
         const signedDiff = (e: PerfEntry): number => (e.direction === "slower" ? e.diffPercent : -e.diffPercent);
@@ -130,7 +130,7 @@ class PerformanceSummaryReporter implements Reporter {
             const baselineLabel = conclusive[0].baselineLabel;
             const candidateLabel = conclusive[0].candidateLabel;
 
-            const icon = avg > 5 ? "🔴" : avg > 0.05 ? "🟡" : "🟢";
+            const icon = avg > 5 ? "🔴" : avg > 1 ? "🟡" : "🟢";
             md.push(`**Baseline:** ${baselineLabel} · **Candidate:** ${candidateLabel}\n`);
             md.push(`| Metric | Value |`);
             md.push(`| --- | --- |`);
@@ -240,8 +240,8 @@ class PerformanceSummaryReporter implements Reporter {
             candidateMs: parseFloat(match[5]),
             diffPercent: parseFloat(match[6]),
             direction: match[7] as "faster" | "slower",
-            inconclusive: line.includes("[INCONCLUSIVE"),
-            pValue: parseFloat(match[8]),
+            inconclusive: line.includes("[INCONCLUSIVE") || !match[8],
+            pValue: match[8] ? parseFloat(match[8]) : NaN,
             baselineGpuMs: gpuMatch ? parseFloat(gpuMatch[1]) : -1,
             candidateGpuMs: gpuMatch ? parseFloat(gpuMatch[2]) : -1,
         };

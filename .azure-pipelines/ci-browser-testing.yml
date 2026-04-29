@@ -208,7 +208,7 @@ jobs:
                   const candidate = stable[stable.length - 1];
                   // Find the latest stable version published before 7 days ago
                   const cutoff = Date.now() - 7 * 24 * 60 * 60 * 1000;
-                  const olderStable = stable.filter(v => new Date(timeData[v]).getTime() < cutoff);
+                  const olderStable = stable.filter(v => new Date(timeData[v]).getTime() < cutoff && v !== candidate);
                   const baseline = olderStable.length > 0 ? olderStable[olderStable.length - 1] : stable[stable.length - 2];
                   console.log(baseline + ' ' + candidate);
                 ")

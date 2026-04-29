@@ -64,6 +64,12 @@ export const evaluateCreateScene = async () => {
     return !!window.scene;
 };
 
+/**
+ * Changed from `(renderCount?: number) => Promise<number>` to
+ * `({ renderCount, warmupFrames?, measureGpuTime? }) => Promise<{ wallTime, gpuTimePerFrame }>`.
+ * Callers must pass an object argument instead of a plain number.
+ * @returns An object containing the wall time and GPU time per frame.
+ */
 // eslint-disable-next-line no-restricted-syntax
 export const evaluateRenderScene = async ({
     renderCount,
@@ -94,6 +100,10 @@ export const evaluateRenderScene = async ({
         // submit command buffers) and measures time from submission to GPU
         // completion via onSubmittedWorkDone().
         let gpuTimePerFrame = -1;
+        // TODO: Replace private _device access with a public accessor if one
+        // becomes available. Currently the engine does not expose a stable
+        // public property for the GPUDevice. The surrounding try/catch
+        // ensures this degrades gracefully if the field is renamed.
         const device = (window.engine as any)._device as GPUDevice | undefined;
         if (measureGpuTime && device?.queue) {
             try {
@@ -691,7 +701,7 @@ function isWarmupSettled(values: number[]): boolean {
     const b = values[values.length - 1];
     const max = Math.max(a, b);
     if (max === 0) {
-        return true;
+        return false;
     }
     return Math.abs(a - b) / max < 0.05;
 }
@@ -922,84 +932,79 @@ const collectInterleavedSamples = async (
         // ── True interleaving via two pages ──────────────────────────
         const stablePage = page;
 
-        await navigateToPage(stablePage, stableUrl);
-        await navigateToPage(devPage, devUrl);
+        try {
+            await navigateToPage(stablePage, stableUrl);
+            await navigateToPage(devPage, devUrl);
 
-        // ── Adaptive warmup: run until settled or max reached ──
-        const stableWarmup: number[] = [];
-        const devWarmup: number[] = [];
-        for (let w = 0; w < opts.warmupPasses; w++) {
-            const sW = await runMeasurementOnLoadedPage(stablePage, baseUrl, createSceneFunction, opts, evaluateArg);
-            if ("skipped" in sW) {
-                await (devPage as any).close?.();
-                await devContext?.close?.();
-                return sW;
+            // ── Adaptive warmup: run until settled or max reached ──
+            const stableWarmup: number[] = [];
+            const devWarmup: number[] = [];
+            for (let w = 0; w < opts.warmupPasses; w++) {
+                const sW = await runMeasurementOnLoadedPage(stablePage, baseUrl, createSceneFunction, opts, evaluateArg);
+                if ("skipped" in sW) {
+                    return sW;
+                }
+                const dW = await runMeasurementOnLoadedPage(devPage, baseUrl, createSceneFunction, opts, evaluateArg);
+                if ("skipped" in dW) {
+                    return dW;
+                }
+                stableWarmup.push(sW.wallTime);
+                devWarmup.push(dW.wallTime);
+                // Calibrate frame count after first warmup pass using the slower build
+                if (w === 0 && opts.targetPassTimeMs > 0) {
+                    const slowest = Math.max(sW.wallTime, dW.wallTime);
+                    opts.framesToRender = calibrateFrameCount(slowest, opts.framesToRender, opts.targetPassTimeMs);
+                    opts.targetPassTimeMs = 0;
+                }
+                // Stop warming up once both builds have settled
+                if (isWarmupSettled(stableWarmup) && isWarmupSettled(devWarmup)) {
+                    break;
+                }
             }
-            const dW = await runMeasurementOnLoadedPage(devPage, baseUrl, createSceneFunction, opts, evaluateArg);
-            if ("skipped" in dW) {
-                await (devPage as any).close?.();
-                await devContext?.close?.();
-                return dW;
+
+            // ── Measured passes ──
+            const stableRaw: number[] = [];
+            const devRaw: number[] = [];
+            const stableGpuTimes: number[] = [];
+            const devGpuTimes: number[] = [];
+
+            for (let i = 0; i < opts.numberOfPasses; i++) {
+                const sResult = await runMeasurementOnLoadedPage(stablePage, baseUrl, createSceneFunction, opts, evaluateArg);
+                if ("skipped" in sResult) {
+                    return sResult;
+                }
+
+                const dResult = await runMeasurementOnLoadedPage(devPage, baseUrl, createSceneFunction, opts, evaluateArg);
+                if ("skipped" in dResult) {
+                    return dResult;
+                }
+
+                stableRaw.push(sResult.wallTime);
+                devRaw.push(dResult.wallTime);
+                if (sResult.gpuTimePerFrame >= 0) {
+                    stableGpuTimes.push(sResult.gpuTimePerFrame);
+                }
+                if (dResult.gpuTimePerFrame >= 0) {
+                    devGpuTimes.push(dResult.gpuTimePerFrame);
+                }
+
+                // Check time budget — bail out early if we're running long.
+                // We need at least trimCount*2+1 measured samples for meaningful stats.
+                const minSamples = opts.trimCount * 2 + 1;
+                if (Date.now() > deadline && stableRaw.length >= minSamples) {
+                    break;
+                }
             }
-            stableWarmup.push(sW.wallTime);
-            devWarmup.push(dW.wallTime);
-            // Calibrate frame count after first warmup pass using the slower build
-            if (w === 0 && opts.targetPassTimeMs > 0) {
-                const slowest = Math.max(sW.wallTime, dW.wallTime);
-                opts.framesToRender = calibrateFrameCount(slowest, opts.framesToRender, opts.targetPassTimeMs);
+
+            if (stableRaw.length < opts.trimCount * 2 + 1) {
+                return { skipped: `Not enough samples (${stableRaw.length}) within time budget` };
             }
-            // Stop warming up once both builds have settled
-            if (isWarmupSettled(stableWarmup) && isWarmupSettled(devWarmup)) {
-                break;
-            }
+
+            return buildInterleavedResult(stableRaw, devRaw, opts, stableGpuTimes, devGpuTimes);
+        } finally {
+            await (devPage as any).close?.();
+            await devContext?.close?.();
         }
-
-        // ── Measured passes ──
-        const stableRaw: number[] = [];
-        const devRaw: number[] = [];
-        const stableGpuTimes: number[] = [];
-        const devGpuTimes: number[] = [];
-
-        for (let i = 0; i < opts.numberOfPasses; i++) {
-            const sResult = await runMeasurementOnLoadedPage(stablePage, baseUrl, createSceneFunction, opts, evaluateArg);
-            if ("skipped" in sResult) {
-                await (devPage as any).close?.();
-                await devContext?.close?.();
-                return sResult;
-            }
-
-            const dResult = await runMeasurementOnLoadedPage(devPage, baseUrl, createSceneFunction, opts, evaluateArg);
-            if ("skipped" in dResult) {
-                await (devPage as any).close?.();
-                await devContext?.close?.();
-                return dResult;
-            }
-
-            stableRaw.push(sResult.wallTime);
-            devRaw.push(dResult.wallTime);
-            if (sResult.gpuTimePerFrame >= 0) {
-                stableGpuTimes.push(sResult.gpuTimePerFrame);
-            }
-            if (dResult.gpuTimePerFrame >= 0) {
-                devGpuTimes.push(dResult.gpuTimePerFrame);
-            }
-
-            // Check time budget — bail out early if we're running long.
-            // We need at least trimCount*2+1 measured samples for meaningful stats.
-            const minSamples = opts.trimCount * 2 + 1;
-            if (Date.now() > deadline && stableRaw.length >= minSamples) {
-                break;
-            }
-        }
-
-        await (devPage as any).close?.();
-        await devContext?.close?.();
-
-        if (stableRaw.length < opts.trimCount * 2 + 1) {
-            return { skipped: `Not enough samples (${stableRaw.length}) within time budget` };
-        }
-
-        return buildInterleavedResult(stableRaw, devRaw, opts, stableGpuTimes, devGpuTimes);
     }
 
     // ── Fallback: sequential collection (single page) ────────────
@@ -1336,26 +1341,31 @@ export const comparePerformance = async (
             }
         }
 
-        // Use all samples collected so far + retry samples
+        // Merge from raw arrays and re-trim to avoid deflating CoV
+        // (each individual result was already trimmed, so concatenating
+        // trimmed arrays would double-trim and make the SEM check too
+        // permissive).
         const prevStable = finalResult.stable;
         const prevDev = finalResult.dev;
-        const allStableRetry = [...prevStable.trimmed, ...retryStable.trimmed];
-        const allDevRetry = [...prevDev.trimmed, ...retryDev.trimmed];
+        const allStableRetry = [...prevStable.raw, ...retryStable.raw];
+        const allDevRetry = [...prevDev.raw, ...retryDev.raw];
+        const trimmedStableRetry = performanceStats.trimmed(allStableRetry, opts.trimCount);
+        const trimmedDevRetry = performanceStats.trimmed(allDevRetry, opts.trimCount);
         // Pair diffs only if both the previous result and retry produced them
         const prevDiffs = finalResult === result ? pairedDifferences : null;
         const allRetryDiffs = prevDiffs && retryDiffs ? [...prevDiffs, ...retryDiffs] : null;
 
         const mergedRetryStable: PerformanceResult = {
-            mean: performanceStats.mean(allStableRetry),
-            raw: [...prevStable.raw, ...retryStable.raw],
-            trimmed: allStableRetry,
-            cov: performanceStats.coefficientOfVariation(allStableRetry),
+            mean: performanceStats.mean(trimmedStableRetry),
+            raw: allStableRetry,
+            trimmed: trimmedStableRetry,
+            cov: performanceStats.coefficientOfVariation(trimmedStableRetry),
         };
         const mergedRetryDev: PerformanceResult = {
-            mean: performanceStats.mean(allDevRetry),
-            raw: [...prevDev.raw, ...retryDev.raw],
-            trimmed: allDevRetry,
-            cov: performanceStats.coefficientOfVariation(allDevRetry),
+            mean: performanceStats.mean(trimmedDevRetry),
+            raw: allDevRetry,
+            trimmed: trimmedDevRetry,
+            cov: performanceStats.coefficientOfVariation(trimmedDevRetry),
         };
 
         const retried = buildResult(mergedRetryStable, mergedRetryDev, allRetryDiffs);
