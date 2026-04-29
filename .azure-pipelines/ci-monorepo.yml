@@ -837,6 +837,7 @@ jobs:
                 BROWSERSTACK_USERNAME: $(BROWSERSTACK_USERNAME)
                 BROWSERSTACK_ACCESS_KEY: $(BROWSERSTACK_ACCESS_KEY)
                 AFFECTED_TAGS: $(AFFECTED_TAGS)
+                BSTACK_SESSIONS_REQUIRED: "2"
 
           - bash: |
                 if [ -f "$(Build.ArtifactStagingDirectory)/perf-comment.md" ]; then
