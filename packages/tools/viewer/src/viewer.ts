@@ -19,6 +19,7 @@ import {
     type ISceneLoaderProgressEvent,
     type LoadAssetContainerOptions,
     type Nullable,
+    type Observable,
     type Observer,
     type PickingInfo,
     type ShaderMaterial,
@@ -52,7 +53,6 @@ import { deepMerge } from "core/Misc/deepMerger";
 import { AbortError } from "core/Misc/error";
 import { Lazy } from "core/Misc/lazy";
 import { Logger } from "core/Misc/logger";
-import { Observable } from "core/Misc/observable";
 import { HardwareScalingOptimization, SceneOptimizer, SceneOptimizerOptions } from "core/Misc/sceneOptimizer";
 import { SnapshotRenderingHelper } from "core/Misc/snapshotRenderingHelper";
 import { _RetryWithInterval } from "core/Misc/timingTools";
