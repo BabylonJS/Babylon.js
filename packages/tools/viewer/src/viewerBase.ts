@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { type HotSpotQuery, type IColor4Like, type IDisposable, type Nullable, type IReadonlyObservable } from "core/index";
 import { AbortError } from "core/Misc/error";
+import { AsyncLock } from "core/Misc/asyncLock";
 import { Logger } from "core/Misc/logger";
 import { Observable } from "core/Misc/observable";
 
@@ -199,6 +200,17 @@ export type LoadEnvironmentOptions = EnvironmentOptions &
             extension: string;
         }>
     >;
+
+/**
+ * @internal `LoadEnvironmentOptions` after the base class has resolved the optional `lighting` and
+ * `skybox` flags to definite booleans (defaults to `true` for both when omitted, otherwise honors the
+ * caller's choice). Engine-specific extras such as `extension` are forwarded as-is. Passed to the
+ * subclass `_loadEnvironmentImpl` so it doesn't repeat the default-resolution logic.
+ */
+export type ResolvedLoadEnvironmentOptions = Omit<LoadEnvironmentOptions, "lighting" | "skybox"> & {
+    readonly lighting: boolean;
+    readonly skybox: boolean;
+};
 
 /**
  * A hot spot query specifying either a surface point or a fixed world position.
@@ -927,6 +939,149 @@ export abstract class ViewerBase {
         throwIfAborted(...abortSignals);
     }
 
+    // ──────────────────────────────────────────────────────────────────────────
+    // Environment loading orchestration
+    // ──────────────────────────────────────────────────────────────────────────
+
+    /** Lock guarding lighting-side environment loads. */
+    private readonly _loadEnvironmentLightingLock = new AsyncLock();
+    /** Abort controller for the currently in-flight lighting-side load (null when none). */
+    private _loadEnvironmentLightingAbortController: Nullable<AbortController> = null;
+
+    /** Lock guarding skybox-side environment loads. */
+    private readonly _loadEnvironmentSkyboxLock = new AsyncLock();
+    /** Abort controller for the currently in-flight skybox-side load (null when none). */
+    private _loadEnvironmentSkyboxAbortController: Nullable<AbortController> = null;
+
+    /**
+     * @internal The abort signal of the currently in-flight lighting-side load, or `undefined` if
+     * none. Subclasses can use this in `_throwIfDisposedOrAborted` to bail out of dependent async
+     * work (shadows, post-processing, etc.) when the user starts a new lighting load.
+     */
+    protected get _loadEnvironmentLightingAbortSignal(): AbortSignal | undefined {
+        return this._loadEnvironmentLightingAbortController?.signal;
+    }
+
+    /**
+     * @internal The abort signal of the currently in-flight skybox-side load, or `undefined` if
+     * none. Subclasses can use this in `_throwIfDisposedOrAborted` to bail out of dependent async
+     * work (shadows, post-processing, etc.) when the user starts a new skybox load.
+     */
+    protected get _loadEnvironmentSkyboxAbortSignal(): AbortSignal | undefined {
+        return this._loadEnvironmentSkyboxAbortController?.signal;
+    }
+
+    /**
+     * Loads an environment from the specified URL. The lighting and skybox sides have
+     * independent locks and abort controllers so concurrent requests for one side don't
+     * cancel an in-flight load for the other.
+     * @param url The URL of the environment to load.
+     * @param options Selects which sides to update (defaults to both) and forwards engine-specific extras.
+     * @param abortSignal Optional signal that can be used to abort the load externally.
+     */
+    public async loadEnvironment(url: string, options?: LoadEnvironmentOptions, abortSignal?: AbortSignal): Promise<void> {
+        return await this._updateEnvironment(url, options, abortSignal);
+    }
+
+    /**
+     * @internal Internal helper exposing the dual-lock orchestration with a nullable URL.
+     * Used by the public `loadEnvironment` (with a string URL) and by subclass `resetEnvironment`
+     * implementations (which pass `undefined` to clear or `"auto"` to load defaults).
+     *
+     * Subclasses should NOT override this — override the abstract `_loadEnvironmentImpl` instead.
+     */
+    protected async _updateEnvironment(url: Nullable<string | undefined>, options?: LoadEnvironmentOptions, abortSignal?: AbortSignal): Promise<void> {
+        this._throwIfDisposedOrAborted(abortSignal);
+
+        // Default semantics: omitting `options` updates both; passing `options` updates only
+        // the sides whose flag is truthy. `{ lighting: true }` alone updates only lighting,
+        // `{ skybox: true }` alone updates only skybox.
+        const updateLighting = options ? !!options.lighting : true;
+        const updateSkybox = options ? !!options.skybox : true;
+        if (!updateLighting && !updateSkybox) {
+            return;
+        }
+
+        // Resolved options object — `lighting` and `skybox` are guaranteed booleans here, while
+        // engine-specific extras (e.g. `extension`) are forwarded as-is. Passed to the impl so
+        // it can use both the resolved flags and the original extras without duplicating the
+        // default-resolution logic.
+        const resolvedOptions: ResolvedLoadEnvironmentOptions = { ...options, lighting: updateLighting, skybox: updateSkybox };
+
+        const locks: AsyncLock[] = [];
+        const internalAbortControllers: AbortController[] = [];
+
+        if (updateLighting) {
+            this._loadEnvironmentLightingAbortController?.abort(new AbortError("New environment lighting is being loaded before previous environment lighting finished loading."));
+            const lightingAbortController = (this._loadEnvironmentLightingAbortController = new AbortController());
+            locks.push(this._loadEnvironmentLightingLock);
+            internalAbortControllers.push(lightingAbortController);
+        }
+        if (updateSkybox) {
+            this._loadEnvironmentSkyboxAbortController?.abort(new AbortError("New environment skybox is being loaded before previous environment skybox finished loading."));
+            const skyboxAbortController = (this._loadEnvironmentSkyboxAbortController = new AbortController());
+            locks.push(this._loadEnvironmentSkyboxLock);
+            internalAbortControllers.push(skyboxAbortController);
+        }
+
+        // Composite abort fires only when ALL relevant internal aborts fire — a skybox-only
+        // re-request shouldn't cancel an in-progress lighting load when both were requested
+        // together.
+        const compositeAbortController = new AbortController();
+        const checkAllAborted = () => {
+            if (internalAbortControllers.every((c) => c.signal.aborted)) {
+                compositeAbortController.abort(new AbortError(internalAbortControllers.map((controller) => controller.signal.reason).join(" | ")));
+            }
+        };
+        for (const controller of internalAbortControllers) {
+            controller.signal.addEventListener("abort", checkAllAborted);
+        }
+
+        try {
+            await AsyncLock.LockAsync(async () => {
+                try {
+                    throwIfAborted(abortSignal, compositeAbortController.signal);
+                    await this._loadEnvironmentImpl(url?.trim() ?? url, resolvedOptions, abortSignal, compositeAbortController.signal);
+                    this.onEnvironmentChanged.notifyObservers();
+                } catch (e) {
+                    if (!(e instanceof AbortError)) {
+                        this.onEnvironmentError.notifyObservers(e);
+                    }
+                    throw e;
+                }
+            }, locks);
+        } finally {
+            for (const controller of internalAbortControllers) {
+                controller.signal.removeEventListener("abort", checkAllAborted);
+            }
+        }
+    }
+
+    /**
+     * @internal Engine-specific environment loading. Subclasses implement this with their actual
+     * texture loading / scene mutation logic. The base class handles all surrounding orchestration:
+     * lock acquisition, abort-prev semantics, composite abort signals, and `onEnvironmentChanged` /
+     * `onEnvironmentError` notifications.
+     *
+     * Implementations should:
+     * - Throw on failure (the base class will fire `onEnvironmentError` for non-abort errors).
+     * - NOT fire `onEnvironmentChanged` themselves (the base class does this on success).
+     * - Periodically re-check abort by calling `throwIfAborted(abortSignal, compositeAbortSignal)`
+     *   at safe points within the load (e.g. after long-running awaits).
+     *
+     * @param url Trimmed URL string, `undefined` (caller asked to clear), or `null`.
+     * @param options Resolved options — `lighting` and `skybox` are guaranteed booleans indicating
+     *   which sides the caller is updating; engine-specific extras (e.g. `extension`) are forwarded as-is.
+     * @param abortSignal The caller's external abort signal (or `undefined`).
+     * @param compositeAbortSignal Signal that fires when ALL relevant internal load operations have aborted.
+     */
+    protected abstract _loadEnvironmentImpl(
+        url: Nullable<string | undefined>,
+        options: ResolvedLoadEnvironmentOptions,
+        abortSignal: AbortSignal | undefined,
+        compositeAbortSignal: AbortSignal
+    ): Promise<void>;
+
     /**
      * Disposes the viewer and releases shared resources (observables, disposed flag).
      * Subclasses MUST override this method to dispose their own engine-specific state
@@ -936,6 +1091,11 @@ export abstract class ViewerBase {
      * Subclasses should also early-return if `_isDisposed` is already true.
      */
     public dispose(): void {
+        this._loadEnvironmentLightingAbortController?.abort(new AbortError("The viewer is being disposed."));
+        this._loadEnvironmentLightingAbortController = null;
+        this._loadEnvironmentSkyboxAbortController?.abort(new AbortError("The viewer is being disposed."));
+        this._loadEnvironmentSkyboxAbortController = null;
+
         this.onEnvironmentChanged.clear();
         this.onEnvironmentConfigurationChanged.clear();
         this.onEnvironmentError.clear();

@@ -44,7 +44,7 @@ import {
     type EnvironmentParams,
     type HotSpot,
     type IViewer,
-    type LoadEnvironmentOptions,
+    type ResolvedLoadEnvironmentOptions,
     type PostProcessing,
     type ResetFlag,
     type ShadowParams,
@@ -161,12 +161,8 @@ export class Viewer extends ViewerBase implements IViewer {
     /** The source that was passed to the most recent {@link loadModel} call, for notifications. */
     private _modelSource: Nullable<string | File | ArrayBufferView> = null;
     private _loadModelAbortController: AbortController | null = null;
-    private _loadEnvironmentLightingAbortController: AbortController | null = null;
-    private _loadEnvironmentSkyboxAbortController: AbortController | null = null;
     private _shadowsAbortController: AbortController | null = null;
     private readonly _loadModelLock = new AsyncLock();
-    private readonly _loadEnvironmentLightingLock = new AsyncLock();
-    private readonly _loadEnvironmentSkyboxLock = new AsyncLock();
     private readonly _updateShadowsLock = new AsyncLock();
 
     // Animation
@@ -461,161 +457,101 @@ export class Viewer extends ViewerBase implements IViewer {
         }
     }
 
-    public async loadEnvironment(url: string, options?: LoadEnvironmentOptions, abortSignal?: AbortSignal): Promise<void> {
-        this._throwIfDisposedOrAborted(abortSignal);
+    protected async _loadEnvironmentImpl(
+        url: Nullable<string | undefined>,
+        options: ResolvedLoadEnvironmentOptions,
+        abortSignal: AbortSignal | undefined,
+        compositeAbortSignal: AbortSignal
+    ): Promise<void> {
+        const updateLighting = options.lighting;
+        const updateSkybox = options.skybox;
 
-        // Match the full Viewer's semantics: omitting `options` entirely means update both;
-        // passing `options` updates only the sides whose flag is truthy. `{ lighting: true }`
-        // alone updates only lighting; `{ skybox: true }` alone updates only skybox.
-        const updateLighting = options ? !!options.lighting : true;
-        const updateSkybox = options ? !!options.skybox : true;
-        if (!updateLighting && !updateSkybox) {
+        // Resolve the target URLs for lighting and skybox after applying the update.
+        const targetLightingUrl = updateLighting ? (url ?? null) : this._currentLightingUrl;
+        const targetSkyboxUrl = updateSkybox ? (url ?? null) : this._currentSkyboxUrl;
+
+        // No-op: nothing actually changes.
+        if (targetLightingUrl === this._currentLightingUrl && targetSkyboxUrl === this._currentSkyboxUrl) {
             return;
         }
 
-        // Dual-lock orchestration matching the full Viewer's pattern: lighting and skybox each
-        // have their own lock and abort controller, so a skybox-only update doesn't cancel an
-        // in-progress lighting update (or vice versa). Lite cannot truly run them concurrently
-        // (its loaders mutate shared scene state), but matching the orchestration shell keeps
-        // the public API and abort semantics consistent across the two engine backends.
-        const locks: AsyncLock[] = [];
-        const internalAbortControllers: AbortController[] = [];
-
-        if (updateLighting) {
-            this._loadEnvironmentLightingAbortController?.abort(new AbortError("New environment lighting is being loaded before previous environment lighting finished loading."));
-            const lightingAbortController = (this._loadEnvironmentLightingAbortController = new AbortController());
-            locks.push(this._loadEnvironmentLightingLock);
-            internalAbortControllers.push(lightingAbortController);
+        // Babylon Lite's current public API has no way to remove or replace existing env state:
+        // - `liteLoadEnvironment` and `loadHdrEnvironment` always set `scene._envTextures` and push
+        //   skybox/ground builders, but they don't remove anything that's already there.
+        // - There's no PBR-scene-compatible standalone skybox loader.
+        // We allow ADDING new state where there was none, but throw on any REPLACEMENT.
+        if (this._currentLightingUrl !== null && targetLightingUrl !== this._currentLightingUrl) {
+            throw new Error(
+                `Babylon Lite cannot replace the loaded environment lighting ("${this._currentLightingUrl}" → "${targetLightingUrl}"). ` +
+                    `Recreate the Viewer to change the environment.`
+            );
         }
-        if (updateSkybox) {
-            this._loadEnvironmentSkyboxAbortController?.abort(new AbortError("New environment skybox is being loaded before previous environment skybox finished loading."));
-            const skyboxAbortController = (this._loadEnvironmentSkyboxAbortController = new AbortController());
-            locks.push(this._loadEnvironmentSkyboxLock);
-            internalAbortControllers.push(skyboxAbortController);
+        if (this._currentSkyboxUrl !== null && targetSkyboxUrl !== this._currentSkyboxUrl) {
+            throw new Error(
+                `Babylon Lite cannot replace the loaded environment skybox ("${this._currentSkyboxUrl}" → "${targetSkyboxUrl}"). ` +
+                    `Recreate the Viewer to change the environment.`
+            );
         }
 
-        // Composite abort signal that fires only when ALL relevant internal abort controllers
-        // have been aborted (matches the full Viewer's behavior — a skybox-only re-request shouldn't
-        // cancel an in-progress lighting load when both were requested together).
-        const compositeAbortController = new AbortController();
-        const checkAllAborted = () => {
-            if (internalAbortControllers.every((c) => c.signal.aborted)) {
-                compositeAbortController.abort(new AbortError(internalAbortControllers.map((controller) => controller.signal.reason).join(" | ")));
-            }
-        };
-        for (const controller of internalAbortControllers) {
-            controller.signal.addEventListener("abort", checkAllAborted);
+        // Skybox-only addition with no lighting yet: Lite's env loader requires a lighting URL,
+        // and we cannot pick a default lighting silently — that would change a side the caller
+        // didn't ask to change.
+        if (!updateLighting && updateSkybox && this._currentLightingUrl === null) {
+            throw new Error("Babylon Lite cannot add a skybox before lighting has been loaded. " + "Load lighting first, or update lighting and skybox together.");
         }
 
-        try {
-            await AsyncLock.LockAsync(async () => {
-                const loadOperation = this._beginLoadOperation();
-                try {
-                    throwIfAborted(abortSignal, compositeAbortController.signal);
+        const effectiveLightingUrl = targetLightingUrl ?? "auto";
+        const resolvedLightingUrl = effectiveLightingUrl === "auto" ? (await import("./defaultEnvironment")).default : effectiveLightingUrl;
+        const ext = getExtension(resolvedLightingUrl, options.extension);
 
-                    // Resolve the target URLs for lighting and skybox after applying the update.
-                    const targetLightingUrl = updateLighting ? url : this._currentLightingUrl;
-                    const targetSkyboxUrl = updateSkybox ? url : this._currentSkyboxUrl;
+        // Lite's `loadHdrEnvironment` cannot suppress its skybox build. So:
+        // - `lighting: true, skybox: false` with .hdr → would build an unwanted skybox. Throw.
+        // - `lighting: true, skybox: true` (or skybox-only with same URL) → fine.
+        if (ext === ".hdr" && !updateSkybox) {
+            throw new Error(
+                "Babylon Lite cannot load only the lighting from a .hdr URL — `loadHdrEnvironment` always builds a skybox. " +
+                    "Update lighting and skybox together, or use a .env URL."
+            );
+        }
 
-                    // No-op: nothing actually changes.
-                    if (targetLightingUrl === this._currentLightingUrl && targetSkyboxUrl === this._currentSkyboxUrl) {
-                        return;
-                    }
-
-                    // Babylon Lite's current public API has no way to remove or replace existing env state:
-                    // - `liteLoadEnvironment` and `loadHdrEnvironment` always set `scene._envTextures` and push
-                    //   skybox/ground builders, but they don't remove anything that's already there.
-                    // - There's no PBR-scene-compatible standalone skybox loader.
-                    // We allow ADDING new state where there was none, but throw on any REPLACEMENT.
-                    if (this._currentLightingUrl !== null && targetLightingUrl !== this._currentLightingUrl) {
-                        throw new Error(
-                            `Babylon Lite cannot replace the loaded environment lighting ("${this._currentLightingUrl}" → "${targetLightingUrl}"). ` +
-                                `Recreate the Viewer to change the environment.`
-                        );
-                    }
-                    if (this._currentSkyboxUrl !== null && targetSkyboxUrl !== this._currentSkyboxUrl) {
-                        throw new Error(
-                            `Babylon Lite cannot replace the loaded environment skybox ("${this._currentSkyboxUrl}" → "${targetSkyboxUrl}"). ` +
-                                `Recreate the Viewer to change the environment.`
-                        );
-                    }
-
-                    // Skybox-only addition with no lighting yet: Lite's env loader requires a lighting URL,
-                    // and we cannot pick a default lighting silently — that would change a side the caller
-                    // didn't ask to change.
-                    if (!updateLighting && updateSkybox && this._currentLightingUrl === null) {
-                        throw new Error("Babylon Lite cannot add a skybox before lighting has been loaded. " + "Load lighting first, or update lighting and skybox together.");
-                    }
-
-                    const effectiveLightingUrl = targetLightingUrl ?? "auto";
-                    const resolvedLightingUrl = effectiveLightingUrl === "auto" ? (await import("./defaultEnvironment")).default : effectiveLightingUrl;
-                    const ext = getExtension(resolvedLightingUrl, options?.extension);
-
-                    // Lite's `loadHdrEnvironment` cannot suppress its skybox build. So:
-                    // - `lighting: true, skybox: false` with .hdr → would build an unwanted skybox. Throw.
-                    // - `lighting: true, skybox: true` (or skybox-only with same URL) → fine.
-                    if (ext === ".hdr" && !updateSkybox) {
-                        throw new Error(
-                            "Babylon Lite cannot load only the lighting from a .hdr URL — `loadHdrEnvironment` always builds a skybox. " +
-                                "Update lighting and skybox together, or use a .env URL."
-                        );
-                    }
-
-                    if (ext === ".hdr") {
-                        await loadHdrEnvironment(this._scene, resolvedLightingUrl, {
-                            skipGround: true,
-                            skyboxSize: 20,
-                        });
-                        this._currentLightingUrl = effectiveLightingUrl;
-                        this._currentSkyboxUrl = effectiveLightingUrl;
-                    } else {
-                        const resolvedSkyboxUrl = targetSkyboxUrl === "auto" ? (await import("./defaultEnvironment")).default : (targetSkyboxUrl ?? undefined);
-                        // Note: when skybox-only is requested but lighting already exists, we still call
-                        // liteLoadEnvironment with the existing lighting URL — this re-fetches and re-uploads
-                        // the cubemap (wasteful) but correctly builds the requested skybox. Per the contract
-                        // ("honoring by re-loading is OK"), this is acceptable.
-                        await liteLoadEnvironment(this._scene, resolvedLightingUrl, {
-                            brdfUrl: (await import("./defaultBRDF")).default,
-                            skyboxUrl: resolvedSkyboxUrl,
-                            skipSkybox: !updateSkybox,
-                            skipGround: true,
-                            skyboxSize: 20,
-                        });
-                        this._currentLightingUrl = effectiveLightingUrl;
-                        if (updateSkybox) {
-                            this._currentSkyboxUrl = targetSkyboxUrl;
-                        }
-                    }
-
-                    if (this._environmentRotation !== 0) {
-                        this._scene.envRotationY = this._environmentRotation;
-                    }
-
-                    // Re-register the scene so that the env loader's deferred builders are processed
-                    // and the new skybox/ground renderables land in the draw buckets. Lite only fills
-                    // `_opaqueRenderables` etc. at registerScene() time.
-                    if (this._renderLoopRunning) {
-                        await this._beginRendering();
-                    }
-
-                    throwIfAborted(abortSignal, compositeAbortController.signal);
-
-                    this.onEnvironmentChanged.notifyObservers();
-                } catch (e) {
-                    if (e instanceof AbortError) {
-                        throw e;
-                    }
-                    this.onEnvironmentError.notifyObservers(e);
-                    throw e;
-                } finally {
-                    loadOperation.dispose();
-                }
-            }, locks);
-        } finally {
-            for (const controller of internalAbortControllers) {
-                controller.signal.removeEventListener("abort", checkAllAborted);
+        if (ext === ".hdr") {
+            await loadHdrEnvironment(this._scene, resolvedLightingUrl, {
+                skipGround: true,
+                skyboxSize: 20,
+            });
+            this._currentLightingUrl = effectiveLightingUrl;
+            this._currentSkyboxUrl = effectiveLightingUrl;
+        } else {
+            const resolvedSkyboxUrl = targetSkyboxUrl === "auto" ? (await import("./defaultEnvironment")).default : (targetSkyboxUrl ?? undefined);
+            // Note: when skybox-only is requested but lighting already exists, we still call
+            // liteLoadEnvironment with the existing lighting URL — this re-fetches and re-uploads
+            // the cubemap (wasteful) but correctly builds the requested skybox. Per the contract
+            // ("honoring by re-loading is OK"), this is acceptable.
+            await liteLoadEnvironment(this._scene, resolvedLightingUrl, {
+                brdfUrl: (await import("./defaultBRDF")).default,
+                skyboxUrl: resolvedSkyboxUrl,
+                skipSkybox: !updateSkybox,
+                skipGround: true,
+                skyboxSize: 20,
+            });
+            this._currentLightingUrl = effectiveLightingUrl;
+            if (updateSkybox) {
+                this._currentSkyboxUrl = targetSkyboxUrl;
             }
         }
+
+        if (this._environmentRotation !== 0) {
+            this._scene.envRotationY = this._environmentRotation;
+        }
+
+        // Re-register the scene so that the env loader's deferred builders are processed
+        // and the new skybox/ground renderables land in the draw buckets. Lite only fills
+        // `_opaqueRenderables` etc. at registerScene() time.
+        if (this._renderLoopRunning) {
+            await this._beginRendering();
+        }
+
+        throwIfAborted(abortSignal, compositeAbortSignal);
     }
 
     public async resetEnvironment(options?: EnvironmentOptions, abortSignal?: AbortSignal): Promise<void> {
@@ -1184,10 +1120,6 @@ export class Viewer extends ViewerBase implements IViewer {
         // Abort any in-flight loads
         this._loadModelAbortController?.abort(new AbortError("Disposed"));
         this._loadModelAbortController = null;
-        this._loadEnvironmentLightingAbortController?.abort(new AbortError("Disposed"));
-        this._loadEnvironmentLightingAbortController = null;
-        this._loadEnvironmentSkyboxAbortController?.abort(new AbortError("Disposed"));
-        this._loadEnvironmentSkyboxAbortController = null;
         this._shadowsAbortController?.abort(new AbortError("Disposed"));
         this._shadowsAbortController = null;
 
