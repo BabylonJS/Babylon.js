@@ -877,6 +877,13 @@ export abstract class ViewerBase {
     protected _isDisposed = false;
 
     /**
+     * @internal Backend-agnostic viewer options stored at construction time. Subclasses declare this
+     * with their own (narrower) options type that extends {@link ViewerBaseOptions} and assign it from
+     * their own constructor (typically via a parameter property).
+     */
+    protected abstract readonly _options?: Readonly<ViewerBaseOptions>;
+
+    /**
      * The current loading progress. False when no load is in flight, true when at least one
      * load is in flight with indeterminate progress, or a number between 0 and 1 representing
      * the average of all in-flight loads' progress.
@@ -1218,6 +1225,13 @@ export abstract class ViewerBase {
      */
     protected _shadowQuality: ShadowQuality = DefaultViewerBaseOptions.shadowConfig.quality;
 
+    // ── Material variants (abstract — subclasses provide engine-specific implementations) ──
+
+    /** @internal */
+    public abstract get selectedMaterialVariant(): Nullable<string>;
+    /** @internal */
+    public abstract set selectedMaterialVariant(value: Nullable<string>);
+
     /**
      * Gets the current shadow configuration.
      */
@@ -1318,5 +1332,91 @@ export abstract class ViewerBase {
         this.onAfterRenderObservable.clear();
         this.onClearColorChanged.clear();
         this._isDisposed = true;
+    }
+
+    // ── Reset orchestration ──
+
+    /**
+     * Resets the viewer to its initial state based on the options passed in to the constructor.
+     * @param flags The flags that specify which parts of the viewer to reset. If no flags are provided, all parts will be reset.
+     * - "source": Reset the loaded model.
+     * - "environment": Reset environment related state.
+     * - "shadow": Reset shadow related state.
+     * - "animation": Reset animation related state.
+     * - "camera": Reset camera related state.
+     * - "post-processing": Reset post-processing related state.
+     * - "material-variant": Reset material variant related state.
+     */
+    public reset(...flags: ResetFlag[]): void {
+        this._reset(true, ...flags);
+    }
+
+    /**
+     * @internal
+     * Orchestrates the reset operation in canonical flag order. The {@link interpolate} parameter is
+     * forwarded to per-flag hooks (currently only `_resetCamera`) so internal callers can reset
+     * without camera animation.
+     */
+    protected _reset(interpolate: boolean, ...flags: ResetFlag[]): void {
+        const all = flags.length === 0;
+
+        if (all || flags.includes("source")) {
+            this._resetModel();
+        }
+        if (all || flags.includes("environment")) {
+            this._resetEnvironment();
+        }
+        if (all || flags.includes("shadow")) {
+            this._resetShadows();
+        }
+        if (all || flags.includes("animation")) {
+            this._resetAnimation();
+        }
+        if (all || flags.includes("camera")) {
+            this._resetCamera(interpolate);
+        }
+        if (all || flags.includes("post-processing")) {
+            this._resetPostProcessing();
+        }
+        if (all || flags.includes("material-variant")) {
+            this._resetMaterialVariant();
+        }
+    }
+
+    /**
+     * @internal Resets the loaded model to the source specified at construction (or no model if no source was specified).
+     */
+    protected _resetModel(): void {
+        observePromise(this._updateModel(this._options?.source));
+    }
+
+    /** @internal */
+    protected abstract _resetEnvironment(): void;
+
+    /**
+     * @internal Resets the shadow configuration to the value specified at construction.
+     */
+    protected _resetShadows(): void {
+        observePromise(this.updateShadows({ quality: this._options?.shadowConfig?.quality ?? DefaultViewerBaseOptions.shadowConfig.quality }));
+    }
+
+    /** @internal */
+    protected abstract _resetAnimation(): void;
+
+    /**
+     * @internal
+     * @param interpolate If true, animate camera transitions when supported. Subclasses without bounds-based
+     * reframing may ignore this parameter.
+     */
+    protected abstract _resetCamera(interpolate: boolean): void;
+
+    /** @internal */
+    protected abstract _resetPostProcessing(): void;
+
+    /**
+     * @internal Resets the selected material variant to the value specified at construction (or null if not specified).
+     */
+    protected _resetMaterialVariant(): void {
+        this.selectedMaterialVariant = this._options?.selectedMaterialVariant ?? null;
     }
 }

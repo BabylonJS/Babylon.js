@@ -69,7 +69,6 @@ import {
     type ResolvedLoadEnvironmentOptions,
     type ViewerLoadModelOptions,
     type PostProcessing,
-    type ResetFlag,
     type ShadowParams,
     type ShadowQuality,
     type SSAOOptions,
@@ -544,7 +543,7 @@ export class Viewer extends ViewerBase implements IDisposable, IViewer {
 
     public constructor(
         private readonly _engine: AbstractEngine,
-        private readonly _options?: Readonly<ViewerOptions>
+        protected readonly _options?: Readonly<ViewerOptions>
     ) {
         super();
         if (this._options?.shadowConfig?.quality === "high" && this._options?.postProcessing?.ssao === "enabled") {
@@ -2122,93 +2121,69 @@ export class Viewer extends ViewerBase implements IDisposable, IViewer {
         );
     }
 
-    /**
-     * Resets the viewer to its initial state based on the options passed in to the constructor.
-     * @param flags The flags that specify which parts of the viewer to reset. If no flags are provided, all parts will be reset.
-     * - "source": Reset the loaded model.
-     * - "environment": Reset environment related state.
-     * - "animation": Reset animation related state.
-     * - "camera": Reset camera related state.
-     * - "post-processing": Reset post-processing related state.
-     * - "material-variant": Reset material variant related state.
-     */
-    public reset(...flags: ResetFlag[]) {
-        this._reset(true, ...flags);
+    /** @internal */
+    protected override _resetEnvironment(): void {
+        this._scene.clearColor = new Color4(...(this._options?.clearColor ?? DefaultViewerOptions.clearColor));
+        this.environmentConfig = {
+            intensity: this._options?.environmentConfig?.intensity ?? DefaultViewerOptions.environmentConfig.intensity,
+            blur: this._options?.environmentConfig?.blur ?? DefaultViewerOptions.environmentConfig.blur,
+            rotation: this._options?.environmentConfig?.rotation ?? DefaultViewerOptions.environmentConfig.rotation,
+        };
+
+        if (this._options?.environmentLighting === this._options?.environmentSkybox) {
+            observePromise(this._updateEnvironment(this._options?.environmentLighting, { lighting: true, skybox: true }));
+        } else {
+            observePromise(this._updateEnvironment(this._options?.environmentLighting, { lighting: true }));
+            observePromise(this._updateEnvironment(this._options?.environmentSkybox, { skybox: true }));
+        }
     }
 
-    private _reset(interpolate: boolean, ...flags: ResetFlag[]) {
-        if (flags.length === 0 || flags.includes("source")) {
-            observePromise(this._updateModel(this._options?.source));
+    /** @internal */
+    protected override _resetAnimation(): void {
+        this.animationSpeed = this._options?.animationSpeed ?? DefaultViewerOptions.animationSpeed;
+        this.selectedAnimation = this._options?.selectedAnimation ?? 0;
+        if (this._options?.animationAutoPlay) {
+            this.playAnimation();
+        } else {
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
+            this.pauseAnimation();
         }
+    }
 
-        if (flags.length === 0 || flags.includes("environment")) {
-            this._scene.clearColor = new Color4(...(this._options?.clearColor ?? DefaultViewerOptions.clearColor));
-            this.environmentConfig = {
-                intensity: this._options?.environmentConfig?.intensity ?? DefaultViewerOptions.environmentConfig.intensity,
-                blur: this._options?.environmentConfig?.blur ?? DefaultViewerOptions.environmentConfig.blur,
-                rotation: this._options?.environmentConfig?.rotation ?? DefaultViewerOptions.environmentConfig.rotation,
-            };
+    /** @internal */
+    protected override _resetCamera(interpolate: boolean): void {
+        // In the case of resetting the camera, we always want to restore default states, so convert NaN to undefined.
+        const alpha = Number(this._options?.cameraOrbit?.[0]);
+        const beta = Number(this._options?.cameraOrbit?.[1]);
+        const radius = Number(this._options?.cameraOrbit?.[2]);
+        const targetX = Number(this._options?.cameraTarget?.[0]);
+        const targetY = Number(this._options?.cameraTarget?.[1]);
+        const targetZ = Number(this._options?.cameraTarget?.[2]);
+        this._reframeCameraFromBounds(
+            interpolate,
+            this._loadedModels,
+            isNaN(alpha) ? undefined : alpha,
+            isNaN(beta) ? undefined : beta,
+            isNaN(radius) ? undefined : radius,
+            isNaN(targetX) ? undefined : targetX,
+            isNaN(targetY) ? undefined : targetY,
+            isNaN(targetZ) ? undefined : targetZ
+        );
+        this.cameraAutoOrbit = {
+            enabled: this._options?.cameraAutoOrbit?.enabled ?? DefaultViewerOptions.cameraAutoOrbit.enabled,
+            speed: this._options?.cameraAutoOrbit?.speed ?? DefaultViewerOptions.cameraAutoOrbit.speed,
+            delay: this._options?.cameraAutoOrbit?.delay ?? DefaultViewerOptions.cameraAutoOrbit.delay,
+        };
+    }
 
-            if (this._options?.environmentLighting === this._options?.environmentSkybox) {
-                observePromise(this._updateEnvironment(this._options?.environmentLighting, { lighting: true, skybox: true }));
-            } else {
-                observePromise(this._updateEnvironment(this._options?.environmentLighting, { lighting: true }));
-                observePromise(this._updateEnvironment(this._options?.environmentSkybox, { skybox: true }));
-            }
-        }
-
-        if (flags.length === 0 || flags.includes("shadow")) {
-            observePromise(this.updateShadows({ quality: this._options?.shadowConfig?.quality ?? DefaultViewerOptions.shadowConfig.quality }));
-        }
-
-        if (flags.length === 0 || flags.includes("animation")) {
-            this.animationSpeed = this._options?.animationSpeed ?? DefaultViewerOptions.animationSpeed;
-            this.selectedAnimation = this._options?.selectedAnimation ?? 0;
-            if (this._options?.animationAutoPlay) {
-                this.playAnimation();
-            } else {
-                // eslint-disable-next-line @typescript-eslint/no-floating-promises
-                this.pauseAnimation();
-            }
-        }
-
-        if (flags.length === 0 || flags.includes("camera")) {
-            // In the case of resetting the camera, we always want to restore default states, so convert NaN to undefined.
-            const alpha = Number(this._options?.cameraOrbit?.[0]);
-            const beta = Number(this._options?.cameraOrbit?.[1]);
-            const radius = Number(this._options?.cameraOrbit?.[2]);
-            const targetX = Number(this._options?.cameraTarget?.[0]);
-            const targetY = Number(this._options?.cameraTarget?.[1]);
-            const targetZ = Number(this._options?.cameraTarget?.[2]);
-            this._reframeCameraFromBounds(
-                interpolate,
-                this._loadedModels,
-                isNaN(alpha) ? undefined : alpha,
-                isNaN(beta) ? undefined : beta,
-                isNaN(radius) ? undefined : radius,
-                isNaN(targetX) ? undefined : targetX,
-                isNaN(targetY) ? undefined : targetY,
-                isNaN(targetZ) ? undefined : targetZ
-            );
-            this.cameraAutoOrbit = {
-                enabled: this._options?.cameraAutoOrbit?.enabled ?? DefaultViewerOptions.cameraAutoOrbit.enabled,
-                speed: this._options?.cameraAutoOrbit?.speed ?? DefaultViewerOptions.cameraAutoOrbit.speed,
-                delay: this._options?.cameraAutoOrbit?.delay ?? DefaultViewerOptions.cameraAutoOrbit.delay,
-            };
-        }
-
-        if (flags.length === 0 || flags.includes("post-processing")) {
-            this.postProcessing = {
-                toneMapping: this._options?.postProcessing?.toneMapping ?? DefaultViewerOptions.postProcessing.toneMapping,
-                contrast: this._options?.postProcessing?.contrast ?? DefaultViewerOptions.postProcessing.contrast,
-                exposure: this._options?.postProcessing?.exposure ?? DefaultViewerOptions.postProcessing.exposure,
-                ssao: this._options?.postProcessing?.ssao ?? DefaultViewerOptions.postProcessing.ssao,
-            };
-        }
-
-        if (flags.length === 0 || flags.includes("material-variant")) {
-            this.selectedMaterialVariant = this._options?.selectedMaterialVariant ?? null;
-        }
+    /** @internal */
+    protected override _resetPostProcessing(): void {
+        this.postProcessing = {
+            toneMapping: this._options?.postProcessing?.toneMapping ?? DefaultViewerOptions.postProcessing.toneMapping,
+            contrast: this._options?.postProcessing?.contrast ?? DefaultViewerOptions.postProcessing.contrast,
+            exposure: this._options?.postProcessing?.exposure ?? DefaultViewerOptions.postProcessing.exposure,
+            ssao: this._options?.postProcessing?.ssao ?? DefaultViewerOptions.postProcessing.ssao,
+        };
     }
 
     /**

@@ -45,7 +45,6 @@ import {
     type IViewer,
     type ResolvedLoadEnvironmentOptions,
     type PostProcessing,
-    type ResetFlag,
     type ShadowParams,
     type ShadowQuality,
     type SSAOOptions,
@@ -185,7 +184,7 @@ export class Viewer extends ViewerBase implements IViewer {
      */
     constructor(
         private readonly _engine: EngineContext,
-        private readonly _options?: ViewerOptions
+        protected readonly _options?: ViewerOptions
     ) {
         super();
         this._shadowQuality = this._options?.shadowConfig?.quality ?? DefaultViewerOptions.shadowConfig.quality;
@@ -998,81 +997,72 @@ export class Viewer extends ViewerBase implements IViewer {
         return this._container !== null;
     }
 
-    public reset(...flags: ResetFlag[]): void {
-        const all = flags.length === 0;
-
-        if (all || flags.includes("camera")) {
-            this.resetCamera();
-            this.cameraAutoOrbit = this._options?.cameraAutoOrbit
-                ? {
-                      enabled: this._options.cameraAutoOrbit.enabled ?? DefaultViewerOptions.cameraAutoOrbit.enabled,
-                      speed: this._options.cameraAutoOrbit.speed ?? DefaultViewerOptions.cameraAutoOrbit.speed,
-                      delay: this._options.cameraAutoOrbit.delay ?? DefaultViewerOptions.cameraAutoOrbit.delay,
-                  }
-                : { ...DefaultViewerOptions.cameraAutoOrbit };
-        }
-
-        if (all || flags.includes("environment")) {
-            observePromise(this.resetEnvironment());
-            const initialLightingUrl = this._options?.environmentLighting ?? DefaultViewerOptions.environmentLighting;
-            const initialSkyboxUrl = this._options?.environmentSkybox ?? DefaultViewerOptions.environmentSkybox;
-            if (initialLightingUrl === initialSkyboxUrl) {
-                if (initialLightingUrl !== "none") {
-                    observePromise(this.loadEnvironment(initialLightingUrl));
-                }
-            } else {
-                if (initialLightingUrl !== "none") {
-                    observePromise(this.loadEnvironment(initialLightingUrl, { lighting: true, skybox: false }));
-                }
-                if (initialSkyboxUrl !== "none") {
-                    observePromise(this.loadEnvironment(initialSkyboxUrl, { lighting: false, skybox: true }));
-                }
+    /** @internal */
+    protected override _resetEnvironment(): void {
+        observePromise(this.resetEnvironment());
+        const initialLightingUrl = this._options?.environmentLighting ?? DefaultViewerOptions.environmentLighting;
+        const initialSkyboxUrl = this._options?.environmentSkybox ?? DefaultViewerOptions.environmentSkybox;
+        if (initialLightingUrl === initialSkyboxUrl) {
+            if (initialLightingUrl !== "none") {
+                observePromise(this.loadEnvironment(initialLightingUrl));
+            }
+        } else {
+            if (initialLightingUrl !== "none") {
+                observePromise(this.loadEnvironment(initialLightingUrl, { lighting: true, skybox: false }));
+            }
+            if (initialSkyboxUrl !== "none") {
+                observePromise(this.loadEnvironment(initialSkyboxUrl, { lighting: false, skybox: true }));
             }
         }
+    }
 
-        if (all || flags.includes("post-processing")) {
-            this._applyPostProcessing({
-                toneMapping: this._options?.postProcessing?.toneMapping ?? DefaultViewerOptions.postProcessing.toneMapping,
-                contrast: this._options?.postProcessing?.contrast ?? DefaultViewerOptions.postProcessing.contrast,
-                exposure: this._options?.postProcessing?.exposure ?? DefaultViewerOptions.postProcessing.exposure,
-                ssao: this._options?.postProcessing?.ssao ?? DefaultViewerOptions.postProcessing.ssao,
-            });
-            this.onPostProcessingChanged.notifyObservers();
-        }
+    /** @internal */
+    protected override _resetAnimation(): void {
+        const groups = this._container?.animationGroups;
+        if (groups && groups.length > 0) {
+            // Pause current
+            const current = this._getActiveAnimationGroup();
+            if (current) {
+                litePauseAnimation(current);
+            }
+            this._selectedAnimation = this._options?.selectedAnimation ?? 0;
+            this._animationSpeed = this._options?.animationSpeed ?? 1;
+            this.onSelectedAnimationChanged.notifyObservers();
+            this.onAnimationSpeedChanged.notifyObservers();
 
-        if (all || flags.includes("shadow")) {
-            observePromise(this.updateShadows({ quality: this._options?.shadowConfig?.quality ?? DefaultViewerOptions.shadowConfig.quality }));
-        }
-
-        if (all || flags.includes("animation")) {
-            const groups = this._container?.animationGroups;
-            if (groups && groups.length > 0) {
-                // Pause current
-                const current = this._getActiveAnimationGroup();
-                if (current) {
-                    litePauseAnimation(current);
-                }
-                this._selectedAnimation = this._options?.selectedAnimation ?? 0;
-                this._animationSpeed = this._options?.animationSpeed ?? 1;
-                this.onSelectedAnimationChanged.notifyObservers();
-                this.onAnimationSpeedChanged.notifyObservers();
-
-                if (this._options?.animationAutoPlay) {
-                    this.playAnimation();
-                }
+            if (this._options?.animationAutoPlay) {
+                this.playAnimation();
             }
         }
+    }
 
-        if (all || flags.includes("material-variant")) {
-            this.selectedMaterialVariant = this._options?.selectedMaterialVariant ?? null;
-        }
+    /**
+     * @internal
+     * Lite currently does not support bounds-based reframing or interpolated camera transitions, so the
+     * `interpolate` parameter is ignored. Once Lite gains those capabilities, the canonical reset order
+     * inherited from `ViewerBase` will produce the same behavior as the full Viewer.
+     */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    protected override _resetCamera(interpolate: boolean): void {
+        this.resetCamera();
+        this.cameraAutoOrbit = this._options?.cameraAutoOrbit
+            ? {
+                  enabled: this._options.cameraAutoOrbit.enabled ?? DefaultViewerOptions.cameraAutoOrbit.enabled,
+                  speed: this._options.cameraAutoOrbit.speed ?? DefaultViewerOptions.cameraAutoOrbit.speed,
+                  delay: this._options.cameraAutoOrbit.delay ?? DefaultViewerOptions.cameraAutoOrbit.delay,
+              }
+            : { ...DefaultViewerOptions.cameraAutoOrbit };
+    }
 
-        if (all || flags.includes("source")) {
-            observePromise(this.resetModel());
-            if (this._options?.source) {
-                observePromise(this.loadModel(this._options.source));
-            }
-        }
+    /** @internal */
+    protected override _resetPostProcessing(): void {
+        this._applyPostProcessing({
+            toneMapping: this._options?.postProcessing?.toneMapping ?? DefaultViewerOptions.postProcessing.toneMapping,
+            contrast: this._options?.postProcessing?.contrast ?? DefaultViewerOptions.postProcessing.contrast,
+            exposure: this._options?.postProcessing?.exposure ?? DefaultViewerOptions.postProcessing.exposure,
+            ssao: this._options?.postProcessing?.ssao ?? DefaultViewerOptions.postProcessing.ssao,
+        });
+        this.onPostProcessingChanged.notifyObservers();
     }
 
     /**
