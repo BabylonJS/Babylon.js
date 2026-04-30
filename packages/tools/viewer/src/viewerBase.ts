@@ -995,6 +995,19 @@ export abstract class ViewerBase {
     }
 
     /**
+     * Removes the loaded environment. By default removes both lighting and skybox; pass `options`
+     * to remove only one side. Subclasses (notably the full Viewer) may override to add backend-specific
+     * fallback behavior such as substituting a default environment for lighting when the scene contains
+     * PBR materials.
+     * @param options Selects which sides to remove (defaults to both).
+     * @param abortSignal Optional signal that can be used to abort the operation externally.
+     * @returns A promise that resolves when the environment has finished resetting.
+     */
+    public async resetEnvironment(options?: EnvironmentOptions, abortSignal?: AbortSignal): Promise<void> {
+        return await this._updateEnvironment(undefined, options, abortSignal);
+    }
+
+    /**
      * @internal Internal helper exposing the dual-lock orchestration with a nullable URL.
      * Used by the public `loadEnvironment` (with a string URL) and by subclass `resetEnvironment`
      * implementations (which pass `undefined` to clear or `"auto"` to load defaults).

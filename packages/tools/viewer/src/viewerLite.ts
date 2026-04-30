@@ -39,7 +39,6 @@ import {
 
 import {
     type CameraAutoOrbit,
-    type EnvironmentOptions,
     type EnvironmentParams,
     type HotSpot,
     type IViewer,
@@ -477,14 +476,16 @@ export class Viewer extends ViewerBase implements IViewer {
             // - There's no PBR-scene-compatible standalone skybox loader.
             // We allow ADDING new state where there was none, but throw on any REPLACEMENT.
             if (this._currentLightingUrl !== null && targetLightingUrl !== this._currentLightingUrl) {
+                const action = targetLightingUrl === null ? "remove" : "replace";
                 throw new Error(
-                    `Babylon Lite cannot replace the loaded environment lighting ("${this._currentLightingUrl}" → "${targetLightingUrl}"). ` +
+                    `Babylon Lite cannot ${action} the loaded environment lighting ("${this._currentLightingUrl}"${targetLightingUrl === null ? "" : ` → "${targetLightingUrl}"`}). ` +
                         `Recreate the Viewer to change the environment.`
                 );
             }
             if (this._currentSkyboxUrl !== null && targetSkyboxUrl !== this._currentSkyboxUrl) {
+                const action = targetSkyboxUrl === null ? "remove" : "replace";
                 throw new Error(
-                    `Babylon Lite cannot replace the loaded environment skybox ("${this._currentSkyboxUrl}" → "${targetSkyboxUrl}"). ` +
+                    `Babylon Lite cannot ${action} the loaded environment skybox ("${this._currentSkyboxUrl}"${targetSkyboxUrl === null ? "" : ` → "${targetSkyboxUrl}"`}). ` +
                         `Recreate the Viewer to change the environment.`
                 );
             }
@@ -556,28 +557,6 @@ export class Viewer extends ViewerBase implements IViewer {
             }
             throw e;
         }
-    }
-
-    public async resetEnvironment(options?: EnvironmentOptions, abortSignal?: AbortSignal): Promise<void> {
-        this._throwIfDisposedOrAborted(abortSignal);
-
-        // Match the full Viewer's semantics: omitting `options` resets both; passing `options`
-        // resets only the sides whose flag is truthy.
-        const resetLighting = options ? !!options.lighting : true;
-        const resetSkybox = options ? !!options.skybox : true;
-
-        if ((resetLighting && this._currentLightingUrl !== null) || (resetSkybox && this._currentSkyboxUrl !== null)) {
-            throw new Error("Babylon Lite does not support removing a loaded environment after the initial load. " + "Recreate the Viewer to clear the environment.");
-        }
-
-        // No physical scene state to remove — just reset the scalar config to defaults.
-        this._environmentIntensity = DefaultViewerOptions.environmentConfig.intensity;
-        this._environmentBlur = DefaultViewerOptions.environmentConfig.blur;
-        this._environmentRotation = DefaultViewerOptions.environmentConfig.rotation;
-        this._scene.envRotationY = 0;
-
-        this.onEnvironmentChanged.notifyObservers();
-        this.onEnvironmentConfigurationChanged.notifyObservers();
     }
 
     // ── Post Processing ──
@@ -998,7 +977,15 @@ export class Viewer extends ViewerBase implements IViewer {
     }
 
     /** @internal */
+    /** @internal */
     protected override _resetEnvironment(): void {
+        // Reset scalar env config to defaults (matches full Viewer's reset hook). The setter fires
+        // `onEnvironmentConfigurationChanged` and is independent of the URL state.
+        this.environmentConfig = {
+            intensity: this._options?.environmentConfig?.intensity ?? DefaultViewerOptions.environmentConfig.intensity,
+            blur: this._options?.environmentConfig?.blur ?? DefaultViewerOptions.environmentConfig.blur,
+            rotation: this._options?.environmentConfig?.rotation ?? DefaultViewerOptions.environmentConfig.rotation,
+        };
         observePromise(this.resetEnvironment());
         const initialLightingUrl = this._options?.environmentLighting ?? DefaultViewerOptions.environmentLighting;
         const initialSkyboxUrl = this._options?.environmentSkybox ?? DefaultViewerOptions.environmentSkybox;
