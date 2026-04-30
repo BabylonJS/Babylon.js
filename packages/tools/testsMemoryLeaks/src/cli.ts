@@ -1,8 +1,13 @@
 import * as fs from "fs";
 import * as path from "path";
 
+import { populateEnvironment } from "@dev/build-tools";
+
 import { DefaultScenarioDefinitions, ValidScenarioSuites, type ScenarioSuite } from "./scenarios";
 import { RunScenarioSuite, MemoryLeakRunnerError, type IMemoryLeakRunnerOptions, type IMemoryLeakScenarioResult } from "./runner";
+
+// Ensure repo-root .env is loaded before any scenario reads CDN_BASE_URL / VIEWER_BASE_URL / etc.
+populateEnvironment();
 
 const GetArgValue = (argv: string[], name: string): string | undefined => {
     const prefixedArg = `--${name}=`;
