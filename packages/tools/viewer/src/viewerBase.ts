@@ -1150,6 +1150,63 @@ export abstract class ViewerBase {
      */
     protected abstract _applyEnvironmentRotation(): void;
 
+    // ── Camera auto-orbit ──
+
+    /** @internal Initialized from options in subclass constructors. */
+    protected _autoOrbitEnabled: boolean = DefaultViewerBaseOptions.cameraAutoOrbit.enabled;
+    /** @internal Initialized from options in subclass constructors. */
+    protected _autoOrbitSpeed: number = DefaultViewerBaseOptions.cameraAutoOrbit.speed;
+    /** @internal Initialized from options in subclass constructors. */
+    protected _autoOrbitDelay: number = DefaultViewerBaseOptions.cameraAutoOrbit.delay;
+
+    public get cameraAutoOrbit(): Readonly<CameraAutoOrbit> {
+        return {
+            enabled: this._autoOrbitEnabled,
+            speed: this._autoOrbitSpeed,
+            delay: this._autoOrbitDelay,
+        };
+    }
+
+    public set cameraAutoOrbit(value: Partial<Readonly<CameraAutoOrbit>>) {
+        let changed = false;
+        if (value.enabled !== undefined && value.enabled !== this._autoOrbitEnabled) {
+            this._autoOrbitEnabled = value.enabled;
+            this._applyCameraAutoOrbitEnabled();
+            changed = true;
+        }
+        if (value.speed !== undefined && value.speed !== this._autoOrbitSpeed) {
+            this._autoOrbitSpeed = value.speed;
+            this._applyCameraAutoOrbitSpeed();
+            changed = true;
+        }
+        if (value.delay !== undefined && value.delay !== this._autoOrbitDelay) {
+            this._autoOrbitDelay = value.delay;
+            this._applyCameraAutoOrbitDelay();
+            changed = true;
+        }
+        if (changed) {
+            this.onCameraAutoOrbitChanged.notifyObservers();
+        }
+    }
+
+    /**
+     * @internal Push the current `_autoOrbitEnabled` value into engine state.
+     * Called by the public `cameraAutoOrbit` setter only when the value changes.
+     */
+    protected abstract _applyCameraAutoOrbitEnabled(): void;
+
+    /**
+     * @internal Push the current `_autoOrbitSpeed` value into engine state.
+     * Called by the public `cameraAutoOrbit` setter only when the value changes.
+     */
+    protected abstract _applyCameraAutoOrbitSpeed(): void;
+
+    /**
+     * @internal Push the current `_autoOrbitDelay` value into engine state.
+     * Called by the public `cameraAutoOrbit` setter only when the value changes.
+     */
+    protected abstract _applyCameraAutoOrbitDelay(): void;
+
     // ──────────────────────────────────────────────────────────────────────────
     // Model loading orchestration
     // ──────────────────────────────────────────────────────────────────────────

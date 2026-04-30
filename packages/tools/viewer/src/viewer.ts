@@ -61,7 +61,6 @@ import { Scene } from "core/scene";
 import { registerBuiltInLoaders } from "loaders/dynamic";
 
 import {
-    type CameraAutoOrbit,
     type EnvironmentOptions,
     type HotSpot,
     type IViewer,
@@ -651,6 +650,11 @@ export class Viewer extends ViewerBase implements IDisposable, IViewer {
         }
         this._camera.attachControl();
         this._autoRotationBehavior = this._camera.getBehaviorByName("AutoRotation") as AutoRotationBehavior;
+        // Sync engine state to base field defaults. The subsequent `_reset(false, "camera")` will then
+        // apply user-provided option overrides via the cameraAutoOrbit setter (with change-detection).
+        this._applyCameraAutoOrbitEnabled();
+        this._applyCameraAutoOrbitSpeed();
+        this._applyCameraAutoOrbitDelay();
 
         this._scene.onAfterRenderCameraObservable.add(() => {
             this.onAfterRenderObservable.notifyObservers();
@@ -685,32 +689,23 @@ export class Viewer extends ViewerBase implements IDisposable, IViewer {
     /**
      * The camera auto orbit configuration.
      */
-    public get cameraAutoOrbit(): Readonly<CameraAutoOrbit> {
-        return {
-            enabled: this._camera.behaviors.includes(this._autoRotationBehavior),
-            speed: this._autoRotationBehavior.idleRotationSpeed,
-            delay: this._autoRotationBehavior.idleRotationWaitTime,
-        };
+    /** @internal */
+    protected override _applyCameraAutoOrbitEnabled(): void {
+        if (this._autoOrbitEnabled) {
+            this._camera.addBehavior(this._autoRotationBehavior);
+        } else {
+            this._camera.removeBehavior(this._autoRotationBehavior);
+        }
     }
 
-    public set cameraAutoOrbit(value: Partial<Readonly<CameraAutoOrbit>>) {
-        if (value.enabled !== undefined && value.enabled !== this.cameraAutoOrbit.enabled) {
-            if (value.enabled) {
-                this._camera.addBehavior(this._autoRotationBehavior);
-            } else {
-                this._camera.removeBehavior(this._autoRotationBehavior);
-            }
-        }
+    /** @internal */
+    protected override _applyCameraAutoOrbitSpeed(): void {
+        this._autoRotationBehavior.idleRotationSpeed = this._autoOrbitSpeed;
+    }
 
-        if (value.delay !== undefined) {
-            this._autoRotationBehavior.idleRotationWaitTime = value.delay;
-        }
-
-        if (value.speed !== undefined) {
-            this._autoRotationBehavior.idleRotationSpeed = value.speed;
-        }
-
-        this.onCameraAutoOrbitChanged.notifyObservers();
+    /** @internal */
+    protected override _applyCameraAutoOrbitDelay(): void {
+        this._autoRotationBehavior.idleRotationWaitTime = this._autoOrbitDelay;
     }
 
     /**

@@ -38,7 +38,6 @@ import {
 } from "@babylonjs/lite";
 
 import {
-    type CameraAutoOrbit,
     type HotSpot,
     type IViewer,
     type ResolvedLoadEnvironmentOptions,
@@ -125,9 +124,6 @@ export class Viewer extends ViewerBase implements IViewer {
     private _renderLoopRunning = false;
 
     // Auto-orbit
-    private _autoOrbitEnabled = this._options?.cameraAutoOrbit?.enabled ?? DefaultViewerOptions.cameraAutoOrbit.enabled;
-    private _autoOrbitSpeed = this._options?.cameraAutoOrbit?.speed ?? DefaultViewerOptions.cameraAutoOrbit.speed;
-    private _autoOrbitDelay = this._options?.cameraAutoOrbit?.delay ?? DefaultViewerOptions.cameraAutoOrbit.delay;
     private _autoOrbitIdleTime = 0;
     private _lastPointerTime = 0;
 
@@ -186,6 +182,9 @@ export class Viewer extends ViewerBase implements IViewer {
         this._environmentIntensity = this._options?.environmentConfig?.intensity ?? DefaultViewerOptions.environmentConfig.intensity;
         this._environmentBlur = this._options?.environmentConfig?.blur ?? DefaultViewerOptions.environmentConfig.blur;
         this._environmentRotation = this._options?.environmentConfig?.rotation ?? DefaultViewerOptions.environmentConfig.rotation;
+        this._autoOrbitEnabled = this._options?.cameraAutoOrbit?.enabled ?? DefaultViewerOptions.cameraAutoOrbit.enabled;
+        this._autoOrbitSpeed = this._options?.cameraAutoOrbit?.speed ?? DefaultViewerOptions.cameraAutoOrbit.speed;
+        this._autoOrbitDelay = this._options?.cameraAutoOrbit?.delay ?? DefaultViewerOptions.cameraAutoOrbit.delay;
         // Create scene internally (matching how full Viewer owns its scene)
         this._scene = createSceneContext(_engine);
         // Camera — NaN means "auto" (will be recomputed when model loads)
@@ -299,32 +298,14 @@ export class Viewer extends ViewerBase implements IViewer {
 
     // ── Camera ──
 
-    public get cameraAutoOrbit(): Readonly<CameraAutoOrbit> {
-        return {
-            enabled: this._autoOrbitEnabled,
-            speed: this._autoOrbitSpeed,
-            delay: this._autoOrbitDelay,
-        };
-    }
+    /** @internal Lite stores auto-orbit state on the base class fields and consults them in its idle loop. No engine push needed. */
+    protected override _applyCameraAutoOrbitEnabled(): void {}
 
-    public set cameraAutoOrbit(value: Partial<Readonly<CameraAutoOrbit>>) {
-        let changed = false;
-        if (value.enabled !== undefined && value.enabled !== this._autoOrbitEnabled) {
-            this._autoOrbitEnabled = value.enabled;
-            changed = true;
-        }
-        if (value.speed !== undefined && value.speed !== this._autoOrbitSpeed) {
-            this._autoOrbitSpeed = value.speed;
-            changed = true;
-        }
-        if (value.delay !== undefined && value.delay !== this._autoOrbitDelay) {
-            this._autoOrbitDelay = value.delay;
-            changed = true;
-        }
-        if (changed) {
-            this.onCameraAutoOrbitChanged.notifyObservers();
-        }
-    }
+    /** @internal Lite stores auto-orbit state on the base class fields. */
+    protected override _applyCameraAutoOrbitSpeed(): void {}
+
+    /** @internal Lite stores auto-orbit state on the base class fields. */
+    protected override _applyCameraAutoOrbitDelay(): void {}
 
     public resetCamera(reframe?: boolean): void {
         this._camera.alpha = this._defaultAlpha;
