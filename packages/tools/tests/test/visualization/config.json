@@ -3581,7 +3581,7 @@
             "referenceImage": "atmosphere-day.png",
             "excludedEngines": ["webgl1"],
             "dependsOn": ["Atmosphere", "Lights", "PBR", "PostProcesses"],
-            "performanceTest": true
+            "excludeFromPerformance": true
         },
         {
             "title": "Atmosphere Day (Planet Origin)",
