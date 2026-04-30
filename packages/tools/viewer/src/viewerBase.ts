@@ -978,6 +978,7 @@ export abstract class ViewerBase {
      * @param url The URL of the environment to load.
      * @param options Selects which sides to update (defaults to both) and forwards engine-specific extras.
      * @param abortSignal Optional signal that can be used to abort the load externally.
+     * @returns A promise that resolves when the environment has finished loading.
      */
     public async loadEnvironment(url: string, options?: LoadEnvironmentOptions, abortSignal?: AbortSignal): Promise<void> {
         return await this._updateEnvironment(url, options, abortSignal);
@@ -1082,6 +1083,130 @@ export abstract class ViewerBase {
         compositeAbortSignal: AbortSignal
     ): Promise<void>;
 
+    // ──────────────────────────────────────────────────────────────────────────
+    // Model loading orchestration
+    // ──────────────────────────────────────────────────────────────────────────
+
+    /** Lock guarding model loads (and resets). */
+    private readonly _loadModelLock = new AsyncLock();
+    /** Abort controller for the currently in-flight model load (null when none). */
+    private _loadModelAbortController: Nullable<AbortController> = null;
+
+    /**
+     * @internal The abort signal of the currently in-flight model load, or `undefined` if none.
+     * Subclasses can use this in `_throwIfDisposedOrAborted` to bail out of dependent async work
+     * (shadows, environment fallback, etc.) when the user starts a new model load.
+     */
+    protected get _loadModelAbortSignal(): AbortSignal | undefined {
+        return this._loadModelAbortController?.signal;
+    }
+
+    /**
+     * Loads a 3D model from the specified source.
+     * @param source The source of the model to load.
+     * @param options Engine-specific options for loading the model.
+     * @param abortSignal Optional signal that can be used to abort the load externally.
+     * @returns A promise that resolves when the model has finished loading.
+     */
+    public async loadModel(source: string | File | ArrayBufferView, options?: ViewerLoadModelOptions, abortSignal?: AbortSignal): Promise<void> {
+        return await this._updateModel(source, options, abortSignal);
+    }
+
+    /**
+     * Unloads the current 3D model if one is loaded.
+     * @param abortSignal Optional signal that can be used to abort the reset.
+     * @returns A promise that resolves when the current model has been unloaded.
+     */
+    public async resetModel(abortSignal?: AbortSignal): Promise<void> {
+        return await this._updateModel(undefined, undefined, abortSignal);
+    }
+
+    /**
+     * @internal Internal helper exposing the model load orchestration with `source: undefined` meaning
+     * "unload the current model". Subclasses should NOT override this — override `_loadModelImpl` instead.
+     */
+    protected async _updateModel(source: string | File | ArrayBufferView | undefined, options?: ViewerLoadModelOptions, abortSignal?: AbortSignal): Promise<void> {
+        this._throwIfDisposedOrAborted(abortSignal);
+
+        this._loadModelAbortController?.abort(new AbortError("New model is being loaded before previous model finished loading."));
+        const internalAbortController = (this._loadModelAbortController = new AbortController());
+
+        await this._loadModelLock.lockAsync(async () => {
+            const loadOperation = this._beginLoadOperation();
+            try {
+                throwIfAborted(abortSignal, internalAbortController.signal);
+                await this._loadModelImpl(source, options, abortSignal, internalAbortController.signal, loadOperation);
+            } catch (e) {
+                if (!(e instanceof AbortError)) {
+                    this.onModelError.notifyObservers(e);
+                }
+                throw e;
+            } finally {
+                loadOperation.dispose();
+            }
+        });
+
+        // Post-lock follow-up (e.g. operations that need other locks). Skip if a newer model load
+        // has already aborted us — the new load owns the post-load work for its own state.
+        if (!internalAbortController.signal.aborted) {
+            await this._afterLoadModel(source, options, abortSignal, internalAbortController.signal);
+        }
+    }
+
+    /**
+     * @internal Engine-specific model loading. Subclasses implement this with their actual model
+     * loading logic. The base class handles all surrounding orchestration: lock acquisition,
+     * abort-prev semantics, and `onModelError` notification (for non-abort errors).
+     *
+     * Implementations should:
+     * - Throw on failure (the base class will fire `onModelError` for non-abort errors).
+     * - Fire `onModelChanged` themselves on success (the base class doesn't, because the timing
+     *   relative to internal model state varies between backends).
+     * - Use `loadOperation.progress` to report progress; do NOT call `_beginLoadOperation` themselves.
+     * - Periodically re-check abort by calling `throwIfAborted(abortSignal, internalAbortSignal)`
+     *   at safe points within the load (e.g. after long-running awaits).
+     * - Treat `source === undefined` as "unload the current model" — this is how `resetModel` flows
+     *   through. They should still fire `onModelChanged(null)` so consumers see the unload.
+     *
+     * @param source Source URL/File/ArrayBufferView, or `undefined` to unload the current model.
+     * @param options Caller's options (or undefined). May contain engine-specific extras.
+     * @param abortSignal The caller's external abort signal (or `undefined`).
+     * @param internalAbortSignal Signal that fires when a NEWER model load supersedes this one.
+     * @param loadOperation Tracking handle for `loadingProgress`. Set `loadOperation.progress` to
+     *   report partial progress; the base class disposes it when the impl returns.
+     */
+    protected abstract _loadModelImpl(
+        source: string | File | ArrayBufferView | undefined,
+        options: ViewerLoadModelOptions | undefined,
+        abortSignal: AbortSignal | undefined,
+        internalAbortSignal: AbortSignal,
+        loadOperation: IDisposable & { progress: Nullable<number> }
+    ): Promise<void>;
+
+    /**
+     * @internal Optional post-lock hook invoked AFTER the model load lock is released, allowing
+     * subclasses to do follow-up work that needs other locks (e.g. environment fallback). The base
+     * skips this hook if the load was superseded by a newer one before we got here.
+     *
+     * Implementations that await additional work should re-check `internalAbortSignal.aborted`
+     * after each await to avoid acting on stale state (a newer load may have started during the
+     * await window).
+     *
+     * Default: no-op.
+     */
+    protected async _afterLoadModel(
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        source: string | File | ArrayBufferView | undefined,
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        options: ViewerLoadModelOptions | undefined,
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        abortSignal: AbortSignal | undefined,
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        internalAbortSignal: AbortSignal
+    ): Promise<void> {
+        // Default: no-op.
+    }
+
     /**
      * Disposes the viewer and releases shared resources (observables, disposed flag).
      * Subclasses MUST override this method to dispose their own engine-specific state
@@ -1095,6 +1220,8 @@ export abstract class ViewerBase {
         this._loadEnvironmentLightingAbortController = null;
         this._loadEnvironmentSkyboxAbortController?.abort(new AbortError("The viewer is being disposed."));
         this._loadEnvironmentSkyboxAbortController = null;
+        this._loadModelAbortController?.abort(new AbortError("The viewer is being disposed."));
+        this._loadModelAbortController = null;
 
         this.onEnvironmentChanged.clear();
         this.onEnvironmentConfigurationChanged.clear();

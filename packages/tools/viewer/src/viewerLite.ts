@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { type IColor4Like, type Nullable } from "core/index";
+import { type IColor4Like, type IDisposable, type Nullable } from "core/index";
 import { AsyncLock } from "core/Misc/asyncLock";
 import { AbortError } from "core/Misc/error";
 import { Logger } from "core/Misc/logger";
@@ -160,9 +160,7 @@ export class Viewer extends ViewerBase implements IViewer {
     private _container: AssetContainer | null = null;
     /** The source that was passed to the most recent {@link loadModel} call, for notifications. */
     private _modelSource: Nullable<string | File | ArrayBufferView> = null;
-    private _loadModelAbortController: AbortController | null = null;
     private _shadowsAbortController: AbortController | null = null;
-    private readonly _loadModelLock = new AsyncLock();
     private readonly _updateShadowsLock = new AsyncLock();
 
     // Animation
@@ -457,7 +455,8 @@ export class Viewer extends ViewerBase implements IViewer {
         }
     }
 
-    protected async _loadEnvironmentImpl(
+    /** @internal */
+    protected override async _loadEnvironmentImpl(
         url: Nullable<string | undefined>,
         options: ResolvedLoadEnvironmentOptions,
         abortSignal: AbortSignal | undefined,
@@ -676,96 +675,78 @@ export class Viewer extends ViewerBase implements IViewer {
 
     // ── Model Loading ──
 
-    public async loadModel(source: string | File | ArrayBufferView, options?: ViewerLoadModelOptions, abortSignal?: AbortSignal): Promise<void> {
-        this._throwIfDisposedOrAborted(abortSignal);
-
-        // Abort any in-flight load
-        this._loadModelAbortController?.abort(new AbortError("New model is being loaded before previous model finished loading."));
-        const internalAbortController = (this._loadModelAbortController = new AbortController());
-
-        return await this._loadModelLock.lockAsync(async () => {
-            const loadOperation = this._beginLoadOperation();
-            try {
-                throwIfAborted(abortSignal, internalAbortController.signal);
-
-                if (typeof source !== "string") {
-                    Logger.Warn("Viewer: Only string URLs are supported for model loading. File and ArrayBufferView sources are not supported.");
-                    this.onModelError.notifyObservers(new Error("Unsupported model source type"));
-                    return;
-                }
-
-                // Unload previous model
-                this._unloadCurrentModel();
-
-                // Load new model
-                const url = source;
-                if (options?.pluginExtension) {
-                    // Append extension hint if provided
-                    const ext = options.pluginExtension.startsWith(".") ? options.pluginExtension : `.${options.pluginExtension}`;
-                    if (!url.toLowerCase().endsWith(ext.toLowerCase())) {
-                        // The Lite loader determines format from URL extension;
-                        // for now we just trust the URL.
-                    }
-                }
-
-                const container = await loadGltf(this._engine, url);
-
-                throwIfAborted(abortSignal, internalAbortController.signal);
-
-                this._container = container;
-                this._modelSource = source;
-
-                // Add to scene and rebuild renderables
-                addToScene(this._scene, container);
-                await this._beginRendering();
-
-                // Apply clear color from model if present
-                if (container.clearColor) {
-                    this._scene.clearColor = container.clearColor;
-                    this.onClearColorChanged.notifyObservers();
-                }
-
-                // Setup shadows if configured
-                if (this._shadowQuality !== "none") {
-                    this._setupShadows();
-                }
-
-                // Setup animations
-                this._setupAnimations();
-
-                // Apply material variant from options
-                if (this._options?.selectedMaterialVariant) {
-                    this.selectedMaterialVariant = this._options.selectedMaterialVariant;
-                }
-
-                // Frame camera to loaded model
-                this._frameCameraToModel();
-
-                this.onModelChanged.notifyObservers(source);
-            } catch (e) {
-                if (e instanceof AbortError) {
-                    throw e;
-                }
-                this.onModelError.notifyObservers(e);
-                throw e;
-            } finally {
-                loadOperation.dispose();
+    /** @internal */
+    protected override async _loadModelImpl(
+        source: string | File | ArrayBufferView | undefined,
+        options: ViewerLoadModelOptions | undefined,
+        abortSignal: AbortSignal | undefined,
+        internalAbortSignal: AbortSignal,
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        loadOperation: IDisposable & { progress: Nullable<number> }
+    ): Promise<void> {
+        // Source `undefined` flows through from `resetModel`. Treat as "unload, no new load".
+        if (source === undefined) {
+            const hadModel = this._modelSource !== null;
+            this._unloadCurrentModel();
+            if (hadModel) {
+                this.onModelChanged.notifyObservers(null);
             }
-        });
-    }
+            return;
+        }
 
-    public async resetModel(abortSignal?: AbortSignal): Promise<void> {
-        this._throwIfDisposedOrAborted(abortSignal);
+        if (typeof source !== "string") {
+            Logger.Warn("Viewer: Only string URLs are supported for model loading. File and ArrayBufferView sources are not supported.");
+            throw new Error("Unsupported model source type");
+        }
 
-        this._loadModelAbortController?.abort(new AbortError("Model reset"));
-        this._loadModelAbortController = null;
-
-        const hadModel = this._modelSource !== null;
+        // Unload previous model
         this._unloadCurrentModel();
 
-        if (hadModel) {
-            this.onModelChanged.notifyObservers(null);
+        // Load new model
+        const url = source;
+        if (options?.pluginExtension) {
+            // Append extension hint if provided
+            const ext = options.pluginExtension.startsWith(".") ? options.pluginExtension : `.${options.pluginExtension}`;
+            if (!url.toLowerCase().endsWith(ext.toLowerCase())) {
+                // The Lite loader determines format from URL extension;
+                // for now we just trust the URL.
+            }
         }
+
+        const container = await loadGltf(this._engine, url);
+
+        throwIfAborted(abortSignal, internalAbortSignal);
+
+        this._container = container;
+        this._modelSource = source;
+
+        // Add to scene and rebuild renderables
+        addToScene(this._scene, container);
+        await this._beginRendering();
+
+        // Apply clear color from model if present
+        if (container.clearColor) {
+            this._scene.clearColor = container.clearColor;
+            this.onClearColorChanged.notifyObservers();
+        }
+
+        // Setup shadows if configured
+        if (this._shadowQuality !== "none") {
+            this._setupShadows();
+        }
+
+        // Setup animations
+        this._setupAnimations();
+
+        // Apply material variant from options
+        if (this._options?.selectedMaterialVariant) {
+            this.selectedMaterialVariant = this._options.selectedMaterialVariant;
+        }
+
+        // Frame camera to loaded model
+        this._frameCameraToModel();
+
+        this.onModelChanged.notifyObservers(source);
     }
 
     private _unloadCurrentModel(): void {
@@ -1118,8 +1099,6 @@ export class Viewer extends ViewerBase implements IViewer {
         this._engine.canvas.removeEventListener("wheel", this._onPointerActivity);
 
         // Abort any in-flight loads
-        this._loadModelAbortController?.abort(new AbortError("Disposed"));
-        this._loadModelAbortController = null;
         this._shadowsAbortController?.abort(new AbortError("Disposed"));
         this._shadowsAbortController = null;
 

@@ -67,6 +67,7 @@ import {
     type HotSpot,
     type IViewer,
     type ResolvedLoadEnvironmentOptions,
+    type ViewerLoadModelOptions,
     type PostProcessing,
     type ResetFlag,
     type ShadowParams,
@@ -526,9 +527,6 @@ export class Viewer extends ViewerBase implements IDisposable, IViewer {
     private readonly _autoSuspendRendering = this._options?.autoSuspendRendering ?? DefaultViewerOptions.autoSuspendRendering;
     private _sceneMutated = false;
     private _suspendRenderCount = 0;
-
-    private readonly _loadModelLock = new AsyncLock();
-    private _loadModelAbortController: Nullable<AbortController> = null;
 
     private _camerasAsHotSpotsAbortController: Nullable<AbortController> = null;
 
@@ -1160,30 +1158,12 @@ export class Viewer extends ViewerBase implements IDisposable, IViewer {
         }
     }
 
-    /**
-     * Loads a 3D model from the specified URL.
-     * @remarks
-     * If a model is already loaded, it will be unloaded before loading the new model.
-     * @param source A url or File or ArrayBufferView that points to the model to load.
-     * @param options The options to use when loading the model.
-     * @param abortSignal An optional signal that can be used to abort the loading process.
-     */
-    public async loadModel(source: string | File | ArrayBufferView, options?: LoadModelOptions, abortSignal?: AbortSignal): Promise<void> {
-        await this._updateModel(source, options, abortSignal);
-    }
-
-    /**
-     * Unloads the current 3D model if one is loaded.
-     * @param abortSignal An optional signal that can be used to abort the reset.
-     */
-    public async resetModel(abortSignal?: AbortSignal): Promise<void> {
-        await this._updateModel(undefined, undefined, abortSignal);
-    }
-
-    protected async _loadModel(source: string | File | ArrayBufferView, options?: LoadAssetContainerOptions, abortSignal?: AbortSignal): Promise<Model> {
-        this._throwIfDisposedOrAborted(abortSignal);
-
-        const loadOperation = this._beginLoadOperation();
+    protected async _loadModel(
+        source: string | File | ArrayBufferView,
+        options: LoadAssetContainerOptions | undefined,
+        abortSignal: AbortSignal | undefined,
+        loadOperation: IDisposable & { progress: Nullable<number> }
+    ): Promise<Model> {
         const originalOnProgress = options?.onProgress;
         const onProgress = (event: ISceneLoaderProgressEvent) => {
             originalOnProgress?.(event);
@@ -1360,41 +1340,54 @@ export class Viewer extends ViewerBase implements IDisposable, IViewer {
             this._loadedModelsBacking.push(model);
 
             return model;
-        } catch (e) {
-            this.onModelError.notifyObservers(e);
-            throw e;
         } finally {
-            loadOperation.dispose();
             this._snapshotHelper?.enableSnapshotRendering();
             this._markSceneMutated();
         }
     }
 
-    private async _updateModel(source: string | File | ArrayBufferView | undefined, options?: LoadModelOptions, abortSignal?: AbortSignal): Promise<void> {
-        this._throwIfDisposedOrAborted(abortSignal);
+    /** @internal */
+    protected override async _loadModelImpl(
+        source: string | File | ArrayBufferView | undefined,
+        options: ViewerLoadModelOptions | undefined,
+        abortSignal: AbortSignal | undefined,
+        internalAbortSignal: AbortSignal,
+        loadOperation: IDisposable & { progress: Nullable<number> }
+    ): Promise<void> {
+        this._activeModel?.dispose();
+        this._activeModelBacking = null;
+        this.selectedAnimation = -1;
 
-        this._loadModelAbortController?.abort(new AbortError("New model is being loaded before previous model finished loading."));
-        const abortController = (this._loadModelAbortController = new AbortController());
+        if (source) {
+            const model = await this._loadModel(source, options, internalAbortSignal, loadOperation);
+            // Re-check abort after the long-running load — a newer loadModel may have superseded us.
+            throwIfAborted(abortSignal, internalAbortSignal);
+            model.makeActive(Object.assign({ source, interpolateCamera: false }, options));
+            this._reset(false, "camera", "animation", "material-variant");
+        }
+    }
 
-        await this._loadModelLock.lockAsync(async () => {
-            throwIfAborted(abortSignal, abortController.signal);
-            this._activeModel?.dispose();
-            this._activeModelBacking = null;
-            this.selectedAnimation = -1;
-
-            if (source) {
-                const model = await this._loadModel(source, options, abortController.signal);
-                model.makeActive(Object.assign({ source, interpolateCamera: false }, options));
-                this._reset(false, "camera", "animation", "material-variant");
-            }
-        });
-
+    /** @internal */
+    protected override async _afterLoadModel(
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        source: string | File | ArrayBufferView | undefined,
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        options: ViewerLoadModelOptions | undefined,
+        abortSignal: AbortSignal | undefined,
+        internalAbortSignal: AbortSignal
+    ): Promise<void> {
         const hasPBRMaterials = this._loadedModels.some((model) => model.assetContainer.materials.some((material) => material instanceof PBRMaterial));
         const usesDefaultMaterial = this._loadedModels.some((model) => model.assetContainer.meshes.some((mesh) => !mesh.material));
         // If PBR is used (either explicitly, or implicitly by a mesh not having a material and therefore using the default PBRMaterial)
         // and an environment texture is not already loaded, then load the default environment.
         if (!this._scene.environmentTexture && (hasPBRMaterials || usesDefaultMaterial)) {
-            await this.resetEnvironment({ lighting: true }, abortSignal);
+            // Pass `internalAbortSignal` so this PBR fallback aborts cleanly if a newer loadModel has started.
+            // We don't OR it with `abortSignal` here because resetEnvironment only takes one signal; the user's
+            // signal is checked by resetEnvironment via _throwIfDisposedOrAborted at its own entry.
+            await this.resetEnvironment({ lighting: true }, abortSignal ?? internalAbortSignal);
+            if (internalAbortSignal.aborted) {
+                throw new AbortError(internalAbortSignal.reason);
+            }
         }
 
         this._startSceneOptimizer(true);
@@ -1486,7 +1479,7 @@ export class Viewer extends ViewerBase implements IDisposable, IViewer {
         ]);
 
         // cancel if the model is unloaded before the shadows are created
-        this._throwIfDisposedOrAborted(abortSignal, this._loadModelAbortController?.signal, this._loadEnvironmentLightingAbortSignal, this._loadEnvironmentSkyboxAbortSignal);
+        this._throwIfDisposedOrAborted(abortSignal, this._loadModelAbortSignal, this._loadEnvironmentLightingAbortSignal, this._loadEnvironmentSkyboxAbortSignal);
 
         let high = this._shadowState.high;
 
@@ -1659,7 +1652,7 @@ export class Viewer extends ViewerBase implements IDisposable, IViewer {
         ]);
 
         // cancel if the model is unloaded before the shadows are created
-        this._throwIfDisposedOrAborted(abortSignal, this._loadModelAbortController?.signal, this._loadEnvironmentLightingAbortSignal, this._loadEnvironmentSkyboxAbortSignal);
+        this._throwIfDisposedOrAborted(abortSignal, this._loadModelAbortSignal, this._loadEnvironmentLightingAbortSignal, this._loadEnvironmentSkyboxAbortSignal);
 
         let normal = this._shadowState.normal;
 
@@ -1678,7 +1671,7 @@ export class Viewer extends ViewerBase implements IDisposable, IViewer {
 
         const iblCdfGenerator = normal?.iblDirection.iblCdfGenerator ? normal?.iblDirection.iblCdfGenerator : new IblCdfGenerator(this._engine);
         const iblDirection = await this._findIblDominantDirection(iblCdfGenerator);
-        this._throwIfDisposedOrAborted(abortSignal, this._loadModelAbortController?.signal, this._loadEnvironmentLightingAbortSignal, this._loadEnvironmentSkyboxAbortSignal);
+        this._throwIfDisposedOrAborted(abortSignal, this._loadModelAbortSignal, this._loadEnvironmentLightingAbortSignal, this._loadEnvironmentSkyboxAbortSignal);
 
         this._snapshotHelper?.disableSnapshotRendering();
 
@@ -1873,7 +1866,8 @@ export class Viewer extends ViewerBase implements IDisposable, IViewer {
         this._updateAutoClear();
     }
 
-    protected async _loadEnvironmentImpl(
+    /** @internal */
+    protected override async _loadEnvironmentImpl(
         url: Nullable<string | undefined>,
         options: ResolvedLoadEnvironmentOptions,
         abortSignal: AbortSignal | undefined,
@@ -2244,7 +2238,6 @@ export class Viewer extends ViewerBase implements IDisposable, IViewer {
         this.selectedAnimation = -1;
         this.animationProgress = 0;
 
-        this._loadModelAbortController?.abort(new AbortError("The viewer is being disposed."));
         this._camerasAsHotSpotsAbortController?.abort(new AbortError("The viewer is being disposed."));
         this._shadowsAbortController?.abort(new AbortError("The viewer is being disposed."));
         this._ssaoAbortController?.abort(new AbortError("The viewer is being disposed."));
