@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { type IColor4Like, type IDisposable, type Nullable } from "core/index";
-import { AsyncLock } from "core/Misc/asyncLock";
+import { type IColor4Like, type Nullable } from "core/index";
 import { AbortError } from "core/Misc/error";
 import { Logger } from "core/Misc/logger";
 
@@ -151,7 +150,6 @@ export class Viewer extends ViewerBase implements IViewer {
     private _ssaoOption: SSAOOptions = this._options?.postProcessing?.ssao ?? DefaultViewerOptions.postProcessing.ssao;
 
     // Shadows
-    private _shadowQuality: ShadowQuality = this._options?.shadowConfig?.quality ?? DefaultViewerOptions.shadowConfig.quality;
     private _shadowGenerator: LiteShadowGenerator | null = null;
     /** Retained reference to the shadow directional light for cleanup when shadows are reconfigured. */
     private _shadowLight: DirectionalLight | null = null;
@@ -160,8 +158,6 @@ export class Viewer extends ViewerBase implements IViewer {
     private _container: AssetContainer | null = null;
     /** The source that was passed to the most recent {@link loadModel} call, for notifications. */
     private _modelSource: Nullable<string | File | ArrayBufferView> = null;
-    private _shadowsAbortController: AbortController | null = null;
-    private readonly _updateShadowsLock = new AsyncLock();
 
     // Animation
     private _selectedAnimation = -1;
@@ -192,6 +188,7 @@ export class Viewer extends ViewerBase implements IViewer {
         private readonly _options?: ViewerOptions
     ) {
         super();
+        this._shadowQuality = this._options?.shadowConfig?.quality ?? DefaultViewerOptions.shadowConfig.quality;
         // Create scene internally (matching how full Viewer owns its scene)
         this._scene = createSceneContext(_engine);
         // Camera — NaN means "auto" (will be recomputed when model loads)
@@ -474,83 +471,92 @@ export class Viewer extends ViewerBase implements IViewer {
             return;
         }
 
-        // Babylon Lite's current public API has no way to remove or replace existing env state:
-        // - `liteLoadEnvironment` and `loadHdrEnvironment` always set `scene._envTextures` and push
-        //   skybox/ground builders, but they don't remove anything that's already there.
-        // - There's no PBR-scene-compatible standalone skybox loader.
-        // We allow ADDING new state where there was none, but throw on any REPLACEMENT.
-        if (this._currentLightingUrl !== null && targetLightingUrl !== this._currentLightingUrl) {
-            throw new Error(
-                `Babylon Lite cannot replace the loaded environment lighting ("${this._currentLightingUrl}" → "${targetLightingUrl}"). ` +
-                    `Recreate the Viewer to change the environment.`
-            );
-        }
-        if (this._currentSkyboxUrl !== null && targetSkyboxUrl !== this._currentSkyboxUrl) {
-            throw new Error(
-                `Babylon Lite cannot replace the loaded environment skybox ("${this._currentSkyboxUrl}" → "${targetSkyboxUrl}"). ` +
-                    `Recreate the Viewer to change the environment.`
-            );
-        }
-
-        // Skybox-only addition with no lighting yet: Lite's env loader requires a lighting URL,
-        // and we cannot pick a default lighting silently — that would change a side the caller
-        // didn't ask to change.
-        if (!updateLighting && updateSkybox && this._currentLightingUrl === null) {
-            throw new Error("Babylon Lite cannot add a skybox before lighting has been loaded. " + "Load lighting first, or update lighting and skybox together.");
-        }
-
-        const effectiveLightingUrl = targetLightingUrl ?? "auto";
-        const resolvedLightingUrl = effectiveLightingUrl === "auto" ? (await import("./defaultEnvironment")).default : effectiveLightingUrl;
-        const ext = getExtension(resolvedLightingUrl, options.extension);
-
-        // Lite's `loadHdrEnvironment` cannot suppress its skybox build. So:
-        // - `lighting: true, skybox: false` with .hdr → would build an unwanted skybox. Throw.
-        // - `lighting: true, skybox: true` (or skybox-only with same URL) → fine.
-        if (ext === ".hdr" && !updateSkybox) {
-            throw new Error(
-                "Babylon Lite cannot load only the lighting from a .hdr URL — `loadHdrEnvironment` always builds a skybox. " +
-                    "Update lighting and skybox together, or use a .env URL."
-            );
-        }
-
-        if (ext === ".hdr") {
-            await loadHdrEnvironment(this._scene, resolvedLightingUrl, {
-                skipGround: true,
-                skyboxSize: 20,
-            });
-            this._currentLightingUrl = effectiveLightingUrl;
-            this._currentSkyboxUrl = effectiveLightingUrl;
-        } else {
-            const resolvedSkyboxUrl = targetSkyboxUrl === "auto" ? (await import("./defaultEnvironment")).default : (targetSkyboxUrl ?? undefined);
-            // Note: when skybox-only is requested but lighting already exists, we still call
-            // liteLoadEnvironment with the existing lighting URL — this re-fetches and re-uploads
-            // the cubemap (wasteful) but correctly builds the requested skybox. Per the contract
-            // ("honoring by re-loading is OK"), this is acceptable.
-            await liteLoadEnvironment(this._scene, resolvedLightingUrl, {
-                brdfUrl: (await import("./defaultBRDF")).default,
-                skyboxUrl: resolvedSkyboxUrl,
-                skipSkybox: !updateSkybox,
-                skipGround: true,
-                skyboxSize: 20,
-            });
-            this._currentLightingUrl = effectiveLightingUrl;
-            if (updateSkybox) {
-                this._currentSkyboxUrl = targetSkyboxUrl;
+        try {
+            // Babylon Lite's current public API has no way to remove or replace existing env state:
+            // - `liteLoadEnvironment` and `loadHdrEnvironment` always set `scene._envTextures` and push
+            //   skybox/ground builders, but they don't remove anything that's already there.
+            // - There's no PBR-scene-compatible standalone skybox loader.
+            // We allow ADDING new state where there was none, but throw on any REPLACEMENT.
+            if (this._currentLightingUrl !== null && targetLightingUrl !== this._currentLightingUrl) {
+                throw new Error(
+                    `Babylon Lite cannot replace the loaded environment lighting ("${this._currentLightingUrl}" → "${targetLightingUrl}"). ` +
+                        `Recreate the Viewer to change the environment.`
+                );
             }
-        }
+            if (this._currentSkyboxUrl !== null && targetSkyboxUrl !== this._currentSkyboxUrl) {
+                throw new Error(
+                    `Babylon Lite cannot replace the loaded environment skybox ("${this._currentSkyboxUrl}" → "${targetSkyboxUrl}"). ` +
+                        `Recreate the Viewer to change the environment.`
+                );
+            }
 
-        if (this._environmentRotation !== 0) {
-            this._scene.envRotationY = this._environmentRotation;
-        }
+            // Skybox-only addition with no lighting yet: Lite's env loader requires a lighting URL,
+            // and we cannot pick a default lighting silently — that would change a side the caller
+            // didn't ask to change.
+            if (!updateLighting && updateSkybox && this._currentLightingUrl === null) {
+                throw new Error("Babylon Lite cannot add a skybox before lighting has been loaded. " + "Load lighting first, or update lighting and skybox together.");
+            }
 
-        // Re-register the scene so that the env loader's deferred builders are processed
-        // and the new skybox/ground renderables land in the draw buckets. Lite only fills
-        // `_opaqueRenderables` etc. at registerScene() time.
-        if (this._renderLoopRunning) {
-            await this._beginRendering();
-        }
+            const effectiveLightingUrl = targetLightingUrl ?? "auto";
+            const resolvedLightingUrl = effectiveLightingUrl === "auto" ? (await import("./defaultEnvironment")).default : effectiveLightingUrl;
+            const ext = getExtension(resolvedLightingUrl, options.extension);
 
-        throwIfAborted(abortSignal, compositeAbortSignal);
+            // Lite's `loadHdrEnvironment` cannot suppress its skybox build. So:
+            // - `lighting: true, skybox: false` with .hdr → would build an unwanted skybox. Throw.
+            // - `lighting: true, skybox: true` (or skybox-only with same URL) → fine.
+            if (ext === ".hdr" && !updateSkybox) {
+                throw new Error(
+                    "Babylon Lite cannot load only the lighting from a .hdr URL — `loadHdrEnvironment` always builds a skybox. " +
+                        "Update lighting and skybox together, or use a .env URL."
+                );
+            }
+
+            if (ext === ".hdr") {
+                await loadHdrEnvironment(this._scene, resolvedLightingUrl, {
+                    skipGround: true,
+                    skyboxSize: 20,
+                });
+                this._currentLightingUrl = effectiveLightingUrl;
+                this._currentSkyboxUrl = effectiveLightingUrl;
+            } else {
+                const resolvedSkyboxUrl = targetSkyboxUrl === "auto" ? (await import("./defaultEnvironment")).default : (targetSkyboxUrl ?? undefined);
+                // Note: when skybox-only is requested but lighting already exists, we still call
+                // liteLoadEnvironment with the existing lighting URL — this re-fetches and re-uploads
+                // the cubemap (wasteful) but correctly builds the requested skybox. Per the contract
+                // ("honoring by re-loading is OK"), this is acceptable.
+                await liteLoadEnvironment(this._scene, resolvedLightingUrl, {
+                    brdfUrl: (await import("./defaultBRDF")).default,
+                    skyboxUrl: resolvedSkyboxUrl,
+                    skipSkybox: !updateSkybox,
+                    skipGround: true,
+                    skyboxSize: 20,
+                });
+                this._currentLightingUrl = effectiveLightingUrl;
+                if (updateSkybox) {
+                    this._currentSkyboxUrl = targetSkyboxUrl;
+                }
+            }
+
+            if (this._environmentRotation !== 0) {
+                this._scene.envRotationY = this._environmentRotation;
+            }
+
+            // Re-register the scene so that the env loader's deferred builders are processed
+            // and the new skybox/ground renderables land in the draw buckets. Lite only fills
+            // `_opaqueRenderables` etc. at registerScene() time.
+            if (this._renderLoopRunning) {
+                await this._beginRendering();
+            }
+
+            throwIfAborted(abortSignal, compositeAbortSignal);
+
+            this.onEnvironmentChanged.notifyObservers();
+        } catch (e) {
+            if (!(e instanceof AbortError)) {
+                this.onEnvironmentError.notifyObservers(e);
+            }
+            throw e;
+        }
     }
 
     public async resetEnvironment(options?: EnvironmentOptions, abortSignal?: AbortSignal): Promise<void> {
@@ -618,41 +624,36 @@ export class Viewer extends ViewerBase implements IViewer {
 
     // ── Shadows ──
 
-    public get shadowConfig(): Readonly<ShadowParams> {
-        return {
-            quality: this._shadowQuality,
-        };
+    /**
+     * Updates the shadow configuration.
+     * @param value The new shadow configuration.
+     * @param abortSignal Optional signal that can be used to abort the update externally.
+     * @returns A promise that resolves when the shadow update completes.
+     */
+    public override async updateShadows(value: Partial<Readonly<ShadowParams>>, abortSignal?: AbortSignal): Promise<void> {
+        if (value.quality === "high") {
+            throw new Error("Babylon Lite does not support 'high' shadow quality. Use 'normal' or 'none'.");
+        }
+        return await super.updateShadows(value, abortSignal);
     }
 
-    public async updateShadows(value: Partial<Readonly<ShadowParams>>): Promise<void> {
-        if (value.quality === undefined) {
-            return;
+    /** @internal */
+    protected override async _updateShadowsImpl(
+        quality: ShadowQuality,
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        abortSignal: AbortSignal | undefined,
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        internalAbortSignal: AbortSignal
+    ): Promise<void> {
+        // Tear down existing shadow state
+        if (this._shadowLight !== null) {
+            this._shadowLight = null;
         }
+        this._shadowGenerator = null;
 
-        let quality: ShadowQuality = value.quality;
-        if (quality === "high") {
-            Logger.Warn("Viewer: Shadow quality 'high' is not supported by Babylon Lite. Falling back to 'normal'.");
-            quality = "normal";
+        if (quality === "normal" && this._container) {
+            this._setupShadows();
         }
-
-        this._shadowsAbortController?.abort(new AbortError("Shadows quality is being changed before previous shadows finished initializing."));
-        this._shadowsAbortController = new AbortController();
-
-        return await this._updateShadowsLock.lockAsync(async () => {
-            this._shadowQuality = quality;
-
-            // Tear down existing shadow state
-            if (this._shadowLight !== null) {
-                this._shadowLight = null;
-            }
-            this._shadowGenerator = null;
-
-            if (quality === "normal" && this._container) {
-                this._setupShadows();
-            }
-
-            this.onShadowsConfigurationChanged.notifyObservers();
-        });
     }
 
     private _setupShadows(): void {
@@ -680,9 +681,7 @@ export class Viewer extends ViewerBase implements IViewer {
         source: string | File | ArrayBufferView | undefined,
         options: ViewerLoadModelOptions | undefined,
         abortSignal: AbortSignal | undefined,
-        internalAbortSignal: AbortSignal,
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        loadOperation: IDisposable & { progress: Nullable<number> }
+        internalAbortSignal: AbortSignal
     ): Promise<void> {
         // Source `undefined` flows through from `resetModel`. Treat as "unload, no new load".
         if (source === undefined) {
@@ -694,59 +693,69 @@ export class Viewer extends ViewerBase implements IViewer {
             return;
         }
 
-        if (typeof source !== "string") {
-            Logger.Warn("Viewer: Only string URLs are supported for model loading. File and ArrayBufferView sources are not supported.");
-            throw new Error("Unsupported model source type");
-        }
-
-        // Unload previous model
-        this._unloadCurrentModel();
-
-        // Load new model
-        const url = source;
-        if (options?.pluginExtension) {
-            // Append extension hint if provided
-            const ext = options.pluginExtension.startsWith(".") ? options.pluginExtension : `.${options.pluginExtension}`;
-            if (!url.toLowerCase().endsWith(ext.toLowerCase())) {
-                // The Lite loader determines format from URL extension;
-                // for now we just trust the URL.
+        const loadOperation = this._beginLoadOperation();
+        try {
+            if (typeof source !== "string") {
+                Logger.Warn("Viewer: Only string URLs are supported for model loading. File and ArrayBufferView sources are not supported.");
+                throw new Error("Unsupported model source type");
             }
+
+            // Unload previous model
+            this._unloadCurrentModel();
+
+            // Load new model
+            const url = source;
+            if (options?.pluginExtension) {
+                // Append extension hint if provided
+                const ext = options.pluginExtension.startsWith(".") ? options.pluginExtension : `.${options.pluginExtension}`;
+                if (!url.toLowerCase().endsWith(ext.toLowerCase())) {
+                    // The Lite loader determines format from URL extension;
+                    // for now we just trust the URL.
+                }
+            }
+
+            const container = await loadGltf(this._engine, url);
+
+            throwIfAborted(abortSignal, internalAbortSignal);
+
+            this._container = container;
+            this._modelSource = source;
+
+            // Add to scene and rebuild renderables
+            addToScene(this._scene, container);
+            await this._beginRendering();
+
+            // Apply clear color from model if present
+            if (container.clearColor) {
+                this._scene.clearColor = container.clearColor;
+                this.onClearColorChanged.notifyObservers();
+            }
+
+            // Setup shadows if configured
+            if (this._shadowQuality !== "none") {
+                this._setupShadows();
+            }
+
+            // Setup animations
+            this._setupAnimations();
+
+            // Apply material variant from options
+            if (this._options?.selectedMaterialVariant) {
+                this.selectedMaterialVariant = this._options.selectedMaterialVariant;
+            }
+
+            // Frame camera to loaded model
+            this._frameCameraToModel();
+
+            this.onModelChanged.notifyObservers(source);
+        } catch (e) {
+            if (!(e instanceof AbortError)) {
+                this.onModelError.notifyObservers(e);
+            }
+            throw e;
+        } finally {
+            loadOperation.dispose();
         }
-
-        const container = await loadGltf(this._engine, url);
-
-        throwIfAborted(abortSignal, internalAbortSignal);
-
-        this._container = container;
-        this._modelSource = source;
-
-        // Add to scene and rebuild renderables
-        addToScene(this._scene, container);
-        await this._beginRendering();
-
-        // Apply clear color from model if present
-        if (container.clearColor) {
-            this._scene.clearColor = container.clearColor;
-            this.onClearColorChanged.notifyObservers();
-        }
-
-        // Setup shadows if configured
-        if (this._shadowQuality !== "none") {
-            this._setupShadows();
-        }
-
-        // Setup animations
-        this._setupAnimations();
-
-        // Apply material variant from options
-        if (this._options?.selectedMaterialVariant) {
-            this.selectedMaterialVariant = this._options.selectedMaterialVariant;
-        }
-
-        // Frame camera to loaded model
-        this._frameCameraToModel();
-
-        this.onModelChanged.notifyObservers(source);
     }
 
     private _unloadCurrentModel(): void {
@@ -1097,10 +1106,6 @@ export class Viewer extends ViewerBase implements IViewer {
         this._engine.canvas.removeEventListener("pointerdown", this._onPointerActivity);
         this._engine.canvas.removeEventListener("pointermove", this._onPointerActivity);
         this._engine.canvas.removeEventListener("wheel", this._onPointerActivity);
-
-        // Abort any in-flight loads
-        this._shadowsAbortController?.abort(new AbortError("Disposed"));
-        this._shadowsAbortController = null;
 
         // Unload model
         this._unloadCurrentModel();

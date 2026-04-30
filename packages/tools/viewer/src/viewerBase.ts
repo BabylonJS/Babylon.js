@@ -630,8 +630,9 @@ export interface IViewer extends IDisposable {
     /**
      * Updates the shadow configuration.
      * @param value The new shadow configuration.
+     * @param abortSignal Optional signal that can be used to abort the update.
      */
-    updateShadows(value: Partial<Readonly<ShadowParams>>): Promise<void>;
+    updateShadows(value: Partial<Readonly<ShadowParams>>, abortSignal?: AbortSignal): Promise<void>;
 
     // ── Model Loading ──
 
@@ -897,9 +898,11 @@ export abstract class ViewerBase {
     }
 
     /**
-     * @internal Begin tracking a new load operation. Subclasses call this at the start of
-     * an async load and dispose the returned handle when it completes (or fails). The handle
-     * exposes a `progress` setter that, when assigned, fires `onLoadingProgressChanged`.
+     * Begin tracking a new load operation. Subclasses call this at the start of an async load
+     * and dispose the returned handle when it completes (or fails). The handle exposes a
+     * `progress` setter that, when assigned, fires `onLoadingProgressChanged`.
+     * @returns A handle that can be disposed when the operation completes; the `progress` setter
+     *   updates the aggregate `loadingProgress` as the operation runs.
      */
     protected _beginLoadOperation(): IDisposable & { progress: Nullable<number> } {
         // eslint-disable-next-line @typescript-eslint/no-this-alias
@@ -1040,16 +1043,8 @@ export abstract class ViewerBase {
 
         try {
             await AsyncLock.LockAsync(async () => {
-                try {
-                    throwIfAborted(abortSignal, compositeAbortController.signal);
-                    await this._loadEnvironmentImpl(url?.trim() ?? url, resolvedOptions, abortSignal, compositeAbortController.signal);
-                    this.onEnvironmentChanged.notifyObservers();
-                } catch (e) {
-                    if (!(e instanceof AbortError)) {
-                        this.onEnvironmentError.notifyObservers(e);
-                    }
-                    throw e;
-                }
+                throwIfAborted(abortSignal, compositeAbortController.signal);
+                await this._loadEnvironmentImpl(url?.trim() ?? url, resolvedOptions, abortSignal, compositeAbortController.signal);
             }, locks);
         } finally {
             for (const controller of internalAbortControllers) {
@@ -1060,13 +1055,14 @@ export abstract class ViewerBase {
 
     /**
      * @internal Engine-specific environment loading. Subclasses implement this with their actual
-     * texture loading / scene mutation logic. The base class handles all surrounding orchestration:
-     * lock acquisition, abort-prev semantics, composite abort signals, and `onEnvironmentChanged` /
-     * `onEnvironmentError` notifications.
+     * texture loading / scene mutation logic. The base class handles only the surrounding lock +
+     * abort-prev orchestration and the composite abort signal; everything else (`onEnvironmentChanged` /
+     * `onEnvironmentError` notifications, snapshot-helper bracketing, etc.) is the impl's responsibility.
      *
      * Implementations should:
-     * - Throw on failure (the base class will fire `onEnvironmentError` for non-abort errors).
-     * - NOT fire `onEnvironmentChanged` themselves (the base class does this on success).
+     * - Throw on failure. They should fire `onEnvironmentError` themselves before throwing if they
+     *   want external observers to be notified.
+     * - Fire `onEnvironmentChanged` on success.
      * - Periodically re-check abort by calling `throwIfAborted(abortSignal, compositeAbortSignal)`
      *   at safe points within the load (e.g. after long-running awaits).
      *
@@ -1132,18 +1128,8 @@ export abstract class ViewerBase {
         const internalAbortController = (this._loadModelAbortController = new AbortController());
 
         await this._loadModelLock.lockAsync(async () => {
-            const loadOperation = this._beginLoadOperation();
-            try {
-                throwIfAborted(abortSignal, internalAbortController.signal);
-                await this._loadModelImpl(source, options, abortSignal, internalAbortController.signal, loadOperation);
-            } catch (e) {
-                if (!(e instanceof AbortError)) {
-                    this.onModelError.notifyObservers(e);
-                }
-                throw e;
-            } finally {
-                loadOperation.dispose();
-            }
+            throwIfAborted(abortSignal, internalAbortController.signal);
+            await this._loadModelImpl(source, options, abortSignal, internalAbortController.signal);
         });
 
         // Post-lock follow-up (e.g. operations that need other locks). Skip if a newer model load
@@ -1155,14 +1141,16 @@ export abstract class ViewerBase {
 
     /**
      * @internal Engine-specific model loading. Subclasses implement this with their actual model
-     * loading logic. The base class handles all surrounding orchestration: lock acquisition,
-     * abort-prev semantics, and `onModelError` notification (for non-abort errors).
+     * loading logic. The base class handles only the surrounding lock + abort-prev orchestration;
+     * everything else (load-operation progress tracking, `onModelChanged` / `onModelError`
+     * notifications, snapshot-helper bracketing) is the impl's responsibility.
      *
      * Implementations should:
-     * - Throw on failure (the base class will fire `onModelError` for non-abort errors).
-     * - Fire `onModelChanged` themselves on success (the base class doesn't, because the timing
-     *   relative to internal model state varies between backends).
-     * - Use `loadOperation.progress` to report progress; do NOT call `_beginLoadOperation` themselves.
+     * - Throw on failure. They should fire `onModelError` themselves before throwing if they want
+     *   external observers to be notified.
+     * - Fire `onModelChanged` on success.
+     * - Manage their own `_beginLoadOperation` / dispose pair if they want to contribute to
+     *   `loadingProgress`.
      * - Periodically re-check abort by calling `throwIfAborted(abortSignal, internalAbortSignal)`
      *   at safe points within the load (e.g. after long-running awaits).
      * - Treat `source === undefined` as "unload the current model" — this is how `resetModel` flows
@@ -1172,15 +1160,12 @@ export abstract class ViewerBase {
      * @param options Caller's options (or undefined). May contain engine-specific extras.
      * @param abortSignal The caller's external abort signal (or `undefined`).
      * @param internalAbortSignal Signal that fires when a NEWER model load supersedes this one.
-     * @param loadOperation Tracking handle for `loadingProgress`. Set `loadOperation.progress` to
-     *   report partial progress; the base class disposes it when the impl returns.
      */
     protected abstract _loadModelImpl(
         source: string | File | ArrayBufferView | undefined,
         options: ViewerLoadModelOptions | undefined,
         abortSignal: AbortSignal | undefined,
-        internalAbortSignal: AbortSignal,
-        loadOperation: IDisposable & { progress: Nullable<number> }
+        internalAbortSignal: AbortSignal
     ): Promise<void>;
 
     /**
@@ -1207,6 +1192,95 @@ export abstract class ViewerBase {
         // Default: no-op.
     }
 
+    // ──────────────────────────────────────────────────────────────────────────
+    // Shadow update orchestration
+    // ──────────────────────────────────────────────────────────────────────────
+
+    /** Lock guarding shadow updates. */
+    private readonly _updateShadowsLock = new AsyncLock();
+    /** Abort controller for the currently in-flight shadow update (null when none). */
+    private _shadowsAbortController: Nullable<AbortController> = null;
+
+    /**
+     * @internal The abort signal of the currently in-flight shadow update, or `undefined` if none.
+     * Subclasses can use this in `_throwIfDisposedOrAborted` to bail out of dependent async work
+     * when the user starts a new shadow update.
+     */
+    protected get _shadowsAbortSignal(): AbortSignal | undefined {
+        return this._shadowsAbortController?.signal;
+    }
+
+    /**
+     * @internal The currently committed shadow quality. Subclasses initialize this from their
+     * options in their constructor and read it in their `_loadModelImpl` etc. The base class
+     * commits a new value here only after `_updateShadowsImpl` succeeds, so failed/aborted
+     * shadow updates don't leave this field out of sync with engine state.
+     */
+    protected _shadowQuality: ShadowQuality = DefaultViewerBaseOptions.shadowConfig.quality;
+
+    /**
+     * Gets the current shadow configuration.
+     */
+    public get shadowConfig(): Readonly<ShadowParams> {
+        return { quality: this._shadowQuality };
+    }
+
+    /**
+     * Updates the shadow configuration. Skips work if the requested value matches the currently
+     * committed one. Subclasses can override this to validate the requested quality (e.g. throw on
+     * unsupported combinations) before delegating to `super.updateShadows(value, abortSignal)`.
+     * @param value The new shadow configuration.
+     * @param abortSignal Optional signal that can be used to abort the update externally.
+     * @returns A promise that resolves when the shadow update completes.
+     */
+    public async updateShadows(value: Partial<Readonly<ShadowParams>>, abortSignal?: AbortSignal): Promise<void> {
+        if (value.quality === undefined || value.quality === this._shadowQuality) {
+            return;
+        }
+
+        // Commit `_shadowQuality` BEFORE running the impl: the engine-specific shadow setup may
+        // read `this._shadowQuality` internally as a sanity check ("did the user change quality
+        // while I was initializing?"), so the new value needs to be visible during the impl.
+        this._shadowQuality = value.quality;
+        await this._updateShadows(this._shadowQuality, abortSignal);
+        this.onShadowsConfigurationChanged.notifyObservers();
+    }
+
+    /**
+     * Runs the engine-specific shadow update at the given quality under the shared lock, with
+     * abort-prev semantics. Subclasses should call this (rather than `_updateShadowsImpl` directly)
+     * when they need to re-run the shadow setup (e.g. after a model change or environment change).
+     * The public `updateShadows` also routes through this helper.
+     * @param quality The shadow quality to apply. Defaults to the currently committed quality
+     *   (`this._shadowQuality`), which is the right choice for re-running shadow setup without
+     *   changing the committed quality. The public `updateShadows` passes a resolved new quality.
+     * @param abortSignal Optional external abort signal.
+     * @returns A promise that resolves when the shadow update completes.
+     */
+    protected async _updateShadows(quality: ShadowQuality = this._shadowQuality, abortSignal?: AbortSignal): Promise<void> {
+        this._throwIfDisposedOrAborted(abortSignal);
+
+        this._shadowsAbortController?.abort(new AbortError("Shadows quality is being changed before previous shadows finished initializing."));
+        const internalAbortController = (this._shadowsAbortController = new AbortController());
+
+        await this._updateShadowsLock.lockAsync(async () => {
+            throwIfAborted(abortSignal, internalAbortController.signal);
+            await this._updateShadowsImpl(quality, abortSignal, internalAbortController.signal);
+        });
+    }
+
+    /**
+     * @internal Engine-specific shadow setup. Subclasses implement this with their actual shadow
+     * generation logic. The base class handles all surrounding orchestration: lock acquisition,
+     * abort-prev semantics, quality resolution, and the success-only commit of `_shadowQuality`.
+     *
+     * Implementations should:
+     * - Throw on failure; the base class propagates the error to the caller without committing the new quality.
+     * - Use `quality` (not `this._shadowQuality`, which still holds the pre-update value) to drive the setup.
+     * - Periodically re-check abort by calling `throwIfAborted(abortSignal, internalAbortSignal)` at safe points.
+     */
+    protected abstract _updateShadowsImpl(quality: ShadowQuality, abortSignal: AbortSignal | undefined, internalAbortSignal: AbortSignal): Promise<void>;
+
     /**
      * Disposes the viewer and releases shared resources (observables, disposed flag).
      * Subclasses MUST override this method to dispose their own engine-specific state
@@ -1222,6 +1296,8 @@ export abstract class ViewerBase {
         this._loadEnvironmentSkyboxAbortController = null;
         this._loadModelAbortController?.abort(new AbortError("The viewer is being disposed."));
         this._loadModelAbortController = null;
+        this._shadowsAbortController?.abort(new AbortError("The viewer is being disposed."));
+        this._shadowsAbortController = null;
 
         this.onEnvironmentChanged.clear();
         this.onEnvironmentConfigurationChanged.clear();

@@ -530,9 +530,6 @@ export class Viewer extends ViewerBase implements IDisposable, IViewer {
 
     private _camerasAsHotSpotsAbortController: Nullable<AbortController> = null;
 
-    private readonly _updateShadowsLock = new AsyncLock();
-    private _shadowsAbortController: Nullable<AbortController> = null;
-
     private readonly _updateSSAOLock = new AsyncLock();
     private _ssaoAbortController: Nullable<AbortController> = null;
 
@@ -542,7 +539,6 @@ export class Viewer extends ViewerBase implements IDisposable, IViewer {
     private _camerasAsHotSpots = false;
     private _hotSpots: Record<string, HotSpot> = this._options?.hotSpots ?? {};
 
-    private _shadowQuality: ShadowQuality = this._options?.shadowConfig?.quality ?? DefaultViewerOptions.shadowConfig.quality;
     private readonly _shadowState: ShadowState = {};
     private _iblShadowsAnimationObserver: Nullable<Observer<Scene>> = null;
 
@@ -555,6 +551,7 @@ export class Viewer extends ViewerBase implements IDisposable, IViewer {
             throw new Error("High quality shadows are not compatible with SSAO. Please choose either high quality shadows or SSAO.");
         }
 
+        this._shadowQuality = this._options?.shadowConfig?.quality ?? DefaultViewerOptions.shadowConfig.quality;
         this._defaultHardwareScalingLevel = this._lastHardwareScalingLevel = this._engine.getHardwareScalingLevel();
         {
             const scene = new Scene(this._engine);
@@ -745,29 +742,16 @@ export class Viewer extends ViewerBase implements IDisposable, IViewer {
     }
 
     /**
-     * Get the current shadow configuration.
-     */
-    public get shadowConfig(): Readonly<ShadowParams> {
-        return {
-            quality: this._shadowQuality,
-        };
-    }
-
-    /**
-     * Update the shadow configuration.
+     * Updates the shadow configuration.
      * @param value The new shadow configuration.
+     * @param abortSignal Optional signal that can be used to abort the update externally.
+     * @returns A promise that resolves when the shadow update completes.
      */
-    public async updateShadows(value: Partial<Readonly<ShadowParams>>): Promise<void> {
-        if (value.quality && this._shadowQuality !== value.quality) {
-            if (value.quality === "high" && this._ssaoOption === "enabled") {
-                throw new Error("Shadows quality cannot be set to high when SSAO is enabled.");
-            }
-
-            this._shadowQuality = value.quality;
-
-            await this._updateShadows();
-            this.onShadowsConfigurationChanged.notifyObservers();
+    public override async updateShadows(value: Partial<Readonly<ShadowParams>>, abortSignal?: AbortSignal): Promise<void> {
+        if (value.quality === "high" && this._ssaoOption === "enabled") {
+            throw new Error("Shadows quality cannot be set to high when SSAO is enabled.");
         }
+        return await super.updateShadows(value, abortSignal);
     }
 
     private _changeSkyboxBlur(value: number) {
@@ -914,7 +898,7 @@ export class Viewer extends ViewerBase implements IDisposable, IViewer {
         if (model !== this._activeModelBacking) {
             this._activeModelBacking = model;
             this._updateLight();
-            observePromise(this._updateShadows());
+            observePromise(this._updateShadows(this._shadowQuality));
             this._updateSSAOPipeline();
             this._applyAnimationSpeed();
             this._selectAnimation(0, false);
@@ -1158,12 +1142,10 @@ export class Viewer extends ViewerBase implements IDisposable, IViewer {
         }
     }
 
-    protected async _loadModel(
-        source: string | File | ArrayBufferView,
-        options: LoadAssetContainerOptions | undefined,
-        abortSignal: AbortSignal | undefined,
-        loadOperation: IDisposable & { progress: Nullable<number> }
-    ): Promise<Model> {
+    protected async _loadModel(source: string | File | ArrayBufferView, options?: LoadAssetContainerOptions, abortSignal?: AbortSignal): Promise<Model> {
+        this._throwIfDisposedOrAborted(abortSignal);
+
+        const loadOperation = this._beginLoadOperation();
         const originalOnProgress = options?.onProgress;
         const onProgress = (event: ISceneLoaderProgressEvent) => {
             originalOnProgress?.(event);
@@ -1299,7 +1281,7 @@ export class Viewer extends ViewerBase implements IDisposable, IViewer {
 
                     selectedAnimation = index;
                     activeAnimation = assetContainer.animationGroups[selectedAnimation];
-                    observePromise(viewer._updateShadows());
+                    observePromise(viewer._updateShadows(viewer._shadowQuality));
 
                     if (activeAnimation) {
                         activeAnimation.goToFrame(0);
@@ -1340,7 +1322,11 @@ export class Viewer extends ViewerBase implements IDisposable, IViewer {
             this._loadedModelsBacking.push(model);
 
             return model;
+        } catch (e) {
+            this.onModelError.notifyObservers(e);
+            throw e;
         } finally {
+            loadOperation.dispose();
             this._snapshotHelper?.enableSnapshotRendering();
             this._markSceneMutated();
         }
@@ -1351,15 +1337,14 @@ export class Viewer extends ViewerBase implements IDisposable, IViewer {
         source: string | File | ArrayBufferView | undefined,
         options: ViewerLoadModelOptions | undefined,
         abortSignal: AbortSignal | undefined,
-        internalAbortSignal: AbortSignal,
-        loadOperation: IDisposable & { progress: Nullable<number> }
+        internalAbortSignal: AbortSignal
     ): Promise<void> {
         this._activeModel?.dispose();
         this._activeModelBacking = null;
         this.selectedAnimation = -1;
 
         if (source) {
-            const model = await this._loadModel(source, options, internalAbortSignal, loadOperation);
+            const model = await this._loadModel(source, options, internalAbortSignal);
             // Re-check abort after the long-running load — a newer loadModel may have superseded us.
             throwIfAborted(abortSignal, internalAbortSignal);
             model.makeActive(Object.assign({ source, interpolateCamera: false }, options));
@@ -1393,33 +1378,29 @@ export class Viewer extends ViewerBase implements IDisposable, IViewer {
         this._startSceneOptimizer(true);
     }
 
-    protected async _updateShadows() {
-        this._shadowsAbortController?.abort(new AbortError("Shadows quality is being changed before previous shadows finished initializing."));
-        const abortController = (this._shadowsAbortController = new AbortController());
+    /** @internal */
+    protected override async _updateShadowsImpl(quality: ShadowQuality, abortSignal: AbortSignal | undefined, internalAbortSignal: AbortSignal): Promise<void> {
+        this._snapshotHelper?.disableSnapshotRendering();
 
-        await this._updateShadowsLock.lockAsync(async () => {
-            this._snapshotHelper?.disableSnapshotRendering();
-
-            try {
-                if (this._shadowQuality === "none") {
-                    this._disposeShadows();
-                } else {
-                    // make sure there is an env light before creating shadows
-                    if (!this._reflectionTexture) {
-                        await this.loadEnvironment("auto", { lighting: true, skybox: false });
-                    }
-
-                    if (this._shadowQuality === "normal") {
-                        await this._updateShadowMap(abortController.signal);
-                    } else if (this._shadowQuality === "high") {
-                        await this._updateEnvShadow(abortController.signal);
-                    }
+        try {
+            if (quality === "none") {
+                this._disposeShadows();
+            } else {
+                // make sure there is an env light before creating shadows
+                if (!this._reflectionTexture) {
+                    await this.loadEnvironment("auto", { lighting: true, skybox: false }, abortSignal);
                 }
-            } finally {
-                this._snapshotHelper?.enableSnapshotRendering();
-                this._markSceneMutated();
+
+                if (quality === "normal") {
+                    await this._updateShadowMap(internalAbortSignal);
+                } else if (quality === "high") {
+                    await this._updateEnvShadow(internalAbortSignal);
+                }
             }
-        });
+        } finally {
+            this._snapshotHelper?.enableSnapshotRendering();
+            this._markSceneMutated();
+        }
     }
 
     private _changeShadowLightIntensity() {
@@ -1994,7 +1975,11 @@ export class Viewer extends ViewerBase implements IDisposable, IViewer {
             throwIfAborted(abortSignal, compositeAbortSignal);
 
             this._updateLight();
-            observePromise(this._updateShadows());
+            observePromise(this._updateShadows(this._shadowQuality));
+            this.onEnvironmentChanged.notifyObservers();
+        } catch (e) {
+            this.onEnvironmentError.notifyObservers(e);
+            throw e;
         } finally {
             this._snapshotHelper?.enableSnapshotRendering();
             this._markSceneMutated();
@@ -2173,8 +2158,7 @@ export class Viewer extends ViewerBase implements IDisposable, IViewer {
         }
 
         if (flags.length === 0 || flags.includes("shadow")) {
-            this._shadowQuality = this._options?.shadowConfig?.quality ?? DefaultViewerOptions.shadowConfig.quality;
-            observePromise(this.updateShadows({ quality: this._shadowQuality }));
+            observePromise(this.updateShadows({ quality: this._options?.shadowConfig?.quality ?? DefaultViewerOptions.shadowConfig.quality }));
         }
 
         if (flags.length === 0 || flags.includes("animation")) {
@@ -2239,7 +2223,6 @@ export class Viewer extends ViewerBase implements IDisposable, IViewer {
         this.animationProgress = 0;
 
         this._camerasAsHotSpotsAbortController?.abort(new AbortError("The viewer is being disposed."));
-        this._shadowsAbortController?.abort(new AbortError("The viewer is being disposed."));
         this._ssaoAbortController?.abort(new AbortError("The viewer is being disposed."));
 
         this._renderLoopController?.dispose();
