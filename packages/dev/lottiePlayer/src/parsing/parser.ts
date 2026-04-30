@@ -58,7 +58,7 @@ type LayerTree = {
 /**
  * Parses a CSS hex color string in `#RGB` or `#RRGGBB` form into normalized 0..1 RGB components.
  * Used for solid layers (`ty:1`), whose color is stored as a CSS string in `sc`. Falls back to
- * black and pushes a warning for any other form (e.g. `rgb()`, named colors) so the source is
+ * white and pushes a warning for any other form (e.g. `rgb()`, named colors) so the source is
  * traceable instead of silently producing the wrong color.
  * @param value The raw `sc` string from a solid layer.
  * @param layerName The owning layer's name (for the warning message).
@@ -85,7 +85,7 @@ function ParseCssColorString(value: string, layerName: string | undefined, unsup
         }
     }
     unsupported.push(`Unsupported CSS color string in solid layer ${layerName ?? "<unknown>"}: ${value}`);
-    return [0, 0, 0];
+    return [1, 1, 1];
 }
 
 /**
