@@ -1099,6 +1099,57 @@ export abstract class ViewerBase {
         compositeAbortSignal: AbortSignal
     ): Promise<void>;
 
+    // ── Environment configuration (intensity / blur / rotation) ──
+
+    /** @internal Current environment intensity. Initialized from options in subclass constructors. */
+    protected _environmentIntensity: number = DefaultViewerBaseOptions.environmentConfig.intensity;
+    /** @internal Current environment skybox blur. Initialized from options in subclass constructors. */
+    protected _environmentBlur: number = DefaultViewerBaseOptions.environmentConfig.blur;
+    /** @internal Current environment rotation in radians. Initialized from options in subclass constructors. */
+    protected _environmentRotation: number = DefaultViewerBaseOptions.environmentConfig.rotation;
+
+    public get environmentConfig(): Readonly<EnvironmentParams> {
+        return {
+            intensity: this._environmentIntensity,
+            blur: this._environmentBlur,
+            rotation: this._environmentRotation,
+        };
+    }
+
+    public set environmentConfig(value: Partial<Readonly<EnvironmentParams>>) {
+        if (value.blur !== undefined && value.blur !== this._environmentBlur) {
+            this._environmentBlur = value.blur;
+            this._applyEnvironmentBlur();
+        }
+        if (value.intensity !== undefined && value.intensity !== this._environmentIntensity) {
+            this._environmentIntensity = value.intensity;
+            this._applyEnvironmentIntensity();
+        }
+        if (value.rotation !== undefined && value.rotation !== this._environmentRotation) {
+            this._environmentRotation = value.rotation;
+            this._applyEnvironmentRotation();
+        }
+        this.onEnvironmentConfigurationChanged.notifyObservers();
+    }
+
+    /**
+     * @internal Push the current `_environmentIntensity` value into the engine's environment state.
+     * Called by the public `environmentConfig` setter only when the value changes.
+     */
+    protected abstract _applyEnvironmentIntensity(): void;
+
+    /**
+     * @internal Push the current `_environmentBlur` value into the engine's environment state.
+     * Called by the public `environmentConfig` setter only when the value changes.
+     */
+    protected abstract _applyEnvironmentBlur(): void;
+
+    /**
+     * @internal Push the current `_environmentRotation` value into the engine's environment state.
+     * Called by the public `environmentConfig` setter only when the value changes.
+     */
+    protected abstract _applyEnvironmentRotation(): void;
+
     // ──────────────────────────────────────────────────────────────────────────
     // Model loading orchestration
     // ──────────────────────────────────────────────────────────────────────────

@@ -39,7 +39,6 @@ import {
 
 import {
     type CameraAutoOrbit,
-    type EnvironmentParams,
     type HotSpot,
     type IViewer,
     type ResolvedLoadEnvironmentOptions,
@@ -133,9 +132,6 @@ export class Viewer extends ViewerBase implements IViewer {
     private _lastPointerTime = 0;
 
     // Environment
-    private _environmentIntensity = this._options?.environmentConfig?.intensity ?? DefaultViewerOptions.environmentConfig.intensity;
-    private _environmentBlur = this._options?.environmentConfig?.blur ?? DefaultViewerOptions.environmentConfig.blur;
-    private _environmentRotation = this._options?.environmentConfig?.rotation ?? DefaultViewerOptions.environmentConfig.rotation;
     /** The currently-loaded lighting URL ("auto" resolves to the embedded default). null = no lighting loaded. */
     private _currentLightingUrl: string | null = null;
     /** The currently-loaded skybox URL ("auto" resolves to the embedded default). null = no skybox loaded. */
@@ -187,6 +183,9 @@ export class Viewer extends ViewerBase implements IViewer {
     ) {
         super();
         this._shadowQuality = this._options?.shadowConfig?.quality ?? DefaultViewerOptions.shadowConfig.quality;
+        this._environmentIntensity = this._options?.environmentConfig?.intensity ?? DefaultViewerOptions.environmentConfig.intensity;
+        this._environmentBlur = this._options?.environmentConfig?.blur ?? DefaultViewerOptions.environmentConfig.blur;
+        this._environmentRotation = this._options?.environmentConfig?.rotation ?? DefaultViewerOptions.environmentConfig.rotation;
         // Create scene internally (matching how full Viewer owns its scene)
         this._scene = createSceneContext(_engine);
         // Camera — NaN means "auto" (will be recomputed when model loads)
@@ -408,45 +407,16 @@ export class Viewer extends ViewerBase implements IViewer {
 
     // ── Environment ──
 
-    public get environmentConfig(): Readonly<EnvironmentParams> {
-        return {
-            intensity: this._environmentIntensity,
-            blur: this._environmentBlur,
-            rotation: this._environmentRotation,
-        };
-    }
+    /** @internal Lite has no engine state for intensity. */
+    protected override _applyEnvironmentIntensity(): void {}
 
-    public set environmentConfig(value: Partial<Readonly<EnvironmentParams>>) {
-        if (value.intensity !== undefined) {
-            this._changeEnvironmentIntensity(value.intensity);
-        }
-        if (value.blur !== undefined) {
-            this._changeSkyboxBlur(value.blur);
-        }
-        if (value.rotation !== undefined) {
-            this._changeEnvironmentRotation(value.rotation);
-        }
-        this.onEnvironmentConfigurationChanged.notifyObservers();
-    }
+    /** @internal Lite has no engine state for blur. */
+    protected override _applyEnvironmentBlur(): void {}
 
-    private _changeEnvironmentIntensity(value: number) {
-        if (value !== this._environmentIntensity) {
-            this._environmentIntensity = value;
-        }
-    }
-
-    private _changeSkyboxBlur(value: number) {
-        if (value !== this._environmentBlur) {
-            this._environmentBlur = value;
-        }
-    }
-
-    private _changeEnvironmentRotation(value: number) {
-        if (value !== this._environmentRotation) {
-            this._environmentRotation = value;
-            if (this._scene.envRotationY !== undefined) {
-                this._scene.envRotationY = value;
-            }
+    /** @internal */
+    protected override _applyEnvironmentRotation(): void {
+        if (this._scene.envRotationY !== undefined) {
+            this._scene.envRotationY = this._environmentRotation;
         }
     }
 

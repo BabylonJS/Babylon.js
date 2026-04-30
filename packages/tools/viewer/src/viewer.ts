@@ -63,7 +63,6 @@ import { registerBuiltInLoaders } from "loaders/dynamic";
 import {
     type CameraAutoOrbit,
     type EnvironmentOptions,
-    type EnvironmentParams,
     type HotSpot,
     type IViewer,
     type ResolvedLoadEnvironmentOptions,
@@ -510,11 +509,8 @@ export class Viewer extends ViewerBase implements IDisposable, IViewer {
     private _environmentSkyboxMode: EnvironmentMode = "none";
     private _environmentLightingMode: EnvironmentMode = "none";
     private _skybox: Nullable<Mesh> = null;
-    private _skyboxBlur = this._options?.environmentConfig?.blur ?? DefaultViewerOptions.environmentConfig.blur;
     private _skyboxTexture: Nullable<CubeTexture | HDRCubeTexture> = null;
     private _reflectionTexture: Nullable<CubeTexture | HDRCubeTexture> = null;
-    private _reflectionsIntensity = this._options?.environmentConfig?.intensity ?? DefaultViewerOptions.environmentConfig.intensity;
-    private _reflectionsRotation = this._options?.environmentConfig?.rotation ?? DefaultViewerOptions.environmentConfig.rotation;
     private _light: Nullable<HemisphericLight> = null;
     private _toneMappingEnabled: boolean;
     private _toneMappingType: number;
@@ -551,6 +547,9 @@ export class Viewer extends ViewerBase implements IDisposable, IViewer {
         }
 
         this._shadowQuality = this._options?.shadowConfig?.quality ?? DefaultViewerOptions.shadowConfig.quality;
+        this._environmentIntensity = this._options?.environmentConfig?.intensity ?? DefaultViewerOptions.environmentConfig.intensity;
+        this._environmentBlur = this._options?.environmentConfig?.blur ?? DefaultViewerOptions.environmentConfig.blur;
+        this._environmentRotation = this._options?.environmentConfig?.rotation ?? DefaultViewerOptions.environmentConfig.rotation;
         this._defaultHardwareScalingLevel = this._lastHardwareScalingLevel = this._engine.getHardwareScalingLevel();
         {
             const scene = new Scene(this._engine);
@@ -717,27 +716,49 @@ export class Viewer extends ViewerBase implements IDisposable, IViewer {
     /**
      * Get the current environment configuration.
      */
-    public get environmentConfig(): Readonly<EnvironmentParams> {
-        return {
-            intensity: this._reflectionsIntensity,
-            blur: this._skyboxBlur,
-            rotation: this._reflectionsRotation,
-        };
+    /** @internal */
+    protected override _applyEnvironmentBlur(): void {
+        if (this._skybox) {
+            const material = this._skybox.material;
+            if (material instanceof BackgroundMaterial) {
+                this._snapshotHelper?.disableSnapshotRendering();
+                material.reflectionBlur = this._environmentBlur;
+                this._snapshotHelper?.enableSnapshotRendering();
+                this._markSceneMutated();
+            }
+        }
     }
 
-    public set environmentConfig(value: Partial<Readonly<EnvironmentParams>>) {
-        if (value.blur !== undefined) {
-            this._changeSkyboxBlur(value.blur);
+    /** @internal */
+    protected override _applyEnvironmentRotation(): void {
+        this._snapshotHelper?.disableSnapshotRendering();
+        if (this._skyboxTexture) {
+            this._skyboxTexture.rotationY = this._environmentRotation;
         }
-        if (value.intensity !== undefined) {
-            this._changeEnvironmentIntensity(value.intensity);
-            this._changeShadowLightIntensity();
+        if (this._reflectionTexture) {
+            this._reflectionTexture.rotationY = this._environmentRotation;
         }
-        if (value.rotation !== undefined) {
-            this._changeEnvironmentRotation(value.rotation);
-            this._rotateShadowLightWithEnvironment();
+        this._snapshotHelper?.enableSnapshotRendering();
+        this._markSceneMutated();
+
+        // Side effect: shadow light follows environment rotation in normal/high modes.
+        this._rotateShadowLightWithEnvironment();
+    }
+
+    /** @internal */
+    protected override _applyEnvironmentIntensity(): void {
+        this._snapshotHelper?.disableSnapshotRendering();
+        if (this._skyboxTexture) {
+            this._skyboxTexture.level = this._environmentIntensity;
         }
-        this.onEnvironmentConfigurationChanged.notifyObservers();
+        if (this._reflectionTexture) {
+            this._reflectionTexture.level = this._environmentIntensity;
+        }
+        this._snapshotHelper?.enableSnapshotRendering();
+        this._markSceneMutated();
+
+        // Side effect: high-quality (IBL) shadows reset their accumulation when intensity changes.
+        this._changeShadowLightIntensity();
     }
 
     /**
@@ -751,57 +772,6 @@ export class Viewer extends ViewerBase implements IDisposable, IViewer {
             throw new Error("Shadows quality cannot be set to high when SSAO is enabled.");
         }
         return await super.updateShadows(value, abortSignal);
-    }
-
-    private _changeSkyboxBlur(value: number) {
-        if (value !== this._skyboxBlur) {
-            this._skyboxBlur = value;
-            if (this._skybox) {
-                const material = this._skybox.material;
-                if (material instanceof BackgroundMaterial) {
-                    this._snapshotHelper?.disableSnapshotRendering();
-                    material.reflectionBlur = this._skyboxBlur;
-                    this._snapshotHelper?.enableSnapshotRendering();
-                    this._markSceneMutated();
-                }
-            }
-        }
-    }
-
-    /**
-     * Change the environment rotation.
-     * @param value the rotation in radians
-     */
-    private _changeEnvironmentRotation(value: number) {
-        if (value !== this._reflectionsRotation) {
-            this._reflectionsRotation = value;
-
-            this._snapshotHelper?.disableSnapshotRendering();
-            if (this._skyboxTexture) {
-                this._skyboxTexture.rotationY = this._reflectionsRotation;
-            }
-            if (this._reflectionTexture) {
-                this._reflectionTexture.rotationY = this._reflectionsRotation;
-            }
-            this._snapshotHelper?.enableSnapshotRendering();
-            this._markSceneMutated();
-        }
-    }
-
-    private _changeEnvironmentIntensity(value: number) {
-        if (value !== this._reflectionsIntensity) {
-            this._reflectionsIntensity = value;
-
-            this._snapshotHelper?.disableSnapshotRendering();
-            if (this._skyboxTexture) {
-                this._skyboxTexture.level = this._reflectionsIntensity;
-            }
-            if (this._reflectionTexture) {
-                this._reflectionTexture.level = this._reflectionsIntensity;
-            }
-            this._snapshotHelper?.enableSnapshotRendering();
-            this._markSceneMutated();
-        }
     }
 
     private _updateAutoClear() {
@@ -1412,7 +1382,7 @@ export class Viewer extends ViewerBase implements IDisposable, IViewer {
     private _rotateShadowLightWithEnvironment(): void {
         if (this._shadowQuality === "normal" && this._shadowState.normal) {
             if (this._shadowState.normal.light) {
-                this._shadowState.normal.refreshLightPositionDirection(this._reflectionsRotation);
+                this._shadowState.normal.refreshLightPositionDirection(this._environmentRotation);
             }
         } else if (this._shadowQuality === "high" && this._shadowState.high) {
             this._shadowState.high.pipeline?.resetAccumulation();
@@ -1734,7 +1704,7 @@ export class Viewer extends ViewerBase implements IDisposable, IViewer {
 
         normal.iblDirection.direction = iblDirection;
         normal.iblDirection.positionFactor = positionFactor;
-        normal.refreshLightPositionDirection(this._reflectionsRotation);
+        normal.refreshLightPositionDirection(this._environmentRotation);
         normal.light.shadowFrustumSize = radius * 4;
 
         for (const model of this._loadedModelsBacking) {
