@@ -193,11 +193,17 @@ export class Layer {
         color?: Color4,
         forceGLSL = false
     ) {
+        if (!scene) {
+            scene = EngineStore.LastCreatedScene!;
+        }
+        this.layerMask = scene.defaultRenderableLayerMask;
+
         this.texture = imgUrl ? new Texture(imgUrl, scene, true) : null;
         this.isBackground = isBackground === undefined ? true : isBackground;
         this.color = color === undefined ? new Color4(1, 1, 1, 1) : color;
 
-        this._scene = <Scene>(scene || EngineStore.LastCreatedScene);
+        this._scene = scene;
+
         const engine = this._scene.getEngine();
         if (engine.isWebGPU && !forceGLSL && !Layer.ForceGLSL) {
             this._shaderLanguage = ShaderLanguage.WGSL;

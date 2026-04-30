@@ -114,7 +114,11 @@ export function BuildShader(filePath: string, basePackageName: string | undefine
     const filename = path.basename(filePath);
     const normalized = path.normalize(filePath);
     const directory = path.dirname(normalized);
-    const isWGSL = directory.indexOf("WGSL") > -1;
+    // Treat a shader as WGSL if any path segment is exactly "wgsl" (case-insensitive,
+    // covering the per-material `wgsl/` convention) or contains the uppercase "WGSL"
+    // marker (covering the legacy `ShadersWGSL/` convention). Substring-only matching
+    // would also pick up unrelated folders such as `twgsl/`.
+    const isWGSL = directory.split(/[/\\]/).some((segment) => segment.toLowerCase() === "wgsl" || segment.indexOf("WGSL") > -1);
     const tsFilename = filename.replace(".fx", ".ts").replace(".wgsl", ".ts");
     const shaderName = GetShaderName(filename);
     const appendDirName = isWGSL ? "WGSL" : "";

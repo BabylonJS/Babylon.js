@@ -255,35 +255,38 @@ export class NodeParticleSystemSet {
      * @returns a promise that resolves to the built particle system set
      */
     public async buildAsync(scene: Scene, verbose = false): Promise<ParticleSystemSet> {
-        return await new Promise<ParticleSystemSet>((resolve) => {
-            const output = new ParticleSystemSet();
+        const output = new ParticleSystemSet();
 
-            // Initialize all blocks
-            for (const block of this._systemBlocks) {
-                this._initializeBlock(block);
-            }
+        // Initialize all blocks
+        for (const block of this._systemBlocks) {
+            this._initializeBlock(block);
+        }
 
-            // Build the blocks
-            for (const block of this.systemBlocks) {
-                const state = new NodeParticleBuildState();
-                state.buildId = this._buildId++;
-                state.scene = scene;
-                state.verbose = verbose;
+        // Build the blocks
+        const buildPromises = new Array<Promise<void>>();
+        for (const block of this.systemBlocks) {
+            const state = new NodeParticleBuildState();
+            state.buildId = this._buildId++;
+            state.scene = scene;
+            state.verbose = verbose;
 
-                const system = block.createSystem(state);
-                system._source = this;
-                system._blockReference = block._internalId;
+            const system = block.createSystem(state);
+            system._source = this;
+            system._blockReference = block._internalId;
 
-                // Errors
-                state.emitErrors();
+            // Errors
+            state.emitErrors();
 
-                output.systems.push(system);
-            }
+            buildPromises.push(state.waitForBuildPromisesAsync());
 
-            this.onBuildObservable.notifyObservers(this);
+            output.systems.push(system);
+        }
 
-            resolve(output);
-        });
+        await Promise.all(buildPromises);
+
+        this.onBuildObservable.notifyObservers(this);
+
+        return output;
     }
 
     /**

@@ -762,6 +762,9 @@ export class InputText extends Control {
                     this._textWrapper.removePart(insertPosition, insertPosition, key);
                     this._textHasChanged();
                 }
+                if (evt) {
+                    evt.preventDefault();
+                }
             }
         }
     }

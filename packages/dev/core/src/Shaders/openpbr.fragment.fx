@@ -279,13 +279,11 @@ void main(void) {
             surface_translucency_weight = transmission_weight;
         #endif
 
-        float transmission_roughness_alpha = transmission_roughness * transmission_roughness;
-        
         #ifdef SCATTERING
             // Transmission Scattering
             #ifdef GEOMETRY_THIN_WALLED
                 vec3 iso_scatter_density = vec3(1.0);
-                transmission_roughness_alpha = transmission_roughness;
+                // transmission_roughness_alpha = transmission_roughness;
             #else
 
                 #ifdef USE_IRRADIANCE_TEXTURE_FOR_SCATTERING
@@ -309,7 +307,7 @@ void main(void) {
                 vec3 iso_scatter_density = clamp(vec3(1.0) - iso_scatter_transmittance, 0.0, 1.0);
             
                 // Refraction roughness is modified by the density of the scattering and also by the anisotropy.
-                transmission_roughness_alpha = min(transmission_roughness_alpha + pow((1.0 - abs(volumeParams.anisotropy)) * max3(iso_scatter_density * iso_scatter_density), 3.0), 1.0);
+                transmission_roughness = min(transmission_roughness + pow((1.0 - abs(volumeParams.anisotropy)) * max3(iso_scatter_density * iso_scatter_density), 3.0), 1.0);
             #endif
 
             // Blend the multi-scatter color towards single-scatter based on the scatter density
@@ -341,8 +339,10 @@ void main(void) {
             float unweighted_translucency = mix(subsurface_weight, 1.0f, transmission_weight);
             transmission_tint = mix(vec3(1.0), transmission_tint, transmission_weight / unweighted_translucency);
             // Roughness for transmission is just surface roughness while, for subsurface, transmission is fully diffuse.
-            transmission_roughness_alpha = mix(1.0, transmission_roughness_alpha, transmission_weight / unweighted_translucency);
+            transmission_roughness = mix(1.0, transmission_roughness, transmission_weight / unweighted_translucency);
         #endif
+
+        float transmission_roughness_alpha = transmission_roughness * transmission_roughness;
     #endif
     // __________________ Transmitted Light From Background Refraction ___________________________
     #include<openpbrBackgroundTransmission>

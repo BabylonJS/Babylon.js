@@ -88,6 +88,22 @@ export class UpdateNoiseBlock extends NodeParticleBlock {
         let noiseTextureSize: Nullable<ISize> = null;
         let lastFrameId = -1;
 
+        state.registerBuildPromise(
+            (async () => {
+                try {
+                    const textureContent = await noiseTextureBlock.extractTextureContentAsync();
+                    if (!textureContent) {
+                        return;
+                    }
+                    noiseTextureData = textureContent.data;
+                    noiseTextureSize = { width: textureContent.width, height: textureContent.height };
+                    lastFrameId = (noiseTextureBlock.textureOutput._storedValue as ProceduralTexture)?.getScene?.()?.getFrameId() ?? -1;
+                } catch {
+                    return;
+                }
+            })()
+        );
+
         const processNoise = (particle: Particle) => {
             // Get the texture directly from the block's stored value to support procedural textures
             // (as the block caches the texture data)
