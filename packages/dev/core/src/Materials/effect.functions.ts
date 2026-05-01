@@ -135,18 +135,18 @@ export function _ProcessShaderCode(
 
     if (typeof baseName === "string") {
         vertexSource = baseName;
-    } else if (typeof baseName.vertexSource === 'string') {
+    } else if (typeof baseName.vertexSource === "string") {
         vertexSource = "source:" + baseName.vertexSource;
-    } else if (typeof baseName.vertexElement === 'string') {
+    } else if (typeof baseName.vertexElement === "string") {
         vertexSource = hostDocument?.getElementById(baseName.vertexElement) || baseName.vertexElement;
     } else {
         vertexSource = baseName.vertex || baseName;
     }
     if (typeof baseName === "string") {
         fragmentSource = baseName;
-    } else if (typeof baseName.fragmentSource === 'string') {
+    } else if (typeof baseName.fragmentSource === "string") {
         fragmentSource = "source:" + baseName.fragmentSource;
-    } else if (typeof baseName.fragmentElement === 'string') {
+    } else if (typeof baseName.fragmentElement === "string") {
         fragmentSource = hostDocument?.getElementById(baseName.fragmentElement) || baseName.fragmentElement;
     } else {
         fragmentSource = baseName.fragment || baseName;
