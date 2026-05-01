@@ -16,6 +16,7 @@ export class PostProcessManager {
     private _scene: Scene;
     private _indexBuffer: Nullable<DataBuffer>;
     private _vertexBuffers: { [key: string]: Nullable<VertexBuffer> } = {};
+    private readonly _activePostProcesses: PostProcess[] = [];
 
     /**
      * Creates a new instance PostProcess
@@ -56,6 +57,20 @@ export class PostProcessManager {
         this._indexBuffer = this._scene.getEngine().createIndexBuffer(indices);
     }
 
+    private _getActivePostProcesses(source: Nullable<PostProcess>[]): PostProcess[] {
+        const activePostProcesses = this._activePostProcesses;
+        activePostProcesses.length = 0;
+
+        for (let index = 0; index < source.length; index++) {
+            const postProcess = source[index];
+            if (postProcess) {
+                activePostProcesses.push(postProcess);
+            }
+        }
+
+        return activePostProcesses;
+    }
+
     public onBeforeRenderObservable = new Observable<PostProcessManager>();
 
     /**
@@ -86,9 +101,7 @@ export class PostProcessManager {
             return false;
         }
 
-        postProcesses = postProcesses || <Nullable<PostProcess[]>>camera._postProcesses.filter((pp) => {
-                return pp != null;
-            });
+        postProcesses = postProcesses || this._getActivePostProcesses(camera._postProcesses);
 
         if (!postProcesses || postProcesses.length === 0 || !this._scene.postProcessesEnabled) {
             return false;
@@ -178,11 +191,7 @@ export class PostProcessManager {
 
         this.onBeforeRenderObservable.notifyObservers(this);
 
-        postProcesses =
-            postProcesses ||
-            camera._postProcesses.filter((pp) => {
-                return pp != null;
-            });
+        postProcesses = postProcesses || this._getActivePostProcesses(camera._postProcesses);
         if (postProcesses.length === 0 || !this._scene.postProcessesEnabled) {
             return;
         }

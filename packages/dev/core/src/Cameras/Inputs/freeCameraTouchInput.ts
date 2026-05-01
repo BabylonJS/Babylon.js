@@ -4,7 +4,7 @@ import { type Nullable } from "../../types";
 import { type ICameraInput, CameraInputTypes } from "../../Cameras/cameraInputsManager";
 import { type FreeCamera } from "../../Cameras/freeCamera";
 import { type PointerInfo, PointerEventTypes } from "../../Events/pointerEvents";
-import { Matrix, Vector3 } from "../../Maths/math.vector";
+import { Matrix, TmpVectors, Vector3 } from "../../Maths/math.vector";
 import { Tools } from "../../Misc/tools";
 import { type IPointerEvent } from "../../Events/deviceInputEvents";
 /**
@@ -196,10 +196,12 @@ export class FreeCameraTouchInput implements ICameraInput<FreeCamera> {
             camera.cameraRotation.x = -(this._offsetY * handednessMultiplier) / this.touchAngularSensibility;
         } else {
             const speed = camera._computeLocalCameraSpeed();
-            const direction = new Vector3(0, 0, this.touchMoveSensibility !== 0 ? (speed * this._offsetY) / this.touchMoveSensibility : 0);
+            const direction = TmpVectors.Vector3[0];
+            direction.copyFromFloats(0, 0, this.touchMoveSensibility !== 0 ? (speed * this._offsetY) / this.touchMoveSensibility : 0);
 
             Matrix.RotationYawPitchRollToRef(camera.rotation.y, camera.rotation.x, 0, camera._cameraRotationMatrix);
-            camera.cameraDirection.addInPlace(Vector3.TransformCoordinates(direction, camera._cameraRotationMatrix));
+            Vector3.TransformCoordinatesToRef(direction, camera._cameraRotationMatrix, direction);
+            camera.cameraDirection.addInPlace(direction);
         }
     }
 

@@ -109,6 +109,8 @@ export class LensFlareSystem {
         scene: Scene
     ) {
         this._scene = scene || EngineStore.LastCreatedScene;
+        this.layerMask = this._scene.defaultRenderableLayerMask;
+
         LensFlareSystem._SceneComponentInitialization(this._scene);
 
         this._emitter = emitter;

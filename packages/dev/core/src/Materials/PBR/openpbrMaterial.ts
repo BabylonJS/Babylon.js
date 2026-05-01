@@ -2497,7 +2497,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
                         }
                     }
 
-                    if (this.geometryNormalTexture) {
+                    if (this.geometryNormalTexture || this.geometryCoatNormalTexture) {
                         if (scene._mirroredCameraPosition) {
                             ubo.updateFloat2("vTangentSpaceParams", this._invertNormalMapX ? 1.0 : -1.0, this._invertNormalMapY ? 1.0 : -1.0);
                         } else {

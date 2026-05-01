@@ -972,6 +972,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
             this._scene = (sceneOrEngine as Scene) || EngineStore.LastCreatedScene;
             this._engine = this._scene.getEngine();
             this.uniqueId = this._scene.getUniqueId();
+            this.layerMask = this._scene.defaultRenderableLayerMask;
             this._scene.particleSystems.push(this);
         } else {
             this._engine = sceneOrEngine as AbstractEngine;

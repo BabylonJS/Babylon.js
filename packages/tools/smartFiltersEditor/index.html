@@ -1,0 +1,46 @@
+<!doctype html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <title>Smart Filter Editor</title>
+
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+        <link rel="shortcut icon" href="/assets/favicon.ico" />
+        <link rel="icon" type="image/png" href="/assets/favicon.ico" />
+        <link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet" />
+        <link rel="stylesheet" href="https://use.typekit.net/cta4xsb.css" />
+
+        <style>
+            html,
+            body {
+                width: 100%;
+                padding: 0;
+                margin: 0;
+                background-color: #2a2342;
+                color: #ffffff;
+                font-family: "acumin-pro";
+                overflow: hidden;
+            }
+            #container {
+                width: 100vw;
+                height: 100vh;
+            }
+        </style>
+    </head>
+
+    <body>
+        <div id="container"></div>
+        <!--
+          Vite entry point: Vite processes src/app.ts directly as native ESM.
+          All dependencies (smart-filters, core, etc.) are resolved via
+          vite.config.ts aliases — no CDN server or loader script needed.
+
+          For production CDN deployments, use the webpack build:
+            npm run build:deployment -w @tools/smart-filters-editor
+          and the public/index.html / public/babylon.smartFilterEditor.loader.js
+          remain the production entry points.
+        -->
+        <script type="module" src="/src/app.ts"></script>
+    </body>
+</html>
