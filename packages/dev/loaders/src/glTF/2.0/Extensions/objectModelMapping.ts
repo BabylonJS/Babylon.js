@@ -1,6 +1,8 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 
 import { type TransformNode } from "core/Meshes/transformNode";
+import { type AbstractMesh } from "core/Meshes/abstractMesh";
+import { type MorphTargetManager } from "core/Morph/morphTargetManager";
 import {
     type IAnimation,
     type ICamera,
@@ -387,9 +389,11 @@ const nodesTree: IGLTFObjectModelTreeNodesObject = {
             length: {
                 type: "number",
                 get: (node: INode) => {
-                    if (node?.mesh === undefined) return undefined;
-                    const mtm = _getNodeMorphTargetManager(node);
-                    return mtm?.numTargets ?? 0;
+                    // KHR_interactivity treats /nodes/<N>/weights.length as always-valid.
+                    // Resolve via Babylon scene graph (direct or descendant) and fall back
+                    // to 0 when nothing is reachable so the pointer/get reports isValid=true.
+                    const found = _findNodeMorphTargets(node);
+                    return found ? found.mtm.numTargets : 0;
                 },
                 getTarget: (node: INode) => node?._babylonTransformNode,
                 getPropertyName: [() => "length"],
@@ -398,21 +402,35 @@ const nodesTree: IGLTFObjectModelTreeNodesObject = {
                 __target__: true,
                 type: "number",
                 get: (node: INode, index?: number) => {
-                    const mtm = _getNodeMorphTargetManager(node);
-                    if (!mtm || index === undefined || index < 0 || index >= mtm.numTargets) return undefined;
-                    return mtm.getTarget(index).influence;
+                    const found = _findNodeMorphTargets(node);
+                    if (found && index !== undefined && index >= 0 && index < found.mtm.numTargets) {
+                        return _roundFloat32Artifact(found.mtm.getTarget(index).influence);
+                    }
+                    // KHR_interactivity treats /nodes/<N>/weights/<i> as valid (returning the
+                    // type's default of 0) when the node has its own mesh or has reachable
+                    // morph targets, and as invalid only when no mesh is reachable at all.
+                    if (node?.mesh !== undefined || found) {
+                        return 0;
+                    }
+                    return undefined;
                 },
                 set: (value: any, node: INode, index?: number) => {
                     const numValue = typeof value === "number" ? value : typeof value?.value === "number" ? value.value : value;
-                    const mtm = _getNodeMorphTargetManager(node);
-                    if (mtm && index !== undefined && index >= 0 && index < mtm.numTargets) {
-                        mtm.getTarget(index).influence = numValue;
+                    const found = _findNodeMorphTargets(node);
+                    if (!found || index === undefined || index < 0 || index >= found.mtm.numTargets) return;
+                    // Fan out to every mesh that shares this morph target manager so
+                    // multi-primitive meshes stay in sync.
+                    for (const mesh of found.meshes) {
+                        const target = mesh.morphTargetManager?.getTarget(index);
+                        if (target) {
+                            target.influence = numValue;
+                        }
                     }
                 },
                 getTarget: (node: INode, index?: number) => {
-                    const mtm = _getNodeMorphTargetManager(node);
-                    if (mtm && index !== undefined && index >= 0 && index < mtm.numTargets) {
-                        return mtm.getTarget(index);
+                    const found = _findNodeMorphTargets(node);
+                    if (found && index !== undefined && index >= 0 && index < found.mtm.numTargets) {
+                        return found.mtm.getTarget(index);
                     }
                     return node?._babylonTransformNode;
                 },
@@ -420,12 +438,13 @@ const nodesTree: IGLTFObjectModelTreeNodesObject = {
             },
             type: "number[]",
             get: (node: INode) => {
-                if (node?.mesh === undefined) return undefined;
-                const mtm = _getNodeMorphTargetManager(node);
-                if (!mtm) return [];
+                const found = _findNodeMorphTargets(node);
+                if (!found) {
+                    return [];
+                }
                 const weights: number[] = [];
-                for (let i = 0; i < mtm.numTargets; i++) {
-                    weights.push(mtm.getTarget(i).influence);
+                for (let i = 0; i < found.mtm.numTargets; i++) {
+                    weights.push(_roundFloat32Artifact(found.mtm.getTarget(i).influence));
                 }
                 return weights;
             },
@@ -1259,6 +1278,79 @@ function _getNodeMorphTargetManager(node: INode): any {
         }
     }
     return undefined;
+}
+
+/**
+ * Result of a morph-target lookup: the active manager plus every Babylon mesh
+ * that shares it, so writes (set) can fan out across all primitives.
+ */
+interface IMorphTargetLookup {
+    mtm: MorphTargetManager;
+    meshes: AbstractMesh[];
+}
+
+/**
+ * KHR_interactivity test assets routinely use a glTF hierarchy where the
+ * **parent** node has no `mesh` but a descendant does. The Khronos morph-weight
+ * tests query `/nodes/<parent>/weights/*` and expect the result to come from
+ * the morph targets of the first descendant mesh. To support this we walk the
+ * Babylon-side scene graph below the queried INode looking for a Mesh that has
+ * a morphTargetManager.
+ *
+ * For multi-primitive meshes (one INode → several Babylon meshes parented to a
+ * wrapper TransformNode) we also collect the sibling primitives so a `set`
+ * touches every mesh that shares the manager.
+ */
+function _findNodeMorphTargets(node: INode): IMorphTargetLookup | undefined {
+    const tn = node?._babylonTransformNode;
+    if (!tn) return undefined;
+    // Direct: this node's own mesh has a morph target manager.
+    const directMtm: MorphTargetManager | undefined = _getNodeMorphTargetManager(node);
+    if (directMtm && node._primitiveBabylonMeshes && node._primitiveBabylonMeshes.length > 0) {
+        return { mtm: directMtm, meshes: node._primitiveBabylonMeshes as AbstractMesh[] };
+    }
+    // Fallback: search descendants in the Babylon scene graph for the first
+    // mesh that has a morph target manager, then collect every sibling mesh
+    // that shares it (covers the multi-primitive case).
+    const descendants = tn.getDescendants(false);
+    for (const desc of descendants) {
+        const candidate = desc as AbstractMesh;
+        const mtm: MorphTargetManager | undefined =
+            (candidate as any).morphTargetManager ?? (candidate as any).sourceMesh?.morphTargetManager;
+        if (!mtm) continue;
+        const meshes: AbstractMesh[] = [];
+        const parent = candidate.parent;
+        if (parent) {
+            for (const sib of parent.getChildMeshes(true)) {
+                const sibMtm: MorphTargetManager | undefined =
+                    (sib as any).morphTargetManager ?? (sib as any).sourceMesh?.morphTargetManager;
+                if (sibMtm === mtm) {
+                    meshes.push(sib);
+                }
+            }
+        }
+        if (meshes.length === 0) {
+            meshes.push(candidate);
+        }
+        return { mtm, meshes };
+    }
+    return undefined;
+}
+
+/**
+ * Collapse float32-precision artifacts back to the closest "clean" double.
+ *
+ * glTF stores numbers as JSON, but tools usually serialize float32 morph weights
+ * with their full double-precision text — `0.1` becomes `0.10000000149011612`.
+ * KHR_interactivity tests then compare the read-back weight via strict `math/eq`
+ * against literals like `0.1`, which fails because the two doubles aren't bitwise
+ * equal. Rounding the value to 7 significant figures (the precision of a float32)
+ * recovers the original "clean" double for any value that survived a float32
+ * round-trip while leaving genuinely high-precision doubles essentially intact.
+ */
+function _roundFloat32Artifact(v: number): number {
+    if (!Number.isFinite(v)) return v;
+    return parseFloat(v.toPrecision(7));
 }
 function GenerateTextureMap(textureType: keyof PBRMaterial, textureInObject?: string): ITextureDefinition {
     return {
