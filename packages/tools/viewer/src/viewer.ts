@@ -527,7 +527,6 @@ export class Viewer extends ViewerBase implements IDisposable, IViewer {
     private _animationSpeed = this._options?.animationSpeed ?? DefaultViewerOptions.animationSpeed;
 
     private _camerasAsHotSpots = false;
-    private _hotSpots: Record<string, HotSpot> = this._options?.hotSpots ?? {};
 
     private readonly _shadowState: ShadowState = {};
     private _iblShadowsAnimationObserver: Nullable<Observer<Scene>> = null;
@@ -545,6 +544,9 @@ export class Viewer extends ViewerBase implements IDisposable, IViewer {
         this._environmentIntensity = this._options?.environmentConfig?.intensity ?? DefaultViewerOptions.environmentConfig.intensity;
         this._environmentBlur = this._options?.environmentConfig?.blur ?? DefaultViewerOptions.environmentConfig.blur;
         this._environmentRotation = this._options?.environmentConfig?.rotation ?? DefaultViewerOptions.environmentConfig.rotation;
+        if (this._options?.hotSpots) {
+            this.hotSpots = this._options.hotSpots;
+        }
         this._defaultHardwareScalingLevel = this._lastHardwareScalingLevel = this._engine.getHardwareScalingLevel();
         {
             const scene = new Scene(this._engine);
@@ -1073,18 +1075,6 @@ export class Viewer extends ViewerBase implements IDisposable, IViewer {
         if (this._activeModel && value) {
             this._activeModel.selectedMaterialVariant = value;
         }
-    }
-
-    /**
-     * The set of defined hotspots.
-     */
-    public get hotSpots() {
-        return this._hotSpots;
-    }
-
-    public set hotSpots(value: Record<string, HotSpot>) {
-        this._hotSpots = value;
-        this.onHotSpotsChanged.notifyObservers();
     }
 
     /**

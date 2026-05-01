@@ -38,7 +38,6 @@ import {
 } from "@babylonjs/lite";
 
 import {
-    type HotSpot,
     type IViewer,
     type ResolvedLoadEnvironmentOptions,
     type PostProcessing,
@@ -159,7 +158,6 @@ export class Viewer extends ViewerBase implements IViewer {
     private _selectedMaterialVariant: Nullable<string> = null;
 
     // Hot spots
-    private _hotSpots: Record<string, HotSpot> = this._options?.hotSpots ?? {};
     private _camerasAsHotSpots = false;
 
     // Lifecycle
@@ -185,6 +183,9 @@ export class Viewer extends ViewerBase implements IViewer {
         this._autoOrbitEnabled = this._options?.cameraAutoOrbit?.enabled ?? DefaultViewerOptions.cameraAutoOrbit.enabled;
         this._autoOrbitSpeed = this._options?.cameraAutoOrbit?.speed ?? DefaultViewerOptions.cameraAutoOrbit.speed;
         this._autoOrbitDelay = this._options?.cameraAutoOrbit?.delay ?? DefaultViewerOptions.cameraAutoOrbit.delay;
+        if (this._options?.hotSpots) {
+            this.hotSpots = this._options.hotSpots;
+        }
         // Create scene internally (matching how full Viewer owns its scene)
         this._scene = createSceneContext(_engine);
         // Camera — NaN means "auto" (will be recomputed when model loads)
@@ -884,15 +885,6 @@ export class Viewer extends ViewerBase implements IViewer {
     }
 
     // ── Hot Spots ──
-
-    public get hotSpots(): Record<string, HotSpot> {
-        return this._hotSpots;
-    }
-
-    public set hotSpots(value: Record<string, HotSpot>) {
-        this._hotSpots = value;
-        this.onHotSpotsChanged.notifyObservers();
-    }
 
     public get camerasAsHotSpots(): boolean {
         return this._camerasAsHotSpots;

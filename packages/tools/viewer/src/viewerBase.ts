@@ -1236,6 +1236,20 @@ export abstract class ViewerBase {
      */
     protected abstract _applyClearColor(): void;
 
+    // ── Hot spots ──
+
+    /** @internal Pure state — no engine state. Subclasses initialize via the public `hotSpots` setter in their constructor body. */
+    private _hotSpots: Record<string, HotSpot> = {};
+
+    public get hotSpots(): Record<string, HotSpot> {
+        return this._hotSpots;
+    }
+
+    public set hotSpots(value: Record<string, HotSpot>) {
+        this._hotSpots = value;
+        this.onHotSpotsChanged.notifyObservers();
+    }
+
     // ──────────────────────────────────────────────────────────────────────────
     // Model loading orchestration
     // ──────────────────────────────────────────────────────────────────────────
