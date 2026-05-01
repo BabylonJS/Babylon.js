@@ -72,23 +72,31 @@ export class UpdateFlowMapBlock extends NodeParticleBlock {
         const system = this.particle.getConnectedValue(state) as ThinParticleSystem;
         const scene = state.scene;
 
-        const flowMapTexture = this.flowMap.connectedPoint?.ownerBlock as ParticleTextureSourceBlock;
-        let flowMap: FlowMap;
+        const flowMapTexture = this.flowMap.connectedPoint?.ownerBlock as Nullable<ParticleTextureSourceBlock>;
+        let flowMap: Nullable<FlowMap> = null;
 
-        // eslint-disable-next-line github/no-then
-        void flowMapTexture.extractTextureContentAsync().then((textureContent: Nullable<INodeParticleTextureData>) => {
-            if (!textureContent) {
-                return;
-            }
-            flowMap = new FlowMap(textureContent.width, textureContent.height, textureContent.data as Uint8ClampedArray);
-        });
+        if (flowMapTexture) {
+            state.registerBuildPromise(
+                (async () => {
+                    let textureContent: Nullable<INodeParticleTextureData>;
+                    try {
+                        textureContent = await flowMapTexture.extractTextureContentAsync();
+                    } catch {
+                        return;
+                    }
+                    if (!textureContent) {
+                        return;
+                    }
+                    flowMap = new FlowMap(textureContent.width, textureContent.height, textureContent.data as Uint8ClampedArray);
+                })()
+            );
+        }
 
         const processFlowMap = (particle: Particle) => {
-            const matrix = scene.getTransformMatrix();
             if (!flowMap) {
-                // If the flow map is not ready, we skip processing
                 return;
             }
+            const matrix = scene.getTransformMatrix();
             const strength = this.strength.getConnectedValue(state) as number;
             flowMap._processParticle(particle, strength * system._tempScaledUpdateSpeed, matrix);
         };

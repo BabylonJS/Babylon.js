@@ -16,9 +16,8 @@ import { type SubMesh } from "core/Meshes/subMesh";
 import { type Mesh } from "core/Meshes/mesh";
 import { Scene } from "core/scene";
 import { RegisterClass } from "core/Misc/typeStore";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
-import "./simple.fragment";
-import "./simple.vertex";
 import { EffectFallbacks } from "core/Materials/effectFallbacks";
 import { AddClipPlaneUniforms, BindClipPlane } from "core/Materials/clipPlaneMaterialHelper";
 import {
@@ -88,8 +87,16 @@ export class SimpleMaterial extends PushMaterial {
     @expandToProperty("_markAllSubMeshesAsLightsDirty")
     public maxSimultaneousLights: number;
 
-    constructor(name: string, scene?: Scene) {
-        super(name, scene);
+    private _shadersLoaded = false;
+
+    /**
+     * Instantiates a Simple Material in the given scene
+     * @param name The friendly name of the material
+     * @param scene The scene to add the material to
+     * @param forceGLSL Use the GLSL code generation for the shader (even on WebGPU). Default is false
+     */
+    constructor(name: string, scene?: Scene, forceGLSL = false) {
+        super(name, scene, undefined, forceGLSL);
     }
 
     public override needAlphaBlending(): boolean {
@@ -248,6 +255,18 @@ export class SimpleMaterial extends PushMaterial {
                         onCompiled: this.onCompiled,
                         onError: this.onError,
                         indexParameters: { maxSimultaneousLights: this._maxSimultaneousLights - 1 },
+                        shaderLanguage: this._shaderLanguage,
+                        extraInitializationsAsync: this._shadersLoaded
+                            ? undefined
+                            : async () => {
+                                  if (this.shaderLanguage === ShaderLanguage.WGSL) {
+                                      await Promise.all([import("./wgsl/simple.vertex"), import("./wgsl/simple.fragment")]);
+                                  } else {
+                                      await Promise.all([import("./simple.vertex"), import("./simple.fragment")]);
+                                  }
+
+                                  this._shadersLoaded = true;
+                              },
                     },
                     engine
                 ),

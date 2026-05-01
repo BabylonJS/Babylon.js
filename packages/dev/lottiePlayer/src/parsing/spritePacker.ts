@@ -197,15 +197,12 @@ export class SpritePacker {
 
         const layerScaleX = scalingFactor.x;
         const layerScaleY = scalingFactor.y;
-        scalingFactor.x = scalingFactor.x * this._atlasScale * this._configuration.devicePixelRatio;
-        scalingFactor.y = scalingFactor.y * this._atlasScale * this._configuration.devicePixelRatio;
+        this._applyAtlasScaleAndFit("shape", debugName, boundingBox, scalingFactor, layerScaleX, layerScaleY);
 
         // Calculate the size of the sprite in the atlas in pixels
         // This takes into account the scaling factor so in the call to _drawVectorShape the canvas will be scaled when rendering
         this._spriteAtlasInfo.cellWidth = this._getAtlasCellDimension(boundingBox.width * scalingFactor.x);
         this._spriteAtlasInfo.cellHeight = this._getAtlasCellDimension(boundingBox.height * scalingFactor.y);
-
-        this._warnIfOversized("shape", debugName, boundingBox, layerScaleX, layerScaleY, this._spriteAtlasInfo.cellWidth, this._spriteAtlasInfo.cellHeight);
 
         // Get (or create) the page that has room for this sprite
         const page = this._getPageWithRoom(this._spriteAtlasInfo.cellWidth, this._spriteAtlasInfo.cellHeight);
@@ -254,15 +251,12 @@ export class SpritePacker {
 
         const layerScaleX = scalingFactor.x;
         const layerScaleY = scalingFactor.y;
-        scalingFactor.x = scalingFactor.x * this._atlasScale * this._configuration.devicePixelRatio;
-        scalingFactor.y = scalingFactor.y * this._atlasScale * this._configuration.devicePixelRatio;
+        this._applyAtlasScaleAndFit("text", debugName, boundingBox, scalingFactor, layerScaleX, layerScaleY);
 
         // Calculate the size of the sprite in the atlas in pixels
         // This takes into account the scaling factor so in the call to _drawText the canvas will be scaled when rendering
         this._spriteAtlasInfo.cellWidth = this._getAtlasCellDimension(boundingBox.width * scalingFactor.x);
         this._spriteAtlasInfo.cellHeight = this._getAtlasCellDimension(boundingBox.height * scalingFactor.y);
-
-        this._warnIfOversized("text", debugName, boundingBox, layerScaleX, layerScaleY, this._spriteAtlasInfo.cellWidth, this._spriteAtlasInfo.cellHeight);
 
         // Get (or create) the page that has room for this sprite
         const page = this._getPageWithRoom(this._spriteAtlasInfo.cellWidth, this._spriteAtlasInfo.cellHeight);
@@ -357,8 +351,9 @@ export class SpritePacker {
     private _getPageWithRoom(cellWidth: number, cellHeight: number): AtlasPage {
         let page = this._pages[this._pages.length - 1];
 
-        // Clamp oversized cells to fit within a single atlas page. The oversize warning (with full
-        // identifying context) is emitted by the caller via _warnIfOversized before we get here.
+        // Defensive clamp: _applyAtlasScaleAndFit should have already downscaled oversized cells
+        // to fit on a single page. This handles the rounding edge case where ceil() pushes a cell
+        // a single pixel past the limit.
         const maxCellWidth = this._configuration.spriteAtlasWidth - 2 * this._configuration.gapSize;
         const maxCellHeight = this._configuration.spriteAtlasHeight - 2 * this._configuration.gapSize;
         if (cellWidth > maxCellWidth || cellHeight > maxCellHeight) {
@@ -391,48 +386,75 @@ export class SpritePacker {
     }
 
     /**
-     * Logs a detailed warning when a sprite cell exceeds the atlas page size, including
-     * the owning layer name, the raw lottie bounding box, and the scale factors that
-     * combine to produce the oversized cell. This makes it easy to identify which lottie
-     * element is responsible and why its rasterized footprint is so large.
-     * @param kind Whether the oversized sprite is a vector shape or a text element.
+     * Combines the layer-side scale with the global atlas scale and devicePixelRatio, then
+     * automatically downscales the result if the rasterized cell would not fit on a single
+     * atlas page. The on-screen size of the sprite is unaffected (it is sourced from the raw
+     * lottie bounding box), only the atlas resolution of this particular sprite is reduced.
+     *
+     * Mutates `scalingFactor` in place with the final effective scale to use when drawing
+     * into the atlas canvas. When a downscale is applied, emits a warning that identifies the
+     * offending layer and the scale factors involved so the source can be diagnosed.
+     * @param kind Whether the sprite is a vector shape or a text element.
      * @param debugName Optional human-readable identifier (typically the owning layer name).
      * @param boundingBox Source bounding box in lottie coordinates, before any scaling.
-     * @param layerScaleX Lottie-side scale factor on X (excluding atlas scale and DPR).
-     * @param layerScaleY Lottie-side scale factor on Y (excluding atlas scale and DPR).
-     * @param cellWidth Computed cell width in pixels (after all scale factors applied).
-     * @param cellHeight Computed cell height in pixels (after all scale factors applied).
+     * @param scalingFactor Layer-side scale on input; receives the final effective scale on output.
+     * @param layerScaleX Original layer-side X scale (preserved for the warning message).
+     * @param layerScaleY Original layer-side Y scale (preserved for the warning message).
      */
-    private _warnIfOversized(
+    private _applyAtlasScaleAndFit(
         kind: "shape" | "text",
         debugName: string | undefined,
         boundingBox: BoundingBox,
+        scalingFactor: IVector2Like,
         layerScaleX: number,
-        layerScaleY: number,
-        cellWidth: number,
-        cellHeight: number
+        layerScaleY: number
     ): void {
         const atlasW = this._configuration.spriteAtlasWidth;
         const atlasH = this._configuration.spriteAtlasHeight;
         const maxCellWidth = atlasW - 2 * this._configuration.gapSize;
         const maxCellHeight = atlasH - 2 * this._configuration.gapSize;
-        if (cellWidth <= maxCellWidth && cellHeight <= maxCellHeight) {
-            return;
+
+        let effectiveScaleX = scalingFactor.x * this._atlasScale * this._configuration.devicePixelRatio;
+        let effectiveScaleY = scalingFactor.y * this._atlasScale * this._configuration.devicePixelRatio;
+
+        const projectedWidth = boundingBox.width * effectiveScaleX;
+        const projectedHeight = boundingBox.height * effectiveScaleY;
+
+        // Auto-fit: if the projected cell exceeds an atlas page on either axis, scale uniformly
+        // down by the worst-axis ratio so the sprite still fits at the highest resolution we can
+        // afford. Uniform scaling preserves the sprite's aspect ratio in the atlas.
+        // Use the ceiled projected dimensions so that after the caller re-applies Math.ceil to
+        // size the cell, the result is provably <= maxCellWidth/maxCellHeight and the defensive
+        // clamp in _getPageWithRoom is not triggered by sub-pixel rounding.
+        const ceiledProjectedWidth = projectedWidth > 0 ? Math.ceil(projectedWidth) : 0;
+        const ceiledProjectedHeight = projectedHeight > 0 ? Math.ceil(projectedHeight) : 0;
+        const fitScale = Math.min(1, ceiledProjectedWidth > 0 ? maxCellWidth / ceiledProjectedWidth : 1, ceiledProjectedHeight > 0 ? maxCellHeight / ceiledProjectedHeight : 1);
+
+        if (fitScale < 1) {
+            effectiveScaleX *= fitScale;
+            effectiveScaleY *= fitScale;
+
+            const dpr = this._configuration.devicePixelRatio;
+            const atlasScale = this._atlasScale;
+            const rawW = boundingBox.width.toFixed(2);
+            const rawH = boundingBox.height.toFixed(2);
+            const lsx = layerScaleX.toFixed(3);
+            const lsy = layerScaleY.toFixed(3);
+            const name = debugName ?? "<unknown>";
+            const finalW = Math.max(1, Math.ceil(boundingBox.width * effectiveScaleX));
+            const finalH = Math.max(1, Math.ceil(boundingBox.height * effectiveScaleY));
+            const gap = this._configuration.gapSize;
+            // eslint-disable-next-line no-console
+            console.warn(
+                `[SpritePacker] ${kind} sprite for layer "${name}" would produce a ${ceiledProjectedWidth}x${ceiledProjectedHeight}px cell that exceeds the usable ${maxCellWidth}x${maxCellHeight}px atlas area ` +
+                    `(within a ${atlasW}x${atlasH}px page with ${gap}px reserved on each side). ` +
+                    `Auto-downscaled by ${fitScale.toFixed(3)} to ${finalW}x${finalH}px (on-screen size unchanged; sprite will appear softer than the rest of the atlas). ` +
+                    `Source bounding box: ${rawW}x${rawH}px at lottie scale ${lsx}x${lsy} \u00d7 atlasScale ${atlasScale} \u00d7 devicePixelRatio ${dpr}.`
+            );
         }
 
-        const dpr = this._configuration.devicePixelRatio;
-        const atlasScale = this._atlasScale;
-        const rawW = boundingBox.width.toFixed(2);
-        const rawH = boundingBox.height.toFixed(2);
-        const lsx = layerScaleX.toFixed(3);
-        const lsy = layerScaleY.toFixed(3);
-        const name = debugName ?? "<unknown>";
-        // eslint-disable-next-line no-console
-        console.warn(
-            `[SpritePacker] ${kind} sprite for layer "${name}" produces a ${cellWidth}x${cellHeight}px cell that exceeds the ${atlasW}x${atlasH}px atlas page. ` +
-                `Clamping to ${Math.min(cellWidth, maxCellWidth)}x${Math.min(cellHeight, maxCellHeight)}px (sprite will appear blurry). ` +
-                `Source bounding box: ${rawW}x${rawH}px at lottie scale ${lsx}x${lsy} \u00d7 atlasScale ${atlasScale} \u00d7 devicePixelRatio ${dpr}.`
-        );
+        scalingFactor.x = effectiveScaleX;
+        scalingFactor.y = effectiveScaleY;
     }
 
     private _extrudeSpriteEdges(page: AtlasPage, x: number, y: number, width: number, height: number): void {

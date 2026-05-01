@@ -6,7 +6,7 @@ import { type IAnimatable } from "../Animations/animatable.interface";
 import { type Nullable } from "../types";
 import { Scene } from "../scene";
 import { type Matrix } from "../Maths/math.vector";
-import { Color3 } from "../Maths/math.color";
+import { Color3, TmpColors } from "../Maths/math.color";
 import { VertexBuffer } from "../Buffers/buffer";
 import { type SubMesh } from "../Meshes/subMesh";
 import { type AbstractMesh } from "../Meshes/abstractMesh";
@@ -1434,15 +1434,13 @@ export class StandardMaterial extends StandardMaterialBase {
                     }
 
                     if (this.opacityFresnelParameters && this.opacityFresnelParameters.isEnabled) {
-                        ubo.updateColor4(
-                            "opacityParts",
-                            new Color3(
-                                this.opacityFresnelParameters.leftColor.toLuminance(),
-                                this.opacityFresnelParameters.rightColor.toLuminance(),
-                                this.opacityFresnelParameters.bias
-                            ),
-                            this.opacityFresnelParameters.power
+                        const opacityParts = TmpColors.Color3[0];
+                        opacityParts.set(
+                            this.opacityFresnelParameters.leftColor.toLuminance(),
+                            this.opacityFresnelParameters.rightColor.toLuminance(),
+                            this.opacityFresnelParameters.bias
                         );
+                        ubo.updateColor4("opacityParts", opacityParts, this.opacityFresnelParameters.power);
                     }
 
                     if (this.reflectionFresnelParameters && this.reflectionFresnelParameters.isEnabled) {

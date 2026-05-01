@@ -65,6 +65,26 @@ describe("DepthRenderer", () => {
         expect(result).toBe(true);
     });
 
+    it("enableDepthRenderer should return distinct renderers for cameras sharing the same id (forum bug 63268)", () => {
+        const camera1 = new ArcRotateCamera("", 0, 0, 10, Vector3.Zero(), scene);
+        const camera2 = new ArcRotateCamera("", 0, 0, 10, Vector3.Zero(), scene);
+
+        // Both cameras have empty names, so their `id` (which falls back to `name`) collides.
+        expect(camera1.id).toBe(camera2.id);
+        // But their `uniqueId` must always differ.
+        expect(camera1.uniqueId).not.toBe(camera2.uniqueId);
+
+        const depthRenderer1 = scene.enableDepthRenderer(camera1);
+        const depthRenderer2 = scene.enableDepthRenderer(camera2);
+
+        // Each camera must get its own DepthRenderer (regression for the id-collision bug).
+        expect(depthRenderer1).not.toBe(depthRenderer2);
+
+        // Calling enableDepthRenderer again with the same camera should return the existing one.
+        expect(scene.enableDepthRenderer(camera1)).toBe(depthRenderer1);
+        expect(scene.enableDepthRenderer(camera2)).toBe(depthRenderer2);
+    });
+
     it("isReady should not corrupt the draw wrapper of a non-depth render pass (forum bug 63230)", async () => {
         const depthRenderer = scene.enableDepthRenderer();
         const depthMap = depthRenderer.getDepthMap();

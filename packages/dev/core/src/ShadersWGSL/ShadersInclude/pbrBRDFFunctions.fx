@@ -24,23 +24,40 @@
     }
 #endif
 
-#if CONDUCTOR_SPECULAR_MODEL == CONDUCTOR_SPECULAR_MODEL_OPENPBR 
+#if CONDUCTOR_SPECULAR_MODEL == CONDUCTOR_SPECULAR_MODEL_OPENPBR
+    const F82_COS_THETA_MAX: f32          = 0.142857143;
+    const F82_ONE_MINUS_CTM_POW5: f32     = 0.462664366;
+    const F82_ONE_MINUS_CTM_POW6: f32     = 0.396569457;
+    const F82_B_DENOMINATOR_RECIP: f32    = 17.6512785;
+    const BRDF_Z_SCALE: f32               = 16.0;
+
     fn getF82Specular(NdotV: f32, F0: vec3f, edgeTint: vec3f, roughness: f32) -> vec3f {
         // F82 specular model for metals
         // https://academysoftwarefoundation.github.io/OpenPBR/index.html#model/basesubstrate/metal
-        const cos_theta_max: f32 = 0.142857143; // 1 / 7
-        
-        const one_minus_cos_theta_max_to_the_fifth: f32 = 0.462664366; // (1 - cos_theta_max)^5
-        const one_minus_cos_theta_max_to_the_sixth: f32 = 0.396569457; // (1 - cos_theta_max)^6
         let white_minus_F0: vec3f = vec3f(1.0f) - F0;
-        let b_numerator: vec3f = (F0 + white_minus_F0 * one_minus_cos_theta_max_to_the_fifth) * (vec3f(1.0) - edgeTint);
-        const b_denominator: f32 = cos_theta_max * one_minus_cos_theta_max_to_the_sixth;
-        const b_denominator_reciprocal: f32 = 1.0f / b_denominator;
-        let b: vec3f = b_numerator * b_denominator_reciprocal; // analogous to "a" in the "Fresnel Equations Considered Harmful" slides
+        let b_numerator: vec3f = (F0 + white_minus_F0 * F82_ONE_MINUS_CTM_POW5) * (vec3f(1.0) - edgeTint);
+        let b: vec3f = b_numerator * F82_B_DENOMINATOR_RECIP;
         let cos_theta: f32 = max(roughness, NdotV);
         let one_minus_cos_theta: f32 = 1.0 - cos_theta;
         let offset_from_F0: vec3f = (white_minus_F0 - b * cos_theta * one_minus_cos_theta) * pow(one_minus_cos_theta, 5.0f);
         return clamp(F0 + offset_from_F0, vec3f(0.0f), vec3f(1.0f));
+    }
+
+    // Compute the b coefficient (F82 dip strength) from F0 and edge tint.
+    fn getF82B(F0: vec3f, edgeTint: vec3f) -> vec3f {
+        return (F0 + (vec3f(1.0) - F0) * F82_ONE_MINUS_CTM_POW5) * (vec3f(1.0) - edgeTint) * F82_B_DENOMINATOR_RECIP;
+    }
+
+    // F82 directional albedo:  E_F82 = (F90-F0)*brdf.x + F0*brdf.y - b*brdf.z
+    fn getF82DirectionalAlbedo(F0: vec3f, F90: vec3f, b: vec3f, environmentBrdf: vec3f) -> vec3f {
+        return (F90 - F0) * environmentBrdf.x + F0 * environmentBrdf.y - b * environmentBrdf.z;
+    }
+
+    // Cosine-weighted hemisphere average of F82 Fresnel (closed form).
+    //   F_avg = 2*∫₀¹ F82(t)·t dt = F0 + (1-F0)/21 - b/126
+    //   The b/126 comes from 2·Beta(3,7) = 2·Γ(3)Γ(7)/Γ(10) = 2/252 = 1/126.
+    fn getF82AverageFresnel(F0: vec3f, b: vec3f) -> vec3f {
+        return F0 + (vec3f(1.0) - F0) / 21.0 - b / 126.0;
     }
 #endif
 
@@ -264,8 +281,20 @@ fn evalIridescence(outsideIOR: f32, eta2: f32, cosTheta1: f32, thinFilmThickness
     // Second interface
     var baseIOR: vec3f = getIORTfromAirToSurfaceR0(clamp(baseF0, vec3f(0.0), vec3f(0.9999))); // guard against 1.0
     var R1: vec3f = getR0fromIORsVec3(baseIOR, iridescenceIOR);
-    var R23: vec3f = fresnelSchlickGGXVec3(cosTheta2, R1,  vec3f(1.));
-    var phi23: vec3f =  vec3f(0.0);
+
+    // When film and substrate IORs match, R1=0 and there is no second-interface reflection.
+    // Return the first-interface Fresnel only — the thin film is optically absent.
+    // Without this guard two bugs combine to produce spurious colour even when R1=0:
+    //   1. Schlick with F90=1 gives R23=(1-cosTheta)^5 instead of 0 for matched IORs.
+    //   2. clamp(R12*R23, 1e-5, ...) forces r123=sqrt(1e-5)=0.003 non-zero, and
+    //      evalSensitivity then amplifies that into visible interference fringes.
+    let maxR1: f32 = max(R1.r, max(R1.g, R1.b));
+    if (maxR1 < 1e-6) {
+        return max(vec3f(R12), vec3f(0.0));
+    }
+
+    var R23: vec3f = fresnelSchlickGGXVec3(cosTheta2, R1, vec3f(1.));
+    var phi23: vec3f = vec3f(0.0);
     if (baseIOR[0] < iridescenceIOR) {
         phi23[0] = PI;
     }
@@ -278,12 +307,12 @@ fn evalIridescence(outsideIOR: f32, eta2: f32, cosTheta1: f32, thinFilmThickness
 
     // Phase shift
     var opd: f32 = 2.0 * iridescenceIOR * thinFilmThickness * cosTheta2;
-    var phi: vec3f =  vec3f(phi21) + phi23;
+    var phi: vec3f = vec3f(phi21) + phi23;
 
     // Compound terms
     var R123: vec3f = clamp(R12 * R23, vec3f(1e-5), vec3f(0.9999));
     var r123: vec3f = sqrt(R123);
-    var Rs: vec3f = (T121 * T121) * R23 / ( vec3f(1.0) - R123);
+    var Rs: vec3f = (T121 * T121) * R23 / (vec3f(1.0) - R123);
 
     // Reflectance term for m = 0 (DC term amplitude)
     var C0: vec3f = R12 + Rs;
@@ -294,13 +323,14 @@ fn evalIridescence(outsideIOR: f32, eta2: f32, cosTheta1: f32, thinFilmThickness
     for (var m: i32 = 1; m <= 2; m++)
     {
         Cm *= r123;
-        var Sm: vec3f = 2.0 * evalSensitivity( f32(m) * opd,  f32(m) * phi);
+        var Sm: vec3f = 2.0 * evalSensitivity(f32(m) * opd, f32(m) * phi);
         I += Cm * Sm;
     }
 
     // Since out of gamut colors might be produced, negative color values are clamped to 0.
-    return max(I,  vec3f(0.0));
+    return max(I, vec3f(0.0));
 }
+
 #endif
 
 // ______________________________________________________________________

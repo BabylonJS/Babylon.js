@@ -101,6 +101,24 @@ describe("ClusteredLightContainer", () => {
             // But the container itself should be in scene.lights
             expect(scene.lights).toContain(container);
         });
+
+        it("should not include child lights in mesh.lightSources after addLight", async () => {
+            const { CreateBox } = await import("core/Meshes/Builders/boxBuilder");
+            const mesh = CreateBox("box", { size: 1 }, scene);
+            const container = new ClusteredLightContainer("cluster", [], scene);
+
+            // Light constructed with dontAddToScene=true is still pushed into mesh.lightSources
+            // by the Light constructor (via the includedOnlyMeshes setter calling _resyncMeshes).
+            // addLight() must clean that up, otherwise the orphan light is rendered as a regular
+            // point/spot light bypassing the cluster (e.g. ignoring maxRange).
+            const point = new PointLight("point1", new Vector3(1, 2, 3), scene, true);
+            expect(mesh.lightSources).toContain(point);
+
+            container.addLight(point);
+
+            expect(mesh.lightSources).not.toContain(point);
+            expect(mesh.lightSources).toContain(container);
+        });
     });
 
     describe("parse", () => {

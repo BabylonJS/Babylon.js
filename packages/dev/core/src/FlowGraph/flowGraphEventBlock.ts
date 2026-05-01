@@ -1,4 +1,5 @@
 import { FlowGraphAsyncExecutionBlock } from "./flowGraphAsyncExecutionBlock";
+import { type IFlowGraphBlockConfiguration } from "./flowGraphBlock";
 import { type FlowGraphContext } from "./flowGraphContext";
 import { FlowGraphEventType } from "./flowGraphEventType";
 
@@ -12,6 +13,30 @@ export abstract class FlowGraphEventBlock extends FlowGraphAsyncExecutionBlock {
      * For example, scene start should have a negative priority because it should be initialized last.
      */
     public initPriority: number = 0;
+
+    /**
+     * Creates a new event block.
+     * @param config optional configuration
+     */
+    constructor(config?: IFlowGraphBlockConfiguration) {
+        super(config);
+        // Event blocks are driven by scene events, not by an incoming signal.
+        // Remove the inherited `in` port so it is not shown in the editor UI
+        // and cannot be accidentally wired.
+        this._unregisterSignalInput("in");
+    }
+
+    /**
+     * Deserializes from an object.
+     * Filters out the legacy "in" signal input that existed before event blocks
+     * stopped exposing it, so old serialized graphs load without error.
+     * @param serializationObject the object to deserialize from
+     */
+    public override deserialize(serializationObject: any) {
+        const filtered = { ...serializationObject };
+        filtered.signalInputs = (serializationObject.signalInputs ?? []).filter((s: any) => s.name !== "in");
+        super.deserialize(filtered);
+    }
 
     /**
      * The type of the event

@@ -266,35 +266,40 @@ export class NodeParticleSystemSet {
      * @returns a promise that resolves to the built particle system set
      */
     public async buildAsync(scene: Scene, verbose = false): Promise<ParticleSystemSet> {
-        return await new Promise<ParticleSystemSet>((resolve) => {
-            const output = new ParticleSystemSet();
+        const output = new ParticleSystemSet();
 
-            // Initialize all blocks
-            for (const block of this._systemBlocks) {
-                this._initializeBlock(block);
+        // Initialize all blocks
+        for (const block of this._systemBlocks) {
+            this._initializeBlock(block);
+        }
+
+        // Build the blocks
+        const buildPromises = new Array<Promise<void>>();
+        for (const block of this.systemBlocks) {
+            const state = new NodeParticleBuildState();
+            state.buildId = this._buildId++;
+            state.scene = scene;
+            state.verbose = verbose;
+
+            const system = block.createSystem(state);
+            if (system instanceof ParticleSystem) {
+                system._source = this;
+                system._blockReference = block._internalId;
             }
 
-            // Build the blocks
-            for (const block of this.systemBlocks) {
-                const state = new NodeParticleBuildState();
-                state.buildId = this._buildId++;
-                state.scene = scene;
-                state.verbose = verbose;
+            // Errors
+            state.emitErrors();
 
-                const system = block.createSystem(state);
-                if (system instanceof ParticleSystem) {
-                    system._source = this;
-                    system._blockReference = block._internalId;
-                }
-                output.systems.push(system);
-                // Errors
-                state.emitErrors();
-            }
+            buildPromises.push(state.waitForBuildPromisesAsync());
 
-            this.onBuildObservable.notifyObservers(this);
+            output.systems.push(system);
+        }
 
-            resolve(output);
-        });
+        await Promise.all(buildPromises);
+
+        this.onBuildObservable.notifyObservers(this);
+
+        return output;
     }
 
     /**

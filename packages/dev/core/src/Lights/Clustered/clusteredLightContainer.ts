@@ -539,7 +539,17 @@ export class ClusteredLightContainer extends Light {
             Logger.Warn("Attempting to add a light to cluster that does not support clustering");
             return;
         }
-        this._scene.removeLight(light);
+        // scene.removeLight returns -1 if the light wasn't in scene.lights. In that case the
+        // mesh.lightSources cleanup it normally performs didn't happen — but the light may still be
+        // there: lights constructed with `dontAddToScene = true` are pushed into mesh.lightSources
+        // by the Light constructor (the `includedOnlyMeshes` setter calls `_resyncMeshes`).
+        // Without explicit cleanup, the orphan would be picked up by PrepareDefinesForLights and
+        // rendered as a regular point/spot light, bypassing the cluster (notably ignoring `maxRange`).
+        if (this._scene.removeLight(light) === -1) {
+            for (const mesh of this._scene.meshes) {
+                mesh._removeLightSource(light, false);
+            }
+        }
         this._lights.push(light);
         this._sortedLights.push(<PointLight | SpotLight>light);
 
