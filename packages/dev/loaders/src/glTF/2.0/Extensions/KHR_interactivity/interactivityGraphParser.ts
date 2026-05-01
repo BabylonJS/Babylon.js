@@ -222,6 +222,10 @@ export class InteractivityGraphToFlowGraphParser {
                     throw new Error(`Error validating interactivity node ${this._interactivityGraph.declarations?.[node.declaration].op} - ${validationResult.error}`);
                 }
             }
+            // Bake any static ref-typed value sockets into pointer templates that
+            // were authored as "relative" (no leading slash). See
+            // _bakeRelativePointerPrefix for full rationale.
+            this._bakeRelativePointerPrefix(node, mapping.fullOperationName);
             const blocks: ISerializedFlowGraphBlock[] = [];
             // create block(s) for this node using the mapping
             for (const blockType of mapping.flowGraphMapping.blocks) {
@@ -230,6 +234,62 @@ export class InteractivityGraphToFlowGraphParser {
                 blocks.push(block);
             }
             this._nodes.push({ blocks, fullOperationName: mapping.fullOperationName });
+        }
+    }
+
+    /**
+     * KHR_interactivity test assets such as `Calculator.glb` author
+     * `pointer/get` and `pointer/set` nodes whose `pointer` configuration value
+     * is a *relative* JSON Pointer (no leading slash), e.g.
+     * `extensions/KHR_node_visibility/visible`, paired with a static ref-typed
+     * value socket like `nodeRef = "/nodes/22/"` that supplies the absolute
+     * prefix. The standard spec algorithm only substitutes `{name}`/`[name]`
+     * template parameters and would leave the relative path untouched, so the
+     * effective JSON Pointer ends up invalid and the `nodeRef` socket has
+     * nowhere to land on the FlowGraph block (causing
+     * "Could not find data input with name nodeRef" failures at parse time).
+     *
+     * To support this convention we splice a static ref value into the
+     * pointer template at parse time, dropping the now-baked socket from the
+     * node's `values` map so the connection wiring step ignores it. Only
+     * literal/static refs are baked here; refs that come from an upstream
+     * connection (`{ node, socket }` shape) are left untouched, since we have
+     * no way to know their value at parse time. Such cases would still
+     * surface as the same parse-time error and need a richer runtime
+     * substitution strategy.
+     * @param node The interactivity node to patch in place.
+     * @param fullOperationName The fully qualified op name (e.g. `pointer/get`).
+     */
+    private _bakeRelativePointerPrefix(node: IKHRInteractivity_Node, fullOperationName: string): void {
+        if (!fullOperationName.startsWith("pointer/")) {
+            return;
+        }
+        const pointerCfg = node.configuration?.pointer;
+        const template = pointerCfg?.value?.[0];
+        if (typeof template !== "string" || template.startsWith("/")) {
+            return;
+        }
+        if (!node.values) {
+            return;
+        }
+        for (const name of Object.keys(node.values)) {
+            const socket = node.values[name] as IKHRInteractivity_Variable;
+            const literal = socket?.value?.[0];
+            if (typeof literal !== "string") {
+                continue;
+            }
+            // We only care about ref-typed sockets, but we don't have the
+            // type table indexed here; checking that the literal looks like a
+            // JSON Pointer (starts with `/`) is enough to disambiguate from
+            // numeric/boolean values.
+            if (!literal.startsWith("/")) {
+                continue;
+            }
+            const trimmedRef = literal.replace(/\/+$/, "");
+            const rewritten = trimmedRef + "/" + template;
+            (pointerCfg!.value as any[])[0] = rewritten;
+            delete (node.values as any)[name];
+            break;
         }
     }
 
