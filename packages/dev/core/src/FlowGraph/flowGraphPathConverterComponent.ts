@@ -94,6 +94,10 @@ export class FlowGraphPathConverterComponent {
  * - string → treat as a JSON Pointer to a glTF object and pull the segment whose position
  *   in the ref matches the position of `{name}` (or `[name]`) in the surrounding template.
  *   Falls back to the last non-empty segment, then to the raw ref string.
+ * @param template the original templated path (used to locate the placeholder position)
+ * @param name the name of the template parameter being resolved
+ * @param raw the runtime value supplied for the template parameter
+ * @returns the substring to splice into the templated path in place of the placeholder
  */
 function ResolveTemplateSubstitution(template: string, name: string, raw: any): string {
     if (raw instanceof FlowGraphInteger) {

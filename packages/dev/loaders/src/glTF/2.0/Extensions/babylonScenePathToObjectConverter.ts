@@ -1,12 +1,12 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 
-import type { Scene } from "core/scene";
-import type { TransformNode } from "core/Meshes/transformNode";
-import type { AbstractMesh } from "core/Meshes/abstractMesh";
-import type { Material } from "core/Materials/material";
-import { Vector3, Quaternion, Matrix } from "core/Maths/math.vector";
-import type { IObjectAccessor } from "core/FlowGraph/typeDefinitions";
-import type { IObjectInfo, IPathToObjectConverter } from "core/ObjectModel/objectModelInterfaces";
+import { type Scene } from "core/scene";
+import { type TransformNode } from "core/Meshes/transformNode";
+import { type AbstractMesh } from "core/Meshes/abstractMesh";
+import { type Material } from "core/Materials/material";
+import { type Vector3, Quaternion, type Matrix } from "core/Maths/math.vector";
+import { type IObjectAccessor } from "core/FlowGraph/typeDefinitions";
+import { type IObjectInfo, type IPathToObjectConverter } from "core/ObjectModel/objectModelInterfaces";
 
 /**
  * Root of the JSON-Pointer namespace under which Babylon-scene objects are
@@ -27,8 +27,17 @@ export const BABYLON_SCENE_OBJECT_MODEL_PREFIX = "/extensions/BABYLON_scene_obje
  * any path-converter changes.
  */
 export interface IBabylonSceneObjectModelTree {
+    /**
+     *
+     */
     transformNodes: IBabylonObjectCollection<TransformNode>;
+    /**
+     *
+     */
     meshes: IBabylonObjectCollection<AbstractMesh>;
+    /**
+     *
+     */
     materials: IBabylonObjectCollection<Material>;
 }
 
@@ -38,7 +47,13 @@ export interface IBabylonSceneObjectModelTree {
  * uniqueId index appears in the path.
  */
 export interface IBabylonObjectCollection<TBabylon> {
+    /**
+     *
+     */
     length: IObjectAccessor<TBabylon[], TBabylon[], number>;
+    /**
+     *
+     */
     __array__: IBabylonObjectLeaves<TBabylon>;
 }
 
@@ -46,12 +61,33 @@ export interface IBabylonObjectCollection<TBabylon> {
 export interface IBabylonObjectLeaves<TBabylon> {
     /** Marks this position as a `getTarget` boundary so the resolver can hand back the instance itself. */
     __target__?: boolean;
+    /**
+     *
+     */
     name?: IObjectAccessor<TBabylon, TBabylon, string>;
+    /**
+     *
+     */
     translation?: IObjectAccessor<TBabylon, TBabylon, Vector3>;
+    /**
+     *
+     */
     rotation?: IObjectAccessor<TBabylon, TBabylon, Quaternion>;
+    /**
+     *
+     */
     scale?: IObjectAccessor<TBabylon, TBabylon, Vector3>;
+    /**
+     *
+     */
     matrix?: IObjectAccessor<TBabylon, TBabylon, Matrix>;
+    /**
+     *
+     */
     globalMatrix?: IObjectAccessor<TBabylon, TBabylon, Matrix>;
+    /**
+     *
+     */
     visible?: IObjectAccessor<TBabylon, TBabylon, boolean>;
 }
 
@@ -204,6 +240,7 @@ export class BabylonScenePathToObjectConverter implements IPathToObjectConverter
  * the same `FlowGraphJsonPointerParserBlock` that the glTF refs use) without
  * committing to a complete property surface in this PR. Add new leaves here
  * as concrete event-source operations need them.
+ * @returns a fresh Babylon-scene object-model tree with the default property surface.
  */
 export function CreateDefaultBabylonSceneObjectModelTree(): IBabylonSceneObjectModelTree {
     return {

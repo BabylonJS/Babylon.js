@@ -1,4 +1,4 @@
-import type { IObjectInfo, IPathToObjectConverter } from "core/ObjectModel/objectModelInterfaces";
+import { type IObjectInfo, type IPathToObjectConverter } from "core/ObjectModel/objectModelInterfaces";
 
 /**
  * Entry in the composite converter's prefix table. The first entry whose
@@ -16,7 +16,7 @@ export interface IPathConverterPrefixEntry<T> {
  *
  * The KHR_interactivity object model lives at the top of the JSON tree
  * (`/nodes/...`, `/materials/...`, `/extensions/...`) and is resolved by
- * {@link import("./gltfPathToObjectConverter").GLTFPathToObjectConverter}.
+ * `GLTFPathToObjectConverter` (see `gltfPathToObjectConverter`).
  *
  * Babylon-specific extensions can register additional namespaces here
  * (for example `/extensions/BABYLON_scene_objects/...` for refs that point

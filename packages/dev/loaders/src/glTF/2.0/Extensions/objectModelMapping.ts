@@ -67,7 +67,10 @@ export interface IGLTFObjectModelTreeNodesObject<GLTFTargetType = INode, Babylon
             /** When true, the path converter skips objectTree traversal for this property, keeping the parent target. */
             __passThroughTarget__?: boolean;
             length: IObjectAccessor<GLTFTargetType, BabylonTargetType, number>;
-            __array__: { __target__: boolean } & IObjectAccessor<GLTFTargetType, BabylonTargetType, number>;
+            // The per-element target alternates between TransformNode (when the index is
+            // out of range or no morph host is reachable) and MorphTarget (when it is),
+            // so we widen the BabylonTargetType to `any` here.
+            __array__: { __target__: boolean } & IObjectAccessor<GLTFTargetType, any, number>;
         } & IObjectAccessor<GLTFTargetType, BabylonTargetType, number[]>;
         extensions: {
             EXT_lights_ies?: {
@@ -417,7 +420,9 @@ const nodesTree: IGLTFObjectModelTreeNodesObject = {
                 set: (value: any, node: INode, index?: number) => {
                     const numValue = typeof value === "number" ? value : typeof value?.value === "number" ? value.value : value;
                     const found = _findNodeMorphTargets(node);
-                    if (!found || index === undefined || index < 0 || index >= found.mtm.numTargets) return;
+                    if (!found || index === undefined || index < 0 || index >= found.mtm.numTargets) {
+                        return;
+                    }
                     // Fan out to every mesh that shares this morph target manager so
                     // multi-primitive meshes stay in sync.
                     for (const mesh of found.meshes) {
@@ -1265,16 +1270,24 @@ function GetMaterial(material: IMaterial, _index?: number, payload?: any) {
 }
 function _getNodeMorphTargetManager(node: INode): any {
     const tn = node?._babylonTransformNode;
-    if (!tn) return undefined;
+    if (!tn) {
+        return undefined;
+    }
     // Single primitive: transform node IS the mesh with morphTargetManager
-    if ((tn as any).morphTargetManager) return (tn as any).morphTargetManager;
+    if ((tn as any).morphTargetManager) {
+        return (tn as any).morphTargetManager;
+    }
     // Multiple primitives: check each primitive mesh and its source
     const primMeshes = node._primitiveBabylonMeshes;
     if (primMeshes) {
         for (const mesh of primMeshes) {
-            if (mesh?.morphTargetManager) return mesh.morphTargetManager;
+            if (mesh?.morphTargetManager) {
+                return mesh.morphTargetManager;
+            }
             // Check source mesh for instanced meshes
-            if ((mesh as any)?.sourceMesh?.morphTargetManager) return (mesh as any).sourceMesh.morphTargetManager;
+            if ((mesh as any)?.sourceMesh?.morphTargetManager) {
+                return (mesh as any).sourceMesh.morphTargetManager;
+            }
         }
     }
     return undefined;
@@ -1300,10 +1313,15 @@ interface IMorphTargetLookup {
  * For multi-primitive meshes (one INode → several Babylon meshes parented to a
  * wrapper TransformNode) we also collect the sibling primitives so a `set`
  * touches every mesh that shares the manager.
+ * @param node the glTF node to start the lookup from
+ * @returns the active morph target manager and every Babylon mesh that shares
+ * it, or `undefined` when no morph target manager is reachable from the node.
  */
 function _findNodeMorphTargets(node: INode): IMorphTargetLookup | undefined {
     const tn = node?._babylonTransformNode;
-    if (!tn) return undefined;
+    if (!tn) {
+        return undefined;
+    }
     // Direct: this node's own mesh has a morph target manager.
     const directMtm: MorphTargetManager | undefined = _getNodeMorphTargetManager(node);
     if (directMtm && node._primitiveBabylonMeshes && node._primitiveBabylonMeshes.length > 0) {
@@ -1315,15 +1333,15 @@ function _findNodeMorphTargets(node: INode): IMorphTargetLookup | undefined {
     const descendants = tn.getDescendants(false);
     for (const desc of descendants) {
         const candidate = desc as AbstractMesh;
-        const mtm: MorphTargetManager | undefined =
-            (candidate as any).morphTargetManager ?? (candidate as any).sourceMesh?.morphTargetManager;
-        if (!mtm) continue;
+        const mtm: MorphTargetManager | undefined = (candidate as any).morphTargetManager ?? (candidate as any).sourceMesh?.morphTargetManager;
+        if (!mtm) {
+            continue;
+        }
         const meshes: AbstractMesh[] = [];
         const parent = candidate.parent;
         if (parent) {
             for (const sib of parent.getChildMeshes(true)) {
-                const sibMtm: MorphTargetManager | undefined =
-                    (sib as any).morphTargetManager ?? (sib as any).sourceMesh?.morphTargetManager;
+                const sibMtm: MorphTargetManager | undefined = (sib as any).morphTargetManager ?? (sib as any).sourceMesh?.morphTargetManager;
                 if (sibMtm === mtm) {
                     meshes.push(sib);
                 }
@@ -1347,9 +1365,13 @@ function _findNodeMorphTargets(node: INode): IMorphTargetLookup | undefined {
  * equal. Rounding the value to 7 significant figures (the precision of a float32)
  * recovers the original "clean" double for any value that survived a float32
  * round-trip while leaving genuinely high-precision doubles essentially intact.
+ * @param v the value to round
+ * @returns the rounded value, or the input unchanged if it is not finite
  */
 function _roundFloat32Artifact(v: number): number {
-    if (!Number.isFinite(v)) return v;
+    if (!Number.isFinite(v)) {
+        return v;
+    }
     return parseFloat(v.toPrecision(7));
 }
 function GenerateTextureMap(textureType: keyof PBRMaterial, textureInObject?: string): ITextureDefinition {
