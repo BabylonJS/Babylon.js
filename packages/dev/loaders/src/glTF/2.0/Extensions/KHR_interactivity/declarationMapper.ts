@@ -409,6 +409,12 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
     "math/saturate": getSimpleInputMapping(FlowGraphBlockNames.Saturate),
     "math/mix": getSimpleInputMapping(FlowGraphBlockNames.MathInterpolation, ["a", "b", "c"]),
     "math/eq": getSimpleInputMapping(FlowGraphBlockNames.Equality, ["a", "b"]),
+    // Reference equality. The spec defines `ref/eq` as: true if both refs are
+    // null, true if both refer to the same object (regardless of whether it
+    // exists), false otherwise. FlowGraphEqualityBlock falls through to a
+    // strict `===` comparison for non-vector/matrix/numeric types, which
+    // already produces the spec-defined behaviour for Babylon object refs.
+    "ref/eq": getSimpleInputMapping(FlowGraphBlockNames.Equality, ["a", "b"]),
     "math/lt": getSimpleInputMapping(FlowGraphBlockNames.LessThan, ["a", "b"]),
     "math/le": getSimpleInputMapping(FlowGraphBlockNames.LessThanOrEqual, ["a", "b"]),
     "math/gt": getSimpleInputMapping(FlowGraphBlockNames.GreaterThan, ["a", "b"]),
