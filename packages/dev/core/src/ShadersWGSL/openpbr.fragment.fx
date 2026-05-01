@@ -268,7 +268,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
                     // If we have a precomputed multi-scatter texture, we can use the scatter vector to sample it and get a more accurate scattered environment light.
                     // This allows us to capture higher order scattering effects that aren't possible with just a single scatter sample.
                     let mfp: vec3f = vec3f(100.0f) / volumeParams.extinction_coeff;
-                    var scattered_light_from_irradiance_texture: vec3f = sss_convolve(sceneIrradianceSampler, sceneDepthSampler, uniforms.renderTargetSize, mfp, scene.projection, scene.inverseProjection, 16, noise.xy);
+                    var scattered_light_from_irradiance_texture: vec3f = sss_convolve(sceneIrradianceSampler, sceneDepthSampler, uniforms.renderTargetSize, mfp, scene.projection, scene.inverseProjection, SSS_SAMPLE_COUNT, noise.xy);
                     var numLights = f32(LIGHTCOUNT);
                     #ifdef REFLECTION
                         numLights += 1.0f;
