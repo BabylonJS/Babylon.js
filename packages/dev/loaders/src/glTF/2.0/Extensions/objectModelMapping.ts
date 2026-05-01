@@ -1057,7 +1057,10 @@ const materialsTree: IGLTFObjectModelTreeMaterialsObject = {
                 },
                 transmissionTexture: {
                     extensions: {
-                        KHR_texture_transform: GenerateTextureMap("subSurface", "refractionIntensityTexture"),
+                        KHR_texture_transform: GenerateTextureMap("subSurface", "refractionIntensityTexture", {
+                            extensionKey: "KHR_materials_transmission",
+                            texturePath: ["transmissionTexture"],
+                        }),
                     },
                 },
             },
@@ -1070,7 +1073,10 @@ const materialsTree: IGLTFObjectModelTreeMaterialsObject = {
                 },
                 diffuseTransmissionTexture: {
                     extensions: {
-                        KHR_texture_transform: GenerateTextureMap("subSurface", "translucencyIntensityTexture"),
+                        KHR_texture_transform: GenerateTextureMap("subSurface", "translucencyIntensityTexture", {
+                            extensionKey: "KHR_materials_diffuse_transmission",
+                            texturePath: ["diffuseTransmissionTexture"],
+                        }),
                     },
                 },
                 diffuseTransmissionColorFactor: {
@@ -1081,7 +1087,10 @@ const materialsTree: IGLTFObjectModelTreeMaterialsObject = {
                 },
                 diffuseTransmissionColorTexture: {
                     extensions: {
-                        KHR_texture_transform: GenerateTextureMap("subSurface", "translucencyColorTexture"),
+                        KHR_texture_transform: GenerateTextureMap("subSurface", "translucencyColorTexture", {
+                            extensionKey: "KHR_materials_diffuse_transmission",
+                            texturePath: ["diffuseTransmissionColorTexture"],
+                        }),
                     },
                 },
             },
