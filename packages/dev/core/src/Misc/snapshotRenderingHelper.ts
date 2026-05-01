@@ -57,7 +57,6 @@ export class SnapshotRenderingHelper {
     private _isEnabling = false;
     private _enableCancelFunctions: Map<() => void, () => void> = new Map(); // first function is the callback, second function is the cancel function
     private _disableCancelFunctions: Map<() => void, () => void> = new Map(); // same as above
-    private readonly _fixedParticleSystems = new Set<ParticleSystem>();
 
     /**
      * Indicates if debug logs should be displayed
@@ -166,10 +165,12 @@ export class SnapshotRenderingHelper {
             }
 
             // Handles fixed-capacity particle systems
-            if (this._fixedParticleSystems.size > 0 && camera) {
-                this._fixedParticleSystems.forEach((ps) => {
-                    this._particleSystemUpdateEffects(ps, camera);
-                });
+            if (scene.particleSystems && camera) {
+                for (const ps of scene.particleSystems) {
+                    if ((ps as ParticleSystem).useFixedCapacityForSnapshot) {
+                        this._particleSystemUpdateEffects(ps as ParticleSystem, camera);
+                    }
+                }
             }
         });
     }
@@ -482,9 +483,7 @@ export class SnapshotRenderingHelper {
             return;
         }
 
-        const ps = particleSystem as ParticleSystem;
-        ps.useFixedCapacityForSnapshot = true;
-        this._fixedParticleSystems.add(ps);
+        (particleSystem as ParticleSystem).useFixedCapacityForSnapshot = true;
     }
 
     private _particleSystemUpdateEffects(ps: ParticleSystem, camera: Camera) {
@@ -506,23 +505,30 @@ export class SnapshotRenderingHelper {
         }
     }
 
+    private _particleSystemBillboardFlags = new WeakMap<object, { billboard: boolean; billboardAll: boolean }>();
+
     private _particleSystemDirectMatrixUpdate(dw: Nullable<DrawWrapper>, viewMatrix: Matrix, projectionMatrix: Matrix, camera: Camera) {
         const effect = dw?.effect;
-        if (!effect || !dw) {
+        if (!effect) {
             return;
         }
-        const dataBuffer = (dw.drawContext as WebGPUDrawContext)?.buffers?.["LeftOver" satisfies (typeof WebGPUShaderProcessor)["LeftOvertUBOName"]];
+        const dataBuffer = (dw!.drawContext as WebGPUDrawContext).buffers["LeftOver" satisfies (typeof WebGPUShaderProcessor)["LeftOvertUBOName"]];
         const ubLeftOver = (effect._pipelineContext as WebGPUPipelineContext)?.uniformBuffer;
         if (!dataBuffer || !ubLeftOver || !ubLeftOver.setDataBuffer(dataBuffer)) {
             return;
         }
         effect.setMatrix("view", viewMatrix);
         effect.setMatrix("projection", projectionMatrix);
-        const defines = effect.defines;
-        if (defines && defines.indexOf("#define BILLBOARD") >= 0) {
+        let flags = this._particleSystemBillboardFlags.get(effect);
+        if (!flags) {
+            const defines = effect.defines ?? "";
+            flags = { billboard: defines.indexOf("#define BILLBOARD") >= 0, billboardAll: defines.indexOf("#define BILLBOARDMODE_ALL") >= 0 };
+            this._particleSystemBillboardFlags.set(effect, flags);
+        }
+        if (flags.billboard) {
             effect.setVector3("eyePosition", camera.globalPosition);
         }
-        if (defines && defines.indexOf("#define BILLBOARDMODE_ALL") >= 0) {
+        if (flags.billboardAll) {
             const invView = TmpVectors.Matrix[0];
             viewMatrix.invertToRef(invView);
             effect.setMatrix("invView", invView);

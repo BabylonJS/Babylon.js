@@ -209,6 +209,7 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
      * This makes the particle system compatible with FAST snapshot rendering, where the recorded draw call parameters
      * are baked into the GPU bundle. Activate via `SnapshotRenderingHelper.fixParticleSystem(ps)`.
      * Note: vertex shader cost scales with capacity rather than the live particle count, so size capacity realistically.
+     * This property is runtime-only and is not persisted by `serialize()` / `Parse()`.
      */
     public get useFixedCapacityForSnapshot(): boolean {
         return this._useFixedCapacityForSnapshot;
