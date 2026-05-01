@@ -18,6 +18,7 @@ import {
     loadEnvironment as liteLoadEnvironment,
     pauseAnimation as litePauseAnimation,
     playAnimation as litePlayAnimation,
+    stopAnimation as liteStopAnimation,
     loadGltf,
     loadHdrEnvironment,
     onBeforeRender,
@@ -646,8 +647,20 @@ export class Viewer extends ViewerBase implements IViewer {
             this._container = container;
             this._modelSource = source;
 
+            // Set up animation state BEFORE `addToScene` registers the tick callback. This way the
+            // very first tick of the new render loop sees only the selected group as eligible to
+            // tick — preventing any "wrong animation" flash on the first rendered frame.
+            // (Lite's `createAnimationGroups` sets every clip to auto-play; we need exactly one to
+            // be active at all times.)
+            this._setupAnimations();
+
             // Add to scene and rebuild renderables
             addToScene(this._scene, container);
+
+            // Frame the camera to the model BEFORE the first rendered frame, so the model never
+            // appears briefly at the previous (default) camera position.
+            this._frameCameraToModel();
+
             await this._beginRendering();
 
             // Apply clear color from model if present
@@ -661,16 +674,10 @@ export class Viewer extends ViewerBase implements IViewer {
                 this._setupShadows();
             }
 
-            // Setup animations
-            this._setupAnimations();
-
             // Apply material variant from options
             if (this._options?.selectedMaterialVariant) {
                 this.selectedMaterialVariant = this._options.selectedMaterialVariant;
             }
-
-            // Frame camera to loaded model
-            this._frameCameraToModel();
 
             this.onModelChanged.notifyObservers(source);
         } catch (e) {
@@ -725,13 +732,24 @@ export class Viewer extends ViewerBase implements IViewer {
             return;
         }
 
-        // Pause the currently playing animation
-        if (this._selectedAnimation >= 0 && this._selectedAnimation < groups.length) {
-            litePauseAnimation(groups[this._selectedAnimation]);
+        const newIndex = index >= 0 && index < groups.length ? index : -1;
+        if (newIndex === this._selectedAnimation) {
+            return;
         }
 
-        this._selectedAnimation = index >= 0 && index < groups.length ? index : -1;
+        // Capture whether the previously-active animation was playing so we can preserve play state
+        // across selection (matches full Viewer's behavior).
+        const previousActive = this._getActiveAnimationGroup();
+        const wasPlaying = previousActive?.isPlaying ?? false;
+
+        this._selectedAnimation = newIndex;
+        this._isolateSelectedAnimation();
+
         this.onSelectedAnimationChanged.notifyObservers();
+
+        if (wasPlaying) {
+            this.playAnimation();
+        }
     }
 
     public get animationSpeed(): number {
@@ -811,6 +829,35 @@ export class Viewer extends ViewerBase implements IViewer {
         return groups[this._selectedAnimation];
     }
 
+    /**
+     * Enforces the "only the selected animation may be playing" invariant by stopping every
+     * non-selected animation group (`_stopped = true`, blocks subsequent ticks) and pausing the
+     * selected one (`ctrl.playing = false`, but tick still runs and applies its time-0 pose).
+     *
+     * Lite's `tickAnimation` writes bone TRS every frame regardless of `playing`, so a merely
+     * paused non-selected group would still pollute the mesh transforms with its current frame's
+     * pose. Only `_stopped = true` blocks tick entirely.
+     */
+    private _isolateSelectedAnimation(): void {
+        const groups = this._container?.animationGroups;
+        if (!groups) {
+            return;
+        }
+        for (let i = 0; i < groups.length; i++) {
+            const group = groups[i];
+            if (i === this._selectedAnimation) {
+                // Pause and ensure tick is allowed (clearing `_stopped` from any prior `stopAnimation`).
+                // Lite's `pauseAnimation` only sets `ctrl.playing = false` — it does not clear `_stopped`,
+                // so a selected group that was previously stopped (because it was non-selected) wouldn't
+                // tick and apply its frame-0 pose without this.
+                group._stopped = false;
+                litePauseAnimation(group);
+            } else {
+                liteStopAnimation(group);
+            }
+        }
+    }
+
     private _setupAnimations(): void {
         const groups = this._container?.animationGroups;
         if (!groups || groups.length === 0) {
@@ -821,15 +868,15 @@ export class Viewer extends ViewerBase implements IViewer {
         // Select the first animation by default, or the one specified in options
         const defaultIndex = this._options?.selectedAnimation ?? 0;
         this._selectedAnimation = defaultIndex >= 0 && defaultIndex < groups.length ? defaultIndex : 0;
+
+        // Stop every non-selected group; pause the selected one. See `_isolateSelectedAnimation`.
+        this._isolateSelectedAnimation();
+
         this.onSelectedAnimationChanged.notifyObservers();
 
         // Auto-play if configured
         if (this._options?.animationAutoPlay) {
-            const group = groups[this._selectedAnimation];
-            group.speedRatio = this._animationSpeed;
-            group.loopAnimation = true;
-            litePlayAnimation(group);
-            this.onIsAnimationPlayingChanged.notifyObservers();
+            this.playAnimation();
         }
     }
 
@@ -945,13 +992,9 @@ export class Viewer extends ViewerBase implements IViewer {
     protected override _resetAnimation(): void {
         const groups = this._container?.animationGroups;
         if (groups && groups.length > 0) {
-            // Pause current
-            const current = this._getActiveAnimationGroup();
-            if (current) {
-                litePauseAnimation(current);
-            }
             this._selectedAnimation = this._options?.selectedAnimation ?? 0;
             this._animationSpeed = this._options?.animationSpeed ?? 1;
+            this._isolateSelectedAnimation();
             this.onSelectedAnimationChanged.notifyObservers();
             this.onAnimationSpeedChanged.notifyObservers();
 
