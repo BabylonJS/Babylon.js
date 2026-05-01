@@ -210,10 +210,13 @@ let checkBabylonVersionAsync = async function () {
 
     let frameworkScripts = Versions[activeVersion] || Versions["Latest"];
     if (snapshot) {
-        frameworkScripts = frameworkScripts.map((v) => ({
-            ...v,
-            url: v.url.replace("https://preview.babylonjs.com", "https://snapshots-cvgtc2eugrd3cgfd.z01.azurefd.net/" + snapshot),
-        }));
+        frameworkScripts = frameworkScripts
+            // Snapshots are always the latest version, so exclude scripts limited to old versions (maxVersion).
+            .filter((v) => !v.maxVersion)
+            .map((v) => ({
+                ...v,
+                url: v.url.replace("https://preview.babylonjs.com", "https://snapshots-cvgtc2eugrd3cgfd.z01.azurefd.net/" + snapshot),
+            }));
     } else if (version) {
         frameworkScripts = frameworkScripts
             .filter((v) => (!v.minVersion || isVersionGreaterOrEqual(version, v.minVersion)) && (!v.maxVersion || isVersionGreaterOrEqual(v.maxVersion, version)))

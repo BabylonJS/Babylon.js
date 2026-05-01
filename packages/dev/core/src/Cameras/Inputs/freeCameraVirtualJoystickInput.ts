@@ -1,7 +1,7 @@
 import { VirtualJoystick, JoystickAxis } from "../../Misc/virtualJoystick";
 import { type ICameraInput, CameraInputTypes } from "../../Cameras/cameraInputsManager";
 import { type FreeCamera } from "../../Cameras/freeCamera";
-import { Matrix, Vector3 } from "../../Maths/math.vector";
+import { Matrix, TmpVectors, Vector3 } from "../../Maths/math.vector";
 import { FreeCameraInputsManager } from "../../Cameras/freeCameraInputsManager";
 
 // Module augmentation to abstract virtual joystick from camera.
@@ -62,19 +62,20 @@ export class FreeCameraVirtualJoystickInput implements ICameraInput<FreeCamera> 
         if (this._leftjoystick) {
             const camera = this.camera;
             const speed = camera._computeLocalCameraSpeed() * 50;
-            const cameraTransform = Matrix.RotationYawPitchRoll(camera.rotation.y, camera.rotation.x, 0);
-            const deltaTransform = Vector3.TransformCoordinates(
-                new Vector3(this._leftjoystick.deltaPosition.x * speed, this._leftjoystick.deltaPosition.y * speed, this._leftjoystick.deltaPosition.z * speed),
-                cameraTransform
-            );
-            camera.cameraDirection = camera.cameraDirection.add(deltaTransform);
-            camera.cameraRotation = camera.cameraRotation.addVector3(this._rightjoystick.deltaPosition);
+            const cameraTransform = TmpVectors.Matrix[0];
+            const deltaPosition = TmpVectors.Vector3[0];
+            const transformedDeltaPosition = TmpVectors.Vector3[1];
+            Matrix.RotationYawPitchRollToRef(camera.rotation.y, camera.rotation.x, 0, cameraTransform);
+            deltaPosition.copyFromFloats(this._leftjoystick.deltaPosition.x * speed, this._leftjoystick.deltaPosition.y * speed, this._leftjoystick.deltaPosition.z * speed);
+            Vector3.TransformCoordinatesToRef(deltaPosition, cameraTransform, transformedDeltaPosition);
+            camera.cameraDirection.addInPlace(transformedDeltaPosition);
+            camera.cameraRotation.addInPlaceFromFloats(this._rightjoystick.deltaPosition.x, this._rightjoystick.deltaPosition.y);
 
             if (!this._leftjoystick.pressed) {
-                this._leftjoystick.deltaPosition = this._leftjoystick.deltaPosition.scale(0.9);
+                this._leftjoystick.deltaPosition.scaleInPlace(0.9);
             }
             if (!this._rightjoystick.pressed) {
-                this._rightjoystick.deltaPosition = this._rightjoystick.deltaPosition.scale(0.9);
+                this._rightjoystick.deltaPosition.scaleInPlace(0.9);
             }
         }
     }

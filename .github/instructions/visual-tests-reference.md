@@ -16,6 +16,7 @@ Reference material for Babylon.js visualization tests. For the workflow and step
 | `replaceUrl`                                                                 | No       | -             | Comma-separated replacement pairs for patching URLs                                                                                                             |
 | `excludeFromAutomaticTesting`                                                | No       | `false`       | Exclude the test from the standard visualization harness entirely, including targeted `-g` runs                                                                 |
 | `useLargeWorldRendering`, `useReverseDepthBuffer`, `useNonCompatibilityMode` | No       | -             | Per-test engine flags                                                                                                                                           |
+| `dependsOn`                                                                  | No\*     | `[]`          | Array of module tags the test exercises (e.g. `["PBR", "Shadows"]`). **Required for new tests.** Tests without it always run in CI.                             |
 
 ## `renderCount` guidance
 
@@ -49,3 +50,45 @@ For tool tests (not Playground snippets), use the appropriate devhost config (e.
 - Async loading often needs more frames than expected.
 - Transparency, alpha-heavy scenes, and text rendering can produce larger diffs.
 - Platform differences: use per-engine baselines first, tolerance changes second.
+
+## Selective test execution (`dependsOn` and `AFFECTED_TAGS`)
+
+Visualization tests support tag-based filtering so PRs only run the tests relevant to the changed code.
+
+### How it works
+
+1. CI runs `scripts/compute-affected-vis-tags.mjs` to determine which tags are affected based on `git diff` and the path-to-tag mapping in `packages/tools/tests/test/visualization/tagMap.json`.
+2. The result is passed as the `AFFECTED_TAGS` environment variable to the test runner.
+3. The test runner filters: only tests whose `dependsOn` has at least one tag in `AFFECTED_TAGS` will run. Tests without `dependsOn` always run.
+
+### `AFFECTED_TAGS` values
+
+| Value             | Behavior                                                                    |
+| ----------------- | --------------------------------------------------------------------------- |
+| Not set or empty  | All tests run (backward compatible)                                         |
+| `ALL`             | All tests run (a "run-all" tag was affected, e.g. Engine, Rendering, Scene) |
+| `NONE`            | No visualization tests run (no relevant files changed)                      |
+| `PBR,Shadows,...` | Only tests with matching `dependsOn` tags run                               |
+
+### Tag vocabulary
+
+The canonical tag list is in `packages/tools/tests/test/visualization/tagMap.json`. The `runAllTags` field lists tags that trigger ALL tests when any of their mapped files change (Engine, Rendering, Scene, Maths, Shaders, Misc, Helpers, Buffers).
+
+### Re-populating tags
+
+To re-analyze all playground snippets and update `dependsOn` fields:
+
+```bash
+node scripts/populate-vis-test-tags.mjs          # writes config.json
+node scripts/populate-vis-test-tags.mjs --dry-run # preview without writing
+```
+
+### Local testing with tag filtering
+
+```bash
+# Only run PBR-tagged tests
+AFFECTED_TAGS=PBR npx playwright test --config playwright.config.ts --project=webgl2
+
+# Skip all vis tests
+AFFECTED_TAGS=NONE npx playwright test --config playwright.config.ts --project=webgl2
+```

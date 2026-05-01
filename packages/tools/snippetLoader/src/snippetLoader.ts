@@ -674,7 +674,7 @@ async function LoadModuleEsm(jsFiles: Record<string, string>, entryName: string,
     }
 
     const entryUrl = finalUrls[entryName] ?? Object.values(finalUrls)[0];
-    const mod = await import(/* webpackIgnore: true */ entryUrl);
+    const mod = await import(/* webpackIgnore: true */ /* @vite-ignore */ entryUrl);
 
     for (const u of Object.values(finalUrls)) {
         URL.revokeObjectURL(u);

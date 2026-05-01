@@ -1,6 +1,4 @@
 {
-    // See https://go.microsoft.com/fwlink/?LinkId=733558
-    // for the documentation about the tasks.json format
     "version": "2.0.0",
     "tasks": [
         {
@@ -15,7 +13,7 @@
             "problemMatcher": {
                 "fileLocation": "relative",
                 "pattern": {
-                    "regexp": "(error|warning|info)",
+                    "regexp": "^NEVER_MATCH_BUILD_TOOLS$",
                     "file": 1,
                     "location": 2,
                     "severity": 3,
@@ -28,7 +26,6 @@
                     "endsPattern": "watching for asset changes..."
                 }
             }
-            // "problemMatcher": ["$tsc-watch"]
         },
         {
             "label": "Watch all (Dev)",
@@ -198,7 +195,25 @@
             "presentation": {
                 "group": "watch"
             },
-            "problemMatcher": ["$ts-webpack-watch", "$tslint-webpack-watch"]
+            "problemMatcher": [
+                {
+                    "pattern": {
+                        "regexp": "^VITE_NEVER_MATCH$",
+                        "file": 1,
+                        "location": 2,
+                        "message": 3
+                    },
+                    "background": {
+                        "activeOnStart": true,
+                        "beginsPattern": {
+                            "regexp": ".*Executing task.*"
+                        },
+                        "endsPattern": {
+                            "regexp": ".*VITE.*ready.*"
+                        }
+                    }
+                }
+            ]
         },
         {
             "label": "Run and Watch Dev host (Dev)",
@@ -216,7 +231,25 @@
             "presentation": {
                 "group": "watch"
             },
-            "problemMatcher": ["$ts-webpack-watch", "$tslint-webpack-watch"]
+            "problemMatcher": [
+                {
+                    "pattern": {
+                        "regexp": "^VITE_NEVER_MATCH$",
+                        "file": 1,
+                        "location": 2,
+                        "message": 3
+                    },
+                    "background": {
+                        "activeOnStart": true,
+                        "beginsPattern": {
+                            "regexp": ".*Executing task.*"
+                        },
+                        "endsPattern": {
+                            "regexp": ".*VITE.*ready.*"
+                        }
+                    }
+                }
+            ]
         },
         {
             "label": "CDN Serve and watch (Dev)",
@@ -234,7 +267,25 @@
             "presentation": {
                 "group": "watch"
             },
-            "problemMatcher": ["$ts-webpack-watch", "$tslint-webpack-watch"]
+            "problemMatcher": [
+                {
+                    "pattern": {
+                        "regexp": "^VITE_NEVER_MATCH$",
+                        "file": 1,
+                        "location": 2,
+                        "message": 3
+                    },
+                    "background": {
+                        "activeOnStart": true,
+                        "beginsPattern": {
+                            "regexp": ".*Executing task.*"
+                        },
+                        "endsPattern": {
+                            "regexp": ".*VITE.*ready.*"
+                        }
+                    }
+                }
+            ]
         },
         {
             "label": "CDN Serve (Dev)",
@@ -247,30 +298,30 @@
             "options": {
                 "cwd": "${workspaceFolder}"
             },
-            "args": ["run", "serve", "-w", "@tools/babylon-server"],
+            "args": ["run", "serve:no-watch", "-w", "@tools/babylon-server"],
             "isBackground": true,
             "presentation": {
                 "group": "serve"
             },
-            "problemMatcher": ["$ts-webpack-watch", "$tslint-webpack-watch"]
-        },
-        {
-            "label": "CDN Serve Prod (Dev)",
-            "dependsOn": ["Build (Dev)"],
-            "type": "shell",
-            "command": "npm",
-            "runOptions": {
-                "instanceLimit": 1
-            },
-            "options": {
-                "cwd": "${workspaceFolder}"
-            },
-            "args": ["run", "serve:prod", "-w", "@tools/babylon-server"],
-            "isBackground": true,
-            "presentation": {
-                "group": "serve"
-            },
-            "problemMatcher": ["$ts-webpack-watch", "$tslint-webpack-watch"]
+            "problemMatcher": [
+                {
+                    "pattern": {
+                        "regexp": "^VITE_NEVER_MATCH$",
+                        "file": 1,
+                        "location": 2,
+                        "message": 3
+                    },
+                    "background": {
+                        "activeOnStart": true,
+                        "beginsPattern": {
+                            "regexp": ".*Executing task.*"
+                        },
+                        "endsPattern": {
+                            "regexp": ".*VITE.*ready.*"
+                        }
+                    }
+                }
+            ]
         },
         {
             "label": "Playground Serve for core (Dev)",
@@ -288,7 +339,25 @@
             "presentation": {
                 "group": "serve"
             },
-            "problemMatcher": ["$ts-webpack-watch", "$tslint-webpack-watch"]
+            "problemMatcher": [
+                {
+                    "pattern": {
+                        "regexp": "^VITE_NEVER_MATCH$",
+                        "file": 1,
+                        "location": 2,
+                        "message": 3
+                    },
+                    "background": {
+                        "activeOnStart": true,
+                        "beginsPattern": {
+                            "regexp": ".*Executing task.*"
+                        },
+                        "endsPattern": {
+                            "regexp": ".*VITE.*ready.*"
+                        }
+                    }
+                }
+            ]
         },
         {
             "label": "Playground Serve (Dev)",
@@ -306,7 +375,25 @@
             "presentation": {
                 "group": "serve"
             },
-            "problemMatcher": ["$ts-webpack-watch", "$tslint-webpack-watch"]
+            "problemMatcher": [
+                {
+                    "pattern": {
+                        "regexp": "^VITE_NEVER_MATCH$",
+                        "file": 1,
+                        "location": 2,
+                        "message": 3
+                    },
+                    "background": {
+                        "activeOnStart": true,
+                        "beginsPattern": {
+                            "regexp": ".*Executing task.*"
+                        },
+                        "endsPattern": {
+                            "regexp": ".*VITE.*ready.*"
+                        }
+                    }
+                }
+            ]
         },
         {
             "label": "Sandbox Serve for core (Dev)",
@@ -324,7 +411,25 @@
             "presentation": {
                 "group": "serve"
             },
-            "problemMatcher": ["$ts-webpack-watch", "$tslint-webpack-watch"]
+            "problemMatcher": [
+                {
+                    "pattern": {
+                        "regexp": "^VITE_NEVER_MATCH$",
+                        "file": 1,
+                        "location": 2,
+                        "message": 3
+                    },
+                    "background": {
+                        "activeOnStart": true,
+                        "beginsPattern": {
+                            "regexp": ".*Executing task.*"
+                        },
+                        "endsPattern": {
+                            "regexp": ".*VITE.*ready.*"
+                        }
+                    }
+                }
+            ]
         },
         {
             "label": "Sandbox Serve (Dev)",
@@ -342,7 +447,25 @@
             "presentation": {
                 "group": "serve"
             },
-            "problemMatcher": ["$ts-webpack-watch", "$tslint-webpack-watch"]
+            "problemMatcher": [
+                {
+                    "pattern": {
+                        "regexp": "^VITE_NEVER_MATCH$",
+                        "file": 1,
+                        "location": 2,
+                        "message": 3
+                    },
+                    "background": {
+                        "activeOnStart": true,
+                        "beginsPattern": {
+                            "regexp": ".*Executing task.*"
+                        },
+                        "endsPattern": {
+                            "regexp": ".*VITE.*ready.*"
+                        }
+                    }
+                }
+            ]
         },
         {
             "label": "GUI Editor Serve for core (Dev)",
@@ -360,7 +483,25 @@
             "presentation": {
                 "group": "serve"
             },
-            "problemMatcher": ["$ts-webpack-watch", "$tslint-webpack-watch"]
+            "problemMatcher": [
+                {
+                    "pattern": {
+                        "regexp": "^VITE_NEVER_MATCH$",
+                        "file": 1,
+                        "location": 2,
+                        "message": 3
+                    },
+                    "background": {
+                        "activeOnStart": true,
+                        "beginsPattern": {
+                            "regexp": ".*Executing task.*"
+                        },
+                        "endsPattern": {
+                            "regexp": ".*VITE.*ready.*"
+                        }
+                    }
+                }
+            ]
         },
         {
             "label": "GUI Editor Serve (Dev)",
@@ -378,7 +519,25 @@
             "presentation": {
                 "group": "serve"
             },
-            "problemMatcher": ["$ts-webpack-watch", "$tslint-webpack-watch"]
+            "problemMatcher": [
+                {
+                    "pattern": {
+                        "regexp": "^VITE_NEVER_MATCH$",
+                        "file": 1,
+                        "location": 2,
+                        "message": 3
+                    },
+                    "background": {
+                        "activeOnStart": true,
+                        "beginsPattern": {
+                            "regexp": ".*Executing task.*"
+                        },
+                        "endsPattern": {
+                            "regexp": ".*VITE.*ready.*"
+                        }
+                    }
+                }
+            ]
         },
         {
             "label": "Node Editor Serve for core (Dev)",
@@ -396,7 +555,25 @@
             "presentation": {
                 "group": "serve"
             },
-            "problemMatcher": ["$ts-webpack-watch", "$tslint-webpack-watch"]
+            "problemMatcher": [
+                {
+                    "pattern": {
+                        "regexp": "^VITE_NEVER_MATCH$",
+                        "file": 1,
+                        "location": 2,
+                        "message": 3
+                    },
+                    "background": {
+                        "activeOnStart": true,
+                        "beginsPattern": {
+                            "regexp": ".*Executing task.*"
+                        },
+                        "endsPattern": {
+                            "regexp": ".*VITE.*ready.*"
+                        }
+                    }
+                }
+            ]
         },
         {
             "label": "Node Editor Serve (Dev)",
@@ -414,7 +591,25 @@
             "presentation": {
                 "group": "serve"
             },
-            "problemMatcher": ["$ts-webpack-watch", "$tslint-webpack-watch"]
+            "problemMatcher": [
+                {
+                    "pattern": {
+                        "regexp": "^VITE_NEVER_MATCH$",
+                        "file": 1,
+                        "location": 2,
+                        "message": 3
+                    },
+                    "background": {
+                        "activeOnStart": true,
+                        "beginsPattern": {
+                            "regexp": ".*Executing task.*"
+                        },
+                        "endsPattern": {
+                            "regexp": ".*VITE.*ready.*"
+                        }
+                    }
+                }
+            ]
         },
         {
             "label": "Node Geometry Editor Serve for core (Dev)",
@@ -432,7 +627,25 @@
             "presentation": {
                 "group": "serve"
             },
-            "problemMatcher": ["$ts-webpack-watch", "$tslint-webpack-watch"]
+            "problemMatcher": [
+                {
+                    "pattern": {
+                        "regexp": "^VITE_NEVER_MATCH$",
+                        "file": 1,
+                        "location": 2,
+                        "message": 3
+                    },
+                    "background": {
+                        "activeOnStart": true,
+                        "beginsPattern": {
+                            "regexp": ".*Executing task.*"
+                        },
+                        "endsPattern": {
+                            "regexp": ".*VITE.*ready.*"
+                        }
+                    }
+                }
+            ]
         },
         {
             "label": "Node Geometry Editor Serve (Dev)",
@@ -450,7 +663,25 @@
             "presentation": {
                 "group": "serve"
             },
-            "problemMatcher": ["$ts-webpack-watch", "$tslint-webpack-watch"]
+            "problemMatcher": [
+                {
+                    "pattern": {
+                        "regexp": "^VITE_NEVER_MATCH$",
+                        "file": 1,
+                        "location": 2,
+                        "message": 3
+                    },
+                    "background": {
+                        "activeOnStart": true,
+                        "beginsPattern": {
+                            "regexp": ".*Executing task.*"
+                        },
+                        "endsPattern": {
+                            "regexp": ".*VITE.*ready.*"
+                        }
+                    }
+                }
+            ]
         },
         {
             "label": "Flow Graph Editor Serve for core (Dev)",
@@ -471,7 +702,25 @@
             "presentation": {
                 "group": "serve"
             },
-            "problemMatcher": ["$ts-webpack-watch", "$tslint-webpack-watch"]
+            "problemMatcher": [
+                {
+                    "pattern": {
+                        "regexp": "^VITE_NEVER_MATCH$",
+                        "file": 1,
+                        "location": 2,
+                        "message": 3
+                    },
+                    "background": {
+                        "activeOnStart": true,
+                        "beginsPattern": {
+                            "regexp": ".*Executing task.*"
+                        },
+                        "endsPattern": {
+                            "regexp": ".*VITE.*ready.*"
+                        }
+                    }
+                }
+            ]
         },
         {
             "label": "Flow Graph Editor Serve (Dev)",
@@ -492,7 +741,25 @@
             "presentation": {
                 "group": "serve"
             },
-            "problemMatcher": ["$ts-webpack-watch", "$tslint-webpack-watch"]
+            "problemMatcher": [
+                {
+                    "pattern": {
+                        "regexp": "^VITE_NEVER_MATCH$",
+                        "file": 1,
+                        "location": 2,
+                        "message": 3
+                    },
+                    "background": {
+                        "activeOnStart": true,
+                        "beginsPattern": {
+                            "regexp": ".*Executing task.*"
+                        },
+                        "endsPattern": {
+                            "regexp": ".*VITE.*ready.*"
+                        }
+                    }
+                }
+            ]
         },
         {
             "label": "Node Render Graph Editor Serve for core (Dev)",
@@ -510,7 +777,25 @@
             "presentation": {
                 "group": "serve"
             },
-            "problemMatcher": ["$ts-webpack-watch", "$tslint-webpack-watch"]
+            "problemMatcher": [
+                {
+                    "pattern": {
+                        "regexp": "^VITE_NEVER_MATCH$",
+                        "file": 1,
+                        "location": 2,
+                        "message": 3
+                    },
+                    "background": {
+                        "activeOnStart": true,
+                        "beginsPattern": {
+                            "regexp": ".*Executing task.*"
+                        },
+                        "endsPattern": {
+                            "regexp": ".*VITE.*ready.*"
+                        }
+                    }
+                }
+            ]
         },
         {
             "label": "Node Render Graph Editor Serve (Dev)",
@@ -528,7 +813,25 @@
             "presentation": {
                 "group": "serve"
             },
-            "problemMatcher": ["$ts-webpack-watch", "$tslint-webpack-watch"]
+            "problemMatcher": [
+                {
+                    "pattern": {
+                        "regexp": "^VITE_NEVER_MATCH$",
+                        "file": 1,
+                        "location": 2,
+                        "message": 3
+                    },
+                    "background": {
+                        "activeOnStart": true,
+                        "beginsPattern": {
+                            "regexp": ".*Executing task.*"
+                        },
+                        "endsPattern": {
+                            "regexp": ".*VITE.*ready.*"
+                        }
+                    }
+                }
+            ]
         },
         {
             "label": "Node Particle Editor Serve for core (Dev)",
@@ -546,7 +849,25 @@
             "presentation": {
                 "group": "serve"
             },
-            "problemMatcher": ["$ts-webpack-watch", "$tslint-webpack-watch"]
+            "problemMatcher": [
+                {
+                    "pattern": {
+                        "regexp": "^VITE_NEVER_MATCH$",
+                        "file": 1,
+                        "location": 2,
+                        "message": 3
+                    },
+                    "background": {
+                        "activeOnStart": true,
+                        "beginsPattern": {
+                            "regexp": ".*Executing task.*"
+                        },
+                        "endsPattern": {
+                            "regexp": ".*VITE.*ready.*"
+                        }
+                    }
+                }
+            ]
         },
         {
             "label": "Node Particle Editor Serve (Dev)",
@@ -564,7 +885,25 @@
             "presentation": {
                 "group": "serve"
             },
-            "problemMatcher": ["$ts-webpack-watch", "$tslint-webpack-watch"]
+            "problemMatcher": [
+                {
+                    "pattern": {
+                        "regexp": "^VITE_NEVER_MATCH$",
+                        "file": 1,
+                        "location": 2,
+                        "message": 3
+                    },
+                    "background": {
+                        "activeOnStart": true,
+                        "beginsPattern": {
+                            "regexp": ".*Executing task.*"
+                        },
+                        "endsPattern": {
+                            "regexp": ".*VITE.*ready.*"
+                        }
+                    }
+                }
+            ]
         },
         {
             "label": "Smart Filter Editor Serve (Dev)",
@@ -600,7 +939,25 @@
             "presentation": {
                 "group": "serve"
             },
-            "problemMatcher": ["$ts-webpack-watch", "$tslint-webpack-watch"]
+            "problemMatcher": [
+                {
+                    "pattern": {
+                        "regexp": "^VITE_NEVER_MATCH$",
+                        "file": 1,
+                        "location": 2,
+                        "message": 3
+                    },
+                    "background": {
+                        "activeOnStart": true,
+                        "beginsPattern": {
+                            "regexp": ".*Executing task.*"
+                        },
+                        "endsPattern": {
+                            "regexp": ".*VITE.*ready.*"
+                        }
+                    }
+                }
+            ]
         },
         {
             "label": "VSM Serve (Dev)",
@@ -618,7 +975,25 @@
             "presentation": {
                 "group": "serve"
             },
-            "problemMatcher": ["$ts-webpack-watch", "$tslint-webpack-watch"]
+            "problemMatcher": [
+                {
+                    "pattern": {
+                        "regexp": "^VITE_NEVER_MATCH$",
+                        "file": 1,
+                        "location": 2,
+                        "message": 3
+                    },
+                    "background": {
+                        "activeOnStart": true,
+                        "beginsPattern": {
+                            "regexp": ".*Executing task.*"
+                        },
+                        "endsPattern": {
+                            "regexp": ".*VITE.*ready.*"
+                        }
+                    }
+                }
+            ]
         },
         {
             "label": "Terminate All Tasks",

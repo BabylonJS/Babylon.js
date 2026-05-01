@@ -53,7 +53,12 @@
             specularColoredFresnel = specularFresnel * specular_color;
             
             #ifdef THIN_FILM
-                var thinFilmDielectricFresnel: vec3f = evalIridescence(thin_film_outside_ior, thin_film_ior, preInfo{X}.VdotH, thin_film_thickness, baseDielectricReflectance.coloredF0);
+                // evalIridescence recovers IOR from baseDielectricReflectance.F0 internally.
+                // F0 already bakes in specular_weight as mix(0, F0_ior, weight), so the
+                // specular_weight → thin-film-strength relationship is preserved. The maxR1
+                // guard inside evalIridescence suppresses spurious colour when film IOR matches
+                // the substrate IOR (e.g. specular_ior == thin_film_ior at weight=1).
+                var thinFilmDielectricFresnel: vec3f = evalIridescence(thin_film_outside_ior, thin_film_ior, preInfo{X}.VdotH, thin_film_thickness, vec3f(baseDielectricReflectance.F0));
                 // Desaturate the thin film fresnel based on thickness and angle - this brings the results much
                 // closer to path-tracing reference.
                 thinFilmDielectricFresnel = mix(thinFilmDielectricFresnel, vec3f(dot(thinFilmDielectricFresnel, vec3f(0.3333f))), thin_film_desaturation_scale);
@@ -226,11 +231,17 @@
             #endif
 
             #ifdef THIN_FILM
-                var thinFilmConductorFresnel = evalIridescence(thin_film_outside_ior, thin_film_ior, preInfo{X}.VdotH, thin_film_thickness, baseConductorReflectance.coloredF0);
+                // getF82Specular clamps cos_theta = max(specular_roughness, VdotH) to prevent the
+                // Schlick curve from reaching white for rough surfaces. Without the same clamp,
+                // evalIridescence evaluates at VdotH=0 and returns 1.0 (Schlick F90=1), while the
+                // F82 baseline evaluates at max(roughness, 0) = roughness — a much lower value.
+                // Applying the same floor makes the thin film Fresnel match the F82 baseline magnitude.
+                let thinFilmConductorAngle: f32 = max(preInfo{X}.VdotH, specular_roughness);
+                var thinFilmConductorFresnel: vec3f = evalIridescence(thin_film_outside_ior, thin_film_ior, thinFilmConductorAngle, thin_film_thickness, baseConductorReflectance.coloredF0);
                 // Desaturate the thin film fresnel based on thickness and angle - this brings the results much
                 // closer to path-tracing reference.
                 thinFilmConductorFresnel = mix(thinFilmConductorFresnel, vec3f(dot(thinFilmConductorFresnel, vec3f(0.3333f))), thin_film_desaturation_scale);
-                coloredFresnel = mix(coloredFresnel, specular_weight * thin_film_ior_scale * thinFilmConductorFresnel, thin_film_weight);
+                coloredFresnel = mix(coloredFresnel, specular_weight * thinFilmConductorFresnel, thin_film_weight * thin_film_ior_scale);
             #endif
 
             #ifdef ANISOTROPIC_BASE

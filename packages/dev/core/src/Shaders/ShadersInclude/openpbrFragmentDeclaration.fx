@@ -81,11 +81,14 @@ uniform vec2 vAmbientOcclusionInfos;
 
 #ifdef GEOMETRY_NORMAL
 uniform vec2 vGeometryNormalInfos;
-uniform vec2 vTangentSpaceParams;
 #endif
 
 #ifdef GEOMETRY_TANGENT
 uniform vec2 vGeometryTangentInfos;
+#endif
+
+#if defined(GEOMETRY_NORMAL) || defined(GEOMETRY_COAT_NORMAL)
+    uniform vec2 vTangentSpaceParams;
 #endif
 
 #ifdef GEOMETRY_COAT_NORMAL

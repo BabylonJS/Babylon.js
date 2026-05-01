@@ -98,6 +98,7 @@ export class IblCdfGeneratorSceneComponent implements ISceneComponent {
     public register(): void {
         this._updateIblSource();
         this._newIblObserver = this.scene.onEnvironmentTextureChangedObservable.add(this._updateIblSource.bind(this));
+        this.scene.addIsReadyCheck(this);
     }
 
     /**
@@ -113,6 +114,22 @@ export class IblCdfGeneratorSceneComponent implements ISceneComponent {
      */
     public dispose(): void {
         this.scene.onEnvironmentTextureChangedObservable.remove(this._newIblObserver);
+        this.scene.removeIsReadyCheck(this);
+    }
+
+    /**
+     * @returns true once the CDF generator's procedural textures and effects are ready.
+     * Used by `Scene.isReady` so that `executeWhenReady` waits for the CDF maps to be
+     * generated before declaring the scene ready to render.
+     */
+    public isReady(): boolean {
+        const generator = this.scene._iblCdfGenerator;
+        // If there's no generator, or no environment texture for it to consume,
+        // there's nothing to wait for - report ready so Scene.isReady() doesn't stall.
+        if (!generator || !this.scene.environmentTexture) {
+            return true;
+        }
+        return !!generator.isReady();
     }
 
     private _updateIblSource(): void {

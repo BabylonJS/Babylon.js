@@ -373,3 +373,67 @@ describe("decomposeWorldMatrixAtFrame", () => {
         expect(node.rotationCurrent).toBeCloseTo(0, 5); // reset restored startValue; decomposeWorldMatrixAtFrame did not mutate
     });
 });
+
+describe("Node loop reset of nested animated nodes", () => {
+    // Regression: when looping back to a frame that is BEFORE the first keyframe of an animated
+    // child node, the controller's reset()+update(currentFrame) sequence used to leave the child's
+    // localMatrix at the END-of-previous-loop interpolated value, even though `currentValue` had
+    // been correctly reset to `startValue`. The cause was that `Node.update` only honored
+    // `isReset` on the node it was first called on (the root) and did not propagate it to
+    // children, so animated descendants whose animation functions return false at the new frame
+    // (idx < 0 — frame before first keyframe) never recomposed their localMatrix.
+    //
+    // This was visible in the Pages.json animation where layers parented under "Null 19" / "Null
+    // Pages" (which have keyframes starting at t=37 / t=109) appeared in their previous-loop
+    // end-state for the first ~30+ frames of every loop.
+    it("recomposes a nested animated child's worldMatrix after looping back before its first keyframe", () => {
+        // Parent: animated keyframes 30→60. Mirrors a "Null" layer whose own animation starts late.
+        const parentScale: Vector2Property = {
+            startValue: { x: 1, y: 1 },
+            currentValue: { x: 1, y: 1 },
+            currentKeyframeIndex: 0,
+            keyframes: [
+                { time: 30, value: { x: 1, y: 1 }, easeFunction1: linearEase(), easeFunction2: linearEase() },
+                { time: 60, value: { x: 5, y: 5 }, easeFunction1: linearEase(), easeFunction2: linearEase() },
+            ],
+        };
+        const parent = new Node("parent", undefined, undefined, parentScale);
+        parent.isVisible = true;
+
+        // Child: own animated position with first keyframe at t=10. Its localMatrix gets recomposed
+        // every time its animation function fires (frames 10..40), then stays at the final
+        // interpolated value once frame > 40.
+        const childPosition = makePositionProperty(0, 0, [
+            { time: 10, x: 0, y: 0 },
+            { time: 40, x: 100, y: 200 },
+        ]);
+        const child = new Node("child", childPosition, undefined, undefined, undefined, parent);
+        child.isVisible = true;
+
+        // Drive the animation to its end so both parent.localMatrix and child.localMatrix sit at
+        // their last-keyframe interpolated values.
+        parent.update(90);
+
+        // Sanity: child's local position is at the last keyframe value before the loop reset.
+        expect(child.positionCurrent.x).toBeCloseTo(100, 5);
+        expect(child.positionCurrent.y).toBeCloseTo(200, 5);
+
+        // Loop back: reset all properties and replay from frame 0 (before the child's first
+        // keyframe at t=10). This mirrors what AnimationController does on loop wrap.
+        parent.reset();
+        parent.update(0);
+
+        // After reset+update at frame 0:
+        //  - child.currentValue must be back to startValue (0, 0) — reset's responsibility.
+        //  - child.worldMatrix translation must reflect (0, 0) too — i.e. its localMatrix must
+        //    have been recomposed from the reset currentValue, not left at the end-of-loop state.
+        expect(child.positionCurrent.x).toBeCloseTo(0, 5);
+        expect(child.positionCurrent.y).toBeCloseTo(0, 5);
+
+        const worldScale = { x: 0, y: 0 };
+        const worldTranslation = { x: 0, y: 0 };
+        child.worldMatrix.decompose(worldScale, worldTranslation);
+        expect(worldTranslation.x).toBeCloseTo(0, 5);
+        expect(worldTranslation.y).toBeCloseTo(0, 5);
+    });
+});

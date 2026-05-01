@@ -57,7 +57,7 @@ Scene.prototype.enableDepthRenderer = function (
     if (!this._depthRenderer) {
         this._depthRenderer = {};
     }
-    if (!this._depthRenderer[camera.id]) {
+    if (!this._depthRenderer[camera.uniqueId]) {
         const supportFullfloat = !!this.getEngine().getCaps().textureFloatRender;
         let textureType: number;
         if (this.getEngine().getCaps().textureHalfFloatRender && (!force32bitsFloat || !supportFullfloat)) {
@@ -67,19 +67,28 @@ Scene.prototype.enableDepthRenderer = function (
         } else {
             textureType = Constants.TEXTURETYPE_UNSIGNED_BYTE;
         }
-        this._depthRenderer[camera.id] = new DepthRenderer(this, textureType, camera, storeNonLinearDepth, samplingMode, storeCameraSpaceZ, undefined, existingRenderTargetTexture);
+        this._depthRenderer[camera.uniqueId] = new DepthRenderer(
+            this,
+            textureType,
+            camera,
+            storeNonLinearDepth,
+            samplingMode,
+            storeCameraSpaceZ,
+            undefined,
+            existingRenderTargetTexture
+        );
     }
 
-    return this._depthRenderer[camera.id];
+    return this._depthRenderer[camera.uniqueId];
 };
 
 Scene.prototype.disableDepthRenderer = function (camera?: Nullable<Camera>): void {
     camera = camera || this.activeCamera;
-    if (!camera || !this._depthRenderer || !this._depthRenderer[camera.id]) {
+    if (!camera || !this._depthRenderer || !this._depthRenderer[camera.uniqueId]) {
         return;
     }
 
-    this._depthRenderer[camera.id].dispose();
+    this._depthRenderer[camera.uniqueId].dispose();
 };
 
 /**
@@ -178,7 +187,7 @@ export class DepthRendererSceneComponent implements ISceneComponent {
         if (this.scene._depthRenderer) {
             for (const key in this.scene._depthRenderer) {
                 const depthRenderer = this.scene._depthRenderer[key];
-                if (depthRenderer.enabled && depthRenderer.useOnlyInActiveCamera && this.scene.activeCamera!.id === key) {
+                if (depthRenderer.enabled && depthRenderer.useOnlyInActiveCamera && `${this.scene.activeCamera!.uniqueId}` === key) {
                     renderTargets.push(depthRenderer.getDepthMap());
                 }
             }
