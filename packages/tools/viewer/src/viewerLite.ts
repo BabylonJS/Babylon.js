@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { type IColor4Like, type Nullable } from "core/index";
+import { type Nullable } from "core/index";
 import { AbortError } from "core/Misc/error";
 import { Logger } from "core/Misc/logger";
 
@@ -222,13 +222,12 @@ export class Viewer extends ViewerBase implements IViewer {
         this._engine.canvas.addEventListener("pointermove", onPointerActivity);
         this._engine.canvas.addEventListener("wheel", onPointerActivity);
 
-        // Clear color — default to transparent black (matching full Viewer)
-        this._scene.clearColor = {
-            r: _options?.clearColor?.[0] ?? 0,
-            g: _options?.clearColor?.[1] ?? 0,
-            b: _options?.clearColor?.[2] ?? 0,
-            a: _options?.clearColor?.[3] ?? 0,
-        };
+        // Clear color — initialize base field from options, then push to engine.
+        this._clearColor.r = _options?.clearColor?.[0] ?? 0;
+        this._clearColor.g = _options?.clearColor?.[1] ?? 0;
+        this._clearColor.b = _options?.clearColor?.[2] ?? 0;
+        this._clearColor.a = _options?.clearColor?.[3] ?? 0;
+        this._applyClearColor();
 
         // Auto-orbit, environment config, animation speed, and hot spots are initialized
         // inline at the field declarations.
@@ -283,17 +282,13 @@ export class Viewer extends ViewerBase implements IViewer {
 
     // ── Clear Color ──
 
-    public get clearColor(): IColor4Like {
-        return this._scene.clearColor;
-    }
-
-    public set clearColor(value: IColor4Like) {
+    /** @internal */
+    protected override _applyClearColor(): void {
         const cc = this._scene.clearColor;
-        cc.r = value.r;
-        cc.g = value.g;
-        cc.b = value.b;
-        cc.a = value.a;
-        this.onClearColorChanged.notifyObservers();
+        cc.r = this._clearColor.r;
+        cc.g = this._clearColor.g;
+        cc.b = this._clearColor.b;
+        cc.a = this._clearColor.a;
     }
 
     // ── Camera ──

@@ -1207,6 +1207,35 @@ export abstract class ViewerBase {
      */
     protected abstract _applyCameraAutoOrbitDelay(): void;
 
+    // ── Clear color ──
+
+    /**
+     * @internal The current scene clear color, stored as a stable mutable record so consumers
+     * holding a reference returned by the `clearColor` getter see updates from the setter and from
+     * `reset("environment")`. The setter mutates this object in-place rather than replacing it.
+     */
+    protected readonly _clearColor: IColor4Like = { r: 0, g: 0, b: 0, a: 0 };
+
+    public get clearColor(): IColor4Like {
+        return this._clearColor;
+    }
+
+    public set clearColor(value: IColor4Like) {
+        this._clearColor.r = value.r;
+        this._clearColor.g = value.g;
+        this._clearColor.b = value.b;
+        this._clearColor.a = value.a;
+        this._applyClearColor();
+        this.onClearColorChanged.notifyObservers();
+    }
+
+    /**
+     * @internal Push the current `_clearColor` value into the engine's scene state. Called by the
+     * public `clearColor` setter; subclasses may also call this directly during construction to sync
+     * engine state to the initial field values.
+     */
+    protected abstract _applyClearColor(): void;
+
     // ──────────────────────────────────────────────────────────────────────────
     // Model loading orchestration
     // ──────────────────────────────────────────────────────────────────────────

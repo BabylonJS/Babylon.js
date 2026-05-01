@@ -13,7 +13,6 @@ import {
     type HDRCubeTexture,
     type IblCdfGenerator,
     type IblShadowsRenderPipeline,
-    type IColor4Like,
     type IDisposable,
     type IMeshDataCache,
     type ISceneLoaderProgressEvent,
@@ -39,7 +38,7 @@ import { BackgroundMaterial } from "core/Materials/Background/backgroundMaterial
 import { ImageProcessingConfiguration } from "core/Materials/imageProcessingConfiguration";
 import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import { Texture } from "core/Materials/Textures/texture";
-import { Color3, Color4 } from "core/Maths/math.color";
+import { Color3 } from "core/Maths/math.color";
 import { Clamp, Lerp } from "core/Maths/math.scalar.functions";
 import { Matrix, Vector2, Vector3 } from "core/Maths/math.vector";
 import { Viewport } from "core/Maths/math.viewport";
@@ -469,15 +468,12 @@ export class Viewer extends ViewerBase implements IDisposable, IViewer {
     /**
      * Gets or sets the clear color (background color) of the viewer.
      */
-    public get clearColor(): IColor4Like {
-        return this._scene.clearColor;
-    }
-
-    public set clearColor(value: IColor4Like) {
-        this._scene.clearColor.r = value.r;
-        this._scene.clearColor.g = value.g;
-        this._scene.clearColor.b = value.b;
-        this._scene.clearColor.a = value.a;
+    /** @internal */
+    protected override _applyClearColor(): void {
+        this._scene.clearColor.r = this._clearColor.r;
+        this._scene.clearColor.g = this._clearColor.g;
+        this._scene.clearColor.b = this._clearColor.b;
+        this._scene.clearColor.a = this._clearColor.a;
     }
 
     /**
@@ -2088,7 +2084,8 @@ export class Viewer extends ViewerBase implements IDisposable, IViewer {
 
     /** @internal */
     protected override _resetEnvironment(): void {
-        this._scene.clearColor = new Color4(...(this._options?.clearColor ?? DefaultViewerOptions.clearColor));
+        const cc = this._options?.clearColor ?? DefaultViewerOptions.clearColor;
+        this.clearColor = { r: cc[0], g: cc[1], b: cc[2], a: cc[3] ?? 1 };
         this.environmentConfig = {
             intensity: this._options?.environmentConfig?.intensity ?? DefaultViewerOptions.environmentConfig.intensity,
             blur: this._options?.environmentConfig?.blur ?? DefaultViewerOptions.environmentConfig.blur,
