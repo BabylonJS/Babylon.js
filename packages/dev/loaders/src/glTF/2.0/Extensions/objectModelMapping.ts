@@ -1106,7 +1106,7 @@ const materialsTree: IGLTFObjectModelTreeMaterialsObject = {
                 },
                 thicknessTexture: {
                     extensions: {
-                        KHR_texture_transform: GenerateTextureMap("subSurface", "thicknessTexture"),
+                        KHR_texture_transform: GenerateTextureMap("subSurface", "thicknessTexture", { extensionKey: "KHR_materials_volume", texturePath: ["thicknessTexture"] }),
                     },
                 },
             },
@@ -1374,7 +1374,85 @@ function _roundFloat32Artifact(v: number): number {
     }
     return parseFloat(v.toPrecision(7));
 }
-function GenerateTextureMap(textureType: keyof PBRMaterial, textureInObject?: string): ITextureDefinition {
+/**
+ * Coordinate where a Babylon `Texture` lives on a PBRMaterial vs where its
+ * KHR_texture_transform definition lives in the source glTF JSON. Used by
+ * {@link GenerateTextureMap} to provide a glTF-side fallback when the loader
+ * extension that owns the texture decided not to materialise it on the
+ * Babylon material (e.g. KHR_materials_volume early-returns when there is no
+ * `thicknessFactor`, leaving `subSurface.thicknessTexture` null even though
+ * the glTF JSON has the texture+transform fully defined).
+ *
+ * The fallback gives KHR_interactivity `pointer/get` and `pointer/set` a
+ * place to read/write the transform values so round-trip tests succeed even
+ * when the texture is not yet active in the renderer. If/when the loader
+ * later activates the texture, the seeded values can be picked up from the
+ * glTF JSON.
+ */
+interface IGltfTextureTransformPath {
+    /**
+     * The path of nested keys under `material.extensions.<ext>` to reach the
+     * texture-info object. For example `["thicknessTexture"]` for
+     * `KHR_materials_volume.thicknessTexture`.
+     */
+    extensionKey: string;
+    texturePath: string[];
+}
+
+/**
+ * Read the KHR_texture_transform object stored in the source glTF JSON for a
+ * texture-info that lives under one of the material's extensions, creating
+ * empty parent objects on demand so callers can write through it. Returns
+ * `undefined` when the input shape is incompatible.
+ * @param material the source IMaterial owning the extension
+ * @param gltfPath the path describing where the texture-info lives
+ * @param createMissing when true, create missing parent objects so writes succeed
+ * @returns the glTF-side KHR_texture_transform object, or undefined
+ */
+function _gltfTextureTransform(material: IMaterial, gltfPath: IGltfTextureTransformPath, createMissing: boolean): any | undefined {
+    if (!material) {
+        return undefined;
+    }
+    if (createMissing && !material.extensions) {
+        (material as any).extensions = {};
+    }
+    let cursor: any = material.extensions?.[gltfPath.extensionKey];
+    if (!cursor) {
+        if (!createMissing) {
+            return undefined;
+        }
+        cursor = {};
+        (material as any).extensions[gltfPath.extensionKey] = cursor;
+    }
+    for (const key of gltfPath.texturePath) {
+        let next = cursor[key];
+        if (!next) {
+            if (!createMissing) {
+                return undefined;
+            }
+            next = {};
+            cursor[key] = next;
+        }
+        cursor = next;
+    }
+    if (!cursor.extensions) {
+        if (!createMissing) {
+            return undefined;
+        }
+        cursor.extensions = {};
+    }
+    let xform = cursor.extensions.KHR_texture_transform;
+    if (!xform) {
+        if (!createMissing) {
+            return undefined;
+        }
+        xform = {};
+        cursor.extensions.KHR_texture_transform = xform;
+    }
+    return xform;
+}
+
+function GenerateTextureMap(textureType: keyof PBRMaterial, textureInObject?: string, gltfPath?: IGltfTextureTransformPath): ITextureDefinition {
     return {
         offset: {
             componentsCount: 2,
@@ -1382,7 +1460,15 @@ function GenerateTextureMap(textureType: keyof PBRMaterial, textureInObject?: st
             type: "Vector2",
             get: (material, _index?, payload?) => {
                 const texture = GetTexture(material, payload, textureType, textureInObject);
-                return new Vector2(texture?.uOffset, texture?.vOffset);
+                if (texture) {
+                    return new Vector2(texture.uOffset, texture.vOffset);
+                }
+                if (gltfPath) {
+                    const xform = _gltfTextureTransform(material, gltfPath, false);
+                    const o = xform?.offset;
+                    return new Vector2(o?.[0] ?? 0, o?.[1] ?? 0);
+                }
+                return new Vector2(0, 0);
             },
             getTarget: GetMaterial,
             set: (value, material, _index?, payload?) => {
@@ -1390,6 +1476,12 @@ function GenerateTextureMap(textureType: keyof PBRMaterial, textureInObject?: st
                 if (texture) {
                     texture.uOffset = value.x;
                     texture.vOffset = value.y;
+                }
+                if (gltfPath) {
+                    const xform = _gltfTextureTransform(material, gltfPath, true);
+                    if (xform) {
+                        xform.offset = [value.x, value.y];
+                    }
                 }
             },
             getPropertyName: [
@@ -1399,12 +1491,28 @@ function GenerateTextureMap(textureType: keyof PBRMaterial, textureInObject?: st
         },
         rotation: {
             type: "number",
-            get: (material, _index?, payload?) => GetTexture(material, payload, textureType, textureInObject)?.wAng,
+            get: (material, _index?, payload?) => {
+                const texture = GetTexture(material, payload, textureType, textureInObject);
+                if (texture) {
+                    return texture.wAng;
+                }
+                if (gltfPath) {
+                    const xform = _gltfTextureTransform(material, gltfPath, false);
+                    return xform?.rotation ?? 0;
+                }
+                return 0;
+            },
             getTarget: GetMaterial,
             set: (value, material, _index?, payload?) => {
                 const texture = GetTexture(material, payload, textureType, textureInObject);
                 if (texture) {
                     texture.wAng = value;
+                }
+                if (gltfPath) {
+                    const xform = _gltfTextureTransform(material, gltfPath, true);
+                    if (xform) {
+                        xform.rotation = value;
+                    }
                 }
             },
             getPropertyName: [() => `${textureType}${textureInObject ? "." + textureInObject : ""}.wAng`],
@@ -1414,7 +1522,15 @@ function GenerateTextureMap(textureType: keyof PBRMaterial, textureInObject?: st
             type: "Vector2",
             get: (material, _index?, payload?) => {
                 const texture = GetTexture(material, payload, textureType, textureInObject);
-                return new Vector2(texture?.uScale, texture?.vScale);
+                if (texture) {
+                    return new Vector2(texture.uScale, texture.vScale);
+                }
+                if (gltfPath) {
+                    const xform = _gltfTextureTransform(material, gltfPath, false);
+                    const s = xform?.scale;
+                    return new Vector2(s?.[0] ?? 1, s?.[1] ?? 1);
+                }
+                return new Vector2(1, 1);
             },
             getTarget: GetMaterial,
             set: (value, material, index?, payload?) => {
@@ -1422,6 +1538,12 @@ function GenerateTextureMap(textureType: keyof PBRMaterial, textureInObject?: st
                 if (texture) {
                     texture.uScale = value.x;
                     texture.vScale = value.y;
+                }
+                if (gltfPath) {
+                    const xform = _gltfTextureTransform(material, gltfPath, true);
+                    if (xform) {
+                        xform.scale = [value.x, value.y];
+                    }
                 }
             },
             getPropertyName: [
