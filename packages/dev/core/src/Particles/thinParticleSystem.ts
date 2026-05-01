@@ -200,6 +200,23 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
     private _alive: boolean;
     private _useInstancing = false;
     private _vertexArrayObject: Nullable<WebGLVertexArrayObject>;
+    private _useFixedCapacityForSnapshot = false;
+
+    /**
+     * Gets or sets a boolean indicating that the particle system should always render at full capacity.
+     * When enabled, the draw call always emits `getCapacity()` quads/instances and inactive slots are zero-filled in the
+     * vertex buffer (collapsing them to degenerate triangles that produce no fragments).
+     * This makes the particle system compatible with FAST snapshot rendering, where the recorded draw call parameters
+     * are baked into the GPU bundle. Activate via `SnapshotRenderingHelper.fixParticleSystem(ps)`.
+     * Note: vertex shader cost scales with capacity rather than the live particle count, so size capacity realistically.
+     */
+    public get useFixedCapacityForSnapshot(): boolean {
+        return this._useFixedCapacityForSnapshot;
+    }
+
+    public set useFixedCapacityForSnapshot(value: boolean) {
+        this._useFixedCapacityForSnapshot = value;
+    }
 
     private _isDisposed = false;
 
@@ -2058,7 +2075,19 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
             }
 
             if (this._vertexBuffer) {
-                this._vertexBuffer.updateDirectly(this._vertexData, 0, this._particles.length);
+                if (this._useFixedCapacityForSnapshot) {
+                    // Zero-fill inactive slots so they collapse to degenerate (size=0) quads that emit no fragments,
+                    // and upload the full capacity so the draw call can stay constant for FAST snapshot rendering.
+                    const stride = this._vertexBufferSize * (this._useInstancing ? 1 : 4);
+                    const usedFloats = this._particles.length * stride;
+                    const totalFloats = this._capacity * stride;
+                    if (usedFloats < totalFloats) {
+                        this._vertexData.fill(0, usedFloats, totalFloats);
+                    }
+                    this._vertexBuffer.updateDirectly(this._vertexData, 0, this._capacity);
+                } else {
+                    this._vertexBuffer.updateDirectly(this._vertexData, 0, this._particles.length);
+                }
             }
         }
 
@@ -2250,13 +2279,13 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
             if (this._scene?.forceWireframe) {
                 engine.drawElementsType(Constants.MATERIAL_LineStripDrawMode, 0, 10, this._particles.length);
             } else {
-                engine.drawArraysType(Constants.MATERIAL_TriangleStripDrawMode, 0, 4, this._particles.length);
+                engine.drawArraysType(Constants.MATERIAL_TriangleStripDrawMode, 0, 4, this._useFixedCapacityForSnapshot ? this._capacity : this._particles.length);
             }
         } else {
             if (this._scene?.forceWireframe) {
                 engine.drawElementsType(Constants.MATERIAL_WireFrameFillMode, 0, this._particles.length * 10);
             } else {
-                engine.drawElementsType(Constants.MATERIAL_TriangleFillMode, 0, this._particles.length * 6);
+                engine.drawElementsType(Constants.MATERIAL_TriangleFillMode, 0, (this._useFixedCapacityForSnapshot ? this._capacity : this._particles.length) * 6);
             }
         }
 
@@ -2269,7 +2298,7 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
      */
     public render(): number {
         // Check
-        if (!this.isReady() || !this._particles.length) {
+        if (!this.isReady() || (!this._particles.length && !this._useFixedCapacityForSnapshot)) {
             return 0;
         }
 
