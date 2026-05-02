@@ -189,7 +189,7 @@ describe("WebGPUShaderProcessorWGSL", () => {
 
     describe("cascaded shadow vertex include", () => {
         it("should use uniforms.view when the scene uniform buffer is not declared", () => {
-            const shadowsVertex = readFileSync("packages/dev/core/src/ShadersWGSL/ShadersInclude/shadowsVertex.fx", "utf8");
+            const shadowsVertex = readFileSync(new URL("../../../../src/ShadersWGSL/ShadersInclude/shadowsVertex.fx", import.meta.url), "utf8");
 
             expect(shadowsVertex).toContain("#ifdef SCENE_UBO");
             expect(shadowsVertex).toContain("vertexOutputs.vPositionFromCamera{X} = scene.view * worldPos;");
