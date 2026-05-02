@@ -1,18 +1,16 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { NullEngine } from "core/Engines/nullEngine";
 import { type Engine } from "core/Engines/engine";
-import {
-    FragmentOutputBlock,
-    InputBlock,
-    NodeMaterial,
-    NodeMaterialBlockConnectionPointTypes,
-    NodeMaterialBlockTargets,
-    NodeMaterialSystemValues,
-    PBRMetallicRoughnessBlock,
-    SubSurfaceBlock,
-    TransformBlock,
-    VertexOutputBlock,
-} from "core/Materials";
+import { FragmentOutputBlock } from "core/Materials/Node/Blocks/Fragment/fragmentOutputBlock";
+import { InputBlock } from "core/Materials/Node/Blocks/Input/inputBlock";
+import { PBRMetallicRoughnessBlock } from "core/Materials/Node/Blocks/PBR/pbrMetallicRoughnessBlock";
+import { SubSurfaceBlock } from "core/Materials/Node/Blocks/PBR/subSurfaceBlock";
+import { TransformBlock } from "core/Materials/Node/Blocks/transformBlock";
+import { VertexOutputBlock } from "core/Materials/Node/Blocks/Vertex/vertexOutputBlock";
+import { NodeMaterialBlockConnectionPointTypes } from "core/Materials/Node/Enums/nodeMaterialBlockConnectionPointTypes";
+import { NodeMaterialBlockTargets } from "core/Materials/Node/Enums/nodeMaterialBlockTargets";
+import { NodeMaterialSystemValues } from "core/Materials/Node/Enums/nodeMaterialSystemValues";
+import { NodeMaterial } from "core/Materials/Node/nodeMaterial";
 import { Color3 } from "core/Maths/math.color";
 import { Scene } from "core/scene";
 
