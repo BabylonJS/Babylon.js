@@ -58,8 +58,16 @@ export class NodeRenderGraph {
     /** @returns the inspector from bundle or global */
     private _getGlobalNodeRenderGraphEditor(): any {
         // UMD Global name detection from Webpack Bundle UMD Name.
+        // Note: rollup-built UMD bundles do not expose the editor class
+        // directly on the namespace - it lives on `.default.NodeRenderGraphEditor` -
+        // so we unwrap that case before falling back to the BABYLON global.
         if (typeof NODERENDERGRAPHEDITOR !== "undefined") {
-            return NODERENDERGRAPHEDITOR;
+            if ((NODERENDERGRAPHEDITOR as any).NodeRenderGraphEditor) {
+                return NODERENDERGRAPHEDITOR;
+            }
+            if ((NODERENDERGRAPHEDITOR as any).default?.NodeRenderGraphEditor) {
+                return (NODERENDERGRAPHEDITOR as any).default;
+            }
         }
 
         // In case of module let's check the global emitted from the editor entry point.

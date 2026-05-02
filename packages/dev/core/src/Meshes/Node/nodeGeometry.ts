@@ -60,8 +60,16 @@ export class NodeGeometry {
     /** @returns the inspector from bundle or global */
     private _getGlobalNodeGeometryEditor(): any {
         // UMD Global name detection from Webpack Bundle UMD Name.
+        // Note: rollup-built UMD bundles do not expose the editor class
+        // directly on the namespace - it lives on `.default.NodeGeometryEditor` -
+        // so we unwrap that case before falling back to the BABYLON global.
         if (typeof NODEGEOMETRYEDITOR !== "undefined") {
-            return NODEGEOMETRYEDITOR;
+            if ((NODEGEOMETRYEDITOR as any).NodeGeometryEditor) {
+                return NODEGEOMETRYEDITOR;
+            }
+            if ((NODEGEOMETRYEDITOR as any).default?.NodeGeometryEditor) {
+                return (NODEGEOMETRYEDITOR as any).default;
+            }
         }
 
         // In case of module let's check the global emitted from the editor entry point.
