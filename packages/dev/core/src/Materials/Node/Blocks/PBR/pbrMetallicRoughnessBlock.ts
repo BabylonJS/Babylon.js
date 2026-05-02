@@ -1260,11 +1260,6 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         state._emitFunctionFromInclude("pbrBlockAlphaFresnel", comments);
         state._emitFunctionFromInclude("pbrBlockAnisotropic", comments);
 
-        if (!isWebGPU) {
-            // In WebGPU, those functions are part of pbrDirectLightingFunctions
-            state._emitFunctionFromInclude("pbrClusteredLightingFunctions", comments);
-        }
-
         //
         // code
         //
@@ -1445,6 +1440,11 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
                 { search: /SS_REFRACTIONMAP_OPPOSITEZ/g, replace: refractionBlock?._defineOppositeZ ?? "SS_REFRACTIONMAP_OPPOSITEZ" },
             ],
         });
+
+        if (!isWebGPU) {
+            // In WebGPU, those functions are part of pbrDirectLightingFunctions
+            state._emitFunctionFromInclude("pbrClusteredLightingFunctions", comments);
+        }
 
         // _____________________________ Direct Lighting Info __________________________________
         state.compilationString += state._emitCodeFromInclude("pbrBlockDirectLighting", comments);
