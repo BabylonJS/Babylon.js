@@ -516,8 +516,11 @@ export function commonUMDRollupConfiguration(options) {
         // Inline SVG/PNG/image assets imported from dist/ files as data URIs.
         url({ include: ["**/*.svg", "**/*.png", "**/*.jpg", "**/*.gif"], limit: Infinity }),
         // Handle SCSS/CSS imports from compiled dist/ files (tool packages).
-        // Extracts styles to a companion .css file alongside the UMD bundle.
-        postcss({ extract: true, minimize: production, use: ["sass"] }),
+        // Inject styles into <head> at runtime to match the previous webpack
+        // style-loader behavior - the editor UMDs do not have a companion
+        // <link> element loading a separate .css file. autoModules treats
+        // *.module.scss / *.module.css as CSS Modules with named exports.
+        postcss({ inject: true, extract: false, minimize: production, use: ["sass"], autoModules: true }),
         ...transpilePlugins,
         nodeResolve({ mainFields: ["browser", "module", "main"], browser: true, extensions: [".ts", ".tsx", ".js", ".jsx"] }),
         commonjs(),
@@ -608,7 +611,7 @@ export function commonUMDRollupConfiguration(options) {
                 perEntryExternals,
                 aliasPlugin({ entries: aliasEntries }),
                 url({ include: ["**/*.svg", "**/*.png", "**/*.jpg", "**/*.gif"], limit: Infinity }),
-                postcss({ extract: true, minimize: production, use: ["sass"] }),
+                postcss({ inject: true, extract: false, minimize: production, use: ["sass"], autoModules: true }),
                 ...perEntryTranspilePlugins,
                 nodeResolve({ mainFields: ["browser", "module", "main"], browser: true, extensions: [".ts", ".tsx", ".js", ".jsx"] }),
                 commonjs(),
