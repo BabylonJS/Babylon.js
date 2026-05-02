@@ -18,7 +18,7 @@ import postcss from "rollup-plugin-postcss";
 import url from "@rollup/plugin-url";
 import { copyFileSync, existsSync } from "fs";
 import { resolve, join, dirname, relative as pathRelative } from "path";
-import { fileURLToPath } from "url";
+import { fileURLToPath, pathToFileURL } from "url";
 import { transform as esbuildTransform } from "esbuild";
 
 // Repo root — used as the filterRoot for @rollup/plugin-typescript so that
@@ -548,7 +548,9 @@ export function commonUMDRollupConfiguration(options) {
         const abs = resolve(dirname(sourcemapPath), relativePath);
         const repoRel = relativeFromRepoRoot(abs);
         if (repoRel.startsWith("..")) {
-            return `file://${abs}`;
+            // Use pathToFileURL so Windows paths (drive letter + backslashes)
+            // become a valid `file:///C:/...` URL that debuggers can resolve.
+            return pathToFileURL(abs).href;
         }
         return `webpack:///./${repoRel}`;
     };
