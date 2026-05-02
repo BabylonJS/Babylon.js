@@ -201,6 +201,7 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
     private _useInstancing = false;
     private _vertexArrayObject: Nullable<WebGLVertexArrayObject>;
     private _useFixedCapacityForSnapshot = false;
+    private _fixedCapacityHighWaterMark = 0;
 
     /**
      * Gets or sets a boolean indicating that the particle system should always render at full capacity.
@@ -2077,13 +2078,18 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
 
             if (this._vertexBuffer) {
                 if (this._useFixedCapacityForSnapshot) {
-                    // Zero-fill inactive slots so they collapse to degenerate (size=0) quads that emit no fragments,
-                    // and upload the full capacity so the draw call can stay constant for FAST snapshot rendering.
+                    // The vertex buffer is uploaded at full capacity so the FAST-snapshot bundle's draw call stays valid.
+                    // Inactive slots must be zeroed so they collapse to degenerate (size=0) quads that emit no fragments.
+                    // Float32Array starts zeroed and `_appendParticleVertices` overwrites only the active range, so we
+                    // only need to clear slots that were active in a previous frame and aren't anymore — i.e. the range
+                    // [currentCount, highWaterMark). When the active count grows we just bump the high-water mark.
                     const stride = this._vertexBufferSize * (this._useInstancing ? 1 : 4);
-                    const usedFloats = this._particles.length * stride;
-                    const totalFloats = this._capacity * stride;
-                    if (usedFloats < totalFloats) {
-                        this._vertexData.fill(0, usedFloats, totalFloats);
+                    const currentCount = this._particles.length;
+                    if (currentCount < this._fixedCapacityHighWaterMark) {
+                        this._vertexData.fill(0, currentCount * stride, this._fixedCapacityHighWaterMark * stride);
+                    }
+                    if (currentCount > this._fixedCapacityHighWaterMark) {
+                        this._fixedCapacityHighWaterMark = currentCount;
                     }
                     this._vertexBuffer.updateDirectly(this._vertexData, 0, this._capacity);
                 } else {
@@ -2278,13 +2284,13 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
 
         if (this._useInstancing) {
             if (this._scene?.forceWireframe) {
-                engine.drawElementsType(Constants.MATERIAL_LineStripDrawMode, 0, 10, this._particles.length);
+                engine.drawElementsType(Constants.MATERIAL_LineStripDrawMode, 0, 10, this._useFixedCapacityForSnapshot ? this._capacity : this._particles.length);
             } else {
                 engine.drawArraysType(Constants.MATERIAL_TriangleStripDrawMode, 0, 4, this._useFixedCapacityForSnapshot ? this._capacity : this._particles.length);
             }
         } else {
             if (this._scene?.forceWireframe) {
-                engine.drawElementsType(Constants.MATERIAL_WireFrameFillMode, 0, this._particles.length * 10);
+                engine.drawElementsType(Constants.MATERIAL_WireFrameFillMode, 0, (this._useFixedCapacityForSnapshot ? this._capacity : this._particles.length) * 10);
             } else {
                 engine.drawElementsType(Constants.MATERIAL_TriangleFillMode, 0, (this._useFixedCapacityForSnapshot ? this._capacity : this._particles.length) * 6);
             }

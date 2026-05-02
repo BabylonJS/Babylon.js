@@ -483,7 +483,23 @@ export class SnapshotRenderingHelper {
             return;
         }
 
-        (particleSystem as ParticleSystem).useFixedCapacityForSnapshot = true;
+        const ps = particleSystem as ParticleSystem;
+        if (ps.useFixedCapacityForSnapshot) {
+            return;
+        }
+        ps.useFixedCapacityForSnapshot = true;
+
+        // The recorded bundle bakes in the draw-call vertex/instance count. If snapshot rendering is already active
+        // (or in the process of being enabled) when we flip the flag, the bundle was recorded with the live particle
+        // count and is now stale. Cycle disable/enable so the next recording picks up the fixed-capacity draw count.
+        if (this._fastSnapshotRenderingEnabled || this._isEnabling) {
+            Logger.Warn(
+                `SnapshotRenderingHelper.fixParticleSystem("${particleSystem.name}") was called after snapshot rendering was enabled. ` +
+                    `Forcing a re-record so the bundle uses the fixed-capacity draw count. Call fixParticleSystem before enableSnapshotRendering to avoid this.`
+            );
+            this.disableSnapshotRendering("fixParticleSystem auto-recover");
+            this.enableSnapshotRendering("fixParticleSystem auto-recover");
+        }
     }
 
     private _particleSystemUpdateEffects(ps: ParticleSystem, camera: Camera) {
@@ -494,20 +510,29 @@ export class SnapshotRenderingHelper {
 
         const viewMatrix = ps.defaultViewMatrix ?? camera.getViewMatrix();
         const projectionMatrix = ps.defaultProjectionMatrix ?? camera.getProjectionMatrix();
+        // Compute invView lazily once per system per frame, only if any draw wrapper actually needs it.
+        let invViewMatrix: Nullable<Matrix> = null;
+        const getInvView = () => {
+            if (!invViewMatrix) {
+                invViewMatrix = TmpVectors.Matrix[0];
+                viewMatrix.invertToRef(invViewMatrix);
+            }
+            return invViewMatrix;
+        };
 
         for (const perPass of drawWrappers) {
             if (!perPass) {
                 continue;
             }
             for (const dw of perPass) {
-                this._particleSystemDirectMatrixUpdate(dw, viewMatrix, projectionMatrix, camera);
+                this._particleSystemDirectMatrixUpdate(dw, viewMatrix, projectionMatrix, camera, getInvView);
             }
         }
     }
 
     private _particleSystemBillboardFlags = new WeakMap<object, { billboard: boolean; billboardAll: boolean }>();
 
-    private _particleSystemDirectMatrixUpdate(dw: Nullable<DrawWrapper>, viewMatrix: Matrix, projectionMatrix: Matrix, camera: Camera) {
+    private _particleSystemDirectMatrixUpdate(dw: Nullable<DrawWrapper>, viewMatrix: Matrix, projectionMatrix: Matrix, camera: Camera, getInvView: () => Matrix) {
         const effect = dw?.effect;
         if (!effect) {
             return;
@@ -529,9 +554,7 @@ export class SnapshotRenderingHelper {
             effect.setVector3("eyePosition", camera.globalPosition);
         }
         if (flags.billboardAll) {
-            const invView = TmpVectors.Matrix[0];
-            viewMatrix.invertToRef(invView);
-            effect.setMatrix("invView", invView);
+            effect.setMatrix("invView", getInvView());
         }
         ubLeftOver.update();
     }
