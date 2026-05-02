@@ -72,6 +72,7 @@ export const AdvancedDynamicTexturePreviewProperties: FunctionComponent<{ textur
                     // The UMD inspector bundle externalizes "gui-editor/guiEditor" to BABYLON.GuiEditor,
                     // which is the GUIEditor class itself rather than a namespace { GUIEditor }.
                     // Tolerate both shapes so this works in both UMD and module builds.
+                    // eslint-disable-next-line @typescript-eslint/naming-convention
                     const guiEditorModule: { GUIEditor: typeof GUIEditor } | typeof GUIEditor = await import("gui-editor/guiEditor");
                     const guiEditor = "GUIEditor" in guiEditorModule ? guiEditorModule.GUIEditor : guiEditorModule;
                     await guiEditor.Show({ liveGuiTexture: texture });
