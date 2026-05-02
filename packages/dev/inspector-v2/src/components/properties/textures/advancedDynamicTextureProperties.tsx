@@ -68,8 +68,12 @@ export const AdvancedDynamicTexturePreviewProperties: FunctionComponent<{ textur
                 label="Edit GUI"
                 icon={EditRegular}
                 onClick={async () => {
-                    const { GUIEditor } = await import("gui-editor/guiEditor");
-                    await GUIEditor.Show({ liveGuiTexture: texture });
+                    // The UMD inspector bundle externalizes "gui-editor/guiEditor" to BABYLON.GuiEditor,
+                    // which is the GUIEditor class itself rather than a namespace { GUIEditor }.
+                    // Tolerate both shapes so this works in both UMD and module builds.
+                    const guiEditorModule: any = await import("gui-editor/guiEditor");
+                    const guiEditor = guiEditorModule.GUIEditor ?? guiEditorModule;
+                    await guiEditor.Show({ liveGuiTexture: texture });
                 }}
             />
         </>

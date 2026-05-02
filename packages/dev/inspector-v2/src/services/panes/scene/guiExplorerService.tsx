@@ -115,8 +115,12 @@ export const GuiExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplorer
                     icon: () => <EditRegular />,
                     // eslint-disable-next-line @typescript-eslint/naming-convention
                     execute: async () => {
-                        const { GUIEditor } = await import("gui-editor/guiEditor");
-                        await GUIEditor.Show({ liveGuiTexture: texture });
+                        // The UMD inspector bundle externalizes "gui-editor/guiEditor" to BABYLON.GuiEditor,
+                        // which is the GUIEditor class itself rather than a namespace { GUIEditor }.
+                        // Tolerate both shapes so this works in both UMD and module builds.
+                        const guiEditorModule: any = await import("gui-editor/guiEditor");
+                        const guiEditor = guiEditorModule.GUIEditor ?? guiEditorModule;
+                        await guiEditor.Show({ liveGuiTexture: texture });
                     },
                 };
             },

@@ -45,7 +45,7 @@ export class NodeRenderGraph {
     private _buildId: number = NodeRenderGraph._BuildIdGenerator++;
 
     /** Define the Url to load node editor script */
-    public static EditorURL = `${Tools._DefaultCdnUrl}/v${Engine.Version}/NodeRenderGraph/babylon.nodeRenderGraph.js`;
+    public static EditorURL = `${Tools._DefaultCdnUrl}/v${Engine.Version}/nodeRenderGraphEditor/babylon.nodeRenderGraphEditor.js`;
 
     /** Define the Url to load snippets */
     public static SnippetUrl = Constants.SnippetUrl;
