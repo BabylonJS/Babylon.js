@@ -292,6 +292,8 @@ function transpileExternalTsPlugin() {
                     esModuleInterop: true,
                     allowSyntheticDefaultImports: true,
                     experimentalDecorators: true,
+                    sourceMap: true,
+                    inlineSources: true,
                 },
             });
             return { code: result.outputText, map: result.sourceMapText || null };
@@ -499,7 +501,10 @@ export function commonUMDRollupConfiguration(options) {
                   declaration: false,
                   declarationMap: false,
                   sourceMap: true,
-                  inlineSources: false,
+                  // Embed source contents in the generated sourcemap so DevTools/playground
+                  // can display the original .ts files even when the relative source paths
+                  // (which start with `../../../../../../../`) cannot be fetched over HTTP.
+                  inlineSources: true,
                   // filterRoot set to the repo root so **/*.ts patterns match files from
                   // any package (including aliased cross-package tool sources).
                   filterRoot: REPO_ROOT,
@@ -598,7 +603,7 @@ export function commonUMDRollupConfiguration(options) {
                           declaration: false,
                           declarationMap: false,
                           sourceMap: true,
-                          inlineSources: false,
+                          inlineSources: true,
                           filterRoot: REPO_ROOT,
                           include: ["**/*.ts", "**/*.tsx"],
                       }),
