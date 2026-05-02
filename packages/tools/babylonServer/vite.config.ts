@@ -302,14 +302,35 @@ function babylonServerPlugin(): Plugin {
                     const jsUrl = url.replace(/\.map$/, "");
                     const jsEntry = umdUrlMap[jsUrl];
                     if (jsEntry) {
-                        const mapPath = path.join(UMD_ROOT, jsEntry.dir, jsEntry.file + ".map");
-                        if (fs.existsSync(mapPath)) {
-                            log(200, "/" + url, "sourcemap");
-                            res.setHeader("Content-Type", "application/json");
-                            res.setHeader("Access-Control-Allow-Origin", "*");
-                            sendFile(mapPath, res);
-                            return;
+                        // The map file may be named after the served file (e.g. babylon.max.js.map)
+                        // OR after the original rollup output (e.g. babylon.js.map / babylon.min.js.map),
+                        // depending on whether copyMinToMaxPlugin ran for this entry.  Try both.
+                        const candidates = [
+                            jsEntry.file + ".map",
+                            jsEntry.file.replace(/\.max\.js$/, ".js") + ".map",
+                            jsEntry.file.replace(/\.js$/, ".min.js") + ".map",
+                            jsEntry.file.replace(/\.min\.js$/, ".js") + ".map",
+                        ];
+                        for (const candidate of candidates) {
+                            const mapPath = path.join(UMD_ROOT, jsEntry.dir, candidate);
+                            if (fs.existsSync(mapPath)) {
+                                log(200, "/" + url, "sourcemap");
+                                res.setHeader("Content-Type", "application/json");
+                                res.setHeader("Access-Control-Allow-Origin", "*");
+                                sendFile(mapPath, res);
+                                return;
+                            }
                         }
+                        // No sourcemap exists for this UMD bundle.  Return 404 with an
+                        // empty JSON body so DevTools doesn't try to parse Vite's SPA
+                        // fallback HTML as JSON (which is the source of "Unexpected
+                        // token '<'" warnings in the browser console).
+                        log(404, "/" + url, "sourcemap missing");
+                        res.statusCode = 404;
+                        res.setHeader("Content-Type", "application/json");
+                        res.setHeader("Access-Control-Allow-Origin", "*");
+                        res.end("{}");
+                        return;
                     }
                 }
 

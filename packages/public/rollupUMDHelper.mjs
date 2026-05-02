@@ -17,7 +17,7 @@ import terser from "@rollup/plugin-terser";
 import postcss from "rollup-plugin-postcss";
 import url from "@rollup/plugin-url";
 import { copyFileSync, existsSync } from "fs";
-import { resolve, join, dirname } from "path";
+import { resolve, join, dirname, relative as pathRelative } from "path";
 import { fileURLToPath } from "url";
 import { transform as esbuildTransform } from "esbuild";
 
@@ -25,6 +25,11 @@ import { transform as esbuildTransform } from "esbuild";
 // `**/*.ts` patterns are matched against repo-relative paths (which never start
 // with "..") regardless of where in the monorepo the file being compiled lives.
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
+
+/** Returns `absPath` rewritten as a forward-slash repo-relative path. */
+function relativeFromRepoRoot(absPath) {
+    return pathRelative(REPO_ROOT, absPath).split("\\").join("/");
+}
 
 // ---------------------------------------------------------------------------
 // Package name mappings
@@ -169,16 +174,29 @@ function resolveSubPathNamespace(source, pkg) {
  * corresponding global so the UMD output receives the correct namespace.
  *
  * @param {string[]} excludePackages Dev package names to bundle rather than externalize.
+ * @param {object} [opts]
+ * @param {boolean} [opts.bundleGltf2Interface]
+ *   When true, do NOT externalize `babylonjs-gltf2interface` — let the alias
+ *   plugin redirect it to the JS stub at packages/public/glTF2Interface/
+ *   babylonjs-gltf2interface.stub.ts so its const-enum values are bundled as
+ *   real runtime values.  Required for fast-rebuild paths (esbuild) that
+ *   cannot inline TS const enums.  In production builds this stays false so
+ *   the UMD output continues to reference `BABYLON.GLTF2`.
  */
-export function babylonUMDExternalsPlugin(excludePackages = []) {
+export function babylonUMDExternalsPlugin(excludePackages = [], opts = {}) {
+    const { bundleGltf2Interface = false } = opts;
     /** Extra globals discovered via sub-path namespace resolution. */
     const extraGlobals = {};
 
     return {
         name: "babylon-umd-externals",
         resolveId(source) {
-            // gltf2interface is always external
+            // gltf2interface — externalize by default (production), or fall
+            // through to the alias plugin (dev) so the stub is bundled.
             if (source.includes("babylonjs-gltf2interface")) {
+                if (bundleGltf2Interface) {
+                    return null;
+                }
                 return { id: "babylonjs-gltf2interface", external: true };
             }
             // Extract the leading package name segment (e.g. "core" from "core/Legacy/legacy")
@@ -425,12 +443,20 @@ export function commonUMDRollupConfiguration(options) {
     // Path to source for the package being built
     const defaultAliasSrc = devPackageAliasPath ?? `../../../dev/${camelize(devPackageName)}/src`;
 
+    // In devMode (esbuild transpilation) const enums from babylonjs-gltf2interface
+    // are NOT inlined, so we must bundle a JS stub that provides the runtime values.
+    // In production (tsc) the const-enum values are inlined and the package stays
+    // externalized to BABYLON.GLTF2 (see babylonUMDExternalsPlugin).
+    const bundleGltf2Interface = devMode && !production;
+    const gltf2InterfaceStub = resolve(REPO_ROOT, "packages/public/glTF2Interface/babylonjs-gltf2interface.stub.ts");
+
     const aliasEntries = [
         { find: devPackageName, replacement: resolve(defaultAliasSrc) },
         ...Object.entries(aliasMap).map(([find, replacement]) => ({
             find,
             replacement: resolve(replacement),
         })),
+        ...(bundleGltf2Interface ? [{ find: "babylonjs-gltf2interface", replacement: gltf2InterfaceStub }] : []),
     ];
 
     /**
@@ -455,7 +481,7 @@ export function commonUMDRollupConfiguration(options) {
 
     const chunkNames = entryPoints ? Object.keys(entryPoints) : [devPackageName];
 
-    const externalsPlugin = babylonUMDExternalsPlugin([devPackageName, ...optionalExternalFunctionSkip]);
+    const externalsPlugin = babylonUMDExternalsPlugin([devPackageName, ...optionalExternalFunctionSkip], { bundleGltf2Interface });
 
     /**
      * Globals resolver used as Rollup's `output.globals` option.
@@ -466,7 +492,7 @@ export function commonUMDRollupConfiguration(options) {
     // In devMode, use esbuild for fast type-stripping transpilation instead of tsc.
     const useEsbuild = devMode && !production;
     const transpilePlugins = useEsbuild
-        ? [esbuildTranspilePlugin({ sourceMap: !devMode })]
+        ? [esbuildTranspilePlugin({ sourceMap: true })]
         : [
               typescript({
                   tsconfig: "tsconfig.build.json",
@@ -512,6 +538,21 @@ export function commonUMDRollupConfiguration(options) {
      * UMD format does not support code-splitting (multiple inputs), so we emit
      * one config per entry and return an array when entryPoints is provided.
      */
+    // Rewrite sourcemap source paths so VS Code's js-debug can resolve them
+    // back to disk for breakpoint binding.  We emit `webpack:///./packages/...`
+    // URLs because js-debug's default sourceMapPathOverrides already maps
+    // `webpack:///./*` → `${webRoot}/*`, so no per-launch-config setup is
+    // required for files inside packages/.  Sources outside the repo (rare,
+    // e.g. some tslib re-exports) fall through to an absolute file:// URL.
+    const sourcemapPathTransform = (relativePath, sourcemapPath) => {
+        const abs = resolve(dirname(sourcemapPath), relativePath);
+        const repoRel = relativeFromRepoRoot(abs);
+        if (repoRel.startsWith("..")) {
+            return `file://${abs}`;
+        }
+        return `webpack:///./${repoRel}`;
+    };
+
     const makeSingleConfig = (inputFile, chunkName) => ({
         input: inputFile,
         output: {
@@ -520,7 +561,8 @@ export function commonUMDRollupConfiguration(options) {
             name: outputName,
             globals: resolveGlobal,
             exports: "named",
-            sourcemap: !devMode,
+            sourcemap: true,
+            sourcemapPathTransform,
             // extend:true makes Rollup emit `global.BABYLON = global.BABYLON || {}`
             // instead of `global.BABYLON = {}`, so each bundle merges into the shared
             // namespace rather than overwriting the previous bundle's exports.
@@ -542,7 +584,7 @@ export function commonUMDRollupConfiguration(options) {
         // The copyMinToMaxPlugin is only attached to the first config to avoid
         // copying the same files multiple times.
         return Object.entries(entryPoints).map(([chunkName, inputFile], i) => {
-            const perEntryExternals = babylonUMDExternalsPlugin([devPackageName, ...optionalExternalFunctionSkip]);
+            const perEntryExternals = babylonUMDExternalsPlugin([devPackageName, ...optionalExternalFunctionSkip], { bundleGltf2Interface });
             const perEntryResolveGlobal = (id) => perEntryExternals.globals[id] ?? umdGlobals[id] ?? id;
             // In devMode, esbuild is stateless so the shared transpilePlugins can be reused.
             // In non-devMode, each entry needs its own tsc plugin instance.
@@ -587,7 +629,8 @@ export function commonUMDRollupConfiguration(options) {
                     name: outputName,
                     globals: perEntryResolveGlobal,
                     exports: "named",
-                    sourcemap: !devMode,
+                    sourcemap: true,
+                    sourcemapPathTransform,
                     extend: true,
                     // Inline any dynamic imports so UMD format (which forbids code-splitting) is happy.
                     inlineDynamicImports: true,
