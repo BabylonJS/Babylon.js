@@ -233,6 +233,7 @@ export class ShadowOnlyMaterial extends PushMaterial {
                 samplers: samplers,
                 defines: defines,
                 maxSimultaneousLights: 1,
+                shaderLanguage: this._shaderLanguage,
             });
 
             subMesh.setEffect(
