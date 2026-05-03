@@ -373,6 +373,12 @@ export abstract class Light extends Node implements ISortableLight {
     public _currentViewDepth = 0;
 
     /**
+     * Used internally by ClusteredLightContainer to keep child lights out of mesh light source lists.
+     * @internal
+     */
+    public _isClusteredLight = false;
+
+    /**
      * Creates a Light object in the scene.
      * Documentation : https://doc.babylonjs.com/features/featuresDeepDive/lights/lights_introduction
      * @param name The friendly name of the light
@@ -848,6 +854,10 @@ export abstract class Light extends Node implements ISortableLight {
     }
 
     private _resyncMeshes() {
+        if (this._isClusteredLight) {
+            return;
+        }
+
         for (const mesh of this.getScene().meshes) {
             mesh._resyncLightSource(this);
         }

@@ -119,6 +119,27 @@ describe("ClusteredLightContainer", () => {
             expect(mesh.lightSources).not.toContain(point);
             expect(mesh.lightSources).toContain(container);
         });
+
+        it("should not re-add child lights to mesh.lightSources when their parent enabled state changes", async () => {
+            const { CreateBox } = await import("core/Meshes/Builders/boxBuilder");
+            const mesh = CreateBox("box", { size: 1 }, scene);
+            const parent = CreateBox("parent", { size: 1 }, scene);
+            parent.setEnabled(false);
+            const container = new ClusteredLightContainer("cluster", [], scene);
+            const point = new PointLight("point", new Vector3(0, 1, 0), scene, true);
+            point.parent = parent;
+
+            container.addLight(point);
+
+            expect(mesh.lightSources).toContain(container);
+            expect(mesh.lightSources).not.toContain(point);
+
+            parent.setEnabled(true);
+
+            expect(mesh.lightSources).toContain(container);
+            expect(mesh.lightSources).not.toContain(point);
+            expect(scene.lights).not.toContain(point);
+        });
     });
 
     describe("parse", () => {
