@@ -1251,8 +1251,6 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         });
         state._emitFunctionFromInclude("hdrFilteringFunctions", comments);
 
-        state._emitFunctionFromInclude("pbrDirectLightingFunctions", comments);
-
         state._emitFunctionFromInclude("pbrIBLFunctions", comments);
 
         state._emitFunctionFromInclude("pbrBlockAlbedoOpacity", comments);
@@ -1441,6 +1439,8 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
                 { search: /SS_REFRACTIONMAP_OPPOSITEZ/g, replace: refractionBlock?._defineOppositeZ ?? "SS_REFRACTIONMAP_OPPOSITEZ" },
             ],
         });
+
+        state._emitFunctionFromInclude("pbrDirectLightingFunctions", comments);
 
         if (!isWebGPU) {
             // In WebGPU, those functions are part of pbrDirectLightingFunctions

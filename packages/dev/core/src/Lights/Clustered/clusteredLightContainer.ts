@@ -610,7 +610,7 @@ export class ClusteredLightContainer extends Light {
     public override transferTexturesToEffect(effect: Effect, lightIndex: string): Light {
         const engine = this.getEngine();
         effect.setTexture("lightDataTexture" + lightIndex, this._lightDataTexture);
-        if (engine.isWebGPU && effect.shaderLanguage === ShaderLanguage.WGSL) {
+        if (engine.isWebGPU) {
             (<WebGPUEngine>engine).setStorageBuffer("tileMaskBuffer" + lightIndex, this._tileMaskBuffer);
         } else {
             effect.setTexture("tileMaskTexture" + lightIndex, this._tileMaskTexture);

@@ -225,7 +225,7 @@ describe("ClusteredLightContainer", () => {
     });
 
     describe("transferTexturesToEffect", () => {
-        it("binds the GLSL tile mask texture for GLSL effects on WebGPU", () => {
+        it("binds the tile mask storage buffer for WebGPU effects", () => {
             const setStorageBuffer = vi.fn();
             const setTexture = vi.fn();
 
@@ -244,8 +244,8 @@ describe("ClusteredLightContainer", () => {
             );
 
             expect(setTexture).toHaveBeenCalledWith("lightDataTexture0", "lightDataTexture");
-            expect(setTexture).toHaveBeenCalledWith("tileMaskTexture0", "tileMaskTexture");
-            expect(setStorageBuffer).not.toHaveBeenCalled();
+            expect(setTexture).not.toHaveBeenCalledWith("tileMaskTexture0", "tileMaskTexture");
+            expect(setStorageBuffer).toHaveBeenCalledWith("tileMaskBuffer0", "tileMaskBuffer");
         });
 
         it("binds the WGSL tile mask storage buffer for WGSL effects on WebGPU", () => {
@@ -271,5 +271,4 @@ describe("ClusteredLightContainer", () => {
             expect(setStorageBuffer).toHaveBeenCalledWith("tileMaskBuffer0", "tileMaskBuffer");
         });
     });
-
 });
