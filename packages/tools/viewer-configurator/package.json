@@ -2,16 +2,9 @@
     "name": "@tools/viewer-configurator",
     "private": true,
     "version": "1.0.0",
-    "files": [
-        "dist"
-    ],
-    "main": "dist/index.js",
     "scripts": {
         "build": "npm run clean && vite build",
-        "compile": "",
-        "build:declaration": "",
         "build:deployment": "npm run clean && vite build",
-        "postcompile": "",
         "serve": "vite",
         "serve:prod": "vite build && vite preview",
         "serve:https": "vite --host :: --https",
