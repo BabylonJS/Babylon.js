@@ -41,6 +41,7 @@ export const enum FlowGraphBlockNames {
     Clamp = "FlowGraphClampBlock",
     Saturate = "FlowGraphSaturateBlock",
     MathInterpolation = "FlowGraphMathInterpolationBlock",
+    MathSlerp = "FlowGraphMathSlerpBlock",
     Equality = "FlowGraphEqualityBlock",
     LessThan = "FlowGraphLessThanBlock",
     LessThanOrEqual = "FlowGraphLessThanOrEqualBlock",

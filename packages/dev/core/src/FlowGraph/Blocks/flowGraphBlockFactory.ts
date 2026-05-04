@@ -96,6 +96,8 @@ export function blockFactory(blockName: FlowGraphBlockNames | string): () => Pro
             return async () => (await import("./Data/Math/flowGraphMathBlocks")).FlowGraphSaturateBlock;
         case FlowGraphBlockNames.MathInterpolation:
             return async () => (await import("./Data/Math/flowGraphMathBlocks")).FlowGraphMathInterpolationBlock;
+        case FlowGraphBlockNames.MathSlerp:
+            return async () => (await import("./Data/Math/flowGraphMathBlocks")).FlowGraphMathSlerpBlock;
         case FlowGraphBlockNames.Equality:
             return async () => (await import("./Data/Math/flowGraphMathBlocks")).FlowGraphEqualityBlock;
         case FlowGraphBlockNames.LessThan:

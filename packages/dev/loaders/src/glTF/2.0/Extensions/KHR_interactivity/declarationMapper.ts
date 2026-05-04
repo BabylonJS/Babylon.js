@@ -408,6 +408,9 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
     "math/clamp": getSimpleInputMapping(FlowGraphBlockNames.Clamp, ["a", "b", "c"]),
     "math/saturate": getSimpleInputMapping(FlowGraphBlockNames.Saturate),
     "math/mix": getSimpleInputMapping(FlowGraphBlockNames.MathInterpolation, ["a", "b", "c"]),
+    // Quaternion spherical-linear interpolation. Inputs are two unit
+    // quaternions and an unclamped float coefficient.
+    "math/quatSlerp": getSimpleInputMapping(FlowGraphBlockNames.MathSlerp, ["a", "b", "c"]),
     "math/eq": getSimpleInputMapping(FlowGraphBlockNames.Equality, ["a", "b"]),
     // Reference equality. The spec defines `ref/eq` as: true if both refs are
     // null, true if both refer to the same object (regardless of whether it

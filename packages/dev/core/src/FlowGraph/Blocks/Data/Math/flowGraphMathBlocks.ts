@@ -732,6 +732,23 @@ export class FlowGraphMathInterpolationBlock extends FlowGraphTernaryOperationBl
 RegisterClass(FlowGraphBlockNames.MathInterpolation, FlowGraphMathInterpolationBlock);
 
 /**
+ * Spherical linear interpolation between two unit quaternions, matching the
+ * KHR_interactivity `math/quatSlerp` operation. The two inputs are treated as
+ * Babylon `Quaternion` values regardless of their concrete class (the spec
+ * defines them as `float4`), and the output is a `Quaternion`.
+ *
+ * The underlying implementation is `Quaternion.Slerp`, whose algorithm matches
+ * the spec step-for-step (dot product, conditional sign-flip on `b`, sin-based
+ * weighting, and a near-identity short-circuit to a linear blend).
+ */
+export class FlowGraphMathSlerpBlock extends FlowGraphTernaryOperationBlock<Quaternion, Quaternion, number, Quaternion> {
+    constructor(config?: IFlowGraphBlockConfiguration) {
+        super(RichTypeAny, RichTypeAny, RichTypeNumber, RichTypeAny, (a, b, c) => Quaternion.Slerp(a, b, c), FlowGraphBlockNames.MathSlerp, config);
+    }
+}
+RegisterClass(FlowGraphBlockNames.MathSlerp, FlowGraphMathSlerpBlock);
+
+/**
  * Equals block.
  */
 export class FlowGraphEqualityBlock extends FlowGraphBinaryOperationBlock<FlowGraphMathOperationType, FlowGraphMathOperationType, boolean> {
