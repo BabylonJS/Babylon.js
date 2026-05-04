@@ -114,7 +114,45 @@ function ResolveTemplateSubstitution(template: string, name: string, raw: any): 
         }
         return ExtractRefSubstitution(template, name, raw);
     }
+    // Babylon object refs (e.g. a Mesh delivered by `event/onSelect.selectedNode`):
+    // the glTF loader stamps `_internalMetadata.gltf.pointers` with one entry
+    // per JSON-Pointer the object can be addressed by, e.g. a single-primitive
+    // Mesh holds both `/nodes/<i>` and `/meshes/<j>/primitives/<k>`. We pick
+    // the pointer whose root segment matches the segment in the template that
+    // immediately precedes the placeholder, so a template like
+    // `/nodes/{nodeRef}/globalMatrix` resolves against the `/nodes/<i>` ref
+    // even if `/meshes/<j>/primitives/<k>` was added to the object first.
+    if (raw && typeof raw === "object") {
+        const pointer = ExtractGltfPointerFromObject(raw, template, name);
+        if (pointer) {
+            return ExtractRefSubstitution(template, name, pointer);
+        }
+    }
     throw new Error(`Invalid value for templated input "${name}": got ${typeof raw}.`);
+}
+
+function ExtractGltfPointerFromObject(obj: any, template: string, name: string): string | undefined {
+    const pointers = obj?._internalMetadata?.gltf?.pointers;
+    if (!Array.isArray(pointers) || pointers.length === 0) {
+        return undefined;
+    }
+    const stringPointers = pointers.filter((p: unknown): p is string => typeof p === "string");
+    if (stringPointers.length === 0) {
+        return undefined;
+    }
+    // Find the segment in the template that precedes the placeholder, e.g.
+    // "nodes" for "/nodes/{nodeRef}/globalMatrix".
+    const placeholders = [`{${name}}`, `[${name}]`];
+    const templateSegments = template.split("/");
+    const placeholderIndex = templateSegments.findIndex((s) => placeholders.indexOf(s) >= 0);
+    const expectedRoot = placeholderIndex > 0 ? templateSegments[placeholderIndex - 1] : undefined;
+    if (expectedRoot) {
+        const match = stringPointers.find((p) => p.split("/")[1] === expectedRoot);
+        if (match) {
+            return match;
+        }
+    }
+    return stringPointers[0];
 }
 
 function AssertNonNegativeInt(value: number, name: string): void {
