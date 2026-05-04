@@ -11,7 +11,7 @@ const GLTF2Loader = {
 const GLTF2Legacy = {
     ...GLTF2,
     ["Loader"]: GLTF2Loader,
-};
+} as typeof GLTF2;
 
 /**
  * This is the entry point for the UMD module.

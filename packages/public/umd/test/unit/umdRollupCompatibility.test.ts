@@ -62,9 +62,10 @@ describe("UMD Rollup compatibility", () => {
         const { GLTF2: fullLoadersNamespace } = await import("../../../../dev/loaders/src/legacy/legacy");
 
         for (const GLTF2 of [glTF2EntryNamespace, fullLoadersNamespace]) {
-            expect(GLTF2.Loader).toBeDefined();
-            expect(GLTF2.Loader.Extensions).toBeDefined();
-            expect(GLTF2.Loader.Extensions.KHR_lights).toBeDefined();
+            const legacyGLTF2 = GLTF2 as typeof GLTF2 & { Loader: { Extensions: { KHR_lights: unknown } } };
+            expect(legacyGLTF2.Loader).toBeDefined();
+            expect(legacyGLTF2.Loader.Extensions).toBeDefined();
+            expect(legacyGLTF2.Loader.Extensions.KHR_lights).toBeDefined();
         }
     });
 });
