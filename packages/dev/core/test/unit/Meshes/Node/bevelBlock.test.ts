@@ -1,10 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { VertexData } from "core/Meshes/mesh.vertexData";
+import { VertexData, VertexDataMaterialInfo } from "core/Meshes/mesh.vertexData";
 import { BoxBlock } from "core/Meshes/Node/Blocks/Sources/boxBlock";
 import { CylinderBlock } from "core/Meshes/Node/Blocks/Sources/cylinderBlock";
 import { BevelBlock } from "core/Meshes/Node/Blocks/bevelBlock";
 import { GeometryOutputBlock } from "core/Meshes/Node/Blocks/geometryOutputBlock";
 import { NodeGeometry } from "core/Meshes/Node/nodeGeometry";
+import { GeometryInputBlock } from "core/Meshes/Node/Blocks/geometryInputBlock";
+import { NodeGeometryBlockConnectionPointTypes } from "core/Meshes/Node/Enums/nodeGeometryConnectionPointTypes";
 
 const Epsilon = 1e-5;
 
@@ -51,6 +53,25 @@ function buildBeveledCylinder(amount: number, segments: number, angle: number) {
     return nodeGeometry.vertexData!;
 }
 
+function buildBeveledVertexData(source: VertexData, amount: number, segments: number, angle: number) {
+    const nodeGeometry = new NodeGeometry("beveled vertex data");
+    const input = new GeometryInputBlock("Source", NodeGeometryBlockConnectionPointTypes.Geometry);
+    const bevel = new BevelBlock("Bevel");
+    const output = new GeometryOutputBlock("Output");
+
+    input.value = source;
+    bevel.amount.value = amount;
+    bevel.segments.value = segments;
+    bevel.angle.value = angle;
+
+    input.output.connectTo(bevel.geometry);
+    bevel.output.connectTo(output.geometry);
+    nodeGeometry.outputBlock = output;
+    nodeGeometry.build();
+
+    return nodeGeometry.vertexData!;
+}
+
 function buildDefaultBeveledCylinder() {
     const nodeGeometry = new NodeGeometry("default beveled cylinder");
     const cylinder = new CylinderBlock("Cylinder");
@@ -79,6 +100,60 @@ function buildBox() {
 
 function getVertexCount(vertexData: VertexData) {
     return vertexData.positions!.length / 3;
+}
+
+function buildDisconnectedBoxes() {
+    const source = buildBox();
+    const result = new VertexData();
+    const positions = Array.from(source.positions!);
+    const normals = Array.from(source.normals!);
+    const indices = Array.from(source.indices!);
+    const vertexCount = positions.length / 3;
+    const secondPositions = positions.slice();
+
+    for (let index = 0; index < positions.length; index += 3) {
+        positions[index] -= 1.25;
+        secondPositions[index] += 1.25;
+    }
+
+    result.positions = positions.concat(secondPositions);
+    result.normals = normals.concat(normals);
+    result.indices = indices.concat(indices.map((index) => index + vertexCount));
+
+    return result;
+}
+
+function expectDisconnectedBoxesMostlyOutward(vertexData: VertexData) {
+    const positions = vertexData.positions!;
+    let outward = 0;
+    let inward = 0;
+
+    for (let index = 0; index < vertexData.indices!.length; index += 3) {
+        const i0 = vertexData.indices![index] * 3;
+        const i1 = vertexData.indices![index + 1] * 3;
+        const i2 = vertexData.indices![index + 2] * 3;
+        const cx = (positions[i0] + positions[i1] + positions[i2]) / 3;
+        const cy = (positions[i0 + 1] + positions[i1 + 1] + positions[i2 + 1]) / 3;
+        const cz = (positions[i0 + 2] + positions[i1 + 2] + positions[i2 + 2]) / 3;
+        const ux = positions[i0] - positions[i1];
+        const uy = positions[i0 + 1] - positions[i1 + 1];
+        const uz = positions[i0 + 2] - positions[i1 + 2];
+        const vx = positions[i2] - positions[i1];
+        const vy = positions[i2 + 1] - positions[i1 + 1];
+        const vz = positions[i2 + 2] - positions[i1 + 2];
+        const nx = uy * vz - uz * vy;
+        const ny = uz * vx - ux * vz;
+        const nz = ux * vy - uy * vx;
+        const centerX = cx < 0 ? -1.25 : 1.25;
+
+        if (nx * (cx - centerX) + ny * cy + nz * cz >= 0) {
+            outward++;
+        } else {
+            inward++;
+        }
+    }
+
+    expect(outward).toBeGreaterThan(inward);
 }
 
 function expectValidTriangleGeometry(vertexData: VertexData) {
@@ -338,6 +413,18 @@ function hasSharpCubeCorner(vertexData: VertexData) {
     return false;
 }
 
+function createMaterialInfo(materialIndex: number, indexStart: number, indexCount: number, verticesCount: number) {
+    const materialInfo = new VertexDataMaterialInfo();
+
+    materialInfo.materialIndex = materialIndex;
+    materialInfo.indexStart = indexStart;
+    materialInfo.indexCount = indexCount;
+    materialInfo.verticesStart = 0;
+    materialInfo.verticesCount = verticesCount;
+
+    return materialInfo;
+}
+
 describe("BevelBlock", () => {
     it("bevels cube hard edges while ignoring coplanar triangle diagonals", () => {
         const source = buildBox();
@@ -427,6 +514,47 @@ describe("BevelBlock", () => {
         expectMostlyOutwardFacing(result);
         expect(getGeometricBoundaryEdgeCount(result)).toBe(0);
         expectCylinderRimNormalsPointTowardCaps(result);
+    });
+
+    it("keeps disconnected components oriented independently", () => {
+        const source = buildDisconnectedBoxes();
+        const result = buildBeveledVertexData(source, 0.12, 3, 30);
+
+        expectValidTriangleGeometry(result);
+        expect(getGeometricBoundaryEdgeCount(result)).toBe(0);
+        expectDisconnectedBoxesMostlyOutward(result);
+    });
+
+    it("preserves vertex attributes and material info", () => {
+        const source = buildBox();
+        const vertexCount = getVertexCount(source);
+        source.colors = [];
+        source.tangents = [];
+        source.uvs2 = [];
+
+        for (let index = 0; index < vertexCount; index++) {
+            source.colors.push(index / vertexCount, 0.25, 1 - index / vertexCount, 1);
+            source.tangents.push(1, 0, 0, 1);
+            source.uvs2.push(index / vertexCount, 1 - index / vertexCount);
+        }
+
+        const splitIndex = Math.floor(source.indices!.length / 2 / 3) * 3;
+        source.materialInfos = [createMaterialInfo(2, 0, splitIndex, vertexCount), createMaterialInfo(3, splitIndex, source.indices!.length - splitIndex, vertexCount)];
+
+        const result = buildBeveledVertexData(source, 0.12, 3, 30);
+        const resultVertexCount = getVertexCount(result);
+
+        expectValidTriangleGeometry(result);
+        expect(result.uvs).toBeDefined();
+        expect(result.uvs!.length).toBe(resultVertexCount * 2);
+        expect(result.uvs2).toBeDefined();
+        expect(result.uvs2!.length).toBe(resultVertexCount * 2);
+        expect(result.colors).toBeDefined();
+        expect(result.colors!.length).toBe(resultVertexCount * 4);
+        expect(result.tangents).toBeDefined();
+        expect(result.tangents!.length).toBe(resultVertexCount * 4);
+        expect(result.materialInfos?.map((materialInfo) => materialInfo.materialIndex)).toEqual([2, 3]);
+        expect(result.materialInfos?.reduce((sum, materialInfo) => sum + materialInfo.indexCount, 0)).toBe(result.indices!.length);
     });
 
     it("supports default cylinder editor wiring", () => {

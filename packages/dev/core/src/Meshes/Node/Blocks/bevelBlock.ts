@@ -1,7 +1,7 @@
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../Decorators/nodeDecorator";
 import { Vector3 } from "../../../Maths/math.vector";
 import { RegisterClass } from "../../../Misc/typeStore";
-import { VertexData } from "../../mesh.vertexData";
+import { VertexData, VertexDataMaterialInfo } from "../../mesh.vertexData";
 import { NodeGeometryBlockConnectionPointTypes } from "../Enums/nodeGeometryConnectionPointTypes";
 import { type NodeGeometryBuildState } from "../nodeGeometryBuildState";
 import { NodeGeometryBlock } from "../nodeGeometryBlock";
@@ -23,11 +23,16 @@ type BevelFaceEdgeSegment = {
     maxPoint: Vector3;
     minNormal: Vector3;
     maxNormal: Vector3;
+    minAttributes: number[];
+    maxAttributes: number[];
+    materialIndex: number;
 };
 
 type BevelPolygonPoint = {
     position: Vector3;
     normal: Vector3;
+    attributes: number[];
+    materialIndex: number;
 };
 
 type BevelCapPoint = Vector3 | BevelPolygonPoint;
@@ -53,8 +58,10 @@ type BevelFaceClipEdge = {
 
 type BevelFace = {
     indices: [number, number, number];
+    originalIndices: [number, number, number];
     normal: Vector3;
     cornerNormals: [Vector3, Vector3, Vector3];
+    materialIndex: number;
 };
 
 type BevelEdgeFace = {
@@ -73,6 +80,28 @@ type BevelTopology = {
     faces: BevelFace[];
     edges: Map<string, BevelEdge>;
     vertexFaces: Map<number, number[]>;
+};
+
+type BevelAttributeName =
+    | "tangents"
+    | "uvs"
+    | "uvs2"
+    | "uvs3"
+    | "uvs4"
+    | "uvs5"
+    | "uvs6"
+    | "colors"
+    | "matricesIndices"
+    | "matricesWeights"
+    | "matricesIndicesExtra"
+    | "matricesWeightsExtra";
+
+type BevelAttributeDescriptor = {
+    name: BevelAttributeName;
+    source: ArrayLike<number>;
+    stride: number;
+    offset: number;
+    output: number[];
 };
 
 function _Quantize(value: number) {
@@ -116,6 +145,213 @@ function _NormalizeNormalOrFallback(normal: Vector3, fallback: Vector3) {
     return normal.lengthSquared() > NormalEpsilon ? normal.normalizeToNew() : fallback.normalizeToNew();
 }
 
+function _BuildAttributeDescriptors(vertexData: VertexData, vertexCount: number) {
+    const descriptors: BevelAttributeDescriptor[] = [];
+    const addDescriptor = (name: BevelAttributeName, stride: number) => {
+        const source = vertexData[name];
+
+        if (!source || source.length < vertexCount * stride) {
+            return;
+        }
+
+        descriptors.push({
+            name,
+            source,
+            stride,
+            offset: descriptors.reduce((sum, descriptor) => sum + descriptor.stride, 0),
+            output: [],
+        });
+    };
+
+    addDescriptor("tangents", 4);
+    addDescriptor("uvs", 2);
+    addDescriptor("uvs2", 2);
+    addDescriptor("uvs3", 2);
+    addDescriptor("uvs4", 2);
+    addDescriptor("uvs5", 2);
+    addDescriptor("uvs6", 2);
+    if (vertexData.colors) {
+        addDescriptor("colors", vertexData.colors.length === vertexData.positions!.length ? 3 : 4);
+    }
+    addDescriptor("matricesIndices", 4);
+    addDescriptor("matricesWeights", 4);
+    addDescriptor("matricesIndicesExtra", 4);
+    addDescriptor("matricesWeightsExtra", 4);
+
+    return descriptors;
+}
+
+function _GetAttributeLength(descriptors: BevelAttributeDescriptor[]) {
+    return descriptors.reduce((sum, descriptor) => sum + descriptor.stride, 0);
+}
+
+function _GetVertexAttributes(descriptors: BevelAttributeDescriptor[], vertexIndex: number) {
+    const attributes: number[] = [];
+
+    for (const descriptor of descriptors) {
+        const sourceOffset = vertexIndex * descriptor.stride;
+        for (let index = 0; index < descriptor.stride; index++) {
+            attributes.push(descriptor.source[sourceOffset + index]);
+        }
+    }
+
+    return attributes;
+}
+
+function _InterpolateAttributes(start: number[], end: number[], amount: number) {
+    if (!start.length) {
+        return start;
+    }
+
+    return start.map((value, index) => value + (end[index] - value) * amount);
+}
+
+function _AverageAttributes(attributes: number[][], length: number) {
+    if (!length || !attributes.length) {
+        return [];
+    }
+
+    const result = new Array<number>(length).fill(0);
+
+    for (const attribute of attributes) {
+        for (let index = 0; index < length; index++) {
+            result[index] += attribute[index] ?? 0;
+        }
+    }
+
+    for (let index = 0; index < length; index++) {
+        result[index] /= attributes.length;
+    }
+
+    return result;
+}
+
+function _AttributesMatch(left: number[], right: number[]) {
+    if (left.length !== right.length) {
+        return false;
+    }
+
+    for (let index = 0; index < left.length; index++) {
+        if (Math.abs(left[index] - right[index]) > OutputPositionEpsilon) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+function _AssignAttributeOutputs(result: VertexData, descriptors: BevelAttributeDescriptor[], vertexAttributes: number[][]) {
+    for (const descriptor of descriptors) {
+        descriptor.output.length = 0;
+
+        for (const attributes of vertexAttributes) {
+            for (let index = 0; index < descriptor.stride; index++) {
+                descriptor.output.push(attributes[descriptor.offset + index] ?? 0);
+            }
+        }
+
+        switch (descriptor.name) {
+            case "tangents":
+                result.tangents = descriptor.output;
+                break;
+            case "uvs":
+                result.uvs = descriptor.output;
+                break;
+            case "uvs2":
+                result.uvs2 = descriptor.output;
+                break;
+            case "uvs3":
+                result.uvs3 = descriptor.output;
+                break;
+            case "uvs4":
+                result.uvs4 = descriptor.output;
+                break;
+            case "uvs5":
+                result.uvs5 = descriptor.output;
+                break;
+            case "uvs6":
+                result.uvs6 = descriptor.output;
+                break;
+            case "colors":
+                result.colors = descriptor.output;
+                break;
+            case "matricesIndices":
+                result.matricesIndices = descriptor.output;
+                break;
+            case "matricesWeights":
+                result.matricesWeights = descriptor.output;
+                break;
+            case "matricesIndicesExtra":
+                result.matricesIndicesExtra = descriptor.output;
+                break;
+            case "matricesWeightsExtra":
+                result.matricesWeightsExtra = descriptor.output;
+                break;
+        }
+    }
+}
+
+function _GetMaterialIndex(vertexData: VertexData, indexStart: number) {
+    if (!vertexData.materialInfos) {
+        return 0;
+    }
+
+    for (const materialInfo of vertexData.materialInfos) {
+        if (indexStart >= materialInfo.indexStart && indexStart < materialInfo.indexStart + materialInfo.indexCount) {
+            return materialInfo.materialIndex;
+        }
+    }
+
+    return 0;
+}
+
+function _BuildMaterialInfoResult(vertexData: VertexData, indices: number[], materialIndices: number[], vertexCount: number) {
+    if (!vertexData.materialInfos?.length) {
+        return { indices, materialInfos: null };
+    }
+
+    const materialOrder = vertexData.materialInfos.map((materialInfo) => materialInfo.materialIndex);
+    const groups = new Map<number, number[]>();
+
+    for (let triangleIndex = 0; triangleIndex < materialIndices.length; triangleIndex++) {
+        const materialIndex = materialIndices[triangleIndex];
+        let group = groups.get(materialIndex);
+
+        if (!group) {
+            group = [];
+            groups.set(materialIndex, group);
+            if (!materialOrder.includes(materialIndex)) {
+                materialOrder.push(materialIndex);
+            }
+        }
+
+        const indexOffset = triangleIndex * 3;
+        group.push(indices[indexOffset], indices[indexOffset + 1], indices[indexOffset + 2]);
+    }
+
+    const groupedIndices: number[] = [];
+    const materialInfos: VertexDataMaterialInfo[] = [];
+
+    for (const materialIndex of materialOrder) {
+        const group = groups.get(materialIndex);
+
+        if (!group?.length) {
+            continue;
+        }
+
+        const materialInfo = new VertexDataMaterialInfo();
+        materialInfo.materialIndex = materialIndex;
+        materialInfo.indexStart = groupedIndices.length;
+        materialInfo.indexCount = group.length;
+        materialInfo.verticesStart = 0;
+        materialInfo.verticesCount = vertexCount;
+        groupedIndices.push(...group);
+        materialInfos.push(materialInfo);
+    }
+
+    return { indices: groupedIndices, materialInfos };
+}
+
 function _IsFlatFace(face: BevelFace) {
     return face.cornerNormals.every((normal) => Vector3.Dot(normal, face.normal) > 1 - PositionEpsilon);
 }
@@ -132,6 +368,14 @@ function _GetCapPointNormal(point: BevelCapPoint, fallback: Vector3) {
     return _IsBevelPolygonPoint(point) ? point.normal : fallback;
 }
 
+function _GetCapPointAttributes(point: BevelCapPoint) {
+    return _IsBevelPolygonPoint(point) ? point.attributes : [];
+}
+
+function _GetCapPointMaterialIndex(point: BevelCapPoint) {
+    return _IsBevelPolygonPoint(point) ? point.materialIndex : 0;
+}
+
 function _BuildTopology(vertexData: VertexData): BevelTopology | null {
     const positions = vertexData.positions;
     const normals = vertexData.normals;
@@ -145,7 +389,6 @@ function _BuildTopology(vertexData: VertexData): BevelTopology | null {
     const weldedPositionMap = new Map<string, number>();
     const originalToWelded: number[] = [];
     const weldedPositions: Vector3[] = [];
-    const meshCenter = new Vector3();
 
     for (let index = 0; index < vertexCount; index++) {
         const x = positions[index * 3];
@@ -158,13 +401,10 @@ function _BuildTopology(vertexData: VertexData): BevelTopology | null {
             weldedIndex = weldedPositions.length;
             weldedPositionMap.set(key, weldedIndex);
             weldedPositions.push(new Vector3(x, y, z));
-            meshCenter.addInPlaceFromFloats(x, y, z);
         }
 
         originalToWelded[index] = weldedIndex;
     }
-
-    meshCenter.scaleInPlace(1 / weldedPositions.length);
 
     const faces: BevelFace[] = [];
     const edges = new Map<string, BevelEdge>();
@@ -174,7 +414,7 @@ function _BuildTopology(vertexData: VertexData): BevelTopology | null {
     const normal = new Vector3();
 
     for (let index = 0; index < indices.length; index += 3) {
-        const originalIndices: [number, number, number] = [indices[index], indices[index + 1], indices[index + 2]];
+        let originalIndices: [number, number, number] = [indices[index], indices[index + 1], indices[index + 2]];
         const i0 = originalToWelded[originalIndices[0]];
         const i1 = originalToWelded[originalIndices[1]];
         const i2 = originalToWelded[originalIndices[2]];
@@ -196,10 +436,6 @@ function _BuildTopology(vertexData: VertexData): BevelTopology | null {
             continue;
         }
 
-        const centroid = p0
-            .add(p1)
-            .addInPlace(p2)
-            .scaleInPlace(1 / 3);
         let cornerNormals: [Vector3, Vector3, Vector3] = normals
             ? [
                   _NormalizeNormalOrFallback(Vector3.FromArray(normals, originalIndices[0] * 3), normal),
@@ -208,8 +444,11 @@ function _BuildTopology(vertexData: VertexData): BevelTopology | null {
               ]
             : [normal.normalizeToNew(), normal.normalizeToNew(), normal.normalizeToNew()];
 
-        if (Vector3.Dot(normal, centroid.subtract(meshCenter)) < 0) {
+        const averageCornerNormal = _NormalizeNormalOrFallback(cornerNormals[0].add(cornerNormals[1]).addInPlace(cornerNormals[2]), normal);
+
+        if (normals && Vector3.Dot(normal, averageCornerNormal) < 0) {
             faceIndices = [i0, i2, i1];
+            originalIndices = [originalIndices[0], originalIndices[2], originalIndices[1]];
             cornerNormals = [cornerNormals[0], cornerNormals[2], cornerNormals[1]];
             normal.scaleInPlace(-1);
         }
@@ -223,8 +462,10 @@ function _BuildTopology(vertexData: VertexData): BevelTopology | null {
         const faceIndex = faces.length;
         faces.push({
             indices: faceIndices,
+            originalIndices,
             normal: faceNormal,
             cornerNormals,
+            materialIndex: _GetMaterialIndex(vertexData, index),
         });
 
         for (const vertexIndex of faceIndices) {
@@ -272,6 +513,8 @@ function _ClonePolygonPoint(point: BevelPolygonPoint): BevelPolygonPoint {
     return {
         position: point.position.clone(),
         normal: point.normal.clone(),
+        attributes: point.attributes.slice(),
+        materialIndex: point.materialIndex,
     };
 }
 
@@ -279,6 +522,8 @@ function _InterpolatePolygonPoint(start: BevelPolygonPoint, end: BevelPolygonPoi
     return {
         position: Vector3.Lerp(start.position, end.position, amount),
         normal: _NormalizeNormalOrFallback(Vector3.Lerp(start.normal, end.normal, amount), start.normal),
+        attributes: _InterpolateAttributes(start.attributes, end.attributes, amount),
+        materialIndex: start.materialIndex,
     };
 }
 
@@ -303,6 +548,18 @@ function _InterpolateSegmentPoint(segment: BevelFaceEdgeSegment, t: number) {
     }
 
     return Vector3.Lerp(segment.minPoint, segment.maxPoint, (t - segment.tMin) / (segment.tMax - segment.tMin));
+}
+
+function _InterpolateSegmentAttributes(segment: BevelFaceEdgeSegment, t: number) {
+    if (t <= segment.tMin + PositionEpsilon) {
+        return segment.minAttributes;
+    }
+
+    if (t >= segment.tMax - PositionEpsilon) {
+        return segment.maxAttributes;
+    }
+
+    return _InterpolateAttributes(segment.minAttributes, segment.maxAttributes, (t - segment.tMin) / (segment.tMax - segment.tMin));
 }
 
 function _ClipPolygonAgainstEdge(polygon: BevelPolygonPoint[], edgeStart: Vector3, inward: Vector3, amount: number) {
@@ -364,7 +621,7 @@ function _SlerpDirections(start: Vector3, end: Vector3, amount: number) {
     return result.normalize();
 }
 
-function _AddUniquePoint(points: BevelCapPoint[], point: Vector3, normal: Vector3) {
+function _AddUniquePoint(points: BevelCapPoint[], point: Vector3, normal: Vector3, attributes: number[], materialIndex: number) {
     const key = _VectorKey(point);
     const normalizedNormal = _NormalizeNormalOrFallback(normal, normal);
 
@@ -372,6 +629,7 @@ function _AddUniquePoint(points: BevelCapPoint[], point: Vector3, normal: Vector
         if (_VectorKey(_GetCapPointPosition(existing)) === key) {
             if (_IsBevelPolygonPoint(existing)) {
                 existing.normal.addInPlace(normalizedNormal).normalize();
+                existing.attributes = _AverageAttributes([existing.attributes, attributes], attributes.length);
             }
             return;
         }
@@ -380,6 +638,8 @@ function _AddUniquePoint(points: BevelCapPoint[], point: Vector3, normal: Vector
     points.push({
         position: point.clone(),
         normal: normalizedNormal,
+        attributes: attributes.slice(),
+        materialIndex,
     });
 }
 
@@ -653,10 +913,14 @@ function _BevelVertexData(vertexData: VertexData, amount: number, segments: numb
     }
 
     const faceClipEdges = _BuildCoplanarFaceClipEdges(topology, selectedEdges);
+    const attributeDescriptors = _BuildAttributeDescriptors(vertexData, vertexData.positions!.length / 3);
+    const attributeLength = _GetAttributeLength(attributeDescriptors);
     const outputPositions: number[] = [];
     const outputNormals: Vector3[] = [];
     const outputNormalContributions: Vector3[][] = [];
+    const outputVertexAttributes: number[][] = [];
     const outputIndices: number[] = [];
+    const outputTriangleMaterialIndices: number[] = [];
     const outputVertexBuckets = new Map<string, number[]>();
     const outputVertexGroups: string[] = [];
     const faceEdgeSegments = new Map<string, BevelFaceEdgeSegment>();
@@ -664,8 +928,9 @@ function _BevelVertexData(vertexData: VertexData, amount: number, segments: numb
     const preparedFaces: BevelPreparedFace[] = [];
     const edgeIntervals = new Map<string, BevelEdgeInterval>();
 
-    const getOrCreateVertex = (position: Vector3, normal: Vector3, smoothingGroup: string) => {
+    const getOrCreateVertex = (position: Vector3, normal: Vector3, smoothingGroup: string, attributes: number[]) => {
         const normalizedNormal = normal.normalizeToNew();
+        const vertexAttributes = attributeLength ? (attributes.length === attributeLength ? attributes : new Array<number>(attributeLength).fill(0)) : [];
         const qx = _OutputQuantize(position.x);
         const qy = _OutputQuantize(position.y);
         const qz = _OutputQuantize(position.z);
@@ -692,6 +957,10 @@ function _BevelVertexData(vertexData: VertexData, amount: number, segments: numb
                             }
 
                             if (outputVertexGroups[index] !== smoothingGroup) {
+                                continue;
+                            }
+
+                            if (!_AttributesMatch(outputVertexAttributes[index], vertexAttributes)) {
                                 continue;
                             }
 
@@ -723,21 +992,35 @@ function _BevelVertexData(vertexData: VertexData, amount: number, segments: numb
         outputPositions.push(outputX, outputY, outputZ);
         outputNormals.push(normalizedNormal);
         outputNormalContributions.push([normalizedNormal.clone()]);
+        outputVertexAttributes.push(vertexAttributes.slice());
         outputVertexGroups.push(smoothingGroup);
 
         return index;
     };
 
-    const addCapPoint = (vertexIndex: number, point: Vector3, normal: Vector3) => {
+    const addCapPoint = (vertexIndex: number, point: Vector3, normal: Vector3, attributes: number[], materialIndex: number) => {
         let points = capPoints.get(vertexIndex);
         if (!points) {
             points = [];
             capPoints.set(vertexIndex, points);
         }
-        _AddUniquePoint(points, point, normal);
+        _AddUniquePoint(points, point, normal, attributes, materialIndex);
     };
 
-    const addTriangle = (p0: Vector3, p1: Vector3, p2: Vector3, targetNormal: Vector3, n0 = targetNormal, n1 = targetNormal, n2 = targetNormal, smoothingGroup = "smooth") => {
+    const addTriangle = (
+        p0: Vector3,
+        p1: Vector3,
+        p2: Vector3,
+        targetNormal: Vector3,
+        n0 = targetNormal,
+        n1 = targetNormal,
+        n2 = targetNormal,
+        smoothingGroup = "smooth",
+        p0Attributes: number[] = [],
+        p1Attributes: number[] = [],
+        p2Attributes: number[] = [],
+        materialIndex = 0
+    ) => {
         const edge0 = p1.subtract(p0);
         const edge1 = p2.subtract(p0);
         const normal = Vector3.Cross(edge0, edge1);
@@ -750,27 +1033,37 @@ function _BevelVertexData(vertexData: VertexData, amount: number, segments: numb
         let v2 = p2;
         let vn1 = n1;
         let vn2 = n2;
+        let va1 = p1Attributes;
+        let va2 = p2Attributes;
 
         if (Vector3.Dot(normal, targetNormal) > 0) {
             v1 = p2;
             v2 = p1;
             vn1 = n2;
             vn2 = n1;
+            va1 = p2Attributes;
+            va2 = p1Attributes;
         }
 
-        const i0 = getOrCreateVertex(p0, n0, smoothingGroup);
-        const i1 = getOrCreateVertex(v1, vn1, smoothingGroup);
-        const i2 = getOrCreateVertex(v2, vn2, smoothingGroup);
+        const i0 = getOrCreateVertex(p0, n0, smoothingGroup, p0Attributes);
+        const i1 = getOrCreateVertex(v1, vn1, smoothingGroup, va1);
+        const i2 = getOrCreateVertex(v2, vn2, smoothingGroup, va2);
 
         if (i0 === i1 || i1 === i2 || i2 === i0) {
             return;
         }
 
         outputIndices.push(i0, i1, i2);
+        outputTriangleMaterialIndices.push(materialIndex);
     };
 
     const addFacePolygon = (polygon: BevelPolygonPoint[], normal: Vector3, smoothingGroup: string, useFlatNormals: boolean) => {
         const center = new Vector3();
+        const centerAttributes = _AverageAttributes(
+            polygon.map((point) => point.attributes),
+            attributeLength
+        );
+        const materialIndex = polygon[0]?.materialIndex ?? 0;
         const centerNormal = useFlatNormals
             ? normal
             : _NormalizeNormalOrFallback(
@@ -793,7 +1086,11 @@ function _BevelVertexData(vertexData: VertexData, amount: number, segments: numb
                 centerNormal,
                 useFlatNormals ? normal : polygon[index].normal,
                 useFlatNormals ? normal : polygon[nextIndex].normal,
-                smoothingGroup
+                smoothingGroup,
+                centerAttributes,
+                polygon[index].attributes,
+                polygon[nextIndex].attributes,
+                materialIndex
             );
         }
     };
@@ -804,6 +1101,8 @@ function _BevelVertexData(vertexData: VertexData, amount: number, segments: numb
         let polygon = face.indices.map((index, cornerIndex) => ({
             position: topology.positions[index].clone(),
             normal: face.cornerNormals[cornerIndex].clone(),
+            attributes: _GetVertexAttributes(attributeDescriptors, face.originalIndices[cornerIndex]),
+            materialIndex: face.materialIndex,
         }));
         const selectedFaceEdges: BevelFaceClipEdge[] = [];
 
@@ -874,6 +1173,8 @@ function _BevelVertexData(vertexData: VertexData, amount: number, segments: numb
             const maxPoint = pointsOnLine[pointsOnLine.length - 1].point.position;
             const minNormal = pointsOnLine[0].point.normal;
             const maxNormal = pointsOnLine[pointsOnLine.length - 1].point.normal;
+            const minAttributes = pointsOnLine[0].point.attributes;
+            const maxAttributes = pointsOnLine[pointsOnLine.length - 1].point.attributes;
             const segment: BevelFaceEdgeSegment = {
                 edgeKey: selectedFaceEdge.key,
                 faceIndex,
@@ -884,11 +1185,14 @@ function _BevelVertexData(vertexData: VertexData, amount: number, segments: numb
                 maxPoint,
                 minNormal,
                 maxNormal,
+                minAttributes,
+                maxAttributes,
+                materialIndex: face.materialIndex,
             };
 
             faceEdgeSegments.set(`${faceIndex}|${selectedFaceEdge.key}`, segment);
-            addCapPoint(edge.v0, minPoint, pointsOnLine[0].point.normal);
-            addCapPoint(edge.v1, maxPoint, pointsOnLine[pointsOnLine.length - 1].point.normal);
+            addCapPoint(edge.v0, minPoint, pointsOnLine[0].point.normal, minAttributes, face.materialIndex);
+            addCapPoint(edge.v1, maxPoint, pointsOnLine[pointsOnLine.length - 1].point.normal, maxAttributes, face.materialIndex);
         }
     }
 
@@ -1016,7 +1320,11 @@ function _BevelVertexData(vertexData: VertexData, amount: number, segments: numb
                         face.normal,
                         face.normal,
                         face.normal,
-                        smoothingGroup
+                        smoothingGroup,
+                        preparedFace.polygon[0].attributes,
+                        preparedFace.polygon[index].attributes,
+                        preparedFace.polygon[index + 1].attributes,
+                        face.materialIndex
                     );
                 }
             }
@@ -1057,6 +1365,10 @@ function _BevelVertexData(vertexData: VertexData, amount: number, segments: numb
         const segment1StartNormal = _InterpolateSegmentNormal(segment1, tStart);
         const segment0EndNormal = _InterpolateSegmentNormal(segment0, tEnd);
         const segment1EndNormal = _InterpolateSegmentNormal(segment1, tEnd);
+        const segment0StartAttributes = _InterpolateSegmentAttributes(segment0, tStart);
+        const segment1StartAttributes = _InterpolateSegmentAttributes(segment1, tStart);
+        const segment0EndAttributes = _InterpolateSegmentAttributes(segment0, tEnd);
+        const segment1EndAttributes = _InterpolateSegmentAttributes(segment1, tEnd);
         const centerStart = segment0Start
             .subtract(faceNormal0.scale(bevelAmount))
             .addInPlace(segment1Start.subtract(faceNormal1.scale(bevelAmount)))
@@ -1069,12 +1381,16 @@ function _BevelVertexData(vertexData: VertexData, amount: number, segments: numb
         const endProfilePoints: Vector3[] = [];
         const startProfileNormals: Vector3[] = [];
         const endProfileNormals: Vector3[] = [];
+        const startProfileAttributes: number[][] = [];
+        const endProfileAttributes: number[][] = [];
 
         for (let segmentIndex = 0; segmentIndex <= segments; segmentIndex++) {
             const profileAmount = segmentIndex / segments;
             const profileNormal = _SlerpDirections(faceNormal0, faceNormal1, profileAmount);
             const startNormal = _SlerpDirections(segment0StartNormal, segment1StartNormal, profileAmount);
             const endNormal = _SlerpDirections(segment0EndNormal, segment1EndNormal, profileAmount);
+            const startAttributes = _InterpolateAttributes(segment0StartAttributes, segment1StartAttributes, profileAmount);
+            const endAttributes = _InterpolateAttributes(segment0EndAttributes, segment1EndAttributes, profileAmount);
             let startPoint = centerStart.add(profileNormal.scale(bevelAmount));
             let endPoint = centerEnd.add(profileNormal.scale(bevelAmount));
 
@@ -1090,8 +1406,10 @@ function _BevelVertexData(vertexData: VertexData, amount: number, segments: numb
             endProfilePoints.push(endPoint);
             startProfileNormals.push(startNormal);
             endProfileNormals.push(endNormal);
-            addCapPoint(edge.v0, startPoint, startNormal);
-            addCapPoint(edge.v1, endPoint, endNormal);
+            startProfileAttributes.push(startAttributes);
+            endProfileAttributes.push(endAttributes);
+            addCapPoint(edge.v0, startPoint, startNormal, startAttributes, segment0.materialIndex);
+            addCapPoint(edge.v1, endPoint, endNormal, endAttributes, segment0.materialIndex);
         }
 
         for (let segmentIndex = 0; segmentIndex < segments; segmentIndex++) {
@@ -1104,7 +1422,12 @@ function _BevelVertexData(vertexData: VertexData, amount: number, segments: numb
                 normalTarget,
                 startProfileNormals[segmentIndex],
                 endProfileNormals[segmentIndex],
-                endProfileNormals[segmentIndex + 1]
+                endProfileNormals[segmentIndex + 1],
+                "smooth",
+                startProfileAttributes[segmentIndex],
+                endProfileAttributes[segmentIndex],
+                endProfileAttributes[segmentIndex + 1],
+                segment0.materialIndex
             );
             addTriangle(
                 startProfilePoints[segmentIndex],
@@ -1113,7 +1436,12 @@ function _BevelVertexData(vertexData: VertexData, amount: number, segments: numb
                 normalTarget,
                 startProfileNormals[segmentIndex],
                 endProfileNormals[segmentIndex + 1],
-                startProfileNormals[segmentIndex + 1]
+                startProfileNormals[segmentIndex + 1],
+                "smooth",
+                startProfileAttributes[segmentIndex],
+                endProfileAttributes[segmentIndex + 1],
+                startProfileAttributes[segmentIndex + 1],
+                segment0.materialIndex
             );
         }
     }
@@ -1125,6 +1453,12 @@ function _BevelVertexData(vertexData: VertexData, amount: number, segments: numb
 
         const incidentNormals: Vector3[] = [];
         const vertexPosition = topology.positions[vertexIndex];
+        const cornerCapPoints = capPoints.get(vertexIndex) ?? [];
+        const cornerAttributes = _AverageAttributes(
+            cornerCapPoints.map((point) => _GetCapPointAttributes(point)),
+            attributeLength
+        );
+        const materialIndex = cornerCapPoints.length ? _GetCapPointMaterialIndex(cornerCapPoints[0]) : 0;
 
         for (const edgeKey of Array.from(selectedEdges)) {
             const edge = topology.edges.get(edgeKey)!;
@@ -1154,17 +1488,22 @@ function _BevelVertexData(vertexData: VertexData, amount: number, segments: numb
             return false;
         }
 
-        const rows: Vector3[][] = [];
+        const rows: BevelPolygonPoint[][] = [];
         for (let rowIndex = 0; rowIndex <= segments; rowIndex++) {
             const rowAmount = rowIndex / segments;
             const left = _SlerpDirections(incidentNormals[0], incidentNormals[1], rowAmount);
             const right = _SlerpDirections(incidentNormals[0], incidentNormals[2], rowAmount);
-            const row: Vector3[] = [];
+            const row: BevelPolygonPoint[] = [];
 
             for (let columnIndex = 0; columnIndex <= rowIndex; columnIndex++) {
                 const columnAmount = rowIndex === 0 ? 0 : columnIndex / rowIndex;
                 const direction = rowIndex === 0 ? incidentNormals[0].clone() : _SlerpDirections(left, right, columnAmount);
-                row.push(center.add(direction.scale(bevelAmount)));
+                row.push({
+                    position: center.add(direction.scale(bevelAmount)),
+                    normal: direction,
+                    attributes: cornerAttributes,
+                    materialIndex,
+                });
             }
 
             rows.push(row);
@@ -1175,27 +1514,45 @@ function _BevelVertexData(vertexData: VertexData, amount: number, segments: numb
             const nextRow = rows[rowIndex + 1];
 
             for (let columnIndex = 0; columnIndex < row.length; columnIndex++) {
-                const targetNormal0 = row[columnIndex].subtract(center).normalize();
-                const targetNormal1 = nextRow[columnIndex].subtract(center).normalize();
-                const targetNormal2 = nextRow[columnIndex + 1].subtract(center).normalize();
+                const targetNormal0 = row[columnIndex].position.subtract(center).normalize();
+                const targetNormal1 = nextRow[columnIndex].position.subtract(center).normalize();
+                const targetNormal2 = nextRow[columnIndex + 1].position.subtract(center).normalize();
                 const targetNormal = targetNormal0.addInPlace(targetNormal1).addInPlace(targetNormal2).normalize();
 
-                addTriangle(row[columnIndex], nextRow[columnIndex], nextRow[columnIndex + 1], targetNormal, targetNormal0, targetNormal1, targetNormal2);
+                addTriangle(
+                    row[columnIndex].position,
+                    nextRow[columnIndex].position,
+                    nextRow[columnIndex + 1].position,
+                    targetNormal,
+                    targetNormal0,
+                    targetNormal1,
+                    targetNormal2,
+                    "smooth",
+                    row[columnIndex].attributes,
+                    nextRow[columnIndex].attributes,
+                    nextRow[columnIndex + 1].attributes,
+                    materialIndex
+                );
 
                 if (columnIndex < row.length - 1) {
-                    const secondTargetNormal0 = row[columnIndex].subtract(center).normalize();
-                    const secondTargetNormal1 = nextRow[columnIndex + 1].subtract(center).normalize();
-                    const secondTargetNormal2 = row[columnIndex + 1].subtract(center).normalize();
+                    const secondTargetNormal0 = row[columnIndex].position.subtract(center).normalize();
+                    const secondTargetNormal1 = nextRow[columnIndex + 1].position.subtract(center).normalize();
+                    const secondTargetNormal2 = row[columnIndex + 1].position.subtract(center).normalize();
                     const secondTargetNormal = secondTargetNormal0.add(secondTargetNormal1).addInPlace(secondTargetNormal2).normalize();
 
                     addTriangle(
-                        row[columnIndex],
-                        nextRow[columnIndex + 1],
-                        row[columnIndex + 1],
+                        row[columnIndex].position,
+                        nextRow[columnIndex + 1].position,
+                        row[columnIndex + 1].position,
                         secondTargetNormal,
                         secondTargetNormal0,
                         secondTargetNormal1,
-                        secondTargetNormal2
+                        secondTargetNormal2,
+                        "smooth",
+                        row[columnIndex].attributes,
+                        nextRow[columnIndex + 1].attributes,
+                        row[columnIndex + 1].attributes,
+                        materialIndex
                     );
                 }
             }
@@ -1257,10 +1614,25 @@ function _BevelVertexData(vertexData: VertexData, amount: number, segments: numb
             const polygonPoints = sortedPoints.map((point) => ({
                 position: _GetCapPointPosition(point),
                 normal: _GetCapPointNormal(point, normal),
+                attributes: _GetCapPointAttributes(point),
+                materialIndex: _GetCapPointMaterialIndex(point),
             }));
             const addPatchTriangle = (point0: BevelPolygonPoint, point1: BevelPolygonPoint, point2: BevelPolygonPoint) => {
                 const targetNormal = _NormalizeNormalOrFallback(point0.normal.add(point1.normal).addInPlace(point2.normal), normal);
-                addTriangle(point0.position, point1.position, point2.position, targetNormal, point0.normal, point1.normal, point2.normal);
+                addTriangle(
+                    point0.position,
+                    point1.position,
+                    point2.position,
+                    targetNormal,
+                    point0.normal,
+                    point1.normal,
+                    point2.normal,
+                    "smooth",
+                    point0.attributes,
+                    point1.attributes,
+                    point2.attributes,
+                    point0.materialIndex
+                );
             };
 
             while (polygonPoints.length > 3) {
@@ -1305,13 +1677,31 @@ function _BevelVertexData(vertexData: VertexData, amount: number, segments: numb
             continue;
         }
 
+        const centerAttributes = _AverageAttributes(
+            sortedPoints.map((point) => _GetCapPointAttributes(point)),
+            attributeLength
+        );
+        const centerMaterialIndex = sortedPoints.length ? _GetCapPointMaterialIndex(sortedPoints[0]) : 0;
         for (let index = 0; index < sortedPoints.length; index++) {
             const point0 = sortedPoints[index];
             const point1 = sortedPoints[(index + 1) % sortedPoints.length];
             const point0Position = _GetCapPointPosition(point0);
             const point1Position = _GetCapPointPosition(point1);
 
-            addTriangle(center, point0Position, point1Position, normal, normal, _GetCapPointNormal(point0, normal), _GetCapPointNormal(point1, normal));
+            addTriangle(
+                center,
+                point0Position,
+                point1Position,
+                normal,
+                normal,
+                _GetCapPointNormal(point0, normal),
+                _GetCapPointNormal(point1, normal),
+                "smooth",
+                centerAttributes,
+                _GetCapPointAttributes(point0),
+                _GetCapPointAttributes(point1),
+                centerMaterialIndex
+            );
         }
     }
 
@@ -1321,7 +1711,6 @@ function _BevelVertexData(vertexData: VertexData, amount: number, segments: numb
 
     const result = new VertexData();
     result.positions = outputPositions;
-    result.indices = outputIndices;
     result.normals = [];
 
     for (let index = 0; index < outputNormals.length; index++) {
@@ -1330,6 +1719,12 @@ function _BevelVertexData(vertexData: VertexData, amount: number, segments: numb
 
         result.normals.push(normal.x, normal.y, normal.z);
     }
+
+    _AssignAttributeOutputs(result, attributeDescriptors, outputVertexAttributes);
+
+    const materialResult = _BuildMaterialInfoResult(vertexData, outputIndices, outputTriangleMaterialIndices, outputPositions.length / 3);
+    result.indices = materialResult.indices;
+    result.materialInfos = materialResult.materialInfos;
 
     return result;
 }
