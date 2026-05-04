@@ -20,3 +20,7 @@ export const TextureMinFilter = { NEAREST: 9728, LINEAR: 9729, NEAREST_MIPMAP_NE
 export const TextureWrapMode = { CLAMP_TO_EDGE: 33071, MIRRORED_REPEAT: 33648, REPEAT: 10497 };
 export const ImageMimeType = { JPEG: "image/jpeg", PNG: "image/png", WEBP: "image/webp" };
 export const KHRLightsPunctual_LightType = { DIRECTIONAL: "directional", POINT: "point", SPOT: "spot" };
+export const EXTLightsArea_LightType = { RECT: "rect", DISK: "disk" };
+export const IMSFTAudioEmitter_DistanceModel = { linear: "linear", inverse: "inverse", exponential: "exponential" };
+export const IMSFTAudioEmitter_AudioMimeType = { WAV: "audio/wav" };
+export const IMSFTAudioEmitter_AnimationEventAction = { play: "play", pause: "pause", stop: "stop" };

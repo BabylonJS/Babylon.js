@@ -2,11 +2,13 @@ import { commonUMDRollupConfiguration } from "../../rollupUMDHelper.mjs";
 import path from "path";
 
 const mode = process.env.ROLLUP_MODE === "production" ? "production" : "development";
+const devMode = process.env.ROLLUP_DEVMODE === "true";
 
 // ktx2decoder bundles @dev/core rather than externalising it, matching the
 // original extendedWebpackConfig: { externals: {} } behaviour.
 export default commonUMDRollupConfiguration({
     mode,
+    devMode,
     devPackageName: "ktx2decoder",
     devPackageAliasPath: "../../../tools/ktx2Decoder/dist",
     namespace: "KTX2DECODER",

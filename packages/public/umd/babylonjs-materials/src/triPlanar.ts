@@ -1,3 +1,2 @@
-import * as materials from "materials/legacy/legacy-triPlanar";
-export { materials };
-export default materials;
+import "materials/legacy/legacy-triPlanar";
+export * from "materials/legacy/legacy-triPlanar";

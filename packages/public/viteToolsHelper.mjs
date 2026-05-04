@@ -233,7 +233,23 @@ export function babylonDevExternalsPlugin(externals) {
  * @param {string} [options.outDir]            Production build output dir (default: "dist").
  */
 export function commonDevViteConfiguration(options) {
-    const { port, aliases = {}, publicDir = "public", enableHttps = false, enableHmr = true, productionExternals = {}, cdnExternals = null, outDir = "dist" } = options;
+    const {
+        port,
+        aliases = {},
+        publicDir = "public",
+        enableHttps: enableHttpsOption,
+        enableHmr: enableHmrOption,
+        productionExternals = {},
+        cdnExternals = null,
+        outDir = "dist",
+    } = options;
+
+    // Mirror the webpack convention: ENABLE_HOT_RELOAD env var controls HMR.
+    // Explicit option takes precedence; env var is the fallback; default is true.
+    const enableHmr = enableHmrOption !== undefined ? enableHmrOption : process.env.ENABLE_HOT_RELOAD !== undefined ? process.env.ENABLE_HOT_RELOAD === "true" : true;
+
+    // Mirror the webpack convention: ENABLE_HTTPS env var controls HTTPS.
+    const enableHttps = enableHttpsOption !== undefined ? enableHttpsOption : process.env.ENABLE_HTTPS === "true";
 
     // Resolve all alias values to absolute paths
     const resolvedAliases = Object.fromEntries(Object.entries(aliases).map(([key, value]) => [key, resolve(value)]));

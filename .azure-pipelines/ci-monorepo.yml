@@ -419,11 +419,13 @@ jobs:
 
     # ============================================================================
     # UNIT TESTS
-    # Depends on: Build
+    # Depends on: Build, FormatLint
     # ============================================================================
     - job: UnitTests
       displayName: "Unit tests"
-      dependsOn: Build
+      dependsOn:
+          - Build
+          - FormatLint
       steps:
           - template: templates/checkout-with-tag-override.yml
 
@@ -481,11 +483,13 @@ jobs:
 
     # ============================================================================
     # INTERACTION TESTS
-    # Depends on: Build
+    # Depends on: Build, FormatLint
     # ============================================================================
     - job: InteractionTests
       displayName: "Interaction tests"
-      dependsOn: Build
+      dependsOn:
+          - Build
+          - FormatLint
       steps:
           - template: templates/checkout-with-tag-override.yml
 
@@ -549,12 +553,14 @@ jobs:
 
     # ============================================================================
     # VISUALIZATION TESTS - WEBGL 2
-    # Depends on: Build
+    # Depends on: Build, FormatLint
     # Runs on BrowserStack
     # ============================================================================
     - job: VisualizationWebGL2
       displayName: "Visualization tests - WebGL 2"
-      dependsOn: Build
+      dependsOn:
+          - Build
+          - FormatLint
       condition: succeeded()
       variables:
           AFFECTED_TAGS: $[ dependencies.Build.outputs['ComputeVisTags.AFFECTED_TAGS'] ]
@@ -631,12 +637,14 @@ jobs:
 
     # ============================================================================
     # VISUALIZATION TESTS - WEBGPU
-    # Depends on: Build
+    # Depends on: Build, FormatLint
     # Runs on BrowserStack
     # ============================================================================
     - job: VisualizationWebGPU
       displayName: "Visualization tests - WebGPU"
-      dependsOn: Build
+      dependsOn:
+          - Build
+          - FormatLint
       variables:
           AFFECTED_TAGS: $[ dependencies.Build.outputs['ComputeVisTags.AFFECTED_TAGS'] ]
       steps:
@@ -714,12 +722,14 @@ jobs:
 
     # ============================================================================
     # NATIVE TESTS (EXPERIMENTAL)
-    # Depends on: Build
+    # Depends on: Build, FormatLint
     # Runs on Windows agent pool
     # ============================================================================
     - job: NativeTests
       displayName: "Native tests (experimental)"
-      dependsOn: Build
+      dependsOn:
+          - Build
+          - FormatLint
       timeoutInMinutes: 15
       pool:
           vmImage: windows-latest
@@ -786,14 +796,16 @@ jobs:
 
     # ============================================================================
     # PERFORMANCE TESTS
-    # Depends on: Build
+    # Depends on: Build, FormatLint
     # Runs on BrowserStack — each test runs baseline + candidate interleaved
     # on the same remote machine to ensure consistent comparison.
     # Non-blocking: failures do not fail the overall pipeline.
     # ============================================================================
     - job: PerformanceTests
       displayName: "Performance tests"
-      dependsOn: Build
+      dependsOn:
+          - Build
+          - FormatLint
       continueOnError: true
       variables:
           AFFECTED_TAGS: $[ dependencies.Build.outputs['ComputeVisTags.AFFECTED_TAGS'] ]
@@ -869,14 +881,16 @@ jobs:
 
     # ============================================================================
     # MEMORY LEAK TESTS
-    # Depends on: Build
+    # Depends on: Build, FormatLint
     # Runs memlab (Puppeteer/Chromium) on the CI agent — heap snapshots require
     # local Chrome DevTools Protocol access, so BrowserStack is not viable here.
     # Non-blocking: failures do not fail the overall pipeline.
     # ============================================================================
     - job: MemoryLeakTests
       displayName: "Memory leak tests"
-      dependsOn: Build
+      dependsOn:
+          - Build
+          - FormatLint
       continueOnError: true
       timeoutInMinutes: 45
       steps:
@@ -1034,7 +1048,8 @@ jobs:
             displayName: "Update CDN"
 
           - script: |
-                curl "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_PURGE)?endpoint=$(CDN_ENDPOINT_CDN)&profileName=$(CDN_PROFILE_CDN)&wait=true" -i -H "Authorization: $(BASIC_AUTH)"
+                # Async purge: don't block CI on the CDN purge completing.
+                curl "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_PURGE)?endpoint=$(CDN_ENDPOINT_CDN)&profileName=$(CDN_PROFILE_CDN)&wait=false" -i -H "Authorization: $(BASIC_AUTH)"
 
-                curl "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_PURGE)?endpoint=$(CDN_ENDPOINT_PREVIEW_CDN)&profileName=$(CDN_PROFILE_CDN)&wait=true" -i -H "Authorization: $(BASIC_AUTH)"
+                curl "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_PURGE)?endpoint=$(CDN_ENDPOINT_PREVIEW_CDN)&profileName=$(CDN_PROFILE_CDN)&wait=false" -i -H "Authorization: $(BASIC_AUTH)"
             displayName: "Purge CDN"

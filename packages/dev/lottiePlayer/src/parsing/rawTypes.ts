@@ -58,6 +58,13 @@ export type RawTextLayer = RawLottieLayer & {
     t: RawTextData;
 };
 
+export type RawSolidLayer = RawLottieLayer & {
+    ty: 1; // Solid layer type
+    sw: number; // Solid layer width in pixels
+    sh: number; // Solid layer height in pixels
+    sc: string; // Solid layer color as a CSS color string (e.g. "#rrggbb")
+};
+
 export type RawElement = {
     nm?: string; // Human readable name
     hd?: boolean; // Hidden

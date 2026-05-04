@@ -5,4 +5,5 @@
 // IMPORTANT: Do NOT also `import * as addons; export { addons }` here.
 // When both patterns coexist, terser collapses all individual exports into the
 // namespace object in the minified bundle, leaving ADDONS.X undefined at runtime.
+import "addons/index";
 export * from "addons/index";

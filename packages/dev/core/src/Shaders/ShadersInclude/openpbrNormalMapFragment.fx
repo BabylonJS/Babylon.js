@@ -14,6 +14,12 @@
 		// flip the uv for the backface
 		vec2 TBNUV = gl_FrontFacing ? vGeometryNormalUV : -vGeometryNormalUV;
 		mat3 TBN = cotangent_frame(normalW * normalScale, vPositionW, TBNUV, vTangentSpaceParams);
+	#elif defined(GEOMETRY_COAT_NORMAL)
+		// TODO - In the case that we're deriving the TBN using the UV mapping,
+		// the base noraml and coat normal should really be generating two different TBNs.
+		// So this code isn't correct if we have both normal maps and they have different UVs.
+		vec2 TBNUV = gl_FrontFacing ? vGeometryCoatNormalUV : -vGeometryCoatNormalUV;
+		mat3 TBN = cotangent_frame(normalW * normalScale, vPositionW, TBNUV, vTangentSpaceParams);
 	#else
 		// flip the uv for the backface
 		vec2 TBNUV = gl_FrontFacing ? vDetailUV : -vDetailUV;

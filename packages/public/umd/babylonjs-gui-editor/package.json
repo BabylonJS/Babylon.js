@@ -1,6 +1,6 @@
 {
     "name": "babylonjs-gui-editor",
-    "version": "9.4.1",
+    "version": "9.5.0",
     "main": "babylon.guiEditor.js",
     "types": "babylon.guiEditor.module.d.ts",
     "files": [
@@ -9,13 +9,14 @@
     "scripts": {
         "build": "npm run clean && npm run build:prod && npm run build:declaration",
         "build:dev": "rollup -c rollup.config.umd.mjs",
+        "build:dev:fast": "rollup -c rollup.config.umd.mjs --environment ROLLUP_DEVMODE:true",
         "build:prod": "rollup -c rollup.config.umd.mjs --environment ROLLUP_MODE:production",
         "build:declaration": "build-tools -c pud --config ./config.json",
         "clean": "rimraf dist && rimraf babylon*.* -g"
     },
     "dependencies": {
-        "babylonjs": "9.4.1",
-        "babylonjs-gui": "9.4.1"
+        "babylonjs": "9.5.0",
+        "babylonjs-gui": "9.5.0"
     },
     "devDependencies": {
         "@dev/build-tools": "1.0.0",

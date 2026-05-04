@@ -22,6 +22,8 @@ export default defineConfig(({ mode }) => {
         root: "../../../",
         server: {
             port,
+            hmr: process.env.ENABLE_HOT_RELOAD !== undefined ? process.env.ENABLE_HOT_RELOAD === "true" : true,
+            https: process.env.ENABLE_HTTPS === "true",
         },
         plugins: [
             {

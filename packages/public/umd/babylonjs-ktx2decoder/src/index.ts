@@ -5,4 +5,5 @@
 // IMPORTANT: Do NOT also `import * as ktx2decoder; export { ktx2decoder }` here.
 // When both patterns coexist, terser collapses all individual exports into the
 // namespace object in the minified bundle, leaving KTX2DECODER.X undefined at runtime.
+import "ktx2decoder/legacy/legacy";
 export * from "ktx2decoder/legacy/legacy";

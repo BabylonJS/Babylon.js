@@ -1,3 +1,2 @@
-import * as materials from "materials/legacy/legacy-sky";
-export { materials };
-export default materials;
+import "materials/legacy/legacy-sky";
+export * from "materials/legacy/legacy-sky";

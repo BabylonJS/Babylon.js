@@ -1,5 +1,6 @@
 import { defineConfig } from "vite";
 import path from "path";
+// @ts-ignore -- untyped JS helper
 import { commonDevViteConfiguration } from "../../public/viteToolsHelper.mjs";
 
 export default defineConfig(
@@ -7,12 +8,12 @@ export default defineConfig(
         port: parseInt(process.env.VSM_PORT ?? "1342"),
         aliases: {
             "shared-ui-components": path.resolve("../../dev/sharedUiComponents/src"),
-            "core": path.resolve("../../dev/core/dist"),
-            "gui": path.resolve("../../dev/gui/dist")
+            core: path.resolve("../../dev/core/dist"),
+            gui: path.resolve("../../dev/gui/dist"),
         },
         productionExternals: {
-            "babylonjs": "BABYLON",
-            "babylonjs-gui": "BABYLON.GUI"
+            babylonjs: "BABYLON",
+            "babylonjs-gui": "BABYLON.GUI",
         },
     })
 );

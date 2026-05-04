@@ -91,9 +91,11 @@ const perfOptions = {
 
 for (const engine of engines) {
     test.describe(`Visualization Performance (${engine})`, () => {
-        // Skip the entire suite if not explicitly enabled
-        if (!enabled) {
-            test.skip();
+        // Skip the entire suite if not explicitly enabled or no tests match
+        if (!enabled || runnableTests.length === 0) {
+            test(`No tests to run (${engine})`, () => {
+                test.skip(true, `No runnable performance tests (AFFECTED_TAGS: ${affectedTagsEnv || "not set"})`);
+            });
             return;
         }
 

@@ -5,15 +5,14 @@
     "scripts": {
         "clean": "rimraf dist && rimraf declarations",
         "static-serve": "http-server ",
-        "serve": "webpack serve",
-        "serve:prod": "npm run serve:source:prod",
-        "serve:source": "webpack serve",
-        "serve:source:prod": "webpack serve --env=mode=production",
+        "serve": "node scripts/ensureUmdBuilds.mjs && vite",
+        "serve:live": "node scripts/ensureUmdBuilds.mjs && ENABLE_LIVE_RELOAD=true vite",
+        "serve:no-watch": "node scripts/ensureUmdBuilds.mjs && NO_WATCH=true vite",
+        "serve:source": "node scripts/ensureUmdBuilds.mjs && vite",
         "build": "npm run build:dev",
-        "build:dev": "npm run build:source:dev && npm run build:declaration",
-        "build:prod": "npm run build:source:dev -- --env=mode=production && npm run build:declaration",
-        "build:snapshot": "npm run clean && npm run build:declaration && webpack --config webpack.config.snapshot.js --env=mode=production",
-        "build:source:dev": "webpack",
+        "build:dev": "npm run build:declaration",
+        "build:prod": "npm run build:declaration",
+        "build:snapshot": "npm run clean && npm run build:declaration && vite build --mode production",
         "build:declaration": "build-tools -c pud --config ./declarationConfigDev.json",
         "watch:declaration:dev": "build-tools -c pud --config ./declarationConfigDev.json --watch",
         "prepare": "node ./scripts/generateScripts.js"
@@ -32,15 +31,7 @@
         "@dev/shared-ui-components": "1.0.0",
         "@tools/node-editor": "1.0.0",
         "@tools/gui-editor": "1.0.0",
-        "@tools/ktx2decoder": "1.0.0",
-        "mini-css-extract-plugin": "^2.5.3",
-        "source-map-loader": "^4.0.0",
-        "style-loader": "^3.3.1",
-        "ts-loader": "^9.2.6",
-        "webpack": "^5.103.0",
-        "webpack-cli": "6.0.1",
-        "webpack-dev-server": "^5.2.2",
-        "webpack-merge": "^5.8.0"
+        "@tools/ktx2decoder": "1.0.0"
     },
     "sideEffects": true
 }

@@ -158,9 +158,9 @@ export class ComputeEffect {
 
         if (typeof baseName === "string") {
             computeSource = baseName;
-        } else if (baseName.computeSource) {
+        } else if (typeof baseName.computeSource === "string") {
             computeSource = "source:" + baseName.computeSource;
-        } else if (baseName.computeElement) {
+        } else if (typeof baseName.computeElement === "string") {
             computeSource = hostDocument?.getElementById(baseName.computeElement) || baseName.computeElement;
         } else {
             computeSource = baseName.compute || baseName;

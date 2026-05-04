@@ -290,7 +290,7 @@ void main(void) {
                     // If we have a precomputed multi-scatter texture, we can use the scatter vector to sample it and get a more accurate scattered environment light.
                     // This allows us to capture higher order scattering effects that aren't possible with just a single scatter sample.
                     vec3 mfp = vec3(100.0) / volumeParams.extinction_coeff;
-                    vec3 scattered_light_from_irradiance_texture = sss_convolve(sceneIrradianceSampler, sceneDepthSampler, renderTargetSize, mfp, projection, inverseProjection, 16, noise.xy);
+                    vec3 scattered_light_from_irradiance_texture = sss_convolve(sceneIrradianceSampler, sceneDepthSampler, renderTargetSize, mfp, projection, inverseProjection, SSS_SAMPLE_COUNT, noise.xy);
                     float numLights = float(LIGHTCOUNT);
                     #ifdef REFLECTION
                         numLights += 1.0;

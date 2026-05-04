@@ -1,6 +1,11 @@
 const MAX_SPRITE_ATLAS_SIZE = 8192;
 
 /**
+ * Controls whether Lottie text layout uses the current spec-correct placement metrics or Babylon.js 8.x-compatible metrics.
+ */
+export type LottieTextCompatibilityMode = "spec" | "babylon8";
+
+/**
  * Configuration options for the Lottie animation player.
  */
 export type AnimationConfiguration = {
@@ -68,6 +73,15 @@ export type AnimationConfiguration = {
      * Default is false.
      */
     debug?: boolean;
+    /**
+     * Controls text layer positioning compatibility.
+     * "spec" uses the corrected Lottie text placement introduced in Babylon.js 9.x.
+     * "babylon8" preserves Babylon.js 8.x text layer placement for animations that were authored around that behavior.
+     * In "babylon8" mode, layers parented to a text layer also follow Babylon.js 8.x semantics and inherit the text
+     * sprite's alignment/baseline offsets rather than the text layer's anchor point.
+     * Default is "spec".
+     */
+    textLayerCompatibilityMode: LottieTextCompatibilityMode;
 };
 
 /**
@@ -84,6 +98,7 @@ export const DefaultConfiguration = {
     devicePixelRatio: 0, // 0 = auto-detect based on atlas size
     easingSteps: 4, // Number of steps to sample easing functions for animations - Less than 4 causes issues with some interpolations
     supportDeviceLost: true, // Whether to support device lost events for WebGL contexts,
+    textLayerCompatibilityMode: "spec", // Text layer positioning compatibility mode
 } as const satisfies AnimationConfiguration;
 
 /**

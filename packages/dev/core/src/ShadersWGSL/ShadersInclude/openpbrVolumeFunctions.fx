@@ -188,7 +188,7 @@ fn sss_convolve(sss_irradiance_texture: texture_2d<f32>, depth_texture: texture_
     var weight_sum: vec3f = vec3f(0.0f);
     for (var i: i32 = 0; i < sample_count; i++)
     {
-        var r: vec2f = fract(plasticSequence(u32(i + sample_count)) + noise * vec2(0.2));
+        var r: vec2f = fract(plasticSequence(u32(i)) + noise);
         r.x *= TWO_PI;
         r.y *= filter_samples_scale;
         let icdf: f32 = sss_samples_icdf(1.0 - r.y, dz);
