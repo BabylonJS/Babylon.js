@@ -880,11 +880,23 @@ const materialsTree: IGLTFObjectModelTreeMaterialsObject = {
                 },
                 anisotropyRotation: {
                     type: "number",
-                    get: (material, index?, payload?) => GetMaterial(material, index, payload)?.anisotropy?.angle,
+                    get: (material, index?, payload?) => {
+                        const mat = GetMaterial(material, index, payload);
+                        if (!mat) {
+                            return undefined;
+                        }
+                        // Prefer the raw cached value (set by importer or by a
+                        // prior pointer/set) so a set->get round-trip returns
+                        // exactly the float that was written, matching the
+                        // glTF Object Model contract for this property.
+                        const cached = _AnisotropyRotationRawCache.get(mat);
+                        return cached !== undefined ? cached : mat.anisotropy?.angle;
+                    },
                     set: (value: number, material, index?, payload?) => {
                         const mat = GetMaterial(material, index, payload);
                         if (mat) {
                             mat.anisotropy.angle = value;
+                            _AnisotropyRotationRawCache.set(mat, value);
                         }
                     },
                     getTarget: (material, index?, payload?) => GetMaterial(material, index, payload),
@@ -1377,6 +1389,29 @@ function _findNodeMorphTargets(node: INode): IMorphTargetLookup | undefined {
  * @param v the value to round
  * @returns the rounded value, or the input unchanged if it is not finite
  */
+/**
+ * Cache of raw `KHR_materials_anisotropy.anisotropyRotation` values keyed by
+ * the Babylon material instance. Babylon stores the anisotropy rotation as a
+ * direction `Vector2(cos θ, sin θ)`, so the round-trip
+ * `set(θ) → get()` collapses any value outside `[-π, π]` via `atan2`. The
+ * KHR_interactivity `pointer/set`/`pointer/get` round-trip on this property
+ * must return the original float, including out-of-range values such as the
+ * `30` used in the Overview.glb conformance test, so we cache the last raw
+ * value we observed (whether from the importer or from a `pointer/set`).
+ */
+const _AnisotropyRotationRawCache: WeakMap<object, number> = new WeakMap<object, number>();
+
+/**
+ * Records a raw glTF anisotropyRotation value for the given Babylon material so
+ * subsequent `pointer/get` calls return the same value even when it falls
+ * outside Babylon's `[-π, π]` storage range.
+ * @param material The Babylon material whose anisotropy rotation was set.
+ * @param value The raw glTF value (radians; not yet wrapped).
+ */
+export function _RememberAnisotropyRotationRawValue(material: object, value: number): void {
+    _AnisotropyRotationRawCache.set(material, value);
+}
+
 function _roundFloat32Artifact(v: number): number {
     if (!Number.isFinite(v)) {
         return v;
