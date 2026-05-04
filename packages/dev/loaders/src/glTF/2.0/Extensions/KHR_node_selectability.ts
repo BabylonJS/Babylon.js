@@ -36,6 +36,10 @@ addNewInteractivityFlowGraphMapping("event/onSelect", NAME, {
     outputs: {
         values: {
             selectedNodeIndex: { name: "index", toBlock: FlowGraphBlockNames.IndexOf },
+            // `selectedNode` is the new ref-typed output from the Opaque-Reference
+            // spec update. It's the picked Babylon mesh itself, available directly
+            // from FlowGraphMeshPickEventBlock.pickedMesh — no IndexOf lookup needed.
+            selectedNode: { name: "pickedMesh", toBlock: FlowGraphBlockNames.MeshPickEvent },
             controllerIndex: { name: "pointerId" },
             selectionPoint: { name: "pickedPoint" },
             selectionRayOrigin: { name: "pickOrigin" },
