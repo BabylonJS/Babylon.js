@@ -595,7 +595,7 @@ export class ArcRotateCamera extends TargetCamera {
     /**
      * Defines the input associated to the camera.
      */
-    declare public override inputs: ArcRotateCameraInputsManager;
+    declare public inputs: ArcRotateCameraInputsManager;
 
     /** @internal */
     public override _reset: () => void;

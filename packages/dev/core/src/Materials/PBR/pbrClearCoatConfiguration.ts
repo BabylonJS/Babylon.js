@@ -42,7 +42,7 @@ export class MaterialClearCoatDefines extends MaterialDefines {
  * Plugin that implements the clear coat component of the PBR material
  */
 export class PBRClearCoatConfiguration extends MaterialPluginBase {
-    declare protected override _material: PBRBaseMaterial;
+    declare protected _material: PBRBaseMaterial;
 
     /**
      * This defaults to 1.5 corresponding to a 0.04 f0 or a 4% reflectance at normal incidence

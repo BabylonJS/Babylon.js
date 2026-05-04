@@ -229,7 +229,7 @@ export class HighlightLayer extends EffectLayer {
     @serialize("options")
     private _options: Required<IHighlightLayerOptions>;
 
-    declare protected override readonly _thinEffectLayer: ThinHighlightLayer;
+    declare protected readonly _thinEffectLayer: ThinHighlightLayer;
     private _downSamplePostprocess: PassPostProcess;
     private _horizontalBlurPostprocess: IBlurPostProcess;
     private _verticalBlurPostprocess: IBlurPostProcess;

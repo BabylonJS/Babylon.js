@@ -107,7 +107,7 @@ export class FollowCamera extends TargetCamera {
     /**
      * Defines the input associated with the camera.
      */
-    declare public override inputs: FollowCameraInputsManager;
+    declare public inputs: FollowCameraInputsManager;
 
     /**
      * Instantiates the follow camera.
