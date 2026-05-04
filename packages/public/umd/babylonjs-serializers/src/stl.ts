@@ -1,3 +1,2 @@
-import * as serializers from "serializers/legacy/legacy-stlSerializer";
-export { serializers };
-export default serializers;
+import "serializers/legacy/legacy-stlSerializer";
+export * from "serializers/legacy/legacy-stlSerializer";

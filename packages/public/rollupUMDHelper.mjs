@@ -636,6 +636,7 @@ export function commonUMDRollupConfiguration(options) {
             freeze: false,
         },
         plugins,
+        treeshake: false,
         // Suppress noisy circular-dependency warnings from the large Babylon packages.
         onwarn(warning, warn) {
             if (warning.code === "CIRCULAR_DEPENDENCY") return;
@@ -702,6 +703,7 @@ export function commonUMDRollupConfiguration(options) {
                     freeze: false,
                 },
                 plugins: perEntryPlugins,
+                treeshake: false,
                 onwarn(warning, warn) {
                     if (warning.code === "CIRCULAR_DEPENDENCY") return;
                     warn(warning);
