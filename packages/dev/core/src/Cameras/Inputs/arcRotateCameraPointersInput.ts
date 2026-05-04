@@ -5,7 +5,7 @@ import { CameraInputTypes } from "../../Cameras/cameraInputsManager";
 import { OrbitCameraPointersInput } from "../../Cameras/Inputs/orbitCameraPointersInput";
 import { type PointerTouch } from "../../Events/pointerEvents";
 import { type IPointerEvent } from "../../Events/deviceInputEvents";
-import { type PointerConditions, type PointerInputMapEntry } from "../cameraInteractions";
+import { type PointerConditions, type PointerInputMapEntry } from "../inputMapper";
 
 /**
  * Manage the pointers inputs to control an arc rotate camera.

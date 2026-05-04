@@ -7,7 +7,7 @@ import { type ICameraInput, CameraInputTypes } from "../../Cameras/cameraInputsM
 import { type KeyboardInfo, KeyboardEventTypes } from "../../Events/keyboardEvents";
 import { Tools } from "../../Misc/tools";
 import { type AbstractEngine } from "../../Engines/abstractEngine";
-import { type KeyboardConditions } from "../cameraInteractions";
+import { type KeyboardConditions } from "../inputMapper";
 
 /**
  * Manage the keyboard inputs to control the movement of an arc rotate camera.

@@ -3,7 +3,7 @@ import { type Scene } from "../scene";
 import { type Vector3 } from "../Maths/math.vector";
 import { type InterpolatingBehavior } from "../Behaviors/Cameras/interpolatingBehavior";
 import { type ArcRotateCamera } from "./arcRotateCamera";
-import { type InputMapEntry, InputMapper } from "./cameraInteractions";
+import { type InputMapEntry, InputMapper } from "./inputMapper";
 
 // ── ArcRotate handler types ────────────────────────────────────────
 

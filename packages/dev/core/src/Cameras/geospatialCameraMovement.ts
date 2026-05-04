@@ -12,7 +12,7 @@ import { type PickingInfo } from "../Collisions/pickingInfo";
 import { type Nullable } from "../types";
 import { type InterpolatingBehavior } from "../Behaviors/Cameras/interpolatingBehavior";
 import { type GeospatialCamera } from "./geospatialCamera";
-import { type InputMapEntry, InputMapper } from "./cameraInteractions";
+import { type InputMapEntry, InputMapper } from "./inputMapper";
 
 // ── Geospatial handler types ────────────────────────────────────────
 

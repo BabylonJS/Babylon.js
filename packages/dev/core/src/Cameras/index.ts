@@ -20,7 +20,7 @@ export * from "./virtualJoysticksCamera";
 export * from "./VR/index";
 export * from "./RigModes/index";
 export * from "./geospatialCamera";
-export * from "./cameraInteractions";
+export * from "./inputMapper";
 export * from "./cameraMovement";
 export * from "./geospatialCameraMovement";
 export * from "./arcRotateCameraMovement";

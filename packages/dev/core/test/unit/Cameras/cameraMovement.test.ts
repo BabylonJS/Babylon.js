@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { CameraMovement } from "core/Cameras/cameraMovement";
-import { InputMapper } from "core/Cameras/cameraInteractions";
+import { InputMapper } from "core/Cameras/inputMapper";
 import { Vector3 } from "core/Maths/math.vector";
 import { NullEngine } from "core/Engines/nullEngine";
 import { Scene } from "core/scene";
