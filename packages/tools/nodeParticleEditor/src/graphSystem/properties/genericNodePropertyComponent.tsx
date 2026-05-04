@@ -9,8 +9,7 @@ import { TextLineComponent } from "shared-ui-components/lines/textLineComponent"
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
 import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent";
 import { Vector3LineComponent } from "shared-ui-components/lines/vector3LineComponent";
-import type { IEditablePropertyListOption } from "core/Decorators/nodeDecorator";
-import { PropertyTypeForEdition, GetEditableProperties, type IPropertyDescriptionForEdition } from "core/Decorators/nodeDecorator";
+import { type IEditablePropertyListOption, PropertyTypeForEdition, GetEditableProperties, type IPropertyDescriptionForEdition } from "core/Decorators/nodeDecorator";
 import { ForceRebuild } from "shared-ui-components/nodeGraphSystem/automaticProperties";
 import { NodeParticleBlockConnectionPointTypes } from "core/Particles/Node/Enums/nodeParticleBlockConnectionPointTypes";
 import { type NodeParticleConnectionPoint } from "core/Particles/Node/nodeParticleBlockConnectionPoint";

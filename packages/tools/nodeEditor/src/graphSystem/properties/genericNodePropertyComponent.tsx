@@ -1,9 +1,8 @@
 import * as React from "react";
 import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
 import { CheckBoxLineComponent } from "../../sharedComponents/checkBoxLineComponent";
-import type { InputBlock } from "core/Materials/Node/Blocks/Input/inputBlock";
-import type { IPropertyDescriptionForEdition, IEditablePropertyListOption } from "core/Decorators/nodeDecorator";
-import { PropertyTypeForEdition, GetEditableProperties } from "core/Decorators/nodeDecorator";
+import { type InputBlock } from "core/Materials/Node/Blocks/Input/inputBlock";
+import { type IPropertyDescriptionForEdition, type IEditablePropertyListOption, PropertyTypeForEdition, GetEditableProperties } from "core/Decorators/nodeDecorator";
 import { NodeMaterialBlockTargets } from "core/Materials/Node/Enums/nodeMaterialBlockTargets";
 import { type NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
 import { type IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";

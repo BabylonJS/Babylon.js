@@ -114,7 +114,7 @@ export class SelectionOutlineLayer extends EffectLayer {
     @serialize("options")
     private _options: Required<ISelectionOutlineLayerOptions>;
 
-    protected override readonly _thinEffectLayer: ThinSelectionOutlineLayer;
+    declare protected override readonly _thinEffectLayer: ThinSelectionOutlineLayer;
 
     /**
      * Instantiates a new selection outline Layer and references it to the scene..

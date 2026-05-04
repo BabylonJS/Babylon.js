@@ -83,7 +83,7 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
      */
     public static DEFAULT_LEGACY_TRANSLUCENCY = false;
 
-    protected override _material: PBRBaseMaterial;
+    declare protected override _material: PBRBaseMaterial;
 
     private _isRefractionEnabled = false;
     /**

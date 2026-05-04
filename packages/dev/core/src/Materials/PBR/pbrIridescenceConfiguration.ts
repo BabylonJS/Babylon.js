@@ -29,7 +29,7 @@ export class MaterialIridescenceDefines extends MaterialDefines {
  * Plugin that implements the iridescence (thin film) component of the PBR material
  */
 export class PBRIridescenceConfiguration extends MaterialPluginBase {
-    protected override _material: PBRBaseMaterial;
+    declare protected override _material: PBRBaseMaterial;
 
     /**
      * The default minimum thickness of the thin-film layer given in nanometers (nm).

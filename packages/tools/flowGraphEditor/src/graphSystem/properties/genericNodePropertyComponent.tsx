@@ -16,7 +16,7 @@ import { Vector4LineComponent } from "shared-ui-components/lines/vector4LineComp
 import { type FlowGraphBlock } from "core/FlowGraph/flowGraphBlock";
 import { type FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnection";
 import { FlowGraphInteger } from "core/FlowGraph/CustomTypes/flowGraphInteger";
-import { type IEditablePropertyListOption, type IPropertyDescriptionForEdition, PropertyTypeForEdition } from "core/Decorators/nodeDecorator";
+import { type IEditablePropertyListOption, type IPropertyDescriptionForEdition, PropertyTypeForEdition, GetEditableProperties } from "core/Decorators/nodeDecorator";
 import { ForceRebuild } from "shared-ui-components/nodeGraphSystem/automaticProperties";
 import { EDITABLE_INPUTS } from "./editableInputsRegistry";
 import { CONSTRUCTOR_CONFIG, FLOW_GRAPH_TYPE_OPTIONS } from "./constructorConfigRegistry";
@@ -509,29 +509,17 @@ export class GenericPropertyTabComponent extends React.Component<IPropertyCompon
 
     override render() {
         const block = this.props.nodeData.data as FlowGraphBlock,
-            propStore: IPropertyDescriptionForEdition[] = (block as any)._propStore;
+            propStore: IPropertyDescriptionForEdition[] = GetEditableProperties(block);
 
-        if (!propStore) {
+        if (!propStore.length) {
             return <></>;
         }
 
         const componentList: { [groupName: string]: JSX.Element[] } = {},
             groups: string[] = [];
 
-        const classes: string[] = [];
-
-        let proto = Object.getPrototypeOf(block);
-        while (proto && proto.getClassName) {
-            classes.push(proto.getClassName());
-            proto = Object.getPrototypeOf(proto);
-        }
-
-        for (const { propertyName, displayName, type, groupName, options, className } of propStore) {
+        for (const { propertyName, displayName, type, groupName, options } of propStore) {
             let components = componentList[groupName];
-
-            if (classes.indexOf(className) === -1) {
-                continue;
-            }
 
             if (!components) {
                 components = [];

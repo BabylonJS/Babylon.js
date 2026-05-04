@@ -13,8 +13,7 @@ import { type NodeGeometryConnectionPoint } from "core/Meshes/Node/nodeGeometryB
 import { NodeGeometryBlockConnectionPointTypes } from "core/Meshes/Node/Enums/nodeGeometryConnectionPointTypes";
 import { Vector3LineComponent } from "shared-ui-components/lines/vector3LineComponent";
 import { Vector4LineComponent } from "shared-ui-components/lines/vector4LineComponent";
-import type { IEditablePropertyListOption } from "core/Decorators/nodeDecorator";
-import { PropertyTypeForEdition, GetEditableProperties, type IPropertyDescriptionForEdition } from "core/Decorators/nodeDecorator";
+import { type IEditablePropertyListOption, PropertyTypeForEdition, GetEditableProperties, type IPropertyDescriptionForEdition } from "core/Decorators/nodeDecorator";
 import { ForceRebuild } from "shared-ui-components/nodeGraphSystem/automaticProperties";
 
 export class GenericPropertyComponent extends React.Component<IPropertyComponentProps> {

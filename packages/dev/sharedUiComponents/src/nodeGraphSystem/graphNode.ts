@@ -14,9 +14,13 @@ import { type INodeData } from "./interfaces/nodeData";
 import { type IPortData } from "./interfaces/portData";
 import * as localStyles from "./graphNode.module.scss";
 import * as commonStyles from "./common.module.scss";
-import type { IEditablePropertyListOption, IEditablePropertyOption, IPropertyDescriptionForEdition } from "core/Decorators/nodeDecorator";
-import { GetEditableProperties } from "core/Decorators/nodeDecorator";
-import { PropertyTypeForEdition } from "core/Decorators/nodeDecorator";
+import {
+    type IEditablePropertyListOption,
+    type IEditablePropertyOption,
+    type IPropertyDescriptionForEdition,
+    GetEditableProperties,
+    PropertyTypeForEdition,
+} from "core/Decorators/nodeDecorator";
 import { ForceRebuild } from "./automaticProperties";
 import dropdownArrowIcon from "../imgs/dropdownArrowIcon_white.svg";
 import { BuildFloatUI } from "./tools";
