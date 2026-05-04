@@ -2,18 +2,18 @@
 
 import { serialize, expandToProperty, addAccessorsForMaterialProperty } from "../../Misc/decorators";
 import { GetEnvironmentBRDFTexture, GetEnvironmentFuzzBRDFTexture } from "../../Misc/brdfTextureTools";
-import { type Nullable } from "../../types"
-import { type Scene } from "../../scene"
-import { type Color4 } from "../../Maths/math.color"
+import { type Nullable } from "../../types";
+import { type Scene } from "../../scene";
+import { type Color4 } from "../../Maths/math.color";
 import { Color3, Color3Black, Color3White } from "../../Maths/math.color.pure";
 import { ImageProcessingConfiguration } from "../imageProcessingConfiguration.pure";
-import { type BaseTexture } from "../../Materials/Textures/baseTexture"
+import { type BaseTexture } from "../../Materials/Textures/baseTexture";
 import { Texture } from "../Textures/texture.pure";
 import { Material } from "../material";
 import { SerializationHelperParse, SerializationHelperClone } from "../../Misc/decorators.serialization.pure";
-import { type Engine } from "../../Engines/engine"
-import { type AbstractMesh } from "../../Meshes/abstractMesh"
-import { type Effect, type IEffectCreationOptions } from "../../Materials/effect"
+import { type Engine } from "../../Engines/engine";
+import { type AbstractMesh } from "../../Meshes/abstractMesh";
+import { type Effect, type IEffectCreationOptions } from "../../Materials/effect";
 import { MaterialDefines } from "../materialDefines";
 import { ImageProcessingDefinesMixin } from "../imageProcessingConfiguration.defines";
 import { EffectFallbacks } from "../effectFallbacks";
@@ -50,22 +50,22 @@ import { VertexBuffer } from "../../Buffers/buffer.pure";
 import { MaterialPluginEvent } from "../materialPluginEvent";
 import { MaterialHelperGeometryRendering } from "../materialHelper.geometryrendering";
 import { PrePassConfiguration, PrePassConfigurationAddUniforms, PrePassConfigurationAddSamplers } from "../prePassConfiguration.pure";
-import { type IMaterialCompilationOptions, type ICustomShaderNameResolveOptions } from "../../Materials/material"
+import { type IMaterialCompilationOptions, type ICustomShaderNameResolveOptions } from "../../Materials/material";
 import { ShaderLanguage } from "../shaderLanguage";
 import { MaterialFlags } from "../materialFlags";
-import { type SubMesh } from "../../Meshes/subMesh"
+import { type SubMesh } from "../../Meshes/subMesh";
 import { Logger } from "core/Misc/logger";
 import { UVDefinesMixin } from "../uv.defines";
 import { Vector2, Vector4, TmpVectors } from "core/Maths/math.vector.pure";
-import { type Vector3, type Matrix } from "core/Maths/math.vector"
-import { type Mesh } from "../../Meshes/mesh"
+import { type Vector3, type Matrix } from "core/Maths/math.vector";
+import { type Mesh } from "../../Meshes/mesh";
 import { ImageProcessingMixin } from "../imageProcessing";
 import { PushMaterial } from "../pushMaterial";
 import { SmartArray } from "../../Misc/smartArray";
-import { type RenderTargetTexture } from "../Textures/renderTargetTexture"
-import { type IAnimatable } from "../../Animations/animatable.interface"
+import { type RenderTargetTexture } from "../Textures/renderTargetTexture";
+import { type IAnimatable } from "../../Animations/animatable.interface";
 import { Tools } from "../../Misc/tools.pure";
-import { type UniformBuffer } from "../../Materials/uniformBuffer"
+import { type UniformBuffer } from "../../Materials/uniformBuffer";
 import { RegisterClass } from "../../Misc/typeStore";
 
 /* eslint-disable @typescript-eslint/naming-convention */
@@ -388,6 +388,12 @@ export class OpenPBRMaterialDefines extends ImageProcessingDefinesMixin(OpenPBRM
     public FUZZ_IBL_SAMPLES = 6;
 
     /**
+     * Enables the 4-tap rotated-grid kernel for refractive background blur.
+     * When false, a single dithered sample is used instead.
+     */
+    public REFRACTION_HIGH_QUALITY_BLUR = false;
+
+    /**
      * Tells the shader to enable the fuzz layer
      */
     public FUZZ = false;
@@ -412,6 +418,11 @@ export class OpenPBRMaterialDefines extends ImageProcessingDefinesMixin(OpenPBRM
      * Enables subsurface scattering
      */
     public SCATTERING = false;
+
+    /**
+     * Number of samples used by the screen-space SSS convolution kernel.
+     */
+    public SSS_SAMPLE_COUNT = 16;
 
     /**
      * Refraction of the 2D background texture. Might include the rest of the scene or just the background.
@@ -1477,6 +1488,29 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
     @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "ambientOcclusionTexture")
     private _ambientOcclusionTexture: Sampler = new Sampler("ambient_occlusion", "ambientOcclusion", "AMBIENT_OCCLUSION");
 
+    /** SSS convolution uses 8 samples. */
+    public static readonly SSS_QUALITY_LOW = 0;
+    /** SSS convolution uses 16 samples (default). */
+    public static readonly SSS_QUALITY_MEDIUM = 1;
+    /** SSS convolution uses 32 samples. */
+    public static readonly SSS_QUALITY_HIGH = 2;
+
+    private _sssQuality: number = OpenPBRMaterial.SSS_QUALITY_MEDIUM;
+    /**
+     * Controls the sample count of the screen-space SSS convolution kernel.
+     * Use the SSS_QUALITY_LOW / MEDIUM / HIGH constants (8 / 16 / 32 samples).
+     * Higher quality reduces noise at the cost of GPU time. Default: MEDIUM.
+     */
+    public get sssQuality(): number {
+        return this._sssQuality;
+    }
+    public set sssQuality(value: number) {
+        if (this._sssQuality !== value) {
+            this._sssQuality = value;
+            this.markAsDirty(Constants.MATERIAL_TextureDirtyFlag);
+        }
+    }
+
     private _propertyList: { [name: string]: Property<any> };
     private _uniformsList: { [name: string]: Uniform } = {};
     private _samplersList: { [name: string]: Sampler } = {};
@@ -1962,6 +1996,22 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
     public set backgroundRefractionTexture(texture: Nullable<BaseTexture>) {
         this._backgroundRefractionTexture = texture;
         this._markAllSubMeshesAsTexturesDirty();
+    }
+
+    private _refractionHighQualityBlur: boolean = true;
+    /**
+     * When true, uses a 4-tap rotated-grid kernel for refractive background blur,
+     * eliminating bilinear block artifacts at the cost of 3 extra texture samples.
+     * When false, a single dithered sample is used. Default: true.
+     */
+    public get refractionHighQualityBlur(): boolean {
+        return this._refractionHighQualityBlur;
+    }
+    public set refractionHighQualityBlur(value: boolean) {
+        if (this._refractionHighQualityBlur !== value) {
+            this._refractionHighQualityBlur = value;
+            this.markAsDirty(Constants.MATERIAL_TextureDirtyFlag);
+        }
     }
 
     /**
@@ -2693,7 +2743,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
                         }
                     }
 
-                    if (this.geometryNormalTexture) {
+                    if (this.geometryNormalTexture || this.geometryCoatNormalTexture) {
                         if (scene._mirroredCameraPosition) {
                             ubo.updateFloat2("vTangentSpaceParams", this._invertNormalMapX ? 1.0 : -1.0, this._invertNormalMapY ? 1.0 : -1.0);
                         } else {
@@ -3294,6 +3344,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
 
                 if (this.transmissionWeight > 0) {
                     defines.REFRACTED_BACKGROUND = !!this._backgroundRefractionTexture && MaterialFlags.RefractionTextureEnabled;
+                    defines.REFRACTION_HIGH_QUALITY_BLUR = this._refractionHighQualityBlur;
                     defines.REFRACTED_LIGHTS = true;
                     const radianceTexture = this._getRadianceTexture();
                     if (radianceTexture) {
@@ -3384,6 +3435,9 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
         defines.IRIDESCENCE = this.thinFilmWeight > 0.0;
         defines.DISPERSION = this.transmissionDispersionScale > 0.0;
         defines.SCATTERING = !this.transmissionScatter.equals(Color3.BlackReadOnly);
+
+        const _sssSampleCounts = [8, 16, 32];
+        defines.SSS_SAMPLE_COUNT = _sssSampleCounts[this._sssQuality] ?? 16;
 
         defines.FUZZ = this.fuzzWeight > 0 && MaterialFlags.ReflectionTextureEnabled;
         if (defines.FUZZ) {

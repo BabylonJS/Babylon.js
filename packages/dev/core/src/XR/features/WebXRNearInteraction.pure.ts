@@ -1,33 +1,32 @@
 /** This file must only contain pure code and pure imports */
 
 import { WebXRFeatureName } from "../webXRFeaturesManager";
-import { type WebXRControllerPointerSelection } from "./WebXRControllerPointerSelection"
-import { type WebXRSessionManager } from "../webXRSessionManager"
-import { type AbstractMesh } from "../../Meshes/abstractMesh"
+import { type WebXRControllerPointerSelection } from "./WebXRControllerPointerSelection";
+import { type WebXRSessionManager } from "../webXRSessionManager";
+import { type AbstractMesh } from "../../Meshes/abstractMesh";
 import { CreateSphere } from "../../Meshes/Builders/sphereBuilder.pure";
-import { type Observer } from "../../Misc/observable"
-import { type WebXRInput } from "../webXRInput"
-import { type WebXRInputSource } from "../webXRInputSource"
-import { type Scene } from "../../scene"
-import { type WebXRControllerComponent } from "../motionController/webXRControllerComponent"
-import { type IndicesArray, type Nullable } from "../../types"
+import { type Observer } from "../../Misc/observable";
+import { type WebXRInput } from "../webXRInput";
+import { type WebXRInputSource } from "../webXRInputSource";
+import { type Scene } from "../../scene";
+import { type WebXRControllerComponent } from "../motionController/webXRControllerComponent";
+import { type IndicesArray, type Nullable } from "../../types";
 import { Vector3, Quaternion, TmpVectors } from "../../Maths/math.vector.pure";
 import { Ray } from "../../Culling/ray.pure";
 import { PickingInfo } from "../../Collisions/pickingInfo";
 import { WebXRAbstractFeature } from "./WebXRAbstractFeature";
 import { UtilityLayerRenderer } from "../../Rendering/utilityLayerRenderer";
-import { type WebXRAbstractMotionController } from "../motionController/webXRAbstractMotionController"
+import { type WebXRAbstractMotionController } from "../motionController/webXRAbstractMotionController";
 import { BoundingSphere, BoundingSphereIntersects } from "../../Culling/boundingSphere.pure";
-import { type TransformNode } from "../../Meshes/transformNode"
+import { type TransformNode } from "../../Meshes/transformNode";
 import { StandardMaterial } from "../../Materials/standardMaterial.pure";
 import { Color3, Color3Black } from "../../Maths/math.color.pure";
-import { type NodeMaterial } from "../../Materials/Node/nodeMaterial.pure"
+import { type NodeMaterial } from "../../Materials/Node/nodeMaterial.pure";
 import { NodeMaterialParseFromFileAsync, NodeMaterialParseFromSnippetAsync } from "../../Materials/Node/nodeMaterial.pure";
-import { type Material } from "../../Materials/material"
+import { type Material } from "../../Materials/material";
 import { Animation } from "../../Animations/animation.pure";
 import { QuadraticEase, EasingFunction } from "../../Animations/easing";
 import { Logger } from "core/Misc/logger";
-import { RayCreateFromToToRef } from "../../Culling/ray.core";
 import { WebXRFeaturesManager } from "../webXRFeaturesManager";
 
 // side effects
@@ -1048,7 +1047,7 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
                 distance = tmp;
 
                 // ray between the sphere center and the point on the mesh
-                RayCreateFromToToRef(sphere.center, tmpVec, tmpRay);
+                Ray.CreateFromToToRef(sphere.center, tmpVec, tmpRay);
                 tmpRay.length = distance * 2;
                 intersectionInfo = tmpRay.intersectsMesh(mesh);
 

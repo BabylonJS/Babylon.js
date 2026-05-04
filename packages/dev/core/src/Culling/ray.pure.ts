@@ -1,9 +1,8 @@
 /** This file must only contain pure code and pure imports */
 
-export * from "./ray.types";
-import { type Nullable } from "../types"
-import { type Matrix } from "../Maths/math.vector"
-import { type PickingInfo } from "../Collisions/pickingInfo"
+import { type Nullable } from "../types";
+import { type Matrix } from "../Maths/math.vector";
+import { type PickingInfo } from "../Collisions/pickingInfo";
 import { Scene } from "../scene";
 import { Camera } from "../Cameras/camera";
 import {
@@ -17,14 +16,8 @@ import {
     Pick,
     PickWithBoundingInfo,
     PickWithRay,
-    RayZero,
-    RayCreateNew,
-    RayCreateNewFromTo,
-    RayCreateFromToToRef,
-    RayTransform,
-    RayTransformToRef,
 } from "./ray.core";
-import { type MeshPredicate, type TrianglePickingPredicate } from "./ray.core"
+import { type MeshPredicate, type TrianglePickingPredicate } from "./ray.core";
 export * from "./ray.core";
 
 export {};
@@ -40,18 +33,6 @@ export function registerRay(): void {
         return;
     }
     _registered = true;
-
-    Ray.Zero = RayZero;
-
-    Ray.CreateNew = RayCreateNew;
-
-    Ray.CreateNewFromTo = RayCreateNewFromTo;
-
-    Ray.CreateFromToToRef = RayCreateFromToToRef;
-
-    Ray.Transform = RayTransform;
-
-    Ray.TransformToRef = RayTransformToRef;
 
     // Picking
     AddRayExtensions(Scene, Camera);

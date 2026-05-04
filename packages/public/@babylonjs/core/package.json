@@ -118,7 +118,6 @@
         "Culling/boundingSphere.js",
         "Culling/boundingSphere.types.js",
         "Culling/ray.js",
-        "Culling/ray.types.js",
         "Debug/debugLayer.js",
         "Debug/debugLayer.types.js",
         "Debug/physicsViewer.js",

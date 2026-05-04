@@ -2,7 +2,7 @@
 
 export * from "./tools.types";
 
-import { type Nullable } from "../types"
+import { type Nullable } from "../types";
 import { Observable } from "./observable";
 import { GetDOMTextContent, IsNavigatorAvailable, IsWindowObjectExist } from "./domManagement";
 import { Logger } from "./logger";
@@ -10,9 +10,9 @@ import { DeepCopierDeepCopy } from "./deepCopier.pure";
 import { PrecisionDate } from "./precisionDate";
 import { _WarnImport } from "./devTools";
 import { WebRequest } from "./webRequest";
-import { type IFileRequest } from "./fileRequest"
+import { type IFileRequest } from "./fileRequest";
 import { EngineStore } from "../Engines/engineStore";
-import { type ReadFileError } from "./fileTools"
+import { type ReadFileError } from "./fileTools";
 import {
     FileToolsOptions,
     DecodeBase64UrlToBinary,
@@ -22,16 +22,16 @@ import {
     ReadFile as FileToolsReadFile,
     SetCorsBehavior,
 } from "./fileTools";
-import { type IOfflineProvider } from "../Offline/IOfflineProvider"
+import { type IOfflineProvider } from "../Offline/IOfflineProvider";
 import { TimingToolsSetImmediate } from "./timingTools.pure";
 import { InstantiationTools } from "./instantiationTools";
 import { RandomGUID } from "./guid";
-import { type IScreenshotSize } from "./interfaces/screenshotSize"
-import { type Camera } from "../Cameras/camera"
-import { type IColor4Like } from "../Maths/math.like"
-import { type AbstractEngine } from "../Engines/abstractEngine"
-import { type RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture"
-import { type INative } from "../Engines/Native/nativeInterfaces"
+import { type IScreenshotSize } from "./interfaces/screenshotSize";
+import { type Camera } from "../Cameras/camera";
+import { type IColor4Like } from "../Maths/math.like";
+import { type AbstractEngine } from "../Engines/abstractEngine";
+import { type RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
+import { type INative } from "../Engines/Native/nativeInterfaces";
 import { NativeTraceLevel } from "../Engines/Native/nativeInterfaces";
 import { Mix, IsExponentOfTwo } from "./tools.functions";
 
@@ -230,7 +230,7 @@ export class Tools {
      * When set, unversioned CDN URLs will be rewritten to include this version prefix.
      * @internal
      */
-    public static _CdnVersion = "8.56.1";
+    public static _CdnVersion = "9.5.0";
 
     /**
      * @internal

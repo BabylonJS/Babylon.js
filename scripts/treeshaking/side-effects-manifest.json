@@ -1,11 +1,11 @@
 {
   "stats": {
     "totalFiles": 3227,
-    "filesWithSideEffects": 1490,
-    "filesWithoutSideEffects": 1737,
+    "filesWithSideEffects": 1489,
+    "filesWithoutSideEffects": 1738,
     "byType": {
       "top-level-call": 653,
-      "declare-module": 160,
+      "declare-module": 159,
       "bare-import": 139,
       "static-property-assignment": 2,
       "prototype-assignment": 16,
@@ -14,7 +14,7 @@
     },
     "filesByType": {
       "top-level-call": 648,
-      "declare-module": 142,
+      "declare-module": 141,
       "bare-import": 50,
       "static-property-assignment": 2,
       "prototype-assignment": 5,
@@ -650,16 +650,6 @@
           "type": "top-level-call",
           "line": 4,
           "text": "registerRay();"
-        }
-      ]
-    },
-    {
-      "file": "Culling/ray.types.ts",
-      "sideEffects": [
-        {
-          "type": "declare-module",
-          "line": 3,
-          "text": "declare module \"./ray.core\" {"
         }
       ]
     },

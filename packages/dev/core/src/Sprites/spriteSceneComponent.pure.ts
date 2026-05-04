@@ -2,19 +2,19 @@
 
 export * from "./spriteSceneComponent.types";
 
-import { type Nullable } from "../types"
+import { type Nullable } from "../types";
 import { Observable } from "../Misc/observable";
 import { Scene } from "../scene.pure";
-import { type Sprite } from "./sprite"
-import { type ISpriteManager } from "./spriteManager"
-import { Ray, RayZero } from "../Culling/ray.core";
-import { type Camera } from "../Cameras/camera"
+import { type Sprite } from "./sprite";
+import { type ISpriteManager } from "./spriteManager";
+import { Ray } from "../Culling/ray.core";
+import { type Camera } from "../Cameras/camera";
 import { PickingInfo } from "../Collisions/pickingInfo";
-import { type ISceneComponent } from "../sceneComponent"
+import { type ISceneComponent } from "../sceneComponent";
 import { SceneComponentConstants } from "../sceneComponent";
 import { ActionEventCreateNewFromSprite } from "../Actions/actionEvent.pure";
 import { Constants } from "../Engines/constants";
-import { type IPointerEvent } from "../Events/deviceInputEvents"
+import { type IPointerEvent } from "../Events/deviceInputEvents";
 import { CreatePickingRayInCameraSpace, CreatePickingRayInCameraSpaceToRef } from "../Culling/ray.core";
 import { ActionEvent } from "../Actions/actionEvent";
 
@@ -50,7 +50,7 @@ export class SpriteSceneComponent implements ISceneComponent {
         this.scene = scene;
         this.scene.spriteManagers = [] as ISpriteManager[];
         // This ray is used to pick sprites in the scene
-        this.scene._tempSpritePickingRay = Ray ? RayZero() : null;
+        this.scene._tempSpritePickingRay = Ray ? Ray.Zero() : null;
         this.scene.onBeforeSpritesRenderingObservable = new Observable<Scene>();
         this.scene.onAfterSpritesRenderingObservable = new Observable<Scene>();
         this._spritePredicate = (sprite: Sprite): boolean => {

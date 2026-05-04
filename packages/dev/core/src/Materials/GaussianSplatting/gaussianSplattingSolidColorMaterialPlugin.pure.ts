@@ -1,17 +1,17 @@
 /** This file must only contain pure code and pure imports */
 
-import { type Nullable } from "../../types"
-import { type Scene } from "../../scene"
-import { type AbstractEngine } from "../../Engines/abstractEngine"
-import { type SubMesh } from "../../Meshes/subMesh"
-import { type UniformBuffer } from "../uniformBuffer"
-import { type MaterialDefines } from "../materialDefines"
+import { type Nullable } from "../../types";
+import { type Scene } from "../../scene";
+import { type AbstractEngine } from "../../Engines/abstractEngine";
+import { type SubMesh } from "../../Meshes/subMesh";
+import { type UniformBuffer } from "../uniformBuffer";
+import { type MaterialDefines } from "../materialDefines";
 import { serialize, expandToProperty } from "../../Misc/decorators";
-import { Color3 } from "../../Maths/math.color.pure";
+import { type Color3 } from "../../Maths/math.color.pure";
 import { MaterialPluginBase } from "../materialPluginBase.pure";
 import { ShaderLanguage } from "../shaderLanguage";
 import { GetGaussianSplattingMaxPartCount } from "./gaussianSplattingMaterial.pure";
-import { type GaussianSplattingMaterial } from "./gaussianSplattingMaterial"
+import { type GaussianSplattingMaterial } from "./gaussianSplattingMaterial";
 import { RegisterClass } from "../../Misc/typeStore";
 
 /**
@@ -23,6 +23,7 @@ export class GaussianSplattingSolidColorMaterialPlugin extends MaterialPluginBas
     private _partColors: Color3[];
     private _maxPartCount: number;
     private _isEnabled = true;
+    private readonly _partColorArray: number[] = [];
     /**
      * Whether the solid-color override is active. When false, splats
      * render with their original per-splat colors.
@@ -203,10 +204,15 @@ if (uniforms.solidColorEnabled > 0.5) {
 
         effect.setFloat("solidColorEnabled", this._isEnabled ? 1.0 : 0.0);
 
-        const colorArray: number[] = [];
+        const colorArray = this._partColorArray;
+        colorArray.length = 0;
         for (let i = 0; i < this._maxPartCount; i++) {
-            const color = this._partColors[i] ?? new Color3(0, 0, 0);
-            colorArray.push(color.r, color.g, color.b);
+            const color = this._partColors[i];
+            if (color) {
+                colorArray.push(color.r, color.g, color.b);
+            } else {
+                colorArray.push(0, 0, 0);
+            }
         }
 
         effect.setArray3("partColors", colorArray);

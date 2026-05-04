@@ -1,10 +1,10 @@
 /** This file must only contain pure code and pure imports */
 
-import { type NodeParticleConnectionPoint } from "../nodeParticleBlockConnectionPoint"
-import { type NodeParticleBuildState } from "../nodeParticleBuildState"
-import { type Nullable } from "core/types"
-import { type BaseTexture } from "../../../Materials/Textures/baseTexture"
-import { type ProceduralTexture } from "../../../Materials/Textures/Procedurals/proceduralTexture"
+import { type NodeParticleConnectionPoint } from "../nodeParticleBlockConnectionPoint";
+import { type NodeParticleBuildState } from "../nodeParticleBuildState";
+import { type Nullable } from "core/types";
+import { type BaseTexture } from "../../../Materials/Textures/baseTexture";
+import { type ProceduralTexture } from "../../../Materials/Textures/Procedurals/proceduralTexture";
 import { Texture } from "core/Materials/Textures/texture.pure";
 import { NodeParticleBlockConnectionPointTypes } from "../Enums/nodeParticleBlockConnectionPointTypes";
 import { NodeParticleBlock } from "../nodeParticleBlock";
@@ -163,30 +163,95 @@ export class ParticleTextureSourceBlock extends NodeParticleBlock {
                 data: Uint8ClampedArray;
             }>
         >((resolve, reject) => {
+            const extractProceduralTextureContentAsync = async (proceduralTexture: ProceduralTexture) => {
+                if (!proceduralTexture.isReady()) {
+                    const effect = proceduralTexture.getEffect();
+                    await new Promise<boolean>((resolveReady) => {
+                        let settled = false;
+                        let errorObserver: Nullable<{ remove: () => void }> = null;
+                        const settle = (ready: boolean) => {
+                            if (settled) return;
+                            settled = true;
+                            errorObserver?.remove();
+                            resolveReady(ready);
+                        };
+                        errorObserver = effect.onErrorObservable.add(() => {
+                            settle(false);
+                        });
+                        effect.executeWhenCompiled(() => {
+                            settle(true);
+                        });
+                    });
+                }
+                if (!proceduralTexture.isReady()) return null;
+                proceduralTexture.render();
+                const data = await proceduralTexture.getContent();
+                if (!data) return null;
+                const size = proceduralTexture.getSize();
+                return {
+                    width: size.width,
+                    height: size.height,
+                    data: new Uint8ClampedArray(data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength)),
+                };
+            };
+
             if (!texture.isReady()) {
-                texture.onLoadObservable.addOnce(async () => {
-                    try {
-                        this._cachedData = await this.extractTextureContentAsync();
-                        resolve(this._cachedData);
-                    } catch (e) {
-                        // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
-                        reject(e);
+                let settled = false;
+                let loadObserver: Nullable<{ remove: () => void }> = null;
+                let internalErrorObserver: Nullable<{ remove: () => void }> = null;
+                let textureErrorObserver: Nullable<{ remove: () => void }> = null;
+
+                const cleanup = () => {
+                    loadObserver?.remove();
+                    internalErrorObserver?.remove();
+                    textureErrorObserver?.remove();
+                };
+
+                const settle = (action: () => void) => {
+                    if (settled) return;
+                    settled = true;
+                    cleanup();
+                    action();
+                };
+
+                loadObserver = texture.onLoadObservable.add(async () => {
+                    settle(async () => {
+                        try {
+                            this._cachedData = await this.extractTextureContentAsync();
+                            resolve(this._cachedData);
+                        } catch (e) {
+                            // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
+                            reject(e);
+                        }
+                    });
+                });
+
+                if (texture.loadingError) {
+                    settle(() => resolve(null));
+                    return;
+                }
+
+                internalErrorObserver = texture.getInternalTexture()?.onErrorObservable.add(() => {
+                    settle(() => resolve(null));
+                });
+
+                textureErrorObserver = Texture.OnTextureLoadErrorObservable.add((tex) => {
+                    if (tex === texture) {
+                        settle(() => resolve(null));
                     }
                 });
+
                 return;
             }
             const size = texture.getSize();
             if (texture.getContent) {
                 const proceduralTexture = texture as ProceduralTexture;
-                proceduralTexture
-                    .getContent()
+                extractProceduralTextureContentAsync(proceduralTexture)
                     // eslint-disable-next-line github/no-then
-                    ?.then((data) => {
-                        this._cachedData = {
-                            width: size.width,
-                            height: size.height,
-                            data: new Uint8ClampedArray(data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength)),
-                        };
+                    .then((result) => {
+                        if (result) {
+                            this._cachedData = result;
+                        }
                         resolve(this._cachedData);
                     })
                     // eslint-disable-next-line github/no-then

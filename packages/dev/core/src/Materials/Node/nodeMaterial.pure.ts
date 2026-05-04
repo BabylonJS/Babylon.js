@@ -2,24 +2,24 @@
 
 export * from "./nodeMaterial.types";
 
-import { type NodeMaterialBlock } from "./nodeMaterialBlock"
+import { type NodeMaterialBlock } from "./nodeMaterialBlock";
 import { PushMaterial } from "../pushMaterial";
-import { type Scene } from "../../scene"
-import { type AbstractMesh } from "../../Meshes/abstractMesh"
+import { type Scene } from "../../scene";
+import { type AbstractMesh } from "../../Meshes/abstractMesh";
 import { Matrix, Vector2 } from "../../Maths/math.vector.pure";
 import { Color3, Color4 } from "../../Maths/math.color.pure";
-import { type Mesh } from "../../Meshes/mesh"
+import { type Mesh } from "../../Meshes/mesh";
 import { NodeMaterialBuildState } from "./nodeMaterialBuildState";
-import { type IEffectCreationOptions } from "../effect"
+import { type IEffectCreationOptions } from "../effect";
 import { Effect } from "../effect";
-import { type BaseTexture } from "../../Materials/Textures/baseTexture"
+import { type BaseTexture } from "../../Materials/Textures/baseTexture";
 import { Observable } from "../../Misc/observable";
 import { NodeMaterialBlockTargets } from "./Enums/nodeMaterialBlockTargets";
 import { NodeMaterialBuildStateSharedData } from "./nodeMaterialBuildStateSharedData";
-import { type SubMesh } from "../../Meshes/subMesh"
+import { type SubMesh } from "../../Meshes/subMesh";
 import { MaterialDefines } from "../../Materials/materialDefines";
-import { type NodeMaterialOptimizer } from "./Optimizers/nodeMaterialOptimizer"
-import { type Nullable } from "../../types"
+import { type NodeMaterialOptimizer } from "./Optimizers/nodeMaterialOptimizer";
+import { type Nullable } from "../../types";
 import { VertexBuffer } from "../../Buffers/buffer.pure";
 import { Tools, ToolsWarn } from "../../Misc/tools.pure";
 import { SfeModeDefine } from "./Blocks/Fragment/smartFilterFragmentOutputBlock.pure";
@@ -30,25 +30,25 @@ import { InputBlock } from "./Blocks/Input/inputBlock.pure";
 import { GetClass } from "../../Misc/typeStore";
 import { serialize } from "../../Misc/decorators";
 import { SerializationHelperSerialize, SerializationHelperParseProperties, SerializationHelperParse, SerializationHelperClone } from "../../Misc/decorators.serialization.pure";
-import { type TextureBlock } from "./Blocks/Dual/textureBlock"
-import { type ReflectionTextureBaseBlock } from "./Blocks/Dual/reflectionTextureBaseBlock"
-import { type RefractionBlock } from "./Blocks/PBR/refractionBlock"
+import { type TextureBlock } from "./Blocks/Dual/textureBlock";
+import { type ReflectionTextureBaseBlock } from "./Blocks/Dual/reflectionTextureBaseBlock";
+import { type RefractionBlock } from "./Blocks/PBR/refractionBlock";
 import { CurrentScreenBlock } from "./Blocks/Dual/currentScreenBlock.pure";
 import { ParticleTextureBlock } from "./Blocks/Particle/particleTextureBlock.pure";
 import { ParticleRampGradientBlock } from "./Blocks/Particle/particleRampGradientBlock.pure";
 import { ParticleBlendMultiplyBlock } from "./Blocks/Particle/particleBlendMultiplyBlock.pure";
 import { EffectFallbacks } from "../effectFallbacks";
 import { WebRequest } from "../../Misc/webRequest";
-import { type PostProcessOptions } from "../../PostProcesses/postProcess"
+import { type PostProcessOptions } from "../../PostProcesses/postProcess";
 import { PostProcess } from "../../PostProcesses/postProcess.pure";
 import { Constants } from "../../Engines/constants";
-import { type Camera } from "../../Cameras/camera"
+import { type Camera } from "../../Cameras/camera";
 import { VectorMergerBlock } from "./Blocks/vectorMergerBlock.pure";
 import { RemapBlock } from "./Blocks/remapBlock.pure";
 import { MultiplyBlock } from "./Blocks/multiplyBlock.pure";
 import { NodeMaterialModes } from "./Enums/nodeMaterialModes";
 import { Texture } from "../Textures/texture.pure";
-import { type IParticleSystem } from "../../Particles/IParticleSystem"
+import { type IParticleSystem } from "../../Particles/IParticleSystem";
 import { BaseParticleSystem } from "../../Particles/baseParticleSystem.pure";
 import { ColorSplitterBlock } from "./Blocks/colorSplitterBlock.pure";
 import { TimingToolsSetImmediate } from "../../Misc/timingTools.pure";
@@ -56,22 +56,22 @@ import { ProceduralTexture } from "../Textures/Procedurals/proceduralTexture.pur
 import { AnimatedInputBlockTypes } from "./Blocks/Input/animatedInputBlockTypes";
 import { TrigonometryBlock, TrigonometryBlockOperations } from "./Blocks/trigonometryBlock.pure";
 import { NodeMaterialSystemValues } from "./Enums/nodeMaterialSystemValues";
-import { type ImageSourceBlock } from "./Blocks/Dual/imageSourceBlock"
+import { type ImageSourceBlock } from "./Blocks/Dual/imageSourceBlock";
 import { EngineStore } from "../../Engines/engineStore";
 import { Material } from "../material";
-import { type TriPlanarBlock } from "./Blocks/triPlanarBlock"
-import { type BiPlanarBlock } from "./Blocks/biPlanarBlock"
-import { type PrePassRenderer } from "../../Rendering/prePassRenderer"
-import { type PrePassTextureBlock } from "./Blocks/Input/prePassTextureBlock"
-import { type PrePassOutputBlock } from "./Blocks/Fragment/prePassOutputBlock"
-import { type NodeMaterialTeleportOutBlock } from "./Blocks/Teleport/teleportOutBlock"
-import { type NodeMaterialTeleportInBlock } from "./Blocks/Teleport/teleportInBlock"
+import { type TriPlanarBlock } from "./Blocks/triPlanarBlock";
+import { type BiPlanarBlock } from "./Blocks/biPlanarBlock";
+import { type PrePassRenderer } from "../../Rendering/prePassRenderer";
+import { type PrePassTextureBlock } from "./Blocks/Input/prePassTextureBlock";
+import { type PrePassOutputBlock } from "./Blocks/Fragment/prePassOutputBlock";
+import { type NodeMaterialTeleportOutBlock } from "./Blocks/Teleport/teleportOutBlock";
+import { type NodeMaterialTeleportInBlock } from "./Blocks/Teleport/teleportInBlock";
 import { Logger } from "core/Misc/logger";
 import { PrepareDefinesForCamera, PrepareDefinesForPrePass } from "../materialHelper.functions";
 import { ImageProcessingDefinesMixin } from "../imageProcessingConfiguration.defines";
 import { ShaderLanguage } from "../shaderLanguage";
 import { AbstractEngine } from "../../Engines/abstractEngine";
-import { type LoopBlock } from "./Blocks/loopBlock"
+import { type LoopBlock } from "./Blocks/loopBlock";
 import { MaterialHelperGeometryRendering } from "../materialHelper.geometryrendering";
 import { UVDefinesMixin } from "../uv.defines";
 import { ImageProcessingMixin } from "../imageProcessing";
@@ -326,7 +326,12 @@ export class NodeMaterial extends NodeMaterialBase {
     private _getGlobalNodeMaterialEditor(): any {
         // UMD Global name detection from Webpack Bundle UMD Name.
         if (typeof NODEEDITOR !== "undefined") {
-            return NODEEDITOR;
+            if ((NODEEDITOR as any).NodeEditor) {
+                return NODEEDITOR;
+            }
+            if ((NODEEDITOR as any).default?.NodeEditor) {
+                return (NODEEDITOR as any).default;
+            }
         }
 
         // In case of module let's check the global emitted from the editor entry point.

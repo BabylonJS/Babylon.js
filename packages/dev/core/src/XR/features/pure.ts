@@ -1,6 +1,5 @@
 /** Pure barrel — re-exports only side-effect-free modules */
 export * from "./WebXRAbstractFeature";
-export * from "./WebXRHitTestLegacy";
 export * from "./WebXRAnchorSystem.pure";
 export * from "./WebXRPlaneDetector.pure";
 export * from "./WebXRBackgroundRemover.pure";

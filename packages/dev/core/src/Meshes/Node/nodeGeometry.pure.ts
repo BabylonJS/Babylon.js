@@ -1,10 +1,10 @@
 import { Observable } from "../../Misc/observable";
-import { type Nullable } from "../../types"
+import { type Nullable } from "../../types";
 import { Mesh } from "../mesh.pure";
-import { type VertexData } from "../mesh.vertexData"
-import { type Scene } from "../../scene"
+import { type VertexData } from "../mesh.vertexData";
+import { type Scene } from "../../scene";
 import { GeometryOutputBlock } from "./Blocks/geometryOutputBlock.pure";
-import { type NodeGeometryBlock } from "./nodeGeometryBlock"
+import { type NodeGeometryBlock } from "./nodeGeometryBlock";
 import { NodeGeometryBuildState } from "./nodeGeometryBuildState";
 import { GetClass } from "../../Misc/typeStore";
 import { serialize } from "../../Misc/decorators";
@@ -12,12 +12,12 @@ import { SerializationHelperSerialize, SerializationHelperParse, SerializationHe
 import { Constants } from "../../Engines/constants";
 import { WebRequest } from "../../Misc/webRequest";
 import { BoxBlock } from "./Blocks/Sources/boxBlock.pure";
-import { type GeometryInputBlock } from "./Blocks/geometryInputBlock"
+import { type GeometryInputBlock } from "./Blocks/geometryInputBlock";
 import { PrecisionDate } from "../../Misc/precisionDate";
-import { type TeleportOutBlock } from "./Blocks/Teleport/teleportOutBlock"
-import { type TeleportInBlock } from "./Blocks/Teleport/teleportInBlock"
+import { type TeleportOutBlock } from "./Blocks/Teleport/teleportOutBlock";
+import { type TeleportInBlock } from "./Blocks/Teleport/teleportInBlock";
 import { Tools, ToolsWarn } from "../../Misc/tools.pure";
-import { type Color4 } from "../../Maths/math.color"
+import { type Color4 } from "../../Maths/math.color";
 import { AbstractEngine } from "core/Engines/abstractEngine";
 
 // declare NODEGEOMETRYEDITOR namespace for compilation issue
@@ -63,7 +63,12 @@ export class NodeGeometry {
     private _getGlobalNodeGeometryEditor(): any {
         // UMD Global name detection from Webpack Bundle UMD Name.
         if (typeof NODEGEOMETRYEDITOR !== "undefined") {
-            return NODEGEOMETRYEDITOR;
+            if ((NODEGEOMETRYEDITOR as any).NodeGeometryEditor) {
+                return NODEGEOMETRYEDITOR;
+            }
+            if ((NODEGEOMETRYEDITOR as any).default?.NodeGeometryEditor) {
+                return (NODEGEOMETRYEDITOR as any).default;
+            }
         }
 
         // In case of module let's check the global emitted from the editor entry point.

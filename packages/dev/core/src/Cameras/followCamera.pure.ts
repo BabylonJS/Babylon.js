@@ -1,12 +1,12 @@
 /** This file must only contain pure code and pure imports */
 
-import { type Nullable } from "../types"
+import { type Nullable } from "../types";
 import { serialize, serializeAsMeshReference } from "../Misc/decorators";
 import { ToolsToRadians, ToolsBackCompatCameraNoPreventDefault } from "../Misc/tools.pure";
 import { TargetCamera } from "./targetCamera.pure";
-import { type Scene } from "../scene"
+import { type Scene } from "../scene";
 import { TmpVectors, Vector3 } from "../Maths/math.vector.pure";
-import { type AbstractMesh } from "../Meshes/abstractMesh"
+import { type AbstractMesh } from "../Meshes/abstractMesh";
 import { FollowCameraInputsManager } from "./followCameraInputsManager";
 import { Node } from "../node";
 import { RegisterClass } from "../Misc/typeStore";
@@ -154,7 +154,7 @@ export class FollowCamera extends TargetCamera {
             vz = vz < 1 ? -this.maxCameraSpeed : this.maxCameraSpeed;
         }
 
-        this.position = new Vector3(this.position.x + vx, this.position.y + vy, this.position.z + vz);
+        this.position.addInPlaceFromFloats(vx, vy, vz);
         this.setTarget(targetPosition);
     }
 

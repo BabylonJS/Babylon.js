@@ -2,31 +2,31 @@
 
 import { serialize, serializeAsColor3, expandToProperty, serializeAsFresnelParameters, serializeAsTexture } from "../Misc/decorators";
 import { SmartArray } from "../Misc/smartArray";
-import { type IAnimatable } from "../Animations/animatable.interface"
-import { type Nullable } from "../types"
+import { type IAnimatable } from "../Animations/animatable.interface";
+import { type Nullable } from "../types";
 import { Scene } from "../scene.pure";
-import { type Matrix } from "../Maths/math.vector"
-import { Color3, Color3White } from "../Maths/math.color.pure";
+import { type Matrix } from "../Maths/math.vector";
+import { Color3, Color3White, TmpColors } from "../Maths/math.color.pure";
 import { VertexBuffer } from "../Buffers/buffer.pure";
-import { type SubMesh } from "../Meshes/subMesh"
-import { type AbstractMesh } from "../Meshes/abstractMesh"
-import { type Mesh } from "../Meshes/mesh"
+import { type SubMesh } from "../Meshes/subMesh";
+import { type AbstractMesh } from "../Meshes/abstractMesh";
+import { type Mesh } from "../Meshes/mesh";
 import { PrePassConfiguration, PrePassConfigurationAddUniforms, PrePassConfigurationAddSamplers } from "./prePassConfiguration.pure";
 import { ImageProcessingDefinesMixin } from "./imageProcessingConfiguration.defines";
 import { ImageProcessingConfiguration } from "./imageProcessingConfiguration.pure";
-import { type FresnelParameters } from "./fresnelParameters"
-import { type ICustomShaderNameResolveOptions } from "../Materials/material"
+import { type FresnelParameters } from "./fresnelParameters";
+import { type ICustomShaderNameResolveOptions } from "../Materials/material";
 import { Material } from "../Materials/material";
 import { MaterialPluginEvent } from "./materialPluginEvent";
 import { MaterialDefines } from "../Materials/materialDefines";
 import { PushMaterial } from "./pushMaterial";
-import { type BaseTexture } from "../Materials/Textures/baseTexture"
-import { type CubeTexture } from "../Materials/Textures/cubeTexture"
-import { type RenderTargetTexture } from "../Materials/Textures/renderTargetTexture"
+import { type BaseTexture } from "../Materials/Textures/baseTexture";
+import { type CubeTexture } from "../Materials/Textures/cubeTexture";
+import { type RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import { MaterialFlags } from "./materialFlags";
 import { Constants } from "../Engines/constants";
 import { EffectFallbacks } from "./effectFallbacks";
-import { type Effect, type IEffectCreationOptions } from "./effect"
+import { type Effect, type IEffectCreationOptions } from "./effect";
 import { DetailMapConfiguration } from "./material.detailMapConfiguration";
 import { AddClipPlaneUniforms, BindClipPlane } from "./clipPlaneMaterialHelper";
 import {
@@ -1857,15 +1857,13 @@ export class StandardMaterial extends StandardMaterialBase {
                     }
 
                     if (this.opacityFresnelParameters && this.opacityFresnelParameters.isEnabled) {
-                        ubo.updateColor4(
-                            "opacityParts",
-                            new Color3(
-                                this.opacityFresnelParameters.leftColor.toLuminance(),
-                                this.opacityFresnelParameters.rightColor.toLuminance(),
-                                this.opacityFresnelParameters.bias
-                            ),
-                            this.opacityFresnelParameters.power
+                        const opacityParts = TmpColors.Color3[0];
+                        opacityParts.set(
+                            this.opacityFresnelParameters.leftColor.toLuminance(),
+                            this.opacityFresnelParameters.rightColor.toLuminance(),
+                            this.opacityFresnelParameters.bias
                         );
+                        ubo.updateColor4("opacityParts", opacityParts, this.opacityFresnelParameters.power);
                     }
 
                     if (this.reflectionFresnelParameters && this.reflectionFresnelParameters.isEnabled) {

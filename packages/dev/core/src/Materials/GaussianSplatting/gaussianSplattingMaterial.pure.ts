@@ -1,13 +1,13 @@
 /** This file must only contain pure code and pure imports */
 
-import { type SubMesh } from "../../Meshes/subMesh"
-import { type AbstractMesh } from "../../Meshes/abstractMesh"
-import { type Mesh } from "../../Meshes/mesh"
-import { type Effect, type IEffectCreationOptions } from "../../Materials/effect"
-import { type Scene } from "../../scene"
-import { type Matrix } from "../../Maths/math.vector"
-import { type GaussianSplattingMesh } from "../../Meshes/GaussianSplatting/gaussianSplattingMesh"
-import { type AbstractEngine } from "../../Engines/abstractEngine"
+import { type SubMesh } from "../../Meshes/subMesh";
+import { type AbstractMesh } from "../../Meshes/abstractMesh";
+import { type Mesh } from "../../Meshes/mesh";
+import { type Effect, type IEffectCreationOptions } from "../../Materials/effect";
+import { type Scene } from "../../scene";
+import { type Matrix } from "../../Maths/math.vector";
+import { type GaussianSplattingMesh } from "../../Meshes/GaussianSplatting/gaussianSplattingMesh";
+import { type AbstractEngine } from "../../Engines/abstractEngine";
 import { SerializationHelperParse, SerializationHelperClone } from "../../Misc/decorators.serialization.pure";
 import { VertexBuffer } from "../../Buffers/buffer.pure";
 import { MaterialDefines } from "../../Materials/materialDefines";
@@ -190,6 +190,8 @@ export class GaussianSplattingMaterial extends PushMaterial {
         "partWorld",
         "partVisibility",
     ];
+    private static _partWorldData = new Float32Array(0);
+    private static readonly _partVisibilityData: number[] = [];
     private _sourceMesh: GaussianSplattingMesh | null = null;
     /**
      * Checks whether the material is ready to be rendered for a given mesh.
@@ -437,16 +439,21 @@ export class GaussianSplattingMaterial extends PushMaterial {
             if (gsMesh.partIndicesTexture) {
                 effect.setTexture("partIndicesTexture", gsMesh.partIndicesTexture);
                 // Bind part world matrices
-                const partWorldData = new Float32Array(gsMesh.partCount * 16);
+                const partWorldDataLength = gsMesh.partCount * 16;
+                if (this._partWorldData.length !== partWorldDataLength) {
+                    this._partWorldData = new Float32Array(partWorldDataLength);
+                }
+                const partWorldData = this._partWorldData;
                 for (let i = 0; i < gsMesh.partCount; i++) {
                     gsMesh.getWorldMatrixForPart(i).toArray(partWorldData, i * 16);
                 }
                 effect.setMatrices("partWorld", partWorldData);
 
                 // Bind part visibility data
-                const partVisibilityData: number[] = [];
+                const partVisibilityData = this._partVisibilityData;
+                partVisibilityData.length = gsMesh.partCount;
                 for (let i = 0; i < gsMesh.partCount; i++) {
-                    partVisibilityData.push(gsMesh.partVisibility[i] ?? 1.0);
+                    partVisibilityData[i] = gsMesh.partVisibility[i] ?? 1.0;
                 }
                 effect.setArray("partVisibility", partVisibilityData);
             }
@@ -566,14 +573,19 @@ export class GaussianSplattingMaterial extends PushMaterial {
 
             if (gsMesh.partIndicesTexture) {
                 effect.setTexture("partIndicesTexture", gsMesh.partIndicesTexture);
-                const partWorldData = new Float32Array(gsMesh.partCount * 16);
+                const partWorldDataLength = gsMesh.partCount * 16;
+                if (this._partWorldData.length !== partWorldDataLength) {
+                    this._partWorldData = new Float32Array(partWorldDataLength);
+                }
+                const partWorldData = this._partWorldData;
                 for (let i = 0; i < gsMesh.partCount; i++) {
                     gsMesh.getWorldMatrixForPart(i).toArray(partWorldData, i * 16);
                 }
                 effect.setMatrices("partWorld", partWorldData);
-                const partVisibilityData: number[] = [];
+                const partVisibilityData = this._partVisibilityData;
+                partVisibilityData.length = gsMesh.partCount;
                 for (let i = 0; i < gsMesh.partCount; i++) {
-                    partVisibilityData.push(gsMesh.partVisibility[i] ?? 1.0);
+                    partVisibilityData[i] = gsMesh.partVisibility[i] ?? 1.0;
                 }
                 effect.setArray("partVisibility", partVisibilityData);
             }

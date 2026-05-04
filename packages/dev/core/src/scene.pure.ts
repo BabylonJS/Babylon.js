@@ -1,93 +1,108 @@
 /** This file must only contain pure code and pure imports */
 
-import { type Nullable } from "./types"
+import { type Nullable } from "./types";
 import { Tools, ToolsSetImmediate, ToolsRandomId } from "./Misc/tools.pure";
-import { type IAnimatable } from "./Animations/animatable.interface"
+import { type IAnimatable } from "./Animations/animatable.interface";
 import { PrecisionDate } from "./Misc/precisionDate";
-import { type Observer } from "./Misc/observable"
+import { type Observer } from "./Misc/observable";
 import { Observable } from "./Misc/observable";
-import { type ISmartArrayLike } from "./Misc/smartArray"
+import { type ISmartArrayLike } from "./Misc/smartArray";
 import { SmartArrayNoDuplicate, SmartArray } from "./Misc/smartArray";
 import { StringDictionary } from "./Misc/stringDictionary";
 import { Tags, TagsMatchesQuery } from "./Misc/tags.pure";
-import { type Vector2 } from "./Maths/math.vector"
+import { type Vector2 } from "./Maths/math.vector";
 import { Vector3, Vector4, Matrix } from "./Maths/math.vector.pure";
-import { type IParticleSystem } from "./Particles/IParticleSystem"
+import { type IParticleSystem } from "./Particles/IParticleSystem";
 import { ImageProcessingConfiguration } from "./Materials/imageProcessingConfiguration.pure";
 import { UniformBuffer } from "./Materials/uniformBuffer";
 import { PickingInfo } from "./Collisions/pickingInfo";
-import { type ICollisionCoordinator } from "./Collisions/collisionCoordinator"
-import { type PointerEventTypes, type PointerInfoPre, type PointerInfo } from "./Events/pointerEvents"
-import { type KeyboardInfoPre, type KeyboardInfo } from "./Events/keyboardEvents"
+import { type ICollisionCoordinator } from "./Collisions/collisionCoordinator";
+import { type PointerEventTypes, type PointerInfoPre, type PointerInfo } from "./Events/pointerEvents";
+import { type KeyboardInfoPre, type KeyboardInfo } from "./Events/keyboardEvents";
 import { ActionEventCreateNew } from "./Actions/actionEvent.pure";
 import { PostProcessManager } from "./PostProcesses/postProcessManager";
-import { type IOfflineProvider } from "./Offline/IOfflineProvider"
+import { type IOfflineProvider } from "./Offline/IOfflineProvider";
 import { FloatingOriginCurrentScene, OverrideMatrixFunctions, ResetMatrixFunctions } from "./Materials/floatingOriginMatrixOverrides";
-import { type RenderingGroupInfo, type IRenderingManagerAutoClearSetup } from "./Rendering/renderingManager"
+import { type RenderingGroupInfo, type IRenderingManagerAutoClearSetup } from "./Rendering/renderingManager";
 import { RenderingManager } from "./Rendering/renderingManager";
-import { type ISceneComponent, type ISceneSerializableComponent, type SimpleStageAction, type RenderTargetsStageAction, type RenderTargetStageAction, type MeshStageAction, type EvaluateSubMeshStageAction, type PreActiveMeshStageAction, type CameraStageAction, type RenderingGroupStageAction, type RenderingMeshStageAction, type PointerMoveStageAction, type PointerUpDownStageAction, type CameraStageFrameBufferAction } from "./sceneComponent"
+import {
+    type ISceneComponent,
+    type ISceneSerializableComponent,
+    type SimpleStageAction,
+    type RenderTargetsStageAction,
+    type RenderTargetStageAction,
+    type MeshStageAction,
+    type EvaluateSubMeshStageAction,
+    type PreActiveMeshStageAction,
+    type CameraStageAction,
+    type RenderingGroupStageAction,
+    type RenderingMeshStageAction,
+    type PointerMoveStageAction,
+    type PointerUpDownStageAction,
+    type CameraStageFrameBufferAction,
+} from "./sceneComponent";
 import { Stage } from "./sceneComponent";
 import { Constants } from "./Engines/constants";
 import { IsWindowObjectExist } from "./Misc/domManagement";
 import { EngineStore } from "./Engines/engineStore";
-import { type AbstractActionManager } from "./Actions/abstractActionManager"
+import { type AbstractActionManager } from "./Actions/abstractActionManager";
 import { _WarnImport } from "./Misc/devTools";
-import { type WebRequest } from "./Misc/webRequest"
+import { type WebRequest } from "./Misc/webRequest";
 import { InputManager } from "./Inputs/scene.inputManager";
 import { PerfCounter } from "./Misc/perfCounter";
-import { type IFileRequest } from "./Misc/fileRequest"
+import { type IFileRequest } from "./Misc/fileRequest";
 import { Color4, Color3 } from "./Maths/math.color.pure";
-import { type Plane } from "./Maths/math.plane"
+import { type Plane } from "./Maths/math.plane";
 import { FrustumGetPlanes, FrustumGetPlanesToRef } from "./Maths/math.frustum.pure";
 import { UniqueIdGenerator } from "./Misc/uniqueIdGenerator";
-import { type LoadFileError, type RequestFileError, type ReadFileError } from "./Misc/fileTools"
+import { type LoadFileError, type RequestFileError, type ReadFileError } from "./Misc/fileTools";
 import { ReadFile, RequestFile, LoadFile } from "./Misc/fileTools.pure";
-import { type IClipPlanesHolder } from "./Misc/interfaces/iClipPlanesHolder"
-import { type IPointerEvent } from "./Events/deviceInputEvents"
+import { type IClipPlanesHolder } from "./Misc/interfaces/iClipPlanesHolder";
+import { type IPointerEvent } from "./Events/deviceInputEvents";
 import { LightConstants } from "./Lights/lightConstants";
 import { _ObserveArray } from "./Misc/arrayTools";
-import { type IAction } from "./Actions/action"
-import { type AnimationPropertiesOverride } from "./Animations/animationPropertiesOverride"
-import { type AnimationGroup } from "./Animations/animationGroup"
-import { type Skeleton } from "./Bones/skeleton"
-import { type Bone } from "./Bones/bone"
-import { type Camera } from "./Cameras/camera"
-import { type Collider } from "./Collisions/collider"
-import { type Ray, type MeshPredicate, type TrianglePickingPredicate } from "./Culling/ray.core"
-import { type Light } from "./Lights/light"
-import { type PerformanceViewerCollector } from "./Misc/PerformanceViewer/performanceViewerCollector"
-import { type MorphTarget } from "./Morph/morphTarget"
-import { type MorphTargetManager } from "./Morph/morphTargetManager"
-import { type PostProcess } from "./PostProcesses/postProcess"
-import { type Material } from "./Materials/material"
-import { type BaseTexture } from "./Materials/Textures/baseTexture"
-import { type Geometry } from "./Meshes/geometry"
-import { type TransformNode } from "./Meshes/transformNode"
-import { type AbstractMesh } from "./Meshes/abstractMesh"
-import { type MultiMaterial } from "./Materials/multiMaterial"
-import { type Effect } from "./Materials/effect"
-import { type RenderTargetTexture } from "./Materials/Textures/renderTargetTexture"
-import { type Mesh } from "./Meshes/mesh"
-import { type SubMesh } from "./Meshes/subMesh"
-import { type Node } from "./node"
-import { type Animation } from "./Animations/animation"
-import { type Animatable } from "./Animations/animatable.core"
-import { type Texture } from "./Materials/Textures/texture"
+import { type IAction } from "./Actions/action";
+import { type AnimationPropertiesOverride } from "./Animations/animationPropertiesOverride";
+import { type AnimationGroup } from "./Animations/animationGroup";
+import { type Skeleton } from "./Bones/skeleton";
+import { type Bone } from "./Bones/bone";
+import { type Camera } from "./Cameras/camera";
+import { type Collider } from "./Collisions/collider";
+import { type Ray, type MeshPredicate, type TrianglePickingPredicate } from "./Culling/ray.core";
+import { type Light } from "./Lights/light";
+import { type PerformanceViewerCollector } from "./Misc/PerformanceViewer/performanceViewerCollector";
+import { type MorphTarget } from "./Morph/morphTarget";
+import { type MorphTargetManager } from "./Morph/morphTargetManager";
+import { type PostProcess } from "./PostProcesses/postProcess";
+import { type Material } from "./Materials/material";
+import { type BaseTexture } from "./Materials/Textures/baseTexture";
+import { type Geometry } from "./Meshes/geometry";
+import { type TransformNode } from "./Meshes/transformNode";
+import { type AbstractMesh } from "./Meshes/abstractMesh";
+import { type MultiMaterial } from "./Materials/multiMaterial";
+import { type Effect } from "./Materials/effect";
+import { type RenderTargetTexture } from "./Materials/Textures/renderTargetTexture";
+import { type Mesh } from "./Meshes/mesh";
+import { type SubMesh } from "./Meshes/subMesh";
+import { type Node } from "./node";
+import { type Animation } from "./Animations/animation";
+import { type Animatable } from "./Animations/animatable.core";
+import { type Texture } from "./Materials/Textures/texture";
 import { PointerPickingConfiguration } from "./Inputs/pointerPickingConfiguration";
 import { Logger } from "./Misc/logger";
-import { type AbstractEngine } from "./Engines/abstractEngine"
-import { type FrameGraph } from "./FrameGraph/frameGraph"
-import { type IAssetContainer } from "./IAssetContainer"
-import { type EffectLayer } from "./Layers/effectLayer"
-import { type Sound } from "./Audio/sound"
-import { type Layer } from "./Layers/layer"
-import { type LensFlareSystem } from "./LensFlares/lensFlareSystem"
-import { type ProceduralTexture } from "./Materials/Textures/Procedurals/proceduralTexture"
-import { type FrameGraphObjectRendererTask } from "./FrameGraph/Tasks/Rendering/objectRendererTask"
+import { type AbstractEngine } from "./Engines/abstractEngine";
+import { type FrameGraph } from "./FrameGraph/frameGraph";
+import { type IAssetContainer } from "./IAssetContainer";
+import { type EffectLayer } from "./Layers/effectLayer";
+import { type Sound } from "./Audio/sound";
+import { type Layer } from "./Layers/layer";
+import { type LensFlareSystem } from "./LensFlares/lensFlareSystem";
+import { type ProceduralTexture } from "./Materials/Textures/Procedurals/proceduralTexture";
+import { type FrameGraphObjectRendererTask } from "./FrameGraph/Tasks/Rendering/objectRendererTask";
 import { _RetryWithInterval } from "./Misc/timingTools.pure";
-import { type ObjectRenderer } from "./Rendering/objectRenderer"
-import { type BoundingBoxRenderer } from "./Rendering/boundingBoxRenderer"
-import { type BoundingBox } from "./Culling/boundingBox"
+import { type ObjectRenderer } from "./Rendering/objectRenderer";
+import { type BoundingBoxRenderer } from "./Rendering/boundingBoxRenderer";
+import { type BoundingBox } from "./Culling/boundingBox";
 import { RegisterClass } from "./Misc/typeStore";
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
@@ -148,6 +163,16 @@ export interface SceneOptions {
 
     /** Defines if the creation of the scene should impact the engine (Eg. UtilityLayer's scene) */
     virtual?: boolean;
+
+    /**
+     * Defines the default layerMask used when creating cameras in the scene (default: 0x0fffffff)
+     */
+    defaultCameraLayerMask?: number;
+
+    /**
+     * Defines the default layerMask used when creating renderable objects in the scene (default: 0x0fffffff)
+     */
+    defaultRenderableLayerMask?: number;
 }
 
 /**
@@ -1801,6 +1826,16 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
     private _uid: Nullable<string>;
 
     /**
+     * Gets or sets the default layerMask used for cameras created in this scene.
+     */
+    public defaultCameraLayerMask: number;
+
+    /**
+     * Gets or sets the default layerMask used for renderable objects created in this scene.
+     */
+    public defaultRenderableLayerMask: number;
+
+    /**
      * @internal
      * Backing store of defined scene components.
      */
@@ -2011,8 +2046,14 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
             useMaterialMeshMap: true,
             useClonedMeshMap: true,
             virtual: false,
+            defaultCameraLayerMask: 0x0fffffff,
+            defaultRenderableLayerMask: 0x0fffffff,
             ...options,
         };
+
+        // Scene Default Layer Masks
+        this.defaultCameraLayerMask = fullOptions.defaultCameraLayerMask;
+        this.defaultRenderableLayerMask = fullOptions.defaultRenderableLayerMask;
 
         engine = this._engine = engine || EngineStore.LastCreatedEngine;
         if (fullOptions.virtual) {

@@ -1,15 +1,15 @@
 /** This file must only contain pure code and pure imports */
 
-import { type Nullable } from "../../types"
-import { type Scene } from "../../scene"
-import { type AbstractEngine } from "../../Engines/abstractEngine"
-import { type SubMesh } from "../../Meshes/subMesh"
-import { type UniformBuffer } from "../uniformBuffer"
-import { type MaterialDefines } from "../materialDefines"
+import { type Nullable } from "../../types";
+import { type Scene } from "../../scene";
+import { type AbstractEngine } from "../../Engines/abstractEngine";
+import { type SubMesh } from "../../Meshes/subMesh";
+import { type UniformBuffer } from "../uniformBuffer";
+import { type MaterialDefines } from "../materialDefines";
 import { MaterialPluginBase } from "../materialPluginBase.pure";
 import { ShaderLanguage } from "../shaderLanguage";
 import { GetGaussianSplattingMaxPartCount } from "./gaussianSplattingMaterial.pure";
-import { type GaussianSplattingMaterial } from "./gaussianSplattingMaterial"
+import { type GaussianSplattingMaterial } from "./gaussianSplattingMaterial";
 import { RegisterClass } from "../../Misc/typeStore";
 
 /**
@@ -24,6 +24,8 @@ export class GaussianSplattingGpuPickingMaterialPlugin extends MaterialPluginBas
     private _pickingColor: [number, number, number] = [0, 0, 0];
     private _isCompound: boolean = false;
     private _partPickingColors: number[] = [];
+    private _partVisibility: number[] = [];
+    private _defaultPartVisibility: number[] = [];
     private _maxPartCount: number;
 
     /**
@@ -35,6 +37,7 @@ export class GaussianSplattingGpuPickingMaterialPlugin extends MaterialPluginBas
         super(material, "GaussianSplatGpuPicking", 200);
 
         this._maxPartCount = maxPartCount ?? GetGaussianSplattingMaxPartCount(material.getScene().getEngine());
+        this._defaultPartVisibility = new Array(this._maxPartCount).fill(1.0);
         this._enable(true);
     }
 
@@ -83,6 +86,22 @@ export class GaussianSplattingGpuPickingMaterialPlugin extends MaterialPluginBas
             colors.push(c[0], c[1], c[2]);
         }
         this._partPickingColors = colors;
+    }
+
+    /**
+     * Marks which parts are "active" (visible) for picking. Only active parts
+     * will have their picking color written; inactive parts are invisible.
+     * @param activeParts Array of part indices that should be visible.
+     */
+    public setPartActive(activeParts: number[]): void {
+        const visibility = this._partVisibility;
+        visibility.length = this._maxPartCount;
+        visibility.fill(0.0);
+        for (const index of activeParts) {
+            if (index >= 0 && index < this._maxPartCount) {
+                visibility[index] = 1.0;
+            }
+        }
     }
 
     /**
@@ -231,6 +250,9 @@ uniform pickingColor: vec3f;
 
         if (this._isCompound) {
             effect.setArray3("partPickingColors", this._partPickingColors);
+            // default all visible when setPartActive hasn't been called
+            const visibility = this._partVisibility.length > 0 ? this._partVisibility : this._defaultPartVisibility;
+            effect.setArray("partVisibility", visibility);
         } else {
             effect.setFloat3("pickingColor", this._pickingColor[0], this._pickingColor[1], this._pickingColor[2]);
         }

@@ -1,4 +1,18 @@
-import { type Observer, type Nullable, type NodeRenderGraphBlock, type NodeRenderGraphTeleportOutBlock, type NodeRenderGraphTeleportInBlock, type AbstractEngine, type INodeRenderGraphCreateOptions, type INodeRenderGraphEditorOptions, type Scene, type WritableObject, type IShadowLight, type INodeRenderGraphCustomBlockDescription, type Immutable } from "core/index"
+import {
+    type Observer,
+    type Nullable,
+    type NodeRenderGraphBlock,
+    type NodeRenderGraphTeleportOutBlock,
+    type NodeRenderGraphTeleportInBlock,
+    type AbstractEngine,
+    type INodeRenderGraphCreateOptions,
+    type INodeRenderGraphEditorOptions,
+    type Scene,
+    type WritableObject,
+    type IShadowLight,
+    type INodeRenderGraphCustomBlockDescription,
+    type Immutable,
+} from "core/index";
 import { Observable } from "../../Misc/observable";
 import { NodeRenderGraphOutputBlock } from "./Blocks/outputBlock.pure";
 import { FrameGraph } from "../frameGraph";
@@ -34,7 +48,7 @@ export class NodeRenderGraph {
     private _buildId: number = NodeRenderGraph._BuildIdGenerator++;
 
     /** Define the Url to load node editor script */
-    public static EditorURL = `${Tools._DefaultCdnUrl}/v${Engine.Version}/NodeRenderGraph/babylon.nodeRenderGraph.js`;
+    public static EditorURL = `${Tools._DefaultCdnUrl}/v${Engine.Version}/nodeRenderGraphEditor/babylon.nodeRenderGraphEditor.js`;
 
     /** Define the Url to load snippets */
     public static SnippetUrl = Constants.SnippetUrl;
@@ -48,7 +62,12 @@ export class NodeRenderGraph {
     private _getGlobalNodeRenderGraphEditor(): any {
         // UMD Global name detection from Webpack Bundle UMD Name.
         if (typeof NODERENDERGRAPHEDITOR !== "undefined") {
-            return NODERENDERGRAPHEDITOR;
+            if ((NODERENDERGRAPHEDITOR as any).NodeRenderGraphEditor) {
+                return NODERENDERGRAPHEDITOR;
+            }
+            if ((NODERENDERGRAPHEDITOR as any).default?.NodeRenderGraphEditor) {
+                return (NODERENDERGRAPHEDITOR as any).default;
+            }
         }
 
         // In case of module let's check the global emitted from the editor entry point.

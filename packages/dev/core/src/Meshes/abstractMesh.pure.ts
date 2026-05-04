@@ -1,46 +1,46 @@
 /** This file must only contain pure code and pure imports */
 
 import { Observable } from "../Misc/observable";
-import { type Nullable, type FloatArray, type IndicesArray, type DeepImmutable } from "../types"
-import { type Camera } from "../Cameras/camera"
-import { type Scene, type IDisposable } from "../scene"
+import { type Nullable, type FloatArray, type IndicesArray, type DeepImmutable } from "../types";
+import { type Camera } from "../Cameras/camera";
+import { type Scene, type IDisposable } from "../scene";
 import { ScenePerformancePriority } from "../scene.pure";
-import { type Vector2 } from "../Maths/math.vector"
+import { type Vector2 } from "../Maths/math.vector";
 import { Quaternion, Matrix, Vector3, TmpVectors } from "../Maths/math.vector.pure";
-import { type Node } from "../node"
+import { type Node } from "../node";
 import { VertexBuffer } from "../Buffers/buffer.pure";
-import { type IGetSetVerticesData } from "../Meshes/mesh.vertexData"
+import { type IGetSetVerticesData } from "../Meshes/mesh.vertexData";
 import { TransformNode } from "../Meshes/transformNode";
-import { type SubMesh } from "../Meshes/subMesh"
+import { type SubMesh } from "../Meshes/subMesh";
 import { PickingInfo } from "../Collisions/pickingInfo";
-import { type IntersectionInfo } from "../Collisions/intersectionInfo"
-import { type ICullable } from "../Culling/boundingInfo"
+import { type IntersectionInfo } from "../Collisions/intersectionInfo";
+import { type ICullable } from "../Culling/boundingInfo";
 import { BoundingInfo } from "../Culling/boundingInfo";
-import { type Material } from "../Materials/material"
-import { type MaterialDefines } from "../Materials/materialDefines"
-import { type Light } from "../Lights/light"
-import { type Skeleton } from "../Bones/skeleton"
-import { type MorphTargetManager } from "../Morph/morphTargetManager"
-import { type IBakedVertexAnimationManager } from "../BakedVertexAnimation/bakedVertexAnimationManager"
-import { type IEdgesRenderer, type IEdgesRendererOptions } from "../Rendering/edgesRenderer"
-import { type SolidParticle } from "../Particles/solidParticle"
+import { type Material } from "../Materials/material";
+import { type MaterialDefines } from "../Materials/materialDefines";
+import { type Light } from "../Lights/light";
+import { type Skeleton } from "../Bones/skeleton";
+import { type MorphTargetManager } from "../Morph/morphTargetManager";
+import { type IBakedVertexAnimationManager } from "../BakedVertexAnimation/bakedVertexAnimationManager";
+import { type IEdgesRenderer, type IEdgesRendererOptions } from "../Rendering/edgesRenderer";
+import { type SolidParticle } from "../Particles/solidParticle";
 import { Constants } from "../Engines/constants";
-import { type AbstractActionManager } from "../Actions/abstractActionManager"
+import { type AbstractActionManager } from "../Actions/abstractActionManager";
 import { UniformBuffer } from "../Materials/uniformBuffer";
 import { _MeshCollisionData } from "../Collisions/meshCollisionData";
 import { _WarnImport } from "../Misc/devTools";
-import { type RawTexture } from "../Materials/Textures/rawTexture"
+import { type RawTexture } from "../Materials/Textures/rawTexture";
 import { extractMinAndMax } from "../Maths/math.functions";
 import { Color4, Color3Red } from "../Maths/math.color.pure";
 import { Epsilon } from "../Maths/math.constants";
-import { type Plane } from "../Maths/math.plane"
+import { type Plane } from "../Maths/math.plane";
 import { Axis } from "../Maths/math.axis";
-import { type IParticleSystem } from "../Particles/IParticleSystem"
-import { type Ray, type TrianglePickingPredicate } from "../Culling/ray"
-import { type Collider } from "../Collisions/collider"
-import { type RenderingGroup } from "../Rendering/renderingGroup"
-import { type MorphTarget } from "../Morph/morphTarget"
-import { type Geometry } from "./geometry"
+import { type IParticleSystem } from "../Particles/IParticleSystem";
+import { type Ray, type TrianglePickingPredicate } from "../Culling/ray";
+import { type Collider } from "../Collisions/collider";
+import { type RenderingGroup } from "../Rendering/renderingGroup";
+import { type MorphTarget } from "../Morph/morphTarget";
+import { type Geometry } from "./geometry";
 import { nativeOverride } from "../Misc/decorators";
 import { AbstractEngine } from "core/Engines/abstractEngine";
 import { VertexDataComputeNormals } from "./mesh.vertexData.pure";
@@ -997,7 +997,7 @@ export abstract class AbstractMesh extends TransformNode implements IDisposable,
         super(name, scene, false);
 
         scene = this.getScene();
-
+        this.layerMask = scene.defaultRenderableLayerMask;
         scene.addMesh(this);
 
         this._resyncLightSources();

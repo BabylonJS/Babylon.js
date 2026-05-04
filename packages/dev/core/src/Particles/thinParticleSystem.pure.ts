@@ -1,36 +1,36 @@
-import { type Immutable, type Nullable } from "../types"
+import { type Immutable, type Nullable } from "../types";
 import { FactorGradient, ColorGradient, Color3Gradient } from "../Misc/gradients.pure";
-import { type Observer } from "../Misc/observable"
+import { type Observer } from "../Misc/observable";
 import { Observable } from "../Misc/observable";
 import { Vector3, Matrix, TmpVectors } from "../Maths/math.vector.pure";
 import { VertexBuffer, Buffer } from "../Buffers/buffer.pure";
 
-import { type Effect } from "../Materials/effect"
-import { type RawTexture } from "../Materials/Textures/rawTexture.pure"
+import { type Effect } from "../Materials/effect";
+import { type RawTexture } from "../Materials/Textures/rawTexture.pure";
 import { RawTextureCreateRGBATexture } from "../Materials/Textures/rawTexture.pure";
 import { EngineStore } from "../Engines/engineStore";
-import { type IDisposable, type Scene } from "../scene"
-import { type IParticleSystem } from "./IParticleSystem"
+import { type IDisposable, type Scene } from "../scene";
+import { type IParticleSystem } from "./IParticleSystem";
 import { BaseParticleSystem } from "./baseParticleSystem.pure";
 import { Particle } from "./particle";
 import { Constants } from "../Engines/constants";
-import { type IAnimatable } from "../Animations/animatable.interface"
+import { type IAnimatable } from "../Animations/animatable.interface";
 import { DrawWrapper } from "../Materials/drawWrapper";
 
-import { type DataBuffer } from "../Buffers/dataBuffer"
-import { type Color3 } from "../Maths/math.color.pure"
+import { type DataBuffer } from "../Buffers/dataBuffer";
+import { type Color3 } from "../Maths/math.color.pure";
 import { Color4, TmpColors, Color3LerpToRef } from "../Maths/math.color.pure";
-import { type ISize } from "../Maths/math.size"
-import { type AbstractEngine } from "../Engines/abstractEngine"
+import { type ISize } from "../Maths/math.size";
+import { type AbstractEngine } from "../Engines/abstractEngine";
 import { AddClipPlaneUniforms, PrepareStringDefinesForClipPlanes, BindClipPlane } from "../Materials/clipPlaneMaterialHelper";
 
-import { type AbstractMesh } from "../Meshes/abstractMesh"
-import { type ProceduralTexture } from "../Materials/Textures/Procedurals/proceduralTexture"
+import { type AbstractMesh } from "../Meshes/abstractMesh";
+import { type ProceduralTexture } from "../Materials/Textures/Procedurals/proceduralTexture";
 import { BindFogParameters, BindLogDepth } from "../Materials/materialHelper.functions";
 import { BoxParticleEmitter } from "./EmitterTypes/boxParticleEmitter";
 import { Lerp } from "../Maths/math.scalar.functions";
 import { PrepareSamplersForImageProcessing, PrepareUniformsForImageProcessing } from "../Materials/imageProcessingConfiguration.functions";
-import { type ThinEngine } from "../Engines/thinEngine"
+import { type ThinEngine } from "../Engines/thinEngine";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import {
     _CreateAngleData,
@@ -69,7 +69,7 @@ import {
     _ProcessSizeGradients,
     _ProcessVelocityGradients,
 } from "./thinParticleSystem.function";
-import { type _IExecutionQueueItem } from "./Queue/executionQueue"
+import { type _IExecutionQueueItem } from "./Queue/executionQueue";
 import { _ConnectAfter, _ConnectBefore, _RemoveFromQueue } from "./Queue/executionQueue";
 import { GradientHelperGetCurrentGradient } from "../Misc/gradients.pure";
 
@@ -202,6 +202,26 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
     private _alive: boolean;
     private _useInstancing = false;
     private _vertexArrayObject: Nullable<WebGLVertexArrayObject>;
+
+    private _useFixedCapacityForSnapshot = false;
+    private _fixedCapacityHighWaterMark = 0;
+
+    /**
+     * Gets or sets a boolean indicating that the particle system should always render at full capacity.
+     * When enabled, the draw call always emits `getCapacity()` quads/instances and inactive slots are zero-filled in the
+     * vertex buffer (collapsing them to degenerate triangles that produce no fragments).
+     * This makes the particle system compatible with FAST snapshot rendering, where the recorded draw call parameters
+     * are baked into the GPU bundle. Activate via `SnapshotRenderingHelper.fixParticleSystem(ps)`.
+     * Note: vertex shader cost scales with capacity rather than the live particle count, so size capacity realistically.
+     * This property is runtime-only and is not persisted by `serialize()` / `Parse()`.
+     */
+    public get useFixedCapacityForSnapshot(): boolean {
+        return this._useFixedCapacityForSnapshot;
+    }
+
+    public set useFixedCapacityForSnapshot(value: boolean) {
+        this._useFixedCapacityForSnapshot = value;
+    }
 
     private _isDisposed = false;
 
@@ -560,6 +580,7 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
             this._scene = (sceneOrEngine as Scene) || EngineStore.LastCreatedScene;
             this._engine = this._scene.getEngine();
             this.uniqueId = this._scene.getUniqueId();
+            this.layerMask = this._scene.defaultRenderableLayerMask;
             this._scene.particleSystems.push(this);
         } else {
             this._engine = sceneOrEngine as AbstractEngine;
@@ -2109,7 +2130,24 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
             }
 
             if (this._vertexBuffer) {
-                this._vertexBuffer.updateDirectly(this._vertexData, 0, this._particles.length);
+                if (this._useFixedCapacityForSnapshot) {
+                    // The vertex buffer is uploaded at full capacity so the FAST-snapshot bundle's draw call stays valid.
+                    // Inactive slots must be zeroed so they collapse to degenerate (size=0) quads that emit no fragments.
+                    // Float32Array starts zeroed and `_appendParticleVertices` overwrites only the active range, so we
+                    // only need to clear slots that were active in a previous frame and aren't anymore — i.e. the range
+                    // [currentCount, highWaterMark). When the active count grows we just bump the high-water mark.
+                    const stride = this._vertexBufferSize * (this._useInstancing ? 1 : 4);
+                    const currentCount = this._particles.length;
+                    if (currentCount < this._fixedCapacityHighWaterMark) {
+                        this._vertexData.fill(0, currentCount * stride, this._fixedCapacityHighWaterMark * stride);
+                    }
+                    if (currentCount > this._fixedCapacityHighWaterMark) {
+                        this._fixedCapacityHighWaterMark = currentCount;
+                    }
+                    this._vertexBuffer.updateDirectly(this._vertexData, 0, this._capacity);
+                } else {
+                    this._vertexBuffer.updateDirectly(this._vertexData, 0, this._particles.length);
+                }
             }
         }
 
@@ -2299,15 +2337,15 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
 
         if (this._useInstancing) {
             if (this._scene?.forceWireframe) {
-                engine.drawElementsType(Constants.MATERIAL_LineStripDrawMode, 0, 10, this._particles.length);
+                engine.drawElementsType(Constants.MATERIAL_LineStripDrawMode, 0, 10, this._useFixedCapacityForSnapshot ? this._capacity : this._particles.length);
             } else {
-                engine.drawArraysType(Constants.MATERIAL_TriangleStripDrawMode, 0, 4, this._particles.length);
+                engine.drawArraysType(Constants.MATERIAL_TriangleStripDrawMode, 0, 4, this._useFixedCapacityForSnapshot ? this._capacity : this._particles.length);
             }
         } else {
             if (this._scene?.forceWireframe) {
-                engine.drawElementsType(Constants.MATERIAL_WireFrameFillMode, 0, this._particles.length * 10);
+                engine.drawElementsType(Constants.MATERIAL_WireFrameFillMode, 0, (this._useFixedCapacityForSnapshot ? this._capacity : this._particles.length) * 10);
             } else {
-                engine.drawElementsType(Constants.MATERIAL_TriangleFillMode, 0, this._particles.length * 6);
+                engine.drawElementsType(Constants.MATERIAL_TriangleFillMode, 0, (this._useFixedCapacityForSnapshot ? this._capacity : this._particles.length) * 6);
             }
         }
 
@@ -2320,7 +2358,7 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
      */
     public render(): number {
         // Check
-        if (!this.isReady() || !this._particles.length) {
+        if (!this.isReady() || (!this._particles.length && !this._useFixedCapacityForSnapshot)) {
             return 0;
         }
 
