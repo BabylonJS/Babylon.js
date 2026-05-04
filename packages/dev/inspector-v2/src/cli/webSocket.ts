@@ -1,20 +1,18 @@
 /**
  * Re-exports WebSocket and WebSocketServer from the ws package.
  *
- * ws is a CJS module — named exports like WebSocketServer aren't available
- * at runtime when Node auto-detects ESM from tsc output. This module works
- * around that by extracting them from the default export and re-exporting
- * them as merged type+value pairs.
+ * ws is a CJS module with different shapes for default and namespace imports.
+ * This module normalizes those imports and re-exports them as merged type+value pairs.
  */
-import ws from "ws";
+import WebSocketDefault, * as wsNamespace from "ws";
 
-export const WebSocket = ws;
+export const WebSocket = WebSocketDefault;
 export type WebSocket = import("ws").WebSocket;
 
 export const WebSocketServer = (
-    ws as unknown as {
+    wsNamespace as unknown as {
         // eslint-disable-next-line @typescript-eslint/naming-convention
-        Server: new (options?: import("ws").ServerOptions) => import("ws").WebSocketServer;
+        WebSocketServer: new (options?: import("ws").ServerOptions) => import("ws").WebSocketServer;
     }
-).Server;
+).WebSocketServer;
 export type WebSocketServer = import("ws").WebSocketServer;

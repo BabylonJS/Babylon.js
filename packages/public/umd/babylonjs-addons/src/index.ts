@@ -1,5 +1,5 @@
 // Export all named symbols directly so ADDONS.HtmlMesh etc. work.
-// With Rollup UMD (unlike webpack's libraryExport:"default"), named exports must be
+// With Rollup UMD, named exports must be
 // explicitly re-exported for them to appear on the global namespace object.
 //
 // IMPORTANT: Do NOT also `import * as addons; export { addons }` here.

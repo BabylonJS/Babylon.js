@@ -5,8 +5,8 @@ import { commonDevViteConfiguration } from "../../public/viteToolsHelper.mjs";
 
 /**
  * Stub optional peer dependencies that core/src references but that are not
- * installed in the dev workspace (e.g. draco3dgltf, ammo.js). Webpack handled
- * these via externalsFunction; Vite needs an explicit transform plugin.
+ * installed in the dev workspace (e.g. draco3dgltf, ammo.js). Vite needs an
+ * explicit transform plugin for these optional imports.
  *
  * Strategy: rewrite the import statements in consuming source files rather than
  * trying to stub the module itself, since ESM named imports require explicit

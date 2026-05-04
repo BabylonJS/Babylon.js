@@ -469,7 +469,7 @@ export async function CreateV2Runner(manifest: V2Manifest, opts: V2RunnerOptions
         const importFn: (s: string) => Promise<any> =
             (window as any).importShim ??
             (async (s: string) => {
-                return await import(/* webpackIgnore: true */ /* @vite-ignore */ s);
+                return await import(/* @vite-ignore */ s);
             });
         const entrySpec = specKey(entryPath);
         await initRuntime();

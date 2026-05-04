@@ -539,6 +539,11 @@ export class ClusteredLightContainer extends Light {
             Logger.Warn("Attempting to add a light to cluster that does not support clustering");
             return;
         }
+        if (light._clusteredContainer) {
+            Logger.Warn("Attempting to add a light to a cluster that is already owned by a clustered light container");
+            return;
+        }
+        light._clusteredContainer = this;
         // scene.removeLight returns -1 if the light wasn't in scene.lights. In that case the
         // mesh.lightSources cleanup it normally performs didn't happen — but the light may still be
         // there: lights constructed with `dontAddToScene = true` are pushed into mesh.lightSources
@@ -579,6 +584,9 @@ export class ClusteredLightContainer extends Light {
         if (index !== -1) {
             this._lights.splice(index, 1);
             // We treat the unsorted array as the "real" one so only add back to the scene if it was found in that
+            if (light._clusteredContainer === this) {
+                light._clusteredContainer = null;
+            }
             this._scene.addLight(light);
         }
         return index;

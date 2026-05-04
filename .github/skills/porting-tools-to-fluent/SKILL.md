@@ -46,27 +46,17 @@ Note: `@dev/shared-ui-components` should already be a dependency. It contains bo
 "sass-loader": "..."   // if no other SCSS remains
 ```
 
-### Webpack config
+### Vite config
 
-Ensure the `shared-ui-components` alias is present and disable CSS loaders:
+Ensure the `shared-ui-components` alias is present:
 
 ```js
-resolve: {
-    extensions: [".js", ".ts", ".tsx"],
-    alias: {
-        core: path.resolve("../../dev/core/dist"),
+commonDevViteConfiguration({
+    aliases: {
         "shared-ui-components": path.resolve("../../dev/sharedUiComponents/src"),
         // ... other aliases as needed
     },
-},
-module: {
-    rules: webpackTools.getRules({
-        includeAssets: true,
-        includeCSS: false,    // no more SCSS
-        sideEffects: true,
-        tsOptions: { transpileOnly: true, compilerOptions: { declaration: false } },
-    }),
-},
+});
 ```
 
 ### tsconfig.json
@@ -95,14 +85,17 @@ import { MakeModularTool } from "shared-ui-components/modularTool/modularTool";
 MakeModularTool({
     namespace: "MyToolName",
     containerElement: document.getElementById("root")!,
-    serviceDefinitions: [/* your service definitions */],
-    toolbarMode: "compact",      // "compact" for minimal toolbar, "full" for full toolbar
-    showThemeSelector: true,     // adds theme toggle to toolbar
+    serviceDefinitions: [
+        /* your service definitions */
+    ],
+    toolbarMode: "compact", // "compact" for minimal toolbar, "full" for full toolbar
+    showThemeSelector: true, // adds theme toggle to toolbar
     // Do NOT pass extensionFeeds to disable the extensions dialog
 });
 ```
 
 `MakeModularTool` automatically provides:
+
 - `FluentProvider` + theme (light/dark)
 - `SettingsStore` (persisted user preferences)
 - `ThemeService` + optional `ThemeSelectorService`
@@ -114,6 +107,7 @@ MakeModularTool({
 ## 3. Service Architecture
 
 Each tool should define its own services that populate the shell. A service is a `ServiceDefinition<Produces, Consumes>` with:
+
 - `friendlyName` — human-readable name for debugging
 - `produces` — array of service identity symbols this service provides
 - `consumes` — array of service identity symbols this service depends on
@@ -148,7 +142,9 @@ export const MyServiceDefinition: ServiceDefinition<[IMyService], [IShellService
         });
 
         return {
-            get someData() { return someData; },
+            get someData() {
+                return someData;
+            },
             onStateChanged,
             dispose: () => {
                 onStateChanged.clear();
@@ -175,8 +171,8 @@ Use the `useObservableState` hook from `shared-ui-components/modularTool/` to su
 import { useObservableState } from "shared-ui-components/modularTool/hooks/observableHooks";
 
 const myData = useObservableState(
-    () => myService.someData,    // getter
-    myService.onStateChanged     // observable to subscribe to
+    () => myService.someData, // getter
+    myService.onStateChanged // observable to subscribe to
 );
 ```
 
@@ -186,21 +182,21 @@ const myData = useObservableState(
 
 ### Legacy → Fluent shared component mapping
 
-| Legacy Component | Fluent Replacement | Import Path |
-|---|---|---|
-| `LineContainerComponent` | `AccordionSection` | `shared-ui-components/fluent/primitives/accordion` |
-| Side pane container | `Accordion` (or `ExtensibleAccordion`) | `shared-ui-components/fluent/primitives/accordion` |
-| `CheckBoxLineComponent` | `Switch` (primitive) or `SwitchPropertyLine` (with label) | `shared-ui-components/fluent/primitives/switch` or `.../hoc/propertyLines/switchPropertyLine` |
-| `SliderLineComponent` | `SyncedSliderInput` (primitive) or `SyncedSliderPropertyLine` (with label) | `shared-ui-components/fluent/primitives/syncedSlider` or `.../hoc/propertyLines/syncedSliderPropertyLine` |
-| `OptionsLine` | `Dropdown` (primitive) or `StringDropdownPropertyLine` (with label) | `shared-ui-components/fluent/primitives/dropdown` or `.../hoc/propertyLines/dropdownPropertyLine` |
-| `ButtonLineComponent` | `Button` (primitive) | `shared-ui-components/fluent/primitives/button` |
-| `TextInputLineComponent` (single-line) | `TextInput` (primitive) or `TextInputPropertyLine` (with label) | `shared-ui-components/fluent/primitives/textInput` or `.../hoc/propertyLines/inputPropertyLine` |
-| `TextInputLineComponent` (multiline) | Fluent `Textarea` + slot props | `@fluentui/react-components` |
-| `MessageLineComponent` | `MessageBar` | `shared-ui-components/fluent/primitives/messageBar` |
-| `Color4LineComponent` | `ColorPickerPopup` (primitive) or `Color4PropertyLine` (with label) | `shared-ui-components/fluent/primitives/colorPicker` or `.../hoc/propertyLines/colorPropertyLine` |
-| `LockObject` | Not needed (Fluent property lines don't use it) | — |
-| `FontAwesomeIconButton` | `Button` with `icon` prop | `shared-ui-components/fluent/primitives/button` |
-| `SplitContainer` / `Splitter` | Shell service layout (side panes) | Handled by `MakeModularTool` |
+| Legacy Component                       | Fluent Replacement                                                         | Import Path                                                                                               |
+| -------------------------------------- | -------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| `LineContainerComponent`               | `AccordionSection`                                                         | `shared-ui-components/fluent/primitives/accordion`                                                        |
+| Side pane container                    | `Accordion` (or `ExtensibleAccordion`)                                     | `shared-ui-components/fluent/primitives/accordion`                                                        |
+| `CheckBoxLineComponent`                | `Switch` (primitive) or `SwitchPropertyLine` (with label)                  | `shared-ui-components/fluent/primitives/switch` or `.../hoc/propertyLines/switchPropertyLine`             |
+| `SliderLineComponent`                  | `SyncedSliderInput` (primitive) or `SyncedSliderPropertyLine` (with label) | `shared-ui-components/fluent/primitives/syncedSlider` or `.../hoc/propertyLines/syncedSliderPropertyLine` |
+| `OptionsLine`                          | `Dropdown` (primitive) or `StringDropdownPropertyLine` (with label)        | `shared-ui-components/fluent/primitives/dropdown` or `.../hoc/propertyLines/dropdownPropertyLine`         |
+| `ButtonLineComponent`                  | `Button` (primitive)                                                       | `shared-ui-components/fluent/primitives/button`                                                           |
+| `TextInputLineComponent` (single-line) | `TextInput` (primitive) or `TextInputPropertyLine` (with label)            | `shared-ui-components/fluent/primitives/textInput` or `.../hoc/propertyLines/inputPropertyLine`           |
+| `TextInputLineComponent` (multiline)   | Fluent `Textarea` + slot props                                             | `@fluentui/react-components`                                                                              |
+| `MessageLineComponent`                 | `MessageBar`                                                               | `shared-ui-components/fluent/primitives/messageBar`                                                       |
+| `Color4LineComponent`                  | `ColorPickerPopup` (primitive) or `Color4PropertyLine` (with label)        | `shared-ui-components/fluent/primitives/colorPicker` or `.../hoc/propertyLines/colorPropertyLine`         |
+| `LockObject`                           | Not needed (Fluent property lines don't use it)                            | —                                                                                                         |
+| `FontAwesomeIconButton`                | `Button` with `icon` prop                                                  | `shared-ui-components/fluent/primitives/button`                                                           |
+| `SplitContainer` / `Splitter`          | Shell service layout (side panes)                                          | Handled by `MakeModularTool`                                                                              |
 
 ### When to use PropertyLine vs primitives
 
@@ -236,7 +232,7 @@ const useStyles = makeStyles({
             <Button icon={ArrowResetRegular} onClick={onReset} />
         </div>
     </div>
-</PropertyLine>
+</PropertyLine>;
 ```
 
 ---
@@ -247,30 +243,30 @@ Replace all FontAwesome icons with `@fluentui/react-icons`. For general icon con
 
 Common FontAwesome → Fluent mappings:
 
-| FontAwesome | Fluent Icon |
-|---|---|
-| `faQuestionCircle` | `QuestionCircleRegular` |
-| `faBullseye` | `TargetRegular` |
-| `faCamera` | `CameraRegular` |
-| `faCheck` | `CheckmarkRegular` |
-| `faCopy` | `CopyRegular` |
-| `faGripVertical` | `ReOrderDotsVerticalRegular` |
-| `faRotateLeft` | `ArrowResetRegular` |
-| `faSave` | `SaveRegular` |
-| `faSquarePlus` | `AddSquareRegular` |
-| `faTrashCan` | `DeleteRegular` |
-| `faUpload` | `ArrowUploadRegular` |
-| `faChevronDown` | `ChevronDownRegular` |
-| `faChevronUp` | `ChevronUpRegular` |
-| `faGear` / `faCog` | `SettingsRegular` |
-| `faEye` | `EyeRegular` |
-| `faEyeSlash` | `EyeOffRegular` |
-| `faPlus` | `AddRegular` |
-| `faMinus` | `SubtractRegular` |
-| `faPencil` / `faEdit` | `EditRegular` |
-| `faClose` / `faTimes` | `DismissRegular` |
-| `faSearch` | `SearchRegular` |
-| `faLink` | `LinkRegular` |
+| FontAwesome           | Fluent Icon                  |
+| --------------------- | ---------------------------- |
+| `faQuestionCircle`    | `QuestionCircleRegular`      |
+| `faBullseye`          | `TargetRegular`              |
+| `faCamera`            | `CameraRegular`              |
+| `faCheck`             | `CheckmarkRegular`           |
+| `faCopy`              | `CopyRegular`                |
+| `faGripVertical`      | `ReOrderDotsVerticalRegular` |
+| `faRotateLeft`        | `ArrowResetRegular`          |
+| `faSave`              | `SaveRegular`                |
+| `faSquarePlus`        | `AddSquareRegular`           |
+| `faTrashCan`          | `DeleteRegular`              |
+| `faUpload`            | `ArrowUploadRegular`         |
+| `faChevronDown`       | `ChevronDownRegular`         |
+| `faChevronUp`         | `ChevronUpRegular`           |
+| `faGear` / `faCog`    | `SettingsRegular`            |
+| `faEye`               | `EyeRegular`                 |
+| `faEyeSlash`          | `EyeOffRegular`              |
+| `faPlus`              | `AddRegular`                 |
+| `faMinus`             | `SubtractRegular`            |
+| `faPencil` / `faEdit` | `EditRegular`                |
+| `faClose` / `faTimes` | `DismissRegular`             |
+| `faSearch`            | `SearchRegular`              |
+| `faLink`              | `LinkRegular`                |
 
 ### Custom SVG icons
 
@@ -281,11 +277,9 @@ import { createFluentIcon } from "@fluentui/react-icons";
 
 export const MyIcon = createFluentIcon(
     "MyIcon",
-    "1em",  // width — "1em" sizes with font-size
+    "1em", // width — "1em" sizes with font-size
     // Single string for complex SVG (supports fill colors):
-    '<g transform="...">' +
-        '<path fill="#e0684b" d="..."/>' +
-    '</g>'
+    '<g transform="...">' + '<path fill="#e0684b" d="..."/>' + "</g>"
 );
 ```
 
@@ -339,9 +333,7 @@ Wrap your tool's root content in a `ToolContext.Provider` with `size: "medium"` 
 ```tsx
 import { ToolContext } from "shared-ui-components/fluent/hoc/fluentToolWrapper";
 
-<ToolContext.Provider value={{ useFluent: true, disableCopy: false, toolName: "MyTool", size: "medium" }}>
-    {/* tool content */}
-</ToolContext.Provider>
+<ToolContext.Provider value={{ useFluent: true, disableCopy: false, toolName: "MyTool", size: "medium" }}>{/* tool content */}</ToolContext.Provider>;
 ```
 
 ---
@@ -352,13 +344,13 @@ import { ToolContext } from "shared-ui-components/fluent/hoc/fluentToolWrapper";
 
 Not all shared primitives forward `className` to the outermost DOM element. When a primitive does NOT forward className, wrap it in a `<div>`:
 
-| Primitive | Forwards `className`? | Workaround |
-|---|---|---|
-| `Button` | ✅ Yes | — |
-| `Dropdown` | ✅ Yes | — |
-| `TextInput` | ✅ Yes (via `mergeClasses`) | — |
-| `SyncedSliderInput` | ❌ No | Wrap in `<div className={...}>` |
-| `ColorPickerPopup` | ❌ No | Wrap in `<div className={...}>` |
+| Primitive           | Forwards `className`?       | Workaround                      |
+| ------------------- | --------------------------- | ------------------------------- |
+| `Button`            | ✅ Yes                      | —                               |
+| `Dropdown`          | ✅ Yes                      | —                               |
+| `TextInput`         | ✅ Yes (via `mergeClasses`) | —                               |
+| `SyncedSliderInput` | ❌ No                       | Wrap in `<div className={...}>` |
+| `ColorPickerPopup`  | ❌ No                       | Wrap in `<div className={...}>` |
 
 ### TextInput width override
 
@@ -372,13 +364,11 @@ Not all shared primitives forward `className` to the outermost DOM element. When
 `className` on Fluent's `Textarea` applies to the outer wrapper span, **not** the inner `<textarea>` element. To style the actual textarea (e.g. monospace font, no-wrap):
 
 ```tsx
-<Textarea
-    className={classes.outerStyles}
-    textarea={{ className: classes.innerStyles }}
-/>
+<Textarea className={classes.outerStyles} textarea={{ className: classes.innerStyles }} />
 ```
 
 Where:
+
 ```tsx
 outerStyles: { minHeight: "160px" },
 innerStyles: { fontFamily: "monospace", whiteSpace: "pre", overflowX: "auto" },
@@ -449,7 +439,7 @@ After porting, delete:
 
 ### Verify
 
-- Webpack builds cleanly with `npx webpack --mode development --no-devtool`
+- The Vite app builds cleanly with the package build script
 - No remaining imports of `sass`, `scss`, `fontawesome`, or legacy shared-ui-components
 - All controls render correctly in both light and dark themes
 - Dynamic functionality (drag-and-drop, modals, etc.) still works
@@ -468,7 +458,7 @@ const options: DropdownOption<string>[] = [
     { key: "option2", text: "Option 2" },
 ];
 
-<Dropdown options={options} value={currentValue} onChange={onValueChanged} />
+<Dropdown options={options} value={currentValue} onChange={onValueChanged} />;
 ```
 
 For `satisfies` clauses in const option arrays, use `satisfies DropdownOption<string>[]` instead of the old `satisfies IInspectableOptions[]`.
@@ -478,7 +468,7 @@ For `satisfies` clauses in const option arrays, use `satisfies DropdownOption<st
 ## Summary: Step-by-Step Porting Order
 
 1. **Update dependencies** — add Fluent + inspector, remove FontAwesome + SCSS
-2. **Update webpack** — add `inspector` alias, set `includeCSS: false`
+2. **Update Vite config** — add any needed shared aliases
 3. **Update tsconfig** — add `inspector` path mapping
 4. **Create services** — define service identities, contracts, and factory functions
 5. **Rewrite entry point** — replace `createRoot` with `MakeModularTool`
