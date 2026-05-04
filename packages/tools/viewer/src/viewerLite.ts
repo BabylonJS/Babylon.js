@@ -8,7 +8,9 @@ import {
     attachControl,
     createArcRotateCamera,
     createDirectionalLight,
+    createDisc,
     createEngine,
+    createPbrMaterial,
     createSceneContext,
     createShadowGenerator,
     disposeEngine,
@@ -30,12 +32,12 @@ import {
     unregisterScene,
     type ArcRotateCamera,
     type AssetContainer,
-    type DirectionalLight,
     type EngineContext,
     type AnimationGroup as LiteAnimationGroup,
     type ShadowGenerator as LiteShadowGenerator,
-    type Mesh,
     type SceneContext,
+    type SceneNode,
+    type LightBase,
 } from "@babylonjs/lite";
 
 import {
@@ -141,8 +143,6 @@ export class Viewer extends ViewerBase implements IViewer {
 
     // Shadows
     private _shadowGenerator: LiteShadowGenerator | null = null;
-    /** Retained reference to the shadow directional light for cleanup when shadows are reconfigured. */
-    private _shadowLight: DirectionalLight | null = null;
 
     // Model
     private _container: AssetContainer | null = null;
@@ -339,12 +339,51 @@ export class Viewer extends ViewerBase implements IViewer {
     }
 
     private _frameCameraToModel(): void {
-        const meshes = this._scene.meshes;
-        if (!meshes || meshes.length === 0) {
+        const bounds = this._computeModelBounds();
+        if (!bounds) {
             return;
         }
+        this._camera.target = { x: bounds.center[0], y: bounds.center[1], z: bounds.center[2] };
+        // Camera radius (= distance from target) sized to the bounding-sphere diameter * 1.5,
+        // matching the previous size*1.5 framing distance.
+        this._camera.radius = bounds.radius * 3;
+        // Scale near/far planes to the model size. Lite's arc-rotate defaults (0.1 / 1000) clip
+        // models that are much smaller (camera ends up inside the near plane) or much larger
+        // (model extends beyond the far plane) than ~1 unit. Mirrors Lite's
+        // `frameSceneToActiveCamera` heuristic: near = radius * 0.01, far = radius * 1000.
+        this._camera.nearPlane = bounds.radius * 0.01;
+        this._camera.farPlane = bounds.radius * 1000;
+    }
 
-        // Compute aggregate bounding box from scene meshes
+    /**
+     * Compute the aggregate world-space bounding box of the loaded model.
+     *
+     * Walks the scene-graph hierarchy from each root in `this._container.entities`. For every
+     * node in the tree two contributions are added to the aggregate AABB:
+     *
+     * 1. The node's world-space position (column 3 of its `worldMatrix`). Including this
+     *    captures bones that sit outside the bind-pose mesh AABB — without this, skinned
+     *    models like the acrobaticPlane glTF report a bind-pose AABB that is dramatically
+     *    smaller than the mesh's actual reach during skeletal animation.
+     * 2. For mesh nodes, the 8 corners of the mesh-local `boundMin`/`boundMax` AABB
+     *    transformed by the node's `worldMatrix`. This correctly accounts for parent
+     *    scale/rotate/translate (Lite stores `boundMin`/`boundMax` in mesh-local space, so
+     *    using them directly underreports for any model whose root has a non-identity
+     *    transform).
+     *
+     * Walking the entity tree (rather than `_scene.meshes`) avoids including non-model
+     * meshes added to the scene by the Viewer itself (e.g. the shadow-receiver disc).
+     *
+     * Used by `_frameCameraToModel` (camera target + radius + near/far planes) and
+     * `_setupShadows` (light positioning, ground placement, frustum sizing).
+     *
+     * @returns aggregate `min`, `max`, `center`, and bounding-sphere `radius`
+     *   (= half the diagonal), or `null` if the model has no bounds info.
+     */
+    private _computeModelBounds(): { min: [number, number, number]; max: [number, number, number]; center: [number, number, number]; radius: number } | null {
+        if (!this._container) {
+            return null;
+        }
         let minX = Infinity,
             minY = Infinity,
             minZ = Infinity;
@@ -352,35 +391,71 @@ export class Viewer extends ViewerBase implements IViewer {
             maxY = -Infinity,
             maxZ = -Infinity;
         let hasBounds = false;
-
-        for (const mesh of meshes) {
-            const m = mesh as any;
-            if (m.boundMin && m.boundMax) {
-                minX = Math.min(minX, m.boundMin[0]);
-                minY = Math.min(minY, m.boundMin[1]);
-                minZ = Math.min(minZ, m.boundMin[2]);
-                maxX = Math.max(maxX, m.boundMax[0]);
-                maxY = Math.max(maxY, m.boundMax[1]);
-                maxZ = Math.max(maxZ, m.boundMax[2]);
-                hasBounds = true;
+        const includePoint = (x: number, y: number, z: number): void => {
+            if (x < minX) {
+                minX = x;
             }
+            if (y < minY) {
+                minY = y;
+            }
+            if (z < minZ) {
+                minZ = z;
+            }
+            if (x > maxX) {
+                maxX = x;
+            }
+            if (y > maxY) {
+                maxY = y;
+            }
+            if (z > maxZ) {
+                maxZ = z;
+            }
+            hasBounds = true;
+        };
+        const visit = (node: SceneNode | LightBase): void => {
+            const wm = (node as { worldMatrix?: ArrayLike<number> }).worldMatrix;
+            if (wm) {
+                // World position of the node (column 3 of the column-major 4×4).
+                includePoint(wm[12]!, wm[13]!, wm[14]!);
+                const mesh = node as { boundMin?: [number, number, number]; boundMax?: [number, number, number] };
+                if (mesh.boundMin && mesh.boundMax) {
+                    // Transform the 8 corners of the local AABB by the node's worldMatrix.
+                    const [bx0, by0, bz0] = mesh.boundMin;
+                    const [bx1, by1, bz1] = mesh.boundMax;
+                    for (let i = 0; i < 8; i++) {
+                        const lx = i & 1 ? bx1 : bx0;
+                        const ly = i & 2 ? by1 : by0;
+                        const lz = i & 4 ? bz1 : bz0;
+                        const wx = wm[0]! * lx + wm[4]! * ly + wm[8]! * lz + wm[12]!;
+                        const wy = wm[1]! * lx + wm[5]! * ly + wm[9]! * lz + wm[13]!;
+                        const wz = wm[2]! * lx + wm[6]! * ly + wm[10]! * lz + wm[14]!;
+                        includePoint(wx, wy, wz);
+                    }
+                }
+            }
+            const children = (node as { children?: (SceneNode | LightBase)[] }).children;
+            if (children) {
+                for (const c of children) {
+                    visit(c);
+                }
+            }
+        };
+        for (const entity of this._container.entities) {
+            visit(entity);
         }
-
         if (!hasBounds) {
-            return;
+            return null;
         }
-
-        const cx = (minX + maxX) / 2;
-        const cy = (minY + maxY) / 2;
-        const cz = (minZ + maxZ) / 2;
-        const sx = maxX - minX;
-        const sy = maxY - minY;
-        const sz = maxZ - minZ;
-        const size = Math.sqrt(sx * sx + sy * sy + sz * sz);
-        const radius = size * 1.5;
-
-        this._camera.target = { x: cx, y: cy, z: cz };
-        this._camera.radius = radius;
+        const dx = maxX - minX;
+        const dy = maxY - minY;
+        const dz = maxZ - minZ;
+        const radius = Math.sqrt(dx * dx + dy * dy + dz * dz) / 2;
+        return {
+            min: [minX, minY, minZ],
+            max: [maxX, maxY, maxZ],
+            center: [(minX + maxX) / 2, (minY + maxY) / 2, (minZ + maxZ) / 2],
+            radius,
+        };
     }
 
     // ── Environment ──
@@ -563,23 +638,31 @@ export class Viewer extends ViewerBase implements IViewer {
         return await super.updateShadows(value, abortSignal);
     }
 
-    /** @internal */
+    /**
+     * @internal
+     * Lite cannot cleanly add or remove shadow infrastructure (light, ground disc, shadow generator)
+     * after the scene has been registered. Adding meshes post-register requires re-running deferred
+     * GPU builders, which corrupts the existing model's pipeline state. Reloading the model breaks
+     * for similar reasons (the previous scene state isn't fully torn down).
+     *
+     * For now, shadow quality is effectively fixed at the value provided in the initial constructor
+     * options: `_setupShadows` runs once during `_loadModelImpl` (before `addToScene` and the first
+     * `registerScene`), so initial setup works correctly. Subsequent calls to `updateShadows` change
+     * the committed `_shadowQuality` field but do not re-run shadow setup. Callers that need to
+     * change shadow quality should recreate the viewer.
+     */
     protected override async _updateShadowsImpl(
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         quality: ShadowQuality,
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         abortSignal: AbortSignal | undefined,
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         internalAbortSignal: AbortSignal
     ): Promise<void> {
-        // Tear down existing shadow state
-        if (this._shadowLight !== null) {
-            this._shadowLight = null;
-        }
-        this._shadowGenerator = null;
-
-        if (quality === "normal" && this._container) {
-            this._setupShadows();
-        }
+        Logger.Warn(
+            "Babylon Lite cannot toggle shadow quality after the model is loaded. " +
+                "Set `shadowConfig.quality` in the viewer constructor options instead, or recreate the viewer to change shadow rendering."
+        );
     }
 
     private _setupShadows(): void {
@@ -587,17 +670,107 @@ export class Viewer extends ViewerBase implements IViewer {
             return;
         }
 
-        const light = createDirectionalLight([0.5, -1, 0.5], 1);
-        addToScene(this._scene, light);
-        this._shadowLight = light;
-
-        // Collect caster meshes from the container
-        const casterMeshes = this._container.entities.filter((e): e is Mesh => "vertices" in e);
-
-        if (casterMeshes.length > 0) {
-            this._shadowGenerator = createShadowGenerator(this._engine, light, casterMeshes);
-            addToScene(this._scene, this._shadowGenerator);
+        // Caster meshes: snapshot the scene's flat mesh list BEFORE we add the ground disc, so the
+        // disc isn't itself treated as a shadow caster. (`container.entities` for glTF only
+        // contains the root TransformNode, so filtering entities directly always returns empty.)
+        const casterMeshes = [...this._scene.meshes];
+        if (casterMeshes.length === 0) {
+            return;
         }
+
+        // Bounds for ground placement, ground sizing, and shadow light positioning. Falls back
+        // to a unit cube if no mesh has bounds info — shadows still set up sensibly.
+        const bounds = this._computeModelBounds() ?? {
+            min: [-1, -1, -1],
+            max: [1, 1, 1],
+            center: [0, 0, 0],
+            radius: 1,
+        };
+        const minY = bounds.min[1];
+        const [cx, cy, cz] = bounds.center;
+        const radius = bounds.radius;
+
+        // Directional light. Position it well outside the model along the negated light direction
+        // so Lite's directional shadow camera (placed at light.position looking in light.direction)
+        // sees the model in front of it. With the default (0, 0, 0) position, the model — which
+        // typically sits with its base at or above origin — would be behind the shadow camera and
+        // get clipped, leaving the shadow map empty. (Mirrors the full Viewer's positionFactor
+        // logic: light.position = -direction * radius * 3.)
+        const lightDir: [number, number, number] = [0.5, -1, 0.5];
+        const dirLen = Math.sqrt(lightDir[0] ** 2 + lightDir[1] ** 2 + lightDir[2] ** 2);
+        const positionFactor = radius * 3;
+        const light = createDirectionalLight(lightDir, 1);
+        light.position.set(cx - (lightDir[0] / dirLen) * positionFactor, cy - (lightDir[1] / dirLen) * positionFactor, cz - (lightDir[2] / dirLen) * positionFactor);
+        addToScene(this._scene, light);
+
+        // Shadow ground disc. Lite's PBR pipeline requires `baseColorTexture` and `ormTexture` on
+        // every PBR material (even if unused), so we provide tiny 1×1 solid textures. The
+        // `shadowOnly: true` flag enables Lite's shadow-only shader path, which mirrors BJS's
+        // `BackgroundMaterial.shadowOnly`: the surface is invisible everywhere except where shadow
+        // falls on it, where it appears in `shadowOnlyColor`.
+        //
+        // Disc radius is intentionally enormous (~1000× the model radius) so the disc is
+        // effectively an infinite ground plane. Animated models can move/translate well outside
+        // a tightly-fit ground without the cast shadow clipping at the disc edge. The disc itself
+        // is alpha-zero outside the shadow region, so the visible scene is unchanged.
+        const groundRadius = radius * 1000;
+        const ground = createDisc(this._engine, { radius: groundRadius, tessellation: 64 });
+        ground.rotation.x = Math.PI / 2;
+        ground.position.y = minY;
+        ground.receiveShadows = true;
+        ground.material = createPbrMaterial({
+            mode: "shadowOnly",
+            color: [0, 0, 0],
+            // Use the natural ESM falloff (falloff = 1) so the penumbra fades smoothly. With
+            // a tight model-fit frustum the ESM gradient is already at the right scale; values
+            // > 1 collapse the gradient into a hard aliased edge. Cap the maximum darkness via
+            // `alpha` so the shadow looks soft rather than pitch black.
+            falloff: 1,
+            alpha: 0.5,
+            alphaBlend: true,
+        });
+        addToScene(this._scene, ground);
+
+        // Shadow generator. Lite drives shadow rendering from `light.shadowGenerator`, not from a
+        // separate scene-level list — so attaching to the light is the load-bearing step here.
+        // Pass only the model meshes as casters: including the ground disc would cause the disc
+        // to occlude itself in the shadow map.
+        //
+        // `frustumSize` controls the world-space extent the shadow camera covers. The blur kernel
+        // is fixed in pixel-space, so a larger frustum makes the blur spread the silhouette over
+        // more world units (= bigger, fuzzier "soft" shadow that looks like a close point light),
+        // while a smaller frustum keeps the silhouette tight (= sun-like directional shadow).
+        //
+        // We size to `radius * 5` as a compromise between a tight sun-like silhouette (which
+        // wants a small frustum) and not clipping the shadow at the frustum boundary when the
+        // model's skeleton animates beyond the bind-pose AABB (which wants a large frustum).
+        // Translation-heavy animations on glTF assets typically displace the mesh by a few
+        // unit-radii via root-bone motion; 5x the model radius covers most without making the
+        // shadow excessively soft.
+        const shadowFrustumSize = radius * 5;
+        // ESM (exponential shadow map) FP16 precision and scale invariance both pivot on the
+        // caster's NDC-depth fraction. The shader stores `exp(-depthScale * NDC_depth)` per
+        // texel; with depthScale=50 (Lite default), values for NDC > ~0.2 underflow to zero in
+        // FP16, collapsing the soft penumbra into a binary silhouette → hard aliased shadow
+        // edge.
+        //
+        // Counter-intuitively, the fix is to make orthoMaxZ much LARGER than the model + light
+        // distance, not smaller: a wide depth range puts the entire caster at small NDC depth
+        // where ESM exp values stay near 1 and FP16 has plenty of precision. The blur kernel
+        // (fixed in texels) then produces the visible penumbra by smearing those near-1 values
+        // toward zero across the silhouette boundary.
+        //
+        // Setting orthoMaxZ = positionFactor * 100 makes the caster's NDC-depth fraction (~0.7%)
+        // invariant to model scale, so the shadow looks identical for a 16 cm airplane and a
+        // 5 m UFO.
+        const orthoMinZ = 0;
+        const orthoMaxZ = positionFactor * 100;
+        this._shadowGenerator = createShadowGenerator(this._engine, light, casterMeshes, {
+            frustumSize: shadowFrustumSize,
+            orthoMinZ,
+            orthoMaxZ,
+        });
+        light.shadowGenerator = this._shadowGenerator;
     }
 
     // ── Model Loading ──
@@ -661,17 +834,19 @@ export class Viewer extends ViewerBase implements IViewer {
             // appears briefly at the previous (default) camera position.
             this._frameCameraToModel();
 
+            // Setup shadows BEFORE the first rendered frame so the shadow ground's deferred GPU
+            // builder is processed by the upcoming `registerScene` (Lite only runs deferred builders
+            // during `registerScene`; meshes added afterwards stay invisible until re-registration).
+            if (this._shadowQuality !== "none") {
+                this._setupShadows();
+            }
+
             await this._beginRendering();
 
             // Apply clear color from model if present
             if (container.clearColor) {
                 this._scene.clearColor = container.clearColor;
                 this.onClearColorChanged.notifyObservers();
-            }
-
-            // Setup shadows if configured
-            if (this._shadowQuality !== "none") {
-                this._setupShadows();
             }
 
             // Apply material variant from options
@@ -704,7 +879,6 @@ export class Viewer extends ViewerBase implements IViewer {
 
         // Remove shadows
         this._shadowGenerator = null;
-        this._shadowLight = null;
 
         this._container = null;
         this._modelSource = null;
@@ -831,12 +1005,17 @@ export class Viewer extends ViewerBase implements IViewer {
 
     /**
      * Enforces the "only the selected animation may be playing" invariant by stopping every
-     * non-selected animation group (`_stopped = true`, blocks subsequent ticks) and pausing the
-     * selected one (`ctrl.playing = false`, but tick still runs and applies its time-0 pose).
+     * non-selected animation group (`stopAnimation` blocks subsequent ticks) and pausing the
+     * selected one (so its tick still runs and applies the current-time pose).
      *
      * Lite's `tickAnimation` writes bone TRS every frame regardless of `playing`, so a merely
      * paused non-selected group would still pollute the mesh transforms with its current frame's
-     * pose. Only `_stopped = true` blocks tick entirely.
+     * pose. Only `stopAnimation` blocks tick entirely.
+     *
+     * The selected group's tick must be allowed to run (so switching between animations updates
+     * the pose). Lite's `pauseAnimation` doesn't un-stop a previously-stopped group, so we run
+     * `playAnimation` then `pauseAnimation` to clear the stopped flag while ending up paused —
+     * the tick fires next frame and applies the time-0 pose.
      */
     private _isolateSelectedAnimation(): void {
         const groups = this._container?.animationGroups;
@@ -846,11 +1025,7 @@ export class Viewer extends ViewerBase implements IViewer {
         for (let i = 0; i < groups.length; i++) {
             const group = groups[i];
             if (i === this._selectedAnimation) {
-                // Pause and ensure tick is allowed (clearing `_stopped` from any prior `stopAnimation`).
-                // Lite's `pauseAnimation` only sets `ctrl.playing = false` — it does not clear `_stopped`,
-                // so a selected group that was previously stopped (because it was non-selected) wouldn't
-                // tick and apply its frame-0 pose without this.
-                group._stopped = false;
+                litePlayAnimation(group);
                 litePauseAnimation(group);
             } else {
                 liteStopAnimation(group);
