@@ -56,4 +56,15 @@ describe("UMD Rollup compatibility", () => {
         expect(multiEntryConfig).toHaveLength(2);
         expect(multiEntryConfig.every((config) => config.treeshake === false)).toBe(true);
     });
+
+    it("keeps the glTF2 legacy export compatible with nested UMD namespaces", async () => {
+        const { GLTF2: glTF2EntryNamespace } = await import("../../../../dev/loaders/src/legacy/legacy-glTF2");
+        const { GLTF2: fullLoadersNamespace } = await import("../../../../dev/loaders/src/legacy/legacy");
+
+        for (const GLTF2 of [glTF2EntryNamespace, fullLoadersNamespace]) {
+            expect(GLTF2.Loader).toBeDefined();
+            expect(GLTF2.Loader.Extensions).toBeDefined();
+            expect(GLTF2.Loader.Extensions.KHR_lights).toBeDefined();
+        }
+    });
 });
