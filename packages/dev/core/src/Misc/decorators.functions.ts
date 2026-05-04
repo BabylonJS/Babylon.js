@@ -1,3 +1,10 @@
+// Polyfill Symbol.metadata for environments that don't support TC39 decorators natively.
+// TypeScript's decorator emit checks Symbol.metadata and uses void 0 if absent, which causes
+// context.metadata to be undefined in decorator callbacks, leading to runtime errors.
+if (typeof Symbol !== "undefined" && !Symbol.metadata) {
+    (Symbol as unknown as Record<string | symbol, symbol>).metadata = Symbol("Symbol.metadata");
+}
+
 /** @internal */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export const __bjsSerializableKey = "__bjs_serializable__";
