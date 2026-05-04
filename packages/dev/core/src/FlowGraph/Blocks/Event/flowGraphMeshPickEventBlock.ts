@@ -89,13 +89,20 @@ export class FlowGraphMeshPickEventBlock extends FlowGraphEventBlock {
             // returning true here to continue the propagation of the pointer event to the rest of the blocks
             return true;
         }
-        // check if the mesh is the picked mesh or a descendant
         const mesh = this._getReferencedMesh(context);
-        if (mesh && pickedInfo.pickInfo?.pickedMesh && (pickedInfo.pickInfo?.pickedMesh === mesh || _IsDescendantOf(pickedInfo.pickInfo?.pickedMesh, mesh))) {
+        const pickedMesh = pickedInfo.pickInfo?.pickedMesh;
+        // When no target mesh is configured, fire for any picked mesh.
+        // When a target is configured, require an exact match or descendant match.
+        // Match by reference first, then by descendant, then by stable name/id as a
+        // fallback for scene reloads where the object reference changes but the mesh
+        // identity (name) is preserved (uniqueId increments monotonically and is NOT
+        // stable across reloads).
+        const meshMatches = !mesh ? !!pickedMesh : !!(pickedMesh && (pickedMesh === mesh || _IsDescendantOf(pickedMesh, mesh) || pickedMesh.name === mesh.name));
+        if (meshMatches && pickedMesh) {
             this.pointerId.setValue((pickedInfo.event as PointerEvent).pointerId, context);
-            this.pickOrigin.setValue(pickedInfo.pickInfo.ray?.origin!, context);
-            this.pickedPoint.setValue(pickedInfo.pickInfo.pickedPoint!, context);
-            this.pickedMesh.setValue(pickedInfo.pickInfo.pickedMesh, context);
+            this.pickOrigin.setValue(pickedInfo.pickInfo!.ray?.origin!, context);
+            this.pickedPoint.setValue(pickedInfo.pickInfo!.pickedPoint!, context);
+            this.pickedMesh.setValue(pickedMesh, context);
             this._execute(context);
             // stop the propagation if the configuration says so
             return !this.config?.stopPropagation;

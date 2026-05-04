@@ -4,8 +4,8 @@ description: |
     Orchestrates the full PR lifecycle: merge upstream, create draft PR,
     self code review, mark ready, monitor, and iterate on fixes.
     Can also monitor and iterate on an existing PR.
-    Input: [--push-remote <fork>] [--upstream-remote <remote>] [--base <branch>] [--merge] [--mode automatic|interactive] [--pr <number>]
-argument-hint: "[--push-remote <fork>] [--upstream-remote <remote>] [--base <branch>] [--merge] [--mode automatic|interactive] [--pr <number>]"
+    Input: [--push-remote <fork>] [--upstream-remote <remote>] [--base <branch>] [--merge] [--mode automatic|interactive] [--review-lens instructions|agnostic|both] [--pr <number>]
+argument-hint: "[--push-remote <fork>] [--upstream-remote <remote>] [--base <branch>] [--merge] [--mode automatic|interactive] [--review-lens instructions|agnostic|both] [--pr <number>]"
 ---
 
 # Create PR
@@ -17,21 +17,26 @@ invokes other skills as sub-agents and does its own work between them.
 
 Parse `$ARGUMENTS`:
 
-| Argument                   | Description                                                                                                                 |
-| -------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
-| `--push-remote <fork>`     | Git remote (user's fork) to push the branch to. If omitted, detect and prompt.                                              |
-| `--upstream-remote <name>` | Git remote pointing at the PR target repo (e.g. `upstream`, `origin`). If omitted, detect and prompt.                       |
-| `--base <branch>`          | Base branch the PR merges into (e.g. `master`). If omitted, use the upstream's default branch and prompt to confirm.        |
-| `--merge`                  | Merge upstream base into the feature branch before creating the PR. If omitted, prompt.                                     |
-| `--mode automatic`         | Fixes are applied, committed, pushed, and comments resolved automatically.                                                  |
-| `--mode interactive`       | Fixes are staged; skill pauses before commit/push/resolve so the user can review.                                           |
-| `--pr <number>`            | Monitor and iterate on an existing PR. Skips Steps 1–5 (no merge, no PR creation, no code review). Only `--mode` is needed. |
+| Argument                   | Description                                                                                                                                                |
+| -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--push-remote <fork>`     | Git remote (user's fork) to push the branch to. If omitted, detect and prompt.                                                                             |
+| `--upstream-remote <name>` | Git remote pointing at the PR target repo (e.g. `upstream`, `origin`). If omitted, detect and prompt.                                                      |
+| `--base <branch>`          | Base branch the PR merges into (e.g. `master`). If omitted, use the upstream's default branch and prompt to confirm.                                       |
+| `--merge`                  | Merge upstream base into the feature branch before creating the PR. If omitted, prompt.                                                                    |
+| `--mode automatic`         | Fixes are applied, committed, pushed, and comments resolved automatically.                                                                                 |
+| `--mode interactive`       | Fixes are staged; skill pauses before commit/push/resolve so the user can review.                                                                          |
+| `--review-lens <lens>`     | Self code review lens passed to `code-review`: `instructions`, `agnostic`, or `both`. If omitted, use `both`.                                              |
+| `--pr <number>`            | Monitor and iterate on an existing PR. Skips Steps 1–5 (no merge, no PR creation, no self code review). Only `--mode` applies; `--review-lens` is ignored. |
 
 If `--mode` is not specified, ask the user.
 
+If `--review-lens` is invalid, stop and ask the user to choose a valid value.
+Do not silently reinterpret misspelled options.
+
 If `--pr` is provided, skip directly to Step 6 (monitor) and Step 7
 (iteration loop). Do not prompt for remote, merge, title, body, reviewers,
-or labels — those only apply when creating a new PR.
+labels, or self code review options; `--review-lens` has no effect because
+self code review only runs when creating a new PR.
 
 ## Prerequisites
 
@@ -93,7 +98,7 @@ Collect everything before starting the workflow so it doesn't stop midway.
 
 Remember `<push-remote>`, `<upstream-remote>`, `<base-branch>`, and
 `<self-login>` (from `gh api user --jq ".login"`) — they are reused in
-1c, 1d, Step 2, and Step 3.
+1c, 1d, Step 2, Step 3, and Step 4.
 
 ### 1b. Mode
 
@@ -102,6 +107,11 @@ Remember `<push-remote>`, `<upstream-remote>`, `<base-branch>`, and
 - **Automatic** — everything happens without pausing.
 - **Interactive** — pauses at key points so you can review before changes
   are committed/pushed.
+
+Resolve the self code review lens without prompting unless the user supplied an
+invalid value:
+
+- `<review-lens>` from `--review-lens`, defaulting to `both`.
 
 ### 1c. PR title and body
 
@@ -192,6 +202,7 @@ Here's the plan:
 - Base branch:           <base-branch>
 - Merge upstream first:  yes / skip
 - Mode:                  automatic / interactive
+- Self review lens:      instructions / agnostic / both
 - Title:                 <title>
 - Reviewers:             <reviewers>
 - Labels:                <labels>
@@ -276,10 +287,11 @@ Use `<push-remote>`, `<upstream-remote>`, and `<base-branch>` from 1a.
 
 ## Step 4: Self code review
 
-1. Invoke the code-review skill, passing through the mode:
+1. Invoke the code-review skill, passing through the resolved base, mode,
+   and review lens:
 
     ```
-    /code-review --mode <automatic|interactive>
+    /code-review --base <upstream-remote>/<base-branch> --mode <automatic|interactive> --lens <instructions|agnostic|both>
     ```
 
 2. **If interactive:** pause after code-review completes and ask the user

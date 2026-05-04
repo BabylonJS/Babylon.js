@@ -6,6 +6,7 @@ import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import { type BaseTexture } from "core/Materials/Textures/baseTexture";
 import { Logger } from "core/Misc/logger";
 import { OpenPBRMaterial } from "core/Materials/PBR/openpbrMaterial";
+import { Color3 } from "core/Maths/math.color";
 
 const NAME = "KHR_materials_transmission";
 
@@ -59,6 +60,9 @@ export class KHR_materials_transmission implements IGLTFExporterExtensionV2 {
         } else if (babylonMaterial instanceof OpenPBRMaterial) {
             if (babylonMaterial.transmissionWeight > 0 && babylonMaterial.transmissionWeightTexture) {
                 additionalTextures.push(babylonMaterial.transmissionWeightTexture);
+                if (babylonMaterial.transmissionColorTexture) {
+                    additionalTextures.push(babylonMaterial.transmissionColorTexture);
+                }
             }
             if (babylonMaterial.subsurfaceWeight > 0 && babylonMaterial.subsurfaceWeightTexture) {
                 additionalTextures.push(babylonMaterial.subsurfaceWeightTexture);
@@ -141,9 +145,21 @@ export class KHR_materials_transmission implements IGLTFExporterExtensionV2 {
                 }
             }
 
-            if (transmissionFactor === 1) {
+            if (babylonMaterial.transmissionDepth == 0.0 && (!babylonMaterial.transmissionColor.equals(Color3.White()) || babylonMaterial.transmissionColorTexture)) {
                 if (node.pbrMetallicRoughness) {
-                    node.pbrMetallicRoughness.baseColorFactor = undefined;
+                    if (!node.pbrMetallicRoughness.baseColorFactor) {
+                        node.pbrMetallicRoughness.baseColorFactor = [1, 1, 1, 1];
+                    }
+                    node.pbrMetallicRoughness.baseColorFactor[0] *= babylonMaterial.transmissionColor.r;
+                    node.pbrMetallicRoughness.baseColorFactor[1] *= babylonMaterial.transmissionColor.g;
+                    node.pbrMetallicRoughness.baseColorFactor[2] *= babylonMaterial.transmissionColor.b;
+                    if (babylonMaterial.transmissionColorTexture && !node.pbrMetallicRoughness.baseColorTexture) {
+                        const transmissionColorTexture = this._exporter._materialExporter.getTextureInfo(babylonMaterial.transmissionColorTexture);
+                        if (transmissionColorTexture) {
+                            node.pbrMetallicRoughness.baseColorTexture = transmissionColorTexture;
+                            this._exporter._materialNeedsUVsSet.add(babylonMaterial);
+                        }
+                    }
                 }
             }
 

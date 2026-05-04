@@ -37,6 +37,7 @@ import { ContextMenuComponent, type ContextMenuEntry } from "./components/contex
 import { ToastContainerComponent, ShowToast } from "./components/toast/toastComponent";
 import { HowToUseDialogComponent } from "./components/howToUse/howToUseDialogComponent";
 import { AllCompositeTemplates, type ICompositeTemplate } from "./compositeTemplates";
+import { GraphTabBarComponent } from "./components/graphTabBar/graphTabBarComponent";
 
 /**
  * Pre-populate string (and other primitive) config fields for blocks whose constructors
@@ -70,6 +71,8 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
     private _historyStack: HistoryStack;
     private _helpObserver: Nullable<Observer<any>> = null;
     private _howToUseObserver: Nullable<Observer<void>> = null;
+    private _beforeActiveGraphObserver: Nullable<Observer<any>> = null;
+    private _activeGraphObserver: Nullable<Observer<any>> = null;
     private _blockClassRegistry = new Map<string, typeof FlowGraphBlock>();
     /** Cache for O(1) block→GraphNode lookups (rebuilt on graph load) */
     private _blockToNodeMap = new Map<FlowGraphBlock, GraphNode>();
@@ -197,14 +200,41 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
             globalState.stateManager.onSelectionChangedObservable.notifyObservers(null);
             // Resolve block classes synchronously from the session-wide registry
             const resolvedClasses = (data.allBlocks || []).map((b: any) => this._blockClassRegistry.get(b.className)!);
-            // Parse the snapshot into a new FlowGraph synchronously
-            const coordinator = new FlowGraphCoordinator({ scene: globalState.scene });
-            const parsedGraph = ParseFlowGraph(data, { coordinator }, resolvedClasses);
-            SerializationTools.PreserveUnresolvedNames(parsedGraph, data);
-            if (data.editorData) {
-                (parsedGraph as any)._editorData = data.editorData;
+
+            // When we have a coordinator with multiple graphs, replace only the
+            // active graph. Otherwise fall back to creating a throwaway coordinator
+            // (legacy path, also used for single-graph sessions).
+            const existingCoordinator = globalState.coordinator;
+            if (existingCoordinator && existingCoordinator.flowGraphs.length > 0) {
+                const activeIndex = globalState.activeGraphIndex;
+                const oldGraph = existingCoordinator.flowGraphs[activeIndex];
+                if (oldGraph) {
+                    existingCoordinator.removeGraph(oldGraph);
+                }
+                // Parse into the existing coordinator
+                const parsedGraph = ParseFlowGraph(data, { coordinator: existingCoordinator }, resolvedClasses);
+                // Move the parsed graph to the correct position in the coordinator
+                const graphs = existingCoordinator.flowGraphs;
+                const currentIndex = graphs.indexOf(parsedGraph);
+                if (currentIndex !== activeIndex && currentIndex >= 0) {
+                    graphs.splice(currentIndex, 1);
+                    graphs.splice(activeIndex, 0, parsedGraph);
+                }
+                SerializationTools.PreserveUnresolvedNames(parsedGraph, data);
+                if (data.editorData) {
+                    (parsedGraph as any)._editorData = data.editorData;
+                }
+                globalState.flowGraph = parsedGraph;
+            } else {
+                // Fallback: create a throwaway coordinator
+                const coordinator = new FlowGraphCoordinator({ scene: globalState.scene });
+                const parsedGraph = ParseFlowGraph(data, { coordinator }, resolvedClasses);
+                SerializationTools.PreserveUnresolvedNames(parsedGraph, data);
+                if (data.editorData) {
+                    (parsedGraph as any)._editorData = data.editorData;
+                }
+                globalState.flowGraph = parsedGraph;
             }
-            globalState.flowGraph = parsedGraph;
             globalState.onResetRequiredObservable.notifyObservers(false);
         };
 
@@ -280,6 +310,10 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         this._helpObserver = null;
         this._howToUseObserver?.remove();
         this._howToUseObserver = null;
+        this._beforeActiveGraphObserver?.remove();
+        this._beforeActiveGraphObserver = null;
+        this._activeGraphObserver?.remove();
+        this._activeGraphObserver = null;
 
         if (this._historyStack) {
             this._historyStack.dispose();
@@ -343,6 +377,18 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
             } else {
                 this.build();
             }
+        });
+
+        // Persist canvas state (zoom, pan, node positions) on the outgoing graph
+        // so it is restored when the user switches back to that tab.
+        this._beforeActiveGraphObserver = this.props.globalState.onBeforeActiveGraphChanged.add((outgoingGraph) => {
+            SerializationTools.UpdateLocations(outgoingGraph, this.props.globalState);
+        });
+
+        // Rebuild the canvas when the active graph changes (multi-graph tab switch)
+        this._activeGraphObserver = this.props.globalState.onActiveGraphChanged.add(() => {
+            this.build();
+            this.props.globalState.onClearUndoStack.notifyObservers();
         });
 
         this.props.globalState.onImportFrameObservable.add((source: any) => {
@@ -1177,6 +1223,36 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                         }
                         this.props.globalState.lockObject.lock = false;
                     }}
+                    onDragOver={(evt) => {
+                        // Allow dropping 3D scene files anywhere on the editor.
+                        // Check both DataTransferItem.kind (modern) and dataTransfer.types (legacy/Firefox)
+                        // to ensure preventDefault is called even when items list is unavailable.
+                        const dt = evt.dataTransfer;
+                        const hasFile =
+                            (dt?.items && Array.from(dt.items).some((item) => item.kind === "file")) ||
+                            (dt?.types && (dt.types.includes("Files") || dt.types.includes("application/x-moz-file")));
+                        if (hasFile) {
+                            evt.preventDefault();
+                            evt.stopPropagation();
+                        }
+                    }}
+                    onDrop={(evt) => {
+                        const files = evt.dataTransfer?.files;
+                        if (!files || files.length === 0) {
+                            return;
+                        }
+                        // Always prevent default when files are dropped to avoid browser navigation.
+                        evt.preventDefault();
+                        evt.stopPropagation();
+                        const supportedExtensions = [".glb", ".gltf", ".babylon"];
+                        for (let i = 0; i < files.length; i++) {
+                            const name = files[i].name.toLowerCase();
+                            if (supportedExtensions.some((ext) => name.endsWith(ext))) {
+                                this.props.globalState.onDropEventReceivedObservable.notifyObservers(evt.nativeEvent);
+                                return;
+                            }
+                        }
+                    }}
                 >
                     {/* Node creation menu */}
                     <NodeListComponent globalState={this.props.globalState} />
@@ -1196,6 +1272,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                         }}
                     >
                         <div className="diagram-canvas-pane" onContextMenu={this._onContextMenu}>
+                            <GraphTabBarComponent globalState={this.props.globalState} />
                             <GraphControlsComponent globalState={this.props.globalState} />
                             <VariablesPanelComponent globalState={this.props.globalState} />
                             <GraphCanvasComponent

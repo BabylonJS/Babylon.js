@@ -25,7 +25,6 @@ pr:
             - packages/tools/guiEditor/**/*.*
             - packages/tools/flowGraphEditor/**/*.*
             - packages/dev/sharedUiComponents/**/*.*
-            - packages/dev/buildTools/src/webpackTools.ts
             - "**/*interaction.tools*"
 
 variables:

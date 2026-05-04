@@ -1,5 +1,15 @@
-import { type RawElement, type RawFont, type RawEllipseShape, type RawPathShape, type RawRectangleShape, type RawStrokeShape, type RawTextData } from "../parsing/rawTypes";
-import { GetInitialVectorValues, GetInitialBezierData } from "../parsing/rawPropertyHelpers";
+import {
+    type RawElement,
+    type RawFont,
+    type RawEllipseShape,
+    type RawGradientStrokeShape,
+    type RawPathShape,
+    type RawRectangleShape,
+    type RawStrokeShape,
+    type RawTextData,
+} from "../parsing/rawTypes";
+import { GetInitialScalarValue, GetInitialVectorValues, GetInitialBezierData } from "../parsing/rawPropertyHelpers";
+import { type LottieTextCompatibilityMode } from "../animationConfiguration";
 import { ApplyLottieTextContext, MeasureLottieText, ResolveLottieText } from "../parsing/textLayout";
 
 /**
@@ -57,6 +67,11 @@ export function GetShapesBoundingBox(rawElements: RawElement[]): BoundingBox {
             GetPathVertices(boxCorners, rawElements[i] as RawPathShape);
         } else if (rawElements[i].ty === "st") {
             strokeWidth = Math.max(strokeWidth, GetStrokeInset(rawElements[i] as RawStrokeShape));
+        } else if (rawElements[i].ty === "gs") {
+            // Gradient strokes (`ty:"gs"`) have the same `w` width property as solid strokes and contribute
+            // identical pixel inset to the bounding box; skipping them here would clip the stroke against
+            // the atlas cell edges.
+            strokeWidth = Math.max(strokeWidth, GetStrokeInset(rawElements[i] as RawGradientStrokeShape));
         }
     }
 
@@ -97,13 +112,15 @@ export function GetShapesBoundingBox(rawElements: RawElement[]): BoundingBox {
  * @param textData The text to calculate the bounding box for
  * @param rawFonts A map of font names to their raw font data
  * @param variables A map of variables to be used in the animation as text can be a variable which will affect its length
+ * @param textLayerCompatibilityMode Text layer compatibility mode used to calculate placement-affecting text metrics.
  * @returns The bounding box for the text
  */
 export function GetTextBoundingBox(
     spritesCanvasContext: OffscreenCanvasRenderingContext2D | CanvasRenderingContext2D,
     textData: RawTextData,
     rawFonts: Map<string, RawFont>,
-    variables: Map<string, string>
+    variables: Map<string, string>,
+    textLayerCompatibilityMode: LottieTextCompatibilityMode = "spec"
 ): BoundingBox | undefined {
     spritesCanvasContext.save();
 
@@ -115,7 +132,7 @@ export function GetTextBoundingBox(
 
     ApplyLottieTextContext(spritesCanvasContext, resolvedText);
 
-    const layout = MeasureLottieText(resolvedText, (text) => spritesCanvasContext.measureText(text));
+    const layout = MeasureLottieText(resolvedText, (text) => spritesCanvasContext.measureText(text), textLayerCompatibilityMode);
 
     spritesCanvasContext.restore();
 
@@ -195,8 +212,12 @@ function GetPathVertices(boxCorners: Corners, path: RawPathShape): void {
     }
 }
 
-function GetStrokeInset(stroke: RawStrokeShape): number {
-    return Math.ceil(stroke.w?.k as number) ?? 1;
+function GetStrokeInset(stroke: RawStrokeShape | RawGradientStrokeShape): number {
+    // Use the initial-value helper so animated widths (a===1) contribute their first-frame value
+    // to the bounding box. Casting `w.k as number` for an animated property yields a keyframe
+    // array, which `Math.ceil` turns into NaN and silently shrinks the sprite cell so the stroke
+    // gets clipped out.
+    return Math.ceil(stroke.w ? GetInitialScalarValue(stroke.w, 1) : 1);
 }
 
 function CalculatePointsWithTangentZero(

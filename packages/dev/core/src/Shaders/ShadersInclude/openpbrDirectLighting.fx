@@ -51,8 +51,12 @@
             specularColoredFresnel = specularFresnel * specular_color;
             
             #ifdef THIN_FILM
-                // Scale the thin film effect based on how different the IOR is from 1.0 (no thin film effect)
-                vec3 thinFilmDielectricFresnel = evalIridescence(thin_film_outside_ior, thin_film_ior, preInfo{X}.VdotH, thin_film_thickness, baseDielectricReflectance.coloredF0);
+                // evalIridescence recovers IOR from baseDielectricReflectance.F0 internally.
+                // F0 already bakes in specular_weight as mix(0, F0_ior, weight), so the
+                // specular_weight → thin-film-strength relationship is preserved. The maxR1
+                // guard inside evalIridescence suppresses spurious colour when film IOR matches
+                // the substrate IOR (e.g. specular_ior == thin_film_ior at weight=1).
+                vec3 thinFilmDielectricFresnel = evalIridescence(thin_film_outside_ior, thin_film_ior, preInfo{X}.VdotH, thin_film_thickness, vec3(baseDielectricReflectance.F0));
                 // Desaturate the thin film fresnel based on thickness and angle - this brings the results much
                 // closer to path-tracing reference.
                 thinFilmDielectricFresnel = mix(thinFilmDielectricFresnel, vec3(dot(thinFilmDielectricFresnel, vec3(0.3333))), thin_film_desaturation_scale);
@@ -70,7 +74,7 @@
             {
                 preLightingInfo preInfoTrans = preInfo{X};
                 #ifdef SCATTERING
-                    preInfoTrans.roughness = sqrt(sqrt(max(refractionAlphaG, 0.05)));
+                    preInfoTrans.roughness = sqrt(sqrt(max(transmission_roughness_alpha, 0.05)));
                 #else
                     preInfoTrans.roughness = transmission_roughness;
                 #endif
@@ -126,11 +130,11 @@
                 #if defined(ANISOTROPIC_BASE)
                     computeAnisotropicSpecularLighting(preInfoTrans, viewDirectionW, refractNormalW, 
                         baseGeoInfo.anisotropicTangent, baseGeoInfo.anisotropicBitangent, baseGeoInfo.anisotropy, 
-                        roughness_alpha_modified_for_scatter, lightColor{X}.rgb
+                        transmission_roughness_alpha, lightColor{X}.rgb
                 #else
                     // We're passing in vec3(1.0) for both F0 and F90 here because the actual Fresnel is computed below
                     // Also computeSpecularLighting does some legacy iridescence work using these values that we don't want.
-                    computeSpecularLighting(preInfoTrans, -refractNormalW, vec3(1.0), vec3(1.0), roughness_alpha_modified_for_scatter, lightColor{X}.rgb
+                    computeSpecularLighting(preInfoTrans, -refractNormalW, vec3(1.0), vec3(1.0), transmission_roughness_alpha, lightColor{X}.rgb
                 #endif
                 #if defined(DISPERSION) && !defined(GEOMETRY_THIN_WALLED)
                     )[i];
@@ -143,22 +147,25 @@
                 // As roughness increases, we add a small ambient term to simulate scattering of internal reflections
                 // This only makes sense for solid materials, so we skip it for thin-walled geometry.
                 #if !defined(GEOMETRY_THIN_WALLED)
-                    forwardScatteredLight = mix(forwardScatteredLight, 0.25 * preInfoTrans.attenuation * lightColor{X}.rgb, clamp(1.0 - pow(baseGeoInfo.NdotV, roughness_alpha_modified_for_scatter), 0.0, 1.0));
+                    forwardScatteredLight = mix(forwardScatteredLight, 0.25 * preInfoTrans.attenuation * lightColor{X}.rgb, clamp(1.0 - pow(baseGeoInfo.NdotV, transmission_roughness_alpha), 0.0, 1.0));
                 #endif
 
                 #ifdef REFRACTED_BACKGROUND
-                    // Scale the IBL refraction so that we only see it at higher roughnesses
-                    // At low blurriness the transmitted light is mostly coming from the background geometry which is in front of the IBL.
-                    // At high blurriness, the refraction from the environment will be coming from more directions
+                    // Scale the light refraction so that we only see it at higher roughnesses
+                    // At low blurriness the transmitted light is mostly coming from the background geometry which are assumed
+                    // to be in front of the direct lights.
+                    // At high blurriness, the refracted light will be coming from more directions
                     // and so we want to include more of this indirect lighting.
-                    forwardScatteredLight = max(slab_translucent_background.rgb, mix(slab_translucent_background.rgb, forwardScatteredLight, roughness_alpha_modified_for_scatter));
+                    #ifdef GEOMETRY_THIN_WALLED
+                        forwardScatteredLight = mix(vec3(0.0), forwardScatteredLight.rgb, 0.2 * transmission_roughness_alpha);
+                    #else
+                        forwardScatteredLight = max(vec3(0.0), mix(vec3(0.0), forwardScatteredLight, transmission_roughness_alpha));
+                    #endif
                 #endif
 
                 #ifdef SCATTERING
                 
-                    #ifdef USE_IRRADIANCE_TEXTURE_FOR_SCATTERING
-                        vec3 diffused_forward_scattered_light = scattered_light_from_irradiance_texture;
-                    #else
+                    #if !defined(USE_IRRADIANCE_TEXTURE_FOR_SCATTERING) || defined(USE_IRRADIANCE_TEXTURE_FOR_SCATTERING_GBUFFER)
                         // Compute forward-scattered light that has been completely diffused. This will be used when
                         // scattering is very strong.
                         preInfoTrans.roughness = 1.0;
@@ -167,7 +174,7 @@
 
                     #ifdef GEOMETRY_THIN_WALLED
                         // Direct Transmission (aka forward-scattered light from back side) 
-                        vec3 forward_scattered_light = forwardScatteredLight * transmission_tint * volumeParams.multi_scatter_color * volumeParams.multi_scatter_color;
+                        vec3 forward_scattered_light = forwardScatteredLight * transmission_tint * volumeParams.multi_scatter_color;
                         // Back Scattering
                         vec3 back_scattered_light = slab_diffuse * volumeParams.multi_scatter_color;
                         // Lerp between the back and forward scattering.
@@ -190,7 +197,11 @@
                         // Back Scattering
                         vec3 back_scattering = mix(forward_scattered_light, forward_scattered_light + back_scattered_light * backscatter_color, iso_scatter_density);
                         // Iso Scattering
-                        vec3 iso_scattering = mix(forward_scattered_light, (diffused_forward_scattered_light + iso_scattered_light) * volumeParams.multi_scatter_color, iso_scatter_density);
+                        #if defined(USE_IRRADIANCE_TEXTURE_FOR_SCATTERING) && !defined(USE_IRRADIANCE_TEXTURE_FOR_SCATTERING_GBUFFER)
+                            vec3 iso_scattering = mix(forward_scattered_light, scattered_light_from_irradiance_texture * volumeParams.multi_scatter_color, iso_scatter_density);
+                        #else
+                            vec3 iso_scattering = mix(forward_scattered_light, (diffused_forward_scattered_light + iso_scattered_light) * volumeParams.multi_scatter_color, iso_scatter_density);
+                        #endif
                         // Lerp between the three based on the anisotropy
                         slab_translucent = mix(back_scattering, iso_scattering, back_to_iso_scattering_blend);
                         slab_translucent = mix(slab_translucent, forward_scattered_light, iso_to_forward_scattering_blend) * transmission_tint;
@@ -217,11 +228,17 @@
             #endif
 
             #ifdef THIN_FILM
-                vec3 thinFilmConductorFresnel = evalIridescence(thin_film_outside_ior, thin_film_ior, preInfo{X}.VdotH, thin_film_thickness, baseConductorReflectance.coloredF0);
+                // getF82Specular clamps cos_theta = max(specular_roughness, VdotH) to prevent the
+                // Schlick curve from reaching white for rough surfaces. Without the same clamp,
+                // evalIridescence evaluates at VdotH=0 and returns 1.0 (Schlick F90=1), while the
+                // F82 baseline evaluates at max(roughness, 0) = roughness — a much lower value.
+                // Applying the same floor makes the thin film Fresnel match the F82 baseline magnitude.
+                float thinFilmConductorAngle = max(preInfo{X}.VdotH, specular_roughness);
+                vec3 thinFilmConductorFresnel = evalIridescence(thin_film_outside_ior, thin_film_ior, thinFilmConductorAngle, thin_film_thickness, baseConductorReflectance.coloredF0);
                 // Desaturate the thin film fresnel based on thickness and angle - this brings the results much
                 // closer to path-tracing reference.
                 thinFilmConductorFresnel = mix(thinFilmConductorFresnel, vec3(dot(thinFilmConductorFresnel, vec3(0.3333))), thin_film_desaturation_scale);
-                coloredFresnel = mix(coloredFresnel, specular_weight * thin_film_ior_scale * thinFilmConductorFresnel, thin_film_weight);
+                coloredFresnel = mix(coloredFresnel, specular_weight * thinFilmConductorFresnel, thin_film_weight * thin_film_ior_scale);
             #endif
 
             #ifdef ANISOTROPIC_BASE

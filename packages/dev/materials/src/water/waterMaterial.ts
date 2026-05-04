@@ -24,9 +24,8 @@ import { type Mesh } from "core/Meshes/mesh";
 import { type Camera } from "core/Cameras/camera";
 import { Scene } from "core/scene";
 import { RegisterClass } from "core/Misc/typeStore";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
-import "./water.fragment";
-import "./water.vertex";
 import { EffectFallbacks } from "core/Materials/effectFallbacks";
 import { CreateGround } from "core/Meshes/Builders/groundBuilder";
 import { AddClipPlaneUniforms, BindClipPlane } from "core/Materials/clipPlaneMaterialHelper";
@@ -241,6 +240,7 @@ export class WaterMaterial extends PushMaterial {
     private _offsetMirror: Matrix = Matrix.Zero();
     private _tempPlane: Plane = new Plane(0, 0, 0, 0);
     private _lastTime: number = 0;
+    private _shadersLoaded = false;
     private _lastDeltaTime: number = 0;
 
     private _waitingRenderList: Nullable<string[]>;
@@ -260,13 +260,15 @@ export class WaterMaterial extends PushMaterial {
      * @param name
      * @param scene
      * @param renderTargetSize
+     * @param forceGLSL Use the GLSL code generation for the shader (even on WebGPU). Default is false
      */
     constructor(
         name: string,
         scene?: Scene,
-        public renderTargetSize: Vector2 = new Vector2(512, 512)
+        public renderTargetSize: Vector2 = new Vector2(512, 512),
+        forceGLSL = false
     ) {
-        super(name, scene);
+        super(name, scene, undefined, forceGLSL);
 
         this._createRenderTargets(this.getScene(), renderTargetSize);
 
@@ -561,6 +563,18 @@ export class WaterMaterial extends PushMaterial {
                         onCompiled: this.onCompiled,
                         onError: this.onError,
                         indexParameters: { maxSimultaneousLights: this._maxSimultaneousLights },
+                        shaderLanguage: this._shaderLanguage,
+                        extraInitializationsAsync: this._shadersLoaded
+                            ? undefined
+                            : async () => {
+                                  if (this.shaderLanguage === ShaderLanguage.WGSL) {
+                                      await Promise.all([import("./wgsl/water.vertex"), import("./wgsl/water.fragment")]);
+                                  } else {
+                                      await Promise.all([import("./water.vertex"), import("./water.fragment")]);
+                                  }
+
+                                  this._shadersLoaded = true;
+                              },
                     },
                     engine
                 ),

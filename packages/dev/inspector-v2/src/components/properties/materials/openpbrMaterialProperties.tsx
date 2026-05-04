@@ -6,6 +6,8 @@ import { Color3PropertyLine } from "shared-ui-components/fluent/hoc/propertyLine
 import { SyncedSliderPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/syncedSliderPropertyLine";
 import { CheckboxPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/checkboxPropertyLine";
 import { TextureSelectorPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/entitySelectorPropertyLine";
+import { NumberDropdownPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/dropdownPropertyLine";
+import { RealTimeFilteringQualityOptions } from "./pbrBaseMaterialProperties";
 
 /**
  * Displays the base layer properties of an OpenPBR material.
@@ -260,7 +262,7 @@ export const OpenPBRMaterialTransmissionProperties: FunctionComponent<{ material
                 target={material}
                 propertyKey="transmissionDepth"
                 min={0}
-                max={5}
+                max={50}
                 step={0.001}
                 convertTo={(value) => value * 100}
                 convertFrom={(value) => value / 100}
@@ -322,7 +324,7 @@ export const OpenPBRMaterialTransmissionProperties: FunctionComponent<{ material
                 target={material}
                 propertyKey="transmissionDispersionScale"
                 min={0}
-                max={1}
+                max={5}
                 step={0.01}
                 description="Strength of rainbow color separation in refraction."
                 docLink="https://academysoftwarefoundation.github.io/OpenPBR/index.html#model/basesubstrate/translucentbase"
@@ -389,7 +391,7 @@ export const OpenPBRMaterialSubsurfaceProperties: FunctionComponent<{ material: 
                 target={material}
                 propertyKey="subsurfaceRadius"
                 min={0}
-                max={4}
+                max={50}
                 step={0.001}
                 convertTo={(value) => value * 100}
                 convertFrom={(value) => value / 100}
@@ -620,7 +622,6 @@ export const OpenPBRMaterialFuzzProperties: FunctionComponent<{ material: OpenPB
                 defaultValue={null}
                 onLink={(texture) => void texture}
             />
-            <BoundProperty component={SyncedSliderPropertyLine} label="Number of Samples" target={material} propertyKey="fuzzSampleNumber" min={4} max={64} step={1} />
         </>
     );
 };
@@ -847,6 +848,87 @@ export const OpenPBRMaterialGeometryProperties: FunctionComponent<{ material: Op
                 scene={material.getScene()}
                 defaultValue={null}
                 onLink={(texture) => void texture}
+            />
+        </>
+    );
+};
+
+const SssQualityOptions = [
+    { label: "Low (8 samples)", value: 0 },
+    { label: "Medium (16 samples)", value: 1 },
+    { label: "High (32 samples)", value: 2 },
+];
+
+/**
+ * Displays the rendering quality properties of an OpenPBR material.
+ * @param props - The required properties
+ * @returns A JSX element representing the quality properties.
+ */
+export const OpenPBRMaterialQualityProperties: FunctionComponent<{ material: OpenPBRMaterial }> = (props) => {
+    const { material } = props;
+
+    return (
+        <>
+            <BoundProperty
+                component={CheckboxPropertyLine}
+                label="Specular Anti-Aliasing"
+                target={material}
+                propertyKey="enableSpecularAntiAliasing"
+                description="When enabled, reduces specular aliasing by adjusting roughness based on surface normal variation."
+            />
+            <BoundProperty
+                component={CheckboxPropertyLine}
+                label="Horizon Occlusion"
+                target={material}
+                propertyKey="useHorizonOcclusion"
+                description="When enabled, prevents normal maps from looking shiny when the reflected vector faces below the surface horizon."
+            />
+            <BoundProperty
+                component={CheckboxPropertyLine}
+                label="Radiance Occlusion"
+                target={material}
+                propertyKey="useRadianceOcclusion"
+                description="When enabled, reduces radiance in areas defined by ambient occlusion to improve energy conservation."
+            />
+            <BoundProperty
+                component={CheckboxPropertyLine}
+                label="High Quality Refraction Blur"
+                target={material}
+                propertyKey="refractionHighQualityBlur"
+                description="When enabled, uses a 4-tap rotated-grid kernel to eliminate bilinear block artifacts in rough refraction and a 6-sample spectral path for dispersion. When disabled, uses a single dithered sample."
+            />
+            <BoundProperty
+                component={NumberDropdownPropertyLine}
+                label="SSS Quality"
+                target={material}
+                propertyKey="sssQuality"
+                options={SssQualityOptions}
+                description="Controls the number of samples used for subsurface scattering convolution. Higher quality reduces noise at the cost of performance."
+            />
+            <BoundProperty
+                component={CheckboxPropertyLine}
+                label="Realtime Filtering"
+                target={material}
+                propertyKey="realTimeFiltering"
+                description="When enabled, uses real-time filtering for IBL (image-based lighting) instead of prefiltered mipmaps."
+            />
+            <BoundProperty
+                component={NumberDropdownPropertyLine}
+                label="Realtime Filtering Quality"
+                target={material}
+                propertyKey="realTimeFilteringQuality"
+                options={RealTimeFilteringQualityOptions}
+                description="Controls the number of samples used for IBL (image-based lighting) filtering. Higher quality reduces noise in reflections at the cost of performance."
+            />
+            <BoundProperty
+                component={SyncedSliderPropertyLine}
+                label="Fuzz Sample Count"
+                target={material}
+                propertyKey="fuzzSampleNumber"
+                min={4}
+                max={64}
+                step={1}
+                description="Controls the number of samples used for fuzz/sheen rendering. Higher values reduce noise at the cost of performance."
             />
         </>
     );

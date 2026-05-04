@@ -1,4 +1,6 @@
 /**
+ * @vitest-environment jsdom
+ *
  * Offline tests for WebXR Body Tracking bone-local computation.
  *
  * Uses a full 83-joint snapshot captured on Quest 3 with a Mixamo model.

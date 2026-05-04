@@ -32,6 +32,9 @@ OpenPBRHomogeneousVolume computeOpenPBRTransmissionVolume(
             // Compute only if we have a valid transmission
             vec3 invDepth = vec3(1. / maxEps(transmission_depth));
             volumeParams.extinction_coeff = -log(maxEps(transmission_color.rgb)) * invDepth;
+            // In OpenPBR 1.2, transmission-scatter represents the single scattering albedo
+            // However, in 1.1, it represents the scattering coefficient divided by the depth.
+            // Enable when switching to OpenPBR 1.2: volumeParams.extinction_coeff * transmission_scatter.rgb;
             volumeParams.scatter_coeff = transmission_scatter.rgb * invDepth;
             volumeParams.absorption_coeff = volumeParams.extinction_coeff - volumeParams.scatter_coeff.rgb;
             float minCoeff = min3(volumeParams.absorption_coeff);
@@ -40,6 +43,8 @@ OpenPBRHomogeneousVolume computeOpenPBRTransmissionVolume(
             }
             // Set extinction coefficient after shifting the absorption to be non-negative.
             volumeParams.extinction_coeff = volumeParams.absorption_coeff + volumeParams.scatter_coeff;
+            // TODO: Change this when switching to OpenPBR 1.2
+            // volumeParams.ss_albedo = transmission_scatter.rgb;
             volumeParams.ss_albedo = volumeParams.scatter_coeff / (volumeParams.extinction_coeff);
         } else {
             volumeParams.extinction_coeff = volumeParams.absorption_coeff + volumeParams.scatter_coeff;
@@ -181,7 +186,7 @@ vec3 sss_convolve(sampler2D sss_irradiance_texture, sampler2D depth_texture, vec
     vec3 weight_sum = vec3(0.0f);
     for (int i = 0; i < sample_count; i++)
     {
-        vec2 r = fract(plasticSequence(uint(i + sample_count)) + noise * 0.2);
+        vec2 r = fract(plasticSequence(uint(i)) + noise);
         r.x *= TWO_PI;
         r.y *= filter_samples_scale;
         float icdf = sss_samples_icdf(1.0 - r.y, dz);

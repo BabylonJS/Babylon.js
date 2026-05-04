@@ -1076,7 +1076,8 @@ export class ArcRotateCamera extends TargetCamera {
         if (this.inertialPanningX !== 0 || this.inertialPanningY !== 0) {
             hasUserInteractions = true;
 
-            const localDirection = new Vector3(this.inertialPanningX, this.inertialPanningY, this.inertialPanningY);
+            const localDirection = TmpVectors.Vector3[0];
+            localDirection.copyFromFloats(this.inertialPanningX, this.inertialPanningY, this.inertialPanningY);
 
             this._viewMatrix.invertToRef(this._cameraTransformMatrix);
             localDirection.multiplyInPlace(this.panningAxis);

@@ -160,7 +160,7 @@ export class FollowCamera extends TargetCamera {
             vz = vz < 1 ? -this.maxCameraSpeed : this.maxCameraSpeed;
         }
 
-        this.position = new Vector3(this.position.x + vx, this.position.y + vy, this.position.z + vz);
+        this.position.addInPlaceFromFloats(vx, vy, vz);
         this.setTarget(targetPosition);
     }
 

@@ -590,6 +590,8 @@ export class GaussianSplattingMaterial extends PushMaterial {
     }
 
     private _voxelMissingTextureWarned = new Set<number>();
+    private _voxelPartWorldData = new Float32Array(0);
+    private readonly _voxelPartVisibilityData: number[] = [];
 
     protected _bindVoxelEffectUniforms(gsMesh: GaussianSplattingMesh, gsMaterial: GaussianSplattingMaterial, shaderMaterial: ShaderMaterial): boolean {
         if (!gsMesh.rotationsATexture) {
@@ -626,14 +628,19 @@ export class GaussianSplattingMaterial extends PushMaterial {
 
         if (gsMesh.partIndicesTexture) {
             effect.setTexture("partIndicesTexture", gsMesh.partIndicesTexture);
-            const partWorldData = new Float32Array(gsMesh.partCount * 16);
+            const partWorldDataLength = gsMesh.partCount * 16;
+            if (this._voxelPartWorldData.length !== partWorldDataLength) {
+                this._voxelPartWorldData = new Float32Array(partWorldDataLength);
+            }
+            const partWorldData = this._voxelPartWorldData;
             for (let i = 0; i < gsMesh.partCount; i++) {
                 gsMesh.getWorldMatrixForPart(i).toArray(partWorldData, i * 16);
             }
             effect.setMatrices("partWorld", partWorldData);
-            const partVisibilityData: number[] = [];
+            const partVisibilityData = this._voxelPartVisibilityData;
+            partVisibilityData.length = gsMesh.partCount;
             for (let i = 0; i < gsMesh.partCount; i++) {
-                partVisibilityData.push(gsMesh.partVisibility[i] ?? 1.0);
+                partVisibilityData[i] = gsMesh.partVisibility[i] ?? 1.0;
             }
             effect.setArray("partVisibility", partVisibilityData);
         }

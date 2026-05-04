@@ -22,7 +22,6 @@ pr:
             - packages/tools/sandbox/**/*.*
             - packages/dev/sharedUiComponents/**/*.*
             - "**/*playground*"
-            - packages/dev/buildTools/src/webpackTools.ts
             - "**/*sandbox*"
             - packages/dev/inspector-v2/**/*.*
 

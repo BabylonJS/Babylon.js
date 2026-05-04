@@ -1,6 +1,6 @@
 {
     "name": "@babylonjs/node-geometry-editor",
-    "version": "9.3.2",
+    "version": "9.5.0",
     "main": "dist/babylon.nodeGeometryEditor.js",
     "module": "dist/babylon.nodeGeometryEditor.js",
     "esnext": "dist/babylon.nodeGeometryEditor.js",
@@ -12,8 +12,8 @@
     ],
     "scripts": {
         "build": "npm run clean && npm run build:prod && npm run build:declaration",
-        "build:dev": "webpack --env development",
-        "build:prod": "webpack --env production",
+        "build:dev": "rollup -c rollup.config.umd.mjs",
+        "build:prod": "rollup -c rollup.config.umd.mjs --environment ROLLUP_MODE:production",
         "build:declaration": "build-tools -c pud --config ./config.json",
         "clean": "rimraf dist"
     },
@@ -23,7 +23,7 @@
         "@types/react-dom": ">=16.0.9"
     },
     "devDependencies": {
-        "@babylonjs/core": "9.3.2",
+        "@babylonjs/core": "9.5.0",
         "@tools/node-geometry-editor": "1.0.0",
         "react": "^18.2.0",
         "react-dom": "^18.2.0"

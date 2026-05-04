@@ -1,6 +1,6 @@
 {
     "name": "@babylonjs/node-particle-editor",
-    "version": "9.3.2",
+    "version": "9.5.0",
     "main": "dist/babylon.nodeParticleEditor.js",
     "module": "dist/babylon.nodeParticleEditor.js",
     "esnext": "dist/babylon.nodeParticleEditor.js",
@@ -12,8 +12,8 @@
     ],
     "scripts": {
         "build": "npm run clean && npm run build:prod && npm run build:declaration",
-        "build:dev": "webpack --env development",
-        "build:prod": "webpack --env production",
+        "build:dev": "rollup -c rollup.config.umd.mjs",
+        "build:prod": "rollup -c rollup.config.umd.mjs --environment ROLLUP_MODE:production",
         "build:declaration": "build-tools -c pud --config ./config.json",
         "clean": "rimraf dist"
     },

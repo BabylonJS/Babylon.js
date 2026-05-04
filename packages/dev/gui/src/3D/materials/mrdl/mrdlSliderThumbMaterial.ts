@@ -524,6 +524,10 @@ export class MRDLSliderThumbMaterial extends PushMaterial {
         const defines = <MRDLSliderThumbMaterialDefines>subMesh.materialDefines;
         const scene = this.getScene();
 
+        if (!this._blueGradientTexture.isReady()) {
+            return false;
+        }
+
         if (this._isReadyForSubMesh(subMesh)) {
             return true;
         }
