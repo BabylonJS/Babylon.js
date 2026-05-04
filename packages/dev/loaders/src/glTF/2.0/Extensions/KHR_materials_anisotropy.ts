@@ -5,7 +5,6 @@ import { type IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader } from "../glTFLoader";
 import { type IKHRMaterialsAnisotropy } from "babylonjs-gltf2interface";
 import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
-import { _RememberAnisotropyRotationRawValue } from "./objectModelMapping";
 
 const NAME = "KHR_materials_anisotropy";
 
@@ -78,10 +77,6 @@ export class KHR_materials_anisotropy implements IGLTFLoaderExtension {
 
         adapter.specularRoughnessAnisotropy = anisotropyWeight;
         adapter.geometryTangentAngle = anisotropyAngle;
-        // Babylon stores the anisotropy rotation as a Vector2 direction, which
-        // collapses any value outside [-π, π] on a get. Cache the raw glTF
-        // value so KHR_interactivity pointer/get returns it unchanged.
-        _RememberAnisotropyRotationRawValue(babylonMaterial, anisotropyAngle);
 
         // Check if this is glTF-style anisotropy
         const extensions = properties.extensions ?? {};
