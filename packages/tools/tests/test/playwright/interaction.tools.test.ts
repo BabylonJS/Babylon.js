@@ -12,6 +12,7 @@ const fgeUrl = (process.env.FGE_BASE_URL || getGlobalConfig().baseUrl.replace(cd
 const npeUrl = (process.env.NPE_BASE_URL || getGlobalConfig().baseUrl.replace(cdnPort, process.env.NPE_PORT || ":1345")) + snapshot;
 
 async function getGraphNodeCount(page: import("@playwright/test").Page) {
+    await page.waitForSelector("#graph-canvas-container", { state: "attached" });
     return await page.evaluate(() => {
         const graph = document.getElementById("graph-canvas-container");
         if (!graph) {
@@ -35,6 +36,15 @@ async function dragPaletteItemToGraph(page: import("@playwright/test").Page, nod
 
 async function expectGraphZoomsOut(page: import("@playwright/test").Page) {
     const graph = page.locator("#graph-canvas");
+    await expect(graph).toBeVisible();
+    await expect
+        .poll(async () => {
+            return await page.evaluate(() => {
+                const graph = document.getElementById("graph-canvas") as HTMLCanvasElement;
+                return graph.style.backgroundSize;
+            });
+        })
+        .toMatch(/\d/);
     const graphPosition = await graph.boundingBox();
     const backgroundSize = await page.evaluate(() => {
         const graph = document.getElementById("graph-canvas") as HTMLCanvasElement;

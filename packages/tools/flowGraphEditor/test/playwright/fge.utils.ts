@@ -267,7 +267,7 @@ export class FlowGraphEditorPage {
      */
     async serializeGraph(): Promise<string> {
         return await this.page.evaluate(() => {
-            const editor = (globalThis as any).BABYLON.FlowGraphEditor;
+            const editor = (globalThis as any).BABYLON?.FlowGraphEditor;
             const graph = editor?._CurrentState?.flowGraph ?? (globalThis as any).__viteFlowGraphEditorArgs?.[0]?.flowGraph;
             if (!graph) {
                 throw new Error("FlowGraphEditor instance not found");
