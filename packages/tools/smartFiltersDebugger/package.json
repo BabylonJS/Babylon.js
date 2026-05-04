@@ -15,8 +15,8 @@
     "scripts": {
         "clean": "rimraf dist && rimraf tsconfig.build.tsbuildinfo",
         "build": "npm run clean && npm run compile",
-        "compile": "webpack --env=prod",
-        "watch": "webpack --env=dev --watch"
+        "compile": "rollup -c rollup.config.umd.mjs --environment ROLLUP_MODE:production",
+        "watch": "rollup -c rollup.config.umd.mjs --watch"
     },
     "devDependencies": {
         "@fortawesome/fontawesome-svg-core": "^6.1.0",
@@ -25,20 +25,9 @@
         "@types/chrome": "^0.0.268",
         "@types/react": "^18.0.0",
         "@types/react-dom": "^18.0.0",
-        "copy-webpack-plugin": "^14.0.0",
-        "css-loader": "^7.1.0",
-        "file-loader": "^6.2.0",
         "react": "^18.2.0",
         "react-dom": "^18.2.0",
         "sass": "^1.62.1",
-        "sass-loader": "^16.0.0",
-        "source-map-loader": "^4.0.0",
-        "style-loader": "^3.3.0",
-        "ts-loader": "^9.2.6",
-        "url-loader": "^4.1.1",
-        "webpack": "^5.103.0",
-        "webpack-cli": "6.0.1",
-        "webpack-dev-server": "^5.2.2",
         "@tools/smart-filters-editor-control": "^1.0.0"
     }
 }

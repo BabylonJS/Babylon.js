@@ -116,7 +116,7 @@ const base = commonDevViteConfiguration({
         // shared-ui-components is used by React components in this package (source-level).
         // Babylon packages (core/*, @dev/core) are NOT aliased here — they are handled by
         // babylonDevExternalsPlugin below, which rewrites all their imports to globalThis.BABYLON
-        // accesses, exactly as webpack's `externals: { "@dev/core": "BABYLON" }` did.
+        // accesses.
         "shared-ui-components": path.resolve("../../dev/sharedUiComponents/src"),
     },
     productionExternals: {
@@ -130,7 +130,7 @@ export default defineConfig({
     plugins: [
         // Spread base plugins first — includes react() and cssModuleNamespaceInteropPlugin.
         ...(base.plugins ?? []),
-        // Replicate webpack `externals: { "@dev/core": "BABYLON" }` for Vite.
+        // Map Babylon package imports to the global BABYLON namespace.
         // Rewrites all `import { X } from "@dev/core"` and `import { X } from "core/..."` to
         // `const { X } = globalThis.BABYLON ?? {}` so no ESM requests are made for those
         // packages. sharedUiComponents/src also imports from "core/..." so both must be mapped.
@@ -251,12 +251,12 @@ export default defineConfig({
             },
         },
         {
-            // Serves /babylon.playground.js — a shim replacing the webpack-built UMD bundle.
+            // Serves /babylon.playground.js — a shim for the legacy bootstrap path.
             //
             // Architecture: public/index.js (full CDN bootstrap) auto-detects localhost and
             // loads all babylon bundles from babylonServer (port 1337). After bundles load it
-            // fetches /babylon.playground.js then calls BABYLON.Playground.Show(). In webpack
-            // mode that file is the compiled bundle registering Playground on window.BABYLON.
+            // fetches /babylon.playground.js then calls BABYLON.Playground.Show(). In the
+            // legacy dev-server mode that file registered Playground on window.BABYLON.
             // In Vite dev mode the React app is served as ES modules; this shim captures the
             // Show() call and relays it to main.ts via a CustomEvent.
             name: "playground-dev-shims",

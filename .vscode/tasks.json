@@ -921,7 +921,25 @@
             "presentation": {
                 "group": "serve"
             },
-            "problemMatcher": ["$ts-webpack-watch", "$tslint-webpack-watch"]
+            "problemMatcher": [
+                {
+                    "pattern": {
+                        "regexp": "^VITE_NEVER_MATCH$",
+                        "file": 1,
+                        "location": 2,
+                        "message": 3
+                    },
+                    "background": {
+                        "activeOnStart": true,
+                        "beginsPattern": {
+                            "regexp": ".*Executing task.*"
+                        },
+                        "endsPattern": {
+                            "regexp": ".*VITE.*ready.*"
+                        }
+                    }
+                }
+            ]
         },
         {
             "label": "VSM Serve for core (Dev)",
@@ -1057,7 +1075,25 @@
             "presentation": {
                 "group": "serve"
             },
-            "problemMatcher": ["$ts-webpack-watch", "$tslint-webpack-watch"]
+            "problemMatcher": [
+                {
+                    "pattern": {
+                        "regexp": "^VITE_NEVER_MATCH$",
+                        "file": 1,
+                        "location": 2,
+                        "message": 3
+                    },
+                    "background": {
+                        "activeOnStart": true,
+                        "beginsPattern": {
+                            "regexp": ".*Executing task.*"
+                        },
+                        "endsPattern": {
+                            "regexp": ".*VITE.*ready.*"
+                        }
+                    }
+                }
+            ]
         },
         {
             "label": "Watch Inspector v2",
@@ -1089,7 +1125,25 @@
             "presentation": {
                 "group": "serve"
             },
-            "problemMatcher": ["$ts-webpack-watch", "$tslint-webpack-watch"]
+            "problemMatcher": [
+                {
+                    "pattern": {
+                        "regexp": "^VITE_NEVER_MATCH$",
+                        "file": 1,
+                        "location": 2,
+                        "message": 3
+                    },
+                    "background": {
+                        "activeOnStart": true,
+                        "beginsPattern": {
+                            "regexp": ".*Executing task.*"
+                        },
+                        "endsPattern": {
+                            "regexp": ".*VITE.*ready.*"
+                        }
+                    }
+                }
+            ]
         }
     ],
     "inputs": [

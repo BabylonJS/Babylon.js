@@ -4,8 +4,7 @@ import path from "path";
 const mode = process.env.ROLLUP_MODE === "production" ? "production" : "development";
 const devMode = process.env.ROLLUP_DEVMODE === "true";
 
-// ktx2decoder bundles @dev/core rather than externalising it, matching the
-// original extendedWebpackConfig: { externals: {} } behaviour.
+// ktx2decoder bundles @dev/core rather than externalising it.
 export default commonUMDRollupConfiguration({
     mode,
     devMode,

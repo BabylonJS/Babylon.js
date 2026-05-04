@@ -32,7 +32,7 @@ let CachedTsPromise: Promise<typeof import("typescript")> | null = null;
 // Isolated dynamic import so the untyped module specifier is contained
 // in a single place and the @ts-expect-error applies cleanly.
 async function _LoadMonacoTs(): Promise<unknown> {
-    return await import(/* webpackChunkName: "typescript" */ "monaco-editor/esm/vs/language/typescript/lib/typescriptServices");
+    return await import("monaco-editor/esm/vs/language/typescript/lib/typescriptServices");
 }
 
 async function GetTypeScript(): Promise<typeof import("typescript")> {
@@ -674,7 +674,7 @@ async function LoadModuleEsm(jsFiles: Record<string, string>, entryName: string,
     }
 
     const entryUrl = finalUrls[entryName] ?? Object.values(finalUrls)[0];
-    const mod = await import(/* webpackIgnore: true */ /* @vite-ignore */ entryUrl);
+    const mod = await import(/* @vite-ignore */ entryUrl);
 
     for (const u of Object.values(finalUrls)) {
         URL.revokeObjectURL(u);

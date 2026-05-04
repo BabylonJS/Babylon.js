@@ -23,10 +23,8 @@
         "@tools/node-geometry-editor": "1.0.0",
         "@types/react": "^18.0.0",
         "@types/react-dom": "^18.0.0",
-        "css-loader": "^7.1.0",
         "react": "^18.2.0",
-        "react-dom": "^18.2.0",
-        "sass-loader": "^16.0.0"
+        "react-dom": "^18.2.0"
     },
     "keywords": [
         "3D",
