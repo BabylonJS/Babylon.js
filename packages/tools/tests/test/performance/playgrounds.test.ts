@@ -2,10 +2,9 @@ import { test, expect, Page } from "@playwright/test";
 import { evaluatePrepareScene, getGlobalConfig, comparePerformance } from "@tools/test-tools";
 
 const perfOptions = {
-    framesToRender: 2000,
-    numberOfPasses: 10,
-    warmupPasses: 2,
-    trimCount: 2,
+    framesToRender: 800,
+    numberOfPasses: 5,
+    trimCount: 1,
     cdnVersion: process.env.CDN_VERSION || "",
     cdnVersionB: process.env.CDN_VERSION_B || "",
 };

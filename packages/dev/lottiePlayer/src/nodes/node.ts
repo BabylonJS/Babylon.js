@@ -294,7 +294,11 @@ export class Node {
         this._updateOpacity(frame);
 
         for (let i = 0; i < this._children.length; i++) {
-            this._children[i].update(frame, isUpdated || isParentUpdated);
+            // Propagate `isReset` so animated descendants whose first keyframe is after `frame` still
+            // recompose their localMatrix from the just-reset `currentValue`. Without this, after a
+            // loop wrap the child would keep the END-of-previous-loop interpolated localMatrix even
+            // though `reset()` already restored its `currentValue` to `startValue`.
+            this._children[i].update(frame, isUpdated || isParentUpdated, isReset);
         }
 
         return isUpdated || isParentUpdated;

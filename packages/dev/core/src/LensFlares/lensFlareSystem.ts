@@ -1,10 +1,10 @@
 import { Tools } from "../Misc/tools";
-import { type Nullable } from "../types"
-import { type Scene } from "../scene"
+import { type Nullable } from "../types";
+import { type Scene } from "../scene";
 import { Matrix, Vector3 } from "../Maths/math.vector";
 import { Clamp } from "../Maths/math.scalar.functions";
 import { EngineStore } from "../Engines/engineStore";
-import { type AbstractMesh } from "../Meshes/abstractMesh"
+import { type AbstractMesh } from "../Meshes/abstractMesh";
 import { VertexBuffer } from "../Buffers/buffer";
 import { Ray } from "../Culling/ray";
 import { Material } from "../Materials/material";
@@ -12,9 +12,9 @@ import { LensFlare } from "./lensFlare";
 import { Constants } from "../Engines/constants";
 
 import { _WarnImport } from "../Misc/devTools";
-import { type DataBuffer } from "../Buffers/dataBuffer"
+import { type DataBuffer } from "../Buffers/dataBuffer";
 import { Color3 } from "../Maths/math.color";
-import { type Viewport } from "../Maths/math.viewport"
+import { type Viewport } from "../Maths/math.viewport";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { Observable } from "core/Misc/observable";
 
@@ -109,6 +109,8 @@ export class LensFlareSystem {
         scene: Scene
     ) {
         this._scene = scene || EngineStore.LastCreatedScene;
+        this.layerMask = this._scene.defaultRenderableLayerMask;
+
         LensFlareSystem._SceneComponentInitialization(this._scene);
 
         this._emitter = emitter;

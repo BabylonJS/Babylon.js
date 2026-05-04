@@ -143,6 +143,9 @@ test("[NME] User can add a new node to the graph", async ({ page }) => {
         height: 1080,
     });
 
+    // Wait for the graph to be rendered (Vite loads the editor asynchronously)
+    await page.waitForSelector("#graph-canvas-container", { state: "attached" });
+
     // get the number of nodes in the graph. this is the number of direct children in #graph-canvas-container
     const nodeCount = await page.evaluate(() => {
         const graph = document.getElementById("graph-canvas-container");
@@ -248,6 +251,9 @@ test("[NGE] User can add a new node to the graph", async ({ page }) => {
         height: 1080,
     });
 
+    // Wait for the graph to be rendered (Vite loads the editor asynchronously)
+    await page.waitForSelector("#graph-canvas-container", { state: "attached" });
+
     // get the number of nodes in the graph. this is the number of direct children in #graph-canvas-container
     const nodeCount = await page.evaluate(() => {
         const graph = document.getElementById("graph-canvas-container");
@@ -352,6 +358,9 @@ test("[NRGE] User can add a new node to the graph", async ({ page }) => {
         width: 1920,
         height: 1080,
     });
+
+    // Wait for the graph to be rendered (Vite loads the editor asynchronously)
+    await page.waitForSelector("#graph-canvas-container", { state: "attached" });
 
     // get the number of nodes in the graph. this is the number of direct children in #graph-canvas-container
     const nodeCount = await page.evaluate(() => {
@@ -524,6 +533,10 @@ test("[GUIEDITOR] User can add and drag graph nodes", async ({ page }) => {
         width: 1920,
         height: 1080,
     });
+
+    // Wait for the GUI editor to be rendered (Vite loads the editor asynchronously)
+    await page.waitForSelector("#ge-sceneExplorer", { state: "attached" });
+
     // expect the tree to be empty - no children
     const treeChildren = await page.evaluate(() => {
         const tree = document.querySelector("#ge-sceneExplorer > div#tree > div") as HTMLElement;
@@ -559,6 +572,9 @@ test("[GUIEDITOR] User can add and drag graph nodes", async ({ page }) => {
     const center = { x: canvasPosition.x + canvasPosition.width / 2, y: canvasPosition.y + canvasPosition.height / 2 };
 
     await page.mouse.move(center.x + 30, center.y, { steps: 5 });
+
+    // Ensure fonts and styles are fully loaded before taking screenshots
+    await page.evaluate(() => document.fonts.ready);
 
     // take a screenshot (for visual inspection)
     const snapshot = await canvasNode.screenshot();

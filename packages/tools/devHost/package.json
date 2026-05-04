@@ -8,11 +8,10 @@
         "dist"
     ],
     "scripts": {
-        "build": "webpack",
-        "analyze": "webpack --env analyze=true",
-        "serve": "webpack serve",
-        "serve-https": "webpack serve --server-type https --open",
-        "serve-https-public": "webpack serve --server-type https --host ::"
+        "build": "vite build",
+        "serve": "vite",
+        "serve-https": "vite --https",
+        "serve-https-public": "vite --https --host ::"
     },
     "devDependencies": {
         "@dev/addons": "^1.0.0",
@@ -25,15 +24,8 @@
         "@dev/procedural-textures": "1.0.0",
         "@dev/serializers": "1.0.0",
         "@tools/accessibility": "1.0.0",
-        "babylonjs-gltf2interface": "^6.42.0",
-        "html-webpack-plugin": "^5.5.0",
-        "source-map-loader": "^4.0.0",
-        "ts-loader": "^9.2.6",
-        "webpack": "^5.103.0",
-        "webpack-bundle-analyzer": "^4.10.1",
-        "webpack-cli": "6.0.1",
-        "webpack-dev-server": "5.2.2",
-        "webpack-merge": "^5.8.0"
+        "@vitejs/plugin-react": "^4.4.1",
+        "vite": "^6.4.2"
     },
     "sideEffects": true
 }

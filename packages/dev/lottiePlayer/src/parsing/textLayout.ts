@@ -1,5 +1,6 @@
 import { type IVector2Like } from "core/Maths/math.like";
 
+import { type LottieTextCompatibilityMode } from "../animationConfiguration";
 import { type RawFont, type RawTextData, type RawTextDocument, type RawTextJustify } from "./rawTypes";
 
 /**
@@ -229,9 +230,18 @@ export function ResolveLottieText(textData: RawTextData, rawFonts: Map<string, R
  * Measures the final texture layout for resolved Lottie text.
  * @param resolvedText Resolved text data.
  * @param measureText Callback used to measure text with the active font.
+ * @param compatibilityMode Text layout compatibility mode.
  * @returns The measured text layout.
  */
-export function MeasureLottieText(resolvedText: ResolvedLottieText, measureText: (text: string) => TextMetricsLike): LottieTextLayout {
+export function MeasureLottieText(
+    resolvedText: ResolvedLottieText,
+    measureText: (text: string) => TextMetricsLike,
+    compatibilityMode: LottieTextCompatibilityMode = "spec"
+): LottieTextLayout {
+    return compatibilityMode === "babylon8" ? MeasureBabylon8LottieText(resolvedText, measureText) : MeasureSpecLottieText(resolvedText, measureText);
+}
+
+function MeasureSpecLottieText(resolvedText: ResolvedLottieText, measureText: (text: string) => TextMetricsLike): LottieTextLayout {
     const hasParagraphBox = resolvedText.boxPosition !== undefined && resolvedText.boxSize !== undefined;
     const lineMeasurements = CreateLineMeasurements(resolvedText, measureText, hasParagraphBox);
     const bottomPaddingPx = resolvedText.hasStroke ? Math.max(MinimumTextBottomPaddingPx, resolvedText.textInfo.sw! / 2) : MinimumTextBottomPaddingPx;
@@ -296,6 +306,37 @@ export function MeasureLottieText(resolvedText: ResolvedLottieText, measureText:
             x: line.x - minX,
             baselineY: line.baselineY - minY,
         })),
+    };
+}
+
+function MeasureBabylon8LottieText(resolvedText: ResolvedLottieText, measureText: (text: string) => TextMetricsLike): LottieTextLayout {
+    // Babylon.js 8.x rasterized text via a single fillText call that received the raw Lottie text string,
+    // including any embedded line break characters. Canvas's fillText/measureText treat \n and \r as
+    // ignorable whitespace, so multi-line Lottie text rendered as a single line in Babylon.js 8.
+    // Joining the lines back together here intentionally reproduces that behavior; do not split across
+    // multiple LottieTextLineLayout entries or this mode will diverge from Babylon.js 8 placement.
+    const text = resolvedText.lines.join("\n");
+    const metrics = measureText(text);
+    const width = Math.ceil(metrics.width);
+    const ascent = Math.ceil(metrics.actualBoundingBoxAscent ?? resolvedText.baselineOffsetPx);
+    const descent = Math.ceil(metrics.actualBoundingBoxDescent ?? 0);
+    const height = ascent + descent;
+
+    return {
+        width,
+        height,
+        offsetX: 0,
+        offsetY: 0,
+        baselineOffsetY: ascent,
+        descent,
+        lines: [
+            {
+                text,
+                width,
+                x: 0,
+                baselineY: ascent,
+            },
+        ],
     };
 }
 

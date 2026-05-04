@@ -2,16 +2,17 @@ import { Epsilon } from "core/Maths/math.constants";
 import { Matrix, TmpVectors, Vector3 } from "core/Maths/math.vector";
 import { BuildArray } from "core/Misc/arrayTools";
 import { IntersectionInfo } from "../Collisions/intersectionInfo";
-import { type BoundingBox } from "./boundingBox"
-import { type BoundingSphere } from "./boundingSphere"
-import { type DeepImmutable, type float, type Nullable } from "core/types"
-import { type Plane } from "core/Maths/math.plane"
-import { type AbstractMesh } from "core/Meshes/abstractMesh"
+import { type BoundingInfo } from "./boundingInfo";
+import { type BoundingBox } from "./boundingBox";
+import { type BoundingSphere } from "./boundingSphere";
+import { type DeepImmutable, type float, type Nullable } from "core/types";
+import { type Plane } from "core/Maths/math.plane";
+import { type AbstractMesh } from "core/Meshes/abstractMesh";
 import { PickingInfo } from "core/Collisions/pickingInfo";
 import { EngineStore } from "core/Engines/engineStore";
-import { type Scene } from "core/scene"
-import { type Camera } from "core/Cameras/camera"
-import { type Mesh } from "core/Meshes/mesh"
+import { type Scene } from "core/scene";
+import { type Camera } from "core/Cameras/camera";
+import { type Mesh } from "core/Meshes/mesh";
 import { _ImportHelper } from "core/import.helper";
 
 /**
@@ -55,7 +56,7 @@ export const PickingCustomization: IPickingCustomization = {
  */
 export class Ray {
     private static readonly _TmpVector3 = BuildArray(6, Vector3.Zero);
-    private static _RayDistant = new Ray(Vector3.Zero(), Vector3.Zero());
+    private static _RayDistant = Ray.Zero();
     private _tmpRay: Ray;
 
     /**
@@ -356,9 +357,9 @@ export class Ray {
         mesh.getWorldMatrix().invertToRef(tm);
 
         if (this._tmpRay) {
-            RayTransformToRef(this, tm, this._tmpRay);
+            Ray.TransformToRef(this, tm, this._tmpRay);
         } else {
-            this._tmpRay = RayTransform(this, tm);
+            this._tmpRay = Ray.Transform(this, tm);
         }
 
         return mesh.intersects(this._tmpRay, fastCheck, trianglePredicate, onlyBoundingInfo, worldToUse, skipBoundingInfo);
@@ -535,19 +536,125 @@ export class Ray {
             // This is slower (2 matrix inverts instead of 1) but precision is preserved.
             // This is hidden behind `EnableDistantPicking` flag (default is false)
             if (!Ray._RayDistant) {
-                Ray._RayDistant = RayZero();
+                Ray._RayDistant = Ray.Zero();
             }
 
             Ray._RayDistant.unprojectRayToRef(x, y, viewportWidth, viewportHeight, Matrix.IdentityReadOnly, view, projection);
 
             const tm = TmpVectors.Matrix[0];
             world.invertToRef(tm);
-            RayTransformToRef(Ray._RayDistant, tm, this);
+            Ray.TransformToRef(Ray._RayDistant, tm, this);
         } else {
             this.unprojectRayToRef(x, y, viewportWidth, viewportHeight, world, view, projection);
         }
 
         return this;
+    }
+
+    // Statics
+    /**
+     * Creates a ray with origin and direction of 0,0,0
+     * @returns the new ray
+     */
+    public static Zero(): Ray {
+        return new Ray(Vector3.Zero(), Vector3.Zero());
+    }
+
+    /**
+     * Creates a new ray from screen space and viewport
+     * @param x position
+     * @param y y position
+     * @param viewportWidth viewport width
+     * @param viewportHeight viewport height
+     * @param world world matrix
+     * @param view view matrix
+     * @param projection projection matrix
+     * @returns new ray
+     */
+    public static CreateNew(
+        x: number,
+        y: number,
+        viewportWidth: number,
+        viewportHeight: number,
+        world: DeepImmutable<Matrix>,
+        view: DeepImmutable<Matrix>,
+        projection: DeepImmutable<Matrix>
+    ): Ray {
+        const result = Ray.Zero();
+
+        return result.update(x, y, viewportWidth, viewportHeight, world, view, projection);
+    }
+
+    /**
+     * Function will create a new transformed ray starting from origin and ending at the end point. Ray's length will be set, and ray will be
+     * transformed to the given world matrix.
+     * @param origin The origin point
+     * @param end The end point
+     * @param world a matrix to transform the ray to. Default is the identity matrix.
+     * @returns the new ray
+     */
+    public static CreateNewFromTo(origin: Vector3, end: Vector3, world: DeepImmutable<Matrix> = Matrix.IdentityReadOnly): Ray {
+        const result = new Ray(new Vector3(0, 0, 0), new Vector3(0, 0, 0));
+        return Ray.CreateFromToToRef(origin, end, result, world);
+    }
+
+    /**
+     * Function will update a transformed ray starting from origin and ending at the end point. Ray's length will be set, and ray will be
+     * transformed to the given world matrix.
+     * @param origin The origin point
+     * @param end The end point
+     * @param result the object to store the result
+     * @param world a matrix to transform the ray to. Default is the identity matrix.
+     * @returns the ref ray
+     */
+    public static CreateFromToToRef(origin: Vector3, end: Vector3, result: Ray, world: DeepImmutable<Matrix> = Matrix.IdentityReadOnly): Ray {
+        result.origin.copyFrom(origin);
+        const direction = end.subtractToRef(origin, result.direction);
+        const length = Math.sqrt(direction.x * direction.x + direction.y * direction.y + direction.z * direction.z);
+        result.length = length;
+        result.direction.normalize();
+
+        return Ray.TransformToRef(result, world, result);
+    }
+
+    /**
+     * Transforms a ray by a matrix
+     * @param ray ray to transform
+     * @param matrix matrix to apply
+     * @returns the resulting new ray
+     */
+    public static Transform(ray: DeepImmutable<Ray>, matrix: DeepImmutable<Matrix>): Ray {
+        const result = new Ray(new Vector3(0, 0, 0), new Vector3(0, 0, 0));
+        Ray.TransformToRef(ray, matrix, result);
+
+        return result;
+    }
+
+    /**
+     * Transforms a ray by a matrix
+     * @param ray ray to transform
+     * @param matrix matrix to apply
+     * @param result ray to store result in
+     * @returns the updated result ray
+     */
+    public static TransformToRef(ray: DeepImmutable<Ray>, matrix: DeepImmutable<Matrix>, result: Ray): Ray {
+        Vector3.TransformCoordinatesToRef(ray.origin, matrix, result.origin);
+        Vector3.TransformNormalToRef(ray.direction, matrix, result.direction);
+        result.length = ray.length;
+        result.epsilon = ray.epsilon;
+
+        const dir = result.direction;
+        const len = dir.length();
+
+        if (!(len === 0 || len === 1)) {
+            const num = 1.0 / len;
+            dir.x *= num;
+            dir.y *= num;
+            dir.z *= num;
+            result.length *= len;
+        }
+
+        return result;
     }
 
     /**
@@ -594,111 +701,6 @@ export class Ray {
 }
 
 /**
- * Creates a ray with origin and direction of 0,0,0
- * @returns the new ray
- */
-export function RayZero(): Ray {
-    return new Ray(Vector3.Zero(), Vector3.Zero());
-}
-
-/**
- * Creates a new ray from screen space and viewport
- * @param x position
- * @param y y position
- * @param viewportWidth viewport width
- * @param viewportHeight viewport height
- * @param world world matrix
- * @param view view matrix
- * @param projection projection matrix
- * @returns new ray
- */
-export function RayCreateNew(
-    x: number,
-    y: number,
-    viewportWidth: number,
-    viewportHeight: number,
-    world: DeepImmutable<Matrix>,
-    view: DeepImmutable<Matrix>,
-    projection: DeepImmutable<Matrix>
-): Ray {
-    const result = RayZero();
-
-    return result.update(x, y, viewportWidth, viewportHeight, world, view, projection);
-}
-
-/**
- * Function will create a new transformed ray starting from origin and ending at the end point. Ray's length will be set, and ray will be
- * transformed to the given world matrix.
- * @param origin The origin point
- * @param end The end point
- * @param world a matrix to transform the ray to. Default is the identity matrix.
- * @returns the new ray
- */
-export function RayCreateNewFromTo(origin: Vector3, end: Vector3, world: DeepImmutable<Matrix> = Matrix.IdentityReadOnly): Ray {
-    const result = new Ray(new Vector3(0, 0, 0), new Vector3(0, 0, 0));
-    return RayCreateFromToToRef(origin, end, result, world);
-}
-
-/**
- * Function will update a transformed ray starting from origin and ending at the end point. Ray's length will be set, and ray will be
- * transformed to the given world matrix.
- * @param origin The origin point
- * @param end The end point
- * @param result the object to store the result
- * @param world a matrix to transform the ray to. Default is the identity matrix.
- * @returns the ref ray
- */
-export function RayCreateFromToToRef(origin: Vector3, end: Vector3, result: Ray, world: DeepImmutable<Matrix> = Matrix.IdentityReadOnly): Ray {
-    result.origin.copyFrom(origin);
-    const direction = end.subtractToRef(origin, result.direction);
-    const length = Math.sqrt(direction.x * direction.x + direction.y * direction.y + direction.z * direction.z);
-    result.length = length;
-    result.direction.normalize();
-
-    return RayTransformToRef(result, world, result);
-}
-
-/**
- * Transforms a ray by a matrix
- * @param ray ray to transform
- * @param matrix matrix to apply
- * @returns the resulting new ray
- */
-export function RayTransform(ray: DeepImmutable<Ray>, matrix: DeepImmutable<Matrix>): Ray {
-    const result = new Ray(new Vector3(0, 0, 0), new Vector3(0, 0, 0));
-    RayTransformToRef(ray, matrix, result);
-
-    return result;
-}
-
-/**
- * Transforms a ray by a matrix
- * @param ray ray to transform
- * @param matrix matrix to apply
- * @param result ray to store result in
- * @returns the updated result ray
- */
-export function RayTransformToRef(ray: DeepImmutable<Ray>, matrix: DeepImmutable<Matrix>, result: Ray): Ray {
-    Vector3.TransformCoordinatesToRef(ray.origin, matrix, result.origin);
-    Vector3.TransformNormalToRef(ray.direction, matrix, result.direction);
-    result.length = ray.length;
-    result.epsilon = ray.epsilon;
-
-    const dir = result.direction;
-    const len = dir.length();
-
-    if (!(len === 0 || len === 1)) {
-        const num = 1.0 / len;
-        dir.x *= num;
-        dir.y *= num;
-        dir.z *= num;
-        result.length *= len;
-    }
-
-    return result;
-}
-
-/**
  * Creates a ray that can be used to pick in the scene
  * @param scene defines the scene to use for the picking
  * @param x defines the x coordinate of the origin (on-screen)
@@ -709,7 +711,7 @@ export function RayTransformToRef(ray: DeepImmutable<Ray>, matrix: DeepImmutable
  * @returns a Ray
  */
 export function CreatePickingRay(scene: Scene, x: number, y: number, world: Nullable<Matrix>, camera: Nullable<Camera>, cameraViewSpace = false): Ray {
-    const result = RayZero();
+    const result = Ray.Zero();
 
     CreatePickingRayToRef(scene, x, y, world, result, camera, cameraViewSpace);
 
@@ -775,7 +777,7 @@ export function CreatePickingRayToRef(
  * @returns a Ray
  */
 export function CreatePickingRayInCameraSpace(scene: Scene, x: number, y: number, camera?: Camera): Ray {
-    const result = RayZero();
+    const result = Ray.Zero();
 
     CreatePickingRayInCameraSpaceToRef(scene, x, y, result, camera);
 
@@ -827,6 +829,20 @@ function InternalPickForMesh(
 ) {
     const ray = rayFunction(world, mesh.enableDistantPicking);
 
+    return InternalPickForMeshWithRay(pickingInfo, mesh, world, ray, fastCheck, onlyBoundingInfo, trianglePredicate, skipBoundingInfo);
+}
+
+// Used when a caller already has the mesh-local ray and wants to avoid rebuilding it through rayFunction.
+function InternalPickForMeshWithRay(
+    pickingInfo: Nullable<PickingInfo>,
+    mesh: AbstractMesh,
+    world: Matrix,
+    ray: Ray,
+    fastCheck?: boolean,
+    onlyBoundingInfo?: boolean,
+    trianglePredicate?: TrianglePickingPredicate,
+    skipBoundingInfo?: boolean
+) {
     const result = mesh.intersects(ray, fastCheck, trianglePredicate, onlyBoundingInfo, world, skipBoundingInfo);
     if (!result || !result.hit) {
         return null;
@@ -837,6 +853,40 @@ function InternalPickForMesh(
     }
 
     return result;
+}
+
+function GetThinInstancePickingIntersectionThreshold(className: string, mesh: AbstractMesh): number {
+    return className === "InstancedLinesMesh" || className === "LinesMesh" ? (mesh as any).intersectionThreshold : 0;
+}
+
+function GetThinInstanceRawBoundingInfo(mesh: AbstractMesh): { rawBoundingInfo: Nullable<BoundingInfo>; intersectionThreshold: number } {
+    const className = mesh.getClassName();
+
+    // GreasedLineMesh has a custom width-aware pick path, so the generic raw sphere+box precheck is not safe there.
+    if (className === "GreasedLineMesh") {
+        return { rawBoundingInfo: null, intersectionThreshold: 0 };
+    }
+
+    const rawBoundingInfo = mesh.rawBoundingInfo;
+
+    return { rawBoundingInfo, intersectionThreshold: rawBoundingInfo ? GetThinInstancePickingIntersectionThreshold(className, mesh) : 0 };
+}
+
+// Returns null when the raw-bounds precheck rejects; otherwise returns the mesh-local thin-instance ray to reuse downstream.
+function ThinInstanceIntersectsRawBoundingInfo(
+    rayFunction: (world: Matrix, enableDistantPicking: boolean) => Ray,
+    mesh: AbstractMesh,
+    world: Matrix,
+    rawBoundingInfo: BoundingInfo,
+    intersectionThreshold: number
+): Nullable<Ray> {
+    const ray = rayFunction(world, mesh.enableDistantPicking);
+
+    if (!ray.intersectsSphere(rawBoundingInfo.boundingSphere, intersectionThreshold) || !ray.intersectsBox(rawBoundingInfo.boundingBox, intersectionThreshold)) {
+        return null;
+    }
+
+    return ray;
 }
 
 function InternalPick(
@@ -852,6 +902,7 @@ function InternalPick(
     const computeWorldMatrixForCamera = !!(scene.activeCameras && scene.activeCameras.length > 1 && scene.cameraToUseForPointers !== scene.activeCamera);
     const currentCamera = scene.cameraToUseForPointers || scene.activeCamera;
     const picker = PickingCustomization.internalPickerForMesh || InternalPickForMesh;
+    const useFastPath = picker === InternalPickForMesh;
 
     for (let meshIndex = 0; meshIndex < scene.meshes.length; meshIndex++) {
         const mesh = scene.meshes[meshIndex];
@@ -875,22 +926,39 @@ function InternalPick(
                     // the user only asked for a bounding info check so we can return
                     return result;
                 }
-                const tmpMatrix = TmpVectors.Matrix[1];
-                const thinMatrices = (mesh as Mesh).thinInstanceGetWorldMatrices();
-                for (let index = 0; index < thinMatrices.length; index++) {
-                    if (predicate && !predicate(mesh, index)) {
-                        continue;
-                    }
-                    const thinMatrix = thinMatrices[index];
-                    thinMatrix.multiplyToRef(world, tmpMatrix);
-                    const result = picker(pickingInfo, rayFunction, mesh, tmpMatrix, fastCheck, onlyBoundingInfo, trianglePredicate, true);
+                const { rawBoundingInfo: thinInstanceRawBoundingInfo, intersectionThreshold: thinInstanceIntersectionThreshold } = GetThinInstanceRawBoundingInfo(mesh);
+                const thinMatrixData = (mesh as Mesh)._thinInstanceDataStorage.matrixData;
+                if (thinMatrixData) {
+                    const thinMatrix = TmpVectors.Matrix[0];
+                    const combinedWorld = TmpVectors.Matrix[1];
+                    const instancesCount = Math.min((mesh as Mesh).thinInstanceCount, thinMatrixData.length >> 4);
+                    for (let index = 0; index < instancesCount; index++) {
+                        if (predicate && !predicate(mesh, index)) {
+                            continue;
+                        }
+                        Matrix.FromArrayToRef(thinMatrixData, index << 4, thinMatrix);
+                        thinMatrix.multiplyToRef(world, combinedWorld);
+                        const thinInstanceRay =
+                            useFastPath && thinInstanceRawBoundingInfo
+                                ? ThinInstanceIntersectsRawBoundingInfo(rayFunction, mesh, combinedWorld, thinInstanceRawBoundingInfo, thinInstanceIntersectionThreshold)
+                                : null;
 
-                    if (result) {
-                        pickingInfo = result;
-                        pickingInfo.thinInstanceIndex = index;
+                        if (useFastPath && thinInstanceRawBoundingInfo && !thinInstanceRay) {
+                            continue;
+                        }
 
-                        if (fastCheck) {
-                            return pickingInfo;
+                        const result: Nullable<PickingInfo> =
+                            useFastPath && thinInstanceRay
+                                ? InternalPickForMeshWithRay(pickingInfo, mesh, combinedWorld, thinInstanceRay, fastCheck, onlyBoundingInfo, trianglePredicate, true)
+                                : picker(pickingInfo, rayFunction, mesh, combinedWorld, fastCheck, onlyBoundingInfo, trianglePredicate, true);
+
+                        if (result) {
+                            pickingInfo = result;
+                            pickingInfo.thinInstanceIndex = index;
+
+                            if (fastCheck) {
+                                return pickingInfo;
+                            }
                         }
                     }
                 }
@@ -924,6 +992,7 @@ function InternalMultiPick(
     const computeWorldMatrixForCamera = !!(scene.activeCameras && scene.activeCameras.length > 1 && scene.cameraToUseForPointers !== scene.activeCamera);
     const currentCamera = scene.cameraToUseForPointers || scene.activeCamera;
     const picker = PickingCustomization.internalPickerForMesh || InternalPickForMesh;
+    const useFastPath = picker === InternalPickForMesh;
 
     for (let meshIndex = 0; meshIndex < scene.meshes.length; meshIndex++) {
         const mesh = scene.meshes[meshIndex];
@@ -942,19 +1011,36 @@ function InternalMultiPick(
         if (mesh.hasThinInstances && (mesh as Mesh).thinInstanceEnablePicking) {
             const result = picker(null, rayFunction, mesh, world, true, true, trianglePredicate);
             if (result) {
-                const tmpMatrix = TmpVectors.Matrix[1];
-                const thinMatrices = (mesh as Mesh).thinInstanceGetWorldMatrices();
-                for (let index = 0; index < thinMatrices.length; index++) {
-                    if (predicate && !predicate(mesh, index)) {
-                        continue;
-                    }
-                    const thinMatrix = thinMatrices[index];
-                    thinMatrix.multiplyToRef(world, tmpMatrix);
-                    const result = picker(null, rayFunction, mesh, tmpMatrix, false, false, trianglePredicate, true);
+                const { rawBoundingInfo: thinInstanceRawBoundingInfo, intersectionThreshold: thinInstanceIntersectionThreshold } = GetThinInstanceRawBoundingInfo(mesh);
+                const thinMatrixData = (mesh as Mesh)._thinInstanceDataStorage.matrixData;
+                if (thinMatrixData) {
+                    const thinMatrix = TmpVectors.Matrix[0];
+                    const combinedWorld = TmpVectors.Matrix[1];
+                    const instancesCount = Math.min((mesh as Mesh).thinInstanceCount, thinMatrixData.length >> 4);
+                    for (let index = 0; index < instancesCount; index++) {
+                        if (predicate && !predicate(mesh, index)) {
+                            continue;
+                        }
+                        Matrix.FromArrayToRef(thinMatrixData, index << 4, thinMatrix);
+                        thinMatrix.multiplyToRef(world, combinedWorld);
+                        const thinInstanceRay =
+                            useFastPath && thinInstanceRawBoundingInfo
+                                ? ThinInstanceIntersectsRawBoundingInfo(rayFunction, mesh, combinedWorld, thinInstanceRawBoundingInfo, thinInstanceIntersectionThreshold)
+                                : null;
 
-                    if (result) {
-                        result.thinInstanceIndex = index;
-                        pickingInfos.push(result);
+                        if (useFastPath && thinInstanceRawBoundingInfo && !thinInstanceRay) {
+                            continue;
+                        }
+
+                        const result: Nullable<PickingInfo> =
+                            useFastPath && thinInstanceRay
+                                ? InternalPickForMeshWithRay(null, mesh, combinedWorld, thinInstanceRay, false, false, trianglePredicate, true)
+                                : picker(null, rayFunction, mesh, combinedWorld, false, false, trianglePredicate, true);
+
+                        if (result) {
+                            result.thinInstanceIndex = index;
+                            pickingInfos.push(result);
+                        }
                     }
                 }
             }
@@ -987,7 +1073,7 @@ export function PickWithBoundingInfo(scene: Scene, x: number, y: number, predica
         scene,
         (world) => {
             if (!scene._tempPickingRay) {
-                scene._tempPickingRay = RayZero();
+                scene._tempPickingRay = Ray.Zero();
             }
 
             CreatePickingRayToRef(scene, x, y, world, scene._tempPickingRay, camera || null);
@@ -1028,7 +1114,7 @@ export function Pick(
         scene,
         (world, enableDistantPicking) => {
             if (!scene._tempPickingRay) {
-                scene._tempPickingRay = RayZero();
+                scene._tempPickingRay = Ray.Zero();
             }
 
             CreatePickingRayToRef(scene, x, y, world, scene._tempPickingRay, camera || null, false, enableDistantPicking);
@@ -1065,10 +1151,10 @@ export function PickWithRay(scene: Scene, ray: Ray, predicate?: MeshPredicate, f
             world.invertToRef(scene._pickWithRayInverseMatrix);
 
             if (!scene._cachedRayForTransform) {
-                scene._cachedRayForTransform = RayZero();
+                scene._cachedRayForTransform = Ray.Zero();
             }
 
-            RayTransformToRef(ray, scene._pickWithRayInverseMatrix, scene._cachedRayForTransform);
+            Ray.TransformToRef(ray, scene._pickWithRayInverseMatrix, scene._cachedRayForTransform);
             return scene._cachedRayForTransform;
         },
         predicate,
@@ -1115,10 +1201,10 @@ export function MultiPickWithRay(scene: Scene, ray: Ray, predicate?: MeshPredica
             world.invertToRef(scene._pickWithRayInverseMatrix);
 
             if (!scene._cachedRayForTransform) {
-                scene._cachedRayForTransform = RayZero();
+                scene._cachedRayForTransform = Ray.Zero();
             }
 
-            RayTransformToRef(ray, scene._pickWithRayInverseMatrix, scene._cachedRayForTransform);
+            Ray.TransformToRef(ray, scene._pickWithRayInverseMatrix, scene._cachedRayForTransform);
             return scene._cachedRayForTransform;
         },
         predicate,
