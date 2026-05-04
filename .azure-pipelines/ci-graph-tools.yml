@@ -22,6 +22,7 @@ pr:
             - packages/tools/nodeEditor/**/*.*
             - packages/tools/nodeGeometryEditor/**/*.*
             - packages/tools/nodeRenderGraphEditor/**/*.*
+            - packages/tools/nodeParticleEditor/**/*.*
             - packages/tools/guiEditor/**/*.*
             - packages/tools/flowGraphEditor/**/*.*
             - packages/dev/sharedUiComponents/**/*.*
@@ -151,6 +152,8 @@ jobs:
                 NME_BASE_URL: "$(SNAPSHOT_CDN_URL)/TOOLS/$(BuildName)/nodeEditor/"
                 NGE_BASE_URL: "$(SNAPSHOT_CDN_URL)/TOOLS/$(BuildName)/nodeGeometryEditor/"
                 NRGE_BASE_URL: "$(SNAPSHOT_CDN_URL)/TOOLS/$(BuildName)/nodeRenderGraphEditor/"
+                NPE_BASE_URL: "$(SNAPSHOT_CDN_URL)/TOOLS/$(BuildName)/nodeParticleEditor/"
+                FGE_BASE_URL: "$(SNAPSHOT_CDN_URL)/TOOLS/$(BuildName)/flowGraphEditor/"
                 GUIEDITOR_BASE_URL: "$(SNAPSHOT_CDN_URL)/TOOLS/$(BuildName)/guiEditor/"
                 SNAPSHOT: "$(BuildName)"
 
