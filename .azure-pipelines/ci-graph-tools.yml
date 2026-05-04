@@ -8,7 +8,7 @@
 #
 # Variable groups:
 #   - BabylonJS-CI-Infrastructure
-#   - BabylonJS-Deployment (BASIC_AUTH, DEPLOYMENT_SERVER)
+#   - BabylonJS-Deployment (DEPLOY_TOKEN, DEPLOYMENT_SERVER)
 # =============================================================================
 
 trigger: none
