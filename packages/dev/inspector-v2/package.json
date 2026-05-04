@@ -31,10 +31,12 @@
         "@tools/gui-editor": "1.0.0",
         "@types/react": "^18.0.0",
         "@types/react-dom": "^18.0.0",
+        "@types/ws": "^8.5.0",
         "gif.js.optimized": "^1.0.1",
         "react": "^18.2.0",
         "react-dom": "^18.2.0",
-        "sharp": "^0.33.0"
+        "sharp": "^0.33.0",
+        "ws": "^8.18.0"
     },
     "dependencies": {
         "@babylonjs/havok": "^1.3.12"
