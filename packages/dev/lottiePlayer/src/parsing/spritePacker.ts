@@ -244,7 +244,13 @@ export class SpritePacker {
         }
 
         // If the text information is malformed and we can't get the bounding box, then just return
-        const boundingBox = GetTextBoundingBox(this._pages[this._pages.length - 1].context, textData, this._rawFonts, this._variables);
+        const boundingBox = GetTextBoundingBox(
+            this._pages[this._pages.length - 1].context,
+            textData,
+            this._rawFonts,
+            this._variables,
+            this._configuration.textLayerCompatibilityMode
+        );
         if (boundingBox === undefined) {
             return undefined;
         }
@@ -611,7 +617,7 @@ export class SpritePacker {
 
         ApplyLottieTextContext(page.context, resolvedText);
 
-        const layout = MeasureLottieText(resolvedText, (text) => page.context.measureText(text));
+        const layout = MeasureLottieText(resolvedText, (text) => page.context.measureText(text), this._configuration.textLayerCompatibilityMode);
 
         // Clip to cell bounds to prevent text overdraw into adjacent cells
         page.context.beginPath();

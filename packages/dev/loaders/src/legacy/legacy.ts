@@ -4,6 +4,6 @@ export * from "./legacy-bvhFileLoader";
 export * from "./legacy-dynamic";
 export * from "./legacy-glTF";
 export * from "./legacy-glTF1";
-export * from "./legacy-glTF2";
+export { GLTF2 } from "./legacy-glTF2";
 export * from "./legacy-objFileLoader";
 export * from "./legacy-stlFileLoader";

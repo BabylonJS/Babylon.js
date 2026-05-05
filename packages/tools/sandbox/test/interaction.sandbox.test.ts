@@ -38,6 +38,25 @@ test("Sandbox is loaded (Desktop)", async ({ page }) => {
     await expect(page).toHaveScreenshot({ maxDiffPixels: 3000 });
 });
 
+test("Sandbox exposes the render canvas and main controls without page errors", async ({ page }) => {
+    const pageErrors: string[] = [];
+    page.on("pageerror", (err) => pageErrors.push(err.message));
+
+    await page.goto(url, {
+        waitUntil: "load",
+    });
+    await page.setViewportSize({
+        width: 1920,
+        height: 1080,
+    });
+    await waitForSandboxReady(page);
+
+    await expect(page.locator("#renderCanvas")).toBeVisible();
+    await expect(page.locator("#droptext")).toBeVisible();
+    await expect(page.getByTitle("Open your scene from your hard drive (.babylon, .gltf, .glb, .obj)")).toBeVisible();
+    expect(pageErrors).toHaveLength(0);
+});
+
 test("dropping an image to the sandbox", async ({ page }) => {
     await page.goto(url, {
         waitUntil: "load",

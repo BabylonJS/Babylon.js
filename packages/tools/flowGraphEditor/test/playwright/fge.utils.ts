@@ -7,7 +7,7 @@ const snapshot = process.env.SNAPSHOT ? "?snapshot=" + process.env.SNAPSHOT : ""
  * Build the base URL for the Flow Graph Editor.
  */
 export function getFgeUrl(): string {
-    return (process.env.FGE_BASE_URL || getGlobalConfig().baseUrl.replace(":1337", process.env.FGE_PORT || ":1345")) + snapshot;
+    return (process.env.FGE_BASE_URL || getGlobalConfig().baseUrl.replace(":1337", process.env.FGE_PORT || ":1347")) + snapshot;
 }
 
 /**
@@ -267,12 +267,11 @@ export class FlowGraphEditorPage {
      */
     async serializeGraph(): Promise<string> {
         return await this.page.evaluate(() => {
-            const editor = (globalThis as any).BABYLON.FlowGraphEditor;
-            if (!editor || !editor._CurrentState) {
+            const editor = (globalThis as any).BABYLON?.FlowGraphEditor;
+            const graph = editor?._CurrentState?.flowGraph ?? (globalThis as any).__viteFlowGraphEditorArgs?.[0]?.flowGraph;
+            if (!graph) {
                 throw new Error("FlowGraphEditor instance not found");
             }
-            const globalState = editor._CurrentState;
-            const graph = globalState.flowGraph;
             const serializationObject: any = {};
             graph.serialize(serializationObject);
             return JSON.stringify(serializationObject);

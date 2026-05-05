@@ -17,7 +17,7 @@ import {
 } from "./rawTypes";
 import { type AnimationInfo, type ScalarKeyframe, type ScalarProperty, type Transform, type Vector2Keyframe, type Vector2Property } from "./parsedTypes";
 
-import { type SpritePacker } from "./spritePacker";
+import { type SpriteAtlasInfo, type SpritePacker } from "./spritePacker";
 import { SpriteNode } from "../nodes/spriteNode";
 
 import { BezierCurve } from "../maths/bezier";
@@ -490,10 +490,8 @@ export class Parser {
             return undefined;
         }
 
-        // Create the anchor node so text layers have the same scene graph structure as shape layers:
-        // ControlNode (TRS) -> Node (Anchor) -> SpriteNode. Positioning then mirrors _parseShapes,
-        // using the layout-derived center returned by addLottieText.
-        const anchorNode = this._parseNullLayer(layer, transform, parent);
+        const useBabylon8TextPlacement = this._configuration.textLayerCompatibilityMode === "babylon8";
+        const spriteParent = useBabylon8TextPlacement ? parent : this._parseNullLayer(layer, transform, parent);
 
         // Build the ThinSprite from the texture packer information
         const sprite = new ThinSprite();
@@ -511,26 +509,39 @@ export class Parser {
 
         this._renderingManager.addSprite(sprite, this._currentLayerOriginalIndex, spriteInfo.atlasIndex);
 
-        // The text layout (justification, baseline, paragraph box) is already baked into
-        // spriteInfo.centerX/centerY (boundingBox.offsetX/offsetY). Y is negated because Lottie's
-        // Y axis points down while Babylon's sprite system has Y pointing up. Same pattern as _parseShapes.
-        const positionProperty: Vector2Property = {
-            startValue: { x: spriteInfo.centerX || 0, y: -spriteInfo.centerY || 0 },
-            currentValue: { x: spriteInfo.centerX || 0, y: -spriteInfo.centerY || 0 },
-            currentKeyframeIndex: 0,
-        };
+        const positionProperty = useBabylon8TextPlacement ? this._getBabylon8TextPosition(layer, transform, spriteInfo) : this._getTextPosition(spriteInfo);
 
-        new SpriteNode(
+        const spriteNode = new SpriteNode(
             "Sprite",
             sprite,
             positionProperty,
             undefined, // Rotation is not used for sprites final transform
             undefined, // Scale is not used for sprites final transform
             undefined, // Opacity is not used for sprites final transform
-            anchorNode
+            spriteParent
         );
 
-        return anchorNode;
+        return useBabylon8TextPlacement ? spriteNode : spriteParent;
+    }
+
+    private _getTextPosition(spriteInfo: SpriteAtlasInfo): Vector2Property {
+        return {
+            startValue: { x: spriteInfo.centerX || 0, y: -spriteInfo.centerY || 0 },
+            currentValue: { x: spriteInfo.centerX || 0, y: -spriteInfo.centerY || 0 },
+            currentKeyframeIndex: 0,
+        };
+    }
+
+    private _getBabylon8TextPosition(layer: RawTextLayer, transform: Transform, spriteInfo: SpriteAtlasInfo): Vector2Property {
+        const textAlignment = layer.t.d?.k?.[0]?.s?.j ?? 0;
+        const xAlignmentOffset = textAlignment === 0 ? spriteInfo.widthPx / 2 : textAlignment === 1 ? -spriteInfo.widthPx / 2 : 0;
+        const yBaselineOffset = spriteInfo.heightPx / 2;
+
+        return {
+            startValue: { x: transform.anchorPoint.startValue.x + xAlignmentOffset, y: transform.anchorPoint.startValue.y + yBaselineOffset },
+            currentValue: { x: transform.anchorPoint.currentValue.x + xAlignmentOffset, y: transform.anchorPoint.currentValue.y + yBaselineOffset },
+            currentKeyframeIndex: 0,
+        };
     }
 
     private _parseElements(elements: RawElement[] | undefined, parent: Node, rasterizationFrame: number): void {

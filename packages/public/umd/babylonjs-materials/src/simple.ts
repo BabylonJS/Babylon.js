@@ -1,3 +1,2 @@
-import * as materials from "materials/legacy/legacy-simple";
-export { materials };
-export default materials;
+import "materials/legacy/legacy-simple";
+export * from "materials/legacy/legacy-simple";

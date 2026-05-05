@@ -1,3 +1,2 @@
-import * as materials from "materials/legacy/legacy-fur";
-export { materials };
-export default materials;
+import "materials/legacy/legacy-fur";
+export * from "materials/legacy/legacy-fur";

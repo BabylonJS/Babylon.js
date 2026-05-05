@@ -8,12 +8,12 @@ export default commonUMDRollupConfiguration({
     mode,
     devMode,
     devPackageName: "inspector-legacy",
-    devPackageAliasPath: "../../../dev/inspector/dist",
+    devPackageAliasPath: devMode ? "../../../dev/inspector/src" : "../../../dev/inspector/dist",
     namespace: "INSPECTOR",
     outputPath: path.resolve("."),
     maxMode: true,
     minToMax: true,
     alias: {
-        "shared-ui-components": path.resolve("../../../dev/sharedUiComponents/dist"),
+        "shared-ui-components": path.resolve(devMode ? "../../../dev/sharedUiComponents/src" : "../../../dev/sharedUiComponents/dist"),
     },
 });

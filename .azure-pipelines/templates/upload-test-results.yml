@@ -47,7 +47,7 @@ steps:
 
           curl $(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_UPLOAD) -i -X POST \
             -H "Content-Type: multipart/form-data" \
-            -H "Authorization: $(BASIC_AUTH)" \
+            -H "Authorization: Bearer $(DEPLOY_TOKEN)" \
             -F "path=${{ parameters.deployPath }}" \
             -F "storageAccount=${{ parameters.storageAccount }}" \
             -F "zip=@_test_report.zip"

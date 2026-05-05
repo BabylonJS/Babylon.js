@@ -1,8 +1,7 @@
 /**
  * Monaco Editor web worker setup.
  *
- * webpack's MonacoWebpackPlugin bundled each worker into a single file automatically.
- * For Vite dev mode we use a custom esbuild-backed middleware that bundles each worker
+ * Vite dev mode uses a custom esbuild-backed middleware that bundles each worker
  * into a single IIFE served at /__monaco-worker-{editor,ts}.js — avoiding the
  * 500-1000+ individual monaco-editor/esm/* requests that module workers cause.
  *

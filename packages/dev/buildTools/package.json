@@ -17,8 +17,6 @@
         "build-tools": "./dist/index.js"
     },
     "dependencies": {
-        "@pmmmwh/react-refresh-webpack-plugin": "^0.6.0",
-        "dotenv": "^16.0.0",
-        "react-refresh-typescript": "^2.0.12"
+        "dotenv": "^16.0.0"
     }
 }

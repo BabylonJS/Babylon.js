@@ -107,7 +107,7 @@ deploy tools.
 
 | Variable            | Description                           |
 | ------------------- | ------------------------------------- |
-| `BASIC_AUTH`        | Deployment server authorization token |
+| `DEPLOY_TOKEN`        | Deployment server authorization token |
 | `DEPLOYMENT_SERVER` | Deployment server base URL            |
 
 Linked by: ci-monorepo, ci-playground-sandbox, ci-graph-tools, cd-publish, cd-tools.

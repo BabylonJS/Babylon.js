@@ -373,6 +373,12 @@ export abstract class Light extends Node implements ISortableLight {
     public _currentViewDepth = 0;
 
     /**
+     * Used internally by ClusteredLightContainer to keep child lights out of mesh light source lists.
+     * @internal
+     */
+    public _clusteredContainer: Nullable<Light> = null;
+
+    /**
      * Creates a Light object in the scene.
      * Documentation : https://doc.babylonjs.com/features/featuresDeepDive/lights/lights_introduction
      * @param name The friendly name of the light
@@ -802,6 +808,10 @@ export abstract class Light extends Node implements ISortableLight {
         array.push = (...items: AbstractMesh[]) => {
             const result = oldPush.apply(array, items);
 
+            if (this._clusteredContainer) {
+                return result;
+            }
+
             for (const item of items) {
                 item._resyncLightSource(this);
             }
@@ -813,6 +823,10 @@ export abstract class Light extends Node implements ISortableLight {
         array.splice = (index: number, deleteCount?: number) => {
             const deleted = oldSplice.call(array, index, deleteCount ?? array.length);
 
+            if (this._clusteredContainer) {
+                return deleted;
+            }
+
             for (const item of deleted) {
                 item._resyncLightSource(this);
             }
@@ -820,8 +834,10 @@ export abstract class Light extends Node implements ISortableLight {
             return deleted;
         };
 
-        for (const item of array) {
-            item._resyncLightSource(this);
+        if (!this._clusteredContainer) {
+            for (const item of array) {
+                item._resyncLightSource(this);
+            }
         }
     }
 
@@ -848,6 +864,10 @@ export abstract class Light extends Node implements ISortableLight {
     }
 
     private _resyncMeshes() {
+        if (this._clusteredContainer) {
+            return;
+        }
+
         for (const mesh of this.getScene().meshes) {
             mesh._resyncLightSource(this);
         }

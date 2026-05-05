@@ -182,7 +182,7 @@ export class ScenePreviewComponent extends React.Component<IScenePreviewComponen
         }
 
         try {
-            // Dynamic imports — these resolve to the BABYLON global via webpack externals
+            // Dynamic imports resolved to the BABYLON global by the UMD dev server
             const { Engine } = await import("core/Engines/engine");
             const { Scene } = await import("core/scene");
             const { ArcRotateCamera } = await import("core/Cameras/arcRotateCamera");

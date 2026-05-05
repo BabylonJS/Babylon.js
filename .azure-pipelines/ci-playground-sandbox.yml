@@ -7,7 +7,7 @@
 #
 # Variable groups:
 #   - BabylonJS-CI-Infrastructure
-#   - BabylonJS-Deployment (BASIC_AUTH, DEPLOYMENT_SERVER)
+#   - BabylonJS-Deployment (DEPLOY_TOKEN, DEPLOYMENT_SERVER)
 # =============================================================================
 
 trigger: none
@@ -22,7 +22,6 @@ pr:
             - packages/tools/sandbox/**/*.*
             - packages/dev/sharedUiComponents/**/*.*
             - "**/*playground*"
-            - packages/dev/buildTools/src/webpackTools.ts
             - "**/*sandbox*"
             - packages/dev/inspector-v2/**/*.*
 

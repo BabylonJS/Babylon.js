@@ -48,7 +48,7 @@ export default defineConfig({
             //
             // The production HTML (public/index.html) uses a CDN bootstrap that
             // loads `babylon.sandbox.js` then calls BABYLON.Sandbox.Show().
-            // In the webpack era this file was the compiled bundle. With Vite the
+            // In the old dev-server flow this file was the compiled bundle. With Vite the
             // bundle is ES modules in assets/. This plugin generates a shim that:
             //   1. Injects <style> tags with inlined CSS and a <script type="module">
             //      tag for the Vite-built entry chunk (with correct hashed filename).
@@ -56,7 +56,7 @@ export default defineConfig({
             //      dispatches an event picked up by main.ts.
             //
             // CSS is inlined as <style> (not loaded via <link>) so it is applied
-            // synchronously — matching the old webpack style-loader behavior and
+            // synchronously, matching the old runtime style-injection behavior and
             // preventing Playwright screenshots from capturing an unstyled page.
             name: "generate-sandbox-shim",
             apply: "build" as const,

@@ -6,20 +6,35 @@ import { type RenderingManager } from "../../src/rendering/renderingManager";
 import { SpriteNode } from "../../src/nodes/spriteNode";
 import { ControlNode } from "../../src/nodes/controlNode";
 import { Node } from "../../src/nodes/node";
-import { type RawElement, type RawLottieAnimation, type RawShapeLayer, type RawTextLayer, type RawTransform } from "../../src/parsing/rawTypes";
+import { type RawElement, type RawLottieAnimation, type RawShapeLayer, type RawTextJustify, type RawTextLayer, type RawTransform } from "../../src/parsing/rawTypes";
 import { type AnimationConfiguration } from "../../src/animationConfiguration";
 
-// Minimal valid empty transform (all fields optional, parser fills in defaults).
-function makeTransform(): RawTransform {
-    return {};
+// Minimal valid transform with a configurable anchor point.
+function makeTransform(anchorPoint: number[] = [0, 0]): RawTransform {
+    return { a: { a: 0, k: anchorPoint, l: 2 } };
 }
 
 // Minimal valid text data. Content does not matter because the SpritePacker is mocked,
 // but the type requires these fields.
-function makeTextData(): RawTextLayer["t"] {
+function makeTextData(justification: RawTextJustify = 0): RawTextLayer["t"] {
     return {
         a: [],
-        d: { k: [] },
+        d: {
+            k: [
+                {
+                    t: 0,
+                    s: {
+                        f: "Arial",
+                        s: 16,
+                        lh: 16,
+                        t: "Text",
+                        ca: 0,
+                        j: justification,
+                        ls: 0,
+                    },
+                },
+            ],
+        },
         m: { a: { a: 0, k: [0, 0], l: 2 }, g: 1 },
     };
 }
@@ -65,11 +80,9 @@ function makeMockRenderingManager(): RenderingManager {
     return mock as unknown as RenderingManager;
 }
 
-function makeConfiguration(): AnimationConfiguration {
-    // Parser only uses the configuration object to forward to other components; none of its
-    // own logic dereferences fields. Cast through unknown so we don't have to enumerate
-    // every property of AnimationConfiguration.
-    return {} as unknown as AnimationConfiguration;
+function makeConfiguration(configuration: Partial<AnimationConfiguration> = {}): AnimationConfiguration {
+    // Cast through unknown so these focused parser tests only need to provide fields the parser reads directly.
+    return configuration as unknown as AnimationConfiguration;
 }
 
 // Recursively finds the first descendant node whose id starts with the given prefix.
@@ -128,6 +141,42 @@ describe("Parser scene graph structure", () => {
         expect(anchor.children).toHaveLength(1);
         const sprite = anchor.children[0];
         expect(sprite).toBeInstanceOf(SpriteNode);
+        expect(sprite.positionStart).toEqual({ x: 8, y: -8 });
+    });
+
+    it("can parse text layers with Babylon 8 text placement compatibility", () => {
+        const animation: RawLottieAnimation = {
+            v: "5.0.0",
+            fr: 30,
+            ip: 0,
+            op: 60,
+            w: 100,
+            h: 100,
+            layers: [
+                {
+                    ty: 5,
+                    ind: 1,
+                    nm: "Text",
+                    ip: 0,
+                    op: 60,
+                    st: 0,
+                    ks: makeTransform([3, 5]),
+                    t: makeTextData(1),
+                } as RawTextLayer,
+            ],
+        };
+
+        const parser = new Parser(makeMockPacker(), animation, makeConfiguration({ textLayerCompatibilityMode: "babylon8" }), makeMockRenderingManager());
+        const roots = parser.animationInfo.nodes;
+
+        expect(roots).toHaveLength(1);
+        const trs = roots[0];
+        expect(trs).toBeInstanceOf(ControlNode);
+        expect(trs.children).toHaveLength(1);
+
+        const sprite = trs.children[0];
+        expect(sprite).toBeInstanceOf(SpriteNode);
+        expect(sprite.positionStart).toEqual({ x: -11, y: 13 });
     });
 
     it("parents a child shape layer under the text layer's anchor Node, not its SpriteNode", () => {

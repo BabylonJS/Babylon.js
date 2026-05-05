@@ -11,7 +11,7 @@ import { type GlobalState } from "../../globalState";
 import { type SceneContext } from "../../sceneContext";
 import { type Observer } from "core/Misc/observable";
 
-// FlowGraphAssetType is a const enum — mirror string values here so webpack doesn't inline stale values.
+// FlowGraphAssetType is a const enum; mirror string values here so bundlers do not inline stale values.
 const AssetTypeOptions = [
     { label: "Mesh", value: "Mesh" },
     { label: "Light", value: "Light" },
