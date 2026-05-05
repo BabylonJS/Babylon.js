@@ -1,6 +1,23 @@
 import { NullEngine } from "core/Engines/nullEngine";
 import { Scene } from "core/scene";
-import { SmartAssetManager } from "core/SmartAssets/index";
+import {
+    type SmartAssetManager,
+    CreateSmartAssetManager,
+    DisposeSmartAssetManager,
+    FindSmartAssetKeyForObject,
+    GetAllSmartAssets,
+    GetSmartAssetManagerFromScene,
+    GetSmartAssetProvenance,
+    LoadAllSmartAssetsAsync,
+    LoadSmartAssetAsync,
+    RegisterSmartAsset,
+    RemoveSmartAssetAsync,
+    ResolveSmartAsset,
+    SerializeSmartAssetManagerMap,
+    SetSmartAssetManagerCreatedCallback,
+    SetSmartAssetUrlAsync,
+    UnloadSmartAssetAsync,
+} from "core/SmartAssets/index";
 import { FileToolsOptions } from "core/Misc/fileTools";
 import type { ISmartAssetLoadedEvent, ISmartAssetUrlChangedEvent, ISmartAssetErrorEvent, ISmartAssetUnloadedEvent } from "core/SmartAssets/index";
 
@@ -41,12 +58,12 @@ describe("SmartAssetManager", () => {
             lockstepMaxSteps: 1,
         });
         scene = new Scene(engine);
-        manager = new SmartAssetManager(scene);
+        manager = CreateSmartAssetManager(scene);
         vi.clearAllMocks();
     });
 
     afterEach(() => {
-        manager.dispose();
+        DisposeSmartAssetManager(manager);
         scene.dispose();
         engine.dispose();
     });
@@ -55,25 +72,25 @@ describe("SmartAssetManager", () => {
 
     describe("register", () => {
         it("should register a key and make it resolvable", () => {
-            manager.register("chair", "models/chair.glb");
-            expect(manager.resolve("chair")).toBe("models/chair.glb");
+            RegisterSmartAsset(manager, "chair", "models/chair.glb");
+            expect(ResolveSmartAsset(manager, "chair")).toBe("models/chair.glb");
         });
 
         it("should return all registered entries", () => {
-            manager.register("chair", "chair.glb");
-            manager.register("table", "table.glb");
-            manager.register("lamp", "lamp.glb");
-            expect(manager.getAll().size).toBe(3);
+            RegisterSmartAsset(manager, "chair", "chair.glb");
+            RegisterSmartAsset(manager, "table", "table.glb");
+            RegisterSmartAsset(manager, "lamp", "lamp.glb");
+            expect(GetAllSmartAssets(manager).size).toBe(3);
         });
 
         it("should overwrite URL on re-register", () => {
-            manager.register("chair", "chair_v1.glb");
-            manager.register("chair", "chair_v2.glb");
-            expect(manager.resolve("chair")).toBe("chair_v2.glb");
+            RegisterSmartAsset(manager, "chair", "chair_v1.glb");
+            RegisterSmartAsset(manager, "chair", "chair_v2.glb");
+            expect(ResolveSmartAsset(manager, "chair")).toBe("chair_v2.glb");
         });
 
         it("should return undefined for unregistered key", () => {
-            expect(manager.resolve("nonexistent")).toBeUndefined();
+            expect(ResolveSmartAsset(manager, "nonexistent")).toBeUndefined();
         });
     });
 
@@ -81,41 +98,41 @@ describe("SmartAssetManager", () => {
 
     describe("scene attachment", () => {
         it("should be discoverable via GetFromScene", () => {
-            const found = SmartAssetManager.GetFromScene(scene);
+            const found = GetSmartAssetManagerFromScene(scene);
             expect(found).toBe(manager);
         });
 
         it("should return undefined after dispose", () => {
-            manager.dispose();
-            expect(SmartAssetManager.GetFromScene(scene)).toBeUndefined();
+            DisposeSmartAssetManager(manager);
+            expect(GetSmartAssetManagerFromScene(scene)).toBeUndefined();
         });
 
         it("should support separate managers on separate scenes", () => {
             const scene2 = new Scene(engine);
-            const manager2 = new SmartAssetManager(scene2);
+            const manager2 = CreateSmartAssetManager(scene2);
 
-            expect(SmartAssetManager.GetFromScene(scene)).toBe(manager);
-            expect(SmartAssetManager.GetFromScene(scene2)).toBe(manager2);
+            expect(GetSmartAssetManagerFromScene(scene)).toBe(manager);
+            expect(GetSmartAssetManagerFromScene(scene2)).toBe(manager2);
 
-            manager2.dispose();
+            DisposeSmartAssetManager(manager2);
             scene2.dispose();
         });
 
         it("should keep asset protocol resolution alive when managers are disposed out of order", () => {
             const scene2 = new Scene(engine);
-            const manager2 = new SmartAssetManager(scene2);
+            const manager2 = CreateSmartAssetManager(scene2);
 
-            manager.register("first", "first.glb");
-            manager2.register("second", "second.glb");
+            RegisterSmartAsset(manager, "first", "first.glb");
+            RegisterSmartAsset(manager2, "second", "second.glb");
 
             expect(FileToolsOptions.PreprocessUrl("asset://first")).toBe("first.glb");
             expect(FileToolsOptions.PreprocessUrl("asset://second")).toBe("second.glb");
 
-            manager.dispose();
+            DisposeSmartAssetManager(manager);
 
             expect(FileToolsOptions.PreprocessUrl("asset://second")).toBe("second.glb");
 
-            manager2.dispose();
+            DisposeSmartAssetManager(manager2);
 
             scene2.dispose();
         });
@@ -126,15 +143,15 @@ describe("SmartAssetManager", () => {
     describe("OnInstanceCreated", () => {
         it("should call static OnInstanceCreated on construction", () => {
             const callback = vi.fn();
-            SmartAssetManager.OnInstanceCreated = callback;
+            SetSmartAssetManagerCreatedCallback(callback);
 
             const scene2 = new Scene(engine);
-            const manager2 = new SmartAssetManager(scene2);
+            const manager2 = CreateSmartAssetManager(scene2);
 
             expect(callback).toHaveBeenCalledWith(manager2);
 
-            SmartAssetManager.OnInstanceCreated = null;
-            manager2.dispose();
+            SetSmartAssetManagerCreatedCallback(null);
+            DisposeSmartAssetManager(manager2);
             scene2.dispose();
         });
     });
@@ -143,13 +160,13 @@ describe("SmartAssetManager", () => {
 
     describe("remove", () => {
         it("should remove a registered key", async () => {
-            manager.register("chair", "chair.glb");
-            await manager.remove("chair");
-            expect(manager.resolve("chair")).toBeUndefined();
+            RegisterSmartAsset(manager, "chair", "chair.glb");
+            await RemoveSmartAssetAsync(manager, "chair");
+            expect(ResolveSmartAsset(manager, "chair")).toBeUndefined();
         });
 
         it("should be a no-op for unregistered key", async () => {
-            await expect(manager.remove("nonexistent")).resolves.toBeUndefined();
+            await expect(RemoveSmartAssetAsync(manager, "nonexistent")).resolves.toBeUndefined();
         });
     });
 
@@ -157,32 +174,32 @@ describe("SmartAssetManager", () => {
 
     describe("loadAsync", () => {
         it("should load an asset and return the container", async () => {
-            const container = await manager.loadAsync("chair", "models/chair.glb");
+            const container = await LoadSmartAssetAsync(manager, "chair", "models/chair.glb");
 
             expect(container).toBeDefined();
             expect(mockAddAllToScene).toHaveBeenCalled();
         });
 
         it("should auto-register when URL is provided", async () => {
-            await manager.loadAsync("chair", "models/chair.glb");
-            expect(manager.resolve("chair")).toBe("models/chair.glb");
+            await LoadSmartAssetAsync(manager, "chair", "models/chair.glb");
+            expect(ResolveSmartAsset(manager, "chair")).toBe("models/chair.glb");
         });
 
         it("should return existing container if already loaded", async () => {
-            const container1 = await manager.loadAsync("chair", "models/chair.glb");
-            const container2 = await manager.loadAsync("chair");
+            const container1 = await LoadSmartAssetAsync(manager, "chair", "models/chair.glb");
+            const container2 = await LoadSmartAssetAsync(manager, "chair");
             expect(container1).toBe(container2);
         });
 
         it("should throw for unregistered key without URL", async () => {
-            await expect(manager.loadAsync("nonexistent")).rejects.toThrow(/not registered/);
+            await expect(LoadSmartAssetAsync(manager, "nonexistent")).rejects.toThrow(/not registered/);
         });
 
         it("should fire onAssetLoadedObservable", async () => {
             const events: ISmartAssetLoadedEvent[] = [];
             manager.onAssetLoadedObservable.add((e) => events.push(e));
 
-            await manager.loadAsync("chair", "models/chair.glb");
+            await LoadSmartAssetAsync(manager, "chair", "models/chair.glb");
 
             expect(events.length).toBe(1);
             expect(events[0].key).toBe("chair");
@@ -193,11 +210,11 @@ describe("SmartAssetManager", () => {
 
     describe("loadAllAsync", () => {
         it("should load all registered assets concurrently", async () => {
-            manager.register("a", "a.glb");
-            manager.register("b", "b.glb");
-            manager.register("c", "c.glb");
+            RegisterSmartAsset(manager, "a", "a.glb");
+            RegisterSmartAsset(manager, "b", "b.glb");
+            RegisterSmartAsset(manager, "c", "c.glb");
 
-            const containers = await manager.loadAllAsync();
+            const containers = await LoadAllSmartAssetsAsync(manager);
             expect(containers.length).toBe(3);
         });
     });
@@ -206,8 +223,8 @@ describe("SmartAssetManager", () => {
 
     describe("unloadAsync", () => {
         it("should unload a loaded asset", async () => {
-            await manager.loadAsync("chair", "models/chair.glb");
-            await manager.unloadAsync("chair");
+            await LoadSmartAssetAsync(manager, "chair", "models/chair.glb");
+            await UnloadSmartAssetAsync(manager, "chair");
 
             expect(mockRemoveAllFromScene).toHaveBeenCalled();
             expect(mockDispose).toHaveBeenCalled();
@@ -217,17 +234,17 @@ describe("SmartAssetManager", () => {
             const events: ISmartAssetUnloadedEvent[] = [];
             manager.onAssetUnloadedObservable.add((e) => events.push(e));
 
-            await manager.loadAsync("chair", "models/chair.glb");
-            await manager.unloadAsync("chair");
+            await LoadSmartAssetAsync(manager, "chair", "models/chair.glb");
+            await UnloadSmartAssetAsync(manager, "chair");
 
             expect(events.length).toBe(1);
             expect(events[0].key).toBe("chair");
         });
 
         it("should keep the key registered after unload", async () => {
-            await manager.loadAsync("chair", "models/chair.glb");
-            await manager.unloadAsync("chair");
-            expect(manager.resolve("chair")).toBe("models/chair.glb");
+            await LoadSmartAssetAsync(manager, "chair", "models/chair.glb");
+            await UnloadSmartAssetAsync(manager, "chair");
+            expect(ResolveSmartAsset(manager, "chair")).toBe("models/chair.glb");
         });
     });
 
@@ -238,8 +255,8 @@ describe("SmartAssetManager", () => {
             const events: ISmartAssetUrlChangedEvent[] = [];
             manager.onUrlChangedObservable.add((e) => events.push(e));
 
-            manager.register("chair", "chair_v1.glb");
-            await manager.setUrl("chair", "chair_v2.glb");
+            RegisterSmartAsset(manager, "chair", "chair_v1.glb");
+            await SetSmartAssetUrlAsync(manager, "chair", "chair_v2.glb");
 
             expect(events.length).toBe(1);
             expect(events[0].oldUrl).toBe("chair_v1.glb");
@@ -247,9 +264,9 @@ describe("SmartAssetManager", () => {
         });
 
         it("should update the resolved URL", async () => {
-            manager.register("chair", "chair_v1.glb");
-            await manager.setUrl("chair", "chair_v2.glb");
-            expect(manager.resolve("chair")).toBe("chair_v2.glb");
+            RegisterSmartAsset(manager, "chair", "chair_v1.glb");
+            await SetSmartAssetUrlAsync(manager, "chair", "chair_v2.glb");
+            expect(ResolveSmartAsset(manager, "chair")).toBe("chair_v2.glb");
         });
     });
 
@@ -257,9 +274,9 @@ describe("SmartAssetManager", () => {
 
     describe("provenance", () => {
         it("should track provenance after loading", async () => {
-            await manager.loadAsync("chair", "models/chair.glb");
+            await LoadSmartAssetAsync(manager, "chair", "models/chair.glb");
 
-            const prov = manager.getProvenance("chair");
+            const prov = GetSmartAssetProvenance(manager, "chair");
             expect(prov).toBeDefined();
             expect(prov!.key).toBe("chair");
             expect(prov!.meshNames).toContain("Mesh1");
@@ -267,14 +284,14 @@ describe("SmartAssetManager", () => {
         });
 
         it("should return undefined for unloaded key", () => {
-            manager.register("chair", "models/chair.glb");
-            expect(manager.getProvenance("chair")).toBeUndefined();
+            RegisterSmartAsset(manager, "chair", "models/chair.glb");
+            expect(GetSmartAssetProvenance(manager, "chair")).toBeUndefined();
         });
 
         it("should support findKeyForObject", async () => {
-            const container = await manager.loadAsync("chair", "models/chair.glb");
+            const container = await LoadSmartAssetAsync(manager, "chair", "models/chair.glb");
             const mesh = container.meshes[0];
-            expect(manager.findKeyForObject(mesh as any)).toBe("chair");
+            expect(FindSmartAssetKeyForObject(manager, mesh as any)).toBe("chair");
         });
     });
 
@@ -288,7 +305,7 @@ describe("SmartAssetManager", () => {
             const errors: ISmartAssetErrorEvent[] = [];
             manager.onAssetErrorObservable.add((e) => errors.push(e));
 
-            await expect(manager.loadAsync("missing", "missing.glb")).rejects.toThrow("404");
+            await expect(LoadSmartAssetAsync(manager, "missing", "missing.glb")).rejects.toThrow("404");
 
             expect(errors.length).toBeGreaterThanOrEqual(1);
             expect(errors[0].key).toBe("missing");
@@ -302,7 +319,7 @@ describe("SmartAssetManager", () => {
 
             manager.onAssetNotFound = vi.fn(async () => "fallback.glb");
 
-            const container = await manager.loadAsync("missing", "missing.glb");
+            const container = await LoadSmartAssetAsync(manager, "missing", "missing.glb");
 
             expect(manager.onAssetNotFound).toHaveBeenCalledWith("missing", "missing.glb");
             expect(container).toBeDefined();
@@ -314,7 +331,7 @@ describe("SmartAssetManager", () => {
 
             manager.onAssetNotFound = vi.fn(async () => null);
 
-            await expect(manager.loadAsync("missing", "missing.glb")).rejects.toThrow("404");
+            await expect(LoadSmartAssetAsync(manager, "missing", "missing.glb")).rejects.toThrow("404");
         });
     });
 
@@ -322,10 +339,10 @@ describe("SmartAssetManager", () => {
 
     describe("serialization", () => {
         it("should serialize the registry", () => {
-            manager.register("chair", "chair.glb");
-            manager.register("table", "table.glb");
+            RegisterSmartAsset(manager, "chair", "chair.glb");
+            RegisterSmartAsset(manager, "table", "table.glb");
 
-            const serialized = manager.serializeAssetMap();
+            const serialized = SerializeSmartAssetManagerMap(manager);
             expect(serialized.version).toBe(1);
             expect(serialized.assets["chair"].url).toBe("chair.glb");
             expect(serialized.assets["table"].url).toBe("table.glb");

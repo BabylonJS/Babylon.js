@@ -1,6 +1,19 @@
 import { NullEngine } from "core/Engines/nullEngine";
 import { Scene } from "core/scene";
-import { SmartAssetManager, OverrideManager } from "core/SmartAssets/index";
+import {
+    type OverrideManager,
+    type SmartAssetManager,
+    AddOverride,
+    CreateOverrideManager,
+    CreateSmartAssetManager,
+    DisposeOverrideManager,
+    DisposeSmartAssetManager,
+    GetOverrides,
+    GetSmartAssetProvenance,
+    LinkOverrideManagerSmartAssets,
+    RegisterSmartAsset,
+    ResolveSmartAsset,
+} from "core/SmartAssets/index";
 import { SerializeProject, DeserializeProject, LoadProjectAsync } from "core/SmartAssets/projectSerializer";
 
 // Store scene reference for mock containers to populate
@@ -59,15 +72,15 @@ describe("ProjectSerializer", () => {
         });
         scene = new Scene(engine);
         _currentScene = scene;
-        sam = new SmartAssetManager(scene);
-        overrides = new OverrideManager(scene);
-        overrides.linkSmartAssetManager(sam);
+        sam = CreateSmartAssetManager(scene);
+        overrides = CreateOverrideManager(scene);
+        LinkOverrideManagerSmartAssets(overrides, sam);
         vi.clearAllMocks();
     });
 
     afterEach(() => {
-        overrides.dispose();
-        sam.dispose();
+        DisposeOverrideManager(overrides);
+        DisposeSmartAssetManager(sam);
         scene.dispose();
         engine.dispose();
         _currentScene = null;
@@ -77,10 +90,10 @@ describe("ProjectSerializer", () => {
 
     describe("serializeProject", () => {
         it("should produce a valid project bundle with assets and overrides", async () => {
-            sam.register("chair", "models/chair.glb");
-            sam.register("table", "models/table.glb");
+            RegisterSmartAsset(sam, "chair", "models/chair.glb");
+            RegisterSmartAsset(sam, "table", "models/table.glb");
 
-            overrides.addOverride({
+            AddOverride(overrides, {
                 key: "",
                 targetType: "scene",
                 targetName: "",
@@ -99,7 +112,7 @@ describe("ProjectSerializer", () => {
         });
 
         it("should produce empty overrides array when no overrides exist", () => {
-            sam.register("chair", "chair.glb");
+            RegisterSmartAsset(sam, "chair", "chair.glb");
 
             const bundle = SerializeProject(sam, overrides);
 
@@ -158,10 +171,10 @@ describe("ProjectSerializer", () => {
 
     describe("round-trip", () => {
         it("should produce identical output on serialize → deserialize → serialize", async () => {
-            sam.register("chair", "chair.glb");
-            sam.register("table", "table.glb");
+            RegisterSmartAsset(sam, "chair", "chair.glb");
+            RegisterSmartAsset(sam, "table", "table.glb");
 
-            overrides.addOverride({
+            AddOverride(overrides, {
                 key: "chair",
                 targetType: "materials",
                 targetName: "WoodMaterial",
@@ -169,7 +182,7 @@ describe("ProjectSerializer", () => {
                 value: 0.5,
             });
 
-            overrides.addOverride({
+            AddOverride(overrides, {
                 key: "",
                 targetType: "scene",
                 targetName: "",
@@ -214,12 +227,12 @@ describe("ProjectSerializer", () => {
             await LoadProjectAsync(projectDoc, sam, overrides);
 
             // Asset should be registered and loaded
-            expect(sam.resolve("chair")).toBe("chair.glb");
-            expect(sam.getProvenance("chair")).toBeDefined();
+            expect(ResolveSmartAsset(sam, "chair")).toBe("chair.glb");
+            expect(GetSmartAssetProvenance(sam, "chair")).toBeDefined();
 
             // Override should be applied
             expect(scene.fogDensity).toBe(0.4);
-            expect(overrides.getOverrides().length).toBe(1);
+            expect(GetOverrides(overrides).length).toBe(1);
         });
 
         it("should work with empty overrides", async () => {
@@ -233,8 +246,8 @@ describe("ProjectSerializer", () => {
 
             await LoadProjectAsync(projectDoc, sam, overrides);
 
-            expect(sam.resolve("table")).toBe("table.glb");
-            expect(overrides.getOverrides().length).toBe(0);
+            expect(ResolveSmartAsset(sam, "table")).toBe("table.glb");
+            expect(GetOverrides(overrides).length).toBe(0);
         });
     });
 });

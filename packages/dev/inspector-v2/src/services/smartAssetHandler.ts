@@ -1,5 +1,11 @@
-import { SmartAssetManager } from "core/SmartAssets/smartAssetManager";
-import { OverrideManager } from "core/SmartAssets/overrideManager";
+import { CreateOverrideManager, GetOverrideManagerFromScene, LinkOverrideManagerSmartAssets, type OverrideManager } from "core/SmartAssets/overrideManager";
+import {
+    CreateSmartAssetManager,
+    GetSmartAssetManagerCreatedCallback,
+    GetSmartAssetManagerFromScene,
+    SetSmartAssetManagerCreatedCallback,
+    type SmartAssetManager,
+} from "core/SmartAssets/smartAssetManager";
 import { type Scene } from "core/scene";
 
 /**
@@ -97,28 +103,28 @@ export function installAssetNotFoundHandler(sam: SmartAssetManager): void {
 
 /**
  * Installs the `onAssetNotFound` handler eagerly: on any existing
- * SmartAssetManager on the scene, and via `OnInstanceCreated` for
+ * SmartAssetManager on the scene, and via the manager-created callback for
  * any future instances. Returns a dispose function to clean up.
  * @param scene - The scene to install hooks on.
  * @returns A dispose function that restores the previous hooks.
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export function installSmartAssetHooks(scene: Scene): () => void {
-    const existing = SmartAssetManager.GetFromScene(scene);
+    const existing = GetSmartAssetManagerFromScene(scene);
     if (existing) {
         installAssetNotFoundHandler(existing);
     }
 
-    const previousOnInstanceCreated = SmartAssetManager.OnInstanceCreated;
+    const previousOnInstanceCreated = GetSmartAssetManagerCreatedCallback();
     const onInstanceCreated = (manager: SmartAssetManager) => {
         previousOnInstanceCreated?.(manager);
         installAssetNotFoundHandler(manager);
     };
-    SmartAssetManager.OnInstanceCreated = onInstanceCreated;
+    SetSmartAssetManagerCreatedCallback(onInstanceCreated);
 
     return () => {
-        if (SmartAssetManager.OnInstanceCreated === onInstanceCreated) {
-            SmartAssetManager.OnInstanceCreated = previousOnInstanceCreated;
+        if (GetSmartAssetManagerCreatedCallback() === onInstanceCreated) {
+            SetSmartAssetManagerCreatedCallback(previousOnInstanceCreated);
         }
     };
 }
@@ -130,17 +136,17 @@ export function installSmartAssetHooks(scene: Scene): () => void {
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export function getOrCreateManagers(scene: Scene): { sam: SmartAssetManager; overrides: OverrideManager } {
-    let sam = SmartAssetManager.GetFromScene(scene);
+    let sam = GetSmartAssetManagerFromScene(scene);
     if (!sam) {
-        sam = new SmartAssetManager(scene);
+        sam = CreateSmartAssetManager(scene);
     }
 
     installAssetNotFoundHandler(sam);
 
-    let overrides = OverrideManager.GetFromScene(scene);
+    let overrides = GetOverrideManagerFromScene(scene);
     if (!overrides) {
-        overrides = new OverrideManager(scene);
-        overrides.linkSmartAssetManager(sam);
+        overrides = CreateOverrideManager(scene);
+        LinkOverrideManagerSmartAssets(overrides, sam);
     }
 
     return { sam, overrides };

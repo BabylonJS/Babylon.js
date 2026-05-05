@@ -1,8 +1,8 @@
 import { zipSync, unzipSync, strToU8, strFromU8 } from "fflate";
 
-import { type SmartAssetManager } from "core/SmartAssets/smartAssetManager";
 import { type OverrideManager } from "core/SmartAssets/overrideManager";
 import { SerializeProject, LoadProjectAsync, PROJECT_LOCALS_KEY } from "core/SmartAssets/projectSerializer";
+import { IsSmartAssetTextureKey, type SmartAssetManager } from "core/SmartAssets/smartAssetManager";
 
 /**
  * Serializes a project into a `.babylonproject` zip bundle.
@@ -47,7 +47,7 @@ export async function saveProjectBundleAsync(sam: SmartAssetManager, overrides: 
             continue;
         }
         const { key, entry, arrayBuffer } = result;
-        const ext = _guessExtension(entry.url, key, sam.isTextureKey(key));
+        const ext = _guessExtension(entry.url, key, IsSmartAssetTextureKey(sam, key));
         const filename = `assets/${key}${ext}`;
         files[filename] = new Uint8Array(arrayBuffer);
         projectAssets[key] = { ...entry, url: filename };
@@ -70,7 +70,7 @@ export async function saveProjectBundleAsync(sam: SmartAssetManager, overrides: 
 
     // Create the zip
     const zipped = zipSync(files, { level: 6 });
-    return new Blob([zipped], { type: "application/zip" });
+    return new Blob([_copyToArrayBuffer(zipped)], { type: "application/zip" });
 }
 
 /**
@@ -101,7 +101,7 @@ export async function loadProjectBundleAsync(zipFile: File, sam: SmartAssetManag
             const mimeType = _guessMimeType(filename);
             // Use a named File so LoadAssetContainerAsync can detect the
             // format from the filename (blob URLs alone have no extension).
-            const file = new File([fileBytes], filename, { type: mimeType });
+            const file = new File([_copyToArrayBuffer(fileBytes)], filename, { type: mimeType });
             const blobUrl = URL.createObjectURL(file);
             entry.url = blobUrl;
         }
@@ -136,6 +136,18 @@ function _guessExtension(url: string, key: string, isTexture: boolean): string {
         }
     }
     return isTexture ? ".png" : ".glb";
+}
+
+/**
+ * Copies bytes into an ArrayBuffer-backed buffer accepted by Blob and File constructors.
+ * @param bytes - The source bytes.
+ * @returns A copied ArrayBuffer.
+ */
+// eslint-disable-next-line @typescript-eslint/naming-convention
+function _copyToArrayBuffer(bytes: Uint8Array): ArrayBuffer {
+    const copy = new Uint8Array(bytes.byteLength);
+    copy.set(bytes);
+    return copy.buffer;
 }
 
 /**

@@ -2,6 +2,8 @@ import { useCallback, useState, type FunctionComponent } from "react";
 
 import { type Scene, type IDisposable } from "core/scene";
 import { SerializeProject } from "core/SmartAssets/projectSerializer";
+import { GetOverrides } from "core/SmartAssets/overrideManager";
+import { GetAllSmartAssets } from "core/SmartAssets/smartAssetManager";
 import { Tools } from "core/Misc/tools";
 
 import { type ServiceDefinition } from "shared-ui-components/modularTool/modularity/serviceDefinition";
@@ -82,7 +84,7 @@ const SmartAssetProjectTools: FunctionComponent<{ scene: Scene }> = (props: { sc
             try {
                 const { sam, overrides } = managers();
                 await loadProjectBundleAsync(file, sam, overrides);
-                setStatusMessage(`Loaded: ${sam.getAll().size} assets, ${overrides.getOverrides().length} overrides`);
+                setStatusMessage(`Loaded: ${GetAllSmartAssets(sam).size} assets, ${GetOverrides(overrides).length} overrides`);
             } catch (err) {
                 setStatusMessage(`Load error: ${err}`);
             }

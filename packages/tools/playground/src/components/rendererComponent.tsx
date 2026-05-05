@@ -10,7 +10,19 @@ import { type InspectorToken } from "inspector/inspector";
 import { type InspectableToken } from "inspector/inspectable";
 import { type ModularBridgeToken } from "inspector/index";
 
-import { Engine, EngineStore, WebGPUEngine, LastCreatedAudioEngine, Logger, type Nullable, type Scene, type ThinEngine, SmartAssetManager } from "@dev/core";
+import {
+    Engine,
+    EngineStore,
+    WebGPUEngine,
+    LastCreatedAudioEngine,
+    Logger,
+    GetSmartAssetManagerCreatedCallback,
+    SetSmartAssetManagerCreatedCallback,
+    type Nullable,
+    type Scene,
+    type SmartAssetManager,
+    type ThinEngine,
+} from "@dev/core";
 import { inspectorAssetNotFoundHandler } from "inspector/services/smartAssetHandler";
 
 import { MakePlaygroundCommandServiceDefinition } from "../tools/playgroundCommandService";
@@ -447,11 +459,14 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
 
             // Install SmartAssetManager hook BEFORE user code runs so
             // onAssetNotFound is available during createScene execution.
-            SmartAssetManager.OnInstanceCreated = (manager) => {
+            const previousSmartAssetManagerCreatedCallback = GetSmartAssetManagerCreatedCallback();
+            const smartAssetManagerCreatedCallback = (manager: SmartAssetManager) => {
+                previousSmartAssetManagerCreatedCallback?.(manager);
                 if (!manager.onAssetNotFound) {
                     manager.onAssetNotFound = inspectorAssetNotFoundHandler;
                 }
             };
+            SetSmartAssetManagerCreatedCallback(smartAssetManagerCreatedCallback);
 
             let sceneResult: Scene | null = null;
             let createdEngine: ThinEngine | null = null;
@@ -464,7 +479,9 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
                 );
                 this._engine = createdEngine as Engine;
             } catch (err) {
-                SmartAssetManager.OnInstanceCreated = null;
+                if (GetSmartAssetManagerCreatedCallback() === smartAssetManagerCreatedCallback) {
+                    SetSmartAssetManagerCreatedCallback(previousSmartAssetManagerCreatedCallback);
+                }
                 this._failRun(err, "The playground timed out while running the scene.");
                 return;
             }

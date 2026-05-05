@@ -6,8 +6,18 @@ import { DirectionalLight } from "core/Lights/directionalLight";
 import { Vector3 } from "core/Maths/math.vector";
 import { Color3, Color4 } from "core/Maths/math.color";
 import { Logger } from "core/Misc/logger";
-import { SmartAssetManager } from "core/SmartAssets/smartAssetManager";
-import { OverrideManager } from "core/SmartAssets/overrideManager";
+import {
+    AddOverride,
+    ApplyAllOverrides,
+    CreateOverrideManager,
+    LinkOverrideManagerSmartAssets,
+} from "core/SmartAssets/overrideManager";
+import {
+    CreateSmartAssetManager,
+    FindSmartAssetKeyForObject,
+    LoadSmartAssetAsync,
+    LoadSmartAssetTextureAsync,
+} from "core/SmartAssets/smartAssetManager";
 import { SerializeProject, PROJECT_LOCALS_KEY } from "core/SmartAssets/projectSerializer";
 import { SceneSerializer } from "core/Misc/sceneSerializer";
 import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
@@ -74,14 +84,14 @@ export const createScene = async function (engine: Engine, canvas: HTMLCanvasEle
     // ═══════════════════════════════════════════════════════════════
     // Step 1: Load a mesh GLB as a smart asset
     // ═══════════════════════════════════════════════════════════════
-    const sam = new SmartAssetManager(scene);
+    const sam = CreateSmartAssetManager(scene);
     sam.onAssetNotFound = async (key, url) => {
         log("MISSING", `Asset "${key}" not found at "${url}" — skipping`);
         return null;
     };
 
-    await sam.loadAsync("boombox", "https://playground.babylonjs.com/scenes/BoomBox.glb");
-    const boomboxMesh = scene.meshes.find((m) => sam.findKeyForObject(m) === "boombox" && m.name !== "__root__");
+    await LoadSmartAssetAsync(sam, "boombox", "https://playground.babylonjs.com/scenes/BoomBox.glb");
+    const boomboxMesh = scene.meshes.find((m) => FindSmartAssetKeyForObject(sam, m) === "boombox" && m.name !== "__root__");
     if (boomboxMesh) {
         pass("Step 1: Loaded mesh GLB as smart asset");
     } else {
@@ -91,8 +101,8 @@ export const createScene = async function (engine: Engine, canvas: HTMLCanvasEle
     // ═══════════════════════════════════════════════════════════════
     // Step 2: Load standalone textures as smart assets
     // ═══════════════════════════════════════════════════════════════
-    const albedoTex = await sam.loadTextureAsync("albedo-tex", "https://playground.babylonjs.com/textures/floor.png");
-    const bumpTex = await sam.loadTextureAsync("bump-tex", "https://playground.babylonjs.com/textures/normalMap.jpg");
+    const albedoTex = await LoadSmartAssetTextureAsync(sam, "albedo-tex", "https://playground.babylonjs.com/textures/floor.png");
+    const bumpTex = await LoadSmartAssetTextureAsync(sam, "bump-tex", "https://playground.babylonjs.com/textures/normalMap.jpg");
 
     if (albedoTex && bumpTex) {
         pass("Step 2: Loaded 2 standalone textures as smart assets");
@@ -138,26 +148,26 @@ export const createScene = async function (engine: Engine, canvas: HTMLCanvasEle
     // ═══════════════════════════════════════════════════════════════
     // Step 6: Set up overrides for the assembly
     // ═══════════════════════════════════════════════════════════════
-    const overrides = new OverrideManager(scene);
-    overrides.linkSmartAssetManager(sam);
+    const overrides = CreateOverrideManager(scene);
+    LinkOverrideManagerSmartAssets(overrides, sam);
 
     // Override mesh transform
     if (boomboxMesh) {
-        overrides.addOverride({
+        AddOverride(overrides, {
             key: "boombox",
             targetType: "meshes",
             targetName: boomboxMesh.name,
             propertyPath: "scaling.x",
             value: 2,
         });
-        overrides.addOverride({
+        AddOverride(overrides, {
             key: "boombox",
             targetType: "meshes",
             targetName: boomboxMesh.name,
             propertyPath: "scaling.y",
             value: 2,
         });
-        overrides.addOverride({
+        AddOverride(overrides, {
             key: "boombox",
             targetType: "meshes",
             targetName: boomboxMesh.name,
@@ -166,7 +176,7 @@ export const createScene = async function (engine: Engine, canvas: HTMLCanvasEle
         });
 
         // Material assignment as a reference override
-        overrides.addOverride({
+        AddOverride(overrides, {
             key: "boombox",
             targetType: "meshes",
             targetName: boomboxMesh.name,
@@ -178,14 +188,14 @@ export const createScene = async function (engine: Engine, canvas: HTMLCanvasEle
 
     // Texture→material slot assignments as reference overrides
     // These use the "texture:key" syntax to reference smart-asset-loaded textures
-    overrides.addOverride({
+    AddOverride(overrides, {
         key: "",
         targetType: "materials",
         targetName: "custom-assembly-mat",
         propertyPath: "albedoTexture",
         value: "texture:albedo-tex",
     });
-    overrides.addOverride({
+    AddOverride(overrides, {
         key: "",
         targetType: "materials",
         targetName: "custom-assembly-mat",
@@ -195,7 +205,7 @@ export const createScene = async function (engine: Engine, canvas: HTMLCanvasEle
     pass("Step 6b: Texture slot overrides added (albedo + bump)");
 
     // Scene-level override
-    overrides.addOverride({
+    AddOverride(overrides, {
         key: "",
         targetType: "scene",
         targetName: "",
@@ -270,7 +280,7 @@ export const createScene = async function (engine: Engine, canvas: HTMLCanvasEle
     // Step 9: Export to .babylon — verify clean output
     // ═══════════════════════════════════════════════════════════════
     try {
-        overrides.applyAllOverrides();
+        ApplyAllOverrides(overrides);
         const exportedScene = SceneSerializer.Serialize(scene);
         const exportJson = JSON.stringify(exportedScene);
         const exportHasCustomMat = (exportedScene.materials as any[])?.some(
