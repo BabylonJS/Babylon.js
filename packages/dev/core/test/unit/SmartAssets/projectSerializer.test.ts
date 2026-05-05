@@ -249,5 +249,20 @@ describe("ProjectSerializer", () => {
             expect(ResolveSmartAsset(sam, "table")).toBe("table.glb");
             expect(GetOverrides(overrides).length).toBe(0);
         });
+
+        it("should preserve plugin extension hints when loading blob-backed project assets", async () => {
+            const { LoadAssetContainerAsync } = await import("core/Loading/sceneLoader");
+            const projectDoc = {
+                version: 2 as const,
+                assets: {
+                    waterbottle: { url: "blob:waterbottle", extension: ".obj" },
+                },
+                overrides: [],
+            };
+
+            await LoadProjectAsync(projectDoc, sam, overrides);
+
+            expect(LoadAssetContainerAsync).toHaveBeenCalledWith("blob:waterbottle", scene, { pluginExtension: ".obj" });
+        });
     });
 });
