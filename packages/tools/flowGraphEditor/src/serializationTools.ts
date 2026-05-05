@@ -365,9 +365,8 @@ export class SerializationTools {
         if (scene) {
             try {
                 // The serializers bundle is loaded by the CDN serve and attaches
-                // GLTF2Export to the global BABYLON namespace. The webpack config
-                // externalizes `core/` → BABYLON but doesn't handle `serializers/`,
-                // so we access it from the global directly.
+                // GLTF2Export to the global BABYLON namespace, so we access it
+                // from the global directly.
                 // eslint-disable-next-line @typescript-eslint/naming-convention
                 const GLTF2Export = (globalThis as any).BABYLON?.GLTF2Export;
                 if (!GLTF2Export) {

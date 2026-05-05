@@ -1,3 +1,2 @@
-import * as materials from "materials/legacy/legacy-lava";
-export { materials };
-export default materials;
+import "materials/legacy/legacy-lava";
+export * from "materials/legacy/legacy-lava";

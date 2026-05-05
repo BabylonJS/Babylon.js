@@ -1,9 +1,8 @@
 /**
  * Shared Vite configuration helpers for Babylon.js tool dev servers.
  *
- * Mirrors the role that commonDevWebpackConfiguration played in webpackTools.ts
- * but targets Vite's native-ESM dev server for dramatically faster start times
- * and HMR performance.
+ * Shared configuration for Babylon.js tool apps running on Vite's native-ESM
+ * dev server.
  *
  * Usage in a vite.config.ts:
  *   import { commonDevViteConfiguration } from "../../../public/viteToolsHelper.mjs";
@@ -18,10 +17,11 @@ import { resolve, join } from "path";
 // ---------------------------------------------------------------------------
 
 /**
- * Vite plugin that restores webpack-compatible CSS module namespace import behaviour.
+ * Vite plugin that restores legacy CSS module namespace import behaviour.
  *
- * webpack transforms `import * as styles from "*.module.scss"` to CJS require(),
- * giving the class-map object directly (e.g. styles["graph-canvas"] works).
+ * The previous bundler transformed `import * as styles from "*.module.scss"`
+ * to CJS require(), giving the class-map object directly (e.g.
+ * styles["graph-canvas"] works).
  *
  * Vite emits CSS modules as ES modules with `export default { "class": "hashed" }`.
  * A namespace import (`import * as styles`) therefore returns the module namespace
@@ -119,7 +119,7 @@ export function babylonDevExternalsPlugin(externals) {
 
         // Transform-based approach (dev + build): rewrite import statements that
         // reference external packages into direct property accesses on the global.
-        // This is the exact equivalent of webpack's `externals: { "@dev/core": "BABYLON" }`.
+        // This maps external package imports to direct global property access.
         //
         // import { Logger } from "@dev/core"              → const { Logger } = BABYLON ?? {};
         // import { Color3 as C3 } from "core/Maths/..."   → const { Color3: C3 } = BABYLON ?? {};
@@ -244,11 +244,11 @@ export function commonDevViteConfiguration(options) {
         outDir = "dist",
     } = options;
 
-    // Mirror the webpack convention: ENABLE_HOT_RELOAD env var controls HMR.
+    // Preserve the legacy convention: ENABLE_HOT_RELOAD env var controls HMR.
     // Explicit option takes precedence; env var is the fallback; default is true.
     const enableHmr = enableHmrOption !== undefined ? enableHmrOption : process.env.ENABLE_HOT_RELOAD !== undefined ? process.env.ENABLE_HOT_RELOAD === "true" : true;
 
-    // Mirror the webpack convention: ENABLE_HTTPS env var controls HTTPS.
+    // Preserve the legacy convention: ENABLE_HTTPS env var controls HTTPS.
     const enableHttps = enableHttpsOption !== undefined ? enableHttpsOption : process.env.ENABLE_HTTPS === "true";
 
     // Resolve all alias values to absolute paths
@@ -295,7 +295,7 @@ export function commonDevViteConfiguration(options) {
             },
         },
 
-        // Tell Vite where to find static assets (mirrors webpack devServer.static)
+        // Tell Vite where to find static assets.
         publicDir,
 
         build: {

@@ -234,7 +234,7 @@ jobs:
           #       -F "storageAccount=$(TOOLS_STORAGE_ACCOUNT)" \
           #       -F "zip=@public.zip"
           #
-          #     curl "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_PURGE)?endpoint=$(CDN_ENDPOINT_SFE)&profileName=$(CDN_PROFILE_TOOLS)&wait=true" -i -H "Authorization: $(BASIC_AUTH)"
+          #     curl "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_PURGE)?endpoint=$(CDN_ENDPOINT_SFE)&profileName=$(CDN_PROFILE_TOOLS)&wait=true" -i -X POST -H "Authorization: $(BASIC_AUTH)"
           #   displayName: 'SFE deployment'
 
           # DISABLED in classic pipeline - Azure CLI upload and purge steps:

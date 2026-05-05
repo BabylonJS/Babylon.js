@@ -54,7 +54,6 @@ export const BlocklistBase = new Set([
     "@types/node",
     "@types/node-globals",
     "@types/node-fetch",
-    "@types/webpack-env",
     "envify",
     "source-map-support",
     "source-map",

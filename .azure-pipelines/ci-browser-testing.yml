@@ -6,7 +6,7 @@
 #          and WebGPU visualization runs against the production CDN, plus
 #          Google Closure Compiler validation.
 # Weekly (Saturday): Full performance test suite across all visualization tests
-#          for both WebGL2 and WebGPU.
+#          (WebGL2 and WebGPU combined in a single job).
 #
 # Schedule: 1:00 AM PST daily (09:00 UTC), plus 3:00 AM PST Saturday (11:00 UTC)
 #
@@ -374,10 +374,11 @@ jobs:
 
     # ============================================================================
     # WEEKLY PERFORMANCE TESTS (Saturday)
-    # Runs ALL visualization tests as performance tests for both WebGL2 and WebGPU.
+    # Runs ALL visualization tests (WebGL2 and WebGPU) as a single performance job.
     # Compares the two most recent stable @babylonjs/core releases from npm,
     # e.g. 9.12.0 (baseline) vs 9.13.0 (candidate).
     # Uses all available BrowserStack parallel agents.
+    # Job timeout is set to 120 minutes to accommodate the full suite.
     # ============================================================================
     - job: ResolvePerfVersions
       displayName: "Resolve perf versions"
@@ -410,10 +411,11 @@ jobs:
             name: ResolveVersions
             displayName: "Resolve perf comparison versions"
 
-    - job: WeeklyPerfWebGL2
-      displayName: "Weekly perf - WebGL2"
+    - job: WeeklyPerfAll
+      displayName: "Weekly perf - all tests"
       dependsOn: ResolvePerfVersions
       condition: and(succeeded(), eq(variables['Build.CronSchedule.DisplayName'], 'Weekly performance tests'))
+      timeoutInMinutes: 120
       variables:
           PERF_CDN_BASELINE: $[ dependencies.ResolvePerfVersions.outputs['ResolveVersions.PERF_CDN_BASELINE'] ]
           PERF_CDN_CANDIDATE: $[ dependencies.ResolvePerfVersions.outputs['ResolveVersions.PERF_CDN_CANDIDATE'] ]
@@ -444,27 +446,28 @@ jobs:
                   echo "##vso[task.setvariable variable=PerfTestsFailed]false"
                 fi
                 exit 0
-            displayName: "Performance - WebGL2 ALL (BStack)"
+            displayName: "Performance - ALL (BStack)"
             continueOnError: true
             env:
                 CDN_BASE_URL: "https://cdn.babylonjs.com"
                 CI: "true"
                 BSTACK_TEST_TYPE: "performance"
-                BSTACK_BUILD_NAME: "Weekly Perf - WebGL2 ($(PERF_CDN_BASELINE) vs $(PERF_CDN_CANDIDATE))"
+                BSTACK_BUILD_NAME: "Weekly Perf - ALL ($(PERF_CDN_BASELINE) vs $(PERF_CDN_CANDIDATE))"
                 VISUALIZATION_PERF: "true"
                 VISUALIZATION_PERF_ALL: "true"
                 CDN_VERSION: $(PERF_CDN_BASELINE)
                 CDN_VERSION_B: $(PERF_CDN_CANDIDATE)
                 TIMEOUT: "300000"
                 BSTACK_SESSIONS_REQUIRED: "5"
+                BSTACK_SESSIONS_MIN: "3"
                 BROWSERSTACK_USERNAME: $(BROWSERSTACK_USERNAME)
                 BROWSERSTACK_ACCESS_KEY: $(BROWSERSTACK_ACCESS_KEY)
 
           # Upload reports only when the perf run failed. Path is stable so the
           # previous weekly's report is overwritten and the URL never changes.
           - script: |
-                curl "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_DELETE)?path=$(NightlyReportRoot)/perfwebgl2playwright" -X POST -H "Authorization: $(BASIC_AUTH)"
-            displayName: "Delete previous weekly perf WebGL2 report"
+                curl "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_DELETE)?path=$(NightlyReportRoot)/perfplaywright" -X POST -H "Authorization: $(BASIC_AUTH)"
+            displayName: "Delete previous weekly perf report"
             condition: eq(variables['PerfTestsFailed'], 'true')
             continueOnError: true
 
@@ -472,15 +475,15 @@ jobs:
             parameters:
                 reportDir: "packages/tools/tests/playwright-report"
                 fallbackReportDir: "playwright-report"
-                deployPath: "$(NightlyReportRoot)/perfwebgl2playwright"
-                displayName: "Upload weekly perf WebGL2 report"
+                deployPath: "$(NightlyReportRoot)/perfplaywright"
+                displayName: "Upload weekly perf report"
                 condition: "eq(variables['PerfTestsFailed'], 'true')"
                 continueOnError: true
 
           - bash: |
-                echo "##[section]Weekly Perf WebGL2 report URL"
-                echo "  $(SNAPSHOT_CDN_URL)/$(NightlyReportRoot)/perfwebgl2playwright/index.html"
-            displayName: "Log weekly perf WebGL2 report URL"
+                echo "##[section]Weekly Perf report URL"
+                echo "  $(SNAPSHOT_CDN_URL)/$(NightlyReportRoot)/perfplaywright/index.html"
+            displayName: "Log weekly perf report URL"
             condition: eq(variables['PerfTestsFailed'], 'true')
 
           - task: PublishTestResults@2
@@ -489,85 +492,4 @@ jobs:
             inputs:
                 testResultsFormat: JUnit
                 testResultsFiles: "junit.xml"
-                testRunTitle: "Weekly Perf - WebGL2"
-
-    - job: WeeklyPerfWebGPU
-      displayName: "Weekly perf - WebGPU"
-      dependsOn: ResolvePerfVersions
-      condition: and(succeeded(), eq(variables['Build.CronSchedule.DisplayName'], 'Weekly performance tests'))
-      variables:
-          PERF_CDN_BASELINE: $[ dependencies.ResolvePerfVersions.outputs['ResolveVersions.PERF_CDN_BASELINE'] ]
-          PERF_CDN_CANDIDATE: $[ dependencies.ResolvePerfVersions.outputs['ResolveVersions.PERF_CDN_CANDIDATE'] ]
-      steps:
-          - checkout: self
-            clean: true
-            fetchTags: false
-
-          - task: UseNode@1
-            displayName: "Use Node 22.x"
-            inputs:
-                version: "22.x"
-
-          - script: npm install
-            displayName: "NPM install"
-            env:
-                PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: "true"
-                PUPPETEER_SKIP_DOWNLOAD: "true"
-
-          - bash: |
-                set +e
-                echo "Baseline: $(PERF_CDN_BASELINE), Candidate: $(PERF_CDN_CANDIDATE)"
-                .azure-pipelines/browserstack-wait.sh npx playwright test --config ./playwright.browserstack.config.ts -g "webgpu"
-                EXIT=$?
-                if [ $EXIT -ne 0 ]; then
-                  echo "##vso[task.setvariable variable=PerfTestsFailed]true"
-                else
-                  echo "##vso[task.setvariable variable=PerfTestsFailed]false"
-                fi
-                exit 0
-            displayName: "Performance - WebGPU ALL (BStack)"
-            continueOnError: true
-            env:
-                CDN_BASE_URL: "https://cdn.babylonjs.com"
-                CI: "true"
-                BSTACK_TEST_TYPE: "performance"
-                BSTACK_BUILD_NAME: "Weekly Perf - WebGPU ($(PERF_CDN_BASELINE) vs $(PERF_CDN_CANDIDATE))"
-                VISUALIZATION_PERF: "true"
-                VISUALIZATION_PERF_ALL: "true"
-                CDN_VERSION: $(PERF_CDN_BASELINE)
-                CDN_VERSION_B: $(PERF_CDN_CANDIDATE)
-                TIMEOUT: "300000"
-                BSTACK_SESSIONS_REQUIRED: "5"
-                BROWSERSTACK_USERNAME: $(BROWSERSTACK_USERNAME)
-                BROWSERSTACK_ACCESS_KEY: $(BROWSERSTACK_ACCESS_KEY)
-
-          # Upload reports only when the perf run failed. Path is stable so the
-          # previous weekly's report is overwritten and the URL never changes.
-          - script: |
-                curl "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_DELETE)?path=$(NightlyReportRoot)/perfwebgpuplaywright" -X POST -H "Authorization: $(BASIC_AUTH)"
-            displayName: "Delete previous weekly perf WebGPU report"
-            condition: eq(variables['PerfTestsFailed'], 'true')
-            continueOnError: true
-
-          - template: templates/upload-test-results.yml
-            parameters:
-                reportDir: "packages/tools/tests/playwright-report"
-                fallbackReportDir: "playwright-report"
-                deployPath: "$(NightlyReportRoot)/perfwebgpuplaywright"
-                displayName: "Upload weekly perf WebGPU report"
-                condition: "eq(variables['PerfTestsFailed'], 'true')"
-                continueOnError: true
-
-          - bash: |
-                echo "##[section]Weekly Perf WebGPU report URL"
-                echo "  $(SNAPSHOT_CDN_URL)/$(NightlyReportRoot)/perfwebgpuplaywright/index.html"
-            displayName: "Log weekly perf WebGPU report URL"
-            condition: eq(variables['PerfTestsFailed'], 'true')
-
-          - task: PublishTestResults@2
-            displayName: "Publish perf test results"
-            condition: succeededOrFailed()
-            inputs:
-                testResultsFormat: JUnit
-                testResultsFiles: "junit.xml"
-                testRunTitle: "Weekly Perf - WebGPU"
+                testRunTitle: "Weekly Perf - ALL"

@@ -1,8 +1,7 @@
 import { serialize, serializeAsColor3, expandToProperty } from "../Misc/decorators";
 import { type Nullable } from "../types";
 import { type Scene } from "../scene";
-import { type Matrix } from "../Maths/math.vector";
-import { Vector3 } from "../Maths/math.vector";
+import { type Matrix, Vector3 } from "../Maths/math.vector";
 import { Color3, TmpColors } from "../Maths/math.color";
 import { Node } from "../node";
 import { type AbstractMesh } from "../Meshes/abstractMesh";
@@ -10,8 +9,7 @@ import { type Effect } from "../Materials/effect";
 import { UniformBuffer } from "../Materials/uniformBuffer";
 import { type IShadowGenerator } from "./Shadows/shadowGenerator";
 import { GetClass } from "../Misc/typeStore";
-import { type ISortableLight } from "./lightConstants";
-import { LightConstants } from "./lightConstants";
+import { type ISortableLight, LightConstants } from "./lightConstants";
 import { type Camera } from "../Cameras/camera";
 import { SerializationHelper } from "../Misc/decorators.serialization";
 /**
@@ -373,6 +371,12 @@ export abstract class Light extends Node implements ISortableLight {
      * @internal
      */
     public _currentViewDepth = 0;
+
+    /**
+     * Used internally by ClusteredLightContainer to keep child lights out of mesh light source lists.
+     * @internal
+     */
+    public _clusteredContainer: Nullable<Light> = null;
 
     /**
      * Creates a Light object in the scene.
@@ -784,13 +788,29 @@ export abstract class Light extends Node implements ISortableLight {
             light.setEnabled(parsedLight.isEnabled);
         }
 
+        light._onParsed(parsedLight, scene);
+
         return light;
+    }
+
+    /**
+     * Called after the light has been fully parsed and all base properties have been set.
+     * Override in subclasses to handle custom serialized data.
+     * @param _parsedLight The JSON representation of the light
+     * @param _scene The scene the light belongs to
+     */
+    protected _onParsed(_parsedLight: any, _scene: Scene): void {
+        // Override in subclasses
     }
 
     private _hookArrayForExcluded(array: AbstractMesh[]): void {
         const oldPush = array.push;
         array.push = (...items: AbstractMesh[]) => {
             const result = oldPush.apply(array, items);
+
+            if (this._clusteredContainer) {
+                return result;
+            }
 
             for (const item of items) {
                 item._resyncLightSource(this);
@@ -803,6 +823,10 @@ export abstract class Light extends Node implements ISortableLight {
         array.splice = (index: number, deleteCount?: number) => {
             const deleted = oldSplice.call(array, index, deleteCount ?? array.length);
 
+            if (this._clusteredContainer) {
+                return deleted;
+            }
+
             for (const item of deleted) {
                 item._resyncLightSource(this);
             }
@@ -810,8 +834,10 @@ export abstract class Light extends Node implements ISortableLight {
             return deleted;
         };
 
-        for (const item of array) {
-            item._resyncLightSource(this);
+        if (!this._clusteredContainer) {
+            for (const item of array) {
+                item._resyncLightSource(this);
+            }
         }
     }
 
@@ -838,6 +864,10 @@ export abstract class Light extends Node implements ISortableLight {
     }
 
     private _resyncMeshes() {
+        if (this._clusteredContainer) {
+            return;
+        }
+
         for (const mesh of this.getScene().meshes) {
             mesh._resyncLightSource(this);
         }
@@ -933,6 +963,15 @@ export abstract class Light extends Node implements ISortableLight {
             scene.requireLightSorting = true;
         }
         this.getScene().sortLightsByPriority();
+    }
+
+    /**
+     * Returns true when all texture resources used by this light are ready (e.g. projection textures).
+     * Override in subclasses that use texture resources.
+     * @returns true if all light textures are ready
+     */
+    public areLightTexturesReady(): boolean {
+        return true;
     }
 
     /**

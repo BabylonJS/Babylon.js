@@ -1049,7 +1049,7 @@ jobs:
 
           - script: |
                 # Async purge: don't block CI on the CDN purge completing.
-                curl "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_PURGE)?endpoint=$(CDN_ENDPOINT_CDN)&profileName=$(CDN_PROFILE_CDN)&wait=false" -i -H "Authorization: $(BASIC_AUTH)"
+                curl "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_PURGE)?endpoint=$(CDN_ENDPOINT_CDN)&profileName=$(CDN_PROFILE_CDN)&wait=false" -i -X POST -H "Authorization: $(BASIC_AUTH)"
 
-                curl "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_PURGE)?endpoint=$(CDN_ENDPOINT_PREVIEW_CDN)&profileName=$(CDN_PROFILE_CDN)&wait=false" -i -H "Authorization: $(BASIC_AUTH)"
+                curl "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_PURGE)?endpoint=$(CDN_ENDPOINT_PREVIEW_CDN)&profileName=$(CDN_PROFILE_CDN)&wait=false" -i -X POST -H "Authorization: $(BASIC_AUTH)"
             displayName: "Purge CDN"

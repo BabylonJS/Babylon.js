@@ -10,18 +10,13 @@
     "scripts": {
         "build": "npm run clean && npm run compile",
         "build:declaration": "build-tools -c pud --config ./config.json",
-        "build:deployment": "npm run clean && webpack --env mode=production",
+        "build:deployment": "npm run clean && rollup -c rollup.config.umd.mjs --environment ROLLUP_MODE:production",
         "compile": "tsc -b tsconfig.build.json",
         "clean": "rimraf dist"
     },
     "dependencies": {},
     "devDependencies": {
-        "@dev/build-tools": "1.0.0",
-        "source-map-loader": "^4.0.0",
-        "ts-loader": "^9.2.6",
-        "webpack": "^5.103.0",
-        "webpack-cli": "6.0.1",
-        "webpack-merge": "^5.8.0"
+        "@dev/build-tools": "1.0.0"
     },
     "sideEffects": true
 }

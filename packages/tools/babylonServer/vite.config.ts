@@ -17,7 +17,7 @@ const TOOLS_ROOT = path.resolve(__dirname, "../../tools");
  * Maps URL paths to files in the rollup UMD output directories.
  * Each entry: [url path prefix (no leading slash), umd package dir, file pattern]
  *
- * The webpack config had entries like:
+ * The previous dev server had entries like:
  *   "gui/babylon.gui.min": `./src/gui/index-dev.ts`
  * which produced `/gui/babylon.gui.min.js` served at that URL.
  *
@@ -95,7 +95,7 @@ const umdUrlMap: Record<string, { dir: string; file: string }> = {
 
 /**
  * Declaration file URL rewrites — maps URL paths to files in the declarations/ dir.
- * Mirrors the webpack historyApiFallback rewrites for .d.ts files.
+ * Mirrors the legacy dev-server rewrites for .d.ts files.
  */
 const declarationRewrites: Record<string, string> = {
     "babylon.d.ts": "core.d.ts",
@@ -118,7 +118,7 @@ const declarationRewrites: Record<string, string> = {
 
 /**
  * Vite plugin that serves pre-built rollup UMD bundles and handles URL rewrites.
- * Replaces webpack's entry-point compilation + devServer configuration.
+ * Replaces the old entry-point compilation and dev-server configuration.
  *
  * Features:
  * - Serves UMD bundles from rollup output directories
