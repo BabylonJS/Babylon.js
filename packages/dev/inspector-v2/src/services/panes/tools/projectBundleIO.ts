@@ -27,26 +27,30 @@ export async function saveProjectBundleAsync(sam: SmartAssetManager, overrides: 
     // Rewrite their URLs in the project JSON to relative paths.
     const projectAssets = { ...bundle.project.assets };
 
-    for (const [key, entry] of Object.entries(projectAssets)) {
-        if (key === PROJECT_LOCALS_KEY) {
-            // Companion is handled separately below
-            continue;
-        }
-
-        if (entry.url.startsWith("blob:") || entry.url.startsWith("data:")) {
-            // Fetch the blob content and bundle it
+    // Fetch all blob/data URIs in parallel (avoid serial awaits in a loop).
+    const blobEntries = Object.entries(projectAssets).filter(([key, entry]) => key !== PROJECT_LOCALS_KEY && (entry.url.startsWith("blob:") || entry.url.startsWith("data:")));
+    const fetched = await Promise.all(
+        blobEntries.map(async ([key, entry]) => {
             try {
                 const response = await fetch(entry.url);
                 const arrayBuffer = await response.arrayBuffer();
-                const ext = _guessExtension(entry.url, key, sam.isTextureKey(key));
-                const filename = `assets/${key}${ext}`;
-                files[filename] = new Uint8Array(arrayBuffer);
-                projectAssets[key] = { ...entry, url: filename };
+                return { key, entry, arrayBuffer };
             } catch {
                 // Can't fetch blob — leave the URL as-is (will break on reload,
-                // but at least the project structure is preserved)
+                // but at least the project structure is preserved).
+                return null;
             }
+        })
+    );
+    for (const result of fetched) {
+        if (!result) {
+            continue;
         }
+        const { key, entry, arrayBuffer } = result;
+        const ext = _guessExtension(entry.url, key, sam.isTextureKey(key));
+        const filename = `assets/${key}${ext}`;
+        files[filename] = new Uint8Array(arrayBuffer);
+        projectAssets[key] = { ...entry, url: filename };
     }
 
     // Add companion .babylon if it exists
@@ -142,12 +146,19 @@ function _guessExtension(url: string, key: string, isTexture: boolean): string {
 // eslint-disable-next-line @typescript-eslint/naming-convention
 function _mimeToExtension(mime: string): string {
     const map: Record<string, string> = {
+        // eslint-disable-next-line @typescript-eslint/naming-convention
         "model/gltf-binary": ".glb",
+        // eslint-disable-next-line @typescript-eslint/naming-convention
         "model/gltf+json": ".gltf",
+        // eslint-disable-next-line @typescript-eslint/naming-convention
         "image/png": ".png",
+        // eslint-disable-next-line @typescript-eslint/naming-convention
         "image/jpeg": ".jpg",
+        // eslint-disable-next-line @typescript-eslint/naming-convention
         "image/webp": ".webp",
+        // eslint-disable-next-line @typescript-eslint/naming-convention
         "application/octet-stream": ".glb",
+        // eslint-disable-next-line @typescript-eslint/naming-convention
         "application/json": ".babylon",
     };
     return map[mime] ?? "";

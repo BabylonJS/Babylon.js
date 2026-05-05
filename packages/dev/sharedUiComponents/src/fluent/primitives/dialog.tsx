@@ -1,12 +1,4 @@
-import {
-    Dialog as FluentDialog,
-    DialogSurface,
-    DialogBody,
-    DialogTitle,
-    DialogContent,
-    DialogActions,
-    DialogTrigger,
-} from "@fluentui/react-components";
+import { Dialog as FluentDialog, DialogSurface, DialogBody, DialogTitle, DialogContent, DialogActions, DialogTrigger } from "@fluentui/react-components";
 import { DismissRegular } from "@fluentui/react-icons";
 import { type ReactNode, type FC } from "react";
 import { Button } from "./button";
@@ -37,7 +29,7 @@ export type DialogProps = {
     children: ReactNode;
     /** Action buttons rendered in the footer. */
     actions?: DialogActionProps[];
-    /** Called when the dialog is dismissed (close button or escape). */
+    /** Called when the dialog is dismissed via the close button. */
     onDismiss?: () => void;
     /** Modal type. Defaults to "modal". */
     modalType?: "modal" | "alert" | "non-modal";
@@ -61,19 +53,30 @@ export type DialogProps = {
  *     <Text>Are you sure you want to proceed?</Text>
  * </Dialog>
  * ```
+ *
+ * @param props - The dialog props.
+ * @returns The dialog element.
  */
 export const Dialog: FC<DialogProps> = (props) => {
     const { open, title, children, actions, onDismiss, modalType = "modal" } = props;
 
     return (
-        <FluentDialog open={open} modalType={modalType}>
+        <FluentDialog
+            open={open}
+            modalType={modalType}
+            onOpenChange={(_, data) => {
+                if (!data.open && onDismiss) {
+                    onDismiss();
+                }
+            }}
+        >
             <DialogSurface>
                 <DialogBody>
                     <DialogTitle
                         action={
                             onDismiss ? (
                                 <DialogTrigger action="close">
-                                    <Button appearance="subtle" aria-label="close" icon={DismissRegular} onClick={onDismiss} />
+                                    <Button appearance="subtle" aria-label="close" icon={DismissRegular} />
                                 </DialogTrigger>
                             ) : undefined
                         }
@@ -84,13 +87,7 @@ export const Dialog: FC<DialogProps> = (props) => {
                     {actions && actions.length > 0 && (
                         <DialogActions>
                             {actions.map((action, index) => (
-                                <Button
-                                    key={index}
-                                    appearance={action.appearance ?? "secondary"}
-                                    onClick={action.onClick}
-                                    disabled={action.disabled}
-                                    label={action.label}
-                                />
+                                <Button key={index} appearance={action.appearance ?? "secondary"} onClick={action.onClick} disabled={action.disabled} label={action.label} />
                             ))}
                         </DialogActions>
                     )}

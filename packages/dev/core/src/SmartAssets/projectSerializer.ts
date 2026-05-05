@@ -207,10 +207,13 @@ function _isLocalObject(obj: object, sam: SmartAssetManager): boolean {
 }
 
 /**
- * Builds a minimal `.babylon`-compatible JSON containing only scene objects
- * (materials, lights, cameras) that are not owned by any external smart asset.
- * Texture references on materials are rewritten to `asset://key` for
- * SAM-tracked textures so they resolve correctly via the protocol hook.
+ * Builds a minimal `.babylon`-compatible JSON containing only scene materials
+ * that are not owned by any external smart asset. Texture references on
+ * materials are rewritten to `asset://key` for SAM-tracked textures so they
+ * resolve correctly via the protocol hook.
+ *
+ * Note: lights and cameras are not currently serialized into the companion
+ * file. User-created lights/cameras will not survive a save/load cycle.
  *
  * @param scene - The scene to extract locals from.
  * @param sam - The SmartAssetManager to check object ownership.

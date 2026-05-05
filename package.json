@@ -139,8 +139,5 @@
             "@typescript-eslint/utils": "^8.58.2"
         },
         "dompurify": "3.4.0"
-    },
-    "dependencies": {
-        "@fluentui-contrib/react-resize-handle": "^0.8.4"
     }
 }

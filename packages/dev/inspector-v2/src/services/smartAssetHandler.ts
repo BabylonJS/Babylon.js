@@ -3,8 +3,8 @@ import { OverrideManager } from "core/SmartAssets/overrideManager";
 import { type Scene } from "core/scene";
 
 /**
- * Default Inspector handler for missing assets — shows a centered overlay
- * message and opens a file picker so the user can locate the file.
+ * Default handler for missing assets — shows an overlay dialog with
+ * "Locate File" and "Skip" buttons.
  * @param key - The smart asset key that was not found.
  * @param expectedUrl - The URL that failed to load.
  * @returns A promise resolving to a new URL, File, or null to skip.
@@ -21,11 +21,31 @@ export async function inspectorAssetNotFoundHandler(key: string, expectedUrl: st
         const dialog = document.createElement("div");
         dialog.style.cssText =
             "background:#2d2d2d;color:#eee;padding:24px 32px;border-radius:8px;" + "font:14px sans-serif;max-width:500px;text-align:center;box-shadow:0 4px 24px rgba(0,0,0,0.6);";
-        dialog.innerHTML =
-            `<div style="font-size:16px;font-weight:bold;margin-bottom:8px;">Asset not found</div>` +
-            `<div style="margin-bottom:4px;">Key: <b>${key}</b></div>` +
-            `<div style="margin-bottom:16px;opacity:0.6;font-size:12px;word-break:break-all;">${shortUrl}</div>` +
-            `<div style="margin-bottom:16px;">Locate the file or click Skip to continue without it.</div>`;
+
+        // Build dialog content with createElement/textContent to avoid XSS via key/expectedUrl.
+        const titleEl = document.createElement("div");
+        titleEl.style.cssText = "font-size:16px;font-weight:bold;margin-bottom:8px;";
+        titleEl.textContent = "Asset not found";
+
+        const keyEl = document.createElement("div");
+        keyEl.style.cssText = "margin-bottom:4px;";
+        keyEl.appendChild(document.createTextNode("Key: "));
+        const keyBold = document.createElement("b");
+        keyBold.textContent = key;
+        keyEl.appendChild(keyBold);
+
+        const urlEl = document.createElement("div");
+        urlEl.style.cssText = "margin-bottom:16px;opacity:0.6;font-size:12px;word-break:break-all;";
+        urlEl.textContent = shortUrl;
+
+        const promptEl = document.createElement("div");
+        promptEl.style.cssText = "margin-bottom:16px;";
+        promptEl.textContent = "Locate the file or click Skip to continue without it.";
+
+        dialog.appendChild(titleEl);
+        dialog.appendChild(keyEl);
+        dialog.appendChild(urlEl);
+        dialog.appendChild(promptEl);
 
         const btnRow = document.createElement("div");
         btnRow.style.cssText = "display:flex;gap:12px;justify-content:center;";
@@ -64,7 +84,7 @@ export async function inspectorAssetNotFoundHandler(key: string, expectedUrl: st
 }
 
 /**
- * Installs the Inspector's `onAssetNotFound` handler on a SmartAssetManager
+ * Installs the default `onAssetNotFound` handler on a SmartAssetManager
  * if no handler is already set.
  * @param sam - The SmartAssetManager to install the handler on.
  */
@@ -84,22 +104,20 @@ export function installAssetNotFoundHandler(sam: SmartAssetManager): void {
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export function installSmartAssetHooks(scene: Scene): () => void {
-    // Retroactively install on existing manager
     const existing = SmartAssetManager.GetFromScene(scene);
     if (existing) {
         installAssetNotFoundHandler(existing);
     }
 
-    // Install on any future instances
     const previousOnInstanceCreated = SmartAssetManager.OnInstanceCreated;
-    SmartAssetManager.OnInstanceCreated = (manager) => {
+    const onInstanceCreated = (manager: SmartAssetManager) => {
         previousOnInstanceCreated?.(manager);
         installAssetNotFoundHandler(manager);
     };
+    SmartAssetManager.OnInstanceCreated = onInstanceCreated;
 
     return () => {
-        // Restore previous hook only if ours is still installed
-        if (SmartAssetManager.OnInstanceCreated !== null) {
+        if (SmartAssetManager.OnInstanceCreated === onInstanceCreated) {
             SmartAssetManager.OnInstanceCreated = previousOnInstanceCreated;
         }
     };
@@ -107,7 +125,6 @@ export function installSmartAssetHooks(scene: Scene): () => void {
 
 /**
  * Gets or lazily creates the SmartAssetManager and OverrideManager for a scene.
- * Installs the Inspector's asset-not-found handler as a fallback.
  * @param scene - The scene to get/create managers for.
  * @returns An object containing the SmartAssetManager and OverrideManager.
  */

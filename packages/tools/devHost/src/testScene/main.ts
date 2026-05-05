@@ -26,7 +26,7 @@ export async function Main(searchParams: URLSearchParams): Promise<void> {
         scene = await createSceneTs(engine, canvas);
     } else {
         // Dynamic import to avoid bundling @dev/core dist (which has unresolvable deps)
-        const { createScene: createSceneJs } = await import(/* webpackIgnore: true */ "./createSceneJS.js");
+        const { createScene: createSceneJs } = await import(/* @vite-ignore */ "./createSceneJS.js");
         scene = await createSceneJs(engine, canvas);
     }
 

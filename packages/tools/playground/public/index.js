@@ -1,5 +1,5 @@
 // Version
-var cdnPort = 1340;
+var cdnPort = 1337;
 window.__CDN_PORT__ = cdnPort;
 var Versions = {
     Latest: [

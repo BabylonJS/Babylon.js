@@ -92,7 +92,9 @@ const SmartAssetProjectTools: FunctionComponent<{ scene: Scene }> = (props: { sc
 
     const onShowProjectJson = useCallback(() => {
         const { sam, overrides } = managers();
-        SerializeProject(sam, overrides);
+        const bundle = SerializeProject(sam, overrides);
+        // eslint-disable-next-line no-console
+        console.log("Project bundle:", bundle);
         setStatusMessage("Project bundle logged to console");
     }, [managers]);
 

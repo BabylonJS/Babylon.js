@@ -42,7 +42,22 @@ export class SmartAssetManager {
     private _refreshCallbacks: Map<string, () => Promise<File>> = new Map();
     private _applyOverridesForKey: ((key: string) => void) | null = null;
     private _applyAllOverrides: (() => void) | null = null;
-    private _originalPreprocessUrl: ((url: string) => string) | null = null;
+
+    private static _ActiveManagers: SmartAssetManager[] = [];
+    private static _OriginalPreprocessUrl: ((url: string) => string) | undefined;
+    private static readonly _PreprocessUrl = (url: string): string => {
+        if (url.startsWith(ASSET_PROTOCOL)) {
+            const key = url.substring(ASSET_PROTOCOL.length);
+            for (let index = SmartAssetManager._ActiveManagers.length - 1; index >= 0; index--) {
+                const resolved = SmartAssetManager._ActiveManagers[index]._urls.get(key);
+                if (resolved) {
+                    return resolved;
+                }
+            }
+            Logger.Warn(`SmartAssetManager: Unknown asset key "${key}" in asset:// URL.`);
+        }
+        return SmartAssetManager._OriginalPreprocessUrl ? SmartAssetManager._OriginalPreprocessUrl(url) : url;
+    };
 
     /**
      * Fires when an asset finishes loading successfully.
@@ -89,19 +104,7 @@ export class SmartAssetManager {
         }
         scene.metadata[SMART_ASSET_MANAGER_KEY] = this;
 
-        // Install asset:// protocol hook
-        this._originalPreprocessUrl = FileToolsOptions.PreprocessUrl;
-        FileToolsOptions.PreprocessUrl = (url: string) => {
-            if (url.startsWith(ASSET_PROTOCOL)) {
-                const key = url.substring(ASSET_PROTOCOL.length);
-                const resolved = this._urls.get(key);
-                if (resolved) {
-                    return resolved;
-                }
-                Logger.Warn(`SmartAssetManager: Unknown asset key "${key}" in asset:// URL.`);
-            }
-            return this._originalPreprocessUrl ? this._originalPreprocessUrl(url) : url;
-        };
+        SmartAssetManager._InstallProtocolHook(this);
 
         if (SmartAssetManager.OnInstanceCreated) {
             SmartAssetManager.OnInstanceCreated(this);
@@ -210,7 +213,8 @@ export class SmartAssetManager {
     }
 
     /**
-     * Changes the URL for an existing key. If the asset is currently loaded, triggers a reload.
+     * Changes the URL for an existing key. If the asset is currently loaded
+     * (scene-file container or texture), triggers a reload.
      * @param key - The key to update.
      * @param newUrl - The new URL.
      */
@@ -221,7 +225,7 @@ export class SmartAssetManager {
         if (oldUrl !== undefined) {
             this.onUrlChangedObservable.notifyObservers({ key, oldUrl, newUrl });
         }
-        if (this._containers.has(key)) {
+        if (this._containers.has(key) || this._textureKeys.has(key)) {
             await this.reloadAsync(key);
         }
     }
@@ -529,10 +533,7 @@ export class SmartAssetManager {
         this.onAssetErrorObservable.clear();
         this.onAssetUnloadedObservable.clear();
 
-        // Restore original PreprocessUrl
-        if (this._originalPreprocessUrl) {
-            FileToolsOptions.PreprocessUrl = this._originalPreprocessUrl;
-        }
+        SmartAssetManager._RemoveProtocolHook(this);
 
         if (this._scene.metadata) {
             delete this._scene.metadata[SMART_ASSET_MANAGER_KEY];
@@ -540,6 +541,29 @@ export class SmartAssetManager {
     }
 
     // ── Private ──
+
+    private static _InstallProtocolHook(manager: SmartAssetManager): void {
+        if (!SmartAssetManager._ActiveManagers.includes(manager)) {
+            SmartAssetManager._ActiveManagers.push(manager);
+        }
+        if (!SmartAssetManager._OriginalPreprocessUrl) {
+            SmartAssetManager._OriginalPreprocessUrl = FileToolsOptions.PreprocessUrl;
+            FileToolsOptions.PreprocessUrl = SmartAssetManager._PreprocessUrl;
+        }
+    }
+
+    private static _RemoveProtocolHook(manager: SmartAssetManager): void {
+        const index = SmartAssetManager._ActiveManagers.indexOf(manager);
+        if (index >= 0) {
+            SmartAssetManager._ActiveManagers.splice(index, 1);
+        }
+        if (SmartAssetManager._ActiveManagers.length === 0 && SmartAssetManager._OriginalPreprocessUrl) {
+            if (FileToolsOptions.PreprocessUrl === SmartAssetManager._PreprocessUrl) {
+                FileToolsOptions.PreprocessUrl = SmartAssetManager._OriginalPreprocessUrl;
+            }
+            SmartAssetManager._OriginalPreprocessUrl = undefined;
+        }
+    }
 
     /**
      * Creates a texture and resolves once it is loaded, or rejects on load error.

@@ -1,6 +1,7 @@
 import { NullEngine } from "core/Engines/nullEngine";
 import { Scene } from "core/scene";
 import { SmartAssetManager } from "core/SmartAssets/index";
+import { FileToolsOptions } from "core/Misc/fileTools";
 import type { ISmartAssetLoadedEvent, ISmartAssetUrlChangedEvent, ISmartAssetErrorEvent, ISmartAssetUnloadedEvent } from "core/SmartAssets/index";
 
 // Mock LoadAssetContainerAsync
@@ -97,6 +98,25 @@ describe("SmartAssetManager", () => {
             expect(SmartAssetManager.GetFromScene(scene2)).toBe(manager2);
 
             manager2.dispose();
+            scene2.dispose();
+        });
+
+        it("should keep asset protocol resolution alive when managers are disposed out of order", () => {
+            const scene2 = new Scene(engine);
+            const manager2 = new SmartAssetManager(scene2);
+
+            manager.register("first", "first.glb");
+            manager2.register("second", "second.glb");
+
+            expect(FileToolsOptions.PreprocessUrl("asset://first")).toBe("first.glb");
+            expect(FileToolsOptions.PreprocessUrl("asset://second")).toBe("second.glb");
+
+            manager.dispose();
+
+            expect(FileToolsOptions.PreprocessUrl("asset://second")).toBe("second.glb");
+
+            manager2.dispose();
+
             scene2.dispose();
         });
     });

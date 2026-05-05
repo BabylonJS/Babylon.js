@@ -268,6 +268,29 @@ describe("OverrideManager", () => {
             const material = scene.materials.find((m) => m.name === "Material1");
             expect((material as any).wireframe).toBe(true);
         });
+
+        it("should scope same-named targets to the owning smart asset key", async () => {
+            const { LoadAssetContainerAsync } = await import("core/Loading/sceneLoader");
+            const firstContainer = createMockContainer(["FirstMesh"], ["SharedMaterial"]);
+            const secondContainer = createMockContainer(["SecondMesh"], ["SharedMaterial"]);
+            vi.mocked(LoadAssetContainerAsync)
+                .mockResolvedValueOnce(firstContainer as any)
+                .mockResolvedValueOnce(secondContainer as any);
+
+            await sam.loadAsync("first", "first.glb");
+            await sam.loadAsync("second", "second.glb");
+
+            overrides.addOverride({
+                key: "second",
+                targetType: "materials",
+                targetName: "SharedMaterial",
+                propertyPath: "alpha",
+                value: 0.25,
+            });
+
+            expect(firstContainer.materials[0].alpha).toBe(1);
+            expect(secondContainer.materials[0].alpha).toBe(0.25);
+        });
     });
 
     describe("scene-level overrides", () => {

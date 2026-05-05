@@ -150,6 +150,33 @@ export class OverrideManager {
         }
     }
 
+    /**
+     * Updates the targetName on all overrides that match a given key, type, and old name.
+     * Use this when an entity is renamed so existing overrides follow the new name.
+     * @param key - The smart asset key.
+     * @param targetType - The target type (meshes, materials, etc.).
+     * @param oldName - The old entity name.
+     * @param newName - The new entity name.
+     */
+    public renameTarget(key: string, targetType: OverrideTargetType, oldName: string, newName: string): void {
+        for (const entry of this._overrides) {
+            if (entry.key === key && entry.targetType === targetType && entry.targetName === oldName) {
+                (entry as { targetName: string }).targetName = newName;
+            }
+        }
+
+        // Update original-value keys to match the new name
+        for (const [origKey, value] of Array.from(this._originalValues.entries())) {
+            const prefix = `${key}::${targetType}::${oldName}::`;
+            if (origKey.startsWith(prefix)) {
+                const propertyPath = origKey.substring(prefix.length);
+                const newOrigKey = `${key}::${targetType}::${newName}::${propertyPath}`;
+                this._originalValues.set(newOrigKey, value);
+                this._originalValues.delete(origKey);
+            }
+        }
+    }
+
     // ── Application ──
 
     /**
@@ -267,8 +294,7 @@ export class OverrideManager {
         return this._findObjectByName(targetType, targetName, key);
     }
 
-    private _findObjectByName(targetType: OverrideTargetType, name: string, _key: string): object | null {
-        // Search in the scene's collections — provenance ensures we know the name came from this key
+    private _findObjectByName(targetType: OverrideTargetType, name: string, key: string): object | null {
         const collections: Record<string, unknown[]> = {
             meshes: this._scene.meshes,
             materials: this._scene.materials,
@@ -283,7 +309,15 @@ export class OverrideManager {
             return null;
         }
 
-        return (collection.find((obj: any) => obj.name === name) as object) ?? null;
+        return (
+            (collection.find((obj: any) => {
+                if (obj.name !== name) {
+                    return false;
+                }
+                const trackedKey = this._smartAssetManager?.findKeyForObject(obj);
+                return key === "" ? trackedKey === undefined : trackedKey === key;
+            }) as object) ?? null
+        );
     }
 
     private _resolveValue(value: OverrideValue, _propertyPath: string, _target: object): unknown {

@@ -2,8 +2,7 @@ import { type ServiceDefinition } from "shared-ui-components/modularTool/modular
 import { type ISceneContext, SceneContextIdentity } from "../../sceneContext";
 import { type IPropertiesService, PropertiesServiceIdentity } from "../properties/propertiesService";
 
-import { SmartAssetManager } from "core/SmartAssets/smartAssetManager";
-import { OverrideManager } from "core/SmartAssets/overrideManager";
+import { type SmartAssetManager } from "core/SmartAssets/smartAssetManager";
 import { type OverrideTargetType } from "core/SmartAssets/overrideEntry";
 import { type Scene } from "core/scene";
 import { type Node } from "core/node";
@@ -13,7 +12,7 @@ import { type Light } from "core/Lights/light";
 import { type Camera } from "core/Cameras/camera";
 import { type AnimationGroup } from "core/Animations/animationGroup";
 
-import { installAssetNotFoundHandler } from "../../smartAssetHandler";
+import { getOrCreateManagers } from "../../smartAssetHandler";
 
 /**
  * Inspector service that captures property edits on SmartAsset-loaded objects
@@ -38,25 +37,34 @@ export const OverrideCaptureServiceDefinition: ServiceDefinition<[], [ISceneCont
             return undefined;
         }
 
-        const sam = SmartAssetManager.GetFromScene(scene);
-        if (!sam) {
-            return undefined;
-        }
+        const { sam, overrides } = getOrCreateManagers(scene);
 
-        // Get or create OverrideManager
-        let overrides = OverrideManager.GetFromScene(scene);
-        if (!overrides) {
-            overrides = new OverrideManager(scene);
-            overrides.linkSmartAssetManager(sam);
-        }
-
-        // Install Inspector's file-picker-based onAssetNotFound handler
-        // if no handler is already installed by user code
-        installAssetNotFoundHandler(sam);
+        // Track the previous name of each entity so renames can update
+        // existing overrides to follow the new name.
+        const previousNames = new WeakMap<object, string>();
 
         // Subscribe to Inspector property changes
         const observer = propertiesService.onPropertyChanged.add((changeInfo) => {
             const { entity, propertyKey, newValue } = changeInfo;
+
+            // When "name" changes, update existing overrides to use the new name
+            // instead of creating a new override.
+            if (propertyKey === "name" && typeof newValue === "string") {
+                const key = _findKeyForEntity(sam, entity, scene);
+                const targetType = key !== null ? _classifyEntity(entity, scene) : null;
+                if (key !== null && targetType !== null) {
+                    const oldName = previousNames.get(entity as object) ?? "";
+                    if (oldName && oldName !== newValue) {
+                        overrides!.renameTarget(key, targetType, oldName, newValue);
+                    }
+                    previousNames.set(entity as object, newValue);
+                }
+                return;
+            }
+
+            if (propertyKey === "id") {
+                return;
+            }
 
             let key = _findKeyForEntity(sam, entity, scene);
             let targetType = key !== null ? _classifyEntity(entity, scene) : null;
@@ -66,6 +74,10 @@ export const OverrideCaptureServiceDefinition: ServiceDefinition<[], [ISceneCont
             if (key !== null && targetType !== null) {
                 // Direct entity (scene, mesh, material, etc.)
                 targetName = key === "" ? "" : _getEntityName(entity);
+                // Seed the previous name on first contact so rename tracking works
+                if (!previousNames.has(entity as object) && targetName) {
+                    previousNames.set(entity as object, targetName);
+                }
             } else {
                 // Sub-object: check if this is a property of a known parent
                 const parentInfo = _findParentEntity(entity, scene, sam);
