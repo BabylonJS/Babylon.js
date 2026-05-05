@@ -55,13 +55,13 @@ export interface IGLTFObjectModelTreeNodesObject<GLTFTargetType = INode, Babylon
         scale: IObjectAccessor<GLTFTargetType, BabylonTargetType, Vector3>;
         matrix: IObjectAccessor<GLTFTargetType, BabylonTargetType, Matrix>;
         globalMatrix: IObjectAccessor<GLTFTargetType, BabylonTargetType, Matrix>;
-        camera: IObjectAccessor<GLTFTargetType, any, number | undefined>;
-        mesh: IObjectAccessor<GLTFTargetType, any, number | undefined>;
-        skin: IObjectAccessor<GLTFTargetType, any, number | undefined>;
-        parent: IObjectAccessor<GLTFTargetType, any, number | undefined>;
+        camera: IObjectAccessor<GLTFTargetType, any, string | undefined>;
+        mesh: IObjectAccessor<GLTFTargetType, any, string | undefined>;
+        skin: IObjectAccessor<GLTFTargetType, any, string | undefined>;
+        parent: IObjectAccessor<GLTFTargetType, any, string | undefined>;
         children: {
             length: IObjectAccessor<number[], any, number>;
-            __array__: { __target__: boolean } & IObjectAccessor<any, any, number>;
+            __array__: { __target__: boolean } & IObjectAccessor<any, any, string>;
         };
         weights: {
             /** When true, the path converter skips objectTree traversal for this property, keeping the parent target. */
@@ -275,7 +275,7 @@ export interface IGLTFObjectModelTreeMeshesObject {
             length: IObjectAccessor<IMeshPrimitive[], any, number>;
             __array__: {
                 __target__: boolean;
-                material: IObjectAccessor<any, any, number | undefined>;
+                material: IObjectAccessor<any, any, string | undefined>;
             };
         };
         weights: {
@@ -291,7 +291,7 @@ export interface IGLTFObjectModelTreeScenesObject {
         __target__: boolean;
         nodes: {
             length: IObjectAccessor<number[], any, number>;
-            __array__: { __target__: boolean } & IObjectAccessor<any, any, number>;
+            __array__: { __target__: boolean } & IObjectAccessor<any, any, string>;
         };
     };
 }
@@ -302,9 +302,9 @@ export interface IGLTFObjectModelTreeSkinsObject {
         __target__: boolean;
         joints: {
             length: IObjectAccessor<number[], any, number>;
-            __array__: { __target__: boolean } & IObjectAccessor<any, any, number>;
+            __array__: { __target__: boolean } & IObjectAccessor<any, any, string>;
         };
-        skeleton: IObjectAccessor<ISkin, any, number | undefined>;
+        skeleton: IObjectAccessor<ISkin, any, string | undefined>;
     };
 }
 
@@ -490,26 +490,29 @@ const nodesTree: IGLTFObjectModelTreeNodesObject = {
             isReadOnly: true,
         },
         camera: {
-            type: "number",
-            get: (node: INode) => node.camera,
+            type: "string",
+            // Per KHR_interactivity Object Model: read-only ref pointing to the
+            // attached camera, encoded as a JSON Pointer string. Empty string
+            // when no camera is attached (the spec's null-ref convention).
+            get: (node: INode) => (node.camera !== undefined ? `/cameras/${node.camera}/` : ""),
             getTarget: (node: INode) => node,
             isReadOnly: true,
         },
         mesh: {
-            type: "number",
-            get: (node: INode) => node.mesh,
+            type: "string",
+            get: (node: INode) => (node.mesh !== undefined ? `/meshes/${node.mesh}/` : ""),
             getTarget: (node: INode) => node,
             isReadOnly: true,
         },
         skin: {
-            type: "number",
-            get: (node: INode) => node.skin,
+            type: "string",
+            get: (node: INode) => (node.skin !== undefined ? `/skins/${node.skin}/` : ""),
             getTarget: (node: INode) => node,
             isReadOnly: true,
         },
         parent: {
-            type: "number",
-            get: (node: INode) => node.parent?.index,
+            type: "string",
+            get: (node: INode) => (node.parent && node.parent.index !== undefined ? `/nodes/${node.parent.index}/` : ""),
             getTarget: (node: INode) => node,
             isReadOnly: true,
         },
@@ -522,8 +525,11 @@ const nodesTree: IGLTFObjectModelTreeNodesObject = {
             },
             __array__: {
                 __target__: true,
-                type: "number",
-                get: (childIndex: any) => childIndex,
+                type: "string",
+                // The wrapping converter passes the indexed child value (an
+                // INode index) as `childIndex`; convert it to a JSON Pointer
+                // ref string so ref/eq comparisons work as authored.
+                get: (childIndex: any) => (typeof childIndex === "number" ? `/nodes/${childIndex}/` : ""),
                 getTarget: () => ({ __nodeIndex: true }),
                 isReadOnly: true,
             },
@@ -608,8 +614,9 @@ const meshesTree: IGLTFObjectModelTreeMeshesObject = {
             __array__: {
                 __target__: true,
                 material: {
-                    type: "number",
-                    get: (primitive: IMeshPrimitive) => primitive.material,
+                    type: "string",
+                    // Read-only ref to the assigned material, JSON Pointer encoded.
+                    get: (primitive: IMeshPrimitive) => (primitive.material !== undefined ? `/materials/${primitive.material}/` : ""),
                     getTarget: (primitive: IMeshPrimitive) => primitive,
                     isReadOnly: true,
                 },
@@ -1581,8 +1588,10 @@ const scenesTree: IGLTFObjectModelTreeScenesObject = {
             },
             __array__: {
                 __target__: true,
-                type: "number",
-                get: (nodeIndex: any) => nodeIndex,
+                type: "string",
+                // Indexed scene root: the underlying value is the INode index;
+                // KHR_interactivity expects a ref-typed JSON Pointer string.
+                get: (nodeIndex: any) => (typeof nodeIndex === "number" ? `/nodes/${nodeIndex}/` : ""),
                 getTarget: () => ({ __nodeIndex: true }),
                 isReadOnly: true,
             },
@@ -1608,15 +1617,21 @@ const skinsTree: IGLTFObjectModelTreeSkinsObject = {
             },
             __array__: {
                 __target__: true,
-                type: "number",
-                get: (jointIndex: any) => jointIndex,
+                type: "string",
+                // Indexed skin joint: returns a ref to the joint node.
+                get: (jointIndex: any) => (typeof jointIndex === "number" ? `/nodes/${jointIndex}/` : ""),
                 getTarget: () => ({ __nodeIndex: true }),
                 isReadOnly: true,
             },
         },
         skeleton: {
-            type: "number",
-            get: (skin: ISkin) => (skin as any).skeleton,
+            type: "string",
+            // Skin's skeleton root: returns a ref to the root node, or empty
+            // (null ref) when no skeleton root is declared.
+            get: (skin: ISkin) => {
+                const skeleton = (skin as any).skeleton;
+                return typeof skeleton === "number" ? `/nodes/${skeleton}/` : "";
+            },
             getTarget: (skin: ISkin) => skin,
             isReadOnly: true,
         },
