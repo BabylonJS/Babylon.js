@@ -99,7 +99,7 @@ export function EditableInPropertyPage(
     return (_value: unknown, context: { name: string | symbol; metadata: DecoratorMetadataObject }) => {
         const meta = context.metadata;
         let propStore: IPropertyDescriptionForEdition[];
-        if (Object.hasOwn(meta, __bjsSmartFilterPropStoreKey)) {
+        if (Object.prototype.hasOwnProperty.call(meta, __bjsSmartFilterPropStoreKey)) {
             propStore = meta[__bjsSmartFilterPropStoreKey] as IPropertyDescriptionForEdition[];
         } else {
             propStore = [];
@@ -144,7 +144,7 @@ export function GetSmartFilterEditableProperties(target: any): IPropertyDescript
     const result: IPropertyDescriptionForEdition[] = [];
     let currentMeta: any = metadata;
     while (currentMeta) {
-        if (Object.hasOwn(currentMeta, __bjsSmartFilterPropStoreKey)) {
+        if (Object.prototype.hasOwnProperty.call(currentMeta, __bjsSmartFilterPropStoreKey)) {
             const store = currentMeta[__bjsSmartFilterPropStoreKey] as IPropertyDescriptionForEdition[];
             result.push(...store);
         }

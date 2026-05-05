@@ -50,7 +50,7 @@ const XML_CLASS_META = Symbol("__xml:meta$__");
 const XML_CLASS_NAME = Symbol("__xml:name$__");
 
 function AddXmlMeta(context: { metadata: DecoratorMetadataObject }, meta: FieldMeta) {
-    if (!Object.hasOwn(context.metadata, XML_CLASS_META)) {
+    if (!Object.prototype.hasOwnProperty.call(context.metadata, XML_CLASS_META)) {
         context.metadata[XML_CLASS_META] = [];
     }
     (context.metadata[XML_CLASS_META] as FieldMeta[]).push(meta);
@@ -107,7 +107,7 @@ export function GetXmlFieldMeta(obj: any): FieldMeta[] {
     const result: FieldMeta[] = [];
     let currentMeta: any = metadata;
     while (currentMeta) {
-        if (Object.hasOwn(currentMeta, XML_CLASS_META)) {
+        if (Object.prototype.hasOwnProperty.call(currentMeta, XML_CLASS_META)) {
             result.push(...(currentMeta[XML_CLASS_META] as FieldMeta[]));
         }
         currentMeta = Object.getPrototypeOf(currentMeta);

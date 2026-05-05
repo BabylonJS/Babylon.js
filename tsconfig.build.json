@@ -32,7 +32,6 @@
             "es2017",
             "es2022.error",
             "es2022.array",
-            "es2022.object",
             "es2021.string",
             "es2022.string",
             "esnext.decorators"
