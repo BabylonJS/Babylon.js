@@ -13,7 +13,14 @@ import { FileToolsOptions } from "../Misc/fileTools";
 import { GetExtensionFromUrl } from "../Misc/urlTools";
 import { type ISmartAssetProvenance } from "./smartAssetProvenance";
 import { type ISmartAssetLoadedEvent, type ISmartAssetUrlChangedEvent, type ISmartAssetErrorEvent, type ISmartAssetUnloadedEvent } from "./smartAssetEvents";
-import { type ISerializedSmartAssetMap, SerializeSmartAssetMap, DeserializeSmartAssetMap, ResolveAssetUrl, ReadJsonSourceAsync } from "./smartAssetSerializer";
+import {
+    type ISerializedSmartAssetEntry,
+    type ISerializedSmartAssetMap,
+    SerializeSmartAssetMap,
+    DeserializeSmartAssetMap,
+    ResolveAssetUrl,
+    ReadJsonSourceAsync,
+} from "./smartAssetSerializer";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const SMART_ASSET_MANAGER_KEY = Symbol.for("babylonjs:smartAssetManager");
@@ -58,8 +65,15 @@ export type SmartAssetManager = {
     onAssetNotFound: ((key: string, expectedUrl: string) => Promise<string | File | null>) | null;
 };
 
+/**
+ * Optional registration data that helps select the correct loader when the URL
+ * does not contain a usable file extension, such as blob-backed local files.
+ */
+export type SmartAssetRegistrationOptions = Pick<ISerializedSmartAssetEntry, "type" | "extension" | "metadata">;
+
 type SmartAssetManagerInternals = {
     urls: Map<string, string>;
+    options: Map<string, SmartAssetRegistrationOptions>;
     containers: Map<string, AssetContainer>;
     provenance: Map<string, ISmartAssetProvenance>;
     objectToKeyMap: WeakMap<object, string>;
@@ -106,6 +120,7 @@ export function CreateSmartAssetManager(scene: Scene): SmartAssetManager {
 
     SmartAssetManagerInternals.set(manager, {
         urls: new Map(),
+        options: new Map(),
         containers: new Map(),
         provenance: new Map(),
         objectToKeyMap: new WeakMap(),
@@ -174,9 +189,20 @@ export function MarkSmartAssetAsTextureKey(manager: SmartAssetManager, key: stri
  * @param manager - The smart asset manager state.
  * @param key - Unique string identifier for this asset.
  * @param url - URL or path to the asset file.
+ * @param options - Optional loader hints and metadata for this asset.
  */
-export function RegisterSmartAsset(manager: SmartAssetManager, key: string, url: string): void {
-    GetSmartAssetInternals(manager).urls.set(key, url);
+export function RegisterSmartAsset(manager: SmartAssetManager, key: string, url: string, options?: SmartAssetRegistrationOptions): void {
+    const internal = GetSmartAssetInternals(manager);
+    internal.urls.set(key, url);
+    if (options) {
+        const existingOptions = internal.options.get(key);
+        internal.options.set(key, { ...existingOptions, ...options });
+        if (options.type === "texture") {
+            internal.textureKeys.add(key);
+        } else if (options.type !== undefined) {
+            internal.textureKeys.delete(key);
+        }
+    }
 }
 
 /**
@@ -211,6 +237,7 @@ export async function RemoveSmartAssetAsync(manager: SmartAssetManager, key: str
         }
     }
     internal.urls.delete(key);
+    internal.options.delete(key);
     internal.textureKeys.delete(key);
     internal.refreshCallbacks.delete(key);
     internal.provenance.delete(key);
@@ -236,6 +263,16 @@ export function GetAllSmartAssets(manager: SmartAssetManager): ReadonlyMap<strin
 }
 
 /**
+ * Returns registration options for a smart asset key.
+ * @param manager - The smart asset manager state.
+ * @param key - The key to look up.
+ * @returns The registered options, or undefined if none were supplied.
+ */
+export function GetSmartAssetRegistrationOptions(manager: SmartAssetManager, key: string): Readonly<SmartAssetRegistrationOptions> | undefined {
+    return GetSmartAssetInternals(manager).options.get(key);
+}
+
+/**
  * Changes the URL for an existing key. If the asset is loaded, triggers a reload.
  * @param manager - The smart asset manager state.
  * @param key - The key to update.
@@ -258,12 +295,13 @@ export async function SetSmartAssetUrlAsync(manager: SmartAssetManager, key: str
  * @param manager - The smart asset manager state.
  * @param key - The key to load.
  * @param url - Optional URL. If provided, the key is registered first.
+ * @param options - Optional loader hints and metadata for this asset.
  * @returns A promise resolving to the loaded AssetContainer.
  */
-export async function LoadSmartAssetAsync(manager: SmartAssetManager, key: string, url?: string): Promise<AssetContainer> {
+export async function LoadSmartAssetAsync(manager: SmartAssetManager, key: string, url?: string, options?: SmartAssetRegistrationOptions): Promise<AssetContainer> {
     const internal = GetSmartAssetInternals(manager);
     if (url) {
-        RegisterSmartAsset(manager, key, url);
+        RegisterSmartAsset(manager, key, url, options);
     }
 
     const resolvedUrl = internal.urls.get(key);
@@ -276,7 +314,7 @@ export async function LoadSmartAssetAsync(manager: SmartAssetManager, key: strin
         return existing;
     }
 
-    return await LoadSmartAssetSceneFileAsync(manager, key, resolvedUrl);
+    return await LoadSmartAssetSceneFileAsync(manager, key, resolvedUrl, internal.options.get(key)?.extension);
 }
 
 /**
@@ -293,7 +331,8 @@ export async function LoadAllSmartAssetsAsync(manager: SmartAssetManager): Promi
         if (internal.containers.has(key)) {
             continue;
         }
-        if (internal.textureKeys.has(key) || IsTextureUrl(url)) {
+        const options = internal.options.get(key);
+        if (internal.textureKeys.has(key) || options?.type === "texture" || IsTextureUrl(url) || IsTextureExtension(options?.extension)) {
             const textureLoadAsync = async () => {
                 try {
                     await LoadSmartAssetTextureAsync(manager, key);
@@ -325,12 +364,13 @@ export async function LoadAllSmartAssetsAsync(manager: SmartAssetManager): Promi
  * @param manager - The smart asset manager state.
  * @param key - The key to load.
  * @param url - Optional URL. If provided, the key is registered first.
+ * @param options - Optional loader hints and metadata for this asset.
  * @returns A promise resolving to the loaded texture.
  */
-export async function LoadSmartAssetTextureAsync(manager: SmartAssetManager, key: string, url?: string): Promise<BaseTexture> {
+export async function LoadSmartAssetTextureAsync(manager: SmartAssetManager, key: string, url?: string, options?: SmartAssetRegistrationOptions): Promise<BaseTexture> {
     const internal = GetSmartAssetInternals(manager);
     if (url) {
-        RegisterSmartAsset(manager, key, url);
+        RegisterSmartAsset(manager, key, url, { ...options, type: options?.type ?? "texture" });
     }
 
     internal.textureKeys.add(key);
@@ -397,7 +437,7 @@ export async function ReloadSmartAssetAsync(manager: SmartAssetManager, key: str
         try {
             const freshFile = await refreshCallback();
             const blobUrl = URL.createObjectURL(freshFile);
-            RegisterSmartAsset(manager, key, blobUrl);
+            RegisterSmartAsset(manager, key, blobUrl, { extension: GetExtensionFromUrl(freshFile.name) || internal.options.get(key)?.extension });
         } catch (e) {
             Logger.Warn(`SmartAssetManager: Refresh callback failed for "${key}": ${e}`);
         }
@@ -464,7 +504,7 @@ export async function LoadSmartAssetMapAsync(manager: SmartAssetManager, source:
 
     for (const [key, entry] of Object.entries(doc.assets)) {
         const resolved = resolvedRootUrl ? ResolveAssetUrl(entry.url, resolvedRootUrl) : entry.url;
-        RegisterSmartAsset(manager, key, resolved);
+        RegisterSmartAsset(manager, key, resolved, { type: entry.type, extension: entry.extension, metadata: entry.metadata });
     }
 
     await LoadAllSmartAssetsAsync(manager);
@@ -511,6 +551,7 @@ export function DisposeSmartAssetManager(manager: SmartAssetManager): void {
     }
 
     internal.urls.clear();
+    internal.options.clear();
     internal.textureKeys.clear();
     internal.refreshCallbacks.clear();
     internal.containers.clear();
@@ -593,11 +634,12 @@ async function ResolveNotFoundAsync(manager: SmartAssetManager, key: string, exp
         return { url: resolution };
     }
     const blobUrl = URL.createObjectURL(resolution);
-    RegisterSmartAsset(manager, key, blobUrl);
-    return { url: blobUrl, extensionHint: GetExtensionFromUrl(resolution.name) || undefined };
+    const extensionHint = GetExtensionFromUrl(resolution.name) || undefined;
+    RegisterSmartAsset(manager, key, blobUrl, { extension: extensionHint });
+    return { url: blobUrl, extensionHint };
 }
 
-async function LoadSmartAssetSceneFileAsync(manager: SmartAssetManager, key: string, url: string): Promise<AssetContainer> {
+async function LoadSmartAssetSceneFileAsync(manager: SmartAssetManager, key: string, url: string, extensionHint?: string): Promise<AssetContainer> {
     const loadAsync = async (loadUrl: string, extensionHint?: string) => {
         const container = await LoadAssetContainerAsync(loadUrl, manager.scene, { pluginExtension: extensionHint });
         container.addAllToScene();
@@ -607,7 +649,7 @@ async function LoadSmartAssetSceneFileAsync(manager: SmartAssetManager, key: str
     };
 
     try {
-        return await loadAsync(url);
+        return await loadAsync(url, extensionHint);
     } catch (error) {
         manager.onAssetErrorObservable.notifyObservers({ key, url, error });
         const fallback = await ResolveNotFoundAsync(manager, key, url);
@@ -652,4 +694,8 @@ const TextureExtensions = new Set([".png", ".jpg", ".jpeg", ".bmp", ".tga", ".gi
  */
 function IsTextureUrl(url: string): boolean {
     return TextureExtensions.has(GetExtensionFromUrl(url));
+}
+
+function IsTextureExtension(extension: string | undefined): boolean {
+    return extension !== undefined && TextureExtensions.has(extension.toLowerCase());
 }

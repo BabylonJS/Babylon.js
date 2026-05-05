@@ -146,7 +146,7 @@ export async function LoadProjectAsync(
             continue;
         }
         const resolved = resolvedRootUrl ? ResolveAssetUrl(entry.url, resolvedRootUrl) : entry.url;
-        RegisterSmartAsset(smartAssetManager, key, resolved);
+        RegisterSmartAsset(smartAssetManager, key, resolved, { type: entry.type, extension: entry.extension, metadata: entry.metadata });
         if (entry.type === "texture") {
             MarkSmartAssetAsTextureKey(smartAssetManager, key);
         }
@@ -159,7 +159,7 @@ export async function LoadProjectAsync(
     if (hasCompanion) {
         const companionEntry = doc.assets[PROJECT_LOCALS_KEY];
         const companionUrl = resolvedRootUrl ? ResolveAssetUrl(companionEntry.url, resolvedRootUrl) : companionEntry.url;
-        RegisterSmartAsset(smartAssetManager, PROJECT_LOCALS_KEY, companionUrl);
+        RegisterSmartAsset(smartAssetManager, PROJECT_LOCALS_KEY, companionUrl, { extension: ".babylon" });
         const { LoadAssetContainerAsync } = await import("../Loading/sceneLoader");
         const container = await LoadAssetContainerAsync(companionUrl, scene, { pluginExtension: ".babylon" });
         container.addAllToScene();

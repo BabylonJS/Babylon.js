@@ -1,4 +1,4 @@
-import { type SmartAssetManager, GetAllSmartAssets, IsSmartAssetTextureKey } from "./smartAssetManager";
+import { type SmartAssetManager, GetAllSmartAssets, GetSmartAssetRegistrationOptions, IsSmartAssetTextureKey } from "./smartAssetManager";
 import { Tools } from "../Misc/tools";
 
 /**
@@ -51,7 +51,8 @@ export function SerializeSmartAssetMap(manager: SmartAssetManager, baseUrl?: str
             url = MakeRelative(url, baseUrl);
         }
 
-        assets[key] = { url, ...(IsSmartAssetTextureKey(manager, key) ? { type: "texture" } : {}) };
+        const options = GetSmartAssetRegistrationOptions(manager, key);
+        assets[key] = { url, ...options, ...(IsSmartAssetTextureKey(manager, key) ? { type: "texture" } : {}) };
     }
 
     return {

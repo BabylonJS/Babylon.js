@@ -220,7 +220,7 @@ const SmartAssetList: FunctionComponent<{ scene: Scene; selectionService: ISelec
                 const isTexture = [".png", ".jpg", ".jpeg", ".env", ".hdr", ".dds", ".ktx", ".ktx2"].includes(ext);
 
                 const blobUrl = URL.createObjectURL(file);
-                RegisterSmartAsset(sam, key, blobUrl);
+                RegisterSmartAsset(sam, key, blobUrl, { ...(ext ? { extension: ext } : {}), ...(isTexture ? { type: "texture" } : {}) });
 
                 try {
                     if (isTexture) {
@@ -289,7 +289,7 @@ const SmartAssetList: FunctionComponent<{ scene: Scene; selectionService: ISelec
                     }
 
                     // Load the new texture via SAM so it's tracked for override resolution.
-                    RegisterSmartAsset(sam, key, blobUrl);
+                    RegisterSmartAsset(sam, key, blobUrl, { ...(ext ? { extension: ext } : {}), type: "texture" });
                     const newTex = await LoadSmartAssetTextureAsync(sam, key);
 
                     // Register a refresh callback so Reload can re-read the file from disk
@@ -315,7 +315,7 @@ const SmartAssetList: FunctionComponent<{ scene: Scene; selectionService: ISelec
                 } else {
                     // Scene file swap (GLB, glTF, etc.)
                     await UnloadSmartAssetAsync(sam, key);
-                    RegisterSmartAsset(sam, key, blobUrl);
+                    RegisterSmartAsset(sam, key, blobUrl, { ...(ext ? { extension: ext } : {}) });
 
                     // Register a refresh callback so Reload can re-read the file from disk
                     if (fileHandle) {

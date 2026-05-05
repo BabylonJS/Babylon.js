@@ -47,7 +47,7 @@ export async function saveProjectBundleAsync(sam: SmartAssetManager, overrides: 
             continue;
         }
         const { key, entry, arrayBuffer } = result;
-        const ext = _guessExtension(entry.url, key, IsSmartAssetTextureKey(sam, key));
+        const ext = entry.extension ?? _guessExtension(entry.url, key, IsSmartAssetTextureKey(sam, key));
         const filename = `assets/${key}${ext}`;
         files[filename] = new Uint8Array(arrayBuffer);
         projectAssets[key] = { ...entry, url: filename };
