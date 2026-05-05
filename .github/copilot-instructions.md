@@ -22,6 +22,16 @@ For a full index of all coding practice, review, and workflow instruction files,
 
 Feature documentation lives in `/specs/`. Each feature has its own folder named `<feature-name>/` containing `goals.md`, `requirements.md`, and `architecture.md` as applicable. Within that folder, a `.temp/` directory holds files that don't need to be kept after development is complete (e.g., `mocks.html`, `mocks.context.md`, `implementation_plan/`).
 
+## Tree-Shaking Architecture
+
+The `@babylonjs/core` package uses a three-file split for tree-shaking. Every source file under `packages/dev/core/src/` is split into:
+
+- **`foo.pure.ts`** — All logic. Imports only from other `.pure.ts` files. No side effects.
+- **`foo.ts`** — Thin wrapper that re-exports from `.pure.ts` and calls the registration function.
+- **`foo.types.ts`** — `declare module` augmentations (only when the file augments another class).
+
+When modifying or creating files in core, always edit the `.pure.ts` file for logic. Side effects (RegisterClass, prototype augmentations, ShaderStore writes) go inside the `register*()` function in `.pure.ts`. See [instructions/tree-shaking.instructions.md](instructions/tree-shaking.instructions.md) for the full guide.
+
 ## Public APIs
 
 All public APIs exported from a package's root index file (except those prefixed with an underscore) are considered public APIs.

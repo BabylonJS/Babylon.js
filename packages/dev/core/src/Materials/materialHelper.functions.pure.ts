@@ -1,33 +1,33 @@
 /** This file must only contain pure code and pure imports */
 
-import { type Camera } from "../Cameras/camera"
-import { type Scene } from "../scene"
-import { type Effect } from "./effect"
+import { type Camera } from "../Cameras/camera";
+import { type Scene } from "../scene";
+import { type Effect } from "./effect";
 // All non-type imports must be pure
 
 import { Constants } from "../Engines/constants";
 import { Logger } from "../Misc/logger";
-import { type IEffectCreationOptions } from "./effect"
-import { type AbstractMesh } from "../Meshes/abstractMesh"
+import { type IEffectCreationOptions } from "./effect";
+import { type AbstractMesh } from "../Meshes/abstractMesh";
 import { EngineStore } from "../Engines/engineStore";
-import { type Mesh } from "../Meshes/mesh"
-import { type UniformBuffer } from "./uniformBuffer"
-import { type BaseTexture } from "./Textures/baseTexture"
-import { type PrePassConfiguration } from "./prePassConfiguration"
-import { type Light } from "../Lights/light"
-import { type MaterialDefines } from "./materialDefines"
-import { type EffectFallbacks } from "./effectFallbacks"
+import { type Mesh } from "../Meshes/mesh";
+import { type UniformBuffer } from "./uniformBuffer";
+import { type BaseTexture } from "./Textures/baseTexture";
+import { type PrePassConfiguration } from "./prePassConfiguration";
+import { type Light } from "../Lights/light";
+import { type MaterialDefines } from "./materialDefines";
+import { type EffectFallbacks } from "./effectFallbacks";
 import { LightConstants } from "../Lights/lightConstants";
-import { type AbstractEngine } from "../Engines/abstractEngine"
-import { type Material } from "./material"
-import { type Nullable } from "../types"
+import { type AbstractEngine } from "../Engines/abstractEngine";
+import { type Material } from "./material";
+import { type Nullable } from "../types";
 import { PrepareDefinesForClipPlanes } from "./clipPlaneMaterialHelper";
-import { type MorphTargetManager } from "../Morph/morphTargetManager"
-import { type IColor3Like } from "core/Maths/math.like"
+import { type MorphTargetManager } from "../Morph/morphTargetManager";
+import { type IColor3Like } from "core/Maths/math.like";
 import { MaterialFlags } from "./materialFlags";
 import { Texture } from "./Textures/texture";
-import { type CubeTexture } from "./Textures/cubeTexture"
-import { type Color3 } from "core/Maths/math.color"
+import { type CubeTexture } from "./Textures/cubeTexture";
+import { type Color3 } from "core/Maths/math.color";
 import { ShaderLanguage } from "./shaderLanguage";
 // All code must be pure
 

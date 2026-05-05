@@ -2,23 +2,23 @@
 
 import { NodeMaterialBlock } from "../../nodeMaterialBlock";
 import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
-import { type NodeMaterialBuildState } from "../../nodeMaterialBuildState"
+import { type NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
-import { type NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint"
+import { type NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
 import { NodeMaterialConnectionPointDirection } from "../../nodeMaterialBlockConnectionPoint";
-import { type NodeMaterialDefines } from "../../nodeMaterial"
+import { type NodeMaterialDefines } from "../../nodeMaterial";
 import { NodeMaterial } from "../../nodeMaterial.pure";
 import { InputBlock } from "../Input/inputBlock.pure";
-import { type Effect } from "../../../effect"
-import { type Nullable } from "../../../../types"
+import { type Effect } from "../../../effect";
+import { type Nullable } from "../../../../types";
 import { Texture } from "../../../Textures/texture.pure";
-import { type Scene } from "../../../../scene"
+import { type Scene } from "../../../../scene";
 import { NodeMaterialModes } from "../../Enums/nodeMaterialModes";
 import { Constants } from "../../../../Engines/constants";
 import { ImageSourceBlock } from "./imageSourceBlock.pure";
 import { NodeMaterialConnectionPointCustomObject } from "../../nodeMaterialConnectionPointCustomObject";
 import { EngineStore } from "../../../../Engines/engineStore";
-import { type PrePassTextureBlock } from "../Input/prePassTextureBlock"
+import { type PrePassTextureBlock } from "../Input/prePassTextureBlock";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { ThinTexture } from "../../../Textures/thinTexture";
 import { type AbstractEngine } from "../../../../Engines/abstractEngine";

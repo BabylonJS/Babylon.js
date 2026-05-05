@@ -2,16 +2,16 @@
 
 import { NodeMaterialBlock } from "../../nodeMaterialBlock";
 import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
-import { type NodeMaterialBuildState } from "../../nodeMaterialBuildState"
-import { type NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint"
+import { type NodeMaterialBuildState } from "../../nodeMaterialBuildState";
+import { type NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
 import { NodeMaterialConnectionPointDirection } from "../../nodeMaterialBlockConnectionPoint";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
-import { type Nullable } from "../../../../types"
+import { type Nullable } from "../../../../types";
 import { Texture } from "../../../Textures/texture.pure";
 import { Constants } from "../../../../Engines/constants";
-import { type Effect } from "../../../effect"
+import { type Effect } from "../../../effect";
 import { NodeMaterial } from "../../nodeMaterial.pure";
-import { type Scene } from "../../../../scene"
+import { type Scene } from "../../../../scene";
 import { NodeMaterialConnectionPointCustomObject } from "../../nodeMaterialConnectionPointCustomObject";
 import { EngineStore } from "../../../../Engines/engineStore";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";

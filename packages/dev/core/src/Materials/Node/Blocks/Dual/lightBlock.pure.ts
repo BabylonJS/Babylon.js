@@ -3,17 +3,17 @@
 import { NodeMaterialBlock } from "../../nodeMaterialBlock";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
-import { type NodeMaterialBuildState } from "../../nodeMaterialBuildState"
-import { type NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint"
-import { type AbstractMesh } from "../../../../Meshes/abstractMesh"
-import { type NodeMaterial, type NodeMaterialDefines } from "../../nodeMaterial"
-import { type Effect } from "../../../effect"
-import { type Mesh } from "../../../../Meshes/mesh"
+import { type NodeMaterialBuildState } from "../../nodeMaterialBuildState";
+import { type NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
+import { type AbstractMesh } from "../../../../Meshes/abstractMesh";
+import { type NodeMaterial, type NodeMaterialDefines } from "../../nodeMaterial";
+import { type Effect } from "../../../effect";
+import { type Mesh } from "../../../../Meshes/mesh";
 import { NodeMaterialSystemValues } from "../../Enums/nodeMaterialSystemValues";
 import { InputBlock } from "../Input/inputBlock.pure";
-import { type Light } from "../../../../Lights/light"
-import { type Nullable } from "../../../../types"
-import { type Scene } from "../../../../scene"
+import { type Light } from "../../../../Lights/light";
+import { type Nullable } from "../../../../types";
+import { type Scene } from "../../../../scene";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
 import { Logger } from "../../../../Misc/logger";
 import { BindLight, BindLights, PrepareDefinesForLight, PrepareDefinesForLights, PrepareUniformsAndSamplersForLight } from "../../../materialHelper.functions";
