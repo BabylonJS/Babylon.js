@@ -202,7 +202,7 @@ export class NodeParticleSystemSet {
      * @returns the global NPE
      */
     private _getGlobalNodeParticleEditor(): any {
-        // UMD Global name detection from Webpack Bundle UMD Name.
+        // UMD global name detection from bundle metadata.
         if (typeof NODEPARTICLEEDITOR !== "undefined") {
             if ((NODEPARTICLEEDITOR as any).NodeParticleEditor) {
                 return NODEPARTICLEEDITOR;

@@ -61,7 +61,7 @@ export class NodeGeometry {
 
     /** @returns the inspector from bundle or global */
     private _getGlobalNodeGeometryEditor(): any {
-        // UMD Global name detection from Webpack Bundle UMD Name.
+        // UMD global name detection from bundle metadata.
         if (typeof NODEGEOMETRYEDITOR !== "undefined") {
             if ((NODEGEOMETRYEDITOR as any).NodeGeometryEditor) {
                 return NODEGEOMETRYEDITOR;

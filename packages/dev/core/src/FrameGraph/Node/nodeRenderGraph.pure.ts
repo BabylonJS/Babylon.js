@@ -60,7 +60,7 @@ export class NodeRenderGraph {
 
     /** @returns the inspector from bundle or global */
     private _getGlobalNodeRenderGraphEditor(): any {
-        // UMD Global name detection from Webpack Bundle UMD Name.
+        // UMD global name detection from bundle metadata.
         if (typeof NODERENDERGRAPHEDITOR !== "undefined") {
             if ((NODERENDERGRAPHEDITOR as any).NodeRenderGraphEditor) {
                 return NODERENDERGRAPHEDITOR;

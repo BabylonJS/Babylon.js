@@ -324,7 +324,7 @@ export class NodeMaterial extends NodeMaterialBase {
      * @returns the global NME
      */
     private _getGlobalNodeMaterialEditor(): any {
-        // UMD Global name detection from Webpack Bundle UMD Name.
+        // UMD global name detection from bundle metadata.
         if (typeof NODEEDITOR !== "undefined") {
             if ((NODEEDITOR as any).NodeEditor) {
                 return NODEEDITOR;

@@ -1661,6 +1661,7 @@ export class StandardMaterial extends StandardMaterialBase {
                 samplers: samplers,
                 defines: defines,
                 maxSimultaneousLights: this._maxSimultaneousLights,
+                shaderLanguage: this._shaderLanguage,
             });
 
             AddClipPlaneUniforms(uniforms);

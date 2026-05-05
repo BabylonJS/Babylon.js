@@ -625,6 +625,7 @@
         "Meshes/Node/Blocks/Teleport/teleportOutBlock.js",
         "Meshes/Node/Blocks/Textures/geometryTextureBlock.js",
         "Meshes/Node/Blocks/Textures/geometryTextureFetchBlock.js",
+        "Meshes/Node/Blocks/bevelBlock.js",
         "Meshes/Node/Blocks/booleanGeometryBlock.js",
         "Meshes/Node/Blocks/boundingBlock.js",
         "Meshes/Node/Blocks/cleanGeometryBlock.js",

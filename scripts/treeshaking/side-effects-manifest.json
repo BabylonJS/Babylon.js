@@ -1,7 +1,7 @@
 {
   "stats": {
-    "totalFiles": 3227,
-    "filesWithSideEffects": 1489,
+    "totalFiles": 3228,
+    "filesWithSideEffects": 1490,
     "filesWithoutSideEffects": 1738,
     "byType": {
       "top-level-call": 653,
@@ -9,7 +9,7 @@
       "bare-import": 139,
       "static-property-assignment": 2,
       "prototype-assignment": 16,
-      "RegisterClass": 23,
+      "RegisterClass": 24,
       "shader-store-write": 623
     },
     "filesByType": {
@@ -18,7 +18,7 @@
       "bare-import": 50,
       "static-property-assignment": 2,
       "prototype-assignment": 5,
-      "RegisterClass": 23,
+      "RegisterClass": 24,
       "shader-store-write": 623
     }
   },
@@ -6000,6 +6000,16 @@
           "type": "declare-module",
           "line": 3,
           "text": "declare module \"../scene\" {"
+        }
+      ]
+    },
+    {
+      "file": "Meshes/Node/Blocks/bevelBlock.ts",
+      "sideEffects": [
+        {
+          "type": "RegisterClass",
+          "line": 1850,
+          "text": "RegisterClass(\"BABYLON.BevelBlock\", BevelBlock);"
         }
       ]
     },

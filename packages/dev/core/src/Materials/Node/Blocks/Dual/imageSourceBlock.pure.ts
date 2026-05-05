@@ -15,6 +15,8 @@ import { type Scene } from "../../../../scene"
 import { NodeMaterialConnectionPointCustomObject } from "../../nodeMaterialConnectionPointCustomObject";
 import { EngineStore } from "../../../../Engines/engineStore";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { ThinTexture } from "../../../Textures/thinTexture";
+import { type AbstractEngine } from "../../../../Engines/abstractEngine";
 import { RegisterClass } from "../../../../Misc/typeStore";
 
 /**
@@ -23,6 +25,20 @@ import { RegisterClass } from "../../../../Misc/typeStore";
 export class ImageSourceBlock extends NodeMaterialBlock {
     private _samplerName: string;
     protected _texture: Nullable<Texture>;
+
+    private static _DefaultTextureByEngine = new WeakMap<AbstractEngine, ThinTexture>();
+
+    private static _GetDefaultTexture(engine: AbstractEngine): ThinTexture {
+        let texture = ImageSourceBlock._DefaultTextureByEngine.get(engine);
+
+        if (!texture) {
+            texture = new ThinTexture(engine.emptyTexture);
+            ImageSourceBlock._DefaultTextureByEngine.set(engine, texture);
+        }
+
+        return texture;
+    }
+
     /**
      * Gets or sets the texture associated with the node
      */
@@ -83,6 +99,10 @@ export class ImageSourceBlock extends NodeMaterialBlock {
      */
     public override bind(effect: Effect, _nodeMaterial: NodeMaterial) {
         if (!this.texture) {
+            const engine = effect.getEngine();
+            if (engine.isWebGPU) {
+                effect.setTexture(this._samplerName, ImageSourceBlock._GetDefaultTexture(engine));
+            }
             return;
         }
 

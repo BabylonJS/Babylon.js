@@ -6,8 +6,8 @@ import { Tools } from "../Misc/tools.pure";
 import { Observable } from "../Misc/observable";
 import { Scene } from "../scene.pure";
 import { EngineStore } from "../Engines/engineStore";
-import { type IInspectable } from "../Misc/iInspectable"
-import { type Camera } from "../Cameras/camera"
+import { type IInspectable } from "../Misc/iInspectable";
+import { type Camera } from "../Cameras/camera";
 import { AbstractEngine } from "core/Engines/abstractEngine";
 
 // declare INSPECTOR namespace for compilation issue
@@ -349,7 +349,7 @@ export class DebugLayer {
      * @returns the inspector instance if found otherwise, null
      */
     private _getGlobalInspector(): any {
-        // UMD Global name detection from Webpack Bundle UMD Name.
+        // UMD global name detection from bundle metadata.
         if (typeof INSPECTOR !== "undefined") {
             return INSPECTOR;
         }

@@ -3,25 +3,25 @@
 import { serialize, serializeAsColor3, expandToProperty, serializeAsTexture, serializeAsVector3 } from "../../Misc/decorators";
 import { SmartArray } from "../../Misc/smartArray";
 import { Logger } from "../../Misc/logger";
-import { type Nullable, type int, type float } from "../../types"
-import { type Scene } from "../../scene"
-import { type Matrix } from "../../Maths/math.vector"
+import { type Nullable, type int, type float } from "../../types";
+import { type Scene } from "../../scene";
+import { type Matrix } from "../../Maths/math.vector";
 import { TmpVectors, Vector3, Vector4 } from "../../Maths/math.vector.pure";
 import { VertexBuffer } from "../../Buffers/buffer.pure";
-import { type SubMesh } from "../../Meshes/subMesh"
-import { type AbstractMesh } from "../../Meshes/abstractMesh"
-import { type Mesh } from "../../Meshes/mesh"
-import { type IEffectCreationOptions } from "../../Materials/effect"
+import { type SubMesh } from "../../Meshes/subMesh";
+import { type AbstractMesh } from "../../Meshes/abstractMesh";
+import { type Mesh } from "../../Meshes/mesh";
+import { type IEffectCreationOptions } from "../../Materials/effect";
 import { MaterialDefines } from "../../Materials/materialDefines";
 import { PushMaterial } from "../../Materials/pushMaterial";
 import { ImageProcessingDefinesMixin } from "../../Materials/imageProcessingConfiguration.defines";
 import { ImageProcessingConfiguration } from "../../Materials/imageProcessingConfiguration.pure";
-import { type BaseTexture } from "../../Materials/Textures/baseTexture"
-import { type RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture"
-import { type IShadowLight } from "../../Lights/shadowLight"
+import { type BaseTexture } from "../../Materials/Textures/baseTexture";
+import { type RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture";
+import { type IShadowLight } from "../../Lights/shadowLight";
 import { Constants } from "../../Engines/constants";
 import { MaterialFlags } from "../materialFlags";
-import { type Color3 } from "../../Maths/math.color.pure"
+import { type Color3 } from "../../Maths/math.color.pure";
 import { Color3Black, Color3White } from "../../Maths/math.color.pure";
 import { EffectFallbacks } from "../effectFallbacks";
 import { AddClipPlaneUniforms, BindClipPlane } from "../clipPlaneMaterialHelper";
@@ -805,6 +805,7 @@ export class BackgroundMaterial extends BackgroundMaterialBase {
                 samplers: samplers,
                 defines: defines,
                 maxSimultaneousLights: this._maxSimultaneousLights,
+                shaderLanguage: this._shaderLanguage,
             });
 
             const join = defines.toString();

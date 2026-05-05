@@ -3,32 +3,32 @@ import { expandToProperty } from "../../Misc/decorators";
 import { Logger } from "../../Misc/logger";
 import { SmartArray } from "../../Misc/smartArray";
 import { GetEnvironmentBRDFTexture } from "../../Misc/brdfTextureTools";
-import { type Nullable } from "../../types"
+import { type Nullable } from "../../types";
 import { Scene } from "../../scene.pure";
-import { type Matrix } from "../../Maths/math.vector"
+import { type Matrix } from "../../Maths/math.vector";
 import { Vector4 } from "../../Maths/math.vector.pure";
 import { VertexBuffer } from "../../Buffers/buffer.pure";
-import { type SubMesh } from "../../Meshes/subMesh"
-import { type AbstractMesh } from "../../Meshes/abstractMesh"
-import { type Mesh } from "../../Meshes/mesh"
+import { type SubMesh } from "../../Meshes/subMesh";
+import { type AbstractMesh } from "../../Meshes/abstractMesh";
+import { type Mesh } from "../../Meshes/mesh";
 import { PBRBRDFConfiguration } from "./pbrBRDFConfiguration";
 import { PrePassConfiguration, PrePassConfigurationAddUniforms, PrePassConfigurationAddSamplers } from "../prePassConfiguration.pure";
 import { Color3, TmpColors, Color3White } from "../../Maths/math.color.pure";
 
 import { ImageProcessingDefinesMixin } from "../../Materials/imageProcessingConfiguration.defines";
 import { ImageProcessingConfiguration } from "../../Materials/imageProcessingConfiguration.pure";
-import { type Effect, type IEffectCreationOptions } from "../../Materials/effect"
-import { type IMaterialCompilationOptions, type ICustomShaderNameResolveOptions } from "../../Materials/material"
+import { type Effect, type IEffectCreationOptions } from "../../Materials/effect";
+import { type IMaterialCompilationOptions, type ICustomShaderNameResolveOptions } from "../../Materials/material";
 import { Material } from "../../Materials/material";
 import { MaterialPluginEvent } from "../materialPluginEvent";
 import { MaterialDefines } from "../../Materials/materialDefines";
 import { PushMaterial } from "../../Materials/pushMaterial";
 
-import { type BaseTexture } from "../../Materials/Textures/baseTexture"
-import { type RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture"
+import { type BaseTexture } from "../../Materials/Textures/baseTexture";
+import { type RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture";
 import { MaterialFlags } from "../materialFlags";
 import { Constants } from "../../Engines/constants";
-import { type IAnimatable } from "../../Animations/animatable.interface"
+import { type IAnimatable } from "../../Animations/animatable.interface";
 import { EffectFallbacks } from "../effectFallbacks";
 import { PBRClearCoatConfiguration } from "./pbrClearCoatConfiguration";
 import { PBRIridescenceConfiguration } from "./pbrIridescenceConfiguration";
@@ -2042,6 +2042,7 @@ export abstract class PBRBaseMaterial extends PBRBaseMaterialBase {
             samplers: samplers,
             defines: defines,
             maxSimultaneousLights: this._maxSimultaneousLights,
+            shaderLanguage: this._shaderLanguage,
         });
 
         const csnrOptions: ICustomShaderNameResolveOptions = {};

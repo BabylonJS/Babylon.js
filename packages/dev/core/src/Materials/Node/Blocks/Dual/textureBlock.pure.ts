@@ -20,6 +20,8 @@ import { NodeMaterialConnectionPointCustomObject } from "../../nodeMaterialConne
 import { EngineStore } from "../../../../Engines/engineStore";
 import { type PrePassTextureBlock } from "../Input/prePassTextureBlock"
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { ThinTexture } from "../../../Textures/thinTexture";
+import { type AbstractEngine } from "../../../../Engines/abstractEngine";
 import { RegisterClass } from "../../../../Misc/typeStore";
 
 /**
@@ -38,6 +40,17 @@ export class TextureBlock extends NodeMaterialBlock {
     private _mainUVDefineName: string;
     private _fragmentOnly: boolean;
     private _imageSource: Nullable<ImageSourceBlock | PrePassTextureBlock>;
+
+    private static _DefaultTextureByEngine = new WeakMap<AbstractEngine, ThinTexture>();
+
+    private static _GetDefaultTexture(engine: AbstractEngine): ThinTexture {
+        let defaultTexture = TextureBlock._DefaultTextureByEngine.get(engine);
+        if (!defaultTexture || defaultTexture.getInternalTexture() !== engine.emptyTexture) {
+            defaultTexture = new ThinTexture(engine.emptyTexture);
+            TextureBlock._DefaultTextureByEngine.set(engine, defaultTexture);
+        }
+        return defaultTexture;
+    }
 
     protected _texture: Nullable<Texture>;
 
@@ -447,16 +460,22 @@ export class TextureBlock extends NodeMaterialBlock {
         }
 
         if (!this.texture) {
+            const engine = effect.getEngine();
+            if (engine.isWebGPU && !this._imageSource) {
+                effect.setTexture(this._samplerName, TextureBlock._GetDefaultTexture(engine));
+            }
             return;
         }
 
+        const texture = this.texture;
+
         if (this._isMixed) {
-            effect.setFloat(this._textureInfoName, this.texture.level);
-            effect.setMatrix(this._textureTransformName, this.texture.getTextureMatrix());
+            effect.setFloat(this._textureInfoName, texture.level);
+            effect.setMatrix(this._textureTransformName, texture.getTextureMatrix());
         }
 
         if (!this._imageSource) {
-            effect.setTexture(this._samplerName, this.texture);
+            effect.setTexture(this._samplerName, texture);
         }
     }
 

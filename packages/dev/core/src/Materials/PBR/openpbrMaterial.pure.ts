@@ -3197,6 +3197,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
             samplers: samplers,
             defines: defines,
             maxSimultaneousLights: this._maxSimultaneousLights,
+            shaderLanguage: this._shaderLanguage,
         });
 
         const csnrOptions: ICustomShaderNameResolveOptions = {};

@@ -870,7 +870,8 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
                 onlyUpdateBuffersList,
                 defines["IESLIGHTTEXTURE" + lightIndex],
                 defines["CLUSTLIGHT" + lightIndex],
-                defines["RECTAREALIGHTEMISSIONTEXTURE" + lightIndex]
+                defines["RECTAREALIGHTEMISSIONTEXTURE" + lightIndex],
+                state.shaderLanguage === ShaderLanguage.WGSL
             );
         }
     }
@@ -1250,7 +1251,9 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         });
         state._emitFunctionFromInclude("hdrFilteringFunctions", comments);
 
-        state._emitFunctionFromInclude("pbrDirectLightingFunctions", comments);
+        if (!isWebGPU) {
+            state._emitFunctionFromInclude("pbrDirectLightingFunctions", comments);
+        }
 
         state._emitFunctionFromInclude("pbrIBLFunctions", comments);
 
@@ -1260,16 +1263,20 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         state._emitFunctionFromInclude("pbrBlockAlphaFresnel", comments);
         state._emitFunctionFromInclude("pbrBlockAnisotropic", comments);
 
-        if (!isWebGPU) {
-            // In WebGPU, those functions are part of pbrDirectLightingFunctions
-            state._emitFunctionFromInclude("pbrClusteredLightingFunctions", comments);
-        }
-
         //
         // code
         //
 
         state._emitUniformFromString("vLightingIntensity", NodeMaterialBlockConnectionPointTypes.Vector4);
+
+        if (isWebGPU) {
+            state._emitFunctionFromInclude("pbrDirectLightingFunctions", comments);
+        }
+
+        if (!isWebGPU) {
+            // In WebGPU, those functions are part of pbrDirectLightingFunctions
+            state._emitFunctionFromInclude("pbrClusteredLightingFunctions", comments);
+        }
 
         if (reflectionBlock?.generateOnlyFragmentCode) {
             state.compilationString += reflectionBlock.handleVertexSide(state);
