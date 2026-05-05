@@ -769,6 +769,20 @@ export class FlowGraphEqualityBlock extends FlowGraphBinaryOperationBlock<FlowGr
         if (typeof a !== typeof b) {
             return false;
         }
+        // Both sides are JSON-Pointer-like ref strings ("/foo/0", "/foo/0/", ...).
+        // KHR_interactivity ref/eq is defined as "refers to the same object",
+        // so normalise trailing slashes before comparing — different asset
+        // authors emit refs with and without the trailing slash for the same
+        // object (e.g. /nodes/420 vs /nodes/420/).
+        if (typeof a === "string" && typeof b === "string") {
+            const aStr: string = a;
+            const bStr: string = b;
+            if (aStr.length > 0 && aStr[0] === "/" && bStr.length > 0 && bStr[0] === "/") {
+                const ar = aStr.endsWith("/") ? aStr.slice(0, -1) : aStr;
+                const br = bStr.endsWith("/") ? bStr.slice(0, -1) : bStr;
+                return ar === br;
+            }
+        }
         return a === b;
     }
 }
