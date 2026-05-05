@@ -471,7 +471,7 @@ function camelize(str) {
  * @param {string} [options.namespace]
  *   UMD global name for this bundle (e.g. "BABYLON.GUI").
  *   Defaults to the value in umdGlobals.
- * @param {string} [options.outputPath]        Output directory; defaults to process.cwd().
+ * @param {string} [options.outputPath]        Output directory; defaults to "./dist".
  * @param {Record<string,string>} [options.alias]  Additional alias entries.
  * @param {string[]} [options.optionalExternalFunctionSkip]
  *   Extra dev package names to bundle (not externalize).
@@ -495,7 +495,7 @@ export function commonUMDRollupConfiguration(options) {
         devPackageAliasPath,
         mode = "development",
         namespace,
-        outputPath = process.cwd(),
+        outputPath = resolve("./dist"),
         alias: aliasMap = {},
         optionalExternalFunctionSkip = [],
         maxMode = false,
