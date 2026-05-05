@@ -18,7 +18,7 @@ const _mergedStoreCache = new WeakMap<object, Record<string, any>>();
  * @internal
  */
 export function GetDirectStoreFromMetadata(metadata: DecoratorMetadataObject): Record<string, any> {
-    let ownStore = Object.hasOwn(metadata, __bjsSerializableKey) ? (metadata[__bjsSerializableKey] as Record<string, any>) : undefined;
+    let ownStore = Object.prototype.hasOwnProperty.call(metadata, __bjsSerializableKey) ? (metadata[__bjsSerializableKey] as Record<string, any>) : undefined;
     if (!ownStore) {
         ownStore = {};
         metadata[__bjsSerializableKey] = ownStore;
@@ -33,7 +33,7 @@ export function GetDirectStore(target: any): any {
     if (!metadata) {
         return {};
     }
-    return Object.hasOwn(metadata, __bjsSerializableKey) ? (metadata[__bjsSerializableKey] as Record<string, any>) : {};
+    return Object.prototype.hasOwnProperty.call(metadata, __bjsSerializableKey) ? (metadata[__bjsSerializableKey] as Record<string, any>) : {};
 }
 
 /**
@@ -57,10 +57,10 @@ export function GetMergedStore(target: any): any {
     const store: Record<string, any> = {};
     let currentMeta: any = metadata;
     while (currentMeta) {
-        if (Object.hasOwn(currentMeta, __bjsSerializableKey)) {
+        if (Object.prototype.hasOwnProperty.call(currentMeta, __bjsSerializableKey)) {
             const classStore = currentMeta[__bjsSerializableKey] as Record<string, any>;
             for (const property in classStore) {
-                if (Object.hasOwn(classStore, property) && !(property in store)) {
+                if (Object.prototype.hasOwnProperty.call(classStore, property) && !(property in store)) {
                     store[property] = classStore[property];
                 }
             }

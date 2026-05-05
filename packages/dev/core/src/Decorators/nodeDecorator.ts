@@ -110,7 +110,7 @@ export function editableInPropertyPage(
     return (_value: unknown, context: { name: string | symbol; metadata: DecoratorMetadataObject }) => {
         const meta = context.metadata;
         let propStore: IPropertyDescriptionForEdition[];
-        if (Object.hasOwn(meta, __bjsPropStoreKey)) {
+        if (Object.prototype.hasOwnProperty.call(meta, __bjsPropStoreKey)) {
             propStore = meta[__bjsPropStoreKey] as IPropertyDescriptionForEdition[];
         } else {
             propStore = [];
@@ -147,7 +147,7 @@ export function GetEditableProperties(target: any): IPropertyDescriptionForEditi
     const result: IPropertyDescriptionForEdition[] = [];
     let currentMeta: any = metadata;
     while (currentMeta) {
-        if (Object.hasOwn(currentMeta, __bjsPropStoreKey)) {
+        if (Object.prototype.hasOwnProperty.call(currentMeta, __bjsPropStoreKey)) {
             const store = currentMeta[__bjsPropStoreKey] as IPropertyDescriptionForEdition[];
             result.push(...store);
         }
