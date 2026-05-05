@@ -55,5 +55,5 @@ steps:
                 # Async purge: don't wait for the CDN to finish purging.
                 # The deployment server has a much shorter timeout than Azure's
                 # purge operation, so blocking on it always times out in CI.
-                curl "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_PURGE)?endpoint=${{ parameters.purgeEndpoint }}&profileName=${{ parameters.purgeProfile }}&wait=false" -i -H "Authorization: $(BASIC_AUTH)"
+                curl "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_PURGE)?endpoint=${{ parameters.purgeEndpoint }}&profileName=${{ parameters.purgeProfile }}&wait=false" -i -X POST -H "Authorization: $(BASIC_AUTH)"
             displayName: "Purge CDN (${{ parameters.purgeEndpoint }})"
