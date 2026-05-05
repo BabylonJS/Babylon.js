@@ -1,6 +1,6 @@
 {
     "name": "babylonjs-addons",
-    "version": "9.5.0",
+    "version": "9.5.1",
     "main": "babylonjs.addons.min.js",
     "types": "babylonjs.addons.module.d.ts",
     "files": [
@@ -16,7 +16,7 @@
         "test:escheck": "es-check es6 ./babylonjs.addons.js"
     },
     "dependencies": {
-        "babylonjs": "9.5.0"
+        "babylonjs": "9.5.1"
     },
     "devDependencies": {
         "@dev/addons": "1.0.0",

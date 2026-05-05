@@ -9,9 +9,8 @@ let CachedInspector: typeof INSPECTOR | undefined;
  * Attaches Inspector v2 to the global INSPECTOR and BABYLON.Inspector.
  */
 export function AttachInspectorGlobals() {
-    // Check if Inspector v2 is already attached, but don't compare the modules directly as
-    // WebPack does some weird stuff with modules that makes direct comparison unreliable.
-    // Instead, check the Inspector class.
+    // Check the Inspector class instead of comparing module namespace objects directly,
+    // since bundlers can wrap those objects differently.
     if ((<any>globalThis).BABYLON?.Inspector !== INSPECTOR.Inspector) {
         // First cache any existing global INSPECTOR value (e.g. Inspector v1).
         CachedInspector = (<any>globalThis).INSPECTOR;
@@ -29,9 +28,8 @@ export function AttachInspectorGlobals() {
  * Detaches Inspector v2 from the global INSPECTOR and BABYLON.Inspector.
  */
 export function DetachInspectorGlobals() {
-    // Check if Inspector v2 is already attached, but don't compare the modules directly as
-    // WebPack does some weird stuff with modules that makes direct comparison unreliable.
-    // Instead, check the Inspector class.
+    // Check the Inspector class instead of comparing module namespace objects directly,
+    // since bundlers can wrap those objects differently.
     if ((<any>globalThis).BABYLON?.Inspector === INSPECTOR.Inspector) {
         // Remove the global INSPECTOR and BABYLON.Inspector.
         if (CachedInspector) {

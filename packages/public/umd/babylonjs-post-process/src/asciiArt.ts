@@ -1,3 +1,2 @@
-import * as postProcess from "post-processes/legacy/legacy-asciiArt";
-export { postProcess };
-export default postProcess;
+import "post-processes/legacy/legacy-asciiArt";
+export * from "post-processes/legacy/legacy-asciiArt";

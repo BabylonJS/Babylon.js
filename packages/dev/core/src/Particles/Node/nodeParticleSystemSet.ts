@@ -199,7 +199,7 @@ export class NodeParticleSystemSet {
      * @returns the global NPE
      */
     private _getGlobalNodeParticleEditor(): any {
-        // UMD Global name detection from Webpack Bundle UMD Name.
+        // UMD global name detection from bundle metadata.
         // Note: rollup-built UMD bundles do not expose the editor class
         // directly on the namespace - it lives on `.default.NodeParticleEditor` -
         // so we unwrap that case before falling back to the BABYLON global.

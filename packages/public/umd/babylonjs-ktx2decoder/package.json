@@ -1,6 +1,6 @@
 {
     "name": "babylonjs-ktx2decoder",
-    "version": "9.5.0",
+    "version": "9.5.1",
     "main": "babylon.ktx2Decoder.js",
     "types": "babylon.ktx2Decoder.module.d.ts",
     "files": [
@@ -15,7 +15,7 @@
         "clean": "rimraf dist && rimraf babylon*.* -g"
     },
     "dependencies": {
-        "babylonjs": "9.5.0"
+        "babylonjs": "9.5.1"
     },
     "devDependencies": {
         "@dev/build-tools": "1.0.0",
