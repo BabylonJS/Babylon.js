@@ -34,7 +34,7 @@ function hasDeclarationInputs(entry) {
     let hasInput = false;
 
     function visit(path) {
-        if (!existsSync(path)) {
+        if (hasInput || !existsSync(path)) {
             return;
         }
 
@@ -42,6 +42,9 @@ function hasDeclarationInputs(entry) {
         if (stat.isDirectory()) {
             for (const child of readdirSync(path)) {
                 visit(resolve(path, child));
+                if (hasInput) {
+                    return;
+                }
             }
             return;
         }
@@ -53,6 +56,9 @@ function hasDeclarationInputs(entry) {
 
     for (const sourceDir of declarationSourceDirs(entry)) {
         visit(sourceDir);
+        if (hasInput) {
+            return true;
+        }
     }
 
     return hasInput;

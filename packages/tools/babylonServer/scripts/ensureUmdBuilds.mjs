@@ -27,6 +27,7 @@ const STAMP_ROOT = resolve(__dirname, "../dist/umd-dev-stamps");
 const STAMP_VERSION = 1;
 const MTIME_TOLERANCE_MS = 2;
 const DRY_RUN = process.argv.includes("--dry-run");
+const mtimeCache = new Map();
 
 const globalInputs = [
     resolve(REPO_ROOT, "packages/public/rollupUMDHelper.mjs"),
@@ -129,29 +130,60 @@ function shouldIgnorePath(path) {
     return name === "node_modules" || name === ".git" || name === "dist" || name === ".rollup.cache";
 }
 
-function latestMtime(paths) {
+function latestMtimeForPath(path) {
+    const cached = mtimeCache.get(path);
+    if (cached) {
+        return cached;
+    }
+
     const latest = { path: "", mtimeMs: 0 };
 
     function visit(path) {
-        if (!existsSync(path) || shouldIgnorePath(path)) {
+        if (shouldIgnorePath(path)) {
             return;
         }
 
-        const stat = statSync(path);
+        let stat;
+        try {
+            stat = statSync(path);
+        } catch {
+            return;
+        }
+
         if (stat.mtimeMs > latest.mtimeMs) {
             latest.path = path;
             latest.mtimeMs = stat.mtimeMs;
         }
 
         if (stat.isDirectory()) {
-            for (const entry of readdirSync(path)) {
+            let entries;
+            try {
+                entries = readdirSync(path);
+            } catch {
+                return;
+            }
+
+            for (const entry of entries) {
                 visit(resolve(path, entry));
             }
         }
     }
 
+    visit(path);
+    mtimeCache.set(path, latest);
+
+    return latest;
+}
+
+function latestMtime(paths) {
+    const latest = { path: "", mtimeMs: 0 };
+
     for (const path of paths) {
-        visit(path);
+        const pathLatest = latestMtimeForPath(path);
+        if (pathLatest.mtimeMs > latest.mtimeMs) {
+            latest.path = pathLatest.path;
+            latest.mtimeMs = pathLatest.mtimeMs;
+        }
     }
 
     return latest;

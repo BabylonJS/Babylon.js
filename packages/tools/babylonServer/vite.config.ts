@@ -1,7 +1,7 @@
 import { defineConfig, type Plugin, type Connect } from "vite";
 import path from "path";
 import fs from "fs";
-import { type ChildProcess, spawn, spawnSync } from "child_process";
+import { type ChildProcess, spawn } from "child_process";
 import { watch as chokidarWatch } from "chokidar";
 
 // ---------------------------------------------------------------------------
@@ -191,6 +191,27 @@ function babylonServerPlugin(): Plugin {
     /** Child processes to clean up on server close. */
     const children: ChildProcess[] = [];
 
+    function stampPackage(pkg: string) {
+        return new Promise<{ code: number; stderr: string }>((resolvePromise) => {
+            const child = spawn("node", ["packages/tools/babylonServer/scripts/ensureUmdBuilds.mjs", "--stamp", pkg], {
+                cwd: REPO_ROOT,
+                stdio: ["ignore", "ignore", "pipe"],
+                shell: true,
+            });
+            children.push(child);
+
+            let stderr = "";
+            child.stderr?.on("data", (data: Buffer) => (stderr += data));
+            child.on("close", (code) => {
+                const index = children.indexOf(child);
+                if (index >= 0) {
+                    children.splice(index, 1);
+                }
+                resolvePromise({ code: code ?? 1, stderr });
+            });
+        });
+    }
+
     function rebuildPackage(pkg: string, server: { ws: { send: (msg: any) => void } }) {
         if (building.has(pkg)) return;
         building.add(pkg);
@@ -206,19 +227,14 @@ function babylonServerPlugin(): Plugin {
 
         let stderr = "";
         child.stderr?.on("data", (d: Buffer) => (stderr += d));
-        child.on("close", (code) => {
-            building.delete(pkg);
+        child.on("close", async (code) => {
             const idx = children.indexOf(child);
             if (idx >= 0) children.splice(idx, 1);
             const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
             if (code === 0) {
-                const stampResult = spawnSync("node", ["packages/tools/babylonServer/scripts/ensureUmdBuilds.mjs", "--stamp", pkg], {
-                    cwd: REPO_ROOT,
-                    stdio: ["ignore", "ignore", "pipe"],
-                    shell: true,
-                });
-                if (stampResult.status !== 0) {
-                    console.warn(`\x1b[33m⚠ Could not mark ${pkg} as fresh: ${stampResult.stderr.toString().trim()}\x1b[0m`);
+                const stampResult = await stampPackage(pkg);
+                if (stampResult.code !== 0) {
+                    console.warn(`\x1b[33m⚠ Could not mark ${pkg} as fresh: ${stampResult.stderr.trim()}\x1b[0m`);
                 }
                 console.log(`\x1b[32m✓ ${pkg} rebuilt in ${elapsed}s\x1b[0m`);
                 if (enableLiveReload) {
@@ -228,6 +244,7 @@ function babylonServerPlugin(): Plugin {
                 console.error(`\x1b[31m✗ ${pkg} build failed (${elapsed}s)\x1b[0m`);
                 if (stderr) console.error(stderr.trim());
             }
+            building.delete(pkg);
         });
     }
 
