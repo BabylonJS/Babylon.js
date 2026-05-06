@@ -1,6 +1,6 @@
 import { type FunctionComponent } from "react";
 
-import { makeStyles, tokens } from "@fluentui/react-components";
+import { Body1, makeStyles, tokens } from "@fluentui/react-components";
 
 const useStyles = makeStyles({
     line: {
@@ -10,7 +10,6 @@ const useStyles = makeStyles({
         background: tokens.colorNeutralBackground2,
         borderRadius: tokens.borderRadiusSmall,
         color: tokens.colorNeutralForeground1,
-        fontSize: tokens.fontSizeBase200,
         cursor: "grab",
         userSelect: "none",
         ":hover": {
@@ -54,7 +53,7 @@ export const DraggableLine: FunctionComponent<IDraggableLineProps> = ({ data, to
                 event.dataTransfer.setData("babylonjs-flow-graph-node", data);
             }}
         >
-            {display}
+            <Body1>{display}</Body1>
         </div>
     );
 };

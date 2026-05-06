@@ -1,6 +1,6 @@
 import { type FunctionComponent, useEffect, useLayoutEffect, useRef } from "react";
 
-import { makeStyles, mergeClasses, tokens } from "@fluentui/react-components";
+import { Body1, Caption1, Divider, makeStyles, mergeClasses, tokens } from "@fluentui/react-components";
 
 /**
  * Describes one item in a context menu.
@@ -91,8 +91,7 @@ const useStyles = makeStyles({
         opacity: 0.6,
     },
     separator: {
-        height: "1px",
-        background: tokens.colorNeutralStroke2,
+        // Tighten the Fluent Divider's vertical rhythm to match the menu item density.
         margin: `${tokens.spacingVerticalXS} 0`,
     },
 });
@@ -138,7 +137,7 @@ export const ContextMenuComponent: FunctionComponent<IContextMenuComponentProps>
             <div ref={menuRef} className={classes.menu} role="menu" style={{ left: x, top: y }} onPointerDown={(e) => e.stopPropagation()}>
                 {items.map((entry, idx) => {
                     if (IsSeparator(entry)) {
-                        return <div key={`sep-${idx}`} className={classes.separator} role="separator" />;
+                        return <Divider key={`sep-${idx}`} className={classes.separator} />;
                     }
                     const item = entry;
                     return (
@@ -165,8 +164,8 @@ export const ContextMenuComponent: FunctionComponent<IContextMenuComponentProps>
                                 }
                             }}
                         >
-                            <span>{item.label}</span>
-                            {item.shortcut && <span className={classes.shortcut}>{item.shortcut}</span>}
+                            <Body1>{item.label}</Body1>
+                            {item.shortcut && <Caption1 className={classes.shortcut}>{item.shortcut}</Caption1>}
                         </div>
                     );
                 })}

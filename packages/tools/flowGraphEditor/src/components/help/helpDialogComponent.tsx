@@ -1,6 +1,6 @@
 import { type FunctionComponent, useEffect, useMemo, useRef } from "react";
 
-import { Dialog, DialogBody, DialogContent, DialogSurface, DialogTitle, makeStyles, tokens } from "@fluentui/react-components";
+import { Dialog, DialogBody, DialogContent, DialogSurface, DialogTitle, Subtitle2, makeStyles, tokens } from "@fluentui/react-components";
 import { Accordion, AccordionSection } from "shared-ui-components/fluent/primitives/accordion";
 
 import { type HelpTopicId, HelpTopics } from "./helpContent";
@@ -125,7 +125,7 @@ export const HelpDialogComponent: FunctionComponent<IHelpDialogProps> = ({ initi
                                     <div ref={(el) => topicRefs.current.set(topic.id, el)} className={classes.topicContent}>
                                         {topic.sections.map((section, idx) => (
                                             <div key={idx}>
-                                                {section.heading && <h4>{section.heading}</h4>}
+                                                {section.heading && <Subtitle2 block>{section.heading}</Subtitle2>}
                                                 {/* Content is developer-authored from helpContent.ts — safe to render as HTML.
                                                     If this ever accepts user/external content, sanitize with DOMPurify first. */}
                                                 {/* eslint-disable-next-line @typescript-eslint/naming-convention */}

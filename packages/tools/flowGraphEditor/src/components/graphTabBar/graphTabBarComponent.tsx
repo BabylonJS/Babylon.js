@@ -1,6 +1,6 @@
 import { type FunctionComponent, type MouseEvent, useCallback, useEffect, useState } from "react";
 
-import { Button, Input, Tab, TabList, makeStyles, mergeClasses, tokens } from "@fluentui/react-components";
+import { Body1, Button, Input, Tab, TabList, makeStyles, mergeClasses, tokens } from "@fluentui/react-components";
 import { AddRegular, DismissRegular } from "@fluentui/react-icons";
 
 import { type GlobalState } from "../../globalState";
@@ -165,7 +165,7 @@ export const GraphTabBarComponent: FunctionComponent<IGraphTabBarProps> = ({ glo
                     const isEditing = editingIndex === index;
                     return (
                         <Tab key={graph.uniqueId} value={String(index)} className={classes.tabHover} onDoubleClick={() => startEditing(index)} title={graph.name}>
-                            <span className={classes.tabContent}>
+                            <div className={classes.tabContent}>
                                 {isEditing ? (
                                     <Input
                                         className={classes.tabRenameInput}
@@ -186,7 +186,7 @@ export const GraphTabBarComponent: FunctionComponent<IGraphTabBarProps> = ({ glo
                                         onClick={(e) => e.stopPropagation()}
                                     />
                                 ) : (
-                                    <span>{graph.name}</span>
+                                    <Body1>{graph.name}</Body1>
                                 )}
                                 {graphs.length > 1 && !isEditing && (
                                     <Button
@@ -199,7 +199,7 @@ export const GraphTabBarComponent: FunctionComponent<IGraphTabBarProps> = ({ glo
                                         onClick={(evt) => onCloseTab(index, evt)}
                                     />
                                 )}
-                            </span>
+                            </div>
                         </Tab>
                     );
                 })}

@@ -160,8 +160,8 @@ flowGraph.start();`;
                         <div className={classes.section}>
                             <Subtitle2>Notes</Subtitle2>
                             <Text>
-                                Both methods create a <span className={classes.inlineCode}>FlowGraphCoordinator</span> that manages the execution context. Call{" "}
-                                <span className={classes.inlineCode}>flowGraph.start()</span> after parsing to begin execution. The scene&apos;s objects (meshes, lights, cameras)
+                                Both methods create a <Text className={classes.inlineCode}>FlowGraphCoordinator</Text> that manages the execution context. Call{" "}
+                                <Text className={classes.inlineCode}>flowGraph.start()</Text> after parsing to begin execution. The scene&apos;s objects (meshes, lights, cameras)
                                 will be automatically available to the flow graph through the coordinator&apos;s context.
                             </Text>
                         </div>

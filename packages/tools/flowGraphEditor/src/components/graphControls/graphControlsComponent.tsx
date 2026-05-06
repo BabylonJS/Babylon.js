@@ -1,6 +1,6 @@
 import { type FunctionComponent, type ReactNode, useCallback, useEffect, useRef, useState } from "react";
 
-import { Button, Dropdown, Input, Option, makeStyles, mergeClasses, tokens } from "@fluentui/react-components";
+import { Body1, Caption1, Button, Divider, Dropdown, Input, Option, makeStyles, mergeClasses, tokens } from "@fluentui/react-components";
 import {
     AddRegular,
     ArrowRedoRegular,
@@ -48,9 +48,13 @@ const useStyles = makeStyles({
         flexWrap: "wrap",
     },
     separator: {
+        // Fluent's `Divider` defaults to `flex-grow: 1`, which is fine in fixed-width toolbars
+        // (see inspector-v2's curve editor topBar). Our toolbar has `flex-wrap: wrap` so that
+        // slack does exist on the row — without `flexGrow: 0` each divider would expand to
+        // consume it. Width and height pin the visible line.
+        flexGrow: 0,
         width: "1px",
         height: "20px",
-        background: tokens.colorNeutralStroke2,
         margin: `0 ${tokens.spacingHorizontalXS}`,
     },
     label: {
@@ -360,9 +364,9 @@ export const GraphControlsComponent: FunctionComponent<IGraphControlsProps> = ({
         const cls = hasErrors ? classes.validationSummaryError : classes.validationSummaryWarning;
         const label = hasErrors ? `${validationResult.errorCount}E ${validationResult.warningCount}W` : `${validationResult.warningCount}W`;
         return (
-            <span className={mergeClasses(classes.validationSummary, cls)} title={`${validationResult.errorCount} error(s), ${validationResult.warningCount} warning(s)`}>
+            <Body1 className={mergeClasses(classes.validationSummary, cls)} title={`${validationResult.errorCount} error(s), ${validationResult.warningCount} warning(s)`}>
                 {label}
-            </span>
+            </Body1>
         );
     })();
 
@@ -392,17 +396,17 @@ export const GraphControlsComponent: FunctionComponent<IGraphControlsProps> = ({
                     forceUpdate({});
                 }}
             />
-            <span className={classes.separator} />
+            <Divider vertical className={classes.separator} />
             <Button size="small" appearance="subtle" icon={<PlayRegular />} title="Start" onClick={onStart} disabled={!canStart} />
             <Button size="small" appearance="subtle" icon={<PauseRegular />} title="Pause" onClick={onPause} disabled={!canPause} />
             <Button size="small" appearance="subtle" icon={<StopRegular />} title="Stop" onClick={onStop} disabled={!canStop} />
             <Button size="small" appearance="subtle" icon={<ArrowResetRegular />} title="Reset" onClick={() => void onResetAsync()} />
             <Button size="small" appearance="subtle" icon={<FastForwardRegular />} title="Continue (resume from breakpoint)" onClick={onContinue} disabled={!canContinue} />
             <Button size="small" appearance="subtle" icon={<NextRegular />} title="Step (execute one block)" onClick={onStep} disabled={!canStep} />
-            <span className={mergeClasses(classes.state, stateClass)}>{stateLabel}</span>
-            <span className={classes.separator} />
+            <Body1 className={mergeClasses(classes.state, stateClass)}>{stateLabel}</Body1>
+            <Divider vertical className={classes.separator} />
             <div className={classes.contextGroup}>
-                <span className={classes.label}>Ctx</span>
+                <Caption1 className={classes.label}>Ctx</Caption1>
                 <Dropdown
                     className={classes.contextDropdown}
                     size="small"
@@ -479,7 +483,7 @@ export const GraphControlsComponent: FunctionComponent<IGraphControlsProps> = ({
                     />
                 )}
             </div>
-            <span className={classes.separator} />
+            <Divider vertical className={classes.separator} />
             <Button
                 size="small"
                 appearance={debugMode ? "primary" : "subtle"}
@@ -489,7 +493,7 @@ export const GraphControlsComponent: FunctionComponent<IGraphControlsProps> = ({
                     globalState.isDebugMode = !globalState.isDebugMode;
                 }}
             />
-            <span className={classes.separator} />
+            <Divider vertical className={classes.separator} />
             <Button size="small" appearance="subtle" icon={<CheckmarkRegular />} title="Validate graph" onClick={onValidate} />
             <Button
                 size="small"
@@ -501,9 +505,9 @@ export const GraphControlsComponent: FunctionComponent<IGraphControlsProps> = ({
                 }}
             />
             {validationSummary}
-            <span className={classes.separator} />
+            <Divider vertical className={classes.separator} />
             <div className={classes.timeScale}>
-                <span className={classes.label}>Speed</span>
+                <Caption1 className={classes.label}>Speed</Caption1>
                 {SpeedPresets.map((s) => (
                     <Button
                         key={s}

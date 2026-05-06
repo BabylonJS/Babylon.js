@@ -33,7 +33,7 @@ import { ShowToast } from "./components/toast/toastComponent";
 import { HowToUseDialogComponent } from "./components/howToUse/howToUseDialogComponent";
 import { AllCompositeTemplates, type ICompositeTemplate } from "./compositeTemplates";
 import { GraphTabBarComponent } from "./components/graphTabBar/graphTabBarComponent";
-import { makeStaticStyles } from "@fluentui/react-components";
+import { Subtitle1, Text, Title3, makeStaticStyles } from "@fluentui/react-components";
 
 const useFlowGraphRootStyles = makeStaticStyles(`
 #flow-graph-editor-graph-root {
@@ -118,9 +118,13 @@ class EditorErrorBoundary extends React.Component<React.PropsWithChildren<{}>, {
     override render() {
         if (this.state.hasError) {
             return (
-                <div style={{ padding: 20, color: "#ff6b6b", backgroundColor: "#1e1e1e", fontFamily: "monospace", height: "100%", overflow: "auto" }}>
-                    <h2>Flow Graph Editor encountered an error</h2>
-                    <pre style={{ whiteSpace: "pre-wrap" }}>{this.state.error}</pre>
+                <div style={{ padding: 20, color: "#ff6b6b", backgroundColor: "#1e1e1e", height: "100%", overflow: "auto" }}>
+                    <Subtitle1 block style={{ color: "inherit" }}>
+                        Flow Graph Editor encountered an error
+                    </Subtitle1>
+                    <Text font="monospace" block style={{ color: "inherit", whiteSpace: "pre-wrap", marginTop: 8 }}>
+                        {this.state.error}
+                    </Text>
                     <button style={{ marginTop: 10, padding: "8px 16px", cursor: "pointer" }} onClick={() => this.setState({ hasError: false, error: "" })}>
                         Try to recover
                     </button>
@@ -1395,8 +1399,12 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                     <HelpDialogComponent initialTopicId={this.state.helpTopicId ?? undefined} onClose={() => this.setState({ helpTopicId: null })} />
                 )}
                 {this.state.showHowToUse && <HowToUseDialogComponent globalState={this.props.globalState} onClose={() => this.setState({ showHowToUse: false })} />}
-                <div className="blocker">Flow Graph Editor needs a horizontal resolution of at least 900px</div>
-                <div className="wait-screen hidden">Processing...please wait</div>
+                <div className="blocker">
+                    <Title3 style={{ color: "inherit" }}>Flow Graph Editor needs a horizontal resolution of at least 900px</Title3>
+                </div>
+                <div className="wait-screen hidden">
+                    <Title3 style={{ color: "inherit" }}>Processing...please wait</Title3>
+                </div>
                 {this.state.contextMenu && (
                     <ContextMenuComponent
                         x={this.state.contextMenu.x}

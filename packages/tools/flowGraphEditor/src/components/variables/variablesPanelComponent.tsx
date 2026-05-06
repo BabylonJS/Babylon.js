@@ -21,7 +21,7 @@ import {
     type IVariableEntry,
     type VariableTypeName,
 } from "../../variableUtils";
-import { Button, Input, Switch, makeStyles, tokens } from "@fluentui/react-components";
+import { Body1, Caption1, Button, Input, Switch, makeStyles, tokens } from "@fluentui/react-components";
 import { AddRegular, ChevronDownRegular, ChevronRightRegular, DismissRegular } from "@fluentui/react-icons";
 
 interface IVariablesPanelProps {
@@ -651,7 +651,7 @@ class VariablesPanelInner extends React.Component<IVariablesPanelInnerProps, IVa
                             this._pollRuntimeValues();
                         }}
                     />
-                    <span>{currentVal ? "true" : "false"}</span>
+                    <Body1>{currentVal ? "true" : "false"}</Body1>
                 </label>
             );
         }
@@ -701,7 +701,7 @@ class VariablesPanelInner extends React.Component<IVariablesPanelInnerProps, IVa
                 <div className={classes.components}>
                     {labels.map((label, ci) => (
                         <div key={label} className={classes.component}>
-                            <span className={classes.componentLabel}>{label}</span>
+                            <Caption1 className={classes.componentLabel}>{label}</Caption1>
                             <Input
                                 className={classes.componentInput}
                                 size="small"
@@ -786,9 +786,9 @@ class VariablesPanelInner extends React.Component<IVariablesPanelInnerProps, IVa
             );
         }
         return (
-            <span className={classes.value} onClick={() => this._startValueEditing(idx)} title="Click to edit value">
+            <Body1 className={classes.value} onClick={() => this._startValueEditing(idx)} title="Click to edit value">
                 {runtimeValues.get(varName) ?? "undefined"}
-            </span>
+            </Body1>
         );
     }
 
@@ -808,14 +808,14 @@ class VariablesPanelInner extends React.Component<IVariablesPanelInnerProps, IVa
                         title={collapsed ? "Expand variables" : "Collapse variables"}
                         onClick={() => this.setState({ collapsed: !collapsed })}
                     />
-                    <span className={classes.title}>Variables{varCount > 0 ? ` (${varCount})` : ""}</span>
-                    {this.state.isRunning && <span className={classes.liveBadge}>● Live</span>}
+                    <Body1 className={classes.title}>Variables{varCount > 0 ? ` (${varCount})` : ""}</Body1>
+                    {this.state.isRunning && <Caption1 className={classes.liveBadge}>● Live</Caption1>}
                     <Button className={classes.addButton} size="small" appearance="subtle" icon={<AddRegular />} title="Add a new variable" onClick={() => this._addVariable()} />
                 </div>
                 {!collapsed && (
                     <div className={classes.body}>
                         {variables.length === 0 ? (
-                            <div className={classes.empty}>No variables. Click + to add one, or use GetVariable/SetVariable blocks.</div>
+                            <Body1 className={classes.empty}>No variables. Click + to add one, or use GetVariable/SetVariable blocks.</Body1>
                         ) : (
                             <div className={classes.table}>
                                 {variables.map((v, idx) => {
@@ -847,13 +847,13 @@ class VariablesPanelInner extends React.Component<IVariablesPanelInnerProps, IVa
                                                         autoFocus
                                                     />
                                                 ) : (
-                                                    <span
+                                                    <Body1
                                                         className={classes.name}
                                                         onDoubleClick={() => this._startNameEditing(idx)}
                                                         title={`${v.name} (${v.getCount}G/${v.setCount}S) — double-click to rename`}
                                                     >
                                                         {v.name}
-                                                    </span>
+                                                    </Body1>
                                                 )}
                                                 <Button
                                                     size="small"

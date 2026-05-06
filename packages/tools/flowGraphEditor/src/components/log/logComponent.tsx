@@ -1,6 +1,6 @@
 import { type FunctionComponent, useEffect, useRef, useState } from "react";
 
-import { makeStyles, mergeClasses, tokens } from "@fluentui/react-components";
+import { Text, makeStyles, mergeClasses, tokens } from "@fluentui/react-components";
 
 import { type FlowGraphBlock } from "core/FlowGraph/flowGraphBlock";
 
@@ -34,8 +34,8 @@ const useStyles = makeStyles({
     },
     log: {
         color: tokens.colorNeutralForeground1,
-        fontSize: tokens.fontSizeBase300,
-        fontFamily: tokens.fontFamilyMonospace,
+        // Render as a block so each log entry occupies its own line in the console pane.
+        display: "block",
     },
     error: {
         color: tokens.colorPaletteRedForeground1,
@@ -98,13 +98,15 @@ export const LogComponent: FunctionComponent<ILogComponentProps> = ({ globalStat
             {logs.map((l, i) => {
                 const hasBlock = !!l.block;
                 return (
-                    <div
+                    <Text
                         key={i}
+                        font="monospace"
+                        size={300}
                         className={mergeClasses(classes.log, l.isError && classes.error, hasBlock && classes.clickable)}
                         onClick={hasBlock ? () => onLogEntryClick(l) : undefined}
                     >
                         {l.time.getHours() + ":" + l.time.getMinutes() + ":" + l.time.getSeconds() + ": " + l.message}
-                    </div>
+                    </Text>
                 );
             })}
         </div>
