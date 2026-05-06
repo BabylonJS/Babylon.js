@@ -7,7 +7,7 @@ import { build } from "esbuild";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const packageRoot = join(__dirname, "..");
-const outputRoot = join(packageRoot, "dist", "es6Smoke");
+const outputRoot = join(packageRoot, "temp", "es6Smoke");
 const require = createRequire(import.meta.url);
 
 mkdirSync(outputRoot, { recursive: true });
