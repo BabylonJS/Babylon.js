@@ -211,7 +211,6 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
     public accessor indexOfRefraction = 1.5;
 
     @serialize()
-    // @ts-expect-error Backing field accessed dynamically by the expandToProperty accessor decorator
     private _volumeIndexOfRefraction = -1.0;
 
     /**
