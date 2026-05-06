@@ -339,6 +339,9 @@ test.describe("Flow Graph Editor — Graph Construction", () => {
 
         const badge = fge.nodeOnCanvas("FlowGraphConsoleLogBlock").locator("[class*='validationBadge']");
         await expect(badge).toBeVisible();
+        await expect(badge).toHaveAttribute("role", "button");
+        await expect(badge).toHaveAttribute("tabindex", "0");
+        await expect(badge).toHaveAttribute("aria-label", "Show validation errors");
 
         const logEntries = page.locator("#fge-log-console .log");
         const beforeCount = await logEntries.count();
@@ -347,6 +350,12 @@ test.describe("Flow Graph Editor — Graph Construction", () => {
 
         await expect.poll(async () => await logEntries.count()).toBeGreaterThan(beforeCount);
         await expect(page.locator("#fge-log-console")).toContainText("FlowGraphConsoleLogBlock");
+
+        const afterClickCount = await logEntries.count();
+        await badge.focus();
+        await page.keyboard.press("Enter");
+
+        await expect.poll(async () => await logEntries.count()).toBeGreaterThan(afterClickCount);
 
         const toast = page.locator(".fge-toast").last();
         await expect(toast).toBeVisible();

@@ -88,15 +88,22 @@ export class GraphNode {
         if (!severity) {
             this._validationBadge.style.display = "none";
             this._validationBadge.title = "";
+            this._validationBadge.removeAttribute("role");
+            this._validationBadge.removeAttribute("tabindex");
+            this._validationBadge.removeAttribute("aria-label");
             this._validationBadge.onclick = null;
             this._validationBadge.onpointerdown = null;
             this._validationBadge.onpointermove = null;
             this._validationBadge.onpointerup = null;
+            this._validationBadge.onkeydown = null;
             return;
         }
         this._validationBadge.style.display = "";
         this._validationBadge.classList.add(severity === "error" ? localStyles["validationError"] : localStyles["validationWarning"]);
         this._validationBadge.title = tooltip ?? "";
+        this._validationBadge.setAttribute("role", "button");
+        this._validationBadge.tabIndex = 0;
+        this._validationBadge.setAttribute("aria-label", severity === "error" ? "Show validation errors" : "Show validation warnings");
         this._validationBadge.onclick = null;
         this._validationBadge.onpointerdown = (e) => {
             e.stopPropagation();
@@ -105,6 +112,14 @@ export class GraphNode {
             e.stopPropagation();
         };
         this._validationBadge.onpointerup = (e) => {
+            e.stopPropagation();
+            onClick?.();
+        };
+        this._validationBadge.onkeydown = (e) => {
+            if (e.key !== "Enter" && e.key !== " ") {
+                return;
+            }
+            e.preventDefault();
             e.stopPropagation();
             onClick?.();
         };

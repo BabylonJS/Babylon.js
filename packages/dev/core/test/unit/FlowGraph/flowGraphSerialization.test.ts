@@ -22,6 +22,7 @@ import {
     ParseFlowGraphContext,
     ParseFlowGraph,
     ParseFlowGraphAsync,
+    ParseCoordinatorAsync,
     ParseFlowGraphCoordinatorFromSnippetAsync,
     ParseFlowGraphFromSnippetAsync,
 } from "core/FlowGraph";
@@ -271,6 +272,19 @@ describe("Flow Graph Serialization", () => {
         expect(fetchMock.mock.calls[0][0]).toBe(Constants.SnippetUrl + "/ABC123/4");
         expect(parsedCoordinator.flowGraphs.length).toBe(1);
         expect(parsedCoordinator.flowGraphs[0].name).toBe("Snippet Graph");
+    });
+
+    it("preserves false dispatch settings when parsing a coordinator", async () => {
+        const coordinator = new FlowGraphCoordinator({ scene });
+        coordinator.dispatchEventsSynchronously = false;
+        coordinator.createGraph("Async Events Graph");
+
+        const serializedCoordinator: any = {};
+        coordinator.serialize(serializedCoordinator);
+
+        const parsedCoordinator = await ParseCoordinatorAsync(serializedCoordinator, { scene });
+
+        expect(parsedCoordinator.dispatchEventsSynchronously).toBe(false);
     });
 
     it("returns the active flow graph from a snippet", async () => {

@@ -35,7 +35,7 @@ async function GetSerializedFlowGraphFromSnippetAsync(snippetId: string): Promis
 }
 
 function ApplyCoordinatorSerializationSettings(serializedObject: any, coordinator: FlowGraphCoordinator): void {
-    if (serializedObject.dispatchEventsSynchronously) {
+    if (serializedObject.dispatchEventsSynchronously !== undefined) {
         coordinator.dispatchEventsSynchronously = serializedObject.dispatchEventsSynchronously;
     }
 
