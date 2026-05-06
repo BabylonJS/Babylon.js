@@ -44,7 +44,27 @@ export class FlowGraphArrayIndexBlock<T = any> extends FlowGraphBlock {
      */
     public override _updateOutputs(context: FlowGraphContext): void {
         const array = this.array.getValue(context);
-        const index = getNumericValue(this.index.getValue(context));
+        const rawIndex = this.index.getValue(context);
+        // KHR_interactivity opaque-reference values feed in here as JSON-Pointer
+        // ref strings (e.g. "/animations/0/") instead of plain integers. Extract
+        // the trailing numeric segment as the index in that case. Undefined /
+        // unconnected inputs short-circuit to a null output instead of crashing
+        // ``getNumericValue`` on a missing ``.value`` property.
+        let index: number;
+        if (rawIndex === undefined || rawIndex === null) {
+            this.value.setValue(null, context);
+            return;
+        }
+        if (typeof rawIndex === "string") {
+            const parsed = _ParseRefIndex(rawIndex);
+            if (parsed === undefined) {
+                this.value.setValue(null, context);
+                return;
+            }
+            index = parsed;
+        } else {
+            index = getNumericValue(rawIndex);
+        }
         if (array && index >= 0 && index < array.length) {
             this.value.setValue(array[index], context);
         } else {
@@ -66,3 +86,28 @@ export class FlowGraphArrayIndexBlock<T = any> extends FlowGraphBlock {
 }
 
 RegisterClass(FlowGraphBlockNames.ArrayIndex, FlowGraphArrayIndexBlock);
+
+/**
+ * Extract the trailing numeric segment from a JSON-Pointer-shaped ref string,
+ * e.g. ``/animations/0/`` → 0, ``/nodes/12`` → 12. Returns ``undefined`` if the
+ * string does not match the expected ``/<container>/<index>(/?)`` shape.
+ * @param ref the ref string to parse.
+ * @returns the trailing integer segment, or ``undefined`` when the input is
+ *          not a JSON-Pointer-shaped ref ending in an integer.
+ */
+function _ParseRefIndex(ref: string): number | undefined {
+    if (ref.length === 0 || ref[0] !== "/") {
+        return undefined;
+    }
+    const trimmed = ref.endsWith("/") ? ref.slice(0, -1) : ref;
+    const lastSlash = trimmed.lastIndexOf("/");
+    if (lastSlash < 0) {
+        return undefined;
+    }
+    const tail = trimmed.substring(lastSlash + 1);
+    if (tail.length === 0) {
+        return undefined;
+    }
+    const parsed = Number(tail);
+    return Number.isFinite(parsed) && Number.isInteger(parsed) ? parsed : undefined;
+}

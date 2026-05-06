@@ -592,7 +592,17 @@ const animationsTree = {
         getTarget: (animations: IAnimation[]) => animations.map((animation) => animation._babylonAnimationGroup!),
         getPropertyName: [() => "length"],
     },
-    __array__: {},
+    __array__: {
+        // Indexed access to the animation. KHR_interactivity Opaque-Reference
+        // spec defines the trailing-slash form ``/animations/<i>/`` as a ref
+        // to the animation itself; we surface that here as a JSON-Pointer ref
+        // string so blocks like ``animation/start`` can consume it directly.
+        __target__: true,
+        type: "string",
+        get: (_animation: IAnimation, index?: number) => (typeof index === "number" ? `/animations/${index}/` : ""),
+        getTarget: (animation: IAnimation) => animation._babylonAnimationGroup,
+        isReadOnly: true,
+    },
 };
 
 const meshesTree: IGLTFObjectModelTreeMeshesObject = {
