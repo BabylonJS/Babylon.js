@@ -656,18 +656,34 @@ export function generateDeclaration() {
                 shell: true,
             });
 
-            child.on("close", (code) => {
+            let inputBuildCompleted = false;
+            const completeInputBuild = (code: number, error?: Error) => {
+                if (inputBuildCompleted) {
+                    return;
+                }
+
+                inputBuildCompleted = true;
                 inputBuildInProgress = false;
                 if (code === 0) {
                     debounced();
+                } else if (error) {
+                    console.error(`declaration input build failed to start`, config.declarationLibs, error.message);
                 } else {
-                    console.error(`declaration input build failed`, config.declarationLibs, `(exit ${code ?? 1})`);
+                    console.error(`declaration input build failed`, config.declarationLibs, `(exit ${code})`);
                 }
 
                 if (inputBuildQueued) {
                     inputBuildQueued = false;
                     buildDeclarationInputs();
                 }
+            };
+
+            child.on("error", (error) => {
+                completeInputBuild(1, error);
+            });
+
+            child.on("close", (code) => {
+                completeInputBuild(code ?? 1);
             });
         };
 
