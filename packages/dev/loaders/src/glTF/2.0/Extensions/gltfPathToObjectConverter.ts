@@ -73,6 +73,15 @@ export class GLTFPathToObjectConverter<T, BabylonType, BabylonValue> implements 
         const parts = path.split("/");
         parts.shift();
 
+        // KHR_interactivity Opaque-Reference spec uses a trailing slash to mean
+        // "ref to the resource itself" (e.g. `/animations/0/` is a ref to the
+        // animation). Drop the trailing empty segment so we resolve to the
+        // accessor for the resource rather than descending into a non-existent
+        // empty-named child.
+        if (parts.length > 0 && parts[parts.length - 1] === "") {
+            parts.pop();
+        }
+
         //if the last part has ".length" in it, separate that as an extra part
         if (parts[parts.length - 1].includes(".length")) {
             const lastPart = parts[parts.length - 1];

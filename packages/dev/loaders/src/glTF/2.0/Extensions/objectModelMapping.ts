@@ -597,9 +597,12 @@ const animationsTree = {
         // spec defines the trailing-slash form ``/animations/<i>/`` as a ref
         // to the animation itself; we surface that here as a JSON-Pointer ref
         // string so blocks like ``animation/start`` can consume it directly.
+        // Use the animation's own ``index`` property (populated by the loader's
+        // ArrayItem.Assign step) so the ref is resolved without needing a
+        // separate index payload from the path converter.
         __target__: true,
         type: "string",
-        get: (_animation: IAnimation, index?: number) => (typeof index === "number" ? `/animations/${index}/` : ""),
+        get: (animation: IAnimation) => (animation && typeof animation.index === "number" ? `/animations/${animation.index}/` : ""),
         getTarget: (animation: IAnimation) => animation._babylonAnimationGroup,
         isReadOnly: true,
     },
