@@ -3,9 +3,11 @@ export * from "./smartAssetEvents";
 export * from "./smartAssetSerializer";
 export {
     type SmartAssetManager,
+    type SmartAssetManagerOrScene,
     type SmartAssetRegistrationOptions,
     CreateSmartAssetManager,
     GetSmartAssetManagerFromScene,
+    GetOrCreateSmartAssetManager,
     GetSmartAssetManagerCreatedCallback,
     SetSmartAssetManagerCreatedCallback,
     IsSmartAssetTextureKey,
