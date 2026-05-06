@@ -1,6 +1,6 @@
 {
     "name": "babylonjs-loaders",
-    "version": "9.5.1",
+    "version": "9.5.2",
     "main": "babylonjs.loaders.min.js",
     "types": "babylonjs.loaders.module.d.ts",
     "files": [
@@ -16,8 +16,8 @@
         "test:escheck": "es-check es6 ./babylonjs.loaders.js"
     },
     "dependencies": {
-        "babylonjs": "9.5.1",
-        "babylonjs-gltf2interface": "9.5.1"
+        "babylonjs": "9.5.2",
+        "babylonjs-gltf2interface": "9.5.2"
     },
     "devDependencies": {
         "@dev/build-tools": "1.0.0",
