@@ -314,7 +314,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
         #endif
         #if defined(SUBSURFACE_SLAB) && defined(GEOMETRY_THIN_WALLED)
             // When subsurface is also present, we need to blend some values between transmission and subsurface slabs.
-            let unweighted_translucency: f32 = mix(subsurface_weight, 1.0f, transmission_weight);
+            let unweighted_translucency: f32 = max(mix(subsurface_weight, 1.0f, transmission_weight), 0.0001f);
             transmission_tint = mix(vec3f(1.0f), transmission_tint, transmission_weight / unweighted_translucency);
             // Roughness for transmission is just surface roughness while, for subsurface, transmission is fully diffuse.
             transmission_roughness = mix(1.0f, transmission_roughness, transmission_weight / unweighted_translucency);

@@ -14,9 +14,12 @@ export interface IMaterialLoadingAdapter {
     readonly material: Material;
 
     /**
-     * Finalizes material properties after loading is complete.
+     * Finalizes material properties after all loading is complete.
+     * May return a Promise for async work (e.g. GPU texture processing). Any returned
+     * Promise is tracked by the loader and awaited before the COMPLETE state is reached,
+     * so callers can rely on onCompleteObservable for fully processed materials.
      */
-    finalize?(): void;
+    finalizeAsync?(): Promise<void> | void;
 
     /**
      * Whether the material should be treated as unlit

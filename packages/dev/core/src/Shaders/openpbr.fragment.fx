@@ -336,7 +336,7 @@ void main(void) {
         #endif
         #if defined(SUBSURFACE_SLAB) && defined(GEOMETRY_THIN_WALLED)
             // When subsurface is also present, we need to blend some values between transmission and subsurface slabs.
-            float unweighted_translucency = mix(subsurface_weight, 1.0f, transmission_weight);
+            float unweighted_translucency = max(mix(subsurface_weight, 1.0f, transmission_weight), 0.0001);
             transmission_tint = mix(vec3(1.0), transmission_tint, transmission_weight / unweighted_translucency);
             // Roughness for transmission is just surface roughness while, for subsurface, transmission is fully diffuse.
             transmission_roughness = mix(1.0, transmission_roughness, transmission_weight / unweighted_translucency);
