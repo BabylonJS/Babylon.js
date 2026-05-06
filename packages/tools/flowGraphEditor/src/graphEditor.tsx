@@ -28,12 +28,29 @@ import { type IFlowGraphValidationResult, FlowGraphValidationSeverity } from "co
 import { AnalyzeSmartGroup, ApplySmartGroupExposure } from "./graphSystem/smartGroup";
 import { HelpDialogComponent } from "./components/help/helpDialogComponent";
 import { type HelpTopicId } from "./components/help/helpContent";
-import { ContextMenuComponent, type ContextMenuEntry } from "./components/contextMenu/contextMenuComponent";
+import { GraphTabBarComponent } from "./components/graphTabBar/graphTabBarComponent";
 import { ShowToast } from "./components/toast/toastComponent";
 import { HowToUseDialogComponent } from "./components/howToUse/howToUseDialogComponent";
 import { AllCompositeTemplates, type ICompositeTemplate } from "./compositeTemplates";
-import { GraphTabBarComponent } from "./components/graphTabBar/graphTabBarComponent";
-import { Subtitle1, Text, Title3, makeStaticStyles } from "@fluentui/react-components";
+import { Menu, MenuDivider, MenuItem, MenuList, MenuPopover, MenuTrigger, Subtitle1, Text, Title3, makeStaticStyles } from "@fluentui/react-components";
+import { createVirtualElementFromClick, type PositioningVirtualElement } from "@fluentui/react-positioning";
+
+/**
+ * Local context-menu item shape used by the right-click menu on the graph canvas.
+ * Built dynamically by `_onContextMenu` and rendered inline as Fluent `<MenuItem>`s.
+ */
+type ContextMenuItem = {
+    label: string;
+    action: () => void;
+    shortcut?: string;
+    disabled?: boolean;
+    ariaLabel?: string;
+};
+type ContextMenuSeparator = { isSeparator: true };
+type ContextMenuEntry = ContextMenuItem | ContextMenuSeparator;
+function IsContextMenuSeparator(entry: ContextMenuEntry): entry is ContextMenuSeparator {
+    return "isSeparator" in entry && entry.isSeparator === true;
+}
 
 const useFlowGraphRootStyles = makeStaticStyles(`
 #flow-graph-editor-graph-root {
@@ -158,7 +175,7 @@ interface IGraphEditorState {
     message: string;
     isError: boolean;
     helpTopicId: HelpTopicId | undefined | null;
-    contextMenu: { x: number; y: number; items: ContextMenuEntry[] } | null;
+    contextMenu: { target: PositioningVirtualElement; items: ContextMenuEntry[] } | null;
     showHowToUse: boolean;
 }
 
@@ -998,7 +1015,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         }
 
         if (items.length > 0) {
-            this.setState({ contextMenu: { x: evt.clientX, y: evt.clientY, items } });
+            this.setState({ contextMenu: { target: createVirtualElementFromClick(evt.nativeEvent), items } });
         }
     };
 
@@ -1406,12 +1423,43 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                     <Title3 style={{ color: "inherit" }}>Processing...please wait</Title3>
                 </div>
                 {this.state.contextMenu && (
-                    <ContextMenuComponent
-                        x={this.state.contextMenu.x}
-                        y={this.state.contextMenu.y}
-                        items={this.state.contextMenu.items}
-                        onClose={() => this.setState({ contextMenu: null })}
-                    />
+                    <Menu
+                        open
+                        onOpenChange={(_, data) => {
+                            if (!data.open) {
+                                this.setState({ contextMenu: null });
+                            }
+                        }}
+                        positioning={{ target: this.state.contextMenu.target, position: "below", align: "start" }}
+                    >
+                        {/* Empty trigger — Fluent requires one but we control open state imperatively. */}
+                        <MenuTrigger disableButtonEnhancement>
+                            <span hidden />
+                        </MenuTrigger>
+                        <MenuPopover>
+                            <MenuList>
+                                {this.state.contextMenu.items.map((entry, idx) => {
+                                    if (IsContextMenuSeparator(entry)) {
+                                        return <MenuDivider key={`sep-${idx}`} />;
+                                    }
+                                    return (
+                                        <MenuItem
+                                            key={`item-${idx}`}
+                                            disabled={entry.disabled}
+                                            aria-label={entry.ariaLabel ?? entry.label}
+                                            secondaryContent={entry.shortcut}
+                                            onClick={() => {
+                                                entry.action();
+                                                this.setState({ contextMenu: null });
+                                            }}
+                                        >
+                                            {entry.label}
+                                        </MenuItem>
+                                    );
+                                })}
+                            </MenuList>
+                        </MenuPopover>
+                    </Menu>
                 )}
             </EditorErrorBoundary>
         );
