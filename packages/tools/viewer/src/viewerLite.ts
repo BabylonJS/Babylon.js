@@ -308,7 +308,12 @@ export class Viewer extends ViewerBase implements IViewer {
         this._camera.alpha = this._defaultAlpha;
         this._camera.beta = this._defaultBeta;
         this._camera.radius = this._defaultRadius;
-        this._camera.target = { x: this._defaultTarget.x, y: this._defaultTarget.y, z: this._defaultTarget.z };
+        // Mutate the existing target ObservableVec3 in place — replacing it with a plain object
+        // would silently lose Lite's ObservableVec3 dirty-tracking, which is what notifies the
+        // camera that its world matrix needs to recompute when target changes.
+        this._camera.target.x = this._defaultTarget.x;
+        this._camera.target.y = this._defaultTarget.y;
+        this._camera.target.z = this._defaultTarget.z;
 
         if (reframe) {
             // TODO: compute bounds from loaded meshes when Lite exposes bounding info
@@ -343,7 +348,12 @@ export class Viewer extends ViewerBase implements IViewer {
         if (!bounds) {
             return;
         }
-        this._camera.target = { x: bounds.center[0], y: bounds.center[1], z: bounds.center[2] };
+        // Mutate the existing target ObservableVec3 in place — replacing it with a plain object
+        // would silently lose Lite's ObservableVec3 dirty-tracking, which is what notifies the
+        // camera that its world matrix needs to recompute when target changes.
+        this._camera.target.x = bounds.center[0];
+        this._camera.target.y = bounds.center[1];
+        this._camera.target.z = bounds.center[2];
         // Camera radius (= distance from target) sized to the bounding-sphere diameter * 1.5,
         // matching the previous size*1.5 framing distance.
         this._camera.radius = bounds.radius * 3;
