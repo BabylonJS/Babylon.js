@@ -80,7 +80,19 @@ export class KHR_node_visibility implements IGLTFLoaderExtension {
                 if (babylonTransformNode) {
                     babylonTransformNode.inheritVisibility = true;
                     if (node.extensions && node.extensions.KHR_node_visibility && node.extensions.KHR_node_visibility.visible === false) {
-                        babylonTransformNode.isVisible = false;
+                        // Apply ``visible: false`` to the same set of meshes the
+                        // runtime ``pointer/set`` accessor writes to. The wrapping
+                        // ``babylonTransformNode`` is often a non-rendering
+                        // ``TransformNode``, so setting ``isVisible`` only there
+                        // leaves the primitive child meshes visible. Mirror the
+                        // accessor in objectModelMapping/KHR_node_visibility.ts so
+                        // assets that author hidden defaults (e.g. MagicBall.glb's
+                        // FortuneWords) start hidden as intended.
+                        (babylonTransformNode as AbstractMesh).isVisible = false;
+                        node._primitiveBabylonMeshes?.forEach((mesh) => {
+                            mesh.inheritVisibility = true;
+                            mesh.isVisible = false;
+                        });
                     }
                 }
             }
