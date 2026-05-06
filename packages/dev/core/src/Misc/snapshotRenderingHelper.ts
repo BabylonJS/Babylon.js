@@ -57,7 +57,6 @@ export class SnapshotRenderingHelper {
     private _isEnabling = false;
     private _enableCancelFunctions: Map<() => void, () => void> = new Map(); // first function is the callback, second function is the cancel function
     private _disableCancelFunctions: Map<() => void, () => void> = new Map(); // same as above
-    private readonly _fixedParticleSystems = new WeakSet<ParticleSystem>();
 
     /**
      * Indicates if debug logs should be displayed
@@ -487,14 +486,13 @@ export class SnapshotRenderingHelper {
         }
 
         const ps = particleSystem as ParticleSystem;
-        const alreadyFixed = this._fixedParticleSystems.has(ps);
+        const wasFixed = ps._useFixedCapacityForSnapshot;
         ps._useFixedCapacityForSnapshot = true;
-        this._fixedParticleSystems.add(ps);
 
         // The recorded bundle bakes in the draw-call vertex/instance count. If snapshot rendering is already active
         // (or in the process of being enabled) when we flip the flag, the bundle was recorded with the live particle
         // count and is now stale. Cycle disable/enable so the next recording picks up the fixed-capacity draw count.
-        if (!alreadyFixed && (this._fastSnapshotRenderingEnabled || this._isEnabling)) {
+        if (!wasFixed && (this._fastSnapshotRenderingEnabled || this._isEnabling)) {
             Logger.Warn(
                 `SnapshotRenderingHelper.fixParticleSystem("${particleSystem.name}") was called after snapshot rendering was enabled. ` +
                     `Forcing a re-record so the bundle uses the fixed-capacity draw count. Call fixParticleSystem before enableSnapshotRendering to avoid this.`
