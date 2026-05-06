@@ -6,7 +6,7 @@
 # 1. Link variable groups (see VARIABLE-GROUPS.md):
 #    - BabylonJS-CI-Infrastructure
 #    - BabylonJS-BrowserStack (BROWSERSTACK_ACCESS_KEY, BROWSERSTACK_USERNAME)
-#    - BabylonJS-Deployment (BASIC_AUTH, DEPLOYMENT_SERVER)
+#    - BabylonJS-Deployment (DEPLOY_TOKEN, DEPLOYMENT_SERVER)
 #
 # 2. Fork build settings (allow secrets, require comments for non-team members)
 #    must be configured in the Azure DevOps pipeline settings UI.
@@ -121,7 +121,7 @@ jobs:
                 snapshotPath: "$(BuildName)"
 
           - script: |
-                curl "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_DELETE)?path=$(BuildName)" -X POST -H "Authorization: $(BASIC_AUTH)"
+                curl "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_DELETE)?path=$(BuildName)" -X POST -H "Authorization: Bearer $(DEPLOY_TOKEN)"
             displayName: "Clear snapshot"
             condition: and(succeeded(), eq(variables['SNAPSHOTEXISTS'], 'true'), not(eq(variables['Build.SourceBranchName'], 'master')))
 
@@ -229,7 +229,7 @@ jobs:
 
                 curl $(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_UPLOAD) -i -X POST \
                   -H "Content-Type: multipart/form-data" \
-                  -H "Authorization: $(BASIC_AUTH)" \
+                  -H "Authorization: Bearer $(DEPLOY_TOKEN)" \
                   -F "path=$(BuildName)" \
                   -F "storageAccount=$(SNAPSHOTS_STORAGE_ACCOUNT)" \
                   -F "saveZip=true" \
@@ -331,7 +331,7 @@ jobs:
 
                 curl $(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_UPLOAD) -i -X POST \
                   -H "Content-Type: multipart/form-data" \
-                  -H "Authorization: $(BASIC_AUTH)" \
+                  -H "Authorization: Bearer $(DEPLOY_TOKEN)" \
                   -F "path=$(BuildName)" \
                   -F "storageAccount=$(SNAPSHOTS_STORAGE_ACCOUNT)" \
                   -F "zip=@snapshot.zip"
@@ -520,7 +520,7 @@ jobs:
                 CI: "true"
 
           - script: |
-                curl "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_DELETE)?path=$(BuildName)/testResults/interactionplaywright" -X POST -H "Authorization: $(BASIC_AUTH)"
+                curl "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_DELETE)?path=$(BuildName)/testResults/interactionplaywright" -X POST -H "Authorization: Bearer $(DEPLOY_TOKEN)"
             displayName: "Delete test results"
             continueOnError: true
             condition: eq(variables['SNAPSHOTEXISTS'], 'true')
@@ -605,7 +605,7 @@ jobs:
                 AFFECTED_TAGS: $(AFFECTED_TAGS)
 
           - script: |
-                curl "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_DELETE)?path=$(BuildName)/testResults/webgl2playwright" -X POST -H "Authorization: $(BASIC_AUTH)"
+                curl "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_DELETE)?path=$(BuildName)/testResults/webgl2playwright" -X POST -H "Authorization: Bearer $(DEPLOY_TOKEN)"
             displayName: "Delete test results"
             continueOnError: true
             condition: eq(variables['SNAPSHOTEXISTS'], 'true')
@@ -689,7 +689,7 @@ jobs:
                 AFFECTED_TAGS: $(AFFECTED_TAGS)
 
           - script: |
-                curl "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_DELETE)?path=$(BuildName)/testResults/webgpuplaywright" -X POST -H "Authorization: $(BASIC_AUTH)"
+                curl "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_DELETE)?path=$(BuildName)/testResults/webgpuplaywright" -X POST -H "Authorization: Bearer $(DEPLOY_TOKEN)"
             displayName: "Delete test results"
             continueOnError: true
             condition: eq(variables['SNAPSHOTEXISTS'], 'true')
@@ -755,7 +755,7 @@ jobs:
             displayName: "Disable JIT Debugging for Script"
 
           - script: |
-                curl "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_SNAPSHOT_CHECK)?buildNumber=$(BuildName)&fileTocheck=cdnSnapshot.zip" -o ./tmp.json -H "Authorization: $(BASIC_AUTH)"
+                curl "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_SNAPSHOT_CHECK)?buildNumber=$(BuildName)&fileTocheck=cdnSnapshot.zip" -o ./tmp.json -H "Authorization: Bearer $(DEPLOY_TOKEN)"
                 findstr "true" .\tmp.json >nul 2>&1
                 if %errorlevel% equ 0 (
                    echo snapshot exists
@@ -1030,7 +1030,7 @@ jobs:
 
                 curl $(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_UPLOAD) -i -X POST \
                   -H "Content-Type: multipart/form-data" \
-                  -H "Authorization: $(BASIC_AUTH)" \
+                  -H "Authorization: Bearer $(DEPLOY_TOKEN)" \
                   -F "path=cdn/$(Build.SourceBranchName)" \
                   -F "storageAccount=$(SNAPSHOTS_STORAGE_ACCOUNT)" \
                   -F "zip=@snapshot.zip"
@@ -1041,7 +1041,7 @@ jobs:
 
                 curl $(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_UPLOAD) -i -X POST \
                   -H "Content-Type: multipart/form-data" \
-                  -H "Authorization: $(BASIC_AUTH)" \
+                  -H "Authorization: Bearer $(DEPLOY_TOKEN)" \
                   -F "path=cdn/$(Build.SourceBranchName)" \
                   -F "storageAccount=$(SNAPSHOTS_STORAGE_ACCOUNT)" \
                   -F "zip=@fileSize.zip"
@@ -1049,7 +1049,7 @@ jobs:
 
           - script: |
                 # Async purge: don't block CI on the CDN purge completing.
-                curl "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_PURGE)?endpoint=$(CDN_ENDPOINT_CDN)&profileName=$(CDN_PROFILE_CDN)&wait=false" -i -X POST -H "Authorization: $(BASIC_AUTH)"
+                curl "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_PURGE)?endpoint=$(CDN_ENDPOINT_CDN)&profileName=$(CDN_PROFILE_CDN)&wait=false" -i -X POST -H "Authorization: Bearer $(DEPLOY_TOKEN)"
 
-                curl "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_PURGE)?endpoint=$(CDN_ENDPOINT_PREVIEW_CDN)&profileName=$(CDN_PROFILE_CDN)&wait=false" -i -X POST -H "Authorization: $(BASIC_AUTH)"
+                curl "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_PURGE)?endpoint=$(CDN_ENDPOINT_PREVIEW_CDN)&profileName=$(CDN_PROFILE_CDN)&wait=false" -i -X POST -H "Authorization: Bearer $(DEPLOY_TOKEN)"
             displayName: "Purge CDN"

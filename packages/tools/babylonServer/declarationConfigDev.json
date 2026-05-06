@@ -25,8 +25,20 @@
     },
     {
         "declarationLibs": ["@dev/inspector-legacy"],
+        "sourceDirectoryOverrides": {
+            "@dev/inspector-legacy": "dev/inspector"
+        },
         "devPackageName": "inspector-legacy",
         "filename": "inspector.d.ts",
+        "outputDirectory": "./declarations"
+    },
+    {
+        "declarationLibs": ["@dev/inspector"],
+        "sourceDirectoryOverrides": {
+            "@dev/inspector": "dev/inspector-v2"
+        },
+        "devPackageName": "inspector",
+        "filename": "inspector-v2.d.ts",
         "outputDirectory": "./declarations"
     },
     {
