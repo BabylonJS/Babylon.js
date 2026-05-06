@@ -729,13 +729,15 @@ export class Viewer extends ViewerBase implements IViewer {
         ground.position.y = minY;
         ground.receiveShadows = true;
         ground.material = createPbrMaterial({
-            mode: "shadowOnly",
-            color: [0, 0, 0],
-            // Use the natural ESM falloff (falloff = 1) so the penumbra fades smoothly. With
-            // a tight model-fit frustum the ESM gradient is already at the right scale; values
-            // > 1 collapse the gradient into a hard aliased edge. Cap the maximum darkness via
-            // `alpha` so the shadow looks soft rather than pitch black.
-            falloff: 1,
+            // TODO: This was based on the babylon lite shadow-only branch.
+            //       Revisit when we have settled on a shadow approach.
+            // mode: "shadowOnly",
+            // color: [0, 0, 0],
+            // // Use the natural ESM falloff (falloff = 1) so the penumbra fades smoothly. With
+            // // a tight model-fit frustum the ESM gradient is already at the right scale; values
+            // // > 1 collapse the gradient into a hard aliased edge. Cap the maximum darkness via
+            // // `alpha` so the shadow looks soft rather than pitch black.
+            // falloff: 1,
             alpha: 0.5,
             alphaBlend: true,
         });
@@ -776,7 +778,9 @@ export class Viewer extends ViewerBase implements IViewer {
         const orthoMinZ = 0;
         const orthoMaxZ = positionFactor * 100;
         this._shadowGenerator = createShadowGenerator(this._engine, light, casterMeshes, {
-            frustumSize: shadowFrustumSize,
+            // TODO: This was based on the babylon lite shadow-only branch.
+            //       Revisit when we have settled on a shadow approach.
+            // frustumSize: shadowFrustumSize,
             orthoMinZ,
             orthoMaxZ,
         });
