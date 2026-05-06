@@ -1,6 +1,4 @@
-/* eslint-disable @typescript-eslint/naming-convention */
 /* eslint-disable github/no-then */
-/* eslint-disable @typescript-eslint/no-floating-promises */
 import * as React from "react";
 import { type GlobalState, RuntimeMode, type InspectorV2Module } from "../globalState";
 import { Utilities } from "../tools/utilities";
@@ -81,7 +79,7 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
             if (!this._engine) {
                 return;
             }
-            this._downloadManager.downloadAsync();
+            void this._downloadManager.downloadAsync();
         });
 
         this.props.globalState.onInspectorRequiredObservable.add(async () => {
@@ -125,7 +123,7 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
         this.props.globalState.onThemeChangedObservable.add(() => {
             if (this._inspectorV2Token) {
                 void this._inspectorV2Token.dispose();
-                this._showInspectorAsync();
+                void this._showInspectorAsync();
             }
         });
 
@@ -256,8 +254,7 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
             return;
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        this._compileAndRunAsync();
+        void this._compileAndRunAsync();
     }
 
     private _finishRun() {
@@ -479,11 +476,12 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
                 );
                 this._engine = createdEngine as Engine;
             } catch (err) {
+                this._failRun(err, "The playground timed out while running the scene.");
+                return;
+            } finally {
                 if (GetSmartAssetManagerCreatedCallback() === smartAssetManagerCreatedCallback) {
                     SetSmartAssetManagerCreatedCallback(previousSmartAssetManagerCreatedCallback);
                 }
-                this._failRun(err, "The playground timed out while running the scene.");
-                return;
             }
             if (!sceneResult) {
                 return this._notifyError("createScene export not found or returned null.");

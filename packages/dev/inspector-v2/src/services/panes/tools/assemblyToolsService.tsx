@@ -1,11 +1,10 @@
-import { useCallback, useEffect, useRef, useState, type FunctionComponent } from "react";
+import { useCallback, useRef, useState, type FunctionComponent } from "react";
 
 import { type Scene, type IDisposable } from "core/scene";
 import {
     FindSmartAssetKeyForObject,
     GetAllSmartAssets,
     GetSmartAssetManagerFromScene,
-    GetSmartAssetProvenance,
     LoadSmartAssetAsync,
     LoadSmartAssetTextureAsync,
     RegisterSmartAsset,
@@ -23,12 +22,11 @@ import { type ISelectionService, SelectionServiceIdentity } from "../../selectio
 
 import { useObservableState } from "shared-ui-components/modularTool/hooks/observableHooks";
 import { Link } from "shared-ui-components/fluent/primitives/link";
-import { Dialog } from "shared-ui-components/fluent/primitives/dialog";
 
 import { getOrCreateSmartAssetManager } from "../../smartAssetHandler";
 
 import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
-import { Body1, Caption1, makeStyles, tokens } from "@fluentui/react-components";
+import { Caption1, makeStyles, tokens } from "@fluentui/react-components";
 import { AddRegular, DeleteRegular, ArrowSyncRegular, LinkRegular, CubeRegular } from "@fluentui/react-icons";
 
 /**
@@ -65,7 +63,7 @@ const useStyles = makeStyles({
         alignItems: "center",
         gap: tokens.spacingHorizontalXS,
         padding: `${tokens.spacingVerticalXS} ${tokens.spacingHorizontalS}`,
-        fontSize: "11px",
+        fontSize: tokens.fontSizeBase100,
         borderBottom: `1px solid ${tokens.colorNeutralStroke3}`,
     },
     assetKey: {
@@ -87,13 +85,13 @@ const useStyles = makeStyles({
     },
     emptyMessage: {
         padding: `${tokens.spacingVerticalS} ${tokens.spacingHorizontalS}`,
-        fontSize: "11px",
+        fontSize: tokens.fontSizeBase100,
         opacity: 0.5,
         fontStyle: "italic",
     },
     statusMessage: {
         padding: `${tokens.spacingVerticalXXS} ${tokens.spacingHorizontalS}`,
-        fontSize: "11px",
+        fontSize: tokens.fontSizeBase100,
         opacity: 0.7,
     },
     iconButton: {
@@ -103,6 +101,9 @@ const useStyles = makeStyles({
             opacity: 1,
         },
     },
+    hiddenInput: {
+        display: "none",
+    },
 });
 
 // ── Smart Asset List ──
@@ -111,31 +112,12 @@ const SmartAssetList: FunctionComponent<{ scene: Scene; selectionService: ISelec
     const { scene, selectionService } = props;
     const styles = useStyles();
     const fileInputRef = useRef<HTMLInputElement>(null);
-    const notFoundFileRef = useRef<HTMLInputElement>(null);
     const [status, setStatus] = useState("");
-    const [pendingNotFound, setPendingNotFound] = useState<{
-        key: string;
-        url: string;
-        resolve: (value: string | File | null) => void;
-    } | null>(null);
 
     // Find the SAM
     const sam = GetSmartAssetManagerFromScene(scene) ?? null;
 
-    // Install a React-state-based onAssetNotFound handler so the Fluent Dialog
-    // is used instead of imperative DOM overlays.
-    useEffect(() => {
-        if (!sam) {
-            return;
-        }
-        sam.onAssetNotFound = async (key: string, expectedUrl: string) => {
-            return await new Promise<string | File | null>((resolve) => {
-                setPendingNotFound({ key, url: expectedUrl, resolve });
-            });
-        };
-    }, [sam]);
-
-    // Reactively read assets — re-renders when any SAM observable fires
+    // Reactively read assets — re-renders when the Smart Asset manager changes.
     const assets = useObservableState(
         useCallback(() => {
             if (!sam) {
@@ -143,9 +125,7 @@ const SmartAssetList: FunctionComponent<{ scene: Scene; selectionService: ISelec
             }
             return Array.from(GetAllSmartAssets(sam), ([key, url]) => ({ key, url }));
         }, [sam]),
-        sam?.onAssetLoadedObservable,
-        sam?.onAssetUnloadedObservable,
-        sam?.onUrlChangedObservable
+        sam?.onChangedObservable
     );
 
     const onAddAsset = useCallback(() => {
@@ -176,7 +156,7 @@ const SmartAssetList: FunctionComponent<{ scene: Scene; selectionService: ISelec
                         await LoadSmartAssetTextureAsync(sam, key);
                     } else {
                         // Temporarily set onAssetNotFound to return the File so SAM's
-                        // retry path can use the extension hint and build provenance.
+                        // retry path can use the extension hint and track loaded objects.
                         const savedHandler = sam.onAssetNotFound;
                         sam.onAssetNotFound = async () => file;
                         try {
@@ -221,7 +201,6 @@ const SmartAssetList: FunctionComponent<{ scene: Scene; selectionService: ISelec
         (key: string) => {
             const doSwapAsync = async (file: File, fileHandle?: FileSystemFileHandle) => {
                 const sam = getOrCreateSmartAssetManager(scene);
-                const oldUrl = ResolveSmartAsset(sam, key) ?? "";
                 const blobUrl = URL.createObjectURL(file);
                 const ext = _getExtension(file.name).toLowerCase();
                 const isTexture = [".png", ".jpg", ".jpeg", ".env", ".hdr", ".dds", ".ktx", ".ktx2"].includes(ext);
@@ -267,7 +246,7 @@ const SmartAssetList: FunctionComponent<{ scene: Scene; selectionService: ISelec
                         SetSmartAssetRefreshCallback(sam, key, async () => await fileHandle.getFile());
                     }
 
-                    // Use onAssetNotFound to provide the File so SAM builds provenance
+                    // Use onAssetNotFound to provide the File so SAM tracks loaded objects.
                     const savedHandler = sam.onAssetNotFound;
                     sam.onAssetNotFound = async () => file;
                     try {
@@ -279,7 +258,7 @@ const SmartAssetList: FunctionComponent<{ scene: Scene; selectionService: ISelec
 
                 // Notify after everything is loaded and tracked so the UI re-renders
                 // with the correct provEntity links
-                sam.onUrlChangedObservable.notifyObservers({ key, oldUrl, newUrl: blobUrl });
+                sam.onChangedObservable.notifyObservers();
 
                 setStatus(`Swapped: ${key}`);
             };
@@ -328,30 +307,9 @@ const SmartAssetList: FunctionComponent<{ scene: Scene; selectionService: ISelec
         [scene]
     );
 
-    const handleNotFoundSkip = useCallback(() => {
-        pendingNotFound?.resolve(null);
-        setPendingNotFound(null);
-    }, [pendingNotFound]);
-
-    const handleNotFoundLocate = useCallback(() => {
-        notFoundFileRef.current?.click();
-    }, []);
-
-    const handleNotFoundFileSelected = useCallback(
-        (e: React.ChangeEvent<HTMLInputElement>) => {
-            const file = e.target.files?.[0] ?? null;
-            pendingNotFound?.resolve(file);
-            setPendingNotFound(null);
-            if (notFoundFileRef.current) {
-                notFoundFileRef.current.value = "";
-            }
-        },
-        [pendingNotFound]
-    );
-
     return (
         <>
-            {assets.length === 0 && <div className={styles.emptyMessage}>No smart assets registered. Add assets to begin.</div>}
+            {assets.length === 0 && <Caption1 className={styles.emptyMessage}>No smart assets registered. Add assets to begin.</Caption1>}
             {assets.map((a) => {
                 // Find the first mesh produced by this key for click-to-select
                 const provEntity = sam ? _findFirstEntityForKey(a.key, scene, sam) : null;
@@ -360,50 +318,26 @@ const SmartAssetList: FunctionComponent<{ scene: Scene; selectionService: ISelec
                     <div key={a.key} className={styles.assetRow}>
                         <CubeRegular fontSize={14} />
                         {provEntity ? (
-                            <span className={styles.assetKey}>
+                            <Caption1 className={styles.assetKey}>
                                 <Link value={a.key} onLink={() => (selectionService.selectedEntity = provEntity)} />
-                            </span>
+                            </Caption1>
                         ) : (
-                            <span className={styles.assetKey}>{a.key}</span>
+                            <Caption1 className={styles.assetKey}>{a.key}</Caption1>
                         )}
-                        <span className={styles.assetUrl} title={a.url}>
+                        <Caption1 className={styles.assetUrl} title={a.url}>
                             {_shortenUrl(a.url)}
-                        </span>
-                        <span className={styles.assetActions}>
+                        </Caption1>
+                        <div className={styles.assetActions}>
                             <LinkRegular fontSize={14} className={styles.iconButton} title="Swap URL" onClick={() => onSwapAsset(a.key)} />
                             <ArrowSyncRegular fontSize={14} className={styles.iconButton} title="Reload" onClick={async () => await onReloadAsset(a.key)} />
                             <DeleteRegular fontSize={14} className={styles.iconButton} title="Remove" onClick={async () => await onRemoveAsset(a.key)} />
-                        </span>
+                        </div>
                     </div>
                 );
             })}
             <ButtonLine label="Add Asset" icon={AddRegular} onClick={onAddAsset} />
-            <input ref={fileInputRef} type="file" accept=".glb,.gltf,.babylon,.obj,.png,.jpg,.env,.hdr" multiple style={{ display: "none" }} onChange={onFileSelected} />
-            {status && <div className={styles.statusMessage}>{status}</div>}
-
-            {/* Asset-not-found dialog using Fluent Dialog */}
-            <Dialog
-                open={!!pendingNotFound}
-                title="Asset not found"
-                onDismiss={handleNotFoundSkip}
-                actions={[
-                    { label: "Skip", onClick: handleNotFoundSkip },
-                    { label: "Locate File…", appearance: "primary", onClick: handleNotFoundLocate },
-                ]}
-            >
-                <Body1>
-                    Key: <b>{pendingNotFound?.key}</b>
-                </Body1>
-                <Caption1>{_shortenUrl(pendingNotFound?.url ?? "")}</Caption1>
-                <Body1>Locate the file or click Skip to continue without it.</Body1>
-            </Dialog>
-            <input
-                ref={notFoundFileRef}
-                type="file"
-                accept=".glb,.gltf,.babylon,.obj,.png,.jpg,.jpeg,.env,.hdr,.dds,.ktx,.ktx2"
-                style={{ display: "none" }}
-                onChange={handleNotFoundFileSelected}
-            />
+            <input ref={fileInputRef} type="file" accept=".glb,.gltf,.babylon,.obj,.png,.jpg,.env,.hdr" multiple className={styles.hiddenInput} onChange={onFileSelected} />
+            {status && <Caption1 className={styles.statusMessage}>{status}</Caption1>}
         </>
     );
 };
@@ -420,35 +354,20 @@ const SmartAssetList: FunctionComponent<{ scene: Scene; selectionService: ISelec
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 function _findFirstEntityForKey(key: string, scene: Scene, sam: SmartAssetManager): { name: string } | null {
-    const prov = GetSmartAssetProvenance(sam, key);
-    if (prov) {
-        for (const meshName of prov.meshNames) {
-            if (meshName === "__root__") {
-                continue;
-            }
-            const mesh = scene.meshes.find((m) => m.name === meshName);
-            if (mesh) {
-                return mesh;
-            }
-        }
-        for (const matName of prov.materialNames) {
-            const mat = scene.materials.find((m) => m.name === matName);
-            if (mat) {
-                return mat;
-            }
-        }
-        for (const texName of prov.textureNames) {
-            const tex = scene.textures.find((t) => t.name === texName);
-            if (tex) {
-                return tex;
-            }
+    for (const mesh of scene.meshes) {
+        if (mesh.name !== "__root__" && FindSmartAssetKeyForObject(sam, mesh) === key) {
+            return mesh;
         }
     }
 
-    // For standalone textures (no provenance), search by key tracking
+    for (const mat of scene.materials) {
+        if (FindSmartAssetKeyForObject(sam, mat) === key) {
+            return mat;
+        }
+    }
+
     for (const tex of scene.textures) {
-        const trackedKey = FindSmartAssetKeyForObject(sam, tex);
-        if (trackedKey === key) {
+        if (FindSmartAssetKeyForObject(sam, tex) === key) {
             return tex;
         }
     }

@@ -1,11 +1,21 @@
-/**
- * Shows a Playground-owned prompt for resolving a missing Smart Asset file.
- * @param key The smart asset key that failed to load.
- * @param expectedUrl The URL that failed to load.
- * @returns A replacement URL or File, or null to skip loading the asset.
- */
-// eslint-disable-next-line @typescript-eslint/naming-convention
-export async function PlaygroundAssetNotFoundHandler(key: string, expectedUrl: string): Promise<string | File | null> {
+let MissingAssetPromptQueue = Promise.resolve<void>(undefined);
+
+async function RunQueuedMissingAssetPromptAsync(promptAsync: () => Promise<string | File | null>): Promise<string | File | null> {
+    const previousPrompt = MissingAssetPromptQueue;
+    let releasePrompt = () => {};
+    MissingAssetPromptQueue = new Promise<void>((resolve) => {
+        releasePrompt = resolve;
+    });
+
+    await previousPrompt;
+    try {
+        return await promptAsync();
+    } finally {
+        releasePrompt();
+    }
+}
+
+async function ShowPlaygroundAssetNotFoundPromptAsync(key: string, expectedUrl: string): Promise<string | File | null> {
     return await new Promise<string | File | null>((resolve) => {
         const shortUrl = expectedUrl.length > 60 ? "..." + expectedUrl.slice(-50) : expectedUrl;
 
@@ -80,4 +90,14 @@ export async function PlaygroundAssetNotFoundHandler(key: string, expectedUrl: s
         overlay.appendChild(dialog);
         document.body.appendChild(overlay);
     });
+}
+
+/**
+ * Shows a Playground-owned prompt for resolving a missing Smart Asset file.
+ * @param key The smart asset key that failed to load.
+ * @param expectedUrl The URL that failed to load.
+ * @returns A replacement URL or File, or null to skip loading the asset.
+ */
+export async function PlaygroundAssetNotFoundHandler(key: string, expectedUrl: string): Promise<string | File | null> {
+    return await RunQueuedMissingAssetPromptAsync(async () => await ShowPlaygroundAssetNotFoundPromptAsync(key, expectedUrl));
 }

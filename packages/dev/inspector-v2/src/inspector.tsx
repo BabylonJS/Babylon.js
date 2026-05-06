@@ -72,6 +72,7 @@ import { InspectorSettingsServiceDefinition } from "./services/inspectorSettings
 import { TextureEditorServiceDefinition } from "./services/textureEditor/textureEditorService";
 import { UserFeedbackServiceDefinition } from "./services/userFeedbackService";
 import { WatcherRefreshToolbarServiceDefinition, WatcherServiceDefinition, WatcherSettingsServiceDefinition } from "./services/watcherService";
+import { SmartAssetPromptServiceDefinition } from "./services/smartAssetPromptService";
 
 type LayoutMode = "inline" | "overlay";
 
@@ -367,6 +368,7 @@ export function ShowInspector(scene: Scene, options: Partial<InspectorOptions> =
             // Tools pane tab and related services.
             ToolsServiceDefinition,
             ExportServiceDefinition,
+            SmartAssetPromptServiceDefinition,
             SmartAssetToolsServiceDefinition,
             AssemblyToolsServiceDefinition,
             GLTFAnimationImportServiceDefinition,

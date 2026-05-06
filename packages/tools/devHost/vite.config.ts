@@ -75,8 +75,6 @@ export default defineConfig((_env) => {
             materials: path.resolve("../../dev/materials/src"),
             "lottie-player": path.resolve("../../dev/lottiePlayer/src"),
             inspector: path.resolve("../../dev/inspector/src"),
-            "inspector-v2": path.resolve("../../dev/inspector-v2/src"),
-            addons: path.resolve("../../dev/addons/src"),
             "shared-ui-components": path.resolve("../../dev/sharedUiComponents/src"),
             "post-processes": path.resolve("../../dev/postProcesses/src"),
             "procedural-textures": path.resolve("../../dev/proceduralTextures/src"),

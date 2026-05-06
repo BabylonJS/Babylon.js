@@ -1,97 +1,43 @@
-import { type ChangeEvent, type FunctionComponent, useCallback, useRef } from "react";
-import { createRoot } from "react-dom/client";
-
 import { CreateSmartAssetManager, GetSmartAssetManagerFromScene, type SmartAssetManager } from "core/SmartAssets/smartAssetManager";
 import { type Scene } from "core/scene";
 
-import { Body1, Caption1, makeStyles } from "@fluentui/react-components";
-import { Dialog } from "shared-ui-components/fluent/primitives/dialog";
+type InspectorAssetNotFoundPromptHandlerCallback = (key: string, expectedUrl: string) => Promise<string | File | null>;
 
-type MissingSmartAssetDialogProps = {
-    keyName: string;
-    expectedUrl: string;
-    onResolve: (value: string | File | null) => void;
-};
-
-const useStyles = makeStyles({
-    hiddenInput: {
-        display: "none",
-    },
-});
-
-const MissingSmartAssetDialog: FunctionComponent<MissingSmartAssetDialogProps> = (props) => {
-    const { keyName, expectedUrl, onResolve } = props;
-    const inputRef = useRef<HTMLInputElement>(null);
-    const classes = useStyles();
-    const shortUrl = expectedUrl.length > 60 ? "..." + expectedUrl.slice(-50) : expectedUrl;
-
-    const onSkip = useCallback(() => {
-        onResolve(null);
-    }, [onResolve]);
-
-    const onLocate = useCallback(() => {
-        inputRef.current?.click();
-    }, []);
-
-    const onFileSelected = useCallback(
-        (event: ChangeEvent<HTMLInputElement>) => {
-            onResolve(event.target.files?.[0] ?? null);
-        },
-        [onResolve]
-    );
-
-    return (
-        <Dialog
-            open
-            title="Asset not found"
-            onDismiss={onSkip}
-            actions={[
-                { label: "Skip", onClick: onSkip },
-                { label: "Locate File...", appearance: "primary", onClick: onLocate },
-            ]}
-        >
-            <Body1>Key: {keyName}</Body1>
-            <Caption1>{shortUrl}</Caption1>
-            <Body1>Locate the file or click Skip to continue without it.</Body1>
-            <input
-                ref={inputRef}
-                type="file"
-                accept=".glb,.gltf,.babylon,.obj,.png,.jpg,.jpeg,.env,.hdr,.dds,.ktx,.ktx2"
-                className={classes.hiddenInput}
-                onChange={onFileSelected}
-            />
-        </Dialog>
-    );
-};
+let InspectorAssetNotFoundPromptHandler: InspectorAssetNotFoundPromptHandlerCallback | null = null;
+let MissingAssetPromptQueue = Promise.resolve<void>(undefined);
 
 /**
- * Default handler for missing assets — shows a shared Fluent dialog with
- * "Locate File" and "Skip" buttons.
+ * Sets the Inspector-owned prompt handler used by Smart Assets when an asset is missing.
+ * @param handler - The handler installed by the Inspector UI, or null to clear it.
+ */
+export function SetInspectorAssetNotFoundPromptHandler(handler: InspectorAssetNotFoundPromptHandlerCallback | null): void {
+    InspectorAssetNotFoundPromptHandler = handler;
+}
+
+async function RunQueuedMissingAssetPromptAsync(key: string, expectedUrl: string): Promise<string | File | null> {
+    const previousPrompt = MissingAssetPromptQueue;
+    let releasePrompt = () => {};
+    MissingAssetPromptQueue = new Promise<void>((resolve) => {
+        releasePrompt = resolve;
+    });
+
+    await previousPrompt;
+    try {
+        return (await InspectorAssetNotFoundPromptHandler?.(key, expectedUrl)) ?? null;
+    } finally {
+        releasePrompt();
+    }
+}
+
+/**
+ * Default handler for missing assets. Delegates to the Inspector UI when it is open.
  * @param key - The smart asset key that was not found.
  * @param expectedUrl - The URL that failed to load.
  * @returns A promise resolving to a new URL, File, or null to skip.
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export async function inspectorAssetNotFoundHandler(key: string, expectedUrl: string): Promise<string | File | null> {
-    return await new Promise<string | File | null>((resolve) => {
-        const container = document.createElement("div");
-        document.body.appendChild(container);
-
-        const root = createRoot(container);
-        let didResolve = false;
-
-        const onResolve = (value: string | File | null) => {
-            if (didResolve) {
-                return;
-            }
-            didResolve = true;
-            root.unmount();
-            container.remove();
-            resolve(value);
-        };
-
-        root.render(<MissingSmartAssetDialog keyName={key} expectedUrl={expectedUrl} onResolve={onResolve} />);
-    });
+    return await RunQueuedMissingAssetPromptAsync(key, expectedUrl);
 }
 
 /**
@@ -104,6 +50,23 @@ export function installAssetNotFoundHandler(sam: SmartAssetManager): void {
     if (!sam.onAssetNotFound) {
         sam.onAssetNotFound = inspectorAssetNotFoundHandler;
     }
+}
+
+/**
+ * Installs the Inspector `onAssetNotFound` handler while preserving any existing handler for restoration.
+ * @param sam - The SmartAssetManager to install the handler on.
+ * @returns A function that restores the previous handler if the Inspector handler is still installed.
+ */
+// eslint-disable-next-line @typescript-eslint/naming-convention
+export function installInspectorAssetNotFoundHandler(sam: SmartAssetManager): () => void {
+    const previousHandler = sam.onAssetNotFound;
+    sam.onAssetNotFound = inspectorAssetNotFoundHandler;
+
+    return () => {
+        if (sam.onAssetNotFound === inspectorAssetNotFoundHandler) {
+            sam.onAssetNotFound = previousHandler;
+        }
+    };
 }
 
 /**

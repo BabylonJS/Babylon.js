@@ -2,6 +2,7 @@ import { type Scene } from "core/scene";
 import { Engine } from "core/Engines/engine";
 
 import { createScene as createSceneTs } from "./createScene";
+import { createScene as createSceneJs } from "./createSceneJS.js";
 
 /**
  * Main entry point for the default scene for the devhost
@@ -25,8 +26,6 @@ export async function Main(searchParams: URLSearchParams): Promise<void> {
     if (useTs) {
         scene = await createSceneTs(engine, canvas);
     } else {
-        // Dynamic import to avoid bundling @dev/core dist (which has unresolvable deps)
-        const { createScene: createSceneJs } = await import(/* @vite-ignore */ "./createSceneJS.js");
         scene = await createSceneJs(engine, canvas);
     }
 

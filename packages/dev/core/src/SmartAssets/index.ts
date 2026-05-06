@@ -1,5 +1,3 @@
-export * from "./smartAssetProvenance";
-export * from "./smartAssetEvents";
 export * from "./smartAssetSerializer";
 export {
     type SmartAssetManager,
@@ -24,7 +22,6 @@ export {
     LoadSmartAssetTextureAsync,
     UnloadSmartAssetAsync,
     ReloadSmartAssetAsync,
-    GetSmartAssetProvenance,
     FindSmartAssetKeyForObject,
     SerializeSmartAssetManagerMap,
     LoadSmartAssetMapAsync,

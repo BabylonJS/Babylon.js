@@ -2,17 +2,12 @@ import { NullEngine } from "core/Engines/nullEngine";
 import { Scene } from "core/scene";
 import {
     type SmartAssetManager,
-    type ISmartAssetLoadedEvent,
-    type ISmartAssetUrlChangedEvent,
-    type ISmartAssetErrorEvent,
-    type ISmartAssetUnloadedEvent,
     CreateSmartAssetManager,
     DisposeSmartAssetManager,
     FindSmartAssetKeyForObject,
     GetAllSmartAssets,
     GetOrCreateSmartAssetManager,
     GetSmartAssetManagerFromScene,
-    GetSmartAssetProvenance,
     LoadAllSmartAssetsAsync,
     LoadSmartAssetAsync,
     RegisterSmartAsset,
@@ -108,6 +103,19 @@ describe("SmartAssetManager", () => {
             expect(ResolveSmartAsset(manager, "chair")).toBe("chair_v2.glb");
         });
 
+        it("should revoke managed blob URLs when replacing and removing them", async () => {
+            const revokeObjectUrlSpy = vi.spyOn(URL, "revokeObjectURL").mockImplementation(() => {});
+
+            RegisterSmartAsset(manager, "local", "blob:smart-asset-v1");
+            RegisterSmartAsset(manager, "local", "blob:smart-asset-v2");
+            await RemoveSmartAssetAsync(manager, "local");
+
+            expect(revokeObjectUrlSpy).toHaveBeenCalledWith("blob:smart-asset-v1");
+            expect(revokeObjectUrlSpy).toHaveBeenCalledWith("blob:smart-asset-v2");
+
+            revokeObjectUrlSpy.mockRestore();
+        });
+
         it("should return undefined for unregistered key", () => {
             expect(ResolveSmartAsset(manager, "nonexistent")).toBeUndefined();
         });
@@ -173,6 +181,33 @@ describe("SmartAssetManager", () => {
 
             scene2.dispose();
         });
+
+        it("should restore the original URL preprocessor after all managers are disposed", () => {
+            const originalPreprocessUrl = FileToolsOptions.PreprocessUrl;
+            const customPreprocessUrl = vi.fn((url: string) => `custom:${url}`);
+
+            const scene2 = new Scene(engine);
+            DisposeSmartAssetManager(manager);
+            FileToolsOptions.PreprocessUrl = customPreprocessUrl;
+
+            const manager1 = CreateSmartAssetManager(scene);
+            const manager2 = CreateSmartAssetManager(scene2);
+
+            RegisterSmartAsset(manager1, "first", "first.glb");
+            RegisterSmartAsset(manager2, "second", "second.glb");
+
+            expect(FileToolsOptions.PreprocessUrl?.("asset://first")).toBe("first.glb");
+            DisposeSmartAssetManager(manager1);
+            expect(FileToolsOptions.PreprocessUrl?.("asset://second")).toBe("second.glb");
+
+            DisposeSmartAssetManager(manager2);
+            expect(FileToolsOptions.PreprocessUrl).toBe(customPreprocessUrl);
+            expect(FileToolsOptions.PreprocessUrl("plain.glb")).toBe("custom:plain.glb");
+
+            FileToolsOptions.PreprocessUrl = originalPreprocessUrl;
+            manager = CreateSmartAssetManager(scene);
+            scene2.dispose();
+        });
     });
 
     // ── OnInstanceCreated Tests ──
@@ -232,14 +267,14 @@ describe("SmartAssetManager", () => {
             await expect(LoadSmartAssetAsync(manager, "nonexistent")).rejects.toThrow(/not registered/);
         });
 
-        it("should fire onAssetLoadedObservable", async () => {
-            const events: ISmartAssetLoadedEvent[] = [];
-            manager.onAssetLoadedObservable.add((e) => events.push(e));
+        it("should notify when a smart asset is loaded", async () => {
+            RegisterSmartAsset(manager, "chair", "models/chair.glb");
+            const onChanged = vi.fn();
+            manager.onChangedObservable.add(onChanged);
 
-            await LoadSmartAssetAsync(manager, "chair", "models/chair.glb");
+            await LoadSmartAssetAsync(manager, "chair");
 
-            expect(events.length).toBe(1);
-            expect(events[0].key).toBe("chair");
+            expect(onChanged).toHaveBeenCalledTimes(1);
         });
 
         it("should load a smart asset directly from a scene", async () => {
@@ -286,15 +321,14 @@ describe("SmartAssetManager", () => {
             expect(mockDispose).toHaveBeenCalled();
         });
 
-        it("should fire onAssetUnloadedObservable", async () => {
-            const events: ISmartAssetUnloadedEvent[] = [];
-            manager.onAssetUnloadedObservable.add((e) => events.push(e));
-
+        it("should notify when a smart asset is unloaded", async () => {
             await LoadSmartAssetAsync(manager, "chair", "models/chair.glb");
+            const onChanged = vi.fn();
+            manager.onChangedObservable.add(onChanged);
+
             await UnloadSmartAssetAsync(manager, "chair");
 
-            expect(events.length).toBe(1);
-            expect(events[0].key).toBe("chair");
+            expect(onChanged).toHaveBeenCalledTimes(1);
         });
 
         it("should keep the key registered after unload", async () => {
@@ -307,16 +341,14 @@ describe("SmartAssetManager", () => {
     // ── URL Swap Tests ──
 
     describe("setUrl", () => {
-        it("should fire onUrlChangedObservable", async () => {
-            const events: ISmartAssetUrlChangedEvent[] = [];
-            manager.onUrlChangedObservable.add((e) => events.push(e));
-
+        it("should notify when a smart asset URL changes", async () => {
             RegisterSmartAsset(manager, "chair", "chair_v1.glb");
+            const onChanged = vi.fn();
+            manager.onChangedObservable.add(onChanged);
+
             await SetSmartAssetUrlAsync(manager, "chair", "chair_v2.glb");
 
-            expect(events.length).toBe(1);
-            expect(events[0].oldUrl).toBe("chair_v1.glb");
-            expect(events[0].newUrl).toBe("chair_v2.glb");
+            expect(onChanged).toHaveBeenCalledTimes(1);
         });
 
         it("should update the resolved URL", async () => {
@@ -326,24 +358,9 @@ describe("SmartAssetManager", () => {
         });
     });
 
-    // ── Provenance Tests ──
+    // ── Object Tracking Tests ──
 
-    describe("provenance", () => {
-        it("should track provenance after loading", async () => {
-            await LoadSmartAssetAsync(manager, "chair", "models/chair.glb");
-
-            const prov = GetSmartAssetProvenance(manager, "chair");
-            expect(prov).toBeDefined();
-            expect(prov!.key).toBe("chair");
-            expect(prov!.meshNames).toContain("Mesh1");
-            expect(prov!.materialNames).toContain("Material1");
-        });
-
-        it("should return undefined for unloaded key", () => {
-            RegisterSmartAsset(manager, "chair", "models/chair.glb");
-            expect(GetSmartAssetProvenance(manager, "chair")).toBeUndefined();
-        });
-
+    describe("object tracking", () => {
         it("should support findKeyForObject", async () => {
             const container = await LoadSmartAssetAsync(manager, "chair", "models/chair.glb");
             const mesh = container.meshes[0];
@@ -354,17 +371,11 @@ describe("SmartAssetManager", () => {
     // ── Error / Missing Asset Tests ──
 
     describe("error handling", () => {
-        it("should fire onAssetErrorObservable on load failure", async () => {
+        it("should throw on load failure", async () => {
             const { LoadAssetContainerAsync } = await import("core/Loading/sceneLoader");
             vi.mocked(LoadAssetContainerAsync).mockRejectedValueOnce(new Error("404"));
 
-            const errors: ISmartAssetErrorEvent[] = [];
-            manager.onAssetErrorObservable.add((e) => errors.push(e));
-
             await expect(LoadSmartAssetAsync(manager, "missing", "missing.glb")).rejects.toThrow("404");
-
-            expect(errors.length).toBeGreaterThanOrEqual(1);
-            expect(errors[0].key).toBe("missing");
         });
 
         it("should call onAssetNotFound and retry with returned URL", async () => {
@@ -379,6 +390,35 @@ describe("SmartAssetManager", () => {
 
             expect(manager.onAssetNotFound).toHaveBeenCalledWith("missing", "missing.glb");
             expect(container).toBeDefined();
+        });
+
+        it("should throw the fallback load error when retry fails", async () => {
+            const { LoadAssetContainerAsync } = await import("core/Loading/sceneLoader");
+            vi.mocked(LoadAssetContainerAsync).mockRejectedValueOnce(new Error("initial 404")).mockRejectedValueOnce(new Error("fallback 404"));
+
+            manager.onAssetNotFound = vi.fn(async () => "fallback.glb");
+
+            await expect(LoadSmartAssetAsync(manager, "missing", "missing.glb")).rejects.toThrow("fallback 404");
+        });
+
+        it("should revoke internally-created blob URLs when removing a smart asset", async () => {
+            const { LoadAssetContainerAsync } = await import("core/Loading/sceneLoader");
+            vi.mocked(LoadAssetContainerAsync)
+                .mockRejectedValueOnce(new Error("404"))
+                .mockResolvedValueOnce(createMockContainer() as any);
+            const createObjectUrlSpy = vi.spyOn(URL, "createObjectURL").mockReturnValue("blob:smart-asset-fallback");
+            const revokeObjectUrlSpy = vi.spyOn(URL, "revokeObjectURL").mockImplementation(() => {});
+
+            manager.onAssetNotFound = vi.fn(async () => new File(["fallback"], "fallback.obj"));
+
+            await LoadSmartAssetAsync(manager, "missing", "missing.glb");
+            await RemoveSmartAssetAsync(manager, "missing");
+
+            expect(createObjectUrlSpy).toHaveBeenCalled();
+            expect(revokeObjectUrlSpy).toHaveBeenCalledWith("blob:smart-asset-fallback");
+
+            createObjectUrlSpy.mockRestore();
+            revokeObjectUrlSpy.mockRestore();
         });
 
         it("should skip asset when onAssetNotFound returns null", async () => {
