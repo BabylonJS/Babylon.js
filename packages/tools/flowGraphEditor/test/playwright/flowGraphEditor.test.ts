@@ -223,6 +223,42 @@ test.describe("Flow Graph Editor — Node List Filter", () => {
 });
 
 test.describe("Flow Graph Editor — Graph Construction", () => {
+    test("starting the graph does not stop existing scene animation groups", async ({ page }) => {
+        const fge = new FlowGraphEditorPage(page);
+        await fge.goto();
+        await fge.assertEditorReady();
+
+        await page.evaluate(() => {
+            const editor = (globalThis as any).BABYLON?.FlowGraphEditor;
+            const args = (globalThis as any).__viteFlowGraphEditorArgs;
+            const sceneCandidates = [editor?._CurrentState?.sceneContext?.scene, args?.[0]?.flowGraph?.scene, (globalThis as any).BABYLON?.EngineStore?.LastCreatedScene].filter(
+                Boolean
+            );
+            const scenes = Array.from(new Set(sceneCandidates));
+            if (scenes.length === 0) {
+                throw new Error("Flow Graph Editor scene not found");
+            }
+            (globalThis as any).__fgeAnimationStopCalled = false;
+            for (const scene of scenes) {
+                scene.animationGroups.push({
+                    name: "alreadyPlaying",
+                    uniqueId: 999999,
+                    isPlaying: true,
+                    targetedAnimations: [],
+                    stop: () => {
+                        (globalThis as any).__fgeAnimationStopCalled = true;
+                    },
+                    dispose: () => {},
+                });
+            }
+        });
+
+        await page.locator("button[title='Start']").click();
+
+        await expect.poll(async () => page.locator(".fge-ctrl-state").textContent()).toContain("Running");
+        expect(await page.evaluate(() => (globalThis as any).__fgeAnimationStopCalled)).toBe(false);
+    });
+
     test("build a SceneReady → ConsoleLog graph", async ({ page }) => {
         const fge = new FlowGraphEditorPage(page);
         await fge.goto();
