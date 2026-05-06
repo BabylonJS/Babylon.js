@@ -331,7 +331,7 @@ export function MakeModularTool(options: ModularToolOptions) {
             return (
                 <ReactContextsWrapper contexts={contexts}>
                     <SettingsStoreContext.Provider value={settingsStore}>
-                        <Theme className={classes.app}>
+                        <Theme className={classes.app} targetDocument={targetDocument}>
                             <Spinner className={classes.spinner} />
                         </Theme>
                     </SettingsStoreContext.Provider>
@@ -347,7 +347,7 @@ export function MakeModularTool(options: ModularToolOptions) {
                         settings without the ISettingsService needing to be explicitly passed around. */}
                     <SettingsStoreContext.Provider value={settingsStore}>
                         <ExtensionManagerContext.Provider value={extensionManagerContext}>
-                            <Theme className={classes.app}>
+                            <Theme className={classes.app} targetDocument={targetDocument}>
                                 <ToastProvider imperativeRef={setToastHandle}>
                                     <Dialog open={!!requiredExtensions} modalType="alert">
                                         <DialogSurface>
@@ -410,6 +410,12 @@ export function MakeModularTool(options: ModularToolOptions) {
             );
         }
     };
+
+    // Derive the target document from the container element. When the container is in a popup
+    // window (or other document distinct from the main one), this is what makes Fluent inject
+    // styles and render portals into the correct document.
+    const containerOwnerDocument = containerElement.ownerDocument;
+    const targetDocument = containerOwnerDocument && containerOwnerDocument !== document ? containerOwnerDocument : undefined;
 
     // Set the container element to be a flex container so that the tool can be displayed properly.
     const originalContainerElementDisplay = containerElement.style.display;

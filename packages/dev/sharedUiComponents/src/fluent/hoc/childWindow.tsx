@@ -1,30 +1,8 @@
 import { type GriffelRenderer, createDOMRenderer, FluentProvider, Portal, RendererProvider } from "@fluentui/react-components";
 import { type FunctionComponent, type PropsWithChildren, type Ref, useCallback, useEffect, useImperativeHandle, useState } from "react";
 
-import { Logger } from "core/Misc/logger";
 import { ToastProvider } from "../primitives/toast";
-
-function ToFeaturesString(options: ChildWindowOptions) {
-    const { defaultWidth, defaultHeight, defaultLeft, defaultTop } = options;
-
-    const features: { key: string; value: string }[] = [];
-
-    if (defaultWidth !== undefined) {
-        features.push({ key: "width", value: defaultWidth.toString() });
-    }
-    if (defaultHeight !== undefined) {
-        features.push({ key: "height", value: defaultHeight.toString() });
-    }
-    if (defaultLeft !== undefined) {
-        features.push({ key: "left", value: defaultLeft.toString() });
-    }
-    if (defaultTop !== undefined) {
-        features.push({ key: "top", value: defaultTop.toString() });
-    }
-    features.push({ key: "location", value: "no" });
-
-    return features.map((feature) => `${feature.key}=${feature.value}`).join(",");
-}
+import { OpenPopupWindow, type PopupWindowHandle } from "./popupWindow";
 
 export type ChildWindowOptions = {
     /**
@@ -99,150 +77,69 @@ export const ChildWindow: FunctionComponent<PropsWithChildren<ChildWindowProps>>
     const { id, children, onOpenChange, imperativeRef: imperativeRef } = props;
 
     const [windowState, setWindowState] = useState<{ mountNode: HTMLElement; renderer: GriffelRenderer }>();
-    const [childWindow, setChildWindow] = useState<Window>();
-
-    const storageKey = id ? `Babylon/Settings/ChildWindow/${id}/Bounds` : null;
+    const [popupHandle, setPopupHandle] = useState<PopupWindowHandle>();
 
     // This function is just for creating the child window itself. It is a function because
     // it must be called synchronously in response to a user interaction (e.g. button click),
     // otherwise the browser will block it as a scripted popup.
     const createWindow = useCallback(
         (options: ChildWindowOptions = {}) => {
-            if (storageKey) {
-                // If we are persisting window bounds, but the window is already open, just use the existing bounds.
-                // Otherwise, try to load bounds from storage.
-                if (childWindow) {
-                    options.defaultLeft = childWindow.screenX;
-                    options.defaultTop = childWindow.screenY;
-                    options.defaultWidth = childWindow.innerWidth;
-                    options.defaultHeight = childWindow.innerHeight;
-                } else {
-                    const savedBounds = localStorage.getItem(storageKey);
-                    if (savedBounds) {
-                        try {
-                            const bounds = JSON.parse(savedBounds);
-                            options.defaultLeft = bounds.left;
-                            options.defaultTop = bounds.top;
-                            options.defaultWidth = bounds.width;
-                            options.defaultHeight = bounds.height;
-                        } catch {
-                            Logger.Warn(`Could not parse saved bounds for child window with key ${storageKey}`);
-                        }
-                    }
-                }
-            }
+            const handle = OpenPopupWindow({
+                id,
+                title: options.title ?? id,
+                defaultWidth: options.defaultWidth,
+                defaultHeight: options.defaultHeight,
+                defaultLeft: options.defaultLeft,
+                defaultTop: options.defaultTop,
+            });
 
-            // Half width by default.
-            if (!options.defaultWidth) {
-                options.defaultWidth = window.innerWidth * (2 / 3);
-            }
-            // Half height by default.
-            if (!options.defaultHeight) {
-                options.defaultHeight = window.innerHeight * (2 / 3);
-            }
-            // Horizontally centered by default.
-            if (!options.defaultLeft) {
-                options.defaultLeft = window.screenX + (window.innerWidth - options.defaultWidth) * (2 / 3);
-            }
-            // Vertically centered by default.
-            if (!options.defaultTop) {
-                options.defaultTop = window.screenY + (window.innerHeight - options.defaultHeight) * (2 / 3);
-            }
-
-            // Try to create the child window (can be null if popups are blocked).
-            const newChildWindow = window.open("", "", ToFeaturesString(options));
-            if (newChildWindow) {
-                // Set the title if provided.
-                newChildWindow.document.title = options.title ?? id ?? "";
-
-                // Set the child window state.
-                setChildWindow((current) => {
-                    // But first close any existing child window.
-                    current?.close();
-                    return newChildWindow;
+            if (handle) {
+                setPopupHandle((current) => {
+                    // Close any existing child window before adopting the new one.
+                    current?.dispose();
+                    return handle;
                 });
             }
         },
-        [childWindow, storageKey]
+        [id]
     );
 
     useImperativeHandle(imperativeRef, () => {
         return {
             open: createWindow,
-            close: () => setChildWindow(undefined),
+            close: () => {
+                setPopupHandle((current) => {
+                    current?.dispose();
+                    return undefined;
+                });
+            },
         };
     }, [createWindow]);
 
-    // This side effect runs any time the child window instance changes. It does the rest of the child window
+    // This side effect runs any time the popup handle changes. It does the rest of the child window
     // setup work, including creating resources and state needed to properly render the content of the child window.
     useEffect(() => {
-        const disposeActions: (() => void)[] = [];
-
-        if (childWindow) {
-            const body = childWindow.document.body;
-            body.style.width = "100%";
-            body.style.height = "100%";
-            body.style.margin = "0";
-            body.style.padding = "0";
-            body.style.display = "flex";
-            body.style.overflow = "hidden";
-
-            // Setup the window state, including creating a Fluent/Griffel "renderer" for managing runtime styles/classes in the child window.
-            setWindowState({ mountNode: body, renderer: createDOMRenderer(childWindow.document) });
-            onOpenChange?.(true);
-
-            // Track the most recently observed window bounds. In some browsers (e.g. Firefox), accessing
-            // properties like screenX on a closed window throws, so we cache the last known good values
-            // to use as a fallback when the dispose runs after the window has already been closed.
-            const getBounds = () => ({
-                left: childWindow.screenX,
-                top: childWindow.screenY,
-                width: childWindow.innerWidth,
-                height: childWindow.innerHeight,
-            });
-            let lastBounds = getBounds();
-
-            // When the child window is closed for any reason, transition back to a closed state.
-            const onChildWindowUnload = () => {
-                setWindowState(undefined);
-                setChildWindow(undefined);
-                onOpenChange?.(false);
-            };
-            childWindow.addEventListener("unload", onChildWindowUnload, { once: true });
-            disposeActions.push(() => childWindow.removeEventListener("unload", onChildWindowUnload));
-
-            // Capture bounds before the window is unloaded, while its properties are still safe to read.
-            const onChildWindowBeforeUnload = () => {
-                lastBounds = getBounds();
-            };
-            childWindow.addEventListener("beforeunload", onChildWindowBeforeUnload);
-            disposeActions.push(() => childWindow.removeEventListener("beforeunload", onChildWindowBeforeUnload));
-
-            // If the main window closes, close any open child windows as well (don't leave them orphaned).
-            const onParentWindowUnload = () => {
-                childWindow.close();
-            };
-            window.addEventListener("unload", onParentWindowUnload, { once: true });
-            disposeActions.push(() => window.removeEventListener("unload", onParentWindowUnload));
-
-            // On dispose, close the child window.
-            disposeActions.push(() => childWindow.close());
-
-            // On dispose, save the window bounds.
-            disposeActions.push(() => {
-                if (storageKey) {
-                    if (!childWindow.closed) {
-                        lastBounds = getBounds();
-                    }
-                    localStorage.setItem(storageKey, JSON.stringify(lastBounds));
-                }
-            });
+        if (!popupHandle) {
+            return undefined;
         }
 
+        const popupDocument = popupHandle.popupWindow.document;
+
+        // Setup the window state, including creating a Fluent/Griffel "renderer" for managing
+        // runtime styles/classes in the child window. We mount React into the popup body
+        // (matching previous behaviour) — the OpenPopupWindow-supplied hostElement is unused
+        // here because Portal needs a stable mount node and the body is the natural choice.
+        setWindowState({ mountNode: popupDocument.body, renderer: createDOMRenderer(popupDocument) });
+        onOpenChange?.(true);
+
         return () => {
-            disposeActions.reverse().forEach((dispose) => dispose());
+            // Tear down the popup. The cached handle's dispose() handles bounds saving and
+            // listener cleanup; React state is reset so the Portal/Provider tree unmounts.
+            popupHandle.dispose();
+            setWindowState(undefined);
+            onOpenChange?.(false);
         };
-    }, [childWindow]);
+    }, [popupHandle]);
 
     if (!windowState) {
         return null;

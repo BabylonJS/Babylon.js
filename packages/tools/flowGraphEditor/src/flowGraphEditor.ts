@@ -37,7 +37,7 @@ export interface IFlowGraphEditorOptions {
  */
 export class FlowGraphEditor {
     private static _CurrentDisposer: { dispose: () => Promise<void> } | undefined;
-    private static _PopupWindow: Window | null;
+    private static _PopupWindow: Window | null = null;
 
     /**
      * Show the flow graph editor
@@ -64,6 +64,14 @@ export class FlowGraphEditor {
         let popupWindow: Window | null = null;
 
         if (!hostElement) {
+            // Use the legacy CreatePopup which copies stylesheets from the main window into the
+            // popup. The graph canvas (shared `nodeGraphSystem/`) still ships traditional CSS,
+            // so without CopyStyles its visuals would be unstyled in the popup. Fluent / Griffel /
+            // makeStaticStyles work alongside it because MakeModularTool derives `targetDocument`
+            // from `containerElement.ownerDocument` (see Theme.tsx / modularTool.tsx).
+            //
+            // TODO: when the graph canvas is migrated off SCSS, switch this to OpenPopupWindow
+            // (in `shared-ui-components/fluent/hoc/popupWindow.ts`) for a fully Fluent-native flow.
             hostElement = CreatePopup("BABYLON.JS FLOW GRAPH EDITOR", {
                 onWindowCreateCallback: (w) => {
                     popupWindow = w;
