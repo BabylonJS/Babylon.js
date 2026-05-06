@@ -240,14 +240,6 @@ export class FlowGraphEditorPage {
     }
 
     /**
-     * Find a port icon element within a node by port name and direction.
-     */
-    private async _findPortIcon(blockClass: string, portName: string, direction: "input" | "output"): Promise<Locator> {
-        const node = this.nodeOnCanvas(blockClass);
-        return this._findPortIconOnNode(node, portName, direction);
-    }
-
-    /**
      * Find a port icon on a specific node locator.
      */
     private _findPortIconOnNode(node: Locator, portName: string, direction: "input" | "output"): Locator {
@@ -358,7 +350,13 @@ export class FlowGraphEditorPage {
      * Useful for verifying that multi-block graphs are wired correctly.
      */
     async getGraphTopology(): Promise<{
-        blocks: { className: string; signalOuts: { name: string; connectedIds: string[] }[]; signalIns: { name: string; connectedIds: string[] }[] }[];
+        blocks: {
+            className: string;
+            signalOuts: { name: string; connectedIds: string[] }[];
+            signalIns: { name: string; connectedIds: string[] }[];
+            dataOuts: { name: string; connectedIds: string[] }[];
+            dataIns: { name: string; connectedIds: string[] }[];
+        }[];
         totalConnections: number;
     }> {
         const serialized = await this.serializeGraph();
@@ -374,7 +372,16 @@ export class FlowGraphEditorPage {
                 const ids = p.connectedPointIds || [];
                 return { name: p.name, connectedIds: ids };
             });
-            return { className: b.className, signalOuts, signalIns };
+            const dataOuts = (b.dataOutputs || []).map((p: any) => {
+                const ids = p.connectedPointIds || [];
+                totalConnections += ids.length;
+                return { name: p.name, connectedIds: ids };
+            });
+            const dataIns = (b.dataInputs || []).map((p: any) => {
+                const ids = p.connectedPointIds || [];
+                return { name: p.name, connectedIds: ids };
+            });
+            return { className: b.className, signalOuts, signalIns, dataOuts, dataIns };
         });
         return { blocks, totalConnections };
     }

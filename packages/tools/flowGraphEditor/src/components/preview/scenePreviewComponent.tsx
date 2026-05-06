@@ -352,7 +352,6 @@ export class ScenePreviewComponent extends React.Component<IScenePreviewComponen
             }
         }
 
-        this.props.globalState.onResetRequiredObservable.notifyObservers(false);
         this.props.globalState.stateManager.onSelectionChangedObservable.notifyObservers(null);
         this.props.globalState.onClearUndoStack.notifyObservers();
         this.props.globalState.onLogRequiredObservable.notifyObservers(

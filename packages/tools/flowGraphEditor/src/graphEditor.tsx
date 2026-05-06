@@ -294,7 +294,6 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
 
         if (globalState.hostDocument) {
             globalState.hostDocument.removeEventListener("keydown", this._onDocumentKeyDown, false);
-            globalState.hostDocument.addEventListener("keydown", this._onDocumentKeyDown, false);
             globalState.hostDocument.removeEventListener("keyup", this._onWidgetKeyUpPointer, false);
         }
 
@@ -520,7 +519,20 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
             }
             const hasError = issues.some((i) => i.severity === FlowGraphValidationSeverity.Error);
             const tooltip = issues.map((i) => (i.severity === FlowGraphValidationSeverity.Error ? "[Error] " : "[Warn] ") + i.message).join("\n");
-            node.setValidationState(hasError ? "error" : "warning", tooltip);
+            const onClick = () => {
+                for (const issue of issues) {
+                    const prefix = issue.severity === FlowGraphValidationSeverity.Error ? "[Error]" : "[Warn]";
+                    const blockName = issue.block?.name ?? "Graph";
+                    this.props.globalState.onLogRequiredObservable.notifyObservers(
+                        new LogEntry(`${prefix} ${blockName}: ${issue.message}`, issue.severity === FlowGraphValidationSeverity.Error, issue.block)
+                    );
+                }
+                this.props.globalState.onToastNotification.notifyObservers({
+                    message: tooltip,
+                    severity: hasError ? "error" : "warning",
+                });
+            };
+            node.setValidationState(hasError ? "error" : "warning", tooltip, onClick);
         }
     }
 

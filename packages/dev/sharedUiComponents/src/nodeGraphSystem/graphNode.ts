@@ -78,8 +78,9 @@ export class GraphNode {
      * Shows a validation badge on the node header.
      * @param severity - "error" | "warning" | null. Pass null to hide the badge.
      * @param tooltip - tooltip text shown on hover.
+     * @param onClick - optional callback invoked when the badge is clicked.
      */
-    public setValidationState(severity: "error" | "warning" | null, tooltip?: string): void {
+    public setValidationState(severity: "error" | "warning" | null, tooltip?: string, onClick?: () => void): void {
         if (!this._validationBadge) {
             return;
         }
@@ -87,11 +88,26 @@ export class GraphNode {
         if (!severity) {
             this._validationBadge.style.display = "none";
             this._validationBadge.title = "";
+            this._validationBadge.onclick = null;
+            this._validationBadge.onpointerdown = null;
+            this._validationBadge.onpointermove = null;
+            this._validationBadge.onpointerup = null;
             return;
         }
         this._validationBadge.style.display = "";
         this._validationBadge.classList.add(severity === "error" ? localStyles["validationError"] : localStyles["validationWarning"]);
         this._validationBadge.title = tooltip ?? "";
+        this._validationBadge.onclick = null;
+        this._validationBadge.onpointerdown = (e) => {
+            e.stopPropagation();
+        };
+        this._validationBadge.onpointermove = (e) => {
+            e.stopPropagation();
+        };
+        this._validationBadge.onpointerup = (e) => {
+            e.stopPropagation();
+            onClick?.();
+        };
     }
 
     /**
