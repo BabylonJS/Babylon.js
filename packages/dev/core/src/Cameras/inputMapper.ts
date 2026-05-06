@@ -238,7 +238,16 @@ export class InputMapper<THandlers extends Record<string, unknown>> {
     public getEntry(source: "keyboard", interaction: InteractionName<THandlers>): KeyboardInputMapEntry<InteractionName<THandlers>> | undefined;
     public getEntry(source: InputSource, interaction: InteractionName<THandlers>): InputMapEntry<InteractionName<THandlers>> | undefined;
     public getEntry(source: InputSource, interaction: InteractionName<THandlers>): InputMapEntry<InteractionName<THandlers>> | undefined {
-        return this.inputMap.find((e) => e.source === source && e.interaction === interaction);
+        // Manual loop instead of `inputMap.find(arrow)` to avoid per-call closure allocation;
+        // this is hit per pointer-move from multi-touch panning paths.
+        const arr = this.inputMap;
+        for (let i = 0; i < arr.length; i++) {
+            const e = arr[i];
+            if (e.source === source && e.interaction === interaction) {
+                return e;
+            }
+        }
+        return undefined;
     }
 
     /**
