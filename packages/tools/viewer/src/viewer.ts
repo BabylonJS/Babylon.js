@@ -928,6 +928,7 @@ export class Viewer implements IDisposable {
 
     private readonly _autoSuspendRendering = this._options?.autoSuspendRendering ?? DefaultViewerOptions.autoSuspendRendering;
     private _sceneMutated = false;
+    private _suppressMutations = false;
     private _suspendRenderCount = 0;
     private _isDisposed = false;
 
@@ -2963,7 +2964,9 @@ export class Viewer implements IDisposable {
     }
 
     protected _markSceneMutated() {
-        this._sceneMutated = true;
+        if (!this._suppressMutations) {
+            this._sceneMutated = true;
+        }
     }
 
     protected _suspendRendering(): IDisposable {
@@ -3012,7 +3015,12 @@ export class Viewer implements IDisposable {
                 this._engine.performanceMonitor.disable();
                 this._engine.setHardwareScalingLevel(this._defaultHardwareScalingLevel);
                 this._engine.beginFrame();
+                // The idle sync render should not trigger a new render cycle (e.g. due to camera inertia
+                // firing onViewMatrixChangedObservable), so suppress any mutations it may cause.
+                this._suppressMutations = true;
                 this._scene.render();
+                this._suppressMutations = false;
+                this._sceneMutated = false;
                 this._engine.endFrame();
             };
 
