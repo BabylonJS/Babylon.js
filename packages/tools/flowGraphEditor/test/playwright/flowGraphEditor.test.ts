@@ -167,6 +167,21 @@ test.describe("Flow Graph Editor — Node List Filter", () => {
         // Multiple categories should be visible again
         await expect(fge.paletteItem("SceneReadyEvent")).toBeVisible();
     });
+
+    test("filtering remains usable after multiple searches", async ({ page }) => {
+        const fge = new FlowGraphEditorPage(page);
+        await fge.goto();
+        await fge.assertEditorReady();
+
+        await fge.filterNodeList("ConsoleLog");
+        await expect(fge.paletteItem("ConsoleLog")).toBeVisible();
+
+        await fge.filterNodeList("SceneReadyEvent");
+        await expect(fge.paletteItem("SceneReadyEvent")).toBeVisible();
+
+        await fge.clearNodeListFilter();
+        await expect(fge.paletteItem("Branch")).toBeVisible();
+    });
 });
 
 test.describe("Flow Graph Editor — Graph Construction", () => {
@@ -184,6 +199,27 @@ test.describe("Flow Graph Editor — Graph Construction", () => {
 
         const linkCount = await fge.getLinkCount();
         expect(linkCount).toBeGreaterThanOrEqual(1);
+    });
+
+    test("serialized graph contains expected blocks after connecting nodes", async ({ page }) => {
+        const fge = new FlowGraphEditorPage(page);
+        await fge.goto();
+        await fge.assertEditorReady();
+
+        const pageErrors: string[] = [];
+        page.on("pageerror", (err) => pageErrors.push(err.message));
+
+        await fge.addBlockFromPalette("SceneReadyEvent");
+        await fge.addBlockFromPalette("ConsoleLog");
+        await fge.connectPorts("FlowGraphSceneReadyEventBlock", "out", "FlowGraphConsoleLogBlock", "in");
+
+        const topology = await fge.getGraphTopology();
+        const blockNames = topology.blocks.map((block) => block.className);
+
+        expect(pageErrors).toHaveLength(0);
+        expect(topology.totalConnections).toBe(1);
+        expect(blockNames).toContain("FlowGraphSceneReadyEventBlock");
+        expect(blockNames).toContain("FlowGraphConsoleLogBlock");
     });
 
     test("SceneReady → Branch with both true/false paths wired to ConsoleLog", async ({ page }) => {

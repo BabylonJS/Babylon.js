@@ -86,3 +86,4 @@ export * from "./Blocks/geometryEaseBlock";
 export * from "./Blocks/Set/aggregatorBlock";
 export * from "./Blocks/subdivideBlock";
 export * from "./Blocks/extrudeGeometryBlock";
+export * from "./Blocks/bevelBlock";

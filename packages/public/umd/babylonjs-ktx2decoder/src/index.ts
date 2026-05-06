@@ -1,5 +1,5 @@
 // Export all named symbols directly so KTX2DECODER.LiteTranscoder_UASTC_ASTC etc. work.
-// With Rollup UMD (unlike webpack's libraryExport:"default"), named exports must be
+// With Rollup UMD, named exports must be
 // explicitly re-exported for them to appear on the global namespace object.
 //
 // IMPORTANT: Do NOT also `import * as ktx2decoder; export { ktx2decoder }` here.

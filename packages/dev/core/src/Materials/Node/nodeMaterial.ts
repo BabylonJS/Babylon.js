@@ -316,7 +316,7 @@ export class NodeMaterial extends NodeMaterialBase {
      * @returns the global NME
      */
     private _getGlobalNodeMaterialEditor(): any {
-        // UMD Global name detection from Webpack Bundle UMD Name.
+        // UMD global name detection from bundle metadata.
         // Note: rollup-built UMD bundles do not expose the editor class
         // directly on the namespace - it lives on `.default.NodeEditor` -
         // so we unwrap that case before falling back to the BABYLON global.

@@ -14,7 +14,7 @@
         "test:debug": "set DEBUG=true && npm run test",
         "update": "vitest run -u",
         "build": "node ./build.mjs",
-        "analyse": "webpack --profile --json > stats.json",
+        "analyse": "node ./build.mjs --analyze > stats.txt",
         "generate-file-size-report": "node ./scripts/generateFileSizes.js",
         "test:playwright": "playwright test --config ../../../playwright.config.ts"
     },

@@ -5,6 +5,7 @@ import { PointLight } from "core/Lights/pointLight";
 import { SpotLight } from "core/Lights/spotLight";
 import { Light } from "core/Lights/light";
 import { ClusteredLightContainer } from "core/Lights/Clustered/clusteredLightContainer";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { Vector3 } from "core/Maths/math.vector";
 import { Scene } from "core/scene";
 
@@ -119,6 +120,68 @@ describe("ClusteredLightContainer", () => {
             expect(mesh.lightSources).not.toContain(point);
             expect(mesh.lightSources).toContain(container);
         });
+
+        it("should not re-add child lights to mesh.lightSources when their parent enabled state changes", async () => {
+            const { CreateBox } = await import("core/Meshes/Builders/boxBuilder");
+            const mesh = CreateBox("box", { size: 1 }, scene);
+            const parent = CreateBox("parent", { size: 1 }, scene);
+            parent.setEnabled(false);
+            const container = new ClusteredLightContainer("cluster", [], scene);
+            const point = new PointLight("point", new Vector3(0, 1, 0), scene, true);
+            point.parent = parent;
+
+            container.addLight(point);
+
+            expect(mesh.lightSources).toContain(container);
+            expect(mesh.lightSources).not.toContain(point);
+
+            parent.setEnabled(true);
+
+            expect(mesh.lightSources).toContain(container);
+            expect(mesh.lightSources).not.toContain(point);
+            expect(scene.lights).not.toContain(point);
+        });
+
+        it("should not re-add child lights to mesh.lightSources when their excluded meshes change", async () => {
+            const { CreateBox } = await import("core/Meshes/Builders/boxBuilder");
+            const mesh = CreateBox("box", { size: 1 }, scene);
+            const container = new ClusteredLightContainer("cluster", [], scene);
+            const point = new PointLight("point", new Vector3(0, 1, 0), scene, true);
+            point.excludedMeshes.push(mesh);
+
+            container.addLight(point);
+
+            expect(mesh.lightSources).toContain(container);
+            expect(mesh.lightSources).not.toContain(point);
+
+            point.excludedMeshes.splice(0, 1);
+
+            expect(mesh.lightSources).toContain(container);
+            expect(mesh.lightSources).not.toContain(point);
+            expect(scene.lights).not.toContain(point);
+        });
+
+        it("should not let multiple clustered light containers own the same child light", () => {
+            const container1 = new ClusteredLightContainer("cluster1", [], scene);
+            const container2 = new ClusteredLightContainer("cluster2", [], scene);
+            const point = new PointLight("point", new Vector3(0, 1, 0), scene, true);
+
+            container1.addLight(point);
+            container1.addLight(point);
+            container2.addLight(point);
+
+            expect(container1.lights).toEqual([point]);
+            expect(container2.lights).toEqual([]);
+            expect(scene.lights).not.toContain(point);
+
+            container2.removeLight(point);
+
+            expect(scene.lights).not.toContain(point);
+
+            container1.removeLight(point);
+
+            expect(scene.lights).toContain(point);
+        });
     });
 
     describe("parse", () => {
@@ -220,6 +283,54 @@ describe("ClusteredLightContainer", () => {
             expect(parsed.lights[1].name).toBe("spot1");
 
             scene2.dispose();
+        });
+    });
+
+    describe("transferTexturesToEffect", () => {
+        it("binds the tile mask storage buffer for WebGPU effects", () => {
+            const setStorageBuffer = vi.fn();
+            const setTexture = vi.fn();
+
+            ClusteredLightContainer.prototype.transferTexturesToEffect.call(
+                {
+                    getEngine: () => ({ isWebGPU: true, setStorageBuffer }),
+                    _lightDataTexture: "lightDataTexture",
+                    _tileMaskTexture: "tileMaskTexture",
+                    _tileMaskBuffer: "tileMaskBuffer",
+                },
+                {
+                    shaderLanguage: ShaderLanguage.GLSL,
+                    setTexture,
+                },
+                "0"
+            );
+
+            expect(setTexture).toHaveBeenCalledWith("lightDataTexture0", "lightDataTexture");
+            expect(setTexture).not.toHaveBeenCalledWith("tileMaskTexture0", "tileMaskTexture");
+            expect(setStorageBuffer).toHaveBeenCalledWith("tileMaskBuffer0", "tileMaskBuffer");
+        });
+
+        it("binds the WGSL tile mask storage buffer for WGSL effects on WebGPU", () => {
+            const setStorageBuffer = vi.fn();
+            const setTexture = vi.fn();
+
+            ClusteredLightContainer.prototype.transferTexturesToEffect.call(
+                {
+                    getEngine: () => ({ isWebGPU: true, setStorageBuffer }),
+                    _lightDataTexture: "lightDataTexture",
+                    _tileMaskTexture: "tileMaskTexture",
+                    _tileMaskBuffer: "tileMaskBuffer",
+                },
+                {
+                    shaderLanguage: ShaderLanguage.WGSL,
+                    setTexture,
+                },
+                "0"
+            );
+
+            expect(setTexture).toHaveBeenCalledWith("lightDataTexture0", "lightDataTexture");
+            expect(setTexture).not.toHaveBeenCalledWith("tileMaskTexture0", "tileMaskTexture");
+            expect(setStorageBuffer).toHaveBeenCalledWith("tileMaskBuffer0", "tileMaskBuffer");
         });
     });
 });

@@ -26,18 +26,9 @@
         "@dev/core": "1.0.0",
         "@dev/gui": "1.0.0",
         "@dev/shared-ui-components": "1.0.0",
-        "@svgr/webpack": "^7.0.0",
         "@types/dagre": "^0.7.47",
         "@types/react": "^18.0.0",
-        "@types/react-dom": "^18.0.0",
-        "copy-webpack-plugin": "^14.0.0",
-        "css-loader": "^7.1.0",
-        "sass-loader": "^16.0.0",
-        "style-loader": "^3.3.0",
-        "url-loader": "^4.1.1",
-        "webpack": "^5.103.0",
-        "webpack-cli": "6.0.1",
-        "webpack-merge": "^5.8.0"
+        "@types/react-dom": "^18.0.0"
     },
     "sideEffects": true
 }

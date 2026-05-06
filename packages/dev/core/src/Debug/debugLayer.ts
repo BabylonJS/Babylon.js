@@ -373,7 +373,7 @@ export class DebugLayer {
      * @returns the inspector instance if found otherwise, null
      */
     private _getGlobalInspector(): any {
-        // UMD Global name detection from Webpack Bundle UMD Name.
+        // UMD global name detection from bundle metadata.
         if (typeof INSPECTOR !== "undefined") {
             return INSPECTOR;
         }

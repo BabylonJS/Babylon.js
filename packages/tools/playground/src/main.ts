@@ -1,8 +1,8 @@
 /**
  * Vite entry point for the Babylon.js Playground.
  *
- * Architecture: this file is the Vite-served ES module counterpart to the
- * webpack-built babylon.playground.js UMD bundle. It does NOT import Babylon
+ * Architecture: this file is the Vite-served ES module entry for the Playground.
+ * It does NOT import Babylon
  * directly — Babylon (babylon.js, loaders, inspector, etc.) is loaded as
  * pre-built UMD bundles from the CDN (or babylonServer on localhost:1337).
  * public/index.js handles that bootstrap.
