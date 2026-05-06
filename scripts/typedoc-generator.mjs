@@ -33,8 +33,20 @@ function generateMessageFromError(error) {
     }]`;
 }
 
+function normalizeFileName(fileName) {
+    const normalizedFileName = fileName
+        ?.replace(/\\/g, "/")
+        .replace(/:\d+:\d+$/, "")
+        .replace(/^\.\//, "");
+    return normalizedFileName?.match(/(?:^|\/)(packages\/[^#]+)$/)?.[1] ?? normalizedFileName;
+}
+
 function getSourceFileName(error) {
-    return error.url?.match(/\/(packages\/dev\/[^#]+)#L\d+$/)?.[1] ?? error.fileName?.replace(/:\d+:\d+$/, "");
+    return normalizeFileName(error.url?.match(/\/(packages\/[^#]+)#L\d+$/)?.[1] ?? error.fileName);
+}
+
+function isSameOrNestedPath(firstFileName, secondFileName) {
+    return firstFileName === secondFileName || firstFileName.endsWith(`/${secondFileName}`) || secondFileName.endsWith(`/${firstFileName}`);
 }
 
 function isInChangedFiles(error, filesChanged) {
@@ -43,7 +55,10 @@ function isInChangedFiles(error, filesChanged) {
         return false;
     }
 
-    return filesChanged.some((file) => file === sourceFileName || file.endsWith(`/${sourceFileName}`));
+    return filesChanged.some((file) => {
+        const changedFileName = normalizeFileName(file);
+        return changedFileName ? isSameOrNestedPath(sourceFileName, changedFileName) : false;
+    });
 }
 
 async function generateTypedocAndAnalyze(entryPoints, filesChanged) {
