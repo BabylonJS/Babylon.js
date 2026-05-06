@@ -273,23 +273,37 @@ export class InteractivityGraphToFlowGraphParser {
             return;
         }
         for (const name of Object.keys(node.values)) {
-            const socket = node.values[name] as IKHRInteractivity_Variable;
+            const socket = node.values[name] as IKHRInteractivity_Variable & { node?: number; socket?: string };
+            // Static-literal case: the socket has a hardcoded JSON-Pointer ref
+            // value (e.g. ``"/nodes/22/"``). Splice the literal into the template
+            // and drop the socket entirely so the connection-wiring step ignores
+            // it. This is the Calculator.glb pattern.
             const literal = socket?.value?.[0];
-            if (typeof literal !== "string") {
-                continue;
+            if (typeof literal === "string" && literal.startsWith("/")) {
+                const trimmedRef = literal.replace(/\/+$/, "");
+                (pointerCfg!.value as any[])[0] = trimmedRef + "/" + template;
+                delete (node.values as any)[name];
+                break;
             }
-            // We only care about ref-typed sockets, but we don't have the
-            // type table indexed here; checking that the literal looks like a
-            // JSON Pointer (starts with `/`) is enough to disambiguate from
-            // numeric/boolean values.
-            if (!literal.startsWith("/")) {
-                continue;
+            // Dynamic-ref case: the socket is connected to an upstream output
+            // (``{ node, socket }``). We can't bake the value at parse time, so
+            // instead we rewrite the template so the existing template-parameter
+            // substitution machinery substitutes the runtime ref. For a socket
+            // named ``nodeRef`` and a relative template like
+            // ``extensions/KHR_node_visibility/visible``, rewrite to
+            // ``/nodes/{nodeRef}/extensions/KHR_node_visibility/visible``. The
+            // FlowGraphPathConverterComponent will register a ``nodeRef`` data
+            // input on the block and the connection-wiring step will hook it
+            // up to the upstream output. At runtime the runtime substitution
+            // logic extracts the matching JSON-Pointer segment from the ref
+            // string delivered by that connection.
+            // This is the MagicBall.glb pattern.
+            if (typeof socket?.node === "number") {
+                (pointerCfg!.value as any[])[0] = `/nodes/{${name}}/${template}`;
+                // Leave the value socket entry as is — it is now the data input
+                // that the substitution machinery will consume.
+                break;
             }
-            const trimmedRef = literal.replace(/\/+$/, "");
-            const rewritten = trimmedRef + "/" + template;
-            (pointerCfg!.value as any[])[0] = rewritten;
-            delete (node.values as any)[name];
-            break;
         }
     }
 
