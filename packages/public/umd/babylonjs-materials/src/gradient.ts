@@ -1,3 +1,2 @@
-import * as materials from "materials/legacy/legacy-gradient";
-export { materials };
-export default materials;
+import "materials/legacy/legacy-gradient";
+export * from "materials/legacy/legacy-gradient";

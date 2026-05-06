@@ -1,3 +1,2 @@
-import * as proceduralTextures from "procedural-textures/legacy/legacy";
-export { proceduralTextures };
-export default proceduralTextures;
+import "procedural-textures/legacy/legacy";
+export * from "procedural-textures/legacy/legacy";

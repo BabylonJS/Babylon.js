@@ -17,7 +17,7 @@ parameters:
 
 steps:
     - script: |
-          curl "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_SNAPSHOT_CHECK)?buildNumber=${{ parameters.snapshotPath }}" -o ./tmp.json -H "Authorization: $(BASIC_AUTH)"
+          curl "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_SNAPSHOT_CHECK)?buildNumber=${{ parameters.snapshotPath }}" -o ./tmp.json -H "Authorization: Bearer $(DEPLOY_TOKEN)"
           if grep "true" ./tmp.json
           then
              echo "##vso[task.setvariable variable=${{ parameters.variableName }}]true"

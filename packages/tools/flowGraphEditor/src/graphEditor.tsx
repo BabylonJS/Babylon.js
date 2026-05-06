@@ -294,7 +294,6 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
 
         if (globalState.hostDocument) {
             globalState.hostDocument.removeEventListener("keydown", this._onDocumentKeyDown, false);
-            globalState.hostDocument.addEventListener("keydown", this._onDocumentKeyDown, false);
             globalState.hostDocument.removeEventListener("keyup", this._onWidgetKeyUpPointer, false);
         }
 
@@ -520,7 +519,20 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
             }
             const hasError = issues.some((i) => i.severity === FlowGraphValidationSeverity.Error);
             const tooltip = issues.map((i) => (i.severity === FlowGraphValidationSeverity.Error ? "[Error] " : "[Warn] ") + i.message).join("\n");
-            node.setValidationState(hasError ? "error" : "warning", tooltip);
+            const onClick = () => {
+                for (const issue of issues) {
+                    const prefix = issue.severity === FlowGraphValidationSeverity.Error ? "[Error]" : "[Warn]";
+                    const blockName = issue.block?.name ?? "Graph";
+                    this.props.globalState.onLogRequiredObservable.notifyObservers(
+                        new LogEntry(`${prefix} ${blockName}: ${issue.message}`, issue.severity === FlowGraphValidationSeverity.Error, issue.block)
+                    );
+                }
+                this.props.globalState.onToastNotification.notifyObservers({
+                    message: tooltip,
+                    severity: hasError ? "error" : "warning",
+                });
+            };
+            node.setValidationState(hasError ? "error" : "warning", tooltip, onClick);
         }
     }
 
@@ -1222,6 +1234,36 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                             return;
                         }
                         this.props.globalState.lockObject.lock = false;
+                    }}
+                    onDragOver={(evt) => {
+                        // Allow dropping 3D scene files anywhere on the editor.
+                        // Check both DataTransferItem.kind (modern) and dataTransfer.types (legacy/Firefox)
+                        // to ensure preventDefault is called even when items list is unavailable.
+                        const dt = evt.dataTransfer;
+                        const hasFile =
+                            (dt?.items && Array.from(dt.items).some((item) => item.kind === "file")) ||
+                            (dt?.types && (dt.types.includes("Files") || dt.types.includes("application/x-moz-file")));
+                        if (hasFile) {
+                            evt.preventDefault();
+                            evt.stopPropagation();
+                        }
+                    }}
+                    onDrop={(evt) => {
+                        const files = evt.dataTransfer?.files;
+                        if (!files || files.length === 0) {
+                            return;
+                        }
+                        // Always prevent default when files are dropped to avoid browser navigation.
+                        evt.preventDefault();
+                        evt.stopPropagation();
+                        const supportedExtensions = [".glb", ".gltf", ".babylon"];
+                        for (let i = 0; i < files.length; i++) {
+                            const name = files[i].name.toLowerCase();
+                            if (supportedExtensions.some((ext) => name.endsWith(ext))) {
+                                this.props.globalState.onDropEventReceivedObservable.notifyObservers(evt.nativeEvent);
+                                return;
+                            }
+                        }
                     }}
                 >
                     {/* Node creation menu */}

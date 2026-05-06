@@ -36,6 +36,7 @@ export class ScenePreviewComponent extends React.Component<IScenePreviewComponen
     private _onSceneContextChangedObserver: Nullable<Observer<SceneContext>> = null;
     private _onSnippetIdChangedObserver: Nullable<Observer<string>> = null;
     private _onReloadSnippetRequestedObserver: Nullable<Observer<void>> = null;
+    private _onDropEventObserver: Nullable<Observer<DragEvent>> = null;
 
     /** @internal */
     constructor(props: IScenePreviewComponentProps) {
@@ -79,6 +80,11 @@ export class ScenePreviewComponent extends React.Component<IScenePreviewComponen
             }
         });
 
+        // Listen for scene-file drops forwarded from the root editor (editor-wide drag-and-drop)
+        this._onDropEventObserver = this.props.globalState.onDropEventReceivedObservable.add((e) => {
+            this._handleDrop(e);
+        });
+
         // Create a default scene so the editor is usable without a snippet
         if (!this.props.globalState.sceneContext && !this.props.globalState.snippetId) {
             void this._createDefaultSceneAsync();
@@ -91,6 +97,7 @@ export class ScenePreviewComponent extends React.Component<IScenePreviewComponen
         this._onSceneContextChangedObserver?.remove();
         this._onSnippetIdChangedObserver?.remove();
         this._onReloadSnippetRequestedObserver?.remove();
+        this._onDropEventObserver?.remove();
     }
 
     private _watchContext(ctx: SceneContext) {
@@ -175,7 +182,7 @@ export class ScenePreviewComponent extends React.Component<IScenePreviewComponen
         }
 
         try {
-            // Dynamic imports — these resolve to the BABYLON global via webpack externals
+            // Dynamic imports resolved to the BABYLON global by the UMD dev server
             const { Engine } = await import("core/Engines/engine");
             const { Scene } = await import("core/scene");
             const { ArcRotateCamera } = await import("core/Cameras/arcRotateCamera");
@@ -345,7 +352,6 @@ export class ScenePreviewComponent extends React.Component<IScenePreviewComponen
             }
         }
 
-        this.props.globalState.onResetRequiredObservable.notifyObservers(false);
         this.props.globalState.stateManager.onSelectionChangedObservable.notifyObservers(null);
         this.props.globalState.onClearUndoStack.notifyObservers();
         this.props.globalState.onLogRequiredObservable.notifyObservers(
@@ -450,12 +456,12 @@ export class ScenePreviewComponent extends React.Component<IScenePreviewComponen
         }
     }
 
-    private _handleDragOver = (e: React.DragEvent) => {
+    private _handleDragOver = (e: DragEvent | React.DragEvent) => {
         e.preventDefault();
         e.stopPropagation();
     };
 
-    private _handleDrop = (e: React.DragEvent) => {
+    private _handleDrop = (e: DragEvent | React.DragEvent) => {
         e.preventDefault();
         e.stopPropagation();
 
@@ -642,7 +648,7 @@ export class ScenePreviewComponent extends React.Component<IScenePreviewComponen
                         </div>
                     )}
                 </div>
-                <div className="preview-canvas-container" onDragOver={this._handleDragOver} onDrop={this._handleDrop}>
+                <div className="preview-canvas-container" onDragOver={this._handleDragOver as React.DragEventHandler} onDrop={this._handleDrop as React.DragEventHandler}>
                     <canvas ref={this._canvasRef} className="preview-canvas" />
                 </div>
                 {ctx && <div className="context-summary">{this._renderCategorySummary(ctx)}</div>}

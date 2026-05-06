@@ -63,13 +63,18 @@ function traverseChildrenLookingForComments(child, parent, isSignature = false) 
     if (!child) {
         return;
     }
+    const source = child.sources?.[0] ?? parent?.sources?.[0];
     const result = {
         componentName: child.name,
         componentType: getKind(child),
         parentName: parent?.name,
-        fileName: child.sources[0]?.fileName + ":" + child.sources[0]?.line + ":" + child.sources[0]?.character,
-        url: child.sources[0]?.url,
+        fileName: source ? `${source.fileName}:${source.line}:${source.character}` : undefined,
+        url: source?.url,
     };
+    if (!source) {
+        result.result = TestResultType.PASS;
+        return result;
+    }
     // underscored names are ignored
     if (child.name.startsWith("_")) {
         result.result = TestResultType.PASS;

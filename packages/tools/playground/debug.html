@@ -9,7 +9,7 @@
                 dataLayer.push(arguments);
             }
             gtag("js", new Date());
-            window.__PLAYGROUND_BUNDLE__ = "<%= PLAYGROUND_BUNDLE %>";
+            window.__PLAYGROUND_BUNDLE__ = "babylon.playground.js";
             gtag("config", "UA-41767310-2");
         </script>
         <title>Babylon.js Playground debug endpoint</title>
@@ -61,6 +61,10 @@
     <body>
         <div id="host-element"></div>
 
+        <!-- Defines the Versions global used by the version-selector dropdown. -->
+        <!-- In Vite dev mode this is intercepted by the playground-versions-provider plugin -->
+        <!-- and returns only the Versions definition (no CDN bootstrap). -->
         <script src="/index.js"></script>
+        <script type="module" src="/src/main.ts"></script>
     </body>
 </html>

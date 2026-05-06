@@ -2,10 +2,13 @@
 # Browser Testing Pipeline (Definition ID: 27)
 # Converted from Azure DevOps Classic Pipeline
 #
-# Scheduled nightly pipeline that runs WebGL2 visualization tests on
-# Webkit, Firefox, and compiles with Google Closure Compiler.
+# Nightly: Webkit and Firefox WebGL2 visualization tests, full Chrome WebGL2
+#          and WebGPU visualization runs against the production CDN, plus
+#          Google Closure Compiler validation.
+# Weekly (Saturday): Full performance test suite across all visualization tests
+#          (WebGL2 and WebGPU combined in a single job).
 #
-# Schedule: 1:00 AM PST daily (09:00 UTC)
+# Schedule: 1:00 AM PST daily (09:00 UTC), plus 3:00 AM PST Saturday (11:00 UTC)
 #
 # Variable groups:
 #   - BabylonJS-BrowserStack (BROWSERSTACK_ACCESS_KEY, BROWSERSTACK_USERNAME)
@@ -15,7 +18,7 @@ trigger: none
 pr: none
 
 schedules:
-    # 1:00 AM PST = 09:00 UTC, all days (daysToBuild: 31)
+    # 1:00 AM PST = 09:00 UTC, all days
     - cron: "0 9 * * *"
       displayName: Nightly browser testing
       branches:
@@ -23,10 +26,23 @@ schedules:
               - master
       always: false
 
+    # 3:00 AM PST = 11:00 UTC, Saturday only
+    - cron: "0 11 * * 6"
+      displayName: Weekly performance tests
+      branches:
+          include:
+              - master
+      always: true
+
 variables:
     - group: BabylonJS-BrowserStack
+    - group: BabylonJS-Deployment
     - name: system.debug
       value: false
+    # Stable path used by nightly jobs that publish test reports. Overwritten
+    # on every nightly run so the URL stays the same.
+    - name: NightlyReportRoot
+      value: "nightly/testResults"
 
 pool:
     vmImage: ubuntu-latest
@@ -53,19 +69,45 @@ jobs:
                 PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: "true"
                 PUPPETEER_SKIP_DOWNLOAD: "true"
 
-          - script: npm run test:playwright -w @tools/tests -- --project=webgl2
+          - script: npx playwright test --config ./playwright.browserstack.config.ts
             displayName: "Run tests (Webkit)"
             env:
                 CDN_BASE_URL: "https://cdn.babylonjs.com"
                 CI: "true"
-                BROWSER: "BrowserStack"
+                BSTACK_TEST_TYPE: "webgl2"
+                BSTACK_BUILD_NAME: "Visualization Tests - Webkit"
                 TIMEOUT: "20000"
                 BROWSERSTACK_USERNAME: $(BROWSERSTACK_USERNAME)
                 BROWSERSTACK_ACCESS_KEY: $(BROWSERSTACK_ACCESS_KEY)
-                BROWSERSTACK_BROWSER: "playwright-webkit@latest:OSX Sonoma"
+                BSTACK_BROWSER: "playwright-webkit"
+                BSTACK_OS: "OS X"
+                BSTACK_OS_VERSION: "Sonoma"
                 EXCLUDE_REGEX_ARRAY: "Picking Visual Test,GUI Input Test,Export GLTF Extension KHR_texture_transform,PBR refraction,Procedural textures playground,GLTF Serializer Morph Target Animation,GLTF Serializer KHR materials clearcoat,Motion Blur"
                 SCREENSHOT_MAX_PIXEL: "6"
                 SCREENSHOT_THRESHOLD: "0.05"
+
+          # Only upload reports when the run failed. Path is stable so the
+          # previous nightly's report is overwritten and the URL never changes.
+          - script: |
+                curl "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_DELETE)?path=$(NightlyReportRoot)/webkitplaywright" -X POST -H "Authorization: Bearer $(DEPLOY_TOKEN)"
+            displayName: "Delete previous nightly Webkit report"
+            condition: failed()
+            continueOnError: true
+
+          - template: templates/upload-test-results.yml
+            parameters:
+                reportDir: "packages/tools/tests/playwright-report"
+                fallbackReportDir: "playwright-report"
+                deployPath: "$(NightlyReportRoot)/webkitplaywright"
+                displayName: "Upload nightly Webkit report"
+                condition: "failed()"
+                continueOnError: true
+
+          - bash: |
+                echo "##[section]Nightly Webkit WebGL2 report URL"
+                echo "  $(SNAPSHOT_CDN_URL)/$(NightlyReportRoot)/webkitplaywright/index.html"
+            displayName: "Log nightly Webkit report URL"
+            condition: failed()
 
           - task: PublishTestResults@2
             displayName: "Publish Test Results"
@@ -94,25 +136,189 @@ jobs:
                 PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: "true"
                 PUPPETEER_SKIP_DOWNLOAD: "true"
 
-          - script: npm run test:playwright -w @tools/tests -- --project=webgl2
+          - script: npx playwright test --config ./playwright.browserstack.config.ts
             displayName: "Run tests (Firefox)"
             env:
                 CDN_BASE_URL: "https://cdn.babylonjs.com"
                 CI: "true"
-                BROWSER: "BrowserStack"
+                BSTACK_TEST_TYPE: "webgl2"
+                BSTACK_BUILD_NAME: "Visualization Tests - Firefox"
                 TIMEOUT: "20000"
                 BROWSERSTACK_USERNAME: $(BROWSERSTACK_USERNAME)
                 BROWSERSTACK_ACCESS_KEY: $(BROWSERSTACK_ACCESS_KEY)
-                BROWSERSTACK_BROWSER: "playwright-firefox@latest:OSX Sonoma"
+                BSTACK_BROWSER: "playwright-firefox"
+                BSTACK_OS: "OS X"
+                BSTACK_OS_VERSION: "Sonoma"
                 EXCLUDE_REGEX_ARRAY: "Procedural textures playground,Normed 16 bits texture formats"
                 SCREENSHOT_THRESHOLD: "0.05"
                 SCREENSHOT_MAX_PIXEL: "5"
+
+          # Only upload reports when the run failed. Path is stable so the
+          # previous nightly's report is overwritten and the URL never changes.
+          - script: |
+                curl "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_DELETE)?path=$(NightlyReportRoot)/firefoxplaywright" -X POST -H "Authorization: Bearer $(DEPLOY_TOKEN)"
+            displayName: "Delete previous nightly Firefox report"
+            condition: failed()
+            continueOnError: true
+
+          - template: templates/upload-test-results.yml
+            parameters:
+                reportDir: "packages/tools/tests/playwright-report"
+                fallbackReportDir: "playwright-report"
+                deployPath: "$(NightlyReportRoot)/firefoxplaywright"
+                displayName: "Upload nightly Firefox report"
+                condition: "failed()"
+                continueOnError: true
+
+          - bash: |
+                echo "##[section]Nightly Firefox WebGL2 report URL"
+                echo "  $(SNAPSHOT_CDN_URL)/$(NightlyReportRoot)/firefoxplaywright/index.html"
+            displayName: "Log nightly Firefox report URL"
+            condition: failed()
 
           - task: PublishTestResults@2
             displayName: "Publish Test Results"
             inputs:
                 testResultsFormat: JUnit
                 testResultsFiles: "./packages/tools/tests/junit.xml"
+
+    # ============================================================================
+    # NIGHTLY CHROME WEBGL2 — FULL VISUALIZATION RUN
+    # Runs every nightly trigger against the production CDN. Mirrors the
+    # ci-monorepo VisualizationWebGL2 job but with AFFECTED_TAGS=ALL so the full
+    # suite always runs.
+    # ============================================================================
+    - job: ChromeWebGL2Full
+      displayName: "Chrome WebGL2 - full nightly"
+      condition: eq(variables['Build.CronSchedule.DisplayName'], 'Nightly browser testing')
+      steps:
+          - checkout: self
+            clean: true
+            fetchTags: false
+
+          - task: UseNode@1
+            displayName: "Use Node 22.x"
+            inputs:
+                version: "22.x"
+
+          - script: npm install
+            displayName: "NPM install"
+            env:
+                PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: "true"
+                PUPPETEER_SKIP_DOWNLOAD: "true"
+
+          - bash: .azure-pipelines/browserstack-wait.sh npx playwright test --config ./playwright.browserstack.config.ts
+            displayName: "Run tests (Chrome WebGL2 ALL)"
+            env:
+                CDN_BASE_URL: "https://cdn.babylonjs.com"
+                CI: "true"
+                EXCLUDE_REGEX_ARRAY: "Procedural textures playground"
+                BSTACK_TEST_TYPE: "webgl2"
+                BSTACK_BUILD_NAME: "Nightly Visualization Tests - Chrome WebGL2 ALL"
+                TIMEOUT: "27500"
+                AFFECTED_TAGS: "ALL"
+                BROWSERSTACK_USERNAME: $(BROWSERSTACK_USERNAME)
+                BROWSERSTACK_ACCESS_KEY: $(BROWSERSTACK_ACCESS_KEY)
+
+          # Only upload reports when the run failed. The path is stable so the
+          # previous nightly's report is overwritten and the URL never changes.
+          - script: |
+                curl "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_DELETE)?path=$(NightlyReportRoot)/webgl2playwright" -X POST -H "Authorization: Bearer $(DEPLOY_TOKEN)"
+            displayName: "Delete previous nightly WebGL2 report"
+            condition: failed()
+            continueOnError: true
+
+          - template: templates/upload-test-results.yml
+            parameters:
+                reportDir: "packages/tools/tests/playwright-report"
+                fallbackReportDir: "playwright-report"
+                deployPath: "$(NightlyReportRoot)/webgl2playwright"
+                displayName: "Upload nightly WebGL2 report"
+                condition: "failed()"
+                continueOnError: true
+
+          - bash: |
+                echo "##[section]Nightly Chrome WebGL2 report URL"
+                echo "  $(SNAPSHOT_CDN_URL)/$(NightlyReportRoot)/webgl2playwright/index.html"
+            displayName: "Log nightly WebGL2 report URL"
+            condition: failed()
+
+          - task: PublishTestResults@2
+            displayName: "Publish Test Results"
+            condition: succeededOrFailed()
+            inputs:
+                testResultsFormat: JUnit
+                testResultsFiles: "./packages/tools/tests/junit.xml"
+                testRunTitle: "Nightly Chrome WebGL2 ALL"
+
+    # ============================================================================
+    # NIGHTLY CHROME WEBGPU — FULL VISUALIZATION RUN
+    # Runs every nightly trigger against the production CDN. Mirrors the
+    # ci-monorepo VisualizationWebGPU job but with AFFECTED_TAGS=ALL.
+    # ============================================================================
+    - job: ChromeWebGPUFull
+      displayName: "Chrome WebGPU - full nightly"
+      condition: eq(variables['Build.CronSchedule.DisplayName'], 'Nightly browser testing')
+      steps:
+          - checkout: self
+            clean: true
+            fetchTags: false
+
+          - task: UseNode@1
+            displayName: "Use Node 22.x"
+            inputs:
+                version: "22.x"
+
+          - script: npm install
+            displayName: "NPM install"
+            env:
+                PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: "true"
+                PUPPETEER_SKIP_DOWNLOAD: "true"
+
+          - bash: .azure-pipelines/browserstack-wait.sh npx playwright test --config ./playwright.browserstack.config.ts
+            displayName: "Run tests (Chrome WebGPU ALL)"
+            retryCountOnTaskFailure: 1
+            env:
+                CDN_BASE_URL: "https://cdn.babylonjs.com"
+                CI: "true"
+                EXCLUDE_REGEX_ARRAY: "Sample depth texture,Render to 3D RT,apply-all-post-processes"
+                BSTACK_TEST_TYPE: "webgpu"
+                BSTACK_BUILD_NAME: "Nightly Visualization Tests - Chrome WebGPU ALL"
+                TIMEOUT: "27500"
+                AFFECTED_TAGS: "ALL"
+                BROWSERSTACK_USERNAME: $(BROWSERSTACK_USERNAME)
+                BROWSERSTACK_ACCESS_KEY: $(BROWSERSTACK_ACCESS_KEY)
+
+          # Only upload reports when the run failed. The path is stable so the
+          # previous nightly's report is overwritten and the URL never changes.
+          - script: |
+                curl "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_DELETE)?path=$(NightlyReportRoot)/webgpuplaywright" -X POST -H "Authorization: Bearer $(DEPLOY_TOKEN)"
+            displayName: "Delete previous nightly WebGPU report"
+            condition: failed()
+            continueOnError: true
+
+          - template: templates/upload-test-results.yml
+            parameters:
+                reportDir: "packages/tools/tests/playwright-report"
+                fallbackReportDir: "playwright-report"
+                deployPath: "$(NightlyReportRoot)/webgpuplaywright"
+                displayName: "Upload nightly WebGPU report"
+                condition: "failed()"
+                continueOnError: true
+
+          - bash: |
+                echo "##[section]Nightly Chrome WebGPU report URL"
+                echo "  $(SNAPSHOT_CDN_URL)/$(NightlyReportRoot)/webgpuplaywright/index.html"
+            displayName: "Log nightly WebGPU report URL"
+            condition: failed()
+
+          - task: PublishTestResults@2
+            displayName: "Publish Test Results"
+            condition: succeededOrFailed()
+            inputs:
+                testResultsFormat: JUnit
+                testResultsFiles: "./packages/tools/tests/junit.xml"
+                testRunTitle: "Nightly Chrome WebGPU ALL"
 
     # ============================================================================
     # COMPILE WITH CLOSURE
@@ -165,3 +371,125 @@ jobs:
 
           - script: npx google-closure-compiler --js ./packages/public/umd/babylonjs-serializers/babylonjs.serializers.js --js_output_file serializers.out.js
             displayName: "Test serializers"
+
+    # ============================================================================
+    # WEEKLY PERFORMANCE TESTS (Saturday)
+    # Runs ALL visualization tests (WebGL2 and WebGPU) as a single performance job.
+    # Compares the two most recent stable @babylonjs/core releases from npm,
+    # e.g. 9.12.0 (baseline) vs 9.13.0 (candidate).
+    # Uses all available BrowserStack parallel agents.
+    # Job timeout is set to 120 minutes to accommodate the full suite.
+    # ============================================================================
+    - job: ResolvePerfVersions
+      displayName: "Resolve perf versions"
+      condition: eq(variables['Build.CronSchedule.DisplayName'], 'Weekly performance tests')
+      steps:
+          - bash: |
+                # Resolve baseline and candidate versions for weekly perf comparison.
+                # Candidate = current latest stable release.
+                # Baseline  = the latest stable release that was published BEFORE the
+                #             last weekly run (~7 days ago). This ensures no releases
+                #             are skipped even if multiple versions shipped in one week.
+                VERSIONS=$(node -e "
+                  const { execSync } = require('child_process');
+                  const allVersions = JSON.parse(execSync('npm view @babylonjs/core versions --json', { encoding: 'utf8' }));
+                  const timeData = JSON.parse(execSync('npm view @babylonjs/core time --json', { encoding: 'utf8' }));
+                  const stable = allVersions.filter(v => !v.includes('-'));
+                  const candidate = stable[stable.length - 1];
+                  // Find the latest stable version published before 7 days ago
+                  const cutoff = Date.now() - 7 * 24 * 60 * 60 * 1000;
+                  const olderStable = stable.filter(v => new Date(timeData[v]).getTime() < cutoff && v !== candidate);
+                  const baseline = olderStable.length > 0 ? olderStable[olderStable.length - 1] : stable[stable.length - 2];
+                  console.log(baseline + ' ' + candidate);
+                ")
+                PREV=$(echo "$VERSIONS" | awk '{print $1}')
+                CURR=$(echo "$VERSIONS" | awk '{print $2}')
+                echo "Baseline (published before last run): $PREV"
+                echo "Candidate (current latest): $CURR"
+                echo "##vso[task.setvariable variable=PERF_CDN_BASELINE;isOutput=true]$PREV"
+                echo "##vso[task.setvariable variable=PERF_CDN_CANDIDATE;isOutput=true]$CURR"
+            name: ResolveVersions
+            displayName: "Resolve perf comparison versions"
+
+    - job: WeeklyPerfAll
+      displayName: "Weekly perf - all tests"
+      dependsOn: ResolvePerfVersions
+      condition: and(succeeded(), eq(variables['Build.CronSchedule.DisplayName'], 'Weekly performance tests'))
+      timeoutInMinutes: 120
+      variables:
+          PERF_CDN_BASELINE: $[ dependencies.ResolvePerfVersions.outputs['ResolveVersions.PERF_CDN_BASELINE'] ]
+          PERF_CDN_CANDIDATE: $[ dependencies.ResolvePerfVersions.outputs['ResolveVersions.PERF_CDN_CANDIDATE'] ]
+      steps:
+          - checkout: self
+            clean: true
+            fetchTags: false
+
+          - task: UseNode@1
+            displayName: "Use Node 22.x"
+            inputs:
+                version: "22.x"
+
+          - script: npm install
+            displayName: "NPM install"
+            env:
+                PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: "true"
+                PUPPETEER_SKIP_DOWNLOAD: "true"
+
+          - bash: |
+                set +e
+                echo "Baseline: $(PERF_CDN_BASELINE), Candidate: $(PERF_CDN_CANDIDATE)"
+                .azure-pipelines/browserstack-wait.sh npx playwright test --config ./playwright.browserstack.config.ts
+                EXIT=$?
+                if [ $EXIT -ne 0 ]; then
+                  echo "##vso[task.setvariable variable=PerfTestsFailed]true"
+                else
+                  echo "##vso[task.setvariable variable=PerfTestsFailed]false"
+                fi
+                exit 0
+            displayName: "Performance - ALL (BStack)"
+            continueOnError: true
+            env:
+                CDN_BASE_URL: "https://cdn.babylonjs.com"
+                CI: "true"
+                BSTACK_TEST_TYPE: "performance"
+                BSTACK_BUILD_NAME: "Weekly Perf - ALL ($(PERF_CDN_BASELINE) vs $(PERF_CDN_CANDIDATE))"
+                VISUALIZATION_PERF: "true"
+                VISUALIZATION_PERF_ALL: "true"
+                CDN_VERSION: $(PERF_CDN_BASELINE)
+                CDN_VERSION_B: $(PERF_CDN_CANDIDATE)
+                TIMEOUT: "300000"
+                BSTACK_SESSIONS_REQUIRED: "5"
+                BSTACK_SESSIONS_MIN: "3"
+                BROWSERSTACK_USERNAME: $(BROWSERSTACK_USERNAME)
+                BROWSERSTACK_ACCESS_KEY: $(BROWSERSTACK_ACCESS_KEY)
+
+          # Upload reports only when the perf run failed. Path is stable so the
+          # previous weekly's report is overwritten and the URL never changes.
+          - script: |
+                curl "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_DELETE)?path=$(NightlyReportRoot)/perfplaywright" -X POST -H "Authorization: Bearer $(DEPLOY_TOKEN)"
+            displayName: "Delete previous weekly perf report"
+            condition: eq(variables['PerfTestsFailed'], 'true')
+            continueOnError: true
+
+          - template: templates/upload-test-results.yml
+            parameters:
+                reportDir: "packages/tools/tests/playwright-report"
+                fallbackReportDir: "playwright-report"
+                deployPath: "$(NightlyReportRoot)/perfplaywright"
+                displayName: "Upload weekly perf report"
+                condition: "eq(variables['PerfTestsFailed'], 'true')"
+                continueOnError: true
+
+          - bash: |
+                echo "##[section]Weekly Perf report URL"
+                echo "  $(SNAPSHOT_CDN_URL)/$(NightlyReportRoot)/perfplaywright/index.html"
+            displayName: "Log weekly perf report URL"
+            condition: eq(variables['PerfTestsFailed'], 'true')
+
+          - task: PublishTestResults@2
+            displayName: "Publish perf test results"
+            condition: succeededOrFailed()
+            inputs:
+                testResultsFormat: JUnit
+                testResultsFiles: "junit.xml"
+                testRunTitle: "Weekly Perf - ALL"

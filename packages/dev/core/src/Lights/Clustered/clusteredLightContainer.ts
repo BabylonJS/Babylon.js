@@ -45,7 +45,7 @@ export class ClusteredLightContainer extends Light {
         if (!caps.texelFetch) {
             return 0;
         } else if (engine.isWebGPU) {
-            // On WebGPU we use atomic writes to storage textures
+            // On WebGPU we use atomic writes to storage buffers
             return 32;
         } else if (engine.version > 1) {
             // On WebGL 2 we use additive float blending as the light mask
@@ -539,7 +539,22 @@ export class ClusteredLightContainer extends Light {
             Logger.Warn("Attempting to add a light to cluster that does not support clustering");
             return;
         }
-        this._scene.removeLight(light);
+        if (light._clusteredContainer) {
+            Logger.Warn("Attempting to add a light to a cluster that is already owned by a clustered light container");
+            return;
+        }
+        light._clusteredContainer = this;
+        // scene.removeLight returns -1 if the light wasn't in scene.lights. In that case the
+        // mesh.lightSources cleanup it normally performs didn't happen — but the light may still be
+        // there: lights constructed with `dontAddToScene = true` are pushed into mesh.lightSources
+        // by the Light constructor (the `includedOnlyMeshes` setter calls `_resyncMeshes`).
+        // Without explicit cleanup, the orphan would be picked up by PrepareDefinesForLights and
+        // rendered as a regular point/spot light, bypassing the cluster (notably ignoring `maxRange`).
+        if (this._scene.removeLight(light) === -1) {
+            for (const mesh of this._scene.meshes) {
+                mesh._removeLightSource(light, false);
+            }
+        }
         this._lights.push(light);
         this._sortedLights.push(<PointLight | SpotLight>light);
 
@@ -569,6 +584,9 @@ export class ClusteredLightContainer extends Light {
         if (index !== -1) {
             this._lights.splice(index, 1);
             // We treat the unsorted array as the "real" one so only add back to the scene if it was found in that
+            if (light._clusteredContainer === this) {
+                light._clusteredContainer = null;
+            }
             this._scene.addLight(light);
         }
         return index;

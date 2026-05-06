@@ -47,8 +47,5 @@
         "react-dnd-touch-backend": "15.0.1",
         "sass": "^1.62.1"
     },
-    "sideEffects": false,
-    "resolutions": {
-        "webpack": "^5.98.0"
-    }
+    "sideEffects": false
 }

@@ -6,7 +6,7 @@
 # 1. Link variable groups (see VARIABLE-GROUPS.md):
 #    - BabylonJS-CI-Infrastructure
 #    - BabylonJS-BrowserStack (BROWSERSTACK_ACCESS_KEY, BROWSERSTACK_USERNAME)
-#    - BabylonJS-Deployment (BASIC_AUTH, DEPLOYMENT_SERVER)
+#    - BabylonJS-Deployment (DEPLOY_TOKEN, DEPLOYMENT_SERVER)
 #
 # 2. Fork build settings (allow secrets, require comments for non-team members)
 #    must be configured in the Azure DevOps pipeline settings UI.
@@ -101,12 +101,27 @@ jobs:
             displayName: "Check git changes"
             continueOnError: true
 
+          - bash: |
+                # For scheduled/build-completion runs, run ALL visualization tests.
+                # For PR/push runs, compute affected tags from the diff.
+                if [ "$(Build.Reason)" = "Schedule" ] || [ "$(Build.Reason)" = "BuildCompletion" ]; then
+                    TAGS="ALL"
+                    echo "Scheduled/publish run — running ALL visualization tests"
+                else
+                    TAGS=$(node scripts/compute-affected-vis-tags.mjs)
+                fi
+                echo "Affected vis-test tags: $TAGS"
+                echo "##vso[task.setvariable variable=AFFECTED_TAGS;isOutput=true]$TAGS"
+            name: ComputeVisTags
+            displayName: "Compute affected vis-test tags"
+            continueOnError: true
+
           - template: templates/check-snapshot-exists.yml
             parameters:
                 snapshotPath: "$(BuildName)"
 
           - script: |
-                curl "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_DELETE)?path=$(BuildName)" -X POST -H "Authorization: $(BASIC_AUTH)"
+                curl "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_DELETE)?path=$(BuildName)" -X POST -H "Authorization: Bearer $(DEPLOY_TOKEN)"
             displayName: "Clear snapshot"
             condition: and(succeeded(), eq(variables['SNAPSHOTEXISTS'], 'true'), not(eq(variables['Build.SourceBranchName'], 'master')))
 
@@ -214,7 +229,7 @@ jobs:
 
                 curl $(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_UPLOAD) -i -X POST \
                   -H "Content-Type: multipart/form-data" \
-                  -H "Authorization: $(BASIC_AUTH)" \
+                  -H "Authorization: Bearer $(DEPLOY_TOKEN)" \
                   -F "path=$(BuildName)" \
                   -F "storageAccount=$(SNAPSHOTS_STORAGE_ACCOUNT)" \
                   -F "saveZip=true" \
@@ -316,7 +331,7 @@ jobs:
 
                 curl $(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_UPLOAD) -i -X POST \
                   -H "Content-Type: multipart/form-data" \
-                  -H "Authorization: $(BASIC_AUTH)" \
+                  -H "Authorization: Bearer $(DEPLOY_TOKEN)" \
                   -F "path=$(BuildName)" \
                   -F "storageAccount=$(SNAPSHOTS_STORAGE_ACCOUNT)" \
                   -F "zip=@snapshot.zip"
@@ -386,12 +401,10 @@ jobs:
           - script: |
                 git branch
                 git fetch origin "+refs/heads/*:refs/remotes/origin/*"
-                git checkout -B master origin/master
                 git branch
 
-                GIT_CHANGES_COMMAND="git diff $(Build.SourceVersion) --name-only --relative" npm run test:docs
+                GIT_CHANGES_COMMAND="git diff origin/master...HEAD --name-only --relative" npm run test:docs
             displayName: "Run TypeDoc test"
-            continueOnError: true
             env:
                 CI: "true"
 
@@ -401,14 +414,17 @@ jobs:
             inputs:
                 testResultsFormat: JUnit
                 testResultsFiles: "./junit.xml"
+                failTaskOnFailedTests: true
 
     # ============================================================================
     # UNIT TESTS
-    # Depends on: Build
+    # Depends on: Build, FormatLint
     # ============================================================================
     - job: UnitTests
       displayName: "Unit tests"
-      dependsOn: Build
+      dependsOn:
+          - Build
+          - FormatLint
       steps:
           - template: templates/checkout-with-tag-override.yml
 
@@ -466,11 +482,13 @@ jobs:
 
     # ============================================================================
     # INTERACTION TESTS
-    # Depends on: Build
+    # Depends on: Build, FormatLint
     # ============================================================================
     - job: InteractionTests
       displayName: "Interaction tests"
-      dependsOn: Build
+      dependsOn:
+          - Build
+          - FormatLint
       steps:
           - template: templates/checkout-with-tag-override.yml
 
@@ -501,7 +519,7 @@ jobs:
                 CI: "true"
 
           - script: |
-                curl "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_DELETE)?path=$(BuildName)/testResults/interactionplaywright" -X POST -H "Authorization: $(BASIC_AUTH)"
+                curl "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_DELETE)?path=$(BuildName)/testResults/interactionplaywright" -X POST -H "Authorization: Bearer $(DEPLOY_TOKEN)"
             displayName: "Delete test results"
             continueOnError: true
             condition: eq(variables['SNAPSHOTEXISTS'], 'true')
@@ -534,12 +552,17 @@ jobs:
 
     # ============================================================================
     # VISUALIZATION TESTS - WEBGL 2
-    # Depends on: Build
+    # Depends on: Build, FormatLint
     # Runs on BrowserStack
     # ============================================================================
     - job: VisualizationWebGL2
       displayName: "Visualization tests - WebGL 2"
-      dependsOn: Build
+      dependsOn:
+          - Build
+          - FormatLint
+      condition: succeeded()
+      variables:
+          AFFECTED_TAGS: $[ dependencies.Build.outputs['ComputeVisTags.AFFECTED_TAGS'] ]
       steps:
           - template: templates/checkout-with-tag-override.yml
 
@@ -556,27 +579,32 @@ jobs:
 
           - script: |
                 npm install
-                #npx playwright install
-                #npx playwright install --force chrome
             displayName: "npm install"
             retryCountOnTaskFailure: 1
             env:
                 PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: "true"
                 PUPPETEER_SKIP_DOWNLOAD: "true"
 
-          - script: npm run test:playwright -w @tools/tests -- --project=webgl2
+          - bash: echo "No visualization tests affected by this change — skipping."
+            displayName: "Skip — no affected tests"
+            condition: eq(variables['AFFECTED_TAGS'], 'NONE')
+
+          - bash: .azure-pipelines/browserstack-wait.sh npx playwright test --config ./playwright.browserstack.config.ts
             displayName: "WebGL2 BStack"
+            condition: ne(variables['AFFECTED_TAGS'], 'NONE')
             env:
                 CDN_BASE_URL: "$(SNAPSHOT_CDN_URL)/$(BuildName)"
                 CI: "true"
                 EXCLUDE_REGEX_ARRAY: "Procedural textures playground"
-                BROWSER: "BrowserStack"
+                BSTACK_TEST_TYPE: "webgl2"
+                BSTACK_BUILD_NAME: "Visualization Tests - WebGL2"
                 TIMEOUT: "27500"
                 BROWSERSTACK_USERNAME: $(BROWSERSTACK_USERNAME)
                 BROWSERSTACK_ACCESS_KEY: $(BROWSERSTACK_ACCESS_KEY)
+                AFFECTED_TAGS: $(AFFECTED_TAGS)
 
           - script: |
-                curl "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_DELETE)?path=$(BuildName)/testResults/webgl2playwright" -X POST -H "Authorization: $(BASIC_AUTH)"
+                curl "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_DELETE)?path=$(BuildName)/testResults/webgl2playwright" -X POST -H "Authorization: Bearer $(DEPLOY_TOKEN)"
             displayName: "Delete test results"
             continueOnError: true
             condition: eq(variables['SNAPSHOTEXISTS'], 'true')
@@ -608,12 +636,16 @@ jobs:
 
     # ============================================================================
     # VISUALIZATION TESTS - WEBGPU
-    # Depends on: Build
+    # Depends on: Build, FormatLint
     # Runs on BrowserStack
     # ============================================================================
     - job: VisualizationWebGPU
       displayName: "Visualization tests - WebGPU"
-      dependsOn: Build
+      dependsOn:
+          - Build
+          - FormatLint
+      variables:
+          AFFECTED_TAGS: $[ dependencies.Build.outputs['ComputeVisTags.AFFECTED_TAGS'] ]
       steps:
           - template: templates/checkout-with-tag-override.yml
 
@@ -630,27 +662,33 @@ jobs:
 
           - script: |
                 npm install
-                #npx playwright install --force chrome
             displayName: "npm install"
             retryCountOnTaskFailure: 1
             env:
                 PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: "true"
                 PUPPETEER_SKIP_DOWNLOAD: "true"
 
-          - script: npm run test:playwright -w @tools/tests -- --project=webgpu
+          - bash: echo "No visualization tests affected by this change — skipping."
+            displayName: "Skip — no affected tests"
+            condition: eq(variables['AFFECTED_TAGS'], 'NONE')
+
+          - bash: .azure-pipelines/browserstack-wait.sh npx playwright test --config ./playwright.browserstack.config.ts
             displayName: "WebGPU BStack"
+            condition: ne(variables['AFFECTED_TAGS'], 'NONE')
             retryCountOnTaskFailure: 1
             env:
                 CDN_BASE_URL: "$(SNAPSHOT_CDN_URL)/$(BuildName)"
                 CI: "true"
                 EXCLUDE_REGEX_ARRAY: "Sample depth texture,Render to 3D RT,apply-all-post-processes"
-                BROWSER: "BrowserStack"
+                BSTACK_TEST_TYPE: "webgpu"
+                BSTACK_BUILD_NAME: "Visualization Tests - WebGPU"
                 TIMEOUT: "27500"
                 BROWSERSTACK_USERNAME: $(BROWSERSTACK_USERNAME)
                 BROWSERSTACK_ACCESS_KEY: $(BROWSERSTACK_ACCESS_KEY)
+                AFFECTED_TAGS: $(AFFECTED_TAGS)
 
           - script: |
-                curl "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_DELETE)?path=$(BuildName)/testResults/webgpuplaywright" -X POST -H "Authorization: $(BASIC_AUTH)"
+                curl "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_DELETE)?path=$(BuildName)/testResults/webgpuplaywright" -X POST -H "Authorization: Bearer $(DEPLOY_TOKEN)"
             displayName: "Delete test results"
             continueOnError: true
             condition: eq(variables['SNAPSHOTEXISTS'], 'true')
@@ -683,12 +721,14 @@ jobs:
 
     # ============================================================================
     # NATIVE TESTS (EXPERIMENTAL)
-    # Depends on: Build
+    # Depends on: Build, FormatLint
     # Runs on Windows agent pool
     # ============================================================================
     - job: NativeTests
       displayName: "Native tests (experimental)"
-      dependsOn: Build
+      dependsOn:
+          - Build
+          - FormatLint
       timeoutInMinutes: 15
       pool:
           vmImage: windows-latest
@@ -714,7 +754,7 @@ jobs:
             displayName: "Disable JIT Debugging for Script"
 
           - script: |
-                curl "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_SNAPSHOT_CHECK)?buildNumber=$(BuildName)&fileTocheck=cdnSnapshot.zip" -o ./tmp.json -H "Authorization: $(BASIC_AUTH)"
+                curl "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_SNAPSHOT_CHECK)?buildNumber=$(BuildName)&fileTocheck=cdnSnapshot.zip" -o ./tmp.json -H "Authorization: Bearer $(DEPLOY_TOKEN)"
                 findstr "true" .\tmp.json >nul 2>&1
                 if %errorlevel% equ 0 (
                    echo snapshot exists
@@ -754,52 +794,158 @@ jobs:
             retryCountOnTaskFailure: 3
 
     # ============================================================================
-    # PERFORMANCE TESTS (DISABLED)
-    # Depends on: Build
-    # Uses statistical comparison (Welch's t-test + ratio check) with
-    # confirmation passes to reduce flakiness.
+    # PERFORMANCE TESTS
+    # Depends on: Build, FormatLint
+    # Runs on BrowserStack — each test runs baseline + candidate interleaved
+    # on the same remote machine to ensure consistent comparison.
+    # Non-blocking: failures do not fail the overall pipeline.
     # ============================================================================
-    # - job: PerformanceTests
-    #   displayName: "Performance tests"
-    #   dependsOn: Build
-    #   steps:
-    #       - checkout: self
-    #         clean: true
-    #         fetchTags: false
+    - job: PerformanceTests
+      displayName: "Performance tests"
+      dependsOn:
+          - Build
+          - FormatLint
+      continueOnError: true
+      variables:
+          AFFECTED_TAGS: $[ dependencies.Build.outputs['ComputeVisTags.AFFECTED_TAGS'] ]
+      steps:
+          - checkout: self
+            clean: true
+            fetchTags: false
 
-    #       - task: UseNode@1
-    #         displayName: "Use Node 22.x"
-    #         continueOnError: true
-    #         retryCountOnTaskFailure: 1
-    #         inputs:
-    #             version: "22.x"
+          - task: UseNode@1
+            displayName: "Use Node 22.x"
+            continueOnError: true
+            retryCountOnTaskFailure: 1
+            inputs:
+                version: "22.x"
 
-    #       - script: npm install
-    #         displayName: "npm install"
-    #         retryCountOnTaskFailure: 1
-    #         env:
-    #             PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: "true"
-    #             PUPPETEER_SKIP_DOWNLOAD: "true"
+          - script: npm install
+            displayName: "npm install"
+            retryCountOnTaskFailure: 1
+            env:
+                PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: "true"
+                PUPPETEER_SKIP_DOWNLOAD: "true"
 
-    #       - script: npx playwright install --with-deps
-    #         displayName: "Install Playwright browsers"
-    #         retryCountOnTaskFailure: 1
+          - bash: .azure-pipelines/browserstack-wait.sh npx playwright test --config ./playwright.browserstack.config.ts
+            displayName: "Run performance tests (BStack)"
+            continueOnError: true
+            env:
+                CDN_BASE_URL: "$(SNAPSHOT_CDN_URL)/$(BuildName)"
+                CI: "true"
+                BSTACK_TEST_TYPE: "performance"
+                BSTACK_BUILD_NAME: "Performance Tests - $(BuildName)"
+                VISUALIZATION_PERF: "true"
+                CDN_VERSION: "latest"
+                CIWORKERS: "$(CIWORKERS)"
+                TIMEOUT: "300000"
+                PERF_COMMENT_FILE: "$(Build.ArtifactStagingDirectory)/perf-comment.md"
+                BROWSERSTACK_USERNAME: $(BROWSERSTACK_USERNAME)
+                BROWSERSTACK_ACCESS_KEY: $(BROWSERSTACK_ACCESS_KEY)
+                AFFECTED_TAGS: $(AFFECTED_TAGS)
+                BSTACK_SESSIONS_REQUIRED: "2"
 
-    #       - script: npm run test:performance
-    #         displayName: "Run performance tests"
-    #         continueOnError: true
-    #         env:
-    #             CDN_BASE_URL: "$(SNAPSHOT_CDN_URL)/$(BuildName)"
-    #             CI: "true"
-    #             TIMEOUT: "200000"
+          - bash: |
+                if [ -f "$(Build.ArtifactStagingDirectory)/perf-comment.md" ]; then
+                    COMMENT=$(cat "$(Build.ArtifactStagingDirectory)/perf-comment.md")
+                    COMMENT="${COMMENT//'%'/'%25'}"
+                    COMMENT="${COMMENT//$'\n'/'%0A'}"
+                    COMMENT="${COMMENT//$'\r'/'%0D'}"
+                    echo "##vso[task.setvariable variable=PERF_COMMENT]$COMMENT"
+                    echo "##vso[task.setvariable variable=HAS_PERF_COMMENT]true"
+                else
+                    echo "No performance comment file found"
+                    echo "##vso[task.setvariable variable=HAS_PERF_COMMENT]false"
+                fi
+            displayName: "Read performance comment"
+            condition: succeededOrFailed()
 
-    #       - task: PublishTestResults@2
-    #         displayName: "Publish performance test results"
-    #         condition: always()
-    #         inputs:
-    #             testResultsFormat: "JUnit"
-    #             testResultsFiles: "junit.xml"
-    #             testRunTitle: "Performance Tests"
+          - task: GitHubComment@0
+            displayName: "Post performance results"
+            condition: and(succeededOrFailed(), eq(variables['HAS_PERF_COMMENT'], 'true'))
+            continueOnError: true
+            inputs:
+                gitHubConnection: "$(GITHUB_SERVICE_CONNECTION)"
+                repositoryName: "$(Build.Repository.Name)"
+                comment: |
+                    $(PERF_COMMENT)
+
+          - task: PublishTestResults@2
+            displayName: "Publish performance test results"
+            condition: succeededOrFailed()
+            inputs:
+                testResultsFormat: "JUnit"
+                testResultsFiles: "junit.xml"
+                testRunTitle: "Performance Tests"
+
+    # ============================================================================
+    # MEMORY LEAK TESTS
+    # Depends on: Build, FormatLint
+    # Runs memlab (Puppeteer/Chromium) on the CI agent — heap snapshots require
+    # local Chrome DevTools Protocol access, so BrowserStack is not viable here.
+    # Non-blocking: failures do not fail the overall pipeline.
+    # ============================================================================
+    - job: MemoryLeakTests
+      displayName: "Memory leak tests"
+      dependsOn:
+          - Build
+          - FormatLint
+      continueOnError: true
+      timeoutInMinutes: 45
+      steps:
+          - checkout: self
+            clean: true
+            fetchTags: false
+
+          - task: UseNode@1
+            displayName: "Use Node 22.x"
+            continueOnError: true
+            retryCountOnTaskFailure: 1
+            inputs:
+                version: "22.x"
+
+          - script: npm install
+            displayName: "npm install"
+            retryCountOnTaskFailure: 1
+
+          - script: npm run test:memory-leaks -- --no-fail-fast
+            displayName: "Run memory leak tests (ci suite)"
+            continueOnError: true
+            env:
+                CDN_BASE_URL: "$(SNAPSHOT_CDN_URL)/$(BuildName)"
+                MEMLEAK_COMMENT_FILE: "$(Build.ArtifactStagingDirectory)/memleak-comment.md"
+
+          - script: npm run test:memory-leaks:packages -- --no-fail-fast
+            displayName: "Run memory leak tests (packages suite)"
+            continueOnError: true
+            env:
+                CDN_BASE_URL: "$(SNAPSHOT_CDN_URL)/$(BuildName)"
+                MEMLEAK_COMMENT_FILE: "$(Build.ArtifactStagingDirectory)/memleak-comment.md"
+
+          - bash: |
+                if [ -f "$(Build.ArtifactStagingDirectory)/memleak-comment.md" ]; then
+                    COMMENT=$(cat "$(Build.ArtifactStagingDirectory)/memleak-comment.md")
+                    COMMENT="${COMMENT//'%'/'%25'}"
+                    COMMENT="${COMMENT//$'\n'/'%0A'}"
+                    COMMENT="${COMMENT//$'\r'/'%0D'}"
+                    echo "##vso[task.setvariable variable=MEMLEAK_COMMENT]$COMMENT"
+                    echo "##vso[task.setvariable variable=HAS_MEMLEAK_COMMENT]true"
+                else
+                    echo "No memory leak comment file found"
+                    echo "##vso[task.setvariable variable=HAS_MEMLEAK_COMMENT]false"
+                fi
+            displayName: "Read memory leak comment"
+            condition: succeededOrFailed()
+
+          - task: GitHubComment@0
+            displayName: "Post memory leak results"
+            condition: and(succeededOrFailed(), eq(variables['HAS_MEMLEAK_COMMENT'], 'true'))
+            continueOnError: true
+            inputs:
+                gitHubConnection: "$(GITHUB_SERVICE_CONNECTION)"
+                repositoryName: "$(Build.Repository.Name)"
+                comment: |
+                    $(MEMLEAK_COMMENT)
 
     # ============================================================================
     # VIEWER TESTS
@@ -843,115 +989,9 @@ jobs:
                 BROWSER: "Chrome"
 
     # ============================================================================
-    # VISUALIZATION TESTS - DEVHOST (EXPERIMENTAL)
-    # Depends on: Build, ES6
-    # NOTE: ALL STEPS are DISABLED in the classic pipeline.
-    # The job is kept as a placeholder since Deploy depends on it.
-    # ============================================================================
-    - job: VisualizationDevhost
-      displayName: "Visualization tests - Devhost (experimental)"
-      dependsOn:
-          - Build
-          - ES6
-      steps:
-          - script: echo "All steps in this job are disabled in the classic pipeline"
-            displayName: "Placeholder - all steps disabled"
-
-          # DISABLED in classic pipeline - full step list:
-          # - task: UseNode@1
-          #   displayName: 'Use Node 22.x'
-          #   continueOnError: true
-          #   retryCountOnTaskFailure: 1
-          #   inputs:
-          #     versionSpec: '22.4.1'
-
-          # - script: |
-          #     curl "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_SNAPSHOT_CHECK)?buildNumber=$(BuildName)/testResults/devhostplaywright" -o ./tmp.json -H "Authorization: $(BASIC_AUTH)"
-          #     if grep "true" ./tmp.json
-          #     then
-          #        echo "##vso[task.setvariable variable=SnapshotExists]true"
-          #     else
-          #        echo "##vso[task.setvariable variable=SnapshotExists]false"
-          #     fi
-          #   displayName: 'Check if snapshot exists'
-
-          # - script: |
-          #     npm install
-          #     npx playwright install
-          #   displayName: 'npm install && playwright install'
-          #   retryCountOnTaskFailure: 1
-          #   env:
-          #     PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: 'true'
-          #     PUPPETEER_SKIP_DOWNLOAD: 'true'
-
-          # - task: Npm@1
-          #   displayName: 'npm build dev'
-          #   inputs:
-          #     command: custom
-          #     customCommand: 'run build:dev'
-
-          # - script: npm run test:visualization:devhost
-          #   displayName: 'run visual tests'
-          #   continueOnError: true
-          #   retryCountOnTaskFailure: 1
-          #   env:
-          #     CDN_BASE_URL: '$(SNAPSHOT_CDN_URL)/$(BuildName)'
-          #     CI: 'true'
-          #     BROWSER: 'Chrome'
-          #     TIMEOUT: '27500'
-          #     BROWSERSTACK_USERNAME: $(BROWSERSTACK_USERNAME)
-          #     BROWSERSTACK_ACCESS_KEY: $(BROWSERSTACK_ACCESS_KEY)
-          #     CIWORKERS: '1'
-
-          # - script: |
-          #     curl "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_DELETE)?path=$(BuildName)/testResults/devhostplaywright" -X POST -H "Authorization: $(BASIC_AUTH)"
-          #   displayName: 'Delete test results'
-          #   continueOnError: true
-          #   condition: eq(variables['SNAPSHOTEXISTS'], 'true')
-
-          # - script: |
-          #     DIR="packages/tools/tests/playwright-report"
-          #     if test -d "$DIR"; then
-          #       cd packages/tools/tests/playwright-report
-          #       zip -r ../../../../file.zip *
-          #       cd ../../../..
-          #     else
-          #       cd playwright-report
-          #       zip -r ../file.zip *
-          #       cd ..
-          #     fi
-          #     curl $(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_UPLOAD) -i -X POST \
-          #       -H "Content-Type: multipart/form-data" \
-          #       -H "Authorization: $(BASIC_AUTH)" \
-          #       -F "path=$(BuildName)/testResults/devhostplaywright" \
-          #       -F "storageAccount=$(SNAPSHOTS_STORAGE_ACCOUNT)" \
-          #       -F "zip=@file.zip"
-          #   displayName: 'Upload test results'
-          #   continueOnError: true
-          #   condition: succeededOrFailed()
-
-          # - task: GitHubComment@0
-          #   displayName: 'Writing Devhost comment'
-          #   condition: eq(variables['SNAPSHOTEXISTS'], 'false')
-          #   inputs:
-          #     gitHubConnection: '$(GITHUB_SERVICE_CONNECTION)'
-          #     repositoryName: '$(Build.Repository.Name)'
-          #     comment: |
-          #       Devhost visualization test reporter:
-          #
-          #       $(SNAPSHOT_CDN_URL)/$(BuildName)/testResults/devhostplaywright/index.html
-
-          # - task: PublishTestResults@2
-          #   displayName: 'Publish Devhost test results'
-          #   condition: succeededOrFailed()
-          #   inputs:
-          #     testResultsFormat: JUnit
-          #     testResultsFiles: './packages/tools/tests/junit.xml'
-
-    # ============================================================================
     # DEPLOY
     # Depends on: Build, UnitTests, VisualizationWebGL2, ES6,
-    #             VisualizationWebGPU, InteractionTests, VisualizationDevhost
+    #             VisualizationWebGPU, InteractionTests
     # Only runs on master/preview branch for Manual/ResourceTrigger/Schedule/
     # BuildCompletion builds
     # ============================================================================
@@ -964,7 +1004,6 @@ jobs:
           - ES6
           - VisualizationWebGPU
           - InteractionTests
-          - VisualizationDevhost
       condition: >-
           and(
             succeeded(),
@@ -990,7 +1029,7 @@ jobs:
 
                 curl $(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_UPLOAD) -i -X POST \
                   -H "Content-Type: multipart/form-data" \
-                  -H "Authorization: $(BASIC_AUTH)" \
+                  -H "Authorization: Bearer $(DEPLOY_TOKEN)" \
                   -F "path=cdn/$(Build.SourceBranchName)" \
                   -F "storageAccount=$(SNAPSHOTS_STORAGE_ACCOUNT)" \
                   -F "zip=@snapshot.zip"
@@ -1001,14 +1040,15 @@ jobs:
 
                 curl $(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_UPLOAD) -i -X POST \
                   -H "Content-Type: multipart/form-data" \
-                  -H "Authorization: $(BASIC_AUTH)" \
+                  -H "Authorization: Bearer $(DEPLOY_TOKEN)" \
                   -F "path=cdn/$(Build.SourceBranchName)" \
                   -F "storageAccount=$(SNAPSHOTS_STORAGE_ACCOUNT)" \
                   -F "zip=@fileSize.zip"
             displayName: "Update CDN"
 
           - script: |
-                curl "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_PURGE)?endpoint=$(CDN_ENDPOINT_CDN)&profileName=$(CDN_PROFILE_CDN)&wait=true" -i -H "Authorization: $(BASIC_AUTH)"
+                # Async purge: don't block CI on the CDN purge completing.
+                curl "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_PURGE)?endpoint=$(CDN_ENDPOINT_CDN)&profileName=$(CDN_PROFILE_CDN)&wait=false" -i -X POST -H "Authorization: Bearer $(DEPLOY_TOKEN)"
 
-                curl "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_PURGE)?endpoint=$(CDN_ENDPOINT_PREVIEW_CDN)&profileName=$(CDN_PROFILE_CDN)&wait=true" -i -H "Authorization: $(BASIC_AUTH)"
+                curl "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_PURGE)?endpoint=$(CDN_ENDPOINT_PREVIEW_CDN)&profileName=$(CDN_PROFILE_CDN)&wait=false" -i -X POST -H "Authorization: Bearer $(DEPLOY_TOKEN)"
             displayName: "Purge CDN"

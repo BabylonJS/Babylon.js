@@ -1,4 +1,2 @@
-import * as core from "core/Legacy/legacy";
-
-export { core };
-export default core;
+import "core/Legacy/legacy";
+export * from "core/Legacy/legacy";

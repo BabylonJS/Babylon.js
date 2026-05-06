@@ -7,7 +7,7 @@ const snapshot = process.env.SNAPSHOT ? "?snapshot=" + process.env.SNAPSHOT : ""
  * Build the base URL for the Flow Graph Editor.
  */
 export function getFgeUrl(): string {
-    return (process.env.FGE_BASE_URL || getGlobalConfig().baseUrl.replace(":1337", process.env.FGE_PORT || ":1345")) + snapshot;
+    return (process.env.FGE_BASE_URL || getGlobalConfig().baseUrl.replace(":1337", process.env.FGE_PORT || ":1347")) + snapshot;
 }
 
 /**
@@ -240,14 +240,6 @@ export class FlowGraphEditorPage {
     }
 
     /**
-     * Find a port icon element within a node by port name and direction.
-     */
-    private async _findPortIcon(blockClass: string, portName: string, direction: "input" | "output"): Promise<Locator> {
-        const node = this.nodeOnCanvas(blockClass);
-        return this._findPortIconOnNode(node, portName, direction);
-    }
-
-    /**
      * Find a port icon on a specific node locator.
      */
     private _findPortIconOnNode(node: Locator, portName: string, direction: "input" | "output"): Locator {
@@ -267,12 +259,11 @@ export class FlowGraphEditorPage {
      */
     async serializeGraph(): Promise<string> {
         return await this.page.evaluate(() => {
-            const editor = (globalThis as any).BABYLON.FlowGraphEditor;
-            if (!editor || !editor._CurrentState) {
+            const editor = (globalThis as any).BABYLON?.FlowGraphEditor;
+            const graph = editor?._CurrentState?.flowGraph ?? (globalThis as any).__viteFlowGraphEditorArgs?.[0]?.flowGraph;
+            if (!graph) {
                 throw new Error("FlowGraphEditor instance not found");
             }
-            const globalState = editor._CurrentState;
-            const graph = globalState.flowGraph;
             const serializationObject: any = {};
             graph.serialize(serializationObject);
             return JSON.stringify(serializationObject);
@@ -359,7 +350,13 @@ export class FlowGraphEditorPage {
      * Useful for verifying that multi-block graphs are wired correctly.
      */
     async getGraphTopology(): Promise<{
-        blocks: { className: string; signalOuts: { name: string; connectedIds: string[] }[]; signalIns: { name: string; connectedIds: string[] }[] }[];
+        blocks: {
+            className: string;
+            signalOuts: { name: string; connectedIds: string[] }[];
+            signalIns: { name: string; connectedIds: string[] }[];
+            dataOuts: { name: string; connectedIds: string[] }[];
+            dataIns: { name: string; connectedIds: string[] }[];
+        }[];
         totalConnections: number;
     }> {
         const serialized = await this.serializeGraph();
@@ -375,7 +372,16 @@ export class FlowGraphEditorPage {
                 const ids = p.connectedPointIds || [];
                 return { name: p.name, connectedIds: ids };
             });
-            return { className: b.className, signalOuts, signalIns };
+            const dataOuts = (b.dataOutputs || []).map((p: any) => {
+                const ids = p.connectedPointIds || [];
+                totalConnections += ids.length;
+                return { name: p.name, connectedIds: ids };
+            });
+            const dataIns = (b.dataInputs || []).map((p: any) => {
+                const ids = p.connectedPointIds || [];
+                return { name: p.name, connectedIds: ids };
+            });
+            return { className: b.className, signalOuts, signalIns, dataOuts, dataIns };
         });
         return { blocks, totalConnections };
     }

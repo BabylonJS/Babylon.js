@@ -190,10 +190,10 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
             #endif
         #endif
         #ifdef GEOMETRY_THIN_WALLED
-            let transmission_roughness: f32 = specular_roughness;
+            var transmission_roughness: f32 = specular_roughness;
         #else
             // Transmission blurriness is affected by IOR so we scale the roughness accordingly
-            let transmission_roughness: f32 = specular_roughness * clamp(4.0f * (specular_ior - 1.0f), 0.001f, 1.0f);
+            var transmission_roughness: f32 = specular_roughness * clamp(4.0f * (specular_ior - 1.0f), 0.001f, 1.0f);
         #endif
 
         #if (defined(TRANSMISSION_SLAB) || defined(SUBSURFACE_SLAB))
@@ -258,20 +258,17 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
             surface_translucency_weight = transmission_weight;
         #endif
 
-        var transmission_roughness_alpha: f32 = transmission_roughness * transmission_roughness;
-        
         #ifdef SCATTERING
             // Transmission Scattering
             #ifdef GEOMETRY_THIN_WALLED
                 var iso_scatter_density: vec3f = vec3f(1.0f);
-                transmission_roughness_alpha = transmission_roughness;
             #else
 
                 #ifdef USE_IRRADIANCE_TEXTURE_FOR_SCATTERING
                     // If we have a precomputed multi-scatter texture, we can use the scatter vector to sample it and get a more accurate scattered environment light.
                     // This allows us to capture higher order scattering effects that aren't possible with just a single scatter sample.
                     let mfp: vec3f = vec3f(100.0f) / volumeParams.extinction_coeff;
-                    var scattered_light_from_irradiance_texture: vec3f = sss_convolve(sceneIrradianceSampler, sceneDepthSampler, uniforms.renderTargetSize, mfp, scene.projection, scene.inverseProjection, 16, noise.xy);
+                    var scattered_light_from_irradiance_texture: vec3f = sss_convolve(sceneIrradianceSampler, sceneDepthSampler, uniforms.renderTargetSize, mfp, scene.projection, scene.inverseProjection, SSS_SAMPLE_COUNT, noise.xy);
                     var numLights = f32(LIGHTCOUNT);
                     #ifdef REFLECTION
                         numLights += 1.0f;
@@ -288,7 +285,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
                 var iso_scatter_density: vec3f = clamp(vec3f(1.0f) - iso_scatter_transmittance, vec3f(0.0f), vec3f(1.0f));
             
                 // Refraction roughness is modified by the density of the scattering and also by the anisotropy.
-                transmission_roughness_alpha = min(transmission_roughness_alpha + pow((1.0f - abs(volumeParams.anisotropy)) * max3(iso_scatter_density * iso_scatter_density), 3.0f), 1.0f);
+                transmission_roughness = min(transmission_roughness + pow((1.0f - abs(volumeParams.anisotropy)) * max3(iso_scatter_density * iso_scatter_density), 3.0f), 1.0f);
             #endif
 
             // Blend the multi-scatter color towards single-scatter based on the scatter density
@@ -320,9 +317,10 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
             let unweighted_translucency: f32 = mix(subsurface_weight, 1.0f, transmission_weight);
             transmission_tint = mix(vec3f(1.0f), transmission_tint, transmission_weight / unweighted_translucency);
             // Roughness for transmission is just surface roughness while, for subsurface, transmission is fully diffuse.
-            transmission_roughness_alpha = mix(1.0f, transmission_roughness_alpha, transmission_weight / unweighted_translucency);
+            transmission_roughness = mix(1.0f, transmission_roughness, transmission_weight / unweighted_translucency);
         #endif
 
+        let transmission_roughness_alpha: f32 = transmission_roughness * transmission_roughness;
     #endif
     // __________________ Transmitted Light From Background Refraction ___________________________
     #include<openpbrBackgroundTransmission>

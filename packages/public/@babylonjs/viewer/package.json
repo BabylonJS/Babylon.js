@@ -1,6 +1,6 @@
 {
     "name": "@babylonjs/viewer",
-    "version": "9.4.1",
+    "version": "9.5.2",
     "type": "module",
     "main": "lib/index.js",
     "module": "lib/index.js",
@@ -56,9 +56,9 @@
         }
     },
     "devDependencies": {
-        "@babylonjs/core": "9.4.1",
+        "@babylonjs/core": "9.5.2",
         "@babylonjs/lite": "file:../../../../../Babylon-Lite-1/packages/babylon-lite/dist",
-        "@babylonjs/loaders": "9.4.1",
+        "@babylonjs/loaders": "9.5.2",
         "@dev/build-tools": "^1.0.0",
         "@rollup/plugin-alias": "^5.1.0",
         "@rollup/plugin-commonjs": "^26.0.1",

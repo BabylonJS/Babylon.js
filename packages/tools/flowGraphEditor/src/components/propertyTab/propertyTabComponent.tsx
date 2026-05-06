@@ -43,6 +43,9 @@ interface IPropertyTabComponentState {
 
 export class PropertyTabComponent extends React.Component<IPropertyTabComponentProps, IPropertyTabComponentState> {
     private _onBuiltObserver: Nullable<Observer<void>>;
+    private _onHashChange = () => {
+        void this._loadSnippetFromHashAsync();
+    };
 
     constructor(props: IPropertyTabComponentProps) {
         super(props);
@@ -69,10 +72,40 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         this._onBuiltObserver = this.props.globalState.onBuiltObservable.add(() => {
             this.forceUpdate();
         });
+
+        this.props.globalState.hostDocument.defaultView?.addEventListener("hashchange", this._onHashChange);
+        void this._loadSnippetFromHashAsync();
     }
 
     override componentWillUnmount() {
         this.props.globalState.onBuiltObservable.remove(this._onBuiltObserver);
+        this.props.globalState.hostDocument.defaultView?.removeEventListener("hashchange", this._onHashChange);
+    }
+
+    private _getSnippetIdFromHash(): string {
+        const hash = this.props.globalState.hostDocument.defaultView?.location.hash.substring(1) ?? "";
+        try {
+            return decodeURIComponent(hash);
+        } catch {
+            return hash;
+        }
+    }
+
+    private _setSnippetIdInHash(snippetId: string): void {
+        const hostWindow = this.props.globalState.hostDocument.defaultView;
+        if (!hostWindow) {
+            return;
+        }
+        const { pathname, search } = hostWindow.location;
+        hostWindow.history.replaceState(null, "", `${pathname}${search}#${snippetId}`);
+    }
+
+    private async _loadSnippetFromHashAsync(): Promise<void> {
+        const snippetId = this._getSnippetIdFromHash();
+        if (!snippetId || snippetId === this.props.globalState.flowGraphSnippetId) {
+            return;
+        }
+        await this.loadFromSnippetAsync(snippetId);
     }
 
     load(file: File) {
@@ -82,7 +115,6 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                 const decoder = new TextDecoder("utf-8");
                 const doLoadAsync = async () => {
                     await SerializationTools.DeserializeAsync(JSON.parse(decoder.decode(data)), this.props.globalState);
-                    this.props.globalState.onResetRequiredObservable.notifyObservers(false);
                     this.props.globalState.stateManager.onSelectionChangedObservable.notifyObservers(null);
                     this.props.globalState.onClearUndoStack.notifyObservers();
                     ShowToast(this.props.globalState, "Flow graph loaded from file", "success");
@@ -179,6 +211,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                     newId += "#" + snippet.version;
                 }
                 this.props.globalState.flowGraphSnippetId = newId;
+                this._setSnippetIdInHash(newId);
                 this.forceUpdate();
 
                 if (navigator.clipboard) {
@@ -227,7 +260,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                 try {
                     await SerializationTools.DeserializeAsync(serializationObject, this.props.globalState);
                     this.props.globalState.flowGraphSnippetId = id;
-                    this.props.globalState.onResetRequiredObservable.notifyObservers(false);
+                    this._setSnippetIdInHash(id);
                     this.props.globalState.stateManager.onSelectionChangedObservable.notifyObservers(null);
                     this.props.globalState.onClearUndoStack.notifyObservers();
                     this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry("Flow graph loaded from snippet " + id, false));

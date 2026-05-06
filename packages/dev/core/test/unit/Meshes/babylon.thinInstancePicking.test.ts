@@ -1,8 +1,9 @@
 import { type Engine, NullEngine } from "core/Engines";
-import { Matrix, Vector3 } from "core/Maths/math.vector";
+import { Matrix, Quaternion, Vector3 } from "core/Maths/math.vector";
 import { type Mesh, MeshBuilder } from "core/Meshes";
 import { Scene } from "core/scene";
-import { Ray } from "core/Culling/ray";
+import { PickingInfo } from "core/Collisions/pickingInfo";
+import { PickingCustomization, Ray } from "core/Culling/ray";
 import "core/Culling/ray";
 import "core/Meshes/thinInstanceMesh";
 
@@ -25,6 +26,12 @@ describe("ThinInstance picking", () => {
         box.thinInstanceEnablePicking = true;
     }
 
+    function createThinInstancesAroundAggregateRayGap() {
+        box.thinInstanceAdd(Matrix.Translation(0, 0, 0), false);
+        box.thinInstanceAdd(Matrix.Translation(10, 0, 0), true);
+        box.thinInstanceEnablePicking = true;
+    }
+
     beforeEach(() => {
         engine = new NullEngine({
             renderHeight: 256,
@@ -40,6 +47,7 @@ describe("ThinInstance picking", () => {
     });
 
     afterEach(() => {
+        PickingCustomization.internalPickerForMesh = undefined;
         scene.dispose();
         engine.dispose();
     });
@@ -153,6 +161,92 @@ describe("ThinInstance picking", () => {
             expect(normal!.y).toBeCloseTo(1);
             expect(normal!.z).toBeCloseTo(0);
         });
+
+        it("picks thin instances with mirrored non-uniform transforms", () => {
+            const transform = Matrix.Compose(new Vector3(-2, 0.5, 1.5), Quaternion.FromEulerAngles(0, 0, Math.PI / 4), new Vector3(3, 1, 0));
+            box.thinInstanceAdd(transform, true);
+            box.thinInstanceEnablePicking = true;
+
+            const ray = new Ray(new Vector3(3, 5, 0), new Vector3(0, -1, 0));
+            const info = scene.pickWithRay(ray);
+
+            expect(info!.hit).toBe(true);
+            expect(info!.thinInstanceIndex).toBe(0);
+            expect(info!.pickedMesh).toBe(box);
+        });
+
+        it("preserves thin-instance picking when rawBoundingInfo is missing", () => {
+            box.thinInstanceAdd(Matrix.Translation(5, 0, 0), false);
+            box.thinInstanceAdd(Matrix.Translation(10, 0, 0), true);
+            box.thinInstanceEnablePicking = true;
+
+            expect(box.getBoundingInfo().boundingBox.minimum.x).toBeCloseTo(4.5);
+            box.rawBoundingInfo = null;
+
+            const ray = new Ray(new Vector3(5, 5, 0), new Vector3(0, -1, 0));
+            const info = scene.pickWithRay(ray);
+
+            expect(info!.hit).toBe(true);
+            expect(info!.thinInstanceIndex).toBe(0);
+            expect(info!.pickedMesh).toBe(box);
+        });
+
+        it("uses the line intersectionThreshold for thin-instance raw-bounds checks", () => {
+            const line = MeshBuilder.CreateLines(
+                "line",
+                {
+                    points: [new Vector3(0, -1, 0), new Vector3(0, 1, 0)],
+                },
+                scene
+            );
+            line.intersectionThreshold = 0.1;
+            line.thinInstanceAdd(Matrix.Translation(5, 0, 0), true);
+            line.thinInstanceEnablePicking = true;
+
+            const ray = new Ray(new Vector3(5.05, 2, 0), new Vector3(0, -1, 0));
+            const info = scene.pickWithRay(ray);
+
+            expect(info!.hit).toBe(true);
+            expect(info!.thinInstanceIndex).toBe(0);
+            expect(info!.pickedMesh).toBe(line);
+        });
+
+        it("rejects thin instances with raw bounds before triangle intersection", () => {
+            createThinInstancesAroundAggregateRayGap();
+
+            const ray = new Ray(new Vector3(5, 5, 0), new Vector3(0, -1, 0));
+            let trianglePredicateCalled = false;
+            const info = scene.pickWithRay(ray, undefined, false, () => {
+                trianglePredicateCalled = true;
+                return true;
+            });
+
+            expect(info!.hit).toBe(false);
+            expect(trianglePredicateCalled).toBe(false);
+        });
+
+        it("does not raw-bounds reject thin instances before a custom picker", () => {
+            createThinInstancesAroundAggregateRayGap();
+
+            let thinInstancePickerCalls = 0;
+            PickingCustomization.internalPickerForMesh = (_pickingInfo, _rayFunction, mesh, _world, _fastCheck, onlyBoundingInfo) => {
+                if (onlyBoundingInfo) {
+                    const result = new PickingInfo();
+                    result.hit = true;
+                    result.pickedMesh = mesh;
+                    return result;
+                }
+
+                thinInstancePickerCalls++;
+                return null!;
+            };
+
+            const ray = new Ray(new Vector3(5, 5, 0), new Vector3(0, -1, 0));
+            const info = scene.pickWithRay(ray);
+
+            expect(info!.hit).toBe(false);
+            expect(thinInstancePickerCalls).toBe(2);
+        });
     });
 
     describe("multiPickWithRay", () => {
@@ -196,6 +290,43 @@ describe("ThinInstance picking", () => {
             expect(infos).toBeTruthy();
             const indices = infos!.map((i) => i.thinInstanceIndex).sort((a, b) => a - b);
             expect(indices).toEqual([0, 1]);
+        });
+
+        it("rejects thin instances with raw bounds before triangle intersection", () => {
+            createThinInstancesAroundAggregateRayGap();
+
+            const ray = new Ray(new Vector3(5, 5, 0), new Vector3(0, -1, 0));
+            let trianglePredicateCalled = false;
+            const infos = scene.multiPickWithRay(ray, undefined, () => {
+                trianglePredicateCalled = true;
+                return true;
+            });
+
+            expect(infos).toEqual([]);
+            expect(trianglePredicateCalled).toBe(false);
+        });
+
+        it("does not raw-bounds reject thin instances before a custom picker", () => {
+            createThinInstancesAroundAggregateRayGap();
+
+            let thinInstancePickerCalls = 0;
+            PickingCustomization.internalPickerForMesh = (_pickingInfo, _rayFunction, mesh, _world, _fastCheck, onlyBoundingInfo) => {
+                if (onlyBoundingInfo) {
+                    const result = new PickingInfo();
+                    result.hit = true;
+                    result.pickedMesh = mesh;
+                    return result;
+                }
+
+                thinInstancePickerCalls++;
+                return null!;
+            };
+
+            const ray = new Ray(new Vector3(5, 5, 0), new Vector3(0, -1, 0));
+            const infos = scene.multiPickWithRay(ray);
+
+            expect(infos).toEqual([]);
+            expect(thinInstancePickerCalls).toBe(2);
         });
     });
 });

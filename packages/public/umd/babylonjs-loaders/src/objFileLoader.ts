@@ -1,3 +1,2 @@
-import * as loaders from "loaders/legacy/legacy-objFileLoader";
-export { loaders };
-export default loaders;
+import "loaders/legacy/legacy-objFileLoader";
+export * from "loaders/legacy/legacy-objFileLoader";

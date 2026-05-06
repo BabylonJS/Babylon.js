@@ -1,6 +1,7 @@
 import { type AbstractMesh } from "core/Meshes/abstractMesh";
 import { FlowGraphEventBlock } from "core/FlowGraph/flowGraphEventBlock";
 import { type PointerInfo } from "core/Events/pointerEvents";
+import { type IPointerEvent } from "core/Events/deviceInputEvents";
 import { type FlowGraphContext } from "core/FlowGraph/flowGraphContext";
 import { type IFlowGraphBlockConfiguration } from "core/FlowGraph/flowGraphBlock";
 import { RegisterClass } from "core/Misc/typeStore";
@@ -80,7 +81,7 @@ export class FlowGraphPointerUpEventBlock extends FlowGraphEventBlock {
             return true;
         }
 
-        this.pointerId.setValue((pointerInfo.event as PointerEvent).pointerId, context);
+        this.pointerId.setValue((pointerInfo.event as IPointerEvent).pointerId, context);
         this.pickedMesh.setValue(pickedMesh ?? null, context);
         this.pickedPoint.setValue(pointerInfo.pickInfo?.pickedPoint ?? null, context);
         this._execute(context);

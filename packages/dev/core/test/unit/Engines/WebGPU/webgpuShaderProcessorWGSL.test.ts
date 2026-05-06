@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach } from "vitest";
+import { readFileSync } from "fs";
 import { WebGPUShaderProcessorWGSL } from "core/Engines/WebGPU/webgpuShaderProcessorsWGSL";
 import { WebGPUShaderProcessingContext } from "core/Engines/WebGPU/webgpuShaderProcessingContext";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
@@ -183,6 +184,17 @@ describe("WebGPUShaderProcessorWGSL", () => {
             const layoutEntry = context.bindGroupLayoutEntries[0][0];
             expect(layoutEntry.storageTexture!.access).toBe("read-only");
             expect(layoutEntry.storageTexture!.format).toBe("rgba32float");
+        });
+    });
+
+    describe("cascaded shadow vertex include", () => {
+        it("should use uniforms.view when the scene uniform buffer is not declared", () => {
+            const shadowsVertex = readFileSync(new URL("../../../../src/ShadersWGSL/ShadersInclude/shadowsVertex.fx", import.meta.url), "utf8");
+
+            expect(shadowsVertex).toContain("#ifdef SCENE_UBO");
+            expect(shadowsVertex).toContain("vertexOutputs.vPositionFromCamera{X} = scene.view * worldPos;");
+            expect(shadowsVertex).toContain("#else");
+            expect(shadowsVertex).toContain("vertexOutputs.vPositionFromCamera{X} = uniforms.view * worldPos;");
         });
     });
 });

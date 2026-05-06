@@ -23,6 +23,7 @@ import {
     OpenPBRMaterialEmissionProperties,
     OpenPBRMaterialThinFilmProperties,
     OpenPBRMaterialGeometryProperties,
+    OpenPBRMaterialQualityProperties,
 } from "../../../components/properties/materials/openpbrMaterialProperties";
 import {
     PBRBaseMaterialAdvancedProperties,
@@ -220,6 +221,10 @@ export const MaterialPropertiesServiceDefinition: ServiceDefinition<[], [IProper
                 {
                     section: "OpenPBR",
                     component: ({ context }) => <OpenPBRMaterialGeometryProperties material={context} />,
+                },
+                {
+                    section: "OpenPBR Quality",
+                    component: ({ context }) => <OpenPBRMaterialQualityProperties material={context} />,
                 },
             ],
         });

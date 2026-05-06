@@ -1,5 +1,13 @@
 
 ### Core
 
-- fix(audio): prevent iOS Safari FPS throttle from silent HTML audio - [_Bug Fix_] by [RaananW](https://github.com/RaananW) ([#18366](https://github.com/BabylonJS/Babylon.js/pull/18366))
-- fix: make toBase64/fromBase64 declarations non-optional for TypeScript 6.0 compat - [_Bug Fix_] by [RaananW](https://github.com/RaananW) ([#18365](https://github.com/BabylonJS/Babylon.js/pull/18365))
+- Fix NodeMaterial SSS with clustered lights - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#18413](https://github.com/BabylonJS/Babylon.js/pull/18413))
+- Add Bevel node to Node Geometry Editor - [_New Feature_] by [deltakosh](https://github.com/deltakosh) ([#18420](https://github.com/BabylonJS/Babylon.js/pull/18420))
+
+### Materials
+
+- Fix NodeMaterial SSS with clustered lights - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#18413](https://github.com/BabylonJS/Babylon.js/pull/18413))
+
+### Node Geometry Editor
+
+- Add Bevel node to Node Geometry Editor - [_New Feature_] by [deltakosh](https://github.com/deltakosh) ([#18420](https://github.com/BabylonJS/Babylon.js/pull/18420))
