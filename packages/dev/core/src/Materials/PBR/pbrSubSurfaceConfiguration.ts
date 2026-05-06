@@ -221,8 +221,20 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
      * This ONLY impacts refraction. If not provided or given a non-valid value,
      * the volume will use the same IOR as the surface.
      */
-    @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public accessor volumeIndexOfRefraction: number;
+    public get volumeIndexOfRefraction(): number {
+        if (this._volumeIndexOfRefraction >= 1.0) {
+            return this._volumeIndexOfRefraction;
+        }
+        return this._indexOfRefraction;
+    }
+    public set volumeIndexOfRefraction(value: number) {
+        const volumeIndexOfRefraction = value >= 1.0 ? value : -1.0;
+        if (this._volumeIndexOfRefraction === volumeIndexOfRefraction) {
+            return;
+        }
+        this._volumeIndexOfRefraction = volumeIndexOfRefraction;
+        this._markAllSubMeshesAsTexturesDirty();
+    }
 
     private _invertRefractionY = false;
     /**
