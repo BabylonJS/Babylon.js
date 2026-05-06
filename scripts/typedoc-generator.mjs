@@ -33,6 +33,19 @@ function generateMessageFromError(error) {
     }]`;
 }
 
+function getSourceFileName(error) {
+    return error.url?.match(/\/(packages\/dev\/[^#]+)#L\d+$/)?.[1] ?? error.fileName?.replace(/:\d+:\d+$/, "");
+}
+
+function isInChangedFiles(error, filesChanged) {
+    const sourceFileName = getSourceFileName(error);
+    if (!sourceFileName) {
+        return false;
+    }
+
+    return filesChanged.some((file) => file === sourceFileName || file.endsWith(`/${sourceFileName}`));
+}
+
 async function generateTypedocAndAnalyze(entryPoints, filesChanged) {
     const app = await Application.bootstrapWithPlugins(
         {
@@ -68,7 +81,7 @@ async function generateTypedocAndAnalyze(entryPoints, filesChanged) {
         msgs.forEach((msg) => {
             const filePath = msg.fileName;
             if (filesChanged) {
-                if (!filesChanged.includes(filePath)) {
+                if (!isInChangedFiles(msg, filesChanged)) {
                     return;
                 }
             }
@@ -80,7 +93,7 @@ async function generateTypedocAndAnalyze(entryPoints, filesChanged) {
 async function main() {
     const packages = process.argv.includes("--packages") ? process.argv[process.argv.indexOf("--packages") + 1].split(",") : ["core", "loaders", "materials", "gui", "serializers"];
     const full = process.argv.includes("--full");
-    const filesChanged = (await runCommand(process.env.GIT_CHANGES_COMMAND || "git diff --name-only master")).split("\n");
+    const filesChanged = full ? undefined : (await runCommand(process.env.GIT_CHANGES_COMMAND || "git diff --name-only master")).split("\n").filter(Boolean);
     const files = globSync(`packages/dev/@(${packages.join("|")})/src/index.ts`).filter((f) => /*!f.endsWith("index.ts") && */ !f.endsWith(".d.ts"));
     console.log(files);
     const dirList = files.filter((file) => {
@@ -114,7 +127,7 @@ async function main() {
         // if in CI, save to errors.txt
         if (process.env.CI) {
             const messages = Object.keys(warnings)
-                .map((w) => `${w} ${generateMessageFromError(Object.keys(warnings)[w])}`)
+                .map((w) => `${w} ${generateMessageFromError(warnings[w])}`)
                 .join("\n");
             writeFileSync("errors.txt", messages);
             // log to the console
@@ -127,4 +140,7 @@ ${messages}`);
     }
 }
 
-main().catch(console.error);
+main().catch((error) => {
+    console.error(error);
+    process.exit(1);
+});
