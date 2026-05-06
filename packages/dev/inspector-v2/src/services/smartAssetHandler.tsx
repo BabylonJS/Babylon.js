@@ -1,9 +1,19 @@
 import { CreateSmartAssetManager, GetSmartAssetManagerFromScene, type SmartAssetManager } from "core/SmartAssets/smartAssetManager";
+import { Observable } from "core/Misc/observable";
 import { type Scene } from "core/scene";
 
 type InspectorAssetNotFoundPromptHandlerCallback = (key: string, expectedUrl: string) => Promise<string | File | null>;
 
-let InspectorAssetNotFoundPromptHandler: InspectorAssetNotFoundPromptHandlerCallback | null = null;
+type InspectorAssetNotFoundPromptRequest = {
+    key: string;
+    expectedUrl: string;
+    resolve: (value: string | File | null) => void;
+    reject: (reason?: unknown) => void;
+};
+
+const OnInspectorAssetNotFoundPromptRequestedObservable = new Observable<InspectorAssetNotFoundPromptRequest>(undefined, true);
+
+let InspectorAssetNotFoundPromptHandlerObserver: ReturnType<typeof OnInspectorAssetNotFoundPromptRequestedObservable.add> = null;
 let MissingAssetPromptQueue = Promise.resolve<void>(undefined);
 
 /**
@@ -11,7 +21,28 @@ let MissingAssetPromptQueue = Promise.resolve<void>(undefined);
  * @param handler - The handler installed by the Inspector UI, or null to clear it.
  */
 export function SetInspectorAssetNotFoundPromptHandler(handler: InspectorAssetNotFoundPromptHandlerCallback | null): void {
-    InspectorAssetNotFoundPromptHandler = handler;
+    InspectorAssetNotFoundPromptHandlerObserver?.remove();
+    InspectorAssetNotFoundPromptHandlerObserver = null;
+
+    if (!handler) {
+        OnInspectorAssetNotFoundPromptRequestedObservable.notifyIfTriggered = true;
+        return;
+    }
+
+    InspectorAssetNotFoundPromptHandlerObserver = OnInspectorAssetNotFoundPromptRequestedObservable.add((request) => {
+        OnInspectorAssetNotFoundPromptRequestedObservable.notifyIfTriggered = false;
+        OnInspectorAssetNotFoundPromptRequestedObservable.cleanLastNotifiedState();
+        void (async () => {
+            try {
+                request.resolve(await handler(request.key, request.expectedUrl));
+            } catch (error) {
+                request.reject(error);
+            }
+        })();
+    });
+
+    OnInspectorAssetNotFoundPromptRequestedObservable.notifyIfTriggered = false;
+    OnInspectorAssetNotFoundPromptRequestedObservable.cleanLastNotifiedState();
 }
 
 async function RunQueuedMissingAssetPromptAsync(key: string, expectedUrl: string): Promise<string | File | null> {
@@ -23,7 +54,9 @@ async function RunQueuedMissingAssetPromptAsync(key: string, expectedUrl: string
 
     await previousPrompt;
     try {
-        return (await InspectorAssetNotFoundPromptHandler?.(key, expectedUrl)) ?? null;
+        return await new Promise<string | File | null>((resolve, reject) => {
+            OnInspectorAssetNotFoundPromptRequestedObservable.notifyObservers({ key, expectedUrl, resolve, reject });
+        });
     } finally {
         releasePrompt();
     }

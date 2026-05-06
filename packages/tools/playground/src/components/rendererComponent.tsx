@@ -23,7 +23,6 @@ import {
 } from "@dev/core";
 
 import { MakePlaygroundCommandServiceDefinition } from "../tools/playgroundCommandService";
-import { PlaygroundAssetNotFoundHandler } from "../tools/smartAssetNotFoundHandler";
 import "../scss/rendering.scss";
 
 const RunnableCreationTimeoutMs = 15000;
@@ -151,11 +150,11 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
         }
     }
 
-    private _ensureInspectable() {
+    private _ensureInspectable(scene: Scene | null = this._scene) {
         if (this._inspectableToken && !this._inspectableToken.isDisposed) {
             return;
         }
-        if (!this._scene) {
+        if (!scene) {
             return;
         }
         this._ensureBridge();
@@ -164,17 +163,17 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
         }
         const inspectorV2Module: InspectorV2Module | undefined = (globalThis as any).INSPECTOR;
         if (inspectorV2Module?.StartInspectable) {
-            this._inspectableToken = inspectorV2Module.StartInspectable(this._scene, {
+            this._inspectableToken = inspectorV2Module.StartInspectable(scene, {
                 bridgeToken: this._bridgeToken,
             });
         }
     }
 
-    private async _showInspectorAsync() {
-        if (this._scene) {
+    private async _showInspectorAsync(scene: Scene | null = this._scene) {
+        if (scene) {
             const inspectorV2Module: InspectorV2Module | undefined = (globalThis as any).INSPECTOR;
             if (inspectorV2Module?.ShowInspector) {
-                this._ensureInspectable();
+                this._ensureInspectable(scene);
                 const options = {
                     ...inspectorV2Module.ConvertOptions({
                         embedMode: true,
@@ -182,13 +181,29 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
                     showThemeSelector: false,
                     themeMode: Utilities.ReadStringFromStore("theme", "Light") === "Dark" ? "dark" : "light",
                 } as const;
-                this._inspectorV2Token = inspectorV2Module.ShowInspector(this._scene, options);
+                this._inspectorV2Token = inspectorV2Module.ShowInspector(scene, options);
             } else {
-                await this._scene.debugLayer.show({
+                await scene.debugLayer.show({
                     embedMode: true,
                 });
             }
         }
+    }
+
+    private async _resolveMissingSmartAssetWithInspectorAsync(scene: Scene, key: string, expectedUrl: string): Promise<string | File | null> {
+        const inspectorV2Module: InspectorV2Module | undefined = (globalThis as any).INSPECTOR;
+        if (!inspectorV2Module?.ShowInspector || !inspectorV2Module.inspectorAssetNotFoundHandler) {
+            Logger.Warn("Playground: Inspector v2 is required to resolve missing Smart Assets.");
+            return null;
+        }
+
+        if (!this._inspectorV2Token) {
+            this.setState({ preferInspector: true });
+            await Promise.resolve();
+            await this._showInspectorAsync(scene);
+        }
+
+        return await inspectorV2Module.inspectorAssetNotFoundHandler(key, expectedUrl);
     }
 
     private _saveError = (_err: ErrorEvent) => {
@@ -460,7 +475,7 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
             const smartAssetManagerCreatedCallback = (manager: SmartAssetManager) => {
                 previousSmartAssetManagerCreatedCallback?.(manager);
                 if (!manager.onAssetNotFound) {
-                    manager.onAssetNotFound = PlaygroundAssetNotFoundHandler;
+                    manager.onAssetNotFound = async (key, expectedUrl) => await this._resolveMissingSmartAssetWithInspectorAsync(manager.scene, key, expectedUrl);
                 }
             };
             SetSmartAssetManagerCreatedCallback(smartAssetManagerCreatedCallback);
