@@ -1,9 +1,13 @@
 import * as React from "react";
-import { LineContainerComponent } from "../../sharedComponents/lineContainerComponent";
 import { type IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
-import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
-import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineComponent";
-import { GeneralPropertyTabComponent, DataConnectionsPropertyTabComponent, GenericPropertyTabComponent } from "./genericNodePropertyComponent";
+import { Accordion, AccordionSection } from "shared-ui-components/fluent/primitives/accordion";
+import { Button } from "shared-ui-components/fluent/primitives/button";
+import { LineContainer } from "shared-ui-components/fluent/hoc/propertyLines/propertyLine";
+import { NumberInputPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/inputPropertyLine";
+import { Body1, makeStyles, tokens } from "@fluentui/react-components";
+import { DismissRegular } from "@fluentui/react-icons";
+
+import { RenderGeneralSection, RenderDataConnectionsSection, RenderGenericPropStoreSections } from "./genericNodePropertyComponent";
 import { type FlowGraphSwitchBlock } from "core/FlowGraph/Blocks/Execution/ControlFlow/flowGraphSwitchBlock";
 import { type FlowGraphBlock } from "core/FlowGraph/flowGraphBlock";
 import { RemoveSignalOutput } from "./blockMutationHelper";
@@ -12,6 +16,36 @@ import { getNumericValue } from "core/FlowGraph/utils";
 interface ISwitchBlockPropertyState {
     newCaseValue: number;
 }
+
+const useStyles = makeStyles({
+    caseRow: {
+        display: "flex",
+        alignItems: "center",
+        gap: tokens.spacingHorizontalS,
+        padding: `0 ${tokens.spacingHorizontalXS}`,
+        width: "100%",
+    },
+    caseLabel: {
+        flex: 1,
+    },
+    empty: {
+        padding: `${tokens.spacingVerticalXS} ${tokens.spacingHorizontalS}`,
+        color: tokens.colorNeutralForeground3,
+        fontStyle: "italic",
+    },
+});
+
+const CaseRow: React.FunctionComponent<{ value: number; onRemove: () => void }> = ({ value, onRemove }) => {
+    const classes = useStyles();
+    return (
+        <LineContainer uniqueId={`case-${value}`}>
+            <div className={classes.caseRow}>
+                <Body1 className={classes.caseLabel}>Case: {value}</Body1>
+                <Button title="Remove case" appearance="subtle" icon={DismissRegular} onClick={onRemove} />
+            </div>
+        </LineContainer>
+    );
+};
 
 /**
  * Property panel for FlowGraphSwitchBlock.
@@ -59,54 +93,47 @@ export class SwitchBlockPropertyComponent extends React.Component<IPropertyCompo
     }
 
     override render() {
-        const { stateManager, nodeData } = this.props;
         const block = this._getBlock();
         const cases: any[] = block.config.cases || [];
 
         return (
-            <>
-                <GeneralPropertyTabComponent stateManager={stateManager} nodeData={nodeData} />
+            <Accordion uniqueId="FlowGraphSwitchProperties" enablePinnedItems enableSearchItems>
+                {RenderGeneralSection(this.props)}
 
-                <LineContainerComponent title="CASES">
-                    {cases.map((caseVal: any, idx: number) => {
-                        const numVal = getNumericValue(caseVal);
-                        return (
-                            <div key={`case-${numVal}`} style={{ display: "flex", alignItems: "center", padding: "0 4px" }}>
-                                <span style={{ flex: 1, color: "#ccc", fontSize: "12px", paddingLeft: "8px" }}>Case: {numVal}</span>
-                                <button
-                                    onClick={() => this._removeCase(caseVal)}
-                                    style={{
-                                        background: "none",
-                                        border: "none",
-                                        color: "#f55",
-                                        cursor: "pointer",
-                                        fontSize: "14px",
-                                        padding: "2px 6px",
-                                    }}
-                                    title="Remove case"
-                                >
-                                    ✕
-                                </button>
-                            </div>
-                        );
-                    })}
-                    {cases.length === 0 && <div style={{ padding: "4px 8px", color: "#888", fontSize: "11px" }}>No cases defined.</div>}
-                    <FloatLineComponent
-                        label="New case value"
-                        lockObject={stateManager.lockObject}
-                        digits={0}
-                        step={"1"}
-                        isInteger={true}
-                        target={this.state}
-                        propertyName="newCaseValue"
-                        onChange={(v) => this.setState({ newCaseValue: v })}
+                <AccordionSection title="Cases" collapseByDefault={false}>
+                    <SwitchCasesContent
+                        cases={cases}
+                        newCaseValue={this.state.newCaseValue}
+                        onNewCaseValueChange={(v) => this.setState({ newCaseValue: v | 0 })}
+                        onAddCase={() => this._addCase()}
+                        onRemoveCase={(caseVal) => this._removeCase(caseVal)}
                     />
-                    <ButtonLineComponent label="Add Case" onClick={() => this._addCase()} />
-                </LineContainerComponent>
+                </AccordionSection>
 
-                <DataConnectionsPropertyTabComponent stateManager={stateManager} nodeData={nodeData} />
-                <GenericPropertyTabComponent stateManager={stateManager} nodeData={nodeData} />
-            </>
+                {RenderDataConnectionsSection(this.props)}
+                {RenderGenericPropStoreSections(this.props)}
+            </Accordion>
         );
     }
 }
+
+const SwitchCasesContent: React.FunctionComponent<{
+    cases: any[];
+    newCaseValue: number;
+    onNewCaseValueChange: (value: number) => void;
+    onAddCase: () => void;
+    onRemoveCase: (caseValue: any) => void;
+}> = ({ cases, newCaseValue, onNewCaseValueChange, onAddCase, onRemoveCase }) => {
+    const classes = useStyles();
+    return (
+        <>
+            {cases.map((caseVal: any) => {
+                const numVal = getNumericValue(caseVal);
+                return <CaseRow key={`case-${numVal}`} value={numVal} onRemove={() => onRemoveCase(caseVal)} />;
+            })}
+            {cases.length === 0 && <Body1 className={classes.empty}>No cases defined.</Body1>}
+            <NumberInputPropertyLine label="New case value" value={newCaseValue} step={1} onChange={onNewCaseValueChange} />
+            <Button label="Add Case" title="Add case" onClick={onAddCase} />
+        </>
+    );
+};

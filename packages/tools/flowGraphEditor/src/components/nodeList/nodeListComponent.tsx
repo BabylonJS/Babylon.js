@@ -1,369 +1,320 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import * as React from "react";
-import { type GlobalState } from "../../globalState";
-import { LineContainerComponent } from "../../sharedComponents/lineContainerComponent";
-import { DraggableLineComponent } from "../../sharedComponents/draggableLineComponent";
-import { type Observer } from "core/Misc/observable";
-import { type Nullable } from "core/types";
+import { type FunctionComponent, useEffect } from "react";
+
+import { makeStyles, tokens } from "@fluentui/react-components";
+
 import { NodeLedger } from "shared-ui-components/nodeGraphSystem/nodeLedger";
+import { Accordion, AccordionSection, AccordionSectionItem } from "shared-ui-components/fluent/primitives/accordion";
+
+import { type GlobalState } from "../../globalState";
 import { AllFlowGraphBlocks } from "../../allBlockNames";
 import { GetBlockType, BlockTypeHeaderColor } from "../../graphSystem/blockTypeColors";
 import { GetTemplatesByCategory, AllCompositeTemplates } from "../../compositeTemplates";
+import { DraggableLine } from "../common/draggableLine";
 
-import "./nodeList.scss";
-
-/** Props for the NodeListComponent. */
 interface INodeListComponentProps {
     globalState: GlobalState;
 }
 
 /**
- * Left-panel block list with filter/search for the Flow Graph Editor.
+ * Tooltip descriptions keyed by block class name.
+ *
+ * NOTE: This map is generated from the legacy implementation; new blocks should add their
+ * tooltip here so the palette surfaces a useful description.
  */
-export class NodeListComponent extends React.Component<INodeListComponentProps, { filter: string }> {
-    /** Observer for the reset event. */
-    private _onResetRequiredObserver: Nullable<Observer<boolean>>;
-    /** Ref for the filter input element, used to restore focus after clearing. */
-    private _inputRef = React.createRef<HTMLInputElement>();
+const Tooltips: Record<string, string> = {
+    // Events
+    FlowGraphSceneReadyEventBlock: "Triggered when the scene is ready",
+    FlowGraphSceneTickEventBlock: "Triggered every frame",
+    FlowGraphMeshPickEventBlock: "Triggered when a mesh is picked",
+    FlowGraphPointerEventBlock: "Triggered on pointer events",
+    FlowGraphPointerDownEventBlock: "Triggered on pointer down",
+    FlowGraphPointerUpEventBlock: "Triggered on pointer up",
+    FlowGraphPointerMoveEventBlock: "Triggered on pointer move",
+    FlowGraphPointerOverEventBlock: "Triggered on pointer over",
+    FlowGraphPointerOutEventBlock: "Triggered on pointer out",
+    FlowGraphReceiveCustomEventBlock: "Triggered when a custom event is received",
+    FlowGraphSendCustomEventBlock: "Sends a custom event",
 
-    /** Tooltip descriptions keyed by block class name. */
-    private static _Tooltips: { [key: string]: string } = {
-        // Events
-        FlowGraphSceneReadyEventBlock: "Triggered when the scene is ready",
-        FlowGraphSceneTickEventBlock: "Triggered every frame",
-        FlowGraphMeshPickEventBlock: "Triggered when a mesh is picked",
-        FlowGraphPointerEventBlock: "Triggered on pointer events",
-        FlowGraphPointerDownEventBlock: "Triggered on pointer down",
-        FlowGraphPointerUpEventBlock: "Triggered on pointer up",
-        FlowGraphPointerMoveEventBlock: "Triggered on pointer move",
-        FlowGraphPointerOverEventBlock: "Triggered on pointer over",
-        FlowGraphPointerOutEventBlock: "Triggered on pointer out",
-        FlowGraphReceiveCustomEventBlock: "Triggered when a custom event is received",
-        FlowGraphSendCustomEventBlock: "Sends a custom event",
+    // Control Flow
+    FlowGraphBranchBlock: "Branches execution based on a condition",
+    FlowGraphForLoopBlock: "Loops over a range of values",
+    FlowGraphWhileLoopBlock: "Loops while a condition is true",
+    FlowGraphSwitchBlock: "Switches between outputs based on a value",
+    FlowGraphSequenceBlock: "Executes outputs in sequence",
+    FlowGraphMultiGateBlock: "Executes one of multiple outputs",
+    FlowGraphFlipFlopBlock: "Alternates between two outputs",
+    FlowGraphDoNBlock: "Executes N times then stops",
+    FlowGraphWaitAllBlock: "Waits for all inputs to fire",
+    FlowGraphSetDelayBlock: "Delays execution",
+    FlowGraphCancelDelayBlock: "Cancels a pending delay",
+    FlowGraphCallCounterBlock: "Counts how many times it was called",
+    FlowGraphDebounceBlock: "Debounces execution",
+    FlowGraphThrottleBlock: "Throttles execution",
 
-        // Control Flow
-        FlowGraphBranchBlock: "Branches execution based on a condition",
-        FlowGraphForLoopBlock: "Loops over a range of values",
-        FlowGraphWhileLoopBlock: "Loops while a condition is true",
-        FlowGraphSwitchBlock: "Switches between outputs based on a value",
-        FlowGraphSequenceBlock: "Executes outputs in sequence",
-        FlowGraphMultiGateBlock: "Executes one of multiple outputs",
-        FlowGraphFlipFlopBlock: "Alternates between two outputs",
-        FlowGraphDoNBlock: "Executes N times then stops",
-        FlowGraphWaitAllBlock: "Waits for all inputs to fire",
-        FlowGraphSetDelayBlock: "Delays execution",
-        FlowGraphCancelDelayBlock: "Cancels a pending delay",
-        FlowGraphCallCounterBlock: "Counts how many times it was called",
-        FlowGraphDebounceBlock: "Debounces execution",
-        FlowGraphThrottleBlock: "Throttles execution",
+    // Animation
+    FlowGraphPlayAnimationBlock: "Plays an animation",
+    FlowGraphStopAnimationBlock: "Stops an animation",
+    FlowGraphPauseAnimationBlock: "Pauses an animation",
+    FlowGraphInterpolationBlock: "Interpolates a value over time",
 
-        // Animation
-        FlowGraphPlayAnimationBlock: "Plays an animation",
-        FlowGraphStopAnimationBlock: "Stops an animation",
-        FlowGraphPauseAnimationBlock: "Pauses an animation",
-        FlowGraphInterpolationBlock: "Interpolates a value over time",
+    // Physics Events
+    FlowGraphPhysicsCollisionEventBlock: "Fires when a physics collision occurs on a body",
 
-        // Physics Events
-        FlowGraphPhysicsCollisionEventBlock: "Fires when a physics collision occurs on a body",
+    // Physics Actions
+    FlowGraphApplyForceBlock: "Applies a force to a physics body at a location",
+    FlowGraphApplyImpulseBlock: "Applies an instantaneous impulse to a physics body",
+    FlowGraphSetLinearVelocityBlock: "Sets the linear velocity of a physics body",
+    FlowGraphSetAngularVelocityBlock: "Sets the angular velocity of a physics body",
+    FlowGraphSetPhysicsMotionTypeBlock: "Sets the motion type (static/animated/dynamic)",
 
-        // Physics Actions
-        FlowGraphApplyForceBlock: "Applies a force to a physics body at a location",
-        FlowGraphApplyImpulseBlock: "Applies an instantaneous impulse to a physics body",
-        FlowGraphSetLinearVelocityBlock: "Sets the linear velocity of a physics body",
-        FlowGraphSetAngularVelocityBlock: "Sets the angular velocity of a physics body",
-        FlowGraphSetPhysicsMotionTypeBlock: "Sets the motion type (static/animated/dynamic)",
+    // Physics Data
+    FlowGraphGetLinearVelocityBlock: "Gets the linear velocity of a physics body",
+    FlowGraphGetAngularVelocityBlock: "Gets the angular velocity of a physics body",
+    FlowGraphGetPhysicsMassPropertiesBlock: "Gets mass, center of mass, and inertia",
 
-        // Physics Data
-        FlowGraphGetLinearVelocityBlock: "Gets the linear velocity of a physics body",
-        FlowGraphGetAngularVelocityBlock: "Gets the angular velocity of a physics body",
-        FlowGraphGetPhysicsMassPropertiesBlock: "Gets mass, center of mass, and inertia",
+    // Audio Actions
+    FlowGraphPlaySoundBlock: "Plays an Audio V2 sound with volume, offset, and loop options",
+    FlowGraphStopSoundBlock: "Stops an Audio V2 sound",
+    FlowGraphPauseSoundBlock: "Pauses or resumes an Audio V2 sound",
+    FlowGraphSetSoundVolumeBlock: "Sets the volume of an Audio V2 sound",
 
-        // Audio Actions
-        FlowGraphPlaySoundBlock: "Plays an Audio V2 sound with volume, offset, and loop options",
-        FlowGraphStopSoundBlock: "Stops an Audio V2 sound",
-        FlowGraphPauseSoundBlock: "Pauses or resumes an Audio V2 sound",
-        FlowGraphSetSoundVolumeBlock: "Sets the volume of an Audio V2 sound",
+    // Audio Events
+    FlowGraphSoundEndedEventBlock: "Fires when an Audio V2 sound stops or ends (including manual stop)",
 
-        // Audio Events
-        FlowGraphSoundEndedEventBlock: "Fires when an Audio V2 sound stops or ends (including manual stop)",
+    // Audio Data
+    FlowGraphGetSoundVolumeBlock: "Gets the current volume of an Audio V2 sound",
+    FlowGraphIsSoundPlayingBlock: "Checks whether an Audio V2 sound is currently playing",
 
-        // Audio Data
-        FlowGraphGetSoundVolumeBlock: "Gets the current volume of an Audio V2 sound",
-        FlowGraphIsSoundPlayingBlock: "Checks whether an Audio V2 sound is currently playing",
+    // Math Constants
+    FlowGraphEBlock: "Euler's number (e)",
+    FlowGraphPIBlock: "Pi constant",
+    FlowGraphInfBlock: "Infinity constant",
+    FlowGraphNaNBlock: "NaN constant",
+    FlowGraphRandomBlock: "Random number generator",
 
-        // Math Constants
-        FlowGraphEBlock: "Euler's number (e)",
-        FlowGraphPIBlock: "Pi constant",
-        FlowGraphInfBlock: "Infinity constant",
-        FlowGraphNaNBlock: "NaN constant",
-        FlowGraphRandomBlock: "Random number generator",
+    // Math Arithmetic
+    FlowGraphAddBlock: "Adds two values",
+    FlowGraphSubtractBlock: "Subtracts two values",
+    FlowGraphMultiplyBlock: "Multiplies two values",
+    FlowGraphDivideBlock: "Divides two values",
+    FlowGraphModuloBlock: "Modulo operation",
+    FlowGraphNegationBlock: "Negates a value",
+    FlowGraphAbsBlock: "Absolute value",
+    FlowGraphSignBlock: "Sign of a value",
+    FlowGraphMinBlock: "Minimum of two values",
+    FlowGraphMaxBlock: "Maximum of two values",
+    FlowGraphExpBlock: "Exponential function",
+    FlowGraphLogBlock: "Natural logarithm",
+    FlowGraphLog2Block: "Base-2 logarithm",
+    FlowGraphLog10Block: "Base-10 logarithm",
+    FlowGraphSqrtBlock: "Square root",
+    FlowGraphCubeRootBlock: "Cube root",
+    FlowGraphPowerBlock: "Power",
 
-        // Math Arithmetic
-        FlowGraphAddBlock: "Adds two values",
-        FlowGraphSubtractBlock: "Subtracts two values",
-        FlowGraphMultiplyBlock: "Multiplies two values",
-        FlowGraphDivideBlock: "Divides two values",
-        FlowGraphModuloBlock: "Modulo operation",
-        FlowGraphNegationBlock: "Negates a value",
-        FlowGraphAbsBlock: "Absolute value",
-        FlowGraphSignBlock: "Sign of a value",
-        FlowGraphMinBlock: "Minimum of two values",
-        FlowGraphMaxBlock: "Maximum of two values",
-        FlowGraphClampBlock: "Clamps a value between min and max",
-        FlowGraphSaturateBlock: "Clamps a value between 0 and 1",
-        FlowGraphMathInterpolationBlock: "Linearly interpolates between two values",
-        FlowGraphPowerBlock: "Raises a value to a power",
-        FlowGraphSquareRootBlock: "Square root",
-        FlowGraphCubeRootBlock: "Cube root",
+    // Math Trigonometry
+    FlowGraphSinBlock: "Sine",
+    FlowGraphCosBlock: "Cosine",
+    FlowGraphTanBlock: "Tangent",
+    FlowGraphAsinBlock: "Inverse sine",
+    FlowGraphAcosBlock: "Inverse cosine",
+    FlowGraphAtanBlock: "Inverse tangent",
+    FlowGraphAtan2Block: "Inverse tangent of two values",
+    FlowGraphSinhBlock: "Hyperbolic sine",
+    FlowGraphCoshBlock: "Hyperbolic cosine",
+    FlowGraphTanhBlock: "Hyperbolic tangent",
+    FlowGraphAsinhBlock: "Inverse hyperbolic sine",
+    FlowGraphAcoshBlock: "Inverse hyperbolic cosine",
+    FlowGraphAtanhBlock: "Inverse hyperbolic tangent",
 
-        // Math Rounding
-        FlowGraphFloorBlock: "Rounds down",
-        FlowGraphCeilBlock: "Rounds up",
-        FlowGraphRoundBlock: "Rounds to nearest",
-        FlowGraphTruncBlock: "Truncates to integer",
-        FlowGraphFractBlock: "Fractional part",
+    // Math Comparison
+    FlowGraphEqualityBlock: "Equality comparison",
+    FlowGraphLessThanBlock: "Less than comparison",
+    FlowGraphLessThanOrEqualBlock: "Less than or equal comparison",
+    FlowGraphGreaterThanBlock: "Greater than comparison",
+    FlowGraphGreaterThanOrEqualBlock: "Greater than or equal comparison",
+    FlowGraphIsValidBlock: "Checks if a value is valid (not null/undefined/NaN/Infinity)",
+    FlowGraphIsNaNBlock: "Checks if a value is NaN",
+    FlowGraphIsInfBlock: "Checks if a value is Infinity",
 
-        // Math Trigonometry
-        FlowGraphSinBlock: "Sine",
-        FlowGraphCosBlock: "Cosine",
-        FlowGraphTanBlock: "Tangent",
-        FlowGraphASinBlock: "Arc sine",
-        FlowGraphACosBlock: "Arc cosine",
-        FlowGraphATanBlock: "Arc tangent",
-        FlowGraphATan2Block: "Arc tangent 2",
-        FlowGraphSinhBlock: "Hyperbolic sine",
-        FlowGraphCoshBlock: "Hyperbolic cosine",
-        FlowGraphTanhBlock: "Hyperbolic tangent",
-        FlowGraphASinhBlock: "Hyperbolic arc sine",
-        FlowGraphACoshBlock: "Hyperbolic arc cosine",
-        FlowGraphATanhBlock: "Hyperbolic arc tangent",
-        FlowGraphDegToRadBlock: "Degrees to radians",
-        FlowGraphRadToDegBlock: "Radians to degrees",
+    // Math Bitwise
+    FlowGraphBitwiseAndBlock: "Bitwise AND",
+    FlowGraphBitwiseOrBlock: "Bitwise OR",
+    FlowGraphBitwiseXorBlock: "Bitwise XOR",
+    FlowGraphBitwiseNotBlock: "Bitwise NOT",
+    FlowGraphBitwiseLeftShiftBlock: "Bitwise left shift",
+    FlowGraphBitwiseRightShiftBlock: "Bitwise right shift",
+    FlowGraphCountLeadingZerosBlock: "Counts leading zeros",
+    FlowGraphCountTrailingZerosBlock: "Counts trailing zeros",
+    FlowGraphLeadingOnesBlock: "Counts leading ones",
+    FlowGraphTrailingOnesBlock: "Counts trailing ones",
 
-        // Math Logarithmic
-        FlowGraphExponentialBlock: "Exponential (e^x)",
-        FlowGraphLogBlock: "Natural logarithm",
-        FlowGraphLog2Block: "Base-2 logarithm",
-        FlowGraphLog10Block: "Base-10 logarithm",
+    // Math Rounding
+    FlowGraphRoundBlock: "Rounds to nearest integer",
+    FlowGraphFloorBlock: "Floor",
+    FlowGraphCeilBlock: "Ceiling",
+    FlowGraphTruncBlock: "Truncates fractional part",
+    FlowGraphFractBlock: "Fractional part",
+    FlowGraphSaturateBlock: "Clamps a value to [0, 1]",
+    FlowGraphClampBlock: "Clamps a value between min and max",
+    FlowGraphInterpolateBlock: "Linear interpolation",
 
-        // Math Comparison
-        FlowGraphEqualityBlock: "Tests equality",
-        FlowGraphLessThanBlock: "Less than comparison",
-        FlowGraphLessThanOrEqualBlock: "Less than or equal comparison",
-        FlowGraphGreaterThanBlock: "Greater than comparison",
-        FlowGraphGreaterThanOrEqualBlock: "Greater than or equal comparison",
-        FlowGraphIsNaNBlock: "Tests if NaN",
-        FlowGraphIsInfBlock: "Tests if Infinity",
-        FlowGraphConditionalBlock: "Selects between two values based on a condition",
+    // Vector / Quaternion
+    FlowGraphLengthBlock: "Vector length",
+    FlowGraphLengthSquaredBlock: "Vector length squared",
+    FlowGraphNormalizeBlock: "Normalizes a vector",
+    FlowGraphDotBlock: "Dot product",
+    FlowGraphCrossBlock: "Cross product",
+    FlowGraphRotate2DBlock: "Rotates a 2D vector",
+    FlowGraphRotate3DBlock: "Rotates a 3D vector",
+    FlowGraphTransposeBlock: "Transposes a matrix",
+    FlowGraphDeterminantBlock: "Matrix determinant",
+    FlowGraphInverseBlock: "Inverts a matrix or quaternion",
+    FlowGraphMatMulBlock: "Matrix multiplication",
+    FlowGraphTransformBlock: "Transforms a vector by a matrix",
+    FlowGraphConjugateBlock: "Conjugate of a quaternion",
+    FlowGraphAngleBetweenBlock: "Angle between two vectors",
+    FlowGraphQuaternionFromAxisAngleBlock: "Creates quaternion from axis/angle",
+    FlowGraphAxisAngleFromQuaternionBlock: "Extracts axis/angle from quaternion",
+    FlowGraphQuaternionFromDirectionsBlock: "Creates quaternion from directions",
+    FlowGraphMatrixDecompose: "Decomposes a matrix into components",
+    FlowGraphMatrixCompose: "Composes a matrix from components",
 
-        // Vector Math
-        FlowGraphLengthBlock: "Vector length",
-        FlowGraphNormalizeBlock: "Normalizes a vector",
-        FlowGraphDotBlock: "Dot product",
-        FlowGraphCrossBlock: "Cross product",
-        FlowGraphRotate2DBlock: "Rotates a 2D vector",
-        FlowGraphRotate3DBlock: "Rotates a 3D vector",
+    // Type Conversion
+    FlowGraphBooleanToFloat: "Converts boolean to float",
+    FlowGraphBooleanToInt: "Converts boolean to integer",
+    FlowGraphFloatToBoolean: "Converts float to boolean",
+    FlowGraphIntToBoolean: "Converts integer to boolean",
+    FlowGraphIntToFloat: "Converts integer to float",
+    FlowGraphFloatToInt: "Converts float to integer",
 
-        // Matrix Math
-        FlowGraphTransposeBlock: "Transposes a matrix",
-        FlowGraphDeterminantBlock: "Determinant of a matrix",
-        FlowGraphInvertMatrixBlock: "Inverts a matrix",
-        FlowGraphMatrixMultiplicationBlock: "Multiplies two matrices",
+    // Data Access
+    FlowGraphConstantBlock: "A constant value",
+    FlowGraphGetPropertyBlock: "Gets a property from an object",
+    FlowGraphSetPropertyBlock: "Sets a property on an object",
+    FlowGraphGetVariableBlock: "Gets a context variable",
+    FlowGraphSetVariableBlock: "Sets a context variable",
+    FlowGraphGetAssetBlock: "Gets an asset by name",
+    FlowGraphJsonPointerParserBlock: "Parses a JSON pointer path",
+    FlowGraphArrayIndexBlock: "Gets an element from an array",
+    FlowGraphIndexOfBlock: "Finds the index of an element",
+    FlowGraphDataSwitchBlock: "Selects data based on an index",
 
-        // Bitwise
-        FlowGraphBitwiseAndBlock: "Bitwise AND",
-        FlowGraphBitwiseOrBlock: "Bitwise OR",
-        FlowGraphBitwiseXorBlock: "Bitwise XOR",
-        FlowGraphBitwiseNotBlock: "Bitwise NOT",
-        FlowGraphBitwiseLeftShiftBlock: "Bitwise left shift",
-        FlowGraphBitwiseRightShiftBlock: "Bitwise right shift",
-        FlowGraphLeadingZerosBlock: "Count leading zeros",
-        FlowGraphTrailingZerosBlock: "Count trailing zeros",
-        FlowGraphOneBitsCounterBlock: "Count set bits",
+    // Utility
+    FlowGraphConsoleLogBlock: "Logs a message to the console",
+    FlowGraphEasingBlock: "Applies an easing function",
+    FlowGraphBezierCurveEasing: "Applies a bezier curve easing",
+    FlowGraphContextBlock: "Gets the flow graph context",
+    FlowGraphCodeExecutionBlock: "Executes custom code",
+    FlowGraphFunctionReference: "Reference to a function flow graph",
+    FlowGraphDebugBlock: "Debug passthrough — shows the value flowing through a data connection",
+};
 
-        // Data Conversion
-        FlowGraphCombineVector2Block: "Combines components into a Vector2",
-        FlowGraphCombineVector3Block: "Combines components into a Vector3",
-        FlowGraphCombineVector4Block: "Combines components into a Vector4",
-        FlowGraphCombineMatrixBlock: "Combines components into a Matrix",
-        FlowGraphCombineMatrix2DBlock: "Combines components into a 2D Matrix",
-        FlowGraphCombineMatrix3DBlock: "Combines components into a 3D Matrix",
-        FlowGraphExtractVector2Block: "Extracts components from a Vector2",
-        FlowGraphExtractVector3Block: "Extracts components from a Vector3",
-        FlowGraphExtractVector4Block: "Extracts components from a Vector4",
-        FlowGraphExtractMatrixBlock: "Extracts components from a Matrix",
-        FlowGraphExtractMatrix2DBlock: "Extracts components from a 2D Matrix",
-        FlowGraphExtractMatrix3DBlock: "Extracts components from a 3D Matrix",
-        FlowGraphTransformVectorBlock: "Transforms a vector by a matrix",
-        FlowGraphTransformCoordinatesBlock: "Transforms coordinates by a matrix",
-        FlowGraphTransformCoordinatesSystemBlock: "Transforms a coordinate system",
-        FlowGraphConjugateBlock: "Conjugate of a quaternion",
-        FlowGraphAngleBetweenBlock: "Angle between two vectors",
-        FlowGraphQuaternionFromAxisAngleBlock: "Creates quaternion from axis/angle",
-        FlowGraphAxisAngleFromQuaternionBlock: "Extracts axis/angle from quaternion",
-        FlowGraphQuaternionFromDirectionsBlock: "Creates quaternion from directions",
-        FlowGraphMatrixDecompose: "Decomposes a matrix into components",
-        FlowGraphMatrixCompose: "Composes a matrix from components",
+const useStyles = makeStyles({
+    root: {
+        display: "flex",
+        flexDirection: "column",
+        height: "100%",
+        overflow: "hidden",
+        background: tokens.colorNeutralBackground1,
+    },
+});
 
-        // Type Conversion
-        FlowGraphBooleanToFloat: "Converts boolean to float",
-        FlowGraphBooleanToInt: "Converts boolean to integer",
-        FlowGraphFloatToBoolean: "Converts float to boolean",
-        FlowGraphIntToBoolean: "Converts integer to boolean",
-        FlowGraphIntToFloat: "Converts integer to float",
-        FlowGraphFloatToInt: "Converts float to integer",
+const FormatCategoryName = (raw: string): string => raw.replace("__", ": ").replace(/_/g, " ");
 
-        // Data Access
-        FlowGraphConstantBlock: "A constant value",
-        FlowGraphGetPropertyBlock: "Gets a property from an object",
-        FlowGraphSetPropertyBlock: "Sets a property on an object",
-        FlowGraphGetVariableBlock: "Gets a context variable",
-        FlowGraphSetVariableBlock: "Sets a context variable",
-        FlowGraphGetAssetBlock: "Gets an asset by name",
-        FlowGraphJsonPointerParserBlock: "Parses a JSON pointer path",
-        FlowGraphArrayIndexBlock: "Gets an element from an array",
-        FlowGraphIndexOfBlock: "Finds the index of an element",
-        FlowGraphDataSwitchBlock: "Selects data based on an index",
+const TemplateCategoryColor = "#8854d0";
 
-        // Utility
-        FlowGraphConsoleLogBlock: "Logs a message to the console",
-        FlowGraphEasingBlock: "Applies an easing function",
-        FlowGraphBezierCurveEasing: "Applies a bezier curve easing",
-        FlowGraphContextBlock: "Gets the flow graph context",
-        FlowGraphCodeExecutionBlock: "Executes custom code",
-        FlowGraphFunctionReference: "Reference to a function flow graph",
-        FlowGraphDebugBlock: "Debug passthrough — shows the value flowing through a data connection",
-    };
+/**
+ * Left-panel block list with built-in filtering and pinning, powered by `Accordion`.
+ *
+ * Rebuilt on top of `shared-ui-components/fluent/primitives/accordion`. Each block category
+ * is an `AccordionSection`; each block (or composite template) is registered as an
+ * `AccordionSectionItem` so the accordion's search box filters across all categories at once
+ * and individual blocks can be pinned to the top via the built-in pin UI.
+ * @returns The rendered node list panel.
+ */
+export const NodeListComponent: FunctionComponent<INodeListComponentProps> = ({ globalState }) => {
+    const classes = useStyles();
 
-    /**
-     * Creates a new NodeListComponent.
-     * @param props - component props
-     */
-    constructor(props: INodeListComponentProps) {
-        super(props);
+    // Register every block name with the NodeLedger so the canvas can format display names
+    // consistently. (This was previously done inline inside the legacy render method.)
+    useEffect(() => {
+        const ledger = NodeLedger.RegisteredNodeNames;
+        for (const cat in AllFlowGraphBlocks) {
+            const blocks = AllFlowGraphBlocks[cat] as string[];
+            for (const block of blocks) {
+                if (!ledger.includes(block)) {
+                    ledger.push(block);
+                }
+            }
+        }
+        NodeLedger.NameFormatter = (name) => {
+            let finalName = name;
+            if (finalName.startsWith("FlowGraph")) {
+                finalName = finalName.substring(9);
+            }
+            if (finalName.endsWith("Block")) {
+                finalName = finalName.substring(0, finalName.length - 5);
+            }
+            return finalName;
+        };
+    }, []);
 
-        this.state = { filter: "" };
-
-        this._onResetRequiredObserver = this.props.globalState.onResetRequiredObservable.add(() => {
-            this.forceUpdate();
+    // The Accordion does not currently expose a re-render trigger, but the editor fires
+    // `onResetRequiredObservable` to nudge the panel in case future block additions need
+    // a refresh.  Keep the subscription so the palette re-renders if the observable fires.
+    useEffect(() => {
+        const obs = globalState.onResetRequiredObservable.add(() => {
+            // No-op: AllFlowGraphBlocks is module-level and stable; reset just refreshes derived state.
         });
-    }
+        return () => {
+            obs?.remove();
+        };
+    }, [globalState]);
 
-    /** Removes the reset observer when the component is unmounted. */
-    override componentWillUnmount() {
-        this.props.globalState.onResetRequiredObservable.remove(this._onResetRequiredObserver);
-    }
-
-    /**
-     * Updates the block list filter.
-     * @param filter - the new filter string
-     */
-    filterContent(filter: string) {
-        this.setState({ filter: filter });
-    }
-
-    /** Clears the current filter and returns focus to the input. */
-    clearFilter() {
-        this.setState({ filter: "" }, () => this._inputRef.current?.focus());
-    }
-
-    /**
-     * Renders the node list panel.
-     * @returns the rendered JSX
-     */
-    override render() {
-        const allBlocks = AllFlowGraphBlocks;
-
-        // Create node menu
-        const blockMenu = [];
-        for (const key in allBlocks) {
-            const blockList = allBlocks[key]
-                .filter((b: string) => !this.state.filter || b.toLowerCase().indexOf(this.state.filter.toLowerCase()) !== -1)
-                .sort((a: string, b: string) => a.localeCompare(b))
-                .map((blockName: string) => {
-                    const blockType = GetBlockType(blockName);
-                    const color = BlockTypeHeaderColor[blockType];
-                    return <DraggableLineComponent key={blockName} data={blockName} tooltip={NodeListComponent._Tooltips[blockName] || ""} color={color} />;
-                });
-
-            if (blockList.length) {
-                blockMenu.push(
-                    <LineContainerComponent key={key + " blocks"} title={key.replace("__", ": ").replace("_", " ")} closed={false}>
-                        {blockList}
-                    </LineContainerComponent>
-                );
-            }
-
-            // Register blocks
-            const ledger = NodeLedger.RegisteredNodeNames;
-            for (const cat in allBlocks) {
-                const blocks = allBlocks[cat] as string[];
-                if (blocks.length) {
-                    for (const block of blocks) {
-                        if (!ledger.includes(block)) {
-                            ledger.push(block);
-                        }
-                    }
-                }
-            }
-            NodeLedger.NameFormatter = (name) => {
-                let finalName = name;
-                // Remove "FlowGraph" prefix and "Block" suffix for display
-                if (finalName.startsWith("FlowGraph")) {
-                    finalName = finalName.substring(9);
-                }
-                if (finalName.endsWith("Block")) {
-                    finalName = finalName.substring(0, finalName.length - 5);
-                }
-
-                return finalName;
-            };
+    const blockSections: { title: string; items: { name: string; tooltip: string; color: string }[] }[] = [];
+    for (const category of Object.keys(AllFlowGraphBlocks)) {
+        const items = (AllFlowGraphBlocks[category] as string[])
+            .slice()
+            .sort((a, b) => a.localeCompare(b))
+            .map((blockName) => {
+                const blockType = GetBlockType(blockName);
+                return {
+                    name: blockName,
+                    tooltip: Tooltips[blockName] ?? "",
+                    color: BlockTypeHeaderColor[blockType],
+                };
+            });
+        if (items.length > 0) {
+            blockSections.push({ title: FormatCategoryName(category), items });
         }
-
-        // Add composite template entries to the palette
-        const templateCategories = GetTemplatesByCategory();
-        for (const categoryName of Object.keys(templateCategories)) {
-            const templateNames = templateCategories[categoryName];
-            const templateItems = templateNames
-                .filter((name: string) => !this.state.filter || name.toLowerCase().indexOf(this.state.filter.toLowerCase()) !== -1)
-                .map((name: string) => {
-                    const template = AllCompositeTemplates[name];
-                    return <DraggableLineComponent key={name} data={name} tooltip={template.description} color="#8854d0" />;
-                });
-
-            if (templateItems.length) {
-                blockMenu.push(
-                    <LineContainerComponent key={"template_" + categoryName} title={"Templates: " + categoryName} closed={false}>
-                        {templateItems}
-                    </LineContainerComponent>
-                );
-            }
-        }
-
-        return (
-            <div id="fgeNodeList">
-                <div className="panes">
-                    <div className="pane">
-                        <div className="filter">
-                            <input
-                                ref={this._inputRef}
-                                type="text"
-                                placeholder="Filter"
-                                value={this.state.filter}
-                                onFocus={() => (this.props.globalState.lockObject.lock = true)}
-                                onBlur={() => {
-                                    this.props.globalState.lockObject.lock = false;
-                                }}
-                                onChange={(evt) => this.filterContent(evt.target.value)}
-                            />
-                            <button className={"filter-clear" + (this.state.filter ? " visible" : "")} onClick={() => this.clearFilter()} title="Clear filter">
-                                ✕
-                            </button>
-                        </div>
-                        <div className="list-container">{blockMenu}</div>
-                    </div>
-                </div>
-            </div>
-        );
     }
-}
+
+    const templateCategories = GetTemplatesByCategory();
+    const templateSections: { title: string; items: { name: string; tooltip: string; color: string }[] }[] = [];
+    for (const categoryName of Object.keys(templateCategories)) {
+        const items = templateCategories[categoryName].map((name: string) => {
+            const template = AllCompositeTemplates[name];
+            return { name, tooltip: template.description, color: TemplateCategoryColor };
+        });
+        if (items.length > 0) {
+            templateSections.push({ title: `Templates: ${categoryName}`, items });
+        }
+    }
+
+    return (
+        <div className={classes.root}>
+            <Accordion uniqueId="FlowGraphNodeList" enableSearchItems enablePinnedItems>
+                {[...blockSections, ...templateSections].map((section) => (
+                    <AccordionSection key={section.title} title={section.title} collapseByDefault={false}>
+                        {section.items.map((item) => (
+                            <AccordionSectionItem key={item.name} uniqueId={item.name} label={item.name}>
+                                <DraggableLine data={item.name} tooltip={item.tooltip} color={item.color} />
+                            </AccordionSectionItem>
+                        ))}
+                    </AccordionSection>
+                ))}
+            </Accordion>
+        </div>
+    );
+};

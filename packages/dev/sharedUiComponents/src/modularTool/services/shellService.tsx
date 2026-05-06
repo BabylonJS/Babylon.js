@@ -449,6 +449,11 @@ const useStyles = makeStyles({
     paneContainer: {
         display: "flex",
         flexDirection: "column",
+        // Side panes hold the width requested by their `style.width` (or saved/dragged value)
+        // and never give it up to a neighboring pane growing. Without this, dragging the left
+        // pane wider would also squeeze the right pane (proportional flex-shrink). The central
+        // content (`flex-grow: 1`) is the only flex item that absorbs the change.
+        flexShrink: 0,
         overflowX: "hidden",
         overflowY: "hidden",
         zIndex: 1,

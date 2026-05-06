@@ -1,5 +1,6 @@
-import * as React from "react";
-import "./contextMenu.scss";
+import { type FunctionComponent, useEffect, useLayoutEffect, useRef } from "react";
+
+import { makeStyles, mergeClasses, tokens } from "@fluentui/react-components";
 
 /**
  * Describes one item in a context menu.
@@ -42,40 +43,82 @@ interface IContextMenuComponentProps {
     onClose: () => void;
 }
 
+const useStyles = makeStyles({
+    overlay: {
+        position: "fixed",
+        top: 0,
+        left: 0,
+        width: "100%",
+        height: "100%",
+        zIndex: 10000,
+    },
+    menu: {
+        position: "fixed",
+        zIndex: 10001,
+        background: tokens.colorNeutralBackground1,
+        border: `1px solid ${tokens.colorNeutralStroke2}`,
+        borderRadius: tokens.borderRadiusMedium,
+        boxShadow: tokens.shadow16,
+        minWidth: "180px",
+        padding: `${tokens.spacingVerticalXS} 0`,
+        color: tokens.colorNeutralForeground1,
+        fontSize: tokens.fontSizeBase300,
+    },
+    item: {
+        display: "flex",
+        alignItems: "center",
+        gap: tokens.spacingHorizontalS,
+        padding: `${tokens.spacingVerticalSNudge} ${tokens.spacingHorizontalL}`,
+        cursor: "pointer",
+        whiteSpace: "nowrap",
+        userSelect: "none",
+        ":hover": {
+            background: tokens.colorNeutralBackground1Hover,
+            color: tokens.colorNeutralForeground1Hover,
+        },
+    },
+    itemDisabled: {
+        opacity: 0.35,
+        cursor: "not-allowed",
+        ":hover": {
+            background: "transparent",
+            color: tokens.colorNeutralForeground1,
+        },
+    },
+    shortcut: {
+        marginLeft: "auto",
+        fontSize: tokens.fontSizeBase200,
+        opacity: 0.6,
+    },
+    separator: {
+        height: "1px",
+        background: tokens.colorNeutralStroke2,
+        margin: `${tokens.spacingVerticalXS} 0`,
+    },
+});
+
 /**
  * Generic right-click context menu shown as a fixed overlay.
+ * @returns The rendered context menu.
  */
-export class ContextMenuComponent extends React.Component<IContextMenuComponentProps> {
-    private _menuRef = React.createRef<HTMLDivElement>();
+export const ContextMenuComponent: FunctionComponent<IContextMenuComponentProps> = ({ x, y, items, onClose }) => {
+    const classes = useStyles();
+    const menuRef = useRef<HTMLDivElement>(null);
 
-    /** @internal */
-    override componentDidMount() {
-        this._clampToViewport();
-        // Close on Escape
-        this._onKeyDown = (e: KeyboardEvent) => {
+    // Close on Escape.
+    useEffect(() => {
+        const onKeyDown = (e: KeyboardEvent) => {
             if (e.key === "Escape") {
-                this.props.onClose();
+                onClose();
             }
         };
-        document.addEventListener("keydown", this._onKeyDown);
-    }
+        document.addEventListener("keydown", onKeyDown);
+        return () => document.removeEventListener("keydown", onKeyDown);
+    }, [onClose]);
 
-    /** @internal */
-    override componentDidUpdate() {
-        this._clampToViewport();
-    }
-
-    /** @internal */
-    override componentWillUnmount() {
-        if (this._onKeyDown) {
-            document.removeEventListener("keydown", this._onKeyDown);
-        }
-    }
-
-    private _onKeyDown: ((e: KeyboardEvent) => void) | null = null;
-
-    private _clampToViewport() {
-        const el = this._menuRef.current;
+    // Clamp the menu inside the viewport once it has been measured.
+    useLayoutEffect(() => {
+        const el = menuRef.current;
         if (!el) {
             return;
         }
@@ -88,49 +131,46 @@ export class ContextMenuComponent extends React.Component<IContextMenuComponentP
         if (rect.bottom > vh) {
             el.style.top = `${Math.max(0, vh - rect.height - 4)}px`;
         }
-    }
+    }, [x, y, items]);
 
-    /** @internal */
-    override render() {
-        return (
-            <div className="fge-context-menu-overlay" onPointerDown={() => this.props.onClose()} onContextMenu={(e) => e.preventDefault()}>
-                <div ref={this._menuRef} className="fge-context-menu" role="menu" style={{ left: this.props.x, top: this.props.y }} onPointerDown={(e) => e.stopPropagation()}>
-                    {this.props.items.map((entry, idx) => {
-                        if (IsSeparator(entry)) {
-                            return <div key={`sep-${idx}`} className="fge-ctx-separator" role="separator" />;
-                        }
-                        const item = entry;
-                        return (
-                            <div
-                                key={`item-${idx}`}
-                                className={`fge-ctx-item${item.disabled ? " disabled" : ""}`}
-                                role="menuitem"
-                                tabIndex={item.disabled ? -1 : 0}
-                                aria-label={item.ariaLabel ?? item.label}
-                                aria-disabled={item.disabled}
-                                onClick={() => {
+    return (
+        <div className={classes.overlay} onPointerDown={onClose} onContextMenu={(e) => e.preventDefault()}>
+            <div ref={menuRef} className={classes.menu} role="menu" style={{ left: x, top: y }} onPointerDown={(e) => e.stopPropagation()}>
+                {items.map((entry, idx) => {
+                    if (IsSeparator(entry)) {
+                        return <div key={`sep-${idx}`} className={classes.separator} role="separator" />;
+                    }
+                    const item = entry;
+                    return (
+                        <div
+                            key={`item-${idx}`}
+                            className={mergeClasses(classes.item, item.disabled && classes.itemDisabled)}
+                            role="menuitem"
+                            tabIndex={item.disabled ? -1 : 0}
+                            aria-label={item.ariaLabel ?? item.label}
+                            aria-disabled={item.disabled}
+                            onClick={() => {
+                                if (!item.disabled) {
+                                    item.action();
+                                    onClose();
+                                }
+                            }}
+                            onKeyDown={(e) => {
+                                if (e.key === "Enter" || e.key === " ") {
+                                    e.preventDefault();
                                     if (!item.disabled) {
                                         item.action();
-                                        this.props.onClose();
+                                        onClose();
                                     }
-                                }}
-                                onKeyDown={(e) => {
-                                    if (e.key === "Enter" || e.key === " ") {
-                                        e.preventDefault();
-                                        if (!item.disabled) {
-                                            item.action();
-                                            this.props.onClose();
-                                        }
-                                    }
-                                }}
-                            >
-                                <span>{item.label}</span>
-                                {item.shortcut && <span className="fge-ctx-shortcut">{item.shortcut}</span>}
-                            </div>
-                        );
-                    })}
-                </div>
+                                }
+                            }}
+                        >
+                            <span>{item.label}</span>
+                            {item.shortcut && <span className={classes.shortcut}>{item.shortcut}</span>}
+                        </div>
+                    );
+                })}
             </div>
-        );
-    }
-}
+        </div>
+    );
+};

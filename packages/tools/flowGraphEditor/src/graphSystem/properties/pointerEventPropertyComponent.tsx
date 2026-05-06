@@ -1,13 +1,11 @@
 import * as React from "react";
-import { LineContainerComponent } from "../../sharedComponents/lineContainerComponent";
 import { type IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
-import { OptionsLine } from "shared-ui-components/lines/optionsLineComponent";
-import {
-    GeneralPropertyTabComponent,
-    ConstructorVariablesPropertyTabComponent,
-    DataConnectionsPropertyTabComponent,
-    GenericPropertyTabComponent,
-} from "./genericNodePropertyComponent";
+import { Accordion, AccordionSection } from "shared-ui-components/fluent/primitives/accordion";
+import { Body1, makeStyles, tokens } from "@fluentui/react-components";
+import { NumberDropdownPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/dropdownPropertyLine";
+import { type DropdownOption } from "shared-ui-components/fluent/primitives/dropdown";
+
+import { RenderGeneralSection, RenderConstructorVariablesSection, RenderDataConnectionsSection, RenderGenericPropStoreSections } from "./genericNodePropertyComponent";
 import { type FlowGraphBlock } from "core/FlowGraph/flowGraphBlock";
 import { type GlobalState } from "../../globalState";
 import { type SceneContext } from "../../sceneContext";
@@ -16,6 +14,49 @@ import { type Observer } from "core/Misc/observable";
 interface IPointerEventPropertyState {
     sceneContext: SceneContext | null;
 }
+
+const useStyles = makeStyles({
+    helpText: {
+        padding: `${tokens.spacingVerticalXS} ${tokens.spacingHorizontalS}`,
+        color: tokens.colorNeutralForeground3,
+        fontStyle: "italic",
+    },
+});
+
+const TargetMeshContent: React.FunctionComponent<{
+    sceneContext: SceneContext | null;
+    currentUniqueId: number;
+    onMeshChange: (uniqueId: number) => void;
+    blockId: string;
+}> = ({ sceneContext, currentUniqueId, onMeshChange, blockId }) => {
+    const classes = useStyles();
+    return (
+        <>
+            {sceneContext ? (
+                <>
+                    <NumberDropdownPropertyLine
+                        key={`mesh-${blockId}-${sceneContext?.scene?.uid ?? "no-scene"}`}
+                        label="Mesh"
+                        options={
+                            [
+                                { label: "(none)", value: -1 },
+                                ...sceneContext.meshes.map((m) => ({
+                                    label: m.name || `(id ${m.uniqueId})`,
+                                    value: m.uniqueId,
+                                })),
+                            ] as DropdownOption<number>[]
+                        }
+                        value={currentUniqueId}
+                        onChange={onMeshChange}
+                    />
+                    {sceneContext.meshes.length === 0 && <Body1 className={classes.helpText}>No meshes found in the scene.</Body1>}
+                </>
+            ) : (
+                <Body1 className={classes.helpText}>Load a scene snippet in the Preview panel to pick meshes by name.</Body1>
+            )}
+        </>
+    );
+};
 
 /**
  * Property panel for pointer event blocks (PointerDown/Up/Move/Over/Out) and MeshPickEventBlock.
@@ -124,46 +165,23 @@ export class PointerEventPropertyComponent extends React.Component<IPropertyComp
     }
 
     override render() {
-        const { stateManager, nodeData } = this.props;
         const { sceneContext } = this.state;
         const block = this._getBlock();
         const blockId = block.uniqueId;
         const currentUniqueId = this._resolveCurrentMeshId(sceneContext);
 
         return (
-            <>
-                <GeneralPropertyTabComponent stateManager={stateManager} nodeData={nodeData} />
-                <ConstructorVariablesPropertyTabComponent stateManager={stateManager} nodeData={nodeData} />
+            <Accordion uniqueId="FlowGraphPointerEventProperties" enablePinnedItems enableSearchItems>
+                {RenderGeneralSection(this.props)}
+                {RenderConstructorVariablesSection(this.props)}
 
-                <LineContainerComponent title="TARGET MESH">
-                    {sceneContext ? (
-                        <>
-                            <OptionsLine
-                                key={`mesh-${blockId}-${sceneContext?.scene?.uid ?? "no-scene"}`}
-                                label="Mesh"
-                                options={[
-                                    { label: "(none)", value: -1 },
-                                    ...sceneContext.meshes.map((m) => ({
-                                        label: m.name || `(id ${m.uniqueId})`,
-                                        value: m.uniqueId,
-                                    })),
-                                ]}
-                                target={{}}
-                                propertyName="_unused"
-                                noDirectUpdate={true}
-                                extractValue={() => currentUniqueId}
-                                onSelect={(value) => this._onMeshChange(value as number)}
-                            />
-                            {sceneContext.meshes.length === 0 && <div style={{ padding: "4px 8px", color: "#aaa", fontSize: "11px" }}>No meshes found in the scene.</div>}
-                        </>
-                    ) : (
-                        <div style={{ padding: "4px 8px", color: "#888", fontSize: "11px" }}>Load a scene snippet in the Preview panel to pick meshes by name.</div>
-                    )}
-                </LineContainerComponent>
+                <AccordionSection title="Target Mesh" collapseByDefault={false}>
+                    <TargetMeshContent sceneContext={sceneContext} currentUniqueId={currentUniqueId} onMeshChange={(id) => this._onMeshChange(id)} blockId={blockId} />
+                </AccordionSection>
 
-                <DataConnectionsPropertyTabComponent stateManager={stateManager} nodeData={nodeData} />
-                <GenericPropertyTabComponent stateManager={stateManager} nodeData={nodeData} />
-            </>
+                {RenderDataConnectionsSection(this.props)}
+                {RenderGenericPropStoreSections(this.props)}
+            </Accordion>
         );
     }
 }

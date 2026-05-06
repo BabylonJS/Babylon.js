@@ -1,8 +1,10 @@
-import * as React from "react";
-import { type GlobalState } from "../../globalState";
+import { type FunctionComponent, useEffect, useRef, useState } from "react";
+
+import { makeStyles, mergeClasses, tokens } from "@fluentui/react-components";
+
 import { type FlowGraphBlock } from "core/FlowGraph/flowGraphBlock";
 
-import "./log.scss";
+import { type GlobalState } from "../../globalState";
 
 interface ILogComponentProps {
     globalState: GlobalState;
@@ -19,67 +21,92 @@ export class LogEntry {
     ) {}
 }
 
-export class LogComponent extends React.Component<ILogComponentProps, { logs: LogEntry[] }> {
-    private _logConsoleRef: React.RefObject<HTMLDivElement>;
-    constructor(props: ILogComponentProps) {
-        super(props);
+const useStyles = makeStyles({
+    console: {
+        background: tokens.colorNeutralBackground3,
+        height: "100%",
+        boxSizing: "border-box",
+        margin: 0,
+        padding: tokens.spacingHorizontalM,
+        width: "100%",
+        overflow: "hidden",
+        overflowY: "auto",
+    },
+    log: {
+        color: tokens.colorNeutralForeground1,
+        fontSize: tokens.fontSizeBase300,
+        fontFamily: tokens.fontFamilyMonospace,
+    },
+    error: {
+        color: tokens.colorPaletteRedForeground1,
+    },
+    clickable: {
+        cursor: "pointer",
+        textDecoration: "underline",
+        textDecorationStyle: "dotted",
+        ":hover": {
+            opacity: 0.8,
+        },
+    },
+});
 
-        this.state = { logs: [] };
-        this._logConsoleRef = React.createRef();
-    }
+/**
+ * Console-style log panel rendered at the bottom of the central column.
+ * Subscribes to `globalState.onLogRequiredObservable` for new entries and supports
+ * click-to-navigate for entries with an attached block.
+ * @returns The rendered log panel.
+ */
+export const LogComponent: FunctionComponent<ILogComponentProps> = ({ globalState }) => {
+    const classes = useStyles();
+    const consoleRef = useRef<HTMLDivElement>(null);
+    const [logs, setLogs] = useState<LogEntry[]>([]);
 
-    override componentDidMount() {
-        this.props.globalState.onLogRequiredObservable.add((log) => {
-            const currentLogs = this.state.logs;
-            currentLogs.push(log);
-
-            this.setState({ logs: currentLogs });
+    useEffect(() => {
+        const observer = globalState.onLogRequiredObservable.add((entry) => {
+            setLogs((prev) => [...prev, entry]);
         });
-    }
+        return () => observer?.remove();
+    }, [globalState]);
 
-    override componentDidUpdate() {
-        if (!this._logConsoleRef.current) {
+    // Auto-scroll to the latest entry whenever logs change.
+    useEffect(() => {
+        if (consoleRef.current) {
+            consoleRef.current.scrollTop = consoleRef.current.scrollHeight;
+        }
+    }, [logs]);
+
+    const onLogEntryClick = (entry: LogEntry) => {
+        if (!entry.block || !globalState.onGetNodeFromBlock) {
             return;
         }
-
-        this._logConsoleRef.current.scrollTop = this._logConsoleRef.current.scrollHeight;
-    }
-
-    private _onLogEntryClick(entry: LogEntry) {
-        if (!entry.block || !this.props.globalState.onGetNodeFromBlock) {
-            return;
-        }
-        const node = this.props.globalState.onGetNodeFromBlock(entry.block);
+        const node = globalState.onGetNodeFromBlock(entry.block);
         if (!node) {
             return;
         }
         // Select the node and zoom to it
-        this.props.globalState.stateManager.onSelectionChangedObservable.notifyObservers({ selection: node });
+        globalState.stateManager.onSelectionChangedObservable.notifyObservers({ selection: node });
         node.setIsSelected(true, false);
 
-        // Center the canvas on the node
         const ownerCanvas = (node as any)._ownerCanvas;
         if (ownerCanvas && typeof ownerCanvas.zoomToNode === "function") {
             ownerCanvas.zoomToNode(node);
         }
-    }
+    };
 
-    override render() {
-        return (
-            <div id="fge-log-console" ref={this._logConsoleRef}>
-                {this.state.logs.map((l, i) => {
-                    const hasBlock = !!l.block;
-                    return (
-                        <div
-                            key={i}
-                            className={"log" + (l.isError ? " error" : "") + (hasBlock ? " clickable" : "")}
-                            onClick={hasBlock ? () => this._onLogEntryClick(l) : undefined}
-                        >
-                            {l.time.getHours() + ":" + l.time.getMinutes() + ":" + l.time.getSeconds() + ": " + l.message}
-                        </div>
-                    );
-                })}
-            </div>
-        );
-    }
-}
+    return (
+        <div ref={consoleRef} className={classes.console}>
+            {logs.map((l, i) => {
+                const hasBlock = !!l.block;
+                return (
+                    <div
+                        key={i}
+                        className={mergeClasses(classes.log, l.isError && classes.error, hasBlock && classes.clickable)}
+                        onClick={hasBlock ? () => onLogEntryClick(l) : undefined}
+                    >
+                        {l.time.getHours() + ":" + l.time.getMinutes() + ":" + l.time.getSeconds() + ": " + l.message}
+                    </div>
+                );
+            })}
+        </div>
+    );
+};

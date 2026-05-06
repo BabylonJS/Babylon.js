@@ -1,18 +1,20 @@
 import * as React from "react";
-import { LineContainerComponent } from "../../sharedComponents/lineContainerComponent";
-import { CheckBoxLineComponent } from "../../sharedComponents/checkBoxLineComponent";
+import { Accordion, AccordionSection } from "shared-ui-components/fluent/primitives/accordion";
+import { makeStyles, tokens } from "@fluentui/react-components";
+
+import { PropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/propertyLine";
+import { TextInputPropertyLine, NumberInputPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/inputPropertyLine";
+import { TextAreaPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/textAreaPropertyLine";
+import { TextPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/textPropertyLine";
+import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
+import { SyncedSliderPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/syncedSliderPropertyLine";
+import { StringDropdownPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/dropdownPropertyLine";
+import { ComboBoxPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/comboBoxPropertyLine";
+import { Color3PropertyLine, Color4PropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/colorPropertyLine";
+import { Vector2PropertyLine, Vector3PropertyLine, Vector4PropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/vectorPropertyLine";
+import { type DropdownOption } from "shared-ui-components/fluent/primitives/dropdown";
+
 import { type IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
-import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
-import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
-import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
-import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent";
-import { OptionsLine } from "shared-ui-components/lines/optionsLineComponent";
-import { Vector2LineComponent } from "shared-ui-components/lines/vector2LineComponent";
-import { Vector3LineComponent } from "shared-ui-components/lines/vector3LineComponent";
-import { Color3LineComponent } from "shared-ui-components/lines/color3LineComponent";
-import { Color4LineComponent } from "shared-ui-components/lines/color4LineComponent";
-import { MatrixLineComponent } from "shared-ui-components/lines/matrixLineComponent";
-import { Vector4LineComponent } from "shared-ui-components/lines/vector4LineComponent";
 import { type FlowGraphBlock } from "core/FlowGraph/flowGraphBlock";
 import { type FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnection";
 import { FlowGraphInteger } from "core/FlowGraph/CustomTypes/flowGraphInteger";
@@ -25,7 +27,6 @@ import { Vector2, Vector3, Vector4, Matrix } from "core/Maths/math.vector";
 import { Color3, Color4 } from "core/Maths/math.color";
 import { FlowGraphBlockDisplayName } from "../blockDisplayUtils";
 import { type GlobalState } from "../../globalState";
-import { AutoCompleteInputComponent } from "../../sharedComponents/autoCompleteInputComponent";
 import { GatherVariableNames } from "../../variableUtils";
 
 /**
@@ -56,6 +57,66 @@ function IsPrimitiveEditableInput(conn: FlowGraphDataConnection<any>, block: Flo
     return _EDITABLE_TYPE_NAMES.has(conn.richType.typeName);
 }
 
+const useMatrixStyles = makeStyles({
+    container: {
+        display: "grid",
+        gridTemplateColumns: "repeat(4, 1fr)",
+        gap: tokens.spacingHorizontalXXS,
+        rowGap: tokens.spacingVerticalXXS,
+        marginTop: tokens.spacingVerticalXS,
+    },
+    cell: {
+        boxSizing: "border-box",
+        height: "24px",
+        padding: `0 ${tokens.spacingHorizontalXS}`,
+        background: tokens.colorNeutralBackground1,
+        border: `1px solid ${tokens.colorNeutralStroke2}`,
+        borderRadius: tokens.borderRadiusSmall,
+        color: tokens.colorNeutralForeground1,
+        fontFamily: tokens.fontFamilyMonospace,
+        fontSize: tokens.fontSizeBase200,
+        outline: "none",
+        ":focus": {
+            borderTopColor: tokens.colorBrandStroke1,
+            borderRightColor: tokens.colorBrandStroke1,
+            borderBottomColor: tokens.colorBrandStroke1,
+            borderLeftColor: tokens.colorBrandStroke1,
+        },
+    },
+});
+
+/**
+ * Compact 4×4 matrix editor used inline inside a `PropertyLine` (no `MatrixPropertyLine`
+ * exists in the shared Fluent set yet). Each cell is an editable number input.
+ * @returns The rendered matrix editor.
+ */
+export const MatrixEditor: React.FunctionComponent<{ value: Matrix; onChange: (value: Matrix) => void }> = ({ value, onChange }) => {
+    const classes = useMatrixStyles();
+    const data = value.asArray();
+    return (
+        <div className={classes.container}>
+            {data.map((cell, i) => (
+                <input
+                    key={i}
+                    className={classes.cell}
+                    type="number"
+                    step="any"
+                    defaultValue={cell}
+                    onBlur={(e) => {
+                        const next = Number(e.currentTarget.value);
+                        if (!Number.isNaN(next)) {
+                            const arr = value.asArray().slice();
+                            arr[i] = next;
+                            const m = Matrix.FromArray(arr);
+                            onChange(m);
+                        }
+                    }}
+                />
+            ))}
+        </div>
+    );
+};
+
 /** Default property panel for any FlowGraph block. */
 export class GenericPropertyComponent extends React.Component<IPropertyComponentProps> {
     constructor(props: IPropertyComponentProps) {
@@ -64,14 +125,106 @@ export class GenericPropertyComponent extends React.Component<IPropertyComponent
 
     override render() {
         return (
-            <>
-                <GeneralPropertyTabComponent stateManager={this.props.stateManager} nodeData={this.props.nodeData} />
-                <ConstructorVariablesPropertyTabComponent stateManager={this.props.stateManager} nodeData={this.props.nodeData} />
-                <DataConnectionsPropertyTabComponent stateManager={this.props.stateManager} nodeData={this.props.nodeData} />
-                <GenericPropertyTabComponent stateManager={this.props.stateManager} nodeData={this.props.nodeData} />
-            </>
+            <Accordion uniqueId="FlowGraphNodeProperties" enablePinnedItems enableSearchItems>
+                {RenderGeneralSection(this.props)}
+                {RenderConstructorVariablesSection(this.props)}
+                {RenderDataConnectionsSection(this.props)}
+                {RenderGenericPropStoreSections(this.props)}
+            </Accordion>
         );
     }
+}
+
+/**
+ * AccordionSection wrappers for the reusable subpanels.
+ *
+ * Why these are functions (not components): the shared `<Accordion>` discovers its
+ * sections by iterating children and looking for elements with a `title` prop. A
+ * wrapping React component (function or class) would be a single child with no
+ * `title`, so the Accordion would skip it. Calling these as `{RenderGeneralSection(props)}`
+ * yields the `<AccordionSection>` element directly into the children array.
+ * @param props - The property component props.
+ * @returns The rendered "General" AccordionSection.
+ */
+export function RenderGeneralSection(props: IPropertyComponentProps): JSX.Element {
+    return (
+        <AccordionSection key="general" title="General" collapseByDefault={false}>
+            <GeneralPropertyTabComponent {...props} />
+        </AccordionSection>
+    );
+}
+
+/**
+ * @param props - The property component props.
+ * @returns The "Construction Variables" AccordionSection, or `null` if the block has no constructor config fields.
+ */
+export function RenderConstructorVariablesSection(props: IPropertyComponentProps): JSX.Element | null {
+    const block = props.nodeData.data as FlowGraphBlock;
+    const fields = CONSTRUCTOR_CONFIG.get(block.getClassName());
+    if (!fields || fields.length === 0) {
+        return null;
+    }
+    return (
+        <AccordionSection key="ctor" title="Construction Variables" collapseByDefault={false}>
+            <ConstructorVariablesPropertyTabComponent {...props} />
+        </AccordionSection>
+    );
+}
+
+/**
+ * @param props - The property component props.
+ * @returns The "Input Values" AccordionSection, or `null` if the block has no editable data inputs.
+ */
+export function RenderDataConnectionsSection(props: IPropertyComponentProps): JSX.Element | null {
+    const block = props.nodeData.data as FlowGraphBlock;
+    const editableInputs = block.dataInputs.filter((conn) => IsPrimitiveEditableInput(conn, block));
+    if (editableInputs.length === 0) {
+        return null;
+    }
+    return (
+        <AccordionSection key="inputs" title="Input Values" collapseByDefault={false}>
+            <DataConnectionsPropertyTabComponent {...props} />
+        </AccordionSection>
+    );
+}
+
+/**
+ * Returns a flat array of `<AccordionSection>` elements — one per editable group declared
+ * via the `editableInPropertyPage` decorator on the block. Each section delegates to
+ * `<GenericPropertyTabComponent>` filtered to that group.
+ * @param props - The property component props.
+ * @returns Array of AccordionSection elements (one per editable group).
+ */
+export function RenderGenericPropStoreSections(props: IPropertyComponentProps): JSX.Element[] {
+    const block = props.nodeData.data as FlowGraphBlock;
+    const propStore = (block as any)._propStore as IPropertyDescriptionForEdition[] | undefined;
+    if (!propStore) {
+        return [];
+    }
+    // Match the class-walk filter inside GenericPropertyTabComponent so we only
+    // collect groups that will actually render at least one entry.
+    const classes: string[] = [];
+    let proto = Object.getPrototypeOf(block);
+    while (proto && proto.getClassName) {
+        classes.push(proto.getClassName());
+        proto = Object.getPrototypeOf(proto);
+    }
+    const groupOrder: string[] = [];
+    const seen = new Set<string>();
+    for (const entry of propStore) {
+        if (classes.indexOf(entry.className) === -1) {
+            continue;
+        }
+        if (!seen.has(entry.groupName)) {
+            seen.add(entry.groupName);
+            groupOrder.push(entry.groupName);
+        }
+    }
+    return groupOrder.map((group) => (
+        <AccordionSection key={`group-${group}`} title={group} collapseByDefault={false}>
+            <GenericPropertyTabComponent {...props} groupFilter={group} />
+        </AccordionSection>
+    ));
 }
 
 /** Renders the "GENERAL" section (Name, Type, Comments) for any block. */
@@ -85,31 +238,25 @@ export class GeneralPropertyTabComponent extends React.Component<IPropertyCompon
 
         return (
             <>
-                <LineContainerComponent title="GENERAL">
-                    <TextInputLineComponent
-                        label="Name"
-                        propertyName="name"
-                        target={block}
-                        value={this.props.nodeData.name}
-                        lockObject={this.props.stateManager.lockObject}
-                        onChange={() => this.props.stateManager.onUpdateRequiredObservable.notifyObservers(block)}
-                        throttlePropertyChangedNotification={true}
-                        validator={() => {
-                            return true;
-                        }}
-                    />
-                    <TextLineComponent label="Type" value={FlowGraphBlockDisplayName(block.getClassName())} />
-                    <TextInputLineComponent
-                        label="Comments"
-                        multilines={true}
-                        lockObject={this.props.stateManager.lockObject}
-                        value={(block as any).comments || ""}
-                        target={block}
-                        propertyName="comments"
-                        onChange={() => this.props.stateManager.onUpdateRequiredObservable.notifyObservers(block)}
-                        throttlePropertyChangedNotification={true}
-                    />
-                </LineContainerComponent>
+                <TextInputPropertyLine
+                    label="Name"
+                    value={(block as any).name ?? this.props.nodeData.name}
+                    onChange={(value) => {
+                        (block as any).name = value;
+                        this.props.stateManager.onUpdateRequiredObservable.notifyObservers(block);
+                        this.forceUpdate();
+                    }}
+                />
+                <TextPropertyLine label="Type" value={FlowGraphBlockDisplayName(block.getClassName())} />
+                <TextAreaPropertyLine
+                    label="Comments"
+                    value={(block as any).comments ?? ""}
+                    onChange={(value) => {
+                        (block as any).comments = value;
+                        this.props.stateManager.onUpdateRequiredObservable.notifyObservers(block);
+                        this.forceUpdate();
+                    }}
+                />
             </>
         );
     }
@@ -183,30 +330,27 @@ export class ConstructorVariablesPropertyTabComponent extends React.Component<IP
         }
 
         return (
-            <LineContainerComponent title="CONSTRUCTION VARIABLES">
+            <>
                 {fields.map((field) => {
                     const currentVal = block.config ? block.config[field.key] : undefined;
 
                     if (field.kind === "boolean") {
                         return (
-                            <CheckBoxLineComponent
+                            <SwitchPropertyLine
                                 key={field.key}
                                 label={field.label}
-                                isSelected={() => !!(block.config && block.config[field.key])}
-                                onSelect={(v) => this._updateConfig(block, field.key, v)}
+                                value={!!(block.config && block.config[field.key])}
+                                onChange={(v) => this._updateConfig(block, field.key, v)}
                             />
                         );
                     }
 
                     if (field.kind === "number") {
-                        const proxy = { v: typeof currentVal === "number" ? currentVal : 0 };
                         return (
-                            <FloatLineComponent
+                            <NumberInputPropertyLine
                                 key={field.key}
                                 label={field.label}
-                                lockObject={this.props.stateManager.lockObject}
-                                target={proxy}
-                                propertyName="v"
+                                value={typeof currentVal === "number" ? currentVal : 0}
                                 onChange={(v) => this._updateConfig(block, field.key, v)}
                             />
                         );
@@ -214,83 +358,65 @@ export class ConstructorVariablesPropertyTabComponent extends React.Component<IP
 
                     if (field.kind === "integer") {
                         const intVal = currentVal instanceof FlowGraphInteger ? currentVal.value : typeof currentVal === "number" ? currentVal : 0;
-                        const proxy = { v: intVal };
                         return (
-                            <FloatLineComponent
+                            <NumberInputPropertyLine
                                 key={field.key}
                                 label={field.label}
-                                lockObject={this.props.stateManager.lockObject}
-                                digits={0}
-                                step={"1"}
-                                isInteger={true}
-                                target={proxy}
-                                propertyName="v"
-                                onChange={(v) => this._updateConfig(block, field.key, new FlowGraphInteger(v))}
+                                value={intVal}
+                                step={1}
+                                onChange={(v) => this._updateConfig(block, field.key, new FlowGraphInteger(v | 0))}
                             />
                         );
                     }
 
                     if (field.kind === "flowgraph-type") {
-                        // OptionsLine with valuesAreStrings + noDirectUpdate lets us
-                        // control the update ourselves while still benefiting from the
-                        // component's stateful re-render on selection.
-                        const configProxy = block.config ?? {};
+                        const options: DropdownOption<string>[] = FLOW_GRAPH_TYPE_OPTIONS.map((opt) => ({ label: opt.label, value: opt.value }));
+                        const value = block.config && block.config[field.key] != null ? (block.config[field.key] as string) : "any";
                         return (
-                            <OptionsLine
+                            <StringDropdownPropertyLine
                                 key={`${field.key}-${block.uniqueId}`}
                                 label={field.label}
-                                options={FLOW_GRAPH_TYPE_OPTIONS}
-                                valuesAreStrings={true}
-                                noDirectUpdate={true}
-                                target={configProxy}
-                                propertyName={field.key}
-                                extractValue={() => (block.config && block.config[field.key] != null ? (block.config[field.key] as string) : "any")}
-                                onSelect={(v) => this._updateConfig(block, field.key, v as string, field.affectsPortTypes)}
+                                options={options}
+                                value={value}
+                                onChange={(v) => this._updateConfig(block, field.key, v, field.affectsPortTypes)}
                             />
                         );
                     }
 
                     if (field.kind === "string") {
-                        const proxy = { v: typeof currentVal === "string" ? currentVal : "" };
                         return (
-                            <TextInputLineComponent
+                            <TextInputPropertyLine
                                 key={field.key}
                                 label={field.label}
-                                lockObject={this.props.stateManager.lockObject}
-                                target={proxy}
-                                propertyName="v"
-                                throttlePropertyChangedNotification={true}
+                                value={typeof currentVal === "string" ? currentVal : ""}
                                 onChange={(v) => this._updateConfig(block, field.key, v)}
                             />
                         );
                     }
 
                     if (field.kind === "options" && field.options) {
-                        const configProxy = block.config ?? {};
+                        const options: DropdownOption<string>[] = field.options.map((opt) => ({ label: opt.label, value: opt.value }));
+                        const value = block.config && block.config[field.key] != null ? (block.config[field.key] as string) : (options[0]?.value ?? "");
                         return (
-                            <OptionsLine
+                            <StringDropdownPropertyLine
                                 key={`${field.key}-${block.uniqueId}`}
                                 label={field.label}
-                                options={field.options}
-                                valuesAreStrings={true}
-                                noDirectUpdate={true}
-                                target={configProxy}
-                                propertyName={field.key}
-                                extractValue={() => (block.config && block.config[field.key] != null ? (block.config[field.key] as string) : (field.options![0]?.value ?? ""))}
-                                onSelect={(v) => this._updateConfig(block, field.key, v as string)}
+                                options={options}
+                                value={value}
+                                onChange={(v) => this._updateConfig(block, field.key, v)}
                             />
                         );
                     }
 
                     if (field.kind === "variable-picker") {
                         const existingVars = this._getExistingVariableNames(block);
+                        const options: DropdownOption<string>[] = existingVars.map((name) => ({ label: name, value: name }));
                         return (
-                            <AutoCompleteInputComponent
+                            <ComboBoxPropertyLine
                                 key={`${field.key}-${block.uniqueId}`}
                                 label={field.label}
                                 value={typeof currentVal === "string" ? currentVal : ""}
-                                suggestions={existingVars}
-                                lockObject={this.props.stateManager.lockObject}
+                                options={options}
                                 onChange={(v) => this._updateConfig(block, field.key, v)}
                             />
                         );
@@ -298,7 +424,7 @@ export class ConstructorVariablesPropertyTabComponent extends React.Component<IP
 
                     return null;
                 })}
-            </LineContainerComponent>
+            </>
         );
     }
 }
@@ -338,7 +464,7 @@ export class DataConnectionsPropertyTabComponent extends React.Component<IProper
         }
 
         return (
-            <LineContainerComponent title="INPUT VALUES">
+            <>
                 {editableInputs.map((conn) => {
                     const def = (conn as any)._defaultValue;
                     const typeName = conn.richType.typeName;
@@ -347,164 +473,98 @@ export class DataConnectionsPropertyTabComponent extends React.Component<IProper
 
                     // Boolean
                     if (typeName === "boolean" || typeof def === "boolean") {
-                        return (
-                            <CheckBoxLineComponent
-                                key={conn.name}
-                                label={label}
-                                isSelected={() => (conn as any)._defaultValue === true}
-                                onSelect={(v) => this._setDefaultValue(conn, v)}
-                            />
-                        );
+                        return <SwitchPropertyLine key={conn.name} label={label} value={(conn as any)._defaultValue === true} onChange={(v) => this._setDefaultValue(conn, v)} />;
                     }
 
                     // FlowGraphInteger
                     if (def instanceof FlowGraphInteger || typeName === "FlowGraphInteger") {
                         const intVal = def instanceof FlowGraphInteger ? def.value : 0;
-                        const proxy = { v: intVal };
                         return (
-                            <FloatLineComponent
+                            <NumberInputPropertyLine
                                 key={conn.name}
                                 label={label}
-                                lockObject={this.props.stateManager.lockObject}
-                                digits={0}
-                                step={"1"}
-                                isInteger={true}
-                                target={proxy}
-                                propertyName="v"
-                                onChange={(v) => this._setDefaultValue(conn, new FlowGraphInteger(v))}
+                                value={intVal}
+                                step={1}
+                                onChange={(v) => this._setDefaultValue(conn, new FlowGraphInteger(v | 0))}
                             />
                         );
                     }
 
                     // Number
                     if (typeName === "number" || typeof def === "number") {
-                        const proxy = { v: typeof def === "number" ? def : 0 };
-                        return (
-                            <FloatLineComponent
-                                key={conn.name}
-                                label={label}
-                                lockObject={this.props.stateManager.lockObject}
-                                target={proxy}
-                                propertyName="v"
-                                onChange={(v) => this._setDefaultValue(conn, v)}
-                            />
-                        );
+                        return <NumberInputPropertyLine key={conn.name} label={label} value={typeof def === "number" ? def : 0} onChange={(v) => this._setDefaultValue(conn, v)} />;
                     }
 
                     // Vector2
                     if (typeName === "Vector2") {
-                        const proxy = { v: def instanceof Vector2 ? def.clone() : Vector2.Zero() };
-                        return (
-                            <Vector2LineComponent
-                                key={conn.name}
-                                label={label}
-                                lockObject={this.props.stateManager.lockObject}
-                                target={proxy}
-                                propertyName="v"
-                                onChange={(v) => this._setDefaultValue(conn, v)}
-                            />
-                        );
+                        const current = def instanceof Vector2 ? def : Vector2.Zero();
+                        return <Vector2PropertyLine key={conn.name} label={label} value={current} onChange={(v) => this._setDefaultValue(conn, v.clone())} />;
                     }
 
                     // Vector3
                     if (typeName === "Vector3") {
-                        const proxy = { v: def instanceof Vector3 ? def.clone() : Vector3.Zero() };
-                        return (
-                            <Vector3LineComponent
-                                key={conn.name}
-                                label={label}
-                                lockObject={this.props.stateManager.lockObject}
-                                target={proxy}
-                                propertyName="v"
-                                onChange={(v) => this._setDefaultValue(conn, v)}
-                            />
-                        );
+                        const current = def instanceof Vector3 ? def : Vector3.Zero();
+                        return <Vector3PropertyLine key={conn.name} label={label} value={current} onChange={(v) => this._setDefaultValue(conn, v.clone())} />;
                     }
 
                     // Vector4
                     if (typeName === "Vector4") {
-                        const proxy = { v: def instanceof Vector4 ? def.clone() : Vector4.Zero() };
-                        return (
-                            <Vector4LineComponent
-                                key={conn.name}
-                                label={label}
-                                lockObject={this.props.stateManager.lockObject}
-                                target={proxy}
-                                propertyName="v"
-                                onChange={(v) => this._setDefaultValue(conn, v)}
-                            />
-                        );
+                        const current = def instanceof Vector4 ? def : Vector4.Zero();
+                        return <Vector4PropertyLine key={conn.name} label={label} value={current} onChange={(v) => this._setDefaultValue(conn, v.clone())} />;
                     }
 
                     // Color3
                     if (typeName === "Color3") {
-                        const proxy = { v: def instanceof Color3 ? def.clone() : new Color3(0, 0, 0) };
-                        return (
-                            <Color3LineComponent
-                                key={conn.name}
-                                label={label}
-                                lockObject={this.props.stateManager.lockObject}
-                                target={proxy}
-                                propertyName="v"
-                                onChange={() => this._setDefaultValue(conn, proxy.v)}
-                            />
-                        );
+                        const current = def instanceof Color3 ? def : new Color3(0, 0, 0);
+                        return <Color3PropertyLine key={conn.name} label={label} value={current} onChange={(v) => this._setDefaultValue(conn, v.clone())} />;
                     }
 
                     // Color4
                     if (typeName === "Color4") {
-                        const proxy = { v: def instanceof Color4 ? def.clone() : new Color4(0, 0, 0, 1) };
-                        return (
-                            <Color4LineComponent
-                                key={conn.name}
-                                label={label}
-                                lockObject={this.props.stateManager.lockObject}
-                                target={proxy}
-                                propertyName="v"
-                                onChange={() => this._setDefaultValue(conn, proxy.v)}
-                            />
-                        );
+                        const current = def instanceof Color4 ? def : new Color4(0, 0, 0, 1);
+                        return <Color4PropertyLine key={conn.name} label={label} value={current} onChange={(v) => this._setDefaultValue(conn, v.clone())} />;
                     }
 
-                    // Matrix
+                    // Matrix — no shared MatrixPropertyLine yet, use a small inline editor.
                     if (typeName === "Matrix") {
-                        const proxy = { v: def instanceof Matrix ? def.clone() : Matrix.Identity() };
+                        const current = def instanceof Matrix ? def : Matrix.Identity();
                         return (
-                            <MatrixLineComponent
-                                key={conn.name}
-                                label={label}
-                                lockObject={this.props.stateManager.lockObject}
-                                target={proxy}
-                                propertyName="v"
-                                onChange={(v) => this._setDefaultValue(conn, v)}
-                            />
+                            <PropertyLine key={conn.name} label={label}>
+                                <MatrixEditor value={current} onChange={(v) => this._setDefaultValue(conn, v)} />
+                            </PropertyLine>
                         );
                     }
 
                     // String (default — also covers RichTypeAny with string default)
-                    const proxy = { v: typeof def === "string" ? def : "" };
                     return (
-                        <TextInputLineComponent
+                        <TextInputPropertyLine
                             key={conn.name}
                             label={label}
-                            lockObject={this.props.stateManager.lockObject}
-                            target={proxy}
-                            propertyName="v"
+                            value={typeof def === "string" ? def : ""}
                             disabled={connected}
-                            throttlePropertyChangedNotification={true}
                             onChange={(v) => this._setDefaultValue(conn, v)}
                         />
                     );
                 })}
-            </LineContainerComponent>
+            </>
         );
     }
 }
 
 /** Renders properties registered via the `editableInPropertyPage` decorator on any block. */
-export class GenericPropertyTabComponent extends React.Component<IPropertyComponentProps> {
-    constructor(props: IPropertyComponentProps) {
+export class GenericPropertyTabComponent extends React.Component<IPropertyComponentProps & { groupFilter?: string }> {
+    constructor(props: IPropertyComponentProps & { groupFilter?: string }) {
         super(props);
+    }
+
+    private _getValue(block: any, propertyName: string): any {
+        return block[propertyName];
+    }
+
+    private _setValue(block: any, propertyName: string, value: any, options: any) {
+        block[propertyName] = value;
+        ForceRebuild(block, this.props.stateManager, propertyName, options.notifiers);
+        this.forceUpdate();
     }
 
     override render() {
@@ -542,12 +602,11 @@ export class GenericPropertyTabComponent extends React.Component<IPropertyCompon
             switch (type) {
                 case PropertyTypeForEdition.Boolean: {
                     components.push(
-                        <CheckBoxLineComponent
-                            key={`checkBox-${propertyName}`}
+                        <SwitchPropertyLine
+                            key={`switch-${propertyName}`}
                             label={displayName}
-                            target={block}
-                            propertyName={propertyName}
-                            onValueChanged={() => ForceRebuild(block, this.props.stateManager, propertyName, options.notifiers)}
+                            value={!!this._getValue(block, propertyName)}
+                            onChange={(v) => this._setValue(block, propertyName, v, options)}
                         />
                     );
                     break;
@@ -556,27 +615,23 @@ export class GenericPropertyTabComponent extends React.Component<IPropertyCompon
                     const cantDisplaySlider = isNaN(options.min as number) || isNaN(options.max as number) || options.min === options.max;
                     if (cantDisplaySlider) {
                         components.push(
-                            <FloatLineComponent
+                            <NumberInputPropertyLine
                                 key={`float-${propertyName}`}
-                                lockObject={this.props.stateManager.lockObject}
                                 label={displayName}
-                                propertyName={propertyName}
-                                target={block}
-                                onChange={() => ForceRebuild(block, this.props.stateManager, propertyName, options.notifiers)}
+                                value={Number(this._getValue(block, propertyName) ?? 0)}
+                                onChange={(v) => this._setValue(block, propertyName, v, options)}
                             />
                         );
                     } else {
                         components.push(
-                            <SliderLineComponent
+                            <SyncedSliderPropertyLine
                                 key={`slider-${propertyName}`}
-                                lockObject={this.props.stateManager.lockObject}
                                 label={displayName}
-                                target={block}
-                                propertyName={propertyName}
+                                value={Number(this._getValue(block, propertyName) ?? 0)}
+                                min={Math.min(options.min as number, options.max as number)}
+                                max={options.max as number}
                                 step={Math.abs((options.max as number) - (options.min as number)) / 100.0}
-                                minimum={Math.min(options.min as number, options.max as number)}
-                                maximum={options.max as number}
-                                onChange={() => ForceRebuild(block, this.props.stateManager, propertyName, options.notifiers)}
+                                onChange={(v) => this._setValue(block, propertyName, v, options)}
                             />
                         );
                     }
@@ -586,126 +641,107 @@ export class GenericPropertyTabComponent extends React.Component<IPropertyCompon
                     const cantDisplaySlider = isNaN(options.min as number) || isNaN(options.max as number) || options.min === options.max;
                     if (cantDisplaySlider) {
                         components.push(
-                            <FloatLineComponent
+                            <NumberInputPropertyLine
                                 key={`int-${propertyName}`}
-                                lockObject={this.props.stateManager.lockObject}
-                                digits={0}
-                                step={"1"}
-                                isInteger={true}
                                 label={displayName}
-                                propertyName={propertyName}
-                                target={block}
-                                onChange={() => ForceRebuild(block, this.props.stateManager, propertyName, options.notifiers)}
+                                value={Number(this._getValue(block, propertyName) ?? 0)}
+                                step={1}
+                                onChange={(v) => this._setValue(block, propertyName, v | 0, options)}
                             />
                         );
                     } else {
                         components.push(
-                            <SliderLineComponent
+                            <SyncedSliderPropertyLine
                                 key={`slider-${propertyName}`}
-                                lockObject={this.props.stateManager.lockObject}
                                 label={displayName}
-                                target={block}
-                                propertyName={propertyName}
-                                decimalCount={0}
+                                value={Number(this._getValue(block, propertyName) ?? 0)}
+                                min={Math.min(options.min as number, options.max as number)}
+                                max={options.max as number}
                                 step={1}
-                                minimum={Math.min(options.min as number, options.max as number)}
-                                maximum={options.max as number}
-                                onChange={() => ForceRebuild(block, this.props.stateManager, propertyName, options.notifiers)}
+                                onChange={(v) => this._setValue(block, propertyName, v | 0, options)}
                             />
                         );
                     }
                     break;
                 }
                 case PropertyTypeForEdition.Vector2: {
+                    const current = (this._getValue(block, propertyName) as Vector2) ?? Vector2.Zero();
                     components.push(
-                        <Vector2LineComponent
+                        <Vector2PropertyLine
                             key={`vector2-${propertyName}`}
-                            lockObject={this.props.stateManager.lockObject}
                             label={displayName}
-                            propertyName={propertyName}
-                            target={block}
-                            onChange={() => ForceRebuild(block, this.props.stateManager, propertyName, options.notifiers)}
+                            value={current}
+                            onChange={(v) => this._setValue(block, propertyName, v.clone(), options)}
                         />
                     );
                     break;
                 }
                 case PropertyTypeForEdition.Vector3: {
+                    const current = (this._getValue(block, propertyName) as Vector3) ?? Vector3.Zero();
                     components.push(
-                        <Vector3LineComponent
+                        <Vector3PropertyLine
                             key={`vector3-${propertyName}`}
-                            lockObject={this.props.stateManager.lockObject}
                             label={displayName}
-                            propertyName={propertyName}
-                            target={block}
-                            onChange={() => ForceRebuild(block, this.props.stateManager, propertyName, options.notifiers)}
+                            value={current}
+                            onChange={(v) => this._setValue(block, propertyName, v.clone(), options)}
                         />
                     );
                     break;
                 }
                 case PropertyTypeForEdition.List: {
+                    const opts: DropdownOption<string>[] = (options.options as IEditablePropertyListOption[]).map((opt) => ({ label: opt.label, value: String(opt.value) }));
                     components.push(
-                        <OptionsLine
+                        <StringDropdownPropertyLine
                             key={`options-${propertyName}`}
                             label={displayName}
-                            options={options.options as IEditablePropertyListOption[]}
-                            target={block}
-                            propertyName={propertyName}
-                            onSelect={() => ForceRebuild(block, this.props.stateManager, propertyName, options.notifiers)}
+                            options={opts}
+                            value={String(this._getValue(block, propertyName) ?? opts[0]?.value ?? "")}
+                            onChange={(v) => this._setValue(block, propertyName, v, options)}
                         />
                     );
                     break;
                 }
                 case PropertyTypeForEdition.Color3: {
+                    const current = (this._getValue(block, propertyName) as Color3) ?? new Color3(0, 0, 0);
                     components.push(
-                        <Color3LineComponent
+                        <Color3PropertyLine
                             key={`color3-${propertyName}`}
-                            lockObject={this.props.stateManager.lockObject}
                             label={displayName}
-                            propertyName={propertyName}
-                            target={block}
-                            onChange={() => ForceRebuild(block, this.props.stateManager, propertyName, options.notifiers)}
+                            value={current}
+                            onChange={(v) => this._setValue(block, propertyName, v.clone(), options)}
                         />
                     );
                     break;
                 }
                 case PropertyTypeForEdition.Color4: {
+                    const current = (this._getValue(block, propertyName) as Color4) ?? new Color4(0, 0, 0, 1);
                     components.push(
-                        <Color4LineComponent
+                        <Color4PropertyLine
                             key={`color4-${propertyName}`}
-                            lockObject={this.props.stateManager.lockObject}
                             label={displayName}
-                            propertyName={propertyName}
-                            target={block}
-                            onChange={() => ForceRebuild(block, this.props.stateManager, propertyName, options.notifiers)}
+                            value={current}
+                            onChange={(v) => this._setValue(block, propertyName, v.clone(), options)}
                         />
                     );
                     break;
                 }
                 case PropertyTypeForEdition.String: {
                     components.push(
-                        <TextInputLineComponent
+                        <TextInputPropertyLine
                             key={`string-${propertyName}`}
                             label={displayName}
-                            propertyName={propertyName}
-                            target={block}
-                            throttlePropertyChangedNotification={true}
-                            throttlePropertyChangedNotificationDelay={1000}
-                            lockObject={this.props.stateManager.lockObject}
-                            onChange={() => ForceRebuild(block, this.props.stateManager, propertyName, options.notifiers)}
+                            value={String(this._getValue(block, propertyName) ?? "")}
+                            onChange={(v) => this._setValue(block, propertyName, v, options)}
                         />
                     );
                     break;
                 }
                 case PropertyTypeForEdition.Matrix: {
+                    const current = (this._getValue(block, propertyName) as Matrix) ?? Matrix.Identity();
                     components.push(
-                        <MatrixLineComponent
-                            key={`matrix-${propertyName}`}
-                            label={displayName}
-                            propertyName={propertyName}
-                            target={block}
-                            lockObject={this.props.stateManager.lockObject}
-                            onChange={() => ForceRebuild(block, this.props.stateManager, propertyName, options.notifiers)}
-                        />
+                        <PropertyLine key={`matrix-${propertyName}`} label={displayName}>
+                            <MatrixEditor value={current} onChange={(v) => this._setValue(block, propertyName, v, options)} />
+                        </PropertyLine>
                     );
                     break;
                 }
@@ -714,11 +750,12 @@ export class GenericPropertyTabComponent extends React.Component<IPropertyCompon
 
         return (
             <>
-                {groups.map((group) => (
-                    <LineContainerComponent key={`group-${group}`} title={group}>
-                        {componentList[group]}
-                    </LineContainerComponent>
-                ))}
+                {groups.map((group) => {
+                    if (this.props.groupFilter !== undefined && group !== this.props.groupFilter) {
+                        return null;
+                    }
+                    return <React.Fragment key={`group-${group}`}>{componentList[group]}</React.Fragment>;
+                })}
             </>
         );
     }

@@ -1,179 +1,210 @@
-import * as React from "react";
-import { type Nullable } from "core/types";
-import { type Observer } from "core/Misc/observable";
-import { type FlowGraph } from "core/FlowGraph/flowGraph";
-import { type GlobalState } from "../../globalState";
+import { type FunctionComponent, type MouseEvent, useCallback, useEffect, useState } from "react";
 
-import "./graphTabBar.scss";
+import { Button, Input, Tab, TabList, makeStyles, mergeClasses, tokens } from "@fluentui/react-components";
+import { AddRegular, DismissRegular } from "@fluentui/react-icons";
+
+import { type GlobalState } from "../../globalState";
 
 interface IGraphTabBarProps {
     globalState: GlobalState;
 }
 
-interface IGraphTabBarState {
-    graphs: Array<{ name: string; uniqueId: string }>;
-    activeIndex: number;
-    editingIndex: number | null;
-    editingName: string;
-}
+const useStyles = makeStyles({
+    bar: {
+        display: "flex",
+        flexDirection: "row",
+        alignItems: "center",
+        background: tokens.colorNeutralBackground3,
+        borderBottom: `1px solid ${tokens.colorNeutralStroke2}`,
+        flexShrink: 0,
+        boxSizing: "border-box",
+        overflow: "hidden",
+    },
+    tabList: {
+        flex: 1,
+        overflowX: "auto",
+        // Hide horizontal scrollbar — the user navigates with arrows / clicks.
+        scrollbarWidth: "none",
+        "&::-webkit-scrollbar": { display: "none" },
+    },
+    tabContent: {
+        display: "inline-flex",
+        alignItems: "center",
+        gap: tokens.spacingHorizontalXS,
+    },
+    closeButton: {
+        // Slim down the close button so it does not push the tab content too wide.
+        minWidth: "auto",
+        padding: 0,
+        opacity: 0,
+        transitionProperty: "opacity",
+        transitionDuration: tokens.durationFast,
+    },
+    closeButtonVisible: {
+        opacity: 1,
+    },
+    // When the tab is hovered, reveal the close button.
+    tabHover: {
+        ":hover .fge-tab-close": {
+            opacity: 1,
+        },
+    },
+    tabRenameInput: {
+        width: "120px",
+    },
+    addButton: {
+        flexShrink: 0,
+        margin: `0 ${tokens.spacingHorizontalXS}`,
+    },
+});
 
 /**
  * Tab bar component for switching between multiple flow graphs in the coordinator.
+ *
+ * Built on Fluent's `TabList` for native keyboard navigation and roving-tabindex behaviour.
+ * Each `Tab` shows the graph name (or an inline rename `Input` when the user double-clicks)
+ * plus a close button. A trailing `+` button creates a new graph.
+ * @returns The rendered tab bar.
  */
-export class GraphTabBarComponent extends React.Component<IGraphTabBarProps, IGraphTabBarState> {
-    private _graphListObserver: Nullable<Observer<void>> = null;
-    private _activeGraphObserver: Nullable<Observer<FlowGraph>> = null;
-    private _scrollRef = React.createRef<HTMLDivElement>();
+export const GraphTabBarComponent: FunctionComponent<IGraphTabBarProps> = ({ globalState }) => {
+    const classes = useStyles();
 
-    constructor(props: IGraphTabBarProps) {
-        super(props);
-        this.state = {
-            graphs: this._getGraphList(),
-            activeIndex: props.globalState.activeGraphIndex,
-            editingIndex: null,
-            editingName: "",
+    const [graphs, setGraphs] = useState(() => globalState.coordinator?.flowGraphs.map((g) => ({ name: g.name, uniqueId: g.uniqueId })) ?? []);
+    const [activeIndex, setActiveIndex] = useState(globalState.activeGraphIndex);
+    const [editingIndex, setEditingIndex] = useState<number | null>(null);
+    const [editingName, setEditingName] = useState("");
+
+    const refreshGraphs = useCallback(() => {
+        const list = globalState.coordinator?.flowGraphs.map((g) => ({ name: g.name, uniqueId: g.uniqueId })) ?? [];
+        setGraphs(list);
+        setActiveIndex(globalState.activeGraphIndex);
+    }, [globalState]);
+
+    useEffect(() => {
+        const listObs = globalState.onGraphListChanged.add(refreshGraphs);
+        const activeObs = globalState.onActiveGraphChanged.add(refreshGraphs);
+        return () => {
+            listObs?.remove();
+            activeObs?.remove();
         };
-    }
+    }, [globalState, refreshGraphs]);
 
-    private _getGraphList(): Array<{ name: string; uniqueId: string }> {
-        const coordinator = this.props.globalState.coordinator;
-        if (!coordinator) {
-            return [];
-        }
-        return coordinator.flowGraphs.map((g) => ({ name: g.name, uniqueId: g.uniqueId }));
-    }
+    const startEditing = useCallback(
+        (index: number) => {
+            const graph = graphs[index];
+            if (!graph) {
+                return;
+            }
+            setEditingIndex(index);
+            setEditingName(graph.name);
+        },
+        [graphs]
+    );
 
-    override componentDidMount() {
-        this._graphListObserver = this.props.globalState.onGraphListChanged.add(() => {
-            this.setState({ graphs: this._getGraphList() });
-        });
-        this._activeGraphObserver = this.props.globalState.onActiveGraphChanged.add(() => {
-            this.setState({
-                activeIndex: this.props.globalState.activeGraphIndex,
-                graphs: this._getGraphList(),
-            });
-        });
-    }
-
-    override componentWillUnmount() {
-        if (this._graphListObserver) {
-            this.props.globalState.onGraphListChanged.remove(this._graphListObserver);
-        }
-        if (this._activeGraphObserver) {
-            this.props.globalState.onActiveGraphChanged.remove(this._activeGraphObserver);
-        }
-    }
-
-    private _onTabClick(index: number) {
-        if (index === this.state.activeIndex) {
-            return;
-        }
-        this.props.globalState.activeGraphIndex = index;
-    }
-
-    private _onTabDoubleClick(index: number) {
-        const graph = this.state.graphs[index];
-        if (!graph) {
-            return;
-        }
-        this.setState({ editingIndex: index, editingName: graph.name });
-    }
-
-    private _commitRename() {
-        const { editingIndex, editingName } = this.state;
+    const commitRename = useCallback(() => {
         if (editingIndex === null) {
             return;
         }
         const trimmed = editingName.trim();
         if (trimmed) {
-            this.props.globalState.renameGraph(editingIndex, trimmed);
+            globalState.renameGraph(editingIndex, trimmed);
         }
-        this.setState({ editingIndex: null, editingName: "" });
+        setEditingIndex(null);
+        setEditingName("");
+    }, [editingIndex, editingName, globalState]);
+
+    const cancelRename = useCallback(() => {
+        setEditingIndex(null);
+        setEditingName("");
+    }, []);
+
+    const onAddGraph = useCallback(() => {
+        globalState.addGraph();
+        globalState.onResetRequiredObservable.notifyObservers(true);
+        globalState.onClearUndoStack.notifyObservers();
+    }, [globalState]);
+
+    const onCloseTab = useCallback(
+        (index: number, evt: MouseEvent) => {
+            // Prevent the click from selecting the tab being closed.
+            evt.stopPropagation();
+            if (graphs.length <= 1) {
+                return;
+            }
+            globalState.removeGraph(index);
+            globalState.onResetRequiredObservable.notifyObservers(true);
+            globalState.onClearUndoStack.notifyObservers();
+        },
+        [graphs.length, globalState]
+    );
+
+    if (graphs.length === 0) {
+        return null;
     }
 
-    private _onAddGraph() {
-        this.props.globalState.addGraph();
-        this.props.globalState.onResetRequiredObservable.notifyObservers(true);
-        this.props.globalState.onClearUndoStack.notifyObservers();
-    }
-
-    private _onCloseTab(index: number, evt: React.MouseEvent) {
-        evt.stopPropagation();
-        if (this.state.graphs.length <= 1) {
-            return;
-        }
-        this.props.globalState.removeGraph(index);
-        this.props.globalState.onResetRequiredObservable.notifyObservers(true);
-        this.props.globalState.onClearUndoStack.notifyObservers();
-    }
-
-    override render() {
-        const { graphs, activeIndex, editingIndex, editingName } = this.state;
-
-        if (graphs.length === 0) {
-            return null;
-        }
-
-        return (
-            <div className="fge-graph-tab-bar" role="tablist">
-                <div className="fge-tab-scroll-area" ref={this._scrollRef}>
-                    {graphs.map((graph, index) => (
-                        <div
-                            key={graph.uniqueId}
-                            className={`fge-tab${index === activeIndex ? " fge-tab-active" : ""}`}
-                            role="tab"
-                            tabIndex={index === activeIndex ? 0 : -1}
-                            aria-selected={index === activeIndex}
-                            aria-label={graph.name}
-                            onClick={() => this._onTabClick(index)}
-                            onDoubleClick={() => this._onTabDoubleClick(index)}
-                            onKeyDown={(e) => {
-                                if (e.key === "Enter" || e.key === " ") {
-                                    e.preventDefault();
-                                    this._onTabClick(index);
-                                } else if (e.key === "ArrowRight") {
-                                    e.preventDefault();
-                                    const next = (index + 1) % graphs.length;
-                                    (e.currentTarget.parentElement?.children[next] as HTMLElement)?.focus();
-                                } else if (e.key === "ArrowLeft") {
-                                    e.preventDefault();
-                                    const prev = (index - 1 + graphs.length) % graphs.length;
-                                    (e.currentTarget.parentElement?.children[prev] as HTMLElement)?.focus();
-                                }
-                            }}
-                            title={graph.name}
-                        >
-                            {editingIndex === index ? (
-                                <input
-                                    className="fge-tab-name-input"
-                                    value={editingName}
-                                    onChange={(e) => this.setState({ editingName: e.target.value })}
-                                    onBlur={() => this._commitRename()}
-                                    onKeyDown={(e) => {
-                                        if (e.key === "Enter") {
-                                            this._commitRename();
-                                        } else if (e.key === "Escape") {
-                                            this.setState({ editingIndex: null, editingName: "" });
-                                        }
-                                    }}
-                                    autoFocus
-                                    onClick={(e) => e.stopPropagation()}
-                                />
-                            ) : (
-                                <span className="fge-tab-name">{graph.name}</span>
-                            )}
-                            {graphs.length > 1 && (
-                                <button className="fge-tab-close" onClick={(evt) => this._onCloseTab(index, evt)} title="Close graph" aria-label={`Close ${graph.name}`}>
-                                    ×
-                                </button>
-                            )}
-                        </div>
-                    ))}
-                </div>
-                <button className="fge-tab-add" onClick={() => this._onAddGraph()} title="Add new graph" aria-label="Add new graph">
-                    +
-                </button>
-            </div>
-        );
-    }
-}
+    // TabList tracks selection by `value` strings — use the graph index as a stable string key.
+    return (
+        <div className={classes.bar}>
+            <TabList
+                className={classes.tabList}
+                size="small"
+                appearance="subtle"
+                selectedValue={String(activeIndex)}
+                onTabSelect={(_, data) => {
+                    if (typeof data.value !== "string") {
+                        return;
+                    }
+                    const index = parseInt(data.value, 10);
+                    if (!Number.isNaN(index) && index !== globalState.activeGraphIndex) {
+                        globalState.activeGraphIndex = index;
+                    }
+                }}
+            >
+                {graphs.map((graph, index) => {
+                    const isActive = index === activeIndex;
+                    const isEditing = editingIndex === index;
+                    return (
+                        <Tab key={graph.uniqueId} value={String(index)} className={classes.tabHover} onDoubleClick={() => startEditing(index)} title={graph.name}>
+                            <span className={classes.tabContent}>
+                                {isEditing ? (
+                                    <Input
+                                        className={classes.tabRenameInput}
+                                        size="small"
+                                        value={editingName}
+                                        onChange={(_, data) => setEditingName(data.value)}
+                                        onBlur={commitRename}
+                                        onKeyDown={(e) => {
+                                            // Stop propagation so the keys don't reach TabList's keyboard handler.
+                                            e.stopPropagation();
+                                            if (e.key === "Enter") {
+                                                commitRename();
+                                            } else if (e.key === "Escape") {
+                                                cancelRename();
+                                            }
+                                        }}
+                                        autoFocus
+                                        onClick={(e) => e.stopPropagation()}
+                                    />
+                                ) : (
+                                    <span>{graph.name}</span>
+                                )}
+                                {graphs.length > 1 && !isEditing && (
+                                    <Button
+                                        className={mergeClasses("fge-tab-close", classes.closeButton, isActive && classes.closeButtonVisible)}
+                                        size="small"
+                                        appearance="subtle"
+                                        icon={<DismissRegular />}
+                                        title="Close graph"
+                                        aria-label={`Close ${graph.name}`}
+                                        onClick={(evt) => onCloseTab(index, evt)}
+                                    />
+                                )}
+                            </span>
+                        </Tab>
+                    );
+                })}
+            </TabList>
+            <Button className={classes.addButton} size="small" appearance="subtle" icon={<AddRegular />} title="Add new graph" aria-label="Add new graph" onClick={onAddGraph} />
+        </div>
+    );
+};
