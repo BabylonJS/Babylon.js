@@ -5,6 +5,7 @@
 import { serialize, serializeAsColor3, expandToProperty } from "core/Misc/decorators";
 import { GetDirectStore, GetMergedStore } from "core/Misc/decorators.functions";
 import { Color3 } from "core/Maths/math.color";
+import { describe, expect, it, vi } from "vitest";
 
 describe("TC39 Decorator Migration", () => {
     describe("serialize decorator", () => {
@@ -75,6 +76,49 @@ describe("TC39 Decorator Migration", () => {
 
             instance.myExpanded = 20;
             expect(instance.myExpanded).toBe(20);
+        });
+
+        it("should preserve initialized backing fields when the auto-accessor has no initializer", () => {
+            class ExpandClass {
+                // @ts-expect-error Backing field is accessed dynamically by expandToProperty
+                private _myExpanded: number = 10;
+
+                @expandToProperty("_myCallback")
+                public accessor myExpanded: number;
+
+                // @ts-expect-error Accessed dynamically by expandToProperty decorator
+                private _myCallback() {
+                    // no-op
+                }
+            }
+
+            const instance = new ExpandClass();
+            expect(instance.myExpanded).toBe(10);
+        });
+
+        it("should copy auto-accessor initializers to the backing field", () => {
+            const callback = vi.fn();
+
+            class ExpandClass {
+                // @ts-expect-error Backing field is accessed dynamically by expandToProperty
+                private _myExpanded: number;
+
+                @expandToProperty("_myCallback")
+                public accessor myExpanded: number = 10;
+
+                // @ts-expect-error Accessed dynamically by expandToProperty decorator
+                private _myCallback() {
+                    callback();
+                }
+            }
+
+            const instance = new ExpandClass();
+            expect(instance.myExpanded).toBe(10);
+            expect(callback).not.toHaveBeenCalled();
+
+            instance.myExpanded = 20;
+            expect(instance.myExpanded).toBe(20);
+            expect(callback).toHaveBeenCalledTimes(1);
         });
     });
 });

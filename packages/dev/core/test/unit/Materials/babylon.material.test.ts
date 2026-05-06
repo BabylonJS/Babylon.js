@@ -1,7 +1,8 @@
 import { Engine, NullEngine } from "core/Engines";
-import { PBRMaterial, StandardMaterial, Texture } from "core/Materials";
+import { BackgroundMaterial, PBRMaterial, StandardMaterial, Texture } from "core/Materials";
 import { MeshBuilder } from "core/Meshes";
 import { Scene } from "core/scene";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 /**
  * Describes the test suite.
@@ -71,6 +72,18 @@ describe("Babylon Material", function () {
 
             const noRepeatCloneMaterial = baseMaterial.clone("noRepeatClonedMaterial", true);
             expect(Object.is(noRepeatCloneMaterial.diffuseTexture, noRepeatCloneMaterial.opacityTexture)).toBe(true);
+        });
+
+        it("updates primary colors when changing background material highlight level", () => {
+            const scene = new Scene(subject);
+            const material = new BackgroundMaterial("material", scene);
+            const computePrimaryColorsSpy = vi.spyOn(material as any, "_computePrimaryColors");
+
+            expect(material.primaryColor.r).toBe(1);
+
+            material.primaryColorHighlightLevel = 0.5;
+
+            expect(computePrimaryColorsSpy).toHaveBeenCalledTimes(1);
         });
     });
 });

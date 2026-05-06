@@ -25,8 +25,13 @@ function generateExpandMember(setCallback: string, targetKey: Nullable<string> =
     return <This, V>(_value: ClassAccessorDecoratorTarget<This, V>, context: ClassAccessorDecoratorContext<This, V>): ClassAccessorDecoratorResult<This, V> => {
         const key = targetKey || "_" + String(context.name);
         return {
+            init(this: any, value: V) {
+                if (value !== undefined || !(key in this)) {
+                    this[key] = value;
+                }
+                return value;
+            },
             get(this: any) {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-return
                 return this[key];
             },
             set(this: any, value: V) {
@@ -180,7 +185,6 @@ export function addAccessorsForMaterialProperty(setCallback: string, sourceKey: 
         const key = sourceKey || "_" + String(context.name);
         return {
             get(this: any) {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-return
                 return this[key]?.value;
             },
             set(this: any, value: V) {

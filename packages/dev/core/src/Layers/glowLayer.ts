@@ -118,7 +118,7 @@ export class GlowLayer extends EffectLayer {
     @serialize("options")
     protected _options: IGlowLayerOptions;
 
-    protected override readonly _thinEffectLayer: ThinGlowLayer;
+    declare protected readonly _thinEffectLayer: ThinGlowLayer;
     private _horizontalBlurPostprocess1: BlurPostProcess;
     private _verticalBlurPostprocess1: BlurPostProcess;
     private _horizontalBlurPostprocess2: BlurPostProcess;

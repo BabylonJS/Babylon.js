@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { type Engine } from "core/Engines/engine";
 import { NullEngine } from "core/Engines/nullEngine";
 import { Scene } from "core/scene";
+import { GlowLayer } from "core/Layers/glowLayer";
 import { SelectionOutlineLayer } from "core/Layers/selectionOutlineLayer";
 import { MeshBuilder } from "core/Meshes/meshBuilder";
 import { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
@@ -48,5 +49,11 @@ describe("SelectionOutlineLayer", () => {
         // After adding a selection, shouldRender flips to true
         layer.addSelection(sphere);
         expect(layer.shouldRender()).toBe(true);
+    });
+
+    it("should preserve the thin effect layer assigned by the base constructor", () => {
+        const layer = new GlowLayer("glow", scene);
+
+        expect(layer.getEffectName()).toBe(GlowLayer.EffectName);
     });
 });

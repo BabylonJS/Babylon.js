@@ -291,8 +291,14 @@ export class BackgroundMaterial extends BackgroundMaterialBase {
      * Defines the level of the highlights (highlight area of the reflection map) in order to help scaling the colors.
      * The primary color is used at the level chosen to define what the white area would look.
      */
-    @expandToProperty("_markAllSubMeshesAsLightsDirty")
-    public accessor primaryColorHighlightLevel: float;
+    public get primaryColorHighlightLevel(): float {
+        return this._primaryColorHighlightLevel;
+    }
+    public set primaryColorHighlightLevel(value: float) {
+        this._primaryColorHighlightLevel = value;
+        this._computePrimaryColors();
+        this._markAllSubMeshesAsLightsDirty();
+    }
 
     @serializeAsTexture()
     protected _reflectionTexture: Nullable<BaseTexture>;
