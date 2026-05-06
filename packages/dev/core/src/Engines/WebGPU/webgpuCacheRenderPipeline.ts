@@ -3,13 +3,13 @@
 /* eslint-disable jsdoc/require-jsdoc */
 import { Constants } from "../constants";
 import * as WebGPUConstants from "./webgpuConstants";
-import { type Effect } from "../../Materials/effect"
-import { type InternalTexture } from "../../Materials/Textures/internalTexture"
+import { type Effect } from "../../Materials/effect";
+import { type InternalTexture } from "../../Materials/Textures/internalTexture";
 import { VertexBuffer } from "../../Buffers/buffer";
-import { type DataBuffer } from "../../Buffers/dataBuffer"
-import { type Nullable } from "../../types"
-import { type WebGPUHardwareTexture } from "./webgpuHardwareTexture"
-import { type WebGPUPipelineContext } from "./webgpuPipelineContext"
+import { type DataBuffer } from "../../Buffers/dataBuffer";
+import { type Nullable } from "../../types";
+import { type WebGPUHardwareTexture } from "./webgpuHardwareTexture";
+import { type WebGPUPipelineContext } from "./webgpuPipelineContext";
 import { WebGPUTextureHelper } from "./webgpuTextureHelper";
 import { renderableTextureFormatToIndex } from "./webgpuTextureManager";
 import { checkNonFloatVertexBuffers } from "core/Buffers/buffer.nonFloatVertexBuffers";
@@ -584,13 +584,13 @@ export abstract class WebGPUCacheRenderPipeline {
             case Constants.GL_ALPHA_FUNCTION_ONE_MINUS_CONSTANT_ALPHA:
                 return WebGPUConstants.BlendFactor.OneMinusConstant;
             case Constants.GL_ALPHA_FUNCTION_SRC1_COLOR:
-                return WebGPUConstants.BlendFactor.Src1;
+                return WebGPUConstants.BlendFactor.Src1 as GPUBlendFactor;
             case Constants.GL_ALPHA_FUNCTION_ONE_MINUS_SRC1_COLOR:
-                return WebGPUConstants.BlendFactor.OneMinusSrc1;
+                return WebGPUConstants.BlendFactor.OneMinusSrc1 as GPUBlendFactor;
             case Constants.GL_ALPHA_FUNCTION_SRC1_ALPHA:
-                return WebGPUConstants.BlendFactor.Src1Alpha;
+                return WebGPUConstants.BlendFactor.Src1Alpha as GPUBlendFactor;
             case Constants.GL_ALPHA_FUNCTION_ONE_MINUS_SRC1_ALPHA:
-                return WebGPUConstants.BlendFactor.OneMinusSrc1Alpha;
+                return WebGPUConstants.BlendFactor.OneMinusSrc1Alpha as GPUBlendFactor;
             default:
                 return WebGPUConstants.BlendFactor.One;
         }

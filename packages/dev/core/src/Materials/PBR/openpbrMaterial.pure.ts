@@ -122,6 +122,13 @@ class Property<T extends PropertyType> {
      */
     public targetUniformComponentNum: number = 4; // Default to vec4
     public targetUniformComponentOffset: number = 0;
+    /**
+     * Optional define name. If set, the per-frame bind loop will skip pushing
+     * the owning uniform to the UBO unless this define is active. All
+     * properties packed into the same uniform must share the same
+     * `requiredDefine` (or none of them must set it) for the gating to apply.
+     */
+    public requiredDefine?: string;
 
     /**
      * Creates a new Property instance.
@@ -131,14 +138,18 @@ class Property<T extends PropertyType> {
      * @param targetUniformComponentNum The number of components in the target uniform. All properties that are
      * packed into the same uniform must agree on the size of the target uniform.
      * @param targetUniformComponentOffset The offset in the uniform where this property will be packed.
+     * @param requiredDefine Optional define name. When provided, the per-frame
+     *  bind loop will skip pushing the owning uniform to the UBO unless
+     *  `defines[requiredDefine]` is true.
      */
-    constructor(name: string, defaultValue: T, targetUniformName: string, targetUniformComponentNum: number, targetUniformComponentOffset: number = 0) {
+    constructor(name: string, defaultValue: T, targetUniformName: string, targetUniformComponentNum: number, targetUniformComponentOffset: number = 0, requiredDefine?: string) {
         this.name = name;
         this.targetUniformName = targetUniformName;
         this.defaultValue = defaultValue;
         this.value = defaultValue;
         this.targetUniformComponentNum = targetUniformComponentNum;
         this.targetUniformComponentOffset = targetUniformComponentOffset;
+        this.requiredDefine = requiredDefine;
     }
 
     /**
@@ -420,9 +431,40 @@ export class OpenPBRMaterialDefines extends ImageProcessingDefinesMixin(OpenPBRM
     public SCATTERING = false;
 
     /**
+     * Enables the use of screen-space irradiance texture for scattering
+     */
+    public USE_IRRADIANCE_TEXTURE_FOR_SCATTERING = false;
+
+    /**
      * Number of samples used by the screen-space SSS convolution kernel.
      */
     public SSS_SAMPLE_COUNT = 16;
+
+    /**
+     * Indicates that the irradiance texture is from the legacy GeometryBufferRenderer.
+     * We use this to handle direct lights which don't render in the legacy GBuffer irradiance.
+     */
+    public USE_IRRADIANCE_TEXTURE_FOR_SCATTERING_GBUFFER = false;
+
+    /**
+     * Enables transmission slab
+     */
+    public TRANSMISSION_SLAB = false;
+
+    /**
+     * Enables transmission slab with volume
+     */
+    public TRANSMISSION_SLAB_VOLUME = false;
+
+    /**
+     * Enables subsurface slab
+     */
+    public SUBSURFACE_SLAB = false;
+
+    /**
+     * Enables thin-walled geometry
+     */
+    public GEOMETRY_THIN_WALLED = false;
 
     /**
      * Refraction of the 2D background texture. Might include the rest of the scene or just the background.
@@ -1162,6 +1204,70 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
     private _transmissionDispersionAbbeNumber: Property<number> = new Property<number>("transmission_dispersion_abbe_number", 20.0, "vTransmissionDispersionAbbeNumber", 1, 0);
 
     /**
+     * Defines the amount of subsurface scattering on the surface.
+     * See OpenPBR's specs for subsurface_weight
+     */
+    public subsurfaceWeight: number;
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "subsurfaceWeight")
+    private _subsurfaceWeight: Property<number> = new Property<number>("subsurface_weight", 0.0, "vSubsurfaceWeight", 1, 0, "SUBSURFACE_SLAB");
+
+    /**
+     * Subsurface weight texture.
+     * See OpenPBR's specs for subsurface_weight
+     */
+    public subsurfaceWeightTexture: Nullable<BaseTexture>;
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "subsurfaceWeightTexture")
+    private _subsurfaceWeightTexture: Sampler = new Sampler("subsurface_weight", "subsurfaceWeight", "SUBSURFACE_WEIGHT");
+
+    /**
+     * Defines the color of the subsurface scattering in the volume.
+     * See OpenPBR's specs for subsurface_color
+     */
+    public subsurfaceColor: Color3;
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "subsurfaceColor")
+    private _subsurfaceColor: Property<Color3> = new Property<Color3>("subsurface_color", new Color3(0.8, 0.8, 0.8), "vSubsurfaceColor", 3, 0, "SUBSURFACE_SLAB");
+
+    /**
+     * Subsurface color texture.
+     * See OpenPBR's specs for subsurface_color
+     */
+    public subsurfaceColorTexture: Nullable<BaseTexture>;
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "subsurfaceColorTexture")
+    private _subsurfaceColorTexture: Sampler = new Sampler("subsurface_color", "subsurfaceColor", "SUBSURFACE_COLOR");
+
+    /**
+     * Defines the radius of the subsurface scattering in the volume.
+     * See OpenPBR's specs for subsurface_radius
+     */
+    public subsurfaceRadius: number;
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "subsurfaceRadius")
+    private _subsurfaceRadius: Property<number> = new Property<number>("subsurface_radius", 0.1, "vSubsurfaceRadius", 1, 0, "SUBSURFACE_SLAB");
+
+    /**
+     * Defines the scale factor applied to the subsurface radius.
+     * See OpenPBR's specs for subsurface_radius_scale
+     */
+    public subsurfaceRadiusScale: Color3;
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "subsurfaceRadiusScale")
+    private _subsurfaceRadiusScale: Property<Color3> = new Property<Color3>("subsurface_radius_scale", new Color3(1, 0.5, 0.25), "vSubsurfaceRadiusScale", 3, 0, "SUBSURFACE_SLAB");
+
+    /**
+     * Subsurface radius scale texture.
+     * See OpenPBR's specs for subsurface_radius_scale
+     */
+    public subsurfaceRadiusScaleTexture: Nullable<BaseTexture>;
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "subsurfaceRadiusScaleTexture")
+    private _subsurfaceRadiusScaleTexture: Sampler = new Sampler("subsurface_radius_scale", "subsurfaceRadiusScale", "SUBSURFACE_RADIUS_SCALE");
+
+    /**
+     * Defines the anisotropy of the subsurface scattering in the volume.
+     * See OpenPBR's specs for subsurface_scatter_anisotropy
+     */
+    public subsurfaceScatterAnisotropy: number;
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "subsurfaceScatterAnisotropy")
+    private _subsurfaceScatterAnisotropy: Property<number> = new Property<number>("subsurface_scatter_anisotropy", 0.0, "vSubsurfaceScatterAnisotropy", 1, 0, "SUBSURFACE_SLAB");
+
+    /**
      * Defines the amount of clear coat on the surface.
      * See OpenPBR's specs for coat_weight
      */
@@ -1306,6 +1412,14 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
     public fuzzRoughnessTexture: Nullable<BaseTexture>;
     @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "fuzzRoughnessTexture")
     private _fuzzRoughnessTexture: Sampler = new Sampler("fuzz_roughness", "fuzzRoughness", "FUZZ_ROUGHNESS");
+
+    /**
+     * Defines whether the geometry is thin-walled (like a sheet of paper) or not.
+     * See OpenPBR's specs for geometry_thin_walled
+     */
+    public geometryThinWalled: number;
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "geometryThinWalled")
+    private _geometryThinWalled: Property<number> = new Property<number>("geometry_thin_walled", 0, "vGeometryThinWalled", 1, 0);
 
     /**
      * Defines the normal of the material's geometry.
@@ -2255,6 +2369,14 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
         this._transmissionDispersionScale;
         this._transmissionDispersionScaleTexture;
         this._transmissionDispersionAbbeNumber;
+        this._subsurfaceWeight;
+        this._subsurfaceWeightTexture;
+        this._subsurfaceColor;
+        this._subsurfaceColorTexture;
+        this._subsurfaceRadius;
+        this._subsurfaceRadiusScale;
+        this._subsurfaceRadiusScaleTexture;
+        this._subsurfaceScatterAnisotropy;
         this._coatWeight;
         this._coatWeightTexture;
         this._coatColor;
@@ -2272,6 +2394,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
         this._fuzzColorTexture;
         this._fuzzRoughness;
         this._fuzzRoughnessTexture;
+        this._geometryThinWalled;
         this._geometryNormalTexture;
         this._geometryTangent;
         this._geometryTangentTexture;

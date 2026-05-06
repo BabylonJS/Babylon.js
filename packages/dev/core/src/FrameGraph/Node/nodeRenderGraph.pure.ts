@@ -12,6 +12,7 @@ import {
     type IShadowLight,
     type INodeRenderGraphCustomBlockDescription,
     type Immutable,
+    type Camera,
 } from "core/index";
 import { Observable } from "../../Misc/observable";
 import { NodeRenderGraphOutputBlock } from "./Blocks/outputBlock.pure";
@@ -260,6 +261,44 @@ export class NodeRenderGraph {
         }
 
         return blocks;
+    }
+
+    /**
+     * Replace a camera in the node render graph
+     * @param currentCamera The camera to replace
+     * @param newCamera The new camera to use
+     * @param updateCameraToUseForPointers If true, updates the scene's camera for pointer events
+     * @param rebuildGraph If true, rebuilds the graph after replacement
+     * @returns true if a camera was replaced
+     */
+    public async replaceCameraAsync(currentCamera: Nullable<Camera>, newCamera: Camera, updateCameraToUseForPointers = true, rebuildGraph = true) {
+        const inputBlocks = this.getInputBlocks();
+
+        let updated = false;
+        for (const block of inputBlocks) {
+            if (block.isCamera() && block.value === currentCamera) {
+                block.value = newCamera;
+                updated = true;
+            }
+        }
+
+        if (updated) {
+            if (updateCameraToUseForPointers) {
+                this._scene.cameraToUseForPointers = newCamera;
+            }
+
+            if (rebuildGraph) {
+                const currentAutoFill = this._options.autoFillExternalInputs;
+                try {
+                    this._options.autoFillExternalInputs = false;
+                    await this.buildAsync();
+                } finally {
+                    this._options.autoFillExternalInputs = currentAutoFill;
+                }
+            }
+        }
+
+        return updated;
     }
 
     /**

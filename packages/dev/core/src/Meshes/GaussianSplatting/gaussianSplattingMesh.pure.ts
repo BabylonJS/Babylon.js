@@ -307,6 +307,8 @@ export class GaussianSplattingMesh extends Mesh {
     private _depthMix: BigInt64Array;
     private _canPostToWorker = true;
     private _readyToDisplay = false;
+    protected _needsRotationScaleTextures: boolean = false;
+    private _maxShDegree = 0;
     private _covariancesATexture: Nullable<BaseTexture> = null;
     private _covariancesBTexture: Nullable<BaseTexture> = null;
     private _centersTexture: Nullable<BaseTexture> = null;
@@ -382,6 +384,13 @@ export class GaussianSplattingMesh extends Mesh {
      */
     public get shDegree() {
         return this._shDegree;
+    }
+
+    /**
+     * Maximum SH degree detected in the loaded data.
+     */
+    public get maxShDegree() {
+        return this._maxShDegree;
     }
 
     /**
@@ -539,8 +548,9 @@ export class GaussianSplattingMesh extends Mesh {
      * @param url defines the url to load from (optional)
      * @param scene defines the hosting scene (optional)
      * @param keepInRam keep datas in ram for editing purpose
+     * @param needsRotationScaleTextures generate rotation and scale matrix textures required for voxel-based IBL shadows
      */
-    constructor(name: string, url: Nullable<string> = null, scene: Nullable<Scene> = null, keepInRam: boolean = false) {
+    constructor(name: string, url: Nullable<string> = null, scene: Nullable<Scene> = null, keepInRam: boolean = false, needsRotationScaleTextures: boolean = false) {
         super(name, scene);
 
         this.subMeshes = [];
@@ -551,6 +561,7 @@ export class GaussianSplattingMesh extends Mesh {
         this._useRGBACovariants = !this.getEngine().isWebGPU && this.getEngine().version === 1.0;
 
         this._keepInRam = keepInRam;
+        this._needsRotationScaleTextures = needsRotationScaleTextures;
         if (url) {
             this._loadingPromise = this.loadFileAsync(url);
         }
@@ -1841,7 +1852,14 @@ export class GaussianSplattingMesh extends Mesh {
         }
     }
 
-    private *_updateData(data: ArrayBuffer, isAsync: boolean, sh?: Uint8Array[], partIndices?: Uint8Array, options: IUpdateOptions = { flipY: false }): Coroutine<void> {
+    private *_updateData(
+        data: ArrayBuffer,
+        isAsync: boolean,
+        sh?: Uint8Array[],
+        partIndices?: Uint8Array,
+        options: IUpdateOptions = { flipY: false },
+        shDegree?: number
+    ): Coroutine<void> {
         // if a covariance texture is present, then it's not a creation but an update
         if (!this._covariancesATexture) {
             this._readyToDisplay = false;
@@ -1862,7 +1880,8 @@ export class GaussianSplattingMesh extends Mesh {
         }
         this._vertexCount = vertexCount;
         // degree == 1 for 1 texture (3 terms), 2 for 2 textures(8 terms) and 3 for 3 textures (15 terms)
-        this._shDegree = sh ? sh.length : 0;
+        this._maxShDegree = sh ? (shDegree ?? sh.length) : 0;
+        this._shDegree = this._maxShDegree;
 
         const textureSize = this._getTextureSize(vertexCount);
         const textureLength = textureSize.x * textureSize.y;
@@ -1959,8 +1978,8 @@ export class GaussianSplattingMesh extends Mesh {
      * @param options optional informations on how to treat data (needs to be 3rd for backward compatibility)
      * @param partIndices optional array of uint8 for rig node indices
      */
-    public updateData(data: ArrayBuffer, sh?: Uint8Array[], options: IUpdateOptions = { flipY: true }, partIndices?: Uint8Array): void {
-        runCoroutineSync(this._updateData(data, false, sh, partIndices, options));
+    public updateData(data: ArrayBuffer, sh?: Uint8Array[], options: IUpdateOptions = { flipY: true }, partIndices?: Uint8Array, shDegree?: number): void {
+        runCoroutineSync(this._updateData(data, false, sh, partIndices, options, shDegree));
     }
 
     /**
