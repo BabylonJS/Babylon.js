@@ -226,28 +226,54 @@ export class InputMapper<THandlers extends Record<string, unknown>> {
     }
 
     /**
-     * Finds the first inputMap entry matching the given source and interaction.
+     * Finds the first inputMap entry matching the given source, interaction, and optional entry conditions.
      * Useful for modifying entry properties (e.g. sensitivity) without rebuilding the entire inputMap.
      * @param source - The physical input source to match
      * @param interaction - The interaction type to match
+     * @param conditions - Optional entry conditions to match. Omitted condition fields are ignored.
      * @returns The matching entry, or undefined if not found
      */
-    public getEntry(source: "pointer", interaction: InteractionName<THandlers>): PointerInputMapEntry<InteractionName<THandlers>> | undefined;
-    public getEntry(source: "wheel", interaction: InteractionName<THandlers>): WheelInputMapEntry<InteractionName<THandlers>> | undefined;
-    public getEntry(source: "touch", interaction: InteractionName<THandlers>): TouchInputMapEntry<InteractionName<THandlers>> | undefined;
-    public getEntry(source: "keyboard", interaction: InteractionName<THandlers>): KeyboardInputMapEntry<InteractionName<THandlers>> | undefined;
-    public getEntry(source: InputSource, interaction: InteractionName<THandlers>): InputMapEntry<InteractionName<THandlers>> | undefined;
-    public getEntry(source: InputSource, interaction: InteractionName<THandlers>): InputMapEntry<InteractionName<THandlers>> | undefined {
+    public getEntry(source: "pointer", interaction: InteractionName<THandlers>, conditions?: PointerConditions): PointerInputMapEntry<InteractionName<THandlers>> | undefined;
+    public getEntry(source: "wheel", interaction: InteractionName<THandlers>, conditions?: WheelConditions): WheelInputMapEntry<InteractionName<THandlers>> | undefined;
+    public getEntry(source: "touch", interaction: InteractionName<THandlers>, conditions?: TouchConditions): TouchInputMapEntry<InteractionName<THandlers>> | undefined;
+    public getEntry(source: "keyboard", interaction: InteractionName<THandlers>, conditions?: KeyboardConditions): KeyboardInputMapEntry<InteractionName<THandlers>> | undefined;
+    public getEntry(source: InputSource, interaction: InteractionName<THandlers>, conditions?: InputConditions): InputMapEntry<InteractionName<THandlers>> | undefined;
+    public getEntry(source: InputSource, interaction: InteractionName<THandlers>, conditions?: InputConditions): InputMapEntry<InteractionName<THandlers>> | undefined {
         // Manual loop instead of `inputMap.find(arrow)` to avoid per-call closure allocation;
         // this is hit per pointer-move from multi-touch panning paths.
         const arr = this.inputMap;
         for (let i = 0; i < arr.length; i++) {
             const e = arr[i];
-            if (e.source === source && e.interaction === interaction) {
+            if (e.source === source && e.interaction === interaction && this._entryConditionsMatch(e, conditions)) {
                 return e;
             }
         }
         return undefined;
+    }
+
+    /**
+     * Finds all inputMap entries matching the given source, interaction, and optional entry conditions.
+     * Useful for bulk updates when more than one physical input maps to the same interaction.
+     * @param source - The physical input source to match
+     * @param interaction - The interaction type to match
+     * @param conditions - Optional entry conditions to match. Omitted condition fields are ignored.
+     * @returns All matching entries, in inputMap order
+     */
+    public getEntries(source: "pointer", interaction: InteractionName<THandlers>, conditions?: PointerConditions): PointerInputMapEntry<InteractionName<THandlers>>[];
+    public getEntries(source: "wheel", interaction: InteractionName<THandlers>, conditions?: WheelConditions): WheelInputMapEntry<InteractionName<THandlers>>[];
+    public getEntries(source: "touch", interaction: InteractionName<THandlers>, conditions?: TouchConditions): TouchInputMapEntry<InteractionName<THandlers>>[];
+    public getEntries(source: "keyboard", interaction: InteractionName<THandlers>, conditions?: KeyboardConditions): KeyboardInputMapEntry<InteractionName<THandlers>>[];
+    public getEntries(source: InputSource, interaction: InteractionName<THandlers>, conditions?: InputConditions): InputMapEntry<InteractionName<THandlers>>[];
+    public getEntries(source: InputSource, interaction: InteractionName<THandlers>, conditions?: InputConditions): InputMapEntry<InteractionName<THandlers>>[] {
+        const matches: InputMapEntry<InteractionName<THandlers>>[] = [];
+        const arr = this.inputMap;
+        for (let i = 0; i < arr.length; i++) {
+            const e = arr[i];
+            if (e.source === source && e.interaction === interaction && this._entryConditionsMatch(e, conditions)) {
+                matches.push(e);
+            }
+        }
+        return matches;
     }
 
     /**
@@ -310,6 +336,34 @@ export class InputMapper<THandlers extends Record<string, unknown>> {
         }
     }
 
+    private _entryConditionsMatch(entry: InputMapEntry<InteractionName<THandlers>>, conditions?: InputConditions): boolean {
+        if (!conditions) {
+            return true;
+        }
+
+        switch (entry.source) {
+            case "pointer":
+                if ("button" in conditions && entry.button !== conditions.button) {
+                    return false;
+                }
+                return !("modifiers" in conditions) || this._entryModifiersMatch(entry.modifiers, conditions.modifiers);
+            case "wheel":
+                return !("modifiers" in conditions) || this._entryModifiersMatch(entry.modifiers, conditions.modifiers);
+            case "touch":
+                return !("touchCount" in conditions) || entry.touchCount === conditions.touchCount;
+            case "keyboard":
+                if ("key" in conditions) {
+                    if (entry.key === undefined) {
+                        return conditions.key === undefined;
+                    }
+                    if (conditions.key === undefined || (Array.isArray(entry.key) ? entry.key.indexOf(conditions.key) === -1 : entry.key !== conditions.key)) {
+                        return false;
+                    }
+                }
+                return !("modifiers" in conditions) || this._entryModifiersMatch(entry.modifiers, conditions.modifiers);
+        }
+    }
+
     private _entrySpecificity(entry: InputMapEntry<InteractionName<THandlers>>): number {
         let score = 0;
         if ("button" in entry && entry.button !== undefined) {
@@ -338,6 +392,28 @@ export class InputMapper<THandlers extends Record<string, unknown>> {
             return false;
         }
         if (entryModifiers.alt !== undefined && entryModifiers.alt !== (currentModifiers?.alt ?? false)) {
+            return false;
+        }
+        return true;
+    }
+
+    private _entryModifiersMatch(entryModifiers?: InputModifiers, conditionsModifiers?: InputModifiers): boolean {
+        if (!conditionsModifiers) {
+            return !entryModifiers;
+        }
+
+        const hasModifierConditions = conditionsModifiers.ctrl !== undefined || conditionsModifiers.shift !== undefined || conditionsModifiers.alt !== undefined;
+        if (!hasModifierConditions) {
+            return !entryModifiers || (entryModifiers.ctrl === undefined && entryModifiers.shift === undefined && entryModifiers.alt === undefined);
+        }
+
+        if (conditionsModifiers.ctrl !== undefined && entryModifiers?.ctrl !== conditionsModifiers.ctrl) {
+            return false;
+        }
+        if (conditionsModifiers.shift !== undefined && entryModifiers?.shift !== conditionsModifiers.shift) {
+            return false;
+        }
+        if (conditionsModifiers.alt !== undefined && entryModifiers?.alt !== conditionsModifiers.alt) {
             return false;
         }
         return true;

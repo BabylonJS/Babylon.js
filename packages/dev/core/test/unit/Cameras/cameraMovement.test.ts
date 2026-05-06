@@ -108,10 +108,7 @@ describe("InputMapper", () => {
                 { source: "pointer" as const, button: 0, interaction: "rotate" as const },
                 { source: "wheel" as const, interaction: "zoom" as const },
             ];
-            const mapperWithDefaults = new InputMapper<TestHandlers>(
-                { rotate: noop, translate: noop, zoom: noop, pan: noop },
-                () => [...defaults]
-            );
+            const mapperWithDefaults = new InputMapper<TestHandlers>({ rotate: noop, translate: noop, zoom: noop, pan: noop }, () => [...defaults]);
             expect(mapperWithDefaults.inputMap).toHaveLength(2);
 
             mapperWithDefaults.inputMap = [];
@@ -129,6 +126,30 @@ describe("InputMapper", () => {
             ];
             expect(mapper.getEntry("pointer", "pan")?.source).toBe("pointer");
             expect(mapper.getEntry("pointer", "zoom")).toBeUndefined();
+        });
+
+        it("should find entry by optional entry conditions", () => {
+            mapper.inputMap = [
+                { source: "pointer", button: 0, modifiers: { ctrl: true }, interaction: "pan" },
+                { source: "pointer", button: 2, interaction: "pan" },
+            ];
+
+            expect(mapper.getEntry("pointer", "pan", { modifiers: {} })?.button).toBe(2);
+            expect(mapper.getEntry("pointer", "pan", { button: 0, modifiers: { ctrl: true } })?.modifiers?.ctrl).toBe(true);
+            expect(mapper.getEntry("pointer", "pan", { button: 1 })).toBeUndefined();
+        });
+
+        it("should find all entries by source, interaction, and optional entry conditions", () => {
+            mapper.inputMap = [
+                { source: "keyboard", modifiers: { ctrl: true }, interaction: "pan", sensitivity: 2 },
+                { source: "keyboard", modifiers: { alt: true }, interaction: "pan", sensitivity: 3 },
+                { source: "keyboard", interaction: "pan", sensitivity: 4 },
+                { source: "pointer", button: 2, interaction: "pan" },
+            ];
+
+            expect(mapper.getEntries("keyboard", "pan")).toHaveLength(3);
+            expect(mapper.getEntries("keyboard", "pan", { modifiers: { ctrl: true } })).toEqual([mapper.inputMap[0]]);
+            expect(mapper.getEntries("keyboard", "pan", { modifiers: {} })).toEqual([mapper.inputMap[2]]);
         });
     });
 
@@ -173,7 +194,6 @@ describe("CameraMovement", () => {
             movement.zoomAccumulatedPixels = 3;
             movement.activeInput = true;
 
-
             movement.computeCurrentFrameDeltas();
 
             expect(movement.panAccumulatedPixels.x).toBe(0);
@@ -186,7 +206,6 @@ describe("CameraMovement", () => {
             movement.panAccumulatedPixels.x = 10;
             movement.activeInput = true;
 
-
             movement.computeCurrentFrameDeltas();
             const firstDelta = movement.panDeltaCurrentFrame.x;
 
@@ -195,7 +214,6 @@ describe("CameraMovement", () => {
             movement.panSpeed = 4;
             movement.panAccumulatedPixels.x = 10;
             movement.activeInput = true;
-
 
             movement.computeCurrentFrameDeltas();
             const secondDelta = movement.panDeltaCurrentFrame.x;
@@ -210,7 +228,6 @@ describe("CameraMovement", () => {
             movement.rotationAccumulatedPixels.y = 10;
             movement.activeInput = true;
 
-
             movement.computeCurrentFrameDeltas();
 
             const ratio = movement.rotationDeltaCurrentFrame.y / movement.rotationDeltaCurrentFrame.x;
@@ -221,7 +238,6 @@ describe("CameraMovement", () => {
             movement.zoomSpeed = 3;
             movement.zoomAccumulatedPixels = 5;
             movement.activeInput = true;
-
 
             movement.computeCurrentFrameDeltas();
 
@@ -235,7 +251,6 @@ describe("CameraMovement", () => {
 
             movement.computeCurrentFrameDeltas();
             const firstDelta = Math.abs(movement.panDeltaCurrentFrame.x);
-
 
             movement.panAccumulatedPixels.x = 0;
             movement.computeCurrentFrameDeltas();
@@ -251,7 +266,6 @@ describe("CameraMovement", () => {
             movement.activeInput = true;
 
             movement.computeCurrentFrameDeltas();
-
 
             movement.panAccumulatedPixels.x = 0;
             movement.computeCurrentFrameDeltas();

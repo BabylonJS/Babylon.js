@@ -717,22 +717,22 @@ export class ArcRotateCamera extends TargetCamera {
 
     public set _useCtrlForPanning(value: boolean) {
         this._useCtrlForPanningInternal = value;
-        const map = this.movement.input.inputMap;
+        const input = this.movement.input;
 
         // Manage keyboard ctrl → pan entry
-        const kbIdx = map.findIndex((e) => e.source === "keyboard" && "modifiers" in e && e.modifiers?.ctrl === true && e.interaction === "pan");
-        if (!value && kbIdx !== -1) {
-            map.splice(kbIdx, 1);
-        } else if (value && kbIdx === -1) {
-            this.movement.input.addEntry({ source: "keyboard", modifiers: { ctrl: true }, interaction: "pan" });
+        const keyboardEntry = input.getEntry("keyboard", "pan", { modifiers: { ctrl: true } });
+        if (!value && keyboardEntry) {
+            input.inputMap.splice(input.inputMap.indexOf(keyboardEntry), 1);
+        } else if (value && !keyboardEntry) {
+            input.addEntry({ source: "keyboard", modifiers: { ctrl: true }, interaction: "pan" });
         }
 
         // Manage pointer ctrl+left-drag → pan entry (matches legacy ArcRotateCameraPointersInput behavior)
-        const ptrIdx = map.findIndex((e) => e.source === "pointer" && "modifiers" in e && e.modifiers?.ctrl === true && e.interaction === "pan");
-        if (!value && ptrIdx !== -1) {
-            map.splice(ptrIdx, 1);
-        } else if (value && ptrIdx === -1) {
-            this.movement.input.addEntry({ source: "pointer", button: 0, modifiers: { ctrl: true }, interaction: "pan" });
+        const pointerEntry = input.getEntry("pointer", "pan", { modifiers: { ctrl: true } });
+        if (!value && pointerEntry) {
+            input.inputMap.splice(input.inputMap.indexOf(pointerEntry), 1);
+        } else if (value && !pointerEntry) {
+            input.addEntry({ source: "pointer", button: 0, modifiers: { ctrl: true }, interaction: "pan" });
         }
     }
 
@@ -747,9 +747,8 @@ export class ArcRotateCamera extends TargetCamera {
 
     public set _panningMouseButton(value: number) {
         this._panningMouseButtonInternal = value;
-        // Find the bare pointer→pan entry (ignore the ctrl-modified one used for ctrl+drag panning)
-        const entry = this.movement.input.inputMap.find((e) => e.source === "pointer" && e.interaction === "pan" && !("modifiers" in e && e.modifiers));
-        if (entry && entry.source === "pointer") {
+        const entry = this.movement.input.getEntry("pointer", "pan", { modifiers: {} });
+        if (entry) {
             entry.button = value;
         }
     }

@@ -92,6 +92,9 @@ export class ArcRotateCameraPointersInput extends OrbitCameraPointersInput {
     /** Cached conditions object for pointer-lock fallback resolution to avoid per-event allocations */
     private _pointerLockConditions: PointerConditions = { button: 0, modifiers: {} };
 
+    /** Cached conditions object for pointer-down resolution */
+    private _pointerConditions: PointerConditions = { modifiers: { ctrl: false, alt: false, shift: false } };
+
     /**
      * Move camera from multi touch panning positions.
      * @param previousMultiTouchPanPosition
@@ -206,10 +209,11 @@ export class ArcRotateCameraPointersInput extends OrbitCameraPointersInput {
      * @param evt Defines the event to track
      */
     public override onButtonDown(evt: IPointerEvent): void {
-        this._activeEntry = this.camera.movement.input.resolveInteraction("pointer", {
-            button: evt.button,
-            modifiers: { ctrl: evt.ctrlKey, alt: evt.altKey, shift: evt.shiftKey },
-        });
+        this._pointerConditions.button = evt.button;
+        this._pointerConditions.modifiers!.ctrl = evt.ctrlKey;
+        this._pointerConditions.modifiers!.alt = evt.altKey;
+        this._pointerConditions.modifiers!.shift = evt.shiftKey;
+        this._activeEntry = this.camera.movement.input.resolveInteraction("pointer", this._pointerConditions);
         super.onButtonDown(evt);
     }
 

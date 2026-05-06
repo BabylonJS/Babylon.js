@@ -99,12 +99,12 @@ export class ArcRotateCameraKeyboardMoveInput implements ICameraInput<ArcRotateC
     public set useAltToZoom(value: boolean) {
         this._useAltToZoom = value;
         if (this.camera?.movement) {
-            const inputMap = this.camera.movement.input.inputMap;
-            const idx = inputMap.findIndex((e) => e.source === "keyboard" && "modifiers" in e && e.modifiers?.alt === true && e.interaction === "zoom");
-            if (!value && idx !== -1) {
-                inputMap.splice(idx, 1);
-            } else if (value && idx === -1) {
-                this.camera.movement.input.addEntry({ source: "keyboard", modifiers: { alt: true }, interaction: "zoom" });
+            const input = this.camera.movement.input;
+            const entry = input.getEntry("keyboard", "zoom", { modifiers: { alt: true } });
+            if (!value && entry) {
+                input.inputMap.splice(input.inputMap.indexOf(entry), 1);
+            } else if (value && !entry) {
+                input.addEntry({ source: "keyboard", modifiers: { alt: true }, interaction: "zoom" });
             }
         }
     }

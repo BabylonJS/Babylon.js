@@ -65,15 +65,13 @@ export class GeospatialCameraKeyboardInput implements ICameraInput<GeospatialCam
      */
     @serialize()
     public get rotationSensitivity(): number {
-        const entry = this.camera.movement.input.inputMap.find((e) => e.source === "keyboard" && e.interaction === "rotate");
+        const entry = this.camera.movement.input.getEntry("keyboard", "rotate");
         return entry?.sensitivity ?? 1;
     }
 
     public set rotationSensitivity(value: number) {
-        for (const entry of this.camera.movement.input.inputMap) {
-            if (entry.source === "keyboard" && entry.interaction === "rotate") {
-                entry.sensitivity = value;
-            }
+        for (const entry of this.camera.movement.input.getEntries("keyboard", "rotate")) {
+            entry.sensitivity = value;
         }
     }
 
@@ -84,15 +82,13 @@ export class GeospatialCameraKeyboardInput implements ICameraInput<GeospatialCam
      */
     @serialize()
     public get panSensitivity(): number {
-        const entry = this.camera.movement.input.inputMap.find((e) => e.source === "keyboard" && e.interaction === "pan");
+        const entry = this.camera.movement.input.getEntry("keyboard", "pan");
         return entry?.sensitivity ?? 1;
     }
 
     public set panSensitivity(value: number) {
-        for (const entry of this.camera.movement.input.inputMap) {
-            if (entry.source === "keyboard" && entry.interaction === "pan") {
-                entry.sensitivity = value;
-            }
+        for (const entry of this.camera.movement.input.getEntries("keyboard", "pan")) {
+            entry.sensitivity = value;
         }
     }
 
@@ -103,15 +99,13 @@ export class GeospatialCameraKeyboardInput implements ICameraInput<GeospatialCam
      */
     @serialize()
     public get zoomSensitivity(): number {
-        const entry = this.camera.movement.input.inputMap.find((e) => e.source === "keyboard" && e.interaction === "zoom");
+        const entry = this.camera.movement.input.getEntry("keyboard", "zoom");
         return entry?.sensitivity ?? 1;
     }
 
     public set zoomSensitivity(value: number) {
-        for (const entry of this.camera.movement.input.inputMap) {
-            if (entry.source === "keyboard" && entry.interaction === "zoom") {
-                entry.sensitivity = value;
-            }
+        for (const entry of this.camera.movement.input.getEntries("keyboard", "zoom")) {
+            entry.sensitivity = value;
         }
     }
 

@@ -4,7 +4,7 @@ import { type PointerTouch } from "../../Events/pointerEvents";
 import { type Nullable } from "../../types";
 import { OrbitCameraPointersInput } from "./orbitCameraPointersInput";
 import { Vector3Distance } from "../../Maths/math.vector.functions";
-import { type PointerInputMapEntry } from "../inputMapper";
+import { type PointerConditions, type PointerInputMapEntry } from "../inputMapper";
 
 /**
  * Geospatial camera inputs can simulate dragging the globe around or tilting the camera around some point on the globe
@@ -23,6 +23,9 @@ export class GeospatialCameraPointersInput extends OrbitCameraPointersInput {
     /** Cached resolved inputMap entry for the current pointer gesture */
     private _activeEntry: PointerInputMapEntry | null = null;
 
+    /** Cached conditions object for pointer-down resolution */
+    private _pointerConditions: PointerConditions = { modifiers: { ctrl: false, alt: false, shift: false } };
+
     /**
      * Defines the rotation sensitivity of the pointer when rotating camera around the x axis (pitch).
      * (Multiplied by the true pixel delta of pointer input, before rotation speed factor is applied by movement class)
@@ -34,10 +37,8 @@ export class GeospatialCameraPointersInput extends OrbitCameraPointersInput {
     }
 
     public set pitchSensitivity(value: number) {
-        for (const entry of this.camera.movement.input.inputMap) {
-            if (entry.source === "pointer" && entry.interaction === "rotate") {
-                entry.sensitivityY = value;
-            }
+        for (const entry of this.camera.movement.input.getEntries("pointer", "rotate")) {
+            entry.sensitivityY = value;
         }
     }
 
@@ -52,10 +53,8 @@ export class GeospatialCameraPointersInput extends OrbitCameraPointersInput {
     }
 
     public set yawSensitivity(value: number) {
-        for (const entry of this.camera.movement.input.inputMap) {
-            if (entry.source === "pointer" && entry.interaction === "rotate") {
-                entry.sensitivityX = value;
-            }
+        for (const entry of this.camera.movement.input.getEntries("pointer", "rotate")) {
+            entry.sensitivityX = value;
         }
     }
 
@@ -74,10 +73,11 @@ export class GeospatialCameraPointersInput extends OrbitCameraPointersInput {
         this.camera.movement.activeInput = true;
         const scene = this.camera.getScene();
 
-        this._activeEntry = this.camera.movement.input.resolveInteraction("pointer", {
-            button: evt.button,
-            modifiers: { ctrl: evt.ctrlKey, alt: evt.altKey, shift: evt.shiftKey },
-        });
+        this._pointerConditions.button = evt.button;
+        this._pointerConditions.modifiers!.ctrl = evt.ctrlKey;
+        this._pointerConditions.modifiers!.alt = evt.altKey;
+        this._pointerConditions.modifiers!.shift = evt.shiftKey;
+        this._activeEntry = this.camera.movement.input.resolveInteraction("pointer", this._pointerConditions);
 
         if (this._activeEntry?.interaction === "pan") {
             this.camera.movement.input.handlers.pan.start(scene.pointerX, scene.pointerY);
