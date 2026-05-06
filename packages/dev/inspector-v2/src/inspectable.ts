@@ -10,7 +10,6 @@ import { ScreenshotCommandServiceDefinition } from "./services/cli/screenshotCom
 import { ShaderCommandServiceDefinition } from "./services/cli/shaderCommandService";
 import { StatsCommandServiceDefinition } from "./services/cli/statsCommandService";
 import { type ISceneContext, SceneContextIdentity } from "./services/sceneContext";
-import { installSmartAssetHooks } from "./services/smartAssetHandler";
 
 const DefaultPort = 4400;
 
@@ -122,11 +121,6 @@ export function _StartInspectable(scene: Scene, options?: Partial<InspectableOpt
             StatsCommandServiceDefinition,
             PerfTraceCommandServiceDefinition
         );
-
-        // Eagerly install onAssetNotFound on any SmartAssetManager (existing
-        // or future) so the file-picker prompt works even without Inspector UI.
-        const disposeSmartAssetHooks = installSmartAssetHooks(scene);
-        disposeActions.push(disposeSmartAssetHooks);
 
         state = {
             refCount: 0,

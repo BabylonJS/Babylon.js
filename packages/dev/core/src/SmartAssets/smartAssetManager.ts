@@ -79,8 +79,6 @@ type SmartAssetManagerInternals = {
     objectToKeyMap: WeakMap<object, string>;
     textureKeys: Set<string>;
     refreshCallbacks: Map<string, () => Promise<File>>;
-    applyOverridesForKey: ((key: string) => void) | null;
-    applyAllOverrides: (() => void) | null;
 };
 
 const SmartAssetManagerInternals = new WeakMap<SmartAssetManager, SmartAssetManagerInternals>();
@@ -126,8 +124,6 @@ export function CreateSmartAssetManager(scene: Scene): SmartAssetManager {
         objectToKeyMap: new WeakMap(),
         textureKeys: new Set(),
         refreshCallbacks: new Map(),
-        applyOverridesForKey: null,
-        applyAllOverrides: null,
     });
 
     if (!scene.metadata) {
@@ -394,7 +390,6 @@ export async function LoadSmartAssetTextureAsync(manager: SmartAssetManager, key
 
     internal.objectToKeyMap.set(texture, key);
     manager.onAssetLoadedObservable.notifyObservers({ key });
-    internal.applyAllOverrides?.();
     return texture;
 }
 
@@ -511,17 +506,6 @@ export async function LoadSmartAssetMapAsync(manager: SmartAssetManager, source:
 }
 
 /**
- * Links override callbacks so smart asset reloads can reapply overrides.
- * @param manager - The smart asset manager state.
- * @param overrideHandlers - Handlers for applying overrides after reload.
- */
-export function LinkSmartAssetOverrideHandlers(manager: SmartAssetManager, overrideHandlers: { applyOverridesForKey(key: string): void; applyAllOverrides(): void }): void {
-    const internal = GetSmartAssetInternals(manager);
-    internal.applyOverridesForKey = (key: string) => overrideHandlers.applyOverridesForKey(key);
-    internal.applyAllOverrides = () => overrideHandlers.applyAllOverrides();
-}
-
-/**
  * Registers an externally loaded AssetContainer under a key.
  * @param manager - The smart asset manager state.
  * @param key - The key to associate with the container.
@@ -557,8 +541,6 @@ export function DisposeSmartAssetManager(manager: SmartAssetManager): void {
     internal.containers.clear();
     internal.provenance.clear();
     internal.objectToKeyMap = new WeakMap();
-    internal.applyOverridesForKey = null;
-    internal.applyAllOverrides = null;
 
     manager.onAssetLoadedObservable.clear();
     manager.onUrlChangedObservable.clear();
@@ -644,7 +626,6 @@ async function LoadSmartAssetSceneFileAsync(manager: SmartAssetManager, key: str
         const container = await LoadAssetContainerAsync(loadUrl, manager.scene, { pluginExtension: extensionHint });
         container.addAllToScene();
         TrackLoadedSmartAssetContainer(manager, key, container);
-        GetSmartAssetInternals(manager).applyOverridesForKey?.(key);
         return container;
     };
 

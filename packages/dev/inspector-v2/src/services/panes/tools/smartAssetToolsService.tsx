@@ -1,34 +1,36 @@
 import { useCallback, useState, type FunctionComponent } from "react";
 
 import { type Scene, type IDisposable } from "core/scene";
-import { SerializeProject } from "core/SmartAssets/projectSerializer";
-import { GetOverrides } from "core/SmartAssets/overrideManager";
-import { GetAllSmartAssets } from "core/SmartAssets/smartAssetManager";
+import { GetAllSmartAssets, LoadSmartAssetMapAsync, RemoveSmartAssetAsync, SerializeSmartAssetManagerMap } from "core/SmartAssets/smartAssetManager";
 import { Tools } from "core/Misc/tools";
 
 import { type ServiceDefinition } from "shared-ui-components/modularTool/modularity/serviceDefinition";
 import { type IToolsService, ToolsServiceIdentity } from "../toolsService";
 
-import { getOrCreateManagers } from "../../smartAssetHandler";
-import { saveProjectBundleAsync, loadProjectBundleAsync } from "./projectBundleIO";
+import { getOrCreateSmartAssetManager } from "../../smartAssetHandler";
 
 import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
 import { FileUploadLine } from "shared-ui-components/fluent/hoc/fileUploadLine";
-import { makeStyles, tokens } from "@fluentui/react-components";
+import { Collapse } from "shared-ui-components/fluent/primitives/collapse";
+import { Caption1, makeStyles, Spinner, tokens } from "@fluentui/react-components";
 import { ArrowDownloadRegular, DocumentTextRegular } from "@fluentui/react-icons";
 
 const useStyles = makeStyles({
     statusMessage: {
         padding: `${tokens.spacingVerticalXXS} ${tokens.spacingHorizontalS}`,
-        fontSize: "11px",
         opacity: 0.7,
+    },
+    busyMessage: {
+        display: "flex",
+        alignItems: "center",
+        gap: tokens.spacingHorizontalXS,
+        padding: `${tokens.spacingVerticalXXS} ${tokens.spacingHorizontalS}`,
     },
 });
 
 /**
- * Inspector Tools service that adds Save/Load Project buttons for the
- * SmartAsset + Override system. Only shows when a SmartAssetManager is
- * present on the scene.
+ * Inspector Tools service that adds Save/Load buttons for standalone
+ * Smart Asset maps.
  */
 export const SmartAssetToolsServiceDefinition: ServiceDefinition<[], [IToolsService]> = {
     friendlyName: "Smart Asset Tools",
@@ -38,8 +40,8 @@ export const SmartAssetToolsServiceDefinition: ServiceDefinition<[], [IToolsServ
 
         contentRegistrations.push(
             toolsService.addSectionContent({
-                key: "Smart Asset Project",
-                section: "Smart Asset Project",
+                key: "Smart Asset Map",
+                section: "Smart Asset Map",
                 component: (props: { context: Scene }) => <SmartAssetProjectTools scene={props.context} />,
             })
         );
@@ -55,57 +57,86 @@ export const SmartAssetToolsServiceDefinition: ServiceDefinition<[], [IToolsServ
 const SmartAssetProjectTools: FunctionComponent<{ scene: Scene }> = (props: { scene: Scene }) => {
     const scene = props.scene;
     const [statusMessage, setStatusMessage] = useState<string>("");
+    const [busyMessage, setBusyMessage] = useState<string>("");
     const styles = useStyles();
+    const isBusy = busyMessage !== "";
 
-    const managers = useCallback(() => getOrCreateManagers(scene), [scene]);
+    const getSmartAssetManager = useCallback(() => getOrCreateSmartAssetManager(scene), [scene]);
 
-    const onSaveProject = useCallback(async () => {
+    const onSaveAssetMap = useCallback(async () => {
+        if (isBusy) {
+            return;
+        }
+
+        setBusyMessage("Saving assets...");
+        setStatusMessage("");
         try {
-            const { sam, overrides } = managers();
-            const zipBlob = await saveProjectBundleAsync(sam, overrides);
-            Tools.Download(zipBlob, "project.zip");
+            const sam = getSmartAssetManager();
+            const assetMap = SerializeSmartAssetManagerMap(sam);
+            const jsonBlob = new Blob([JSON.stringify(assetMap, null, 2)], { type: "application/json" });
+            Tools.Download(jsonBlob, "smart-assets.json");
 
-            const bundle = SerializeProject(sam, overrides);
-            const assetCount = Object.keys(bundle.project.assets).length;
-            const overrideCount = bundle.project.overrides.length;
-            setStatusMessage(`Saved: ${assetCount} assets, ${overrideCount} overrides`);
+            setStatusMessage(`Saved: ${Object.keys(assetMap.assets).length} assets`);
         } catch (err) {
             setStatusMessage(`Save error: ${err}`);
+        } finally {
+            setBusyMessage("");
         }
-    }, [managers]);
+    }, [getSmartAssetManager, isBusy]);
 
-    const onLoadProject = useCallback(
+    const onLoadAssetMap = useCallback(
         async (files: FileList) => {
             const file = files[0];
             if (!file) {
                 return;
             }
 
+            if (isBusy) {
+                return;
+            }
+
+            setBusyMessage("Loading assets...");
+            setStatusMessage("");
             try {
-                const { sam, overrides } = managers();
-                await loadProjectBundleAsync(file, sam, overrides);
-                setStatusMessage(`Loaded: ${GetAllSmartAssets(sam).size} assets, ${GetOverrides(overrides).length} overrides`);
+                const sam = getSmartAssetManager();
+                await Promise.all(Array.from(GetAllSmartAssets(sam).keys()).map(async (key) => await RemoveSmartAssetAsync(sam, key)));
+                await LoadSmartAssetMapAsync(sam, file);
+                setStatusMessage(`Loaded: ${GetAllSmartAssets(sam).size} assets`);
             } catch (err) {
                 setStatusMessage(`Load error: ${err}`);
+            } finally {
+                setBusyMessage("");
             }
         },
-        [managers]
+        [getSmartAssetManager, isBusy]
     );
 
-    const onShowProjectJson = useCallback(() => {
-        const { sam, overrides } = managers();
-        const bundle = SerializeProject(sam, overrides);
+    const onShowAssetMapJson = useCallback(() => {
+        if (isBusy) {
+            return;
+        }
+
+        const sam = getSmartAssetManager();
+        const assetMap = SerializeSmartAssetManagerMap(sam);
         // eslint-disable-next-line no-console
-        console.log("Project bundle:", bundle);
-        setStatusMessage("Project bundle logged to console");
-    }, [managers]);
+        console.log("Smart Asset map:", assetMap);
+        setStatusMessage("Smart Asset map logged to console");
+    }, [getSmartAssetManager, isBusy]);
 
     return (
         <>
-            <ButtonLine label="Save Project" icon={ArrowDownloadRegular} onClick={onSaveProject} />
-            <FileUploadLine label="Load Project" accept=".zip" onClick={onLoadProject} />
-            <ButtonLine label="Log Project to Console" icon={DocumentTextRegular} onClick={onShowProjectJson} />
-            {statusMessage && <div className={styles.statusMessage}>{statusMessage}</div>}
+            <ButtonLine label="Save Smart Assets" icon={ArrowDownloadRegular} onClick={onSaveAssetMap} disabled={isBusy} />
+            <FileUploadLine label="Load Smart Assets" accept=".json" onClick={onLoadAssetMap} disabled={isBusy} />
+            <ButtonLine label="Log Smart Assets to Console" icon={DocumentTextRegular} onClick={onShowAssetMapJson} disabled={isBusy} />
+            <Collapse visible={isBusy}>
+                <div className={styles.busyMessage}>
+                    <Spinner size="extra-small" />
+                    <Caption1>{busyMessage}</Caption1>
+                </div>
+            </Collapse>
+            <Collapse visible={statusMessage !== ""}>
+                <Caption1 className={styles.statusMessage}>{statusMessage}</Caption1>
+            </Collapse>
         </>
     );
 };

@@ -39,7 +39,6 @@
         "ws": "^8.18.0"
     },
     "dependencies": {
-        "@babylonjs/havok": "^1.3.12",
-        "fflate": "^0.8.2"
+        "@babylonjs/havok": "^1.3.12"
     }
 }

@@ -1,8 +1,7 @@
 /**
  * Records which scene objects were created when a smart asset key was loaded.
  * Provenance is generated at load time by snapshotting object names from the
- * asset container and is used for override target resolution and Inspector
- * visualization.
+ * asset container and is used for Inspector visualization and selection.
  */
 export interface ISmartAssetProvenance {
     /** The smart asset key this provenance belongs to. */

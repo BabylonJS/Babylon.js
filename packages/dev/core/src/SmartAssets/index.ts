@@ -1,7 +1,31 @@
 export * from "./smartAssetProvenance";
 export * from "./smartAssetEvents";
 export * from "./smartAssetSerializer";
-export * from "./smartAssetManager";
-export * from "./overrideEntry";
-export * from "./overrideManager";
-export * from "./projectSerializer";
+export {
+    type SmartAssetManager,
+    type SmartAssetRegistrationOptions,
+    CreateSmartAssetManager,
+    GetSmartAssetManagerFromScene,
+    GetSmartAssetManagerCreatedCallback,
+    SetSmartAssetManagerCreatedCallback,
+    IsSmartAssetTextureKey,
+    MarkSmartAssetAsTextureKey,
+    RegisterSmartAsset,
+    SetSmartAssetRefreshCallback,
+    RemoveSmartAssetAsync,
+    ResolveSmartAsset,
+    GetAllSmartAssets,
+    GetSmartAssetRegistrationOptions,
+    SetSmartAssetUrlAsync,
+    LoadSmartAssetAsync,
+    LoadAllSmartAssetsAsync,
+    LoadSmartAssetTextureAsync,
+    UnloadSmartAssetAsync,
+    ReloadSmartAssetAsync,
+    GetSmartAssetProvenance,
+    FindSmartAssetKeyForObject,
+    SerializeSmartAssetManagerMap,
+    LoadSmartAssetMapAsync,
+    TrackLoadedSmartAssetContainer,
+    DisposeSmartAssetManager,
+} from "./smartAssetManager";

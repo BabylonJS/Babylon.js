@@ -23,9 +23,9 @@ import {
     type SmartAssetManager,
     type ThinEngine,
 } from "@dev/core";
-import { inspectorAssetNotFoundHandler } from "inspector/services/smartAssetHandler";
 
 import { MakePlaygroundCommandServiceDefinition } from "../tools/playgroundCommandService";
+import { PlaygroundAssetNotFoundHandler } from "../tools/smartAssetNotFoundHandler";
 import "../scss/rendering.scss";
 
 const RunnableCreationTimeoutMs = 15000;
@@ -463,7 +463,7 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
             const smartAssetManagerCreatedCallback = (manager: SmartAssetManager) => {
                 previousSmartAssetManagerCreatedCallback?.(manager);
                 if (!manager.onAssetNotFound) {
-                    manager.onAssetNotFound = inspectorAssetNotFoundHandler;
+                    manager.onAssetNotFound = PlaygroundAssetNotFoundHandler;
                 }
             };
             SetSmartAssetManagerCreatedCallback(smartAssetManagerCreatedCallback);

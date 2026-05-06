@@ -1,7 +1,7 @@
-import { type ComponentProps, type ComponentType, forwardRef, useContext, useMemo } from "react";
+import { type ComponentProps, type ComponentType, forwardRef, useMemo } from "react";
 
 import { ErrorBoundary } from "shared-ui-components/modularTool/components/errorBoundary";
-import { PropertyContext, usePropertyChangedNotifier } from "../../contexts/propertyContext";
+import { usePropertyChangedNotifier } from "../../contexts/propertyContext";
 import { MakePropertyHook, useProperty } from "../../hooks/compoundPropertyHooks";
 import { GetPropertyDescriptor } from "../../instrumentation/propertyInstrumentation";
 import { getClassNameWithNamespace } from "shared-ui-components/copyCommandToClipboard";
@@ -170,10 +170,6 @@ type RequiredPropertyPath = { propertyPath: string; functionPath?: never } | { f
  * Props for Property component - a simpler version of BoundProperty that only handles onCopy functionality
  * Pass in the full propertyPath from entity to property (e.g. "meshes[0].position.x") to ensure copyString is accurate
  * Use functionPath for function-based properties (e.g. "setEnabled" generates "debugNode.setEnabled(value)")
- *
- * When an onChange callback is provided and a PropertyContext with an entity is available,
- * the component automatically notifies the property change context so downstream consumers
- * (e.g. override capture) are aware of the edit. No manual notification is required.
  */
 export type PropertyProps<ComponentT extends ComponentType<any>> = Omit<ComponentProps<ComponentT>, "onCopy"> & {
     component: ComponentT;
@@ -197,31 +193,13 @@ function PropertyImpl<ComponentT extends ComponentType<any>>(props: PropertyProp
         functionPath,
         value,
         ...rest
-    } = props as PropertyProps<ComponentT> & { value?: unknown; onChange?: (val: any) => void; propertyPath?: string; functionPath?: string };
-
-    const propertyContext = useContext(PropertyContext);
-    const notifyPropertyChanged = usePropertyChangedNotifier();
-
-    // Auto-wrap onChange to notify the property change context when an entity is available
-    const wrappedOnChange = useMemo(() => {
-        const callerOnChange = (rest as any).onChange as ((val: any) => void) | undefined;
-        if (!callerOnChange || !propertyContext?.entity || !propertyPath) {
-            return callerOnChange;
-        }
-        const entity = propertyContext.entity;
-        return (val: any) => {
-            const oldValue = value;
-            callerOnChange(val);
-            notifyPropertyChanged(entity as any, propertyPath as any, oldValue, val);
-        };
-    }, [(rest as any).onChange, propertyContext?.entity, propertyPath, value, notifyPropertyChanged]);
+    } = props as PropertyProps<ComponentT> & { value?: unknown; propertyPath?: string; functionPath?: string };
 
     const propsToSend = {
         onCopy: () => (functionPath ? GetOnCopyStringFunc(value, functionPath) : GetOnCopyString(value, propertyPath!)),
         ...rest,
         ref,
         value,
-        ...(wrappedOnChange !== undefined ? { onChange: wrappedOnChange } : {}),
     };
 
     return <Component {...(propsToSend as ComponentProps<ComponentT>)} />;

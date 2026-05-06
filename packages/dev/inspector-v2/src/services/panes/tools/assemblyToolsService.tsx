@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type FunctionComponent } from "react";
 
 import { type Scene, type IDisposable } from "core/scene";
-import { AddOverride, ApplyAllOverrides, ApplyOverridesForKey, GetOverrideManagerFromScene, GetOverrides } from "core/SmartAssets/overrideManager";
 import {
     FindSmartAssetKeyForObject,
     GetAllSmartAssets,
@@ -17,8 +16,6 @@ import {
     UnloadSmartAssetAsync,
     type SmartAssetManager,
 } from "core/SmartAssets/smartAssetManager";
-import { type AbstractMesh } from "core/Meshes/abstractMesh";
-import { type Material } from "core/Materials/material";
 
 import { type ServiceDefinition } from "shared-ui-components/modularTool/modularity/serviceDefinition";
 import { type IToolsService, ToolsServiceIdentity } from "../toolsService";
@@ -28,17 +25,15 @@ import { useObservableState } from "shared-ui-components/modularTool/hooks/obser
 import { Link } from "shared-ui-components/fluent/primitives/link";
 import { Dialog } from "shared-ui-components/fluent/primitives/dialog";
 
-import { getOrCreateManagers } from "../../smartAssetHandler";
-import { PROJECT_LOCALS_KEY } from "core/SmartAssets/projectSerializer";
+import { getOrCreateSmartAssetManager } from "../../smartAssetHandler";
 
 import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
 import { Body1, Caption1, makeStyles, tokens } from "@fluentui/react-components";
-import { AddRegular, DeleteRegular, ArrowSyncRegular, LinkRegular, CubeRegular, DocumentTextRegular } from "@fluentui/react-icons";
+import { AddRegular, DeleteRegular, ArrowSyncRegular, LinkRegular, CubeRegular } from "@fluentui/react-icons";
 
 /**
  * Inspector Tools service that provides an assembly-focused UX for composing
- * scenes from smart assets. Allows adding/removing/swapping assets, assigning
- * materials to meshes, and viewing the override summary — all without code.
+ * scenes from smart assets. Allows adding/removing/swapping assets.
  */
 export const AssemblyToolsServiceDefinition: ServiceDefinition<[], [IToolsService, ISelectionService]> = {
     friendlyName: "Assembly Tools",
@@ -51,22 +46,6 @@ export const AssemblyToolsServiceDefinition: ServiceDefinition<[], [IToolsServic
                 key: "Smart Assets",
                 section: "Smart Assets",
                 component: (props: { context: Scene }) => <SmartAssetList scene={props.context} selectionService={selectionService} />,
-            })
-        );
-
-        contentRegistrations.push(
-            toolsService.addSectionContent({
-                key: "Material Assignment",
-                section: "Material Assignment",
-                component: (props: { context: Scene }) => <MaterialAssignment scene={props.context} />,
-            })
-        );
-
-        contentRegistrations.push(
-            toolsService.addSectionContent({
-                key: "Override Summary",
-                section: "Override Summary",
-                component: (props: { context: Scene }) => <OverrideSummary scene={props.context} />,
             })
         );
 
@@ -112,13 +91,6 @@ const useStyles = makeStyles({
         opacity: 0.5,
         fontStyle: "italic",
     },
-    overrideRow: {
-        display: "flex",
-        gap: tokens.spacingHorizontalXS,
-        padding: `${tokens.spacingVerticalXXS} ${tokens.spacingHorizontalS}`,
-        fontSize: "10px",
-        fontFamily: "monospace",
-    },
     statusMessage: {
         padding: `${tokens.spacingVerticalXXS} ${tokens.spacingHorizontalS}`,
         fontSize: "11px",
@@ -130,21 +102,6 @@ const useStyles = makeStyles({
         ":hover": {
             opacity: 1,
         },
-    },
-    materialSelect: {
-        flex: 1,
-        fontSize: "11px",
-        padding: "2px 4px",
-        backgroundColor: tokens.colorNeutralBackground3,
-        color: tokens.colorNeutralForeground1,
-        border: `1px solid ${tokens.colorNeutralStroke1}`,
-        borderRadius: tokens.borderRadiusMedium,
-    },
-    dimSeparator: {
-        opacity: 0.5,
-    },
-    overrideValue: {
-        color: tokens.colorPaletteGreenForeground1,
     },
 });
 
@@ -167,9 +124,6 @@ const SmartAssetList: FunctionComponent<{ scene: Scene; selectionService: ISelec
 
     // Install a React-state-based onAssetNotFound handler so the Fluent Dialog
     // is used instead of imperative DOM overlays.
-    const pendingNotFoundRef = useRef(pendingNotFound);
-    pendingNotFoundRef.current = pendingNotFound;
-
     useEffect(() => {
         if (!sam) {
             return;
@@ -187,13 +141,7 @@ const SmartAssetList: FunctionComponent<{ scene: Scene; selectionService: ISelec
             if (!sam) {
                 return [] as Array<{ key: string; url: string }>;
             }
-            const entries: Array<{ key: string; url: string }> = [];
-            for (const [key, url] of GetAllSmartAssets(sam)) {
-                if (key !== PROJECT_LOCALS_KEY) {
-                    entries.push({ key, url });
-                }
-            }
-            return entries;
+            return Array.from(GetAllSmartAssets(sam), ([key, url]) => ({ key, url }));
         }, [sam]),
         sam?.onAssetLoadedObservable,
         sam?.onAssetUnloadedObservable,
@@ -211,7 +159,7 @@ const SmartAssetList: FunctionComponent<{ scene: Scene; selectionService: ISelec
                 return;
             }
 
-            const { sam } = getOrCreateManagers(scene);
+            const sam = getOrCreateSmartAssetManager(scene);
 
             for (let i = 0; i < files.length; i++) {
                 const file = files[i];
@@ -253,7 +201,7 @@ const SmartAssetList: FunctionComponent<{ scene: Scene; selectionService: ISelec
 
     const onRemoveAsset = useCallback(
         async (key: string) => {
-            const { sam } = getOrCreateManagers(scene);
+            const sam = getOrCreateSmartAssetManager(scene);
             await RemoveSmartAssetAsync(sam, key);
             setStatus(`Removed: ${key}`);
         },
@@ -262,7 +210,7 @@ const SmartAssetList: FunctionComponent<{ scene: Scene; selectionService: ISelec
 
     const onReloadAsset = useCallback(
         async (key: string) => {
-            const { sam } = getOrCreateManagers(scene);
+            const sam = getOrCreateSmartAssetManager(scene);
             await ReloadSmartAssetAsync(sam, key);
             setStatus(`Reloaded: ${key}`);
         },
@@ -272,7 +220,7 @@ const SmartAssetList: FunctionComponent<{ scene: Scene; selectionService: ISelec
     const onSwapAsset = useCallback(
         (key: string) => {
             const doSwapAsync = async (file: File, fileHandle?: FileSystemFileHandle) => {
-                const { sam, overrides } = getOrCreateManagers(scene);
+                const sam = getOrCreateSmartAssetManager(scene);
                 const oldUrl = ResolveSmartAsset(sam, key) ?? "";
                 const blobUrl = URL.createObjectURL(file);
                 const ext = _getExtension(file.name).toLowerCase();
@@ -288,7 +236,7 @@ const SmartAssetList: FunctionComponent<{ scene: Scene; selectionService: ISelec
                         }
                     }
 
-                    // Load the new texture via SAM so it's tracked for override resolution.
+                    // Load the new texture via SAM so it stays tracked by key.
                     RegisterSmartAsset(sam, key, blobUrl, { ...(ext ? { extension: ext } : {}), type: "texture" });
                     const newTex = await LoadSmartAssetTextureAsync(sam, key);
 
@@ -309,9 +257,6 @@ const SmartAssetList: FunctionComponent<{ scene: Scene; selectionService: ISelec
                         }
                         oldTex.dispose();
                     }
-
-                    // Re-apply overrides that reference this texture key
-                    ApplyAllOverrides(overrides);
                 } else {
                     // Scene file swap (GLB, glTF, etc.)
                     await UnloadSmartAssetAsync(sam, key);
@@ -330,9 +275,6 @@ const SmartAssetList: FunctionComponent<{ scene: Scene; selectionService: ISelec
                     } finally {
                         sam.onAssetNotFound = savedHandler;
                     }
-
-                    // Re-apply overrides for the reloaded asset
-                    ApplyOverridesForKey(overrides, key);
                 }
 
                 // Notify after everything is loaded and tracked so the UI re-renders
@@ -466,138 +408,6 @@ const SmartAssetList: FunctionComponent<{ scene: Scene; selectionService: ISelec
     );
 };
 
-// ── Material Assignment ──
-
-const MaterialAssignment: FunctionComponent<{ scene: Scene }> = (props: { scene: Scene }) => {
-    const { scene } = props;
-    const styles = useStyles();
-    const [meshes, setMeshes] = useState<AbstractMesh[]>([]);
-    const [materials, setMaterials] = useState<Material[]>([]);
-    const [status, setStatus] = useState("");
-
-    const refresh = useCallback(() => {
-        setMeshes(scene.meshes.filter((m) => m.name !== "__root__" && !m.name.startsWith("__")));
-        setMaterials(scene.materials.filter((m) => m.name !== "default material"));
-    }, [scene]);
-
-    useEffect(() => {
-        refresh();
-    }, [refresh]);
-
-    const onAssignMaterial = useCallback(
-        (meshName: string, materialName: string) => {
-            const mesh = scene.meshes.find((m) => m.name === meshName);
-            const mat = scene.materials.find((m) => m.name === materialName);
-            if (!mesh || !mat) {
-                return;
-            }
-
-            mesh.material = mat;
-
-            // Persist as an override
-            const { sam, overrides } = getOrCreateManagers(scene);
-            const key = FindSmartAssetKeyForObject(sam, mesh) ?? "";
-            AddOverride(overrides, {
-                key,
-                targetType: "meshes",
-                targetName: mesh.name,
-                propertyPath: "material",
-                value: `ref:${mat.name}`,
-            });
-
-            setStatus(`Assigned ${mat.name} → ${mesh.name}`);
-        },
-        [scene]
-    );
-
-    if (meshes.length === 0) {
-        return <div className={styles.emptyMessage}>No meshes in scene. Add assets first.</div>;
-    }
-
-    return (
-        <>
-            {meshes.map((mesh) => (
-                <div key={mesh.name} className={styles.assetRow}>
-                    <span className={styles.assetKey} title={mesh.name}>
-                        {mesh.name}
-                    </span>
-                    <select
-                        value={mesh.material?.name ?? ""}
-                        onChange={(e) => {
-                            if (e.target.value) {
-                                onAssignMaterial(mesh.name, e.target.value);
-                            }
-                        }}
-                        className={styles.materialSelect}
-                    >
-                        <option value="">(none)</option>
-                        {materials.map((m, idx) => (
-                            <option key={`${m.name}-${idx}`} value={m.name}>
-                                {m.name}
-                            </option>
-                        ))}
-                    </select>
-                </div>
-            ))}
-            <ButtonLine label="Refresh" icon={ArrowSyncRegular} onClick={refresh} />
-            {status && <div className={styles.statusMessage}>{status}</div>}
-        </>
-    );
-};
-
-// ── Override Summary ──
-
-const OverrideSummary: FunctionComponent<{ scene: Scene }> = (props: { scene: Scene }) => {
-    const { scene } = props;
-    const styles = useStyles();
-    const [overrideList, setOverrideList] = useState<Array<{ key: string; target: string; prop: string; value: string }>>([]);
-
-    const refresh = useCallback(() => {
-        const overrides = GetOverrideManagerFromScene(scene);
-        if (!overrides) {
-            setOverrideList([]);
-            return;
-        }
-
-        const entries = GetOverrides(overrides).map((o) => ({
-            key: o.key || "(scene)",
-            target: `${o.targetType}.${o.targetName}`,
-            prop: o.propertyPath,
-            value: String(o.value),
-        }));
-        setOverrideList(entries);
-    }, [scene]);
-
-    useEffect(() => {
-        refresh();
-        // Auto-refresh every 2 seconds to pick up new overrides from
-        // Inspector edits, project loads, and programmatic changes
-        const interval = setInterval(refresh, 2000);
-        return () => clearInterval(interval);
-    }, [refresh]);
-
-    if (overrideList.length === 0) {
-        return <div className={styles.emptyMessage}>No overrides tracked. Edit properties in Inspector to create overrides.</div>;
-    }
-
-    return (
-        <>
-            {overrideList.map((o, i) => (
-                <div key={i} className={styles.overrideRow}>
-                    <span>{o.key}</span>
-                    <span className={styles.dimSeparator}>→</span>
-                    <span>
-                        {o.target}.{o.prop}
-                    </span>
-                    <span className={styles.dimSeparator}>=</span>
-                    <span className={styles.overrideValue}>{_shortenValue(o.value)}</span>
-                </div>
-            ))}
-            <ButtonLine label="Refresh" icon={DocumentTextRegular} onClick={refresh} />
-        </>
-    );
-};
-
 // ── Utilities ──
 
 /**
@@ -673,16 +483,6 @@ function _shortenUrl(url: string): string {
     }
     const parts = url.split("/");
     return parts.length > 3 ? "…/" + parts.slice(-2).join("/") : url;
-}
-
-/**
- * Truncates a value string to a maximum display length.
- * @param value - The value string to shorten.
- * @returns The truncated string, with an ellipsis if it was shortened.
- */
-// eslint-disable-next-line @typescript-eslint/naming-convention
-function _shortenValue(value: string): string {
-    return value.length > 30 ? value.substring(0, 27) + "…" : value;
 }
 
 /**
