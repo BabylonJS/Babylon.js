@@ -1,4 +1,5 @@
 /** Pure barrel — re-exports only side-effect-free modules */
+export * from "./allBlocks.pure";
 export * from "./booleanGeometryBlock.pure";
 export * from "./boundingBlock.pure";
 export * from "./cleanGeometryBlock.pure";
@@ -49,4 +50,3 @@ export * from "./Set/pure";
 export * from "./Sources/pure";
 export * from "./Teleport/pure";
 export * from "./Textures/pure";
-export * from "./allBlocks.pure";

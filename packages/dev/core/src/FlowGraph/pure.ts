@@ -16,5 +16,6 @@ export * from "./flowGraphParser";
 export * from "./flowGraphPathConverter";
 export * from "./flowGraphPathConverterComponent";
 export * from "./flowGraphLogger";
+export * from "./flowGraphValidator";
 export * from "./Blocks/pure";
 export * from "./CustomTypes/pure";

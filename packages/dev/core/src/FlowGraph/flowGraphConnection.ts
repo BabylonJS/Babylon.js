@@ -61,7 +61,7 @@ export class FlowGraphConnection<BlockT, ConnectedToT extends IConnectable> impl
      * @internal
      */
     // disable warning as this is used for parsing
-
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public connectedPointIds: any[] = [];
 
     public constructor(

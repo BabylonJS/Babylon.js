@@ -1,25 +1,25 @@
 {
   "stats": {
-    "totalFiles": 3228,
-    "filesWithSideEffects": 1490,
-    "filesWithoutSideEffects": 1738,
+    "totalFiles": 3251,
+    "filesWithSideEffects": 1510,
+    "filesWithoutSideEffects": 1741,
     "byType": {
-      "top-level-call": 653,
+      "top-level-call": 658,
       "declare-module": 159,
-      "bare-import": 139,
+      "bare-import": 137,
       "static-property-assignment": 2,
       "prototype-assignment": 16,
       "RegisterClass": 24,
-      "shader-store-write": 623
+      "shader-store-write": 639
     },
     "filesByType": {
-      "top-level-call": 648,
+      "top-level-call": 653,
       "declare-module": 141,
-      "bare-import": 50,
+      "bare-import": 49,
       "static-property-assignment": 2,
       "prototype-assignment": 5,
       "RegisterClass": 24,
-      "shader-store-write": 623
+      "shader-store-write": 639
     }
   },
   "manifest": [
@@ -2094,6 +2094,16 @@
       ]
     },
     {
+      "file": "FlowGraph/Blocks/allBlocks.ts",
+      "sideEffects": [
+        {
+          "type": "top-level-call",
+          "line": 4,
+          "text": "registerAllFlowGraphBlocks();"
+        }
+      ]
+    },
+    {
       "file": "FlowGraph/Blocks/Data/Audio/flowGraphGetSoundVolumeBlock.ts",
       "sideEffects": [
         {
@@ -2348,7 +2358,7 @@
       "sideEffects": [
         {
           "type": "RegisterClass",
-          "line": 108,
+          "line": 109,
           "text": "RegisterClass(FlowGraphBlockNames.PointerDownEvent, FlowGraphPointerDownEventBlock);"
         }
       ]
@@ -2358,7 +2368,7 @@
       "sideEffects": [
         {
           "type": "RegisterClass",
-          "line": 108,
+          "line": 109,
           "text": "RegisterClass(FlowGraphBlockNames.PointerMoveEvent, FlowGraphPointerMoveEventBlock);"
         }
       ]
@@ -2388,7 +2398,7 @@
       "sideEffects": [
         {
           "type": "RegisterClass",
-          "line": 108,
+          "line": 109,
           "text": "RegisterClass(FlowGraphBlockNames.PointerUpEvent, FlowGraphPointerUpEventBlock);"
         }
       ]
@@ -2820,6 +2830,16 @@
           "type": "declare-module",
           "line": 3,
           "text": "declare module \"./frameGraphTextureManager.pure\" {"
+        }
+      ]
+    },
+    {
+      "file": "FrameGraph/Node/Blocks/allBlocks.ts",
+      "sideEffects": [
+        {
+          "type": "top-level-call",
+          "line": 4,
+          "text": "registerAllNodeRenderGraphBlocks();"
         }
       ]
     },
@@ -3885,6 +3905,16 @@
           "type": "top-level-call",
           "line": 8,
           "text": "registerAddBlock();"
+        }
+      ]
+    },
+    {
+      "file": "Materials/Node/Blocks/allBlocks.ts",
+      "sideEffects": [
+        {
+          "type": "top-level-call",
+          "line": 4,
+          "text": "registerAllNodeMaterialBlocks();"
         }
       ]
     },
@@ -6004,6 +6034,16 @@
       ]
     },
     {
+      "file": "Meshes/Node/Blocks/allBlocks.ts",
+      "sideEffects": [
+        {
+          "type": "top-level-call",
+          "line": 4,
+          "text": "registerAllNodeGeometryBlocks();"
+        }
+      ]
+    },
+    {
       "file": "Meshes/Node/Blocks/bevelBlock.ts",
       "sideEffects": [
         {
@@ -7469,6 +7509,16 @@
       ]
     },
     {
+      "file": "Particles/Node/Blocks/allBlocks.ts",
+      "sideEffects": [
+        {
+          "type": "top-level-call",
+          "line": 4,
+          "text": "registerAllNodeParticleBlocks();"
+        }
+      ]
+    },
+    {
       "file": "Particles/Node/Blocks/Conditions/particleConditionBlock.ts",
       "sideEffects": [
         {
@@ -8679,21 +8729,6 @@
       ]
     },
     {
-      "file": "Rendering/depthRenderer.ts",
-      "sideEffects": [
-        {
-          "type": "bare-import",
-          "line": 3,
-          "text": "import \"../Shaders/depth.fragment\";"
-        },
-        {
-          "type": "bare-import",
-          "line": 4,
-          "text": "import \"../Shaders/depth.vertex\";"
-        }
-      ]
-    },
-    {
       "file": "Rendering/depthRendererSceneComponent.ts",
       "sideEffects": [
         {
@@ -9409,6 +9444,26 @@
       ]
     },
     {
+      "file": "Shaders/gaussianSplattingVoxel.fragment.ts",
+      "sideEffects": [
+        {
+          "type": "shader-store-write",
+          "line": 23,
+          "text": "if (!ShaderStore.ShadersStore[name]) {"
+        }
+      ]
+    },
+    {
+      "file": "Shaders/gaussianSplattingVoxel.vertex.ts",
+      "sideEffects": [
+        {
+          "type": "shader-store-write",
+          "line": 29,
+          "text": "if (!ShaderStore.ShadersStore[name]) {"
+        }
+      ]
+    },
+    {
       "file": "Shaders/geometry.fragment.ts",
       "sideEffects": [
         {
@@ -9949,6 +10004,16 @@
       ]
     },
     {
+      "file": "Shaders/lod3D.fragment.ts",
+      "sideEffects": [
+        {
+          "type": "shader-store-write",
+          "line": 9,
+          "text": "if (!ShaderStore.ShadersStore[name]) {"
+        }
+      ]
+    },
+    {
       "file": "Shaders/lodCube.fragment.ts",
       "sideEffects": [
         {
@@ -10083,7 +10148,7 @@
       "sideEffects": [
         {
           "type": "shader-store-write",
-          "line": 240,
+          "line": 305,
           "text": "if (!ShaderStore.ShadersStore[name]) {"
         }
       ]
@@ -11173,7 +11238,7 @@
       "sideEffects": [
         {
           "type": "shader-store-write",
-          "line": 21,
+          "line": 34,
           "text": "if (!ShaderStore.IncludesShadersStore[name]) {"
         }
       ]
@@ -11194,6 +11259,16 @@
         {
           "type": "shader-store-write",
           "line": 20,
+          "text": "if (!ShaderStore.IncludesShadersStore[name]) {"
+        }
+      ]
+    },
+    {
+      "file": "Shaders/ShadersInclude/openpbrBlockPrePass.ts",
+      "sideEffects": [
+        {
+          "type": "shader-store-write",
+          "line": 72,
           "text": "if (!ShaderStore.IncludesShadersStore[name]) {"
         }
       ]
@@ -11263,7 +11338,7 @@
       "sideEffects": [
         {
           "type": "shader-store-write",
-          "line": 234,
+          "line": 240,
           "text": "if (!ShaderStore.IncludesShadersStore[name]) {"
         }
       ]
@@ -11273,7 +11348,7 @@
       "sideEffects": [
         {
           "type": "shader-store-write",
-          "line": 143,
+          "line": 146,
           "text": "if (!ShaderStore.IncludesShadersStore[name]) {"
         }
       ]
@@ -11323,7 +11398,7 @@
       "sideEffects": [
         {
           "type": "shader-store-write",
-          "line": 59,
+          "line": 61,
           "text": "if (!ShaderStore.IncludesShadersStore[name]) {"
         }
       ]
@@ -11369,6 +11444,16 @@
       ]
     },
     {
+      "file": "Shaders/ShadersInclude/openpbrSubsurfaceLayerData.ts",
+      "sideEffects": [
+        {
+          "type": "shader-store-write",
+          "line": 30,
+          "text": "if (!ShaderStore.IncludesShadersStore[name]) {"
+        }
+      ]
+    },
+    {
       "file": "Shaders/ShadersInclude/openpbrThinFilmLayerData.ts",
       "sideEffects": [
         {
@@ -11404,6 +11489,16 @@
         {
           "type": "shader-store-write",
           "line": 124,
+          "text": "if (!ShaderStore.IncludesShadersStore[name]) {"
+        }
+      ]
+    },
+    {
+      "file": "Shaders/ShadersInclude/openpbrVolumeFunctions.ts",
+      "sideEffects": [
+        {
+          "type": "shader-store-write",
+          "line": 62,
           "text": "if (!ShaderStore.IncludesShadersStore[name]) {"
         }
       ]
@@ -11643,7 +11738,7 @@
       "sideEffects": [
         {
           "type": "shader-store-write",
-          "line": 174,
+          "line": 175,
           "text": "if (!ShaderStore.IncludesShadersStore[name]) {"
         }
       ]
@@ -11714,6 +11809,16 @@
         {
           "type": "shader-store-write",
           "line": 23,
+          "text": "if (!ShaderStore.IncludesShadersStore[name]) {"
+        }
+      ]
+    },
+    {
+      "file": "Shaders/ShadersInclude/pbrFragmentReflectionDeclaration.ts",
+      "sideEffects": [
+        {
+          "type": "shader-store-write",
+          "line": 38,
           "text": "if (!ShaderStore.IncludesShadersStore[name]) {"
         }
       ]
@@ -12759,6 +12864,26 @@
       ]
     },
     {
+      "file": "ShadersWGSL/gaussianSplattingVoxel.fragment.ts",
+      "sideEffects": [
+        {
+          "type": "shader-store-write",
+          "line": 18,
+          "text": "if (!ShaderStore.ShadersStoreWGSL[name]) {"
+        }
+      ]
+    },
+    {
+      "file": "ShadersWGSL/gaussianSplattingVoxel.vertex.ts",
+      "sideEffects": [
+        {
+          "type": "shader-store-write",
+          "line": 38,
+          "text": "if (!ShaderStore.ShadersStoreWGSL[name]) {"
+        }
+      ]
+    },
+    {
       "file": "ShadersWGSL/geometry.fragment.ts",
       "sideEffects": [
         {
@@ -13249,6 +13374,16 @@
       ]
     },
     {
+      "file": "ShadersWGSL/lod3D.fragment.ts",
+      "sideEffects": [
+        {
+          "type": "shader-store-write",
+          "line": 9,
+          "text": "if (!ShaderStore.ShadersStoreWGSL[name]) {"
+        }
+      ]
+    },
+    {
       "file": "ShadersWGSL/lodCube.fragment.ts",
       "sideEffects": [
         {
@@ -13373,7 +13508,7 @@
       "sideEffects": [
         {
           "type": "shader-store-write",
-          "line": 220,
+          "line": 285,
           "text": "if (!ShaderStore.ShadersStoreWGSL[name]) {"
         }
       ]
@@ -14273,7 +14408,7 @@
       "sideEffects": [
         {
           "type": "shader-store-write",
-          "line": 20,
+          "line": 34,
           "text": "if (!ShaderStore.IncludesShadersStoreWGSL[name]) {"
         }
       ]
@@ -14294,6 +14429,16 @@
         {
           "type": "shader-store-write",
           "line": 20,
+          "text": "if (!ShaderStore.IncludesShadersStoreWGSL[name]) {"
+        }
+      ]
+    },
+    {
+      "file": "ShadersWGSL/ShadersInclude/openpbrBlockPrePass.ts",
+      "sideEffects": [
+        {
+          "type": "shader-store-write",
+          "line": 96,
           "text": "if (!ShaderStore.IncludesShadersStoreWGSL[name]) {"
         }
       ]
@@ -14353,7 +14498,7 @@
       "sideEffects": [
         {
           "type": "shader-store-write",
-          "line": 246,
+          "line": 300,
           "text": "if (!ShaderStore.IncludesShadersStoreWGSL[name]) {"
         }
       ]
@@ -14403,7 +14548,7 @@
       "sideEffects": [
         {
           "type": "shader-store-write",
-          "line": 59,
+          "line": 61,
           "text": "if (!ShaderStore.IncludesShadersStoreWGSL[name]) {"
         }
       ]
@@ -14449,6 +14594,16 @@
       ]
     },
     {
+      "file": "ShadersWGSL/ShadersInclude/openpbrSubsurfaceLayerData.ts",
+      "sideEffects": [
+        {
+          "type": "shader-store-write",
+          "line": 30,
+          "text": "if (!ShaderStore.IncludesShadersStoreWGSL[name]) {"
+        }
+      ]
+    },
+    {
       "file": "ShadersWGSL/ShadersInclude/openpbrThinFilmLayerData.ts",
       "sideEffects": [
         {
@@ -14474,6 +14629,16 @@
         {
           "type": "shader-store-write",
           "line": 10,
+          "text": "if (!ShaderStore.IncludesShadersStoreWGSL[name]) {"
+        }
+      ]
+    },
+    {
+      "file": "ShadersWGSL/ShadersInclude/openpbrVolumeFunctions.ts",
+      "sideEffects": [
+        {
+          "type": "shader-store-write",
+          "line": 63,
           "text": "if (!ShaderStore.IncludesShadersStoreWGSL[name]) {"
         }
       ]
@@ -14713,7 +14878,7 @@
       "sideEffects": [
         {
           "type": "shader-store-write",
-          "line": 178,
+          "line": 179,
           "text": "if (!ShaderStore.IncludesShadersStoreWGSL[name]) {"
         }
       ]
@@ -14764,6 +14929,16 @@
         {
           "type": "shader-store-write",
           "line": 23,
+          "text": "if (!ShaderStore.IncludesShadersStoreWGSL[name]) {"
+        }
+      ]
+    },
+    {
+      "file": "ShadersWGSL/ShadersInclude/pbrFragmentReflectionDeclaration.ts",
+      "sideEffects": [
+        {
+          "type": "shader-store-write",
+          "line": 34,
           "text": "if (!ShaderStore.IncludesShadersStoreWGSL[name]) {"
         }
       ]
@@ -15003,7 +15178,7 @@
       "sideEffects": [
         {
           "type": "shader-store-write",
-          "line": 50,
+          "line": 54,
           "text": "if (!ShaderStore.IncludesShadersStoreWGSL[name]) {"
         }
       ]
@@ -15044,6 +15219,26 @@
         {
           "type": "shader-store-write",
           "line": 19,
+          "text": "if (!ShaderStore.IncludesShadersStoreWGSL[name]) {"
+        }
+      ]
+    },
+    {
+      "file": "ShadersWGSL/ShadersInclude/vertexPullingDeclaration.ts",
+      "sideEffects": [
+        {
+          "type": "shader-store-write",
+          "line": 184,
+          "text": "if (!ShaderStore.IncludesShadersStoreWGSL[name]) {"
+        }
+      ]
+    },
+    {
+      "file": "ShadersWGSL/ShadersInclude/vertexPullingVertex.ts",
+      "sideEffects": [
+        {
+          "type": "shader-store-write",
+          "line": 60,
           "text": "if (!ShaderStore.IncludesShadersStoreWGSL[name]) {"
         }
       ]

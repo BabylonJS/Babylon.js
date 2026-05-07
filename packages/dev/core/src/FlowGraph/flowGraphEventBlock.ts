@@ -1,5 +1,6 @@
 import { FlowGraphAsyncExecutionBlock } from "./flowGraphAsyncExecutionBlock";
-import { type FlowGraphContext } from "./flowGraphContext"
+import { type IFlowGraphBlockConfiguration } from "./flowGraphBlock";
+import { type FlowGraphContext } from "./flowGraphContext";
 import { FlowGraphEventType } from "./flowGraphEventType";
 
 /**
@@ -14,6 +15,30 @@ export abstract class FlowGraphEventBlock extends FlowGraphAsyncExecutionBlock {
     public initPriority: number = 0;
 
     /**
+     * Creates a new event block.
+     * @param config optional configuration
+     */
+    constructor(config?: IFlowGraphBlockConfiguration) {
+        super(config);
+        // Event blocks are driven by scene events, not by an incoming signal.
+        // Remove the inherited `in` port so it is not shown in the editor UI
+        // and cannot be accidentally wired.
+        this._unregisterSignalInput("in");
+    }
+
+    /**
+     * Deserializes from an object.
+     * Filters out the legacy "in" signal input that existed before event blocks
+     * stopped exposing it, so old serialized graphs load without error.
+     * @param serializationObject the object to deserialize from
+     */
+    public override deserialize(serializationObject: any) {
+        const filtered = { ...serializationObject };
+        filtered.signalInputs = (serializationObject.signalInputs ?? []).filter((s: any) => s.name !== "in");
+        super.deserialize(filtered);
+    }
+
+    /**
      * The type of the event
      */
     public readonly type: FlowGraphEventType = FlowGraphEventType.NoTrigger;
@@ -22,7 +47,32 @@ export abstract class FlowGraphEventBlock extends FlowGraphAsyncExecutionBlock {
      */
     public _execute(context: FlowGraphContext): void {
         context._notifyExecuteNode(this);
+        // Fire both signals: KHR_interactivity graphs connect to `done`,
+        // while editor-authored graphs typically connect to `out`.
+        // Both must fire so that either wiring style works correctly.
         this.done._activateSignal(context);
+        this.out._activateSignal(context);
+    }
+
+    /**
+     * @internal
+     * Override _startPendingTasks so that event blocks do NOT fire the
+     * `out` signal at graph-start time.  The base FlowGraphAsyncExecutionBlock
+     * fires `out` immediately in _startPendingTasks (useful for async blocks
+     * like PlayAnimation that start a task and let sync flow continue).
+     * Event blocks should only fire their output signals when the actual
+     * event occurs, which is handled by _execute.
+     */
+    public override _startPendingTasks(context: FlowGraphContext): void {
+        if (context._getExecutionVariable(this, "_initialized", false)) {
+            this._cancelPendingTasks(context);
+            this._resetAfterCanceled(context);
+        }
+        this._preparePendingTasks(context);
+        context._addPendingBlock(this);
+        // Do NOT fire out._activateSignal — event blocks fire both out and
+        // done in _execute when the actual event triggers.
+        context._setExecutionVariable(this, "_initialized", true);
     }
 
     /**

@@ -12,5 +12,3 @@ export * from "./flowGraphDataSwitchBlock.pure";
 export * from "./Math/pure";
 export * from "./Transformers/pure";
 export * from "./Utils/pure";
-export * from "./Audio/pure";
-export * from "./Physics/pure";
