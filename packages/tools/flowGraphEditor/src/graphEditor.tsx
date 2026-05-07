@@ -32,7 +32,7 @@ import { GraphTabBarComponent } from "./components/graphTabBar/graphTabBarCompon
 import { ShowToast } from "./components/toast/toastComponent";
 import { HowToUseDialogComponent } from "./components/howToUse/howToUseDialogComponent";
 import { AllCompositeTemplates, type ICompositeTemplate } from "./compositeTemplates";
-import { Menu, MenuDivider, MenuItem, MenuList, MenuPopover, MenuTrigger, Subtitle1, Text, Title3, makeStaticStyles } from "@fluentui/react-components";
+import { Menu, MenuDivider, MenuItem, MenuList, MenuPopover, MenuTrigger, Title3, makeStaticStyles } from "@fluentui/react-components";
 import { createVirtualElementFromClick, type PositioningVirtualElement } from "@fluentui/react-positioning";
 
 /**
@@ -120,37 +120,6 @@ const useFlowGraphRootStyles = makeStaticStyles(`
     .blocker { display: grid; }
 }
 `);
-
-/** Render-error boundary for the editor tree. */
-class EditorErrorBoundary extends React.Component<React.PropsWithChildren<{}>, { hasError: boolean; error: string }> {
-    constructor(props: React.PropsWithChildren<{}>) {
-        super(props);
-        this.state = { hasError: false, error: "" };
-    }
-
-    static GetDerivedStateFromError(error: Error) {
-        return { hasError: true, error: error.message };
-    }
-
-    override render() {
-        if (this.state.hasError) {
-            return (
-                <div style={{ padding: 20, color: "#ff6b6b", backgroundColor: "#1e1e1e", height: "100%", overflow: "auto" }}>
-                    <Subtitle1 block style={{ color: "inherit" }}>
-                        Flow Graph Editor encountered an error
-                    </Subtitle1>
-                    <Text font="monospace" block style={{ color: "inherit", whiteSpace: "pre-wrap", marginTop: 8 }}>
-                        {this.state.error}
-                    </Text>
-                    <button style={{ marginTop: 10, padding: "8px 16px", cursor: "pointer" }} onClick={() => this.setState({ hasError: false, error: "" })}>
-                        Try to recover
-                    </button>
-                </div>
-            );
-        }
-        return this.props.children;
-    }
-}
 
 /**
  * Tiny shim that activates the editor's static styles. Render anywhere inside the editor tree.
@@ -1338,7 +1307,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
     /** @internal */
     override render() {
         return (
-            <EditorErrorBoundary>
+            <>
                 <EditorStaticStyles />
                 <SplitContainer
                     id="flow-graph-editor-graph-root"
@@ -1461,7 +1430,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                         </MenuPopover>
                     </Menu>
                 )}
-            </EditorErrorBoundary>
+            </>
         );
     }
 }
