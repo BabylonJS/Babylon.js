@@ -46,7 +46,7 @@ import { Constants } from "./Engines/constants";
 import { IsWindowObjectExist } from "./Misc/domManagement";
 import { EngineStore } from "./Engines/engineStore";
 import { type AbstractActionManager } from "./Actions/abstractActionManager";
-import { _WarnImport } from "./Misc/devTools";
+import { _WarnImport, _IsSideEffectImplemented } from "./Misc/devTools";
 import { type WebRequest } from "./Misc/webRequest";
 import { InputManager } from "./Inputs/scene.inputManager";
 import { PerfCounter } from "./Misc/perfCounter";
@@ -6767,7 +6767,7 @@ export function registerScene(): void {
 }
 
 // #region GENERATED_SIDE_EFFECT_STUBS — do not edit, regenerate with `npm run generate:side-effect-stubs`
-import { _MissingSideEffect, _MissingSideEffectProperty, _IsSideEffectImplemented } from "./Misc/devTools";
+import { _MissingSideEffect, _MissingSideEffectProperty } from "./Misc/devTools";
 
 Scene.prototype.sortActiveAnimatables ??= _MissingSideEffect("Scene", "sortActiveAnimatables") as any;
 Scene.prototype.beginWeightedAnimation ??= _MissingSideEffect("Scene", "beginWeightedAnimation") as any;

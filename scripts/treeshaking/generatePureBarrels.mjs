@@ -30,10 +30,13 @@ const SRC_ROOT = resolve(REPO_ROOT, "packages/dev/core/src");
 const MANIFEST_PATH = resolve(__dirname, "side-effects-manifest.json");
 
 const DRY_RUN = process.argv.includes("--dry-run");
+const CHECK = process.argv.includes("--check");
 const VERBOSE = process.argv.includes("--verbose");
 
 const HEADER = `/** Pure barrel — re-exports only side-effect-free modules */\n`;
 const writtenFiles = [];
+/** @type {Map<string, string>} path → expected content (used in --check mode) */
+const expectedContents = new Map();
 
 // ── Load side-effects manifest ──────────────────────────────────────────────
 const manifestData = JSON.parse(readFileSync(MANIFEST_PATH, "utf-8"));
@@ -225,6 +228,8 @@ function processDirectory(dir) {
     if (DRY_RUN) {
         console.log(`\n[DRY-RUN] Would write ${relPure}:`);
         console.log(fileContent);
+    } else if (CHECK) {
+        expectedContents.set(purePath, fileContent);
     } else {
         writeFileSync(purePath, fileContent, "utf-8");
         writtenFiles.push(purePath);
@@ -429,6 +434,8 @@ function postPassOrphans(dir) {
     if (DRY_RUN) {
         console.log(`\n[DRY-RUN] Would write (post-pass) ${relDir}/pure.ts:`);
         console.log(fileContent);
+    } else if (CHECK) {
+        expectedContents.set(purePath, fileContent);
     } else {
         writeFileSync(purePath, fileContent, "utf-8");
         writtenFiles.push(purePath);
@@ -453,9 +460,9 @@ function linkSubdirBarrels(dir) {
         if (!existsSync(subPure)) continue;
 
         const parentPure = join(dir, "pure.ts");
-        if (!existsSync(parentPure)) continue;
+        if (!existsSync(parentPure) && !expectedContents.has(parentPure)) continue;
 
-        const parentContent = readFileSync(parentPure, "utf-8");
+        const parentContent = CHECK ? (expectedContents.get(parentPure) ?? readFileSync(parentPure, "utf-8")) : readFileSync(parentPure, "utf-8");
         const subRef = `./${entry.name}/pure`;
         if (parentContent.includes(subRef)) continue;
 
@@ -463,6 +470,10 @@ function linkSubdirBarrels(dir) {
         const newLine = `export * from "${subRef}";\n`;
         if (DRY_RUN) {
             console.log(`[DRY-RUN] Would append to ${relative(SRC_ROOT, parentPure)}: ${newLine.trim()}`);
+        } else if (CHECK) {
+            // In check mode, accumulate expected content for this parent barrel
+            const existing = expectedContents.get(parentPure) ?? parentContent;
+            expectedContents.set(parentPure, existing + newLine);
         } else {
             writeFileSync(parentPure, parentContent + newLine, "utf-8");
             writtenFiles.push(parentPure);
@@ -489,7 +500,7 @@ console.log(`  Post-pass parent links:      ${postPassLinks}`);
 console.log(`  Empty barrels (not written): ${emptyBarrels}`);
 
 // ── Format generated files with Prettier ────────────────────────────────────
-if (!DRY_RUN && writtenFiles.length > 0) {
+if (!DRY_RUN && !CHECK && writtenFiles.length > 0) {
     // Deduplicate (a file may be appended to multiple times)
     const uniqueFiles = [...new Set(writtenFiles)];
     console.log(`\nFormatting ${uniqueFiles.length} files with Prettier...`);
@@ -505,5 +516,43 @@ if (!DRY_RUN && writtenFiles.length > 0) {
         console.log(`Formatted ${uniqueFiles.length} files.`);
     } catch (err) {
         console.error(`Warning: Prettier formatting failed: ${err.message}`);
+    }
+}
+
+// ── Check mode: compare expected vs on-disk ─────────────────────────────────
+if (CHECK) {
+    let driftCount = 0;
+    /** Normalize content for comparison: non-empty trimmed lines sorted */
+    const normalize = (s) =>
+        s
+            .split("\n")
+            .map((l) => l.trim())
+            .filter(Boolean)
+            .sort()
+            .join("\n");
+
+    for (const [filePath, expected] of expectedContents) {
+        let actual = "";
+        try {
+            actual = readFileSync(filePath, "utf-8");
+        } catch {
+            // File doesn't exist on disk
+        }
+        if (normalize(actual) !== normalize(expected)) {
+            driftCount++;
+            if (driftCount <= 10) {
+                console.error(`  DRIFT: ${relative(REPO_ROOT, filePath)}`);
+            }
+        }
+    }
+    if (driftCount > 0) {
+        if (driftCount > 10) {
+            console.error(`  ... and ${driftCount - 10} more`);
+        }
+        console.error(`\n❌ ${driftCount} pure barrel(s) are out of date.`);
+        console.error(`To fix: npm run generate:pure-barrels\n`);
+        process.exit(1);
+    } else {
+        console.log(`\n✅ All pure barrels are up-to-date.\n`);
     }
 }

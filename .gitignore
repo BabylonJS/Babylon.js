@@ -56,3 +56,4 @@ packages/tools/smartFiltersEditor/www/index.html
 
 # Sonda bundle analysis reports
 .sonda/
+docs/tree-shaking/

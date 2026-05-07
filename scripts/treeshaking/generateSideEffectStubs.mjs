@@ -18,8 +18,13 @@ import { resolve, dirname, relative, posix } from "path";
 import { globSync } from "glob";
 
 const ROOT = resolve(import.meta.dirname, "../../packages/dev/core/src");
+const REPO_ROOT = resolve(import.meta.dirname, "../..");
 const DRY_RUN = process.argv.includes("--dry-run");
+const CHECK = process.argv.includes("--check");
 const VERBOSE = process.argv.includes("--verbose");
+
+/** @type {Map<string, string>} path → expected content (used in --check mode) */
+const expectedContents = new Map();
 
 const REGION_START = "// #region GENERATED_SIDE_EFFECT_STUBS — do not edit, regenerate with `npm run generate:side-effect-stubs`";
 const REGION_END = "// #endregion GENERATED_SIDE_EFFECT_STUBS";
@@ -291,6 +296,8 @@ for (const [targetFile, classMap] of stubsByFile) {
 
     if (DRY_RUN) {
         console.log(`[DRY RUN] Would write ${fileStubCount} stubs to ${relative(ROOT, targetFile)}`);
+    } else if (CHECK) {
+        expectedContents.set(targetFile, content);
     } else {
         writeFileSync(targetFile, content, "utf-8");
     }
@@ -314,3 +321,32 @@ console.log(`  Property stubs generated: ${totalProperties}`);
 console.log(`  Internal members skipped: ${totalSkipped}`);
 console.log(`  Target files modified:    ${filesModified}`);
 if (DRY_RUN) console.log(`  (dry run — no files written)`);
+
+// ── Check mode: compare expected vs on-disk ─────────────────────────────────
+if (CHECK) {
+    let driftCount = 0;
+    for (const [filePath, expected] of expectedContents) {
+        let actual = "";
+        try {
+            actual = readFileSync(filePath, "utf-8");
+        } catch {
+            // File doesn't exist on disk
+        }
+        if (actual !== expected) {
+            driftCount++;
+            if (driftCount <= 10) {
+                console.error(`  DRIFT: ${relative(REPO_ROOT, filePath)}`);
+            }
+        }
+    }
+    if (driftCount > 0) {
+        if (driftCount > 10) {
+            console.error(`  ... and ${driftCount - 10} more`);
+        }
+        console.error(`\n❌ ${driftCount} file(s) have out-of-date side-effect stubs.`);
+        console.error(`To fix: npm run generate:side-effect-stubs\n`);
+        process.exit(1);
+    } else {
+        console.log(`\n✅ All side-effect stubs are up-to-date.\n`);
+    }
+}
