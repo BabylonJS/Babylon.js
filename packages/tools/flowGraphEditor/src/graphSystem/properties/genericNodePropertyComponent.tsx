@@ -13,6 +13,7 @@ import { ComboBoxPropertyLine } from "shared-ui-components/fluent/hoc/propertyLi
 import { Color3PropertyLine, Color4PropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/colorPropertyLine";
 import { Vector2PropertyLine, Vector3PropertyLine, Vector4PropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/vectorPropertyLine";
 import { type DropdownOption } from "shared-ui-components/fluent/primitives/dropdown";
+import { SpinButton } from "shared-ui-components/fluent/primitives/spinButton";
 
 import { type IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
 import { type FlowGraphBlock } from "core/FlowGraph/flowGraphBlock";
@@ -60,55 +61,43 @@ function IsPrimitiveEditableInput(conn: FlowGraphDataConnection<any>, block: Flo
 const useMatrixStyles = makeStyles({
     container: {
         display: "grid",
-        gridTemplateColumns: "repeat(4, 1fr)",
+        // Four equal-width columns that together span the full available width.
+        gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
         gap: tokens.spacingHorizontalXXS,
         rowGap: tokens.spacingVerticalXXS,
         marginTop: tokens.spacingVerticalXS,
+        width: "100%",
     },
     cell: {
-        boxSizing: "border-box",
-        height: "24px",
-        padding: `0 ${tokens.spacingHorizontalXS}`,
-        background: tokens.colorNeutralBackground1,
-        border: `1px solid ${tokens.colorNeutralStroke2}`,
-        borderRadius: tokens.borderRadiusSmall,
-        color: tokens.colorNeutralForeground1,
-        fontFamily: tokens.fontFamilyMonospace,
-        fontSize: tokens.fontSizeBase200,
-        outline: "none",
-        ":focus": {
-            borderTopColor: tokens.colorBrandStroke1,
-            borderRightColor: tokens.colorBrandStroke1,
-            borderBottomColor: tokens.colorBrandStroke1,
-            borderLeftColor: tokens.colorBrandStroke1,
-        },
+        // Let the SpinButton fill its grid cell so all 16 cells share the row width uniformly.
+        width: "100%",
+        minWidth: 0,
     },
 });
 
 /**
  * Compact 4×4 matrix editor used inline inside a `PropertyLine` (no `MatrixPropertyLine`
- * exists in the shared Fluent set yet). Each cell is an editable number input.
+ * exists in the shared Fluent set yet). Each cell is a Fluent `SpinButton`.
  * @returns The rendered matrix editor.
  */
 export const MatrixEditor: React.FunctionComponent<{ value: Matrix; onChange: (value: Matrix) => void }> = ({ value, onChange }) => {
     const classes = useMatrixStyles();
-    const data = value.asArray();
+    // `Matrix.asArray()` returns a Float32Array. `Float32Array.prototype.map` is
+    // type-preserving, so we convert to a plain array before iterating to render JSX.
+    const data = Array.from(value.asArray());
     return (
         <div className={classes.container}>
             {data.map((cell, i) => (
-                <input
+                <SpinButton
                     key={i}
                     className={classes.cell}
-                    type="number"
-                    step="any"
-                    defaultValue={cell}
-                    onBlur={(e) => {
-                        const next = Number(e.currentTarget.value);
-                        if (!Number.isNaN(next)) {
-                            const arr = value.asArray().slice();
+                    value={cell}
+                    step={0.1}
+                    onChange={(next) => {
+                        if (Number.isFinite(next)) {
+                            const arr = Array.from(value.asArray());
                             arr[i] = next;
-                            const m = Matrix.FromArray(arr);
-                            onChange(m);
+                            onChange(Matrix.FromArray(arr));
                         }
                     }}
                 />
