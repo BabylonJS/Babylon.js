@@ -1063,11 +1063,19 @@ function usePane(
     // registered). The Fluent hook's setValue will silently fail when the element doesn't exist (in relative mode,
     // it measures the element before/after and reverts if unchanged, which always happens when the element is null).
     // By composing the ref callback, we ensure the stored value is applied immediately after the element mounts.
+    //
+    // We also set the CSS variable directly as a fallback. The hook preserves its internal currentValue across
+    // re-mounts, so when (for example) the user undocks a resized pane and then re-docks it, currentValue already
+    // equals the persisted setting and the hook's setValue short-circuits — but the freshly-mounted DOM node has no
+    // inline CSS variable, so the pane visually reverts to the default width until the user drags. Setting the
+    // variable directly closes that gap. The order is important: setValue first (handles the first-mount case where
+    // currentValue starts at 0), then the direct setProperty as a redundant fallback for the no-op case.
     const composedHorizontalElementRef = useCallback(
         (node: HTMLElement | null) => {
             paneHorizontalResizeElementRef(node);
             if (node) {
                 setPaneWidthAdjust(paneWidthSettingRef.current);
+                node.style.setProperty(paneWidthAdjustCSSVar, `${paneWidthSettingRef.current}px`);
             }
         },
         [paneHorizontalResizeElementRef, setPaneWidthAdjust]
@@ -1077,6 +1085,7 @@ function usePane(
             paneVerticalResizeElementRef(node);
             if (node) {
                 setPaneHeightAdjust(paneHeightSettingRef.current);
+                node.style.setProperty(paneHeightAdjustCSSVar, `${paneHeightSettingRef.current}px`);
             }
         },
         [paneVerticalResizeElementRef, setPaneHeightAdjust]
