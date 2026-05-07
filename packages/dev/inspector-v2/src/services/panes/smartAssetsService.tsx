@@ -7,6 +7,7 @@ import {
     GetAllSmartAssets,
     GetOrCreateSmartAssetManager,
     GetSmartAssetManagerFromScene,
+    GetSmartAssetTextureExtensions,
     LoadSmartAssetAsync,
     LoadSmartAssetTextureAsync,
     RegisterSmartAsset,
@@ -16,6 +17,10 @@ import {
     UnloadSmartAssetAsync,
     type SmartAssetManager,
 } from "core/SmartAssets/smartAssetManager";
+
+import { type Material } from "core/Materials/material";
+import { type BaseTexture } from "core/Materials/Textures/baseTexture";
+import { type AbstractMesh } from "core/Meshes/abstractMesh";
 
 import { type ServiceDefinition } from "shared-ui-components/modularTool/modularity/serviceDefinition";
 import { type IShellService, ShellServiceIdentity } from "shared-ui-components/modularTool/services/shellService";
@@ -34,6 +39,15 @@ import { Caption1, makeStyles, tokens } from "@fluentui/react-components";
 import { AddRegular, DeleteRegular, ArrowSyncRegular, LinkRegular, CubeRegular } from "@fluentui/react-icons";
 
 const SmartAssetsPaneKey = "Smart Assets";
+
+const TextureFileAccept = [".png", ".jpg", ".jpeg", ".bmp", ".tga", ".gif", ".webp", ".env", ".hdr", ".dds", ".ktx", ".ktx2", ".basis"];
+const SceneFileAccept = [".glb", ".gltf", ".babylon", ".obj"];
+const AllAcceptString = [...SceneFileAccept, ...TextureFileAccept].join(",");
+
+// eslint-disable-next-line @typescript-eslint/naming-convention
+function _isTextureExtension(ext: string): boolean {
+    return GetSmartAssetTextureExtensions().has(ext);
+}
 
 /**
  * Inspector pane service that appears when Smart Assets are used in the current scene.
@@ -156,7 +170,7 @@ const useStyles = makeStyles({
         borderBottom: `1px solid ${tokens.colorNeutralStroke3}`,
     },
     assetKey: {
-        fontWeight: "bold",
+        fontWeight: tokens.fontWeightSemibold,
         minWidth: "60px",
         flexShrink: 0,
     },
@@ -251,7 +265,7 @@ const SmartAssetList: FunctionComponent<{ scene: Scene; selectionService: ISelec
                 const file = files[i];
                 const key = file.name.replace(/\.[^/.]+$/, "");
                 const ext = _getExtension(file.name).toLowerCase();
-                const isTexture = [".png", ".jpg", ".jpeg", ".env", ".hdr", ".dds", ".ktx", ".ktx2"].includes(ext);
+                const isTexture = _isTextureExtension(ext);
 
                 const blobUrl = URL.createObjectURL(file);
                 RegisterSmartAsset(sam, key, blobUrl, { ...(ext ? { extension: ext } : {}), ...(isTexture ? { type: "texture" } : {}) });
@@ -309,11 +323,11 @@ const SmartAssetList: FunctionComponent<{ scene: Scene; selectionService: ISelec
                 const sam = GetOrCreateSmartAssetManager(scene);
                 const blobUrl = URL.createObjectURL(file);
                 const ext = _getExtension(file.name).toLowerCase();
-                const isTexture = [".png", ".jpg", ".jpeg", ".env", ".hdr", ".dds", ".ktx", ".ktx2"].includes(ext);
+                const isTexture = _isTextureExtension(ext);
 
                 if (isTexture) {
                     // Find the old texture tracked by this key
-                    let oldTex: import("core/Materials/Textures/baseTexture").BaseTexture | undefined;
+                    let oldTex: BaseTexture | undefined;
                     for (const tex of scene.textures) {
                         if (FindSmartAssetKeyForObject(sam, tex) === key) {
                             oldTex = tex;
@@ -385,9 +399,9 @@ const SmartAssetList: FunctionComponent<{ scene: Scene; selectionService: ISelec
                                     description: "Assets",
                                     accept: {
                                         // eslint-disable-next-line @typescript-eslint/naming-convention
-                                        "model/*": [".glb", ".gltf", ".babylon", ".obj"],
+                                        "model/*": SceneFileAccept,
                                         // eslint-disable-next-line @typescript-eslint/naming-convention
-                                        "image/*": [".png", ".jpg", ".jpeg", ".env", ".hdr", ".dds", ".ktx", ".ktx2"],
+                                        "image/*": TextureFileAccept,
                                     },
                                 },
                             ],
@@ -411,7 +425,7 @@ const SmartAssetList: FunctionComponent<{ scene: Scene; selectionService: ISelec
                 // Fallback for browsers without File System Access API
                 const input = document.createElement("input");
                 input.type = "file";
-                input.accept = ".glb,.gltf,.babylon,.obj,.png,.jpg,.jpeg,.env,.hdr,.dds,.ktx,.ktx2";
+                input.accept = AllAcceptString;
                 input.onchange = async () => {
                     const file = input.files?.[0];
                     if (!file) {
@@ -458,7 +472,7 @@ const SmartAssetList: FunctionComponent<{ scene: Scene; selectionService: ISelec
                 );
             })}
             <ButtonLine label="Add Asset" icon={AddRegular} onClick={onAddAsset} />
-            <input ref={fileInputRef} type="file" accept=".glb,.gltf,.babylon,.obj,.png,.jpg,.env,.hdr" multiple className={styles.hiddenInput} onChange={onFileSelected} />
+            <input ref={fileInputRef} type="file" accept={AllAcceptString} multiple className={styles.hiddenInput} onChange={onFileSelected} />
             {status && <Caption1 className={styles.statusMessage}>{status}</Caption1>}
         </>
     );
@@ -475,7 +489,7 @@ const SmartAssetList: FunctionComponent<{ scene: Scene; selectionService: ISelec
  * @returns The first matching entity, or null if not found.
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
-function _findFirstEntityForKey(key: string, scene: Scene, sam: SmartAssetManager): { name: string } | null {
+function _findFirstEntityForKey(key: string, scene: Scene, sam: SmartAssetManager): AbstractMesh | Material | BaseTexture | null {
     for (const mesh of scene.meshes) {
         if (mesh.name !== "__root__" && FindSmartAssetKeyForObject(sam, mesh) === key) {
             return mesh;

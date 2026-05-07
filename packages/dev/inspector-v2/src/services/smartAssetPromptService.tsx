@@ -1,7 +1,7 @@
 import { type ChangeEvent, type FunctionComponent, useCallback, useEffect, useRef, useState } from "react";
 
 import { Body1, Caption1, makeStyles, tokens } from "@fluentui/react-components";
-import { AddSmartAssetManagerCreatedObserver, GetSmartAssetManagerFromScene, type SmartAssetManager } from "core/SmartAssets/smartAssetManager";
+import { AddSmartAssetManagerCreatedObserver, GetSmartAssetManagerFromScene, GetSmartAssetTextureExtensions, type SmartAssetManager } from "core/SmartAssets/smartAssetManager";
 
 import { type ServiceDefinition } from "shared-ui-components/modularTool/modularity/serviceDefinition";
 import { Dialog } from "shared-ui-components/fluent/primitives/dialog";
@@ -15,6 +15,9 @@ type PendingMissingAsset = {
     expectedUrl: string;
     resolve: (value: string | File | null) => void;
 };
+
+const SceneFileExtensions = [".glb", ".gltf", ".babylon", ".obj"];
+const PromptAcceptString = [...SceneFileExtensions, ...Array.from(GetSmartAssetTextureExtensions())].join(",");
 
 const useStyles = makeStyles({
     hiddenInput: {
@@ -109,13 +112,7 @@ const SmartAssetMissingPromptHost: FunctionComponent = () => {
                     {shortUrl}
                 </Caption1>
                 <Body1>Locate the file or click Skip to continue without it.</Body1>
-                <input
-                    ref={inputRef}
-                    type="file"
-                    accept=".glb,.gltf,.babylon,.obj,.png,.jpg,.jpeg,.env,.hdr,.dds,.ktx,.ktx2"
-                    className={classes.hiddenInput}
-                    onChange={onFileSelected}
-                />
+                <input ref={inputRef} type="file" accept={PromptAcceptString} className={classes.hiddenInput} onChange={onFileSelected} />
             </div>
         </Dialog>
     );

@@ -25,10 +25,11 @@ const useStyles = makeStyles({
 
 /**
  * Save/load controls for a scene's Smart Asset map.
+ * @param props - Component props.
  * @returns The Smart Asset map controls.
  */
-export const SmartAssetProjectTools: FunctionComponent<{ scene: Scene }> = (props: { scene: Scene }) => {
-    const scene = props.scene;
+export const SmartAssetProjectTools: FunctionComponent<{ scene: Scene }> = (props) => {
+    const { scene } = props;
     const [statusMessage, setStatusMessage] = useState<string>("");
     const [busyMessage, setBusyMessage] = useState<string>("");
     const styles = useStyles();

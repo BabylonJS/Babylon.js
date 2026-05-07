@@ -142,6 +142,7 @@ export function GetOrCreateSmartAssetManager(scene: Scene): SmartAssetManager {
  * @returns The observer registration.
  */
 export function AddSmartAssetManagerCreatedObserver(callback: (manager: SmartAssetManager) => void): Observer<SmartAssetManager> {
+    // Wrap so the EventState second-arg from Observable.add isn't passed through to the caller.
     return OnSmartAssetManagerCreatedObservable.add((manager) => callback(manager));
 }
 
@@ -558,7 +559,7 @@ async function CreateAndLoadTextureAsync(manager: SmartAssetManager, url: string
     return await new Promise<BaseTexture>((resolve, reject) => {
         const ext = (extensionHint || GetExtensionFromUrl(url)).toLowerCase();
         const isCube = ext === ".env" || ext === ".hdr" || ext === ".dds";
-        const onError = (message?: string, exception?: any) => {
+        const onError = (message?: string, exception?: unknown) => {
             const err = exception instanceof Error ? exception : new Error(message ?? `SmartAssetManager: failed to load texture from "${url}".`);
             reject(err);
         };
@@ -626,6 +627,15 @@ function TrackSmartAssetContainerObjects(manager: SmartAssetManager, key: string
 }
 
 const TextureExtensions = new Set([".png", ".jpg", ".jpeg", ".bmp", ".tga", ".gif", ".webp", ".env", ".hdr", ".dds", ".ktx", ".ktx2", ".basis"]);
+
+/**
+ * Returns the set of file extensions (including the leading dot) that {@link LoadAllSmartAssetsAsync}
+ * treats as standalone textures.
+ * @returns A read-only set of texture file extensions.
+ */
+export function GetSmartAssetTextureExtensions(): ReadonlySet<string> {
+    return TextureExtensions;
+}
 
 /**
  * Returns true if the URL points to a standalone texture file.

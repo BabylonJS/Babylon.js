@@ -21,4 +21,5 @@ export {
     SerializeSmartAssetManagerMap,
     LoadSmartAssetMapAsync,
     DisposeSmartAssetManager,
+    GetSmartAssetTextureExtensions,
 } from "./smartAssetManager";
