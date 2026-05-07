@@ -17,7 +17,6 @@ import {
     SerializeSmartAssetManagerMap,
     UnloadSmartAssetAsync,
 } from "core/SmartAssets/smartAssetManager";
-import { FileToolsOptions } from "core/Misc/fileTools";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 // Mock LoadAssetContainerAsync
@@ -161,54 +160,6 @@ describe("SmartAssetManager", () => {
             DisposeSmartAssetManager(manager2);
             scene2.dispose();
         });
-
-        it("should keep asset protocol resolution alive when managers are disposed out of order", () => {
-            const scene2 = new Scene(engine);
-            const manager2 = CreateSmartAssetManager(scene2);
-
-            RegisterSmartAsset(manager, "first", "first.glb");
-            RegisterSmartAsset(manager2, "second", "second.glb");
-
-            expect(FileToolsOptions.PreprocessUrl("asset://first")).toBe("first.glb");
-            expect(FileToolsOptions.PreprocessUrl("asset://second")).toBe("second.glb");
-
-            DisposeSmartAssetManager(manager);
-
-            expect(FileToolsOptions.PreprocessUrl("asset://second")).toBe("second.glb");
-
-            DisposeSmartAssetManager(manager2);
-
-            scene2.dispose();
-        });
-
-        it("should restore the original URL preprocessor after all managers are disposed", () => {
-            const customPreprocessUrl = vi.fn((url: string) => `custom:${url}`);
-
-            const scene2 = new Scene(engine);
-            DisposeSmartAssetManager(manager);
-            // Capture the truly-original preprocessor with the hook uninstalled,
-            // not whatever wrapper happens to be installed at the start of the test.
-            const originalPreprocessUrl = FileToolsOptions.PreprocessUrl;
-            FileToolsOptions.PreprocessUrl = customPreprocessUrl;
-
-            const manager1 = CreateSmartAssetManager(scene);
-            const manager2 = CreateSmartAssetManager(scene2);
-
-            RegisterSmartAsset(manager1, "first", "first.glb");
-            RegisterSmartAsset(manager2, "second", "second.glb");
-
-            expect(FileToolsOptions.PreprocessUrl?.("asset://first")).toBe("first.glb");
-            DisposeSmartAssetManager(manager1);
-            expect(FileToolsOptions.PreprocessUrl?.("asset://second")).toBe("second.glb");
-
-            DisposeSmartAssetManager(manager2);
-            expect(FileToolsOptions.PreprocessUrl).toBe(customPreprocessUrl);
-            expect(FileToolsOptions.PreprocessUrl("plain.glb")).toBe("custom:plain.glb");
-
-            FileToolsOptions.PreprocessUrl = originalPreprocessUrl;
-            manager = CreateSmartAssetManager(scene);
-            scene2.dispose();
-        });
     });
 
     // ── OnInstanceCreated Tests ──
@@ -241,11 +192,10 @@ describe("SmartAssetManager", () => {
 
             scene2.dispose();
 
-            // After scene disposal the manager is fully torn down: a second
-            // explicit dispose should be a safe no-op and the protocol hook
-            // should no longer route this key.
+            // After scene disposal the manager is fully torn down. The metadata
+            // entry is removed and a second explicit dispose is a safe no-op.
+            expect(GetSmartAssetManagerFromScene(scene2)).toBeUndefined();
             expect(() => DisposeSmartAssetManager(manager2)).not.toThrow();
-            expect(FileToolsOptions.PreprocessUrl("asset://chair")).toBe("asset://chair");
         });
 
         it("should be safe to explicitly dispose before the scene is disposed", () => {

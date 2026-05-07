@@ -9,7 +9,6 @@ import { type AnimationGroup } from "../Animations/animationGroup";
 import { Observable, type Observer } from "../Misc/observable";
 import { Logger } from "../Misc/logger";
 import { LoadAssetContainerAsync } from "../Loading/sceneLoader";
-import { FileToolsOptions } from "../Misc/fileTools";
 import { GetExtensionFromUrl } from "../Misc/urlTools";
 import {
     type ISerializedSmartAssetEntry,
@@ -23,7 +22,6 @@ import {
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const SMART_ASSET_MANAGER_KEY = Symbol.for("babylonjs:smartAssetManager");
-const ASSET_PROTOCOL = "asset://";
 
 /**
  * Stateful handle for a scene's smart asset registry.
@@ -74,25 +72,7 @@ type SmartAssetManagerInternals = {
 };
 
 const SmartAssetManagerInternals = new WeakMap<SmartAssetManager, SmartAssetManagerInternals>();
-const ActiveSmartAssetManagers: SmartAssetManager[] = [];
-let OriginalPreprocessUrl = FileToolsOptions.PreprocessUrl;
-let SmartAssetProtocolHookInstalled = false;
 const OnSmartAssetManagerCreatedObservable = new Observable<SmartAssetManager>();
-
-const SmartAssetPreprocessUrl = (url: string): string => {
-    if (url.startsWith(ASSET_PROTOCOL)) {
-        const key = url.substring(ASSET_PROTOCOL.length);
-        for (let index = ActiveSmartAssetManagers.length - 1; index >= 0; index--) {
-            const internal = SmartAssetManagerInternals.get(ActiveSmartAssetManagers[index]);
-            const resolved = internal?.urls.get(key);
-            if (resolved) {
-                return resolved;
-            }
-        }
-        Logger.Warn(`SmartAssetManager: Unknown asset key "${key}" in asset:// URL.`);
-    }
-    return OriginalPreprocessUrl(url);
-};
 
 /**
  * Creates a new SmartAssetManager state object and attaches it to the scene.
@@ -122,7 +102,6 @@ export function CreateSmartAssetManager(scene: Scene): SmartAssetManager {
         scene.metadata = {};
     }
     scene.metadata[SMART_ASSET_MANAGER_KEY] = manager;
-    InstallSmartAssetProtocolHook(manager);
 
     // Auto-dispose when the scene is disposed so the manager doesn't outlive it.
     internal.sceneDisposeObserver = scene.onDisposeObservable.add(() => DisposeSmartAssetManager(manager));
@@ -497,7 +476,7 @@ function TrackLoadedSmartAssetContainer(manager: SmartAssetManager, key: string,
 }
 
 /**
- * Disposes the manager, unloading all assets and restoring global protocol hooks if needed.
+ * Disposes the manager, unloading all assets and detaching it from its scene.
  * Safe to call multiple times; subsequent calls are no-ops. Automatically invoked when the
  * owning scene is disposed.
  * @param manager - The smart asset manager state.
@@ -536,8 +515,6 @@ export function DisposeSmartAssetManager(manager: SmartAssetManager): void {
 
     manager.onChangedObservable.clear();
 
-    RemoveSmartAssetProtocolHook(manager);
-
     if (manager.scene.metadata) {
         delete manager.scene.metadata[SMART_ASSET_MANAGER_KEY];
     }
@@ -568,34 +545,6 @@ function TrackManagedBlobUrl(internal: SmartAssetManagerInternals, key: string, 
 
 function ResolveSmartAssetManager(managerOrScene: SmartAssetManagerOrScene): SmartAssetManager {
     return SmartAssetManagerInternals.has(managerOrScene as SmartAssetManager) ? (managerOrScene as SmartAssetManager) : GetOrCreateSmartAssetManager(managerOrScene as Scene);
-}
-
-function InstallSmartAssetProtocolHook(manager: SmartAssetManager): void {
-    if (!ActiveSmartAssetManagers.includes(manager)) {
-        ActiveSmartAssetManagers.push(manager);
-    }
-    if (!SmartAssetProtocolHookInstalled) {
-        // Guard against a previously leaked hook so we never capture ourselves
-        // as the original preprocessor (which would cause infinite recursion).
-        if (FileToolsOptions.PreprocessUrl !== SmartAssetPreprocessUrl) {
-            OriginalPreprocessUrl = FileToolsOptions.PreprocessUrl;
-        }
-        FileToolsOptions.PreprocessUrl = SmartAssetPreprocessUrl;
-        SmartAssetProtocolHookInstalled = true;
-    }
-}
-
-function RemoveSmartAssetProtocolHook(manager: SmartAssetManager): void {
-    const index = ActiveSmartAssetManagers.indexOf(manager);
-    if (index >= 0) {
-        ActiveSmartAssetManagers.splice(index, 1);
-    }
-    if (ActiveSmartAssetManagers.length === 0 && SmartAssetProtocolHookInstalled) {
-        if (FileToolsOptions.PreprocessUrl === SmartAssetPreprocessUrl) {
-            FileToolsOptions.PreprocessUrl = OriginalPreprocessUrl;
-        }
-        SmartAssetProtocolHookInstalled = false;
-    }
 }
 
 async function CreateAndLoadTextureAsync(manager: SmartAssetManager, url: string, extensionHint?: string): Promise<BaseTexture> {
