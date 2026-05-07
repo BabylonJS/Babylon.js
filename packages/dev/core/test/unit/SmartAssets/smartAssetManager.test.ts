@@ -95,6 +95,14 @@ describe("SmartAssetManager", () => {
             scene2.dispose();
         });
 
+        it("should throw when CreateSmartAssetManager is called on a scene that already has one", () => {
+            // Guards against duplicate-creation foot-gun: a second CreateSmartAssetManager
+            // call would otherwise overwrite scene.metadata and leak the original manager
+            // (whose onDisposeObservable observer would later delete the new manager's
+            // metadata back-reference when the scene is disposed).
+            expect(() => CreateSmartAssetManager(scene)).toThrow(/already exists/);
+        });
+
         it("should overwrite URL on re-register", () => {
             RegisterSmartAsset(manager, "chair", "chair_v1.glb");
             RegisterSmartAsset(manager, "chair", "chair_v2.glb");

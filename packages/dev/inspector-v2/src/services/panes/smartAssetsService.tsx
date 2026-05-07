@@ -62,8 +62,7 @@ export const SmartAssetsServiceDefinition: ServiceDefinition<[], [IShellService,
                         return;
                     }
 
-                    const paneExists = selectPane();
-                    if (paneExists && attempt >= 2) {
+                    if (selectPane()) {
                         selectionRequested = false;
                         ClearSmartAssetsPaneSelectionRequest();
                         return;
@@ -331,7 +330,10 @@ const SmartAssetList: FunctionComponent<{ scene: Scene; selectionService: ISelec
                         SetSmartAssetRefreshCallback(sam, key, async () => await fileHandle.getFile());
                     }
 
-                    // Replace references on all materials that used the old texture
+                    // Replace references on all materials that used the old texture.
+                    // Only Standard/PBR-style slot names are rewritten here; NodeMaterial,
+                    // ShaderMaterial, BackgroundMaterial, and other custom materials with
+                    // non-standard texture slots will need to be updated manually.
                     if (oldTex) {
                         const texSlots = ["albedoTexture", "bumpTexture", "metallicTexture", "emissiveTexture", "ambientTexture", "reflectivityTexture", "opacityTexture"] as const;
                         for (const mat of scene.materials) {
@@ -375,8 +377,9 @@ const SmartAssetList: FunctionComponent<{ scene: Scene; selectionService: ISelec
             const windowWithPicker = window as Window & { showOpenFilePicker?: (options?: any) => Promise<FileSystemFileHandle[]> };
             if (typeof windowWithPicker.showOpenFilePicker === "function") {
                 const pickerAsync = async () => {
+                    let handle: FileSystemFileHandle;
                     try {
-                        const [handle] = await windowWithPicker.showOpenFilePicker!({
+                        [handle] = await windowWithPicker.showOpenFilePicker!({
                             types: [
                                 {
                                     description: "Assets",
@@ -389,10 +392,18 @@ const SmartAssetList: FunctionComponent<{ scene: Scene; selectionService: ISelec
                                 },
                             ],
                         });
+                    } catch (err) {
+                        // User cancelled the picker (AbortError) — silently ignore.
+                        if ((err as { name?: string })?.name !== "AbortError") {
+                            setStatus(`Swap cancelled: ${err}`);
+                        }
+                        return;
+                    }
+                    try {
                         const file = await handle.getFile();
                         await doSwapAsync(file, handle);
-                    } catch {
-                        // User cancelled the picker
+                    } catch (err) {
+                        setStatus(`Failed to swap ${key}: ${err}`);
                     }
                 };
                 void pickerAsync();
@@ -400,13 +411,17 @@ const SmartAssetList: FunctionComponent<{ scene: Scene; selectionService: ISelec
                 // Fallback for browsers without File System Access API
                 const input = document.createElement("input");
                 input.type = "file";
-                input.accept = ".glb,.gltf,.babylon,.obj,.png,.jpg,.env,.hdr";
+                input.accept = ".glb,.gltf,.babylon,.obj,.png,.jpg,.jpeg,.env,.hdr,.dds,.ktx,.ktx2";
                 input.onchange = async () => {
                     const file = input.files?.[0];
                     if (!file) {
                         return;
                     }
-                    await doSwapAsync(file);
+                    try {
+                        await doSwapAsync(file);
+                    } catch (err) {
+                        setStatus(`Failed to swap ${key}: ${err}`);
+                    }
                 };
                 input.click();
             }

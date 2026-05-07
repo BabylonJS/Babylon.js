@@ -76,10 +76,17 @@ const OnSmartAssetManagerCreatedObservable = new Observable<SmartAssetManager>()
 
 /**
  * Creates a new SmartAssetManager state object and attaches it to the scene.
+ *
+ * Throws if the scene already has a SmartAssetManager — use {@link GetOrCreateSmartAssetManager}
+ * if you don't know whether one already exists.
  * @param scene - The scene this manager operates on.
  * @returns The created smart asset manager state.
  */
 export function CreateSmartAssetManager(scene: Scene): SmartAssetManager {
+    if (GetSmartAssetManagerFromScene(scene)) {
+        throw new Error("SmartAssetManager: A manager already exists for this scene. Use GetOrCreateSmartAssetManager instead.");
+    }
+
     const manager: SmartAssetManager = {
         scene,
         onChangedObservable: new Observable<void>(),

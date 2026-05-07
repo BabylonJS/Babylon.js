@@ -189,6 +189,19 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
         }
     }
 
+    /**
+     * Bridges Smart Asset missing-file requests to the Inspector's locate/skip prompt.
+     *
+     * Opens Inspector v2 if it isn't already open, then forwards the prompt request to
+     * `inspectorAssetNotFoundHandler`. When the user picks a replacement, the wait ring
+     * is shown to indicate the new asset is loading; the ring is hidden by the rest of
+     * the run pipeline once loading completes (downstream `onRunExecutedObservable`
+     * handlers and `_finishRun()` clear it via `onDisplayWaitRingObservable`).
+     * @param scene - The scene that owns the missing asset's manager.
+     * @param key - The smart asset key that was not found.
+     * @param expectedUrl - The URL that failed to load.
+     * @returns A replacement URL, File, or null to skip the asset.
+     */
     private async _resolveMissingSmartAssetWithInspectorAsync(scene: Scene, key: string, expectedUrl: string): Promise<string | File | null> {
         const inspectorV2Module: InspectorV2Module | undefined = (globalThis as any).INSPECTOR;
         if (!inspectorV2Module?.ShowInspector || !inspectorV2Module.inspectorAssetNotFoundHandler) {
