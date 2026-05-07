@@ -643,6 +643,13 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
     public extension: Nullable<string> = null;
 
     /**
+     * If true, load glTF files using the OpenPBR material instead of the default PBR material.
+     * @experimental
+     */
+    @property({ attribute: "use-open-pbr", type: Boolean })
+    public useOpenPBR: boolean = this._options.useOpenPBR ?? false;
+
+    /**
      * The texture URLs used for lighting and skybox. Setting this property will set both environmentLighting and environmentSkybox.
      */
     @property({
@@ -1001,7 +1008,7 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
         } else {
             this._propertyBindings.filter((binding) => changedProperties.has(binding.property)).forEach((binding) => binding.updateViewer());
 
-            if (changedProperties.has("source")) {
+            if (changedProperties.has("source") || changedProperties.has("useOpenPBR")) {
                 this._updateModel();
             }
 
@@ -1367,6 +1374,8 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
                                             exposure: coerceNumericAttribute(viewerElement.getAttribute("exposure")) ?? target.postProcessing?.exposure,
                                             ssao: viewerElement.hasAttribute("ssao") || target.postProcessing?.ssao,
                                         };
+                                    case "useOpenPBR":
+                                        return viewerElement.useOpenPBR || target.useOpenPBR;
                                     case "selectedMaterialVariant":
                                         return viewerElement.getAttribute("material-variant") ?? target.selectedMaterialVariant;
                                     case "onInitialized":

@@ -176,6 +176,13 @@
                     <option value="high">High (environment shadow)</option>
                 </select>
             </div>
+            <div>
+                <span>Material</span>
+                <select id="materialSelect" oninput="onMaterial()">
+                    <option value="pbr">PBR</option>
+                    <option value="openpbr">OpenPBR</option>
+                </select>
+            </div>
         </div>
         <script type="module" src="/packages/tools/viewer/src/index.ts"></script>
         <script type="module">
@@ -193,6 +200,7 @@
                 // viewerElement.selectedAnimation = 1;
             }, 3000);
 
+            let currentSource = viewerElement.source;
             let viewerDetails = viewerElement.viewerDetails;
             viewerElement.addEventListener("viewerready", (event) => {
                 viewerDetails = viewerElement.viewerDetails;
@@ -236,6 +244,7 @@
                 if (file) {
                     event.preventDefault();
                     await customElements.whenDefined("babylon-viewer");
+                    currentSource = file;
                     await viewerDetails.viewer.loadModel(file);
                 }
             };
@@ -291,6 +300,7 @@
                 });
 
                 if (file) {
+                    currentSource = file;
                     await viewerDetails.viewer.loadModel(file);
                 }
             };
@@ -393,6 +403,10 @@
                 const value = document.querySelector("#shadowQualityInput").value;
                 const viewer = viewerElement.viewerDetails.viewer;
                 viewer.updateShadows({ quality: value });
+            };
+            globalThis.onMaterial = () => {
+                const value = document.querySelector("#materialSelect").value;
+                viewerDetails.viewer.loadModel(currentSource, { pluginOptions: { gltf: { useOpenPBR: value === "openpbr" } } });
             };
         </script>
     </body>
