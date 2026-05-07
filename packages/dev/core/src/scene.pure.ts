@@ -5742,7 +5742,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
 
         this.importedMeshesFiles = [] as string[];
 
-        if (this._activeAnimatables && this.stopAllAnimations) {
+        if (this._activeAnimatables && _IsSideEffectImplemented(this.stopAllAnimations)) {
             // Ensures that no animatable notifies a callback that could start a new animation group, constantly adding new animatables to the active list...
             for (const animatable of this._activeAnimatables) {
                 animatable.onAnimationEndObservable.clear();
@@ -6767,7 +6767,7 @@ export function registerScene(): void {
 }
 
 // #region GENERATED_SIDE_EFFECT_STUBS — do not edit, regenerate with `npm run generate:side-effect-stubs`
-import { _MissingSideEffect, _MissingSideEffectProperty } from "./Misc/devTools";
+import { _MissingSideEffect, _MissingSideEffectProperty, _IsSideEffectImplemented } from "./Misc/devTools";
 
 Scene.prototype.sortActiveAnimatables ??= _MissingSideEffect("Scene", "sortActiveAnimatables") as any;
 Scene.prototype.beginWeightedAnimation ??= _MissingSideEffect("Scene", "beginWeightedAnimation") as any;

@@ -1,31 +1,32 @@
-import { type SmartArray } from "../Misc/smartArray"
+import { type SmartArray } from "../Misc/smartArray";
 import { Observable } from "../Misc/observable";
-import { type Nullable } from "../types"
-import { type Camera } from "../Cameras/camera"
-import { type Scene } from "../scene"
+import { type Nullable } from "../types";
+import { type Camera } from "../Cameras/camera";
+import { type Scene } from "../scene";
 import { Color4 } from "../Maths/math.color";
-import { type AbstractEngine } from "../Engines/abstractEngine"
+import { type AbstractEngine } from "../Engines/abstractEngine";
 import { EngineStore } from "../Engines/engineStore";
 import { VertexBuffer } from "../Buffers/buffer";
-import { type SubMesh } from "../Meshes/subMesh"
-import { type AbstractMesh } from "../Meshes/abstractMesh"
-import { type Mesh } from "../Meshes/mesh"
-import { type EffectWrapperCreationOptions } from "core/Materials/effectRenderer"
+import { type SubMesh } from "../Meshes/subMesh";
+import { type AbstractMesh } from "../Meshes/abstractMesh";
+import { type Mesh } from "../Meshes/mesh";
+import { type EffectWrapperCreationOptions } from "core/Materials/effectRenderer";
 import { EffectWrapper } from "core/Materials/effectRenderer";
-import { type BaseTexture } from "../Materials/Textures/baseTexture"
-import { type Effect } from "../Materials/effect"
+import { type BaseTexture } from "../Materials/Textures/baseTexture";
+import { type Effect } from "../Materials/effect";
 import { Material } from "../Materials/material";
 import { Constants } from "../Engines/constants";
 
-import { type DataBuffer } from "../Buffers/dataBuffer"
+import { type DataBuffer } from "../Buffers/dataBuffer";
 import { EffectFallbacks } from "../Materials/effectFallbacks";
 import { DrawWrapper } from "../Materials/drawWrapper";
 import { AddClipPlaneUniforms, BindClipPlane, PrepareStringDefinesForClipPlanes } from "../Materials/clipPlaneMaterialHelper";
 import { BindBonesParameters, BindMorphTargetParameters, PrepareDefinesAndAttributesForMorphTargets, PushAttributesForInstances } from "../Materials/materialHelper.functions";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { ObjectRenderer } from "core/Rendering/objectRenderer";
-import { type Vector2 } from "../Maths/math.vector"
+import { type Vector2 } from "../Maths/math.vector";
 import { Engine } from "core/Engines/engine";
+import { _IsSideEffectImplemented } from "../Misc/devTools";
 
 /**
  * Special Glow Blur post process only blurring the alpha channel
@@ -440,7 +441,7 @@ export class ThinEffectLayer {
         this._objectRenderer.renderList = null;
 
         // Prevent package size in es6 (getBoundingBoxRenderer might not be present)
-        const hasBoundingBoxRenderer = !!this._scene.getBoundingBoxRenderer;
+        const hasBoundingBoxRenderer = _IsSideEffectImplemented(this._scene.getBoundingBoxRenderer);
 
         let boundingBoxRendererEnabled = false;
         if (hasBoundingBoxRenderer) {

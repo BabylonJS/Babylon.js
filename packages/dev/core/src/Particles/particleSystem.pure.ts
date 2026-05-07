@@ -1,19 +1,20 @@
 /** This file must only contain pure code and pure imports */
 
 import { ThinParticleSystem } from "./thinParticleSystem.pure";
-import { type IParticleEmitterType } from "./EmitterTypes/IParticleEmitterType"
+import { type IParticleEmitterType } from "./EmitterTypes/IParticleEmitterType";
 import { SubEmitter, SubEmitterType } from "./subEmitter";
 import { Color3FromArray, Color4FromArray } from "../Maths/math.color.pure";
 import { Vector3 } from "../Maths/math.vector.pure";
-import { type IParticleSystem } from "./IParticleSystem"
-import { type AbstractMesh } from "../Meshes/abstractMesh"
-import { type Nullable } from "../types"
-import { type Scene } from "../scene"
+import { type IParticleSystem } from "./IParticleSystem";
+import { type AbstractMesh } from "../Meshes/abstractMesh";
+import { type Nullable } from "../types";
+import { type Scene } from "../scene";
 import { AbstractEngine } from "../Engines/abstractEngine";
+import { _IsSideEffectImplemented } from "../Misc/devTools";
 import { GetClass } from "../Misc/typeStore";
-import { type BaseTexture } from "../Materials/Textures/baseTexture"
-import { type Effect } from "../Materials/effect"
-import { type Particle } from "./particle"
+import { type BaseTexture } from "../Materials/Textures/baseTexture";
+import { type Effect } from "../Materials/effect";
+import { type Particle } from "./particle";
 import { Constants } from "../Engines/constants";
 import { SerializationHelperAppendSerializedAnimations } from "../Misc/decorators.serialization.pure";
 import { MeshParticleEmitter } from "./EmitterTypes/meshParticleEmitter";
@@ -35,10 +36,10 @@ import {
     CreateSphereEmitter,
 } from "./particleSystem.functions";
 import { Attractor } from "./attractor";
-import { type _IExecutionQueueItem } from "./Queue/executionQueue"
+import { type _IExecutionQueueItem } from "./Queue/executionQueue";
 import { _ConnectAfter, _RemoveFromQueue } from "./Queue/executionQueue";
-import { type FlowMap } from "./flowMap"
-import { type NodeParticleSystemSet } from "./Node/nodeParticleSystemSet"
+import { type FlowMap } from "./flowMap";
+import { type NodeParticleSystemSet } from "./Node/nodeParticleSystemSet";
 /**
  * This represents a particle system in Babylon.
  * Particles are often small sprites used to simulate hard-to-reproduce phenomena like fire, smoke, water, or abstract visual effects like magic glitter and faery dust.
@@ -808,7 +809,7 @@ export class ParticleSystem extends ThinParticleSystem {
             engine = scene.getEngine();
         }
 
-        if (parsedParticleSystem.customShader && (engine as any).createEffectForParticles) {
+        if (parsedParticleSystem.customShader && _IsSideEffectImplemented((engine as any).createEffectForParticles)) {
             program = parsedParticleSystem.customShader;
             const defines: string = program.shaderOptions.defines.length > 0 ? program.shaderOptions.defines.join("\n") : "";
             custom = (engine as any).createEffectForParticles(program.shaderPath.fragmentElement, program.shaderOptions.uniforms, program.shaderOptions.samplers, defines);
@@ -1246,7 +1247,7 @@ export class ParticleSystem extends ThinParticleSystem {
         const custom = { ...this._customWrappers };
         let program: any = null;
         const engine = this._engine;
-        if (engine.createEffectForParticles) {
+        if (_IsSideEffectImplemented(engine.createEffectForParticles)) {
             if (this.customShader != null) {
                 program = this.customShader;
                 const defines: string = program.shaderOptions.defines.length > 0 ? program.shaderOptions.defines.join("\n") : "";

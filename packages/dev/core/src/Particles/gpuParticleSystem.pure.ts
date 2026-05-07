@@ -8,6 +8,7 @@ import { type Color4 } from "../Maths/math.color.pure";
 import { TmpColors, Color4LerpToRef } from "../Maths/math.color.pure";
 import { Lerp } from "../Maths/math.scalar.functions";
 import { VertexBuffer, Buffer } from "../Buffers/buffer.pure";
+import { _IsSideEffectImplemented } from "../Misc/devTools";
 
 import { type IParticleSystem } from "./IParticleSystem";
 import { BaseParticleSystem } from "./baseParticleSystem.pure";
@@ -2162,7 +2163,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         const custom = { ...this._customWrappers };
         let program: any = null;
         const engine = this._engine as any;
-        if (engine.createEffectForParticles) {
+        if (_IsSideEffectImplemented(engine.createEffectForParticles)) {
             if (this.customShader != null) {
                 program = this.customShader;
                 const defines: string = program.shaderOptions.defines.length > 0 ? program.shaderOptions.defines.join("\n") : "";
@@ -2257,7 +2258,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         );
         particleSystem._rootUrl = rootUrl;
 
-        if (parsedParticleSystem.customShader && (engine as any).createEffectForParticles) {
+        if (parsedParticleSystem.customShader && _IsSideEffectImplemented((engine as any).createEffectForParticles)) {
             const program = parsedParticleSystem.customShader;
             const defines: string = program.shaderOptions.defines.length > 0 ? program.shaderOptions.defines.join("\n") : "";
             const custom: Nullable<Effect> = (engine as any).createEffectForParticles(

@@ -1,16 +1,17 @@
 /** This file must only contain pure code and pure imports */
 
-import { type Nullable } from "core/types"
-import { type AbstractMesh } from "core/Meshes/abstractMesh"
-import { type ParticleSystem } from "core/Particles/particleSystem"
-import { type NodeParticleConnectionPoint } from "core/Particles/Node/nodeParticleBlockConnectionPoint"
-import { type NodeParticleBuildState } from "core/Particles/Node/nodeParticleBuildState"
+import { type Nullable } from "core/types";
+import { type AbstractMesh } from "core/Meshes/abstractMesh";
+import { type ParticleSystem } from "core/Particles/particleSystem";
+import { type NodeParticleConnectionPoint } from "core/Particles/Node/nodeParticleBlockConnectionPoint";
+import { type NodeParticleBuildState } from "core/Particles/Node/nodeParticleBuildState";
 import { Constants } from "../../../Engines/constants";
 import { editableInPropertyPage, PropertyTypeForEdition } from "core/Decorators/nodeDecorator";
 import { Vector2, Vector3 } from "core/Maths/math.vector.pure";
 import { Color4 } from "core/Maths/math.color.pure";
 import { BaseParticleSystem } from "core/Particles/baseParticleSystem.pure";
 import { NodeParticleBlock } from "core/Particles/Node/nodeParticleBlock";
+import { _IsSideEffectImplemented } from "../../../Misc/devTools";
 import { _TriggerSubEmitter } from "core/Particles/Node/Blocks/Triggers/triggerTools";
 import { NodeParticleBlockConnectionPointTypes } from "core/Particles/Node/Enums/nodeParticleBlockConnectionPointTypes";
 import { RegisterClass } from "core/Misc/typeStore";
@@ -264,9 +265,9 @@ export class SystemBlock extends NodeParticleBlock {
         // Apply custom shader if defined
         if (this.customShader) {
             const engine = particleSystem.getScene()?.getEngine();
-            if (engine?.createEffectForParticles) {
+            if (_IsSideEffectImplemented(engine?.createEffectForParticles)) {
                 const defines: string = this.customShader.shaderOptions.defines.length > 0 ? this.customShader.shaderOptions.defines.join("\n") : "";
-                const effect = engine.createEffectForParticles(
+                const effect = engine!.createEffectForParticles(
                     this.customShader.shaderPath.fragmentElement,
                     this.customShader.shaderOptions.uniforms,
                     this.customShader.shaderOptions.samplers,

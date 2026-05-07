@@ -37,7 +37,7 @@ import { Constants } from "../Engines/constants";
 import { SerializationHelperAppendSerializedAnimations } from "../Misc/decorators.serialization.pure";
 import { Logger } from "../Misc/logger";
 import { GetClass } from "../Misc/typeStore";
-import { _WarnImport } from "../Misc/devTools";
+import { _WarnImport, _IsSideEffectImplemented } from "../Misc/devTools";
 import { SceneComponentConstants } from "../sceneComponent";
 import { MeshLODLevel } from "./meshLODLevel";
 import { type Path3D } from "../Maths/math.path";
@@ -830,7 +830,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
 
         // Physics clone
-        if (scene.getPhysicsEngine) {
+        if (_IsSideEffectImplemented(scene.getPhysicsEngine)) {
             const physicsEngine = scene.getPhysicsEngine();
             if (clonePhysicsImpostor && physicsEngine) {
                 if (physicsEngine.getPluginVersion() === 1) {
@@ -6064,7 +6064,11 @@ if (!Object.getOwnPropertyDescriptor(Mesh.prototype, "thinInstanceEnablePicking"
     Object.defineProperty(Mesh.prototype, "thinInstanceEnablePicking", _MissingSideEffectProperty("Mesh", "thinInstanceEnablePicking"));
 }
 if (!Object.getOwnPropertyDescriptor(Mesh.prototype, "thinInstanceAllowAutomaticStaticBufferRecreation")) {
-    Object.defineProperty(Mesh.prototype, "thinInstanceAllowAutomaticStaticBufferRecreation", _MissingSideEffectProperty("Mesh", "thinInstanceAllowAutomaticStaticBufferRecreation"));
+    Object.defineProperty(
+        Mesh.prototype,
+        "thinInstanceAllowAutomaticStaticBufferRecreation",
+        _MissingSideEffectProperty("Mesh", "thinInstanceAllowAutomaticStaticBufferRecreation")
+    );
 }
 if (!Object.getOwnPropertyDescriptor(Mesh.prototype, "thinInstanceCount")) {
     Object.defineProperty(Mesh.prototype, "thinInstanceCount", _MissingSideEffectProperty("Mesh", "thinInstanceCount"));

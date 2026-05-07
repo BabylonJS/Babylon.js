@@ -3,8 +3,9 @@
 export * from "./abstractEngine.query.types";
 
 import { AbstractMesh } from "core/Meshes/abstractMesh.pure";
-import { type Nullable } from "../../types"
+import { type Nullable } from "../../types";
 import { AbstractEngine } from "../abstractEngine";
+import { type ISideEffectStub } from "../../Misc/devTools";
 
 /** @internal */
 export type OcclusionQuery = WebGLQuery | number;
@@ -185,7 +186,7 @@ export function registerAbstractEngineQuery(): void {
             return false;
         }
 
-        if (!engine.isQueryResultAvailable) {
+        if ((engine.isQueryResultAvailable as unknown as ISideEffectStub).__isSideEffectStub) {
             // Occlusion query where not referenced
             dataStorage.isOccluded = false;
             return false;
@@ -220,7 +221,7 @@ export function registerAbstractEngineQuery(): void {
         }
 
         const scene = this.getScene();
-        if (scene.getBoundingBoxRenderer) {
+        if (!(scene.getBoundingBoxRenderer as unknown as ISideEffectStub).__isSideEffectStub) {
             const occlusionBoundingBoxRenderer = scene.getBoundingBoxRenderer();
 
             if (this._occlusionQuery === null) {

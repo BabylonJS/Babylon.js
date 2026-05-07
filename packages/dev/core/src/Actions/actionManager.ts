@@ -1,15 +1,16 @@
-import { type Nullable } from "../types"
-import { type AbstractMesh } from "../Meshes/abstractMesh"
-import { type Scene } from "../scene"
+import { type Nullable } from "../types";
+import { type AbstractMesh } from "../Meshes/abstractMesh";
+import { type Scene } from "../scene";
+import { _IsSideEffectImplemented } from "../Misc/devTools";
 import { Vector3, Vector4 } from "../Maths/math.vector";
 import { Color3, Color4 } from "../Maths/math.color";
 import { Condition, ValueCondition } from "./condition";
-import { type IAction } from "./action"
+import { type IAction } from "./action";
 import { Action } from "./action";
 import { DoNothingAction } from "./directActions";
 
 import { EngineStore } from "../Engines/engineStore";
-import { type IActionEvent } from "../Actions/actionEvent"
+import { type IActionEvent } from "../Actions/actionEvent";
 import { Logger } from "../Misc/logger";
 import { DeepCopier } from "../Misc/deepCopier";
 import { GetClass } from "../Misc/typeStore";
@@ -555,7 +556,7 @@ export class ActionManager extends AbstractActionManager {
                         value = scene.getNodeByName(value);
                     } else if (name === "sound") {
                         // Can not externalize to component, so only checks for the presence off the API.
-                        if (scene.getSoundByName) {
+                        if (_IsSideEffectImplemented(scene.getSoundByName)) {
                             value = scene.getSoundByName(value);
                         }
                     } else if (name !== "propertyPath") {
