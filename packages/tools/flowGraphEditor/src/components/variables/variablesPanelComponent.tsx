@@ -21,8 +21,9 @@ import {
     type IVariableEntry,
     type VariableTypeName,
 } from "../../variableUtils";
-import { Body1, Caption1, Button, Input, Switch, makeStyles, tokens } from "@fluentui/react-components";
+import { Body1, Caption1, Button, Card, Dropdown, Input, Option, OptionGroup, Switch, makeStyles, tokens } from "@fluentui/react-components";
 import { AddRegular, ChevronDownRegular, ChevronRightRegular, DismissRegular } from "@fluentui/react-icons";
+import { Collapse } from "shared-ui-components/fluent/primitives/collapse";
 
 interface IVariablesPanelProps {
     globalState: GlobalState;
@@ -91,24 +92,18 @@ const useStyles = makeStyles({
     table: {
         display: "flex",
         flexWrap: "wrap",
-        gap: "1px",
-        padding: `${tokens.spacingVerticalXS} ${tokens.spacingHorizontalS}`,
+        // Spacing between adjacent variable Cards on the same row and between rows.
+        columnGap: tokens.spacingHorizontalS,
+        rowGap: tokens.spacingVerticalS,
+        padding: `${tokens.spacingVerticalS} ${tokens.spacingHorizontalS}`,
     },
     cell: {
-        display: "flex",
-        flexDirection: "column",
-        background: tokens.colorNeutralBackground1,
-        border: `1px solid ${tokens.colorNeutralStroke2}`,
-        borderRadius: tokens.borderRadiusSmall,
-        padding: `${tokens.spacingVerticalXXS} ${tokens.spacingHorizontalXS}`,
+        // Trim the Fluent Card to fit our compact variables strip. Background, border, radius,
+        // and hover treatment all come from Card itself.
         minWidth: "120px",
         maxWidth: "220px",
-        ":hover": {
-            borderTopColor: tokens.colorNeutralStroke1,
-            borderRightColor: tokens.colorNeutralStroke1,
-            borderBottomColor: tokens.colorNeutralStroke1,
-            borderLeftColor: tokens.colorNeutralStroke1,
-        },
+        padding: `${tokens.spacingVerticalS} ${tokens.spacingHorizontalS}`,
+        gap: tokens.spacingVerticalXS,
     },
     nameRow: { display: "flex", alignItems: "center", gap: tokens.spacingHorizontalXS },
     name: {
@@ -125,17 +120,18 @@ const useStyles = makeStyles({
     nameInput: { flex: 1, minWidth: 0 },
     typeRow: { marginTop: "2px" },
     typeSelect: {
+        // Compact dropdown to fit in the variables strip's small per-row layout.
         width: "100%",
-        height: "20px",
-        padding: `0 ${tokens.spacingHorizontalXXS}`,
-        fontSize: tokens.fontSizeBase100,
-        color: tokens.colorNeutralForeground2,
-        background: tokens.colorNeutralBackground3,
-        border: `1px solid ${tokens.colorNeutralStroke2}`,
-        borderRadius: tokens.borderRadiusSmall,
-        cursor: "pointer",
-        outline: "none",
-        boxSizing: "border-box",
+        minWidth: "auto",
+    },
+    typeOptionGroupLabel: {
+        // The Fluent dropdown popover renders inside a portal which our `Theme`
+        // intentionally configures with `applyStylesToPortals: false`. As a result,
+        // CSS custom properties like `var(--fontFamilyBase)` aren't resolved inside the
+        // popover, and `<OptionGroup>` labels fall back to the browser default (Times New
+        // Roman). Hard-code Fluent's web font stack here, applied via OptionGroup's `label`
+        // slot, so just *our* group labels look right.
+        fontFamily: "'Segoe UI', 'Segoe UI Web (West European)', -apple-system, BlinkMacSystemFont, Roboto, 'Helvetica Neue', sans-serif",
     },
     valueRow: { marginTop: "2px" },
     value: {
@@ -608,28 +604,35 @@ class VariablesPanelInner extends React.Component<IVariablesPanelInnerProps, IVa
     }
 
     private _renderTypeSelector(varName: string, currentType: VariableTypeName) {
-        // Native <select> is used here because Fluent's Dropdown does not support <optgroup>.
-        // The select is themed via makeStyles to blend with the rest of the panel.
+        // Use raw Fluent Dropdown + OptionGroup here because the shared wrapper at
+        // `shared-ui-components/fluent/primitives/dropdown` takes a flat options array and
+        // doesn't expose grouped options. The shared wrapper's other ergonomics (ToolContext
+        // sizing, etc.) aren't critical at this density.
         const { classes } = this.props;
+        const currentLabel = VariableTypeGroups.flatMap((g) => g.types).find((t) => t.name === currentType)?.label ?? currentType;
         return (
-            <select
+            <Dropdown
+                size="small"
                 className={classes.typeSelect}
-                value={currentType}
-                onChange={(e) => {
-                    this._changeVariableType(varName, e.target.value as VariableTypeName);
+                value={currentLabel}
+                selectedOptions={[currentType]}
+                onOptionSelect={(_, data) => {
+                    if (data.optionValue) {
+                        this._changeVariableType(varName, data.optionValue as VariableTypeName);
+                    }
                 }}
                 title="Variable type"
             >
                 {VariableTypeGroups.map((group) => (
-                    <optgroup key={group.label} label={group.label}>
+                    <OptionGroup key={group.label} label={{ className: classes.typeOptionGroupLabel, children: group.label }}>
                         {group.types.map((t) => (
-                            <option key={t.name} value={t.name}>
+                            <Option key={t.name} value={t.name} text={t.label}>
                                 {t.label}
-                            </option>
+                            </Option>
                         ))}
-                    </optgroup>
+                    </OptionGroup>
                 ))}
-            </select>
+            </Dropdown>
         );
     }
 
@@ -812,7 +815,7 @@ class VariablesPanelInner extends React.Component<IVariablesPanelInnerProps, IVa
                     {this.state.isRunning && <Caption1 className={classes.liveBadge}>● Live</Caption1>}
                     <Button className={classes.addButton} size="small" appearance="subtle" icon={<AddRegular />} title="Add a new variable" onClick={() => this._addVariable()} />
                 </div>
-                {!collapsed && (
+                <Collapse visible={!collapsed} orientation="vertical">
                     <div className={classes.body}>
                         {variables.length === 0 ? (
                             <Body1 className={classes.empty}>No variables. Click + to add one, or use GetVariable/SetVariable blocks.</Body1>
@@ -821,7 +824,7 @@ class VariablesPanelInner extends React.Component<IVariablesPanelInnerProps, IVa
                                 {variables.map((v, idx) => {
                                     const typeName = variableTypes.get(v.name) ?? "any";
                                     return (
-                                        <div key={v.name} className={classes.cell}>
+                                        <Card key={v.name} size="small" className={classes.cell}>
                                             <div className={classes.nameRow}>
                                                 {editingNameIndex === idx ? (
                                                     <Input
@@ -865,13 +868,13 @@ class VariablesPanelInner extends React.Component<IVariablesPanelInnerProps, IVa
                                             </div>
                                             <div className={classes.typeRow}>{this._renderTypeSelector(v.name, typeName)}</div>
                                             <div className={classes.valueRow}>{this._renderValueEditor(v.name, typeName, idx)}</div>
-                                        </div>
+                                        </Card>
                                     );
                                 })}
                             </div>
                         )}
                     </div>
-                )}
+                </Collapse>
             </div>
         );
     }
