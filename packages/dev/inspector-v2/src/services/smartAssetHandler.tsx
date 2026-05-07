@@ -1,6 +1,7 @@
 import { CreateSmartAssetManager, GetSmartAssetManagerFromScene, type SmartAssetManager } from "core/SmartAssets/smartAssetManager";
 import { Observable } from "core/Misc/observable";
 import { type Scene } from "core/scene";
+import { SelectSmartAssetsPane } from "./smartAssetsPaneSelection";
 
 type InspectorAssetNotFoundPromptHandlerCallback = (key: string, expectedUrl: string) => Promise<string | File | null>;
 
@@ -70,7 +71,12 @@ async function RunQueuedMissingAssetPromptAsync(key: string, expectedUrl: string
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export async function inspectorAssetNotFoundHandler(key: string, expectedUrl: string): Promise<string | File | null> {
-    return await RunQueuedMissingAssetPromptAsync(key, expectedUrl);
+    SelectSmartAssetsPane();
+    const replacementAsset = await RunQueuedMissingAssetPromptAsync(key, expectedUrl);
+    if (replacementAsset) {
+        SelectSmartAssetsPane();
+    }
+    return replacementAsset;
 }
 
 /**

@@ -4,6 +4,7 @@ import { type Scene, type IDisposable } from "core/scene";
 import {
     FindSmartAssetKeyForObject,
     GetAllSmartAssets,
+    GetSmartAssetManagerCreatedCallback,
     GetSmartAssetManagerFromScene,
     LoadSmartAssetAsync,
     LoadSmartAssetTextureAsync,
@@ -12,44 +13,140 @@ import {
     RemoveSmartAssetAsync,
     ResolveSmartAsset,
     SetSmartAssetRefreshCallback,
+    SetSmartAssetManagerCreatedCallback,
     UnloadSmartAssetAsync,
     type SmartAssetManager,
 } from "core/SmartAssets/smartAssetManager";
 
 import { type ServiceDefinition } from "shared-ui-components/modularTool/modularity/serviceDefinition";
-import { type IToolsService, ToolsServiceIdentity } from "../toolsService";
-import { type ISelectionService, SelectionServiceIdentity } from "../../selectionService";
+import { type IShellService, ShellServiceIdentity } from "shared-ui-components/modularTool/services/shellService";
+import { type ISceneContext, SceneContextIdentity } from "../sceneContext";
+import { type ISelectionService, SelectionServiceIdentity } from "../selectionService";
 
 import { useObservableState } from "shared-ui-components/modularTool/hooks/observableHooks";
 import { Link } from "shared-ui-components/fluent/primitives/link";
+import { Accordion, AccordionSection } from "shared-ui-components/fluent/primitives/accordion";
 
-import { getOrCreateSmartAssetManager } from "../../smartAssetHandler";
+import { getOrCreateSmartAssetManager } from "../smartAssetHandler";
+import { AddSmartAssetsPaneSelectionObserver, ClearSmartAssetsPaneSelectionRequest, EnableSmartAssetsPaneSelectionRequestCache } from "../smartAssetsPaneSelection";
+import { SmartAssetProjectTools } from "./tools/smartAssetToolsService";
 
 import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
 import { Caption1, makeStyles, tokens } from "@fluentui/react-components";
 import { AddRegular, DeleteRegular, ArrowSyncRegular, LinkRegular, CubeRegular } from "@fluentui/react-icons";
 
-/**
- * Inspector Tools service that provides an assembly-focused UX for composing
- * scenes from smart assets. Allows adding/removing/swapping assets.
- */
-export const AssemblyToolsServiceDefinition: ServiceDefinition<[], [IToolsService, ISelectionService]> = {
-    friendlyName: "Assembly Tools",
-    consumes: [ToolsServiceIdentity, SelectionServiceIdentity],
-    factory: (toolsService, selectionService) => {
-        const contentRegistrations: IDisposable[] = [];
+const SmartAssetsPaneKey = "Smart Assets";
 
-        contentRegistrations.push(
-            toolsService.addSectionContent({
-                key: "Smart Assets",
-                section: "Smart Assets",
-                component: (props: { context: Scene }) => <SmartAssetList scene={props.context} selectionService={selectionService} />,
-            })
-        );
+/**
+ * Inspector pane service that appears when Smart Assets are used in the current scene.
+ */
+export const SmartAssetsServiceDefinition: ServiceDefinition<[], [IShellService, ISceneContext, ISelectionService]> = {
+    friendlyName: "Smart Assets",
+    consumes: [ShellServiceIdentity, SceneContextIdentity, SelectionServiceIdentity],
+    factory: (shellService, sceneContext, selectionService) => {
+        let paneRegistration: IDisposable | null = null;
+        let selectionRequested = false;
+        let selectionRequestVersion = 0;
+
+        const selectPane = () => {
+            const pane = shellService.sidePanes.find((pane) => pane.key === SmartAssetsPaneKey);
+            if (pane) {
+                pane.select();
+                return true;
+            }
+            return false;
+        };
+
+        const schedulePaneSelection = (requestVersion: number, attempt = 0) => {
+            globalThis.setTimeout(
+                () => {
+                    if (!selectionRequested || requestVersion !== selectionRequestVersion) {
+                        return;
+                    }
+
+                    const paneExists = selectPane();
+                    if (paneExists && attempt >= 2) {
+                        selectionRequested = false;
+                        ClearSmartAssetsPaneSelectionRequest();
+                        return;
+                    }
+
+                    if (attempt < 10) {
+                        schedulePaneSelection(requestVersion, attempt + 1);
+                    }
+                },
+                attempt === 0 ? 0 : 16
+            );
+        };
+
+        const requestPaneSelection = () => {
+            selectionRequested = true;
+            selectionRequestVersion++;
+            registerPane();
+            schedulePaneSelection(selectionRequestVersion);
+        };
+
+        const registerPane = () => {
+            if (paneRegistration) {
+                return;
+            }
+
+            paneRegistration = shellService.addSidePane({
+                key: SmartAssetsPaneKey,
+                title: SmartAssetsPaneKey,
+                icon: CubeRegular,
+                horizontalLocation: "right",
+                verticalLocation: "top",
+                order: 395,
+                teachingMoment: false,
+                content: () => {
+                    const scene = useObservableState(() => sceneContext.currentScene, sceneContext.currentSceneObservable);
+                    return scene ? <SmartAssetsPane scene={scene} selectionService={selectionService} /> : null;
+                },
+            });
+
+            if (selectionRequested) {
+                schedulePaneSelection(selectionRequestVersion);
+            }
+        };
+
+        const registerPaneForCurrentScene = () => {
+            const scene = sceneContext.currentScene;
+            if (scene && GetSmartAssetManagerFromScene(scene)) {
+                registerPane();
+            }
+        };
+
+        registerPaneForCurrentScene();
+
+        const sceneObserver = sceneContext.currentSceneObservable.add(registerPaneForCurrentScene);
+        const selectionObserver = AddSmartAssetsPaneSelectionObserver(() => {
+            requestPaneSelection();
+        });
+
+        const previousSmartAssetManagerCreatedCallback = GetSmartAssetManagerCreatedCallback();
+        const smartAssetManagerCreatedCallback = (manager: SmartAssetManager) => {
+            previousSmartAssetManagerCreatedCallback?.(manager);
+            if (manager.scene === sceneContext.currentScene) {
+                registerPane();
+                if (selectionRequested) {
+                    schedulePaneSelection(selectionRequestVersion);
+                }
+            }
+        };
+        SetSmartAssetManagerCreatedCallback(smartAssetManagerCreatedCallback);
 
         return {
             dispose: () => {
-                contentRegistrations.forEach((r) => r.dispose());
+                selectionRequested = false;
+                selectionRequestVersion++;
+                paneRegistration?.dispose();
+                sceneObserver.remove();
+                selectionObserver?.remove();
+                EnableSmartAssetsPaneSelectionRequestCache();
+                if (GetSmartAssetManagerCreatedCallback() === smartAssetManagerCreatedCallback) {
+                    SetSmartAssetManagerCreatedCallback(previousSmartAssetManagerCreatedCallback);
+                }
             },
         };
     },
@@ -105,6 +202,23 @@ const useStyles = makeStyles({
         display: "none",
     },
 });
+
+// ── Smart Assets Pane ──
+
+const SmartAssetsPane: FunctionComponent<{ scene: Scene; selectionService: ISelectionService }> = (props) => {
+    const { scene, selectionService } = props;
+
+    return (
+        <Accordion uniqueId="SmartAssets" enablePinnedItems enableHiddenItems enableSearchItems>
+            <AccordionSection title="Assets">
+                <SmartAssetList scene={scene} selectionService={selectionService} />
+            </AccordionSection>
+            <AccordionSection title="Asset Map">
+                <SmartAssetProjectTools scene={scene} />
+            </AccordionSection>
+        </Accordion>
+    );
+};
 
 // ── Smart Asset List ──
 

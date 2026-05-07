@@ -1,11 +1,8 @@
 import { useCallback, useState, type FunctionComponent } from "react";
 
-import { type Scene, type IDisposable } from "core/scene";
+import { type Scene } from "core/scene";
 import { GetAllSmartAssets, LoadSmartAssetMapAsync, RemoveSmartAssetAsync, SerializeSmartAssetManagerMap } from "core/SmartAssets/smartAssetManager";
 import { Tools } from "core/Misc/tools";
-
-import { type ServiceDefinition } from "shared-ui-components/modularTool/modularity/serviceDefinition";
-import { type IToolsService, ToolsServiceIdentity } from "../toolsService";
 
 import { getOrCreateSmartAssetManager } from "../../smartAssetHandler";
 
@@ -29,32 +26,10 @@ const useStyles = makeStyles({
 });
 
 /**
- * Inspector Tools service that adds Save/Load buttons for standalone
- * Smart Asset maps.
+ * Save/load controls for a scene's Smart Asset map.
+ * @returns The Smart Asset map controls.
  */
-export const SmartAssetToolsServiceDefinition: ServiceDefinition<[], [IToolsService]> = {
-    friendlyName: "Smart Asset Tools",
-    consumes: [ToolsServiceIdentity],
-    factory: (toolsService) => {
-        const contentRegistrations: IDisposable[] = [];
-
-        contentRegistrations.push(
-            toolsService.addSectionContent({
-                key: "Smart Asset Map",
-                section: "Smart Asset Map",
-                component: (props: { context: Scene }) => <SmartAssetProjectTools scene={props.context} />,
-            })
-        );
-
-        return {
-            dispose: () => {
-                contentRegistrations.forEach((r) => r.dispose());
-            },
-        };
-    },
-};
-
-const SmartAssetProjectTools: FunctionComponent<{ scene: Scene }> = (props: { scene: Scene }) => {
+export const SmartAssetProjectTools: FunctionComponent<{ scene: Scene }> = (props: { scene: Scene }) => {
     const scene = props.scene;
     const [statusMessage, setStatusMessage] = useState<string>("");
     const [busyMessage, setBusyMessage] = useState<string>("");

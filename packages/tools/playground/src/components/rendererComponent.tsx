@@ -203,7 +203,11 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
             await this._showInspectorAsync(scene);
         }
 
-        return await inspectorV2Module.inspectorAssetNotFoundHandler(key, expectedUrl);
+        const replacementAsset = await inspectorV2Module.inspectorAssetNotFoundHandler(key, expectedUrl);
+        if (replacementAsset) {
+            this.props.globalState.onDisplayWaitRingObservable.notifyObservers(true);
+        }
+        return replacementAsset;
     }
 
     private _saveError = (_err: ErrorEvent) => {
@@ -516,8 +520,8 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
             const isFinalRun = this._finishRun();
 
             // Rehydrate inspector
-            if (isFinalRun && this.state.preferInspector && displayInspector) {
-                this.props.globalState.onInspectorRequiredObservable.notifyObservers();
+            if (isFinalRun && this.state.preferInspector && displayInspector && !this._inspectorV2Token && !this._scene.debugLayer.isVisible()) {
+                await this._showInspectorAsync();
             }
             return;
         } catch (e) {
