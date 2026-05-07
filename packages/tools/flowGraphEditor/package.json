@@ -29,6 +29,7 @@
         "@dev/shared-ui-components": "1.0.0",
         "@fluentui/react-components": "^9.70.0",
         "@fluentui/react-icons": "^2.0.310",
+        "@fluentui/react-positioning": "^9.22.0",
         "@tools/snippet-loader": "1.0.0",
         "@types/react": "^18.0.0",
         "@types/react-dom": "^18.0.0"
