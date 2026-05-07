@@ -9,6 +9,7 @@ import { RegisterToPropertyTabManagers } from "./graphSystem/registerToPropertyL
 import { RegisterTypeLedger } from "./graphSystem/registerToTypeLedger";
 
 import { CentralGraphServiceDefinition } from "./services/centralGraphService";
+import { DialogBridgeServiceDefinition } from "./services/dialogBridgeService";
 import { MakeGlobalStateService } from "./services/globalStateService";
 import { NodeListServiceDefinition } from "./services/nodeListService";
 import { PropertyTabServiceDefinition } from "./services/propertyTabService";
@@ -91,6 +92,7 @@ export class FlowGraphEditor {
             serviceDefinitions: [
                 MakeGlobalStateService(options, hostElement),
                 CentralGraphServiceDefinition,
+                DialogBridgeServiceDefinition,
                 NodeListServiceDefinition,
                 PropertyTabServiceDefinition,
                 ScenePreviewServiceDefinition,

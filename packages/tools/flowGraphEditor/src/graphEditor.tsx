@@ -3,7 +3,6 @@ import { type GlobalState } from "./globalState";
 import { LogComponent, LogEntry } from "./components/log/logComponent";
 import { type Nullable } from "core/types";
 import { type Observer } from "core/Misc/observable";
-import { MessageDialog } from "shared-ui-components/components/MessageDialog";
 import { SerializationTools } from "./serializationTools";
 import { blockFactory } from "core/FlowGraph/Blocks/flowGraphBlockFactory";
 
@@ -141,8 +140,6 @@ interface IGraphEditorProps {
 }
 
 interface IGraphEditorState {
-    message: string;
-    isError: boolean;
     helpTopicId: HelpTopicId | undefined | null;
     contextMenu: { target: PositioningVirtualElement; items: ContextMenuEntry[] } | null;
     showHowToUse: boolean;
@@ -417,8 +414,6 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         super(props);
 
         this.state = {
-            message: "",
-            isError: true,
             helpTopicId: null,
             contextMenu: null,
             showHowToUse: false,
@@ -537,10 +532,6 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
 
         this.props.globalState.hostDocument.removeEventListener("keydown", this._onDocumentKeyDown, false);
         this.props.globalState.hostDocument.addEventListener("keydown", this._onDocumentKeyDown, false);
-
-        this.props.globalState.stateManager.onErrorMessageDialogRequiredObservable.add((message: string) => {
-            this.setState({ message: message, isError: true });
-        });
 
         // ── Validation wiring ──────────────────────────────────────────
         // Provide the editor's block list so "unreachable" detection works.
@@ -1380,7 +1371,6 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                     <Splitter size={8} minSize={40} initialSize={120} maxSize={500} controlledSide={ControlledSize.Second} />
                     <LogComponent globalState={this.props.globalState} />
                 </SplitContainer>
-                <MessageDialog message={this.state.message} isError={this.state.isError} onClose={() => this.setState({ message: "" })} />
                 {this.state.helpTopicId !== null && (
                     <HelpDialogComponent initialTopicId={this.state.helpTopicId ?? undefined} onClose={() => this.setState({ helpTopicId: null })} />
                 )}
