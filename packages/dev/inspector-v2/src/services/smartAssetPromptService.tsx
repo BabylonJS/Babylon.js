@@ -1,12 +1,7 @@
 import { type ChangeEvent, type FunctionComponent, useCallback, useEffect, useRef, useState } from "react";
 
 import { Body1, Caption1, makeStyles, tokens } from "@fluentui/react-components";
-import {
-    GetSmartAssetManagerCreatedCallback,
-    GetSmartAssetManagerFromScene,
-    SetSmartAssetManagerCreatedCallback,
-    type SmartAssetManager,
-} from "core/SmartAssets/smartAssetManager";
+import { AddSmartAssetManagerCreatedObserver, GetSmartAssetManagerFromScene, type SmartAssetManager } from "core/SmartAssets/smartAssetManager";
 
 import { type ServiceDefinition } from "shared-ui-components/modularTool/modularity/serviceDefinition";
 import { Dialog } from "shared-ui-components/fluent/primitives/dialog";
@@ -162,20 +157,15 @@ export const SmartAssetPromptServiceDefinition: ServiceDefinition<[], [IShellSer
         installForCurrentScene();
 
         const sceneObserver = sceneContext.currentSceneObservable.add(installForCurrentScene);
-        const previousSmartAssetManagerCreatedCallback = GetSmartAssetManagerCreatedCallback();
-        const smartAssetManagerCreatedCallback = (manager: SmartAssetManager) => {
-            previousSmartAssetManagerCreatedCallback?.(manager);
+        const smartAssetManagerCreatedObserver = AddSmartAssetManagerCreatedObserver((manager: SmartAssetManager) => {
             installForManager(manager);
-        };
-        SetSmartAssetManagerCreatedCallback(smartAssetManagerCreatedCallback);
+        });
 
         return {
             dispose: () => {
                 registration.dispose();
                 sceneObserver.remove();
-                if (GetSmartAssetManagerCreatedCallback() === smartAssetManagerCreatedCallback) {
-                    SetSmartAssetManagerCreatedCallback(previousSmartAssetManagerCreatedCallback);
-                }
+                smartAssetManagerCreatedObserver?.remove();
                 for (const disposeHandler of Array.from(managerHandlerDisposers.values()).reverse()) {
                     disposeHandler();
                 }

@@ -8,7 +8,7 @@ import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
 import { FileUploadLine } from "shared-ui-components/fluent/hoc/fileUploadLine";
 import { Collapse } from "shared-ui-components/fluent/primitives/collapse";
 import { Caption1, makeStyles, Spinner, tokens } from "@fluentui/react-components";
-import { ArrowDownloadRegular, DocumentTextRegular } from "@fluentui/react-icons";
+import { ArrowDownloadRegular } from "@fluentui/react-icons";
 
 const useStyles = makeStyles({
     statusMessage: {
@@ -84,23 +84,10 @@ export const SmartAssetProjectTools: FunctionComponent<{ scene: Scene }> = (prop
         [getSmartAssetManager, isBusy]
     );
 
-    const onShowAssetMapJson = useCallback(() => {
-        if (isBusy) {
-            return;
-        }
-
-        const sam = getSmartAssetManager();
-        const assetMap = SerializeSmartAssetManagerMap(sam);
-        // eslint-disable-next-line no-console
-        console.log("Smart Asset map:", assetMap);
-        setStatusMessage("Smart Asset map logged to console");
-    }, [getSmartAssetManager, isBusy]);
-
     return (
         <>
             <ButtonLine label="Save Smart Assets" icon={ArrowDownloadRegular} onClick={onSaveAssetMap} disabled={isBusy} />
             <FileUploadLine label="Load Smart Assets" accept=".json" onClick={onLoadAssetMap} disabled={isBusy} />
-            <ButtonLine label="Log Smart Assets to Console" icon={DocumentTextRegular} onClick={onShowAssetMapJson} disabled={isBusy} />
             <Collapse visible={isBusy}>
                 <div className={styles.busyMessage}>
                     <Spinner size="extra-small" />

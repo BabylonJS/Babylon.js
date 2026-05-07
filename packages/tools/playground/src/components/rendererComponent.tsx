@@ -14,8 +14,7 @@ import {
     WebGPUEngine,
     LastCreatedAudioEngine,
     Logger,
-    GetSmartAssetManagerCreatedCallback,
-    SetSmartAssetManagerCreatedCallback,
+    AddSmartAssetManagerCreatedObserver,
     type Nullable,
     type Scene,
     type SmartAssetManager,
@@ -475,14 +474,11 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
 
             // Install SmartAssetManager hook BEFORE user code runs so
             // onAssetNotFound is available during createScene execution.
-            const previousSmartAssetManagerCreatedCallback = GetSmartAssetManagerCreatedCallback();
-            const smartAssetManagerCreatedCallback = (manager: SmartAssetManager) => {
-                previousSmartAssetManagerCreatedCallback?.(manager);
+            const smartAssetManagerCreatedObserver = AddSmartAssetManagerCreatedObserver((manager: SmartAssetManager) => {
                 if (!manager.onAssetNotFound) {
                     manager.onAssetNotFound = async (key, expectedUrl) => await this._resolveMissingSmartAssetWithInspectorAsync(manager.scene, key, expectedUrl);
                 }
-            };
-            SetSmartAssetManagerCreatedCallback(smartAssetManagerCreatedCallback);
+            });
 
             let sceneResult: Scene | null = null;
             let createdEngine: ThinEngine | null = null;
@@ -498,9 +494,7 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
                 this._failRun(err, "The playground timed out while running the scene.");
                 return;
             } finally {
-                if (GetSmartAssetManagerCreatedCallback() === smartAssetManagerCreatedCallback) {
-                    SetSmartAssetManagerCreatedCallback(previousSmartAssetManagerCreatedCallback);
-                }
+                smartAssetManagerCreatedObserver?.remove();
             }
             if (!sceneResult) {
                 return this._notifyError("createScene export not found or returned null.");

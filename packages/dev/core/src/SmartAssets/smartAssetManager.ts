@@ -6,7 +6,7 @@ import { type BaseTexture } from "../Materials/Textures/baseTexture";
 import { Texture } from "../Materials/Textures/texture";
 import { CubeTexture } from "../Materials/Textures/cubeTexture";
 import { type AnimationGroup } from "../Animations/animationGroup";
-import { Observable } from "../Misc/observable";
+import { Observable, type Observer } from "../Misc/observable";
 import { Logger } from "../Misc/logger";
 import { LoadAssetContainerAsync } from "../Loading/sceneLoader";
 import { FileToolsOptions } from "../Misc/fileTools";
@@ -77,7 +77,7 @@ const SmartAssetManagerInternals = new WeakMap<SmartAssetManager, SmartAssetMana
 const ActiveSmartAssetManagers: SmartAssetManager[] = [];
 let OriginalPreprocessUrl = FileToolsOptions.PreprocessUrl;
 let SmartAssetProtocolHookInstalled = false;
-let SmartAssetManagerCreatedCallback: ((manager: SmartAssetManager) => void) | null = null;
+const OnSmartAssetManagerCreatedObservable = new Observable<SmartAssetManager>();
 
 const SmartAssetPreprocessUrl = (url: string): string => {
     if (url.startsWith(ASSET_PROTOCOL)) {
@@ -127,7 +127,7 @@ export function CreateSmartAssetManager(scene: Scene): SmartAssetManager {
     // Auto-dispose when the scene is disposed so the manager doesn't outlive it.
     internal.sceneDisposeObserver = scene.onDisposeObservable.add(() => DisposeSmartAssetManager(manager));
 
-    SmartAssetManagerCreatedCallback?.(manager);
+    OnSmartAssetManagerCreatedObservable.notifyObservers(manager);
 
     return manager;
 }
@@ -151,19 +151,12 @@ export function GetOrCreateSmartAssetManager(scene: Scene): SmartAssetManager {
 }
 
 /**
- * Gets the callback invoked whenever a SmartAssetManager is created.
- * @returns The current callback, or null.
+ * Adds an observer that is notified whenever a SmartAssetManager is created.
+ * @param callback - The callback to invoke with each newly created manager.
+ * @returns The observer registration.
  */
-export function GetSmartAssetManagerCreatedCallback(): ((manager: SmartAssetManager) => void) | null {
-    return SmartAssetManagerCreatedCallback;
-}
-
-/**
- * Sets the callback invoked whenever a SmartAssetManager is created.
- * @param callback - The callback to install, or null to clear it.
- */
-export function SetSmartAssetManagerCreatedCallback(callback: ((manager: SmartAssetManager) => void) | null): void {
-    SmartAssetManagerCreatedCallback = callback;
+export function AddSmartAssetManagerCreatedObserver(callback: (manager: SmartAssetManager) => void): Observer<SmartAssetManager> {
+    return OnSmartAssetManagerCreatedObservable.add((manager) => callback(manager));
 }
 
 /**

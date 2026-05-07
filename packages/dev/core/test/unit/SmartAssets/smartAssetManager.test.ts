@@ -2,6 +2,7 @@ import { NullEngine } from "core/Engines/nullEngine";
 import { Scene } from "core/scene";
 import {
     type SmartAssetManager,
+    AddSmartAssetManagerCreatedObserver,
     CreateSmartAssetManager,
     DisposeSmartAssetManager,
     FindSmartAssetKeyForObject,
@@ -14,7 +15,6 @@ import {
     RemoveSmartAssetAsync,
     ResolveSmartAsset,
     SerializeSmartAssetManagerMap,
-    SetSmartAssetManagerCreatedCallback,
     UnloadSmartAssetAsync,
 } from "core/SmartAssets/smartAssetManager";
 import { FileToolsOptions } from "core/Misc/fileTools";
@@ -146,7 +146,7 @@ describe("SmartAssetManager", () => {
 
         it("should get or create a manager for a scene", () => {
             const callback = vi.fn();
-            SetSmartAssetManagerCreatedCallback(callback);
+            const observer = AddSmartAssetManagerCreatedObserver(callback);
             const scene2 = new Scene(engine);
 
             const manager2 = GetOrCreateSmartAssetManager(scene2);
@@ -157,7 +157,7 @@ describe("SmartAssetManager", () => {
             expect(callback).toHaveBeenCalledTimes(1);
             expect(callback).toHaveBeenCalledWith(manager2);
 
-            SetSmartAssetManagerCreatedCallback(null);
+            observer?.remove();
             DisposeSmartAssetManager(manager2);
             scene2.dispose();
         });
@@ -216,14 +216,14 @@ describe("SmartAssetManager", () => {
     describe("OnInstanceCreated", () => {
         it("should call static OnInstanceCreated on construction", () => {
             const callback = vi.fn();
-            SetSmartAssetManagerCreatedCallback(callback);
+            const observer = AddSmartAssetManagerCreatedObserver(callback);
 
             const scene2 = new Scene(engine);
             const manager2 = CreateSmartAssetManager(scene2);
 
             expect(callback).toHaveBeenCalledWith(manager2);
 
-            SetSmartAssetManagerCreatedCallback(null);
+            observer?.remove();
             DisposeSmartAssetManager(manager2);
             scene2.dispose();
         });
@@ -309,7 +309,7 @@ describe("SmartAssetManager", () => {
 
         it("should load a smart asset directly from a scene", async () => {
             const callback = vi.fn();
-            SetSmartAssetManagerCreatedCallback(callback);
+            const observer = AddSmartAssetManagerCreatedObserver(callback);
             const scene2 = new Scene(engine);
 
             const container = await LoadSmartAssetAsync(scene2, "chair", "models/chair.glb");
@@ -321,7 +321,7 @@ describe("SmartAssetManager", () => {
             expect(callback).toHaveBeenCalledTimes(1);
             expect(callback).toHaveBeenCalledWith(manager2);
 
-            SetSmartAssetManagerCreatedCallback(null);
+            observer?.remove();
             DisposeSmartAssetManager(manager2!);
             scene2.dispose();
         });

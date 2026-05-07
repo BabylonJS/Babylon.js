@@ -2,10 +2,10 @@ import { useCallback, useRef, useState, type FunctionComponent } from "react";
 
 import { type Scene, type IDisposable } from "core/scene";
 import {
+    AddSmartAssetManagerCreatedObserver,
     FindSmartAssetKeyForObject,
     GetAllSmartAssets,
     GetOrCreateSmartAssetManager,
-    GetSmartAssetManagerCreatedCallback,
     GetSmartAssetManagerFromScene,
     LoadSmartAssetAsync,
     LoadSmartAssetTextureAsync,
@@ -13,7 +13,6 @@ import {
     ReloadSmartAssetAsync,
     RemoveSmartAssetAsync,
     SetSmartAssetRefreshCallback,
-    SetSmartAssetManagerCreatedCallback,
     UnloadSmartAssetAsync,
     type SmartAssetManager,
 } from "core/SmartAssets/smartAssetManager";
@@ -123,17 +122,14 @@ export const SmartAssetsServiceDefinition: ServiceDefinition<[], [IShellService,
             requestPaneSelection();
         });
 
-        const previousSmartAssetManagerCreatedCallback = GetSmartAssetManagerCreatedCallback();
-        const smartAssetManagerCreatedCallback = (manager: SmartAssetManager) => {
-            previousSmartAssetManagerCreatedCallback?.(manager);
+        const smartAssetManagerCreatedObserver = AddSmartAssetManagerCreatedObserver((manager: SmartAssetManager) => {
             if (manager.scene === sceneContext.currentScene) {
                 registerPane();
                 if (selectionRequested) {
                     schedulePaneSelection(selectionRequestVersion);
                 }
             }
-        };
-        SetSmartAssetManagerCreatedCallback(smartAssetManagerCreatedCallback);
+        });
 
         return {
             dispose: () => {
@@ -143,9 +139,7 @@ export const SmartAssetsServiceDefinition: ServiceDefinition<[], [IShellService,
                 sceneObserver.remove();
                 selectionObserver?.remove();
                 EnableSmartAssetsPaneSelectionRequestCache();
-                if (GetSmartAssetManagerCreatedCallback() === smartAssetManagerCreatedCallback) {
-                    SetSmartAssetManagerCreatedCallback(previousSmartAssetManagerCreatedCallback);
-                }
+                smartAssetManagerCreatedObserver?.remove();
             },
         };
     },
