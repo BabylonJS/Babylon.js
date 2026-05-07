@@ -37,7 +37,7 @@
         "build": "npm run clean && npm run compile",
         "clean": "rimraf dist && rimraf *.tsbuildinfo -g && rimraf \"./**/*.!(cmd|md|json|build.json|tasks.json|cjs)\" -g",
         "compile": "tsc -b tsconfig.build.json && build-tools -c tp --outDir . --buildType es6 --basePackage @babylonjs/core --appendJS",
-        "postcompile": "build-tools -c run-tasks",
+        "postcompile": "build-tools -c run-tasks && node ../../../../scripts/treeshaking/injectPureAnnotations.mjs .",
         "watch": "node ./watcher.cjs"
     },
     "devDependencies": {

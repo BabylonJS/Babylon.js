@@ -39,7 +39,11 @@ const verbose = args.includes("--verbose");
 const writtenFiles = [];
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const distDir = resolve(__dirname, "../../packages/dev/core/dist");
+
+// Accept an optional positional argument for the directory to scan.
+// Falls back to packages/dev/core/dist if not provided.
+const positionalArgs = args.filter((a) => !a.startsWith("--"));
+const distDir = positionalArgs.length > 0 ? resolve(positionalArgs[0]) : resolve(__dirname, "../../packages/dev/core/dist");
 
 // Find all .pure.js files in dist/
 const pureFiles = globSync("**/*.pure.js", { cwd: distDir, absolute: true });
