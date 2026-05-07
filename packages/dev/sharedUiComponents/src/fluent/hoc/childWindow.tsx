@@ -91,6 +91,14 @@ export const ChildWindow: FunctionComponent<PropsWithChildren<ChildWindowProps>>
                 defaultHeight: options.defaultHeight,
                 defaultLeft: options.defaultLeft,
                 defaultTop: options.defaultTop,
+                onClose: () => {
+                    // Triggered when the popup is closed for any reason (user dismissal, parent unload,
+                    // or programmatic dispose). Clear the popup handle so the effect cleanup runs and
+                    // `onOpenChange(false)` is propagated up the tree (which lets a parent shell re-dock
+                    // a previously-undocked pane). teardown() is idempotent so calling dispose() again
+                    // from the effect cleanup is a safe no-op.
+                    setPopupHandle(undefined);
+                },
             });
 
             if (handle) {
@@ -125,11 +133,10 @@ export const ChildWindow: FunctionComponent<PropsWithChildren<ChildWindowProps>>
 
         const popupDocument = popupHandle.popupWindow.document;
 
-        // Setup the window state, including creating a Fluent/Griffel "renderer" for managing
-        // runtime styles/classes in the child window. We mount React into the popup body
-        // (matching previous behaviour) — the OpenPopupWindow-supplied hostElement is unused
-        // here because Portal needs a stable mount node and the body is the natural choice.
-        setWindowState({ mountNode: popupDocument.body, renderer: createDOMRenderer(popupDocument) });
+        // Use the popup's hostElement as the React mount point. OpenPopupWindow configures it as a
+        // flex column that fills the popup body, so the FluentProvider (also a flex column with
+        // flex-grow: 1) inside it can fill the available space.
+        setWindowState({ mountNode: popupHandle.hostElement, renderer: createDOMRenderer(popupDocument) });
         onOpenChange?.(true);
 
         return () => {

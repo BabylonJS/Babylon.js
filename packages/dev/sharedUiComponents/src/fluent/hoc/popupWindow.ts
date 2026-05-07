@@ -40,7 +40,10 @@ export type PopupWindowOptions = {
     id?: string;
 
     /**
-     * Optional callback invoked when the popup is closed (by the user or via {@link PopupWindowHandle.dispose}).
+     * Optional callback invoked when the popup is closed externally — e.g. the user dismisses
+     * the popup, or the browser tab/window itself is unloaded. NOT called when the consumer
+     * closes the popup via {@link PopupWindowHandle.dispose} (the consumer already knows about
+     * that closure).
      */
     onClose?: () => void;
 };
@@ -146,10 +149,14 @@ export function OpenPopupWindow(options: PopupWindowOptions = {}): PopupWindowHa
     popupBody.style.overflow = "hidden";
 
     const hostElement = popupWindow.document.createElement("div");
+    hostElement.style.display = "flex";
+    hostElement.style.flexDirection = "column";
+    hostElement.style.flexGrow = "1";
     hostElement.style.width = "100%";
     hostElement.style.height = "100%";
     hostElement.style.margin = "0";
     hostElement.style.padding = "0";
+    hostElement.style.overflow = "hidden";
     popupBody.appendChild(hostElement);
 
     // Track the most recently observed window bounds. In some browsers (e.g. Firefox), accessing
@@ -173,7 +180,10 @@ export function OpenPopupWindow(options: PopupWindowOptions = {}): PopupWindowHa
     popupWindow.addEventListener("beforeunload", onPopupBeforeUnload);
 
     let disposed = false;
-    const teardown = () => {
+    // Internal cleanup: tears down listeners, persists bounds, closes the popup.
+    // Does NOT invoke `options.onClose` — that's reserved for popup unload events
+    // that originate from outside our own teardown (e.g. user dismissed the popup).
+    const cleanup = () => {
         if (disposed) {
             return;
         }
@@ -191,17 +201,29 @@ export function OpenPopupWindow(options: PopupWindowOptions = {}): PopupWindowHa
         }
 
         popupWindow.removeEventListener("beforeunload", onPopupBeforeUnload);
+        // Remove the unload listener so that any pending unload event triggered by our
+        // own popupWindow.close() below cannot reach back into onPopupUnload after we've
+        // already torn down. This avoids a race where, during a programmatic open-while-open
+        // swap, the old popup's unload would otherwise fire onClose and clear React state
+        // pointing at the new popup.
+        popupWindow.removeEventListener("unload", onPopupUnload);
         window.removeEventListener("unload", onParentUnload);
 
         if (!popupWindow.closed) {
             popupWindow.close();
         }
-
-        options.onClose?.();
     };
 
     const onPopupUnload = () => {
-        teardown();
+        if (disposed) {
+            // Already torn down programmatically; the popup is just finishing its unload.
+            return;
+        }
+        cleanup();
+        // Notify the consumer only for externally-triggered closures (user dismissed the popup,
+        // tab/browser closed). Programmatic disposal calls cleanup() directly and intentionally
+        // skips this so callers don't get a re-entrant onClose for the close they themselves issued.
+        options.onClose?.();
     };
     popupWindow.addEventListener("unload", onPopupUnload, { once: true });
 
@@ -216,6 +238,6 @@ export function OpenPopupWindow(options: PopupWindowOptions = {}): PopupWindowHa
     return {
         popupWindow,
         hostElement,
-        dispose: teardown,
+        dispose: cleanup,
     };
 }
