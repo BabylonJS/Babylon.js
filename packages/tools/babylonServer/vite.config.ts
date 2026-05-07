@@ -132,6 +132,17 @@ const staticDeclarationRewrites: Record<string, string> = {
     "glTF2Interface/babylon.glTF2Interface.d.ts": path.resolve(REPO_ROOT, "packages/public/glTF2Interface/babylon.glTF2Interface.d.ts"),
 };
 
+function getUmdEntry(url: string) {
+    const directEntry = umdUrlMap[url];
+    if (directEntry) {
+        return directEntry;
+    }
+
+    const urlDir = path.posix.dirname(url);
+    const urlFile = path.posix.basename(url);
+    return Object.entries(umdUrlMap).find(([mappedUrl, entry]) => path.posix.dirname(mappedUrl) === urlDir && entry.file === urlFile)?.[1];
+}
+
 /**
  * Vite plugin that serves pre-built rollup UMD bundles and handles URL rewrites.
  * Replaces the old entry-point compilation and dev-server configuration.
@@ -336,7 +347,7 @@ function babylonServerPlugin(): Plugin {
                 const url = req.url?.split("?")[0]?.replace(/^\//, "") ?? "";
 
                 // --- UMD bundle serving ---
-                const umdEntry = umdUrlMap[url];
+                const umdEntry = getUmdEntry(url);
                 if (umdEntry) {
                     const filePath = path.join(UMD_ROOT, umdEntry.dir, umdEntry.file);
                     if (fs.existsSync(filePath)) {
@@ -355,7 +366,7 @@ function babylonServerPlugin(): Plugin {
                 // --- Sourcemap serving (same dir as the UMD bundle) ---
                 if (url.endsWith(".js.map")) {
                     const jsUrl = url.replace(/\.map$/, "");
-                    const jsEntry = umdUrlMap[jsUrl];
+                    const jsEntry = getUmdEntry(jsUrl);
                     if (jsEntry) {
                         // The map file may be named after the served file (e.g. babylon.max.js.map)
                         // OR after the original rollup output (e.g. babylon.js.map / babylon.min.js.map),

@@ -1,7 +1,21 @@
 import { test, expect } from "@playwright/test";
+import { readFileSync } from "fs";
 import { FlowGraphEditorPage } from "./fge.utils";
 
 // The FGE starts with an empty graph — no default blocks on the canvas.
+
+function CountSerializedConnections(serializedGraph: any): number {
+    let totalConnections = 0;
+    for (const block of serializedGraph.allBlocks ?? []) {
+        for (const port of block.signalOutputs ?? []) {
+            totalConnections += port.connectedPointIds?.length ?? 0;
+        }
+        for (const port of block.dataOutputs ?? []) {
+            totalConnections += port.connectedPointIds?.length ?? 0;
+        }
+    }
+    return totalConnections;
+}
 
 test.describe("Flow Graph Editor — Loading", () => {
     test("editor loads with all panels visible", async ({ page }) => {
@@ -17,6 +31,30 @@ test.describe("Flow Graph Editor — Loading", () => {
 
         const count = await fge.getNodeCount();
         expect(count).toBe(0);
+    });
+
+    test("loads a flow graph snippet from the URL hash", async ({ page }) => {
+        const fge = new FlowGraphEditorPage(page);
+        await fge.goto();
+        await fge.assertEditorReady();
+
+        await fge.addBlockFromPalette("SceneReadyEvent");
+        const serializedGraph = await fge.serializeGraph();
+        const snippetId = "FGEHASH";
+        const version = "7";
+
+        await page.route(`https://snippet.babylonjs.com/${snippetId}/${version}`, async (route) => {
+            await route.fulfill({
+                contentType: "application/json",
+                body: JSON.stringify({ jsonPayload: JSON.stringify({ flowGraph: serializedGraph }) }),
+            });
+        });
+
+        await page.goto(`${fge.baseUrl}#${snippetId}#${version}`, { waitUntil: "load" });
+        await fge.assertEditorReady();
+
+        await expect(page.locator(".fge-toast").last()).toContainText(`Flow graph loaded from snippet ${snippetId}#${version}`);
+        await expect(fge.nodeOnCanvas("FlowGraphSceneReadyEventBlock")).toBeVisible();
     });
 
     test("node list palette contains expected categories", async ({ page }) => {
@@ -185,6 +223,42 @@ test.describe("Flow Graph Editor — Node List Filter", () => {
 });
 
 test.describe("Flow Graph Editor — Graph Construction", () => {
+    test("starting the graph does not stop existing scene animation groups", async ({ page }) => {
+        const fge = new FlowGraphEditorPage(page);
+        await fge.goto();
+        await fge.assertEditorReady();
+
+        await page.evaluate(() => {
+            const editor = (globalThis as any).BABYLON?.FlowGraphEditor;
+            const args = (globalThis as any).__viteFlowGraphEditorArgs;
+            const sceneCandidates = [editor?._CurrentState?.sceneContext?.scene, args?.[0]?.flowGraph?.scene, (globalThis as any).BABYLON?.EngineStore?.LastCreatedScene].filter(
+                Boolean
+            );
+            const scenes = Array.from(new Set(sceneCandidates));
+            if (scenes.length === 0) {
+                throw new Error("Flow Graph Editor scene not found");
+            }
+            (globalThis as any).__fgeAnimationStopCalled = false;
+            for (const scene of scenes) {
+                scene.animationGroups.push({
+                    name: "alreadyPlaying",
+                    uniqueId: 999999,
+                    isPlaying: true,
+                    targetedAnimations: [],
+                    stop: () => {
+                        (globalThis as any).__fgeAnimationStopCalled = true;
+                    },
+                    dispose: () => {},
+                });
+            }
+        });
+
+        await page.locator("button[title='Start']").click();
+
+        await expect.poll(async () => page.locator(".fge-ctrl-state").textContent()).toContain("Running");
+        expect(await page.evaluate(() => (globalThis as any).__fgeAnimationStopCalled)).toBe(false);
+    });
+
     test("build a SceneReady → ConsoleLog graph", async ({ page }) => {
         const fge = new FlowGraphEditorPage(page);
         await fge.goto();
@@ -220,6 +294,81 @@ test.describe("Flow Graph Editor — Graph Construction", () => {
         expect(topology.totalConnections).toBe(1);
         expect(blockNames).toContain("FlowGraphSceneReadyEventBlock");
         expect(blockNames).toContain("FlowGraphConsoleLogBlock");
+    });
+
+    test("save and load JSON preserves visual connections", async ({ page }) => {
+        const fge = new FlowGraphEditorPage(page);
+        await fge.goto();
+        await fge.assertEditorReady();
+
+        await fge.addBlockFromPalette("SceneReadyEvent");
+        await fge.addBlockFromPalette("ConsoleLog");
+        await fge.addBlockFromPalette("GetVariable");
+
+        await fge.connectPorts("FlowGraphSceneReadyEventBlock", "out", "FlowGraphConsoleLogBlock", "in");
+        await fge.connectPorts("FlowGraphGetVariableBlock", "value", "FlowGraphConsoleLogBlock", "message");
+
+        await expect.poll(async () => await fge.getLinkCount()).toBeGreaterThanOrEqual(2);
+        expect((await fge.getGraphTopology()).totalConnections).toBe(2);
+
+        const downloadPromise = page.waitForEvent("download");
+        await fge.rightPanel.getByRole("button", { name: "Save", exact: true }).click();
+        const download = await downloadPromise;
+        const downloadPath = await download.path();
+        if (!downloadPath) {
+            throw new Error("Saved flow graph download did not produce a local file path");
+        }
+        const savedJson = JSON.parse(readFileSync(downloadPath, "utf8"));
+        const savedGraph = savedJson._flowGraphs?.[savedJson.activeGraphIndex ?? 0] ?? savedJson;
+        expect(CountSerializedConnections(savedGraph)).toBe(2);
+
+        await page.locator("input[type='file'][accept='.json']").setInputFiles(downloadPath);
+
+        await expect(page.locator(".fge-toast").last()).toContainText("Flow graph loaded from file");
+        await expect.poll(async () => await fge.getNodeCount()).toBe(3);
+        await expect.poll(async () => await fge.getLinkCount()).toBeGreaterThanOrEqual(2);
+    });
+
+    test("clicking a validation badge logs its block issues", async ({ page }) => {
+        const fge = new FlowGraphEditorPage(page);
+        await fge.goto();
+        await fge.assertEditorReady();
+
+        await fge.addBlockFromPalette("ConsoleLog");
+        await page.locator("button[title='Validate graph']").click();
+
+        const badge = fge.nodeOnCanvas("FlowGraphConsoleLogBlock").locator("[class*='validationBadge']");
+        await expect(badge).toBeVisible();
+        await expect(badge).toHaveAttribute("role", "button");
+        await expect(badge).toHaveAttribute("tabindex", "0");
+        await expect(badge).toHaveAttribute("aria-label", "Show validation errors");
+
+        const logEntries = page.locator("#fge-log-console .log");
+        const beforeCount = await logEntries.count();
+
+        await badge.click();
+
+        await expect.poll(async () => await logEntries.count()).toBeGreaterThan(beforeCount);
+        await expect(page.locator("#fge-log-console")).toContainText("FlowGraphConsoleLogBlock");
+
+        const afterClickCount = await logEntries.count();
+        await badge.focus();
+        await page.keyboard.press("Enter");
+
+        await expect.poll(async () => await logEntries.count()).toBeGreaterThan(afterClickCount);
+
+        const toast = page.locator(".fge-toast").last();
+        await expect(toast).toBeVisible();
+
+        const toastMessage = toast.locator(".fge-toast-message");
+        await expect(toastMessage).toHaveCSS("white-space", "pre-line");
+        await expect(toastMessage).toContainText("[Error]");
+        await expect(toastMessage).toContainText("[Warn]");
+        expect(await toastMessage.textContent()).toContain("\n");
+
+        await toast.hover();
+        await page.waitForTimeout(4300);
+        await expect(toast).toBeVisible();
     });
 
     test("SceneReady → Branch with both true/false paths wired to ConsoleLog", async ({ page }) => {
