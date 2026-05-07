@@ -1,20 +1,51 @@
-import { type IAssetContainer } from "core/IAssetContainer"
+import { type IAssetContainer } from "core/IAssetContainer";
 import { blockFactory } from "./Blocks/flowGraphBlockFactory";
-import { type FlowGraphBlockNames } from "./Blocks/flowGraphBlockNames"
-import { type FlowGraph, type IFlowGraphParseOptions } from "./flowGraph"
-import { type FlowGraphBlock, type IFlowGraphBlockParseOptions } from "./flowGraphBlock"
-import { type FlowGraphContext, type IFlowGraphContextParseOptions } from "./flowGraphContext"
-import { type IFlowGraphCoordinatorParseOptions } from "./flowGraphCoordinator"
-import { FlowGraphCoordinator } from "./flowGraphCoordinator";
-import { type FlowGraphDataConnection } from "./flowGraphDataConnection"
+import { type FlowGraphBlockNames } from "./Blocks/flowGraphBlockNames";
+import { type FlowGraph, type IFlowGraphParseOptions } from "./flowGraph";
+import { type FlowGraphBlock, type IFlowGraphBlockParseOptions } from "./flowGraphBlock";
+import { type FlowGraphContext, type IFlowGraphContextParseOptions } from "./flowGraphContext";
+import { type IFlowGraphCoordinatorParseOptions, FlowGraphCoordinator } from "./flowGraphCoordinator";
+import { type FlowGraphDataConnection } from "./flowGraphDataConnection";
 import { FlowGraphEventBlock } from "./flowGraphEventBlock";
 import { FlowGraphExecutionBlock } from "./flowGraphExecutionBlock";
-import { type FlowGraphSignalConnection } from "./flowGraphSignalConnection"
+import { type FlowGraphSignalConnection } from "./flowGraphSignalConnection";
 import { defaultValueParseFunction, needsPathConverter } from "./serialization";
-import { type ISerializedFlowGraph, type ISerializedFlowGraphBlock, type ISerializedFlowGraphContext } from "./typeDefinitions"
-import { type Node } from "core/node"
+import { type ISerializedFlowGraph, type ISerializedFlowGraphBlock, type ISerializedFlowGraphContext } from "./typeDefinitions";
+import { type Node } from "core/node";
 import { getRichTypeByFlowGraphType, RichType } from "./flowGraphRichTypes";
-import { type FlowGraphConnection } from "./flowGraphConnection"
+import { type FlowGraphConnection } from "./flowGraphConnection";
+import { Constants } from "core/Engines/constants";
+import { WebRequest } from "core/Misc/webRequest";
+
+async function GetSerializedFlowGraphFromSnippetAsync(snippetId: string): Promise<any> {
+    const response = await WebRequest.FetchAsync(Constants.SnippetUrl + "/" + snippetId.replace(/#/g, "/"));
+    if (!response.ok) {
+        throw new Error("Unable to load the snippet " + snippetId);
+    }
+
+    const text = new TextDecoder().decode(await response.arrayBuffer());
+    const snippet = JSON.parse(text);
+    const snippetPayload = JSON.parse(snippet.jsonPayload);
+    const flowGraphPayload = snippetPayload.flowGraph;
+    if (!flowGraphPayload) {
+        throw new Error("Snippet " + snippetId + " does not contain a flow graph");
+    }
+
+    return typeof flowGraphPayload === "string" ? JSON.parse(flowGraphPayload) : flowGraphPayload;
+}
+
+function ApplyCoordinatorSerializationSettings(serializedObject: any, coordinator: FlowGraphCoordinator): void {
+    if (serializedObject.dispatchEventsSynchronously !== undefined) {
+        coordinator.dispatchEventsSynchronously = serializedObject.dispatchEventsSynchronously;
+    }
+
+    if (serializedObject._defaultValues) {
+        for (const key in serializedObject._defaultValues) {
+            getRichTypeByFlowGraphType(key).defaultValue = serializedObject._defaultValues[key];
+        }
+    }
+}
+
 /**
  * Given a list of blocks, find an output data connection that has a specific unique id
  * @param blocks a list of flow graph blocks
@@ -61,19 +92,9 @@ export async function ParseCoordinatorAsync(serializedObject: any, options: IFlo
     const valueParseFunction = options.valueParseFunction ?? defaultValueParseFunction;
     const coordinator = new FlowGraphCoordinator({ scene: options.scene });
 
-    if (serializedObject.dispatchEventsSynchronously) {
-        coordinator.dispatchEventsSynchronously = serializedObject.dispatchEventsSynchronously;
-    }
+    ApplyCoordinatorSerializationSettings(serializedObject, coordinator);
 
     await options.scene.whenReadyAsync();
-    // if custom default values are defined, set them in the global context
-    if (serializedObject._defaultValues) {
-        for (const key in serializedObject._defaultValues) {
-            // key is the FlowGraphType, value is the default value
-            const value = serializedObject._defaultValues[key];
-            getRichTypeByFlowGraphType(key).defaultValue = value;
-        }
-    }
     // async-parse the flow graphs. This can be done in parallel
     await Promise.all(
         serializedObject._flowGraphs?.map(
@@ -81,6 +102,51 @@ export async function ParseCoordinatorAsync(serializedObject: any, options: IFlo
         )
     );
     return coordinator;
+}
+
+/**
+ * Parses a flow graph coordinator from a snippet saved by the Flow Graph Editor.
+ * @param snippetId the snippet id to load. Versioned ids such as "ABC123#4" are supported.
+ * @param options options for parsing the coordinator.
+ * @returns the parsed flow graph coordinator.
+ */
+export async function ParseFlowGraphCoordinatorFromSnippetAsync(snippetId: string, options: IFlowGraphCoordinatorParseOptions): Promise<FlowGraphCoordinator> {
+    const serializedObject = await GetSerializedFlowGraphFromSnippetAsync(snippetId);
+    if (serializedObject._flowGraphs) {
+        return await ParseCoordinatorAsync(serializedObject, options);
+    }
+
+    const valueParseFunction = options.valueParseFunction ?? defaultValueParseFunction;
+    const coordinator = new FlowGraphCoordinator({ scene: options.scene });
+    await options.scene.whenReadyAsync();
+    await ParseFlowGraphAsync(serializedObject, { coordinator, valueParseFunction, pathConverter: options.pathConverter });
+    return coordinator;
+}
+
+/**
+ * Parses a flow graph from a snippet saved by the Flow Graph Editor.
+ * If the snippet contains multiple graphs, all graphs are parsed into the provided coordinator and the active graph is returned.
+ * @param snippetId the snippet id to load. Versioned ids such as "ABC123#4" are supported.
+ * @param options options for parsing the graph.
+ * @returns the parsed flow graph.
+ */
+export async function ParseFlowGraphFromSnippetAsync(snippetId: string, options: IFlowGraphParseOptions): Promise<FlowGraph> {
+    const serializedObject = await GetSerializedFlowGraphFromSnippetAsync(snippetId);
+    const valueParseFunction = options.valueParseFunction ?? defaultValueParseFunction;
+
+    if (!serializedObject._flowGraphs) {
+        return await ParseFlowGraphAsync(serializedObject, options);
+    }
+
+    ApplyCoordinatorSerializationSettings(serializedObject, options.coordinator);
+    const parsedGraphs: FlowGraph[] = [];
+    for (const serializedGraph of serializedObject._flowGraphs) {
+        // eslint-disable-next-line no-await-in-loop -- graph order matters for the active graph index.
+        parsedGraphs.push(await ParseFlowGraphAsync(serializedGraph, { coordinator: options.coordinator, valueParseFunction, pathConverter: options.pathConverter }));
+    }
+
+    const activeGraphIndex = serializedObject.activeGraphIndex ?? 0;
+    return parsedGraphs[activeGraphIndex] ?? parsedGraphs[0];
 }
 
 /**
@@ -110,6 +176,13 @@ export async function ParseFlowGraphAsync(serializationObject: ISerializedFlowGr
  */
 export function ParseFlowGraph(serializationObject: ISerializedFlowGraph, options: IFlowGraphParseOptions, resolvedClasses: (typeof FlowGraphBlock)[]) {
     const graph = options.coordinator.createGraph();
+    // Restore graph identity from serialized data
+    if (serializationObject.name) {
+        graph.name = serializationObject.name;
+    }
+    if (serializationObject.uniqueId) {
+        graph.uniqueId = serializationObject.uniqueId;
+    }
     const blocks: FlowGraphBlock[] = [];
     const valueParseFunction = options.valueParseFunction ?? defaultValueParseFunction;
     // Parse all blocks
@@ -122,28 +195,80 @@ export function ParseFlowGraph(serializationObject: ISerializedFlowGraph, option
             resolvedClasses[i]
         );
         blocks.push(block);
+        graph.addBlock(block);
         if (block instanceof FlowGraphEventBlock) {
             graph.addEventBlock(block);
         }
     }
-    // After parsing all blocks, connect them
+    // After parsing all blocks, connect them.
+    // Build lookup maps for O(1) connection resolution instead of O(B*P) linear scans.
+    const dataInMap = new Map<string, FlowGraphDataConnection<any>>();
+    const dataOutMap = new Map<string, FlowGraphDataConnection<any>>();
+    const signalInMap = new Map<string, FlowGraphSignalConnection>();
+    const signalOutMap = new Map<string, FlowGraphSignalConnection>();
+    for (const block of blocks) {
+        for (const dataIn of block.dataInputs) {
+            dataInMap.set(dataIn.uniqueId, dataIn);
+        }
+        for (const dataOut of block.dataOutputs) {
+            dataOutMap.set(dataOut.uniqueId, dataOut);
+        }
+        if (block instanceof FlowGraphExecutionBlock) {
+            for (const signalIn of block.signalInputs) {
+                signalInMap.set(signalIn.uniqueId, signalIn);
+            }
+            for (const signalOut of block.signalOutputs) {
+                signalOutMap.set(signalOut.uniqueId, signalOut);
+            }
+        }
+    }
+    const connectIfNeeded = <ConnectionT extends FlowGraphConnection<any, any>>(connection: ConnectionT, connectedConnection: ConnectionT) => {
+        if (connection._connectedPoint.indexOf(connectedConnection) !== -1) {
+            return;
+        }
+        connection.connectTo(connectedConnection);
+    };
     for (const block of blocks) {
         for (const dataIn of block.dataInputs) {
             for (const serializedConnection of dataIn.connectedPointIds) {
-                const connection = GetDataOutConnectionByUniqueId(blocks, serializedConnection);
-                dataIn.connectTo(connection);
+                const connection = dataOutMap.get(serializedConnection);
+                if (!connection) {
+                    throw new Error("Could not find data out connection with unique id " + serializedConnection);
+                }
+                connectIfNeeded(dataIn, connection);
+            }
+        }
+        for (const dataOut of block.dataOutputs) {
+            for (const serializedConnection of dataOut.connectedPointIds) {
+                const connection = dataInMap.get(serializedConnection);
+                if (!connection) {
+                    throw new Error("Could not find data in connection with unique id " + serializedConnection);
+                }
+                connectIfNeeded(dataOut, connection);
             }
         }
         if (block instanceof FlowGraphExecutionBlock) {
             for (const signalOut of block.signalOutputs) {
                 for (const serializedConnection of signalOut.connectedPointIds) {
-                    const connection = GetSignalInConnectionByUniqueId(blocks, serializedConnection);
-                    signalOut.connectTo(connection);
+                    const connection = signalInMap.get(serializedConnection);
+                    if (!connection) {
+                        throw new Error("Could not find signal in connection with unique id " + serializedConnection);
+                    }
+                    connectIfNeeded(signalOut, connection);
+                }
+            }
+            for (const signalIn of block.signalInputs) {
+                for (const serializedConnection of signalIn.connectedPointIds) {
+                    const connection = signalOutMap.get(serializedConnection);
+                    if (!connection) {
+                        throw new Error("Could not find signal out connection with unique id " + serializedConnection);
+                    }
+                    connectIfNeeded(connection, signalIn);
                 }
             }
         }
     }
-    for (const serializedContext of serializationObject.executionContexts) {
+    for (const serializedContext of serializationObject.executionContexts ?? []) {
         ParseFlowGraphContext(serializedContext, { graph, valueParseFunction }, serializationObject.rightHanded);
     }
     return graph;
@@ -164,6 +289,7 @@ export function ParseFlowGraphContext(serializationObject: ISerializedFlowGraphC
     result.treatDataAsRightHanded = rightHanded || false;
     const valueParseFunction = options.valueParseFunction ?? defaultValueParseFunction;
     result.uniqueId = serializationObject.uniqueId;
+    result.name = serializationObject.name ?? "";
     const scene = result.getScene();
     // check if assets context is available
     if (serializationObject._assetsContext) {
@@ -201,6 +327,12 @@ export function ParseFlowGraphContext(serializationObject: ISerializedFlowGraphC
     for (const key in serializationObject._userVariables) {
         const value = valueParseFunction(key, serializationObject._userVariables, result.assetsContext, scene);
         result.userVariables[key] = value;
+    }
+    // Restore variable type annotations
+    if (serializationObject._variableTypes) {
+        for (const key in serializationObject._variableTypes) {
+            result.setVariableType(key, serializationObject._variableTypes[key]);
+        }
     }
     for (const key in serializationObject._connectionValues) {
         const value = valueParseFunction(key, serializationObject._connectionValues, result.assetsContext, scene);
@@ -244,7 +376,7 @@ export function ParseFlowGraphBlockWithClassType(
     }
     if (needsPathConverter(serializationObject.className)) {
         if (!parseOptions.pathConverter) {
-            throw new Error("Path converter is required for this block");
+            throw new Error("Block " + serializationObject.className + " requires a path converter to be provided in parse options.");
         }
         parsedConfig.pathConverter = parseOptions.pathConverter;
     }
@@ -254,6 +386,17 @@ export function ParseFlowGraphBlockWithClassType(
         const dataInput = obj.getDataInput(serializationObject.dataInputs[i].name);
         if (dataInput) {
             dataInput.deserialize(serializationObject.dataInputs[i]);
+            // Restore _defaultValue if it was serialized.  Without this, the
+            // user-set inline value (e.g. "2" on an Add input, or "position"
+            // on a GetProperty's propertyName) is lost during round-trips.
+            if (serializationObject.dataInputs[i].defaultValue !== undefined) {
+                (dataInput as any)._defaultValue = valueParseFunction(
+                    "defaultValue",
+                    serializationObject.dataInputs[i],
+                    parseOptions.assetsContainer || parseOptions.scene,
+                    parseOptions.scene
+                );
+            }
         } else {
             throw new Error("Could not find data input with name " + serializationObject.dataInputs[i].name + " in block " + serializationObject.className);
         }

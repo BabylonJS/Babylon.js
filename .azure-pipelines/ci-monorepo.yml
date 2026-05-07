@@ -401,12 +401,10 @@ jobs:
           - script: |
                 git branch
                 git fetch origin "+refs/heads/*:refs/remotes/origin/*"
-                git checkout -B master origin/master
                 git branch
 
-                GIT_CHANGES_COMMAND="git diff $(Build.SourceVersion) --name-only --relative" npm run test:docs
+                GIT_CHANGES_COMMAND="git diff origin/master...HEAD --name-only --relative" npm run test:docs
             displayName: "Run TypeDoc test"
-            continueOnError: true
             env:
                 CI: "true"
 
@@ -416,6 +414,7 @@ jobs:
             inputs:
                 testResultsFormat: JUnit
                 testResultsFiles: "./junit.xml"
+                failTaskOnFailedTests: true
 
     # ============================================================================
     # UNIT TESTS

@@ -11,7 +11,9 @@ interface IToastEntry {
     id: number;
     message: string;
     severity: ToastSeverity;
-    timerId: ReturnType<typeof setTimeout>;
+    timerId: Nullable<ReturnType<typeof setTimeout>>;
+    startedAt: number;
+    remainingDuration: number;
 }
 
 interface IToastContainerProps {
@@ -50,9 +52,9 @@ export class ToastContainerComponent extends React.Component<IToastContainerProp
     override componentDidMount() {
         this._observer = this.props.globalState.onToastNotification.add((data) => {
             const id = this._nextId++;
-            const timerId = setTimeout(() => this._dismiss(id), TOAST_DURATION_MS);
+            const timerId = this._createDismissTimer(id, TOAST_DURATION_MS);
             this.setState((prev) => ({
-                toasts: [...prev.toasts, { id, message: data.message, severity: data.severity, timerId }],
+                toasts: [...prev.toasts, { id, message: data.message, severity: data.severity, timerId, startedAt: Date.now(), remainingDuration: TOAST_DURATION_MS }],
             }));
         });
     }
@@ -63,15 +65,57 @@ export class ToastContainerComponent extends React.Component<IToastContainerProp
         this._observer = null;
         // Clear all pending timers
         for (const t of this.state.toasts) {
-            clearTimeout(t.timerId);
+            if (t.timerId) {
+                clearTimeout(t.timerId);
+            }
         }
+    }
+
+    private _createDismissTimer(id: number, duration: number) {
+        return setTimeout(() => this._dismiss(id), duration);
+    }
+
+    private _pauseDismiss(id: number) {
+        this.setState((prev) => ({
+            toasts: prev.toasts.map((toast) => {
+                if (toast.id !== id || !toast.timerId) {
+                    return toast;
+                }
+                clearTimeout(toast.timerId);
+                const elapsed = Date.now() - toast.startedAt;
+                return {
+                    ...toast,
+                    timerId: null,
+                    remainingDuration: Math.max(0, toast.remainingDuration - elapsed),
+                };
+            }),
+        }));
+    }
+
+    private _resumeDismiss(id: number) {
+        this.setState((prev) => ({
+            toasts: prev.toasts.map((toast) => {
+                if (toast.id !== id || toast.timerId) {
+                    return toast;
+                }
+                const remainingDuration = Math.max(1, toast.remainingDuration);
+                return {
+                    ...toast,
+                    timerId: this._createDismissTimer(id, remainingDuration),
+                    startedAt: Date.now(),
+                    remainingDuration,
+                };
+            }),
+        }));
     }
 
     private _dismiss(id: number) {
         this.setState((prev) => ({
             toasts: prev.toasts.filter((t) => {
                 if (t.id === id) {
-                    clearTimeout(t.timerId);
+                    if (t.timerId) {
+                        clearTimeout(t.timerId);
+                    }
                     return false;
                 }
                 return true;
@@ -84,7 +128,14 @@ export class ToastContainerComponent extends React.Component<IToastContainerProp
         return (
             <div className="fge-toast-container">
                 {this.state.toasts.map((toast) => (
-                    <div key={toast.id} className={`fge-toast fge-toast-${toast.severity}`} role="status" aria-live="polite">
+                    <div
+                        key={toast.id}
+                        className={`fge-toast fge-toast-${toast.severity}`}
+                        role="status"
+                        aria-live="polite"
+                        onMouseEnter={() => this._pauseDismiss(toast.id)}
+                        onMouseLeave={() => this._resumeDismiss(toast.id)}
+                    >
                         <span className="fge-toast-icon">{SEVERITY_ICONS[toast.severity]}</span>
                         <span className="fge-toast-message">{toast.message}</span>
                         <button className="fge-toast-close" aria-label="Dismiss" onClick={() => this._dismiss(toast.id)}>

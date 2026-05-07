@@ -1,25 +1,13 @@
-import { type IAssetContainer } from "core/IAssetContainer"
+import { type IAssetContainer } from "core/IAssetContainer";
+import { Logger } from "../Misc/logger";
 import { Color3, Color4 } from "../Maths/math.color";
 import { Matrix, Quaternion, Vector2, Vector3, Vector4 } from "../Maths/math.vector";
-import { type Scene } from "../scene"
+import { type Scene } from "../scene";
 import { FlowGraphBlockNames } from "./Blocks/flowGraphBlockNames";
 import { FlowGraphInteger } from "./CustomTypes/flowGraphInteger";
 import { FlowGraphTypes, getRichTypeByFlowGraphType } from "./flowGraphRichTypes";
-import { type TransformNode } from "core/Meshes/transformNode"
+import { type Node } from "core/node";
 import { FlowGraphMatrix2D, FlowGraphMatrix3D } from "./CustomTypes/flowGraphMatrix";
-
-function IsMeshClassName(className: string) {
-    return (
-        className === "Mesh" ||
-        className === "AbstractMesh" ||
-        className === "GroundMesh" ||
-        className === "InstanceMesh" ||
-        className === "LinesMesh" ||
-        className === "GoldbergMesh" ||
-        className === "GreasedLineMesh" ||
-        className === "TrailMesh"
-    );
-}
 
 function IsVectorClassName(className: string) {
     return (
@@ -38,6 +26,22 @@ function IsMatrixClassName(className: string) {
 
 function IsAnimationGroupClassName(className: string) {
     return className === "AnimationGroup";
+}
+
+function GetSceneNodeFromSerializedReference(serializedReference: any, scene: Scene): Node | undefined {
+    if (!serializedReference || (!serializedReference.id && !serializedReference.name)) {
+        return undefined;
+    }
+
+    const nodes = scene.getNodes().filter((node) => (serializedReference.id ? node.id === serializedReference.id : node.name === serializedReference.name));
+    if (nodes.length === 0) {
+        return undefined;
+    }
+
+    const className = serializedReference.type ?? serializedReference.className;
+    const classMatches = className ? nodes.filter((node) => node.getClassName() === className) : [];
+    const candidates = classMatches.length > 0 ? classMatches : nodes;
+    return (serializedReference.uniqueId ? candidates.find((node) => node.uniqueId === serializedReference.uniqueId) : undefined) ?? candidates[0];
 }
 
 function ParseVector(className: string, value: Array<number>, flipHandedness = false) {
@@ -90,13 +94,30 @@ export function defaultValueSerializationFunction(key: string, value: any, seria
                 id: value.id,
                 name: value.name,
                 className,
+                uniqueId: value.uniqueId,
             };
         } else {
-            // only if it is not an object
-            if (typeof value !== "object") {
+            if (typeof value !== "object" || value === null) {
                 serializationObject[key] = value;
             } else {
-                throw new Error(`Could not serialize value ${value}`);
+                // Skip known non-serializable keys immediately to avoid
+                // expensive JSON.stringify attempts on large object trees
+                // (e.g. pathConverter holds the entire glTF parse tree).
+                if (key === "pathConverter") {
+                    return;
+                }
+                // Quick check: if any own property is a function, the object
+                // is not JSON-safe and stringify would be wasteful.
+                const hasFunction = Object.values(value).some((v) => typeof v === "function");
+                if (hasFunction) {
+                    return;
+                }
+                // Plain object (e.g. parsed event config) — store it if JSON-safe.
+                try {
+                    serializationObject[key] = JSON.parse(JSON.stringify(value));
+                } catch {
+                    Logger.Warn(`FlowGraph serialization: value for key "${key}" is not JSON-serializable and was skipped.`);
+                }
             }
         }
     }
@@ -115,12 +136,9 @@ export function defaultValueParseFunction(key: string, serializationObject: any,
     const intermediateValue = serializationObject[key];
     let finalValue;
     const className = intermediateValue?.type ?? intermediateValue?.className;
-    if (IsMeshClassName(className)) {
-        let nodes: TransformNode[] = scene.meshes.filter((m) => (intermediateValue.id ? m.id === intermediateValue.id : m.name === intermediateValue.name));
-        if (nodes.length === 0) {
-            nodes = scene.transformNodes.filter((m) => (intermediateValue.id ? m.id === intermediateValue.id : m.name === intermediateValue.name));
-        }
-        finalValue = intermediateValue.uniqueId ? nodes.find((m) => m.uniqueId === intermediateValue.uniqueId) : nodes[0];
+    const sceneNode = GetSceneNodeFromSerializedReference(intermediateValue, scene);
+    if (sceneNode) {
+        finalValue = sceneNode;
     } else if (IsVectorClassName(className)) {
         finalValue = ParseVector(className, intermediateValue.value);
     } else if (IsAnimationGroupClassName(className)) {
@@ -142,19 +160,26 @@ export function defaultValueParseFunction(key: string, serializationObject: any,
         finalValue = intermediateValue.value;
     } else {
         if (Array.isArray(intermediateValue)) {
-            // configuration data of an event
-            finalValue = intermediateValue.reduce((acc, val) => {
-                if (!val.eventData) {
+            // Check if this is an event configuration array (objects with id/eventData)
+            // versus a plain array of primitives (e.g. variable name lists)
+            if (intermediateValue.length > 0 && typeof intermediateValue[0] === "object" && intermediateValue[0] !== null && "eventData" in intermediateValue[0]) {
+                // configuration data of an event
+                finalValue = intermediateValue.reduce((acc, val) => {
+                    if (!val.eventData) {
+                        return acc;
+                    }
+                    acc[val.id] = {
+                        type: getRichTypeByFlowGraphType(val.type),
+                    };
+                    if (typeof val.value !== "undefined") {
+                        acc[val.id].value = defaultValueParseFunction("value", val, assetsContainer, scene);
+                    }
                     return acc;
-                }
-                acc[val.id] = {
-                    type: getRichTypeByFlowGraphType(val.type),
-                };
-                if (typeof val.value !== "undefined") {
-                    acc[val.id].value = defaultValueParseFunction("value", val, assetsContainer, scene);
-                }
-                return acc;
-            }, {});
+                }, {});
+            } else {
+                // Plain array of primitives — return as-is
+                finalValue = intermediateValue;
+            }
         } else {
             finalValue = intermediateValue;
         }
@@ -172,6 +197,5 @@ export function defaultValueParseFunction(key: string, serializationObject: any,
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export function needsPathConverter(className: string) {
     // I am not using the ClassName property here because it was causing a circular dependency
-    // that jest didn't like!
     return className === FlowGraphBlockNames.JsonPointerParser;
 }
