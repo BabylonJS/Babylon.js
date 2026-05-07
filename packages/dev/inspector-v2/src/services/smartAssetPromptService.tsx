@@ -130,13 +130,22 @@ export const SmartAssetPromptServiceDefinition: ServiceDefinition<[], [IShellSer
             component: SmartAssetMissingPromptHost,
             order: 1000,
         });
+        // Map entry is removed when the manager's scene is disposed so we don't
+        // accumulate disposed managers across e.g. successive Playground runs.
         const managerHandlerDisposers = new Map<SmartAssetManager, () => void>();
 
         const installForManager = (manager: SmartAssetManager) => {
             if (manager.scene !== sceneContext.currentScene || managerHandlerDisposers.has(manager)) {
                 return;
             }
-            managerHandlerDisposers.set(manager, installInspectorAssetNotFoundHandler(manager));
+            const restoreHandler = installInspectorAssetNotFoundHandler(manager);
+            const sceneDisposeObserver = manager.scene.onDisposeObservable.add(() => {
+                managerHandlerDisposers.delete(manager);
+            });
+            managerHandlerDisposers.set(manager, () => {
+                manager.scene.onDisposeObservable.remove(sceneDisposeObserver);
+                restoreHandler();
+            });
         };
 
         const installForCurrentScene = () => {

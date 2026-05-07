@@ -1,12 +1,15 @@
 import { Observable, type Observer } from "core/Misc/observable";
 
-const OnSmartAssetsPaneSelectionRequestedObservable = new Observable<void>(undefined, true);
+// Use a non-undefined sentinel payload so notifyIfTriggered's replay-on-add
+// behavior (which only fires when _lastNotifiedValue !== undefined) actually
+// works for late subscribers — Observable<void> would never replay.
+const OnSmartAssetsPaneSelectionRequestedObservable = new Observable<true>(undefined, true);
 
 /**
  * Requests that Inspector select the Smart Assets pane when it is available.
  */
 export function SelectSmartAssetsPane(): void {
-    OnSmartAssetsPaneSelectionRequestedObservable.notifyObservers();
+    OnSmartAssetsPaneSelectionRequestedObservable.notifyObservers(true);
 }
 
 /**
@@ -14,8 +17,8 @@ export function SelectSmartAssetsPane(): void {
  * @param callback - The callback to run when Smart Assets should be selected.
  * @returns The observer registration.
  */
-export function AddSmartAssetsPaneSelectionObserver(callback: () => void): Observer<void> | null {
-    return OnSmartAssetsPaneSelectionRequestedObservable.add(callback);
+export function AddSmartAssetsPaneSelectionObserver(callback: () => void): Observer<true> | null {
+    return OnSmartAssetsPaneSelectionRequestedObservable.add(() => callback());
 }
 
 /**

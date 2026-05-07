@@ -5,6 +5,7 @@ import { type Material } from "../Materials/material";
 import { type BaseTexture } from "../Materials/Textures/baseTexture";
 import { Texture } from "../Materials/Textures/texture";
 import { CubeTexture } from "../Materials/Textures/cubeTexture";
+import { HDRCubeTexture } from "../Materials/Textures/hdrCubeTexture";
 import { type AnimationGroup } from "../Animations/animationGroup";
 import { Observable, type Observer } from "../Misc/observable";
 import { Logger } from "../Misc/logger";
@@ -558,14 +559,18 @@ function ResolveSmartAssetManager(managerOrScene: SmartAssetManagerOrScene): Sma
 async function CreateAndLoadTextureAsync(manager: SmartAssetManager, url: string, extensionHint?: string): Promise<BaseTexture> {
     return await new Promise<BaseTexture>((resolve, reject) => {
         const ext = (extensionHint || GetExtensionFromUrl(url)).toLowerCase();
-        const isCube = ext === ".env" || ext === ".hdr" || ext === ".dds";
         const onError = (message?: string, exception?: unknown) => {
             const err = exception instanceof Error ? exception : new Error(message ?? `SmartAssetManager: failed to load texture from "${url}".`);
             reject(err);
         };
         let texture: BaseTexture;
         const onLoad = () => resolve(texture);
-        if (isCube) {
+        if (ext === ".hdr") {
+            // HDR equirectangular files require HDRCubeTexture — CubeTexture's .hdr
+            // loader explicitly throws ".hdr not supported in Cube." so we can't
+            // route HDRs through the generic CubeTexture path.
+            texture = new HDRCubeTexture(url, manager.scene, 256, false, true, false, false, onLoad, onError);
+        } else if (ext === ".env" || ext === ".dds") {
             texture = new CubeTexture(url, manager.scene, null, false, null, onLoad, onError, undefined, ext === ".env");
         } else {
             texture = new Texture(url, manager.scene, undefined, undefined, undefined, onLoad, onError);
