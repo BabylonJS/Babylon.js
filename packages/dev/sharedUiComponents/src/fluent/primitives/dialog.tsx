@@ -12,9 +12,7 @@ export type DialogActionProps = {
     /** Click handler. */
     onClick: () => void;
     /** Button appearance. Defaults to "secondary". */
-    appearance?: "primary" | "secondary" | "subtle";
-    /** Whether the button is disabled. */
-    disabled?: boolean;
+    appearance?: "primary" | "secondary";
 };
 
 /**
@@ -31,13 +29,10 @@ export type DialogProps = {
     actions?: DialogActionProps[];
     /** Called when the dialog is dismissed via the close button. */
     onDismiss?: () => void;
-    /** Modal type. Defaults to "modal". */
-    modalType?: "modal" | "alert" | "non-modal";
 };
 
 /**
  * A shared dialog component wrapping Fluent UI Dialog with Babylon conventions.
- * Provides a consistent dialog pattern across all Babylon tools (Inspector, Playground, editors).
  *
  * @example
  * ```tsx
@@ -58,12 +53,12 @@ export type DialogProps = {
  * @returns The dialog element.
  */
 export const Dialog: FC<DialogProps> = (props) => {
-    const { open, title, children, actions, onDismiss, modalType = "modal" } = props;
+    const { open, title, children, actions, onDismiss } = props;
 
     return (
         <FluentDialog
             open={open}
-            modalType={modalType}
+            modalType="modal"
             onOpenChange={(_, data) => {
                 if (!data.open && onDismiss) {
                     onDismiss();
@@ -87,7 +82,7 @@ export const Dialog: FC<DialogProps> = (props) => {
                     {actions && actions.length > 0 && (
                         <DialogActions>
                             {actions.map((action, index) => (
-                                <Button key={index} appearance={action.appearance ?? "secondary"} onClick={action.onClick} disabled={action.disabled} label={action.label} />
+                                <Button key={index} appearance={action.appearance ?? "secondary"} onClick={action.onClick} label={action.label} />
                             ))}
                         </DialogActions>
                     )}

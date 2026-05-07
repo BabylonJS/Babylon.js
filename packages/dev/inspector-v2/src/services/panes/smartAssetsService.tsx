@@ -4,6 +4,7 @@ import { type Scene, type IDisposable } from "core/scene";
 import {
     FindSmartAssetKeyForObject,
     GetAllSmartAssets,
+    GetOrCreateSmartAssetManager,
     GetSmartAssetManagerCreatedCallback,
     GetSmartAssetManagerFromScene,
     LoadSmartAssetAsync,
@@ -11,7 +12,6 @@ import {
     RegisterSmartAsset,
     ReloadSmartAssetAsync,
     RemoveSmartAssetAsync,
-    ResolveSmartAsset,
     SetSmartAssetRefreshCallback,
     SetSmartAssetManagerCreatedCallback,
     UnloadSmartAssetAsync,
@@ -27,7 +27,6 @@ import { useObservableState } from "shared-ui-components/modularTool/hooks/obser
 import { Link } from "shared-ui-components/fluent/primitives/link";
 import { Accordion, AccordionSection } from "shared-ui-components/fluent/primitives/accordion";
 
-import { getOrCreateSmartAssetManager } from "../smartAssetHandler";
 import { AddSmartAssetsPaneSelectionObserver, ClearSmartAssetsPaneSelectionRequest, EnableSmartAssetsPaneSelectionRequestCache } from "../smartAssetsPaneSelection";
 import { SmartAssetProjectTools } from "./tools/smartAssetToolsService";
 
@@ -253,7 +252,7 @@ const SmartAssetList: FunctionComponent<{ scene: Scene; selectionService: ISelec
                 return;
             }
 
-            const sam = getOrCreateSmartAssetManager(scene);
+            const sam = GetOrCreateSmartAssetManager(scene);
 
             for (let i = 0; i < files.length; i++) {
                 const file = files[i];
@@ -295,7 +294,7 @@ const SmartAssetList: FunctionComponent<{ scene: Scene; selectionService: ISelec
 
     const onRemoveAsset = useCallback(
         async (key: string) => {
-            const sam = getOrCreateSmartAssetManager(scene);
+            const sam = GetOrCreateSmartAssetManager(scene);
             await RemoveSmartAssetAsync(sam, key);
             setStatus(`Removed: ${key}`);
         },
@@ -304,7 +303,7 @@ const SmartAssetList: FunctionComponent<{ scene: Scene; selectionService: ISelec
 
     const onReloadAsset = useCallback(
         async (key: string) => {
-            const sam = getOrCreateSmartAssetManager(scene);
+            const sam = GetOrCreateSmartAssetManager(scene);
             await ReloadSmartAssetAsync(sam, key);
             setStatus(`Reloaded: ${key}`);
         },
@@ -314,7 +313,7 @@ const SmartAssetList: FunctionComponent<{ scene: Scene; selectionService: ISelec
     const onSwapAsset = useCallback(
         (key: string) => {
             const doSwapAsync = async (file: File, fileHandle?: FileSystemFileHandle) => {
-                const sam = getOrCreateSmartAssetManager(scene);
+                const sam = GetOrCreateSmartAssetManager(scene);
                 const blobUrl = URL.createObjectURL(file);
                 const ext = _getExtension(file.name).toLowerCase();
                 const isTexture = [".png", ".jpg", ".jpeg", ".env", ".hdr", ".dds", ".ktx", ".ktx2"].includes(ext);
@@ -482,16 +481,6 @@ function _findFirstEntityForKey(key: string, scene: Scene, sam: SmartAssetManage
 
     for (const tex of scene.textures) {
         if (FindSmartAssetKeyForObject(sam, tex) === key) {
-            return tex;
-        }
-    }
-
-    // Fallback: if the texture was loaded but _objectToKeyMap lost track
-    // (e.g. after swap), try matching by the registered URL
-    const registeredUrl = ResolveSmartAsset(sam, key);
-    if (registeredUrl) {
-        const tex = scene.textures.find((t) => t.name === registeredUrl || t.name === key);
-        if (tex) {
             return tex;
         }
     }

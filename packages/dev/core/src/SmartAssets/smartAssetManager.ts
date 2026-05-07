@@ -14,8 +14,9 @@ import { GetExtensionFromUrl } from "../Misc/urlTools";
 import {
     type ISerializedSmartAssetEntry,
     type ISerializedSmartAssetMap,
-    SerializeSmartAssetMap,
     DeserializeSmartAssetMap,
+    IsAbsoluteOrSpecialUrl,
+    MakeRelative,
     ResolveAssetUrl,
     ReadJsonSourceAsync,
 } from "./smartAssetSerializer";
@@ -69,6 +70,7 @@ type SmartAssetManagerInternals = {
     textureKeys: Set<string>;
     refreshCallbacks: Map<string, () => Promise<File>>;
     blobUrls: Map<string, string>;
+    sceneDisposeObserver: ReturnType<Scene["onDisposeObservable"]["add"]> | null;
 };
 
 const SmartAssetManagerInternals = new WeakMap<SmartAssetManager, SmartAssetManagerInternals>();
@@ -104,7 +106,7 @@ export function CreateSmartAssetManager(scene: Scene): SmartAssetManager {
         onAssetNotFound: null,
     };
 
-    SmartAssetManagerInternals.set(manager, {
+    const internal: SmartAssetManagerInternals = {
         urls: new Map(),
         options: new Map(),
         containers: new Map(),
@@ -112,13 +114,19 @@ export function CreateSmartAssetManager(scene: Scene): SmartAssetManager {
         textureKeys: new Set(),
         refreshCallbacks: new Map(),
         blobUrls: new Map(),
-    });
+        sceneDisposeObserver: null,
+    };
+    SmartAssetManagerInternals.set(manager, internal);
 
     if (!scene.metadata) {
         scene.metadata = {};
     }
     scene.metadata[SMART_ASSET_MANAGER_KEY] = manager;
     InstallSmartAssetProtocolHook(manager);
+
+    // Auto-dispose when the scene is disposed so the manager doesn't outlive it.
+    internal.sceneDisposeObserver = scene.onDisposeObservable.add(() => DisposeSmartAssetManager(manager));
+
     SmartAssetManagerCreatedCallback?.(manager);
 
     return manager;
@@ -156,27 +164,6 @@ export function GetSmartAssetManagerCreatedCallback(): ((manager: SmartAssetMana
  */
 export function SetSmartAssetManagerCreatedCallback(callback: ((manager: SmartAssetManager) => void) | null): void {
     SmartAssetManagerCreatedCallback = callback;
-}
-
-/**
- * Returns true if the given key was loaded as a standalone texture.
- * @param managerOrScene - The smart asset manager state, or a scene that owns one.
- * @param key - The key to check.
- * @returns True if this key is a texture key.
- */
-export function IsSmartAssetTextureKey(managerOrScene: SmartAssetManagerOrScene, key: string): boolean {
-    const manager = ResolveSmartAssetManager(managerOrScene);
-    return GetSmartAssetInternals(manager).textureKeys.has(key);
-}
-
-/**
- * Marks a key as a standalone texture.
- * @param managerOrScene - The smart asset manager state, or a scene that owns one.
- * @param key - The key to mark.
- */
-export function MarkSmartAssetAsTextureKey(managerOrScene: SmartAssetManagerOrScene, key: string): void {
-    const manager = ResolveSmartAssetManager(managerOrScene);
-    GetSmartAssetInternals(manager).textureKeys.add(key);
 }
 
 /**
@@ -265,35 +252,6 @@ export function ResolveSmartAsset(managerOrScene: SmartAssetManagerOrScene, key:
 export function GetAllSmartAssets(managerOrScene: SmartAssetManagerOrScene): ReadonlyMap<string, string> {
     const manager = ResolveSmartAssetManager(managerOrScene);
     return GetSmartAssetInternals(manager).urls;
-}
-
-/**
- * Returns registration options for a smart asset key.
- * @param managerOrScene - The smart asset manager state, or a scene that owns one.
- * @param key - The key to look up.
- * @returns The registered options, or undefined if none were supplied.
- */
-export function GetSmartAssetRegistrationOptions(managerOrScene: SmartAssetManagerOrScene, key: string): Readonly<SmartAssetRegistrationOptions> | undefined {
-    const manager = ResolveSmartAssetManager(managerOrScene);
-    return GetSmartAssetInternals(manager).options.get(key);
-}
-
-/**
- * Changes the URL for an existing key. If the asset is loaded, triggers a reload.
- * @param managerOrScene - The smart asset manager state, or a scene that owns one.
- * @param key - The key to update.
- * @param newUrl - The new URL.
- * @returns A promise that resolves once any required reload has completed.
- */
-export async function SetSmartAssetUrlAsync(managerOrScene: SmartAssetManagerOrScene, key: string, newUrl: string): Promise<void> {
-    const manager = ResolveSmartAssetManager(managerOrScene);
-    const internal = GetSmartAssetInternals(manager);
-    RevokeManagedBlobUrl(internal, key, newUrl);
-    internal.urls.set(key, newUrl);
-    manager.onChangedObservable.notifyObservers();
-    if (internal.containers.has(key) || internal.textureKeys.has(key)) {
-        await ReloadSmartAssetAsync(manager, key);
-    }
 }
 
 /**
@@ -452,7 +410,7 @@ export async function ReloadSmartAssetAsync(managerOrScene: SmartAssetManagerOrS
         try {
             const freshFile = await refreshCallback();
             const blobUrl = URL.createObjectURL(freshFile);
-            RegisterSmartAssetBlobUrl(manager, key, blobUrl, { extension: GetExtensionFromUrl(freshFile.name) || internal.options.get(key)?.extension });
+            RegisterSmartAsset(manager, key, blobUrl, { extension: GetExtensionFromUrl(freshFile.name) || internal.options.get(key)?.extension });
         } catch (e) {
             Logger.Warn(`SmartAssetManager: Refresh callback failed for "${key}": ${e}`);
         }
@@ -483,13 +441,26 @@ export function FindSmartAssetKeyForObject(managerOrScene: SmartAssetManagerOrSc
 
 /**
  * Serializes the registry to a JSON-compatible document.
+ * If a baseUrl is provided, asset URLs are stored relative to it for portability.
  * @param managerOrScene - The smart asset manager state, or a scene that owns one.
  * @param baseUrl - Optional base URL for making asset paths relative.
  * @returns A serialized asset map document.
  */
 export function SerializeSmartAssetManagerMap(managerOrScene: SmartAssetManagerOrScene, baseUrl?: string): ISerializedSmartAssetMap {
     const manager = ResolveSmartAssetManager(managerOrScene);
-    return SerializeSmartAssetMap(manager, baseUrl);
+    const internal = GetSmartAssetInternals(manager);
+    const assets: Record<string, ISerializedSmartAssetEntry> = {};
+
+    for (const [key, registeredUrl] of Array.from(internal.urls)) {
+        let url = registeredUrl;
+        if (baseUrl && !IsAbsoluteOrSpecialUrl(url)) {
+            url = MakeRelative(url, baseUrl);
+        }
+        const options = internal.options.get(key);
+        assets[key] = { url, ...options, ...(internal.textureKeys.has(key) ? { type: "texture" } : {}) };
+    }
+
+    return { version: 1, assets };
 }
 
 /**
@@ -521,12 +492,11 @@ export async function LoadSmartAssetMapAsync(managerOrScene: SmartAssetManagerOr
 
 /**
  * Registers an externally loaded AssetContainer under a key.
- * @param managerOrScene - The smart asset manager state, or a scene that owns one.
+ * @param manager - The smart asset manager state.
  * @param key - The key to associate with the container.
  * @param container - The loaded AssetContainer.
  */
-export function TrackLoadedSmartAssetContainer(managerOrScene: SmartAssetManagerOrScene, key: string, container: AssetContainer): void {
-    const manager = ResolveSmartAssetManager(managerOrScene);
+function TrackLoadedSmartAssetContainer(manager: SmartAssetManager, key: string, container: AssetContainer): void {
     const internal = GetSmartAssetInternals(manager);
     internal.containers.set(key, container);
     TrackSmartAssetContainerObjects(manager, key, container);
@@ -535,11 +505,23 @@ export function TrackLoadedSmartAssetContainer(managerOrScene: SmartAssetManager
 
 /**
  * Disposes the manager, unloading all assets and restoring global protocol hooks if needed.
+ * Safe to call multiple times; subsequent calls are no-ops. Automatically invoked when the
+ * owning scene is disposed.
  * @param manager - The smart asset manager state.
  */
 export function DisposeSmartAssetManager(manager: SmartAssetManager): void {
-    const internal = GetSmartAssetInternals(manager);
-    for (const [, container] of Array.from(internal.containers)) {
+    const internal = SmartAssetManagerInternals.get(manager);
+    if (!internal) {
+        return;
+    }
+    SmartAssetManagerInternals.delete(manager);
+
+    if (internal.sceneDisposeObserver) {
+        manager.scene.onDisposeObservable.remove(internal.sceneDisposeObserver);
+        internal.sceneDisposeObserver = null;
+    }
+
+    for (const container of Array.from(internal.containers.values())) {
         container.removeAllFromScene();
         container.dispose();
     }
@@ -558,7 +540,6 @@ export function DisposeSmartAssetManager(manager: SmartAssetManager): void {
         URL.revokeObjectURL(blobUrl);
     }
     internal.blobUrls.clear();
-    internal.objectToKeyMap = new WeakMap();
 
     manager.onChangedObservable.clear();
 
@@ -575,10 +556,6 @@ function GetSmartAssetInternals(manager: SmartAssetManager): SmartAssetManagerIn
         throw new Error("SmartAssetManager: Unknown manager state.");
     }
     return internal;
-}
-
-function RegisterSmartAssetBlobUrl(manager: SmartAssetManager, key: string, blobUrl: string, options?: SmartAssetRegistrationOptions): void {
-    RegisterSmartAsset(manager, key, blobUrl, options);
 }
 
 function RevokeManagedBlobUrl(internal: SmartAssetManagerInternals, key: string, replacementUrl?: string): void {
@@ -605,7 +582,11 @@ function InstallSmartAssetProtocolHook(manager: SmartAssetManager): void {
         ActiveSmartAssetManagers.push(manager);
     }
     if (!SmartAssetProtocolHookInstalled) {
-        OriginalPreprocessUrl = FileToolsOptions.PreprocessUrl;
+        // Guard against a previously leaked hook so we never capture ourselves
+        // as the original preprocessor (which would cause infinite recursion).
+        if (FileToolsOptions.PreprocessUrl !== SmartAssetPreprocessUrl) {
+            OriginalPreprocessUrl = FileToolsOptions.PreprocessUrl;
+        }
         FileToolsOptions.PreprocessUrl = SmartAssetPreprocessUrl;
         SmartAssetProtocolHookInstalled = true;
     }
@@ -656,7 +637,7 @@ async function ResolveNotFoundAsync(manager: SmartAssetManager, key: string, exp
     }
     const blobUrl = URL.createObjectURL(resolution);
     const extensionHint = GetExtensionFromUrl(resolution.name) || undefined;
-    RegisterSmartAssetBlobUrl(manager, key, blobUrl, { extension: extensionHint });
+    RegisterSmartAsset(manager, key, blobUrl, { extension: extensionHint });
     return { url: blobUrl, extensionHint };
 }
 

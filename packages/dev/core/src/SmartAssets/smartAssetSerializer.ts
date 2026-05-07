@@ -1,4 +1,3 @@
-import { type SmartAssetManager, GetAllSmartAssets, GetSmartAssetRegistrationOptions, IsSmartAssetTextureKey } from "./smartAssetManager";
 import { Tools } from "../Misc/tools";
 
 /**
@@ -31,33 +30,6 @@ export interface ISerializedSmartAssetMap {
 
     /** Map of asset keys to their serialized entries. */
     readonly assets: Record<string, ISerializedSmartAssetEntry>;
-}
-
-/**
- * Serializes a SmartAssetManager's asset table to a JSON-compatible document.
- * If a baseUrl is provided, asset URLs are stored relative to it for portability.
- * @param manager - The SmartAssetManager to serialize.
- * @param baseUrl - Optional base URL for making asset paths relative.
- * @returns A serialized asset map document.
- */
-export function SerializeSmartAssetMap(manager: SmartAssetManager, baseUrl?: string): ISerializedSmartAssetMap {
-    const assets: Record<string, ISerializedSmartAssetEntry> = {};
-
-    for (const [key, registeredUrl] of Array.from(GetAllSmartAssets(manager))) {
-        let url = registeredUrl;
-
-        if (baseUrl && !IsAbsoluteOrSpecialUrl(url)) {
-            url = MakeRelative(url, baseUrl);
-        }
-
-        const options = GetSmartAssetRegistrationOptions(manager, key);
-        assets[key] = { url, ...options, ...(IsSmartAssetTextureKey(manager, key) ? { type: "texture" } : {}) };
-    }
-
-    return {
-        version: 1,
-        assets,
-    };
 }
 
 /**
@@ -96,6 +68,15 @@ export function DeserializeSmartAssetMap(data: unknown): ISerializedSmartAssetMa
 }
 
 /**
+ * Returns true for `data:`, `blob:`, or any URL with an absolute protocol.
+ * @param url - The URL to inspect.
+ * @returns Whether the URL is absolute or a data/blob URI.
+ */
+export function IsAbsoluteOrSpecialUrl(url: string): boolean {
+    return url.startsWith("data:") || url.startsWith("blob:") || Tools.IsAbsoluteUrl(url);
+}
+
+/**
  * Resolves an asset URL relative to a base URL.
  * Absolute URLs (http://, https://) and data URIs are returned as-is.
  * @param assetUrl - The asset URL to resolve.
@@ -106,19 +87,7 @@ export function ResolveAssetUrl(assetUrl: string, baseUrl: string): string {
     if (IsAbsoluteOrSpecialUrl(assetUrl)) {
         return assetUrl;
     }
-    // Ensure baseUrl ends with a folder separator
-    const folder = Tools.GetFolderPath(baseUrl);
-    return folder + assetUrl;
-}
-
-/**
- * Checks whether a URL is absolute (has a protocol) or a data/blob URI.
- * @param url - The URL to inspect.
- * @returns True for `data:`, `blob:`, or any URL with an absolute protocol.
- */
-
-function IsAbsoluteOrSpecialUrl(url: string): boolean {
-    return url.startsWith("data:") || url.startsWith("blob:") || Tools.IsAbsoluteUrl(url);
+    return Tools.GetFolderPath(baseUrl) + assetUrl;
 }
 
 /**
@@ -128,8 +97,7 @@ function IsAbsoluteOrSpecialUrl(url: string): boolean {
  * @param baseUrl - The base URL whose folder is the relativization root.
  * @returns The relativized URL, or the original if no common prefix exists.
  */
-
-function MakeRelative(url: string, baseUrl: string): string {
+export function MakeRelative(url: string, baseUrl: string): string {
     const folder = Tools.GetFolderPath(baseUrl);
     if (url.startsWith(folder)) {
         return url.substring(folder.length);

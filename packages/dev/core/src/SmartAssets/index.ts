@@ -1,4 +1,4 @@
-export * from "./smartAssetSerializer";
+export { type ISerializedSmartAssetEntry, type ISerializedSmartAssetMap } from "./smartAssetSerializer";
 export {
     type SmartAssetManager,
     type SmartAssetManagerOrScene,
@@ -8,15 +8,11 @@ export {
     GetOrCreateSmartAssetManager,
     GetSmartAssetManagerCreatedCallback,
     SetSmartAssetManagerCreatedCallback,
-    IsSmartAssetTextureKey,
-    MarkSmartAssetAsTextureKey,
     RegisterSmartAsset,
     SetSmartAssetRefreshCallback,
     RemoveSmartAssetAsync,
     ResolveSmartAsset,
     GetAllSmartAssets,
-    GetSmartAssetRegistrationOptions,
-    SetSmartAssetUrlAsync,
     LoadSmartAssetAsync,
     LoadAllSmartAssetsAsync,
     LoadSmartAssetTextureAsync,
@@ -25,6 +21,5 @@ export {
     FindSmartAssetKeyForObject,
     SerializeSmartAssetManagerMap,
     LoadSmartAssetMapAsync,
-    TrackLoadedSmartAssetContainer,
     DisposeSmartAssetManager,
 } from "./smartAssetManager";

@@ -1,10 +1,8 @@
 import { useCallback, useState, type FunctionComponent } from "react";
 
 import { type Scene } from "core/scene";
-import { GetAllSmartAssets, LoadSmartAssetMapAsync, RemoveSmartAssetAsync, SerializeSmartAssetManagerMap } from "core/SmartAssets/smartAssetManager";
+import { GetAllSmartAssets, GetOrCreateSmartAssetManager, LoadSmartAssetMapAsync, RemoveSmartAssetAsync, SerializeSmartAssetManagerMap } from "core/SmartAssets/smartAssetManager";
 import { Tools } from "core/Misc/tools";
-
-import { getOrCreateSmartAssetManager } from "../../smartAssetHandler";
 
 import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
 import { FileUploadLine } from "shared-ui-components/fluent/hoc/fileUploadLine";
@@ -36,7 +34,7 @@ export const SmartAssetProjectTools: FunctionComponent<{ scene: Scene }> = (prop
     const styles = useStyles();
     const isBusy = busyMessage !== "";
 
-    const getSmartAssetManager = useCallback(() => getOrCreateSmartAssetManager(scene), [scene]);
+    const getSmartAssetManager = useCallback(() => GetOrCreateSmartAssetManager(scene), [scene]);
 
     const onSaveAssetMap = useCallback(async () => {
         if (isBusy) {

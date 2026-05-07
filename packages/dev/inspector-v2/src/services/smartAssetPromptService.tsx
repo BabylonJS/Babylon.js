@@ -1,6 +1,6 @@
 import { type ChangeEvent, type FunctionComponent, useCallback, useEffect, useRef, useState } from "react";
 
-import { Body1, Caption1, makeStyles } from "@fluentui/react-components";
+import { Body1, Caption1, makeStyles, tokens } from "@fluentui/react-components";
 import {
     GetSmartAssetManagerCreatedCallback,
     GetSmartAssetManagerFromScene,
@@ -24,6 +24,23 @@ type PendingMissingAsset = {
 const useStyles = makeStyles({
     hiddenInput: {
         display: "none",
+    },
+    body: {
+        display: "flex",
+        flexDirection: "column",
+        gap: tokens.spacingVerticalS,
+    },
+    keyRow: {
+        display: "flex",
+        gap: tokens.spacingHorizontalXS,
+    },
+    keyLabel: {
+        fontWeight: tokens.fontWeightSemibold,
+    },
+    url: {
+        fontFamily: tokens.fontFamilyMonospace,
+        wordBreak: "break-all",
+        opacity: 0.8,
     },
 });
 
@@ -88,16 +105,23 @@ const SmartAssetMissingPromptHost: FunctionComponent = () => {
                 { label: "Locate File...", appearance: "primary", onClick: onLocate },
             ]}
         >
-            <Body1>Key: {pendingMissingAsset.keyName}</Body1>
-            <Caption1>{shortUrl}</Caption1>
-            <Body1>Locate the file or click Skip to continue without it.</Body1>
-            <input
-                ref={inputRef}
-                type="file"
-                accept=".glb,.gltf,.babylon,.obj,.png,.jpg,.jpeg,.env,.hdr,.dds,.ktx,.ktx2"
-                className={classes.hiddenInput}
-                onChange={onFileSelected}
-            />
+            <div className={classes.body}>
+                <div className={classes.keyRow}>
+                    <Body1 className={classes.keyLabel}>Key:</Body1>
+                    <Body1>{pendingMissingAsset.keyName}</Body1>
+                </div>
+                <Caption1 className={classes.url} title={pendingMissingAsset.expectedUrl}>
+                    {shortUrl}
+                </Caption1>
+                <Body1>Locate the file or click Skip to continue without it.</Body1>
+                <input
+                    ref={inputRef}
+                    type="file"
+                    accept=".glb,.gltf,.babylon,.obj,.png,.jpg,.jpeg,.env,.hdr,.dds,.ktx,.ktx2"
+                    className={classes.hiddenInput}
+                    onChange={onFileSelected}
+                />
+            </div>
         </Dialog>
     );
 };

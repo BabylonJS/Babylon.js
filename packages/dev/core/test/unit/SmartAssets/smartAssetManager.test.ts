@@ -15,7 +15,6 @@ import {
     ResolveSmartAsset,
     SerializeSmartAssetManagerMap,
     SetSmartAssetManagerCreatedCallback,
-    SetSmartAssetUrlAsync,
     UnloadSmartAssetAsync,
 } from "core/SmartAssets/smartAssetManager";
 import { FileToolsOptions } from "core/Misc/fileTools";
@@ -183,11 +182,13 @@ describe("SmartAssetManager", () => {
         });
 
         it("should restore the original URL preprocessor after all managers are disposed", () => {
-            const originalPreprocessUrl = FileToolsOptions.PreprocessUrl;
             const customPreprocessUrl = vi.fn((url: string) => `custom:${url}`);
 
             const scene2 = new Scene(engine);
             DisposeSmartAssetManager(manager);
+            // Capture the truly-original preprocessor with the hook uninstalled,
+            // not whatever wrapper happens to be installed at the start of the test.
+            const originalPreprocessUrl = FileToolsOptions.PreprocessUrl;
             FileToolsOptions.PreprocessUrl = customPreprocessUrl;
 
             const manager1 = CreateSmartAssetManager(scene);
@@ -225,6 +226,35 @@ describe("SmartAssetManager", () => {
             SetSmartAssetManagerCreatedCallback(null);
             DisposeSmartAssetManager(manager2);
             scene2.dispose();
+        });
+    });
+
+    // ── Auto-disposal on scene disposal ──
+
+    describe("scene disposal", () => {
+        it("should auto-dispose the manager when its scene is disposed", () => {
+            const scene2 = new Scene(engine);
+            const manager2 = CreateSmartAssetManager(scene2);
+            RegisterSmartAsset(manager2, "chair", "chair.glb");
+
+            expect(GetSmartAssetManagerFromScene(scene2)).toBe(manager2);
+
+            scene2.dispose();
+
+            // After scene disposal the manager is fully torn down: a second
+            // explicit dispose should be a safe no-op and the protocol hook
+            // should no longer route this key.
+            expect(() => DisposeSmartAssetManager(manager2)).not.toThrow();
+            expect(FileToolsOptions.PreprocessUrl("asset://chair")).toBe("asset://chair");
+        });
+
+        it("should be safe to explicitly dispose before the scene is disposed", () => {
+            const scene2 = new Scene(engine);
+            const manager2 = CreateSmartAssetManager(scene2);
+
+            DisposeSmartAssetManager(manager2);
+            // Scene disposal should not re-run cleanup or throw.
+            expect(() => scene2.dispose()).not.toThrow();
         });
     });
 
@@ -335,26 +365,6 @@ describe("SmartAssetManager", () => {
             await LoadSmartAssetAsync(manager, "chair", "models/chair.glb");
             await UnloadSmartAssetAsync(manager, "chair");
             expect(ResolveSmartAsset(manager, "chair")).toBe("models/chair.glb");
-        });
-    });
-
-    // ── URL Swap Tests ──
-
-    describe("setUrl", () => {
-        it("should notify when a smart asset URL changes", async () => {
-            RegisterSmartAsset(manager, "chair", "chair_v1.glb");
-            const onChanged = vi.fn();
-            manager.onChangedObservable.add(onChanged);
-
-            await SetSmartAssetUrlAsync(manager, "chair", "chair_v2.glb");
-
-            expect(onChanged).toHaveBeenCalledTimes(1);
-        });
-
-        it("should update the resolved URL", async () => {
-            RegisterSmartAsset(manager, "chair", "chair_v1.glb");
-            await SetSmartAssetUrlAsync(manager, "chair", "chair_v2.glb");
-            expect(ResolveSmartAsset(manager, "chair")).toBe("chair_v2.glb");
         });
     });
 
