@@ -16,9 +16,6 @@ import { type FlowGraphBlock } from "core/FlowGraph/flowGraphBlock";
 import { FlowGraphExecutionBlock } from "core/FlowGraph/flowGraphExecutionBlock";
 import { ParseFlowGraph } from "core/FlowGraph/flowGraphParser";
 import { FlowGraphCoordinator } from "core/FlowGraph/flowGraphCoordinator";
-import { SplitContainer } from "shared-ui-components/split/splitContainer";
-import { Splitter } from "shared-ui-components/split/splitter";
-import { ControlledSize, SplitDirection } from "shared-ui-components/split/splitContext";
 import { GraphControlsComponent } from "./components/graphControls/graphControlsComponent";
 import { VariablesPanelComponent } from "./components/variables/variablesPanelComponent";
 import { HistoryStack } from "shared-ui-components/historyStack";
@@ -31,7 +28,8 @@ import { GraphTabBarComponent } from "./components/graphTabBar/graphTabBarCompon
 import { ShowToast } from "./components/toast/toastComponent";
 import { HowToUseDialogComponent } from "./components/howToUse/howToUseDialogComponent";
 import { AllCompositeTemplates, type ICompositeTemplate } from "./compositeTemplates";
-import { Menu, MenuDivider, MenuItem, MenuList, MenuPopover, MenuTrigger, Title3, makeStaticStyles } from "@fluentui/react-components";
+import { Divider, makeStyles, Menu, MenuDivider, MenuItem, MenuList, MenuPopover, MenuTrigger, Title3, tokens, makeStaticStyles } from "@fluentui/react-components";
+import { useResizeHandle } from "@fluentui-contrib/react-resize-handle";
 import { createVirtualElementFromClick, type PositioningVirtualElement } from "@fluentui/react-positioning";
 
 /**
@@ -81,16 +79,20 @@ const useFlowGraphRootStyles = makeStaticStyles(`
 #flow-graph-editor-graph-root ~ .wait-screen.hidden {
     visibility: hidden;
 }
-#flow-graph-editor-graph-root .diagram-container {
-    background: #3a4a4f;
+#flow-graph-editor-graph-root {
+    display: flex;
+    flex-direction: column;
     width: 100%;
     height: 100%;
+    overflow: hidden;
+    background: #3a4a4f;
 }
 #flow-graph-editor-graph-root .diagram-canvas-pane {
     display: flex;
     flex-direction: column;
     width: 100%;
-    height: 100%;
+    flex: 1;
+    min-height: 0;
     overflow: hidden;
 }
 #flow-graph-editor-graph-root .diagram-canvas-pane > :last-child {
@@ -127,6 +129,52 @@ const useFlowGraphRootStyles = makeStaticStyles(`
 const EditorStaticStyles: React.FC = () => {
     useFlowGraphRootStyles();
     return null;
+};
+
+const LogHeightAdjustCSSVar = "--flow-graph-log-height-adjust";
+
+const useLogResizeStyles = makeStyles({
+    divider: {
+        flex: "0 0 auto",
+        margin: "0",
+        minHeight: tokens.spacingVerticalM,
+        cursor: "ns-resize",
+        alignItems: "end",
+    },
+    logPane: {
+        flex: "0 0 auto",
+        overflow: "hidden",
+        minHeight: 0,
+    },
+});
+
+/**
+ * Renders the resize handle (Fluent `<Divider>`) and the resizable log container as siblings.
+ *
+ * This only exists as a separate function component because {@link useResizeHandle} is a React
+ * hook and cannot be called from a class component's render method. Once {@link GraphEditor}
+ * is converted to a function component, this can be deleted: the divider and the resizable
+ * div can become inline siblings of the canvas pane in `GraphEditor`'s render, with
+ * `useResizeHandle` called directly in `GraphEditor` itself.
+ * @param props The component props.
+ * @returns A fragment containing the divider and the resizable log container.
+ */
+const LogResizeRegion: React.FC<React.PropsWithChildren> = ({ children }) => {
+    const classes = useLogResizeStyles();
+    const { elementRef, handleRef } = useResizeHandle({
+        growDirection: "up",
+        relative: true,
+        variableName: LogHeightAdjustCSSVar,
+        variableTarget: "element",
+    });
+    return (
+        <>
+            <Divider ref={handleRef} className={classes.divider} />
+            <div ref={elementRef} className={classes.logPane} style={{ height: `clamp(40px, calc(120px + var(${LogHeightAdjustCSSVar}, 0px)), 500px)` }}>
+                {children}
+            </div>
+        </>
+    );
 };
 
 /**
@@ -1300,11 +1348,10 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         return (
             <>
                 <EditorStaticStyles />
-                <SplitContainer
+                <div
                     id="flow-graph-editor-graph-root"
-                    direction={SplitDirection.Vertical}
                     className="diagram-container"
-                    containerRef={this._diagramContainerRef}
+                    ref={this._diagramContainerRef}
                     onPointerMove={(evt) => {
                         this._mouseLocationX = evt.pageX;
                         this._mouseLocationY = evt.pageY;
@@ -1368,9 +1415,10 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                             }}
                         />
                     </div>
-                    <Splitter size={8} minSize={40} initialSize={120} maxSize={500} controlledSide={ControlledSize.Second} />
-                    <LogComponent globalState={this.props.globalState} />
-                </SplitContainer>
+                    <LogResizeRegion>
+                        <LogComponent globalState={this.props.globalState} />
+                    </LogResizeRegion>
+                </div>
                 {this.state.helpTopicId !== null && (
                     <HelpDialogComponent initialTopicId={this.state.helpTopicId ?? undefined} onClose={() => this.setState({ helpTopicId: null })} />
                 )}
