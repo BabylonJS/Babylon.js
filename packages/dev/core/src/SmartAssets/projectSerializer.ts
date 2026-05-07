@@ -1,6 +1,15 @@
-import { type SmartAssetManager } from "./smartAssetManager";
-import { type OverrideManager } from "./overrideManager";
-import { type ISerializedSmartAssetMap, SerializeSmartAssetMap, DeserializeSmartAssetMap, ResolveAssetUrl, ReadJsonSourceAsync } from "./smartAssetSerializer";
+import {
+    type SmartAssetManager,
+    FindSmartAssetKeyForObject,
+    GetAllSmartAssets,
+    LoadAllSmartAssetsAsync,
+    LoadSmartAssetAsync,
+    RegisterSmartAsset,
+    RemoveSmartAssetAsync,
+    SerializeSmartAssetManagerMap,
+} from "./smartAssetManager";
+import { type OverrideManager, ClearOverrides, DeserializeAndApplyOverrides, SerializeOverrides } from "./overrideManager";
+import { type ISerializedSmartAssetMap, DeserializeSmartAssetMap, ResolveAssetUrl, ReadJsonSourceAsync } from "./smartAssetSerializer";
 import { type IOverrideEntry } from "./overrideEntry";
 import { type Scene } from "../scene";
 
@@ -53,8 +62,8 @@ export interface ISerializedProject {
  * @returns A project bundle containing the JSON document and optional companion file.
  */
 export function SerializeProject(smartAssetManager: SmartAssetManager, overrideManager: OverrideManager, baseUrl?: string): IProjectBundle {
-    const assetMap = SerializeSmartAssetMap(smartAssetManager, baseUrl);
-    const overrides = overrideManager.serialize();
+    const assetMap = SerializeSmartAssetManagerMap(smartAssetManager, baseUrl);
+    const overrides = SerializeOverrides(overrideManager);
     const scene = smartAssetManager.scene;
 
     // Build a minimal .babylon JSON with only user-created objects
@@ -110,11 +119,11 @@ export async function LoadProjectAsync(
     const scene = smartAssetManager.scene;
 
     // Clear existing state so we load fresh from the project file
-    for (const existingKey of Array.from(smartAssetManager.getAll().keys())) {
+    for (const existingKey of Array.from(GetAllSmartAssets(smartAssetManager).keys())) {
         // eslint-disable-next-line no-await-in-loop
-        await smartAssetManager.remove(existingKey);
+        await RemoveSmartAssetAsync(smartAssetManager, existingKey);
     }
-    overrideManager.clearOverrides();
+    ClearOverrides(overrideManager);
 
     // Clear asset-loaded meshes, animation groups, and materials.
     // Preserve cameras and lights — they are scene furniture managed by the host.
@@ -137,29 +146,22 @@ export async function LoadProjectAsync(
             continue;
         }
         const resolved = resolvedRootUrl ? ResolveAssetUrl(entry.url, resolvedRootUrl) : entry.url;
-        smartAssetManager.register(key, resolved);
-        if (entry.type === "texture") {
-            smartAssetManager.markAsTextureKey(key);
-        }
+        RegisterSmartAsset(smartAssetManager, key, resolved, { type: entry.type });
     }
 
-    await smartAssetManager.loadAllAsync();
+    await LoadAllSmartAssetsAsync(smartAssetManager);
 
     // Now load the companion .babylon — textures are ready so asset:// refs resolve.
-    // Use pluginExtension hint because blob URLs have no file extension.
+    // Pass the .babylon extension hint because blob URLs have no file extension.
     if (hasCompanion) {
         const companionEntry = doc.assets[PROJECT_LOCALS_KEY];
         const companionUrl = resolvedRootUrl ? ResolveAssetUrl(companionEntry.url, resolvedRootUrl) : companionEntry.url;
-        smartAssetManager.register(PROJECT_LOCALS_KEY, companionUrl);
-        const { LoadAssetContainerAsync } = await import("../Loading/sceneLoader");
-        const container = await LoadAssetContainerAsync(companionUrl, scene, { pluginExtension: ".babylon" });
-        container.addAllToScene();
-        smartAssetManager.trackLoadedContainer(PROJECT_LOCALS_KEY, container);
+        await LoadSmartAssetAsync(smartAssetManager, PROJECT_LOCALS_KEY, companionUrl, { extension: ".babylon" });
     }
 
     // Apply overrides
     if (doc.overrides.length > 0) {
-        overrideManager.deserializeAndApply(doc.overrides);
+        DeserializeAndApplyOverrides(overrideManager, doc.overrides);
     }
 }
 
@@ -202,7 +204,7 @@ export function DeserializeProject(data: unknown): ISerializedProject {
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 function _isLocalObject(obj: object, sam: SmartAssetManager): boolean {
-    const key = sam.findKeyForObject(obj as any);
+    const key = FindSmartAssetKeyForObject(sam, obj as any);
     return key === undefined || key === PROJECT_LOCALS_KEY;
 }
 
@@ -262,7 +264,7 @@ function _rewriteTextureUrls(serializedMaterial: Record<string, unknown>, sam: S
         }
 
         for (const tex of scene.textures) {
-            const key = sam.findKeyForObject(tex);
+            const key = FindSmartAssetKeyForObject(sam, tex);
             if (key && (tex.name === texName || (tex as any).url === texName || tex.name === texUrl || (tex as any).url === texUrl)) {
                 const assetUrl = `asset://${key}`;
                 texData.name = assetUrl;
