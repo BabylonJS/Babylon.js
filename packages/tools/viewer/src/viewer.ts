@@ -34,7 +34,6 @@ import { PointerEventTypes } from "core/Events/pointerEvents";
 import { DirectionalLight } from "core/Lights/directionalLight";
 import { HemisphericLight } from "core/Lights/hemisphericLight";
 import { LoadAssetContainerAsync } from "core/Loading/sceneLoader";
-import { type Material } from "core/Materials/material";
 import { BackgroundMaterial } from "core/Materials/Background/backgroundMaterial";
 import { ImageProcessingConfiguration } from "core/Materials/imageProcessingConfiguration";
 import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
@@ -474,11 +473,6 @@ export type ViewerOptions = Partial<{
      * Called once when the viewer is initialized and provides viewer details that can be used for advanced customization.
      */
     onInitialized: (details: Readonly<ViewerDetails>) => void;
-
-    /**
-     * Called after each material is loaded. Use this to apply default material settings (e.g. quality parameters) to every material loaded by this viewer.
-     */
-    onMaterialLoaded: (material: Material) => void;
 
     /**
      * The default clear color of the scene.
@@ -1657,17 +1651,6 @@ export class Viewer implements IDisposable {
         };
         delete options?.onProgress;
 
-        const viewerOnMaterialLoaded = this._options?.onMaterialLoaded;
-        const originalOnMaterialLoaded = options?.pluginOptions?.gltf?.onMaterialLoaded;
-        const onMaterialLoaded =
-            viewerOnMaterialLoaded || originalOnMaterialLoaded
-                ? (material: Material) => {
-                      viewerOnMaterialLoaded?.(material);
-                      originalOnMaterialLoaded?.(material);
-                  }
-                : undefined;
-        delete options?.pluginOptions?.gltf?.onMaterialLoaded;
-
         let materialVariantsController: Nullable<MaterialVariantsController> = null;
         const originalOnMaterialVariantsLoaded = options?.pluginOptions?.gltf?.extensionOptions?.KHR_materials_variants?.onLoaded;
         const onMaterialVariantsLoaded: typeof originalOnMaterialVariantsLoaded = (controller) => {
@@ -1704,7 +1687,6 @@ export class Viewer implements IDisposable {
                     // https://doc.babylonjs.com/setup/support/3D_commerce_certif
                     transparencyAsCoverage: true,
                     useOpenPBR: this._options?.useOpenPBR ?? DefaultViewerOptions.useOpenPBR,
-                    onMaterialLoaded,
                     extensionOptions: {
                         // eslint-disable-next-line @typescript-eslint/naming-convention
                         KHR_materials_variants: {
