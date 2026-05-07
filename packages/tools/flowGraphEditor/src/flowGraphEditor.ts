@@ -99,7 +99,7 @@ export class FlowGraphEditor {
                 ToastBridgeServiceDefinition,
                 ToolbarServiceDefinition,
             ],
-            toolbarMode: "compact",
+            toolbarMode: "full",
             showThemeSelector: true,
         });
 

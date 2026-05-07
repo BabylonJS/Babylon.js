@@ -60,7 +60,7 @@ const useStyles = makeStyles({
         display: "flex",
         alignItems: "center",
         height: "26px",
-        padding: `0 ${tokens.spacingHorizontalS}`,
+        padding: `0 ${tokens.spacingHorizontalXS}`,
         gap: tokens.spacingHorizontalXS,
         background: tokens.colorNeutralBackground2,
     },

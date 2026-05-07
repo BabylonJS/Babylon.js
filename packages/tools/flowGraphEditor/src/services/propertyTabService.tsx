@@ -4,8 +4,9 @@ import { type ServiceDefinition } from "shared-ui-components/modularTool/modular
 import { type IShellService, ShellServiceIdentity } from "shared-ui-components/modularTool/services/shellService";
 
 import { PropertyTabComponent } from "../components/propertyTab/propertyTabComponent";
-import { BabylonLogo } from "../icons";
 import { type IGlobalStateService, GlobalStateServiceIdentity } from "./globalStateService";
+
+import { DocumentTextRegular } from "@fluentui/react-icons";
 
 /**
  * Phase 2 (passthrough) side-pane service that hosts the legacy `PropertyTabComponent` in
@@ -21,8 +22,8 @@ export const PropertyTabServiceDefinition: ServiceDefinition<[], [IShellService,
     factory: (shellService, globalStateService) => {
         const registration = shellService.addSidePane({
             key: "FlowGraphProperties",
-            title: "Flow Graph Editor",
-            icon: BabylonLogo,
+            title: "Properties",
+            icon: DocumentTextRegular,
             horizontalLocation: "right",
             verticalLocation: "top",
             teachingMoment: false,

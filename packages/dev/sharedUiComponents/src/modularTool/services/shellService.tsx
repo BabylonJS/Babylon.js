@@ -426,6 +426,7 @@ const useStyles = makeStyles({
     paneCollapseButton: {
         padding: `0 0 0 ${tokens.spacingHorizontalXS}`,
         borderBottom: `1px solid ${tokens.colorNeutralStroke2}`,
+        backgroundColor: tokens.colorNeutralBackground2,
     },
     paneCollapseButtonWithBorder: {
         borderLeft: `1px solid ${tokens.colorNeutralStroke2}`,

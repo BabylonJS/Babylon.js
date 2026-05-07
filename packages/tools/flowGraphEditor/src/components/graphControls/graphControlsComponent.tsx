@@ -37,13 +37,7 @@ const useStyles = makeStyles({
         // Use rowGap so that when items wrap onto a second row the rows are spaced sensibly.
         columnGap: tokens.spacingHorizontalXS,
         rowGap: tokens.spacingVerticalXXS,
-        padding: `${tokens.spacingVerticalXS} ${tokens.spacingHorizontalS}`,
-        background: tokens.colorNeutralBackground3,
-        borderBottom: `1px solid ${tokens.colorNeutralStroke2}`,
         flexShrink: 0,
-        // Use minHeight (not height) so the bar can grow vertically when controls wrap onto
-        // additional rows. Without this, wrapped controls would be clipped by the fixed height.
-        minHeight: "36px",
         boxSizing: "border-box",
         flexWrap: "wrap",
     },
