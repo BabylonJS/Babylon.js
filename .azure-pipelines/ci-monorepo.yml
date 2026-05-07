@@ -371,6 +371,9 @@ jobs:
           - script: npx --yes dpdm -T --no-tree ./packages/dev/core/src/**/*
             displayName: "Circular dependencies"
 
+          - script: npm run check:treeshaking
+            displayName: "Tree-shaking verification"
+
     # ============================================================================
     # TYPEDOC CHECK
     # Only runs on PRs (not on master branch)
