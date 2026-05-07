@@ -1,6 +1,6 @@
 import { type IFlowGraphBlockConfiguration } from "core/FlowGraph/flowGraphBlock";
 import { FlowGraphUnaryOperationBlock } from "../flowGraphUnaryOperationBlock";
-import { RichTypeBoolean, RichTypeFlowGraphInteger, RichTypeNumber } from "core/FlowGraph/flowGraphRichTypes";
+import { RichTypeAny, RichTypeBoolean, RichTypeFlowGraphInteger, RichTypeNumber } from "core/FlowGraph/flowGraphRichTypes";
 import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
 import { RegisterClass } from "core/Misc/typeStore";
 import { FlowGraphInteger } from "core/FlowGraph/CustomTypes/flowGraphInteger";
@@ -51,10 +51,19 @@ RegisterClass(FlowGraphBlockNames.IntToBoolean, FlowGraphIntToBoolean);
 
 /**
  * A block that converts an integer to a float.
+ *
+ * KHR_interactivity ``type/intToFloat`` is spec-defined to take an ``int``
+ * input. The Babylon FlowGraph runtime represents ``int`` as
+ * ``FlowGraphInteger`` (a wrapper carrying ``.value``). Accept both shapes —
+ * a plain JavaScript ``number`` and a ``FlowGraphInteger`` — so accessors that
+ * return a raw integer (e.g. the ``/nodes/{}/children.length`` pointer/get
+ * accessor in ``objectModelMapping.ts``) interoperate with downstream graph
+ * blocks without producing ``undefined`` (which then poisons math chains
+ * with NaN).
  */
-export class FlowGraphIntToFloat extends FlowGraphUnaryOperationBlock<FlowGraphInteger, number> {
+export class FlowGraphIntToFloat extends FlowGraphUnaryOperationBlock<FlowGraphInteger | number, number> {
     constructor(config?: IFlowGraphBlockConfiguration) {
-        super(RichTypeFlowGraphInteger, RichTypeNumber, (a) => a.value, FlowGraphBlockNames.IntToFloat, config);
+        super(RichTypeAny, RichTypeNumber, (a) => (typeof a === "number" ? a : a?.value), FlowGraphBlockNames.IntToFloat, config);
     }
 }
 
