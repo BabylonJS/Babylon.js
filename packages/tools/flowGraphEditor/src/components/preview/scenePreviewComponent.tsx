@@ -168,8 +168,30 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
             this._handleDrop(e);
         });
 
-        // Create a default scene so the editor is usable without a snippet
-        if (!this.props.globalState.sceneContext && !this.props.globalState.snippetId) {
+        // Reconcile the existing scene (if any) with the freshly mounted canvas. The component can be
+        // re-mounted while a sceneContext already exists — for example when the side pane is undocked
+        // into a popup window and then re-docked back into the main window. Each mount creates a new
+        // <canvas> DOM element, but the Engine on the existing sceneContext is bound to the previous
+        // canvas, and a WebGL context cannot be transferred between canvas elements. Detect the
+        // mismatch and rebuild against the new canvas; if a snippet is already loaded, re-run it,
+        // otherwise create the default scene. Loses in-flight preview interaction state but preserves
+        // the editor's snippet selection.
+        const ctx = this.props.globalState.sceneContext;
+        const canvas = this._canvasRef.current;
+        const canvasMismatch = !!ctx && !!canvas && ctx.engine.getRenderingCanvas() !== canvas;
+        const pendingSnippetId = this.props.globalState.snippetId;
+        if (canvasMismatch) {
+            this._disposeCurrentScene();
+            if (pendingSnippetId) {
+                this.setState({ snippetId: pendingSnippetId }, () => {
+                    void this.loadSnippetAsync();
+                });
+            } else {
+                void this._createDefaultSceneAsync();
+            }
+        } else if (!ctx && !pendingSnippetId) {
+            // First mount with no prior state — create a default scene so the editor is usable
+            // without a snippet.
             void this._createDefaultSceneAsync();
         }
     }
