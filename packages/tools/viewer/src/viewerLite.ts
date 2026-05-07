@@ -234,10 +234,11 @@ export class Viewer extends ViewerBase implements IViewer {
         // Auto-orbit, environment config, animation speed, and hot spots are initialized
         // inline at the field declarations.
 
-        // Post processing — apply user-provided overrides to the scene's image processing
-        if (_options?.postProcessing) {
-            this._applyPostProcessing(_options.postProcessing);
-        }
+        // Post processing — apply the initial Viewer state (loaded from options at field init
+        // time above) to `scene.imageProcessing`, which still holds Lite's defaults until we
+        // push our values. We bypass the public setter because the fields are already at the
+        // target values, so the setter would dedup and skip the scene apply.
+        this._applyImageProcessingToScene();
 
         // Shadow config — route through updateShadows so unsupported "high" is normalized to "normal"
         if (_options?.shadowConfig?.quality) {
@@ -574,6 +575,12 @@ export class Viewer extends ViewerBase implements IViewer {
                 this._scene.envRotationY = this._environmentRotation;
             }
 
+            // Lite's env loader unconditionally overwrites `scene.imageProcessing` (toneMappingEnabled,
+            // exposure, contrast) with its own defaults — clobbering whatever the Viewer set during
+            // construction or via subsequent `postProcessing` setter calls. Re-push our committed
+            // values so the user-facing post-processing state survives env loads.
+            this._applyImageProcessingToScene();
+
             // Re-register the scene so that the env loader's deferred builders are processed
             // and the new skybox/ground renderables land in the draw buckets. Lite only fills
             // `_opaqueRenderables` etc. at registerScene() time.
@@ -604,33 +611,50 @@ export class Viewer extends ViewerBase implements IViewer {
     }
 
     public set postProcessing(value: Partial<Readonly<PostProcessing>>) {
-        this._applyPostProcessing(value);
-        this.onPostProcessingChanged.notifyObservers();
-    }
-
-    private _applyPostProcessing(value: Partial<Readonly<PostProcessing>>): void {
-        if (value.toneMapping !== undefined) {
+        let changed = false;
+        if (value.toneMapping !== undefined && value.toneMapping !== this._toneMapping) {
             this._toneMapping = value.toneMapping;
-            const liteType = toneMappingToLiteType(value.toneMapping);
-            this._scene.imageProcessing.toneMappingEnabled = liteType !== undefined;
-            if (liteType !== undefined) {
-                this._scene.imageProcessing.toneMappingType = liteType;
-            }
+            changed = true;
         }
-        if (value.exposure !== undefined) {
+        if (value.exposure !== undefined && value.exposure !== this._exposure) {
             this._exposure = value.exposure;
-            this._scene.imageProcessing.exposure = value.exposure;
+            changed = true;
         }
-        if (value.contrast !== undefined) {
+        if (value.contrast !== undefined && value.contrast !== this._contrast) {
             this._contrast = value.contrast;
-            this._scene.imageProcessing.contrast = value.contrast;
+            changed = true;
         }
-        if (value.ssao !== undefined) {
+        if (value.ssao !== undefined && value.ssao !== this._ssaoOption) {
             this._ssaoOption = value.ssao;
             if (value.ssao !== "disabled") {
                 Logger.Warn("Viewer: SSAO is not supported by Babylon Lite.");
             }
+            changed = true;
         }
+        if (changed) {
+            this._applyImageProcessingToScene();
+            this.onPostProcessingChanged.notifyObservers();
+        }
+    }
+
+    /**
+     * Push the Viewer's committed post-processing state (`_toneMapping`, `_exposure`,
+     * `_contrast`) into `scene.imageProcessing`. Called from the `postProcessing` setter
+     * whenever the user-facing state actually changes, and again after env loads (Lite's env
+     * loader overwrites `scene.imageProcessing` with its own defaults, so we have to re-push
+     * our values).
+     *
+     * SSAO has no `scene.imageProcessing` slot in Lite — it's tracked in `_ssaoOption` but
+     * doesn't render anything yet (Lite has no SSAO support).
+     */
+    private _applyImageProcessingToScene(): void {
+        const liteType = toneMappingToLiteType(this._toneMapping);
+        this._scene.imageProcessing.toneMappingEnabled = liteType !== undefined;
+        if (liteType !== undefined) {
+            this._scene.imageProcessing.toneMappingType = liteType;
+        }
+        this._scene.imageProcessing.exposure = this._exposure;
+        this._scene.imageProcessing.contrast = this._contrast;
     }
 
     // ── Shadows ──
@@ -1213,13 +1237,14 @@ export class Viewer extends ViewerBase implements IViewer {
 
     /** @internal */
     protected override _resetPostProcessing(): void {
-        this._applyPostProcessing({
+        // Route through the public setter so we get free dedup + observable-notify-on-change
+        // semantics, matching what the user-facing API does.
+        this.postProcessing = {
             toneMapping: this._options?.postProcessing?.toneMapping ?? DefaultViewerOptions.postProcessing.toneMapping,
             contrast: this._options?.postProcessing?.contrast ?? DefaultViewerOptions.postProcessing.contrast,
             exposure: this._options?.postProcessing?.exposure ?? DefaultViewerOptions.postProcessing.exposure,
             ssao: this._options?.postProcessing?.ssao ?? DefaultViewerOptions.postProcessing.ssao,
-        });
-        this.onPostProcessingChanged.notifyObservers();
+        };
     }
 
     /**
