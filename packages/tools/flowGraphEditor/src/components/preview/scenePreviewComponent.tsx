@@ -10,7 +10,7 @@ import { SceneContext } from "../../sceneContext";
 import { SerializationTools } from "../../serializationTools";
 import { LogEntry } from "../log/logComponent";
 import { LoadSnippet, type IPlaygroundSnippetResult } from "@tools/snippet-loader";
-import { Body1, Button, Input, makeStyles, tokens } from "@fluentui/react-components";
+import { Body1, Button, Input, Tooltip, makeStyles, tokens } from "@fluentui/react-components";
 import { CheckmarkRegular } from "@fluentui/react-icons";
 
 interface IScenePreviewComponentProps {
@@ -735,9 +735,11 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
                     {ctx && (
                         <div className={classes.status}>
                             <Body1 className={classes.statusCount}>{sceneObjectCount}</Body1> objects in scene context
-                            <Body1 className={classes.statusWired} title="Flow graph execution contexts will resolve asset references from this scene">
-                                <CheckmarkRegular /> wired to flow graph
-                            </Body1>
+                            <Tooltip content="Flow graph execution contexts will resolve asset references from this scene" relationship="description">
+                                <Body1 className={classes.statusWired}>
+                                    <CheckmarkRegular /> wired to flow graph
+                                </Body1>
+                            </Tooltip>
                         </div>
                     )}
                 </div>

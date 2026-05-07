@@ -1,6 +1,6 @@
 import { type FunctionComponent } from "react";
 
-import { Body1, makeStyles, tokens } from "@fluentui/react-components";
+import { Body1, Tooltip, makeStyles, tokens } from "@fluentui/react-components";
 
 const useStyles = makeStyles({
     line: {
@@ -44,16 +44,17 @@ export const DraggableLine: FunctionComponent<IDraggableLineProps> = ({ data, to
     const display = data.startsWith("FlowGraph") ? data.slice(9).replace("Block", "") : data.replace("Block", "");
 
     return (
-        <div
-            className={classes.line}
-            title={tooltip}
-            style={borderStyle}
-            draggable
-            onDragStart={(event) => {
-                event.dataTransfer.setData("babylonjs-flow-graph-node", data);
-            }}
-        >
-            <Body1>{display}</Body1>
-        </div>
+        <Tooltip content={tooltip} relationship="description">
+            <div
+                className={classes.line}
+                style={borderStyle}
+                draggable
+                onDragStart={(event) => {
+                    event.dataTransfer.setData("babylonjs-flow-graph-node", data);
+                }}
+            >
+                <Body1>{display}</Body1>
+            </div>
+        </Tooltip>
     );
 };

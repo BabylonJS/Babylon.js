@@ -1,6 +1,6 @@
 import { type FunctionComponent, type MouseEvent, useCallback, useEffect, useState } from "react";
 
-import { Body1, Button, Input, Tab, TabList, makeStyles, mergeClasses, tokens } from "@fluentui/react-components";
+import { Body1, Button, Input, Tab, TabList, Tooltip, makeStyles, mergeClasses, tokens } from "@fluentui/react-components";
 import { AddRegular, DismissRegular } from "@fluentui/react-icons";
 
 import { type GlobalState } from "../../globalState";
@@ -164,7 +164,7 @@ export const GraphTabBarComponent: FunctionComponent<IGraphTabBarProps> = ({ glo
                     const isActive = index === activeIndex;
                     const isEditing = editingIndex === index;
                     return (
-                        <Tab key={graph.uniqueId} value={String(index)} className={classes.tabHover} onDoubleClick={() => startEditing(index)} title={graph.name}>
+                        <Tab key={graph.uniqueId} value={String(index)} className={classes.tabHover} onDoubleClick={() => startEditing(index)}>
                             <div className={classes.tabContent}>
                                 {isEditing ? (
                                     <Input
@@ -189,22 +189,25 @@ export const GraphTabBarComponent: FunctionComponent<IGraphTabBarProps> = ({ glo
                                     <Body1>{graph.name}</Body1>
                                 )}
                                 {graphs.length > 1 && !isEditing && (
-                                    <Button
-                                        className={mergeClasses("fge-tab-close", classes.closeButton, isActive && classes.closeButtonVisible)}
-                                        size="small"
-                                        appearance="subtle"
-                                        icon={<DismissRegular />}
-                                        title="Close graph"
-                                        aria-label={`Close ${graph.name}`}
-                                        onClick={(evt) => onCloseTab(index, evt)}
-                                    />
+                                    <Tooltip content="Close graph" relationship="label">
+                                        <Button
+                                            className={mergeClasses("fge-tab-close", classes.closeButton, isActive && classes.closeButtonVisible)}
+                                            size="small"
+                                            appearance="subtle"
+                                            icon={<DismissRegular />}
+                                            aria-label={`Close ${graph.name}`}
+                                            onClick={(evt) => onCloseTab(index, evt)}
+                                        />
+                                    </Tooltip>
                                 )}
                             </div>
                         </Tab>
                     );
                 })}
             </TabList>
-            <Button className={classes.addButton} size="small" appearance="subtle" icon={<AddRegular />} title="Add new graph" aria-label="Add new graph" onClick={onAddGraph} />
+            <Tooltip content="Add new graph" relationship="label">
+                <Button className={classes.addButton} size="small" appearance="subtle" icon={<AddRegular />} aria-label="Add new graph" onClick={onAddGraph} />
+            </Tooltip>
         </div>
     );
 };

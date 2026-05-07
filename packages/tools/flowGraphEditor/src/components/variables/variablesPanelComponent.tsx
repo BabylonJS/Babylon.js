@@ -21,7 +21,7 @@ import {
     type IVariableEntry,
     type VariableTypeName,
 } from "../../variableUtils";
-import { Body1, Caption1, Button, Card, Dropdown, Input, Option, OptionGroup, Switch, makeStyles, tokens } from "@fluentui/react-components";
+import { Body1, Caption1, Button, Card, Dropdown, Field, Input, Option, OptionGroup, Switch, Tooltip, makeStyles, tokens } from "@fluentui/react-components";
 import { AddRegular, ChevronDownRegular, ChevronRightRegular, DismissRegular } from "@fluentui/react-icons";
 import { Collapse } from "shared-ui-components/fluent/primitives/collapse";
 
@@ -611,28 +611,29 @@ class VariablesPanelInner extends React.Component<IVariablesPanelInnerProps, IVa
         const { classes } = this.props;
         const currentLabel = VariableTypeGroups.flatMap((g) => g.types).find((t) => t.name === currentType)?.label ?? currentType;
         return (
-            <Dropdown
-                size="small"
-                className={classes.typeSelect}
-                value={currentLabel}
-                selectedOptions={[currentType]}
-                onOptionSelect={(_, data) => {
-                    if (data.optionValue) {
-                        this._changeVariableType(varName, data.optionValue as VariableTypeName);
-                    }
-                }}
-                title="Variable type"
-            >
-                {VariableTypeGroups.map((group) => (
-                    <OptionGroup key={group.label} label={{ className: classes.typeOptionGroupLabel, children: group.label }}>
-                        {group.types.map((t) => (
-                            <Option key={t.name} value={t.name} text={t.label}>
-                                {t.label}
-                            </Option>
-                        ))}
-                    </OptionGroup>
-                ))}
-            </Dropdown>
+            <Tooltip content="Variable type" relationship="label">
+                <Dropdown
+                    size="small"
+                    className={classes.typeSelect}
+                    value={currentLabel}
+                    selectedOptions={[currentType]}
+                    onOptionSelect={(_, data) => {
+                        if (data.optionValue) {
+                            this._changeVariableType(varName, data.optionValue as VariableTypeName);
+                        }
+                    }}
+                >
+                    {VariableTypeGroups.map((group) => (
+                        <OptionGroup key={group.label} label={{ className: classes.typeOptionGroupLabel, children: group.label }}>
+                            {group.types.map((t) => (
+                                <Option key={t.name} value={t.name} text={t.label}>
+                                    {t.label}
+                                </Option>
+                            ))}
+                        </OptionGroup>
+                    ))}
+                </Dropdown>
+            </Tooltip>
         );
     }
 
@@ -646,7 +647,7 @@ class VariablesPanelInner extends React.Component<IVariablesPanelInnerProps, IVa
             const ctx = fg?.getContext(this.props.globalState.selectedContextIndex);
             const currentVal = ctx?.userVariables[varName];
             return (
-                <label className={classes.boolToggle}>
+                <Field className={classes.boolToggle} orientation="horizontal" label={currentVal ? "true" : "false"}>
                     <Switch
                         checked={!!currentVal}
                         onChange={(_, data) => {
@@ -654,8 +655,7 @@ class VariablesPanelInner extends React.Component<IVariablesPanelInnerProps, IVa
                             this._pollRuntimeValues();
                         }}
                     />
-                    <Body1>{currentVal ? "true" : "false"}</Body1>
-                </label>
+                </Field>
             );
         }
 
@@ -789,9 +789,11 @@ class VariablesPanelInner extends React.Component<IVariablesPanelInnerProps, IVa
             );
         }
         return (
-            <Body1 className={classes.value} onClick={() => this._startValueEditing(idx)} title="Click to edit value">
-                {runtimeValues.get(varName) ?? "undefined"}
-            </Body1>
+            <Tooltip content="Click to edit value" relationship="label">
+                <Body1 className={classes.value} onClick={() => this._startValueEditing(idx)}>
+                    {runtimeValues.get(varName) ?? "undefined"}
+                </Body1>
+            </Tooltip>
         );
     }
 
@@ -804,16 +806,19 @@ class VariablesPanelInner extends React.Component<IVariablesPanelInnerProps, IVa
         return (
             <div className={classes.strip}>
                 <div className={classes.header}>
-                    <Button
-                        size="small"
-                        appearance="subtle"
-                        icon={collapsed ? <ChevronRightRegular /> : <ChevronDownRegular />}
-                        title={collapsed ? "Expand variables" : "Collapse variables"}
-                        onClick={() => this.setState({ collapsed: !collapsed })}
-                    />
+                    <Tooltip content={collapsed ? "Expand variables" : "Collapse variables"} relationship="label">
+                        <Button
+                            size="small"
+                            appearance="subtle"
+                            icon={collapsed ? <ChevronRightRegular /> : <ChevronDownRegular />}
+                            onClick={() => this.setState({ collapsed: !collapsed })}
+                        />
+                    </Tooltip>
                     <Body1 className={classes.title}>Variables{varCount > 0 ? ` (${varCount})` : ""}</Body1>
                     {this.state.isRunning && <Caption1 className={classes.liveBadge}>● Live</Caption1>}
-                    <Button className={classes.addButton} size="small" appearance="subtle" icon={<AddRegular />} title="Add a new variable" onClick={() => this._addVariable()} />
+                    <Tooltip content="Add a new variable" relationship="label">
+                        <Button className={classes.addButton} size="small" appearance="subtle" icon={<AddRegular />} onClick={() => this._addVariable()} />
+                    </Tooltip>
                 </div>
                 <Collapse visible={!collapsed} orientation="vertical">
                     <div className={classes.body}>
@@ -850,21 +855,15 @@ class VariablesPanelInner extends React.Component<IVariablesPanelInnerProps, IVa
                                                         autoFocus
                                                     />
                                                 ) : (
-                                                    <Body1
-                                                        className={classes.name}
-                                                        onDoubleClick={() => this._startNameEditing(idx)}
-                                                        title={`${v.name} (${v.getCount}G/${v.setCount}S) — double-click to rename`}
-                                                    >
-                                                        {v.name}
-                                                    </Body1>
+                                                    <Tooltip content={`${v.name} (${v.getCount}G/${v.setCount}S) — double-click to rename`} relationship="description">
+                                                        <Body1 className={classes.name} onDoubleClick={() => this._startNameEditing(idx)}>
+                                                            {v.name}
+                                                        </Body1>
+                                                    </Tooltip>
                                                 )}
-                                                <Button
-                                                    size="small"
-                                                    appearance="subtle"
-                                                    icon={<DismissRegular />}
-                                                    title="Delete variable and its blocks"
-                                                    onClick={() => this._deleteVariable(v.name)}
-                                                />
+                                                <Tooltip content="Delete variable and its blocks" relationship="label">
+                                                    <Button size="small" appearance="subtle" icon={<DismissRegular />} onClick={() => this._deleteVariable(v.name)} />
+                                                </Tooltip>
                                             </div>
                                             <div className={classes.typeRow}>{this._renderTypeSelector(v.name, typeName)}</div>
                                             <div className={classes.valueRow}>{this._renderValueEditor(v.name, typeName, idx)}</div>

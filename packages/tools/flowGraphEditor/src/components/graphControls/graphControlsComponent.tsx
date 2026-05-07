@@ -1,6 +1,6 @@
 import { type FunctionComponent, type ReactNode, useCallback, useEffect, useRef, useState } from "react";
 
-import { Body1, Caption1, Button, Divider, Dropdown, Input, Option, makeStyles, mergeClasses, tokens } from "@fluentui/react-components";
+import { Body1, Caption1, Button, Divider, Dropdown, Input, Option, Tooltip, makeStyles, mergeClasses, tokens } from "@fluentui/react-components";
 import {
     AddRegular,
     ArrowRedoRegular,
@@ -364,9 +364,9 @@ export const GraphControlsComponent: FunctionComponent<IGraphControlsProps> = ({
         const cls = hasErrors ? classes.validationSummaryError : classes.validationSummaryWarning;
         const label = hasErrors ? `${validationResult.errorCount}E ${validationResult.warningCount}W` : `${validationResult.warningCount}W`;
         return (
-            <Body1 className={mergeClasses(classes.validationSummary, cls)} title={`${validationResult.errorCount} error(s), ${validationResult.warningCount} warning(s)`}>
-                {label}
-            </Body1>
+            <Tooltip content={`${validationResult.errorCount} error(s), ${validationResult.warningCount} warning(s)`} relationship="description">
+                <Body1 className={mergeClasses(classes.validationSummary, cls)}>{label}</Body1>
+            </Tooltip>
         );
     })();
 
@@ -374,35 +374,49 @@ export const GraphControlsComponent: FunctionComponent<IGraphControlsProps> = ({
 
     return (
         <div className={classes.bar}>
-            <Button
-                size="small"
-                appearance="subtle"
-                icon={<ArrowUndoRegular />}
-                title="Undo (Ctrl+Z)"
-                disabled={!globalState.stateManager.historyStack?.canUndo}
-                onClick={() => {
-                    globalState.stateManager.historyStack?.undo();
-                    forceUpdate({});
-                }}
-            />
-            <Button
-                size="small"
-                appearance="subtle"
-                icon={<ArrowRedoRegular />}
-                title="Redo (Ctrl+Shift+Z)"
-                disabled={!globalState.stateManager.historyStack?.canRedo}
-                onClick={() => {
-                    globalState.stateManager.historyStack?.redo();
-                    forceUpdate({});
-                }}
-            />
+            <Tooltip content="Undo (Ctrl+Z)" relationship="label">
+                <Button
+                    size="small"
+                    appearance="subtle"
+                    icon={<ArrowUndoRegular />}
+                    disabled={!globalState.stateManager.historyStack?.canUndo}
+                    onClick={() => {
+                        globalState.stateManager.historyStack?.undo();
+                        forceUpdate({});
+                    }}
+                />
+            </Tooltip>
+            <Tooltip content="Redo (Ctrl+Shift+Z)" relationship="label">
+                <Button
+                    size="small"
+                    appearance="subtle"
+                    icon={<ArrowRedoRegular />}
+                    disabled={!globalState.stateManager.historyStack?.canRedo}
+                    onClick={() => {
+                        globalState.stateManager.historyStack?.redo();
+                        forceUpdate({});
+                    }}
+                />
+            </Tooltip>
             <Divider vertical className={classes.separator} />
-            <Button size="small" appearance="subtle" icon={<PlayRegular />} title="Start" onClick={onStart} disabled={!canStart} />
-            <Button size="small" appearance="subtle" icon={<PauseRegular />} title="Pause" onClick={onPause} disabled={!canPause} />
-            <Button size="small" appearance="subtle" icon={<StopRegular />} title="Stop" onClick={onStop} disabled={!canStop} />
-            <Button size="small" appearance="subtle" icon={<ArrowResetRegular />} title="Reset" onClick={() => void onResetAsync()} />
-            <Button size="small" appearance="subtle" icon={<FastForwardRegular />} title="Continue (resume from breakpoint)" onClick={onContinue} disabled={!canContinue} />
-            <Button size="small" appearance="subtle" icon={<NextRegular />} title="Step (execute one block)" onClick={onStep} disabled={!canStep} />
+            <Tooltip content="Start" relationship="label">
+                <Button size="small" appearance="subtle" icon={<PlayRegular />} onClick={onStart} disabled={!canStart} />
+            </Tooltip>
+            <Tooltip content="Pause" relationship="label">
+                <Button size="small" appearance="subtle" icon={<PauseRegular />} onClick={onPause} disabled={!canPause} />
+            </Tooltip>
+            <Tooltip content="Stop" relationship="label">
+                <Button size="small" appearance="subtle" icon={<StopRegular />} onClick={onStop} disabled={!canStop} />
+            </Tooltip>
+            <Tooltip content="Reset" relationship="label">
+                <Button size="small" appearance="subtle" icon={<ArrowResetRegular />} onClick={() => void onResetAsync()} />
+            </Tooltip>
+            <Tooltip content="Continue (resume from breakpoint)" relationship="label">
+                <Button size="small" appearance="subtle" icon={<FastForwardRegular />} onClick={onContinue} disabled={!canContinue} />
+            </Tooltip>
+            <Tooltip content="Step (execute one block)" relationship="label">
+                <Button size="small" appearance="subtle" icon={<NextRegular />} onClick={onStep} disabled={!canStep} />
+            </Tooltip>
             <Body1 className={mergeClasses(classes.state, stateClass)}>{stateLabel}</Body1>
             <Divider vertical className={classes.separator} />
             <div className={classes.contextGroup}>
@@ -424,31 +438,33 @@ export const GraphControlsComponent: FunctionComponent<IGraphControlsProps> = ({
                         </Option>
                     ))}
                 </Dropdown>
-                <Button
-                    size="small"
-                    appearance="subtle"
-                    icon={<AddRegular />}
-                    title="Add execution context"
-                    onClick={() => {
-                        const idx = globalState.createNewContext();
-                        if (idx >= 0) {
-                            globalState.selectedContextIndex = idx;
-                            log(`Created context ${idx}.`);
-                        }
-                    }}
-                />
-                <Button
-                    size="small"
-                    appearance="subtle"
-                    icon={<SubtractRegular />}
-                    title="Remove selected context"
-                    disabled={contextList.length <= 1}
-                    onClick={() => {
-                        if (globalState.removeContextAt(selectedContextIndex)) {
-                            log(`Removed context ${selectedContextIndex}.`);
-                        }
-                    }}
-                />
+                <Tooltip content="Add execution context" relationship="label">
+                    <Button
+                        size="small"
+                        appearance="subtle"
+                        icon={<AddRegular />}
+                        onClick={() => {
+                            const idx = globalState.createNewContext();
+                            if (idx >= 0) {
+                                globalState.selectedContextIndex = idx;
+                                log(`Created context ${idx}.`);
+                            }
+                        }}
+                    />
+                </Tooltip>
+                <Tooltip content="Remove selected context" relationship="label">
+                    <Button
+                        size="small"
+                        appearance="subtle"
+                        icon={<SubtractRegular />}
+                        disabled={contextList.length <= 1}
+                        onClick={() => {
+                            if (globalState.removeContextAt(selectedContextIndex)) {
+                                log(`Removed context ${selectedContextIndex}.`);
+                            }
+                        }}
+                    />
+                </Tooltip>
                 {editingContextIndex !== null ? (
                     <Input
                         className={classes.contextRenameInput}
@@ -468,59 +484,64 @@ export const GraphControlsComponent: FunctionComponent<IGraphControlsProps> = ({
                         onBlur={commitContextRename}
                     />
                 ) : (
-                    <Button
-                        size="small"
-                        appearance="subtle"
-                        icon={<EditRegular />}
-                        title="Rename selected context"
-                        onClick={() => {
-                            const ctx = contextList.find((c) => c.index === selectedContextIndex);
-                            if (ctx) {
-                                setEditingContextIndex(selectedContextIndex);
-                                setEditingContextName(ctx.name);
-                            }
-                        }}
-                    />
+                    <Tooltip content="Rename selected context" relationship="label">
+                        <Button
+                            size="small"
+                            appearance="subtle"
+                            icon={<EditRegular />}
+                            onClick={() => {
+                                const ctx = contextList.find((c) => c.index === selectedContextIndex);
+                                if (ctx) {
+                                    setEditingContextIndex(selectedContextIndex);
+                                    setEditingContextName(ctx.name);
+                                }
+                            }}
+                        />
+                    </Tooltip>
                 )}
             </div>
             <Divider vertical className={classes.separator} />
-            <Button
-                size="small"
-                appearance={debugMode ? "primary" : "subtle"}
-                icon={<BugRegular />}
-                title={debugMode ? "Disable Debug Mode" : "Enable Debug Mode"}
-                onClick={() => {
-                    globalState.isDebugMode = !globalState.isDebugMode;
-                }}
-            />
+            <Tooltip content={debugMode ? "Disable Debug Mode" : "Enable Debug Mode"} relationship="label">
+                <Button
+                    size="small"
+                    appearance={debugMode ? "primary" : "subtle"}
+                    icon={<BugRegular />}
+                    onClick={() => {
+                        globalState.isDebugMode = !globalState.isDebugMode;
+                    }}
+                />
+            </Tooltip>
             <Divider vertical className={classes.separator} />
-            <Button size="small" appearance="subtle" icon={<CheckmarkRegular />} title="Validate graph" onClick={onValidate} />
-            <Button
-                size="small"
-                appearance={liveValidation ? "primary" : "subtle"}
-                icon={<FlashRegular />}
-                title={liveValidation ? "Disable Live Validation" : "Enable Live Validation"}
-                onClick={() => {
-                    globalState.liveValidation = !globalState.liveValidation;
-                }}
-            />
+            <Tooltip content="Validate graph" relationship="label">
+                <Button size="small" appearance="subtle" icon={<CheckmarkRegular />} onClick={onValidate} />
+            </Tooltip>
+            <Tooltip content={liveValidation ? "Disable Live Validation" : "Enable Live Validation"} relationship="label">
+                <Button
+                    size="small"
+                    appearance={liveValidation ? "primary" : "subtle"}
+                    icon={<FlashRegular />}
+                    onClick={() => {
+                        globalState.liveValidation = !globalState.liveValidation;
+                    }}
+                />
+            </Tooltip>
             {validationSummary}
             <Divider vertical className={classes.separator} />
             <div className={classes.timeScale}>
                 <Caption1 className={classes.label}>Speed</Caption1>
                 {SpeedPresets.map((s) => (
-                    <Button
-                        key={s}
-                        className={classes.speedButton}
-                        size="small"
-                        appearance={timeScale === s ? "primary" : "subtle"}
-                        title={`${s}× speed`}
-                        onClick={() => {
-                            globalState.timeScale = s;
-                        }}
-                    >
-                        {s}×
-                    </Button>
+                    <Tooltip key={s} content={`${s}× speed`} relationship="label">
+                        <Button
+                            className={classes.speedButton}
+                            size="small"
+                            appearance={timeScale === s ? "primary" : "subtle"}
+                            onClick={() => {
+                                globalState.timeScale = s;
+                            }}
+                        >
+                            {s}×
+                        </Button>
+                    </Tooltip>
                 ))}
             </div>
         </div>
