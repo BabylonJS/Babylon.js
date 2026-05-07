@@ -246,12 +246,12 @@ export class Viewer extends ViewerBase implements IViewer {
         }
 
         // Per-frame callback
-        onBeforeRender(this._scene, (_deltaMs) => {
+        onBeforeRender(this._scene, (deltaMs) => {
             if (this._isDisposed) {
                 return;
             }
 
-            this._updateAutoOrbit(_deltaMs);
+            this._updateAutoOrbit(deltaMs);
             this._pollAnimationState();
 
             this.onAfterRenderObservable.notifyObservers();
