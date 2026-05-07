@@ -1554,3 +1554,55 @@ import "@babylonjs/core/Materials/Node/Blocks/allBlocks";
 - [x] **12.5** — FrameGraph (NodeRenderGraph) blocks: `registerAllNodeRenderGraphBlocks()` + 6 category helpers
 - [x] **12.6** — Update pure barrels and index barrels to export `allBlocks`
 - [x] **12.7** — Verify TypeScript compilation: 0 errors
+
+---
+
+## Phase 13 — Developer Experience: Detecting Missing Side-Effect Imports
+
+### Problem
+
+When using pure imports (`@babylonjs/core/*.pure`), missing side-effect registrations
+cause `throw _WarnImport(...)` at runtime. Because these throw immediately, the user only
+discovers ONE missing import per run — fix it, run again, hit the next one. This cascading
+error pattern is especially painful for features with transitive dependencies (e.g.,
+`ImageProcessingConfiguration` → `ColorCurves` → `Texture`).
+
+### Solution: Multi-Pronged Approach
+
+#### 13.1 — `CheckMissingImports()` Standalone Diagnostic ✅
+
+A standalone module (`Misc/checkMissingImports.ts`) that tests all known side-effect stubs
+via try/catch and reports which ones haven't been registered. **Zero cost to production
+bundles** — only loaded if explicitly imported.
+
+```typescript
+import { CheckMissingImports } from "@babylonjs/core/Misc/checkMissingImports";
+const missing = CheckMissingImports(); // logs all missing, returns array
+```
+
+Implementation:
+
+- Standalone file imports the classes that define stubs (Scene, Mesh, Texture, Node, SerializationHelper)
+- Uses try/catch to probe each stub — if it throws the `_WarnImport` string, the module is missing
+- Reports ALL missing imports in a single `console.warn` with a note that they're only needed
+  if the app actually uses the corresponding features
+- No registry, no closures, no stored references in hot code paths
+- Currently covers ~22 stubs: SerializationHelper parsers (4), Scene factories (2), Scene picking/Ray (1),
+  Texture factories (4), Mesh parsers (10), Node factories (1)
+
+#### 13.2 — Transitive Dependencies in Registration Functions ✅
+
+Registration functions now call their transitive dependencies:
+
+- `registerImageProcessingConfiguration()` → calls `registerColorCurves()`
+
+This means importing `ImageProcessingConfiguration` automatically registers `ColorCurves` parser,
+eliminating the most common cascading error chain.
+
+#### 13.3 — Future: Feature Packs (Not Yet Implemented)
+
+High-level registration bundles for common use cases:
+
+- `registerMaterialSerialization()` — all material-related parsers
+- `registerMeshSerialization()` — all mesh type parsers
+- `registerSceneComponents()` — all scene component registrations

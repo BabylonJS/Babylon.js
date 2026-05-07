@@ -1,19 +1,19 @@
 /** This file must only contain pure code and pure imports */
 
 export * from "./decorators.serialization.types";
-import { type FresnelParameters } from "../Materials/fresnelParameters"
-import { type ImageProcessingConfiguration } from "../Materials/imageProcessingConfiguration"
+import { type FresnelParameters } from "../Materials/fresnelParameters";
+import { type ImageProcessingConfiguration } from "../Materials/imageProcessingConfiguration";
 import { _WarnImport } from "./devTools";
-import { type ColorCurves } from "../Materials/colorCurves"
-import { type Scene } from "../scene"
-import { type Nullable } from "../types"
-import { type BaseTexture } from "../Materials/Textures/baseTexture"
-import { type IAnimatable } from "../Animations/animatable.interface"
+import { type ColorCurves } from "../Materials/colorCurves";
+import { type Scene } from "../scene";
+import { type Nullable } from "../types";
+import { type BaseTexture } from "../Materials/Textures/baseTexture";
+import { type IAnimatable } from "../Animations/animatable.interface";
 import { Tags, TagsHasTags, TagsGetTags, TagsAddTagsTo } from "./tags.pure";
-import { type Color4 } from "../Maths/math.color.pure"
+import { type Color4 } from "../Maths/math.color.pure";
 import { Color3FromArray, Color4FromArray } from "../Maths/math.color.pure";
 import { Matrix, Quaternion, Vector2, Vector3 } from "../Maths/math.vector.pure";
-import { type Camera } from "../Cameras/camera"
+import { type Camera } from "../Cameras/camera";
 import { GetMergedStore } from "./decorators.functions";
 
 /** @internal */

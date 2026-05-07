@@ -2,14 +2,14 @@
 
 import { serialize, serializeAsTexture, serializeAsColorCurves, serializeAsColor4 } from "../Misc/decorators";
 import { Observable } from "../Misc/observable";
-import { type Nullable } from "../types"
+import { type Nullable } from "../types";
 import { Color4 } from "../Maths/math.color.pure";
-import { ColorCurves } from "../Materials/colorCurves.pure";
-import { type BaseTexture } from "../Materials/Textures/baseTexture"
-import { type Effect } from "../Materials/effect"
+import { ColorCurves, registerColorCurves } from "../Materials/colorCurves.pure";
+import { type BaseTexture } from "../Materials/Textures/baseTexture";
+import { type Effect } from "../Materials/effect";
 import { Mix } from "../Misc/tools.functions";
 import { SerializationHelperSerialize, SerializationHelperParse, SerializationHelperClone } from "../Misc/decorators.serialization.pure";
-import { type IImageProcessingConfigurationDefines } from "./imageProcessingConfiguration.defines"
+import { type IImageProcessingConfigurationDefines } from "./imageProcessingConfiguration.defines";
 import { PrepareSamplersForImageProcessing, PrepareUniformsForImageProcessing } from "./imageProcessingConfiguration.functions";
 import { SerializationHelper } from "../Misc/decorators.serialization.pure";
 import { RegisterClass } from "../Misc/typeStore";
@@ -661,6 +661,9 @@ export function registerImageProcessingConfiguration(): void {
         return;
     }
     _registered = true;
+
+    // Register transitive dependencies needed for deserialization
+    registerColorCurves();
 
     // References the dependencies.
     SerializationHelper._ImageProcessingConfigurationParser = ImageProcessingConfiguration.Parse;
