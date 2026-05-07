@@ -5,3 +5,4 @@ export * from "./Data/pure";
 export * from "./Event/pure";
 export * from "./flowGraphBlockFactory";
 export * from "./flowGraphBlockNames";
+export * from "./allBlocks.pure";

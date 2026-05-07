@@ -1368,6 +1368,26 @@ if (!Object.getOwnPropertyDescriptor(Scene.prototype, "debugLayer")) {
 | 273 stub assignments     | ~16 KB     | ~3-4 KB   |
 | **Total**                | **~16 KB** | **~4 KB** |
 
+### Phase 11b — Silent Stubs (no warnings by default)
+
+**Problem**: Internal engine code calls augmented methods as feature checks every frame in the
+render loop (e.g., `getBoundingBoxRenderer?.()`, `getOutlineRenderer()` in `_renderForCamera`).
+The original `_MissingSideEffect` warned on first call, producing false-positive console spam
+for users who simply don't use those features.
+
+**Decision**: `_MissingSideEffect(className, methodName, warn = false)` — stubs are **silent by
+default**. They return `undefined` (falsy), so callers naturally skip the feature. If a user
+explicitly tries to USE the returned value (e.g., `scene.enablePhysics().doSomething()`), they
+get a clear `TypeError` at the point of use — this is sufficient diagnostic information.
+
+**Optional warning**: The `warn = true` parameter is available for methods that are never called
+internally as feature checks and where a diagnostic warning would be genuinely helpful. Currently
+no stubs use `warn = true` — all are silent.
+
+**Key insight**: The `_IsSideEffectImplemented()` helper (checking `__isSideEffectStub` tag) is
+the correct mechanism for feature detection in hot paths. Warning-based stubs were always the
+wrong approach for methods used as feature flags.
+
 ---
 
 ## Risk Mitigation
@@ -1453,3 +1473,84 @@ import { Foo } from "@babylonjs/core/Something/foo";
 - The splitter already tracks which imports are used only by side-effect code vs. pure code — this is the exact information needed to generate correct imports for `foo.effects.ts`
 - File count increases by ~650 files (one `.effects.ts` per existing split), but each is tiny (typically 2-5 lines)
 - Barrel generation would need a parallel pass for `effects.ts` barrels
+
+---
+
+## Phase 12 — Bulk Block Registration Functions (`registerAll*Blocks`)
+
+### Problem Statement
+
+Each block system (Node Material, Node Geometry, Node Particle, FlowGraph, FrameGraph/NodeRenderGraph)
+has dozens of individual `register*Block()` functions. Deserialization of serialized block graphs
+is all-or-nothing — you can't know at build time which blocks a snippet will use. The current
+workaround is `import "@babylonjs/core/.../Blocks/index.js"` (a side-effect barrel), which breaks
+the pure barrel contract.
+
+### Solution
+
+Provide a single `registerAll*Blocks()` function per system (in an `allBlocks.pure.ts` file) that
+calls all individual registration functions. Also provide per-category helpers for users who know
+they only need a subset. A thin wrapper `allBlocks.ts` auto-registers for the legacy path.
+
+### Pattern
+
+```ts
+// allBlocks.pure.ts — calls all register*() for the system
+import { registerFoo } from "./foo.pure";
+import { registerBar } from "./bar.pure";
+// ...
+
+export function registerAllXxxBlocks(): void {
+    if (_registered) return;
+    _registered = true;
+    registerXxxCategoryABlocks();
+    registerXxxCategoryBBlocks();
+    // ...
+}
+
+export function registerXxxCategoryABlocks(): void {
+    /* ... */
+}
+export function registerXxxCategoryBBlocks(): void {
+    /* ... */
+}
+
+// allBlocks.ts — thin wrapper
+export * from "./allBlocks.pure";
+import { registerAllXxxBlocks } from "./allBlocks.pure";
+registerAllXxxBlocks();
+```
+
+### Consumer Usage
+
+```ts
+// Pure path — explicit opt-in (tree-shakeable)
+import { registerAllNodeMaterialBlocks } from "@babylonjs/core/Materials/Node/Blocks/allBlocks.pure";
+registerAllNodeMaterialBlocks();
+
+// Granular — only PBR + math
+import { registerNodeMaterialPBRBlocks, registerNodeMaterialMathBlocks } from "@babylonjs/core/Materials/Node/Blocks/allBlocks.pure";
+registerNodeMaterialPBRBlocks();
+registerNodeMaterialMathBlocks();
+
+// Legacy — side-effect import (auto-registers)
+import "@babylonjs/core/Materials/Node/Blocks/allBlocks";
+```
+
+### Implementation
+
+| Block System     | Location                  | Blocks | Categories                                                       | Status  |
+| ---------------- | ------------------------- | ------ | ---------------------------------------------------------------- | ------- |
+| Node Material    | `Materials/Node/Blocks/`  | ~108   | Vertex, Fragment, Dual, Input, Teleport, PBR, Particle, GS, Math | ✅ Done |
+| Node Geometry    | `Meshes/Node/Blocks/`     | ~80    | Instances, Matrices, Set, Sources, Teleport, Textures, Math      | ✅ Done |
+| Node Particle    | `Particles/Node/Blocks/`  | ~49    | Conditions, Emitters, Teleport, Triggers, Update, Math           | ✅ Done |
+| FlowGraph        | `FlowGraph/Blocks/`       | ~47    | Event, Execution, Data                                           | ✅ Done |
+| FrameGraph (NRG) | `FrameGraph/Node/Blocks/` | ~44    | Layers, PostProcesses, Rendering, Teleport, Textures, Core       | ✅ Done |
+
+- [x] **12.1** — Node Material blocks: `registerAllNodeMaterialBlocks()` + 9 category helpers
+- [x] **12.2** — Node Geometry blocks: `registerAllNodeGeometryBlocks()` + 7 category helpers
+- [x] **12.3** — Node Particle blocks: `registerAllNodeParticleBlocks()` + 6 category helpers
+- [x] **12.4** — FlowGraph blocks: `registerAllFlowGraphBlocks()` + 3 category helpers
+- [x] **12.5** — FrameGraph (NodeRenderGraph) blocks: `registerAllNodeRenderGraphBlocks()` + 6 category helpers
+- [x] **12.6** — Update pure barrels and index barrels to export `allBlocks`
+- [x] **12.7** — Verify TypeScript compilation: 0 errors

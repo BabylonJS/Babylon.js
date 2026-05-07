@@ -23,18 +23,32 @@ export interface ISideEffectStub {
 }
 
 /**
- * Returns a stub function that logs a warning when an augmented method is called
- * without importing its side-effect module. The real implementation overwrites
- * the stub when the corresponding register function is loaded.
+ * Returns a stub function that acts as a placeholder for augmented methods that
+ * require a side-effect import. The stub is tagged with `__isSideEffectStub` so
+ * that feature-detection code can check `_IsSideEffectImplemented()` before calling.
+ *
+ * The stub does NOT warn by default because internal engine code frequently calls
+ * augmented methods as feature checks (e.g., `getBoundingBoxRenderer?.()` in the
+ * render loop). Warnings would fire every frame for features the user never requested.
+ *
+ * If the user actually tries to use the returned value (which is undefined), they
+ * will get a clear TypeError at the point of use.
+ *
+ * @param className - The class name (for diagnostic purposes)
+ * @param methodName - The method name (for diagnostic purposes)
+ * @param warn - If true, emit a one-time console warning when the stub is called.
+ *              Use this only for methods that are never called internally as feature checks.
  * @internal
  */
-export function _MissingSideEffect(className: string, methodName: string): (...args: unknown[]) => void {
+export function _MissingSideEffect(className: string, methodName: string, warn = false): (...args: unknown[]) => void {
     const stub = function () {
-        const key = `${className}.${methodName}`;
-        if (!_StubWarnedMap[key]) {
-            _StubWarnedMap[key] = true;
-            // eslint-disable-next-line no-console
-            console.warn(`[Babylon.js] ${key}() requires a side-effect import. See: https://doc.babylonjs.com/setup/treeshaking`);
+        if (warn) {
+            const key = `${className}.${methodName}`;
+            if (!_StubWarnedMap[key]) {
+                _StubWarnedMap[key] = true;
+                // eslint-disable-next-line no-console
+                console.warn(`[Babylon.js] ${key}() requires a side-effect import. See: https://doc.babylonjs.com/setup/treeshaking`);
+            }
         }
     };
     (stub as unknown as ISideEffectStub).__isSideEffectStub = true;
