@@ -733,6 +733,18 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
         [viewer]
     );
 
+    const useOpenPBRConfig = useConfiguration(
+        DefaultViewerOptions.useOpenPBR,
+        viewerOptions.useOpenPBR ?? DefaultViewerOptions.useOpenPBR,
+        () => viewerElement.useOpenPBR,
+        (useOpenPBR) => {
+            viewerElement.useOpenPBR = useOpenPBR;
+        },
+        undefined,
+        [viewer.onModelChanged],
+        [viewerElement, viewer]
+    );
+
     const [hotspots, setHotspots] = useState<HotSpotInfo[]>(Object.entries(viewerOptions.hotSpots ?? {}).map(([name, data]) => ({ name, id: CreateHotSpotId(), data })));
 
     useEffect(() => {
@@ -835,6 +847,10 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
             attributes.push(`shadow-quality="${shadowQualityConfig.configuredState}"`);
         }
 
+        if (useOpenPBRConfig.canReset) {
+            attributes.push(`use-open-pbr`);
+        }
+
         if (toneMappingConfig.canReset) {
             attributes.push(`tone-mapping="${toneMappingConfig.configuredState}"`);
         }
@@ -913,6 +929,7 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
         animationAutoPlayConfig.configuredState,
         hasMaterialVariants,
         selectedMaterialVariantConfig.configuredState,
+        useOpenPBRConfig.configuredState,
         hotSpotsSnippet,
     ]);
 
@@ -988,6 +1005,10 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
             properties.push(`"shadowConfig": {${shadowProperties.map((property) => `\n    ${property}`).join(",")}\n  }`);
         }
 
+        if (useOpenPBRConfig.canReset) {
+            properties.push(`"useOpenPBR": true`);
+        }
+
         if (cameraConfig.canReset) {
             const {
                 alpha,
@@ -1053,6 +1074,7 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
         animationStateConfig.configuredState,
         animationAutoPlayConfig.configuredState,
         selectedMaterialVariantConfig.configuredState,
+        useOpenPBRConfig.configuredState,
         hotSpotsSnippet,
     ]);
 
@@ -1265,6 +1287,7 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
         animationStateConfig.reset();
         animationAutoPlayConfig.reset();
         selectedMaterialVariantConfig.reset();
+        useOpenPBRConfig.reset();
         setHotspots([]);
     }, [
         lightingUrlConfig.reset,
@@ -1286,6 +1309,7 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
         animationStateConfig.reset,
         animationAutoPlayConfig.reset,
         selectedMaterialVariantConfig.reset,
+        useOpenPBRConfig.reset,
     ]);
 
     // SSAO is not supported when shadow quality is set to high (IBL).
@@ -1335,6 +1359,22 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
                                     </div>
                                 </div>
                             </LineContainer>
+                            <PropertyLine
+                                label="Use OpenPBR"
+                                uniqueId="use-open-pbr"
+                                description="Load glTF materials using the OpenPBR material instead of the default PBR material. Changing this setting will reload the model."
+                            >
+                                <div className={classes.propertyContent}>
+                                    <Switch value={useOpenPBRConfig.configuredState} onChange={useOpenPBRConfig.update} />
+                                    <Button
+                                        title="Reset material"
+                                        appearance="transparent"
+                                        icon={DeleteRegular}
+                                        disabled={!useOpenPBRConfig.canReset}
+                                        onClick={useOpenPBRConfig.reset}
+                                    />
+                                </div>
+                            </PropertyLine>
                         </AccordionSection>
                         <AccordionSection title="Environment">
                             <PropertyLine
