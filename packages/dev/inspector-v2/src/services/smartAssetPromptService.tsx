@@ -1,7 +1,7 @@
 import { type ChangeEvent, type FunctionComponent, useCallback, useEffect, useRef, useState } from "react";
 
 import { Body1, Caption1, makeStyles, tokens } from "@fluentui/react-components";
-import { AddSmartAssetManagerCreatedObserver, GetSmartAssetManagerFromScene, GetSmartAssetTextureExtensions, type SmartAssetManager } from "core/SmartAssets/smartAssetManager";
+import { AddSmartAssetManagerCreatedObserver, GetSmartAssetManager, GetSmartAssetTextureExtensions, type SmartAssetManager } from "core/SmartAssets/smartAssetManager";
 
 import { type ServiceDefinition } from "shared-ui-components/modularTool/modularity/serviceDefinition";
 import { Dialog } from "shared-ui-components/fluent/primitives/dialog";
@@ -153,11 +153,10 @@ export const SmartAssetPromptServiceDefinition: ServiceDefinition<[], [IShellSer
             if (!currentScene) {
                 return;
             }
-
-            const smartAssetManager = GetSmartAssetManagerFromScene(currentScene);
-            if (smartAssetManager) {
-                installForManager(smartAssetManager);
-            }
+            // Get-or-create — ensures the inspector handler is bound even when
+            // the scene's first SmartAsset use happens after the prompt service
+            // started (no prior creation event for the observer to catch).
+            installForManager(GetSmartAssetManager(currentScene));
         };
 
         installForCurrentScene();

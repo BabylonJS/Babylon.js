@@ -5,8 +5,7 @@ import {
     AddSmartAssetManagerCreatedObserver,
     FindSmartAssetKeyForObject,
     GetAllSmartAssets,
-    GetOrCreateSmartAssetManager,
-    GetSmartAssetManagerFromScene,
+    GetSmartAssetManager,
     GetSmartAssetTextureExtensions,
     LoadSmartAssetAsync,
     LoadSmartAssetTextureAsync,
@@ -121,8 +120,7 @@ export const SmartAssetsServiceDefinition: ServiceDefinition<[], [IShellService,
         };
 
         const registerPaneForCurrentScene = () => {
-            const scene = sceneContext.currentScene;
-            if (scene && GetSmartAssetManagerFromScene(scene)) {
+            if (sceneContext.currentScene) {
                 registerPane();
             }
         };
@@ -233,18 +231,12 @@ const SmartAssetList: FunctionComponent<{ scene: Scene; selectionService: ISelec
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [status, setStatus] = useState("");
 
-    // Find the SAM
-    const sam = GetSmartAssetManagerFromScene(scene) ?? null;
-
-    // Reactively read assets — re-renders when the Smart Asset manager changes.
+    // Subscribe reactively to changes — re-renders the asset list whenever
+    // RegisterSmartAsset / Load / Remove / Reload fire onChangedObservable.
+    const sam = GetSmartAssetManager(scene);
     const assets = useObservableState(
-        useCallback(() => {
-            if (!sam) {
-                return [] as Array<{ key: string; url: string }>;
-            }
-            return Array.from(GetAllSmartAssets(sam), ([key, url]) => ({ key, url }));
-        }, [sam]),
-        sam?.onChangedObservable
+        useCallback(() => Array.from(GetAllSmartAssets(scene), ([key, url]) => ({ key, url })), [scene]),
+        sam.onChangedObservable
     );
 
     const onAddAsset = useCallback(() => {
@@ -258,8 +250,6 @@ const SmartAssetList: FunctionComponent<{ scene: Scene; selectionService: ISelec
                 return;
             }
 
-            const sam = GetOrCreateSmartAssetManager(scene);
-
             for (let i = 0; i < files.length; i++) {
                 const file = files[i];
                 const key = file.name.replace(/\.[^/.]+$/, "");
@@ -272,17 +262,18 @@ const SmartAssetList: FunctionComponent<{ scene: Scene; selectionService: ISelec
                 try {
                     if (isTexture) {
                         // eslint-disable-next-line no-await-in-loop
-                        await LoadSmartAssetTextureAsync(sam, key, blobUrl, options);
+                        await LoadSmartAssetTextureAsync(scene, key, blobUrl, options);
                     } else {
                         // Temporarily set onAssetNotFound to return the File so SAM's
                         // retry path can use the extension hint and track loaded objects.
-                        const savedHandler = sam.onAssetNotFound;
-                        sam.onAssetNotFound = async () => file;
+                        const samForOverride = GetSmartAssetManager(scene);
+                        const savedHandler = samForOverride.onAssetNotFound;
+                        samForOverride.onAssetNotFound = async () => file;
                         try {
                             // eslint-disable-next-line no-await-in-loop
-                            await LoadSmartAssetAsync(sam, key, blobUrl, options);
+                            await LoadSmartAssetAsync(scene, key, blobUrl, options);
                         } finally {
-                            sam.onAssetNotFound = savedHandler;
+                            samForOverride.onAssetNotFound = savedHandler;
                         }
                     }
                     setStatus(`Added: ${key}`);
@@ -317,7 +308,7 @@ const SmartAssetList: FunctionComponent<{ scene: Scene; selectionService: ISelec
     const onSwapAsset = useCallback(
         (key: string) => {
             const doSwapAsync = async (file: File, fileHandle?: FileSystemFileHandle) => {
-                const sam = GetOrCreateSmartAssetManager(scene);
+                const sam = GetSmartAssetManager(scene);
                 const blobUrl = URL.createObjectURL(file);
                 const ext = _getExtension(file.name).toLowerCase();
                 const isTexture = _isTextureExtension(ext);
@@ -326,18 +317,18 @@ const SmartAssetList: FunctionComponent<{ scene: Scene; selectionService: ISelec
                     // Find the old texture tracked by this key
                     let oldTex: BaseTexture | undefined;
                     for (const tex of scene.textures) {
-                        if (FindSmartAssetKeyForObject(sam, tex) === key) {
+                        if (FindSmartAssetKeyForObject(scene, tex) === key) {
                             oldTex = tex;
                             break;
                         }
                     }
 
                     // Load the new texture via SAM so it stays tracked by key.
-                    const newTex = await LoadSmartAssetTextureAsync(sam, key, blobUrl, { ...(ext ? { extension: ext } : {}), type: "texture" });
+                    const newTex = await LoadSmartAssetTextureAsync(scene, key, blobUrl, { ...(ext ? { extension: ext } : {}), type: "texture" });
 
                     // Register a refresh callback so Reload can re-read the file from disk
                     if (fileHandle) {
-                        SetSmartAssetRefreshCallback(sam, key, async () => await fileHandle.getFile());
+                        SetSmartAssetRefreshCallback(scene, key, async () => await fileHandle.getFile());
                     }
 
                     // Replace references on all materials that used the old texture.
@@ -357,18 +348,18 @@ const SmartAssetList: FunctionComponent<{ scene: Scene; selectionService: ISelec
                     }
                 } else {
                     // Scene file swap (GLB, glTF, etc.)
-                    await UnloadSmartAssetAsync(sam, key);
+                    await UnloadSmartAssetAsync(scene, key);
 
                     // Register a refresh callback so Reload can re-read the file from disk
                     if (fileHandle) {
-                        SetSmartAssetRefreshCallback(sam, key, async () => await fileHandle.getFile());
+                        SetSmartAssetRefreshCallback(scene, key, async () => await fileHandle.getFile());
                     }
 
                     // Use onAssetNotFound to provide the File so SAM tracks loaded objects.
                     const savedHandler = sam.onAssetNotFound;
                     sam.onAssetNotFound = async () => file;
                     try {
-                        await LoadSmartAssetAsync(sam, key, blobUrl, { ...(ext ? { extension: ext } : {}) });
+                        await LoadSmartAssetAsync(scene, key, blobUrl, { ...(ext ? { extension: ext } : {}) });
                     } finally {
                         sam.onAssetNotFound = savedHandler;
                     }
@@ -443,7 +434,7 @@ const SmartAssetList: FunctionComponent<{ scene: Scene; selectionService: ISelec
             {assets.length === 0 && <Caption1 className={styles.emptyMessage}>No smart assets registered. Add assets to begin.</Caption1>}
             {assets.map((a) => {
                 // Find the first mesh produced by this key for click-to-select
-                const provEntity = sam ? _findFirstEntityForKey(a.key, scene, sam) : null;
+                const provEntity = _findFirstEntityForKey(a.key, scene);
 
                 return (
                     <div key={a.key} className={styles.assetRow}>
@@ -480,25 +471,24 @@ const SmartAssetList: FunctionComponent<{ scene: Scene; selectionService: ISelec
  * Prefers non-root meshes, then materials, then textures.
  * @param key - The smart asset key.
  * @param scene - The scene to search.
- * @param sam - The SmartAssetManager instance.
  * @returns The first matching entity, or null if not found.
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
-function _findFirstEntityForKey(key: string, scene: Scene, sam: SmartAssetManager): AbstractMesh | Material | BaseTexture | null {
+function _findFirstEntityForKey(key: string, scene: Scene): AbstractMesh | Material | BaseTexture | null {
     for (const mesh of scene.meshes) {
-        if (mesh.name !== "__root__" && FindSmartAssetKeyForObject(sam, mesh) === key) {
+        if (mesh.name !== "__root__" && FindSmartAssetKeyForObject(scene, mesh) === key) {
             return mesh;
         }
     }
 
     for (const mat of scene.materials) {
-        if (FindSmartAssetKeyForObject(sam, mat) === key) {
+        if (FindSmartAssetKeyForObject(scene, mat) === key) {
             return mat;
         }
     }
 
     for (const tex of scene.textures) {
-        if (FindSmartAssetKeyForObject(sam, tex) === key) {
+        if (FindSmartAssetKeyForObject(scene, tex) === key) {
             return tex;
         }
     }

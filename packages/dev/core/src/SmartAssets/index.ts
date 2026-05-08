@@ -1,10 +1,8 @@
 export { type ISerializedSmartAssetEntry, type ISerializedSmartAssetMap } from "./smartAssetSerializer";
 export {
     type SmartAssetManager,
-    type SmartAssetManagerOrScene,
     type SmartAssetRegistrationOptions,
-    GetSmartAssetManagerFromScene,
-    GetOrCreateSmartAssetManager,
+    GetSmartAssetManager,
     AddSmartAssetManagerCreatedObserver,
     RegisterSmartAsset,
     SetSmartAssetRefreshCallback,
