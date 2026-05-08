@@ -118,7 +118,6 @@ const base = commonDevViteConfiguration({
         // babylonDevExternalsPlugin below, which rewrites all their imports to globalThis.BABYLON
         // accesses.
         "shared-ui-components": path.resolve("../../dev/sharedUiComponents/src"),
-        inspector: path.resolve("../../dev/inspector-v2/src"),
     },
     productionExternals: {
         babylonjs: "BABYLON",

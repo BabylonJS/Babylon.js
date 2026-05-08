@@ -38,8 +38,7 @@ export type SnippetPayload = {
 
 export function GenerateV2Manifest(globalState: GlobalState): V2Manifest {
     const entry = globalState.entryFilePath || (globalState.language === "JS" ? "index.js" : "index.ts");
-    const files = Object.keys(globalState.files || {}).length ? { ...globalState.files } : { [entry]: globalState.currentCode || "" };
-
+    const files = Object.keys(globalState.files || {}).length ? globalState.files : { [entry]: globalState.currentCode || "" };
     return {
         v: ManifestVersion,
         language: (globalState.language === "JS" ? "JS" : "TS") as "JS" | "TS",
