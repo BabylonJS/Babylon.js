@@ -37,6 +37,7 @@ import {
     ToolbarButton,
     Tooltip,
     makeStyles,
+    mergeClasses,
     tokens,
 } from "@fluentui/react-components";
 import { AddRegular, ChevronDownRegular, ChevronRightRegular, DismissRegular } from "@fluentui/react-icons";
@@ -895,15 +896,15 @@ class VariablesPanelInner extends React.Component<IVariablesPanelInnerProps, IVa
         const bodyVisible = !showHeader || !collapsed;
 
         const bodyContent = (
-            <div className={`${classes.body} ${isVertical ? classes.bodyVertical : ""}`}>
+            <div className={mergeClasses(classes.body, isVertical && classes.bodyVertical)}>
                 {variables.length === 0 ? (
                     <Body1 className={classes.empty}>No variables. Click + to add one, or use GetVariable/SetVariable blocks.</Body1>
                 ) : (
-                    <div className={`${classes.table} ${isVertical ? classes.tableVertical : ""}`}>
+                    <div className={mergeClasses(classes.table, isVertical && classes.tableVertical)}>
                         {variables.map((v, idx) => {
                             const typeName = variableTypes.get(v.name) ?? "any";
                             return (
-                                <Card key={v.name} size="small" className={`${classes.cell} ${isVertical ? classes.cellVertical : ""}`}>
+                                <Card key={v.name} size="small" className={mergeClasses(classes.cell, isVertical && classes.cellVertical)}>
                                     <div className={classes.nameRow}>
                                         {editingNameIndex === idx ? (
                                             <Input
@@ -950,7 +951,7 @@ class VariablesPanelInner extends React.Component<IVariablesPanelInnerProps, IVa
         );
 
         return (
-            <div className={`${classes.strip} ${isVertical ? classes.stripVertical : ""}`}>
+            <div className={mergeClasses(classes.strip, isVertical && classes.stripVertical)}>
                 {showHeader && (
                     <div className={classes.header}>
                         <Tooltip content={collapsed ? "Expand variables" : "Collapse variables"} relationship="label">

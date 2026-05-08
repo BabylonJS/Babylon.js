@@ -103,6 +103,10 @@ export class FlowGraphEditor {
             ],
             toolbarMode: "full",
             showThemeSelector: true,
+            leftPaneMinWidth: 250,
+            leftPaneDefaultWidth: 250,
+            rightPaneMinWidth: 250,
+            rightPaneDefaultWidth: 300,
         });
 
         this._CurrentDisposer = tool;
