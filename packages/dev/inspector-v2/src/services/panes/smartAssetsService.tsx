@@ -10,7 +10,6 @@ import {
     GetSmartAssetTextureExtensions,
     LoadSmartAssetAsync,
     LoadSmartAssetTextureAsync,
-    RegisterSmartAsset,
     ReloadSmartAssetAsync,
     RemoveSmartAssetAsync,
     SetSmartAssetRefreshCallback,
@@ -268,12 +267,12 @@ const SmartAssetList: FunctionComponent<{ scene: Scene; selectionService: ISelec
                 const isTexture = _isTextureExtension(ext);
 
                 const blobUrl = URL.createObjectURL(file);
-                RegisterSmartAsset(sam, key, blobUrl, { ...(ext ? { extension: ext } : {}), ...(isTexture ? { type: "texture" } : {}) });
+                const options = { ...(ext ? { extension: ext } : {}), ...(isTexture ? { type: "texture" } : {}) };
 
                 try {
                     if (isTexture) {
                         // eslint-disable-next-line no-await-in-loop
-                        await LoadSmartAssetTextureAsync(sam, key);
+                        await LoadSmartAssetTextureAsync(sam, key, blobUrl, options);
                     } else {
                         // Temporarily set onAssetNotFound to return the File so SAM's
                         // retry path can use the extension hint and track loaded objects.
@@ -281,7 +280,7 @@ const SmartAssetList: FunctionComponent<{ scene: Scene; selectionService: ISelec
                         sam.onAssetNotFound = async () => file;
                         try {
                             // eslint-disable-next-line no-await-in-loop
-                            await LoadSmartAssetAsync(sam, key);
+                            await LoadSmartAssetAsync(sam, key, blobUrl, options);
                         } finally {
                             sam.onAssetNotFound = savedHandler;
                         }
@@ -301,8 +300,7 @@ const SmartAssetList: FunctionComponent<{ scene: Scene; selectionService: ISelec
 
     const onRemoveAsset = useCallback(
         async (key: string) => {
-            const sam = GetOrCreateSmartAssetManager(scene);
-            await RemoveSmartAssetAsync(sam, key);
+            await RemoveSmartAssetAsync(scene, key);
             setStatus(`Removed: ${key}`);
         },
         [scene]
@@ -310,8 +308,7 @@ const SmartAssetList: FunctionComponent<{ scene: Scene; selectionService: ISelec
 
     const onReloadAsset = useCallback(
         async (key: string) => {
-            const sam = GetOrCreateSmartAssetManager(scene);
-            await ReloadSmartAssetAsync(sam, key);
+            await ReloadSmartAssetAsync(scene, key);
             setStatus(`Reloaded: ${key}`);
         },
         [scene]
@@ -336,8 +333,7 @@ const SmartAssetList: FunctionComponent<{ scene: Scene; selectionService: ISelec
                     }
 
                     // Load the new texture via SAM so it stays tracked by key.
-                    RegisterSmartAsset(sam, key, blobUrl, { ...(ext ? { extension: ext } : {}), type: "texture" });
-                    const newTex = await LoadSmartAssetTextureAsync(sam, key);
+                    const newTex = await LoadSmartAssetTextureAsync(sam, key, blobUrl, { ...(ext ? { extension: ext } : {}), type: "texture" });
 
                     // Register a refresh callback so Reload can re-read the file from disk
                     if (fileHandle) {
@@ -362,7 +358,6 @@ const SmartAssetList: FunctionComponent<{ scene: Scene; selectionService: ISelec
                 } else {
                     // Scene file swap (GLB, glTF, etc.)
                     await UnloadSmartAssetAsync(sam, key);
-                    RegisterSmartAsset(sam, key, blobUrl, { ...(ext ? { extension: ext } : {}) });
 
                     // Register a refresh callback so Reload can re-read the file from disk
                     if (fileHandle) {
@@ -373,7 +368,7 @@ const SmartAssetList: FunctionComponent<{ scene: Scene; selectionService: ISelec
                     const savedHandler = sam.onAssetNotFound;
                     sam.onAssetNotFound = async () => file;
                     try {
-                        await LoadSmartAssetAsync(sam, key);
+                        await LoadSmartAssetAsync(sam, key, blobUrl, { ...(ext ? { extension: ext } : {}) });
                     } finally {
                         sam.onAssetNotFound = savedHandler;
                     }

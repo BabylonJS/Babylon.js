@@ -1,7 +1,7 @@
 import { useCallback, useState, type FunctionComponent } from "react";
 
 import { type Scene } from "core/scene";
-import { GetAllSmartAssets, GetOrCreateSmartAssetManager, LoadSmartAssetMapAsync, RemoveSmartAssetAsync, SerializeSmartAssetManagerMap } from "core/SmartAssets/smartAssetManager";
+import { GetAllSmartAssets, LoadSmartAssetMapAsync, RemoveSmartAssetAsync, SerializeSmartAssetManagerMap } from "core/SmartAssets/smartAssetManager";
 import { Tools } from "core/Misc/tools";
 
 import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
@@ -35,8 +35,6 @@ export const SmartAssetProjectTools: FunctionComponent<{ scene: Scene }> = (prop
     const styles = useStyles();
     const isBusy = busyMessage !== "";
 
-    const getSmartAssetManager = useCallback(() => GetOrCreateSmartAssetManager(scene), [scene]);
-
     const onSaveAssetMap = useCallback(async () => {
         if (isBusy) {
             return;
@@ -45,8 +43,7 @@ export const SmartAssetProjectTools: FunctionComponent<{ scene: Scene }> = (prop
         setBusyMessage("Saving assets...");
         setStatusMessage("");
         try {
-            const sam = getSmartAssetManager();
-            const assetMap = SerializeSmartAssetManagerMap(sam);
+            const assetMap = SerializeSmartAssetManagerMap(scene);
             const jsonBlob = new Blob([JSON.stringify(assetMap, null, 2)], { type: "application/json" });
             Tools.Download(jsonBlob, "smart-assets.json");
 
@@ -56,7 +53,7 @@ export const SmartAssetProjectTools: FunctionComponent<{ scene: Scene }> = (prop
         } finally {
             setBusyMessage("");
         }
-    }, [getSmartAssetManager, isBusy]);
+    }, [scene, isBusy]);
 
     const onLoadAssetMap = useCallback(
         async (files: FileList) => {
@@ -72,17 +69,16 @@ export const SmartAssetProjectTools: FunctionComponent<{ scene: Scene }> = (prop
             setBusyMessage("Loading assets...");
             setStatusMessage("");
             try {
-                const sam = getSmartAssetManager();
-                await Promise.all(Array.from(GetAllSmartAssets(sam).keys()).map(async (key) => await RemoveSmartAssetAsync(sam, key)));
-                await LoadSmartAssetMapAsync(sam, file);
-                setStatusMessage(`Loaded: ${GetAllSmartAssets(sam).size} assets`);
+                await Promise.all(Array.from(GetAllSmartAssets(scene).keys()).map(async (key) => await RemoveSmartAssetAsync(scene, key)));
+                await LoadSmartAssetMapAsync(scene, file);
+                setStatusMessage(`Loaded: ${GetAllSmartAssets(scene).size} assets`);
             } catch (err) {
                 setStatusMessage(`Load error: ${err}`);
             } finally {
                 setBusyMessage("");
             }
         },
-        [getSmartAssetManager, isBusy]
+        [scene, isBusy]
     );
 
     return (
