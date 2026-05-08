@@ -1,8 +1,8 @@
 {
   "stats": {
-    "totalFiles": 3198,
+    "totalFiles": 3197,
     "filesWithSideEffects": 1415,
-    "filesWithoutSideEffects": 1783,
+    "filesWithoutSideEffects": 1782,
     "byType": {
       "top-level-call": 633,
       "declare-module": 108,

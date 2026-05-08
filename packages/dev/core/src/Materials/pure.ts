@@ -41,7 +41,7 @@ export * from "./meshDebugPluginMaterial.pure";
 export * from "./GaussianSplatting/gaussianSplattingMaterial.pure";
 export * from "./GaussianSplatting/gaussianSplattingSolidColorMaterialPlugin.pure";
 export * from "./GaussianSplatting/gaussianSplattingGpuPickingMaterialPlugin.pure";
-export * from "./materialHelper.functions.pure";
+export * from "./materialHelper.functions";
 export * from "./materialHelper.geometryrendering";
 export * from "./materialStencilState";
 export * from "./uv.defines";

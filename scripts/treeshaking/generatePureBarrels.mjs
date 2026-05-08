@@ -243,6 +243,39 @@ function processDirectory(dir) {
 }
 
 /**
+ * Check if a file is a "barrel" (only `export * from` statements) that
+ * transitively re-exports from side-effectful modules.
+ * @param {string} filePath Absolute path to the .ts file
+ * @param {string} contextDir Directory containing the barrel (for resolving relative paths)
+ * @returns {boolean} True if the file is a barrel with side-effectful re-exports
+ */
+function isBarrelWithSideEffects(filePath, contextDir) {
+    const content = readFileSync(filePath, "utf-8");
+    const lines = content.split("\n");
+    const specifiers = [];
+    for (const line of lines) {
+        const trimmed = line.trim();
+        if (!trimmed || trimmed.startsWith("//") || trimmed.startsWith("/*") || trimmed.startsWith("*")) continue;
+        const m = trimmed.match(/^export\s+\*\s+from\s+["'](.+?)["']\s*;?\s*$/);
+        if (!m) {
+            // Not a pure barrel — has non-re-export content (classes, functions, etc.)
+            return false;
+        }
+        specifiers.push(m[1]);
+    }
+    if (specifiers.length === 0) return false;
+    // Check if any target is in the side-effects manifest
+    const barrelDir = dirname(filePath);
+    for (const spec of specifiers) {
+        const targetRel = relative(SRC_ROOT, resolve(barrelDir, spec)) + ".ts";
+        if (sideEffectFiles.has(targetRel)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+/**
  * Resolve an `export * from "./specifier"` line.
  * Returns the rewritten line for pure.ts, or null to skip.
  * @param {string} dir Absolute path of the directory containing the export line
@@ -281,15 +314,25 @@ function resolveExport(dir, specifier, originalLine) {
             return `export * from "${pureSpecifier}";`;
         }
         const filePath = relPath + ".ts";
-        if (!sideEffectFiles.has(filePath)) {
-            keptAsIs++;
-            return originalLine.trim();
+        if (sideEffectFiles.has(filePath)) {
+            skippedExports++;
+            if (VERBOSE) {
+                console.log(`  SKIP (side effects, no .pure): ${filePath}`);
+            }
+            return null;
         }
-        skippedExports++;
-        if (VERBOSE) {
-            console.log(`  SKIP (side effects, no .pure): ${filePath}`);
+        // Check if the file is a re-exporting barrel that transitively includes
+        // side-effectful modules. A barrel is a file whose non-empty, non-comment
+        // lines are all `export * from "..."` statements.
+        if (isBarrelWithSideEffects(resolvedFile, dir)) {
+            skippedExports++;
+            if (VERBOSE) {
+                console.log(`  SKIP (barrel re-exports side-effectful modules): ${filePath}`);
+            }
+            return null;
         }
-        return null;
+        keptAsIs++;
+        return originalLine.trim();
     }
 
     // Case 3: Could be a directory without explicit /index
