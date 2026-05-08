@@ -799,6 +799,14 @@
             "dependsOn": ["Particles"]
         },
         {
+            "title": "FAST snapshot CPU particles",
+            "playgroundId": "#AW6Q7E#0",
+            "renderCount": 30,
+            "excludedEngines": ["webgl1", "webgl2"],
+            "referenceImage": "fast-snapshot-cpu-particles.png",
+            "dependsOn": ["Cameras", "Particles", "Rendering"]
+        },
+        {
             "title": "Chibi Rex",
             "playgroundId": "#SYM1EP#0",
             "referenceImage": "chibi-rex.png",
@@ -3919,26 +3927,14 @@
         {
             "title": "OpenPBR Thin Film and Specular Color - IBL",
             "playgroundId": "#GRQHVV#322",
-            "excludedEngines": [
-                "webgl1"
-            ],
-            "dependsOn": [
-                "Lights",
-                "PBR",
-                "Textures"
-            ]
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["Lights", "PBR", "Textures"]
         },
         {
             "title": "OpenPBR Thin Film and Specular IOR Match - IBL",
             "playgroundId": "#GRQHVV#323",
-            "excludedEngines": [
-                "webgl1"
-            ],
-            "dependsOn": [
-                "Lights",
-                "PBR",
-                "Textures"
-            ]
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["Lights", "PBR", "Textures"]
         },
         {
             "title": "OpenPBR Thin Film Textures - IBL",
