@@ -1,9 +1,9 @@
 export { type ISerializedSmartAssetMap } from "./smartAssetSerializer";
 export {
     type SmartAssetManager,
+    type SmartAssetLoadOptions,
     GetSmartAssetManager,
     AddSmartAssetManagerCreatedObserver,
-    SetSmartAssetRefreshCallback,
     RemoveSmartAssetAsync,
     GetAllSmartAssets,
     LoadSmartAssetAsync,

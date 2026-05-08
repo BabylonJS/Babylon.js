@@ -11,7 +11,6 @@ import {
     LoadSmartAssetTextureAsync,
     ReloadSmartAssetAsync,
     RemoveSmartAssetAsync,
-    SetSmartAssetRefreshCallback,
     UnloadSmartAssetAsync,
     type SmartAssetManager,
 } from "core/SmartAssets/smartAssetManager";
@@ -324,12 +323,12 @@ const SmartAssetList: FunctionComponent<{ scene: Scene; selectionService: ISelec
                     }
 
                     // Load the new texture via SAM so it stays tracked by key.
-                    const newTex = await LoadSmartAssetTextureAsync(scene, key, blobUrl, { ...(ext ? { extension: ext } : {}), type: "texture" });
-
-                    // Register a refresh callback so Reload can re-read the file from disk
-                    if (fileHandle) {
-                        SetSmartAssetRefreshCallback(scene, key, async () => await fileHandle.getFile());
-                    }
+                    // Pass reloadSource so Reload can re-read the file from disk.
+                    const newTex = await LoadSmartAssetTextureAsync(scene, key, blobUrl, {
+                        ...(ext ? { extension: ext } : {}),
+                        type: "texture",
+                        reloadSource: fileHandle ? async () => await fileHandle.getFile() : undefined,
+                    });
 
                     // Replace references on all materials that used the old texture.
                     // Only Standard/PBR-style slot names are rewritten here; NodeMaterial,
@@ -350,16 +349,15 @@ const SmartAssetList: FunctionComponent<{ scene: Scene; selectionService: ISelec
                     // Scene file swap (GLB, glTF, etc.)
                     await UnloadSmartAssetAsync(scene, key);
 
-                    // Register a refresh callback so Reload can re-read the file from disk
-                    if (fileHandle) {
-                        SetSmartAssetRefreshCallback(scene, key, async () => await fileHandle.getFile());
-                    }
-
                     // Use onAssetNotFound to provide the File so SAM tracks loaded objects.
                     const savedHandler = sam.onAssetNotFound;
                     sam.onAssetNotFound = async () => file;
                     try {
-                        await LoadSmartAssetAsync(scene, key, blobUrl, { ...(ext ? { extension: ext } : {}) });
+                        // Pass reloadSource so Reload can re-read the file from disk.
+                        await LoadSmartAssetAsync(scene, key, blobUrl, {
+                            ...(ext ? { extension: ext } : {}),
+                            reloadSource: fileHandle ? async () => await fileHandle.getFile() : undefined,
+                        });
                     } finally {
                         sam.onAssetNotFound = savedHandler;
                     }

@@ -52,7 +52,21 @@ export type SmartAssetManager = {
  * Optional registration data that helps select the correct loader when the URL
  * does not contain a usable file extension, such as blob-backed local files.
  */
-export type SmartAssetRegistrationOptions = Pick<ISerializedSmartAssetEntry, "type" | "extension" | "metadata">;
+type SmartAssetRegistrationOptions = Pick<ISerializedSmartAssetEntry, "type" | "extension" | "metadata">;
+
+/**
+ * Optional load-time configuration. Includes the persistable {@link SmartAssetRegistrationOptions}
+ * fields (type, extension, metadata) plus a transient `reloadSource` callback used by
+ * {@link ReloadSmartAssetAsync} to fetch fresh bytes from disk for blob-backed assets.
+ */
+export type SmartAssetLoadOptions = SmartAssetRegistrationOptions & {
+    /**
+     * Optional callback invoked by {@link ReloadSmartAssetAsync} to obtain a fresh File
+     * for the asset. Use this when the registered URL is a `blob:` URL backed by a
+     * `FileSystemFileHandle` so Reload can re-read the underlying file from disk.
+     */
+    readonly reloadSource?: () => Promise<File>;
+};
 
 type SmartAssetManagerInternals = {
     urls: Map<string, string>;
@@ -60,7 +74,7 @@ type SmartAssetManagerInternals = {
     containers: Map<string, AssetContainer>;
     objectToKeyMap: WeakMap<object, string>;
     textureKeys: Set<string>;
-    refreshCallbacks: Map<string, () => Promise<File>>;
+    reloadSources: Map<string, () => Promise<File>>;
     blobUrls: Map<string, string>;
     sceneDisposeObserver: ReturnType<Scene["onDisposeObservable"]["add"]> | null;
 };
@@ -89,7 +103,7 @@ function CreateSmartAssetManager(scene: Scene): SmartAssetManager {
         containers: new Map(),
         objectToKeyMap: new WeakMap(),
         textureKeys: new Set(),
-        refreshCallbacks: new Map(),
+        reloadSources: new Map(),
         blobUrls: new Map(),
         sceneDisposeObserver: null,
     };
@@ -158,21 +172,6 @@ export function RegisterSmartAsset(scene: Scene, key: string, url: string, optio
 }
 
 /**
- * Sets a callback that provides fresh file contents for a key on reload.
- * @param scene - The scene that owns the smart asset.
- * @param key - The smart asset key.
- * @param callback - A function that returns a fresh File, or null to clear.
- */
-export function SetSmartAssetRefreshCallback(scene: Scene, key: string, callback: (() => Promise<File>) | null): void {
-    const internal = GetSmartAssetInternals(GetSmartAssetManager(scene));
-    if (callback) {
-        internal.refreshCallbacks.set(key, callback);
-    } else {
-        internal.refreshCallbacks.delete(key);
-    }
-}
-
-/**
  * Removes a key from the registry. If the asset is loaded, it is unloaded first.
  * @param scene - The scene that owns the smart asset.
  * @param key - The key to remove.
@@ -193,7 +192,7 @@ export async function RemoveSmartAssetAsync(scene: Scene, key: string): Promise<
     internal.urls.delete(key);
     internal.options.delete(key);
     internal.textureKeys.delete(key);
-    internal.refreshCallbacks.delete(key);
+    internal.reloadSources.delete(key);
     RevokeManagedBlobUrl(internal, key);
     manager.onChangedObservable.notifyObservers();
 }
@@ -215,11 +214,15 @@ export function GetAllSmartAssets(scene: Scene): ReadonlyMap<string, string> {
  * @param options - Optional loader hints and metadata for this asset.
  * @returns A promise resolving to the loaded AssetContainer.
  */
-export async function LoadSmartAssetAsync(scene: Scene, key: string, url?: string, options?: SmartAssetRegistrationOptions): Promise<AssetContainer> {
+export async function LoadSmartAssetAsync(scene: Scene, key: string, url?: string, options?: SmartAssetLoadOptions): Promise<AssetContainer> {
     const manager = GetSmartAssetManager(scene);
     const internal = GetSmartAssetInternals(manager);
     if (url) {
-        RegisterSmartAsset(scene, key, url, options);
+        const { reloadSource: _ignored, ...registrationOptions } = options ?? {};
+        RegisterSmartAsset(scene, key, url, registrationOptions);
+    }
+    if (options?.reloadSource) {
+        internal.reloadSources.set(key, options.reloadSource);
     }
 
     const resolvedUrl = internal.urls.get(key);
@@ -286,11 +289,15 @@ export async function LoadAllSmartAssetsAsync(scene: Scene): Promise<AssetContai
  * @param options - Optional loader hints and metadata for this asset.
  * @returns A promise resolving to the loaded texture.
  */
-export async function LoadSmartAssetTextureAsync(scene: Scene, key: string, url?: string, options?: SmartAssetRegistrationOptions): Promise<BaseTexture> {
+export async function LoadSmartAssetTextureAsync(scene: Scene, key: string, url?: string, options?: SmartAssetLoadOptions): Promise<BaseTexture> {
     const manager = GetSmartAssetManager(scene);
     const internal = GetSmartAssetInternals(manager);
     if (url) {
-        RegisterSmartAsset(scene, key, url, { ...options, type: options?.type ?? "texture" });
+        const { reloadSource: _ignored, ...registrationOptions } = options ?? {};
+        RegisterSmartAsset(scene, key, url, { ...registrationOptions, type: registrationOptions.type ?? "texture" });
+    }
+    if (options?.reloadSource) {
+        internal.reloadSources.set(key, options.reloadSource);
     }
 
     internal.textureKeys.add(key);
@@ -352,14 +359,14 @@ export async function UnloadSmartAssetAsync(scene: Scene, key: string): Promise<
  */
 export async function ReloadSmartAssetAsync(scene: Scene, key: string): Promise<AssetContainer | BaseTexture> {
     const internal = GetSmartAssetInternals(GetSmartAssetManager(scene));
-    const refreshCallback = internal.refreshCallbacks.get(key);
-    if (refreshCallback) {
+    const reloadSource = internal.reloadSources.get(key);
+    if (reloadSource) {
         try {
-            const freshFile = await refreshCallback();
+            const freshFile = await reloadSource();
             const blobUrl = URL.createObjectURL(freshFile);
             RegisterSmartAsset(scene, key, blobUrl, { extension: GetExtensionFromUrl(freshFile.name) || internal.options.get(key)?.extension });
         } catch (e) {
-            Logger.Warn(`SmartAssetManager: Refresh callback failed for "${key}": ${e}`);
+            Logger.Warn(`SmartAssetManager: reloadSource callback failed for "${key}": ${e}`);
         }
     }
 
@@ -474,7 +481,7 @@ export function DisposeSmartAssetManager(manager: SmartAssetManager): void {
     internal.urls.clear();
     internal.options.clear();
     internal.textureKeys.clear();
-    internal.refreshCallbacks.clear();
+    internal.reloadSources.clear();
     internal.containers.clear();
     for (const blobUrl of Array.from(internal.blobUrls.values())) {
         URL.revokeObjectURL(blobUrl);
